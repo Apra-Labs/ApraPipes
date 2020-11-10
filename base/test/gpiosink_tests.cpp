@@ -11,7 +11,7 @@
 #include <mutex>
 #include <atomic>
 
-BOOST_AUTO_TEST_SUITE(gpiosink_tests)
+BOOST_AUTO_TEST_SUITE(gpiosink_tests, * boost::unit_test::disabled())
 
 mutex mutex_;
 condition_variable con1, con2;

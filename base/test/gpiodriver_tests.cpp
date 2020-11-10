@@ -4,7 +4,7 @@
 #include <boost/chrono/chrono.hpp>
 #include "GPIODriver.h"
 
-BOOST_AUTO_TEST_SUITE(gpiodriver_tests)
+BOOST_AUTO_TEST_SUITE(gpiodriver_tests, * boost::unit_test::disabled())
 
 int read()
 {

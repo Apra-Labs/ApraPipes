@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include<stdio.h>
-#include "jpeglib.h"
+#include "libjpeg-8b/jpeglib.h"
 
 class JPEGEncoderL4TMHelper
 {

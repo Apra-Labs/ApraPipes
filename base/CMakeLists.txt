@@ -22,6 +22,8 @@ IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
 
+list(APPEND CMAKE_PREFIX_PATH "/usr/lib/aarch64-linux-gnu/tegra")
+
 project(APRAPIPES)
 hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
 find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
@@ -34,6 +36,8 @@ enable_language(CUDA)
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
+		SET ( JPEGLIBINCLUDE "/usr/src/jetson_multimedia_api/include" )			
+		find_library(NVJPEGLIB_L4T nvjpeg)
 	ELSE()
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -239,6 +243,8 @@ add_library(aprapipes STATIC
 	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 )
 
+target_include_directories ( aprapipes PRIVATE ${JPEGLIBINCLUDE})
+
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -298,8 +304,6 @@ SET(UT_FILES
 
 add_executable(aprapipesut ${UT_FILES})
 
-message("NVCUDAToolkit_LIBS " ${NVCUDAToolkit_LIBS})
-
 target_link_libraries(aprapipesut   
   aprapipes  
   Boost::filesystem
@@ -312,4 +316,5 @@ target_link_libraries(aprapipesut
   ${OpenCV_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
 )

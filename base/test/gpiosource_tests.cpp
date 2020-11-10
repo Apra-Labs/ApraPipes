@@ -13,7 +13,7 @@
 using sys_clock = std::chrono::system_clock;
 
 
-BOOST_AUTO_TEST_SUITE(gpiosource_tests)
+BOOST_AUTO_TEST_SUITE(gpiosource_tests, * boost::unit_test::disabled())
 
 mutex mutex_;
 condition_variable con1, con2;

@@ -19,9 +19,11 @@ Build can take ~2 hours depending on the machine configuration.
 This project uses [hunter package manager](https://github.com/cpp-pm/hunter).
 
 ## Jetson boards - Nano, TX2, NX, AGX
-* Setup the board with Jetpack 4.4 
+* Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
 * `chmod +x build_jetson.sh`
 * `./build_jetson.sh`
+
+Build can take ~12 hours on Jetson Nano. 
 
 ## Run Tests
 * run all tests  `_build/aprapipesut`
