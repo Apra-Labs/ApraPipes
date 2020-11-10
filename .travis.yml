@@ -1,0 +1,15 @@
+language:
+  - minimal
+
+os:
+  - linux
+  
+arch:
+  - amd64
+#  - arm64
+
+compiler:
+  - gcc
+ 
+script:
+  -./build_linux_x64.sh 
