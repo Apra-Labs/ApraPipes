@@ -330,7 +330,7 @@ CalcHistogramCVProps CalcHistogramCV::getProps()
 
 void CalcHistogramCV::setProps(CalcHistogramCVProps& props)
 {
-	Module::setProps(props, PropsChangeMetadata::ModuleName::CalcHistogramCV);
+	Module::addPropsToQueue(props);
 }
 
 bool CalcHistogramCV::handlePropsChange(frame_sp& frame)

@@ -120,7 +120,7 @@ bool FileReaderModule::handleCommand(Command::CommandType type, frame_sp& frame)
 
 void FileReaderModule::setProps(FileReaderModuleProps& props)
 {
-	Module::setProps(props, PropsChangeMetadata::ModuleName::FrameReaderModule);
+	Module::addPropsToQueue(props);
 }
 
 FileReaderModuleProps FileReaderModule::getProps()

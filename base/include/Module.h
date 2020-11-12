@@ -158,11 +158,10 @@ protected:
 	void setProps(ModuleProps& props);
 	void fillProps(ModuleProps& props);
 	template<class T>
-	void setProps(T& props, PropsChangeMetadata::ModuleName moduleName)
+	void addPropsToQueue(T& props)
 	{
-		auto metadata = framemetadata_sp(new PropsChangeMetadata(moduleName));
 		auto size = props.getSerializeSize();
-		auto frame = makeCommandFrame(size, metadata);
+		auto frame = makeCommandFrame(size, mPropsChangeMetadata);
 
 		// serialize
 		serialize<T>(props, frame);
@@ -327,4 +326,5 @@ private:
 	boost::shared_ptr<QuePushStrategy> mQuePushStrategy;
 
 	framemetadata_sp mCommandMetadata;
+	framemetadata_sp mPropsChangeMetadata;
 };

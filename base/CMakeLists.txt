@@ -113,7 +113,6 @@ SET(include/CORE_FILES_H
 	include/RawImagePlanarMetadata.h
 	include/RawImageMetadata.h
 	include/QuePushStrategy.h
-	include/PropsChangeMetadata.h
 	include/PipeLine.h
 	include/PausePlayMetadata.h
 	include/PaceMaker.h
@@ -135,21 +134,6 @@ ENDIF(ENABLE_WINDOWS)
 
 SET(GENRIC_FILES)
 SET(GENRIC_FILES_H)
-
-IF(ENABLE_ARM64)
-	SET(GENRIC_FILES ${GENRIC_FILES}
-		src/GPIODriver.cpp
-		src/GPIOSink.cpp
-		src/GPIOSource.cpp
-	)
-
-	SET(GENERIC_FILES_H ${GENERIC_FILES_H}
-		include/GPIOSource.h
-		include/GPIOSink.h
-		include/GPIOMetadata.h
-		include/GPIODriver.h
-	)
-ENDIF(ENABLE_ARM64)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -252,9 +236,6 @@ IF (ENABLE_ARM64)
 		test/jpegencoderl4tm_tests.cpp
 		test/jpegdecoderl4tm_tests.cpp
 		test/opencvresize_tests.cpp
-		test/gpiodriver_tests.cpp
-		test/gpiosource_tests.cpp
-		test/gpiosink_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 

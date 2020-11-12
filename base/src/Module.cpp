@@ -124,6 +124,7 @@ Module::Module(Kind nature, string name, ModuleProps _props) :mRunning(false), m
 	mProps.reset(new ModuleProps(_props)); // saving for restoring later
 
 	mCommandMetadata.reset(new FrameMetadata(FrameMetadata::FrameType::COMMAND));
+	mPropsChangeMetadata.reset(new FrameMetadata(FrameMetadata::FrameType::PROPS_CHANGE));	
 }
 Module::~Module() 
 {
@@ -1083,8 +1084,7 @@ void Module::register_consumer(boost::function<void(Module*, unsigned short)> co
 
 bool Module::handlePropsChange(frame_sp& frame)
 {
-	auto moduleName = FrameMetadataFactory::downcast<PropsChangeMetadata>(frame->getMetadata())->getModuleName();
-	throw AIPException(AIP_NOTIMPLEMENTED, "Props Change for <" + to_string(moduleName) + "> not implemented");
+	throw AIPException(AIP_NOTIMPLEMENTED, "Props Change for not implemented");
 }
 
 bool Module::handleCommand(Command::CommandType type, frame_sp& frame)
@@ -1106,8 +1106,7 @@ bool Module::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 		break;
 	default:
-		auto moduleName = FrameMetadataFactory::downcast<PropsChangeMetadata>(frame->getMetadata())->getModuleName();
-		throw AIPException(AIP_NOTIMPLEMENTED, "Command Handler for <" + to_string(moduleName) + "> not implemented");
+		throw AIPException(AIP_NOTIMPLEMENTED, "Command Handler for <" + to_string(type) + "> not implemented");
 	}
 	
 	return true;

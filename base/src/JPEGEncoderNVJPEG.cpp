@@ -224,7 +224,7 @@ public:
 
 		//synchronize
 		auto syncStatus = cudaStreamSynchronize(props.stream);
-		if (status != cudaSuccess)
+		if (syncStatus != cudaSuccess)
 		{
 			LOG_ERROR << "cudaStreamSynchronize failed.<" << status << ">";
 		}

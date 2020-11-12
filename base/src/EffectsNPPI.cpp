@@ -564,7 +564,7 @@ EffectsNPPIProps EffectsNPPI::getProps()
 
 void EffectsNPPI::setProps(EffectsNPPIProps& props)
 {
-	Module::setProps(props, PropsChangeMetadata::ModuleName::EffectsNPPI);
+	Module::addPropsToQueue(props);
 }
 
 bool EffectsNPPI::handlePropsChange(frame_sp& frame)

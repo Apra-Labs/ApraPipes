@@ -209,7 +209,7 @@ bool GaussianBlur::processEOS(string &pinId)
 
 void GaussianBlur::setProps(GaussianBlurProps &props)
 {
-    Module::setProps(props, PropsChangeMetadata::ModuleName::GaussianBlur);
+    Module::addPropsToQueue(props);
 }
 
 bool GaussianBlur::handlePropsChange(frame_sp &frame)

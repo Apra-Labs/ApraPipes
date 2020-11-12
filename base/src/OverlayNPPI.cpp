@@ -582,7 +582,7 @@ OverlayNPPIProps OverlayNPPI::getProps()
 
 void OverlayNPPI::setProps(OverlayNPPIProps& props)
 {
-	Module::setProps(props, PropsChangeMetadata::ModuleName::OverlayNPPI);
+	Module::addPropsToQueue(props);
 }
 
 bool OverlayNPPI::handlePropsChange(frame_sp& frame)

@@ -2,7 +2,6 @@
 
 #include "FrameMetadata.h"
 #include "PausePlayMetadata.h"
-#include "PropsChangeMetadata.h"
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "ArrayMetadata.h"
