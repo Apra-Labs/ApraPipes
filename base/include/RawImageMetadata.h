@@ -65,6 +65,7 @@ public:
 		}
 
 		_step = _step + FrameMetadata::getPaddingLength(_step, alignLength);
+		_step = _step * ImageMetadata::getElemSize(_depth);
 
 		initData(_width, _height, _imageType, _type, _step, _depth);
 	}
@@ -160,7 +161,7 @@ public:
 	{
 		auto elemSize = ImageMetadata::getElemSize(depth);
 
-		return elemSize*(step*offsetY + (offsetX*channels));
+		return (step*offsetY + (elemSize*offsetX*channels) );
 	}
 
 	int getChannels() { return channels; }
@@ -171,13 +172,8 @@ public:
 
 protected:
 	void setDataSize()
-	{
-		if (depth != CV_8U)
-		{
-			throw AIPException(AIP_FATAL, "There may be some hardcoding to 8u .. need to review code. Throwing exception for now");
-		}
-		auto elemSize = ImageMetadata::getElemSize(depth);
-		dataSize = height * step * elemSize;
+	{		
+		dataSize = height * step ;
 	}
 
 	void initData(int _width, int _height, ImageMetadata::ImageType _imageType, int _type, size_t _step, int _depth, MemType _memType = MemType::HOST)

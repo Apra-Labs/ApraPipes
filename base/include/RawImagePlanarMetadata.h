@@ -33,6 +33,12 @@ public:
 			throw AIPException(AIP_NOTIMPLEMENTED, msg);
 		}
 
+		auto elemSize =  ImageMetadata::getElemSize(_depth);
+		for (auto i = 0; i < maxChannels; i++)
+		{
+			_step[i] = _step[i] * elemSize;
+		}
+
 		initData(_width, _height, _imageType, _step, _depth);
 	}
 
@@ -106,7 +112,7 @@ public:
 
 		auto elemSize = ImageMetadata::getElemSize(depth);
 
-		return elemSize * (step[channelId]*offsetY + (offsetX));
+		return ( step[channelId]*offsetY + (elemSize * offsetX) );
 	}
 
 	int getDepth() { return depth; }
@@ -118,13 +124,11 @@ public:
 protected:
 	void setDataSize()
 	{
-		auto elemSize = ImageMetadata::getElemSize(depth);
-
 		dataSize = 0;
 		for (auto i = 0; i < channels; i++)
 		{
 			nextPtrOffset[i] = dataSize;
-			dataSize += step[i] * height[i] * elemSize;
+			dataSize += step[i] * height[i];
 		}
 	}
 
