@@ -3,7 +3,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <boost/pool/object_pool.hpp>
-#include "ExtFrame.h"
+#include "Frame.h"
 #include "Frame.h"
 #include "CommonDefs.h"
 
@@ -101,8 +101,9 @@ void foo()
 
 BOOST_AUTO_TEST_CASE(boost_opool_extframe)
 {
-	boost::object_pool<ExtFrame> opool;
-	auto a = frame_sp(opool.construct(nullptr, 0), [&](ExtFrame* pointer) {
+	boost::object_pool<Frame> opool;
+	auto metadata = framemetadata_sp();
+	auto a = frame_sp(opool.construct(nullptr, 0, metadata), [&](Frame* pointer) {
 		opool.free(pointer);
 		foo();
 	});

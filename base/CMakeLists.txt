@@ -95,7 +95,6 @@ SET(include/CORE_FILES_H
 	include/FileSequenceDriver.h
 	include/FileReaderModule.h
 	include/FilenameStrategy.h
-	include/ExtFrame.h
 	include/ExternalSourceModule.h
 	include/ExternalSinkModule.h
 	include/CommonDefs.h

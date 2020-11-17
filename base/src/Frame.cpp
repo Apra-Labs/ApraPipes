@@ -27,16 +27,32 @@ std::size_t Buffer::size() const BOOST_ASIO_NOEXCEPT
 	return boost::asio::mutable_buffer::size();
 }
 
-Frame::Frame():mutable_buffer(0, 0),myOrig(0), mFrameType(0), mFStart(0), mFEnd(0),m_num(0), m_den(0),fIndex(0),pictureType(255)
+Frame::Frame():mutable_buffer(0, 0),myOrig(0)
 {
-
+	setDefaultValues();
 }
-Frame::Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother), mFrameType(0), mFStart(0), mFEnd(0),m_num(0), m_den(0), fIndex(0), fIndex2(0), timestamp(0), pictureType(255)
+Frame::Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother)
 {
-
+	setDefaultValues();
+}
+Frame::Frame(void *buff, size_t size, framemetadata_sp& metadata):mutable_buffer(buff,size), myOrig(buff)
+{
+	setDefaultValues();
+	mMetadata = metadata;
 }
 Frame::~Frame() {
 	myMother.reset();
+}
+
+void Frame::setDefaultValues()
+{
+	 mFrameType = 0;
+	 mFStart = 0;
+	 mFEnd = 0;
+	 m_num = 0;
+	 m_den = 0;
+	 fIndex = 0;
+	 pictureType = 255;
 }
 
 void* Frame::data() const BOOST_ASIO_NOEXCEPT

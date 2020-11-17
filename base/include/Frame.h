@@ -25,6 +25,7 @@ private:
 class Frame :public boost::asio::mutable_buffer {
 public:
 	Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother);
+	Frame(void *buff, size_t size, framemetadata_sp& metadata);
 	virtual ~Frame();
 	short mFrameType;
 	uint64_t mFStart, mFEnd;
@@ -47,6 +48,7 @@ protected:
 	Frame();
 	framemetadata_sp mMetadata;
 private:
+	void setDefaultValues();
 	void *myOrig;
 	friend class FrameFactory;
 	boost::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children	
