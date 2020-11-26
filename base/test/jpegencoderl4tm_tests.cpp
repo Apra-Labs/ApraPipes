@@ -60,6 +60,52 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
+{
+	// metadata is known
+	auto width = 1280;
+	auto height = 720;
+	auto fileSize = width*height*3;
+	unsigned char *in_buf = new unsigned char[fileSize];
+
+	auto in_file = new std::ifstream("./data/frame_1280x720_rgb.raw");
+	in_file->read((char *)in_buf, fileSize);
+	delete in_file;
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());	
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+
+	auto rawImagePin = m1->addOutputPin(metadata);
+
+	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	m1->setNext(m2);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
+
+	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	m2->setNext(m3);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
+	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
+
+	frame_container frames;
+	frames.insert(make_pair(rawImagePin, rawImageFrame));
+
+	m1->send(frames);
+	m2->step();
+	frames = m3->pop();
+	BOOST_TEST((frames.find(encodedImagePin) != frames.end()));
+	auto encodedImageFrame = frames[encodedImagePin];
+	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
+
+	Test_Utils::saveOrCompare("./data/testOutput/jpegencoderl4tm_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
+}
+
 BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 {
 	// metadata is known

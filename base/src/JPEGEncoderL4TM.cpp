@@ -15,7 +15,7 @@ class JPEGEncoderL4TM::Detail
 {
 
 public:
-	Detail(JPEGEncoderL4TMProps& props) 
+	Detail(JPEGEncoderL4TMProps& props): color_space(JCS_YCbCr)
 	{
 		mProps = JPEGEncoderL4TMProps(props);
 	}
@@ -42,11 +42,17 @@ public:
 
 	size_t compute(frame_sp& inFrame, buffer_sp& buffer)
 	{
-		size_t outLength = mDataSize;
-		memcpy(dummyBuffer.get(), inFrame->data(), inFrame->size());	
+		auto in_buf = static_cast<const unsigned char*>(inFrame->data());
 
+		if(color_space == JCS_YCbCr)
+		{
+			memcpy(dummyBuffer.get(), inFrame->data(), inFrame->size());	
+			in_buf = dummyBuffer.get();
+		}		
+
+		size_t outLength = mDataSize;
 		auto out_buf = (unsigned char*)buffer->data();	
-		encHelper->encode(dummyBuffer.get(), &out_buf, outLength);
+		encHelper->encode(in_buf, &out_buf, outLength);
 		
 		return outLength;
 	}
@@ -69,13 +75,19 @@ public:
 	bool validateMetadata(framemetadata_sp &metadata, std::string id)
 	{
 		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if (rawImageMetadata->getChannels() != 1)
+		if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1";
+			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1 or 3";
 			return false;
 		}
 
-		if (rawImageMetadata->getStep()*mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth()*mProps.scale))
+		if(rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB)
+		{
+			LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO or RGB";
+			return false;
+		}
+
+		if (rawImageMetadata->getStep()*mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth()*rawImageMetadata->getChannels()*mProps.scale))
 		{
 			LOG_ERROR << "<" << id << ">:: RAW_IMAGE STEP IS EXPECTED TO BE 32 BIT ALIGNED<>" << rawImageMetadata->getWidth() << "<>" << mProps.scale;
 			return false;
@@ -87,13 +99,23 @@ public:
 private:
 
 	void init(framemetadata_sp& metadata)
-	{
+	{		
 		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		
+		if(rawImageMetadata->getImageType() == ImageMetadata::RGB)
+		{
+			color_space = JCS_RGB;
+		}
+
 		encHelper.reset(new JPEGEncoderL4TMHelper(mProps.quality));
-		encHelper->init(rawImageMetadata->getWidth(), rawImageMetadata->getHeight(), rawImageMetadata->getStep(), mProps.scale);
+		encHelper->init(rawImageMetadata->getWidth(), rawImageMetadata->getHeight(), rawImageMetadata->getStep(), color_space, mProps.scale);
 		size_t dummyBufferLength = (3 * rawImageMetadata->getStep() * rawImageMetadata->getHeight()) >> 1;
-		dummyBuffer.reset(new unsigned char[dummyBufferLength]); 
-		memset(dummyBuffer.get(), 128, dummyBufferLength);
+
+		if (color_space == JCS_YCbCr)
+		{
+			dummyBuffer.reset(new unsigned char[dummyBufferLength]);
+			memset(dummyBuffer.get(), 128, dummyBufferLength);
+		}
 		mDataSize = 	dummyBufferLength;	
 	}	
 
@@ -103,6 +125,8 @@ private:
 	framemetadata_sp mMetadata;		
 	framemetadata_sp mOutputMetadata;	
 	size_t mDataSize;	
+
+	J_COLOR_SPACE color_space;
 
 	JPEGEncoderL4TMProps mProps;
 };

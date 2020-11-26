@@ -5,7 +5,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ROUND_UP_4(num) (((num) + 3) & ~3)
 
-JPEGEncoderL4TMHelper::JPEGEncoderL4TMHelper(int _quality)
+JPEGEncoderL4TMHelper::JPEGEncoderL4TMHelper(int _quality): planes(3)
 {
     memset(&cinfo, 0, sizeof(cinfo));
     memset(&jerr, 0, sizeof(jerr));
@@ -35,9 +35,12 @@ JPEGEncoderL4TMHelper::~JPEGEncoderL4TMHelper()
     jpeg_destroy_compress(&cinfo);
 }
 
-bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stride, double scale)
+bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stride, J_COLOR_SPACE color_space, double scale)
 {
-    uint32_t channels = 3;
+    if (color_space == JCS_RGB)
+    {
+        planes = 1;
+    }
 
     uint32_t i, j, k;
 
@@ -56,7 +59,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
     h_max_samp = 0;
     v_max_samp = 0;
 
-    for (i = 0; i < channels; ++i)
+    for (i = 0; i < planes; ++i)
     {
         h_samp[i] = ROUND_UP_4(comp_width[0]) / comp_width[i];
         h_max_samp = MAX(h_max_samp, h_samp[i]);
@@ -64,7 +67,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
         v_max_samp = MAX(v_max_samp, v_samp[i]);
     }
 
-    for (i = 0; i < channels; ++i)
+    for (i = 0; i < planes; ++i)
     {
         h_samp[i] = h_max_samp / h_samp[i];
         v_samp[i] = v_max_samp / v_samp[i];
@@ -72,8 +75,8 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
     cinfo.image_width = width;
     cinfo.image_height = height;
-    cinfo.input_components = channels;
-    cinfo.in_color_space = JCS_YCbCr;
+    cinfo.input_components = 3; // YUV RGB
+    cinfo.in_color_space = color_space;
 
     if (scale != 1)
     {
@@ -85,15 +88,17 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, quality, TRUE);
 
-    cinfo.raw_data_in = TRUE;
-
-    for (i = 0; i < channels; i++)
+    if (planes == 3)
     {
-        cinfo.comp_info[i].h_samp_factor = h_samp[i];
-        cinfo.comp_info[i].v_samp_factor = v_samp[i];
-        line[i] = (unsigned char **)malloc(v_max_samp * DCTSIZE *
-                                           sizeof(unsigned char *));
-    }
+        cinfo.raw_data_in = TRUE;
+        for (i = 0; i < planes; i++)
+        {
+            cinfo.comp_info[i].h_samp_factor = h_samp[i];
+            cinfo.comp_info[i].v_samp_factor = v_samp[i];
+            line[i] = (unsigned char **)malloc(v_max_samp * DCTSIZE *
+                                               sizeof(unsigned char *));
+        }
+    }   
 
     return true;
 }
@@ -104,12 +109,11 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
     jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
 
-    uint32_t channels = 3;
-    unsigned char *base[channels], *end[channels];
+    unsigned char *base[planes], *end[planes];
 
     uint32_t i, j, k;
 
-    for (i = 0; i < channels; i++)
+    for (i = 0; i < planes; i++)
     {
         base[i] = (unsigned char *)in_buf;
         end[i] = base[i] + comp_height[i] * stride[i];
@@ -127,19 +131,32 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
         return -1;
     }
 
-    for (i = 0; i < comp_height[0]; i += v_max_samp * DCTSIZE)
+    if (planes == 3)
     {
-        for (k = 0; k < channels; k++)
+        for (i = 0; i < comp_height[0]; i += v_max_samp * DCTSIZE)
         {
-            for (j = 0; j < v_samp[k] * DCTSIZE; j++)
+            for (k = 0; k < planes; k++)
             {
-                line[k][j] = base[k];
-                if (base[k] + stride[k] < end[k])
-                    base[k] += stride[k];
+                for (j = 0; j < v_samp[k] * DCTSIZE; j++)
+                {
+                    line[k][j] = base[k];
+                    if (base[k] + stride[k] < end[k])
+                        base[k] += stride[k];
+                }
             }
+
+            jpeg_write_raw_data(&cinfo, line, v_max_samp * DCTSIZE);
         }
-        jpeg_write_raw_data(&cinfo, line, v_max_samp * DCTSIZE);
     }
+    else
+    {
+        while (cinfo.next_scanline < cinfo.image_height)
+        {
+            auto row = base[0] + (cinfo.next_scanline*stride[0]);
+            jpeg_write_scanlines(&cinfo, &row, 1); 
+        }
+    }
+            
 
     jpeg_finish_compress(&cinfo);
 
