@@ -109,7 +109,7 @@ private:
 
 		encHelper.reset(new JPEGEncoderL4TMHelper(mProps.quality));
 		encHelper->init(rawImageMetadata->getWidth(), rawImageMetadata->getHeight(), rawImageMetadata->getStep(), color_space, mProps.scale);
-		size_t dummyBufferLength = (3 * rawImageMetadata->getStep() * rawImageMetadata->getHeight()) >> 1;
+		size_t dummyBufferLength = rawImageMetadata->getDataSize();
 
 		if (color_space == JCS_YCbCr)
 		{

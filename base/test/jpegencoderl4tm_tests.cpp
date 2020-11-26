@@ -10,6 +10,9 @@
 #include "Logger.h"
 #include "AIPExceptions.h"
 #include "JPEGEncoderL4TM.h"
+#include "FileReaderModule.h"
+#include "StatSink.h"
+#include "PipeLine.h"
 #include "test_utils.h"
 #include <fstream>
 
@@ -151,6 +154,47 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm_scale_0.125.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0); 
+}
+
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
+{
+	LoggerProps logprops;
+	logprops.logLevel = boost::log::trivial::severity_level::info;
+	Logger::initLogger(logprops);
+
+	// metadata is known
+	auto width = 1280;
+	auto height = 720;
+	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1, 4*1024*1024);
+	fileReaderProps.fps = 100;
+	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+	auto rawImagePin = m1->addOutputPin(metadata);
+
+	JPEGEncoderL4TMProps encoderProps;
+	encoderProps.logHealth = true;
+	encoderProps.logHealthFrequency = 100;
+	auto m2 = boost::shared_ptr<Module>(new JPEGEncoderL4TM(encoderProps));
+	m1->setNext(m2);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
+
+	StatSinkProps sinkProps;
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto m3 = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	m2->setNext(m3);
+
+	PipeLine p("test");
+	p.appendModule(m1);
+	p.init();
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
