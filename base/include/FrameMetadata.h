@@ -45,7 +45,8 @@ public:
 		APRA_LINES,
 		LINE,
 		ROI,
-		DEFECTS_INFO
+		DEFECTS_INFO,
+		BMP_IMAGE
 	};
 
 	enum MemType

@@ -140,6 +140,7 @@ SET(IP_FILES
 	src/HistogramOverlay.cpp
 	src/ImageDecoderCV.cpp
 	src/ImageViewerModule.cpp
+	src/BMPConverter.cpp
 )
 
 SET(IP_FILES_H
@@ -149,6 +150,7 @@ SET(IP_FILES_H
 	include/ApraLines.h
 	include/ImageViewerModule.h
 	include/ImageDecoderCV.h
+	include/BMPConverter.h
 )
 
 SET(CUDA_CORE_FILES
@@ -279,6 +281,7 @@ SET(UT_FILES
 	test/merge_tests.cpp
 	test/split_tests.cpp
 	test/imagemetadata_tests.cpp
+	test/bmpconverter_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
