@@ -2,6 +2,8 @@
 #include <string.h>
 #include <malloc.h>
 
+// https://dev.w3.org/Amaya/libjpeg/example.c
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define ROUND_UP_4(num) (((num) + 3) & ~3)
 
