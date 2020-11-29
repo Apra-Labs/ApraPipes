@@ -113,6 +113,7 @@ private:
 
 		if (color_space == JCS_YCbCr)
 		{
+			dummyBufferLength *= 1.5;
 			dummyBuffer.reset(new unsigned char[dummyBufferLength]);
 			memset(dummyBuffer.get(), 128, dummyBufferLength);
 		}
