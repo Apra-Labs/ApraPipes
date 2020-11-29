@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	auto width = 1280;
 	auto height = 720;
 	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1, 4*1024*1024);
-	fileReaderProps.fps = 100;
+	fileReaderProps.fps = 1000;
 	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = m1->addOutputPin(metadata);

@@ -107,6 +107,25 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
 int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **out_buf, unsigned long &out_buf_size)
 {
+    if(cinfo.in_color_space == JCS_RGB)
+    {
+        // every time destroy the cinfo and create it
+        // if we don't do this per encode memory leak of the order of input frame
+        jpeg_destroy_compress(&cinfo);
+
+        memset(&cinfo, 0, sizeof(cinfo));
+        cinfo.err = jpeg_std_error(&jerr);
+        jpeg_create_compress(&cinfo);
+        jpeg_suppress_tables(&cinfo, TRUE);
+
+        cinfo.image_width = comp_width[0];
+        cinfo.image_height = comp_height[0];
+        cinfo.input_components = 3; // YUV RGB
+        cinfo.in_color_space = JCS_RGB;
+
+        jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, quality, TRUE);
+    }
 
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
     jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
