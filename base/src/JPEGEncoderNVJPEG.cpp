@@ -63,6 +63,8 @@ public:
 			nextPtrOffset[i] = 0;
 		}
 
+		input_format = NVJPEG_INPUT_BGRI;
+
 		if (metadata->getFrameType() == FrameMetadata::FrameType::RAW_IMAGE)
 		{
 			auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
@@ -76,6 +78,10 @@ public:
 				isYUV = true;
 				break;
 			case ImageMetadata::ImageType::RGB:
+				isYUV = false;
+				subsampling = NVJPEG_CSS_420;
+				input_format = NVJPEG_INPUT_RGBI;
+				break;
 			case ImageMetadata::ImageType::BGR:
 			case ImageMetadata::ImageType::RGBA:
 			case ImageMetadata::ImageType::BGRA:
@@ -131,8 +137,6 @@ public:
 			throw AIPException(AIP_FATAL, "nvjpegEncoderParamsSetSamplingFactors failed.<" + std::to_string(status) + ">");
 		}
 
-		input_format = NVJPEG_INPUT_BGRI; // unused currently fill the values when adding tests for other image types
-
 		size_t max_stream_length = 0;
 		status = nvjpegEncodeGetBufferSize(
 			nv_handle,
@@ -142,7 +146,7 @@ public:
 			&max_stream_length);
 		if (status != NVJPEG_STATUS_SUCCESS)
 		{
-			throw AIPException(AIP_FATAL, "nvjpegEncoderParamsSetSamplingFactors failed.<" + std::to_string(status) + ">");
+			throw AIPException(AIP_FATAL, "nvjpegEncodeGetBufferSize failed.<" + std::to_string(status) + ">");
 		}
 
 		return max_stream_length;

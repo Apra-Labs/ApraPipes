@@ -100,6 +100,49 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	cudaStreamDestroy(stream);
 }
 
+BOOST_AUTO_TEST_CASE(rgb_1280x720)
+{
+	// metadata is known
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	cudaStream_t stream;
+	cudaStreamCreate(&stream);
+	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	fileReader->setNext(copy);
+
+	auto m2 = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+	copy->setNext(m2);
+	auto encodedImagePin = m2->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
+
+	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	m2->setNext(m3);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(copy->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+
+
+
+	fileReader->step();
+	copy->step();
+	m2->step();
+	auto frames = m3->pop();
+	BOOST_TEST((frames.find(encodedImagePin) != frames.end()));
+	auto encodedImageFrame = frames[encodedImagePin];
+	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
+
+	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
+
+	cudaStreamDestroy(stream);
+}
+
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 {
 
