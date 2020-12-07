@@ -131,8 +131,12 @@ IF(ENABLE_WINDOWS)
 	)
 ENDIF(ENABLE_WINDOWS)
 
-SET(GENRIC_FILES)
-SET(GENRIC_FILES_H)
+SET(GENRIC_FILES
+	src/VirtualCameraSink.cpp
+)
+SET(GENRIC_FILES_H
+	include/VirtualCameraSink.h
+)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -282,6 +286,7 @@ SET(UT_FILES
 	test/split_tests.cpp
 	test/imagemetadata_tests.cpp
 	test/bmpconverter_tests.cpp
+	test/virtualcamerasink_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
