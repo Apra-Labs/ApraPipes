@@ -29,17 +29,17 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	fileReader->addOutputPin(metadata);
 
 	VirtualCameraSinkProps sinkProps("/dev/video10");
-	sinkProps.logHealth = true;
-	sinkProps.logHealthFrequency = 100;
+	// sinkProps.logHealth = true;
+	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	fileReader->setNext(sink);	
 
 	PipeLine p("test");
 	p.appendModule(fileReader);
-	p.init();
+	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();

@@ -5,9 +5,6 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -115,7 +112,7 @@ private:
 	size_t step;
 };
 
-VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(TRANSFORM, "VirtualCameraSink", props)
+VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
 {
 	mDetail.reset(new Detail(props));
 }
