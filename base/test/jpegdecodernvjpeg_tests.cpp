@@ -20,8 +20,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -46,8 +45,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/jpegdecodernvjpeg_tests_mono_1920x960.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(color_yuv420_640x360)
@@ -56,8 +53,7 @@ BOOST_AUTO_TEST_CASE(color_yuv420_640x360)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -82,8 +78,6 @@ BOOST_AUTO_TEST_CASE(color_yuv420_640x360)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/jpegdecodernvjpeg_tests_yuv420_640x360.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

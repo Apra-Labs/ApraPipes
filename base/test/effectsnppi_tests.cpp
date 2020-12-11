@@ -35,8 +35,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -206,7 +205,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 		Test_Utils::saveOrCompare(filename.c_str(), (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 	}
 
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
@@ -219,8 +217,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -525,8 +522,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 		auto filename = "./data/testOutput/effects/hue_saturation_yuv420_640x360/" + std::to_string(i) + "effectsnppi_tests_yuv420_640x360_to_hue_" + std::to_string(effectsProps.hue) + "_saturation_" + std::to_string(effectsProps.saturation) + ".jpg";
 		Test_Utils::saveOrCompare(filename.c_str(), (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled())
@@ -541,8 +536,7 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -595,8 +589,6 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 	BOOST_TEST(externalSource->term());
 	BOOST_TEST(effects->term());
 	BOOST_TEST(sync->term());
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(kernel_test, *boost::unit_test::disabled())
@@ -685,8 +677,7 @@ BOOST_AUTO_TEST_CASE(img_864x576)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
 
@@ -955,8 +946,6 @@ BOOST_AUTO_TEST_CASE(img_864x576)
 		auto filename = "./data/testOutput/effects/hue_saturation_img_864x576/" + std::to_string(i) + "effectsnppi_tests_img_864x576_to_hue_" + std::to_string(effectsProps.hue) + "_saturation_" + std::to_string(effectsProps.saturation) + ".jpg";
 		Test_Utils::saveOrCompare(filename.c_str(), (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

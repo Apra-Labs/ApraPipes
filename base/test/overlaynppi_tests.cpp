@@ -20,8 +20,7 @@ BOOST_AUTO_TEST_SUITE(overlaynppi_tests)
 
 BOOST_AUTO_TEST_CASE(mono_1920x1080)
 {	
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto width = 1920;
 	auto height = 1080;
@@ -83,14 +82,11 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/overlaynppi_tests_mono_1920x1080_to_overlay_1920x1080_bgra.jpg", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(mono_1920x1080_pos)
 {
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto width = 1920;
 	auto height = 1080;
@@ -200,8 +196,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_pos)
 		overlay->setProps(overlayProps);
 		overlay->step();
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
@@ -215,8 +209,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -283,8 +276,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 		Test_Utils::saveOrCompare("./data/testOutput/overlaynppi_tests_yuv420_640x360_to_overlay_640x360_yuv420_globalalpha.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_pos)
@@ -298,8 +289,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pos)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);			
 			
@@ -354,8 +344,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pos)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/overlaynppi_tests_yuv420_640x360_pos_to_overlay_640x360_yuv420.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,17 +1,19 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class CudaStreamSynchronizeProps : public ModuleProps
 {
 public:
-	CudaStreamSynchronizeProps(cudaStream_t _stream) : ModuleProps() 
+	CudaStreamSynchronizeProps(cudastream_sp& _stream) : ModuleProps() 
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 	}
 	
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 };
 
 class CudaStreamSynchronize : public Module {

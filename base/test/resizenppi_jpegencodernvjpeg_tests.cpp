@@ -26,8 +26,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -58,8 +57,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_jpegencodernvjpeg_tests_mono_1920x1080_to_mono_960x540.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
@@ -73,8 +70,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -105,8 +101,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_jpegencodernvjpeg_tests_yuv420_640x360_to_yuv420_320x180.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
@@ -125,8 +119,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -155,7 +148,6 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 		sink->pop();
 	}
 
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

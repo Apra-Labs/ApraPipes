@@ -2,18 +2,20 @@
 
 #include "Module.h"
 #include "ImageMetadata.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class JPEGDecoderNVJPEGProps : public ModuleProps
 {
 public:
-	JPEGDecoderNVJPEGProps(cudaStream_t _stream)
+	JPEGDecoderNVJPEGProps(cudastream_sp& _stream)
 	{
 		imageType = ImageMetadata::UNSET;
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 	}
 
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 	ImageMetadata::ImageType imageType; 
 };
 

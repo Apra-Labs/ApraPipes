@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class OverlayNPPIProps : public ModuleProps
 {
 public:
-	OverlayNPPIProps(cudaStream_t _stream)
+	OverlayNPPIProps(cudastream_sp& _stream)
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		offsetX = 0;
 		offsetY = 0;
 		globalAlpha = -1;
@@ -18,6 +19,7 @@ public:
 	int offsetY;
 	int globalAlpha;
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 
 	size_t getSerializeSize()
 	{

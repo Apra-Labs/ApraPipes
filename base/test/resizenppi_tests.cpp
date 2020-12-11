@@ -24,8 +24,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -57,8 +56,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_mono_1920x1080_to_960x540.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
@@ -70,9 +67,8 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -104,8 +100,6 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_overlay_1920x960_BGRA_to_960x480_C4.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
@@ -118,9 +112,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -152,8 +145,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_yuv420_640x360_to_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
@@ -172,8 +163,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
@@ -201,8 +191,6 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 		copy2->step();
 		m3->pop();
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

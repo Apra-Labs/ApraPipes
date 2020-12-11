@@ -25,8 +25,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -53,8 +52,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_mono_1920x1080.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
@@ -68,8 +65,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -96,8 +92,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_yuv420_640x360.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(rgb_1280x720)
@@ -111,8 +105,7 @@ BOOST_AUTO_TEST_CASE(rgb_1280x720)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -139,8 +132,6 @@ BOOST_AUTO_TEST_CASE(rgb_1280x720)
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
@@ -159,8 +150,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
@@ -185,8 +175,6 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 		m2->step();
 		m3->pop();
 	}
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

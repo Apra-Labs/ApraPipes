@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class JPEGEncoderNVJPEGProps : public ModuleProps
 {
 public:
-	JPEGEncoderNVJPEGProps(cudaStream_t _stream)
+	JPEGEncoderNVJPEGProps(cudastream_sp& _stream)
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		quality = 90;
 	}
 
 	unsigned short quality;
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 };
 
 class JPEGEncoderNVJPEG : public Module

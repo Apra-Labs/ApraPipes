@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class EffectsNPPIProps : public ModuleProps
 {
 public:
-	EffectsNPPIProps(cudaStream_t _stream)
+	EffectsNPPIProps(cudastream_sp& _stream)
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		contrast = 1;
 		brightness = 0;
 		hue = 0;
@@ -21,6 +22,7 @@ public:
     int brightness;     // 0 no change [-100 - 100]
 
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 
 
 	size_t getSerializeSize()

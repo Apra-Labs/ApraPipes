@@ -1,17 +1,18 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 #include "FrameMetadata.h"
 
 class CudaMemCopyProps : public ModuleProps
 {
 public:
-	CudaMemCopyProps(cudaMemcpyKind kind, cudaStream_t _stream) : ModuleProps()
+	CudaMemCopyProps(cudaMemcpyKind kind, cudastream_sp& _stream) : ModuleProps()
 	{	
 		alignLength = 0;
 		memcpyKind = kind;
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		sync = false;
 		if (memcpyKind == cudaMemcpyDeviceToHost)
 		{
@@ -28,7 +29,8 @@ public:
 	}
 
 	cudaMemcpyKind memcpyKind;
-    cudaStream_t stream;
+    cudastream_sp stream_sp;
+	cudaStream_t stream;
     bool sync;
 	size_t alignLength;
 };

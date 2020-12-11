@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 class ResizeNPPIProps : public ModuleProps
 {
 public:
-	ResizeNPPIProps(int _width, int _height, cudaStream_t _stream)
+	ResizeNPPIProps(int _width, int _height, cudastream_sp& _stream)
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		width = _width;
 		height = _height;
 		eInterpolation = 4; // NPPI_INTER_CUBIC
@@ -17,6 +18,7 @@ public:
 	int width;
 	int height;
 	cudaStream_t stream;
+	cudastream_sp stream_sp;
 	int eInterpolation;
 };
 

@@ -23,9 +23,7 @@ BOOST_AUTO_TEST_CASE(general)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId = source->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
-
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
@@ -54,8 +52,6 @@ BOOST_AUTO_TEST_CASE(general)
 	auto frameCopy = frames.cbegin()->second;
 	BOOST_TEST(frame->size() == frameCopy->size());
 	BOOST_TEST(memcmp(frame->data(), frameCopy->data(), frame->size()) == 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(rawimage)
@@ -71,9 +67,7 @@ BOOST_AUTO_TEST_CASE(rawimage)
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, type, 0, depth, FrameMetadata::HOST, true));
 	auto pinId = source->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
-
+	auto stream = cudastream_sp(new ApraCudaStream);	
 	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
@@ -113,8 +107,6 @@ BOOST_AUTO_TEST_CASE(rawimage)
 	BOOST_TEST(ptr->getStep() == step);
 	BOOST_TEST(ptr->getType() == type);
 	BOOST_TEST(ptr->getDataSize() == step * height);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(rawimageplanar)
@@ -129,9 +121,7 @@ BOOST_AUTO_TEST_CASE(rawimageplanar)
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::YUV420, size_t(0), depth));
 	auto pinId = source->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
-
+	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
@@ -176,8 +166,6 @@ BOOST_AUTO_TEST_CASE(rawimageplanar)
 	BOOST_TEST(ptr->getStep(1) == step[1]);
 	BOOST_TEST(ptr->getStep(2) == step[2]);
 	BOOST_TEST(ptr->getDataSize() == step[0] * height * 1.5);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

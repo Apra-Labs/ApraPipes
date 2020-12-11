@@ -24,8 +24,7 @@ BOOST_AUTO_TEST_CASE(decode_encode_mono_1920x960)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -50,8 +49,6 @@ BOOST_AUTO_TEST_CASE(decode_encode_mono_1920x960)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_encode_mono_1920x960.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
@@ -60,8 +57,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -91,8 +87,6 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_resize_encode_mono_1920x960_to_960x480.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960, *boost::unit_test::disabled())
@@ -101,8 +95,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960, *boost::unit_test::disabled(
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -139,7 +132,6 @@ BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960, *boost::unit_test::disabled(
 		sink->step();
 	}
 
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360)
@@ -148,8 +140,7 @@ BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -174,8 +165,6 @@ BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_encode_color_yuv420_640x360.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360)
@@ -184,8 +173,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	auto stream = cudastream_sp(new ApraCudaStream);
 
 	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
@@ -215,8 +203,6 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_resize_encode_color_yuv420_640x360_to_960x480.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-
-	cudaStreamDestroy(stream);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

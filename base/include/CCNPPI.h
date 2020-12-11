@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
+#include "CudaCommon.h"
 
 // dynamic change of image type is not supported for now
 
 class CCNPPIProps : public ModuleProps
 {
 public:
-	CCNPPIProps(ImageMetadata::ImageType _imageType, cudaStream_t _stream)
+	CCNPPIProps(ImageMetadata::ImageType _imageType, cudastream_sp& _stream)
 	{
-		stream = _stream;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
 		imageType = _imageType;
 	}
 	
+	cudastream_sp stream_sp;
 	cudaStream_t stream;
 	ImageMetadata::ImageType imageType;	
 };

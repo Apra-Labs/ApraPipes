@@ -569,7 +569,8 @@ void EffectsNPPI::setProps(EffectsNPPIProps& props)
 
 bool EffectsNPPI::handlePropsChange(frame_sp& frame)
 {
-	EffectsNPPIProps props(mDetail->getProps().stream);
+	auto stream = mDetail->getProps().stream_sp;
+	EffectsNPPIProps props(stream);
 	bool ret = Module::handlePropsChange(frame, props);
 
 	mDetail->setProps(props);
