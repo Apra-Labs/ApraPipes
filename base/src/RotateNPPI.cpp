@@ -10,7 +10,7 @@
 class RotateNPPI::Detail
 {
 public:
-	Detail(RotateNPPIProps &_props) : props(_props), shiftX(0), shiftY(0)
+	Detail(RotateNPPIProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 
@@ -321,6 +321,7 @@ bool RotateNPPI::init()
 
 bool RotateNPPI::term()
 {
+	mDetail.reset();
 	return Module::term();
 }
 

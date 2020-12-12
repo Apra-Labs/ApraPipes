@@ -1,4 +1,5 @@
 _build
+_debugbuild
 thirdparty/Video_Codec_SDK_10.0.26
 data/testOutput
 .vscode
