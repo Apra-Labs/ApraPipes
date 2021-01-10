@@ -325,6 +325,42 @@ BOOST_AUTO_TEST_CASE(frame_factory_resize_test)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(frame_que_test)
+{
+	FrameContainerQueue q(2);
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
+	{
+		auto f1 = fact->create(1023, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
+		auto f2 = fact->create(1024, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
+		auto f3 = fact->create(1025, fact, FrameMetadata::MemType::HOST);//uses 2 chunk
+
+		frame_container frames1;
+		frame_container frames2;
+		frame_container frames3;
+		frames1.insert(std::make_pair("p1", f1));
+
+		frames2.insert(std::make_pair("p1", f1));
+		frames2.insert(std::make_pair("p2", f2));
+
+		frames3.insert(std::make_pair("p1", f1));
+		frames3.insert(std::make_pair("p2", f2));
+		frames3.insert(std::make_pair("p3", f3));
+
+		BOOST_TEST(q.try_pop() == frame_container()); //empty queue
+		q.push(frames1);
+		q.push(frames2);
+		BOOST_TEST(q.try_push(frames3) == false);
+		auto frames1_ = q.pop();
+		BOOST_TEST(frames1.size() == frames1_.size());
+
+		auto frames2_ = q.pop();
+		BOOST_TEST(frames2.size() == frames2_.size());
+
+		BOOST_TEST(q.try_pop() == frame_container()); //empty queue
+	}
+}
+
+
 BOOST_AUTO_TEST_CASE(base64_encoding_test)
 {
 	std::string authString1 = "admin:";
@@ -365,6 +401,116 @@ BOOST_AUTO_TEST_CASE(two_threaed_framefactory_test)
 	t1.join();
 	t2.join();
 
+}
+
+BOOST_AUTO_TEST_CASE(bounded_buffer_1)
+{
+	bounded_buffer<int> queue(5);
+	queue.push(1);
+	queue.push(2);
+	queue.push(3);
+	queue.push(4);
+	queue.push(5);
+	BOOST_TEST(queue.size() == 5);
+	BOOST_TEST(queue.try_push(1) == false);
+	BOOST_TEST(queue.size() == 5);
+	queue.clear();
+	BOOST_TEST(queue.size() == 0);
+	queue.push(6);
+	BOOST_TEST(queue.size() == 0);
+	BOOST_TEST(queue.try_push(1) == false);
+	BOOST_TEST(queue.size() == 0);
+	queue.accept();
+	queue.push(7);
+	BOOST_TEST(queue.size() == 1);
+}
+
+void testQueueClear(bounded_buffer<int>& queue)
+{
+	for(auto i = 0; i < 10; i++)
+	{
+		queue.push(i);
+		if (i < 5)
+		{
+			BOOST_TEST(queue.size() == i + 1);
+		}
+		else
+		{
+			// because clear has been called			
+			BOOST_TEST(queue.size() == 0);
+			BOOST_TEST(queue.try_push(i) == false);
+			BOOST_TEST(queue.size() == 0);
+		}
+
+		LOG_ERROR << "finished pushing " << i;
+	}
+}
+
+void testQueueClear2(bounded_buffer<int>& queue)
+{
+	for(auto i = 0; i < 10; i++)
+	{
+		auto ret = queue.try_push(i);
+		if (i < 5)
+		{
+			BOOST_TEST(ret);
+			BOOST_TEST(queue.size() == i + 1);
+		}
+		else
+		{
+			// because queue is full
+			BOOST_TEST(!ret);
+			BOOST_TEST(queue.size() == 5);
+		}
+
+		LOG_ERROR << "finished pushing " << i;
+	}
+}
+
+BOOST_AUTO_TEST_CASE(bounded_buffer_2)
+{
+	bounded_buffer<int> queue(5);
+	std::thread t1(testQueueClear, std::ref(queue));
+
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+
+	// it is expected to be stuck now
+	queue.clear();
+
+	t1.join();
+
+	queue.accept();
+
+	t1 = std::thread(testQueueClear2, std::ref(queue));
+	t1.join();
+}
+
+void testQueuePushPop(bounded_buffer<int>& queue, bool push)
+{
+	for (int i = 0; i < 10; i++)
+	{
+		if (push)
+		{
+			queue.push(i);
+		}
+		else
+		{
+			BOOST_TEST(queue.pop() == i);
+		}
+	}
+}
+
+
+BOOST_AUTO_TEST_CASE(bounded_buffer_3)
+{
+	bounded_buffer<int> queue(5);
+	std::thread t1(testQueuePushPop, std::ref(queue), true);
+
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::thread t2(testQueuePushPop, std::ref(queue), false);
+
+	t1.join();
+	t2.join();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

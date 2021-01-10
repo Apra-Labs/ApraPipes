@@ -35,6 +35,49 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
+bool PipeLine::checkCyclicDependency()
+{
+	std::map< std::string, std::vector<std::string> > dependencyMap;
+	auto valid = true;
+
+	for (auto itr = modules.begin(); itr != modules.end(); itr++)
+	{
+		auto parentModule = itr->get();
+		auto parentId = parentModule->getId();
+
+		dependencyMap[parentId] = std::vector<std::string>();
+		auto nextModules = parentModule->getConnectedModules(); // get next modules
+		for (auto childItr = nextModules.begin(); childItr != nextModules.end(); childItr++)
+		{
+			auto childModule = childItr->get();
+			auto childId = childModule->getId();
+
+			dependencyMap[parentId].push_back(childId);
+
+			if (dependencyMap.find(childId) == dependencyMap.end())
+			{
+				dependencyMap[childId] = std::vector<std::string>();
+			}
+
+			for (const auto& moduleId: dependencyMap[childId])
+			{
+				if (moduleId == parentId)
+				{
+					// cyclic dependency
+					if (!parentModule->isFeedbackEnabled(childId) && !childModule->isFeedbackEnabled(parentId))
+					{
+						// feedback not enabled
+						LOG_ERROR << "Cyclic Dependency detected between <" << parentId << "> and <" << childId << ">. Please use addFeedback when connecting the pins for one of the module.";
+						valid = false;
+					}
+				}
+			}
+		}
+	}
+
+	return valid;
+}
+
 bool PipeLine::validate()
 {
 	if (modules.front()->getNature() != Module::SOURCE)
@@ -52,6 +95,11 @@ bool PipeLine::validate()
 
 bool PipeLine::init()
 {
+	if(!checkCyclicDependency())
+	{
+		myStatus = PL_INITFAILED;
+		return false;
+	}
 
 	LOG_TRACE << " Initializing pipeline";
 	for (auto i = modules.begin(); i != modules.end(); i++)

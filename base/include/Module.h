@@ -124,6 +124,8 @@ public:
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool setNext(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
+	bool addFeedback(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
+	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
 
 	bool relay(boost::shared_ptr<Module> next, bool open);
@@ -256,6 +258,9 @@ protected:
 	string getInputPinIdByType(int type);
 	string getOutputPinIdByType(int type);		
 	
+	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback); 
+	void addInputPin(framemetadata_sp& metadata, string& pinId, bool isFeedback); 
 	virtual void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails	
 	boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
 	
@@ -297,6 +302,8 @@ private:
 
 	bool shouldForceStep();
 	bool shouldSkip();
+
+	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
 	
 	bool mPlay;
 	uint32_t mForceStepCount;
@@ -308,6 +315,7 @@ private:
 	boost::shared_ptr<FrameContainerQueue> mQue;
 	bool mRunning;
 	uint32_t mStopCount;
+	uint32_t mForwardPins;
 	boost::shared_ptr<FrameFactory> mpFrameFactory;
 	boost::shared_ptr<FrameFactory> mpCommandFactory;
 	boost::shared_ptr<PaceMaker> pacer;
@@ -316,6 +324,7 @@ private:
 	map<string, boost::shared_ptr<Module>> mModules;
 	map<string, bool> mRelay;
 		
+	std::map<std::string, bool> mInputPinsDirection;
 	metadata_by_pin mInputPinIdMetadataMap;
 	metadata_by_pin mOutputPinIdMetadataMap;
 	uint64_t mFIndex;

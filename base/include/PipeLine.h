@@ -30,6 +30,7 @@ class PipeLine {
 	string mName;
 	container_type modules;
 	bool validate();
+	bool checkCyclicDependency();
 public:
 	PipeLine(string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();

@@ -102,7 +102,7 @@ private:
 	double mPipelineFps;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props) :mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), myNature(nature), myName(name), mFIndex(0), mSkipIndex(0) {
+Module::Module(Kind nature, string name, ModuleProps _props) :mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mFIndex(0), mSkipIndex(0) {
 	static int moduleCounter = 0;
 	moduleCounter += 1;
 	myId = name + "_" + std::to_string(moduleCounter);
@@ -134,6 +134,9 @@ Module::~Module()
 bool Module::term()
 {	
 	mQue->clear();
+	// in case of cyclic dependency - one module holds the reference of the other and hence they never get freed
+	mModules.clear(); 
+
 	return true;
 }
 
@@ -204,7 +207,7 @@ void Module::addOutputPin(framemetadata_sp& metadata, string& pinId)
 	}
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open)
+bool Module::setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback)
 {
 	if (next->getNature() < this->getNature())
 	{
@@ -241,7 +244,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, b
 		// Set input meta here
 		try
 		{
-			next->addInputPin(metadata, pinId); // addInputPin throws exception from validateInputPins
+			next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
 		}
 		catch (AIPException& exception)
 		{
@@ -267,15 +270,46 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, b
 }
 
 bool Module::setNext(boost::shared_ptr<Module> next, bool open)
-{ 	
+{
+	return setNext(next, open, false);
+}
+
+bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback)
+{
 	pair<string, framemetadata_sp> me; // map element
 	vector<string> pinIdArr;
-	BOOST_FOREACH(me, mOutputPinIdMetadataMap) {
+	BOOST_FOREACH (me, mOutputPinIdMetadataMap)
+	{
 		pinIdArr.push_back(me.first);
 	}
 
 	// sending all the outputpins
-	return setNext(next, pinIdArr, open);
+	return setNext(next, pinIdArr, open, isFeedback);
+}
+
+bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
+{
+	return setNext(next, pinIdArr, open, false);
+}
+
+bool Module::addFeedback(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
+{
+	return setNext(next, pinIdArr, open, true);
+}
+
+bool Module::addFeedback(boost::shared_ptr<Module> next, bool open)
+{
+	return setNext(next, open, true);
+}
+
+void Module::addInputPin(framemetadata_sp &metadata, string &pinId, bool isFeedback)
+{
+	addInputPin(metadata, pinId);
+	if (isFeedback)
+	{
+		mForwardPins--;
+		mInputPinsDirection[pinId] = false; // feedback
+	}
 }
 
 void Module::addInputPin(framemetadata_sp& metadata, string& pinId)
@@ -293,6 +327,26 @@ void Module::addInputPin(framemetadata_sp& metadata, string& pinId)
 		auto msg = "Input Pins Validation Failed. <" + getId() + ">";
 		throw AIPException(AIP_PINS_VALIDATION_FAILED, msg);
 	}
+
+	mForwardPins++;
+	mInputPinsDirection[pinId] = true; // forward
+}
+
+bool Module::isFeedbackEnabled(std::string& moduleId)
+{
+	auto& pinIdArr = mConnections[moduleId];
+	auto childModule = mModules[moduleId];
+	for (auto itr = pinIdArr.begin(); itr != pinIdArr.end(); itr++)
+	{
+		auto& pinId = *itr;
+		if(childModule->mInputPinsDirection[pinId])
+		{
+			// forward pin found - so feedback not enabled
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool Module::validateInputPins()
@@ -346,6 +400,7 @@ bool Module::init()
 		return ret;
 	}
 
+	mQue->accept();
 	if (mModules.size() == 1 && mProps->quePushStrategyType == QuePushStrategy::NON_BLOCKING_ALL_OR_NONE)
 	{
 		mProps->quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
@@ -1012,17 +1067,19 @@ bool Module::stop()
 		return true;
 	}
 	mStopCount++;
-	if (myNature != SOURCE && mStopCount != mInputPinIdMetadataMap.size())
+	if (myNature != SOURCE && mStopCount != mForwardPins)
 	{
 		return true;
 	}
-	mRunning = false;
 	if (myNature == SINK)
 	{
+		mRunning = false;
 		return true;
 	}
 
 	sendEoPFrame();
+
+	mRunning = false;
 
 	return true;
 }

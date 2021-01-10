@@ -748,62 +748,94 @@ BOOST_AUTO_TEST_CASE(stop)
 
 		}
 
-		virtual ~TestModule2() {}
+		virtual ~TestModule2() 
+		{
+			
+		}
 
 	protected:
 		bool validateInputPins() { return true; } // invoked with setInputPin
 		bool validateOutputPins() { return true; } // invoked with addOutputPin	
 	};
 
-	auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
-	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	m1->addOutputPin(metadata1);
-	auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
-	m1->setNext(m2);
-	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	m2->addOutputPin(metadata2);
-	auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
-	m2->setNext(m3);
+	{
+		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m1->addOutputPin(metadata1);
+		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		m1->setNext(m2);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m2->addOutputPin(metadata2);
+		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		m2->setNext(m3);
 
-	m1->init();
-	m2->init();
-	m3->init();
+		m1->init();
+		m2->init();
+		m3->init();
 
-	m1->stop();
-	auto que = m2->getQue();
-	auto frames = que->try_pop();
-	BOOST_TEST(frames.size() == 0); // since modules are not running - stop is not propagated - nothing happens
+		m1->stop();
+		auto que = m2->getQue();
+		auto frames = que->try_pop();
+		BOOST_TEST(frames.size() == 0); // since modules are not running - stop is not propagated - nothing happens
+	}
 
-	m1->init();
-	m2->init();
-	m3->init();
-	// running m1 in a thread	
-	boost::thread(ref(*(m1.get())));
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
-	m1->stop();
-	
-	que = m2->getQue();
-	frames = que->try_pop();
-	BOOST_TEST(frames.size() == 1); 
-	BOOST_TEST(frames.begin()->second->isEoP() == true);
-	que = m3->getQue();
-	frames = que->try_pop();
-	BOOST_TEST(frames.size() == 0); // since m2 is not running - stop is not propagated - nothing happens
+	{
+		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m1->addOutputPin(metadata1);
+		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		m1->setNext(m2);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m2->addOutputPin(metadata2);
+		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		m2->setNext(m3);
 
-	m1->init();
-	m2->init();
-	m3->init();
-	//running m2 in a thread	
-	boost::thread(ref(*(m2.get())));
-	boost::thread(ref(*(m1.get()))); // running m1 again - stop was called before so thread would have exited
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
-	m1->stop();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		m1->init();
+		m2->init();
+		m3->init();
+		// running m1 in a thread	
+		auto t1 = boost::thread(ref(*(m1.get())));
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		m1->stop();
 
-	que = m3->getQue();
-	frames = que->try_pop();
-	BOOST_TEST(frames.size() == 1); 
-	BOOST_TEST(frames.begin()->second->isEoP() == true);
+		auto que = m2->getQue();
+		auto frames = que->try_pop();
+		BOOST_TEST(frames.size() == 1);
+		BOOST_TEST(frames.begin()->second->isEoP() == true);
+		que = m3->getQue();
+		frames = que->try_pop();
+		BOOST_TEST(frames.size() == 0); // since m2 is not running - stop is not propagated - nothing happens
+		t1.join();
+	}
+
+	{
+		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m1->addOutputPin(metadata1);
+		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		m1->setNext(m2);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		m2->addOutputPin(metadata2);
+		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		m2->setNext(m3);
+		m1->init();
+		m2->init();
+		m3->init();
+		//running m2 in a thread	
+		auto t2 = boost::thread(ref(*(m2.get())));
+		auto t1 = boost::thread(ref(*(m1.get()))); // running m1 again - stop was called before so thread would have exited
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		m1->stop();
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+
+		auto que = m3->getQue();
+		auto frames = que->try_pop();
+		BOOST_TEST(frames.size() == 1);
+		BOOST_TEST(frames.begin()->second->isEoP() == true);
+
+		t1.join();
+		t2.join();
+	}
 }
 
 BOOST_AUTO_TEST_CASE(stop_bug)
@@ -1271,15 +1303,25 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 		}
 	};
 
+	class TestTransform1Props: public ModuleProps
+	{
+
+	};
+
 	class TestTransform1 : public Module
 	{
 	public:
-		TestTransform1() : Module(TRANSFORM, "TestTransform1", ModuleProps())
+		TestTransform1(TestTransform1Props props=TestTransform1Props()) : Module(TRANSFORM, "TestTransform1", ModuleProps(props))
 		{
 
 		}
 
-		virtual ~TestTransform1() {}
+		virtual ~TestTransform1() 
+		{
+			// LOG_ERROR << "DESTRUCTOR TRANSFORM1";
+		}
+
+		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 	protected:
 		bool validateInputPins() { return true; } // invoked with setInputPin
@@ -1288,7 +1330,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 		bool process(frame_container& frames)
 		{
 			auto inputPinId = frames.begin()->first;
-			LOG_ERROR << inputPinId << " pin id";
+			//LOG_ERROR << inputPinId << " pin id";
 
 			if (inputPinId.find("TestSource") == -1)
 			{
@@ -1315,7 +1357,12 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 
 		}
 
-		virtual ~TestTransform2() {}
+		virtual ~TestTransform2() 
+		{
+			// LOG_ERROR << "DESTRUCTOR TRANSFORM2";
+		}
+
+		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 	protected:
 		bool validateInputPins() { return true; } // invoked with setInputPin
@@ -1356,37 +1403,117 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 			return true;
 		}
 	};
+		
+	{		
+		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		auto pinId = source->addOutputPin(metadata);
+		
+		auto transform1 = boost::shared_ptr<Module>(new TestTransform1());
+		source->setNext(transform1);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform1->addOutputPin(metadata2);
+		
+		auto transform2 = boost::shared_ptr<Module>(new TestTransform2());
+		transform1->setNext(transform2);
+		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform2->addOutputPin(metadata3);
+		
+		transform2->setNext(transform1);
+		
+		auto sink = boost::shared_ptr<Module>(new TestSink());
+		transform2->setNext(sink);
+		
+		PipeLine p("test");
+		p.appendModule(source);
 
-	auto source = boost::shared_ptr<Module>(new TestSource());
-	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	auto pinId = source->addOutputPin(metadata);
+		BOOST_TEST(p.init() == false);
+		BOOST_TEST(source->term());
+		BOOST_TEST(transform1->term());
+		BOOST_TEST(transform2->term());
+		BOOST_TEST(sink->term());
+	}
 
-	auto transform1 = boost::shared_ptr<Module>(new TestTransform1());
-	source->setNext(transform1);
-	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	transform1->addOutputPin(metadata2);
-	
-	auto transform2 = boost::shared_ptr<Module>(new TestTransform2());
-	transform1->setNext(transform2);
-	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	transform2->addOutputPin(metadata3);
+	{
+		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		auto pinId = source->addOutputPin(metadata);
 
-	transform2->setNext(transform1);
-	
-	auto sink = boost::shared_ptr<Module>(new TestSink());
-	transform2->setNext(sink);
+		auto transform1 = boost::shared_ptr<Module>(new TestTransform1());
+		source->setNext(transform1);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform1->addOutputPin(metadata2);
 
-	PipeLine p("test");
-	p.appendModule(source);
+		auto transform2 = boost::shared_ptr<Module>(new TestTransform2());
+		transform1->setNext(transform2);
+		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform2->addOutputPin(metadata3);
 
-	BOOST_TEST(p.init());
-	p.run_all_threaded();
-	
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		transform2->addFeedback(transform1);
 
-	p.stop();
-	p.term();
-	p.wait_for_all();
+		auto sink = boost::shared_ptr<Module>(new TestSink());
+		transform2->setNext(sink);
+
+		PipeLine p("test");
+		p.appendModule(source);
+
+		BOOST_TEST(p.init());
+		p.run_all_threaded();
+
+		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+
+		p.stop();
+		p.term();
+		p.wait_for_all();
+	}
+
+	{
+		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		auto pinId = source->addOutputPin(metadata);
+
+		TestTransform1Props props;
+		props.qlen = 1;
+		props.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+		auto transform1 = boost::shared_ptr<TestTransform1>(new TestTransform1(props));
+		source->setNext(transform1);
+		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform1->addOutputPin(metadata2);
+
+		PipeLine p("test");
+		p.appendModule(source);
+
+		auto transform2 = boost::shared_ptr<TestTransform2>(new TestTransform2());
+		transform1->setNext(transform2);
+		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+		transform2->addOutputPin(metadata3);
+
+		transform2->addFeedback(transform1);
+		auto queue2 = transform2->getQue();
+
+		BOOST_TEST(p.init());
+
+		BOOST_TEST(transform2->init());
+		p.run_all_threaded();
+
+		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+
+		p.stop();
+		p.term();
+		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		// source is stopped
+		// transform 1 is stopped and waiting for transform2->push
+		queue2->pop(); // free 1 slot in the que for the stop to be propagated
+		p.wait_for_all();
+		
+		auto queue1 = transform1->getQue();
+		BOOST_TEST(queue1->size() == 0);
+
+		transform2->step(); // with this the queue will be full
+		BOOST_TEST(queue1->size() == 0); // previously queue1 size was 1 here - so que full
+		transform2->step(); // previously this step was in deadlock
+		BOOST_TEST(queue1->size() == 0);
+	}
 	LOG_ERROR << "COMPLETED";
 }
 

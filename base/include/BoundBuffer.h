@@ -16,23 +16,31 @@ public:
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
-	explicit bounded_buffer(size_type capacity) : m_unread(0), m_capacity(capacity) {}
+	explicit bounded_buffer(size_type capacity) : m_unread(0), m_capacity(capacity), m_accept(true) {}
 
 	void push(typename boost::call_traits<value_type>::param_type item)
 	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
 		boost::mutex::scoped_lock lock(m_mutex);
-		m_not_full.wait(lock, boost::bind(&bounded_buffer<value_type>::is_not_full, this));
-		m_container.push_front(item);
-		++m_unread;
-		lock.unlock();
-		m_not_empty.notify_one();
+		m_not_full.wait(lock, boost::bind(&bounded_buffer<value_type>::is_ready_to_accept, this));
+		if (is_not_full() && m_accept)
+		{
+			m_container.push_front(item);
+			++m_unread;
+			lock.unlock();
+			m_not_empty.notify_one();
+		}
+		else
+		{
+			// check and remove if explicit unlock is required
+			lock.unlock();
+		}
 	}
 
 	bool try_push(typename boost::call_traits<value_type>::param_type item)
 	{
 		boost::mutex::scoped_lock lock(m_mutex);
-		if (is_not_full())
+		if (is_not_full() && m_accept)
 		{
 			m_container.push_front(item);
 			++m_unread;
@@ -84,6 +92,15 @@ public:
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_container.clear();
 		m_unread = 0;
+		m_accept = false;
+		m_not_full.notify_one();
+
+		lock.unlock();
+	}
+
+	void accept() {
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_accept = true;
 		lock.unlock();
 	}
 
@@ -100,7 +117,12 @@ private:
 
 	bool is_not_empty() const { return m_unread > 0; }
 	bool is_not_full() const { return m_unread < m_capacity; }
+	bool is_ready_to_accept() const
+	{
+		return ((m_unread < m_capacity) || !m_accept);
+	}
 
+	bool m_accept;
 	size_type m_unread;
 	size_type m_capacity;
 	container_type m_container;
