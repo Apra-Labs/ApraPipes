@@ -16,7 +16,6 @@ public:
 
     // data is cuda rgb data pointer and should be already synced
     bool process(uint8_t* data, size_t size);
-    bool processEOS();
 
 private:    
     void initV4L2();
@@ -33,6 +32,7 @@ private:
     void capturePlaneDQCallback(AV4L2Buffer * buffer);
     void reuseCatureBuffer(ExtFrame *pointer, uint32_t index);
 
+    bool processEOS();
 private:
 
     int mFD;

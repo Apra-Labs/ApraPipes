@@ -28,7 +28,6 @@ BOOST_AUTO_TEST_CASE(yuv420_black)
 
     boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
-    helper.processEOS();
     delete[] data;
 }
 
@@ -57,7 +56,6 @@ BOOST_AUTO_TEST_CASE(memory_cache_free_test)
 
         boost::this_thread::sleep_for(boost::chrono::seconds(1));
 
-        helper.processEOS();
         delete[] data;
     }
 

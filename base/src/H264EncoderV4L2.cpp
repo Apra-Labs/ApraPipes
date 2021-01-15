@@ -15,11 +15,7 @@ H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM,
 
 H264EncoderV4L2::~H264EncoderV4L2() 
 {
-	if (mHelper.get())
-	{
-		mHelper->processEOS();
-		mHelper.reset();
-	}
+	mHelper.reset();
 }
 
 bool H264EncoderV4L2::validateInputPins()
@@ -79,7 +75,6 @@ bool H264EncoderV4L2::init()
 
 bool H264EncoderV4L2::term()
 {
-	mHelper->processEOS();
 	mHelper.reset();
 
 	return Module::term();
@@ -131,6 +126,6 @@ bool H264EncoderV4L2::shouldTriggerSOS()
 
 bool H264EncoderV4L2::processEOS(string& pinId)
 {
-	mHelper->processEOS();
+	mHelper.reset();
 	return true;
 }

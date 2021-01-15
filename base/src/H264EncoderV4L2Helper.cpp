@@ -50,6 +50,7 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(int width, int height, uint32_t bit
 
 H264EncoderV4L2Helper::~H264EncoderV4L2Helper()
 {
+    processEOS();
     mOutputPlane->deinitPlane();
     mCapturePlane->deinitPlane();
 
