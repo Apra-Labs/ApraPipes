@@ -25,19 +25,40 @@ ENDIF(ENABLE_LINUX)
 list(APPEND CMAKE_PREFIX_PATH "/usr/lib/aarch64-linux-gnu/tegra")
 
 project(APRAPIPES)
+set(CMAKE_CXX_STANDARD 14)
+
 hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
 find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
 
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
+# hunter_add_package(ffmpeg)
+# find_package(ffmpeg CONFIG REQUIRED)
+
 enable_language(CUDA)
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JPEGLIBINCLUDE "/usr/src/jetson_multimedia_api/include" )			
+		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )			
 		find_library(NVJPEGLIB_L4T nvjpeg)
+
+		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu)
+		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
+		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
+
+		find_library(V4L2LIB v4l2)
+		find_library(EGLLIB EGL)
+		find_library(NVBUFUTILSLIB nvbuf_utils)
+
+		SET(JETSON_LIBS
+			libcudart_static.a	
+			libcuda.so.1.1	
+			${V4L2LIB}
+			${NVBUFUTILSLIB}
+			${EGLLIB}	
+		)
 	ELSE()
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -192,6 +213,10 @@ IF(ENABLE_ARM64)
 		src/JPEGDecoderL4TMHelper.cpp
 		src/JPEGEncoderL4TM.cpp
 		src/JPEGEncoderL4TMHelper.cpp
+		src/AV4L2Buffer.cpp
+		src/AV4L2ElementPlane.cpp
+		src/H264EncoderV4L2Helper.cpp
+		src/V4L2CUYUV420Converter.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -218,6 +243,10 @@ IF(ENABLE_ARM64)
 		include/JPEGDecoderL4TM.h	
 		include/JPEGEncoderL4TMHelper.h
 		include/JPEGEncoderL4TM.h
+		include/AV4L2Buffer.h
+		include/AV4L2ElementPlane.h
+		include/H264EncoderV4L2Helper.h
+		include/V4L2CUYUV420Converter.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -235,7 +264,7 @@ add_library(aprapipes STATIC
 	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 )
 
-target_include_directories ( aprapipes PRIVATE ${JPEGLIBINCLUDE})
+target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE})
 
 # aprapipes Unit Tests
 
@@ -244,6 +273,7 @@ IF (ENABLE_ARM64)
 		test/jpegencoderl4tm_tests.cpp
 		test/jpegdecoderl4tm_tests.cpp
 		test/opencvresize_tests.cpp
+		test/h264encoderv4l2helper_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -296,6 +326,10 @@ SET(UT_FILES
 
 add_executable(aprapipesut ${UT_FILES})
 
+IF(ENABLE_ARM64)
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE})
+ENDIF(ENABLE_ARM64)
+
 target_link_libraries(aprapipesut   
   aprapipes  
   Boost::filesystem
@@ -308,5 +342,6 @@ target_link_libraries(aprapipesut
   ${OpenCV_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
+  ${NVJPEGLIB_L4T}  
+  ${JETSON_LIBS}
 )
