@@ -3,13 +3,16 @@
 #include "nvbuf_utils.h"
 #include "AIPExceptions.h"
 
-V4L2CUYUV420Converter::V4L2CUYUV420Converter(struct v4l2_format& format): mFormat(format)
+V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format): mFormat(format)
 {
-    mWidthY = mFormat.fmt.pix_mp.width;
+    mWidthY = srcWidth;
     mWidthUV = mWidthY >> 1;
 
-    mHeightY = mFormat.fmt.pix_mp.height;
+    mHeightY = srcHeight;
     mHeightUV = mHeightY >> 1;
+
+    mBytesUsedY = mWidthY * mHeightY;
+    mBytesUsedUV = mBytesUsedY >> 2;
 }
 
 V4L2CUYUV420Converter::~V4L2CUYUV420Converter()
@@ -23,6 +26,7 @@ void V4L2CUYUV420Converter::process(uint8_t* data, size_t size, AV4L2Buffer* buf
     auto numPlanes =buffer->getNumPlanes();
     for( i = 0; i < numPlanes; i++)
     {    
+        buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedY;
         auto v4l2Data = buffer->planesInfo[i].data;
         auto height = mHeightY;
         auto width = mWidthY;
@@ -32,6 +36,7 @@ void V4L2CUYUV420Converter::process(uint8_t* data, size_t size, AV4L2Buffer* buf
         {
             height = mHeightUV;
             width = mWidthUV;
+            buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedUV;
         }
         for (uint32_t j = 0; j < height; j++)
         {
@@ -50,7 +55,7 @@ void V4L2CUYUV420Converter::process(uint8_t* data, size_t size, AV4L2Buffer* buf
     }
 }
 
-V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(struct v4l2_format& format): V4L2CUYUV420Converter(format)
+V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format): V4L2CUYUV420Converter(srcWidth, srcHeight, format)
 {
     initEGLDisplay();
 }

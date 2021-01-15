@@ -7,7 +7,7 @@
 class V4L2CUYUV420Converter
 {
 public:
-    V4L2CUYUV420Converter(struct v4l2_format& format);
+    V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format);
     virtual ~V4L2CUYUV420Converter();
 
     // YUV420 data - stride is expected to match width
@@ -20,12 +20,14 @@ private:
 
     uint32_t mWidthY;
     uint32_t mWidthUV;
+    uint32_t mBytesUsedY;
+    uint32_t mBytesUsedUV;
 };
 
 class V4L2CURGBToYUV420Converter: public V4L2CUYUV420Converter
 {
 public:
-    V4L2CURGBToYUV420Converter(struct v4l2_format& format);
+    V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format);
     ~V4L2CURGBToYUV420Converter();
     
     void process(uint8_t *data, size_t size, AV4L2Buffer *buffer) {}

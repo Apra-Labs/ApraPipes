@@ -3,7 +3,7 @@
 
 #include <sys/mman.h>
 
-AV4L2Buffer::AV4L2Buffer(uint32_t index, uint32_t type, uint32_t memType, uint32_t numPlanes, struct v4l2_format &format) : mNumPlanes(numPlanes)
+AV4L2Buffer::AV4L2Buffer(uint32_t index, uint32_t type, uint32_t memType, uint32_t numPlanes) : mNumPlanes(numPlanes)
 {
     memset(&v4l2_buf, 0, sizeof(struct v4l2_buffer));
     v4l2_buf.index = index;
@@ -11,29 +11,10 @@ AV4L2Buffer::AV4L2Buffer(uint32_t index, uint32_t type, uint32_t memType, uint32
     v4l2_buf.memory = memType;
     v4l2_buf.length = numPlanes;
 
-    uint32_t bytesForPlaneY = 0;
-    uint32_t bytesForPlaneUV = 0;
-    if (format.fmt.pix_mp.pixelformat == V4L2_PIX_FMT_YUV420M)
-    {
-        bytesForPlaneY = format.fmt.pix_mp.width * format.fmt.pix_mp.height;
-        bytesForPlaneUV = bytesForPlaneY >> 2;
-    }
-
     v4l2_buf.m.planes = new struct v4l2_plane[numPlanes];
     for (auto i = 0; i < numPlanes; i++)
     {
         memset(&v4l2_buf.m.planes[i], 0, sizeof(struct v4l2_plane));
-        if (format.fmt.pix_mp.pixelformat == V4L2_PIX_FMT_YUV420M)
-        {
-            if (i != 0)
-            {
-                v4l2_buf.m.planes[i].bytesused = bytesForPlaneUV;
-            }
-            else
-            {
-                v4l2_buf.m.planes[i].bytesused = bytesForPlaneY;
-            }
-        }
     }
     planesInfo = new AV4L2PlaneInfo[numPlanes];
 }

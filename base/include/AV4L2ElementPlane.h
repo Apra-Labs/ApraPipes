@@ -48,6 +48,9 @@ private:
     uint32_t mNumPlanes;
     int mFD;
 
+    uint32_t mSrcWidth;
+    uint32_t mSrcHeight;
+
     uint32_t mMemType;
 
     AV4L2Buffer **mBuffers;

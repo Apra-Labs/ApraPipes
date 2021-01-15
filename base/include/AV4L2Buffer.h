@@ -16,7 +16,7 @@ public:
 class AV4L2Buffer
 {
 public:
-    AV4L2Buffer(uint32_t index, uint32_t type, uint32_t memType, uint32_t numPlanes, struct v4l2_format& format);
+    AV4L2Buffer(uint32_t index, uint32_t type, uint32_t memType, uint32_t numPlanes);
     ~AV4L2Buffer();
 
     void map();

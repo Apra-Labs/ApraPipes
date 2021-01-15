@@ -45,7 +45,7 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(int width, int height, uint32_t bit
 
     mCapturePlane->qAllBuffers();
 
-    mConverter = std::make_unique<V4L2CUYUV420Converter>(mOutputPlane->mFormat);
+    mConverter = std::make_unique<V4L2CUYUV420Converter>(width, height, mOutputPlane->mFormat);
 }
 
 H264EncoderV4L2Helper::~H264EncoderV4L2Helper()

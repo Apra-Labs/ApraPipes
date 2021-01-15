@@ -6,7 +6,8 @@ AV4L2ElementPlane::AV4L2ElementPlane(int mFD, uint32_t type, uint32_t pixelForma
                                                                                      mPixelFormat(pixelFormat), mCount(10),
                                                                                      mStreamOn(false), mBuffers(nullptr),
                                                                                      mCallback(nullptr), mDQThreadRunning(false),
-                                                                                     mStopDQThread(false), mFreeCount(mCount)
+                                                                                     mStopDQThread(false), mFreeCount(mCount),
+                                                                                     mSrcWidth(0), mSrcHeight(0)
 {
     mMemType = V4L2_MEMORY_MMAP;
 
@@ -43,10 +44,8 @@ void AV4L2ElementPlane::setPlaneFormat(int width, int height)
         throw AIPException(AIP_FATAL, "Error in setPlaneFormat VIDIOC_S_FMT");
     }
 
-    if (mPixelFormat == V4L2_PIX_FMT_H264)
-    {
-        return;
-    }
+    mSrcWidth = width;
+    mSrcHeight = height;
 }
 
 void AV4L2ElementPlane::setupPlane()
@@ -84,10 +83,10 @@ void AV4L2ElementPlane::reqbufs(uint32_t count)
         mBuffers = new AV4L2Buffer *[mCount];
         for (uint32_t i = 0; i < mCount; i++)
         {
-            mBuffers[i] = new AV4L2Buffer(i, mType, mMemType, mNumPlanes, mFormat);
+            mBuffers[i] = new AV4L2Buffer(i, mType, mMemType, mNumPlanes);
         }
 
-        mTempBuffer = new AV4L2Buffer(0, mType, mMemType, mNumPlanes, mFormat);
+        mTempBuffer = new AV4L2Buffer(0, mType, mMemType, mNumPlanes);
     }
     else
     {
@@ -208,7 +207,7 @@ int AV4L2ElementPlane::dqBuffer(AV4L2Buffer **buffer, uint32_t retries)
                 LOG_INFO << "DQing V4L2_BUF_FLAG_LAST";
                 break;
             }
-            pthread_mutex_unlock(&plane_lock);  
+            pthread_mutex_unlock(&plane_lock);
 
             if (retries-- == 0)
             {
