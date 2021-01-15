@@ -217,7 +217,7 @@ int AV4L2ElementPlane::dqBuffer(AV4L2Buffer **buffer, uint32_t retries)
         }
         else
         {
-            LOG_FATAL << "Error while DQing buffer";
+            LOG_FATAL << "Error while DQing buffer <>" << errno;
             *buffer = nullptr;
             return ret;
         }

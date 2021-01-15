@@ -75,6 +75,7 @@ bool H264EncoderV4L2::init()
 
 bool H264EncoderV4L2::term()
 {
+	mHelper->processEOS();
 	mHelper.reset();
 
 	return Module::term();
