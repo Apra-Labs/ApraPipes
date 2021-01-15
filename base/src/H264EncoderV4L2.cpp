@@ -15,7 +15,11 @@ H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM,
 
 H264EncoderV4L2::~H264EncoderV4L2() 
 {
-	mHelper.reset();
+	if (mHelper.get())
+	{
+		mHelper->processEOS();
+		mHelper.reset();
+	}
 }
 
 bool H264EncoderV4L2::validateInputPins()
