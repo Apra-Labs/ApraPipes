@@ -217,6 +217,7 @@ IF(ENABLE_ARM64)
 		src/AV4L2ElementPlane.cpp
 		src/H264EncoderV4L2Helper.cpp
 		src/V4L2CUYUV420Converter.cpp
+		src/H264EncoderV4L2.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -247,6 +248,7 @@ IF(ENABLE_ARM64)
 		include/AV4L2ElementPlane.h
 		include/H264EncoderV4L2Helper.h
 		include/V4L2CUYUV420Converter.h
+		include/H264EncoderV4L2.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -274,6 +276,7 @@ IF (ENABLE_ARM64)
 		test/jpegdecoderl4tm_tests.cpp
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2helper_tests.cpp
+		test/h264encoderv4l2_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 

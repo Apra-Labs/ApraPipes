@@ -21,10 +21,12 @@ BOOST_AUTO_TEST_CASE(yuv420_black)
         LOG_ERROR << frame->size();
     } );
 
-    for (auto i = 0; i < 10; i++)
+    for (auto i = 0; i < 100; i++)
     {
         helper.process(data, imageSize);
     }
+
+    boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
     helper.processEOS();
     delete[] data;
