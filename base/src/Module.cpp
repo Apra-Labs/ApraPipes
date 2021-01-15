@@ -528,17 +528,14 @@ bool Module::send(frame_container& frames, bool forceBlockingPush) {
 		}
 	}
 
-	if (myNature == SOURCE)
+	if (fIndex == 0 || fIndex <= mFIndex)
 	{
-		if (fIndex == 0 || fIndex <= mFIndex)
-		{
-			// fIndex is being set (incremented) automatically
-			fIndex = mFIndex++;
-		}
-		else
-		{
-			mFIndex = fIndex;
-		}
+		// fIndex is being set (incremented) automatically
+		fIndex = mFIndex++;
+	}
+	else
+	{
+		mFIndex = fIndex;
 	}
 
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
