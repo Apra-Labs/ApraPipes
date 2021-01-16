@@ -3,7 +3,7 @@
 #include "nvbuf_utils.h"
 #include "AIPExceptions.h"
 
-V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format): mFormat(format)
+V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format) : mFormat(format)
 {
     mWidthY = srcWidth;
     mWidthUV = mWidthY >> 1;
@@ -17,22 +17,21 @@ V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeig
 
 V4L2CUYUV420Converter::~V4L2CUYUV420Converter()
 {
-    
 }
 
-void V4L2CUYUV420Converter::process(uint8_t* data, size_t size, AV4L2Buffer* buffer)
+void V4L2CUYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buffer)
 {
     uint32_t i;
-    auto numPlanes =buffer->getNumPlanes();
-    for( i = 0; i < numPlanes; i++)
-    {    
+    auto numPlanes = buffer->getNumPlanes();
+    for (i = 0; i < numPlanes; i++)
+    {
         buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedY;
         auto v4l2Data = buffer->planesInfo[i].data;
         auto height = mHeightY;
         auto width = mWidthY;
         auto bytesperline = mFormat.fmt.pix_mp.plane_fmt[i].bytesperline;
 
-        if(i != 0)
+        if (i != 0)
         {
             height = mHeightUV;
             width = mWidthUV;
@@ -46,18 +45,21 @@ void V4L2CUYUV420Converter::process(uint8_t* data, size_t size, AV4L2Buffer* buf
         }
     }
 
-    for(i = 0; i < numPlanes; i++)
+    for (i = 0; i < numPlanes; i++)
     {
-        if( NvBufferMemSyncForDevice (buffer->planesInfo[i].fd, i, (void**)(&buffer->planesInfo[i].data) ) < 0)
+        if (NvBufferMemSyncForDevice(buffer->planesInfo[i].fd, i, (void **)(&buffer->planesInfo[i].data)) < 0)
         {
             LOG_FATAL << "NvBufferMemSyncForDevice failed<>" << i;
         }
     }
 }
 
-V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format& format): V4L2CUYUV420Converter(srcWidth, srcHeight, format)
+V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, uint32_t srcStep, struct v4l2_format &format) : V4L2CUYUV420Converter(srcWidth, srcHeight, format)
 {
     initEGLDisplay();
+    cudaFree(0);
+    oSizeROI = {static_cast<int>(srcWidth), static_cast<int>(srcHeight)};
+    nsrcStep = static_cast<int>(srcStep);
 }
 
 V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
@@ -85,7 +87,7 @@ void V4L2CURGBToYUV420Converter::initEGLDisplay()
 
 void V4L2CURGBToYUV420Converter::termEGLDisplay()
 {
-     if (!eglTerminate(eglDisplay))
+    if (!eglTerminate(eglDisplay))
     {
         LOG_ERROR << "ERROR eglTerminate failed";
         return;
@@ -94,5 +96,65 @@ void V4L2CURGBToYUV420Converter::termEGLDisplay()
     if (!eglReleaseThread())
     {
         LOG_ERROR << "ERROR eglReleaseThread failed";
+    }
+}
+
+void V4L2CURGBToYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buffer)
+{
+    for (auto i = 0; i < 3; i++)
+    {
+        eglImages[i] = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[i].fd);
+        status = cuGraphicsEGLRegisterImage(&pResources[i], eglImages[i], CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
+        if (status != CUDA_SUCCESS)
+        {
+            LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status << " cuda process stop. index<" << i << ">";
+            return;
+        }
+
+        status = cuGraphicsResourceGetMappedEglFrame(&eglFrames[i], pResources[i], 0, 0);
+        if (status != CUDA_SUCCESS)
+        {
+            LOG_ERROR << "cuGraphicsSubResourceGetMappedArray failed status<" << status << "> index<" << i << ">";
+            return;
+        }
+
+        dstPitch[i] = static_cast<int>(eglFrames[i].pitch);
+        dst[i] = static_cast<Npp8u *>(eglFrames[i].frame.pPitch[0]);
+    }
+
+    status = cuCtxSynchronize();
+    if (status != CUDA_SUCCESS)
+    {
+        LOG_ERROR << "cuCtxSynchronize failed status<" << status << ">";
+        return;
+    }
+
+    auto res = nppiRGBToYUV420_8u_C3P3R(static_cast<const Npp8u *>(data), nsrcStep, dst, dstPitch, oSizeROI);
+    if (res != NPP_SUCCESS)
+    {
+        LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R failed";
+    }
+
+    status = cuCtxSynchronize();
+    if (status != CUDA_SUCCESS)
+    {
+        LOG_ERROR << "cuCtxSynchronize failed after cc status<" << status << ">";
+    }
+
+    for (auto i = 0; i < 3; i++)
+    {
+        status = cuGraphicsUnregisterResource(pResources[i]);
+        if (status != CUDA_SUCCESS)
+        {
+            LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status << "<>" << i;
+        }
+
+        NvDestroyEGLImage(eglDisplay, eglImages[i]);
+
+        buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedY;
+        if (i != 0)
+        {
+            buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedUV;
+        }
     }
 }

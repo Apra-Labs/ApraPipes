@@ -12,7 +12,7 @@ public:
     AV4L2ElementPlane(int fd, uint32_t type, uint32_t pixelFormat);
     ~AV4L2ElementPlane();
 
-    void setPlaneFormat(int width, int height);
+    void setPlaneFormat(uint32_t width, uint32_t height);
     void setupPlane();
     void deinitPlane();
     void setStreamStatus(bool status);
@@ -47,9 +47,6 @@ private:
     uint32_t mPixelFormat;
     uint32_t mNumPlanes;
     int mFD;
-
-    uint32_t mSrcWidth;
-    uint32_t mSrcHeight;
 
     uint32_t mMemType;
 

@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(yuv420_black)
     memset(data, 0, imageSizeY);
     memset(data + imageSizeY, 128, imageSizeY >> 1);
 
-    H264EncoderV4L2Helper helper(width, height, 4*1024*1024, 30, [](frame_sp& frame) -> void {
+    H264EncoderV4L2Helper helper(V4L2_PIX_FMT_YUV420M, width, height, width, 4*1024*1024, 30, [](frame_sp& frame) -> void {
         LOG_INFO << frame->size();
     } );
 
@@ -29,6 +29,32 @@ BOOST_AUTO_TEST_CASE(yuv420_black)
     boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
     delete[] data;
+}
+
+BOOST_AUTO_TEST_CASE(rgb24_black)
+{
+    auto width = 1280;
+    auto height = 720;
+    auto step = width * 3;
+    auto imageSize = step * height;
+
+    uint8_t* data;
+    cudaMalloc(&data, imageSize);
+    cudaMemset(data, 0, imageSize);
+    cudaDeviceSynchronize();
+
+    H264EncoderV4L2Helper helper(V4L2_PIX_FMT_RGB24, width, height, step, 4*1024*1024, 30, [](frame_sp& frame) -> void {
+        LOG_INFO << frame->size();
+    } );
+
+    for (auto i = 0; i < 100; i++)
+    {
+        helper.process(data, imageSize);
+    }
+
+    boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+    cudaFree(data);
 }
 
 BOOST_AUTO_TEST_CASE(memory_cache_free_test)
@@ -45,7 +71,7 @@ BOOST_AUTO_TEST_CASE(memory_cache_free_test)
         memset(data, 0, imageSizeY);
         memset(data + imageSizeY, 128, imageSizeY >> 1);
 
-        H264EncoderV4L2Helper helper(width, height, 4 * 1024 * 1024, 30, [&](frame_sp &frame) -> void {
+        H264EncoderV4L2Helper helper(V4L2_PIX_FMT_YUV420M, width, height, width, 4 * 1024 * 1024, 30, [&](frame_sp &frame) -> void {
             cacheFrame = frame;
         });
 

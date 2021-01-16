@@ -22,7 +22,7 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(int width, int height, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
 {
     initV4L2();
 
@@ -45,7 +45,18 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(int width, int height, uint32_t bit
 
     mCapturePlane->qAllBuffers();
 
-    mConverter = std::make_unique<V4L2CUYUV420Converter>(width, height, mOutputPlane->mFormat);
+    if (pixelFormat == V4L2_PIX_FMT_YUV420M)
+    {
+        mConverter = std::make_unique<V4L2CUYUV420Converter>(width, height, mOutputPlane->mFormat);
+    }
+    else if(pixelFormat == V4L2_PIX_FMT_RGB24)
+    {
+        mConverter = std::make_unique<V4L2CURGBToYUV420Converter>(width, height, step, mOutputPlane->mFormat);
+    }
+    else
+    {
+        throw AIPException(AIP_FATAL, "Unimplemented colorspace<>" + std::to_string(pixelFormat));
+    }
 }
 
 H264EncoderV4L2Helper::~H264EncoderV4L2Helper()

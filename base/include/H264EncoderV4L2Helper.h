@@ -11,7 +11,7 @@ class H264EncoderV4L2Helper
 public:
     typedef std::function<void (frame_sp&)> SendFrame;
 
-    H264EncoderV4L2Helper(int width, int height, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
+    H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
     ~H264EncoderV4L2Helper();    
 
     // data is cuda rgb data pointer and should be already synced

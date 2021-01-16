@@ -6,8 +6,7 @@ AV4L2ElementPlane::AV4L2ElementPlane(int mFD, uint32_t type, uint32_t pixelForma
                                                                                      mPixelFormat(pixelFormat), mCount(10),
                                                                                      mStreamOn(false), mBuffers(nullptr),
                                                                                      mCallback(nullptr), mDQThreadRunning(false),
-                                                                                     mStopDQThread(false), mFreeCount(mCount),
-                                                                                     mSrcWidth(0), mSrcHeight(0)
+                                                                                     mStopDQThread(false), mFreeCount(mCount)
 {
     mMemType = V4L2_MEMORY_MMAP;
 
@@ -27,7 +26,7 @@ AV4L2ElementPlane::~AV4L2ElementPlane()
     pthread_cond_destroy(&plane_cond);
 }
 
-void AV4L2ElementPlane::setPlaneFormat(int width, int height)
+void AV4L2ElementPlane::setPlaneFormat(uint32_t width, uint32_t height)
 {
     memset(&mFormat, 0, sizeof(struct v4l2_format));
 
@@ -43,9 +42,6 @@ void AV4L2ElementPlane::setPlaneFormat(int width, int height)
     {
         throw AIPException(AIP_FATAL, "Error in setPlaneFormat VIDIOC_S_FMT");
     }
-
-    mSrcWidth = width;
-    mSrcHeight = height;
 }
 
 void AV4L2ElementPlane::setupPlane()
