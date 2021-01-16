@@ -60,6 +60,11 @@ V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32
     cudaFree(0);
     oSizeROI = {static_cast<int>(srcWidth), static_cast<int>(srcHeight)};
     nsrcStep = static_cast<int>(srcStep);
+
+    for (auto i = 0; i < 3; i++)
+    {
+        dstPitch[i] = static_cast<int>(mFormat.fmt.pix_mp.plane_fmt[i].bytesperline);
+    }
 }
 
 V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
@@ -101,25 +106,24 @@ void V4L2CURGBToYUV420Converter::termEGLDisplay()
 
 void V4L2CURGBToYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buffer)
 {
+    eglImage = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[0].fd);
+    status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
+    if (status != CUDA_SUCCESS)
+    {
+        LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status << " cuda process stop";
+        return;
+    }
+
+    status = cuGraphicsResourceGetMappedEglFrame(&eglFrame, pResource, 0, 0);
+    if (status != CUDA_SUCCESS)
+    {
+        LOG_ERROR << "cuGraphicsSubResourceGetMappedArray failed status<" << status << ">";
+        return;
+    }
+
     for (auto i = 0; i < 3; i++)
     {
-        eglImages[i] = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[i].fd);
-        status = cuGraphicsEGLRegisterImage(&pResources[i], eglImages[i], CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
-        if (status != CUDA_SUCCESS)
-        {
-            LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status << " cuda process stop. index<" << i << ">";
-            return;
-        }
-
-        status = cuGraphicsResourceGetMappedEglFrame(&eglFrames[i], pResources[i], 0, 0);
-        if (status != CUDA_SUCCESS)
-        {
-            LOG_ERROR << "cuGraphicsSubResourceGetMappedArray failed status<" << status << "> index<" << i << ">";
-            return;
-        }
-
-        dstPitch[i] = static_cast<int>(eglFrames[i].pitch);
-        dst[i] = static_cast<Npp8u *>(eglFrames[i].frame.pPitch[0]);
+        dst[i] = static_cast<Npp8u *>(eglFrame.frame.pPitch[i]);
     }
 
     status = cuCtxSynchronize();
@@ -141,16 +145,16 @@ void V4L2CURGBToYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer
         LOG_ERROR << "cuCtxSynchronize failed after cc status<" << status << ">";
     }
 
+    status = cuGraphicsUnregisterResource(pResource);
+    if (status != CUDA_SUCCESS)
+    {
+        LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status;
+    }
+
+    NvDestroyEGLImage(eglDisplay, eglImage);
+
     for (auto i = 0; i < 3; i++)
     {
-        status = cuGraphicsUnregisterResource(pResources[i]);
-        if (status != CUDA_SUCCESS)
-        {
-            LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status << "<>" << i;
-        }
-
-        NvDestroyEGLImage(eglDisplay, eglImages[i]);
-
         buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedY;
         if (i != 0)
         {
