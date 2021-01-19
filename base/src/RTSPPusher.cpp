@@ -297,7 +297,9 @@ public:
 	boost::shared_ptr<H264FrameDemuxer> demuxer;
 	bool precoded;
 	EventType connectionStatus;
-	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), precoded(true), connectionStatus(CONNECTION_FAILED)
+	bool isFirstFrame;
+
+	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), precoded(true), connectionStatus(CONNECTION_FAILED), isFirstFrame(false)
 	{
 		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
 	}
@@ -531,8 +533,11 @@ bool RTSPPusher::process(frame_container &frames)
 		return true;
 	}
 
-	// first frame is repeated processSOS and here - check if we can remove from write_precoded_video_frame
-	// may be because of emit_event ?
+	if(mDetail->isFirstFrame)
+	{
+		mDetail->isFirstFrame = false;
+		return true;
+	}
 
 	// non-first frame
 	if (!mDetail->write_precoded_video_frame(frame))
@@ -554,6 +559,7 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 	{
 		//written header and first frame both.
 		mDetail->connectionStatus = CONNECTION_READY;
+		mDetail->isFirstFrame = true;
 		// emit_event(CONNECTION_READY);
 		return true;
 	}
