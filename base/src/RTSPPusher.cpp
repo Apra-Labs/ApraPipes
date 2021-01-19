@@ -25,9 +25,8 @@ class RTSPPusher::Detail
 	AVCodec *video_codec;
 	string mURL;
 	string mTitle;
-	int frameCount;
+	int64_t totalDuration;
 	AVRational in_time_base;
-	int64_t prev_pts;
 	// int64_t prev_mfEnd;
 
 	AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id, int num, int den)
@@ -77,56 +76,6 @@ class RTSPPusher::Detail
 		return st;
 	}
 
-	int open_video()
-	{
-		int ret;
-		AVCodecContext *c = video_st->codec;
-
-		//AK: the following line initializes extradata and extradata size
-		ret = avcodec_open2(c, video_codec, NULL);
-		if (ret < 0)
-		{
-			// av_log(NULL, AV_LOG_ERROR, "Could not open video codec.\n", avcodec_get_name(c->codec_id));
-			LOG_ERROR << "Could not open video codec. ^" << avcodec_get_name(c->codec_id) << "^"
-					  << "\n";
-		}
-		else
-		{
-
-			/* allocate and init a re-usable frame */
-			frame = av_frame_alloc();
-			if (!frame)
-			{
-				// av_log(NULL, AV_LOG_ERROR, "Could not allocate video frame.\n");
-				LOG_ERROR << "Could not allocate video frame."
-						  << "\n";
-				ret = -1;
-			}
-			else
-			{
-				frame->format = c->pix_fmt;
-				frame->width = c->width;
-				frame->height = c->height;
-
-				/* Allocate the encoded raw picture. */
-				ret = avpicture_alloc(&dst_picture, c->pix_fmt, c->width, c->height);
-				if (ret < 0)
-				{
-					// av_log(NULL, AV_LOG_ERROR, "Could not allocate picture.\n");
-					LOG_ERROR << "Could not allocate picture."
-							  << "\n";
-				}
-				else
-				{
-					/* copy data and linesize picture pointers to frame */
-					*((AVPicture *)frame) = dst_picture;
-				}
-			}
-		}
-
-		return ret;
-	}
-
 	int open_video_precoded()
 	{
 		AVCodecContext *c = video_st->codec;
@@ -135,88 +84,6 @@ class RTSPPusher::Detail
 		c->extradata_size = (int)demuxer->getSPS_PPS().size();
 		lastDiff = pts_adder = lastPTS = 0;
 		return 0;
-	}
-
-	void fix_pts(int64_t &pts_org)
-	{
-		LOG_TRACE << "The PTS org is :" << pts_org << "and last PTS : " << lastPTS;
-		if (pts_org > lastPTS)
-		{
-			lastDiff = pts_org - lastPTS;
-			lastPTS = pts_org;
-		}
-		else
-		{
-			// pts_adder = lastPTS - pts_org + lastDiff;
-			pts_adder = pts_adder + lastPTS - pts_org + lastDiff;
-			LOG_TRACE << "PTS_ORG: " << pts_org << ": PTS_ADDER: " << pts_adder << ": LAST_PTS:" << lastPTS << ": LAST_DIFF: " << lastDiff;
-			// lastPTS = pts_org;
-			lastPTS = pts_org;
-		}
-		pts_org += pts_adder;
-	}
-
-	/* Prepare a dummy image. */
-	void fill_yuv_image(AVPicture *pict, int frame_index, int width, int height)
-	{
-		int x, y, i;
-
-		i = frame_index;
-
-		/* Y */
-		for (y = 0; y < height; y++)
-			for (x = 0; x < width; x++)
-				pict->data[0][y * pict->linesize[0] + x] = x + y + i * 3;
-
-		/* Cb and Cr */
-		for (y = 0; y < height / 2; y++)
-		{
-			for (x = 0; x < width / 2; x++)
-			{
-				pict->data[1][y * pict->linesize[1] + x] = 128 + y + i * 2;
-				pict->data[2][y * pict->linesize[2] + x] = 64 + x + i * 5;
-			}
-		}
-	}
-
-	int write_video_frame(AVFormatContext *oc, AVStream *st)
-	{
-		int ret = 0;
-		AVCodecContext *c = st->codec;
-
-		fill_yuv_image(&dst_picture, frameCount, c->width, c->height);
-
-		AVPacket pkt = {0};
-		int got_packet;
-		av_init_packet(&pkt);
-
-		/* encode the image */
-		frame->pts = frameCount;
-		ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
-		if (ret < 0)
-		{
-			// av_log(NULL, AV_LOG_ERROR, "Error encoding video frame.\n");
-			LOG_ERROR << "Error encoding video frame."
-					  << "\n";
-		}
-		else
-		{
-			if (got_packet)
-			{
-				pkt.stream_index = st->index;
-				pkt.pts = av_rescale_q_rnd(pkt.pts, c->time_base, st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-				ret = av_write_frame(oc, &pkt);
-
-				if (ret < 0)
-				{
-					// av_log(NULL, AV_LOG_ERROR, "Error while writing video frame.\n");
-					LOG_ERROR << "Error while writing video frame."
-							  << "\n";
-				}
-			}
-		}
-
-		return ret;
 	}
 
 	bool init_stream_params()
@@ -247,21 +114,12 @@ public:
 		av_init_packet(&pkt);
 
 		/* encode the image */
-		frameCount++;
-		pkt.stream_index = video_st->index;
-		//pkt.duration = f->mFEnd - lastPTS;
-		//pkt.pts=lastPTS= f->mFEnd;
-		//pkt.pts = AV_NOPTS_VALUE;
-		//pkt.pts = av_rescale_q_rnd(frameCount, c->time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-		pkt.pts = av_rescale_q_rnd(f->mFEnd, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-		// LOG_INFO << "frame mfend: "<< f->mFEnd << "- diff is : "<< (f->mFEnd - prev_mfEnd) << " -PTS: "<< pkt.pts;
-		// prev_mfEnd = f->mFEnd;
-		fix_pts(pkt.pts);
 
-		//LOG_TRACE << "PTS is : " << pkt.pts << " and the diff is :" << (pkt.pts - prev_pts) << "frame index : " << f->fIndex;
-		//
-		// printf("diff is : %lld and the frame index is %lld\n", (pkt.pts - prev_pts), f->fIndex);
-		prev_pts = pkt.pts;
+		pkt.stream_index = video_st->index;
+
+		auto duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+		totalDuration += duration;
+		pkt.pts = totalDuration;
 
 		pkt.data = (uint8_t *)codedFrame.data();
 		pkt.size = (int)codedFrame.size();
@@ -312,7 +170,7 @@ public:
 		const char *url = mURL.c_str();
 
 		int ret = 0;
-		frameCount = 0;
+		totalDuration = 0;
 
 		av_log_set_level(AV_LOG_INFO);
 
@@ -324,13 +182,13 @@ public:
 		if (rc < 0)
 		{
 			// av_log(NULL, AV_LOG_FATAL, "Alloc failure in avformat %d\n", rc);
-			LOG_FATAL << "Alloc failure in avformat : " << rc << "<>" << url;			
+			LOG_FATAL << "Alloc failure in avformat : " << rc << "<>" << url;
 			{
 				char errBuf[AV_ERROR_MAX_STRING_SIZE];
 				size_t errBufSize = AV_ERROR_MAX_STRING_SIZE;
 				av_strerror(rc, errBuf, errBufSize);
 
-				LOG_ERROR << errBuf;			
+				LOG_ERROR << errBuf;
 			}
 			return false;
 		}
@@ -369,10 +227,7 @@ public:
 			LOG_INFO << "Video stream codec : ^" << avcodec_get_name(video_st->codec->codec_id) << "^"
 					 << "\n";
 
-			if (precoded)
-				ret = open_video_precoded();
-			else
-				ret = open_video();
+			ret = open_video_precoded();
 			if (ret < 0)
 			{
 				// av_log(NULL, AV_LOG_FATAL, "Open video stream failed.\n");
@@ -533,7 +388,7 @@ bool RTSPPusher::process(frame_container &frames)
 		return true;
 	}
 
-	if(mDetail->isFirstFrame)
+	if (mDetail->isFirstFrame)
 	{
 		mDetail->isFirstFrame = false;
 		return true;
@@ -555,7 +410,7 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 {
 	LOG_TRACE << "at first frame";
 	//stick the sps/pps into extradata
-	if (mDetail->write_header(frame->m_num, frame->m_den) && mDetail->write_precoded_video_frame(frame))
+	if (mDetail->write_header(1, 30) && mDetail->write_precoded_video_frame(frame))
 	{
 		//written header and first frame both.
 		mDetail->connectionStatus = CONNECTION_READY;
