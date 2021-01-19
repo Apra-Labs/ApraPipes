@@ -33,9 +33,6 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
-# hunter_add_package(ffmpeg)
-# find_package(ffmpeg CONFIG REQUIRED)
-
 enable_language(CUDA)
 
 IF(ENABLE_CUDA)
@@ -52,6 +49,12 @@ IF(ENABLE_CUDA)
 		find_library(EGLLIB EGL)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 
+    	find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
+        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
+        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
+        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
+
+
 		SET(JETSON_LIBS
 			libcudart_static.a	
 			libcuda.so.1.1	
@@ -63,7 +66,12 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-		
+
+		find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
+        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
+        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
+        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
+	
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
 			libnvjpeg_static.a
@@ -82,6 +90,7 @@ include_directories(AFTER SYSTEM include
 	${OPENCV_ROOT}/include/opencv4
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
+	../thirdparty/ffmpeg/linux_x64/include
 )
 
 # ApraPipes library
@@ -152,11 +161,19 @@ IF(ENABLE_WINDOWS)
 	)
 ENDIF(ENABLE_WINDOWS)
 
-SET(GENRIC_FILES
+SET(GENERIC_FILES
 	src/VirtualCameraSink.cpp
+	src/RTSPPusher.cpp
+	src/H264FrameDemuxer.cpp
+	src/H264ParserUtils.cpp
+	src/H264Utils.cpp
 )
-SET(GENRIC_FILES_H
+SET(GENERIC_FILES_H
 	include/VirtualCameraSink.h
+	include/H264FrameDemuxer.h
+	include/H264ParserUtils.h
+	include/H264Utils.h
+	include/RTSPPusher.h
 )
 
 SET(IP_FILES
@@ -260,7 +277,7 @@ ENDIF(ENABLE_ARM64)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_library(aprapipes STATIC
 	${CORE_FILES} ${CORE_FILES_H}
-	${GENRIC_FILES} ${GENERIC_FILES_H}
+	${GENERIC_FILES} ${GENERIC_FILES_H}
 	${IP_FILES} ${IP_FILES_H}
 	${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
 	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
@@ -323,6 +340,7 @@ SET(UT_FILES
 	test/imagemetadata_tests.cpp
 	test/bmpconverter_tests.cpp
 	test/virtualcamerasink_tests.cpp
+	test/rtsppusher_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
@@ -347,4 +365,8 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}  
   ${JETSON_LIBS}
+  ${LIB_AVFORMAT}
+  ${LIB_AVCODEC}
+  ${LIB_AVUTIL}
+  ${LIB_FFSWR}
 )

@@ -5,8 +5,6 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
-#include <libswscale/swscale.h>
-#include <libavutil/time.h>
 }
 
 #include "RTSPPusher.h"
@@ -14,7 +12,7 @@ extern "C"
 #include "H264Utils.h"
 #include "H264ParserUtils.h"
 #include "Frame.h"
-
+ 
 class RTSPPusher::Detail
 {
 	/* video output */
