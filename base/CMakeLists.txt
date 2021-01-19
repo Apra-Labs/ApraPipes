@@ -49,10 +49,10 @@ IF(ENABLE_CUDA)
 		find_library(EGLLIB EGL)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 
-    	find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
-        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
-        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
-        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/linux_arm64/lib NO_DEFAULT_PATH)
+    	find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
+        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
+        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
+        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
 
 
 		SET(JETSON_LIBS
@@ -67,10 +67,10 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 
-		find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
-        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
-        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
-        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/linux_x64/lib NO_DEFAULT_PATH)
+		find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
+        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
+        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
+        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
 	
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
@@ -90,7 +90,7 @@ include_directories(AFTER SYSTEM include
 	${OPENCV_ROOT}/include/opencv4
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
-	../thirdparty/ffmpeg/linux_x64/include
+	../thirdparty/ffmpeg/include
 )
 
 # ApraPipes library
