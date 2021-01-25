@@ -252,6 +252,7 @@ public:
 		{
 			isTcp = false;
 		}
+		isTcp = true;
 
 		av_dict_set(&outContext->metadata, "title", mTitle.c_str(), 0);
 		av_dict_set(&options, "rtsp_transport", isTcp ? "tcp" : "udp", 0);
