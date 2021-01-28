@@ -1,0 +1,500 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; Apra Pipes v0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Framework" href="Framework.html" />
+    <link rel="prev" title="Welcome to Apra Pipes documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Apra Pipes
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#design">Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stack">Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#libraries">Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-concepts">Core Concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module">Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pins">Pins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#queue">Queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#framemetadata">FrameMetadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#framefactory">FrameFactory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#frame">Frame</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#framecontainer">FrameContainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#moduleprops">ModuleProps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-functions">Module Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline">PipeLine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic-modules">Basic Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sample-cuda-modules">Sample Cuda Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Framework.html">Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorial_Adding_New_IP_Module.html">Adding New Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NvidiaCUDAModules.html">NVIDIA CUDA Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUDAKernelProgrammingGuide.html">CUDA Kernel Programming Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Apra Pipes</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>ApraPipes is a pipeline framework.</p>
+<div class="section" id="design">
+<h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><div class="line-block">
+<div class="line">Reusable Modules</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Easy to Test</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Memory Management</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Thread Management</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Parallel Processing</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="stack">
+<h2>Stack<a class="headerlink" href="#stack" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><div class="line-block">
+<div class="line">C++</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">CUDA</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">CMake</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="libraries">
+<h2>Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><div class="line-block">
+<div class="line">Boost C++</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Nvidia</div>
+</div>
+<blockquote>
+<div><ul>
+<li><div class="line-block">
+<div class="line">CudaToolkit</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">NPPI</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">NvJPEG</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">NvENC</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Jetson MultiMedia API</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><div class="line-block">
+<div class="line">Intel Media SDK</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">OpenCV</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Live555</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="core-concepts">
+<h2>Core Concepts<a class="headerlink" href="#core-concepts" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/Module.jpg" src="_images/Module.jpg" />
+<div class="section" id="module">
+<h3>Module<a class="headerlink" href="#module" title="Permalink to this headline">¶</a></h3>
+<p>Base class</p>
+</div>
+<div class="section" id="pins">
+<h3>Pins<a class="headerlink" href="#pins" title="Permalink to this headline">¶</a></h3>
+<p>Two modules are connected using pins</p>
+</div>
+<div class="section" id="queue">
+<h3>Queue<a class="headerlink" href="#queue" title="Permalink to this headline">¶</a></h3>
+<p>Blocking, NonBlocking</p>
+</div>
+<div class="section" id="framemetadata">
+<h3>FrameMetadata<a class="headerlink" href="#framemetadata" title="Permalink to this headline">¶</a></h3>
+<p>Properties of a pin. Width, Height, MemType, FrameType</p>
+</div>
+<div class="section" id="framefactory">
+<h3>FrameFactory<a class="headerlink" href="#framefactory" title="Permalink to this headline">¶</a></h3>
+<p>Responsible for reusing memory</p>
+</div>
+<div class="section" id="frame">
+<h3>Frame<a class="headerlink" href="#frame" title="Permalink to this headline">¶</a></h3>
+<p>Data is transported using frame</p>
+</div>
+<div class="section" id="framecontainer">
+<h3>FrameContainer<a class="headerlink" href="#framecontainer" title="Permalink to this headline">¶</a></h3>
+<p>Has multiple frames</p>
+</div>
+<div class="section" id="moduleprops">
+<h3>ModuleProps<a class="headerlink" href="#moduleprops" title="Permalink to this headline">¶</a></h3>
+<p>fps, Queue Strategy</p>
+</div>
+<div class="section" id="module-functions">
+<h3>Module Functions<a class="headerlink" href="#module-functions" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="line-block">
+<div class="line">addOutputPin</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">validateOuputPins</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">setNext</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">validateInputPins</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">init</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">term</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">processSOS</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">processEOS</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">produce</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">process</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">send</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="pipeline">
+<h3>PipeLine<a class="headerlink" href="#pipeline" title="Permalink to this headline">¶</a></h3>
+<p>Responsible for lifecycle events</p>
+<ul>
+<li><div class="line-block">
+<div class="line">appendModule</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">init</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">run_all_threaded</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">stop</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">term</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">wait_for_all</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="unit-tests">
+<h3>Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h3>
+<p>BOOST Tests</p>
+</div>
+<div class="section" id="basic-modules">
+<h3>Basic Modules<a class="headerlink" href="#basic-modules" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="line-block">
+<div class="line">FileReaderModule</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">FileWriterModule</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">ExternalSourceModule</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">ExternalSinkModule</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">CudaMemCopy</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Decoder (JPEGDecoderL4TM, JPEGDecoderNVJPEG)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Encoder (JPEGEncoderL4TM, JPEGEncoderNVJPEG)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">StatSink</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="sample-cuda-modules">
+<h3>Sample Cuda Modules<a class="headerlink" href="#sample-cuda-modules" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="line-block">
+<div class="line">ResizeNPPI</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">CCNPPI</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Framework.html" class="btn btn-neutral float-right" title="Framework" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Apra Pipes documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Akhil
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

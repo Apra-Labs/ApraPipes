@@ -1,0 +1,114 @@
+Introduction
+============
+ApraPipes is a pipeline framework.
+
+Design 
+^^^^^^
+- | Reusable Modules
+- | Easy to Test
+- | Memory Management
+- | Thread Management
+- | Parallel Processing 
+
+Stack
+^^^^^
+- | C++
+- | CUDA
+- | CMake
+
+Libraries
+^^^^^^^^^
+- | Boost C++
+- | Nvidia 
+
+    - | CudaToolkit
+    - | NPPI
+    - | NvJPEG
+    - | NvENC 
+    - | Jetson MultiMedia API
+- | Intel Media SDK
+- | OpenCV
+- | Live555
+
+Core Concepts
+^^^^^^^^^^^^^
+
+.. image:: Module.jpg
+
+
+Module
+""""""
+Base class
+
+Pins
+""""
+Two modules are connected using pins
+
+Queue
+"""""
+Blocking, NonBlocking
+
+FrameMetadata
+"""""""""""""
+Properties of a pin. Width, Height, MemType, FrameType
+
+FrameFactory
+""""""""""""
+Responsible for reusing memory
+
+Frame
+"""""
+Data is transported using frame
+
+FrameContainer
+""""""""""""""
+Has multiple frames
+
+ModuleProps
+"""""""""""
+fps, Queue Strategy
+
+Module Functions
+""""""""""""""""
+- | addOutputPin
+- | validateOuputPins
+- | setNext
+- | validateInputPins
+- | init
+- | term
+- | processSOS
+- | processEOS
+- | produce
+- | process
+- | send
+
+PipeLine
+""""""""
+Responsible for lifecycle events
+
+- | appendModule
+- | init
+- | run_all_threaded
+- | stop
+- | term
+- | wait_for_all
+
+Unit Tests
+""""""""""
+BOOST Tests
+
+Basic Modules
+"""""""""""""
+- | FileReaderModule
+- | FileWriterModule
+- | ExternalSourceModule
+- | ExternalSinkModule
+- | CudaMemCopy
+- | Decoder (JPEGDecoderL4TM, JPEGDecoderNVJPEG)
+- | Encoder (JPEGEncoderL4TM, JPEGEncoderNVJPEG)
+- | StatSink
+
+Sample Cuda Modules
+"""""""""""""""""""
+- | ResizeNPPI
+- | CCNPPI
