@@ -5,10 +5,11 @@
 #include "FrameFactory.h"
 #include "Module.h"
 #include "PipeLine.h"
+#include "ExtFrame.h"
+
 #include <boost/test/unit_test.hpp>
 
 // NOTE: TESTS WHICH REQUIRE ANY ENVIRONMENT TO BE PRESENT BEFORE RUNNING ARE NOT UNIT TESTS !!!
-
 
 BOOST_AUTO_TEST_SUITE(unit_tests)
 
@@ -500,7 +501,6 @@ void testQueuePushPop(bounded_buffer<int>& queue, bool push)
 	}
 }
 
-
 BOOST_AUTO_TEST_CASE(bounded_buffer_3)
 {
 	bounded_buffer<int> queue(5);
@@ -511,6 +511,16 @@ BOOST_AUTO_TEST_CASE(bounded_buffer_3)
 
 	t1.join();
 	t2.join();
+}
+
+BOOST_AUTO_TEST_CASE(sendinttest)
+{
+	int fd = 100;
+	ExtFrame frame(&fd, 4);
+
+	auto ptr = static_cast<int*>(frame.data());
+	BOOST_TEST(ptr == &fd);
+	BOOST_TEST(*ptr == fd);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

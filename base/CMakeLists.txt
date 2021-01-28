@@ -41,13 +41,14 @@ IF(ENABLE_CUDA)
 		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )			
 		find_library(NVJPEGLIB_L4T nvjpeg)
 
-		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
 		find_library(V4L2LIB v4l2)
 		find_library(EGLLIB EGL)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
+		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
+		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
 
     	find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
         find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
@@ -61,6 +62,8 @@ IF(ENABLE_CUDA)
 			${V4L2LIB}
 			${NVBUFUTILSLIB}
 			${EGLLIB}	
+			${EGLSTREAM_CAMCONSUMER_LIB}
+			${NVARGUS_SOCKETCLINET_LIB}
 		)
 	ELSE()
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -235,6 +238,8 @@ IF(ENABLE_ARM64)
 		src/H264EncoderV4L2Helper.cpp
 		src/V4L2CUYUV420Converter.cpp
 		src/H264EncoderV4L2.cpp
+		src/DMABuffer.cpp
+		src/NvArgusCameraHelper.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -266,6 +271,8 @@ IF(ENABLE_ARM64)
 		include/H264EncoderV4L2Helper.h
 		include/V4L2CUYUV420Converter.h
 		include/H264EncoderV4L2.h
+		include/DMABuffer.h
+		include/NvArgusCameraHelper.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -294,6 +301,7 @@ IF (ENABLE_ARM64)
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2helper_tests.cpp
 		test/h264encoderv4l2_tests.cpp
+		test/nvarguscamerahelper_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
