@@ -240,6 +240,7 @@ IF(ENABLE_ARM64)
 		src/H264EncoderV4L2.cpp
 		src/DMABuffer.cpp
 		src/NvArgusCameraHelper.cpp
+		src/NvArgusCamera.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -273,6 +274,7 @@ IF(ENABLE_ARM64)
 		include/H264EncoderV4L2.h
 		include/DMABuffer.h
 		include/NvArgusCameraHelper.h
+		include/NvArgusCamera.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -302,6 +304,7 @@ IF (ENABLE_ARM64)
 		test/h264encoderv4l2helper_tests.cpp
 		test/h264encoderv4l2_tests.cpp
 		test/nvarguscamerahelper_tests.cpp
+		test/nvarguscamera_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 

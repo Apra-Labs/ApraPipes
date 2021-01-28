@@ -196,7 +196,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
         LOG_ERROR << "Failed to get Argus::ISourceSettings interface";
         return false;
     }
-    iSourceSettings->setFrameDurationRange(Argus::Range<uint64_t>(1e9 / 30));
+    iSourceSettings->setFrameDurationRange(Argus::Range<uint64_t>(1e9 / fps));
 
     /* Submit capture requests */
     LOG_INFO << "Starting repeat capture requests";
