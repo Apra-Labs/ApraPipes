@@ -14,6 +14,7 @@ public:
 	{
 		maxDelay = 30;
 		strategy = ALL_OR_NONE;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::NONE;
 	}
 
 	int maxDelay; // Difference between current frame and first frame in the queue
