@@ -13,6 +13,7 @@
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "QuePushStrategy.h"
+#include "FIndexStrategy.h"
 #include "Command.h"
 
 using namespace std;
@@ -32,6 +33,7 @@ public:
 		logHealthFrequency = 1000;
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
 	}
 
 	ModuleProps(int _fps)
@@ -42,6 +44,7 @@ public:
 		logHealthFrequency = 1000;
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
 	}
 
 	ModuleProps(int _fps, size_t _qlen, bool _logHealth)
@@ -52,6 +55,7 @@ public:
 		logHealthFrequency = 1000;
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
 	}
 
 	size_t getQLen()
@@ -62,7 +66,7 @@ public:
 	virtual size_t getSerializeSize()
 	{
 		// 1024 is for boost serialize
-		return 1024 + sizeof(fps) + sizeof(qlen) + sizeof(logHealth) + sizeof(logHealthFrequency) + sizeof(maxConcurrentFrames) + sizeof(skipN) + sizeof(skipD);
+		return 1024 + sizeof(fps) + sizeof(qlen) + sizeof(logHealth) + sizeof(logHealthFrequency) + sizeof(maxConcurrentFrames) + sizeof(skipN) + sizeof(skipD) + sizeof(quePushStrategyType) + sizeof(fIndexStrategyType);
 	}
 
 	int fps; // can be updated during runtime with setProps
@@ -86,6 +90,7 @@ public:
 	int skipD = 1; 
 
 	QuePushStrategy::QuePushStrategyType quePushStrategyType;
+	FIndexStrategy::FIndexStrategyType fIndexStrategyType;
 		
 private:
 	friend class Module;	
@@ -93,7 +98,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD;
+		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD & quePushStrategyType & fIndexStrategyType;
 	}
 };
 
@@ -327,7 +332,7 @@ private:
 	std::map<std::string, bool> mInputPinsDirection;
 	metadata_by_pin mInputPinIdMetadataMap;
 	metadata_by_pin mOutputPinIdMetadataMap;
-	uint64_t mFIndex;
+	std::shared_ptr<FIndexStrategy> mFIndexStrategy;
 
 	class Profiler;
 	boost::shared_ptr<Profiler> mProfiler;

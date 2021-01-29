@@ -102,7 +102,7 @@ private:
 	double mPipelineFps;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props) :mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mFIndex(0), mSkipIndex(0) {
+Module::Module(Kind nature, string name, ModuleProps _props) :mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0) {
 	static int moduleCounter = 0;
 	moduleCounter += 1;
 	myId = name + "_" + std::to_string(moduleCounter);
@@ -426,6 +426,8 @@ bool Module::init()
 
 	mStopCount = 0;
 
+	mFIndexStrategy = FIndexStrategy::create(mProps->fIndexStrategyType);
+
 	return ret;
 }
 
@@ -467,7 +469,8 @@ bool Module::isFull() {
 }
 
 bool Module::send(frame_container& frames, bool forceBlockingPush) {
-	uint64_t fIndex = mFIndex; // mFindex may be propagated for EOS, EOP, Command, PropsChange also - which is wrong
+	// mFindex may be propagated for EOS, EOP, Command, PropsChange also - which is wrong
+	uint64_t fIndex = 0; 
 	uint64_t timestamp = 0;
 	if (frames.size() != 0)
 	{
@@ -528,15 +531,7 @@ bool Module::send(frame_container& frames, bool forceBlockingPush) {
 		}
 	}
 
-	if (fIndex == 0 || fIndex <= mFIndex)
-	{
-		// fIndex is being set (incremented) automatically
-		fIndex = mFIndex++;
-	}
-	else
-	{
-		mFIndex = fIndex;
-	}
+	fIndex = mFIndexStrategy->getFIndex(fIndex);
 
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
 	{

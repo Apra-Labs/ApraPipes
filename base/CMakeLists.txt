@@ -115,6 +115,7 @@ SET(CORE_FILES
 	src/QuePushStrategy.cpp
 	src/Split.cpp
 	src/Utils.cpp
+	src/FIndexStrategy.cpp
 )
 
 SET(include/CORE_FILES_H
@@ -155,6 +156,7 @@ SET(include/CORE_FILES_H
 	include/ImageMetadata.h
 	include/enum_macros.h
 	include/MetadataHints.h
+	include/FIndexStrategy.h
 )
 
 IF(ENABLE_WINDOWS)
