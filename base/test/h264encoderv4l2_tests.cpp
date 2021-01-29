@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling)
+BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling, *boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 1280;
