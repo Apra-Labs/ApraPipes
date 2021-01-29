@@ -2,14 +2,12 @@
 #include "Logger.h"
 #include "AIPExceptions.h"
 
-AV4L2ElementPlane::AV4L2ElementPlane(int mFD, uint32_t type, uint32_t pixelFormat) : mFD(mFD), mType(type),
+AV4L2ElementPlane::AV4L2ElementPlane(int mFD, uint32_t type, uint32_t pixelFormat, enum v4l2_memory memType) : mFD(mFD), mType(type),
                                                                                      mPixelFormat(pixelFormat), mCount(10),
                                                                                      mStreamOn(false), mBuffers(nullptr),
                                                                                      mCallback(nullptr), mDQThread(0), mDQThreadRunning(false),
-                                                                                     mStopDQThread(false), mFreeCount(mCount)
+                                                                                     mStopDQThread(false), mFreeCount(mCount), mMemType(memType)
 {
-    mMemType = V4L2_MEMORY_MMAP;
-
     mNumPlanes = 1;
     if (pixelFormat == V4L2_PIX_FMT_YUV420M)
     {
@@ -47,6 +45,11 @@ void AV4L2ElementPlane::setPlaneFormat(uint32_t width, uint32_t height)
 void AV4L2ElementPlane::setupPlane()
 {
     reqbufs(mCount);
+
+    if(mMemType == V4L2_MEMORY_DMABUF)
+    {
+        return;
+    }
 
     for (auto i = 0; i < mCount; i++)
     {
@@ -379,9 +382,12 @@ void AV4L2ElementPlane::deinitPlane()
 {
     setStreamStatus(false);
     waitForDQThread(-1); // waiting second time
-    for (uint32_t i = 0; i < mCount; i++)
+    if (mMemType == V4L2_MEMORY_MMAP)
     {
-        mBuffers[i]->unmap();
+        for (uint32_t i = 0; i < mCount; i++)
+        {
+            mBuffers[i]->unmap();
+        }
     }
     reqbufs(0);
     LOG_INFO << "deinitPlane successful";

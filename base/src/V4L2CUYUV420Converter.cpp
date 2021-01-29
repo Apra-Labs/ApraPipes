@@ -19,8 +19,10 @@ V4L2CUYUV420Converter::~V4L2CUYUV420Converter()
 {
 }
 
-void V4L2CUYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buffer)
+void V4L2CUYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
+    auto data = static_cast<uint8_t*>(frame->data());
+
     uint32_t i;
     auto numPlanes = buffer->getNumPlanes();
     for (i = 0; i < numPlanes; i++)
@@ -52,6 +54,28 @@ void V4L2CUYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buf
             LOG_FATAL << "NvBufferMemSyncForDevice failed<>" << i;
         }
     }
+}
+
+V4L2CUDMABufYUV420Converter::V4L2CUDMABufYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format): V4L2CUYUV420Converter(srcWidth, srcHeight, format)
+{
+
+}
+
+V4L2CUDMABufYUV420Converter::~V4L2CUDMABufYUV420Converter()
+{
+    mCache.clear();
+}
+
+void V4L2CUDMABufYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
+{
+    auto ptr = static_cast<int *>(frame->data());    
+    if(mCache.find(*ptr) != mCache.end())
+    {
+        mCache.erase(*ptr);
+    }    
+    buffer->v4l2_buf.m.planes[0].m.fd = *ptr;
+    buffer->v4l2_buf.m.planes[0].bytesused = 1;
+    mCache.insert(std::make_pair(*ptr, frame));
 }
 
 V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, uint32_t srcStep, struct v4l2_format &format) : V4L2CUYUV420Converter(srcWidth, srcHeight, format)
@@ -104,7 +128,7 @@ void V4L2CURGBToYUV420Converter::termEGLDisplay()
     }
 }
 
-void V4L2CURGBToYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer *buffer)
+void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
     eglImage = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[0].fd);
     status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
@@ -133,6 +157,7 @@ void V4L2CURGBToYUV420Converter::process(uint8_t *data, size_t size, AV4L2Buffer
         return;
     }
 
+    auto data = static_cast<uint8_t*>(frame->data());
     auto res = nppiRGBToYUV420_8u_C3P3R(static_cast<const Npp8u *>(data), nsrcStep, dst, dstPitch, oSizeROI);
     if (res != NPP_SUCCESS)
     {

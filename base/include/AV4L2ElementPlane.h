@@ -9,7 +9,7 @@
 class AV4L2ElementPlane
 {
 public:
-    AV4L2ElementPlane(int fd, uint32_t type, uint32_t pixelFormat);
+    AV4L2ElementPlane(int fd, uint32_t type, uint32_t pixelFormat, enum v4l2_memory memType);
     ~AV4L2ElementPlane();
 
     void setPlaneFormat(uint32_t width, uint32_t height);
@@ -45,10 +45,9 @@ private:
     int mFreeCount;
     uint32_t mType;
     uint32_t mPixelFormat;
+    enum v4l2_memory mMemType;
     uint32_t mNumPlanes;
     int mFD;
-
-    uint32_t mMemType;
 
     AV4L2Buffer **mBuffers;
     AV4L2Buffer *mTempBuffer;

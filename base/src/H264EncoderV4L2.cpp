@@ -39,14 +39,14 @@ bool H264EncoderV4L2::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	auto expectedMemType = FrameMetadata::MemType::CUDA_DEVICE;
-	if(frameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	if(frameType == FrameMetadata::RAW_IMAGE_PLANAR && (memType != FrameMetadata::HOST && memType != FrameMetadata::DMABUF) )
 	{	
-		expectedMemType = FrameMetadata::MemType::HOST;
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST OR DMABUF. Actual<" << memType << ">";
+		return false;
 	}
-	if (memType != expectedMemType)
+	if (frameType == FrameMetadata::RAW_IMAGE && memType != FrameMetadata::CUDA_DEVICE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be <" << expectedMemType << ">. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -96,7 +96,7 @@ bool H264EncoderV4L2::term()
 bool H264EncoderV4L2::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	mHelper->process(static_cast<uint8_t*>(frame->data()), frame->size());
+	mHelper->process(frame);
 
 	return true;
 }
@@ -144,7 +144,13 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		}
 	}
 
-	mHelper = H264EncoderV4L2Helper::create(pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
+	auto v4l2MemType = V4L2_MEMORY_MMAP;
+	if(metadata->getMemType() == FrameMetadata::DMABUF)
+	{
+		v4l2MemType = V4L2_MEMORY_DMABUF;
+	}
+
+	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
 		frame->setMetadata(mOutputMetadata);
 
 		frame_container frames;

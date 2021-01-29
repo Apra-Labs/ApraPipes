@@ -6,6 +6,8 @@
 #include "cudaEGL.h"
 #include "npp.h"
 
+#include "Frame.h"
+
 class V4L2CUYUV420Converter
 {
 public:
@@ -13,7 +15,7 @@ public:
     virtual ~V4L2CUYUV420Converter();
 
     // YUV420 data - stride is expected to match width
-    virtual void process(uint8_t *data, size_t size, AV4L2Buffer *buffer);
+    virtual void process(frame_sp& frame, AV4L2Buffer *buffer);
 
 protected:
     uint32_t mBytesUsedY;
@@ -26,13 +28,26 @@ protected:
     uint32_t mWidthUV;
 };
 
+class V4L2CUDMABufYUV420Converter: public V4L2CUYUV420Converter
+{
+public:
+    V4L2CUDMABufYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format);
+    ~V4L2CUDMABufYUV420Converter();
+
+    // YUV420 data - stride is expected to match width
+    void process(frame_sp& frame, AV4L2Buffer *buffer);
+
+private:
+    std::map<int, frame_sp> mCache;
+};
+
 class V4L2CURGBToYUV420Converter : public V4L2CUYUV420Converter
 {
 public:
     V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, uint32_t srcStep, struct v4l2_format &format);
     ~V4L2CURGBToYUV420Converter();
 
-    void process(uint8_t *data, size_t size, AV4L2Buffer *buffer);
+    void process(frame_sp& frame, AV4L2Buffer *buffer);
 
 private:
     void initEGLDisplay();

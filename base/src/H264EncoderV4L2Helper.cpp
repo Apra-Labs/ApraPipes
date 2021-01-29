@@ -22,9 +22,9 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
 {
-    auto instance = std::make_shared<H264EncoderV4L2Helper>(pixelFormat, width, height, step, bitrate, fps, sendFrame);
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, fps, sendFrame);
     instance->setSelf(instance);
 
     return instance;
@@ -35,12 +35,12 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
     mSelf = self;
 }
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
 {
     initV4L2();
 
-    mCapturePlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, V4L2_PIX_FMT_H264);
-    mOutputPlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, V4L2_PIX_FMT_YUV420M);
+    mCapturePlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, V4L2_PIX_FMT_H264, V4L2_MEMORY_MMAP);
+    mOutputPlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, V4L2_PIX_FMT_YUV420M, memType);
 
     mCapturePlane->setPlaneFormat(width, height);
     mOutputPlane->setPlaneFormat(width, height);
@@ -58,7 +58,11 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t widt
 
     mCapturePlane->qAllBuffers();
 
-    if (pixelFormat == V4L2_PIX_FMT_YUV420M)
+    if(memType == V4L2_MEMORY_DMABUF)
+    {
+        mConverter = std::make_unique<V4L2CUDMABufYUV420Converter>(width, height, mOutputPlane->mFormat);
+    }
+    else if (pixelFormat == V4L2_PIX_FMT_YUV420M)
     {
         mConverter = std::make_unique<V4L2CUYUV420Converter>(width, height, mOutputPlane->mFormat);
     }
@@ -201,7 +205,7 @@ void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index,
     mCapturePlane->qBuffer(index);
 }
 
-bool H264EncoderV4L2Helper::process(uint8_t *data, size_t size)
+bool H264EncoderV4L2Helper::process(frame_sp& frame)
 {
     auto buffer = mOutputPlane->getFreeBuffer();
     if (!buffer)
@@ -209,7 +213,7 @@ bool H264EncoderV4L2Helper::process(uint8_t *data, size_t size)
         return true;
     }
 
-    mConverter->process(data, size, buffer);
+    mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
 }
 
