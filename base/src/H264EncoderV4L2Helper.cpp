@@ -22,6 +22,19 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
+{
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(pixelFormat, width, height, step, bitrate, fps, sendFrame);
+    instance->setSelf(instance);
+
+    return instance;
+}
+
+void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self)
+{
+    mSelf = self;
+}
+
 H264EncoderV4L2Helper::H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
 {
     initV4L2();
@@ -69,6 +82,11 @@ H264EncoderV4L2Helper::~H264EncoderV4L2Helper()
     mCapturePlane.reset();
 
     termV4L2();
+}
+
+void H264EncoderV4L2Helper::stop()
+{
+    mSelf.reset();
 }
 
 void H264EncoderV4L2Helper::termV4L2()
@@ -172,11 +190,11 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
 
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
-    auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex()));
+    auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
     mSendFrame(frame);
 }
 
-void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index)
+void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self)
 {
     // take care of destruction case
     frame_opool.free(pointer);

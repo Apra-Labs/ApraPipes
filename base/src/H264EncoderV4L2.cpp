@@ -15,7 +15,11 @@ H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM,
 
 H264EncoderV4L2::~H264EncoderV4L2() 
 {
-	mHelper.reset();
+	if (mHelper.get())
+	{
+		mHelper->stop();
+		mHelper.reset();
+	}
 }
 
 bool H264EncoderV4L2::validateInputPins()
@@ -80,7 +84,11 @@ bool H264EncoderV4L2::init()
 
 bool H264EncoderV4L2::term()
 {
-	mHelper.reset();
+	if (mHelper.get())
+	{
+		mHelper->stop();
+		mHelper.reset();
+	}
 
 	return Module::term();
 }
@@ -136,7 +144,7 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		}
 	}
 
-	mHelper = std::make_unique<H264EncoderV4L2Helper>(pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
+	mHelper = H264EncoderV4L2Helper::create(pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
 		frame->setMetadata(mOutputMetadata);
 
 		frame_container frames;
@@ -154,6 +162,11 @@ bool H264EncoderV4L2::shouldTriggerSOS()
 
 bool H264EncoderV4L2::processEOS(string& pinId)
 {
-	mHelper.reset();
+	if (mHelper.get())
+	{
+		mHelper->stop();
+		mHelper.reset();
+	}
+
 	return true;
 }

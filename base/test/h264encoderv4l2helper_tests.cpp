@@ -17,16 +17,18 @@ BOOST_AUTO_TEST_CASE(yuv420_black)
     memset(data, 0, imageSizeY);
     memset(data + imageSizeY, 128, imageSizeY >> 1);
 
-    H264EncoderV4L2Helper helper(V4L2_PIX_FMT_YUV420M, width, height, width, 4*1024*1024, 30, [](frame_sp& frame) -> void {
+    auto helper = H264EncoderV4L2Helper::create(V4L2_PIX_FMT_YUV420M, width, height, width, 4*1024*1024, 30, [](frame_sp& frame) -> void {
         LOG_INFO << frame->size();
     } );
 
     for (auto i = 0; i < 100; i++)
     {
-        helper.process(data, imageSize);
+        helper->process(data, imageSize);
     }
 
     boost::this_thread::sleep_for(boost::chrono::seconds(5));
+    helper->stop();
+    helper.reset();
 
     delete[] data;
 }
@@ -43,16 +45,18 @@ BOOST_AUTO_TEST_CASE(rgb24_black)
     cudaMemset(data, 0, imageSize);
     cudaDeviceSynchronize();
 
-    H264EncoderV4L2Helper helper(V4L2_PIX_FMT_RGB24, width, height, step, 4*1024*1024, 30, [](frame_sp& frame) -> void {
+    auto helper = H264EncoderV4L2Helper::create(V4L2_PIX_FMT_RGB24, width, height, step, 4*1024*1024, 30, [](frame_sp& frame) -> void {
         LOG_INFO << frame->size();
     } );
 
     for (auto i = 0; i < 100; i++)
     {
-        helper.process(data, imageSize);
+        helper->process(data, imageSize);
     }
 
     boost::this_thread::sleep_for(boost::chrono::seconds(5));
+    helper->stop();
+    helper.reset();
 
     cudaFree(data);
 }
@@ -71,16 +75,18 @@ BOOST_AUTO_TEST_CASE(memory_cache_free_test)
         memset(data, 0, imageSizeY);
         memset(data + imageSizeY, 128, imageSizeY >> 1);
 
-        H264EncoderV4L2Helper helper(V4L2_PIX_FMT_YUV420M, width, height, width, 4 * 1024 * 1024, 30, [&](frame_sp &frame) -> void {
+        auto helper = H264EncoderV4L2Helper::create(V4L2_PIX_FMT_YUV420M, width, height, width, 4 * 1024 * 1024, 30, [&](frame_sp &frame) -> void {
             cacheFrame = frame;
         });
 
         for (auto i = 0; i < 10; i++)
         {
-            helper.process(data, imageSize);
+            helper->process(data, imageSize);
         }
 
         boost::this_thread::sleep_for(boost::chrono::seconds(1));
+        helper->stop();
+        helper.reset();
 
         delete[] data;
     }

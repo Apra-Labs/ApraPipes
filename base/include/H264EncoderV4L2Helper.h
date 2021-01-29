@@ -9,15 +9,21 @@
 class H264EncoderV4L2Helper
 {
 public:
-    typedef std::function<void (frame_sp&)> SendFrame;
+    typedef std::function<void(frame_sp &)> SendFrame;
+
+    static std::shared_ptr<H264EncoderV4L2Helper> create(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
 
     H264EncoderV4L2Helper(uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
-    ~H264EncoderV4L2Helper();    
+    ~H264EncoderV4L2Helper();
+
+    void stop();
 
     // data is cuda rgb data pointer and should be already synced
-    bool process(uint8_t* data, size_t size);
+    bool process(uint8_t *data, size_t size);
 
-private:    
+private:
+    void setSelf(std::shared_ptr<H264EncoderV4L2Helper> &mother);
+
     void initV4L2();
     void termV4L2();
 
@@ -29,12 +35,13 @@ private:
     void initEncoderParams(uint32_t bitrate, uint32_t fps);
     int setExtControls(v4l2_ext_control &control);
 
-    void capturePlaneDQCallback(AV4L2Buffer * buffer);
-    void reuseCatureBuffer(ExtFrame *pointer, uint32_t index);
+    void capturePlaneDQCallback(AV4L2Buffer *buffer);
+    void reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self);
 
     bool processEOS();
-private:
 
+private:
+    std::shared_ptr<H264EncoderV4L2Helper> mSelf;
     int mFD;
     std::unique_ptr<AV4L2ElementPlane> mOutputPlane;
     std::unique_ptr<AV4L2ElementPlane> mCapturePlane;

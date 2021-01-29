@@ -5,7 +5,7 @@
 AV4L2ElementPlane::AV4L2ElementPlane(int mFD, uint32_t type, uint32_t pixelFormat) : mFD(mFD), mType(type),
                                                                                      mPixelFormat(pixelFormat), mCount(10),
                                                                                      mStreamOn(false), mBuffers(nullptr),
-                                                                                     mCallback(nullptr), mDQThreadRunning(false),
+                                                                                     mCallback(nullptr), mDQThread(0), mDQThreadRunning(false),
                                                                                      mStopDQThread(false), mFreeCount(mCount)
 {
     mMemType = V4L2_MEMORY_MMAP;
@@ -305,6 +305,11 @@ void* AV4L2ElementPlane::dqThread(void *data)
 
 int AV4L2ElementPlane::waitForDQThread(uint32_t max_wait_ms)
 {
+    if(!mDQThread)
+    {
+        LOG_INFO << "Thread already exited";
+        return 0;
+    }
     struct timespec timeToWait;
     struct timeval now;
     int return_val = 0;

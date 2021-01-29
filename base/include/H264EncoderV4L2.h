@@ -33,7 +33,7 @@ protected:
 	bool processEOS(string& pinId);
 
 private:
-	std::unique_ptr<H264EncoderV4L2Helper> mHelper;
+	std::shared_ptr<H264EncoderV4L2Helper> mHelper;
 
 	H264EncoderV4L2Props mProps;
 	framemetadata_sp mOutputMetadata;
