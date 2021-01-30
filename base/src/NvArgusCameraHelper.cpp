@@ -3,6 +3,9 @@
 #include "ExtFrame.h"
 #include "Logger.h"
 
+#include <Argus/Ext/DolWdrSensorMode.h>
+#include <Argus/Ext/PwlWdrSensorMode.h>
+
 NvArgusCameraHelper::NvArgusCameraHelper() : numBuffers(10), mRunning(false)
 {
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -197,6 +200,22 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
         return false;
     }
     iSourceSettings->setFrameDurationRange(Argus::Range<uint64_t>(1e9 / fps));
+
+    Argus::ICameraProperties *iCameraProperties = Argus::interface_cast<Argus::ICameraProperties>(cameraDevices[0]);
+    std::vector<Argus::SensorMode*> sensorModes;
+    Argus::Status status = iCameraProperties->getAllSensorModes(&sensorModes);
+    if (status != Argus::STATUS_OK)
+    {
+        LOG_ERROR << "Failed to get sensor modes from device";
+        return false;
+    }
+    if(sensorModes.size() != 6)
+    {
+        LOG_ERROR << "Unknown Camera. Improve the code to make it generic. Currently tested only for Raspi Camera";
+        return false;
+    }
+    
+    iSourceSettings->setSensorMode(sensorModes[5]);
 
     /* Submit capture requests */
     LOG_INFO << "Starting repeat capture requests";

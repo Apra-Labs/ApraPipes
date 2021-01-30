@@ -8,13 +8,12 @@
 class NvArgusCameraProps : public ModuleProps
 {
 public:
-	NvArgusCameraProps(uint32_t _width, uint32_t _height, uint32_t _fps) : ModuleProps(), width(_width), height(_height), fps(_fps)
+	NvArgusCameraProps(uint32_t _width, uint32_t _height) : ModuleProps(), width(_width), height(_height)
 	{
 	}
 
 	uint32_t width;
 	uint32_t height;
-	uint32_t fps;
 };
 
 class NvArgusCamera : public Module
