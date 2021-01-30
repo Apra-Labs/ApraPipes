@@ -69,13 +69,17 @@ V4L2CUDMABufYUV420Converter::~V4L2CUDMABufYUV420Converter()
 void V4L2CUDMABufYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
     auto ptr = static_cast<int *>(frame->data());    
-    if(mCache.find(*ptr) != mCache.end())
-    {
-        mCache.erase(*ptr);
-    }    
     buffer->v4l2_buf.m.planes[0].m.fd = *ptr;
     buffer->v4l2_buf.m.planes[0].bytesused = 1;
-    mCache.insert(std::make_pair(*ptr, frame));
+
+    std::lock_guard<std::mutex> lock(mCacheMutex);
+    mCache.push_back(frame);
+}
+
+void V4L2CUDMABufYUV420Converter::releaseFrame()
+{
+    std::lock_guard<std::mutex> lock(mCacheMutex);
+    mCache.pop_front();
 }
 
 V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, uint32_t srcStep, struct v4l2_format &format) : V4L2CUYUV420Converter(srcWidth, srcHeight, format)

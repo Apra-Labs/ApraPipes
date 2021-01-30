@@ -7,6 +7,8 @@
 #include "npp.h"
 
 #include "Frame.h"
+#include <deque>
+#include <mutex>
 
 class V4L2CUYUV420Converter
 {
@@ -16,6 +18,8 @@ public:
 
     // YUV420 data - stride is expected to match width
     virtual void process(frame_sp& frame, AV4L2Buffer *buffer);
+
+    virtual void releaseFrame() {}
 
 protected:
     uint32_t mBytesUsedY;
@@ -36,9 +40,11 @@ public:
 
     // YUV420 data - stride is expected to match width
     void process(frame_sp& frame, AV4L2Buffer *buffer);
+    void releaseFrame();
 
 private:
-    std::map<int, frame_sp> mCache;
+   std::deque<frame_sp> mCache;
+   std::mutex mCacheMutex;
 };
 
 class V4L2CURGBToYUV420Converter : public V4L2CUYUV420Converter

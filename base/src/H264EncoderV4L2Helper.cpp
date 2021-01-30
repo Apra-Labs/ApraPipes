@@ -196,6 +196,7 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
     auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
     mSendFrame(frame);
+    mConverter->releaseFrame();
 }
 
 void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self)
