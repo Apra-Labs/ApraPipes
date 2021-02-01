@@ -15,7 +15,7 @@ Tested on Ubuntu 18.04 and Jetson Boards
 git submodule update --init --recursive
 sudo apt install yasm -y
 cd thirdparty/ffmpeg
-./configure
+./configure --enable-pic
 make -j"$(nproc)"
 ```
 
