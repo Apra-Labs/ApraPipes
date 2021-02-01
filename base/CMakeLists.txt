@@ -35,6 +35,12 @@ find_package(OpenCV)
 
 enable_language(CUDA)
 
+SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
+find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
+find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
+find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
+find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
+
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
@@ -50,12 +56,6 @@ IF(ENABLE_CUDA)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
 
-    	find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
-        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
-        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
-        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/lib/linux_arm64 NO_DEFAULT_PATH)
-
-
 		SET(JETSON_LIBS
 			libcudart_static.a	
 			libcuda.so.1.1	
@@ -69,11 +69,6 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-
-		find_library(LIB_AVFORMAT libavformat.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
-        find_library(LIB_AVCODEC libavcodec.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
-        find_library(LIB_AVUTIL libavutil.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
-        find_library(LIB_FFSWR libswresample.a PATHS ../thirdparty/ffmpeg/lib/linux_x64 NO_DEFAULT_PATH)
 	
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
@@ -294,7 +289,7 @@ add_library(aprapipes STATIC
 	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 )
 
-target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE})
+target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 
 # aprapipes Unit Tests
 
@@ -361,7 +356,7 @@ SET(UT_FILES
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE})
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
