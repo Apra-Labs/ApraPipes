@@ -3,6 +3,7 @@
 #include <iostream>
 #include "H264FrameDemuxer.h"
 #include "Frame.h"
+#include "FrameMetadata.h"
 #include "FrameContainerQueue.h"
 #include "H264Utils.h"
 #include "Logger.h"
@@ -36,7 +37,13 @@ FrameContainerQueueAdapter::PushType H264FrameDemuxer::should_push(frame_contain
 {
 	auto frame = item.begin()->second;
 	//allow EOS to be pushed
-	if (frame->isEOS()) return MUST_PUSH; 
+	if (frame->isEOS() || frame->isEoP()) return MUST_PUSH; 
+	auto metadata = frame->getMetadata();
+	if(!metadata.get() || metadata->getFrameType() != FrameMetadata::FrameType::H264_DATA)
+	{
+		// non H264 Data
+		return MUST_PUSH;
+	}
 
 	//assign the current frame type 
 	frame->mFrameType = H264Utils::getNALUType(frame.get());
