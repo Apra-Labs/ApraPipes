@@ -6,7 +6,7 @@
 
 BOOST_AUTO_TEST_SUITE(nvarguscamerahelper_tests)
 
-BOOST_AUTO_TEST_CASE(basic)
+BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
     uint32_t width = 1280;
     uint32_t height = 720;
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(basic)
 }
 
 
-BOOST_AUTO_TEST_CASE(cache)
+BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
 {
     frame_sp cacheFrame;
     {
