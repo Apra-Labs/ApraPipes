@@ -84,12 +84,6 @@ bool H264EncoderV4L2::init()
 
 bool H264EncoderV4L2::term()
 {
-	if (mHelper.get())
-	{
-		mHelper->stop();
-		mHelper.reset();
-	}
-
 	return Module::term();
 }
 
@@ -168,11 +162,7 @@ bool H264EncoderV4L2::shouldTriggerSOS()
 
 bool H264EncoderV4L2::processEOS(string& pinId)
 {
-	if (mHelper.get())
-	{
-		mHelper->stop();
-		mHelper.reset();
-	}
+	throw AIPException(AIP_FATAL, "H264EncoderV4L2::processEOS not handled");
 
 	return true;
 }

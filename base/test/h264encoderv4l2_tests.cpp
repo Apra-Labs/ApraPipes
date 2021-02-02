@@ -200,11 +200,12 @@ BOOST_AUTO_TEST_CASE(encodepush, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10000000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
 	LOG_ERROR << "STOPPING";
 
 	p.stop();
+	p.term();
 	LOG_ERROR << "WAITING";
 	p.wait_for_all();
 	LOG_ERROR << "TEST DONE";
