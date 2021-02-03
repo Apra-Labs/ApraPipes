@@ -2,6 +2,7 @@
 
 #include "ExtFrame.h"
 #include "Logger.h"
+#include "AIPExceptions.h"
 
 #include <Argus/Ext/DolWdrSensorMode.h>
 #include <Argus/Ext/PwlWdrSensorMode.h>
@@ -9,6 +10,16 @@
 NvArgusCameraHelper::NvArgusCameraHelper() : numBuffers(10), mRunning(false)
 {
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if(eglDisplay == EGL_NO_DISPLAY)
+    {
+        throw AIPException(AIP_FATAL, "eglGetDisplay failed");
+    } 
+    
+    if (!eglInitialize(eglDisplay, NULL, NULL))
+    {
+       throw AIPException(AIP_FATAL, "eglInitialize failed");
+    }
+
     nativeBuffers = new DMABuffer *[numBuffers];
     for (auto i = 0; i < numBuffers; i++)
     {
