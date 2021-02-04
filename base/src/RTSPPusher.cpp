@@ -12,7 +12,7 @@ extern "C"
 #include "H264Utils.h"
 #include "H264ParserUtils.h"
 #include "Frame.h"
- 
+
 class RTSPPusher::Detail
 {
 	/* video output */
@@ -25,7 +25,7 @@ class RTSPPusher::Detail
 	string mTitle;
 	int64_t totalDuration;
 	AVRational in_time_base;
-	// int64_t prev_mfEnd;
+	bool isTCP;
 
 	AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id, int num, int den)
 	{
@@ -115,7 +115,6 @@ public:
 
 		pkt.stream_index = video_st->index;
 
-		auto duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 		totalDuration += duration;
 		pkt.pts = totalDuration;
 
@@ -149,13 +148,12 @@ public:
 		return true;
 	}
 	size_t width, height, bitrate, fps_den, fps_num;
-	int64_t lastPTS, lastDiff, pts_adder;
+	int64_t lastPTS, lastDiff, pts_adder, duration;
 	boost::shared_ptr<H264FrameDemuxer> demuxer;
-	bool precoded;
 	EventType connectionStatus;
 	bool isFirstFrame;
 
-	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), precoded(true), connectionStatus(CONNECTION_FAILED), isFirstFrame(false)
+	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), isTCP(props.isTCP), connectionStatus(CONNECTION_FAILED), isFirstFrame(false), duration(0)
 	{
 		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
 	}
@@ -244,18 +242,8 @@ public:
 
 		AVDictionary *options = NULL;
 
-		// string networkMode = configData.getValue("Network_Mode");
-		string networkMode = "udp";
-		bool isTcp = true;
-		LOG_INFO << "Network mode being used :" << networkMode;
-		if (networkMode.compare("udp") == 0)
-		{
-			isTcp = false;
-		}
-		isTcp = true;
-
 		av_dict_set(&outContext->metadata, "title", mTitle.c_str(), 0);
-		av_dict_set(&options, "rtsp_transport", isTcp ? "tcp" : "udp", 0);
+		av_dict_set(&options, "rtsp_transport", isTCP ? "tcp" : "udp", 0);
 
 		av_dump_format(outContext, 0, mURL.c_str(), 1);
 
@@ -275,6 +263,9 @@ public:
 					  << "\n";
 			return false;
 		}
+
+		duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+
 		return true;
 	}
 
@@ -286,17 +277,10 @@ public:
 			{
 				av_write_trailer(outContext);
 			}
-			if (precoded)
-			{
-				video_st->codec->extradata = 0;
-				video_st->codec->extradata_size = 0;
-			}
-			else
-			{
-				av_free(src_picture.data[0]);
-				av_free(dst_picture.data[0]);
-				av_frame_free(&frame);
-			}
+
+			video_st->codec->extradata = 0;
+			video_st->codec->extradata_size = 0;
+
 			avcodec_close(video_st->codec);
 		}
 

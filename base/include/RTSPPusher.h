@@ -5,7 +5,7 @@
 class RTSPPusherProps : public ModuleProps
 {
 public:
-	RTSPPusherProps(std::string _URL, std::string _title) : URL(_URL), title(_title)
+	RTSPPusherProps(std::string _URL, std::string _title) : URL(_URL), title(_title), isTCP(true)
 	{
 	}
 
@@ -15,6 +15,7 @@ public:
 
 	std::string URL;
 	std::string title;
+	bool isTCP;
 };
 
 class RTSPPusher : public Module
