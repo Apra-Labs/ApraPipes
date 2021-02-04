@@ -86,14 +86,9 @@ BOOST_AUTO_TEST_CASE(allornone)
 			encodedImageFrame->fIndex = 600;
 
 			frame_container frames;
-			frames.insert(make_pair(pin1_1, encodedImageFrame));
+
 			frames.insert(make_pair(pin2_1, encodedImageFrame));
 			frames.insert(make_pair(pin3_1, encodedImageFrame));
-
-
-			m1->send(frames);
-			muxer->step();
-			BOOST_TEST(sink->try_pop().size() == 0);
 
 			m2->send(frames);
 			muxer->step();
@@ -107,6 +102,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 			encodedImageFrame2->fIndex = 600;
 
 			frame_container frames2;
+			frames2.insert(make_pair(pin1_1, encodedImageFrame2));
 			frames2.insert(make_pair(pin1_2, encodedImageFrame2));
 			m1->send(frames2);
 			muxer->step();
@@ -124,14 +120,9 @@ BOOST_AUTO_TEST_CASE(allornone)
 					encodedImageFrame->fIndex = 701 + i;
 
 					frame_container frames;
-					frames.insert(make_pair(pin1_1, encodedImageFrame));
+
 					frames.insert(make_pair(pin2_1, encodedImageFrame));
 					frames.insert(make_pair(pin3_1, encodedImageFrame));
-
-
-					m1->send(frames);
-					muxer->step();
-					BOOST_TEST(sink->try_pop().size() == 0);
 
 					m2->send(frames);
 					muxer->step();
@@ -146,6 +137,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 				encodedImageFrame2->fIndex = 706;
 
 				frame_container frames2;
+				frames2.insert(make_pair(pin1_1, encodedImageFrame2));
 				frames2.insert(make_pair(pin1_2, encodedImageFrame2));
 				m1->send(frames2);
 				muxer->step();
@@ -156,14 +148,8 @@ BOOST_AUTO_TEST_CASE(allornone)
 					encodedImageFrame->fIndex = 706;
 
 					frame_container frames;
-					frames.insert(make_pair(pin1_1, encodedImageFrame));
 					frames.insert(make_pair(pin2_1, encodedImageFrame));
 					frames.insert(make_pair(pin3_1, encodedImageFrame));
-
-
-					m1->send(frames);
-					muxer->step();
-					BOOST_TEST(sink->try_pop().size() == 0);
 
 					m2->send(frames);
 					muxer->step();
@@ -213,14 +199,9 @@ BOOST_AUTO_TEST_CASE(allornone)
 				encodedImageFrame->fIndex = 801 + i;
 
 				frame_container frames;
-				frames.insert(make_pair(pin1_1, encodedImageFrame));
+
 				frames.insert(make_pair(pin2_1, encodedImageFrame));
 				frames.insert(make_pair(pin3_1, encodedImageFrame));
-
-
-				m1->send(frames);
-				muxer->step();
-				BOOST_TEST(sink->try_pop().size() == 0);
 
 				m2->send(frames);
 				muxer->step();
@@ -235,6 +216,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 			encodedImageFrame2->fIndex = 831;
 
 			frame_container frames2;
+			frames2.insert(make_pair(pin1_1, encodedImageFrame2));
 			frames2.insert(make_pair(pin1_2, encodedImageFrame2));
 			m1->send(frames2);
 			muxer->step();
@@ -245,14 +227,8 @@ BOOST_AUTO_TEST_CASE(allornone)
 				encodedImageFrame->fIndex = 831;
 
 				frame_container frames;
-				frames.insert(make_pair(pin1_1, encodedImageFrame));
 				frames.insert(make_pair(pin2_1, encodedImageFrame));
 				frames.insert(make_pair(pin3_1, encodedImageFrame));
-
-
-				m1->send(frames);
-				muxer->step();
-				BOOST_TEST(sink->try_pop().size() == 0);
 
 				m2->send(frames);
 				muxer->step();
