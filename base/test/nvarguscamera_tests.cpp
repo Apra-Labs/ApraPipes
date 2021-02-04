@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
-	sourceProps.fps = 120;
+	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 	
 	H264EncoderV4L2Props encoderProps;
@@ -49,8 +49,8 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	source->setNext(encoder);
 
-	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera_1280x720.h264", true)));
-	// encoder->setNext(fileWriter);
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera/frame_????.h264")));
+	encoder->setNext(fileWriter);
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;

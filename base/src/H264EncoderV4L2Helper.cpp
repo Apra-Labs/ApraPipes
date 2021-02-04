@@ -1,4 +1,5 @@
 #include "H264EncoderV4L2Helper.h"
+#include "v4l2_nv_extensions.h"
 
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -148,9 +149,16 @@ void H264EncoderV4L2Helper::setProfile()
     memset(&control, 0, sizeof(control));
 
     control.id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
-    control.value = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+    control.value = V4L2_MPEG_VIDEO_H264_PROFILE_HIGH;
 
     CHECKV4L2(setExtControls(control), "Setting encoder profile ", true);
+
+    memset(&control, 0, sizeof(control));
+
+    control.id = V4L2_CID_MPEG_VIDEOENC_NUM_BFRAMES;
+    control.value = 0;
+
+    CHECKV4L2(setExtControls(control), "Setting V4L2_CID_MPEG_VIDEOENC_NUM_BFRAMES ", true);
 }
 
 void H264EncoderV4L2Helper::setLevel()
