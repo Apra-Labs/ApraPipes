@@ -349,6 +349,7 @@ SET(UT_FILES
 	test/bmpconverter_tests.cpp
 	test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
+	test/findexstrategy_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
