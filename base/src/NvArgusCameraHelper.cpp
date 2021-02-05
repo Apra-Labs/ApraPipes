@@ -220,13 +220,34 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
         LOG_ERROR << "Failed to get sensor modes from device";
         return false;
     }
-    if(sensorModes.size() != 6)
+    auto index = 0;
+    auto noOfSensors = sensorModes.size();
+    for (; index < noOfSensors; index++)
     {
-        LOG_ERROR << "Unknown Camera. Improve the code to make it generic. Currently tested only for Raspi Camera";
-        return false;
+        Argus::ISensorMode *iSensorMode = Argus::interface_cast<Argus::ISensorMode>(sensorModes[index]);
+        Argus::Size2D<uint32_t> resolution = iSensorMode->getResolution();
+        auto u64Range = iSensorMode->getFrameDurationRange();
+        auto fpsMin = 10e9 / u64Range.max();
+        auto fpsMax = 10e9 / u64Range.min();
+
+        LOG_INFO << "Your params width : " << width << " height : " << height << " fps : " << fps;
+        LOG_INFO << "Matching to width : " << resolution.width() << " height : " << resolution.height() << " fpsRange: " << fpsMin << "-" << fpsMax;
+
+        if (resolution.width() == width && resolution.height() == height)
+        {
+            if (fps >= fpsMin && fps <= fpsMax)
+            {
+                break;
+            }
+        }
     }
-    
-    iSourceSettings->setSensorMode(sensorModes[5]);
+
+    if (index == sensorModes.size())
+    {
+        throw AIPException(AIP_PARAM_OUTOFRANGE, "Width, Height, FPS is not supported. Please specify params in range");
+    }
+
+    iSourceSettings->setSensorMode(sensorModes[index]);
 
     /* Submit capture requests */
     LOG_INFO << "Starting repeat capture requests";
