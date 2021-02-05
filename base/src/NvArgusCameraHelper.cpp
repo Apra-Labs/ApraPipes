@@ -222,6 +222,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
     }
     auto index = 0;
     auto noOfSensors = sensorModes.size();
+    LOG_INFO << "Your params width : " << width << " height : " << height << " fps : " << fps;
     for (; index < noOfSensors; index++)
     {
         Argus::ISensorMode *iSensorMode = Argus::interface_cast<Argus::ISensorMode>(sensorModes[index]);
@@ -230,7 +231,6 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
         auto fpsMin = 10e9 / u64Range.max();
         auto fpsMax = 10e9 / u64Range.min();
 
-        LOG_INFO << "Your params width : " << width << " height : " << height << " fps : " << fps;
         LOG_INFO << "Matching to width : " << resolution.width() << " height : " << resolution.height() << " fpsRange: " << fpsMin << "-" << fpsMax;
 
         if (resolution.width() == width && resolution.height() == height)
