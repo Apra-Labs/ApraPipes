@@ -51,5 +51,27 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
     LOG_ERROR << "FINISHED";
 }
 
+BOOST_AUTO_TEST_CASE(invalid_sensor_mode)
+{
+    uint32_t width = 380;
+    uint32_t height = 720;
+
+    auto helper = NvArgusCameraHelper::create([](frame_sp &frame) -> void {
+        auto ptr = static_cast<int *>(frame->data());
+        LOG_ERROR << " Received frame <>" << *ptr;
+    });
+
+    try
+    {
+        helper->start(width,height,30);
+        BOOST_TEST(false, "It should go to the catch block");
+    }
+    catch(...)
+    {
+        LOG_ERROR << "Testcase passed";
+    }
+    helper.reset();
+    LOG_ERROR << "FINISHED";
+}
 
 BOOST_AUTO_TEST_SUITE_END()
