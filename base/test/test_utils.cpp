@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include "test_utils.h"
+#include "Logger.h"
 #include <boost/test/unit_test.hpp>
 #include "iostream"
 #include <boost/filesystem.hpp>
@@ -165,4 +166,23 @@ bool Test_Utils::saveOrCompare(const char* fileName, int tolerance)
 	SAFE_DELETE_ARRAY(dataRead);
 
 	return res;
+}
+
+std::string Test_Utils::getArg(std::string param)
+{
+	param = "-" + param;
+	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
+	{
+		LOG_DEBUG << "Arg[" << i <<"] is ------------ " << boost::unit_test::framework::master_test_suite().argv[i];
+	}
+	
+	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
+	{
+		if(boost::unit_test::framework::master_test_suite().argv[i] == param )
+		{
+			return boost::unit_test::framework::master_test_suite().argv[i+1];
+		}
+	}
+
+	return "";
 }
