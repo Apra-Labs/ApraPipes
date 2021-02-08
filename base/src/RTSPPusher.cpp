@@ -112,6 +112,7 @@ public:
 
 		totalDuration += duration;
 		pkt.pts = totalDuration;
+		pkt.dts = pkt.pts;
 
 		pkt.data = (uint8_t *)codedFrame.data();
 		pkt.size = (int)codedFrame.size();
