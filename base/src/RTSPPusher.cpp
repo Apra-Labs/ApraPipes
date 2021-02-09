@@ -30,7 +30,6 @@ class RTSPPusher::Detail
 	AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id, int num, int den)
 	{
 		LOG_TRACE << "add_stream enter";
-		AVCodecContext *c;
 		AVStream *st = 0;
 
 		/* find the encoder */
@@ -58,16 +57,13 @@ class RTSPPusher::Detail
 
 				in_time_base.den = den;
 				in_time_base.num = num;
-				c = st->codec;
+				auto c = st->codecpar;
 				c->codec_id = codec_id;
-				c->bit_rate = (int)bitrate;
+				c->codec_type = AVMEDIA_TYPE_VIDEO;
+				c->bit_rate = (int)4000000;
 				c->width = (int)width;
 				c->height = (int)height;
-				c->time_base.den = (int)fps_num; //Note: time_base is inverse of fps hence this
-				c->time_base.num = (int)fps_den; //Note: time_base is inverse of fps hence this
-				c->gop_size = 32;				 /* emit one intra frame every twelve frames at most */
-				c->pix_fmt = AV_PIX_FMT_YUV420P;
-				c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+				c->format = AV_PIX_FMT_YUV420P;
 			}
 		}
 		LOG_TRACE << "add_stream exit";
@@ -76,7 +72,7 @@ class RTSPPusher::Detail
 
 	int open_video_precoded()
 	{
-		AVCodecContext *c = video_st->codec;
+		AVCodecParameters *c = video_st->codecpar;
 
 		c->extradata = (uint8_t *)(demuxer->getSPS_PPS().data());
 		c->extradata_size = (int)demuxer->getSPS_PPS().size();
@@ -107,7 +103,6 @@ public:
 		mutable_buffer &codedFrame = *(f.get());
 		bool isKeyFrame = (f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE);
 
-		AVCodecContext *c = video_st->codec;
 		AVPacket pkt = {0};
 		av_init_packet(&pkt);
 
@@ -117,6 +112,7 @@ public:
 
 		totalDuration += duration;
 		pkt.pts = totalDuration;
+		pkt.dts = pkt.pts;
 
 		pkt.data = (uint8_t *)codedFrame.data();
 		pkt.size = (int)codedFrame.size();
@@ -170,7 +166,6 @@ public:
 
 		av_log_set_level(AV_LOG_INFO);
 
-		av_register_all();
 		avformat_network_init();
 
 		int rc = avformat_alloc_output_context2(&outContext, NULL, "rtsp", url);
@@ -218,9 +213,7 @@ public:
 		/* Now that all the parameters are set, we can open the video codec and allocate the necessary encode buffers. */
 		if (video_st)
 		{
-			// av_log(NULL, AV_LOG_DEBUG, "Video stream codec %s.\n ", avcodec_get_name(video_st->codec->codec_id));
-
-			LOG_INFO << "Video stream codec : ^" << avcodec_get_name(video_st->codec->codec_id) << "^"
+			LOG_INFO << "Video stream codec : ^" << avcodec_get_name(video_st->codecpar->codec_id) << "^"
 					 << "\n";
 
 			ret = open_video_precoded();
@@ -278,10 +271,8 @@ public:
 				av_write_trailer(outContext);
 			}
 
-			video_st->codec->extradata = 0;
-			video_st->codec->extradata_size = 0;
-
-			avcodec_close(video_st->codec);
+			video_st->codecpar->extradata = 0;
+			video_st->codecpar->extradata_size = 0;
 		}
 
 		if (outContext)

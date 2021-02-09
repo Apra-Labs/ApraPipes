@@ -6,6 +6,7 @@
 #include "Module.h"
 #include "PipeLine.h"
 #include "ExtFrame.h"
+#include "test_utils.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -521,6 +522,14 @@ BOOST_AUTO_TEST_CASE(sendinttest)
 	auto ptr = static_cast<int*>(frame.data());
 	BOOST_TEST(ptr == &fd);
 	BOOST_TEST(*ptr == fd);
+}
+
+BOOST_AUTO_TEST_CASE(params_test, *boost::unit_test::disabled())
+{
+	BOOST_TEST(Test_Utils::getArg("ip") == "10.102.10.121");
+	BOOST_TEST(Test_Utils::getArg("ip").length() == 13);
+	BOOST_TEST(Test_Utils::getArg("IP") == "");
+	BOOST_TEST(Test_Utils::getArg("data") == "ArgusCamera");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
