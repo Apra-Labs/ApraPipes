@@ -168,9 +168,9 @@ bool Test_Utils::saveOrCompare(const char* fileName, int tolerance)
 	return res;
 }
 
-std::string Test_Utils::getArg(std::string param)
+std::string Test_Utils::getArgValue(std::string argName, std::string argDefaultValue)
 {
-	param = "-" + param;
+	argName = "-" + argName;
 	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
 	{
 		LOG_DEBUG << "Arg[" << i <<"] is ------------ " << boost::unit_test::framework::master_test_suite().argv[i];
@@ -178,11 +178,11 @@ std::string Test_Utils::getArg(std::string param)
 	
 	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
 	{
-		if(boost::unit_test::framework::master_test_suite().argv[i] == param )
+		if(boost::unit_test::framework::master_test_suite().argv[i] == argName )
 		{
 			return boost::unit_test::framework::master_test_suite().argv[i+1];
 		}
 	}
 
-	return "";
+	return argDefaultValue;
 }

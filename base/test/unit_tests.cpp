@@ -526,10 +526,11 @@ BOOST_AUTO_TEST_CASE(sendinttest)
 
 BOOST_AUTO_TEST_CASE(params_test, *boost::unit_test::disabled())
 {
-	BOOST_TEST(Test_Utils::getArg("ip") == "10.102.10.121");
-	BOOST_TEST(Test_Utils::getArg("ip").length() == 13);
-	BOOST_TEST(Test_Utils::getArg("IP") == "");
-	BOOST_TEST(Test_Utils::getArg("data") == "ArgusCamera");
+	BOOST_TEST(Test_Utils::getArgValue("ip") == "10.102.10.121");
+	BOOST_TEST(Test_Utils::getArgValue("ip").length() == 13);
+	BOOST_TEST(Test_Utils::getArgValue("IP") == "");
+	BOOST_TEST(Test_Utils::getArgValue("data") == "ArgusCamera");
+	BOOST_TEST(Test_Utils::getArgValue("some_random_arg_name_not_passed_through_commandline", "hola") == "hola");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
