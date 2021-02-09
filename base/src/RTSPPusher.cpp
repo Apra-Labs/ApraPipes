@@ -26,6 +26,7 @@ class RTSPPusher::Detail
 	int64_t totalDuration;
 	AVRational in_time_base;
 	bool isTCP;
+	uint32_t encoderTargetKbps;
 
 	AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id, int num, int den)
 	{
@@ -60,7 +61,7 @@ class RTSPPusher::Detail
 				auto c = st->codecpar;
 				c->codec_id = codec_id;
 				c->codec_type = AVMEDIA_TYPE_VIDEO;
-				c->bit_rate = (int)4000000;
+				c->bit_rate = static_cast<int64_t>(encoderTargetKbps*1024);
 				c->width = (int)width;
 				c->height = (int)height;
 				c->format = AV_PIX_FMT_YUV420P;
@@ -149,7 +150,7 @@ public:
 	EventType connectionStatus;
 	bool isFirstFrame;
 
-	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), isTCP(props.isTCP), connectionStatus(CONNECTION_FAILED), isFirstFrame(false), duration(0)
+	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), isTCP(props.isTCP), connectionStatus(CONNECTION_FAILED), isFirstFrame(false), duration(0), encoderTargetKbps(props.encoderTargetKbps)
 	{
 		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
 	}
