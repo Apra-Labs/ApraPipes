@@ -1,8 +1,15 @@
+
 # ApraPipes
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning tooklits
 
 # Build and Run Tests
 Tested on Ubuntu 18.04 and Jetson Boards
+
+## Setup
+* Clone with submodules
+```
+git clone --recursive https://github.com/kumaakh/ApraPipes.git
+```
 
 ## Prerequisites
 * Install [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804)
@@ -10,7 +17,6 @@ Tested on Ubuntu 18.04 and Jetson Boards
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * ffmpeg
 ```
-git submodule update --init --recursive
 sudo apt install yasm -y
 cd thirdparty/ffmpeg
 ./configure --enable-pic
@@ -39,6 +45,11 @@ Build can take ~12 hours on Jetson Nano.
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 
 This project uses boost tests for unit tests.
+
+## Update Submodules
+```
+git submodule update --init --recursive
+```
 
 ## Documentation
 * Open `docs/build/html/index.html` using Google Chrome
