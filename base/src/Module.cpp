@@ -768,7 +768,8 @@ bool Module::run()
 	{
 		if (!step())
 		{
-			onStepFail();
+			stop_onStepfail();
+			break;
 		}
 	}
 	LOG_INFO << "Ending " << myId << " on " << myThread.get_id() ;
@@ -927,7 +928,7 @@ bool Module::step()
 		if (frames.size() == 0 || shouldSkip())
 		{
 			// it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
-			return ret;
+			return true;
 		}
 
 		mProfiler->startProcessingLap();
@@ -1117,7 +1118,7 @@ void Module::ignore(int times) {
 } 
 
 void Module::stop_onStepfail() {
-	LOG_ERROR << "stopping due to step failure ";
+	LOG_ERROR << "Stopping " << myId << " due to step failure ";
 	handleStop();
 }
 
