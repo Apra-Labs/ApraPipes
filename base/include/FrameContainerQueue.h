@@ -15,6 +15,11 @@ public:
 	virtual bool try_push(frame_container item);
 	virtual frame_container try_pop();
 
+	virtual bool isFull();
+	virtual void clear();
+	virtual void accept();
+	virtual size_t size();
+
 private:
 };
 
@@ -94,6 +99,42 @@ public:
 			return mAdaptee->try_pop();
 		}
 		return frame_container();
+	}
+
+	bool isFull()
+	{
+		if(!mAdaptee.get())
+		{
+			return false;
+		}
+
+		return mAdaptee->isFull();
+	}
+
+	void clear()
+	{
+		if(mAdaptee.get())
+		{
+			mAdaptee->clear();
+		}
+	}
+
+	void accept()
+	{
+		if(mAdaptee.get())
+		{
+			mAdaptee->accept();
+		}
+	}
+
+	size_t size()
+	{
+		if(!mAdaptee.get())
+		{
+			return 0;
+		}
+
+		return mAdaptee->size();
 	}
 
 protected:
