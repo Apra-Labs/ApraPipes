@@ -246,7 +246,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, b
 		{
 			next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			mModules.erase(nextModuleId);
 			mConnections.erase(nextModuleId);
@@ -1033,7 +1033,7 @@ bool Module::stepNonSource(frame_container& frames)
 	{
 		ret = process(frames);
 	}
-	catch (AIPException&)
+	catch (AIP_Exception&)
 	{
 		// assuming already logged
 	}

@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 			m2->init();
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_ROI_OUTOFRANGE);
 		}
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 			auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_IMAGE_LOAD_FAILED);
 		}
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 			m2->init();
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_ROI_OUTOFRANGE);
 		}
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 			m2->step();
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_ROI_OUTOFRANGE);
 		}

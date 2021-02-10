@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(boostdirectorystrategy)
 			strategy->Connect();
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_NOTFOUND);
 		}
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(boostdirectorystrategy)
 			strategy->Connect();
 			BOOST_TEST(false);
 		}
-		catch (AIPException& exception)
+		catch (AIP_Exception& exception)
 		{
 			BOOST_TEST(exception.getCode() == AIP_PARAM_OUTOFRANGE);
 		}

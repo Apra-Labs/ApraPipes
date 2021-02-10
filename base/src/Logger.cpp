@@ -199,3 +199,13 @@ std::ostringstream & Logger::pre(std::ostringstream& stream, boost::log::trivial
 	}
 	return stream;
 }
+
+std::ostringstream & Logger::aipexceptionPre(std::ostringstream& stream, boost::log::trivial::severity_level lvl,int type)
+{
+	if (lvl >= mProps.logLevel)
+	{
+		//add TS and Sev into the log
+		stream << boost::posix_time::microsec_clock::universal_time() <<" [AIPException<" << type << ">] ";
+	}
+	return stream;
+}
