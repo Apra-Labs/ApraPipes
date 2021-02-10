@@ -873,6 +873,11 @@ bool Module::processSourceQue()
 				auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
 				handleCommand(cmdType, frame);
 			}
+			else if (frame->isEoP())
+			{
+				handleStop();
+				return false;
+			}
 			else
 			{
 				LOG_ERROR << frame->getMetadata()->getFrameType() << "<> not handled";
@@ -896,7 +901,10 @@ bool Module::step()
 	bool ret = false;	
 	if (myNature == SOURCE)
 	{
-		processSourceQue();
+		if(!processSourceQue())
+		{
+			return true;
+		}
 		bool forceStep = shouldForceStep();
 
 		pacer->start();
@@ -986,7 +994,7 @@ bool Module::preProcessNonSource(frame_container& frames)
 
 		if (frame->isEoP())
 		{
-			stop();
+			handleStop();
 			frames.erase(pinId);
 			continue;
 		}
@@ -1037,21 +1045,17 @@ bool Module::stepNonSource(frame_container& frames)
 	return ret;
 }
 
-
-void Module::sendEoPFrame()
+bool Module::addEoPFrame(frame_container& frames)
 {
-	frame_container frames;
 	pair<string, framemetadata_sp> me; // map element	
 	BOOST_FOREACH(me, mOutputPinIdMetadataMap) {
 		auto frame = frame_sp(new EoPFrame());
 		frame->setMetadata(me.second);
 		frames.insert(make_pair(me.first, frame));
 	}
-
-	send(frames, true);
 }
 
-bool Module::stop()
+bool Module::handleStop()
 {
 	// force stop is required
 	if (mRunning == false)
@@ -1076,6 +1080,24 @@ bool Module::stop()
 	return true;
 }
 
+void Module::sendEoPFrame()
+{
+	frame_container frames;
+	addEoPFrame(frames);
+
+	send(frames, true);
+}
+
+bool Module::stop()
+{
+	frame_container frames;
+	addEoPFrame(frames);
+
+	Module::push(frames);
+
+	return true;
+}
+
 void Module::adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter)
 {
 	queAdapter->adapt(mQue);
@@ -1089,14 +1111,14 @@ void Module::ignore(int times) {
 	{
 		LOG_TRACE << "stopping due to step failure ";
 		observed = 0;
-		stop();
+		handleStop();
 	}
 	
 } 
 
 void Module::stop_onStepfail() {
 	LOG_ERROR << "stopping due to step failure ";
-	stop();
+	handleStop();
 }
 
 void Module::emit_event(unsigned short eventID)

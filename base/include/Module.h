@@ -284,6 +284,9 @@ protected:
 private:	
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
+	
+	bool addEoPFrame(frame_container& frames);
+	bool handleStop();
 
 	template<class T>
 	void serialize(T& props, frame_sp& frame)

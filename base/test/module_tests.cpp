@@ -774,6 +774,7 @@ BOOST_AUTO_TEST_CASE(stop)
 		m3->init();
 
 		m1->stop();
+		m1->step();
 		auto que = m2->getQue();
 		auto frames = que->try_pop();
 		BOOST_TEST(frames.size() == 0); // since modules are not running - stop is not propagated - nothing happens
@@ -797,6 +798,7 @@ BOOST_AUTO_TEST_CASE(stop)
 		auto t1 = boost::thread(ref(*(m1.get())));
 		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
 		m1->stop();
+		m1->step();
 
 		auto que = m2->getQue();
 		auto frames = que->try_pop();
@@ -826,6 +828,7 @@ BOOST_AUTO_TEST_CASE(stop)
 		auto t1 = boost::thread(ref(*(m1.get()))); // running m1 again - stop was called before so thread would have exited
 		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
 		m1->stop();
+		m1->step();
 		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
 
 		auto que = m3->getQue();
