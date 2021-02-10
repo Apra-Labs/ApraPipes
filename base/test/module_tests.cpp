@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 		m1->addOutputPin(metadata2);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 		outputMetadata = m1->getOutputMetadata();
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 		m1->addOutputPin(metadata4, pinId);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_UNIQUE_CONSTRAINT_FAILED);
 		outputMetadata = m1->getOutputMetadata();
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 		m1->addOutputPin(metadata5);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 		outputMetadata = m1->getOutputMetadata();
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(module_addInputPin)
 		m1->addInputPin(metadata2, pinId2);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 		inputMetadata = m1->getInputMetadata();
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(module_addInputPin)
 		m1->addInputPin(metadata4, pinId);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_UNIQUE_CONSTRAINT_FAILED);
 		inputMetadata = m1->getInputMetadata();
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(module_addInputPin)
 		m1->addInputPin(metadata5, pinId3);
 		BOOST_TEST(false);
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 		inputMetadata = m1->getInputMetadata();
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE(module_setNext)
 		m1->setNext(m5);
 		BOOST_TEST(false); // not expected to come here
 	}
-	catch (AIPException& exception)
+	catch (AIP_Exception& exception)
 	{
 		exception.getCode();
 	}

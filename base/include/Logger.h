@@ -62,7 +62,8 @@ public:
 	void _setListener(void(*cb)(std::string&));
 	
 	std::ostringstream& pre(std::ostringstream& stream, boost::log::trivial::severity_level lvl);
-
+	std::ostringstream& aipexceptionPre(std::ostringstream& stream, boost::log::trivial::severity_level lvl,int type);
+	
 	void operator()(); //to support boost::thread
 private:	
 	Logger(LoggerProps props);

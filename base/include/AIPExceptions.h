@@ -23,24 +23,26 @@
 // Fatal errors
 #define AIP_FATAL 7811
 
+#define AIPException_LOG_SEV(severity,type) for(std::ostringstream stream; Logger::getLogger()->push(severity, stream);) Logger::getLogger()->aipexceptionPre(stream, severity,type)
+
 // class referred from https://stackoverflow.com/a/8152888
 
-class AIPException : public std::runtime_error
+class AIP_Exception : public std::runtime_error
 {
 public:	
 	/** Constructor (C++ STL strings).
 	 *  @param message The error message.
 	 */	
-	explicit AIPException(int type, const std::string logMessage) :
+	explicit AIP_Exception(int type,const std::string file,int line,const std::string logMessage) :
 		runtime_error(std::to_string(type))
 	{
 		if (type > AIP_FATAL)
 		{
-			LOG_FATAL << "AIPException<" << type << "> <" << logMessage.c_str() << ">";
+			AIPException_LOG_SEV(boost::log::trivial::severity_level::fatal,type) << file << ":" << line << ":" << logMessage.c_str();
 		} 
 		else
 		{
-			LOG_ERROR << "AIPException<" << type << "> <" << logMessage.c_str() << ">";
+			AIPException_LOG_SEV(boost::log::trivial::severity_level::error,type) << file << ":" << line << ":" << logMessage.c_str();
 		}
 
 		message = logMessage;
@@ -49,7 +51,7 @@ public:
 	/** Destructor.
 	 * Virtual to allow for subclassing.
 	 */
-	virtual ~AIPException() throw () {}
+	virtual ~AIP_Exception() throw () {}
 
 	int getCode()
 	{		
@@ -64,3 +66,5 @@ public:
 private:
 	std::string message;
 };
+
+#define AIPException(_type,_message) AIP_Exception(_type,__FILE__,__LINE__,_message)
