@@ -375,7 +375,7 @@ bool RTSPPusher::process(frame_container &frames)
 		mDetail->connectionStatus = WRITE_FAILED;
 		LOG_FATAL << "write_precoded_video_frame failed";
 
-		// return false;
+		return false;
 	}
 
 	return true;
