@@ -922,6 +922,11 @@ bool Module::step()
 			ret = produce();
 			mProfiler->endLap(0);
 		}
+		else
+		{
+			ret = true;
+			// ret false will kill the thread
+		}
 		
 		pacer->end();
 	}

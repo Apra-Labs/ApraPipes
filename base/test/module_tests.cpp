@@ -922,6 +922,11 @@ BOOST_AUTO_TEST_CASE(pause_play_step)
 		virtual ~TestModule1() {}
 
 	protected:
+		bool produce()
+		{
+			return true;
+		}
+
 		bool validateOutputPins()
 		{			
 			return true;
