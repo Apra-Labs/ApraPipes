@@ -87,6 +87,11 @@ public:
 		return mPipelineFps;
 	}
 
+	void resetStats()
+	{
+		mPipelineFps = 0;
+	}
+
 private:
 	string moduleId;
 	sys_clock::time_point processingStart;
@@ -135,7 +140,8 @@ bool Module::term()
 {	
 	mQue->clear();
 	// in case of cyclic dependency - one module holds the reference of the other and hence they never get freed
-	mModules.clear(); 
+	mModules.clear();
+	mProfiler->resetStats(); 
 
 	return true;
 }
