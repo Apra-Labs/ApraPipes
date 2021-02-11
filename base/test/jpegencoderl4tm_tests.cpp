@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 		m2->step();
 		BOOST_TEST(false);
 	}
-	catch (AIPException &exception)
+	catch (AIP_Exception &exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_NOTIMPLEMENTED);
 	}
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::uni
 		m1->setNext(m2);
 		BOOST_TEST(false);
 	}
-	catch (AIPException &exception)
+	catch (AIP_Exception &exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 	}
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test:
 		m1->setNext(m2);
 		BOOST_TEST(false);
 	}
-	catch (AIPException &exception)
+	catch (AIP_Exception &exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
 	}
@@ -466,7 +466,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 		m2->step();
 		BOOST_TEST(false);
 	}
-	catch (AIPException &exception)
+	catch (AIP_Exception &exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_NOTIMPLEMENTED);
 	}
