@@ -174,6 +174,7 @@ SET(GENERIC_FILES_H
 	include/H264ParserUtils.h
 	include/H264Utils.h
 	include/RTSPPusher.h
+	
 )
 
 SET(IP_FILES
@@ -183,6 +184,8 @@ SET(IP_FILES
 	src/ImageDecoderCV.cpp
 	src/ImageViewerModule.cpp
 	src/BMPConverter.cpp
+	src/ImageResizeCV.cpp
+	src/ImageEncoderCV.cpp
 )
 
 SET(IP_FILES_H
@@ -193,6 +196,8 @@ SET(IP_FILES_H
 	include/ImageViewerModule.h
 	include/ImageDecoderCV.h
 	include/BMPConverter.h
+	include/ImageResizeCV.h
+	include/ImageEncoderCV.h
 )
 
 SET(CUDA_CORE_FILES
@@ -350,6 +355,9 @@ SET(UT_FILES
 	test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
 	test/findexstrategy_tests.cpp
+	test/jpegdecodercv_tests.cpp
+	test/Imageresizecv_tests.cpp
+	test/ImageEncodeCV_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
