@@ -8,7 +8,8 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-
+#include "PipeLine.h"
+#include "StatSink.h"
 #include "test_utils.h"
 #include "ImageResizeCV.h"
 

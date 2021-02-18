@@ -8,7 +8,8 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-
+#include "PipeLine.h"
+#include "StatSink.h"
 #include "test_utils.h"
 #include "ImageEncoderCV.h"
 
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE(color_bgra_1920x960)
 
 
 
-BOOST_AUTO_TEST_CASE(MONO_profile,, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 {
 	LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
