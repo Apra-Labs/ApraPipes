@@ -1,3 +1,9 @@
+compiler: clang
+ addons:
+   apt:
+     sources: ['kalakris-cmake']
+     packages: ['cmake']
+ 
 matrix:
   include:
     - name: CUDA 10
