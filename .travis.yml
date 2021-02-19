@@ -1,8 +1,9 @@
-compiler: clang
-  addons:
+addons:
     apt:
-      sources: 'kalakris-cmake'
-      packages: 'cmake'
+      packages:
+        - cmake
+      sources:
+        - kalakris-cmake
  
 matrix:
   include:
