@@ -12,6 +12,7 @@ cache:
   ccache: true
   directories: 
     - $HOME/.hunter
+    - $HOME/build
     
     
 before_install:
