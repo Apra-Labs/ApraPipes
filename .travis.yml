@@ -51,7 +51,8 @@ install:
 #   - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
 #   # don't forget to switch back to the main build directory once you are done
 #   - cd ${TRAVIS_BUILD_DIR}
-  - choco upgrade cmake
+#   - choco upgrade cmake
+  - sudo apt upgrade cmake
   
 script:
   - ./build_linux_x64.sh
