@@ -1,11 +1,11 @@
-# matrix:
-#   include:
-#     - name: CUDA 10
-#       env:
-#       - CUDA=10.2.89-1
-#       - CUDA_SHORT=10.2
-#       - UBUNTU_VERSION=ubuntu1804
-#       dist: Bionic
+matrix:
+  include:
+    - name: CUDA 10
+      env:
+      - CUDA=10.2.89-1
+      - CUDA_SHORT=10.2
+      - UBUNTU_VERSION=ubuntu1804
+      dist: Bionic
 
 cache:
   timeout: 1000
