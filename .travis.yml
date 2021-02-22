@@ -21,6 +21,10 @@ before_install:
   - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
   - export PATH=/usr/local/bin:$PATH
   - cmake --version 
+  - sudo apt install yasm -y
+  - cd thirdparty/ffmpeg
+  - ./configure --enable-pic
+  - make -j"$(nproc)"
 #   - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
 #   - wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
 #   - sudo dpkg -i ${INSTALLER}
