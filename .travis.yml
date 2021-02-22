@@ -21,7 +21,8 @@ before_install:
   - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
   - export PATH=/usr/local/bin:$PATH
   - cmake --version 
-  - sudo apt install yasm -y
+  - sudo apt-get update -y
+  - sudo apt install -y yasm 
   - cd thirdparty/ffmpeg
   - ./configure --enable-pic
   - make -j"$(nproc)"
