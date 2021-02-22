@@ -5,22 +5,29 @@ OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 
-SET( CONFIG_FILEPATH ${CMAKE_SOURCE_DIR}/../cmake/config.cmake)
+# SET( CONFIG_FILEPATH ${CMAKE_SOURCE_DIR}/../cmake/config.cmake)
 
-include("../cmake/HunterGate.cmake")
-HunterGate(
-	URL "https://github.com/saichaitanyaeruvaram/hunter/archive/opencv-4.5.0.tar.gz"
-    	SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
-	FILEPATH ${CONFIG_FILEPATH}
-  )
+# include("../cmake/HunterGate.cmake")
+# HunterGate(
+#	URL "https://github.com/saichaitanyaeruvaram/hunter/archive/opencv-4.5.0.tar.gz"
+#    	SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
+#	FILEPATH ${CONFIG_FILEPATH}
+# )
 
 
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
-hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
-find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
+# hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
+# find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
 
-hunter_add_package(OpenCV)
-find_package(OpenCV)
+# hunter_add_package(OpenCV)
+# find_package(OpenCV)
+
+SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
+find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
+find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
+find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
+find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
+
 
