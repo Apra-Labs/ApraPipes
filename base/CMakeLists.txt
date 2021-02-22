@@ -30,8 +30,8 @@ set(CMAKE_CXX_STANDARD 14)
 hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
 find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
 
-hunter_add_package(OpenCV)
-find_package(OpenCV)
+#hunter_add_package(OpenCV)
+#find_package(OpenCV)
 
 enable_language(CUDA)
 
