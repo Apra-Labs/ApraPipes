@@ -12,7 +12,7 @@ cache:
   ccache: true
   directories: 
     - $HOME/.hunter
-    - $HOME/build
+#     - $HOME/build
 
     
     
