@@ -12,7 +12,7 @@ cache:
   ccache: true
   directories: 
     - $HOME/.hunter
-    - $HOME/thirdparty/ffmpeg
+    - $HOME/thirdparty
     - $HOME/build/yashrajsingh1998/ApraPipes/_build
 
     
