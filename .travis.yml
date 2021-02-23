@@ -13,7 +13,7 @@ cache:
   directories: 
     - $HOME/.hunter
     - $HOME/thirdparty/ffmpeg
-#     - $HOME/build
+    - $HOME/build
 
     
     
