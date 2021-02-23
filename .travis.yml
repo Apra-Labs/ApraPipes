@@ -26,9 +26,9 @@ before_install:
   - sudo pip install awscli
   - aws --version
 #   - travis encrypt AWS_ACCESS_KEY_ID=
-  - AWS_DEFAULT_REGION = us-east-1
-  - AWS_ACCESS_KEY_ID = AKIA5Q546NI4FHSVILNL
-  - AWS_SECRET_ACCESS_KEY =   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
+#   - AWS_DEFAULT_REGION = us-east-1
+#   - AWS_ACCESS_KEY_ID = AKIA5Q546NI4FHSVILNL
+#   - AWS_SECRET_ACCESS_KEY =   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
 #   - aws_access_key = AKIA5Q546NI4FHSVILNL
 #   - aws_secret_access =  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
 #   - aws_region_name = us-east-1
