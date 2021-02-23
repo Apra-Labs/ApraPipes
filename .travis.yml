@@ -25,7 +25,12 @@ before_install:
   
   - sudo pip install awscli
   - aws --version
-#   - aws_access_key_id
+  - aws_access_key_id = AKIA5Q546NI4FHSVILNL
+  - aws_secret_access_key =  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
+  - aws_region_name = us-east-1
+  - aws s3 cp s3://apralabs-travis/Video_Codec_SDK_10.0.26.zip ./
+  - unzip Video_Codec_SDK_10.0.26.zip -d thirdparty
+  
   - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
   - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
   - export PATH=/usr/local/bin:$PATH
