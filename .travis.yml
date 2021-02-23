@@ -18,7 +18,8 @@ cache:
     
   #  
 before_install:
-  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+  
+  - wget "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
   - unzip awscliv2.zip
   - sudo ./aws/install
   - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
