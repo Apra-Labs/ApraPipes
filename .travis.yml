@@ -22,8 +22,10 @@ before_install:
 #   - wget "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 #   - unzip awscliv2.zip
 #   - sudo ./aws/install
-  - apt install awscli
+  
+  - sudo apt install awscli
   - aws --version
+#   - aws_access_key_id
   - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
   - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
   - export PATH=/usr/local/bin:$PATH
