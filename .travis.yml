@@ -23,7 +23,7 @@ before_install:
 #   - unzip awscliv2.zip
 #   - sudo ./aws/install
   
-  - sudo apt install awscli
+  - sudo pip install awscli
   - aws --version
 #   - aws_access_key_id
   - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
