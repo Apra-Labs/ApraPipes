@@ -25,9 +25,13 @@ before_install:
   
   - sudo pip install awscli
   - aws --version
-  - aws_access_key = AKIA5Q546NI4FHSVILNL
-  - aws_secret_access =  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
-  - aws_region_name = us-east-1
+#   - travis encrypt AWS_ACCESS_KEY_ID=
+  - AWS_DEFAULT_REGION = us-east-1
+  - AWS_ACCESS_KEY_ID = AKIA5Q546NI4FHSVILNL
+  - AWS_SECRET_ACCESS_KEY =   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
+#   - aws_access_key = AKIA5Q546NI4FHSVILNL
+#   - aws_secret_access =  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
+#   - aws_region_name = us-east-1
   - aws s3 cp s3://apralabs-travis/Video_Codec_SDK_10.0.26.zip ./
   - unzip Video_Codec_SDK_10.0.26.zip -d thirdparty
   
