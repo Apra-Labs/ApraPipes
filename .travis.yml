@@ -7,11 +7,11 @@ matrix:
       - UBUNTU_VERSION=ubuntu1804
       dist: Bionic
       # remove if not needed
-addons:
-  apt:
-    packages:
+# addons:
+#   apt:
+#     packages:
 #       - nvidia-common
-      - nvidia-cuda-toolkit
+#       - nvidia-cuda-toolkit
 #       - nvidia-cuda-dev
       
 cache:
@@ -35,11 +35,12 @@ before_install:
   - cmake --version 
   - sudo apt-get update -y
   - sudo apt install -y yasm 
-  - cd thirdparty/ffmpeg
-  - ./configure --enable-pic
-  - make -j"$(nproc)"
-  - cd ..
-  - cd ..
+  
+#   - cd thirdparty/ffmpeg
+#   - ./configure --enable-pic
+#   - make -j"$(nproc)"
+#   - cd ..
+#   - cd ..
   
 #   - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
 #   - wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
