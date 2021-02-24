@@ -7,12 +7,12 @@ matrix:
       - UBUNTU_VERSION=ubuntu1804
       dist: Bionic
       # remove if not needed
-# addons:
-#   apt:
-#     packages:
-#       - nvidia-common
-#       - nvidia-cuda-toolkit
-#       - nvidia-cuda-dev
+addons:
+  apt:
+    packages:
+      - nvidia-common
+      - nvidia-cuda-toolkit-10.2.89
+      - nvidia-cuda-dev
       
 cache:
   timeout: 1000
