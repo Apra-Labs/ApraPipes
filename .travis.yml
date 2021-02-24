@@ -10,9 +10,9 @@ matrix:
 addons:
   apt:
     packages:
-      - nvidia-common
-      - nvidia-cuda-toolkit
-      - nvidia-cuda-dev
+#       - nvidia-common
+#       - nvidia-cuda-toolkit
+#       - nvidia-cuda-dev
       
 cache:
   timeout: 1000
