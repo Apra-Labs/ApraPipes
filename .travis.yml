@@ -15,6 +15,12 @@ cache:
     - $HOME/thirdparty
     - $HOME/build/yashrajsingh1998/ApraPipes/_build
 
+addons:
+  apt:
+    #sources:
+    #  - multiverse
+    packages:
+      - nvidia-cuda-toolkit
     
   #  
 before_install:
@@ -48,7 +54,14 @@ before_install:
   - LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
   - PATH=${CUDA_HOME}/bin:${PATH}
   - PATH=${PATH}:${PWD}
+  
   - nvcc --version
+  - if [ $USE_NVML -eq 1 ]; then wget $NVML_LINK$NVML_FILE && chmod u+x $NVML_FILE && sudo ./$NVML_FILE --silent --installdir=/ ; fi
+  - if [ $USE_NVML -eq 1 ]; then export CMAKE_PREFIX_PATH=/usr/src/gdk/nvml/lib/ ; fi
+  - sudo find /usr/ -name libcuda*.so
+  - sudo find /usr/ -name nvml.h
+  - sudo find /usr/ -name libnvidia*.so
+  - sudo find /usr/ -name libnvml*.so
   
 # install:    
 # #   # first we create a directory for the CMake binaries
