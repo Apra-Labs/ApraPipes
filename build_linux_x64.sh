@@ -1,6 +1,6 @@
 mkdir -p _build
 cd _build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../base 
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_CUDA=ON -DENABLE_LINUX=ON../base 
 cmake --build . -- -j "$(nproc)"
 
 cd ..
