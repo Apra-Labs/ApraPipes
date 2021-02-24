@@ -13,10 +13,14 @@ HunterGate(
     SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
 	FILEPATH ${CONFIG_FILEPATH}
   )
-
+  
+  
+message("enable cuda condition ------------------------------------------------------ ")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
+	message("enable cuda is on------------------------------------------------------------------")
 ENDIF(ENABLE_CUDA)
+message("enable cuda DONE ------------------------------------------------------ ")
 
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
