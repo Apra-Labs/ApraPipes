@@ -6,7 +6,14 @@ matrix:
       - CUDA_SHORT=10.2
       - UBUNTU_VERSION=ubuntu1804
       dist: Bionic
-
+      # remove if not needed
+addons:
+  apt:
+    packages:
+      - nvidia-common
+      - nvidia-cuda-toolkit
+      - nvidia-cuda-dev
+      
 cache:
   timeout: 1000
   ccache: true
