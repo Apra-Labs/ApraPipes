@@ -60,6 +60,7 @@ before_install:
   - if [ $USE_NVML -eq 1 ]; then export CMAKE_PREFIX_PATH=/usr/src/gdk/nvml/lib/ ; fi
   - sudo find /usr/ -name libcuda*.so
   - sudo find /usr/ -name nvml.h
+  - sudo find /usr/ -name nppdefs.h
   - sudo find /usr/ -name libnvidia*.so
   - sudo find /usr/ -name libnvml*.so
   
