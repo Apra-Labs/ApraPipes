@@ -55,21 +55,27 @@ before_install:
 #-------------------------------------------------------------------add   
   
   
-  - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
-  - wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
-  - sudo dpkg -i ${INSTALLER}
-  - wget https://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/7fa2af80.pub
-  - sudo apt-key add 7fa2af80.pub
-  - sudo apt update -qq
-  - sudo apt install -y cuda-toolkit-${CUDA_SHORT/./-} cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
-  - sudo apt clean
-  - CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
-  - LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
-  - PATH=${CUDA_HOME}/bin:${PATH}
-  - ls /usr/local/cuda-10.2/bin
-  - ls /usr/local/cuda-10.2
-  - ls /usr/local/cuda-10.2/include
-  
+#   - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
+#   - wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
+#   - sudo dpkg -i ${INSTALLER}
+#   - wget https://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/7fa2af80.pub
+#   - sudo apt-key add 7fa2af80.pub
+#   - sudo apt update -qq
+#   - sudo apt install -y cuda-toolkit-${CUDA_SHORT/./-} cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-cufft-dev-${CUDA_SHORT/./-}
+#   - sudo apt clean
+#   - CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+#   - LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+#   - PATH=${CUDA_HOME}/bin:${PATH}
+#   - ls /usr/local/cuda-10.2/bin
+#   - ls /usr/local/cuda-10.2
+#   - ls /usr/local/cuda-10.2/include
+#----------------------------------------------------------------------------------add
+
+
+
+
+
+
 #   - INSTALLER=cuda-repo-${UBUNTU_VERSION}_${CUDA}_amd64.deb
 #   - wget http://developer.download.nvidia.com/compute/cuda/repos/${UBUNTU_VERSION}/x86_64/${INSTALLER}
 #   - sudo dpkg -i ${INSTALLER}
@@ -83,12 +89,12 @@ before_install:
 #   - PATH=${CUDA_HOME}/bin:${PATH}
 #   - PATH=${PATH}:${PWD}
   
-  - nvcc --version 
+#   - nvcc --version 
 #   - if [ $USE_NVML -eq 1 ]; then wget $NVML_LINK$NVML_FILE && chmod u+x $NVML_FILE && sudo ./$NVML_FILE --silent --installdir=/ ; fi
 #   - if [ $USE_NVML -eq 1 ]; then export CMAKE_PREFIX_PATH=/usr/src/gdk/nvml/lib/ ; fi
 #   - sudo find /usr/ -name libcuda*.so
 #   - sudo find /usr/ -name nvml.h
-  - sudo find /usr/ -name nppdefs.h
+#   - sudo find /usr/ -name nppdefs.h
 #   - sudo find /usr/ -name libnvidia*.so
 #   - sudo find /usr/ -name libnvml*.so
   
