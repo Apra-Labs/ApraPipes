@@ -14,7 +14,7 @@ HunterGate(
 	FILEPATH ${CONFIG_FILEPATH}
   )
   
-  
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")  
 message("enable cuda condition ------------------------------------------------------ ")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
