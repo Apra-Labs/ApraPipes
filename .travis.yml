@@ -29,10 +29,10 @@ before_install:
   - aws s3 cp s3://apralabs-travis/Video_Codec_SDK_10.0.26.zip ./
   - unzip Video_Codec_SDK_10.0.26.zip -d thirdparty
   
-  - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
-  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
-  - export PATH=/usr/local/bin:$PATH
-  - cmake --version 
+#   - wget -O cmake.sh https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh
+#   - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+#   - export PATH=/usr/local/bin:$PATH
+#   - cmake --version 
   - sudo apt-get update -y
   - sudo apt install -y yasm 
   
