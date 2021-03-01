@@ -44,14 +44,14 @@ before_install:
 
 
 #-------------------------------------------------------------
- # - sudo apt-get update -y
- # - sudo apt install -y yasm 
+ - sudo apt-get update -y
+ - sudo apt install -y yasm 
   
-#  - cd thirdparty/ffmpeg
-#  - ./configure --enable-pic
-#  - make -j"$(nproc)"
-#  - cd ..
-#  - cd ..
+ - cd thirdparty/ffmpeg
+ - ./configure --enable-pic
+ - make -j"$(nproc)"
+ - cd ..
+ - cd ..
 #-------------------------------------------------------------------add   
   
   
