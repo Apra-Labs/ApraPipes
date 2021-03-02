@@ -20,8 +20,12 @@ hunter_config(
 	WITH_LIBV4L=ON
 	WITH_OPENGL=ON
 	OPENCV_WITH_EXTRA_MODULES=ON
-	OPENCV_EXTRA_MODULES_PATH=OPENCV_CONTRIB/modules
-	BUILD_LIST=calib3d,videoio,ts ../opencv
+	BUILD_opencv_surface_matching=OFF ../opencv
+	BUILD_opencv_face=OFF ../opencv
+	BUILD_opencv_line_descriptor=OFF ../opencv
+	BUILD_opencv_calib3d=OFF ../opencv
+	#OPENCV_EXTRA_MODULES_PATH=OPENCV_CONTRIB/modules
+	#BUILD_LIST=calib3d,videoio,ts ../opencv
 )
 hunter_config(
     Boost
