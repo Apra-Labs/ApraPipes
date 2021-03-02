@@ -20,6 +20,8 @@ hunter_config(
 	WITH_LIBV4L=ON
 	WITH_OPENGL=ON
 	OPENCV_WITH_EXTRA_MODULES=ON
+	BUILD_opencv_tracking=OFF ../opencv
+	BUILD_opencv_optflow=OFF ../opencv
 	BUILD_opencv_surface_matching=OFF ../opencv
 	BUILD_opencv_face=OFF ../opencv
 	BUILD_opencv_line_descriptor=OFF ../opencv
