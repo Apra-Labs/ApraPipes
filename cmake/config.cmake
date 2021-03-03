@@ -20,23 +20,12 @@ hunter_config(
 	WITH_LIBV4L=ON
 	WITH_OPENGL=ON
 	OPENCV_WITH_EXTRA_MODULES=ON
-	#BUILD_opencv_tracking=OFF ../opencv
-	#BUILD_opencv_optflow=OFF ../opencv
-	#BUILD_opencv_surface_matching=OFF ../opencv
-	#BUILD_opencv_face=OFF ../opencv
-	#BUILD_opencv_line_descriptor=OFF ../opencv
-	#BUILD_opencv_ml=OFF ../opencv
-	#BUILD_opencv_objdetect=OFF ../opencv
-	#BUILD_opencv_photo=OFF ../opencv
-	#BUILD_opencv_gapi=OFF ../opencv
-	#BUILD_opencv_xphoto=OFF ../opencv
-	#BUILD_opencv_apps=OFF ../opencv
-	#BUILD_opencv_stereo=OFF ../opencv
+	BUILD_LIST=calib3d 
 
 
 	
 	#OPENCV_EXTRA_MODULES_PATH=OPENCV_CONTRIB/modules
-	BUILD_LIST=calib3d,videoio,ts ../opencv
+	
 )
 hunter_config(
     Boost
