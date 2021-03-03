@@ -29,6 +29,8 @@ hunter_config(
 	BUILD_opencv_objdetect=OFF ../opencv
 	BUILD_opencv_photo=OFF ../opencv
 	BUILD_opencv_gapi=OFF ../opencv
+	BUILD_opencv_cudalegacy=OFF ../opencv
+	BUILD_opencv_xphoto=OFF ../opencv
 	BUILD_opencv_apps=OFF ../opencv
 
 	
