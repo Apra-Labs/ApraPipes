@@ -32,6 +32,8 @@ hunter_config(
 	BUILD_opencv_cudalegacy=OFF ../opencv
 	BUILD_opencv_xphoto=OFF ../opencv
 	BUILD_opencv_apps=OFF ../opencv
+	BUILD_opencv_stereo=OFF ../opencv
+
 
 	
 	#OPENCV_EXTRA_MODULES_PATH=OPENCV_CONTRIB/modules
