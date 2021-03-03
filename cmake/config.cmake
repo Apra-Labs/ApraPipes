@@ -25,7 +25,13 @@ hunter_config(
 	BUILD_opencv_surface_matching=OFF ../opencv
 	BUILD_opencv_face=OFF ../opencv
 	BUILD_opencv_line_descriptor=OFF ../opencv
-	BUILD_opencv_calib3d=OFF ../opencv
+	BUILD_opencv_ml=OFF ../opencv
+	BUILD_opencv_objdetect=OFF ../opencv
+	BUILD_opencv_photo=OFF ../opencv
+	BUILD_opencv_gapi=OFF ../opencv
+	BUILD_opencv_apps=OFF ../opencv
+
+	
 	#OPENCV_EXTRA_MODULES_PATH=OPENCV_CONTRIB/modules
 	#BUILD_LIST=calib3d,videoio,ts ../opencv
 )
