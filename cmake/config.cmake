@@ -20,7 +20,7 @@ hunter_config(
 	WITH_LIBV4L=ON
 	WITH_OPENGL=ON
 	#OPENCV_WITH_EXTRA_MODULES=ON
-	OPENCV_EXTRA_MODULES_PATH=/opencv_contrib/modules
+	OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules
 	BUILD_LIST=highgui 
 
 
