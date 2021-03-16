@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 0)
 		{
 			frame_container frames;
-			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i;
 			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
 			source1->send(frames);
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 1)
 		{
 			frame_container frames;
-			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
 			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
 			source2->send(frames);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 2)
 		{
 			frame_container frames;
-			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i;
 			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
 			source3->send(frames);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 0)
 		{
 			frame_container frames;
-			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i+2;
 			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
 			source1->send(frames);
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 1)
 		{
 			frame_container frames;
-			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
 			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
 			source2->send(frames);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 2)
 		{
 			frame_container frames;
-			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i-2;
 			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
 			source3->send(frames);
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 0)
 		{
 			frame_container frames;
-			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i;
 			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
 			source1->send(frames);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 1)
 		{
 			frame_container frames;
-			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
 			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
 			source2->send(frames);
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 2)
 		{
 			frame_container frames;
-			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i;
 			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
 			source3->send(frames);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 0)
 		{
 			frame_container frames;
-			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = fIndex2;
 			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
 			source1->send(frames);
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 1)
 		{
 			frame_container frames;
-			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = fIndex2;
 			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
 			source2->send(frames);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		if (i % 3 == 2)
 		{
 			frame_container frames;
-			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = fIndex2;
 			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
 			source3->send(frames);

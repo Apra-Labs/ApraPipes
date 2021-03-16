@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	BOOST_TEST(splitPinIds.size() == props.number);
 
 	{		
-		auto encodedImageFrame = source->makeFrame(readDataSize, metadata);		
+		auto encodedImageFrame = source->makeFrame(readDataSize, source_pin);		
 		frame_container frames;
 		frames.insert(make_pair(source_pin, encodedImageFrame));
 

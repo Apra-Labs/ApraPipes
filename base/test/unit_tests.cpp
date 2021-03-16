@@ -7,6 +7,12 @@
 #include "PipeLine.h"
 #include "ExtFrame.h"
 #include "test_utils.h"
+#include "nvbuf_utils.h"
+#include "EGL/egl.h"
+#include "cudaEGL.h"
+
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -21,22 +27,24 @@ BOOST_AUTO_TEST_CASE(dummy_test)
 
 BOOST_AUTO_TEST_CASE(frame_factory_test)
 {
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
-	auto f1 = fact->create(1023, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
-	auto f2 = fact->create(1024, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
-	auto f3 = fact->create(1025, fact, FrameMetadata::MemType::HOST);//uses 2 chunks
-	auto f4 = fact->create(2047, fact, FrameMetadata::MemType::HOST);//uses 2 chunk
-	auto f5 = fact->create(100000, fact, FrameMetadata::MemType::HOST); //uses 98 chunk
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST));
+	framefactory_sp fact(new FrameFactory(metadata));
+	auto f1 = fact->create(1023, fact);//uses 1 chunk
+	auto f2 = fact->create(1024, fact);//uses 1 chunk
+	auto f3 = fact->create(1025, fact);//uses 2 chunks
+	auto f4 = fact->create(2047, fact);//uses 2 chunk
+	auto f5 = fact->create(100000, fact); //uses 98 chunk
 }
 
 BOOST_AUTO_TEST_CASE(multiple_que_test)
 {
 	{
 		boost::shared_ptr<FrameContainerQueue> q1 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(20));
-		boost::shared_ptr<FrameFactory> fact(new FrameFactory);
+		framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST));
+		boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
 
 		{
-			auto f = fact->create(1023, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
+			auto f = fact->create(1023, fact);//uses 1 chunk
 			frame_container frames;
 			frames["a"] = f;
 			q1->push(frames);
@@ -56,22 +64,24 @@ BOOST_AUTO_TEST_CASE(multiple_que_test)
 
 BOOST_AUTO_TEST_CASE(frame_factory_test_host_pinned)
 {
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
-	auto f1 = fact->create(1023, fact, FrameMetadata::MemType::HOST_PINNED);//uses 1 chunk
-	auto f2 = fact->create(1024, fact, FrameMetadata::MemType::HOST_PINNED);//uses 1 chunk
-	auto f3 = fact->create(1025, fact, FrameMetadata::MemType::HOST_PINNED);//uses 2 chunks
-	auto f4 = fact->create(2047, fact, FrameMetadata::MemType::HOST_PINNED);//uses 2 chunk
-	auto f5 = fact->create(100000, fact, FrameMetadata::MemType::HOST_PINNED); //uses 98 chunk
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST_PINNED));
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
+	auto f1 = fact->create(1023, fact);//uses 1 chunk
+	auto f2 = fact->create(1024, fact);//uses 1 chunk
+	auto f3 = fact->create(1025, fact);//uses 2 chunks
+	auto f4 = fact->create(2047, fact);//uses 2 chunk
+	auto f5 = fact->create(100000, fact); //uses 98 chunk
 }
 
 BOOST_AUTO_TEST_CASE(frame_factory_test_cuda_device)
 {
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
-	auto f1 = fact->create(1023, fact, FrameMetadata::MemType::CUDA_DEVICE);//uses 1 chunk
-	auto f2 = fact->create(1024, fact, FrameMetadata::MemType::CUDA_DEVICE);//uses 1 chunk
-	auto f3 = fact->create(1025, fact, FrameMetadata::MemType::CUDA_DEVICE);//uses 2 chunks
-	auto f4 = fact->create(2047, fact, FrameMetadata::MemType::CUDA_DEVICE);//uses 2 chunk
-	auto f5 = fact->create(100000, fact, FrameMetadata::MemType::CUDA_DEVICE); //uses 98 chunk
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::CUDA_DEVICE));
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
+	auto f1 = fact->create(1023, fact);//uses 1 chunk
+	auto f2 = fact->create(1024, fact);//uses 1 chunk
+	auto f3 = fact->create(1025, fact);//uses 2 chunks
+	auto f4 = fact->create(2047, fact);//uses 2 chunk
+	auto f5 = fact->create(100000, fact); //uses 98 chunk
 }
 
 #endif
@@ -102,7 +112,7 @@ BOOST_AUTO_TEST_CASE(boost_pool_ordered_malloc_free)
 		}
 	};
 
-	size_t CHUNK_SZ = 1024;
+	size_t CHUNK_SZ = 1024;	
 	boost::pool<apra_allocator> p(CHUNK_SZ);
 
 	size_t noOfChunks = 100;
@@ -307,34 +317,16 @@ BOOST_AUTO_TEST_CASE(boost_pool_ordered_malloc_free)
 	BOOST_TEST(noOfFree == 1);
 }
 
-BOOST_AUTO_TEST_CASE(frame_factory_resize_test)
-{
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
-	{
-		auto buffer = fact->createBuffer(5000, fact, FrameMetadata::MemType::HOST);
-		BOOST_TEST(buffer->size() == 5000);
-
-		auto frame = fact->create(buffer, 2000, fact, FrameMetadata::MemType::HOST);
-		BOOST_TEST(frame->size() == 2000);
-	}
-
-	{
-		auto buffer = fact->createBuffer(5000, fact, FrameMetadata::MemType::HOST);
-		BOOST_TEST(buffer->size() == 5000);
-
-		auto frame = fact->create(buffer, 5000, fact, FrameMetadata::MemType::HOST);
-		BOOST_TEST(frame->size() == 5000);
-	}
-}
 
 BOOST_AUTO_TEST_CASE(frame_que_test)
 {
 	FrameContainerQueue q(2);
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST));
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
 	{
-		auto f1 = fact->create(1023, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
-		auto f2 = fact->create(1024, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
-		auto f3 = fact->create(1025, fact, FrameMetadata::MemType::HOST);//uses 2 chunk
+		auto f1 = fact->create(1023, fact);//uses 1 chunk
+		auto f2 = fact->create(1024, fact);//uses 1 chunk
+		auto f3 = fact->create(1025, fact);//uses 2 chunk
 
 		frame_container frames1;
 		frame_container frames2;
@@ -380,7 +372,7 @@ void producer_consumer(bool isProducer, boost::shared_ptr<FrameFactory> fact, Fr
 	{
 		if (isProducer)
 		{
-			auto f1 = fact->create(1023, fact, FrameMetadata::MemType::HOST);//uses 1 chunk
+			auto f1 = fact->create(1023, fact);//uses 1 chunk
 			frame_container frames;
 			frames.insert(std::make_pair("p1", f1));
 			q.push(frames);
@@ -396,7 +388,8 @@ void producer_consumer(bool isProducer, boost::shared_ptr<FrameFactory> fact, Fr
 BOOST_AUTO_TEST_CASE(two_threaed_framefactory_test)
 {
 	FrameContainerQueue q(20);
-	boost::shared_ptr<FrameFactory> fact(new FrameFactory);
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST));
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
 	std::thread t1(producer_consumer, true, fact, std::ref(q), 100000);
 	std::thread t2(producer_consumer, false, fact, std::ref(q), 100000);
 
@@ -531,6 +524,52 @@ BOOST_AUTO_TEST_CASE(params_test, *boost::unit_test::disabled())
 	BOOST_TEST(Test_Utils::getArgValue("IP") == "");
 	BOOST_TEST(Test_Utils::getArgValue("data") == "ArgusCamera");
 	BOOST_TEST(Test_Utils::getArgValue("some_random_arg_name_not_passed_through_commandline", "hola") == "hola");
+}
+
+BOOST_AUTO_TEST_CASE(egltest)
+{
+	// egldisplay -
+	EGLDisplay eglDisplay;
+	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if(eglDisplay == EGL_NO_DISPLAY)
+	{
+		throw AIPException(AIP_FATAL, "eglGetDisplay failed");
+	} 
+
+	if (!eglInitialize(eglDisplay, NULL, NULL))
+	{
+		throw AIPException(AIP_FATAL, "eglInitialize failed");
+	}
+	// cudafree
+	cudaFree(0);
+	// create fd
+	 NvBufferCreateParams inputParams = {0};
+
+    inputParams.width = 640;
+    inputParams.height = 480;
+    inputParams.layout =  NvBufferLayout_Pitch;
+    inputParams.colorFormat = NvBufferColorFormat_UYVY;
+    inputParams.payloadType = NvBufferPayload_SurfArray;
+    inputParams.nvbuf_tag = NvBufferTag_CAMERA;
+
+	int fd = -1;
+    if (NvBufferCreateEx(&fd, &inputParams))
+	{
+		LOG_ERROR << "Failed to create Buffer";
+	}
+	auto eglImage = NvEGLImageFromFd(eglDisplay, fd);
+    if (eglImage == EGL_NO_IMAGE_KHR)
+    {
+        LOG_ERROR << "Failed to create EGLImage";        
+    }
+	CUgraphicsResource pResource;
+
+	auto status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
+	if (status != CUDA_SUCCESS)
+	{
+		LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status << " cuda process stop";
+	}
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

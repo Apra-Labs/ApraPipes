@@ -235,9 +235,6 @@ bool ResizeNPPI::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	setMetadata(metadata);	
-
 	return true;
 }
 
@@ -249,7 +246,7 @@ bool ResizeNPPI::term()
 bool ResizeNPPI::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mFrameLength, mOutputMetadata);	
+	auto outFrame = makeFrame(mFrameLength);	
 
 	mDetail->compute(frame->data(), outFrame->data());	
 

@@ -188,12 +188,6 @@ bool BMPConverter::init()
         return false;
     }
 
-    auto metadata = getFirstInputMetadata();
-    if (metadata->isSet())
-    {
-        mDetail->setMetadata(metadata);
-    }
-
     return true;
 }
 
@@ -205,7 +199,7 @@ bool BMPConverter::term()
 bool BMPConverter::process(frame_container &frames)
 {
     auto frame = frames.cbegin()->second;
-    auto outFrame = makeFrame(mDetail->outSize, mOutputMetadata);
+    auto outFrame = makeFrame(mDetail->outSize);
 
     mDetail->compute(frame->data(), outFrame->data());
 

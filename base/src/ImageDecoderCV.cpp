@@ -82,12 +82,6 @@ bool ImageDecoderCV::init()
 		return false;
 	}
 
-	auto metadata = getFirstOutputMetadata();
-	if (metadata->isSet())
-	{
-		mDetail->setMetadata(metadata);
-	}
-
 	return true;
 }
 
@@ -105,7 +99,7 @@ bool ImageDecoderCV::process(frame_container& frames)
 	}
 
 	auto metadata = mDetail->getMetadata();
-	auto outFrame = makeFrame(metadata->getDataSize(), metadata);
+	auto outFrame = makeFrame(metadata->getDataSize());
 
 	mDetail->mImg.data = (uchar *) outFrame->data();
 	cv::imdecode(cv::Mat(1, (int)frame->size(), CV_8UC1, frame->data()), cv::IMREAD_UNCHANGED, &mDetail->mImg);

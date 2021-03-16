@@ -69,12 +69,6 @@ bool ImageViewerModule::init()
 	{
 		return false;
 	}
-
-	auto metadata = getFirstInputMetadata();
-	if (metadata->isSet())
-	{
-		mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
-	}
 		
 	return true; 
 }

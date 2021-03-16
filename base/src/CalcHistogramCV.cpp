@@ -230,10 +230,10 @@ bool CalcHistogramCV::validateOutputPins()
 		return false;
 	}
 
-	pair<string, framemetadata_sp> me; // map element	
-	auto metadataByPin = getOutputMetadata();
-	BOOST_FOREACH(me, metadataByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameType();
+	pair<string, framefactory_sp> me; // map element	
+	auto framefactoryByPin = getOutputFrameFactory();
+	BOOST_FOREACH(me, framefactoryByPin) {
+		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";
@@ -268,13 +268,7 @@ bool CalcHistogramCV::init()
 		return false;
 	}
 
-	auto metadata = getInputMetadataByType(FrameMetadata::RAW_IMAGE);
-	if (metadata->isSet())
-	{
-		mDetail->setInputMetadata(metadata);
-	}
-
-	metadata = getOutputMetadataByType(FrameMetadata::ARRAY);	
+	auto metadata = getOutputMetadataByType(FrameMetadata::ARRAY);	
 	// setting the datasize
 	FrameMetadataFactory::downcast<ArrayMetadata>(metadata)->setData(mDetail->bins, CV_32FC1, sizeof(float));
 	mDetail->setOutputMetadata(metadata);
@@ -297,7 +291,7 @@ bool CalcHistogramCV::process(frame_container& frames)
 
 	// makeframe
 	auto metadata = mDetail->getOutputMetadata();
-	auto outFrame = makeFrame(metadata->getDataSize(), metadata);
+	auto outFrame = makeFrame(metadata->getDataSize());
 	
 	mDetail->compute(frame, outFrame);	
 		

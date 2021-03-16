@@ -12,7 +12,6 @@
 
 // NOTE: TESTS WHICH REQUIRE ANY ENVIRONMENT TO BE PRESENT BEFORE RUNNING ARE NOT UNIT TESTS !!!
 
-
 BOOST_AUTO_TEST_SUITE(module_tests)
 
 class TestModule : public Module
@@ -30,7 +29,7 @@ public:
 	framemetadata_sp getFirstInputMetadata() { return Module::getFirstInputMetadata(); }
 	framemetadata_sp getFirstOutputMetadata() { return Module::getFirstOutputMetadata(); }
 	metadata_by_pin& getInputMetadata() { return Module::getInputMetadata(); }
-	metadata_by_pin& getOutputMetadata() { return Module::getOutputMetadata(); }
+	framefactory_by_pin& getOutputFrameFactory() { return Module::getOutputFrameFactory(); }
 	framemetadata_sp getInputMetadataByType(int type) { return Module::getInputMetadataByType(type); }
 	framemetadata_sp getOutputMetadataByType(int type) { return Module::getOutputMetadataByType(type); }
 	int getNumberOfInputsByType(int type) { return Module::getNumberOfInputsByType(type); }
@@ -45,7 +44,6 @@ public:
 
 	boost_deque<frame_sp> getFrames(frame_container& frames) { return Module::getFrames(frames); }
 
-	frame_sp makeFrame(size_t size, framemetadata_sp& metadata) { return Module::makeFrame(size, metadata); }
 	frame_sp makeFrame(size_t size, string pinId) { return Module::makeFrame(size, pinId); }
 	frame_sp makeFrame(size_t size) { return Module::makeFrame(size); }
 	
@@ -64,7 +62,6 @@ public:
 };
 
 /*	
-
 	protected
 	virtual bool shouldTriggerSOS();
 	
@@ -90,10 +87,10 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 				return false;
 			}
 
-			pair<string, framemetadata_sp> me; // map element	
-			auto metadataByPin = getOutputMetadata();
-			BOOST_FOREACH(me, metadataByPin) {
-				FrameMetadata::FrameType frameType = me.second->getFrameType();
+			pair<string, framefactory_sp> me; // map element	
+			auto framefactoryByPin = getOutputFrameFactory();
+			BOOST_FOREACH(me, framefactoryByPin) {
+				FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
 				if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ENCODED_IMAGE)
 				{					
 					return false;
@@ -109,7 +106,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	m1->addOutputPin(metadata1);
 
-	auto outputMetadata = m1->getOutputMetadata();
+	auto outputMetadata = m1->getOutputFrameFactory();
 	BOOST_TEST(outputMetadata.size() == 1);
 
 	try
@@ -121,7 +118,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
-		outputMetadata = m1->getOutputMetadata();
+		outputMetadata = m1->getOutputFrameFactory();
 		BOOST_TEST(outputMetadata.size() == 1);
 	}
 	catch (...)
@@ -142,7 +139,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_UNIQUE_CONSTRAINT_FAILED);
-		outputMetadata = m1->getOutputMetadata();
+		outputMetadata = m1->getOutputFrameFactory();
 		BOOST_TEST(outputMetadata.size() == 2);
 	}
 	catch (...)
@@ -150,13 +147,13 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 		BOOST_TEST(false); // not expected to come here
 	}
 
-	outputMetadata = m1->getOutputMetadata();
+	outputMetadata = m1->getOutputFrameFactory();
 	BOOST_TEST(outputMetadata.size() == 2);
 
 	auto it = outputMetadata.cbegin();
-	BOOST_TEST(it->second->getFrameType() == FrameMetadata::ENCODED_IMAGE);
+	BOOST_TEST(it->second->getFrameMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 	it++;
-	BOOST_TEST(it->second->getFrameType() == FrameMetadata::RAW_IMAGE);
+	BOOST_TEST(it->second->getFrameMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	BOOST_TEST(it->first == "m1_p_1");
 
 	try
@@ -168,7 +165,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 	catch (AIP_Exception& exception)
 	{
 		BOOST_TEST(exception.getCode() == AIP_PINS_VALIDATION_FAILED);
-		outputMetadata = m1->getOutputMetadata();
+		outputMetadata = m1->getOutputFrameFactory();
 		BOOST_TEST(outputMetadata.size() == 2);
 	}
 	catch (...)
@@ -457,9 +454,9 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 	auto m3 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
 	auto m4 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
 
-	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
-	auto metadata2 = framemetadata_sp(new RawImageMetadata());
-	auto metadata3 = framemetadata_sp(new ArrayMetadata());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE,FrameMetadata::MemType::HOST));
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA,FrameMetadata::MemType::HOST));
+	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL,FrameMetadata::MemType::HOST));
 	auto pin1Id = m->addOutputPin(metadata1);
 	string pin2Id = "p2";
 	m->addOutputPin(metadata2, pin2Id);
@@ -485,7 +482,7 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 	BOOST_TEST((frame2->getMetadata() == metadata2));
 	BOOST_TEST(((frame2->size() == 1025) && (frame2->data() != NULL)));
 
-	auto frame3 = m->makeFrame(10000, metadata3);
+	auto frame3 = m->makeFrame(10000, pin3Id);
 	BOOST_TEST((frame3->getMetadata() == metadata3));
 	BOOST_TEST(((frame3->size() == 10000) && (frame3->data() != NULL)));
 	
@@ -495,7 +492,7 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 	frames_orig.insert(make_pair(pin3Id, frame3));
 
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::ENCODED_IMAGE) == frame1);
-	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::ARRAY) == frame3);
+	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::GENERAL) == frame3);
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::AUDIO) == frame_sp());
 	auto frame = m->getFrameByType(frames_orig, FrameMetadata::AUDIO);
 	BOOST_TEST(m->isFrameEmpty(frame) == true);
@@ -601,9 +598,8 @@ BOOST_AUTO_TEST_CASE(skip_test)
 
 		bool produce()
 		{
-			auto metadata = getOutputMetadata().begin()->second;
-			auto pinId = getOutputMetadata().begin()->first;
-			auto frame = makeFrame(1024, metadata);
+			auto pinId = getOutputFrameFactory().begin()->first;
+			auto frame = makeFrame(1024, pinId);
 
 			frame_container frames;
 			frames.insert(std::make_pair(pinId, frame));
@@ -616,9 +612,8 @@ BOOST_AUTO_TEST_CASE(skip_test)
 
 		bool process(frame_container& frames)
 		{			
-			auto metadata = getOutputMetadata().begin()->second;
-			auto pinId = getOutputMetadata().begin()->first;
-			auto frame = makeFrame(1024, metadata);
+			auto pinId = getOutputFrameFactory().begin()->first;
+			auto frame = makeFrame(1024, pinId);
 
 			frames.insert(std::make_pair(pinId, frame));
 
@@ -863,7 +858,7 @@ BOOST_AUTO_TEST_CASE(stop_bug)
 		virtual bool produce() 
 		{
 			auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-			auto frame = makeFrame(1024, metadata);
+			auto frame = makeFrame(1024, getOutputPinIdByType(metadata->getFrameType()));
 
 			frame_container frames;
 			frames.insert(std::make_pair(getOutputPinIdByType(metadata->getFrameType()), frame));
@@ -1217,8 +1212,8 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 		{
 			auto metadata1 = getOutputMetadataByType(FrameMetadata::ENCODED_IMAGE);
 			auto metadata2 = getOutputMetadataByType(FrameMetadata::RAW_IMAGE);
-			auto frame1 = makeFrame(1023, metadata1);
-			auto frame2 = makeFrame(1024, metadata2);
+			auto frame1 = makeFrame(1023, getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE));
+			auto frame2 = makeFrame(1024, getOutputPinIdByType(FrameMetadata::RAW_IMAGE));
 
 			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), frame1));
 			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), frame2));
@@ -1298,9 +1293,8 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 
 		bool produce()
 		{
-			auto metadata = getOutputMetadata().begin()->second;
-			auto pinId = getOutputMetadata().begin()->first;
-			auto frame = makeFrame(1024, metadata);
+			auto pinId = getOutputFrameFactory().begin()->first;
+			auto frame = makeFrame(1024);
 
 			frame_container frames;
 			frames.insert(std::make_pair(pinId, frame));
@@ -1345,9 +1339,8 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 				return true;
 			}
 
-			auto metadata = getOutputMetadata().begin()->second;
-			auto pinId = getOutputMetadata().begin()->first;
-			auto frame = makeFrame(1024, metadata);
+			auto pinId = getOutputFrameFactory().begin()->first;
+			auto frame = makeFrame(1024);
 
 			frames.insert(std::make_pair(pinId, frame));
 
@@ -1378,9 +1371,8 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
 
 		bool process(frame_container& frames)
 		{
-			auto metadata = getOutputMetadata().begin()->second;
-			auto pinId = getOutputMetadata().begin()->first;
-			auto frame = makeFrame(1024, metadata);
+			auto pinId = getOutputFrameFactory().begin()->first;
+			auto frame = makeFrame(1024);
 
 			frames.insert(std::make_pair(pinId, frame));
 

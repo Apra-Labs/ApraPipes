@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+	auto encodedImageFrame = m1->makeFrame(readDataSize, encodedImagePin);
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+	auto encodedImageFrame = m1->makeFrame(readDataSize, encodedImagePin);
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+	auto encodedImageFrame = m1->makeFrame(readDataSize, encodedImagePin);
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;

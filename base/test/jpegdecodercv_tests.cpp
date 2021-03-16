@@ -12,7 +12,7 @@
 #include "test_utils.h"
 #include "ImageDecoderCV.h"
 
-BOOST_AUTO_TEST_SUITE(jpegdecodercv_tests)
+BOOST_AUTO_TEST_SUITE(jpegdecodercv_tests, * boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
@@ -35,12 +35,10 @@ BOOST_AUTO_TEST_CASE(mono1_1920x960)
 
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(decoder->init());
-	// BOOST_TEST(copy->init());
 	BOOST_TEST(sink->init());	
 	
 	fileReader->step();
 	decoder->step();
-	// copy->step();
 	auto frames = sink->pop();
 	BOOST_TEST(frames.size() == 1);
 	auto outputFrame = frames.cbegin()->second;

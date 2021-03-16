@@ -40,7 +40,7 @@ public:
 		return mOutputMetadata;
 	}
 
-	size_t compute(frame_sp& inFrame, buffer_sp& buffer)
+	size_t compute(frame_sp& inFrame, frame_sp& frame)
 	{
 		auto in_buf = static_cast<const unsigned char*>(inFrame->data());
 
@@ -51,7 +51,7 @@ public:
 		}		
 
 		size_t outLength = mDataSize;
-		auto out_buf = (unsigned char*)buffer->data();	
+		auto out_buf = (unsigned char*)frame->data();	
 		encHelper->encode(in_buf, &out_buf, outLength);
 		
 		return outLength;
@@ -95,6 +95,7 @@ public:
 
 		return true;
 	}
+	std::string outputPinId;
 
 private:
 
@@ -189,14 +190,9 @@ bool JPEGEncoderL4TM::init()
 		return false;
 	}
 
-	auto metadata = getInputMetadataByType(FrameMetadata::RAW_IMAGE);
-	if (metadata->isSet())
-	{
-		mDetail->setImageMetadata(metadata);
-	}
-
-	metadata = getOutputMetadataByType(FrameMetadata::ENCODED_IMAGE);
+	auto metadata = getOutputMetadataByType(FrameMetadata::ENCODED_IMAGE);
 	mDetail->setOutputMetadata(metadata);
+	mDetail->outputPinId = getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE);
 
 	return true;
 }
@@ -215,13 +211,13 @@ bool JPEGEncoderL4TM::process(frame_container& frames)
 	}
 
 	auto metadata = mDetail->getOutputMetadata();
-	auto buffer = makeBuffer(mDetail->getDataSize(), metadata->getMemType());		
+	auto bufferFrame = makeFrame(mDetail->getDataSize());		
 
-	size_t frameLength = mDetail->compute(frame, buffer);
+	size_t frameLength = mDetail->compute(frame, bufferFrame);
 		
-	auto outFrame = makeFrame(buffer, frameLength, metadata);
+	auto outFrame = makeFrame(bufferFrame, frameLength, mDetail->outputPinId);
 
-	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), outFrame));
+	frames.insert(make_pair(mDetail->outputPinId, outFrame));
 	send(frames);
 	return true;
 }

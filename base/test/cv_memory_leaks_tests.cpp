@@ -94,20 +94,5 @@ BOOST_AUTO_TEST_CASE(cv_memory_leak_all)
 
 }
 
-void foo()
-{
-
-}
-
-BOOST_AUTO_TEST_CASE(boost_opool_extframe)
-{
-	boost::object_pool<Frame> opool;
-	auto metadata = framemetadata_sp();
-	auto a = frame_sp(opool.construct(nullptr, 0, metadata), [&](Frame* pointer) {
-		opool.free(pointer);
-		foo();
-	});
-
-}
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -83,6 +83,7 @@ protected:
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool handlePropsChange(frame_sp& frame);
 private:
+	string mPinId;
 	boost::shared_ptr<FileSequenceDriver> mDriver;
 	FileReaderModuleProps mProps;
 	frame_container mFrames;

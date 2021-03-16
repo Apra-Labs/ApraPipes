@@ -106,7 +106,7 @@ bool ImageResizeCV::process(frame_container &frames)
 		return true;
 	}
 
-	auto outFrame = makeFrame(mDetail->mFrameLength, mDetail->mOutputMetadata);
+	auto outFrame = makeFrame();
 
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
 	mDetail->oImg.data = static_cast<uint8_t *>(outFrame->data());

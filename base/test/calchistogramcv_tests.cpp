@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		BOOST_TEST(m3->init());
 
 		FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-		auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+		auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 		memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 		frame_container frames;
@@ -260,7 +260,7 @@ void testValues(int bins, int type, vector<float>& histValues)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_withchangeprops)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_perf)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;

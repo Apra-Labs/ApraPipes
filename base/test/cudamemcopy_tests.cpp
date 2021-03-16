@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 
 #include "CudaMemCopy.h"
@@ -39,7 +40,7 @@ BOOST_AUTO_TEST_CASE(general)
 	BOOST_TEST(sink->init());
 
 	auto readDataSize = 1000;
-	auto frame = source->makeFrame(readDataSize, metadata);
+	auto frame = source->makeFrame(readDataSize, pinId);
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
@@ -83,7 +84,7 @@ BOOST_AUTO_TEST_CASE(rawimage)
 	BOOST_TEST(sink->init());
 
 	auto readDataSize = metadata->getDataSize();
-	auto frame = source->makeFrame(readDataSize, metadata);
+	auto frame = source->makeFrame(readDataSize, pinId);
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE(rawimageplanar)
 	BOOST_TEST(sink->init());
 
 	auto readDataSize = metadata->getDataSize(); 
-	auto frame = source->makeFrame(readDataSize, metadata);
+	auto frame = source->makeFrame(readDataSize, pinId);
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;

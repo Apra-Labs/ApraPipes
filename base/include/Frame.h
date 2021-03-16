@@ -7,25 +7,9 @@ using namespace std;
 class FrameFactory;
 class ApraData;
 
-class Buffer : public boost::asio::mutable_buffer
-{
-public:
-	Buffer(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother);
-	virtual ~Buffer();
-
-	virtual void* data() const BOOST_ASIO_NOEXCEPT;
-	virtual std::size_t size() const BOOST_ASIO_NOEXCEPT;
-private:
-	void *myOrig;
-	friend class FrameFactory;
-	boost::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children
-	void resetMemory(); // used during resize frame
-};
-
 class Frame :public boost::asio::mutable_buffer {
 public:
 	Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother);
-	Frame(void *buff, size_t size, framemetadata_sp& metadata);
 	virtual ~Frame();
 	short mFrameType;
 	uint64_t mFStart, mFEnd;
@@ -39,9 +23,11 @@ public:
 	virtual bool isEmpty() { return false; }	
 	virtual bool isPropsChange();
 	virtual bool isPausePlay();
-	virtual bool isCommand();
-	void setMetadata(framemetadata_sp& _metadata) { mMetadata = _metadata; }
+	virtual bool isCommand();	
 	framemetadata_sp getMetadata() { return mMetadata; }
+	// Make it private
+	// If someone wants to use it, make that class a friend class
+	void setMetadata(framemetadata_sp& _metadata) { mMetadata = _metadata; }
 	virtual void* data() const BOOST_ASIO_NOEXCEPT;
 	virtual std::size_t size() const BOOST_ASIO_NOEXCEPT;
 protected:
@@ -49,6 +35,7 @@ protected:
 	framemetadata_sp mMetadata;
 private:
 	void setDefaultValues();
+	void resetMemory();
 	void *myOrig;
 	friend class FrameFactory;
 	boost::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children	

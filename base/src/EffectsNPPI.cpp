@@ -11,11 +11,11 @@
 class EffectsNPPI::Detail
 {
 public:
-	Detail(EffectsNPPIProps &_props, std::function<buffer_sp(size_t)> _makeBuffer) : props(_props), dataSize(0), channels(0), noEffects(false), frameType(FrameMetadata::GENERAL)
+	Detail(EffectsNPPIProps &_props, std::function<frame_sp(size_t)> _makeFrame) : props(_props), dataSize(0), channels(0), noEffects(false), frameType(FrameMetadata::GENERAL)
 	{
+		makeFrame = _makeFrame;	
 		nppStreamCtx.hStream = _props.stream;
 		setProps(_props);	
-		makeBuffer = _makeBuffer;	
 	}
 
 	~Detail()
@@ -111,7 +111,7 @@ public:
 		bufferMul.reset();
 		if (contrast != 1 && brightness != 0)
 		{
-			bufferMul = makeBuffer(dataSize);
+			bufferMul = makeFrame(dataSize);
 		}
 
 	}
@@ -358,9 +358,9 @@ private:
 	std::function<NppStatus(const Npp8u *, int, const Npp8u[3], Npp8u *, int, NppiSize, int, NppStreamContext)> bgraAdd;
 	std::function<NppStatus(const Npp8u *, int, const Npp8u[3], Npp8u *, int, NppiSize, int, NppStreamContext)> bgraMul;
 
-	buffer_sp bufferMul;
+	frame_sp bufferMul;
 
-	std::function<buffer_sp(size_t)> makeBuffer;
+	std::function<frame_sp(size_t)> makeFrame; 
 	size_t dataSize;
 
 private:
@@ -381,7 +381,7 @@ private:
 
 EffectsNPPI::EffectsNPPI(EffectsNPPIProps _props) : Module(TRANSFORM, "EffectsNPPI", _props), props(_props), mFrameLength(0), mFrameType(FrameMetadata::GENERAL)
 {
-	mDetail.reset(new Detail(_props, [&](size_t size) -> buffer_sp {return makeBuffer(size, FrameMetadata::CUDA_DEVICE); }));
+	mDetail.reset(new Detail(_props, [&](size_t size) -> frame_sp {return makeFrame(size); }));
 }
 
 EffectsNPPI::~EffectsNPPI() {}
@@ -455,9 +455,6 @@ bool EffectsNPPI::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	setMetadata(metadata);
-
 	return true;
 }
 
@@ -469,7 +466,7 @@ bool EffectsNPPI::term()
 bool EffectsNPPI::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mFrameLength, mOutputMetadata);
+	auto outFrame = makeFrame();
 
 	mDetail->compute(frame->data(), outFrame->data());
 

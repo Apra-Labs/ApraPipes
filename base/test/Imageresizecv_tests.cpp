@@ -11,6 +11,8 @@
 
 #include "test_utils.h"
 #include "ImageResizeCV.h"
+#include "PipeLine.h"
+#include "StatSink.h"
 
 BOOST_AUTO_TEST_SUITE(Imageresizecv_tests)
 
