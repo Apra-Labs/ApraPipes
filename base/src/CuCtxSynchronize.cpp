@@ -57,7 +57,6 @@ void CuCtxSynchronize::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool CuCtxSynchronize::process(frame_container& frames)
 {
-    cudaFree(0);
 	auto cudaStatus = cuCtxSynchronize();
 	if (cudaStatus != CUDA_SUCCESS)
 	{
@@ -66,5 +65,11 @@ bool CuCtxSynchronize::process(frame_container& frames)
 
 	send(frames);
 
+	return true;
+}
+
+bool CuCtxSynchronize::processSOS(frame_sp &frame)
+{
+    cudaFree(0);
 	return true;
 }
