@@ -22,7 +22,6 @@ public:
 
 protected:	
 	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
 	bool validateInputPins();
 	bool validateOutputPins();	
 	void addInputPin(framemetadata_sp& metadata, string& pinId);

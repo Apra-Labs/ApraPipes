@@ -60,7 +60,6 @@ IF(ENABLE_CUDA)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
-		include("../cmake/FindTensorRT.cmake")
 		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
@@ -264,7 +263,6 @@ IF(ENABLE_ARM64)
 		src/EglRenderer.cpp
 		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
-		src/TensorRT.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -284,7 +282,6 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
-	include/TensorRT.h
 )
 
 IF(ENABLE_ARM64)
@@ -326,9 +323,7 @@ add_library(aprapipes STATIC
 	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 )
 
-target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} 
-${TensorRT_INCLUDE_DIRS}
-)
+target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} )
 
 # aprapipes Unit Tests
 
@@ -425,6 +420,5 @@ target_link_libraries(aprapipesut
   ${LIB_AVCODEC}
   ${LIB_AVUTIL}
   ${LIB_FFSWR}
-  ${TensorRT_LIBRARIES}
   ${CURSES_LIBRARIES}
 )
