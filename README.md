@@ -20,7 +20,7 @@ git clone --recursive https://github.com/kumaakh/ApraPipes.git
 sudo apt install yasm -y
 cd thirdparty/ffmpeg
 ./configure --enable-pic
-make -j"$(nproc)"
+make -j"$(($(nproc) - 1))"
 ```
 
 ## Ubuntu 18.04 x64

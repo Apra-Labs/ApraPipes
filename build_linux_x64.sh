@@ -1,11 +1,11 @@
 mkdir -p _build
 cd _build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../base 
-cmake --build . -- -j "$(nproc)"
+cmake --build . -- -j "$(($(nproc) - 2))"
 
 cd ..
 
 mkdir -p _debugbuild
 cd _debugbuild
 cmake -DCMAKE_BUILD_TYPE=Debug ../base 
-cmake --build . -- -j "$(nproc)"
+cmake --build . -- -j "$(($(nproc) - 2))"

@@ -36,6 +36,9 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
+hunter_add_package(ncursesw)
+find_package(ncursesw CONFIG REQUIRED)
+
 enable_language(CUDA)
 
 SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
@@ -59,8 +62,7 @@ IF(ENABLE_CUDA)
 		find_library(X11LIB X11)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
-		find_package(Curses REQUIRED)
+		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)		
 
 		SET(JETSON_LIBS
 			libcudart_static.a	
@@ -97,7 +99,7 @@ include_directories(AFTER SYSTEM include
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
-	${CURSES_INCLUDE_DIR}
+	${NCURSESW_ROOT}/include/ncursesw
 )
 
 # ApraPipes library
@@ -232,8 +234,7 @@ SET(CUDA_CORE_FILES_H
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
 	src/CCKernel.cu
-	src/CCNPPI.cpp
-	src/NvTransform.cpp
+	src/CCNPPI.cpp	
 	src/EffectsKernel.cu
 	src/EffectsNPPI.cpp
 	src/GaussianBlur.cpp
@@ -263,6 +264,7 @@ IF(ENABLE_ARM64)
 		src/EglRenderer.cpp
 		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
+		src/NvTransform.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -276,8 +278,7 @@ SET(CUDA_IP_FILES_H
 	include/EffectsNPPI.h
 	include/EffectsKernel.h
 	include/CCNPPI.h
-	include/CCKernel.h
-	include/NvTransform.h
+	include/CCKernel.h	
 	include/ResizeNPPI.h
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
@@ -306,6 +307,7 @@ IF(ENABLE_ARM64)
 		include/EglRenderer.h
 		include/ApraNvEglRenderer.h
 		include/DMAUtils.h
+		include/NvTransform.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -352,7 +354,7 @@ IF (ENABLE_CUDA)
 
 	IF(ENABLE_ARM64)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
-
+			test/cuda_arm_tests.cpp
 		)
 	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
@@ -420,5 +422,5 @@ target_link_libraries(aprapipesut
   ${LIB_AVCODEC}
   ${LIB_AVUTIL}
   ${LIB_FFSWR}
-  ${CURSES_LIBRARIES}
+  PkgConfig::ncursesw
 )
