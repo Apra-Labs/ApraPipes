@@ -1131,7 +1131,7 @@ bool Module::preProcessNonSource(frame_container &frames)
 					auto metadata = me.second->getFrameMetadata();
 					if (!metadata->isSet())
 					{
-						throw AIPException(AIP_FATAL, "Transform FrameFactory is constructed without metadata set");
+						throw AIPException(AIP_FATAL, getId() + "<>Transform FrameFactory is constructed without metadata set");
 					}					
 					mOutputPinIdFrameFactoryMap[me.first].reset(new FrameFactory(metadata, mProps->maxConcurrentFrames));
 				}

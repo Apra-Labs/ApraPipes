@@ -193,10 +193,10 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360)
 	BOOST_TEST(encoder->init());
 	BOOST_TEST(sink->init());
 
-	fileReader->step();
-	decoder->step();
-	resize->step();
-	encoder->step();
+	BOOST_TEST(fileReader->step());
+	BOOST_TEST(decoder->step());
+	BOOST_TEST(resize->step());
+	BOOST_TEST(encoder->step());
 	auto frames = sink->pop();
 	BOOST_TEST(frames.size() == 1);
 	auto outputFrame = frames.cbegin()->second;

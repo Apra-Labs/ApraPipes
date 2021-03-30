@@ -320,6 +320,7 @@ void ResizeNPPI::setMetadata(framemetadata_sp& metadata)
 
 	mFrameLength = mOutputMetadata->getDataSize();
 	mDetail->setMetadata(metadata, mOutputMetadata);	
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
 }
 
 bool ResizeNPPI::shouldTriggerSOS()

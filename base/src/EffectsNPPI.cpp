@@ -538,6 +538,7 @@ void EffectsNPPI::setMetadata(framemetadata_sp& metadata)
 
 	mFrameLength = mOutputMetadata->getDataSize();
 	mDetail->setMetadata(metadata);
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
 }
 
 bool EffectsNPPI::shouldTriggerSOS()
