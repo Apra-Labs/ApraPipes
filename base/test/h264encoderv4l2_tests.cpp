@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360.h264", 0);
 }
 
-BOOST_AUTO_TEST_CASE(rgb24_1280x720)
+BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 1280;
