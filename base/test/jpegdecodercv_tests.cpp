@@ -12,7 +12,11 @@
 #include "test_utils.h"
 #include "ImageDecoderCV.h"
 
+#ifdef ARM64
+BOOST_AUTO_TEST_SUITE(jpegdecodercv_tests, *boost::unit_test::disabled())
+#else
 BOOST_AUTO_TEST_SUITE(jpegdecodercv_tests)
+#endif
 
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
