@@ -1273,7 +1273,7 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 	
 }
 
-BOOST_AUTO_TEST_CASE(feedbackmodule, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(feedbackmodule)
 {
 	class TestSource : public Module
 	{

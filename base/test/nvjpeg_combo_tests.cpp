@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_resize_encode_mono_1920x960_to_960x480.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960)
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/testOutput/effects/hue_img_864x576")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));

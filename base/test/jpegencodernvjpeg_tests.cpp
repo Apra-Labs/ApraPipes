@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_mono_1920x1080.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(yuv420_640x360)
 {
 	// metadata is known
 	auto width = 640;
