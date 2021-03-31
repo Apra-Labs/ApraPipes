@@ -117,9 +117,20 @@ bool ImageDecoderCV::processSOS(frame_sp& frame)
 		return false;
 	}
 
+	auto imageType = ImageMetadata::ImageType::MONO;
+	if(matImg.type() == CV_8UC3)
+	{
+		imageType = ImageMetadata::ImageType::BGR;
+	}
+	else if(matImg.type() == CV_8UC4)
+	{
+		imageType = ImageMetadata::ImageType::BGRA;
+	}
+
+	RawImageMetadata outputMetadata(matImg.cols, matImg.rows, imageType, matImg.type(), 0, matImg.depth(), FrameMetadata::HOST, true);
 	auto metadata = getFirstOutputMetadata();
-	auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	rawImageMetadata->setData(matImg);
+	auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);	
+	rawImageMetadata->setData(outputMetadata);
 		
 	mDetail->setMetadata(metadata);
 
