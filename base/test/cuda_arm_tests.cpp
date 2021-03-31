@@ -5,6 +5,8 @@
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 
+#include "AIPExceptions.h"
+
 #include <boost/test/unit_test.hpp>
 
 // NOTE: TESTS WHICH REQUIRE ANY ENVIRONMENT TO BE PRESENT BEFORE RUNNING ARE NOT UNIT TESTS !!!
