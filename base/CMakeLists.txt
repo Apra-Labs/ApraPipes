@@ -33,7 +33,9 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
-enable_language(CUDA)
+IF(ENABLE_CUDA)
+	enable_language(CUDA)
+ENDIF(ENABLE_CUDA)
 
 SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
 find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
@@ -286,13 +288,20 @@ ELSE()
 ENDIF(ENABLE_ARM64)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-add_library(aprapipes STATIC
+set(SOURCE
 	${CORE_FILES} ${CORE_FILES_H}
 	${GENERIC_FILES} ${GENERIC_FILES_H}
 	${IP_FILES} ${IP_FILES_H}
-	${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
-	${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 )
+
+IF(ENABLE_CUDA)
+	set(SOURCE ${SOURCE}
+		${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+		${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+	)
+ENDIF(ENABLE_CUDA)
+
+add_library(aprapipes STATIC ${SOURCE})
 
 target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 
