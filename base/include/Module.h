@@ -214,13 +214,14 @@ protected:
 	}
 	
 	frame_sp makeCommandFrame(size_t size, framemetadata_sp& metadata);
-	frame_sp makeFrame(size_t size, framemetadata_sp& metadata);
 	frame_sp makeFrame(size_t size, string& pinId);
 	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
-	frame_sp makeFrame(buffer_sp& buffer, size_t& newSize, framemetadata_sp& metadata);
-	buffer_sp makeBuffer(size_t size, FrameMetadata::MemType memType);
+	frame_sp makeFrame();
+	frame_sp makeFrame(frame_sp& bigFrame, size_t& newSize, string& pinId);
 	frame_sp getEOSFrame();
 	frame_sp getEmptyFrame();
+
+	void setMetadata(std::string& pinId, framemetadata_sp& metadata);
 		
 	virtual bool send(frame_container& frames, bool forceBlockingPush=false);
 	virtual void sendEOS();	
@@ -248,12 +249,12 @@ protected:
 	virtual bool validateOutputPins(); // invoked with addOutputPin
 	virtual bool validateInputOutputPins() { return validateInputPins() && validateOutputPins(); } // invoked during Module::init before anything else
 				
-	size_t getNumberOfOutputPins() { return mOutputPinIdMetadataMap.size(); }
+	size_t getNumberOfOutputPins() { return mOutputPinIdFrameFactoryMap.size(); }
 	size_t getNumberOfInputPins() { return mInputPinIdMetadataMap.size(); }
 	framemetadata_sp getFirstInputMetadata();
 	framemetadata_sp getFirstOutputMetadata();
 	metadata_by_pin& getInputMetadata() { return mInputPinIdMetadataMap; }
-	metadata_by_pin& getOutputMetadata() { return mOutputPinIdMetadataMap; }
+	framefactory_by_pin& getOutputFrameFactory() { return mOutputPinIdFrameFactoryMap; }
 	framemetadata_sp getInputMetadataByType(int type);
 	int getNumberOfInputsByType(int type);
 	int getNumberOfOutputsByType(int type);
@@ -282,6 +283,7 @@ protected:
 	bool handlePausePlay(bool play);
 	virtual void notifyPlay(bool play) {}
 private:	
+	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
 	
@@ -334,7 +336,7 @@ private:
 		
 	std::map<std::string, bool> mInputPinsDirection;
 	metadata_by_pin mInputPinIdMetadataMap;
-	metadata_by_pin mOutputPinIdMetadataMap;
+	framefactory_by_pin mOutputPinIdFrameFactoryMap;
 	std::shared_ptr<FIndexStrategy> mFIndexStrategy;
 
 	class Profiler;

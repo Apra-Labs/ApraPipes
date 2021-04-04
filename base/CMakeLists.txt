@@ -13,7 +13,6 @@ HunterGate(
     SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
 	FILEPATH ${CONFIG_FILEPATH}
   )
-
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
@@ -22,7 +21,9 @@ IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
 
-list(APPEND CMAKE_PREFIX_PATH "/usr/lib/aarch64-linux-gnu/tegra")
+IF(ENABLE_ARM64)
+	add_compile_definitions(ARM64)	
+ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
@@ -32,6 +33,13 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 
 hunter_add_package(OpenCV)
 find_package(OpenCV)
+
+IF(NOT ENABLE_ARM64)
+	hunter_add_package(ncursesw)
+	find_package(ncursesw CONFIG REQUIRED)
+	SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+	SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
@@ -46,24 +54,29 @@ find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEF
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )			
-		find_library(NVJPEGLIB_L4T nvjpeg)
+		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(V4L2LIB v4l2)
+		find_library(NVJPEGLIB_L4T nvjpeg)
+		find_library(V4L2LIB nvv4l2)
 		find_library(EGLLIB EGL)
+		find_library(GLESv2LIB GLESv2)
+		find_library(X11LIB X11)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
+		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
 			libcudart_static.a	
 			libcuda.so.1.1	
 			${V4L2LIB}
 			${NVBUFUTILSLIB}
-			${EGLLIB}	
+			${EGLLIB}
+			${GLESv2LIB}
+			${X11LIB}	
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
@@ -91,6 +104,7 @@ include_directories(AFTER SYSTEM include
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
+	${CURSES_INCLUDE_DIR}
 )
 
 # ApraPipes library
@@ -113,6 +127,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
+	src/KeyboardListener.cpp
 )
 
 SET(include/CORE_FILES_H
@@ -154,6 +169,7 @@ SET(include/CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
+	include/KeyboardListener.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -208,6 +224,7 @@ SET(CUDA_CORE_FILES
 	src/CudaCommon.cpp
 	src/CudaMemCopy.cpp
 	src/CudaStreamSynchronize.cpp
+	src/CuCtxSynchronize.cpp
 )
 
 SET(CUDA_CORE_FILES_H
@@ -216,12 +233,13 @@ SET(CUDA_CORE_FILES_H
 	include/CudaCommon.h	
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
+	include/CuCtxSynchronize.h
 )
 
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
 	src/CCKernel.cu
-	src/CCNPPI.cpp
+	src/CCNPPI.cpp	
 	src/EffectsKernel.cu
 	src/EffectsNPPI.cpp
 	src/GaussianBlur.cpp
@@ -243,13 +261,20 @@ IF(ENABLE_ARM64)
 		src/V4L2CUYUV420Converter.cpp
 		src/H264EncoderV4L2.cpp
 		src/DMABuffer.cpp
+		src/DMAFDWrapper.cpp
 		src/NvArgusCameraHelper.cpp
 		src/NvArgusCamera.cpp
+		src/NvV4L2Camera.cpp
+		src/NvV4L2CameraHelper.cpp
+		src/EglRenderer.cpp
+		src/NvEglRenderer.cpp
+		src/DMAUtils.cpp
+		src/NvTransform.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
 		src/JPEGDecoderNVJPEG.cpp	
-		src/JPEGEncoderNVJPEG.cpp	
+		src/JPEGEncoderNVJPEG.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -258,7 +283,7 @@ SET(CUDA_IP_FILES_H
 	include/EffectsNPPI.h
 	include/EffectsKernel.h
 	include/CCNPPI.h
-	include/CCKernel.h
+	include/CCKernel.h	
 	include/ResizeNPPI.h
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
@@ -277,8 +302,17 @@ IF(ENABLE_ARM64)
 		include/V4L2CUYUV420Converter.h
 		include/H264EncoderV4L2.h
 		include/DMABuffer.h
+		include/DMAAllocator.h
+		include/DMAFDWrapper.h
+		include/Allocators.h
 		include/NvArgusCameraHelper.h
 		include/NvArgusCamera.h
+		include/NvV4L2Camera.h
+		include/NvV4L2CameraHelper.h
+		include/EglRenderer.h
+		include/ApraNvEglRenderer.h
+		include/DMAUtils.h
+		include/NvTransform.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -316,6 +350,10 @@ IF (ENABLE_ARM64)
 		test/h264encoderv4l2_tests.cpp
 		test/nvarguscamerahelper_tests.cpp
 		test/nvarguscamera_tests.cpp
+		test/nvv4l2camera_test.cpp
+		test/nvv4l2camerahelper_test.cpp
+		test/nvtransform_tests.cpp
+		test/eglrenderer_test.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -328,7 +366,7 @@ IF (ENABLE_CUDA)
 
 	IF(ENABLE_ARM64)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
-
+			test/cuda_arm_tests.cpp
 		)
 	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
@@ -364,6 +402,7 @@ SET(UT_FILES
 	test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
 	test/findexstrategy_tests.cpp
+	test/frame_factory_test_dma.cpp
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
@@ -395,4 +434,5 @@ target_link_libraries(aprapipesut
   ${LIB_AVCODEC}
   ${LIB_AVUTIL}
   ${LIB_FFSWR}
+  ${CURSES_LIBRARIES}
 )

@@ -62,33 +62,6 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		BOOST_TEST(m2->init());
 	}
 
-	{		
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
-		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));		
-		m1->addOutputPin(metadata);
-
-		CalcHistogramCVProps histProps(8);
-		histProps.roi = { 491,6,1429, 3338 };
-		auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
-		m1->setNext(m2);
-		auto histMetadata = framemetadata_sp(new ArrayMetadata());
-		m2->addOutputPin(histMetadata);
-
-		try
-		{
-			m2->init();
-			BOOST_TEST(false);
-		}
-		catch (AIP_Exception& exception)
-		{
-			BOOST_TEST(exception.getCode() == AIP_ROI_OUTOFRANGE);
-		}
-		catch (...)
-		{
-			BOOST_TEST(false);
-		}
-	}
-
 	{
 		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));
@@ -112,33 +85,6 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 	}
 
 	{
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
-		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));
-		m1->addOutputPin(metadata);
-
-		CalcHistogramCVProps histProps(8);
-		histProps.maskImgPath = "./data/maskImg.jpg";
-		auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
-		m1->setNext(m2);
-		auto histMetadata = framemetadata_sp(new ArrayMetadata());
-		m2->addOutputPin(histMetadata);
-
-		try
-		{
-			m2->init();
-			BOOST_TEST(false);
-		}
-		catch (AIP_Exception& exception)
-		{
-			BOOST_TEST(exception.getCode() == AIP_ROI_OUTOFRANGE);
-		}
-		catch (...)
-		{
-			BOOST_TEST(false);
-		}
-	}
-
-	{
 		// process SOS will be called and it checks for roi range. Exception has to be thrown
 		cv::Mat img = cv::imread("./data/frame.jpg");
 		if (!img.data)
@@ -147,7 +93,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		}
 
 		auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-		auto metadata = framemetadata_sp(new RawImageMetadata());		
+		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));		
 		auto rawImagePinId = m1->addOutputPin(metadata);
 
 		CalcHistogramCVProps props;
@@ -168,7 +114,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		BOOST_TEST(m3->init());
 
 		FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-		auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+		auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 		memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 		frame_container frames;
@@ -260,7 +206,7 @@ void testValues(int bins, int type, vector<float>& histValues)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -388,7 +334,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_withchangeprops)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -442,7 +388,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_perf)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePinId);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;

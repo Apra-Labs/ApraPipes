@@ -269,7 +269,7 @@ bool JPEGDecoderNVJPEG::term()
 bool JPEGDecoderNVJPEG::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mOutputSize, mOutputMetadata);
+	auto outFrame = makeFrame(mOutputSize);
 
 	auto res = mDetail->compute(frame->data(), frame->size(), outFrame->data());
 	if (!res)
@@ -289,6 +289,7 @@ bool JPEGDecoderNVJPEG::processSOS(frame_sp &frame)
 	mOutputMetadata = mDetail->setMetadata(frame->data(), frame->size());
 	mOutputMetadata->setHint(hint);
 	mOutputSize = mOutputMetadata->getDataSize();
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
 
 	return true;
 }

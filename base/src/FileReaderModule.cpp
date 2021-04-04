@@ -2,7 +2,7 @@
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
 #include "FileSequenceDriver.h"
-#include "Frame.h"
+#include "ExtFrame.h"
 #include "Command.h"
 
 FileReaderModule::FileReaderModule(FileReaderModuleProps _props)
@@ -38,6 +38,7 @@ bool FileReaderModule::init() {
 	}
 
 	mCache = mDriver->canCache();
+	mPinId = getOutputFrameFactory().begin()->first;
 
 	return true;
 }
@@ -49,24 +50,24 @@ bool FileReaderModule::term() {
 }
 bool FileReaderModule::produce() 
 {	
-	auto metadata = getOutputMetadata().begin()->second;
 	if (mCache && mFrames.size() == 1)
 	{
 		// used for performance tests
 		frame_container frames;
 		auto& cachedFrame = mFrames.begin()->second; 
-		auto frame = frame_sp(new Frame(cachedFrame->data(), cachedFrame->size(), boost::shared_ptr<FrameFactory>()));
+		auto frame = frame_sp(new ExtFrame(cachedFrame->data(), cachedFrame->size()));
+		auto metadata = getOutputFrameFactory().begin()->second->getFrameMetadata();	
 		frame->setMetadata(metadata);
-		frames.insert(make_pair(getOutputMetadata().begin()->first, frame));
+		frames.insert(make_pair(mPinId, frame));
 		send(frames);
 		return true;
 	}
 	
 	
-	auto buffer = makeBuffer(mProps.maxFileSize, metadata->getMemType());
+	auto bufferFrame = makeFrame(mProps.maxFileSize);
 	size_t buffer_size = mProps.maxFileSize;
 	uint64_t fIndex2 = 0;
-	if (!mDriver->ReadP(static_cast<uint8_t*>(buffer->data()), buffer_size, fIndex2))
+	if (!mDriver->ReadP(static_cast<uint8_t*>(bufferFrame->data()), buffer_size, fIndex2))
 	{
 		if (buffer_size > mProps.maxFileSize)
 		{
@@ -75,12 +76,11 @@ bool FileReaderModule::produce()
 		}
 		return false;
 	}
-	
-	auto frame = makeFrame(buffer, buffer_size, metadata);
+	auto frame = makeFrame(bufferFrame, buffer_size, mPinId);
 	frame->fIndex2 = fIndex2;
 	
 	frame_container frames;
-	frames.insert(make_pair(getOutputMetadata().begin()->first, frame));
+	frames.insert(make_pair(mPinId, frame));
 	send(frames);
 
 	if (mCache)

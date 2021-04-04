@@ -255,8 +255,8 @@ private:
 JPEGEncoderNVJPEG::JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps _props) : Module(TRANSFORM, "JPEGEncoderNVJPEG", _props), mMaxStreamLength(0)
 {
 	mDetail.reset(new Detail(_props));
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
-	mOutputPinId = addOutputPin(mOutputMetadata);
+	auto outputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	mOutputPinId = addOutputPin(outputMetadata);
 }
 
 JPEGEncoderNVJPEG::~JPEGEncoderNVJPEG() {}
@@ -313,12 +313,6 @@ bool JPEGEncoderNVJPEG::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	if (metadata->isSet())
-	{
-		mMaxStreamLength = mDetail->setMetadata(metadata);
-	}
-
 	return true;
 }
 
@@ -331,12 +325,12 @@ bool JPEGEncoderNVJPEG::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 
-	auto buffer = makeBuffer(mMaxStreamLength, mOutputMetadata->getMemType());
+	auto bufferFrame = makeFrame(mMaxStreamLength, mOutputPinId);
 
 	size_t frameLength = mMaxStreamLength;
-	mDetail->compute(frame->data(), buffer->data(), frameLength);
+	mDetail->compute(frame->data(), bufferFrame->data(), frameLength);
 
-	auto outFrame = makeFrame(buffer, frameLength, mOutputMetadata);
+	auto outFrame = makeFrame(bufferFrame, frameLength, mOutputPinId);
 
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);

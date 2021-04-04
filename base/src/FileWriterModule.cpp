@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/filesystem.hpp>
 #include "FileWriterModule.h"
 #include "FrameMetadata.h"
 
@@ -8,6 +9,13 @@
 FileWriterModule::FileWriterModule(FileWriterModuleProps _props)
 	:Module(SINK, "FileWriterModule", _props)
 {
+	boost::filesystem::path p(_props.strFullFileNameWithPattern);
+	boost::filesystem::path dirPath = p.parent_path();
+	
+	if (!boost::filesystem::exists(dirPath))
+	{
+		boost::filesystem::create_directories(dirPath);
+	}
 	mDriver = boost::shared_ptr<FileSequenceDriver>(new FileSequenceDriver(_props.strFullFileNameWithPattern, _props.append));
 	mDriver->notifyPlay(true);
 }

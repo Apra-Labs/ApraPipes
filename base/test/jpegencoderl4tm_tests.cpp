@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	BOOST_TEST(m2->init());
 	BOOST_TEST(m3->init());
 
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	//	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 	BOOST_TEST(m3->init());
 
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 	BOOST_TEST(m3->init());
 
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 	BOOST_TEST(m3->init());
 
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), metadata);
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;

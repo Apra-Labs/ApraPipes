@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
     LOG_ERROR << "FINISHED";
 }
 
-BOOST_AUTO_TEST_CASE(invalid_sensor_mode)
+BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
 {
     uint32_t width = 380;
     uint32_t height = 720;

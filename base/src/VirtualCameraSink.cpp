@@ -145,12 +145,6 @@ bool VirtualCameraSink::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	if (metadata->isSet())
-	{
-		mDetail->setMetadata(metadata);
-	}
-
 	return true;
 }
 

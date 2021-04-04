@@ -462,24 +462,6 @@ bool OverlayNPPI::init()
 		return false;
 	}
 
-	auto inputPinIdMetadataMap = getInputMetadata();
-	for (auto const &element : inputPinIdMetadataMap)
-	{
-		auto metadata = element.second;
-		if (metadata->isSet())
-		{
-			if (metadata->getHint() != OVERLAY_HINT)
-			{
-				setMetadata(metadata);
-			}
-			else
-			{
-				auto frame = makeFrame(metadata->getDataSize(), metadata);
-				mDetail->setOverlayMetadata(metadata, frame);
-			}
-		}
-	}
-
 	return true;
 }
 
@@ -510,7 +492,7 @@ bool OverlayNPPI::process(frame_container &frames)
 		return true;
 	}
 
-	auto outFrame = makeFrame(mFrameLength, mOutputMetadata);
+	auto outFrame = makeFrame(mFrameLength);
 
 	if (!mDetail->compute(frame->data(), outFrame->data()))
 	{
@@ -537,7 +519,7 @@ bool OverlayNPPI::processSOS(frame_sp &frame)
 	}
 	else
 	{
-		auto frame = makeFrame(metadata->getDataSize(), metadata);
+		auto frame = makeFrame(metadata->getDataSize());
 		mDetail->setOverlayMetadata(metadata, frame);
 	}
 	return true;

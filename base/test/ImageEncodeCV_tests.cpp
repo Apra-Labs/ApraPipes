@@ -11,8 +11,14 @@
 
 #include "test_utils.h"
 #include "ImageEncoderCV.h"
+#include "PipeLine.h"
+#include "StatSink.h"
 
+#ifdef ARM64
+BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests, *boost::unit_test::disabled())
+#else
 BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
+#endif
 
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
@@ -102,12 +108,7 @@ BOOST_AUTO_TEST_CASE(color_bgra_1920x960)
 
 }
 
-
-
-
-
-
-BOOST_AUTO_TEST_CASE(MONO_profile,, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 {
 	LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;

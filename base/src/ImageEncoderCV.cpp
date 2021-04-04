@@ -143,7 +143,7 @@ bool ImageEncoderCV::process(frame_container &frames)
 	
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
 	cv::imencode(".jpg",mDetail->iImg,buf,mDetail->flags);
-	auto outFrame = makeFrame(buf.size(), mOutputMetadata);
+	auto outFrame = makeFrame(buf.size());
 	memcpy ( static_cast<void*>(outFrame->data()), &buf[0],buf.size());
 	frames.insert(make_pair(mOutputPinId,outFrame));
 	send(frames);

@@ -17,7 +17,8 @@ public:
 		RGBA, // Interleaved
 		YUV411_I, // Interleaved
         YUV444, // Planar
-		YUV420 // Planar		
+		YUV420, // Planar
+		UYVY	// Interleaved		
 	};
 
 	static size_t getElemSize(int depth)

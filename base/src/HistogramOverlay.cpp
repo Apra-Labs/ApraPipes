@@ -190,17 +190,6 @@ bool HistogramOverlay::init()
 	{
 		return false;
 	}
-
-	auto metadata = getInputMetadataByType(FrameMetadata::RAW_IMAGE);
-	if (metadata->isSet())
-	{
-		mDetail->setImgMetadata(metadata);
-	}
-	metadata = getInputMetadataByType(FrameMetadata::ARRAY);
-	if (metadata->isSet())
-	{
-		mDetail->setHistMetadata(metadata);
-	}
 	
 	return true;
 }
@@ -223,7 +212,7 @@ bool HistogramOverlay::process(frame_container& frames)
 
 	// makeframe
 	auto metadata = mDetail->getOutputMetadata();
-	auto outFrame = makeFrame(metadata->getDataSize(), metadata);
+	auto outFrame = makeFrame(metadata->getDataSize());
 		
 	// copy buffer
 	memcpy(outFrame->data(), imgFrame->data(), metadata->getDataSize());

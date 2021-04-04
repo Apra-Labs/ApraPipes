@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	BOOST_TEST(m1->init());
 	BOOST_TEST(m2->init());
 
-	auto frame = m1->makeFrame(readDataSize, metadata);
+	auto frame = m1->makeFrame(readDataSize, pinId);
 	memcpy(frame->data(), pReadData, readDataSize);
 
 	frame_container frames;

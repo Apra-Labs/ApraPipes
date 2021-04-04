@@ -313,9 +313,6 @@ bool RotateNPPI::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	mDetail->setMetadata(metadata);
-
 	return true;
 }
 
@@ -328,7 +325,7 @@ bool RotateNPPI::term()
 bool RotateNPPI::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mDetail->mFrameLength, mDetail->mOutputMetadata);
+	auto outFrame = makeFrame(mDetail->mFrameLength);
 
 	mDetail->compute(frame->data(), outFrame->data());
 

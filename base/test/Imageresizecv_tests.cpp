@@ -11,8 +11,14 @@
 
 #include "test_utils.h"
 #include "ImageResizeCV.h"
+#include "PipeLine.h"
+#include "StatSink.h"
 
+#ifdef ARM64
+BOOST_AUTO_TEST_SUITE(Imageresizecv_tests, *boost::unit_test::disabled())
+#else
 BOOST_AUTO_TEST_SUITE(Imageresizecv_tests)
+#endif
 
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
@@ -158,7 +164,6 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
 
-	
 	auto width = 1280;
 	auto height = 720;
 
@@ -167,13 +172,10 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	
 	auto m2 = boost::shared_ptr<Module>(new ImageResizeCV(ImageResizeCVProps(width >> 1, height >> 1)));
 	fileReader->setNext(m2);
 	
-	
 	auto outputPinId = m2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	
 	
 	StatSinkProps statSinkProps;
 	statSinkProps.logHealth = true;
@@ -189,7 +191,6 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	p->stop();
 	p->term();
 	p->wait_for_all();
-
 }
 
 BOOST_AUTO_TEST_CASE(bgra_profile, *boost::unit_test::disabled())

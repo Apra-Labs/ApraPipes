@@ -38,9 +38,9 @@ public:
 	}
 
 	// used in ut
-	frame_sp makeFrame(size_t size, framemetadata_sp& metadata)
+	frame_sp makeFrame(size_t size, string pinId)
 	{
-		return Module::makeFrame(size, metadata);
+		return Module::makeFrame(size, pinId);
 	}
 
 	// used in ut
@@ -67,19 +67,6 @@ public:
 		auto out = make_pair(ret, frame->fIndex);
 		
 		return out;
-	}
-
-	bool copyFrame(void* pBuffer, size_t size)
-	{
-		auto metadata = getFirstOutputMetadata();
-		auto frame = Module::makeFrame(size, metadata);
-
-		memcpy(frame->data(), pBuffer, size);
-
-		frame_container frames;
-		frames.insert(make_pair(getInputPinIdByType(metadata->getFrameType()), frame));
-
-		return Module::send(frames);
 	}
 
 	bool stop()

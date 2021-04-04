@@ -68,11 +68,6 @@ bool CudaMemCopy::init()
 		mCopy2D = true;
 	}
 
-	if(inputMetadata->isSet())
-	{
-		setOutputMetadata(inputMetadata);
-	}	
-
 	return true;
 }
 
@@ -90,7 +85,7 @@ bool CudaMemCopy::process(frame_container &frames)
 
 	if (mCopy2D)
 	{
-		outFrame = makeFrame(mOutputMetadata->getDataSize(), mOutputMetadata);		
+		outFrame = makeFrame(mOutputMetadata->getDataSize());		
 		for (auto i = 0; i < mChannels; i++)
 		{
 			auto src = static_cast<uint8_t*>(frame->data()) + mSrcNextPtrOffset[i];
@@ -106,7 +101,7 @@ bool CudaMemCopy::process(frame_container &frames)
 	else
 	{
 		auto copySize = frame->size();
-		outFrame = makeFrame(copySize, mOutputMetadata);
+		outFrame = makeFrame(copySize);
 		cudaStatus = cudaMemcpyAsync(outFrame->data(), frame->data(), copySize, props.memcpyKind, props.stream);
 	}
 	if (cudaStatus != cudaSuccess)
@@ -146,6 +141,7 @@ bool CudaMemCopy::processSOS(frame_sp &frame)
 {	
 	auto inputMetadata = frame->getMetadata();	
 	setOutputMetadata(inputMetadata);
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
 	return true;
 }
 

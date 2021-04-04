@@ -1,3 +1,4 @@
+
 #include "GaussianBlur.h"
 #include <opencv2/cudafilters.hpp>
 #include "opencv2/core/cuda_stream_accessor.hpp"
@@ -137,12 +138,6 @@ bool GaussianBlur::init()
         return false;
     }
 
-    auto inputMetadata = getFirstInputMetadata();
-    if (inputMetadata->isSet())
-    {
-		setMetadata(inputMetadata);
-    }
-
     return true;
 }
 
@@ -159,7 +154,7 @@ bool GaussianBlur::process(frame_container &frames)
 		return true;
 	}
 	
-	auto outFrame = makeFrame(mOutDataSize, mOutputMetadata);
+	auto outFrame = makeFrame(mOutDataSize);
 
 	if (!mDetail->compute(frame, outFrame))
 	{

@@ -235,9 +235,6 @@ bool ResizeNPPI::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	setMetadata(metadata);	
-
 	return true;
 }
 
@@ -249,7 +246,7 @@ bool ResizeNPPI::term()
 bool ResizeNPPI::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mFrameLength, mOutputMetadata);	
+	auto outFrame = makeFrame(mFrameLength);	
 
 	mDetail->compute(frame->data(), outFrame->data());	
 
@@ -323,6 +320,7 @@ void ResizeNPPI::setMetadata(framemetadata_sp& metadata)
 
 	mFrameLength = mOutputMetadata->getDataSize();
 	mDetail->setMetadata(metadata, mOutputMetadata);	
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
 }
 
 bool ResizeNPPI::shouldTriggerSOS()

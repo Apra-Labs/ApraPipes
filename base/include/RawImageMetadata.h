@@ -48,6 +48,9 @@ public:
 		case ImageMetadata::MONO:
 			_step = _width;
 			break;
+		case ImageMetadata::UYVY:
+			_step = _width * 2;
+			break;
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
 			_step = _width * 3;
@@ -127,6 +130,9 @@ public:
 		case ImageMetadata::MONO:
 			multiple = 1;
 			break;
+		case ImageMetadata::UYVY:
+			multiple = 2;
+			break;
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
 			multiple = 3;
@@ -191,6 +197,7 @@ protected:
 		case ImageMetadata::MONO:
 			channels = 1;
 			break;
+		case ImageMetadata::UYVY:
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
 		case ImageMetadata::YUV411_I:

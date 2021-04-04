@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 		{
 			// basic
 
-			auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 			encodedImageFrame->fIndex = 500;
 
 			frame_container frames;
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 		{
 			// pin1_2 comes late
 
-			auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 			encodedImageFrame->fIndex = 600;
 
 			frame_container frames;
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 			muxer->step();
 			BOOST_TEST(sink->try_pop().size() == 0);
 
-			auto encodedImageFrame2 = m1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame2 = m1->makeFrame(readDataSize, pin1_1);
 			encodedImageFrame2->fIndex = 600;
 
 			frame_container frames2;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 
 				for (auto i = 0; i < 5; i++)
 				{
-					auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+					auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 					encodedImageFrame->fIndex = 701 + i;
 
 					frame_container frames;
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 					BOOST_TEST(sink->try_pop().size() == 0);
 				}
 
-				auto encodedImageFrame2 = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame2 = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame2->fIndex = 706;
 
 				frame_container frames2;
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 				BOOST_TEST(sink->try_pop().size() == 0);
 
 				{
-					auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+					auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 					encodedImageFrame->fIndex = 706;
 
 					frame_container frames;
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 				{
 					// basic
 
-					auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+					auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 					encodedImageFrame->fIndex = 732;
 
 					frame_container frames;
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 
 			for (auto i = 0; i < 30; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 801 + i;
 
 				frame_container frames;
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 				BOOST_TEST(sink->try_pop().size() == 0);
 			}
 
-			auto encodedImageFrame2 = m1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame2 = m1->makeFrame(readDataSize, pin1_1);
 			encodedImageFrame2->fIndex = 831;
 
 			frame_container frames2;
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 			BOOST_TEST(sink->try_pop().size() == 0);
 
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 831;
 
 				frame_container frames;
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(allornone)
 			{
 				// basic
 
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 832;
 
 				frame_container frames;
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 		{
 			// basic
 
-			auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+			auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 			encodedImageFrame->fIndex = 500;
 
 			frame_container frames;
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 			// expectation is for 10 times no output								
 			for (auto i = 0; i < maxDelay + 1; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 700 + i;
 
 				frame_container frames;
@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 			// from 11 th time - we expect the frames to come
 			for (auto i = maxDelay + 1; i < maxDelay + 50; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 700 + i;
 
 				frame_container frames;
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_2)
 			// expectation is for 10 times no output								
 			for (auto i = 0; i < (maxDelay + 1); i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 800 + i;
 
 				frame_container frames;
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_2)
 			// from 11 th time - we expect the m1, m2 frames to come
 			for (auto i = maxDelay + 1; i < maxDelay + 50; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 800 + i;
 
 				frame_container frames;
@@ -555,7 +555,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_3)
 			auto noFramesCount = maxDelay / 2;
 			for (auto i = 0; i < noFramesCount; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 600 + i;
 
 				frame_container frames;
@@ -571,7 +571,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_3)
 			for (auto i = noFramesCount; i < maxDelay + 50; i++)
 			{
 				{
-					auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+					auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 					encodedImageFrame->fIndex = 600 + i;
 
 					frame_container frames;
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_3)
 				}
 
 				{
-					auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+					auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 					encodedImageFrame->fIndex = 600 + i - noFramesCount;
 
 					frame_container frames;
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 			auto noFramesCount = 5;
 			for (auto i = 0; i < noFramesCount; i++)
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = i;
 
 				frame_container frames;
@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 
 			// now directly frame index 3 is sent
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 3;
 
 				frame_container frames;
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 
 			{
 				// old frame index 0 is sent
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 0;
 
 				frame_container frames;
@@ -716,7 +716,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 
 			// now directly frame index 4 is sent
 			{
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 4;
 
 				frame_container frames;
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 
 			{
 				// frame index 4 is now sent
-				auto encodedImageFrame = m1->makeFrame(readDataSize, metadata);
+				auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
 				encodedImageFrame->fIndex = 4;
 
 				frame_container frames;

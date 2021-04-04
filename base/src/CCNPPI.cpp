@@ -308,12 +308,6 @@ bool CCNPPI::init()
 		return false;
 	}
 
-	auto metadata = getFirstInputMetadata();
-	if (metadata->isSet())
-	{
-		setMetadata(metadata);
-	}
-
 	return true;
 }
 
@@ -329,7 +323,7 @@ bool CCNPPI::process(frame_container &frames)
 	frame_sp outFrame;
 	if (!mNoChange)
 	{
-		outFrame = makeFrame(mFrameLength, mOutputMetadata);
+		outFrame = makeFrame();
 		if (!mDetail->compute(frame->data(), outFrame->data()))
 		{
 			return true;

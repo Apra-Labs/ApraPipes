@@ -42,6 +42,5 @@ private:
 	boost::shared_ptr<Detail> mDetail;
 
 	size_t mMaxStreamLength;
-	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 };
