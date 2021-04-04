@@ -25,8 +25,6 @@ IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)	
 ENDIF(ENABLE_ARM64)
 
-list(APPEND CMAKE_PREFIX_PATH "/usr/lib/aarch64-linux-gnu/tegra")
-
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
@@ -56,13 +54,13 @@ find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEF
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )			
-		find_library(NVJPEGLIB_L4T nvjpeg)
+		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(V4L2LIB v4l2)
+		find_library(NVJPEGLIB_L4T nvjpeg)
+		find_library(V4L2LIB nvv4l2)
 		find_library(EGLLIB EGL)
 		find_library(GLESv2LIB GLESv2)
 		find_library(X11LIB X11)
