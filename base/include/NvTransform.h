@@ -1,13 +1,6 @@
 #pragma once
 
 #include "Module.h"
-#include "CudaCommon.h"
-
-#include "ExtFrame.h"
-#include "DMABuffer.h"
-#include <boost/pool/object_pool.hpp>
-
-#include <deque>
 
 class NvTransformProps : public ModuleProps
 {

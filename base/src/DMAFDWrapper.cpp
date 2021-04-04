@@ -30,8 +30,8 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         return nullptr;
     }
 
-    NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write, &(buffer->hostPtr));
-	NvBufferMemSyncForCpu(buffer->m_fd, 0, &(buffer->hostPtr));
+    // Use NvBufferMemMapEx
+    NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write, &(buffer->hostPtr));	
     if(colorFormat == NvBufferColorFormat_ARGB32){
         cudaFree(0);
         buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
@@ -46,7 +46,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     return buffer;
 }
 
-DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR), m_fd(-1), index(_index), eglDisplay(_eglDisplay)
+DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR), m_fd(-1), index(_index), eglDisplay(_eglDisplay), hostPtr(nullptr), cudaPtr(nullptr)
 {
 }
 
@@ -55,10 +55,14 @@ DMAFDWrapper::~DMAFDWrapper()
     if (eglImage != EGL_NO_IMAGE_KHR)
     {
         DMAUtils::freeCudaPtr(eglImage,&pResource, eglDisplay);
-        auto res = NvDestroyEGLImage(NULL, eglImage);
+    }
+
+    if (hostPtr)
+    {
+        auto res = NvBufferMemMap(m_fd, 0, NvBufferMem_Read_Write, &hostPtr);
         if(res)
         {
-            LOG_ERROR << "NvDestroyEGLImage Error<>" << res;
+            LOG_ERROR << "NvBufferMemMap Error<>" << res;
         }
     }
 

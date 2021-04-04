@@ -1,4 +1,5 @@
 #include "DMAUtils.h"
+#include "Logger.h"
 
 uint8_t* DMAUtils::getCudaPtrForFD(int fd, EGLImageKHR eglImage, CUgraphicsResource *pResource, CUeglFrame eglFrame, EGLDisplay eglDisplay){
     eglImage = NvEGLImageFromFd(eglDisplay, fd);
@@ -51,5 +52,9 @@ void DMAUtils::freeCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResource, 
         return;
     }
 
-    NvDestroyEGLImage(eglDisplay, eglImage);
+    auto res = NvDestroyEGLImage(eglDisplay, eglImage);
+    if (res)
+    {
+        LOG_ERROR << "NvDestroyEGLImage Error<>" << res;
+    }
 }

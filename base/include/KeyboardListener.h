@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Module.h"
-#include "CudaCommon.h"
 
 class KeyboardListenerProps : public ModuleProps
 {

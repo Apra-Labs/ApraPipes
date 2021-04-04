@@ -24,6 +24,7 @@ public:
 			int k;
 			k = getchar();
             if(k == 's'){
+				// the below 2 variables are accessed by two different threads - both read and write
                 mOpen = true;
                 mFrameSaved = 0;
             }

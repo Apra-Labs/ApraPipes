@@ -283,7 +283,7 @@ protected:
 	bool handlePausePlay(bool play);
 	virtual void notifyPlay(bool play) {}
 private:	
-	frame_sp makeFrame(size_t size, framefactory_sp& metadata);
+	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
 	
