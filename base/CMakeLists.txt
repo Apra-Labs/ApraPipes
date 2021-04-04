@@ -36,8 +36,12 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
-hunter_add_package(ncursesw)
-find_package(ncursesw CONFIG REQUIRED)
+IF(NOT ENABLE_ARM64)
+	hunter_add_package(ncursesw)
+	find_package(ncursesw CONFIG REQUIRED)
+	SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+	SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
@@ -64,7 +68,8 @@ IF(ENABLE_CUDA)
 		find_library(X11LIB X11)
 		find_library(NVBUFUTILSLIB nvbuf_utils)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)		
+		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
+		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
 			libcudart_static.a	
@@ -101,7 +106,7 @@ include_directories(AFTER SYSTEM include
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
-	${NCURSESW_ROOT}/include/ncursesw
+	${CURSES_INCLUDE_DIR}
 )
 
 # ApraPipes library
@@ -431,5 +436,5 @@ target_link_libraries(aprapipesut
   ${LIB_AVCODEC}
   ${LIB_AVUTIL}
   ${LIB_FFSWR}
-  PkgConfig::ncursesw
+  ${CURSES_LIBRARIES}
 )
