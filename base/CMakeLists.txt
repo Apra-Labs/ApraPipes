@@ -50,6 +50,8 @@ find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFA
 find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
 find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
 find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
+find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
+
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
@@ -105,6 +107,7 @@ include_directories(AFTER SYSTEM include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
 	${CURSES_INCLUDE_DIR}
+	../thirdparty/zxing-cpp/_install/include/ZXing
 )
 
 # ApraPipes library
@@ -185,6 +188,7 @@ SET(GENERIC_FILES
 	src/H264FrameDemuxer.cpp
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
+	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
 	include/VirtualCameraSink.h
@@ -192,7 +196,7 @@ SET(GENERIC_FILES_H
 	include/H264ParserUtils.h
 	include/H264Utils.h
 	include/RTSPPusher.h
-	
+	include/QRReader.h
 )
 
 SET(IP_FILES
@@ -406,6 +410,7 @@ SET(UT_FILES
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
+	test/QRReader_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
@@ -435,4 +440,5 @@ target_link_libraries(aprapipesut
   ${LIB_AVUTIL}
   ${LIB_FFSWR}
   ${CURSES_LIBRARIES}
+  ${LIB_ZXING}
 )
