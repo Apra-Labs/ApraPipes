@@ -2,6 +2,8 @@
 #include "DMAUtils.h"
 #include "nvbuf_utils.h"
 #include "Logger.h"
+#include "AIPExceptions.h"
+
 #include "cuda_runtime.h"
 
 DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
@@ -59,7 +61,7 @@ DMAFDWrapper::~DMAFDWrapper()
 
     if (hostPtr)
     {
-        auto res = NvBufferMemMap(m_fd, 0, NvBufferMem_Read_Write, &hostPtr);
+        auto res = NvBufferMemUnMap(m_fd, 0, &hostPtr);
         if(res)
         {
             LOG_ERROR << "NvBufferMemMap Error<>" << res;
@@ -71,4 +73,24 @@ DMAFDWrapper::~DMAFDWrapper()
         NvBufferDestroy(m_fd);
         m_fd = -1;
     }
+}
+
+void* DMAFDWrapper::getHostPtr()
+{
+    if(!NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
+    {
+        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
+    }
+
+    return hostPtr;
+}
+
+void* DMAFDWrapper::getCudaPtr() const
+{
+    return cudaPtr;
+}
+
+int DMAFDWrapper::getIndex() const
+{
+    return index;
 }

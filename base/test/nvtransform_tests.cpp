@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test)
 		throw AIPException(AIP_FATAL, "eglInitialize failed");
 	} 
 	DMAFDWrapper* dmafdWrapper = DMAFDWrapper::create(0,1024,1024,NvBufferColorFormat_ABGR32,NvBufferLayout_Pitch,eglDisplay);
-	auto mapped = dmafdWrapper->hostPtr;
+	auto mapped = dmafdWrapper->getHostPtr();
 	memset(mapped,255,1024*1024*4);
 	auto rgbSize = 10;
 	for(auto i = 0; i < rgbSize; i++)
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(fdtest)
 		throw AIPException(AIP_FATAL, "eglInitialize failed");
 	} 
 	DMAFDWrapper* dmafdWrapper = DMAFDWrapper::create(0,1024,1024,NvBufferColorFormat_ABGR32,NvBufferLayout_Pitch,eglDisplay);
-	auto mapped = dmafdWrapper->hostPtr;
+	auto mapped = dmafdWrapper->getHostPtr();
 
 
 	auto src = DMAUtils::getCudaPtrForFD(dmafdWrapper->getFd(), eglInImage,&pInResource,eglInFrame, eglDisplay);

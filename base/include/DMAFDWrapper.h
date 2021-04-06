@@ -16,12 +16,11 @@ public:
     /* Return DMA buffer handle */
     int getFd() const { return m_fd; }
     EGLImageKHR getEGLImage() const { return eglImage; }
+    void* getHostPtr();
+    void* getCudaPtr() const;
+    int getIndex() const;
 
     int tempFD;
-    void* hostPtr;
-    uint8_t* cudaPtr;
-    int index;
-
 private:
     DMAFDWrapper(int index, EGLDisplay EGLDisplay);
 
@@ -30,4 +29,8 @@ private:
     CUgraphicsResource  pResource;
     CUeglFrame eglFrame;
     EGLDisplay eglDisplay;
+
+    void* hostPtr;
+    uint8_t* cudaPtr;
+    const int index;
 };

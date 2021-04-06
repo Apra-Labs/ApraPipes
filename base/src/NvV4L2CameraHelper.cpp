@@ -165,7 +165,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
 
         /* Query camera v4l2 buf length */
         memset(&buf, 0, sizeof buf);
-        buf.index = dmaFDWrapper->index;
+        buf.index = dmaFDWrapper->getIndex();
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory = V4L2_MEMORY_DMABUF;
 
