@@ -77,7 +77,7 @@ DMAFDWrapper::~DMAFDWrapper()
 
 void* DMAFDWrapper::getHostPtr()
 {
-    if(!NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
+    if(NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
     {
         throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
     }
