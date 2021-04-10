@@ -24,10 +24,6 @@ public:
             return;
         }
 
-        if(framemetadata->getFrameType() != FrameMetadata::FrameType::RAW_IMAGE){
-            throw AIPException(AIP_FATAL, "Only Frame Type accepted are Raw Image");
-        }
-
         eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         if(eglDisplay == EGL_NO_DISPLAY)
         {
@@ -39,18 +35,45 @@ public:
             throw AIPException(AIP_FATAL, "eglInitialize failed");
         } 
 
-		auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(framemetadata);
-		width = inputRawMetadata->getWidth();
-        height = inputRawMetadata->getHeight();
-        switch(inputRawMetadata->getImageType()){
-            case ImageMetadata::UYVY:
-                colorFormat = NvBufferColorFormat_UYVY;
-                break;
-            case ImageMetadata::RGBA:
-                colorFormat = NvBufferColorFormat_ARGB32;
-                break;
-            default:
-                throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(inputRawMetadata->getImageType()));
+        auto imageType = ImageMetadata::RGBA;
+
+        auto frameType = framemetadata->getFrameType();
+        switch (frameType)
+        {
+        case FrameMetadata::FrameType::RAW_IMAGE:
+        {
+            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(framemetadata);
+            width = inputRawMetadata->getWidth();
+            height = inputRawMetadata->getHeight();
+            imageType = inputRawMetadata->getImageType();
+        }
+        break;
+        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+        {
+            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(framemetadata);
+            width = inputRawMetadata->getWidth(0);
+            height = inputRawMetadata->getHeight(0);
+            imageType = inputRawMetadata->getImageType();
+        }
+        break;
+        default:
+            throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+            break;
+        }
+
+        switch (imageType)
+        {
+        case ImageMetadata::UYVY:
+            colorFormat = NvBufferColorFormat_UYVY;
+            break;
+        case ImageMetadata::RGBA:
+            colorFormat = NvBufferColorFormat_ARGB32;
+            break;
+        case ImageMetadata::YUV420:
+            colorFormat = NvBufferColorFormat_YUV420;
+            break;
+        default:
+            throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
         }
     };
 

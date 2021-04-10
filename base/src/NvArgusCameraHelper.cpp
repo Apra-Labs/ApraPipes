@@ -1,6 +1,7 @@
 #include "NvArgusCameraHelper.h"
 
-#include "ExtFrame.h"
+#include "Frame.h"
+#include "DMAFDWrapper.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
 
@@ -9,58 +10,33 @@
 
 NvArgusCameraHelper::NvArgusCameraHelper() : numBuffers(10), mRunning(false)
 {
-    eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if(eglDisplay == EGL_NO_DISPLAY)
-    {
-        throw AIPException(AIP_FATAL, "eglGetDisplay failed");
-    } 
-    
-    if (!eglInitialize(eglDisplay, NULL, NULL))
-    {
-       throw AIPException(AIP_FATAL, "eglInitialize failed");
-    }
-
-    nativeBuffers = new DMABuffer *[numBuffers];
-    for (auto i = 0; i < numBuffers; i++)
-    {
-        nativeBuffers[i] = nullptr;
-    }
-
     buffers = new Argus::UniqueObj<Argus::Buffer>[numBuffers];
 }
 
 NvArgusCameraHelper::~NvArgusCameraHelper()
-{
-    LOG_INFO << "in destructor ------------------";
-
-    for (auto i = 0; i < numBuffers; i++)
-    {
-        if (nativeBuffers[i])
-        {
-            delete nativeBuffers[i];
-            nativeBuffers[i] = nullptr;
-        }
-    }
-    delete[] nativeBuffers;
-    eglTerminate(eglDisplay);
-
+{    
+    mQueuedFrames.clear();
     delete[] buffers;
-
-    LOG_INFO << "out of destructor ------------------";
 }
 
-std::shared_ptr<NvArgusCameraHelper> NvArgusCameraHelper::create(SendFrame sendFrame)
+std::shared_ptr<NvArgusCameraHelper> NvArgusCameraHelper::create(uint32_t _numBuffers, SendFrame sendFrame, MakeFrame makeFrame)
 {
     auto instance = std::make_shared<NvArgusCameraHelper>();
-    instance->setSelf(instance);
+    instance->numBuffers = _numBuffers;
     instance->mSendFrame = sendFrame;
+    instance->mMakeFrame = makeFrame;
 
     return instance;
 }
 
-void NvArgusCameraHelper::setSelf(std::shared_ptr<NvArgusCameraHelper> &self)
+void NvArgusCameraHelper::sendFrame(Argus::Buffer *buffer)
 {
-    mSelf = self;
+    Argus::IBuffer *iBuffer = Argus::interface_cast<Argus::IBuffer>(buffer);
+    auto ptr = const_cast<void*>(iBuffer->getClientData());
+    auto frame = mQueuedFrames[ptr];
+    mSendFrame(frame);
+    std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
+    mQueuedFrames.erase(ptr);    
 }
 
 void NvArgusCameraHelper::operator()()
@@ -78,21 +54,31 @@ void NvArgusCameraHelper::operator()()
             break;
         }
 
-        auto dmaBuf = DMABuffer::fromArgusBuffer(buffer);        
-        dmaBuf->tempFD = dmaBuf->getFd(); // doing this for safety, if some downstream module changes the value by mistake
-        auto frame = frame_sp(frame_opool.construct(&dmaBuf->tempFD, 4), std::bind(&NvArgusCameraHelper::releaseBufferToCamera, this, std::placeholders::_1, mSelf, buffer));
-        mSendFrame(frame);
+        sendFrame(buffer);        
     }
 
-    LOG_ERROR << "consumer thread exiting";
 }
 
-void NvArgusCameraHelper::releaseBufferToCamera(ExtFrame *pointer, std::shared_ptr<NvArgusCameraHelper> self, Argus::Buffer *buffer)
+bool NvArgusCameraHelper::queueFrameToCamera()
 {
-    frame_opool.free(pointer);
+    while(true)
+    {
+        auto frame = mMakeFrame();
+        if(!frame.get()){
+            break;
+        }
+        auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 
-    Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-    stream->releaseBuffer(buffer);
+        Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
+        auto status = stream->releaseBuffer(static_cast<Argus::Buffer*>(const_cast<void*>(dmaFDWrapper->getClientData())));
+        if(Argus::STATUS_OK != status)
+        {
+            throw AIPException(AIP_FATAL, "Failed to release buffer to stream. queueFrameToCamera <" + std::to_string(status) + ">");
+        }
+
+        std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
+        mQueuedFrames[dmaFDWrapper] = frame;
+    }
 }
 
 bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
@@ -143,19 +129,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
     /* Create the OutputStream */
     outputStream.reset(iCaptureSession->createOutputStream(streamSettings.get()));
     Argus::IBufferOutputStream *iBufferOutputStream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-
-    /* Allocate native buffers */
-    Argus::Size2D<uint32_t> streamSize(width, height);
-    for (uint32_t i = 0; i < numBuffers; i++)
-    {
-        nativeBuffers[i] = DMABuffer::create(streamSize, NvBufferColorFormat_NV12, NvBufferLayout_BlockLinear, eglDisplay);
-        if (!nativeBuffers[i])
-        {
-            LOG_ERROR << "Failed to allocate NativeBuffer";
-            return false;
-        }
-    }
-
+    
     /* Create the Argus::BufferSettings object to configure Argus::Buffer creation */
     Argus::UniqueObj<Argus::BufferSettings> bufferSettings(iBufferOutputStream->createBufferSettings());
     Argus::IEGLImageBufferSettings *iBufferSettings =
@@ -170,29 +144,38 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
        stream for initial capture use) */
     for (uint32_t i = 0; i < numBuffers; i++)
     {
-        iBufferSettings->setEGLImage(nativeBuffers[i]->getEGLImage());
-        iBufferSettings->setEGLDisplay(eglDisplay);
+        auto frame = mMakeFrame();
+        if(!frame.get())
+        {
+            throw AIPException(AIP_FATAL, "failed to get frame. index<" + std::to_string(i) + ">");
+        }
+
+        auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
+
+        iBufferSettings->setEGLImage(dmaFDWrapper->getEGLImage());
+        iBufferSettings->setEGLDisplay(dmaFDWrapper->getEGLDisplay());
         buffers[i].reset(iBufferOutputStream->createBuffer(bufferSettings.get()));
         Argus::IBuffer *iBuffer = Argus::interface_cast<Argus::IBuffer>(buffers[i]);
-
-        /* Reference Argus::Argus::Buffer and DMABuffer each other */
-        iBuffer->setClientData(nativeBuffers[i]);
-        nativeBuffers[i]->setArgusBuffer(buffers[i].get());
-
         if (!Argus::interface_cast<Argus::IEGLImageBuffer>(buffers[i]))
         {
             LOG_ERROR << "Failed to create Argus::Buffer";
             return false;
         }
 
-        if (iBufferOutputStream->releaseBuffer(buffers[i].get()) != Argus::STATUS_OK)
+         /* Reference Argus::Argus::Buffer and DMA each other */
+        iBuffer->setClientData(dmaFDWrapper);
+        dmaFDWrapper->setClientData(buffers[i].get());
+        mQueuedFrames[dmaFDWrapper] = frame;
+
+        auto status = iBufferOutputStream->releaseBuffer(buffers[i].get());
+        if (status != Argus::STATUS_OK)
         {
             LOG_ERROR << "Failed to release Argus::Buffer for capture use";
             return false;
         }
     }
 
-    mThread = std::thread(std::ref(*(mSelf.get())));
+    mThread = std::thread(std::ref(*this));
 
     /* Create capture request and enable output stream */
     Argus::UniqueObj<Argus::Request> request(iCaptureSession->createRequest());
@@ -288,8 +271,6 @@ bool NvArgusCameraHelper::stop()
     mThread.join();
 
     LOG_INFO << "THREAD JOIN END";
-
-    mSelf.reset();
 
     return true;
 }

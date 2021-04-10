@@ -1,44 +1,42 @@
 #pragma once
 
-#include <memory>
 #include <thread>
-
-#include "ExtFrame.h"
-#include <boost/pool/object_pool.hpp>
+#include <map>
 
 #include <Argus/Argus.h>
-#include "DMABuffer.h"
+#include "CommonDefs.h"
+#include <mutex>
 
 class NvArgusCameraHelper
 {
 public:
     typedef std::function<void (frame_sp&)> SendFrame;
-    static std::shared_ptr<NvArgusCameraHelper> create(SendFrame sendFrame);
+    typedef std::function<frame_sp ()> MakeFrame;
+    static std::shared_ptr<NvArgusCameraHelper> create(uint32_t numBuffers, SendFrame sendFrame, MakeFrame makeFrame);
 
     NvArgusCameraHelper();
     ~NvArgusCameraHelper();
 
     bool start(uint32_t width, uint32_t height, uint32_t fps);
     bool stop(); // blocking call
+    bool queueFrameToCamera();
 
     void operator()();
 private:
-    void setSelf(std::shared_ptr<NvArgusCameraHelper> &mother);
-    void releaseBufferToCamera(ExtFrame *pointer, std::shared_ptr<NvArgusCameraHelper> self, Argus::Buffer* buffer);
+    void sendFrame(Argus::Buffer *buffer);
 
 private:
-    std::shared_ptr<NvArgusCameraHelper> mSelf;
     SendFrame mSendFrame;
+    MakeFrame mMakeFrame;
     std::thread mThread;
+    std::mutex mQueuedFramesMutex;
     bool mRunning;
 
-    boost::object_pool<ExtFrame> frame_opool;
-
 private:
-    EGLDisplay eglDisplay;
     uint32_t numBuffers;
-    DMABuffer **nativeBuffers;
+
     Argus::UniqueObj<Argus::Buffer> *buffers;
+    std::map<void*, frame_sp> mQueuedFrames;
 
     Argus::UniqueObj<Argus::CameraProvider> cameraProvider;
     Argus::UniqueObj<Argus::CaptureSession> captureSession;

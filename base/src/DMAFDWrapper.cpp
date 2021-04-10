@@ -33,15 +33,22 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     }
 
     // Use NvBufferMemMapEx
-    NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write, &(buffer->hostPtr));	
-    if(colorFormat == NvBufferColorFormat_ARGB32){
-        cudaFree(0);
+    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write, &(buffer->hostPtr));	
+    if(res)
+    {
+        LOG_ERROR << "NvBufferMemMap Error<>" << res;
+        delete buffer;
+        return nullptr;
+    }
+    if(colorFormat != NvBufferColorFormat_UYVY){
         buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
         if(buffer->eglImage == EGL_NO_IMAGE_KHR){
             LOG_ERROR << "Failed to create eglImage";
             delete buffer;
             return nullptr;
         }
+
+        cudaFree(0);        
         buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage,&buffer->pResource,buffer->eglFrame, eglDisplay);
     }
 
@@ -64,7 +71,7 @@ DMAFDWrapper::~DMAFDWrapper()
         auto res = NvBufferMemUnMap(m_fd, 0, &hostPtr);
         if(res)
         {
-            LOG_ERROR << "NvBufferMemMap Error<>" << res;
+            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
         }
     }
 
@@ -93,4 +100,14 @@ void* DMAFDWrapper::getCudaPtr() const
 int DMAFDWrapper::getIndex() const
 {
     return index;
+}
+
+const void* DMAFDWrapper::getClientData() const
+{
+    return clientData;
+}
+
+void DMAFDWrapper::setClientData(const void* _clientData)
+{
+    clientData = _clientData;
 }

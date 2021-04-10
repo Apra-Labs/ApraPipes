@@ -1,6 +1,7 @@
 #include "V4L2CUYUV420Converter.h"
 #include <cstring>
 #include "nvbuf_utils.h"
+#include "DMAFDWrapper.h"
 #include "AIPExceptions.h"
 
 V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format) : mFormat(format)
@@ -68,8 +69,8 @@ V4L2CUDMABufYUV420Converter::~V4L2CUDMABufYUV420Converter()
 
 void V4L2CUDMABufYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
-    auto ptr = static_cast<int *>(frame->data());    
-    buffer->v4l2_buf.m.planes[0].m.fd = *ptr;
+    auto ptr = static_cast<DMAFDWrapper *>(frame->data());    
+    buffer->v4l2_buf.m.planes[0].m.fd = ptr->getFd();
     buffer->v4l2_buf.m.planes[0].bytesused = 1;
 
     std::lock_guard<std::mutex> lock(mCacheMutex);

@@ -29,7 +29,7 @@ protected:
 	bool validateOutputPins();
 
 private:
-	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	std::shared_ptr<NvArgusCameraHelper> mHelper;
+	NvArgusCameraProps mProps;
 };

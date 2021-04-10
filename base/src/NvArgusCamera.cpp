@@ -3,20 +3,10 @@
 #include "FrameMetadata.h"
 
 NvArgusCamera::NvArgusCamera(NvArgusCameraProps props)
-	: Module(SOURCE, "NvArgusCamera", props)
+	: Module(SOURCE, "NvArgusCamera", props), mProps(props)
 {
-	mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(props.width, props.height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
-	mOutputPinId = addOutputPin(mOutputMetadata);
-
-	mHelper = NvArgusCameraHelper::create([&](frame_sp &frame) -> void {
-		frame->setMetadata(mOutputMetadata);
-
-		frame_container frames;
-		frames.insert(make_pair(mOutputPinId, frame));
-		send(frames);
-	});
-
-	mHelper->start(props.width, props.height, props.fps);
+	auto outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(static_cast<int>(props.width), static_cast<int>(props.height), ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+	mOutputPinId = addOutputPin(outputMetadata);	
 }
 
 NvArgusCamera::~NvArgusCamera() {}
@@ -38,6 +28,15 @@ bool NvArgusCamera::init()
 		return false;
 	}
 
+	makeFrame();
+
+	mHelper = NvArgusCameraHelper::create(
+		mProps.maxConcurrentFrames, [&](frame_sp &frame) -> void {
+		frame_container frames;
+		frames.insert(make_pair(mOutputPinId, frame));
+		send(frames); }, [&]() -> frame_sp { return makeFrame(); });
+	mHelper->start(mProps.width, mProps.height, static_cast<uint32_t>(mProps.fps));
+
 	return true;
 }
 
@@ -52,6 +51,6 @@ bool NvArgusCamera::term()
 
 bool NvArgusCamera::produce()
 {
-
+	mHelper->queueFrameToCamera();
 	return true;
 }

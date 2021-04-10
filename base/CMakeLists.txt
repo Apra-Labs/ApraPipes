@@ -264,7 +264,6 @@ IF(ENABLE_ARM64)
 		src/H264EncoderV4L2Helper.cpp
 		src/V4L2CUYUV420Converter.cpp
 		src/H264EncoderV4L2.cpp
-		src/DMABuffer.cpp
 		src/DMAFDWrapper.cpp
 		src/NvArgusCameraHelper.cpp
 		src/NvArgusCamera.cpp
@@ -305,7 +304,6 @@ IF(ENABLE_ARM64)
 		include/H264EncoderV4L2Helper.h
 		include/V4L2CUYUV420Converter.h
 		include/H264EncoderV4L2.h
-		include/DMABuffer.h
 		include/DMAAllocator.h
 		include/DMAFDWrapper.h
 		include/Allocators.h

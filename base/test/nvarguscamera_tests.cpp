@@ -12,6 +12,7 @@ BOOST_AUTO_TEST_SUITE(nvarguscamera_tests)
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 120;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
@@ -41,6 +42,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 	
@@ -78,6 +80,7 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 	

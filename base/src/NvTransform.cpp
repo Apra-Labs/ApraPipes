@@ -6,7 +6,6 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "DMAFDWrapper.h"
-#include "DMABuffer.h"
 
 #include "npp.h"
 
