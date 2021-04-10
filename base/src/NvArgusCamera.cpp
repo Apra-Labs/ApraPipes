@@ -28,8 +28,6 @@ bool NvArgusCamera::init()
 		return false;
 	}
 
-	makeFrame();
-
 	mHelper = NvArgusCameraHelper::create(
 		mProps.maxConcurrentFrames, [&](frame_sp &frame) -> void {
 		frame_container frames;
