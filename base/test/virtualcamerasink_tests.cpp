@@ -2,6 +2,7 @@
 
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -40,6 +41,42 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
+{
+
+	LoggerProps logprops;
+	logprops.logLevel = boost::log::trivial::severity_level::info;
+	Logger::initLogger(logprops);
+
+	// metadata is known
+	auto width = 640;
+	auto height = 360;
+
+	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360");
+	fileReaderProps.fps = 30;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
+	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
+
+	fileReader->addOutputPin(metadata);
+
+	VirtualCameraSinkProps sinkProps("/dev/video10");
+	// sinkProps.logHealth = true;
+	// sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	fileReader->setNext(sink);	
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();

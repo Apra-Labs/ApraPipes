@@ -18,7 +18,7 @@
 class VirtualCameraSink::Detail
 {
 public:
-	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), imageSize(0)
+	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), imageSize(0), imageType(ImageMetadata::ImageType::RGB)
 	{
 	}
 
@@ -32,25 +32,57 @@ public:
 	}
 
 	void setMetadata(framemetadata_sp &metadata)
-	{
-		if (metadata->getFrameType() != FrameMetadata::FrameType::RAW_IMAGE)
-		{
-			throw AIPException(AIP_FATAL, "Only RGB is supported. Wrong FrameType");
-		}
+	{	
+        auto frameType = metadata->getFrameType();
+        switch (frameType)
+        {
+        case FrameMetadata::FrameType::RAW_IMAGE:
+        {
+            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+            width = inputRawMetadata->getWidth();
+            height = inputRawMetadata->getHeight();
+			auto step = inputRawMetadata->getStep();
+			if (step != width * 3)
+			{
+				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*3. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
+			}
+			imageType = inputRawMetadata->getImageType();
+        }
+        break;
+        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+        {
+            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+            width = inputRawMetadata->getWidth(0);
+            height = inputRawMetadata->getHeight(0);
+			auto channels = inputRawMetadata->getChannels();
+			for(auto i = 0; i < channels; i++)
+			{
+				auto step = inputRawMetadata->getStep(i);
+				auto _width = inputRawMetadata->getWidth(i);
+				if (step != _width)
+				{
+					throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width. width<" + std::to_string(_width) + "> step<" + std::to_string(step) + ">");
+				}
+			}			
+            imageType = inputRawMetadata->getImageType();
+        }
+        break;
+        default:
+            throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+            break;
+        }
 
-		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if (rawImageMetadata->getImageType() != ImageMetadata::RGB)
-		{
-			throw AIPException(AIP_FATAL, "Only RGB is supported. Wrong ImageType");
-		}
-		width = rawImageMetadata->getWidth();
-		height = rawImageMetadata->getHeight();
-		step = rawImageMetadata->getStep();
-		imageSize = rawImageMetadata->getDataSize();
-		if (step != width * 3)
-		{
-			throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*3. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
-		}
+        switch (imageType)
+        {       
+        case ImageMetadata::RGB:
+        case ImageMetadata::YUV420:
+            break;
+        default:
+            throw AIPException(AIP_FATAL, "Expected ImageType RGB or YUV420. Actual<" + std::to_string(imageType) + ">");
+        }	
+
+		imageSize = metadata->getDataSize();
+		
 
 		init();
 	}
@@ -97,7 +129,17 @@ private:
 		}
 		v.fmt.pix.width = width;
 		v.fmt.pix.height = height;
-		v.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
+		switch (imageType)
+		{
+		case ImageMetadata::ImageType::RGB:
+			v.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
+			break;
+		case ImageMetadata::ImageType::YUV420:
+			v.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+			break;
+		default:
+			throw AIPException(AIP_NOTEXEPCTED, "RGB or YUV420 is expected.");
+		}
 		v.fmt.pix.sizeimage = imageSize;
 		v.fmt.pix.field = V4L2_FIELD_NONE;
 		if (ioctl(dev_fd, VIDIOC_S_FMT, &v) == -1)
@@ -109,7 +151,7 @@ private:
 	int dev_fd;
 	int width;
 	int height;
-	size_t step;
+	ImageMetadata::ImageType imageType;
 };
 
 VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
@@ -129,7 +171,7 @@ bool VirtualCameraSink::validateInputPins()
 
 	framemetadata_sp metadata = getFirstInputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::RAW_IMAGE)
+	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
 		return false;
