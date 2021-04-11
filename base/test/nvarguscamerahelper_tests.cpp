@@ -18,6 +18,7 @@ BOOST_AUTO_TEST_CASE(memory_alloc_test, *boost::unit_test::disabled())
 
     auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
     auto frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
+    frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
     auto frame = frameFactory->create(size, frameFactory);
     BOOST_TEST(frame.get() != nullptr);
     if (frame.get())

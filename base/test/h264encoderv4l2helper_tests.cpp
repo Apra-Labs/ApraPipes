@@ -1,11 +1,14 @@
 #include <boost/test/unit_test.hpp>
 
+#include "RawImagePlanarMetadata.h"
 #include "H264EncoderV4L2Helper.h"
-
-#include "nvbuf_utils.h"
+#include "FrameFactory.h"
+#include "Frame.h"
+#include "Logger.h"
 
 #include "test_utils.h"
-#include "Logger.h"
+
+#include "nvbuf_utils.h"
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2helper_tests)
 
@@ -42,38 +45,13 @@ BOOST_AUTO_TEST_CASE(yuv420_black_dmabuf)
 {
     auto width = 1280;
     auto height = 720;
-    auto imageSizeY = width * height;
-    auto imageSize = (imageSizeY * 3) >> 1;
-
-    auto data = new uint8_t[imageSize];    
-    memset(data, 0, imageSizeY);
-    memset(data + imageSizeY, 128, imageSizeY >> 1);
-
-
-    NvBufferCreateParams inputParams = {0};
-
-    inputParams.width = width;
-    inputParams.height = height;
-    inputParams.layout = NvBufferLayout_BlockLinear;
-    inputParams.colorFormat = NvBufferColorFormat_NV12;
-    inputParams.payloadType = NvBufferPayload_SurfArray;
-    inputParams.nvbuf_tag = NvBufferTag_CAMERA;
-
-    int fd = -1;
-    BOOST_TEST(NvBufferCreateEx(&fd, &inputParams) == 0);
-    BOOST_TEST(fd != -1);
-
-    NvBufferParams par;
-    NvBufferGetParams(fd, &par);
-    void *ptr_y;
-    uint8_t *ptr_cur;
-    NvBufferMemMap(fd, 0, NvBufferMem_Write, &ptr_y);
-    NvBufferMemSyncForCpu(fd, 0, &ptr_y);
     
-    NvBufferMemSyncForDevice(fd, 0, &ptr_y);
-    NvBufferMemUnMap(fd, 0, &ptr_y);
+    auto imageSize = (width * height * 3) >> 1;
 
-    auto inputFrame = boost::shared_ptr<Frame>(new ExtFrame(&fd, 4));
+    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+    auto frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
+
+    auto inputFrame = frameFactory->create(imageSize, frameFactory);
 
     auto helper = H264EncoderV4L2Helper::create(V4L2_MEMORY_DMABUF, V4L2_PIX_FMT_YUV420M, width, height, width, 4*1024*1024, 30, [](frame_sp& frame) -> void {
         LOG_ERROR << frame->size();
@@ -87,9 +65,6 @@ BOOST_AUTO_TEST_CASE(yuv420_black_dmabuf)
     boost::this_thread::sleep_for(boost::chrono::seconds(5));
     helper->stop();
     helper.reset();
-
-    BOOST_TEST(NvBufferDestroy(fd) == 0);
-    delete[] data;
 }
 
 BOOST_AUTO_TEST_CASE(rgb24_black)

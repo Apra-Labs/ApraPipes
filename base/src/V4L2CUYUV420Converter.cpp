@@ -1,8 +1,11 @@
 #include "V4L2CUYUV420Converter.h"
-#include <cstring>
-#include "nvbuf_utils.h"
 #include "DMAFDWrapper.h"
+#include "ApraEGLDisplay.h"
+#include "Frame.h"
 #include "AIPExceptions.h"
+
+#include "nvbuf_utils.h"
+#include <cstring>
 
 V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format) : mFormat(format)
 {
@@ -85,7 +88,7 @@ void V4L2CUDMABufYUV420Converter::releaseFrame()
 
 V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, uint32_t srcStep, struct v4l2_format &format) : V4L2CUYUV420Converter(srcWidth, srcHeight, format)
 {
-    initEGLDisplay();
+    eglDisplay = ApraEGLDisplay::getEGLDisplay();
     cudaFree(0);
     oSizeROI = {static_cast<int>(srcWidth), static_cast<int>(srcHeight)};
     nsrcStep = static_cast<int>(srcStep);
@@ -98,39 +101,7 @@ V4L2CURGBToYUV420Converter::V4L2CURGBToYUV420Converter(uint32_t srcWidth, uint32
 
 V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
 {
-    termEGLDisplay();
-}
-
-void V4L2CURGBToYUV420Converter::initEGLDisplay()
-{
-    eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (eglDisplay == EGL_NO_DISPLAY)
-    {
-        throw AIPException(AIP_FATAL, "Could not get EGL display connection");
-    }
-
-    /**
-     * Initialize egl, egl maps DMA mFD of encoder output plane
-     * for CUDA to process (render a black rectangle).
-     */
-    if (!eglInitialize(eglDisplay, NULL, NULL))
-    {
-        throw AIPException(AIP_FATAL, "init EGL display failed");
-    }
-}
-
-void V4L2CURGBToYUV420Converter::termEGLDisplay()
-{
-    if (!eglTerminate(eglDisplay))
-    {
-        LOG_ERROR << "ERROR eglTerminate failed";
-        return;
-    }
-
-    if (!eglReleaseThread())
-    {
-        LOG_ERROR << "ERROR eglReleaseThread failed";
-    }
+    
 }
 
 void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)

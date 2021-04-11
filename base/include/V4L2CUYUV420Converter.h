@@ -1,12 +1,12 @@
 #pragma once
 
+#include "CommonDefs.h"
 #include "AV4L2Buffer.h"
 
 #include "EGL/egl.h"
 #include "cudaEGL.h"
 #include "npp.h"
 
-#include "Frame.h"
 #include <deque>
 #include <mutex>
 
@@ -54,10 +54,6 @@ public:
     ~V4L2CURGBToYUV420Converter();
 
     void process(frame_sp& frame, AV4L2Buffer *buffer);
-
-private:
-    void initEGLDisplay();
-    void termEGLDisplay();
 
 private:
     EGLDisplay eglDisplay;

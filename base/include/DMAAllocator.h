@@ -3,6 +3,7 @@
 #include "DMAFDWrapper.h"
 #include "nvbuf_utils.h"
 #include "FrameMetadataFactory.h"
+#include "ApraEGLDisplay.h"
 #include <deque>
 
 class DMAAllocator : public HostAllocator
@@ -24,16 +25,7 @@ public:
             return;
         }
 
-        eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if(eglDisplay == EGL_NO_DISPLAY)
-        {
-            throw AIPException(AIP_FATAL, "eglGetDisplay failed");
-        } 
-
-        if (!eglInitialize(eglDisplay, NULL, NULL))
-        {
-            throw AIPException(AIP_FATAL, "eglInitialize failed");
-        } 
+        eglDisplay = ApraEGLDisplay::getEGLDisplay();
 
         auto imageType = ImageMetadata::RGBA;
 
@@ -82,13 +74,7 @@ public:
         for(auto wrapper : dmaFDWrapperArr)
         {
             delete wrapper;
-        }
-
-        eglTerminate(eglDisplay);
-        if (!eglReleaseThread())
-        {
-            LOG_ERROR << "ERROR eglReleaseThread failed";
-        }        
+        }             
     }
 
     void *allocateChunks(size_t n)

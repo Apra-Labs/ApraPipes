@@ -273,6 +273,7 @@ IF(ENABLE_ARM64)
 		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
 		src/NvTransform.cpp
+		src/ApraEGLDisplay.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -315,6 +316,7 @@ IF(ENABLE_ARM64)
 		include/ApraNvEglRenderer.h
 		include/DMAUtils.h
 		include/NvTransform.h
+		include/ApraEGLDisplay.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
@@ -369,6 +371,7 @@ IF (ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
 			test/cuda_arm_tests.cpp
+			test/apraegldisplay_tests.cpp
 		)
 	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
