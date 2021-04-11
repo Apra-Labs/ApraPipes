@@ -1,5 +1,6 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
+#include "DMAFDWrapper.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
@@ -32,30 +33,30 @@ public:
 	}
 
 	void setMetadata(framemetadata_sp &metadata)
-	{	
-        auto frameType = metadata->getFrameType();
-        switch (frameType)
-        {
-        case FrameMetadata::FrameType::RAW_IMAGE:
-        {
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-            width = inputRawMetadata->getWidth();
-            height = inputRawMetadata->getHeight();
+	{
+		auto frameType = metadata->getFrameType();
+		switch (frameType)
+		{
+		case FrameMetadata::FrameType::RAW_IMAGE:
+		{
+			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+			width = inputRawMetadata->getWidth();
+			height = inputRawMetadata->getHeight();
 			auto step = inputRawMetadata->getStep();
 			if (step != width * 3)
 			{
 				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*3. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
 			}
 			imageType = inputRawMetadata->getImageType();
-        }
-        break;
-        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
-        {
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-            width = inputRawMetadata->getWidth(0);
-            height = inputRawMetadata->getHeight(0);
+		}
+		break;
+		case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+		{
+			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			width = inputRawMetadata->getWidth(0);
+			height = inputRawMetadata->getHeight(0);
 			auto channels = inputRawMetadata->getChannels();
-			for(auto i = 0; i < channels; i++)
+			for (auto i = 0; i < channels; i++)
 			{
 				auto step = inputRawMetadata->getStep(i);
 				auto _width = inputRawMetadata->getWidth(i);
@@ -63,36 +64,50 @@ public:
 				{
 					throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width. width<" + std::to_string(_width) + "> step<" + std::to_string(step) + ">");
 				}
-			}			
-            imageType = inputRawMetadata->getImageType();
-        }
-        break;
-        default:
-            throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
-            break;
-        }
+			}
+			imageType = inputRawMetadata->getImageType();
+		}
+		break;
+		default:
+			throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+			break;
+		}
 
-        switch (imageType)
-        {       
-        case ImageMetadata::RGB:
-        case ImageMetadata::YUV420:
-            break;
-        default:
-            throw AIPException(AIP_FATAL, "Expected ImageType RGB or YUV420. Actual<" + std::to_string(imageType) + ">");
-        }	
+		switch (imageType)
+		{
+		case ImageMetadata::RGB:
+		case ImageMetadata::YUV420:
+			break;
+		default:
+			throw AIPException(AIP_FATAL, "Expected ImageType RGB or YUV420. Actual<" + std::to_string(imageType) + ">");
+		}
+
+		auto memType = metadata->getMemType();
+		switch (memType)
+		{
+		case FrameMetadata::MemType::HOST:
+			getDataPtr = [&](frame_sp& frame) -> void* {
+				return getHostDataPtr(frame); };
+			break;
+		case FrameMetadata::MemType::DMABUF:
+			getDataPtr = [&](frame_sp& frame) -> void* {
+				return getDMAFDHostDataPtr(frame); };
+			break;
+		default:
+			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
+		}
 
 		imageSize = metadata->getDataSize();
-		
 
 		init();
 	}
 
-	bool writeToDevice(void *data)
+	bool writeToDevice(frame_sp frame)
 	{
 		try
 		{
-			auto ret = write(dev_fd, data, imageSize);
-			if(ret == -1)
+			auto ret = write(dev_fd, getDataPtr(frame), imageSize);
+			if (ret == -1)
 			{
 				LOG_ERROR << "FAILED TO WRITE TO DEVICE.";
 			}
@@ -148,10 +163,24 @@ private:
 		}
 	}
 
+	void *getHostDataPtr(frame_sp &frame)
+	{
+		return frame->data();
+	}
+
+	void *getDMAFDHostDataPtr(frame_sp &frame)
+	{
+		auto ptr = static_cast<DMAFDWrapper *>(frame->data());
+		return ptr->getHostPtr();
+	}
+
 	int dev_fd;
 	int width;
 	int height;
 	ImageMetadata::ImageType imageType;
+
+	typedef std::function<void *(frame_sp &)> GetDataPtr;
+	GetDataPtr getDataPtr;
 };
 
 VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
@@ -197,7 +226,7 @@ bool VirtualCameraSink::term()
 
 bool VirtualCameraSink::process(frame_container &frames)
 {
-	mDetail->writeToDevice(frames.cbegin()->second->data());
+	mDetail->writeToDevice(frames.cbegin()->second);
 
 	return true;
 }

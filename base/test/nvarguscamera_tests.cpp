@@ -3,6 +3,7 @@
 #include "NvArgusCamera.h"
 #include "FileWriterModule.h"
 #include "H264EncoderV4L2.h"
+#include "VirtualCameraSink.h"
 #include "RTSPPusher.h"
 #include "StatSink.h"
 #include "PipeLine.h"
@@ -20,6 +21,36 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	source->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
+{
+	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
+	sourceProps.fps = 120;
+	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+
+	VirtualCameraSinkProps sinkProps("/dev/video10");
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	source->setNext(sink);
 
 	PipeLine p("test");
