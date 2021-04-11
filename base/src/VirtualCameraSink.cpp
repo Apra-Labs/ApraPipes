@@ -1,6 +1,6 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
-#ifdef ARM_64
+#ifdef ARM64
 #include "DMAFDWrapper.h"
 #endif
 #include "Frame.h"
@@ -90,7 +90,7 @@ public:
 		case FrameMetadata::MemType::HOST:
 			getDataPtr = [&](frame_sp &frame) -> void * { return getHostDataPtr(frame); };
 			break;
-#ifdef ARM_64
+#ifdef ARM64
 		case FrameMetadata::MemType::DMABUF:
 			getDataPtr = [&](frame_sp &frame) -> void * { return getDMAFDHostDataPtr(frame); };
 			break;
@@ -111,7 +111,7 @@ public:
 			auto ret = write(dev_fd, getDataPtr(frame), imageSize);
 			if (ret == -1)
 			{
-				LOG_ERROR << "FAILED TO WRITE TO DEVICE.";
+				LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
 			}
 		}
 		catch (...)
@@ -139,6 +139,7 @@ private:
 		}
 
 		struct v4l2_format v;
+		memset(&v, 0, sizeof(struct v4l2_format));
 		v.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
 		if (ioctl(dev_fd, VIDIOC_G_FMT, &v) == -1)
 		{
@@ -163,6 +164,13 @@ private:
 		{
 			throw AIPException(AIP_FATAL, "cannot setup video device 2<" + props.device + ">");
 		}
+
+		memset(&v, 0, sizeof(struct v4l2_format));
+		v.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+		if (ioctl(dev_fd, VIDIOC_G_FMT, &v) == -1)
+		{
+			throw AIPException(AIP_FATAL, "cannot setup video device<" + props.device + ">");
+		}
 	}
 
 	void *getHostDataPtr(frame_sp &frame)
@@ -170,7 +178,7 @@ private:
 		return frame->data();
 	}
 
-#ifdef ARM_64
+#ifdef ARM64
 	void *getDMAFDHostDataPtr(frame_sp &frame)
 	{
 		auto ptr = static_cast<DMAFDWrapper *>(frame->data());
