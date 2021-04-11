@@ -1,6 +1,8 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
+#ifdef ARM_64
 #include "DMAFDWrapper.h"
+#endif
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
@@ -86,13 +88,13 @@ public:
 		switch (memType)
 		{
 		case FrameMetadata::MemType::HOST:
-			getDataPtr = [&](frame_sp& frame) -> void* {
-				return getHostDataPtr(frame); };
+			getDataPtr = [&](frame_sp &frame) -> void * { return getHostDataPtr(frame); };
 			break;
+#ifdef ARM_64
 		case FrameMetadata::MemType::DMABUF:
-			getDataPtr = [&](frame_sp& frame) -> void* {
-				return getDMAFDHostDataPtr(frame); };
+			getDataPtr = [&](frame_sp &frame) -> void * { return getDMAFDHostDataPtr(frame); };
 			break;
+#endif
 		default:
 			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
 		}
@@ -168,11 +170,13 @@ private:
 		return frame->data();
 	}
 
+#ifdef ARM_64
 	void *getDMAFDHostDataPtr(frame_sp &frame)
 	{
 		auto ptr = static_cast<DMAFDWrapper *>(frame->data());
 		return ptr->getHostPtr();
 	}
+#endif
 
 	int dev_fd;
 	int width;
