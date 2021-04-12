@@ -60,7 +60,7 @@ bool FileWriterModule::process(frame_container& frames)
 
 	try
 	{
-		if (!mDriver->Write(static_cast<uint8_t*>(frame->data()), buffer_size) && mDriver->IsConnected())
+		if (!mDriver->Write(static_cast<uint8_t*>(mGetDataPtr(frame)), buffer_size) && mDriver->IsConnected())
 		{
 			LOG_FATAL << "write failed<>" << frame->fIndex;
 		}
@@ -71,4 +71,17 @@ bool FileWriterModule::process(frame_container& frames)
 	}
 	
 	return true;
+}
+
+bool FileWriterModule::processSOS(frame_sp &frame)
+{
+	auto metadata = frame->getMetadata();
+	mGetDataPtr = FrameUtils::getDataPtrFunction(metadata->getMemType());
+
+	return true;
+}
+
+bool FileWriterModule::shouldTriggerSOS()
+{
+	return !mGetDataPtr;
 }

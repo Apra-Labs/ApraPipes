@@ -1,16 +1,17 @@
 #include <boost/test/unit_test.hpp>
 
+#include "PipeLine.h"
+#include "H264EncoderV4L2.h"
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "H264EncoderV4L2.h"
-#include "test_utils.h"
-#include "PipeLine.h"
 #include "StatSink.h"
 #include "CudaMemCopy.h"
 #include "RTSPPusher.h"
+
+#include "test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2_tests)
 
