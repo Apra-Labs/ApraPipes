@@ -14,27 +14,29 @@ class NvTransform::Detail
 public:
 	Detail(NvTransformProps &_props) : props(_props)
 	{
-        src_rect.top = _props.top;
-        src_rect.left = _props.left;
-        src_rect.width = _props.width;
-        src_rect.height = _props.height;
+		src_rect.top = _props.top;
+		src_rect.left = _props.left;
+		src_rect.width = _props.width;
+		src_rect.height = _props.height;
 
 		memset(&transParams, 0, sizeof(transParams));
 		transParams.transform_filter = NvBufferTransform_Filter_Smart;
-        if(src_rect.width != 0){
-		    transParams.src_rect = src_rect;
+		if (src_rect.width != 0)
+		{
+			transParams.src_rect = src_rect;
 			transParams.transform_flag = NVBUFFER_TRANSFORM_FILTER | NVBUFFER_TRANSFORM_CROP_SRC;
-        }else{
+		}
+		else
+		{
 			transParams.transform_flag = NVBUFFER_TRANSFORM_FILTER;
 		}
 	}
 
 	~Detail()
 	{
-
 	}
 
-	bool compute(frame_sp& frame, int outFD)
+	bool compute(frame_sp &frame, int outFD)
 	{
 		auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 		NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
@@ -48,13 +50,13 @@ public:
 	std::string outputPinId;
 	NvTransformProps props;
 
-private:	
+private:
 	NvBufferTransformParams transParams;
 };
 
 NvTransform::NvTransform(NvTransformProps props) : Module(TRANSFORM, "NvTransform", props)
 {
-	mDetail.reset(new Detail(props));	
+	mDetail.reset(new Detail(props));
 }
 
 NvTransform::~NvTransform() {}
@@ -93,7 +95,7 @@ bool NvTransform::validateOutputPins()
 		return false;
 	}
 
-	framemetadata_sp metadata = getFirstOutputMetadata();	
+	framemetadata_sp metadata = getFirstOutputMetadata();
 	if (metadata->getFrameType() != FrameMetadata::RAW_IMAGE)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << metadata->getFrameType() << ">";
@@ -105,26 +107,26 @@ bool NvTransform::validateOutputPins()
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
-	}	
+	}
 
 	return true;
 }
 
-void NvTransform::addInputPin(framemetadata_sp& metadata, string& pinId)
+void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 	switch (mDetail->props.imageType)
 	{
-		case ImageMetadata::RGBA:
-			mDetail->outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
-			break;
-		default:
-			throw AIPException(AIP_FATAL, "Unsupported Image Type<" + std::to_string(inputRawMetadata->getImageType()) + ">");
+	case ImageMetadata::RGBA:
+		mDetail->outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+		break;
+	default:
+		throw AIPException(AIP_FATAL, "Unsupported Image Type<" + std::to_string(inputRawMetadata->getImageType()) + ">");
 	}
 
 	mDetail->outputMetadata->copyHint(*metadata.get());
-	mDetail->outputPinId = addOutputPin(mDetail->outputMetadata);	
+	mDetail->outputPinId = addOutputPin(mDetail->outputMetadata);
 }
 
 bool NvTransform::init()
@@ -144,9 +146,9 @@ bool NvTransform::term()
 
 bool NvTransform::process(frame_container &frames)
 {
-	auto frame = frames.cbegin()->second;	
-    auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(),mDetail->outputPinId);
-	if(!outFrame.get())
+	auto frame = frames.cbegin()->second;
+	auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
+	if (!outFrame.get())
 	{
 		LOG_ERROR << "FAILED TO GET BUFFER";
 		return false;
@@ -155,7 +157,7 @@ bool NvTransform::process(frame_container &frames)
 	auto dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
 	dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
 
-    mDetail->compute(frame,dmaFdWrapper->tempFD);
+	mDetail->compute(frame, dmaFdWrapper->tempFD);
 
 	frames.insert(make_pair(mDetail->outputPinId, outFrame));
 	send(frames);
@@ -171,8 +173,8 @@ bool NvTransform::processSOS(frame_sp &frame)
 	return true;
 }
 
-void NvTransform::setMetadata(framemetadata_sp& metadata)
-{	
+void NvTransform::setMetadata(framemetadata_sp &metadata)
+{
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 	auto width = rawMetadata->getWidth();
 	auto height = rawMetadata->getHeight();
@@ -180,23 +182,25 @@ void NvTransform::setMetadata(framemetadata_sp& metadata)
 	auto depth = rawMetadata->getDepth();
 	auto inputImageType = rawMetadata->getImageType();
 
-
 	if (!(mDetail->props.imageType == ImageMetadata::RGBA && inputImageType == ImageMetadata::UYVY))
 	{
 		throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
 	}
 
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->outputMetadata);
-    if(mDetail->props.width == 0){
-        RawImageMetadata outputMetadata(width, height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);		
-	    rawOutMetadata->setData(outputMetadata);
-    }else{
-        RawImageMetadata outputMetadata(mDetail->props.width, mDetail->props.height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);		
-	    rawOutMetadata->setData(outputMetadata);
-    }
+	if (mDetail->props.width == 0)
+	{
+		RawImageMetadata outputMetadata(width, height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);
+		rawOutMetadata->setData(outputMetadata);
+	}
+	else
+	{
+		RawImageMetadata outputMetadata(mDetail->props.width, mDetail->props.height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);
+		rawOutMetadata->setData(outputMetadata);
+	}
 }
 
-bool NvTransform::processEOS(string& pinId)
+bool NvTransform::processEOS(string &pinId)
 {
 	mDetail->outputMetadata.reset();
 	return true;
