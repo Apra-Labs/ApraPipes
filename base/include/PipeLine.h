@@ -44,7 +44,7 @@ public:
 	void step();
 	void stop();
 	void term();
-	void wait_for_all();
+	void wait_for_all(bool ignoreStatus = false);
 	void interrup_wait_for_all();
 	const char* getStatus();
 };
