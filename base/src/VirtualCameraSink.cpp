@@ -6,6 +6,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
+#include "FrameUtils.h"
 #include "AIPExceptions.h"
 
 #include <fcntl.h>
@@ -88,16 +89,16 @@ public:
 		switch (memType)
 		{
 		case FrameMetadata::MemType::HOST:
-			getDataPtr = [&](frame_sp &frame) -> void * { return getHostDataPtr(frame); };
 			break;
 #ifdef ARM64
 		case FrameMetadata::MemType::DMABUF:
-			getDataPtr = [&](frame_sp &frame) -> void * { return getDMAFDHostDataPtr(frame); };
 			break;
 #endif
 		default:
 			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
 		}
+
+		getDataPtr = FrameUtils::getDataPtrFunction(memType);
 
 		imageSize = metadata->getDataSize();
 
@@ -173,26 +174,11 @@ private:
 		}
 	}
 
-	void *getHostDataPtr(frame_sp &frame)
-	{
-		return frame->data();
-	}
-
-#ifdef ARM64
-	void *getDMAFDHostDataPtr(frame_sp &frame)
-	{
-		auto ptr = static_cast<DMAFDWrapper *>(frame->data());
-		return ptr->getHostPtr();
-	}
-#endif
-
 	int dev_fd;
 	int width;
 	int height;
 	ImageMetadata::ImageType imageType;
-
-	typedef std::function<void *(frame_sp &)> GetDataPtr;
-	GetDataPtr getDataPtr;
+	FrameUtils::GetDataPtr getDataPtr;
 };
 
 VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
