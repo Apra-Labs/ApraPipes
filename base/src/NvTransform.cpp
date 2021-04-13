@@ -71,9 +71,9 @@ bool NvTransform::validateInputPins()
 
 	framemetadata_sp metadata = getFirstInputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::RAW_IMAGE)
+	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -96,9 +96,10 @@ bool NvTransform::validateOutputPins()
 	}
 
 	framemetadata_sp metadata = getFirstOutputMetadata();
-	if (metadata->getFrameType() != FrameMetadata::RAW_IMAGE)
+	auto frameType = metadata->getFrameType();
+	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << metadata->getFrameType() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -120,6 +121,9 @@ void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 	case ImageMetadata::RGBA:
 		mDetail->outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+		break;
+	case ImageMetadata::YUV420:
+		mDetail->outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 		break;
 	default:
 		throw AIPException(AIP_FATAL, "Unsupported Image Type<" + std::to_string(inputRawMetadata->getImageType()) + ">");
@@ -175,29 +179,64 @@ bool NvTransform::processSOS(frame_sp &frame)
 
 void NvTransform::setMetadata(framemetadata_sp &metadata)
 {
-	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	auto width = rawMetadata->getWidth();
-	auto height = rawMetadata->getHeight();
-	auto type = rawMetadata->getType();
-	auto depth = rawMetadata->getDepth();
-	auto inputImageType = rawMetadata->getImageType();
+	auto frameType = metadata->getFrameType();
 
-	if (!(mDetail->props.imageType == ImageMetadata::RGBA && inputImageType == ImageMetadata::UYVY))
+	switch (frameType)
 	{
-		throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
-	}
+	case FrameMetadata::FrameType::RAW_IMAGE:
+	{
+		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		auto width = rawMetadata->getWidth();
+		auto height = rawMetadata->getHeight();
+		auto type = rawMetadata->getType();
+		auto depth = rawMetadata->getDepth();
+		auto inputImageType = rawMetadata->getImageType();
 
-	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->outputMetadata);
-	if (mDetail->props.width == 0)
-	{
-		RawImageMetadata outputMetadata(width, height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);
-		rawOutMetadata->setData(outputMetadata);
+		if (!(mDetail->props.imageType == ImageMetadata::RGBA && inputImageType == ImageMetadata::UYVY))
+		{
+			throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
+		}
+
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->outputMetadata);
+		if (mDetail->props.width == 0)
+		{
+			RawImageMetadata outputMetadata(width, height, mDetail->props.imageType, CV_8UC4, 0, depth, FrameMetadata::DMABUF, true);
+			rawOutMetadata->setData(outputMetadata);
+		}
+		else
+		{
+			RawImageMetadata outputMetadata(mDetail->props.width, mDetail->props.height, mDetail->props.imageType, CV_8UC4, 0, depth, FrameMetadata::DMABUF, true);
+			rawOutMetadata->setData(outputMetadata);
+		}
 	}
-	else
+	break;
+	case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
 	{
-		RawImageMetadata outputMetadata(mDetail->props.width, mDetail->props.height, mDetail->props.imageType, CV_8UC4, 512, depth, FrameMetadata::DMABUF, true);
-		rawOutMetadata->setData(outputMetadata);
+		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+		auto width = rawMetadata->getWidth(0);
+		auto height = rawMetadata->getHeight(0);
+		auto depth = rawMetadata->getDepth();
+		auto inputImageType = rawMetadata->getImageType();
+
+		if (!(mDetail->props.imageType == ImageMetadata::YUV420 && inputImageType == ImageMetadata::NV12))
+		{
+			throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
+		}
+
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mDetail->outputMetadata);
+		if (mDetail->props.width == 0)
+		{
+			RawImagePlanarMetadata outputMetadata(width, height, mDetail->props.imageType, size_t(0), depth, FrameMetadata::DMABUF);
+			rawOutMetadata->setData(outputMetadata);
+		}
+		else
+		{
+			RawImagePlanarMetadata outputMetadata(mDetail->props.width, mDetail->props.height, mDetail->props.imageType, size_t(0), depth, FrameMetadata::DMABUF);
+			rawOutMetadata->setData(outputMetadata);
+		}
 	}
+	break;
+	}	
 }
 
 bool NvTransform::processEOS(string &pinId)

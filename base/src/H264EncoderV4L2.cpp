@@ -125,7 +125,7 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		width = static_cast<uint32_t>(rawMetadata->getWidth(0));
 		height = static_cast<uint32_t>(rawMetadata->getHeight(0));
 		step = static_cast<uint32_t>(rawMetadata->getStep(0));
-		if (rawMetadata->getImageType() != ImageMetadata::YUV420)
+		if (rawMetadata->getImageType() != ImageMetadata::YUV420 && rawMetadata->getImageType() != ImageMetadata::NV12)
 		{
 			throw AIPException(AIP_NOTIMPLEMENTED, "Only YUV420 Supported");
 		}

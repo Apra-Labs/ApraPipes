@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "NvArgusCamera.h"
+#include "NvTransform.h"
 #include "FileWriterModule.h"
 #include "H264EncoderV4L2.h"
 #include "VirtualCameraSink.h"
@@ -53,6 +54,9 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	source->setNext(sink);
 
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/frame_????.raw")));
+	source->setNext(fileWriter);
+
 	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
@@ -82,7 +86,7 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	source->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera/frame_????.h264")));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera/frame.h264", true)));
 	encoder->setNext(fileWriter);
 
 	StatSinkProps sinkProps;

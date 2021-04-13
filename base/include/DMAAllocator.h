@@ -64,6 +64,9 @@ public:
         case ImageMetadata::YUV420:
             colorFormat = NvBufferColorFormat_YUV420;
             break;
+        case ImageMetadata::NV12:
+            colorFormat = NvBufferColorFormat_NV12;
+            break;
         default:
             throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
         }

@@ -22,6 +22,7 @@ public:
 			}
 
 			break;
+		case ImageMetadata::NV12:
 		case ImageMetadata::YUV420:
 			_step[0] = _width + FrameMetadata::getPaddingLength(_width, alignLength);
 			_step[1] = _step[0] >> 1;
@@ -104,6 +105,10 @@ public:
 
 	size_t getOffset(int channelId, int offsetX, int offsetY)
 	{
+		if(imageType == ImageMetadata::NV12)
+		{
+			throw AIPException(AIP_NOTIMPLEMENTED, "Offset for NV12 not implemented");
+		}
 		if (imageType == ImageMetadata::YUV420 && channelId != 0)
 		{
 			offsetX = offsetX >> 1;
@@ -153,6 +158,7 @@ protected:
 			}
 
 			break;
+		case ImageMetadata::NV12:
 		case ImageMetadata::YUV420:
 			width[0] = _width;
 			height[0] = _height;

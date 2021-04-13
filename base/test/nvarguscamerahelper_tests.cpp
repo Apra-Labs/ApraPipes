@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(memory_alloc_test, *boost::unit_test::disabled())
     uint32_t height = 720;
     size_t size = width * height * 3 >> 1;
 
-    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
     auto frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
     frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
     auto frame = frameFactory->create(size, frameFactory);
