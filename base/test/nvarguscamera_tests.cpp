@@ -48,14 +48,17 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	sourceProps.fps = 120;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	source->setNext(transform);
+
 	VirtualCameraSinkProps sinkProps("/dev/video10");
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
-	source->setNext(sink);
+	transform->setNext(sink);
 
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/frame_????.raw")));
-	source->setNext(fileWriter);
+	transform->setNext(fileWriter);
 
 	PipeLine p("test");
 	p.appendModule(source);
