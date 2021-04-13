@@ -116,7 +116,6 @@ bool NvTransform::validateOutputPins()
 void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 	switch (mDetail->props.imageType)
 	{
 	case ImageMetadata::RGBA:
@@ -126,7 +125,7 @@ void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 		mDetail->outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 		break;
 	default:
-		throw AIPException(AIP_FATAL, "Unsupported Image Type<" + std::to_string(inputRawMetadata->getImageType()) + ">");
+		throw AIPException(AIP_FATAL, "Unsupported Image Type<" + std::to_string(mDetail->props.imageType) + ">");
 	}
 
 	mDetail->outputMetadata->copyHint(*metadata.get());
