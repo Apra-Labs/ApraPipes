@@ -373,6 +373,7 @@ IF (ENABLE_CUDA)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
 			test/cuda_arm_tests.cpp
 			test/apraegldisplay_tests.cpp
+			test/frame_factory_test_dma.cpp
 		)
 	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
@@ -407,8 +408,7 @@ SET(UT_FILES
 	test/bmpconverter_tests.cpp
 	test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
-	test/findexstrategy_tests.cpp
-	test/frame_factory_test_dma.cpp
+	test/findexstrategy_tests.cpp	
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp

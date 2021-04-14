@@ -7,8 +7,8 @@
 #include "cuda_runtime.h"
 
 DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
-                                    NvBufferColorFormat colorFormat,
-                                    NvBufferLayout layout, EGLDisplay eglDisplay)
+                                   NvBufferColorFormat colorFormat,
+                                   NvBufferLayout layout, EGLDisplay eglDisplay)
 {
     DMAFDWrapper *buffer = new DMAFDWrapper(index, eglDisplay);
     if (!buffer)
@@ -33,29 +33,62 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     }
 
     // Use NvBufferMemMapEx
-    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write, &(buffer->hostPtr));	
-    if(res)
+    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr));
+    if (res)
     {
         LOG_ERROR << "NvBufferMemMap Error<>" << res;
         delete buffer;
         return nullptr;
     }
-    if(colorFormat != NvBufferColorFormat_UYVY){
+
+    if (colorFormat == NvBufferColorFormat_NV12 ||
+        colorFormat == NvBufferColorFormat_YUV420)
+    {
+        res = NvBufferMemMap(buffer->m_fd, 1, NvBufferMem_Read, &(buffer->hostPtrU));
+        if (res)
+        {
+            LOG_ERROR << "NvBufferMemMap Error<>" << res;
+            delete buffer;
+            return nullptr;
+        }
+    }
+
+    if (colorFormat == NvBufferColorFormat_YUV420)
+    {
+        res = NvBufferMemMap(buffer->m_fd, 2, NvBufferMem_Read, &(buffer->hostPtrV));
+        if (res)
+        {
+            LOG_ERROR << "NvBufferMemMap Error<>" << res;
+            delete buffer;
+            return nullptr;
+        }
+    }
+
+    if (colorFormat != NvBufferColorFormat_UYVY)
+    {
         buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
-        if(buffer->eglImage == EGL_NO_IMAGE_KHR){
+        if (buffer->eglImage == EGL_NO_IMAGE_KHR)
+        {
             LOG_ERROR << "Failed to create eglImage";
             delete buffer;
             return nullptr;
         }
 
-        cudaFree(0);        
-        buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage,&buffer->pResource,buffer->eglFrame, eglDisplay);
+        cudaFree(0);
+        buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
     }
 
     return buffer;
 }
 
-DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR), m_fd(-1), index(_index), eglDisplay(_eglDisplay), hostPtr(nullptr), cudaPtr(nullptr)
+DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR),
+                                                                 m_fd(-1),
+                                                                 index(_index),
+                                                                 eglDisplay(_eglDisplay),
+                                                                 hostPtr(nullptr),
+                                                                 hostPtrU(nullptr),
+                                                                 hostPtrV(nullptr),
+                                                                 cudaPtr(nullptr)
 {
 }
 
@@ -63,13 +96,31 @@ DMAFDWrapper::~DMAFDWrapper()
 {
     if (eglImage != EGL_NO_IMAGE_KHR)
     {
-        DMAUtils::freeCudaPtr(eglImage,&pResource, eglDisplay);
+        DMAUtils::freeCudaPtr(eglImage, &pResource, eglDisplay);
     }
 
     if (hostPtr)
     {
         auto res = NvBufferMemUnMap(m_fd, 0, &hostPtr);
-        if(res)
+        if (res)
+        {
+            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
+        }
+    }
+
+    if (hostPtrU)
+    {
+        auto res = NvBufferMemUnMap(m_fd, 1, &hostPtrU);
+        if (res)
+        {
+            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
+        }
+    }
+
+    if (hostPtrV)
+    {
+        auto res = NvBufferMemUnMap(m_fd, 2, &hostPtrV);
+        if (res)
         {
             LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
         }
@@ -82,9 +133,9 @@ DMAFDWrapper::~DMAFDWrapper()
     }
 }
 
-void* DMAFDWrapper::getHostPtr()
+void *DMAFDWrapper::getHostPtr()
 {
-    if(NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
+    if (NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
     {
         throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
     }
@@ -92,7 +143,37 @@ void* DMAFDWrapper::getHostPtr()
     return hostPtr;
 }
 
-void* DMAFDWrapper::getCudaPtr() const
+void *DMAFDWrapper::getHostPtrY()
+{
+    return getHostPtr();
+}
+
+void *DMAFDWrapper::getHostPtrU()
+{
+    if (NvBufferMemSyncForCpu(m_fd, 1, &hostPtrU))
+    {
+        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
+    }
+
+    return hostPtrU;
+}
+
+void *DMAFDWrapper::getHostPtrV()
+{
+    if (NvBufferMemSyncForCpu(m_fd, 2, &hostPtrV))
+    {
+        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
+    }
+
+    return hostPtrV;
+}
+
+void *DMAFDWrapper::getHostPtrUV()
+{
+    return getHostPtrU();
+}
+
+void *DMAFDWrapper::getCudaPtr() const
 {
     return cudaPtr;
 }
@@ -102,12 +183,12 @@ int DMAFDWrapper::getIndex() const
     return index;
 }
 
-const void* DMAFDWrapper::getClientData() const
+const void *DMAFDWrapper::getClientData() const
 {
     return clientData;
 }
 
-void DMAFDWrapper::setClientData(const void* _clientData)
+void DMAFDWrapper::setClientData(const void *_clientData)
 {
     clientData = _clientData;
 }

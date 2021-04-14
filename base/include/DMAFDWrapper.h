@@ -18,6 +18,10 @@ public:
     EGLImageKHR getEGLImage() const { return eglImage; }
     EGLDisplay getEGLDisplay() const { return eglDisplay; }
     void* getHostPtr();
+    void* getHostPtrY();
+    void* getHostPtrU();
+    void* getHostPtrV();
+    void* getHostPtrUV();
     void* getCudaPtr() const;
     int getIndex() const;
 
@@ -38,7 +42,10 @@ private:
     CUeglFrame eglFrame;
     EGLDisplay eglDisplay;
 
-    void* hostPtr;
+    void* hostPtr; // Y, InterleavedUYVY, RGBA
+    void* hostPtrU; // U and UV (NV12)
+    void* hostPtrV;
+
     uint8_t* cudaPtr;
     const int index;
 
