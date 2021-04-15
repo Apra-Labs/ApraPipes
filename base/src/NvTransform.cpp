@@ -118,6 +118,7 @@ void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	switch (mDetail->props.imageType)
 	{
+	case ImageMetadata::BGRA:
 	case ImageMetadata::RGBA:
 		mDetail->outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 		break;
@@ -216,6 +217,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 
 	switch (mDetail->props.imageType)
 	{
+	case ImageMetadata::ImageType::BGRA:
 	case ImageMetadata::ImageType::RGBA:
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->outputMetadata);

@@ -46,9 +46,9 @@ public:
 			width = inputRawMetadata->getWidth();
 			height = inputRawMetadata->getHeight();
 			auto step = inputRawMetadata->getStep();
-			if (step != width * 3)
+			if (step != (width * inputRawMetadata->getChannels()))
 			{
-				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*3. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
+				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*channels. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
 			}
 			imageType = inputRawMetadata->getImageType();
 		}
@@ -79,10 +79,13 @@ public:
 		switch (imageType)
 		{
 		case ImageMetadata::RGB:
+		case ImageMetadata::BGRA:
+		case ImageMetadata::RGBA:
 		case ImageMetadata::YUV420:
+		case ImageMetadata::NV12:
 			break;
 		default:
-			throw AIPException(AIP_FATAL, "Expected ImageType RGB or YUV420. Actual<" + std::to_string(imageType) + ">");
+			throw AIPException(AIP_FATAL, "Expected ImageType RGB or RGBA or YUV420 or NV12. Actual<" + std::to_string(imageType) + ">");
 		}
 
 		auto memType = metadata->getMemType();
@@ -158,11 +161,20 @@ private:
 		case ImageMetadata::ImageType::RGB:
 			v.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
 			break;
+		case ImageMetadata::ImageType::RGBA:
+			v.fmt.pix.pixelformat = V4L2_PIX_FMT_ARGB32;
+			break;
+		case ImageMetadata::ImageType::BGRA:
+			v.fmt.pix.pixelformat = V4L2_PIX_FMT_ABGR32;
+			break;
 		case ImageMetadata::ImageType::YUV420:
 			v.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
 			break;
+		case ImageMetadata::ImageType::NV12:
+			v.fmt.pix.pixelformat = V4L2_PIX_FMT_NV12;
+			break;
 		default:
-			throw AIPException(AIP_NOTEXEPCTED, "RGB or YUV420 is expected.");
+			throw AIPException(AIP_NOTEXEPCTED, "RGB or RGBA or YUV420 or NV12 is expected.");
 		}
 		v.fmt.pix.sizeimage = imageSize;
 		v.fmt.pix.field = V4L2_FIELD_NONE;

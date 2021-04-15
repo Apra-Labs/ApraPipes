@@ -41,24 +41,21 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
-	sourceProps.fps = 120;
+	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
-
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
-	source->setNext(transform);
-
+	
 	VirtualCameraSinkProps sinkProps("/dev/video10");
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
-	transform->setNext(sink);
+	source->setNext(sink);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/frame_????.raw")));
-	transform->setNext(fileWriter);
+	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
+	// source->setNext(fileWriter);
 
 	PipeLine p("test");
 	p.appendModule(source);
@@ -68,7 +65,45 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
+{
+	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
+	sourceProps.fps = 30;
+	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::BGRA)));
+	source->setNext(transform);
+
+	VirtualCameraSinkProps sinkProps("/dev/video10");
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	transform->setNext(sink);
+
+	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/bgra_????.raw")));
+	// transform->setNext(fileWriter);
+	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
+	// source->setNext(fileWriter2);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();

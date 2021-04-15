@@ -59,6 +59,9 @@ public:
             colorFormat = NvBufferColorFormat_UYVY;
             break;
         case ImageMetadata::RGBA:
+            colorFormat = NvBufferColorFormat_ABGR32;
+            break;
+        case ImageMetadata::BGRA:
             colorFormat = NvBufferColorFormat_ARGB32;
             break;
         case ImageMetadata::YUV420:
