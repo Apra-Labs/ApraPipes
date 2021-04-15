@@ -156,35 +156,51 @@ bool FileSequenceDriver::Read(uint8_t*& dataToRead, size_t& dataSize, uint64_t& 
 }
 
 
-bool FileSequenceDriver::Write(const uint8_t* dataToWrite, size_t dataSize)
+bool FileSequenceDriver::Write(const Dataset& dataset)
 {
-    bool writeRes = false;
-
 	uint64_t index = 0;
-    const std::string fileNameToUse = mStrategy->GetFileNameToUse(false, index);
+	const std::string fileNameToUse = mStrategy->GetFileNameToUse(false, index);
 
-    if (!fileNameToUse.empty())
-    {
-        LOG_TRACE << "FileSequenceDriver::Writing File " << fileNameToUse;
+	LOG_TRACE << "FileSequenceDriver::Writing File " << fileNameToUse;
+	bool append = mAppend;
+	auto size = dataset.data.size();
+	for (size_t i = 0; i < size; i++)
+	{
+		writeHelper(fileNameToUse, const_cast<const uint8_t *>(static_cast<uint8_t *>(dataset.data[i])), dataset.size[i], append);
+		append = true;
+	}
+}
 
-		auto mode = std::ios::out | std::ios::binary;
-		if (mAppend)
-		{
-			mode = mode | std::ios::app;
-		}
+bool FileSequenceDriver::writeHelper(const std::string &fileName, const uint8_t *dataToWrite, size_t dataSize, bool append)
+{
+	if (fileName.empty())
+	{
+		return false;
+	}
+	
+	auto mode = std::ios::out | std::ios::binary;
+	if (append)
+	{
+		mode = mode | std::ios::app;
+	}
 
-        std::ofstream file(fileNameToUse.c_str(), mode);
-        if (file.is_open())
-        {
-            file.write((const char*)dataToWrite, dataSize);
+	auto res = true;
 
-            writeRes = true;
+	std::ofstream file(fileName.c_str(), mode);
+	if (file.is_open())
+	{
+		file.write((const char *)dataToWrite, dataSize);
 
-            file.close();
-        }
-    }
+		res = !file.bad() && !file.eof() && !file.fail();
 
-    return writeRes;
+		file.close();
+	}
+	else
+	{
+		res = false;
+	}
+
+	return res;
 }
 
 void FileSequenceDriver::SetReadLoop(bool readLoop)

@@ -40,7 +40,8 @@ protected:
 	bool shouldTriggerSOS();
 private:
 	boost::shared_ptr<FileSequenceDriver> mDriver;	
-	FrameUtils::GetDataPtr mGetDataPtr;
+	FrameUtils::GetDataset mGetDataset;
+	Dataset mDataset;
 };
 
 

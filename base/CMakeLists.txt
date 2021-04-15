@@ -154,6 +154,7 @@ SET(include/CORE_FILES_H
 	include/ApraData.h
 	include/AIPExceptions.h
 	include/Utils.h
+	include/Dataset.h
 	include/FrameUtils.h
 	include/ThreadSafeQue.h	
 	include/StatSink.h

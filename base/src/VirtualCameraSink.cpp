@@ -22,7 +22,7 @@
 class VirtualCameraSink::Detail
 {
 public:
-	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), imageSize(0), imageType(ImageMetadata::ImageType::RGB)
+	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), datasetSize(0), imageType(ImageMetadata::ImageType::RGB)
 	{
 	}
 
@@ -98,26 +98,31 @@ public:
 			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
 		}
 
-		getDataPtr = FrameUtils::getDataPtrFunction(memType);
+		getDataset = FrameUtils::getDatasetFunction(metadata, dataset);
 
-		imageSize = metadata->getDataSize();
+		datasetSize = dataset.data.size();
 
-		init();
+		init(metadata->getDataSize());
 	}
 
 	bool writeToDevice(frame_sp frame)
 	{
-		try
+		getDataset(frame, dataset);
+
+		for (size_t i = 0; i < datasetSize; i++)
 		{
-			auto ret = write(dev_fd, getDataPtr(frame), imageSize);
-			if (ret == -1)
+			try
 			{
-				LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
+				auto ret = write(dev_fd, dataset.data[i], dataset.size[i]);
+				if (ret == -1)
+				{
+					LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
+				}
 			}
-		}
-		catch (...)
-		{
-			LOG_ERROR << "writing to device failed.";
+			catch (...)
+			{
+				LOG_ERROR << "writing to device failed.";
+			}
 		}
 	}
 
@@ -128,10 +133,10 @@ public:
 	}
 
 	VirtualCameraSinkProps props;
-	size_t imageSize;
+	size_t datasetSize;
 
 private:
-	void init()
+	void init(size_t imageSize)
 	{
 		dev_fd = open(props.device.c_str(), O_RDWR);
 		if (dev_fd == -1)
@@ -178,7 +183,8 @@ private:
 	int width;
 	int height;
 	ImageMetadata::ImageType imageType;
-	FrameUtils::GetDataPtr getDataPtr;
+	FrameUtils::GetDataset getDataset;
+	Dataset dataset;
 };
 
 VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
@@ -239,12 +245,12 @@ bool VirtualCameraSink::processSOS(frame_sp &frame)
 
 bool VirtualCameraSink::shouldTriggerSOS()
 {
-	return mDetail->imageSize == 0;
+	return mDetail->datasetSize == 0;
 }
 
 bool VirtualCameraSink::processEOS(string &pinId)
 {
-	mDetail->imageSize = 0;
+	mDetail->datasetSize = 0;
 	return true;
 }
 

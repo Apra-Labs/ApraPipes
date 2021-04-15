@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Dataset.h"
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -26,11 +27,15 @@ public:
 
     bool Read(uint8_t*& dataToRead, size_t& dataSize, uint64_t& index);
 	bool ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& index);
-    bool Write(const uint8_t* dataToWrite, size_t dataSize);
+    bool Write(const Dataset& dataset);
 	    
     void SetReadLoop(bool readLoop);
 	void notifyPlay(bool play);
 	void jump(uint64_t index);
+
+private:
+    bool writeHelper(const std::string& fileName, const uint8_t* dataToWrite, size_t dataSize, bool append);
+
 private:       
 	bool mAppend;
 	boost::shared_ptr<FilenameStrategy> mStrategy;

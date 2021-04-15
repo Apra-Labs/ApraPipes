@@ -56,11 +56,12 @@ bool FileWriterModule::term() {
 bool FileWriterModule::process(frame_container& frames) 
 {
 	auto frame = frames.begin()->second;
-	size_t buffer_size = frame->size();
+	
+	mGetDataset(frame, mDataset);
 
 	try
 	{
-		if (!mDriver->Write(static_cast<uint8_t*>(mGetDataPtr(frame)), buffer_size) && mDriver->IsConnected())
+		if (!mDriver->Write(mDataset) && mDriver->IsConnected())
 		{
 			LOG_FATAL << "write failed<>" << frame->fIndex;
 		}
@@ -76,12 +77,12 @@ bool FileWriterModule::process(frame_container& frames)
 bool FileWriterModule::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
-	mGetDataPtr = FrameUtils::getDataPtrFunction(metadata->getMemType());
+	mGetDataset = FrameUtils::getDatasetFunction(metadata, mDataset);
 
 	return true;
 }
 
 bool FileWriterModule::shouldTriggerSOS()
 {
-	return !mGetDataPtr;
+	return !mGetDataset;
 }
