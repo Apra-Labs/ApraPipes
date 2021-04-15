@@ -23,7 +23,7 @@
 
 using sys_clock = std::chrono::system_clock;
 
-BOOST_AUTO_TEST_SUITE(nv_transform_tests)
+BOOST_AUTO_TEST_SUITE(nv_transform_tests, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {

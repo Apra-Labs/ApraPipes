@@ -2,6 +2,8 @@
 
 #include "PipeLine.h"
 #include "NvV4L2Camera.h"
+#include "NvTransform.h"
+#include "VirtualCameraSink.h"
 #include "FileWriterModule.h"
 #include "StatSink.h"
 
@@ -36,6 +38,36 @@ BOOST_AUTO_TEST_CASE(save, *boost::unit_test::disabled())
 
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
 	source->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
+{	
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(1920, 1080, 10)));	
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	source->setNext(transform);
+
+	VirtualCameraSinkProps sinkProps("/dev/video10");
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	transform->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(source);
