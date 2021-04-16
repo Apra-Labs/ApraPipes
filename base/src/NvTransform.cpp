@@ -122,6 +122,7 @@ void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	case ImageMetadata::RGBA:
 		mDetail->outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 		break;
+	case ImageMetadata::NV12:
 	case ImageMetadata::YUV420:
 		mDetail->outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 		break;
