@@ -96,6 +96,7 @@ DMAFDWrapper::~DMAFDWrapper()
 {
     if (eglImage != EGL_NO_IMAGE_KHR)
     {
+        cudaFree(0);
         DMAUtils::freeCudaPtr(eglImage, &pResource, eglDisplay);
     }
 

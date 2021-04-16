@@ -6,6 +6,7 @@
 #include "VirtualCameraSink.h"
 #include "FileWriterModule.h"
 #include "StatSink.h"
+#include "EglRenderer.h"
 
 BOOST_AUTO_TEST_SUITE(nvv4l2camera_tests)
 
@@ -63,10 +64,19 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
 	source->setNext(transform);
 
-	VirtualCameraSinkProps sinkProps("/dev/video10");
-	sinkProps.logHealth = true;
-	sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	// VirtualCameraSinkProps sinkProps("/dev/video10");
+	// sinkProps.logHealth = true;
+	// sinkProps.logHealthFrequency = 100;
+	// auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	// transform->setNext(sink);
+
+	// auto fileWriter1 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/uyvy_????.raw")));
+	// source->setNext(fileWriter1);
+
+	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/yuv420_????.raw")));
+	// transform->setNext(fileWriter2);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");

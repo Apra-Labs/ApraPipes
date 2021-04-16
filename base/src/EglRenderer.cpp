@@ -99,8 +99,32 @@ bool EglRenderer::term(){
 
 bool EglRenderer::processSOS(frame_sp& frame)
 {
-	auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(frame->getMetadata());
-    mDetail->init(metadata->getHeight(),metadata->getWidth());
+    auto inputMetadata = frame->getMetadata();
+    auto frameType = inputMetadata->getFrameType();
+    int width = 0;
+    int height =0;
+
+    switch (frameType)
+    {
+    case FrameMetadata::FrameType::RAW_IMAGE:
+    {
+        auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
+        width = metadata->getWidth();
+        height = metadata->getHeight();
+    }
+    break;
+    case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+    {
+        auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
+        width = metadata->getWidth(0);
+        height = metadata->getHeight(0);
+    }
+    break;
+    default:
+        throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
+    }
+
+    mDetail->init(height, width);
 	return true;
 }
 
