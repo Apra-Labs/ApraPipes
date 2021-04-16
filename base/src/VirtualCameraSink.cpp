@@ -154,6 +154,8 @@ private:
 		{
 			throw AIPException(AIP_FATAL, "cannot setup video device<" + props.device + ">");
 		}
+		v.fmt.pix.colorspace = V4L2_COLORSPACE_DEFAULT;
+		v.fmt.pix.bytesperline = 0;
 		v.fmt.pix.width = width;
 		v.fmt.pix.height = height;
 		switch (imageType)
@@ -189,6 +191,8 @@ private:
 		{
 			throw AIPException(AIP_FATAL, "cannot setup video device<" + props.device + ">");
 		}
+
+		LOG_INFO << v.fmt.pix.bytesperline << "<>" << v.fmt.pix.colorspace << "<>" << v.fmt.pix.pixelformat << "<>" << v.fmt.pix.sizeimage << "<>" << v.fmt.pix.width << "<>" << v.fmt.pix.height;
 	}
 
 	int dev_fd;
