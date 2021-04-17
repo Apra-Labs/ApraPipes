@@ -8,6 +8,7 @@
 #include "RTSPPusher.h"
 #include "StatSink.h"
 #include "PipeLine.h"
+#include "DMAFDToHostCopy.h"
 
 BOOST_AUTO_TEST_SUITE(nvarguscamera_tests)
 
@@ -47,12 +48,15 @@ BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+
+	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	source->setNext(copySource);
 	
 	VirtualCameraSinkProps sinkProps("/dev/video10");
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
-	source->setNext(sink);
+	copySource->setNext(sink);
 
 	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
 	// source->setNext(fileWriter);
@@ -74,6 +78,50 @@ BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(vcam_yuv420, *boost::unit_test::disabled())
+{
+	NvArgusCameraProps sourceProps(1280, 720);
+	sourceProps.maxConcurrentFrames = 10;
+	sourceProps.fps = 30;
+	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+
+	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	source->setNext(copySource);
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	source->setNext(transform);
+
+	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	transform->setNext(copy);
+
+	VirtualCameraSinkProps sinkProps("/dev/video10");
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	copy->setNext(sink);
+
+	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/yuv420_????.raw")));
+	// copy->setNext(fileWriter);
+	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
+	// copySource->setNext(fileWriter2);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
 BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
@@ -81,19 +129,25 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
+	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	source->setNext(copySource);
+
 	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::BGRA)));
 	source->setNext(transform);
+
+	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	transform->setNext(copy);
 
 	VirtualCameraSinkProps sinkProps("/dev/video10");
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
-	transform->setNext(sink);
+	copy->setNext(sink);
 
 	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/bgra_????.raw")));
-	// transform->setNext(fileWriter);
+	// copy->setNext(fileWriter);
 	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
-	// source->setNext(fileWriter2);
+	// copySource->setNext(fileWriter2);
 
 	PipeLine p("test");
 	p.appendModule(source);
