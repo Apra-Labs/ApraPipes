@@ -45,9 +45,9 @@ public:
 			width = inputRawMetadata->getWidth();
 			height = inputRawMetadata->getHeight();
 			auto step = inputRawMetadata->getStep();
-			if (step != (width * inputRawMetadata->getChannels()))
+			if (step != inputRawMetadata->getRowSize())
 			{
-				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*channels. width<" + std::to_string(width) + "> step<" + std::to_string(step) + ">");
+				throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width*channels. width<" + std::to_string(inputRawMetadata->getRowSize()) + "> step<" + std::to_string(step) + ">");
 			}
 			imageType = inputRawMetadata->getImageType();
 		}
@@ -62,9 +62,9 @@ public:
 			{
 				auto step = inputRawMetadata->getStep(i);
 				auto _width = inputRawMetadata->getWidth(i);
-				if (step != _width)
+				if (step != inputRawMetadata->getRowSize(i))
 				{
-					throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width. width<" + std::to_string(_width) + "> step<" + std::to_string(step) + ">");
+					throw AIPException(AIP_FATAL, "Not Implemented. step must be equal to width. width<" + std::to_string(inputRawMetadata->getRowSize(i)) + "> step<" + std::to_string(step) + ">");
 				}
 			}
 			imageType = inputRawMetadata->getImageType();
