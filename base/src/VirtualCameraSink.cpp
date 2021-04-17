@@ -6,7 +6,6 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
-#include "FrameUtils.h"
 #include "AIPExceptions.h"
 
 #include <fcntl.h>
@@ -22,7 +21,7 @@
 class VirtualCameraSink::Detail
 {
 public:
-	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), datasetSize(0), imageType(ImageMetadata::ImageType::RGB)
+	Detail(VirtualCameraSinkProps &_props) : props(_props), dev_fd(0), imageSize(0), imageType(ImageMetadata::ImageType::RGB)
 	{
 	}
 
@@ -101,31 +100,23 @@ public:
 			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
 		}
 
-		getDataset = FrameUtils::getDatasetFunction(metadata, dataset);
-
-		datasetSize = dataset.data.size();
-
-		init(metadata->getDataSize());
+		imageSize = metadata->getDataSize();
+		init();
 	}
 
 	bool writeToDevice(frame_sp frame)
 	{
-		getDataset(frame, dataset);
-
-		for (size_t i = 0; i < datasetSize; i++)
+		try
 		{
-			try
+			auto ret = write(dev_fd, frame->data(), imageSize);
+			if (ret == -1)
 			{
-				auto ret = write(dev_fd, dataset.data[i], dataset.size[i]);
-				if (ret == -1)
-				{
-					LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
-				}
+				LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
 			}
-			catch (...)
-			{
-				LOG_ERROR << "writing to device failed.";
-			}
+		}
+		catch (...)
+		{
+			LOG_ERROR << "writing to device failed.";
 		}
 	}
 
@@ -136,10 +127,10 @@ public:
 	}
 
 	VirtualCameraSinkProps props;
-	size_t datasetSize;
+	size_t imageSize;
 
 private:
-	void init(size_t imageSize)
+	void init()
 	{
 		dev_fd = open(props.device.c_str(), O_RDWR);
 		if (dev_fd == -1)
@@ -199,8 +190,6 @@ private:
 	int width;
 	int height;
 	ImageMetadata::ImageType imageType;
-	FrameUtils::GetDataset getDataset;
-	Dataset dataset;
 };
 
 VirtualCameraSink::VirtualCameraSink(VirtualCameraSinkProps props) : Module(SINK, "VirtualCameraSink", props)
@@ -219,6 +208,13 @@ bool VirtualCameraSink::validateInputPins()
 	}
 
 	framemetadata_sp metadata = getFirstInputMetadata();
+	FrameMetadata::MemType memType = metadata->getMemType();
+	if (memType != FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		return false;
+	}
+
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
@@ -261,12 +257,12 @@ bool VirtualCameraSink::processSOS(frame_sp &frame)
 
 bool VirtualCameraSink::shouldTriggerSOS()
 {
-	return mDetail->datasetSize == 0;
+	return mDetail->imageSize == 0;
 }
 
 bool VirtualCameraSink::processEOS(string &pinId)
 {
-	mDetail->datasetSize = 0;
+	mDetail->imageSize = 0;
 	return true;
 }
 

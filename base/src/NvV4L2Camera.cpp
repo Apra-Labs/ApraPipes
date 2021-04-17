@@ -1,11 +1,13 @@
 #include "NvV4L2Camera.h"
+#include "DMAAllocator.h"
 #include "FrameMetadata.h"
 
 NvV4L2Camera::NvV4L2Camera(NvV4L2CameraProps _props)
 	: Module(SOURCE, "NvV4L2Camera", _props), props(_props)
 {
-	auto mOutputMetadata = framemetadata_sp(new RawImageMetadata(props.width, props.height, ImageMetadata::ImageType::UYVY, CV_8UC3, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
-	mOutputPinId = addOutputPin(mOutputMetadata);
+	auto outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+	DMAAllocator::setMetadata(outputMetadata, props.width, props.height, ImageMetadata::ImageType::UYVY);
+	mOutputPinId = addOutputPin(outputMetadata);
 
 	mHelper = std::make_shared<NvV4L2CameraHelper>([&](frame_sp &frame) -> void {
 			frame_container frames;

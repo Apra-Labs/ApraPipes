@@ -29,7 +29,14 @@ bool FileWriterModule::validateInputPins()
 		return false;
 	}
 
-	// 1 and only 1 input expected
+	framemetadata_sp metadata = getFirstInputMetadata();
+	FrameMetadata::MemType memType = metadata->getMemType();
+	if (memType != FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		return false;
+	}
+	
 	// any frame type is allowed. so no validations
 	return true;
 }
@@ -56,12 +63,11 @@ bool FileWriterModule::term() {
 bool FileWriterModule::process(frame_container& frames) 
 {
 	auto frame = frames.begin()->second;
-	
-	mGetDataset(frame, mDataset);
-
 	try
 	{
-		if (!mDriver->Write(mDataset) && mDriver->IsConnected())
+		if (!mDriver->Write(const_cast<const uint8_t *>(static_cast<uint8_t *>(frame->data())),
+							frame->size()) &&
+			mDriver->IsConnected())
 		{
 			LOG_FATAL << "write failed<>" << frame->fIndex;
 		}
@@ -72,17 +78,4 @@ bool FileWriterModule::process(frame_container& frames)
 	}
 	
 	return true;
-}
-
-bool FileWriterModule::processSOS(frame_sp &frame)
-{
-	auto metadata = frame->getMetadata();
-	mGetDataset = FrameUtils::getDatasetFunction(metadata, mDataset);
-
-	return true;
-}
-
-bool FileWriterModule::shouldTriggerSOS()
-{
-	return !mGetDataset;
 }

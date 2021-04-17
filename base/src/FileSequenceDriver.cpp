@@ -156,19 +156,13 @@ bool FileSequenceDriver::Read(uint8_t*& dataToRead, size_t& dataSize, uint64_t& 
 }
 
 
-bool FileSequenceDriver::Write(const Dataset& dataset)
+bool FileSequenceDriver::Write(const uint8_t* dataToWrite, size_t dataSize)
 {
 	uint64_t index = 0;
 	const std::string fileNameToUse = mStrategy->GetFileNameToUse(false, index);
 
 	LOG_TRACE << "FileSequenceDriver::Writing File " << fileNameToUse;
-	bool append = mAppend;
-	auto size = dataset.data.size();
-	for (size_t i = 0; i < size; i++)
-	{
-		writeHelper(fileNameToUse, const_cast<const uint8_t *>(static_cast<uint8_t *>(dataset.data[i])), dataset.size[i], append);
-		append = true;
-	}
+	writeHelper(fileNameToUse, dataToWrite, dataSize, mAppend);
 }
 
 bool FileSequenceDriver::writeHelper(const std::string &fileName, const uint8_t *dataToWrite, size_t dataSize, bool append)

@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_map>
 #include "Module.h"
-#include "FrameUtils.h"
 
 using namespace std;
 
@@ -35,13 +34,9 @@ public:
 	bool term();
 protected:
 	bool process(frame_container& frames);
-	bool processSOS(frame_sp &frame);
 	bool validateInputPins();
-	bool shouldTriggerSOS();
 private:
 	boost::shared_ptr<FileSequenceDriver> mDriver;	
-	FrameUtils::GetDataset mGetDataset;
-	Dataset mDataset;
 };
 
 

@@ -99,8 +99,13 @@ public:
 
 	size_t getRowSize(int channelId)
 	{
+		auto multiple = 1;
+		if (channelId == 1 && imageType == ImageMetadata::NV12)
+		{
+			multiple = 2;
+		}
 		auto elemSize = ImageMetadata::getElemSize(depth);
-		return static_cast<size_t>(width[channelId] * elemSize);
+		return static_cast<size_t>(width[channelId] * elemSize * multiple);
 	}
 
 	size_t getStep(int channelId) { return step[channelId]; }
@@ -171,7 +176,7 @@ protected:
 			channels = 2;
 			width[0] = _width;
 			height[0] = _height;
-			width[1] = _width;
+			width[1] = _width >> 1;
 			height[1] = _height >> 1;
 			break;
 		case ImageMetadata::YUV420:

@@ -1,11 +1,13 @@
 #include "NvArgusCamera.h"
 
+#include "DMAAllocator.h"
 #include "FrameMetadata.h"
 
 NvArgusCamera::NvArgusCamera(NvArgusCameraProps props)
 	: Module(SOURCE, "NvArgusCamera", props), mProps(props)
 {
-	auto outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(static_cast<int>(props.width), static_cast<int>(props.height), ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+	auto outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+	DMAAllocator::setMetadata(outputMetadata, static_cast<int>(props.width), static_cast<int>(props.height), ImageMetadata::ImageType::NV12);	
 	mOutputPinId = addOutputPin(outputMetadata);	
 }
 

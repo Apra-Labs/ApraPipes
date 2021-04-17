@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "DMAFDWrapper.h"
+#include "DMAAllocator.h"
 
 #include "npp.h"
 
@@ -216,27 +217,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 		height = mDetail->props.height;
 	}
 
-	switch (mDetail->props.imageType)
-	{
-	case ImageMetadata::ImageType::BGRA:
-	case ImageMetadata::ImageType::RGBA:
-	{
-		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->outputMetadata);
-		RawImageMetadata outputMetadata(width, height, mDetail->props.imageType, CV_8UC4, 0, depth, FrameMetadata::DMABUF, true);
-		rawOutMetadata->setData(outputMetadata);
-	}
-	break;
-	case ImageMetadata::ImageType::YUV420:
-	case ImageMetadata::ImageType::NV12:
-	{
-		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mDetail->outputMetadata);
-		RawImagePlanarMetadata outputMetadata(width, height, mDetail->props.imageType, size_t(0), depth, FrameMetadata::DMABUF);
-		rawOutMetadata->setData(outputMetadata);
-	}
-	break;
-	default:
-		throw AIPException(AIP_NOTIMPLEMENTED, "Unsupported ImageType<" + std::to_string(mDetail->props.imageType) + ">");
-	}
+	DMAAllocator::setMetadata(mDetail->outputMetadata, width, height, mDetail->props.imageType);
 }
 
 bool NvTransform::processEOS(string &pinId)

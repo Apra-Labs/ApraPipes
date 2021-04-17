@@ -32,19 +32,6 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         return nullptr;
     }
 
-    NvBufferParams fdParams;
-    if(NvBufferGetParams(buffer->m_fd, &fdParams))
-    {
-        delete buffer;
-        return nullptr;
-    }
-
-    LOG_INFO << "PixelFormat<" << fdParams.pixel_format << "> Planes<" << fdParams.num_planes << "> NvBufferSize<" << fdParams.nv_buffer_size << "> MemSize<" << fdParams.memsize << "> InColorFormat<" << colorFormat << "> Index<" << index << ">";
-    for (auto i = 0; i < fdParams.num_planes; i++)
-    {
-        LOG_INFO << "Width<" << fdParams.width[i] << "> Height<" << fdParams.height[i] << "> Pitch<" << fdParams.pitch[i] << "> Offset<" << fdParams.offset[i] << "> PSize<" << fdParams.psize[i] << "> Layout<" << fdParams.layout[i] << ">";
-    }
-
     // Use NvBufferMemMapEx
     auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr));
     if (res)

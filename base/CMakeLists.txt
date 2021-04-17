@@ -154,8 +154,6 @@ SET(include/CORE_FILES_H
 	include/ApraData.h
 	include/AIPExceptions.h
 	include/Utils.h
-	include/Dataset.h
-	include/FrameUtils.h
 	include/ThreadSafeQue.h	
 	include/StatSink.h
 	include/Split.h
@@ -276,6 +274,7 @@ IF(ENABLE_ARM64)
 		src/DMAUtils.cpp
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
+		src/DMAFDToHostCopy.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -319,6 +318,8 @@ IF(ENABLE_ARM64)
 		include/DMAUtils.h
 		include/NvTransform.h
 		include/ApraEGLDisplay.h
+		include/DMAFrameUtils.h
+		include/DMAFDToHostCopy.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
