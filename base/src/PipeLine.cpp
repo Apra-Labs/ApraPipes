@@ -222,9 +222,9 @@ void PipeLine::stop()
 	}
 }
 
-void PipeLine::wait_for_all()
+void PipeLine::wait_for_all(bool ignoreStatus)
 {
-	if (myStatus != PL_TERMINATED)
+	if (!ignoreStatus && myStatus != PL_TERMINATED)
 	{
 		LOG_INFO << "Pipeline status " << getStatus() << " is expected to be PL_TERMINATED";
 		return;
