@@ -5,8 +5,6 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 
-#include "npp.h"
-
 class RotateCV::Detail
 {
 public:

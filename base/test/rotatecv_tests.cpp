@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 
 #include "FileReaderModule.h"
@@ -8,7 +7,6 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-#include "CudaMemCopy.h"
 #include "RotateCV.h"
 #include "test_utils.h"
 
