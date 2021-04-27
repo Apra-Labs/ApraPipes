@@ -46,7 +46,7 @@ public:
 		height = rawMetadata->getHeight();
 		width = rawMetadata->getWidth();
 		type = rawMetadata->getType();
-		RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
+		RawImageMetadata outputMetadata(height, width, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		rawOutMetadata->setData(outputMetadata); // new function required
 		imageType = rawMetadata->getImageType();
