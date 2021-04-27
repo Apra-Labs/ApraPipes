@@ -208,6 +208,7 @@ SET(IP_FILES
 	src/BMPConverter.cpp
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
+	src/RotateCV.cpp
 )
 
 SET(IP_FILES_H
@@ -220,6 +221,7 @@ SET(IP_FILES_H
 	include/BMPConverter.h
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
+	include/RotateCV.h
 )
 
 SET(CUDA_CORE_FILES
@@ -415,6 +417,7 @@ SET(UT_FILES
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/QRReader_tests.cpp
+	test/rotatecv_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
