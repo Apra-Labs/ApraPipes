@@ -18,7 +18,7 @@ void test(std::string filename, int width, int height, ImageMetadata::ImageType 
 {
 
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/" + filename + ".raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, depth, CV_8U));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width * 3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto m1 = boost::shared_ptr<Module>(new RotateCV(RotateCVProps(angle)));
@@ -42,7 +42,6 @@ void test(std::string filename, int width, int height, ImageMetadata::ImageType 
 
 	auto outFilename = "./data/testOutput/rotatecv_tests_" + filename + "_" + std::to_string(angle) + ".raw";
 	Test_Utils::saveOrCompare(outFilename.c_str(), (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
 }
 
 BOOST_AUTO_TEST_CASE(rgb_8U_90_c)

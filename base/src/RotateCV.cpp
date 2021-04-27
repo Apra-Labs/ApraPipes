@@ -16,13 +16,12 @@ public:
 		{
 			throw AIPException(AIP_NOTIMPLEMENTED, "Only 90 degree rotation supported currently.");
 		}
+		rotateFlag = (props.angle == 90.0) ? cv::ROTATE_90_CLOCKWISE : cv::ROTATE_180;
 	}
 
 	~Detail()
 	{
 	}
-
-	FrameMetadata::FrameType mFrameType;
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
@@ -45,25 +44,25 @@ public:
 		}
 
 		ImageMetadata::ImageType imageType = ImageMetadata::MONO;
-        auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-        height = rawMetadata->getHeight();
-        width = rawMetadata->getWidth();
-        type = rawMetadata->getType();
-        RawImageMetadata outputMetadata(rawMetadata->getHeight(), rawMetadata->getWidth(), rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
-        auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-        rawOutMetadata->setData(outputMetadata); // new function required
-        imageType = rawMetadata->getImageType();
-        depth = rawMetadata->getDepth();
+		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		height = rawMetadata->getHeight();
+		width = rawMetadata->getWidth();
+		type = rawMetadata->getType();
+		RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+		rawOutMetadata->setData(outputMetadata); // new function required
+		imageType = rawMetadata->getImageType();
+		depth = rawMetadata->getDepth();
 
 		mFrameLength = mOutputMetadata->getDataSize();
 	}
 
 	bool compute(void *buffer, void *outBuffer)
 	{
-		cv::Mat input(height,width,type,buffer);
-        cv::Mat output(width,height,type,outBuffer);
+		cv::Mat input(height, width, type, buffer);
+		cv::Mat output(width, height, type, outBuffer);
 
-        cv::rotate(input,output,(props.angle==90.0) ? cv::ROTATE_90_CLOCKWISE : cv::ROTATE_180);
+		cv::rotate(input, output, rotateFlag);
 
 		return true;
 	}
@@ -72,8 +71,12 @@ public:
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
-    uint32_t height,width,type,depth;
+
+private:
+	FrameMetadata::FrameType mFrameType;
+	uint32_t height, width, type, depth;
 	RotateCVProps props;
+	int rotateFlag;
 };
 
 RotateCV::RotateCV(RotateCVProps props) : Module(TRANSFORM, "RotateCV", props)
