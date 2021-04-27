@@ -14,7 +14,7 @@ public:
 		{
 			throw AIPException(AIP_NOTIMPLEMENTED, "Only 90 degree rotation supported currently.");
 		}
-		rotateFlag = (props.angle == 90.0) ? cv::ROTATE_90_CLOCKWISE : cv::ROTATE_180;
+		rotateFlag = (props.angle == 90.0) ? cv::ROTATE_90_CLOCKWISE : cv::ROTATE_90_COUNTERCLOCKWISE;
 	}
 
 	~Detail()
