@@ -132,10 +132,10 @@ public:
 private:
 	void init()
 	{
-		dev_fd = open(props.device.c_str(), O_RDWR);
+		dev_fd = open(props.device.c_str(), O_WRONLY);
 		if (dev_fd == -1)
 		{
-			throw AIPException(AIP_FATAL, "cannot open video device<" + props.device + ">");
+			throw AIPException(AIP_FATAL, "cannot open video device<" + props.device + "> errno<" + std::to_string(errno) + ">");
 		}
 
 		struct v4l2_format v;

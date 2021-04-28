@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	fileReader->addOutputPin(metadata);
 
-	VirtualCameraSinkProps sinkProps("/dev/video10");
+	VirtualCameraSinkProps sinkProps("/dev/video99");
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
