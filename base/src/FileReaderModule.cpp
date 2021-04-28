@@ -52,6 +52,11 @@ bool FileReaderModule::produce()
 {	
 	if (mCache && mFrames.size() == 1)
 	{
+		if(!mProps.readLoop)
+		{
+			stop();
+			return true;
+		}
 		// used for performance tests
 		frame_container frames;
 		auto& cachedFrame = mFrames.begin()->second; 

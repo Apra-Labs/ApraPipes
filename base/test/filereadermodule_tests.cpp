@@ -390,4 +390,44 @@ BOOST_AUTO_TEST_CASE(propschange)
 	sink->term();
 }
 
+BOOST_AUTO_TEST_CASE(pipeline_exit)
+{
+	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
+	FileReaderModuleProps props("./data/filenamestrategydata/?.txt");
+	props.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(props));
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId = fileReader->addOutputPin(metadata);
+
+	auto sink = boost::shared_ptr<Module>(new StatSink());	
+	fileReader->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+
+	p.wait_for_all(true);
+}
+
+BOOST_AUTO_TEST_CASE(pipeline_readone_exit)
+{
+	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
+	FileReaderModuleProps props("./data/filenamestrategydata/0.txt");
+	props.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(props));
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId = fileReader->addOutputPin(metadata);
+
+	auto sink = boost::shared_ptr<Module>(new StatSink());	
+	fileReader->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+
+	p.wait_for_all(true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
