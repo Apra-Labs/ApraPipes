@@ -559,7 +559,10 @@ bool Module::send(frame_container &frames, bool forceBlockingPush)
 
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
 	{
-		// change only for output pins - add condition here
+		if (mOutputPinIdFrameFactoryMap.find(it->first) == mOutputPinIdFrameFactoryMap.end())
+		{
+			continue;
+		}
 		it->second->fIndex = fIndex;
 		it->second->timestamp = timestamp;
 	}
