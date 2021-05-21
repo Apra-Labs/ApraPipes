@@ -1157,6 +1157,10 @@ bool Module::stepNonSource(frame_container &frames)
 	{
 		// assuming already logged
 	}
+	catch(const std::exception& exception)
+	{
+		LOG_FATAL << getId() << "<>" << exception.what();
+	}
 	catch (...)
 	{
 		LOG_FATAL << getId() << "<> Unknown exception. Catching throw";
