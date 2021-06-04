@@ -10,34 +10,35 @@ class QRReader::Detail
 {
 
 public:
-	Detail(): mWidth(0), mHeight(0)
+	Detail() : mWidth(0), mHeight(0)
 	{
 		mHints.setEanAddOnSymbol(ZXing::EanAddOnSymbol::Read);
 	}
 
 	~Detail() {}
 
-	void setMetadata(framemetadata_sp& metadata) {
-        auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if(rawImageMetadata->getImageType() != ImageMetadata::ImageType::RGB)
+	void setMetadata(framemetadata_sp &metadata)
+	{
+		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		if (rawImageMetadata->getImageType() != ImageMetadata::ImageType::RGB)
 		{
 			throw AIPException(AIP_FATAL, "Expected <RGB>. Actual <" + std::to_string(rawImageMetadata->getImageType()) + ">");
 		}
-        mWidth = rawImageMetadata->getWidth();
-        mHeight = rawImageMetadata->getHeight();
+		mWidth = rawImageMetadata->getWidth();
+		mHeight = rawImageMetadata->getHeight();
 	}
 
-    int mWidth;
-    int mHeight;
-	ZXing::DecodeHints mHints;	
+	int mWidth;
+	int mHeight;
+	ZXing::DecodeHints mHints;
 	std::string mOutputPinId;
 
-private:	
+private:
 	framemetadata_sp mMetadata;
 };
 
 QRReader::QRReader(QRReaderProps _props) : Module(TRANSFORM, "QRReader", _props)
-{	
+{
 	mDetail.reset(new Detail());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	mDetail->mOutputPinId = addOutputPin(metadata);
@@ -90,7 +91,6 @@ bool QRReader::init()
 		return false;
 	}
 
-	
 	return true;
 }
 
@@ -99,29 +99,29 @@ bool QRReader::term()
 	return Module::term();
 }
 
-bool QRReader::process(frame_container& frames)
+bool QRReader::process(frame_container &frames)
 {
-    
+
 	auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE);
 	if (isFrameEmpty(frame))
 	{
 		return true;
 	}
-	
-	const auto& result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, ZXing::ImageFormat::RGB}, mDetail->mHints);
+
+	const auto &result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, ZXing::ImageFormat::RGB}, mDetail->mHints);
 
 	auto text = ZXing::TextUtfEncoding::ToUtf8(result.text());
-	
+
 	auto outFrame = makeFrame(text.length(), mDetail->mOutputPinId);
 	memcpy(outFrame->data(), text.c_str(), outFrame->size());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
-	
+
 	send(frames);
 
 	return true;
 }
 
-bool QRReader::processSOS(frame_sp& frame)
+bool QRReader::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->setMetadata(metadata);
