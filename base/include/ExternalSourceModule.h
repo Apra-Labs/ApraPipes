@@ -44,9 +44,9 @@ public:
 	}
 
 	// used in ut
-	bool send(frame_container& frames)
+	bool send(frame_container& frames, bool forceBlockingPush=false)
 	{
-		return Module::send(frames);
+		return Module::send(frames, forceBlockingPush);
 	}
 
 	// used in ut
