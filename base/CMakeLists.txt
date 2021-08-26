@@ -437,11 +437,11 @@ target_link_libraries(aprapipesut
   Boost::chrono
   Boost::system
   Boost::boost    
+  ${JETSON_LIBS}
   ${OpenCV_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}  
-  ${JETSON_LIBS}
+  ${NVJPEGLIB_L4T}
   ${LIB_AVFORMAT}
   ${LIB_AVCODEC}
   ${LIB_AVUTIL}
