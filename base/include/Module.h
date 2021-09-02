@@ -25,7 +25,16 @@ class PaceMaker;
 class ModuleProps
 {
 public:
-	ModuleProps(int fps = 60,size_t qlen = 20,bool logHealth = false,int logHealthFrequency = 1000,QuePushStrategy::QuePushStrategyType quePushStrategyType = QuePushStrategy::BLOCKING,size_t maxConcurrentFrames = 0,FIndexStrategy::FIndexStrategyType fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT){}
+	ModuleProps(int _fps = 60, size_t _qlen = 20, bool _logHealth = false, int _logHealthFrequency = 1000, QuePushStrategy::QuePushStrategyType _quePushStrategyType = QuePushStrategy::BLOCKING, size_t _maxConcurrentFrames = 0, FIndexStrategy::FIndexStrategyType _fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT)
+	{
+		fps = _fps;
+		qlen = _qlen;
+		logHealth = _logHealth;
+		logHealthFrequency = _logHealthFrequency;
+		quePushStrategyType = _quePushStrategyType;
+		maxConcurrentFrames = _maxConcurrentFrames;
+		fIndexStrategyType = _fIndexStrategyType;
+	}
 
 	size_t getQLen()
 	{
