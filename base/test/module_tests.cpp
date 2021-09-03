@@ -542,7 +542,7 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 
 BOOST_AUTO_TEST_CASE(module_props)
 {
-	auto module = boost::shared_ptr<TestModule>(new TestModule(Module::SOURCE, "hola", ModuleProps(50, 40, true)));
+	auto module = boost::shared_ptr<TestModule>(new TestModule(Module::SOURCE, "hola", ModuleProps({.fps = 50,.qlen = 40,.logHealth = true})));
 	auto props = module->getProps();
 	BOOST_TEST(props.fps == 50);
 	BOOST_TEST(props.getQLen() == 40);
