@@ -209,6 +209,8 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
+	src/BrightnessContrastControl.cpp
+	src/VirtualPTZ.cpp
 )
 
 SET(IP_FILES_H
@@ -222,6 +224,8 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
+	include/BrightnessContrastControl.h
+	include/VirtualPTZ.h
 )
 
 SET(CUDA_CORE_FILES
@@ -418,6 +422,8 @@ SET(UT_FILES
 	test/ImageEncodeCV_tests.cpp
 	test/QRReader_tests.cpp
 	test/rotatecv_tests.cpp
+	test/brightness_contrast_tests.cpp
+	test/virtualptz_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
