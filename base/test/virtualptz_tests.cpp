@@ -28,11 +28,8 @@
 #include "BrightnessContrastControl.h"
 #include "ImageOverlay.h"
 #include "WebCamSrc.h"
-#ifdef ARM64
-BOOST_AUTO_TEST_SUITE(virtual_ptz_tests, *boost::unit_test::disabled())
-#else
+
 BOOST_AUTO_TEST_SUITE(virtual_ptz_tests)
-#endif
 
 BOOST_AUTO_TEST_CASE(mono)
 {
@@ -60,7 +57,7 @@ BOOST_AUTO_TEST_CASE(mono)
 	auto outputFrame = frames.cbegin()->second;
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
-	Test_Utils::saveOrCompare("./data/testOutput/vPtztest4.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/vPtztestmono.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(rgb)
@@ -89,7 +86,7 @@ BOOST_AUTO_TEST_CASE(rgb)
 	auto outputFrame = frames.cbegin()->second;
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
-	Test_Utils::saveOrCompare("./data/testOutput/vPtztest8.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/vPtztestrgb.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(testGetSetProps)
@@ -118,7 +115,7 @@ BOOST_AUTO_TEST_CASE(testGetSetProps)
 		BOOST_TEST(frames.size() == 1);
 		auto outputFrame = frames.cbegin()->second;
 		BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-		Test_Utils::saveOrCompare("./data/testOutput/vPtztest2.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+		Test_Utils::saveOrCompare("./data/testOutput/vPtztestprops1.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 	}
 
 	VirtualPTZProps props12(0.950, 0.950, 0.90, 0.90);
@@ -134,7 +131,7 @@ BOOST_AUTO_TEST_CASE(testGetSetProps)
 		BOOST_TEST(frames.size() == 1);
 		auto outputFrame = frames.cbegin()->second;
 		BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-		Test_Utils::saveOrCompare("./data/testOutput/vPtztest7.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+		Test_Utils::saveOrCompare("./data/testOutput/vPtztestprops2.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 	}
 }
 

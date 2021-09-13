@@ -17,11 +17,7 @@
 #include "CudaMemCopy.h"
 #include "BrightnessContrastControl.h"
 
-#ifdef ARM64
-BOOST_AUTO_TEST_SUITE(brightnes_contrast_tests, *boost::unit_test::disabled())
-#else
 BOOST_AUTO_TEST_SUITE(brightnes_contrast_tests)
-#endif
 
 BOOST_AUTO_TEST_CASE(mono)
 {
@@ -30,24 +26,23 @@ BOOST_AUTO_TEST_CASE(mono)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<Module>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
+	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
 	fileReader->setNext(brightnessControl);
 
-	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/brightnessControlmono.raw")));
+	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	brightnessControl->setNext(m2);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
-	BOOST_TEST(p.init());
-	p.run_all_threaded();
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(brightnessControl->init());
+	BOOST_TEST(m2->init());
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
-
-	p.stop();
-	p.term();
-
-	p.wait_for_all();
+	fileReader->step();
+	brightnessControl->step();
+	auto frames = m2->pop();
+	BOOST_TEST(frames.size() == 1);
+	auto outputFrame = frames.cbegin()->second;
+	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/brightnessmono.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(bgra)
@@ -63,24 +58,23 @@ BOOST_AUTO_TEST_CASE(bgra)
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<Module>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
+	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
 	fileReader->setNext(brightnessControl);
 
-	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/brightnessControl12345.raw")));
+	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	brightnessControl->setNext(m2);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
-	BOOST_TEST(p.init());
-	p.run_all_threaded();
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(brightnessControl->init());
+	BOOST_TEST(m2->init());
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
-
-	p.stop();
-	p.term();
-
-	p.wait_for_all();
+	fileReader->step();
+	brightnessControl->step();
+	auto frames = m2->pop();
+	BOOST_TEST(frames.size() == 1);
+	auto outputFrame = frames.cbegin()->second;
+	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/brightnessbgra.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(getSetProps)
