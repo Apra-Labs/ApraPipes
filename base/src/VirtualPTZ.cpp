@@ -33,7 +33,7 @@ public:
         mRoi = cv::Rect(mInputWidth * props.roiX, mInputHeight * props.roiY, mInputWidth * props.roiWidth, mInputHeight * props.roiHeight);
         if (!Utils::check_roi_bounds(mRoi, rawMetadata->getWidth(), rawMetadata->getHeight()))
         {
-            VirtualPTZProps defProps(1, 1, 0, 0);
+            LOG_ERROR << "Using the full image as roi is out of bounds. <" << props.roiX << "> <" << props.roiY << "> <" << props.roiHeight << "> <" << props.roiWidth << ">";
         }
         else
         {
