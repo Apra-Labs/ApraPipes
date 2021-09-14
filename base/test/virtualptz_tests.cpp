@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(rgb)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto vPtz = boost::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.9, 0.900, 0.90, 0.90)));
+	auto vPtz = boost::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.29, 0.2900, 0.0, 0.0)));
 	fileReader->setNext(vPtz);
 
 	auto Vptzprops = vPtz->getProps();
