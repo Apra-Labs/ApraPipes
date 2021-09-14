@@ -35,7 +35,7 @@ public:
 	int mFrameType;
 };
 
-BrightnessContrastControl::BrightnessContrastControl(BrightnessContrastControlProps _props) : Module(TRANSFORM, "BrightnessContrastControl", _props) //,  mFrameType(FrameMetadata::GENERAL) //mProps(_props),
+BrightnessContrastControl::BrightnessContrastControl(BrightnessContrastControlProps _props) : Module(TRANSFORM, "BrightnessContrastControl", _props)
 {
 	mDetail.reset(new Detail(_props));
 }
@@ -134,7 +134,7 @@ void BrightnessContrastControl::setMetadata(framemetadata_sp &metadata)
 	case ImageMetadata::RGBA:
 		break;
 	default:
-		throw AIPException(AIP_NOTIMPLEMENTED, "ImageType not Supported<" + std::to_string(imageType) + ">"); // # aug30review  - change comment
+		throw AIPException(AIP_NOTIMPLEMENTED, "ImageType not Supported<" + std::to_string(imageType) + ">");
 	}
 }
 
