@@ -34,12 +34,12 @@ public:
         if (!Utils::check_roi_bounds(mRoi, rawMetadata->getWidth(), rawMetadata->getHeight()))
         {
             LOG_ERROR << "Using the full image as roi is out of bounds. <" << props.roiX << "> <" << props.roiY << "> <" << props.roiHeight << "> <" << props.roiWidth << ">";
+            mRoi = cv::Rect(mInputWidth * mProps.roiX, mInputHeight * mProps.roiY, mInputWidth * mProps.roiWidth, mInputHeight * mProps.roiHeight);
         }
         else
         {
             mProps = props;
         }
-        mRoi = cv::Rect(mInputWidth * mProps.roiX, mInputHeight * mProps.roiY, mInputWidth * mProps.roiWidth, mInputHeight * mProps.roiHeight);
     }
 
 public:
