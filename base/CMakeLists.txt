@@ -211,6 +211,7 @@ SET(IP_FILES
 	src/RotateCV.cpp
 	src/BrightnessContrastControl.cpp
 	src/VirtualPTZ.cpp
+	src/WebCamSource.cpp
 )
 
 SET(IP_FILES_H
@@ -226,6 +227,7 @@ SET(IP_FILES_H
 	include/RotateCV.h
 	include/BrightnessContrastControl.h
 	include/VirtualPTZ.h
+	include/WebCamSource.h
 )
 
 SET(CUDA_CORE_FILES
@@ -424,6 +426,7 @@ SET(UT_FILES
 	test/rotatecv_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
+	test/webcam_source_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
