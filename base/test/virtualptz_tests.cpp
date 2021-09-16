@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-// #include <opencv2/highgui/highgui.hpp>
 #include "VirtualPTZ.h"
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -8,26 +7,11 @@
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "AIPExceptions.h"
-#include "MetadataHints.h"
 #include "test_utils.h"
-#include "ImageResizeCV.h"
-#include "RotateCV.h"
-#include "FramesMuxer.h"
-#include "PipeLine.h"
-#include "StatSink.h"
-#include "ImageOverlayCPU.h"
-#include "TextOverlayCPU.h"
-#include "OpencvWebcam.h"
 #include "StatSink.h"
 #include "PipeLine.h"
 #include "FileWriterModule.h"
-#include "CudaMemCopy.h"
-#include "JPEGEncoderNVJPEG.h"
-#include "ImageEncoderCV.h"
-#include "BrightnessContrastControl.h"
-#include "ImageOverlay.h"
-#include "WebCamSrc.h"
+
 
 BOOST_AUTO_TEST_SUITE(virtual_ptz_tests)
 

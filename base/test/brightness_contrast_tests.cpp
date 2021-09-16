@@ -6,15 +6,10 @@
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "AIPExceptions.h"
-#include "MetadataHints.h"
 #include "test_utils.h"
-#include "FramesMuxer.h"
-#include "PipeLine.h"
 #include "StatSink.h"
 #include "PipeLine.h"
 #include "FileWriterModule.h"
-#include "CudaMemCopy.h"
 #include "BrightnessContrastControl.h"
 
 BOOST_AUTO_TEST_SUITE(brightnes_contrast_tests)
