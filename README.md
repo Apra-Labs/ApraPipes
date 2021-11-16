@@ -12,6 +12,7 @@ git clone --recursive https://github.com/kumaakh/ApraPipes.git
 ```
 
 ## Prerequisites
+* Run ```sudo apt-get update && sudo apt-get install build-essential```  to get latest build tools
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * ffmpeg
 ```
