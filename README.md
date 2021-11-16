@@ -55,6 +55,7 @@ This project uses [hunter package manager](https://github.com/cpp-pm/hunter).
 Build can take ~12 hours on Jetson Nano. 
 
 ## Run Tests
+* list all tests `_build/aprapipesut --list_content`
 * run all tests  `_build/aprapipesut`
 * run one test `_build/aprapipesut --run_test=filenamestrategy_tests/boostdirectorystrategy`
 * run one test with arguments `_build/aprapipesut --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera`
