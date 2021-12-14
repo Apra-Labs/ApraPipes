@@ -35,6 +35,12 @@ hunter_config(
 	CMAKE_POSITION_INDEPENDENT_CODE=ON
 )
 hunter_config(
+    lzma
+    VERSION ${HUNTER_lzma_VERSION}
+    CMAKE_ARGS
+	CMAKE_POSITION_INDEPENDENT_CODE=ON
+)
+hunter_config(
     Jpeg
     VERSION ${HUNTER_Jpeg_VERSION}
     CMAKE_ARGS
