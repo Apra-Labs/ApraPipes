@@ -27,6 +27,7 @@ jobs:
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
     
     - name: Cache thirdparty
+      id: cache-thirdparty
       uses: actions/cache@v2
       env:
         cache-name: cache-thirdparty
@@ -37,6 +38,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
           
     - name: Cache hunter 
+      id: cache-hunter
       uses: actions/cache@v2
       env:
         cache-name: cache-hunter
@@ -50,10 +52,12 @@ jobs:
       run: sudo apt-get install -y yasm
     
     - name: Build FFMPEG
+      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
       working-directory: ${{github.workspace}}/thirdparty/ffmpeg
       run: (./configure --enable-pic) && (make)
       
     - name: Build ZXING
+      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
       working-directory: ${{github.workspace}}/thirdparty/zxing-cpp
       run: (chmod +x build.sh) && (./build.sh)
   
