@@ -1,4 +1,4 @@
-name: CMake
+name: ApraPipesBuild
 
 on:
   push:
@@ -22,6 +22,19 @@ jobs:
       with: 
         submodules: 'true'
     
+    - name: Cache hunter 
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-hunter
+      with:
+          # hunter cache files are stored in `~/.hunter` on Linux
+          path: ~/.hunter
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('${{github.workspace}}/cmake/config.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
     - name: Install yasm
       run: sudo apt-get install -y yasm
     
@@ -38,13 +51,9 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_CUDA=OFF ./base
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+   # - name: Build
+   #   run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.  
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: aprapipesut
-      
+   # - name: Test
+   #   working-directory: ${{github.workspace}}/build
+   #   run: aprapipesut
