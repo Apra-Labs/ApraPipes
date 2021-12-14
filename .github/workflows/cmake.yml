@@ -24,20 +24,28 @@ jobs:
         submodules: 'true'
     - name: Compute submodule status
       working-directory: ${{github.workspace}}/thirdparty
-      run: git submodule status > ${{env.SUBMODS_TXT}}
+      run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
     
+    - name: Cache thirdparty
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-thirdparty
+      with:
+          # thirdparty stuff is in thirdparty folder
+          path: ${{github.workspace}}/thirdparty
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/${{env.SUBMODS_TXT}}') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+          
     - name: Cache hunter 
       uses: actions/cache@v2
       env:
         cache-name: cache-hunter
       with:
           # hunter cache files are stored in `~/.hunter` on Linux
-          path: |
-            ~/.hunter
-            ${{github.workspace}}/thirdparty
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('cmake/config.cmake', 'thirdparty/${{env.SUBMODS_TXT}}') }}
+          path: ~/.hunter
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('cmake/config.cmake') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-          
+    
     - name: Install yasm
       run: sudo apt-get install -y yasm
     
