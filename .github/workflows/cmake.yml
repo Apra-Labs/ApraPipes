@@ -19,7 +19,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
+    
+    - name: Install yasm
+      run: sudo apt-get install -y yasm
+    
+    - name: Build FFMPEG
+      working-directory: ${{github.workspace}}/thirdparty/ffmpeg
+      run: (./configure --enable-pic) && (make)
+      
+    - name: Build ZXING
+      working-directory: ${{github.workspace}}/thirdparty/zxing-cpp
+      run: (chmod +x build.sh) && (./build.sh)
+  
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
