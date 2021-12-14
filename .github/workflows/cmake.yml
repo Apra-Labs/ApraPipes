@@ -49,6 +49,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install yasm
+      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
       run: sudo apt-get install -y yasm
     
     - name: Build FFMPEG
@@ -66,8 +67,8 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_CUDA=OFF ./base
 
-   # - name: Build
-   #   run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
    # - name: Test
    #   working-directory: ${{github.workspace}}/build
