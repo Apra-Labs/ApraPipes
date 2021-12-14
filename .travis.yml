@@ -12,4 +12,4 @@ compiler:
   - gcc
  
 script:
-  -./build_linux_x64.sh 
+  -./build_linux_no_cuda.sh
