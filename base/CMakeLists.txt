@@ -34,6 +34,16 @@ find_package(Boost CONFIG REQUIRED system thread filesystem serialization log ch
 hunter_add_package(OpenCV)
 find_package(OpenCV)
 
+hunter_add_package(BZip2)
+find_package(BZip2)
+
+hunter_add_package(ZLIB)
+find_package(ZLIB)
+
+hunter_add_package(lzma)
+find_package(lzma)
+
+
 IF(NOT ENABLE_ARM64)
 	hunter_add_package(ncursesw)
 	find_package(ncursesw CONFIG REQUIRED)
@@ -457,4 +467,7 @@ target_link_libraries(aprapipesut
   ${LIB_FFSWR}
   ${CURSES_LIBRARIES}
   ${LIB_ZXING}
+  BZip2::bz2
+  ZLIB::zlib
+  lzma::lzma
 )
