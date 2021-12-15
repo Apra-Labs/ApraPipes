@@ -12,7 +12,7 @@
 
 BOOST_AUTO_TEST_SUITE(filewritermodule_tests)
 
-BOOST_AUTO_TEST_CASE(basic)
+BOOST_AUTO_TEST_CASE(basic, * boost::unit_test::disabled())
 {
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;

@@ -733,7 +733,7 @@ BOOST_AUTO_TEST_CASE(skip_test)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(stop)
+BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 {
 	class TestModule2 : public TestModule
 	{
@@ -836,7 +836,7 @@ BOOST_AUTO_TEST_CASE(stop)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(stop_bug)
+BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 {
 	
 
@@ -904,7 +904,7 @@ BOOST_AUTO_TEST_CASE(stop_bug)
 	t3.join();
 }
 
-BOOST_AUTO_TEST_CASE(pause_play_step)
+BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 {
 	class TestModule1 : public TestModule
 	{
@@ -1154,7 +1154,7 @@ BOOST_AUTO_TEST_CASE(relay)
 
 }
 
-BOOST_AUTO_TEST_CASE(pipeline_relay)
+BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 {
 	class TestModule2 : public TestModule
 	{
@@ -1273,7 +1273,7 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 	
 }
 
-BOOST_AUTO_TEST_CASE(feedbackmodule)
+BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 {
 	class TestSource : public Module
 	{

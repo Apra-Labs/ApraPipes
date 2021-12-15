@@ -8,7 +8,7 @@
 #include "WebCamSource.h"
 #include "ExternalSinkModule.h"
 
-BOOST_AUTO_TEST_SUITE(webcam_tests)
+BOOST_AUTO_TEST_SUITE(webcam_tests, * boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(basic)
 {
