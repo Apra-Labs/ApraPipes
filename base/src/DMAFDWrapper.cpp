@@ -33,7 +33,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     }
 
     // Use NvBufferMemMapEx
-    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr));
+    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read_Write , &(buffer->hostPtr));
     if (res)
     {
         LOG_ERROR << "NvBufferMemMap Error<>" << res;
@@ -44,7 +44,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     if (colorFormat == NvBufferColorFormat_NV12 ||
         colorFormat == NvBufferColorFormat_YUV420)
     {
-        res = NvBufferMemMap(buffer->m_fd, 1, NvBufferMem_Read, &(buffer->hostPtrU));
+        res = NvBufferMemMap(buffer->m_fd, 1, NvBufferMem_Read_Write , &(buffer->hostPtrU));
         if (res)
         {
             LOG_ERROR << "NvBufferMemMap Error<>" << res;
@@ -55,7 +55,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
 
     if (colorFormat == NvBufferColorFormat_YUV420)
     {
-        res = NvBufferMemMap(buffer->m_fd, 2, NvBufferMem_Read, &(buffer->hostPtrV));
+        res = NvBufferMemMap(buffer->m_fd, 2, NvBufferMem_Read_Write , &(buffer->hostPtrV));
         if (res)
         {
             LOG_ERROR << "NvBufferMemMap Error<>" << res;
