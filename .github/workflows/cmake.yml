@@ -45,7 +45,7 @@ jobs:
       with:
           # hunter cache files are stored in `~/.hunter` on Linux
           path: ~/.hunter
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('cmake/config.cmake') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('cmake/config.cmake', 'base/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install yasm
