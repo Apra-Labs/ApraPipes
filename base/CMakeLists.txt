@@ -35,13 +35,13 @@ hunter_add_package(OpenCV)
 find_package(OpenCV)
 
 hunter_add_package(BZip2)
-find_package(BZip2)
+find_package(BZip2 CONFIG REQUIRED)
 
 hunter_add_package(ZLIB)
-find_package(ZLIB)
+find_package(ZLIB CONFIG REQUIRED)
 
 hunter_add_package(lzma)
-find_package(lzma)
+find_package(lzma CONFIG REQUIRED)
 
 
 IF(NOT ENABLE_ARM64)
