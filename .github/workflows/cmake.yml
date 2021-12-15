@@ -71,4 +71,10 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
-      run: build/aprapipesut
+      run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result.xml
+      
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: CI_test_result.xml
