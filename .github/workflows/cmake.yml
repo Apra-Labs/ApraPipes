@@ -1,4 +1,4 @@
-name: ApraPipesBuild
+name: CI
 
 on:
   push:
@@ -72,9 +72,28 @@ jobs:
 
     - name: Test
       run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result.xml
-      
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+       name: Unit Test Results
+       path: |
+         CI_test_result.xml
+    
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
         files: CI_test_result.xml
+
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
+          
