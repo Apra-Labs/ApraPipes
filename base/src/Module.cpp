@@ -1179,6 +1179,7 @@ bool Module::addEoPFrame(frame_container &frames)
 		frame->setMetadata(metadata);
 		frames.insert(make_pair(me.first, frame));
 	}
+	return true;
 }
 
 bool Module::handleStop()
