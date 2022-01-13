@@ -1,4 +1,4 @@
-include "RotateNPPIDMA.h"
+include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
@@ -12,10 +12,10 @@ include "RotateNPPIDMA.h"
 
 #define PI 3.14159265
 
-class RotateNPPIDMA::Detail
+class AffineTransform::Detail
 {
 public:
-	Detail(RotateNPPIDMAProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
+	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 	}
@@ -170,7 +170,7 @@ public:
 		return true;
 	}
 
-	void setProps(RotateNPPIDMAProps &mprops)
+	void setProps(AffineTransformProps &mprops)
 	{
 		if (!mOutputMetadata.get())
 		{
@@ -184,7 +184,7 @@ public:
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
-	RotateNPPIDMAProps props;
+	AffineTransformProps props;
 	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
@@ -243,14 +243,14 @@ public:
 	NppStreamContext nppStreamCtx;
 };
 
-RotateNPPIDMA::RotateNPPIDMA(RotateNPPIDMAProps props) : Module(TRANSFORM, "RotateNPPIDMA", props)
+AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props)
 {
 	mDetail.reset(new Detail(props));
 }
 
-RotateNPPIDMA::~RotateNPPIDMA() {}
+AffineTransform::~AffineTransform() {}
 
-bool RotateNPPIDMA::validateInputPins()
+bool AffineTransform::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
@@ -276,7 +276,7 @@ bool RotateNPPIDMA::validateInputPins()
 	return true;
 }
 
-bool RotateNPPIDMA::validateOutputPins()
+bool AffineTransform::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
@@ -302,7 +302,7 @@ bool RotateNPPIDMA::validateOutputPins()
 	return true;
 }
 
-void RotateNPPIDMA::addInputPin(framemetadata_sp &metadata, string &pinId)
+void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -312,7 +312,7 @@ void RotateNPPIDMA::addInputPin(framemetadata_sp &metadata, string &pinId)
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
-bool RotateNPPIDMA::init()
+bool AffineTransform::init()
 {
 	if (!Module::init())
 	{
@@ -322,13 +322,13 @@ bool RotateNPPIDMA::init()
 	return true;
 }
 
-bool RotateNPPIDMA::term()
+bool AffineTransform::term()
 {
 	mDetail.reset();
 	return Module::term();
 }
 
-bool RotateNPPIDMA::process(frame_container &frames)
+bool AffineTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
@@ -342,38 +342,38 @@ bool RotateNPPIDMA::process(frame_container &frames)
 	return true;
 }
 
-bool RotateNPPIDMA::processSOS(frame_sp &frame)
+bool AffineTransform::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->setMetadata(metadata);
 	return true;
 }
 
-bool RotateNPPIDMA::shouldTriggerSOS()
+bool AffineTransform::shouldTriggerSOS()
 {
 	return mDetail->mFrameLength == 0;
 }
 
-bool RotateNPPIDMA::processEOS(string &pinId)
+bool AffineTransform::processEOS(string &pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;
 }
 
-void RotateNPPIDMA::setProps(RotateNPPIDMAProps &props)
+void AffineTransform::setProps(AffineTransformProps &props)
 {
 	Module::addPropsToQueue(props);
 }
 
-RotateNPPIDMAProps RotateNPPIDMA::getProps()
+AffineTransformProps AffineTransform::getProps()
 {
 	fillProps(mDetail->props);
 	return mDetail->props;
 }
 
-bool RotateNPPIDMA::handlePropsChange(frame_sp &frame)
+bool AffineTransform::handlePropsChange(frame_sp &frame)
 {
-	RotateNPPIDMAProps props(mDetail->props.stream, 0);
+	AffineTransformProps props(mDetail->props.stream, 0);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
