@@ -45,14 +45,14 @@ find_package(lzma CONFIG REQUIRED)
 
 
 IF(NOT ENABLE_ARM64)
-	hunter_add_package(ncursesw)
-	find_package(ncursesw CONFIG REQUIRED)
-	SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-	SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+hunter_add_package(ncursesw)
+find_package(ncursesw CONFIG REQUIRED)
+SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+SET(CURSES_LIBRARIES PkgConfig::ncursesw)
 ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_CUDA)
-	enable_language(CUDA)
+enable_language(CUDA)
 ENDIF(ENABLE_CUDA)
 
 SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
@@ -70,7 +70,7 @@ IF(ENABLE_CUDA)
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
-
+		
 		find_library(NVJPEGLIB_L4T nvjpeg)
 		find_library(V4L2LIB nvv4l2)
 		find_library(EGLLIB EGL)
@@ -293,6 +293,7 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
+		src/AffineTransform.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
@@ -316,7 +317,7 @@ SET(CUDA_IP_FILES_H
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
 		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
+		include/JPEGDecoderL4TM.h	 
 		include/JPEGEncoderL4TMHelper.h
 		include/JPEGEncoderL4TM.h
 		include/AV4L2Buffer.h
@@ -338,6 +339,7 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+		include/AffineTransform.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
