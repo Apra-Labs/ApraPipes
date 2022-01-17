@@ -61,7 +61,10 @@ find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT
 find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
 find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
 find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
-
+find_library(LIB_SFML_GRAPHICS libsfml-graphics.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
+find_library(LIB_SFML_AUDIO libsfml-audio.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
+find_library(LIB_SFML_WINDOW libsfml-window.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
+find_library(LIB_SFML_SYSTEM libsfml-system.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
@@ -116,6 +119,7 @@ include_directories(AFTER SYSTEM include
 	/usr/local/cuda-10.2/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
+	../thirdparty/sfml/
 	${CURSES_INCLUDE_DIR}
 	../thirdparty/zxing-cpp/_install/include/ZXing
 )
@@ -141,6 +145,7 @@ SET(CORE_FILES
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
 	src/KeyboardListener.cpp
+	src/SoundRecord.cpp
 )
 
 SET(include/CORE_FILES_H
@@ -183,6 +188,7 @@ SET(include/CORE_FILES_H
 	include/MetadataHints.h
 	include/FIndexStrategy.h
 	include/KeyboardListener.h
+	include/SoundRecord.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -437,8 +443,9 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/sound_record_tests.cpp
 	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}	
+	${CUDA_UT_FILES}
 )
 
 add_executable(aprapipesut ${UT_FILES})
@@ -470,4 +477,8 @@ target_link_libraries(aprapipesut
   BZip2::bz2
   ZLIB::zlib
   lzma::lzma
+  ${LIB_SFML_GRAPHICS}
+  ${LIB_SFML_AUDIO}
+  ${LIB_SFML_WINDOW}
+  ${LIB_SFML_SYSTEM}
 )
