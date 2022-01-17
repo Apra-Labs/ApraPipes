@@ -45,14 +45,14 @@ find_package(lzma CONFIG REQUIRED)
 
 
 IF(NOT ENABLE_ARM64)
-hunter_add_package(ncursesw)
-find_package(ncursesw CONFIG REQUIRED)
-SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+	hunter_add_package(ncursesw)
+	find_package(ncursesw CONFIG REQUIRED)
+	SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+	SET(CURSES_LIBRARIES PkgConfig::ncursesw)
 ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_CUDA)
-enable_language(CUDA)
+	enable_language(CUDA)
 ENDIF(ENABLE_CUDA)
 
 SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
@@ -70,7 +70,7 @@ IF(ENABLE_CUDA)
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
-		
+
 		find_library(NVJPEGLIB_L4T nvjpeg)
 		find_library(V4L2LIB nvv4l2)
 		find_library(EGLLIB EGL)
