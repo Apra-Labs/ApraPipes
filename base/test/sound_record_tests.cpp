@@ -18,14 +18,14 @@ BOOST_AUTO_TEST_CASE(record)
     SoundRecordProps sourceProps(48000,1,2,0,200);
     auto source = boost::shared_ptr<Module>(new SoundRecord(sourceProps));
 
-    auto fileWriter_without_denoise = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../test.wav", true)));
-    source->setNext(fileWriter_without_denoise);
+    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../test.wav", true)));
+    source->setNext(outputFile);
 
     PipeLine p("test");
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::seconds(20));
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
     p.stop();
     p.term();
     p.wait_for_all();
