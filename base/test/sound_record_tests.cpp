@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(record)
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    boost::this_thread::sleep_for(boost::chrono::seconds(15));
     p.stop();
     p.term();
     p.wait_for_all();
