@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
-#ifdef Not WINDOWS
+#ifdef LINUX
 	#include <unistd.h>
 #endif
 #include <fcntl.h>

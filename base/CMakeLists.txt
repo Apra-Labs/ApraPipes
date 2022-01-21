@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 # SET( CONFIG_FILEPATH ${CMAKE_SOURCE_DIR}/../cmake/config.cmake)
 # HunterGate(
 # 	URL "https://github.com/saichaitanyaeruvaram/hunter/archive/opencv-4.5.0.tar.gz"
@@ -18,12 +18,16 @@ IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
 
-IF(ENABLE_LINUX)
-	add_compile_definitions(WINDOWS)	
-ENDIF(ENABLE_LINUX)
+IF(ENABLE_WINDOWS)
+	add_compile_definitions(WINDOWS)
+        set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/zxing-cpp)	
+	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
+ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_ARM64)
-	add_compile_definitions(ARM64)	
+	add_compile_definitions(ARM64)
+	set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
@@ -49,7 +53,7 @@ find_package(liblzma REQUIRED)
 
 find_package(FFMPEG REQUIRED)
 
-find_package(zxing CONFIG REQUIRED)
+find_package(ZXing CONFIG REQUIRED)
 
 find_package(bigint CONFIG REQUIRED)
 
@@ -80,14 +84,14 @@ IF(ENABLE_CUDA)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(NVJPEGLIB_L4T nvjpeg)
-		find_library(V4L2LIB nvv4l2)
-		find_library(EGLLIB EGL)
-		find_library(GLESv2LIB GLESv2)
-		find_library(X11LIB X11)
-		find_library(NVBUFUTILSLIB nvbuf_utils)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
+		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		find_library(V4L2LIB nvv4l2 REQUIRED)
+		find_library(EGLLIB EGL REQUIRED)
+		find_library(GLESv2LIB GLESv2 REQUIRED)
+		find_library(X11LIB X11 REQUIRED)
+		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
+		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
@@ -115,11 +119,14 @@ IF(ENABLE_CUDA)
 			libnppial_static.a					
 			libculibos.a	
 		)	
-
 	ENDIF(ENABLE_ARM64)
+
+	include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+
 ENDIF(ENABLE_CUDA)
 
 include_directories(AFTER SYSTEM include)
+
 
 # ApraPipes library
 
@@ -141,10 +148,10 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	# src/KeyboardListener.cpp
+	src/QRReader.cpp
 )
 
-SET(include/CORE_FILES_H
+SET(CORE_FILES_H
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
@@ -183,7 +190,7 @@ SET(include/CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	# include/KeyboardListener.h
+	include/QRReader.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -194,21 +201,26 @@ IF(ENABLE_WINDOWS)
 ENDIF(ENABLE_WINDOWS)
 
 SET(GENERIC_FILES
-	# src/VirtualCameraSink.cpp
 	src/RTSPPusher.cpp
 	src/H264FrameDemuxer.cpp
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
-	# src/QRReader.cpp
+	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
-	# include/VirtualCameraSink.h
 	include/H264FrameDemuxer.h
 	include/H264ParserUtils.h
 	include/H264Utils.h
 	include/RTSPPusher.h
-	# include/QRReader.h
+	include/QRReader.h
 )
+
+IF(LINUX)
+	list(APPEND CORE_FILES src/KeyboardListener.cpp)
+	list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
+	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
+ENDIF(LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -363,7 +375,12 @@ ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
 
-target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+target_include_directories ( aprapipes PRIVATE 
+${JETSON_MULTIMEDIA_LIB_INCLUDE}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
+${Boost_INCLUDE_DIRS}
+)
 
 # aprapipes Unit Tests
 
@@ -427,20 +444,26 @@ SET(UT_FILES
 	test/split_tests.cpp
 	test/imagemetadata_tests.cpp
 	test/bmpconverter_tests.cpp
-	# test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
 	test/findexstrategy_tests.cpp	
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
-	# test/QRReader_tests.cpp
 	test/rotatecv_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/QRReader_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
 )
+
+IF(LINUX)
+	list(APPEND UT_FILES
+	test/virtualcamerasink_tests.cpp
+	test/QRReader_tests.cpp
+	)
+ENDIF(LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -450,11 +473,17 @@ ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-#   Boost::unit_test_framework
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  zxing::libzxing	
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+#   ${ZXing_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
   liblzma::liblzma
