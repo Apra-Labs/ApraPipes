@@ -25,7 +25,7 @@ jobs:
     
     - name: Compute submodule status
       working-directory: ${{github.workspace}}/vcpkg
-      run: git fetch --all
+      run: git fetch upstream
       
     - name: Cache VCPKG 
       id: cache-vcpkg
