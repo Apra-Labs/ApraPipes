@@ -51,6 +51,9 @@ jobs:
     - name: Install yasm
       if: steps.cache-thirdparty.outputs.cache-hit != 'true'
       run: sudo apt-get install -y yasm
+
+   - name: Install nasm
+     run: sudo apt-get install -y nasm
     
     - name: Build FFMPEG
       if: steps.cache-thirdparty.outputs.cache-hit != 'true'
