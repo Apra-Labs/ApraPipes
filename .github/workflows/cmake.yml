@@ -26,7 +26,10 @@ jobs:
       working-directory: ${{github.workspace}}/vcpkg
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
     - name: Fetch vcpkg
-      run: cd ${{github.workspace}}/vcpkg | git fetch | cd ..
+      run: |
+          cd ${{github.workspace}}/vcpkg
+          git fetch --all
+          cd ..
     - name: Cache VCPKG 
       id: cache-vcpkg
       uses: actions/cache@v2
