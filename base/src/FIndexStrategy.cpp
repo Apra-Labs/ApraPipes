@@ -7,6 +7,7 @@ std::shared_ptr<FIndexStrategy> FIndexStrategy::create(FIndexStrategyType type)
     case FIndexStrategyType::AUTO_INCREMENT:
         return std::make_shared<FIndexAutoIncrementStrategy>();
     case FIndexStrategyType::NONE:
+    default:
         return std::make_shared<FIndexStrategy>();
         break;
     }
