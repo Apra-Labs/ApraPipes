@@ -25,47 +25,25 @@ jobs:
     - name: Compute submodule status
       working-directory: ${{github.workspace}}/thirdparty
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
-    
-    - name: Cache thirdparty
-      id: cache-thirdparty
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-thirdparty
-      with:
-          # thirdparty stuff is in thirdparty folder
-          path: ${{github.workspace}}/thirdparty
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/${{env.SUBMODS_TXT}}') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
           
-    - name: Cache hunter 
-      id: cache-hunter
+    - name: Cache VCPKG 
+      id: cache-vcpkg
       uses: actions/cache@v2
       env:
         cache-name: cache-hunter
       with:
           # hunter cache files are stored in `~/.hunter` on Linux
-          path: ~/.hunter
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('cmake/config.cmake', 'base/CMakeLists.txt') }}
+          path: $HOME/.cache/vcpkg/archives
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install yasm
-      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
       run: sudo apt-get install -y yasm
-    
-    - name: Build FFMPEG
-      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
-      working-directory: ${{github.workspace}}/thirdparty/ffmpeg
-      run: (./configure --enable-pic) && (make)
-      
-    - name: Build ZXING
-      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
-      working-directory: ${{github.workspace}}/thirdparty/zxing-cpp
-      run: (chmod +x build.sh) && (./build.sh)
   
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_CUDA=OFF ./base
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=OFF -DENABLE_CUDA=OFF ./base -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
