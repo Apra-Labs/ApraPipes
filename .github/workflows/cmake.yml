@@ -27,6 +27,10 @@ jobs:
       working-directory: ${{github.workspace}}/thirdparty
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
       
+    - name: Run VCPKG bootstrap
+      working-directory: ${{github.workspace}}
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
     - name: Cache VCPKG 
       id: cache-vcpkg
       uses: actions/cache@v2
