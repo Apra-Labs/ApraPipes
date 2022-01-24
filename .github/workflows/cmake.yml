@@ -24,7 +24,7 @@ jobs:
         submodules: 'true'
     
     - name: Compute submodule status
-      working-directory: ${{github.workspace}}/thirdparty
+      working-directory: ${{github.workspace}}
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
       
     - name: Run VCPKG bootstrap
