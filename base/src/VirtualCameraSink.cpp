@@ -113,12 +113,15 @@ public:
 			if (ret == -1)
 			{
 				LOG_ERROR << "FAILED TO WRITE TO DEVICE. <>" << errno;
+				return false;
 			}
 		}
 		catch (...)
 		{
 			LOG_ERROR << "writing to device failed.";
+			return false;
 		}
+		return true;
 	}
 
 	void getImageSize(int &_width, int &_height)
@@ -243,9 +246,7 @@ bool VirtualCameraSink::term()
 
 bool VirtualCameraSink::process(frame_container &frames)
 {
-	mDetail->writeToDevice(frames.cbegin()->second);
-
-	return true;
+	return mDetail->writeToDevice(frames.cbegin()->second);
 }
 
 bool VirtualCameraSink::processSOS(frame_sp &frame)
