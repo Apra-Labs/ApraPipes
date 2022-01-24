@@ -8,7 +8,7 @@ Tested on Ubuntu 18.04 and Jetson Boards
 ## Setup
 * Clone with submodules
 ```
-git clone --recursive https://github.com/kumaakh/ApraPipes.git
+git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 ```
 
 ## Prerequisites

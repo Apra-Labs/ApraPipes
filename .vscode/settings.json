@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "mutex": "cpp",
+        "condition_variable": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp",
+        "memory": "cpp",
+        "thread": "cpp",
+        "type_traits": "cpp"
+    }
+}
