@@ -29,7 +29,7 @@ jobs:
       
     - name: Run VCPKG bootstrap
       working-directory: ${{github.workspace}}
-      run: ./vcpkg/bootstrap-vcpkg.bat
+      run: ./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install
     # - name: Cache VCPKG 
     #   id: cache-vcpkg
     #   uses: actions/cache@v2
