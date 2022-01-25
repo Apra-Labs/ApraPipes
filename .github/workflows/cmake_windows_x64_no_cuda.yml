@@ -30,16 +30,17 @@ jobs:
     - name: Run VCPKG bootstrap
       working-directory: ${{github.workspace}}
       run: ./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install
-    # - name: Cache VCPKG 
-    #   id: cache-vcpkg
-    #   uses: actions/cache@v2
-    #   env:
-    #     cache-name: cache-vcpkg
-    #   with:
-    #       # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
-    #       path: "./vcpkg/archives"
-    #       key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
-    #       restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+    
+    - name: Cache VCPKG 
+      id: cache-vcpkg
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-vcpkg
+      with:
+          # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
+          path: "./vcpkg/archives"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
   #   - name: Install build dependecies
   #     run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
 
