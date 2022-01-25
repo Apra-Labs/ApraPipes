@@ -25,7 +25,7 @@ jobs:
     
     - name: Compute submodule status
       working-directory: ${{github.workspace}}
-      run: (git submodule status > ${{env.SUBMODS_TXT}}) && (type ${{env.SUBMODS_TXT}}) && (echo %APPDATA%) && (echo %LOCALAPPDATA%)
+      run: (git submodule status > ${{env.SUBMODS_TXT}}) && (type ${{env.SUBMODS_TXT}}) && (echo $Env:LOCALAPPDATA)
       
     - name: Run VCPKG bootstrap
       working-directory: ${{github.workspace}}
@@ -38,7 +38,7 @@ jobs:
         cache-name: cache-vcpkg
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
-          path: "%APPDATA%/vcpkg/archives"
+          path: $Env:LOCALAPPDATA/vcpkg/archives"
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
