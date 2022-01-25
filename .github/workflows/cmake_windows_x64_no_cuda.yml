@@ -41,19 +41,29 @@ jobs:
           path: "%{APPDATA}/vcpkg/archives"
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-  #   - name: Install build dependecies
-  #     run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  
+    - name: Install vcpkg
+      run: |
+      cd ./base
+      ../vcpkg/vcpkg.exe install
+    
+    # - name: Configure CMake
+    #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+    #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+    
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{github.workspace}}/vcpkg/buildtrees/opencv4/install-x64-windows-dbg-out.log
+        path: faillogs.txt
+        retention-days: 5
 
   #   - name: Build
   #     run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
   #   - name: Test
-  #     run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result.xml
+  #     run: build/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
     
   #   - name: Upload Test Results
   #     if: always()
@@ -61,17 +71,17 @@ jobs:
   #     with:
   #      name: Unit Test Results
   #      path: |
-  #        CI_test_result.xml
+  #        CI_test_result_windows.xml
     
   #   - name: Publish Unit Test Results
   #     uses: EnricoMi/publish-unit-test-result-action/composite@v1
   #     if: always()
   #     with:
-  #       files: CI_test_result.xml
+  #       files: CI_test_result_windows.xml
 
   # event_file:
   #   name: "Event File"
-  #   runs-on: ubuntu-latest
+  #   runs-on: windows-latest
   #   steps:
   #     - name: Upload
   #       uses: actions/upload-artifact@v2
