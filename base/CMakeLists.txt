@@ -20,7 +20,6 @@ ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
-        set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/zxing-cpp)	
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 ENDIF(ENABLE_WINDOWS)
 
