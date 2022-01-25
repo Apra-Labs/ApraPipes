@@ -1,4 +1,4 @@
-name: CI
+name: CI_Linux_x64
 
 on:
   push:
@@ -54,7 +54,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
-      run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result.xml
+      run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
     
     - name: Upload Test Results
       if: always()
@@ -62,13 +62,13 @@ jobs:
       with:
        name: Unit Test Results
        path: |
-         CI_test_result.xml
+         CI_test_result_ubuntu.xml
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: CI_test_result.xml
+        files: CI_test_result_ubuntu.xml
 
   event_file:
     name: "Event File"
