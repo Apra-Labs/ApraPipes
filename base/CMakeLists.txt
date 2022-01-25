@@ -10,6 +10,7 @@ OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 #     SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
 # 	FILEPATH ${CONFIG_FILEPATH}
 #   )
+set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
