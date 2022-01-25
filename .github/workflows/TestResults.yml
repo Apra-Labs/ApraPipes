@@ -2,7 +2,7 @@ name: Unit Test Results
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["CI_Linux_x64","CI_Windows_x64"]
     types:
       - completed
 
