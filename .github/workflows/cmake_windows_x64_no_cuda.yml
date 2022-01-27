@@ -38,7 +38,7 @@ jobs:
         cache-name: cache-vcpkg
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
-          path: "$Env:LOCALAPPDATA/vcpkg/archives"
+          path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
