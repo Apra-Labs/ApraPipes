@@ -3,6 +3,7 @@
   "name": "apra-pipes-arm64",
   "version": "0.0.1",
   "dependencies": [
-    "bigint"
+    "bigint",
+    "zlib"
   ]
 }
