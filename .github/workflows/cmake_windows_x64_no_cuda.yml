@@ -42,42 +42,38 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
-    - name: Run vcpkg install
-      working-directory: ${{github.workspace}}/base
-      run: ../vcpkg/vcpkg.exe install
-
-    # - name: Configure CMake
-    #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-    #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
     
-  #   - name: Build
-  #     run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-  #   - name: Test
-  #     run: build/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
+    - name: Test
+      run: build/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
     
-  #   - name: Upload Test Results
-  #     if: always()
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #      name: Unit Test Results
-  #      path: |
-  #        CI_test_result_windows.xml
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+       name: Unit Test Results
+       path: |
+         CI_test_result_windows.xml
     
-  #   - name: Publish Unit Test Results
-  #     uses: EnricoMi/publish-unit-test-result-action/composite@v1
-  #     if: always()
-  #     with:
-  #       files: CI_test_result_windows.xml
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: CI_test_result_windows.xml
 
-  # event_file:
-  #   name: "Event File"
-  #   runs-on: windows-latest
-  #   steps:
-  #     - name: Upload
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: Event File
-  #         path: ${{ github.event_path }}
+  event_file:
+    name: "Event File"
+    runs-on: windows-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
           

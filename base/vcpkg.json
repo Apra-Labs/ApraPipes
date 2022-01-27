@@ -3,7 +3,20 @@
   "name": "apra-pipes-arm64",
   "version": "0.0.1",
   "dependencies": [
+    "ffmpeg",
     "bigint",
+    "boost-math",
+    "boost-system",
+    "boost-thread",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-log",
+    "boost-chrono",
+    "boost-test",
+    "boost-iostreams",
+    "zxing-cpp",
+    "liblzma",
+    "bzip2",
     "zlib"
   ]
 }
