@@ -3,6 +3,11 @@
   "name": "apra-pipes-arm64",
   "version": "0.0.1",
   "dependencies": [
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": ["nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
+    },
     "ffmpeg",
     "bigint",
     "boost-math",
