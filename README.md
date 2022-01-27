@@ -71,3 +71,11 @@ git submodule update --init --recursive
 ## Documentation
 * Open `docs/build/html/index.html` using Google Chrome
 
+### To regenerate documentation
+```
+To build docs
+apt-install get python-sphinx 
+pip install sphinx-rtd-theme
+cd docs
+make html
+```
