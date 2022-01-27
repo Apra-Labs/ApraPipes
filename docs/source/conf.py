@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Apra Pipes'
-copyright = '2020, Akhil'
-author = 'Akhil'
+copyright = '2020, Apra Labs'
+author = 'Apra Labs'
 
 # The full version, including alpha/beta/rc tags
 release = 'v0'

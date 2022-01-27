@@ -9,7 +9,7 @@ Welcome to Apra Pipes documentation!
 
    Introduction
    Framework
-   Tutorial_Adding_New_IP_Module
+   Tutorial_Adding_New_Module
    NvidiaCUDAModules
    CUDAKernelProgrammingGuide
 
