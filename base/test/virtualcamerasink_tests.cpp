@@ -10,7 +10,10 @@
 #include "PipeLine.h"
 #include "StatSink.h"
 
+#define VIDEO_DEV "/dev/video99"
+
 BOOST_AUTO_TEST_SUITE(virtualcamerasink_tests)
+
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 {
@@ -29,7 +32,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	fileReader->addOutputPin(metadata);
 
-	VirtualCameraSinkProps sinkProps("/dev/video99");
+	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
@@ -65,7 +68,7 @@ BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
 
 	fileReader->addOutputPin(metadata);
 
-	VirtualCameraSinkProps sinkProps("/dev/video10");
+	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
@@ -76,7 +79,7 @@ BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();
@@ -100,7 +103,7 @@ BOOST_AUTO_TEST_CASE(nv12, *boost::unit_test::disabled())
 
 	fileReader->addOutputPin(metadata);
 
-	VirtualCameraSinkProps sinkProps("/dev/video10");
+	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
@@ -111,7 +114,7 @@ BOOST_AUTO_TEST_CASE(nv12, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();
@@ -135,7 +138,7 @@ BOOST_AUTO_TEST_CASE(bgra, *boost::unit_test::disabled())
 
 	fileReader->addOutputPin(metadata);
 
-	VirtualCameraSinkProps sinkProps("/dev/video10");
+	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
@@ -146,7 +149,7 @@ BOOST_AUTO_TEST_CASE(bgra, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();

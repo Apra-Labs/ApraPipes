@@ -162,7 +162,9 @@ bool FileSequenceDriver::Write(const uint8_t* dataToWrite, size_t dataSize)
 	const std::string fileNameToUse = mStrategy->GetFileNameToUse(false, index);
 
 	LOG_TRACE << "FileSequenceDriver::Writing File " << fileNameToUse;
+  
 	writeHelper(fileNameToUse, dataToWrite, dataSize, mAppend);
+	return true;
 }
 
 bool FileSequenceDriver::writeHelper(const std::string &fileName, const uint8_t *dataToWrite, size_t dataSize, bool append)
