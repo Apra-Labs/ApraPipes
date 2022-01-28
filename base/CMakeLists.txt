@@ -4,12 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-# SET( CONFIG_FILEPATH ${CMAKE_SOURCE_DIR}/../cmake/config.cmake)
-# HunterGate(
-# 	URL "https://github.com/saichaitanyaeruvaram/hunter/archive/opencv-4.5.0.tar.gz"
-#     SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
-# 	FILEPATH ${CONFIG_FILEPATH}
-#   )
+
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -34,27 +29,14 @@ project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
 
-# hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
-# find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
 find_package(OpenCV CONFIG REQUIRED)
-# hunter_add_package(OpenCV)
-# find_package(OpenCV)
-# hunter_add_package(BZip2)
-# find_package(BZip2 CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
-# hunter_add_package(ZLIB)
-# find_package(ZLIB CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
-# hunter_add_package(lzma)
-# find_package(lzma CONFIG REQUIRED)
 find_package(liblzma REQUIRED)
-
 find_package(FFMPEG REQUIRED)
-
 find_package(ZXing CONFIG REQUIRED)
-
 find_package(bigint CONFIG REQUIRED)
 
 IF(NOT ENABLE_ARM64)
@@ -67,14 +49,6 @@ ENDIF(NOT ENABLE_ARM64)
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
 ENDIF(ENABLE_CUDA)
-
-# SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
-# find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
-# find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
-# find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
-# find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
-# find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
-
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
@@ -481,7 +455,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-#   ${ZXing_LIBRARIES}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
