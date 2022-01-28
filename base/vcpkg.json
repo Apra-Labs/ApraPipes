@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-arm64",
+  "version": "0.0.1",
+  "dependencies": [
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": ["nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
+    },
+    "ffmpeg",
+    "bigint",
+    "boost-math",
+    "boost-system",
+    "boost-thread",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-log",
+    "boost-chrono",
+    "boost-test",
+    "boost-iostreams",
+    "zxing-cpp",
+    "liblzma",
+    "bzip2",
+    "zlib"
+  ]
+}
