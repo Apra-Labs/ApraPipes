@@ -3,7 +3,7 @@
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning tooklits
 
 # Build and Run Tests
-Tested on Ubuntu 18.04 and Jetson Boards
+Tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community No Cuda
 
 ## Setup
 * Clone with submodules
@@ -11,30 +11,40 @@ Tested on Ubuntu 18.04 and Jetson Boards
 git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 ```
 
-## Prerequisites
+## Prerequisites Windows
+* Install Visual Studio 2017 Community 
+  * Install Desktop development C++
+  * .NET Desktop development
+  * Universal Windwos Developmnet Platform
+* Install CMake 3.22.1
+* Run bootstrap-vcpkg.bat in the vcpkg/ directory
+* Run `vcpkg.exe integrate install`
+
+### Build windows
+
+* `build_windows.bat`
+
+## Run Tests
+* list all tests `_build/BUILD_TYPE/aprapipesut.exe --list_content`
+* run all tests  `_build/BUILD_TYPE/aprapipesut.exe`
+* run one test `_build/BUILD_TYPE/aprapipesut.exe --run_test=filenamestrategy_tests/boostdirectorystrategy`
+* run one test with arguments `_build/BUILD_TYPE/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera`
+  * Look at the unit_tests/params_test to check for sample usage of parameters in test code
+
+
+## Prerequisites Linux
 * Run ```sudo apt-get update && sudo apt-get install build-essential```  to get latest build tools
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
-* ffmpeg
-```
-sudo apt install yasm -y
-cd thirdparty/ffmpeg
-./configure --enable-pic
-make -j"$(($(nproc) - 1))"
-```
-* zxing
-```
-cd thirdparty/zxing-cpp
-chmod +x build.sh
-./build.sh
-```
+* Run ./bootstrap-vcpkg.sh in vcpkg/ directory
+* Run ./vcpkg integrate install
 
 ## Ubuntu 18.04 x64
 
-### Prerequisites
+### Prerequisites for CUDA (only tested on Linux and Jetson)
 * Install [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804)
 * Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
 
-### Build
+### Build Linux
 
 * `chmod +x build_linux_x64.sh`
 * `./build_linux_x64.sh`
