@@ -24,7 +24,7 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 
 * `build_windows.bat`
 
-## Run Tests
+### Run Tests
 * list all tests `_build/BUILD_TYPE/aprapipesut.exe --list_content`
 * run all tests  `_build/BUILD_TYPE/aprapipesut.exe`
 * run one test `_build/BUILD_TYPE/aprapipesut.exe --run_test=filenamestrategy_tests/boostdirectorystrategy`
@@ -32,22 +32,21 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 
 
-## Prerequisites Linux
+## Prerequisites Ubuntu 18.04 x64
 * Run ```sudo apt-get update && sudo apt-get install build-essential```  to get latest build tools
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * Run ./bootstrap-vcpkg.sh in vcpkg/ directory
 * Run ./vcpkg integrate install
 
-## Ubuntu 18.04 x64
-
-### Prerequisites for CUDA (only tested on Linux and Jetson)
+### Prerequisites for CUDA 
 * Install [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804)
 * Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
+* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.cuda.json to base/vcpkg.json
 
 ### Build Linux
 
-* `chmod +x build_linux_x64.sh`
-* `./build_linux_x64.sh`
+* `chmod +x build_linux_x64.sh` or `chmod +x build_linux_no_cuda.sh`
+* `./build_linux_x64.sh` or `./build_linux_no_cuda.sh` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules
 
 Build can take ~2 hours depending on the machine configuration.
 This project uses [hunter package manager](https://github.com/cpp-pm/hunter).
@@ -57,6 +56,11 @@ This project uses [hunter package manager](https://github.com/cpp-pm/hunter).
 ### Prerequisites
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
 * sudo apt-get install libncurses5-dev
+* CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+* Run ./bootstrap-vcpkg.sh in vcpkg/ directory
+* Run ./vcpkg integrate install
+* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.jetson.json to base/vcpkg.json
+
 
 ### Build
 * `chmod +x build_jetson.sh`
