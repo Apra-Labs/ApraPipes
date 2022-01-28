@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Apra Pipes'
-copyright = '2020, Akhil'
-author = 'Akhil'
+copyright = '2020-2022, Apra Labs'
+author = 'Apra Labs'
 
 # The full version, including alpha/beta/rc tags
 release = 'v0'
@@ -57,3 +57,5 @@ html_static_path = ['_static']
 html_css_files = [
     'rtd.css',
 ]
+
+master_doc = 'index'

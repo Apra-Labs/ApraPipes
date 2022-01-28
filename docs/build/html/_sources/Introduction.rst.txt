@@ -107,6 +107,9 @@ Basic Modules
 - | Decoder (JPEGDecoderL4TM, JPEGDecoderNVJPEG)
 - | Encoder (JPEGEncoderL4TM, JPEGEncoderNVJPEG)
 - | StatSink
+- | FramesMuxer
+- | Split
+- | Merge
 
 Sample Cuda Modules
 """""""""""""""""""
