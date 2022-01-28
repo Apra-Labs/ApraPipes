@@ -13,10 +13,13 @@
 
 BOOST_AUTO_TEST_SUITE(sound_record_tests)
 
-BOOST_AUTO_TEST_CASE(recordMono)
+BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
 {
     // Manual test, listen to the file on audacity to for sanity check
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    auto time_to_run = Test_Utils::getArgValue("s", "10");
+    auto n_seconds = atoi(time_to_run.c_str());
 
     SoundRecordProps sourceProps(48000,1,0,200);
     auto source = boost::shared_ptr<Module>(new SoundRecord(sourceProps));
@@ -28,15 +31,18 @@ BOOST_AUTO_TEST_CASE(recordMono)
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::seconds(15));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
     p.stop();
     p.term();
     p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(recordStereo)
+BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
 {
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    auto time_to_run = Test_Utils::getArgValue("s", "10");
+    auto n_seconds = atoi(time_to_run.c_str());
 
     SoundRecordProps sourceProps(48000,2,0,200);
     auto source = boost::shared_ptr<SoundRecord>(new SoundRecord(sourceProps));
@@ -48,7 +54,7 @@ BOOST_AUTO_TEST_CASE(recordStereo)
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::seconds(15));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
     p.stop();
     p.term();
     p.wait_for_all();
