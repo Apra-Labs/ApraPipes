@@ -6,7 +6,7 @@
     {
       "name": "opencv4",
       "default-features": false,
-      "features": ["cuda","cudnn","nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
+      "features": [ "nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
     },
     "ffmpeg",
     "bigint",
@@ -23,5 +23,12 @@
     "liblzma",
     "bzip2",
     "zlib"
+  ],
+  "builtin-baseline": "1b664707c109f5d48b0b142e96117a53deb653be",
+  "overrides": [
+      {
+          "name": "opencv4",
+          "version": "4.5.3#3"
+      }
   ]
 }
