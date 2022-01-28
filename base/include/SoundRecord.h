@@ -5,12 +5,18 @@
 class SoundRecordProps : public ModuleProps
 {
 public:
-    SoundRecordProps(int _sampleRate, int _channel, int _byteDepth, int _device, int _proccessingRate) : sampleRate(_sampleRate), channel(_channel), byteDepth(_byteDepth), device(_device), proccessingRate(_proccessingRate)
+    SoundRecordProps(
+        int _sampleRate,
+        int _channel,
+        int _device,
+        int _proccessingRate) : sampleRate(_sampleRate),
+                                channel(_channel),
+                                device(_device),
+                                proccessingRate(_proccessingRate)
     {
     }
     int sampleRate;
     int channel;
-    int byteDepth;
     int device;
     int proccessingRate;
 };
@@ -22,10 +28,13 @@ public:
     virtual ~SoundRecord() {}
     virtual bool init();
     virtual bool term();
+    void setProps(SoundRecordProps &props);
+    SoundRecordProps getProps();
 
 protected:
     bool validateOutputPins();
     bool produce();
+    bool handlePropsChange(frame_sp &frame);
 
 private:
     class Detail;

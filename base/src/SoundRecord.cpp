@@ -9,21 +9,27 @@
 #include <bits/stdc++.h>
 
 std::vector<sf::Int16> samples_array;
-int gProcessRate;
 
 class SoundRecord::Detail
 {
 
 public:
-    Detail(SoundRecordProps _props, std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame), mProps(_props)
+    Detail(
+        SoundRecordProps _props,
+        std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.proccessingRate, _props.channel),
+                                                                                              mProps(_props)
     {
-        gProcessRate = mProps.proccessingRate;
     }
     ~Detail() {}
 
+    void setProps(SoundRecordProps &props)
+    {
+        mProps = props;
+    }
+
     bool init()
     {
-        if (!MyRecorder::isAvailable())
+        if (!ApraRecorder::isAvailable())
         {
             LOG_ERROR << "No Audio device available";
             return false;
@@ -32,6 +38,7 @@ public:
         std::vector<std::string> availableDevices = sf::SoundRecorder::getAvailableDevices();
         auto success = mRecorder.setDevice(availableDevices[mProps.device]);
         LOG_INFO << "recorder set device: " << success;
+        mRecorder.setChannelCount(mProps.channel); //set channel count
         mRecorder.start(mProps.sampleRate);
         return true;
     }
@@ -42,20 +49,24 @@ public:
     }
 
 private:
-    class MyRecorder : public sf::SoundRecorder
+    class ApraRecorder : public sf::SoundRecorder
     {
         friend class SoundRecord;
+        int processingIntervalInMilliSecond;
+        int channelCount;
         std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> mMakeFrame;
 
     public:
-        MyRecorder(std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame)
+        ApraRecorder(std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame, int _processingIntervalInMilliSecond, int _channelCount)
         {
             mMakeFrame = _mMakeFrame;
+            processingIntervalInMilliSecond = _processingIntervalInMilliSecond;
+            channelCount = _channelCount;
         }
 
         virtual bool onStart()
         {
-            setProcessingInterval(sf::milliseconds(gProcessRate));
+            setProcessingInterval(sf::milliseconds(processingIntervalInMilliSecond)); //set Processing Interval
             return true;
         }
 
@@ -66,7 +77,7 @@ private:
     };
 
 public:
-    MyRecorder mRecorder;
+    ApraRecorder mRecorder;
     SoundRecordProps mProps;
     std::string mOutputRawAudio;
 };
@@ -101,6 +112,24 @@ bool SoundRecord::validateOutputPins()
         return false;
     }
     return true;
+}
+SoundRecordProps SoundRecord::getProps()
+{
+    fillProps(mDetail->mProps);
+    return mDetail->mProps;
+}
+
+void SoundRecord::setProps(SoundRecordProps &props)
+{
+    Module::addPropsToQueue(props);
+}
+
+bool SoundRecord::handlePropsChange(frame_sp &frame)
+{
+    SoundRecordProps props(0, 0, 0, 0);
+    bool ret = Module::handlePropsChange(frame, props);
+    mDetail->setProps(props);
+    return ret;
 }
 
 bool SoundRecord::produce()
