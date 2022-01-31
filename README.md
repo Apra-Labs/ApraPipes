@@ -33,7 +33,7 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 
 
 ## Prerequisites Ubuntu 18.04 x64
-* Run ```sudo apt-get update && sudo apt-get install build-essential```  to get latest build tools
+* Run ```sudo apt-get update && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison```  to get latest build tools
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * Run ./bootstrap-vcpkg.sh in vcpkg/ directory
 * Run ./vcpkg integrate install
@@ -49,7 +49,6 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 * `./build_linux_x64.sh` or `./build_linux_no_cuda.sh` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules
 
 Build can take ~2 hours depending on the machine configuration.
-This project uses [hunter package manager](https://github.com/cpp-pm/hunter).
 
 ## Jetson boards - Nano, TX2, NX, AGX
 
