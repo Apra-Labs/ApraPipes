@@ -6,9 +6,8 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Audio/SoundRecorder.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 
-std::vector<sf::Int16> samples_array;
 
 class SoundRecord::Detail
 {

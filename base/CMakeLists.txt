@@ -38,6 +38,7 @@ find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 
 IF(NOT ENABLE_ARM64)
 	# hunter_add_package(ncursesw)
@@ -49,17 +50,6 @@ ENDIF(NOT ENABLE_ARM64)
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
 ENDIF(ENABLE_CUDA)
-
-SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
-find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
-find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
-find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
-find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
-find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
-find_library(LIB_SFML_GRAPHICS libsfml-graphics.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
-find_library(LIB_SFML_AUDIO libsfml-audio.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
-find_library(LIB_SFML_WINDOW libsfml-window.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
-find_library(LIB_SFML_SYSTEM libsfml-system.so  PATHS ../thirdparty/sfml/lib/ NO_DEFAULT_PATH)
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
@@ -110,16 +100,7 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-include_directories(AFTER SYSTEM include
-	${BOOST_ROOT}/include
-	${OPENCV_ROOT}/include/opencv4
-	/usr/local/cuda-10.2/include
-	../thirdparty/Video_Codec_SDK_10.0.26/Interface
-	../thirdparty/ffmpeg/include
-	../thirdparty/sfml/
-	${CURSES_INCLUDE_DIR}
-	../thirdparty/zxing-cpp/_install/include/ZXing
-)
+include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
 
@@ -141,7 +122,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/KeyboardListener.cpp
+	#src/KeyboardListener.cpp
 	src/SoundRecord.cpp
 	src/QRReader.cpp
 )
@@ -185,7 +166,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	include/KeyboardListener.h
+	#include/KeyboardListener.h
 	include/SoundRecord.h
 	include/QRReader.h
 )
@@ -479,18 +460,25 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${LIB_ZXING}
-  BZip2::bz2
-  ZLIB::zlib
-  lzma::lzma
-  ${LIB_SFML_GRAPHICS}
-  ${LIB_SFML_AUDIO}
-  ${LIB_SFML_WINDOW}
-  ${LIB_SFML_SYSTEM}
+  ${sfml}
+#   ${LIB_ZXING}
+#   BZip2::bz2
+#   ZLIB::zlib
+#   lzma::lzma
+#   ${LIB_SFML_GRAPHICS}
+#   ${LIB_SFML_AUDIO}
+#   ${LIB_SFML_WINDOW}
+#   ${LIB_SFML_SYSTEM}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
   liblzma::liblzma
   bigint::bigint
+  sfml-system 
+  sfml-network 
+  sfml-graphics
+  sfml-window
+  sfml-audio
+  sfml-main
   )
