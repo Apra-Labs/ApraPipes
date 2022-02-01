@@ -461,14 +461,6 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ${sfml}
-#   ${LIB_ZXING}
-#   BZip2::bz2
-#   ZLIB::zlib
-#   lzma::lzma
-#   ${LIB_SFML_GRAPHICS}
-#   ${LIB_SFML_AUDIO}
-#   ${LIB_SFML_WINDOW}
-#   ${LIB_SFML_SYSTEM}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -476,9 +468,5 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-system 
-  sfml-network 
-  sfml-graphics
-  sfml-window
   sfml-audio
-  sfml-main
   )
