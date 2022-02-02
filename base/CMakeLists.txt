@@ -464,6 +464,5 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   liblzma::liblzma
   bigint::bigint
-  sfml-system 
   sfml-audio
   )
