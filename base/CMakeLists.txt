@@ -122,7 +122,6 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	#src/KeyboardListener.cpp
 	src/SoundRecord.cpp
 	src/QRReader.cpp
 )
@@ -166,7 +165,6 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	#include/KeyboardListener.h
 	include/SoundRecord.h
 	include/QRReader.h
 )
