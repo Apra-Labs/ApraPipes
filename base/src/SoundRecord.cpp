@@ -1,11 +1,11 @@
 #include "SoundRecord.h"
 #include "Module.h"
 #include "Logger.h"
-#include <SFML/System.hpp>
+#include "SFML/System.hpp"
 #include "SFML/Graphics.hpp"
-#include <SFML/Audio.hpp>
-#include <SFML/Audio/SoundRecorder.hpp>
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio.hpp"
+#include "SFML/Audio/SoundRecorder.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
 //#include <bits/stdc++.h>
 
 

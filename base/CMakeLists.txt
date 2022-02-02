@@ -38,7 +38,7 @@ find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
-find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
 IF(NOT ENABLE_ARM64)
 	# hunter_add_package(ncursesw)

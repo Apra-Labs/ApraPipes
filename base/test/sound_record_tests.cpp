@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
     SoundRecordProps sourceProps(48000,1,0,200);
     auto source = boost::shared_ptr<Module>(new SoundRecord(sourceProps));
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../testMono.wav", true)));
+    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/AudiotestMono.wav", true)));
     source->setNext(outputFile);
 
     PipeLine p("test");
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
     SoundRecordProps sourceProps(48000,2,0,200);
     auto source = boost::shared_ptr<SoundRecord>(new SoundRecord(sourceProps));
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../testStereo.wav", true)));
+    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/AudiotestStereo.wav", true)));
     source->setNext(outputFile);
 
     PipeLine p("test");
