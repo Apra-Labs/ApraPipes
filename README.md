@@ -28,12 +28,12 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 * Run bootstrap-vcpkg.bat in the vcpkg/ directory
 * Run `vcpkg.exe integrate install`
 
-### Build windows
+## Build windows
 
-## Without Cuda
+### Without Cuda
 * `build_windows.bat`
 
-## With Cuda
+### With Cuda
 * `build_windows_cuda.bat`
 
 
