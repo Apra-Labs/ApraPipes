@@ -13,26 +13,67 @@ BOOST_AUTO_TEST_SUITE(nvarguscamerahelper_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
-    uint32_t width = 1280;
-    uint32_t height = 720;
+    auto argValue = Test_Utils::getArgValue("n", "1");
+    auto n_cams = atoi(argValue.c_str());
+
+    uint32_t width = 800;
+    uint32_t height = 800;
     size_t size = width * height * 3 >> 1;
 
+    std::shared_ptr<NvArgusCameraHelper> helper[3];
+    int i = 0;
     auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
     auto frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
 
-    std::shared_ptr<NvArgusCameraHelper> helper = NvArgusCameraHelper::create(
-        10, [&](frame_sp &frame) -> void {
-        auto ptr = static_cast<DMAFDWrapper *>(frame->data());
-        LOG_ERROR << "Received frame <>" << ptr->getFd();
-        helper->queueFrameToCamera(); }, [&]() -> frame_sp { return frameFactory->create(size, frameFactory); });
+    helper[i] = NvArgusCameraHelper::create(
+        10, [&](frame_sp &frame) -> void
+        {
+            auto ptr = static_cast<DMAFDWrapper *>(frame->data());
+            helper[i]->queueFrameToCamera();
+        },
+        [&]() -> frame_sp
+        { return frameFactory->create(size, frameFactory); });
 
-    BOOST_TEST(helper->start(width, height, 30));
+    BOOST_TEST(helper[i]->start(width, height, 60, i));
 
-    boost::this_thread::sleep_for(boost::chrono::seconds(5));
+    if (n_cams >= 2)
+    {
+        i = 1;
+        auto metadata1 = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+        auto frameFactory1 = framefactory_sp(new FrameFactory(metadata1, 10));
 
-    BOOST_TEST(helper->stop());
-    helper.reset();
-    LOG_ERROR << "FINISHED";
+        helper[i] = NvArgusCameraHelper::create(
+            10, [&](frame_sp &frame) -> void
+            {
+                auto ptr = static_cast<DMAFDWrapper *>(frame->data());
+                helper[i]->queueFrameToCamera();
+            },
+            [&]() -> frame_sp
+            { return frameFactory1->create(size, frameFactory1); });
+    }
+    if (n_cams >= 3)
+    {
+        i = 2;
+        auto metadata2 = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+        auto frameFactory2 = framefactory_sp(new FrameFactory(metadata2, 10));
+
+        helper[i] = NvArgusCameraHelper::create(
+            10, [&](frame_sp &frame) -> void
+            {
+                auto ptr = static_cast<DMAFDWrapper *>(frame->data());
+                helper[i]->queueFrameToCamera();
+            },
+            [&]() -> frame_sp
+            { return frameFactory2->create(size, frameFactory2); });
+    }
+
+    boost::this_thread::sleep_for(boost::chrono::seconds(50));
+
+    for (int i = 0; i < n_cams; i++)
+    {
+        BOOST_TEST(helper[i]->stop());
+        helper[i].reset();
+    }
 }
 
 BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
@@ -52,7 +93,7 @@ BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
 
     try
     {
-        helper->start(width,height,30);
+        helper->start(width, height, 30, 0);
         BOOST_TEST(false, "It should go to the catch block");
     }
     catch(...)
