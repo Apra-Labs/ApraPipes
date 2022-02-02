@@ -11,18 +11,31 @@ Tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Comm
 git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 ```
 
+### Prerequisites for CUDA 
+* Install [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804)
+* Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract where cuda is installed.
+* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.cuda.json to base/vcpkg.json
+
+
+
 ## Prerequisites Windows
 * Install Visual Studio 2017 Community 
   * Install Desktop development C++
   * .NET Desktop development
-  * Universal Windwos Developmnet Platform
+  * Universal Windows Development Platform
 * Install CMake 3.22.1
+* Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
 * Run bootstrap-vcpkg.bat in the vcpkg/ directory
 * Run `vcpkg.exe integrate install`
 
 ### Build windows
 
+## Without Cuda
 * `build_windows.bat`
+
+## With Cuda
+* `build_windows_cuda.bat`
+
 
 ### Run Tests
 * list all tests `_build/BUILD_TYPE/aprapipesut.exe --list_content`
@@ -38,10 +51,6 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 * Run ./bootstrap-vcpkg.sh in vcpkg/ directory
 * Run ./vcpkg integrate install
 
-### Prerequisites for CUDA 
-* Install [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804)
-* Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
-* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.cuda.json to base/vcpkg.json
 
 ### Build Linux
 
