@@ -458,7 +458,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${sfml}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2

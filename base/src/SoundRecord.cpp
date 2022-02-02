@@ -6,8 +6,6 @@
 #include "SFML/Audio.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
-//#include <bits/stdc++.h>
-
 
 class SoundRecord::Detail
 {
@@ -15,8 +13,9 @@ class SoundRecord::Detail
 public:
     Detail(
         SoundRecordProps _props,
-        std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.proccessingRate, _props.channel),
-                                                                                              mProps(_props)
+        std::function<bool(const sf::Int16 *samples,
+                           std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.proccessingRate, _props.channel),
+                                                                    mProps(_props)
     {
     }
     ~Detail() {}
@@ -85,7 +84,7 @@ SoundRecord::SoundRecord(SoundRecordProps _props) : Module(SOURCE, "SoundRecord"
 {
     mDetail.reset(new Detail(_props, [&](const sf::Int16 *samples, std::size_t sampleCount) -> bool
                              {
-                                 auto outFrame = makeFrame(sampleCount * 2);
+                                 auto outFrame = makeFrame(sampleCount * 2); // Size of Int16 is 2 byte
                                  frame_container frames;
                                  memcpy(outFrame->data(), samples, outFrame->size());
                                  frames.insert(make_pair(mOutputPinId, outFrame));
@@ -125,7 +124,7 @@ void SoundRecord::setProps(SoundRecordProps &props)
 
 bool SoundRecord::handlePropsChange(frame_sp &frame)
 {
-    SoundRecordProps props(0, 0, 0, 0);
+    SoundRecordProps props;
     bool ret = Module::handlePropsChange(frame, props);
     mDetail->setProps(props);
     return ret;

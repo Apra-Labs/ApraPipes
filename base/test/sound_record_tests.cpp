@@ -59,4 +59,36 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
     p.term();
     p.wait_for_all();
 }
+BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
+{
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    auto time_to_run = Test_Utils::getArgValue("s", "10");
+    auto n_seconds = atoi(time_to_run.c_str());
+
+    SoundRecordProps sourceProps(44000,1,0,200);
+    auto source = boost::shared_ptr<SoundRecord>(new SoundRecord(sourceProps));
+
+    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/AudiotestMono.wav", true)));
+    source->setNext(outputFile);
+
+    auto outputFile2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/AudiotestStereo.wav", true)));
+    source->setNext(outputFile2,false);
+
+    PipeLine p("test");
+    p.appendModule(source);
+    p.init();
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
+    auto currentProps = source->getProps();
+    currentProps.channel = 2;
+    currentProps.sampleRate = 48000;
+    source->setProps(currentProps);
+    source->relay(outputFile,false);
+    source->relay(outputFile2,true);
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
+    p.stop();
+    p.term();
+    p.wait_for_all();
+}
 BOOST_AUTO_TEST_SUITE_END()
