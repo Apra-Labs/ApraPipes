@@ -124,7 +124,7 @@ void SoundRecord::setProps(SoundRecordProps &props)
 
 bool SoundRecord::handlePropsChange(frame_sp &frame)
 {
-    SoundRecordProps props;
+    SoundRecordProps props(0,0,0,0);
     bool ret = Module::handlePropsChange(frame, props);
     mDetail->setProps(props);
     return ret;
