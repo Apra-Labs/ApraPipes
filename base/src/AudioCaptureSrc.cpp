@@ -1,26 +1,24 @@
-#include "SoundRecord.h"
+#include "AudioCaptureSrc.h"
 #include "Module.h"
 #include "Logger.h"
-#include "SFML/System.hpp"
-#include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
-class SoundRecord::Detail
+class AudioCaptureSrc::Detail
 {
 
 public:
     Detail(
-        SoundRecordProps _props,
+        AudioCaptureSrcProps _props,
         std::function<bool(const sf::Int16 *samples,
-                           std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.proccessingRate, _props.channel),
+                           std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.processingIntervalMS, _props.channels),
                                                                     mProps(_props)
     {
     }
     ~Detail() {}
 
-    void setProps(SoundRecordProps &props)
+    void setProps(AudioCaptureSrcProps &props)
     {
         mProps = props;
     }
@@ -34,9 +32,9 @@ public:
         }
 
         std::vector<std::string> availableDevices = sf::SoundRecorder::getAvailableDevices();
-        auto success = mRecorder.setDevice(availableDevices[mProps.device]);
+        auto success = mRecorder.setDevice(availableDevices[mProps.audioInputDeviceIndex]);
         LOG_INFO << "recorder set device: " << success;
-        mRecorder.setChannelCount(mProps.channel); //set channel count
+        mRecorder.setChannelCount(mProps.channels); //set channel count
         mRecorder.start(mProps.sampleRate);
         return true;
     }
@@ -49,7 +47,7 @@ public:
 private:
     class ApraRecorder : public sf::SoundRecorder
     {
-        friend class SoundRecord;
+        friend class AudioCaptureSrc;
         int processingIntervalInMilliSecond;
         int channelCount;
         std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> mMakeFrame;
@@ -76,11 +74,11 @@ private:
 
 public:
     ApraRecorder mRecorder;
-    SoundRecordProps mProps;
+    AudioCaptureSrcProps mProps;
     std::string mOutputRawAudio;
 };
 
-SoundRecord::SoundRecord(SoundRecordProps _props) : Module(SOURCE, "SoundRecord", _props)
+AudioCaptureSrc::AudioCaptureSrc(AudioCaptureSrcProps _props) : Module(SOURCE, "AudioCaptureSrc", _props)
 {
     mDetail.reset(new Detail(_props, [&](const sf::Int16 *samples, std::size_t sampleCount) -> bool
                              {
@@ -94,7 +92,7 @@ SoundRecord::SoundRecord(SoundRecordProps _props) : Module(SOURCE, "SoundRecord"
     auto mOutputRawAudio = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::AUDIO));
     mOutputPinId = addOutputPin(mOutputRawAudio);
 }
-bool SoundRecord::validateOutputPins()
+bool AudioCaptureSrc::validateOutputPins()
 {
     if (getNumberOfOutputPins() != 1)
     {
@@ -111,35 +109,35 @@ bool SoundRecord::validateOutputPins()
     }
     return true;
 }
-SoundRecordProps SoundRecord::getProps()
+AudioCaptureSrcProps AudioCaptureSrc::getProps()
 {
     fillProps(mDetail->mProps);
-    return mDetail->mProps;
+    return mDetail->mProps; 
 }
 
-void SoundRecord::setProps(SoundRecordProps &props)
+void AudioCaptureSrc::setProps(AudioCaptureSrcProps &props)
 {
     Module::addPropsToQueue(props);
 }
 
-bool SoundRecord::handlePropsChange(frame_sp &frame)
+bool AudioCaptureSrc::handlePropsChange(frame_sp &frame)
 {
     bool ret = Module::handlePropsChange(frame, mDetail->mProps);
     mDetail->setProps(mDetail->mProps);
     return ret;
 }
 
-bool SoundRecord::produce()
+bool AudioCaptureSrc::produce()
 {
     return true;
 }
 
-bool SoundRecord::init()
+bool AudioCaptureSrc::init()
 {
     return Module::init() && mDetail->init();
 }
 
-bool SoundRecord::term()
+bool AudioCaptureSrc::term()
 {
     mDetail->stopRecording();
     return Module::term();

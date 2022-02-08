@@ -122,7 +122,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/SoundRecord.cpp
+	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 )
 
@@ -165,7 +165,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	include/SoundRecord.h
+	include/AudioCaptureSrc.h
 	include/QRReader.h
 )
 
