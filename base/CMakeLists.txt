@@ -32,6 +32,8 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
 find_package(OpenCV CONFIG REQUIRED)
+find_package(redis++ CONFIG REQUIRED)
+find_package(hiredis CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(liblzma REQUIRED)
@@ -209,6 +211,8 @@ SET(IP_FILES
 	src/BrightnessContrastControl.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
+	src/RedisDBReader.cpp
+	src/EventSource.cpp
 )
 
 SET(IP_FILES_H
@@ -225,6 +229,8 @@ SET(IP_FILES_H
 	include/BrightnessContrastControl.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
+	include/RedisDBReader.h
+	include/EventSource.h
 )
 
 SET(CUDA_CORE_FILES
@@ -427,6 +433,8 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/redisreader_tests.cpp
+	test/eventsource_tests.cpp
 	test/QRReader_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
