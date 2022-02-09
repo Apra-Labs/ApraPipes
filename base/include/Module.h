@@ -25,6 +25,10 @@ class PaceMaker;
 class ModuleProps
 {
 public:	
+	enum FrameFetchStrategy {
+		PUSH,
+		PULL
+	};
 	ModuleProps()
 	{
 		fps = 60;
@@ -34,6 +38,7 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
 	ModuleProps(int _fps)
@@ -45,6 +50,7 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
 	ModuleProps(int _fps, size_t _qlen, bool _logHealth)
@@ -56,6 +62,19 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
+	}
+
+	ModuleProps(FrameFetchStrategy _frameFetchStrategy)
+	{
+		fps = 60;
+		qlen = 20;
+		logHealth = false;		
+		logHealthFrequency = 1000;
+		quePushStrategyType = QuePushStrategy::BLOCKING;
+		maxConcurrentFrames = 0;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = _frameFetchStrategy;
 	}
 
 	size_t getQLen()
@@ -88,7 +107,8 @@ public:
 	// skipD >= skipN
 	int skipN = 0; 
 	int skipD = 1; 
-
+	//have one more enum and then in module.cpp dont call run if the enum is pull type.
+	FrameFetchStrategy frameFetchStrategy;
 	QuePushStrategy::QuePushStrategyType quePushStrategyType;
 	FIndexStrategy::FIndexStrategyType fIndexStrategyType;
 		
@@ -98,7 +118,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD & quePushStrategyType & fIndexStrategyType;
+		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD & quePushStrategyType & fIndexStrategyType & frameFetchStrategy;
 	}
 };
 
