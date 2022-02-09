@@ -119,12 +119,13 @@ Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), 
 
 	pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
 	auto tempId = getId();
-	mProfiler.reset(new Profiler(tempId, _props.logHealth, _props.logHealthFrequency, [&]() -> std::string {
-		if(!mpFrameFactory.get()){
-			return "";
-		}
-		 return mpFrameFactory->getPoolHealthRecord(); 
-	}));
+	mProfiler.reset(new Profiler(tempId, _props.logHealth, _props.logHealthFrequency, [&]() -> std::string
+								 {
+									 if (!mpFrameFactory.get())
+									 {
+										 return "";
+									 }
+									 return mpFrameFactory->getPoolHealthRecord(); }));
 	if (_props.skipN > _props.skipD)
 	{
 		throw AIPException(AIP_ROI_OUTOFRANGE, "skipN <= skipD");
@@ -246,7 +247,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 			mConnections.erase(nextModuleId);
 			throw AIPException(AIP_PIN_NOTFOUND, msg);
 		}
-		
+
 		framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
 		// Set input meta here
 		try
@@ -437,7 +438,7 @@ bool Module::init()
 		BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
 		{
 			auto metadata = me.second->getFrameMetadata();
-			if(!metadata->isSet())
+			if (!metadata->isSet())
 			{
 				throw AIPException(AIP_FATAL, "Source FrameFactory is constructed without metadata set");
 			}
@@ -788,7 +789,7 @@ frame_sp Module::makeFrame()
 {
 	auto size = mOutputPinIdFrameFactoryMap.begin()->second->getFrameMetadata()->getDataSize();
 	auto pinId = mOutputPinIdFrameFactoryMap.begin()->first;
-	return makeFrame(size,pinId);
+	return makeFrame(size, pinId);
 }
 
 frame_sp Module::makeFrame(size_t size)
@@ -798,16 +799,16 @@ frame_sp Module::makeFrame(size_t size)
 
 frame_sp Module::makeFrame(size_t size, string &pinId)
 {
-	return makeFrame(size,mOutputPinIdFrameFactoryMap[pinId]);
+	return makeFrame(size, mOutputPinIdFrameFactoryMap[pinId]);
 }
 
-frame_sp Module::makeCommandFrame(size_t size,framemetadata_sp& metadata)
+frame_sp Module::makeCommandFrame(size_t size, framemetadata_sp &metadata)
 {
 	auto frame = mpCommandFactory->create(size, mpCommandFactory, metadata);
 	return frame;
 }
 
-frame_sp Module::makeFrame(size_t size,framefactory_sp& frameFactory)
+frame_sp Module::makeFrame(size_t size, framefactory_sp &frameFactory)
 {
 	return frameFactory->create(size, frameFactory);
 }
@@ -817,7 +818,8 @@ frame_sp Module::makeFrame(frame_sp &bigFrame, size_t &size, string &pinId)
 	return mOutputPinIdFrameFactoryMap[pinId]->create(bigFrame, size, mOutputPinIdFrameFactoryMap[pinId]);
 }
 
-void Module::setMetadata(std::string& pinId, framemetadata_sp& metadata){
+void Module::setMetadata(std::string &pinId, framemetadata_sp &metadata)
+{
 	mOutputPinIdFrameFactoryMap[pinId]->setMetadata(metadata);
 	return;
 }
@@ -834,7 +836,10 @@ frame_sp Module::getEmptyFrame()
 
 void Module::operator()()
 {
-	run();
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PUSH)
+	{
+		run();
+	}
 }
 bool Module::run()
 {
@@ -850,7 +855,7 @@ bool Module::run()
 		}
 	}
 	LOG_INFO << "Ending " << myId << " on " << myThread.get_id();
-	term(); //my job is done
+	term(); // my job is done
 	return true;
 }
 
@@ -1135,7 +1140,7 @@ bool Module::preProcessNonSource(frame_container &frames)
 					if (!metadata->isSet())
 					{
 						throw AIPException(AIP_FATAL, getId() + "<>Transform FrameFactory is constructed without metadata set");
-					}					
+					}
 					mOutputPinIdFrameFactoryMap[me.first].reset(new FrameFactory(metadata, mProps->maxConcurrentFrames));
 				}
 			}
@@ -1157,7 +1162,7 @@ bool Module::stepNonSource(frame_container &frames)
 	{
 		// assuming already logged
 	}
-	catch(const std::exception& exception)
+	catch (const std::exception &exception)
 	{
 		LOG_FATAL << getId() << "<>" << exception.what();
 	}
@@ -1194,15 +1199,16 @@ bool Module::handleStop()
 	{
 		return true;
 	}
-	if (myNature == SINK)
+	if (myNature != SINK)
 	{
-		mRunning = false;
-		return true;
+		sendEoPFrame();
 	}
-
-	sendEoPFrame();
-
 	mRunning = false;
+	// if pull and not source - call term
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PULL && myNature != SOURCE)
+	{
+		term();
+	}
 
 	return true;
 }
@@ -1262,12 +1268,12 @@ void Module::emit_fatal(unsigned short eventID)
 {
 	if (!fatal_event_consumer.empty())
 	{
-		//we have a handler... let's trigger it
+		// we have a handler... let's trigger it
 		fatal_event_consumer(this, eventID);
 	}
 	else
 	{
-		//we dont have a handler let's kill this thread
+		// we dont have a handler let's kill this thread
 		std::string msg("Fatal error in module ");
 		LOG_FATAL << "FATAL error in module : " << myName;
 		msg += myName;
