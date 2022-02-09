@@ -21,7 +21,14 @@
     "boost-iostreams",
     "zxing-cpp",
     "liblzma",
+    {
+      "name": "glib",
+      "default-features": false,
+      "features": ["libmount"]
+    },
     "bzip2",
-    "zlib"
-  ]
+    "zlib",
+    "hiredis",
+    "redis-plus-plus"
+    ]
 }
