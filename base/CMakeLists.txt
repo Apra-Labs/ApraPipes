@@ -151,8 +151,8 @@ include_directories(AFTER SYSTEM include
 	${VCPKGINSTALL_ROOT}/glib-2.0/include
 	${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/include/glib-2.0
 	../thirdparty/gstreamer/outInstall/include/gstreamer-1.0
-	# ../thirdparty/gstreamer/outInstall/include/json-glib-1.0
-	# ../thirdparty/gstreamer/outInstall/include/libsoup-2.4    
+	../thirdparty/gstreamer/outInstall/include/json-glib-1.0
+	../thirdparty/gstreamer/outInstall/include/libsoup-2.4    
 	# /home/ubuntu/src/Ultra-Light-Fast-Generic-Face-Detector-1MB/ncnn/3rdparty/ncnn/src
 	# /home/ubuntu/src/Ultra-Light-Fast-Generic-Face-Detector-1MB/ncnn/build/ncnn_build/src
 )
@@ -504,7 +504,7 @@ SET(UT_FILES
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
 	test/sound_record_tests.cpp	test/pullstratergy_tests.cpp
-	# test/gstrtsponvifsink_tests.cpp
+	test/gstrtsponvifsink_tests.cpp
 	# test/redisreader_tests.cpp
 	# test/eventsource_tests.cpp
 	# test/text_overlay_tests.cpp
