@@ -14,7 +14,7 @@ NvArgusCameraHelper::NvArgusCameraHelper() : numBuffers(10), mRunning(false)
 }
 
 NvArgusCameraHelper::~NvArgusCameraHelper()
-{    
+{
     mQueuedFrames.clear();
     delete[] buffers;
 }
@@ -32,18 +32,18 @@ std::shared_ptr<NvArgusCameraHelper> NvArgusCameraHelper::create(uint32_t _numBu
 void NvArgusCameraHelper::sendFrame(Argus::Buffer *buffer)
 {
     Argus::IBuffer *iBuffer = Argus::interface_cast<Argus::IBuffer>(buffer);
-    auto ptr = const_cast<void*>(iBuffer->getClientData());
+    auto ptr = const_cast<void *>(iBuffer->getClientData());
     auto frame = mQueuedFrames[ptr];
     mSendFrame(frame);
     std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
-    mQueuedFrames.erase(ptr);    
+    mQueuedFrames.erase(ptr);
 }
 
 void NvArgusCameraHelper::operator()()
 {
     mRunning = true;
     Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-        
+
     while (mRunning)
     {
         Argus::Status status = Argus::STATUS_OK;
@@ -54,24 +54,24 @@ void NvArgusCameraHelper::operator()()
             break;
         }
 
-        sendFrame(buffer);        
+        sendFrame(buffer);
     }
-
 }
 
 bool NvArgusCameraHelper::queueFrameToCamera()
 {
-    while(true)
+    while (true)
     {
         auto frame = mMakeFrame();
-        if(!frame.get()){
+        if (!frame.get())
+        {
             break;
         }
         auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 
         Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-        auto status = stream->releaseBuffer(static_cast<Argus::Buffer*>(const_cast<void*>(dmaFDWrapper->getClientData())));
-        if(Argus::STATUS_OK != status)
+        auto status = stream->releaseBuffer(static_cast<Argus::Buffer *>(const_cast<void *>(dmaFDWrapper->getClientData())));
+        if (Argus::STATUS_OK != status)
         {
             throw AIPException(AIP_FATAL, "Failed to release buffer to stream. queueFrameToCamera <" + std::to_string(status) + ">");
         }
@@ -81,11 +81,41 @@ bool NvArgusCameraHelper::queueFrameToCamera()
     }
 }
 
-bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
+boost::shared_ptr<NvArgusCameraUtils> NvArgusCameraUtils::instance;
+
+NvArgusCameraUtils::NvArgusCameraUtils()
 {
-    /* Create the Argus::CameraProvider object and get the core interface */
     cameraProvider.reset(Argus::CameraProvider::create());
     Argus::ICameraProvider *iCameraProvider = Argus::interface_cast<Argus::ICameraProvider>(cameraProvider);
+    if (!iCameraProvider)
+    {
+        throw AIPException(AIP_FATAL, "Unable to initialize NvArgusCameraUtils");
+    }
+}
+
+NvArgusCameraUtils::~NvArgusCameraUtils()
+{
+}
+
+Argus::ICameraProvider *NvArgusCameraUtils::_getNvArgusCameraUtils()
+{
+    Argus::ICameraProvider *iCameraProvider = Argus::interface_cast<Argus::ICameraProvider>(cameraProvider);
+    return iCameraProvider;
+}
+
+Argus::ICameraProvider *NvArgusCameraUtils::getNvArgusCameraUtils()
+{
+    if (!instance.get())
+    {
+        instance.reset(new NvArgusCameraUtils());
+    }
+    return instance->_getNvArgusCameraUtils();
+}
+
+bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, int cameraId)
+{
+    /* Create the Argus::CameraProvider object and get the core interface */
+    Argus::ICameraProvider *iCameraProvider = NvArgusCameraUtils::getNvArgusCameraUtils();
     if (!iCameraProvider)
     {
         LOG_ERROR << "Failed to create Argus::CameraProvider";
@@ -103,7 +133,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
 
     /* Create the capture session using the first device and get the core interface */
     captureSession.reset(
-        iCameraProvider->createCaptureSession(cameraDevices[0]));
+        iCameraProvider->createCaptureSession(cameraDevices[cameraId]));
 
     Argus::ICaptureSession *iCaptureSession = Argus::interface_cast<Argus::ICaptureSession>(captureSession);
     if (!iCaptureSession)
@@ -145,7 +175,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
     for (uint32_t i = 0; i < numBuffers; i++)
     {
         auto frame = mMakeFrame();
-        if(!frame.get())
+        if (!frame.get())
         {
             throw AIPException(AIP_FATAL, "failed to get frame. index<" + std::to_string(i) + ">");
         }
@@ -162,7 +192,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps)
             return false;
         }
 
-         /* Reference Argus::Argus::Buffer and DMA each other */
+      /* Reference Argus::Argus::Buffer and DMA each other */
         iBuffer->setClientData(dmaFDWrapper);
         dmaFDWrapper->setClientData(buffers[i].get());
         mQueuedFrames[dmaFDWrapper] = frame;
