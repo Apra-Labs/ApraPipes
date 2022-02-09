@@ -12,7 +12,7 @@
 #include "FileWriterModule.h"
 #include "BrightnessContrastControl.h"
 
-BOOST_AUTO_TEST_SUITE(brightnes_contrast_tests)
+BOOST_AUTO_TEST_SUITE(brightness_contrast_tests)
 
 BOOST_AUTO_TEST_CASE(mono)
 {
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(mono)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
+	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5, 8)));
 	fileReader->setNext(brightnessControl);
 
 	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(bgra)
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
+	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5, 8)));
 	fileReader->setNext(brightnessControl);
 
 	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 40)));
+	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5, 8)));
 	fileReader->setNext(brightnessControl);
 
 	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 		Test_Utils::saveOrCompare("./data/testOutput/brightnessgetset1.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 	}
 
-	BrightnessContrastControlProps props12(2, 40);
+	BrightnessContrastControlProps props12(0.4, 0.8, 8);
 
 	brightnessControl->setProps(props12);
 	brightnessControl->step();
