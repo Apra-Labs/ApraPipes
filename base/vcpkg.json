@@ -22,8 +22,15 @@
     "boost-iostreams",
     "nu-book-zxing-cpp",
     "liblzma",
+    {
+      "name": "glib",
+      "default-features": false,
+      "features": ["libmount"]
+    },
     "bzip2",
     "zlib",
+    "hiredis",
+    "redis-plus-plus"
     "sfml"
   ]
 }
