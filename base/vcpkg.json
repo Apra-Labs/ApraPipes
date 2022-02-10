@@ -22,6 +22,7 @@
     "zxing-cpp",
     "liblzma",
     "bzip2",
-    "zlib"
+    "zlib",
+    "sfml"
   ]
 }
