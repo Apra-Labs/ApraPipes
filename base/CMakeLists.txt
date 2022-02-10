@@ -38,6 +38,7 @@ find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
 IF(NOT ENABLE_ARM64)
 	# hunter_add_package(ncursesw)
@@ -101,7 +102,6 @@ ENDIF(ENABLE_CUDA)
 
 include_directories(AFTER SYSTEM include)
 
-
 # ApraPipes library
 
 SET(CORE_FILES
@@ -122,6 +122,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
+	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 )
 
@@ -164,6 +165,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
+	include/AudioCaptureSrc.h
 	include/QRReader.h
 )
 
@@ -427,9 +429,10 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
 	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}	
+	${CUDA_UT_FILES}
 )
 
 IF(LINUX)
@@ -461,4 +464,5 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   liblzma::liblzma
   bigint::bigint
+  sfml-audio
   )
