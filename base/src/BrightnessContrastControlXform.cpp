@@ -1,4 +1,4 @@
-#include "BrightnessContrastControl.h"
+#include "BrightnessContrastControlXform.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"

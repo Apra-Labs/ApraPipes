@@ -10,7 +10,7 @@
 #include "StatSink.h"
 #include "PipeLine.h"
 #include "FileWriterModule.h"
-#include "BrightnessContrastControl.h"
+#include "BrightnessContrastControlXform.h"
 
 BOOST_AUTO_TEST_SUITE(brightness_contrast_tests)
 
