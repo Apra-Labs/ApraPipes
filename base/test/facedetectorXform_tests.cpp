@@ -11,7 +11,7 @@
 #include "PipeLine.h"
 #include "AIPExceptions.h"
 #include "FileWriterModule.h"
-#include "FaceDetector.h"
+#include "FaceDetectorXform.h"
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
 
@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
-	FaceDetectorProps faceDetectorProps;
-	auto faceDetector = boost::shared_ptr<FaceDetector>(new FaceDetector(faceDetectorProps));
+	FaceDetectorXformProps faceDetectorProps;
+	auto faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
 	fileReader->setNext(faceDetector);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	faceDetector->setNext(sink);

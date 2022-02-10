@@ -1,4 +1,4 @@
-#include "FaceDetector.h"
+#include "FaceDetectorXform.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -11,10 +11,10 @@
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
 
-class FaceDetector::Detail
+class FaceDetectorXform::Detail
 {
 public:
-	Detail(FaceDetectorProps &_props) : mProps(_props), ultraface(binPath, paramPath, 320, 240, 1, 0.7)
+	Detail(FaceDetectorXformProps &_props) : mProps(_props), ultraface(binPath, paramPath, 320, 240, 1, 0.7)
 	{
 	}
 	~Detail() {}
@@ -24,14 +24,14 @@ public:
 		mInputImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
 	}
 
-	void setProps(FaceDetectorProps &props)
+	void setProps(FaceDetectorXformProps &props)
 	{
 		mProps = props;
 	}
 
 public:
 	framemetadata_sp mOutputMetadata;
-	FaceDetectorProps mProps;
+	FaceDetectorXformProps mProps;
 	std::string mOutputPinId;
 	cv::Mat mInputImg;
 	ncnn::Mat inmat;
@@ -45,12 +45,12 @@ public:
 	FaceDetectsInfo faceDetectsInfo;
 };
 
-FaceDetector::FaceDetector(FaceDetectorProps _props) : Module(TRANSFORM, "FaceDetector", _props)
+FaceDetectorXform::FaceDetectorXform(FaceDetectorXformProps _props) : Module(TRANSFORM, "FaceDetectorXform", _props)
 {
 	mDetail.reset(new Detail(_props));
 }
 
-bool FaceDetector::validateInputPins()
+bool FaceDetectorXform::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
@@ -69,7 +69,7 @@ bool FaceDetector::validateInputPins()
 	return true;
 }
 
-bool FaceDetector::validateOutputPins()
+bool FaceDetectorXform::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
@@ -79,24 +79,24 @@ bool FaceDetector::validateOutputPins()
 	return true;
 }
 
-void FaceDetector::addInputPin(framemetadata_sp &metadata, string &pinId)
+void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACEDETECTS_INFO));
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
-bool FaceDetector::init()
+bool FaceDetectorXform::init()
 {
 	return Module::init();
 }
 
-bool FaceDetector::term()
+bool FaceDetectorXform::term()
 {
 	return Module::term();
 }
 
-bool FaceDetector::process(frame_container &frames)
+bool FaceDetectorXform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	mDetail->mInputImg.data = static_cast<uint8_t *>(frame->data());
@@ -125,7 +125,7 @@ bool FaceDetector::process(frame_container &frames)
 	return true;
 }
 
-void FaceDetector::setMetadata(framemetadata_sp &metadata)
+void FaceDetectorXform::setMetadata(framemetadata_sp &metadata)
 {
 	if (!metadata->isSet())
 	{
@@ -150,14 +150,14 @@ void FaceDetector::setMetadata(framemetadata_sp &metadata)
 	}
 }
 
-bool FaceDetector::processSOS(frame_sp &frame)
+bool FaceDetectorXform::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);
 	return true;
 }
 
-bool FaceDetector::shouldTriggerSOS()
+bool FaceDetectorXform::shouldTriggerSOS()
 {
 	if (mDetail->mInputImg.cols == 0)
 	{
@@ -166,21 +166,21 @@ bool FaceDetector::shouldTriggerSOS()
 	return false;
 }
 
-FaceDetectorProps FaceDetector::getProps()
+FaceDetectorXformProps FaceDetectorXform::getProps()
 {
 	fillProps(mDetail->mProps);
 	return mDetail->mProps;
 }
 
-bool FaceDetector::handlePropsChange(frame_sp &frame)
+bool FaceDetectorXform::handlePropsChange(frame_sp &frame)
 {
-	FaceDetectorProps props;
+	FaceDetectorXformProps props;
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
 }
 
-void FaceDetector::setProps(FaceDetectorProps &props)
+void FaceDetectorXform::setProps(FaceDetectorXformProps &props)
 {
 	Module::addPropsToQueue(props);
 }

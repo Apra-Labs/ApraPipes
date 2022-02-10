@@ -3,10 +3,10 @@
 #include "Module.h"
 #include <boost/serialization/vector.hpp>
 
-class FaceDetectorProps : public ModuleProps
+class FaceDetectorXformProps : public ModuleProps
 {
 public:
-    FaceDetectorProps(std::string _binPath = "../../data/version-RFB/RFB-320.bin", std::string _paramPath = "../../data/version-RFB/RFB-320.param") : binPath(_binPath), paramPath(_paramPath)
+    FaceDetectorXformProps(std::string _binPath = "../../data/version-RFB/RFB-320.bin", std::string _paramPath = "../../data/version-RFB/RFB-320.param") : binPath(_binPath), paramPath(_paramPath)
     {
     }
     std::string binPath;
@@ -28,17 +28,17 @@ private:
     }
 };
 
-class FaceDetector : public Module
+class FaceDetectorXform : public Module
 {
 public:
-    FaceDetector(FaceDetectorProps props);
-    virtual ~FaceDetector() {}
+    FaceDetectorXform(FaceDetectorXformProps props);
+    virtual ~FaceDetectorXform() {}
 
     virtual bool init();
     virtual bool term();
 
-    void setProps(FaceDetectorProps &props);
-    FaceDetectorProps getProps();
+    void setProps(FaceDetectorXformProps &props);
+    FaceDetectorXformProps getProps();
 
 protected:
     bool process(frame_container &frames);
