@@ -51,6 +51,14 @@ bool BrightnessContrastControl::validateInputPins()
 	}
 
 	framemetadata_sp metadata = getFirstInputMetadata();
+
+	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+
+	if (rawMetadata->getDepth() != CV_8U)
+	{
+		throw AIPException(AIP_NOTIMPLEMENTED, "Bit depth not supported.");
+	}
+
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE)
 	{
@@ -119,11 +127,8 @@ void BrightnessContrastControl::setMetadata(framemetadata_sp &metadata)
 		return;
 	}
 
-	if(mDetail->mProps.bitsPerPixel != 8)
-	{
-		LOG_ERROR << "Only 8 bits per pixel are supported currently.";
-	}
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+
 	RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->mOutputMetadata);
 	rawOutMetadata->setData(outputMetadata);
@@ -159,7 +164,7 @@ BrightnessContrastControlProps BrightnessContrastControl::getProps()
 
 bool BrightnessContrastControl::handlePropsChange(frame_sp &frame)
 {
-	BrightnessContrastControlProps props(1.0, 0.0, 8);
+	BrightnessContrastControlProps props(1.0, 0.0);
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;

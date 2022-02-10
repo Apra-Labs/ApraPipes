@@ -5,16 +5,15 @@
 class BrightnessContrastControlProps : public ModuleProps
 {
 public:
-	BrightnessContrastControlProps(double _contrast, double _brightness, int _bitsPerPixel) : contrast(_contrast), brightness(_brightness), bitsPerPixel(_bitsPerPixel)
+	BrightnessContrastControlProps(double _contrast, double _brightness) : contrast(_contrast), brightness(_brightness)
 	{
 	}
 	double contrast;
 	double brightness;
-	int bitsPerPixel;
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(int) + sizeof(double) * 2;
+		return ModuleProps::getSerializeSize() + sizeof(double) * 2;
 	}
 
 private:
@@ -24,7 +23,7 @@ private:
 	void serialize(Archive &ar, const unsigned int version)
 	{
 		ar &boost::serialization::base_object<ModuleProps>(*this);
-		ar &contrast &brightness &bitsPerPixel;
+		ar &contrast &brightness;
 	}
 };
 
