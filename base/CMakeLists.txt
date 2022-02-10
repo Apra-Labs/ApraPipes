@@ -213,7 +213,7 @@ SET(IP_FILES
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
 	src/UltraFace.cpp
-	src/FaceDetector.cpp
+	src/FaceDetectorXform.cpp
 )
 
 SET(IP_FILES_H
@@ -233,7 +233,7 @@ SET(IP_FILES_H
 	include/UltraFace.hpp
 	include/ApraFaceInfo.h
 	include/FaceDetectsInfo.h
-	include/FaceDetector.h
+	include/FaceDetectorXform.h
 )
 
 SET(CUDA_CORE_FILES
@@ -436,7 +436,7 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
-	test/facedetector_tests.cpp
+	test/facedetectorXform_tests.cpp
 	test/QRReader_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}	
