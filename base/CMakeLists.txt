@@ -103,6 +103,7 @@ ENDIF(ENABLE_CUDA)
 add_subdirectory(../thirdparty/ncnn ncnn_build)
 include_directories(AFTER SYSTEM include
 					../thirdparty/ncnn/src
+					../thirdparty/ncnn/build/ncnn_build/src
 )
 
 # ApraPipes library
