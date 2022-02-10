@@ -99,9 +99,9 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-add_subdirectory(thirdparty/ncnn ncnn_build)
+add_subdirectory(../thirdparty/ncnn ncnn_build)
 include_directories(AFTER SYSTEM include
-					thirdparty/ncnn/src
+					../thirdparty/ncnn/src
 )
 
 
