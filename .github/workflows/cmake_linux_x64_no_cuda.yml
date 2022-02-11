@@ -21,8 +21,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with: 
-        submodules: 'true'
+        submodules: 'false'
     
+    -name: Checkout submodule
+      working-directory: ${{github.workspace}}
+      run: |
+      git pull --recurse-submodules
+      git submodule update --recursive 
+
     - name: Compute submodule status
       working-directory: ${{github.workspace}}
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
