@@ -20,7 +20,7 @@
     "boost-chrono",
     "boost-test",
     "boost-iostreams",
-    "zxing-cpp",
+    "nu-book-zxing-cpp",
     "liblzma",
     "bzip2",
     "zlib",
