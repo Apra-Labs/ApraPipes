@@ -24,7 +24,7 @@ jobs:
         submodules: 'false'
 
     - name: Checkout submodule
-      run: git pull --recurse-submodules && git submodule update --recursive 
+      run: git submodule update --init --recursive
 
     - name: Compute submodule status
       working-directory: ${{github.workspace}}
