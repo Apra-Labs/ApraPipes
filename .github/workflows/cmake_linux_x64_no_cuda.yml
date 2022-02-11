@@ -55,6 +55,9 @@ jobs:
     - name: Test
       run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
     
+    - name: Log errors
+      run: cat ./build/vcpkg-manifest-install.log
+
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v2
