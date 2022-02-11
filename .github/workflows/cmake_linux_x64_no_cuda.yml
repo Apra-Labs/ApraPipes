@@ -39,7 +39,7 @@ jobs:
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
           path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/versions/baseline.json') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install build dependecies
