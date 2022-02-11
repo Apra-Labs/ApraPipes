@@ -40,7 +40,6 @@ jobs:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
           path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/versions/baseline.json') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
