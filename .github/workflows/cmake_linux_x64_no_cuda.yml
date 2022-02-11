@@ -54,9 +54,6 @@ jobs:
 
     - name: Test
       run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
-    
-    - name: Log errors
-      run: cat ./build/vcpkg-manifest-install.log
 
     - name: Upload Test Results
       if: always()
@@ -65,6 +62,15 @@ jobs:
        name: Unit Test Results
        path: |
          CI_test_result_ubuntu.xml
+
+    - name: Upload Build errors
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+       name: Vcpkg build errors
+       path: |
+          ./build/vcpkg-manifest-install.log
+         
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
