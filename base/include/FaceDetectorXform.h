@@ -6,7 +6,7 @@
 class FaceDetectorXformProps : public ModuleProps
 {
 public:
-    FaceDetectorXformProps(std::string _binPath = "../../data/version-RFB/RFB-320.bin", std::string _paramPath = "../../data/version-RFB/RFB-320.param") : binPath(_binPath), paramPath(_paramPath)
+    FaceDetectorXformProps(std::string _binPath = "./data/version-RFB/RFB-320.bin", std::string _paramPath = "./data/version-RFB/RFB-320.param") : binPath(_binPath), paramPath(_paramPath)
     {
     }
     std::string binPath;

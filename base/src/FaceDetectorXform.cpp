@@ -14,7 +14,7 @@
 class FaceDetectorXform::Detail
 {
 public:
-	Detail(FaceDetectorXformProps &_props) : mProps(_props), ultraface(binPath, paramPath, 320, 240, 1, 0.7)
+	Detail(FaceDetectorXformProps &_props) : mProps(_props), ultraface(mProps.binPath, mProps.paramPath, 320, 240, 1, 0.7)
 	{
 	}
 	~Detail() {}
@@ -35,8 +35,6 @@ public:
 	std::string mOutputPinId;
 	cv::Mat mInputImg;
 	ncnn::Mat inmat;
-	const std::string binPath = "../../data/version-RFB/RFB-320.bin";
-	const std::string paramPath = "../../data/version-RFB/RFB-320.param";
 	UltraFace ultraface;
 	int mFrameType;
 	ApraFaceInfo faceInfo;
