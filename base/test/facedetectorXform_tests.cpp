@@ -53,7 +53,6 @@ BOOST_AUTO_TEST_CASE(serialization_test)
 {
 
 	FaceDetectsInfo result;
-	// fill some dummy data
 	ApraFaceInfo face;
 	face.x1 = 1.0;
 	face.y1 = 1.0;
@@ -71,7 +70,6 @@ BOOST_AUTO_TEST_CASE(serialization_test)
 	FaceDetectsInfo result2;
 	Utils::deSerialize<FaceDetectsInfo>(result2, ptr, size);
 
-	// result and result2 should match - do boost_test()
 	BOOST_TEST(result2.faces.size() == result.faces.size());
 	BOOST_TEST(result2.faces[0].x1 == result.faces[0].x1);
 	BOOST_TEST(result2.faces[0].y1 == result.faces[0].y1);
@@ -100,7 +98,7 @@ BOOST_AUTO_TEST_CASE(aprafaceinfo_test)
 	ApraFaceInfo face2;
 	Utils::deSerialize<ApraFaceInfo>(face2, ptr, size);
 
-	// result and result2 should match - do boost_test()
+
 	BOOST_TEST(face.x1 == face2.x1);
 	BOOST_TEST(face.y1 == face2.y1);
 	BOOST_TEST(face.x2 == face2.x2);
