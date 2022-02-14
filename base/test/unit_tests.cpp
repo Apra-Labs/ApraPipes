@@ -348,6 +348,44 @@ BOOST_AUTO_TEST_CASE(frame_que_test)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(frame_que_drop_oldtest_test)
+{
+	FrameContainerQueue q(2);
+	framemetadata_sp metadata(new FrameMetadata(FrameMetadata::FrameType::GENERAL,FrameMetadata::MemType::HOST));
+	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
+	{
+		auto f1 = fact->create(1023, fact);//uses 1 chunk
+		auto f2 = fact->create(1024, fact);//uses 1 chunk
+		auto f3 = fact->create(1025, fact);//uses 2 chunk
+
+		frame_container frames1;
+		frame_container frames2;
+		frame_container frames3;
+		frames1.insert(std::make_pair("p1", f1));
+		frames2.insert(std::make_pair("p2", f2));
+		frames3.insert(std::make_pair("p3", f3));
+
+		BOOST_TEST(q.try_pop() == frame_container()); //empty queue
+		q.push(frames1);
+		q.push(frames2);
+		BOOST_TEST(q.try_push(frames3) == false); //full queue
+
+		q.push_drop_oldest(frames3); //pushed with drop_oldest now 2 is on top
+
+		auto frames2_ = q.pop();
+		auto frames3_ = q.pop();
+		BOOST_TEST(q.try_pop() == frame_container()); //all popped now empty queue
+
+		//now check if frames2_ is same as frames2 
+		BOOST_TEST(frames2.size() == frames2_.size());
+		BOOST_TEST(frames2["p2"]->size() == f2->size());
+
+		//now check if frames3_ is same as frames3 
+		BOOST_TEST(frames3.size() == frames3_.size());
+		BOOST_TEST(frames3["p3"]->size() == f3->size());
+	}
+}
+
 
 BOOST_AUTO_TEST_CASE(base64_encoding_test)
 {

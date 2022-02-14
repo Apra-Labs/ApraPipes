@@ -29,6 +29,7 @@
     "bzip2",
     "zlib",
     "hiredis",
-    "redis-plus-plus"
+    "redis-plus-plus",
+    "sfml"
     ]
 }
