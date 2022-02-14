@@ -1,5 +1,4 @@
 #pragma once
-#define BOOST_USE_WINAPI_VERSION BOOST_WINAPI_VERSION_WIN7
 
 #include <string>
 #include <boost/shared_ptr.hpp>
