@@ -29,33 +29,29 @@ project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
-set(GSTLIB_ROOT ../thirdparty/gstreamer/outInstall/lib/x86_64-linux-gnu/)
-set(VCPKGINSTALL_ROOT ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/lib)
+set(ENV{PKG_CONFIG_PATH} "./thirdparty/gstreamer/outInstall/lib/x86_64-linux-gnu/pkgconfig")
+find_package(PkgConfig REQUIRED)
 
-find_library(GSTREAMER_LIB libgstreamer-1.0.so  PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GOBJECT_LIB libgobject-2.0.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(GLIB_LIB libglib-2.0.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(PCRE_LIB libpcre.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(GIO_LIB libgio-2.0.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTRTP_LIB libgstrtp-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTRTSP_LIB libgstrtsp-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTRTSPSERVER_LIB libgstrtspserver-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTAPP_LIB libgstapp-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTNET_LIB libgstnet-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GTHREAD_LIB libgthread-2.0.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(GMODULE_LIB libgmodule-2.0.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(MOUNT_LIB libmount.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(FFI_LIB libffi.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(BLKID_LIB libblkid.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-find_library(SELINUX_LIB libselinux.a PATHS ${VCPKGINSTALL_ROOT} NO_DEFAULT REQUIRED)
-# find_library(GSTRTPMANAGER_LIB libgstrtpmanager.a PATHS ./vcpkg_installed/x64-linux/lib/gstreamer-1.0 NO_DEFAULT REQUIRED)
-find_library(GSTWEBRTC_LIB libgstwebrtc-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTSDP_LIB libgstsdp-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTPBUTILS_LIB libgstpbutils-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTBASE_LIB libgstbase-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(GSTCHECK_LIB libgstcheck-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(SOUP_LIB libsoup-2.4.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
-find_library(JSON_GLIB_LIB libjson-glib-1.0.so PATHS ${GSTLIB_ROOT} NO_DEFAULT REQUIRED)
+
+pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
+pkg_search_module(GOBJECT REQUIRED gobject-2.0)  
+pkg_search_module(GLIB REQUIRED glib-2.0)  
+pkg_search_module(GIO REQUIRED gio-2.0) 
+pkg_search_module(GSTRTP REQUIRED gstreamer-rtp-1.0)  
+pkg_search_module(GSTRTSP REQUIRED gstreamer-rtsp-1.0)  
+pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)  
+pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
+pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
+pkg_search_module(PCRE REQUIRED libpcre)
+pkg_search_module(GTHREAD REQUIRED gthread-2.0)
+pkg_search_module(GMODULE REQUIRED gmodule-2.0)
+if(!ENABLE_WINDWOS)
+	pkg_search_module(LIBMOUNT REQUIRED libmount)
+	pkg_search_module(LIBBBLKID REQUIRED libblkid)
+	pkg_search_module(LIBSELINUX REQUIRED libselinux)
+
+endif()
+pkg_search_module(GSTBASE REQUIRED gstreamer-base-1.0)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -147,15 +143,7 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 
-include_directories(AFTER SYSTEM include
-	${VCPKGINSTALL_ROOT}/glib-2.0/include
-	${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/include/glib-2.0
-	../thirdparty/gstreamer/outInstall/include/gstreamer-1.0
-	../thirdparty/gstreamer/outInstall/include/json-glib-1.0
-	../thirdparty/gstreamer/outInstall/include/libsoup-2.4    
-	# /home/ubuntu/src/Ultra-Light-Fast-Generic-Face-Detector-1MB/ncnn/3rdparty/ncnn/src
-	# /home/ubuntu/src/Ultra-Light-Fast-Generic-Face-Detector-1MB/ncnn/build/ncnn_build/src
-)
+include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
 
@@ -430,6 +418,26 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
+${GSTAPP_INCLUDE_DIRS}
+${GSTBASE_INCLUDE_DIRS}
+${GSTREAMER_INCLUDE_DIRS}
+${GSTRTSPSERVER_INCLUDE_DIRS}
+${PCRE_INCLUDE_DIRS}
+${GLIB_INCLUDE_DIRS}
+${GSTRTSP_INCLUDE_DIRS}
+${GSTRTP_INCLUDE_DIRS}
+${GSTSDP_INCLUDE_DIRS}
+${GSTNET_INCLUDE_DIRS}
+${GSTPBUTILS_INCLUDE_DIRS}
+${GSTRTPMANAGER_INCLUDE_DIRS}
+${LIBFFI_INCLUDE_DIRS}
+${LIBBLKID_INCLUDE_DIRS}
+${GIO_INCLUDE_DIRS}
+${GMODULE_INCLUDE_DIRS}
+${GTHREAD_INCLUDE_DIRS}
+${GOBJECT_INCLUDE_DIRS}
+${LIBMOUNT_INCLUDE_DIRS}
+${LIBSELINUX_INCLUDE_DIRS}
 )
 
 # aprapipes Unit Tests
@@ -540,59 +548,52 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${GSTAPP_LIB}
-  ${GSTBASE_LIB}
-  ${GSTREAMER_LIB}
-  ${GSTRTSPSERVER_LIB}
-  ${PCRE_LIB}
-  ${GLIB_LIB}
-  ${GSTWEBRTC_LIB}
-  ${GSTRTSP_LIB}
-  ${GSTRTP_LIB}
-  ${GSTSDP_LIB}
-  ${GSTNET_LIB}
-  ${GSTPBUTILS_LIB}
-  ${GSTRTPMANAGER_LIB}
-  ${FFI_LIB}
-  ${BLKID_LIB}
-  ${GIO_LIB}
-  ${GMODULE_LIB}
-  ${GTHREAD_LIB}
-  ${GLIB_LDFLAGS}
+  ${GSTAPP_LIBRARIES}
+  ${GSTBASE_LIBRARIES}
+  ${GSTREAMER_LIBRARIES}
+  ${GSTRTSPSERVER_LIBRARIES}
+  ${PCRE_LIBRARIES}
   ${GLIB_LIBRARIES}
-  ${GOBJECT_LIB}
-  ${MOUNT_LIB}
-  ${SELINUX_LIB}
-  ${JSON_GLIB_LIB}
-  ${SOUP_LIB}
+  ${GSTRTSP_LIBRARIES}
+  ${GSTRTP_LIBRARIES}
+  ${GSTSDP_LIBRARIES}
+  ${GSTNET_LIBRARIES}
+  ${GSTPBUTILS_LIBRARIES}
+  ${GSTRTPMANAGER_LIBRARIES}
+  ${LIBFFI_LIBRARIES}
+  ${LIBBLKID_LIBRARIES}
+  ${GIO_LIBRARIES}
+  ${GMODULE_LIBRARIES}
+  ${GTHREAD_LIBRARIES}
+  ${GLIB_LDFLAGS}
+  ${GOBJECT_LIBRARIES}
+  ${LIBMOUNT_LIBRARIES}
+  ${LIBSELINUX_LIBRARIES}
 
-  ${GSTAPP_LIB}
-  ${GSTBASE_LIB}
-  ${GSTREAMER_LIB}
-  ${GSTRTSPSERVER_LIB}
-  ${PCRE_LIB}
-  ${GLIB_LIB}
-  ${GSTRTSP_LIB}
-  ${GSTRTP_LIB}
-  ${GSTSDP_LIB}
-  ${GSTNET_LIB}
-  ${GSTPBUTILS_LIB}
-  ${GSTRTPMANAGER_LIB}
-  ${FFI_LIB}
-  ${BLKID_LIB}
-  ${GIO_LIB}
-  ${GMODULE_LIB}
-  ${GTHREAD_LIB}
-  ${GLIB_LDFLAGS}
+  ${GSTAPP_LIBRARIES}
+  ${GSTBASE_LIBRARIES}
+  ${GSTREAMER_LIBRARIES}
+  ${GSTRTSPSERVER_LIBRARIES}
+  ${PCRE_LIBRARIES}
   ${GLIB_LIBRARIES}
-  ${GOBJECT_LIB}
-  ${MOUNT_LIB}
-  ${SELINUX_LIB}
+  ${GSTRTSP_LIBRARIES}
+  ${GSTRTP_LIBRARIES}
+  ${GSTSDP_LIBRARIES}
+  ${GSTNET_LIBRARIES}
+  ${GSTPBUTILS_LIBRARIES}
+  ${GSTRTPMANAGER_LIBRARIES}
+  ${LIBFFI_LIBRARIES}
+  ${LIBBLKID_LIBRARIES}
+  ${GIO_LIBRARIES}
+  ${GMODULE_LIBRARIES}
+  ${GTHREAD_LIBRARIES}
+  ${GLIB_LDFLAGS}
+  ${GOBJECT_LIBRARIES}
+  ${LIBMOUNT_LIBRARIES}
+  ${LIBSELINUX_LIBRARIES}
   resolv
   ${JSON_GLIB_LIB}
   ${SOUP_LIB}
-  hiredis::hiredis
-  redis++::redis++_static
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
