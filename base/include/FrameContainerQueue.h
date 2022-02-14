@@ -4,8 +4,6 @@
 #include "BoundBuffer.h"
 #include "CommonDefs.h"
 
-using namespace std;
-
 class FrameContainerQueue :public bounded_buffer<frame_container> {
 public:
 	FrameContainerQueue(size_t capacity);
