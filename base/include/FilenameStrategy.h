@@ -44,10 +44,10 @@ protected:
 	bool mReadLoop;
 
 	std::string mDirName;
-	uint64_t mCurrentIndex;
+	int mCurrentIndex;
 
-	uint64_t mStartIndex;
-	uint64_t mMaxIndex;
+	int mStartIndex;
+	int mMaxIndex;
 
 private:	
 	std::string GetFileNameForCurrentIndex(bool checkForExistence) const;
