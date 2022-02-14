@@ -25,7 +25,7 @@ public:
 			ar &username &password;
 		}
 	};
-	GStreamerOnvifRTSPSinkProps(uint32_t _width = 1920, uint32_t _height = 1080, int _bitrate = 204800, int _goplength = 30, std::string _h264Profile = "baseline", std::string _port = "8554", std::string _htdigestPath = "/var/lib/onvif/onvif_users.htdigest", std::string _realm = "Onvif_service", std::string _unicastAddress = "0.0.0.0", std::string _mountPoint = "/rgbcamera", std::vector<User> _userList = {{"admin", "7ABCDE"}}) : ModuleProps(), width(_width), height(_height), bitrate(_bitrate), goplength(_goplength), h264Profile(_h264Profile), port(_port), htdigestPath(_htdigestPath), unicastAddress(_unicastAddress), realm(_realm), mountPoint(_mountPoint), userList(_userList) {}
+	GStreamerOnvifRTSPSinkProps(uint32_t _width = 1920, uint32_t _height = 1080, int _bitrate = 204800, int _goplength = 30, std::string _h264Profile = "baseline", std::string _port = "8554", std::string _htdigestPath = "./data/onvif_users.htdigest", std::string _realm = "Onvif_service", std::string _unicastAddress = "0.0.0.0", std::string _mountPoint = "/rgbcamera", std::vector<User> _userList = {{"admin", "7ABCDE"}}) : ModuleProps(), width(_width), height(_height), bitrate(_bitrate), goplength(_goplength), h264Profile(_h264Profile), port(_port), htdigestPath(_htdigestPath), unicastAddress(_unicastAddress), realm(_realm), mountPoint(_mountPoint), userList(_userList) {}
 	// port, authpaths, rtspLinkInitial
 	uint32_t width;
 	uint32_t height;
