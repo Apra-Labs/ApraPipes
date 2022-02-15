@@ -2,8 +2,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/container/deque.hpp>
 #include "enum_macros.h"
+#include <string>
 
-using namespace std;
 class Module;
 // a linear pipline
 class PipeLine {
@@ -27,14 +27,14 @@ class PipeLine {
 	typedef boost::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
 	
-	string mName;
+	std::string mName;
 	container_type modules;
 	bool validate();
 	bool checkCyclicDependency();
 public:
-	PipeLine(string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
+	PipeLine(std::string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();
-	string getName() { return mName; }
+	std::string getName() { return mName; }
 	bool appendModule(boost::shared_ptr<Module> pModule);
 	bool init();
 	void run_all_threaded();
