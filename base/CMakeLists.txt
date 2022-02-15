@@ -80,11 +80,12 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-	ELSE()
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-	
+ 
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
 			libnvjpeg_static.a
@@ -93,10 +94,25 @@ IF(ENABLE_CUDA)
 			libnppidei_static.a
 			libnppial_static.a					
 			libculibos.a	
-		)	
-	ENDIF(ENABLE_ARM64)
+		) 
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSE()
+		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 
-	include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		SET(NVCUDAToolkit_LIBS		
+			cudart_static.lib
+			nvjpeg.lib
+			nppig.lib
+			nppicc.lib
+			nppidei.lib
+			nppial.lib					
+			cublas.lib	
+			cublasLt.lib
+		)
+		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
+	ENDIF(ENABLE_ARM64)
 
 ENDIF(ENABLE_CUDA)
 
