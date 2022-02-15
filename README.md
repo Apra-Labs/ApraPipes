@@ -45,6 +45,52 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 
 
+## Prerequisites for macOS
+- Update to Xcode 13.2.1 or Recent
+    - Please note you need atleast 40GB of free space on your macPC to update to latest version
+    - Follow this Link to [Install XCode](https://www.freecodecamp.org/news/how-to-download-and-install-xcode/)
+- Install Homebrew
+    ```sh 
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    ```
+- Install nproc and coreutils
+    ```sh 
+    brew install coreutils
+    ```
+- Install CMake version - 3.22.2
+    - Download .dmg from [CMake Website](https://cmake.org/download/)
+    - Do not use brew to install CMake.
+- Install NSAM tool,
+    ```sh 
+    brew install nasm
+    ```
+
+### Apra Pipes Install and Build on macOS,
+- Clone Apra Pipes,
+    ```sh 
+    git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+    ```
+- Run
+    ```sh 
+    sudo ./vcpkg/vcpkg integrate install
+    ./vcpkg/bootstrap-vcpkg.sh
+    ```
+- Make sure you have path set to CMake,
+    ```sh 
+    PATH="/Applications/CMake.app/Contents/bin":"$PATH"
+    ```
+- Give execute permission to ./build_linux_no_cuda.sh
+    ```sh 
+    chmod +x ./build_linux_no_cuda.sh
+    ```
+- Build Apra Piples No Cuda Version,
+    ```sh 
+    ./build_linux_no_cuda.sh
+    ```
+### Run tests on MAC
+* list all tests `_build/aprapipesut --list_content`
+* run all tests  `_build/aprapipesut`
+
 ## Prerequisites Ubuntu 18.04 x64
 * Run ```sudo apt-get update && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison```  to get latest build tools
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
