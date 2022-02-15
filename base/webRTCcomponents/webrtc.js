@@ -16,7 +16,7 @@ var default_peer_id;
 var rtc_configuration = {iceServers: [{urls: "stun:stun.services.mozilla.com"},
                                       {urls: "stun:stun.l.google.com:19302"}]};
 // The default constraints that will be attempted. Can be overriden by the user.
-var default_constraints = {video: true, audio: true};
+var default_constraints = {video: false, audio: false};
 
 var connect_attempts = 0;
 var peer_connection;
