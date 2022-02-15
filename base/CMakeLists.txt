@@ -28,6 +28,31 @@ ENDIF(ENABLE_ARM64)
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
+find_package(PkgConfig REQUIRED)
+
+pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
+pkg_search_module(GOBJECT REQUIRED gobject-2.0)  
+pkg_search_module(GLIB REQUIRED glib-2.0)  
+pkg_search_module(GIO REQUIRED gio-2.0) 
+pkg_search_module(GSTRTP REQUIRED gstreamer-rtp-1.0)  
+pkg_search_module(GSTRTSP REQUIRED gstreamer-rtsp-1.0)  
+pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)  
+pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
+pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
+pkg_search_module(GSTWEBRTC REQUIRED gstreamer-webrtc-1.0)
+pkg_search_module(LIBSOUP REQUIRED libsoup-2.4)
+pkg_search_module(JSONGLIB REQUIRED json-glib-1.0)
+pkg_search_module(PCRE REQUIRED libpcre)
+pkg_search_module(GTHREAD REQUIRED gthread-2.0)
+pkg_search_module(GMODULE REQUIRED gmodule-2.0)
+
+if(!ENABLE_WINDWOS)
+	pkg_search_module(LIBMOUNT REQUIRED libmount)
+	pkg_search_module(LIBBBLKID REQUIRED libblkid)
+	pkg_search_module(LIBSELINUX REQUIRED libselinux)
+
+endif()
+pkg_search_module(GSTBASE REQUIRED gstreamer-base-1.0)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -227,6 +252,7 @@ SET(IP_FILES
 	src/BrightnessContrastControl.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
+	src/GstWebRTCSink.cpp
 )
 
 SET(IP_FILES_H
@@ -243,6 +269,7 @@ SET(IP_FILES_H
 	include/BrightnessContrastControl.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
+	include/GstWebRTCSink.h
 )
 
 SET(CUDA_CORE_FILES
@@ -372,6 +399,29 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
+${GSTAPP_INCLUDE_DIRS}
+${GSTBASE_INCLUDE_DIRS}
+${GSTREAMER_INCLUDE_DIRS}
+${GSTRTSPSERVER_INCLUDE_DIRS}
+${GSTWEBRTC_INCLUDE_DIRS}
+${PCRE_INCLUDE_DIRS}
+${GLIB_INCLUDE_DIRS}
+${LIBSOUP_INCLUDE_DIRS}
+${JSONGLIB_INCLUDE_DIRS}
+${GSTRTSP_INCLUDE_DIRS}
+${GSTRTP_INCLUDE_DIRS}
+${GSTSDP_INCLUDE_DIRS}
+${GSTNET_INCLUDE_DIRS}
+${GSTPBUTILS_INCLUDE_DIRS}
+${GSTRTPMANAGER_INCLUDE_DIRS}
+${LIBFFI_INCLUDE_DIRS}
+${LIBBLKID_INCLUDE_DIRS}
+${GIO_INCLUDE_DIRS}
+${GMODULE_INCLUDE_DIRS}
+${GTHREAD_INCLUDE_DIRS}
+${GOBJECT_INCLUDE_DIRS}
+${LIBMOUNT_INCLUDE_DIRS}
+${LIBSELINUX_INCLUDE_DIRS}
 )
 
 # aprapipes Unit Tests
@@ -447,6 +497,7 @@ SET(UT_FILES
 	test/webcam_source_tests.cpp
 	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
+	test/gstwebrtcsink_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -474,6 +525,56 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${GSTAPP_LIBRARIES}
+  ${GSTBASE_LIBRARIES}
+  ${GSTREAMER_LIBRARIES}
+  ${GSTWEBRTC_LIBRARIES}
+  ${GSTRTSPSERVER_LIBRARIES}
+  ${PCRE_LIBRARIES}
+  ${GLIB_LIBRARIES}
+  ${GSTRTSP_LIBRARIES}
+  ${GSTRTP_LIBRARIES}
+  ${GSTSDP_LIBRARIES}
+  ${GSTNET_LIBRARIES}
+  ${LIBSOUP_LIBRARIES}
+  ${JSONGLIB_LIBRARIES}
+  ${GSTPBUTILS_LIBRARIES}
+  ${GSTRTPMANAGER_LIBRARIES}
+  ${LIBFFI_LIBRARIES}
+  ${LIBBLKID_LIBRARIES}
+  ${GIO_LIBRARIES}
+  ${GMODULE_LIBRARIES}
+  ${GTHREAD_LIBRARIES}
+  ${GLIB_LDFLAGS}
+  ${GOBJECT_LIBRARIES}
+  ${LIBMOUNT_LIBRARIES}
+  ${LIBSELINUX_LIBRARIES}
+
+  ${GSTAPP_LIBRARIES}
+  ${GSTBASE_LIBRARIES}
+  ${GSTREAMER_LIBRARIES}
+  ${GSTWEBRTC_LIBRARIES}
+  ${GSTRTSPSERVER_LIBRARIES}
+  ${PCRE_LIBRARIES}
+  ${GLIB_LIBRARIES}
+  ${GSTRTSP_LIBRARIES}
+  ${GSTRTP_LIBRARIES}
+  ${GSTSDP_LIBRARIES}
+  ${GSTNET_LIBRARIES}
+  ${LIBSOUP_LIBRARIES}
+  ${JSONGLIB_LIBRARIES}
+  ${GSTPBUTILS_LIBRARIES}
+  ${GSTRTPMANAGER_LIBRARIES}
+  ${LIBFFI_LIBRARIES}
+  ${LIBBLKID_LIBRARIES}
+  ${GIO_LIBRARIES}
+  ${GMODULE_LIBRARIES}
+  ${GTHREAD_LIBRARIES}
+  ${GLIB_LDFLAGS}
+  ${GOBJECT_LIBRARIES}
+  ${LIBMOUNT_LIBRARIES}
+  ${LIBSELINUX_LIBRARIES}
+  resolv
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
