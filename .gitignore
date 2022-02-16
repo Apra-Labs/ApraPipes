@@ -2,3 +2,4 @@ _build
 _debugbuild
 thirdparty/Video_Codec_SDK_10.0.26
 data/testOutput
+thirdparty/gst-build/gst-build-1.16
