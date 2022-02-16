@@ -46,7 +46,21 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install build dependecies
-      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
+      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison autopoint && pip3 install --user meson
+    
+    - name: Build gstreamer
+      working-directory: ${{github.workspace}}
+      run: cd thirdparty && sh build_gstreamer.sh && cd ..
+
+    - name: Cache thirdparty
+      id: cache-thirdparty
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-thirdparty
+      with:
+          path: ${{github.workspace}}/thirdparty
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/${{env.SUBMODS_TXT}}') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

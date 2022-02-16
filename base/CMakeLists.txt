@@ -28,6 +28,8 @@ ENDIF(ENABLE_ARM64)
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
+set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
