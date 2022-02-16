@@ -103,33 +103,29 @@ public:
 	{
 		mutable_buffer &codedFrame = *(f.get());
 		bool isKeyFrame = (f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE);
-
-		AVPacket pkt = {0};
-		av_init_packet(&pkt);
-
-		/* encode the image */
-
-		pkt.stream_index = video_st->index;
-
 		totalDuration += duration;
-		pkt.pts = totalDuration;
-		pkt.dts = pkt.pts;
 
-		pkt.data = (uint8_t *)codedFrame.data();
-		pkt.size = (int)codedFrame.size();
+		pkt->stream_index = video_st->index;
+		pkt->pts = totalDuration;
+		pkt->dts = pkt->pts;
+
+		pkt->data = (uint8_t *)codedFrame.data();
+		pkt->size = (int)codedFrame.size();
 		if (isKeyFrame)
-			pkt.flags |= AV_PKT_FLAG_KEY;
+			pkt->flags |= AV_PKT_FLAG_KEY;
 
-		int ret = av_write_frame(outContext, &pkt);
+		int ret = av_write_frame(outContext, pkt);
 
+		bool bRC=true;
 		if (ret < 0)
 		{
+			bRC=false;
 			// av_log(NULL, AV_LOG_ERROR, "Error while writing video frame.ret = %d\n", ret);
 
 			char avErrorBuf[500] = {'\0'};
 			av_strerror(ret, avErrorBuf, 500);
 
-			LOG_ERROR << "Error while writing video frame : " << ret << ":" << avErrorBuf << ":" << pkt.pts << "\n";
+			LOG_ERROR << "Error while writing video frame : " << ret << ":" << avErrorBuf << ":" << pkt->pts << "\n";
 
 			// On evostream going down the return code is -32 - errno.h says 32 is EPIPE but
 			// AVERROR_EOF not coming as -32
@@ -139,23 +135,24 @@ public:
 				connectionStatus = CONNECTION_FAILED;
 				// emit the event after returning
 			}
-
-			return false;
 		}
-		return true;
+		return bRC;
 	}
 	size_t width, height, bitrate, fps_den, fps_num;
 	int64_t lastPTS, lastDiff, pts_adder, duration;
 	boost::shared_ptr<H264FrameDemuxer> demuxer;
 	EventType connectionStatus;
 	bool isFirstFrame;
+	AVPacket *pkt;
 
 	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), isTCP(props.isTCP), connectionStatus(CONNECTION_FAILED), isFirstFrame(false), duration(0), encoderTargetKbps(props.encoderTargetKbps)
 	{
 		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
+		pkt = av_packet_alloc();
 	}
 	~Detail()
 	{
+		av_packet_free(&pkt);
 	}
 
 	bool init()

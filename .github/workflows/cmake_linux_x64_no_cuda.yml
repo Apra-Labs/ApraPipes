@@ -21,8 +21,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with: 
-        submodules: 'true'
-    
+        submodules: 'false'
+
+    - name: Checkout submodule
+      run: git submodule update --init --recursive
+
     - name: Compute submodule status
       working-directory: ${{github.workspace}}
       run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
@@ -39,7 +42,7 @@ jobs:
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
           path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: Install build dependecies
