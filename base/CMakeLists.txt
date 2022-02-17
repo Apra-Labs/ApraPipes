@@ -26,12 +26,11 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
-set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+set(CMAKE_CXX_STANDARD 14)
 
-set(ENV{PKG_CONFIG_PATH} "./thirdparty/gstreamer/outInstall/lib/x86_64-linux-gnu/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+
 find_package(PkgConfig REQUIRED)
-
 
 pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
 pkg_search_module(GOBJECT REQUIRED gobject-2.0)  
@@ -42,10 +41,14 @@ pkg_search_module(GSTRTSP REQUIRED gstreamer-rtsp-1.0)
 pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)  
 pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
 pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
+pkg_search_module(GSTWEBRTC REQUIRED gstreamer-webrtc-1.0)
+pkg_search_module(LIBSOUP REQUIRED libsoup-2.4)
+pkg_search_module(JSONGLIB REQUIRED json-glib-1.0)
 pkg_search_module(PCRE REQUIRED libpcre)
 pkg_search_module(GTHREAD REQUIRED gthread-2.0)
 pkg_search_module(GMODULE REQUIRED gmodule-2.0)
-if(!ENABLE_WINDWOS)
+
+if(!ENABLE_WINDOWS)
 	pkg_search_module(LIBMOUNT REQUIRED libmount)
 	pkg_search_module(LIBBBLKID REQUIRED libblkid)
 	pkg_search_module(LIBSELINUX REQUIRED libselinux)
@@ -56,8 +59,6 @@ pkg_search_module(GSTBASE REQUIRED gstreamer-base-1.0)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
 find_package(OpenCV CONFIG REQUIRED)
-find_package(redis++ CONFIG REQUIRED)
-find_package(hiredis CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(liblzma REQUIRED)
@@ -142,7 +143,6 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-
 include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
@@ -172,7 +172,6 @@ SET(CORE_FILES
 SET(CORE_FILES_H
 	include/FramesMuxer.h
 	include/FrameMetadata.h
-	include/H264Metadata.h
 	include/FrameMetadataFactory.h
 	include/Frame.h
 	include/FrameFactory.h
@@ -255,14 +254,7 @@ SET(IP_FILES
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/GstOnvifRtspSink.cpp
-	# src/RedisDBReader.cpp
-	# src/EventSource.cpp
-	# src/TextOverlayCPU.cpp
-	# src/GstWebRTCSink.cpp
-	# src/UltraFace.cpp
-	# src/FaceDetector.cpp
-	# src/H264Encoder.cpp
+	src/GstWebRTCSink.cpp
 )
 
 SET(IP_FILES_H
@@ -279,16 +271,7 @@ SET(IP_FILES_H
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/GstOnvifRtspSink.h
-	# include/RedisDBReader.h
-	# include/EventSource.h
-	# include/TextOverlayCPU.h
-	# include/GstWebRTCSink.h
-	# include/UltraFace.hpp
-	# include/ApraFaceInfo.h
-	# include/FaceDetectsInfo.h
-	# include/FaceDetector.h
-	# include/H264Encoder.h
+	include/GstWebRTCSink.h
 )
 
 SET(CUDA_CORE_FILES
@@ -422,8 +405,11 @@ ${GSTAPP_INCLUDE_DIRS}
 ${GSTBASE_INCLUDE_DIRS}
 ${GSTREAMER_INCLUDE_DIRS}
 ${GSTRTSPSERVER_INCLUDE_DIRS}
+${GSTWEBRTC_INCLUDE_DIRS}
 ${PCRE_INCLUDE_DIRS}
 ${GLIB_INCLUDE_DIRS}
+${LIBSOUP_INCLUDE_DIRS}
+${JSONGLIB_INCLUDE_DIRS}
 ${GSTRTSP_INCLUDE_DIRS}
 ${GSTRTP_INCLUDE_DIRS}
 ${GSTSDP_INCLUDE_DIRS}
@@ -512,14 +498,9 @@ SET(UT_FILES
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
 	test/sound_record_tests.cpp	test/pullstratergy_tests.cpp
-	test/gstrtsponvifsink_tests.cpp
-	# test/redisreader_tests.cpp
-	# test/eventsource_tests.cpp
-	# test/text_overlay_tests.cpp
-	# test/gstwebrtcsink_tests.cpp
-	# test/facedetector_tests.cpp
-	# test/h264encoder_tests.cpp
+	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
+	test/gstwebrtcsink_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -536,10 +517,9 @@ add_executable(aprapipesut ${UT_FILES})
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
-# add_subdirectory(/home/ubuntu/src/Ultra-Light-Fast-Generic-Face-Detector-1MB/ncnn/3rdparty/ncnn ncnn_build)
+
 target_link_libraries(aprapipesut   
   aprapipes  
-#   ncnn
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
@@ -548,52 +528,56 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${GSTAPP_LIBRARIES}
-  ${GSTBASE_LIBRARIES}
-  ${GSTREAMER_LIBRARIES}
-  ${GSTRTSPSERVER_LIBRARIES}
-  ${PCRE_LIBRARIES}
-  ${GLIB_LIBRARIES}
-  ${GSTRTSP_LIBRARIES}
-  ${GSTRTP_LIBRARIES}
-  ${GSTSDP_LIBRARIES}
-  ${GSTNET_LIBRARIES}
-  ${GSTPBUTILS_LIBRARIES}
-  ${GSTRTPMANAGER_LIBRARIES}
-  ${LIBFFI_LIBRARIES}
-  ${LIBBLKID_LIBRARIES}
-  ${GIO_LIBRARIES}
-  ${GMODULE_LIBRARIES}
-  ${GTHREAD_LIBRARIES}
+  ${GSTAPP_LINK_LIBRARIES}
+  ${GSTBASE_LINK_LIBRARIES}
+  ${GSTREAMER_LINK_LIBRARIES}
+  ${GSTWEBRTC_LINK_LIBRARIES}
+  ${GSTRTSPSERVER_LINK_LIBRARIES}
+  ${PCRE_LINK_LIBRARIES}
+  ${GLIB_LINK_LIBRARIES}
+  ${GSTRTSP_LINK_LIBRARIES}
+  ${GSTRTP_LINK_LIBRARIES}
+  ${GSTSDP_LINK_LIBRARIES}
+  ${GSTNET_LINK_LIBRARIES}
+  ${LIBSOUP_LINK_LIBRARIES}
+  ${JSONGLIB_LINK_LIBRARIES}
+  ${GSTPBUTILS_LINK_LIBRARIES}
+  ${GSTRTPMANAGER_LINK_LIBRARIES}
+  ${LIBFFI_LINK_LIBRARIES}
+  ${LIBBLKID_LINK_LIBRARIES}
+  ${GIO_LINK_LIBRARIES}
+  ${GMODULE_LINK_LIBRARIES}
+  ${GTHREAD_LINK_LIBRARIES}
   ${GLIB_LDFLAGS}
-  ${GOBJECT_LIBRARIES}
-  ${LIBMOUNT_LIBRARIES}
-  ${LIBSELINUX_LIBRARIES}
+  ${GOBJECT_LINK_LIBRARIES}
+  ${LIBMOUNT_LINK_LIBRARIES}
+  ${LIBSELINUX_LINK_LIBRARIES}
 
-  ${GSTAPP_LIBRARIES}
-  ${GSTBASE_LIBRARIES}
-  ${GSTREAMER_LIBRARIES}
-  ${GSTRTSPSERVER_LIBRARIES}
-  ${PCRE_LIBRARIES}
-  ${GLIB_LIBRARIES}
-  ${GSTRTSP_LIBRARIES}
-  ${GSTRTP_LIBRARIES}
-  ${GSTSDP_LIBRARIES}
-  ${GSTNET_LIBRARIES}
-  ${GSTPBUTILS_LIBRARIES}
-  ${GSTRTPMANAGER_LIBRARIES}
-  ${LIBFFI_LIBRARIES}
-  ${LIBBLKID_LIBRARIES}
-  ${GIO_LIBRARIES}
-  ${GMODULE_LIBRARIES}
-  ${GTHREAD_LIBRARIES}
+  ${GSTAPP_LINK_LIBRARIES}
+  ${GSTBASE_LINK_LIBRARIES}
+  ${GSTREAMER_LINK_LIBRARIES}
+  ${GSTWEBRTC_LINK_LIBRARIES}
+  ${GSTRTSPSERVER_LINK_LIBRARIES}
+  ${PCRE_LINK_LIBRARIES}
+  ${GLIB_LINK_LIBRARIES}
+  ${GSTRTSP_LINK_LIBRARIES}
+  ${GSTRTP_LINK_LIBRARIES}
+  ${GSTSDP_LINK_LIBRARIES}
+  ${GSTNET_LINK_LIBRARIES}
+  ${LIBSOUP_LINK_LIBRARIES}
+  ${JSONGLIB_LINK_LIBRARIES}
+  ${GSTPBUTILS_LINK_LIBRARIES}
+  ${GSTRTPMANAGER_LINK_LIBRARIES}
+  ${LIBFFI_LINK_LIBRARIES}
+  ${LIBBLKID_LINK_LIBRARIES}
+  ${GIO_LINK_LIBRARIES}
+  ${GMODULE_LINK_LIBRARIES}
+  ${GTHREAD_LINK_LIBRARIES}
   ${GLIB_LDFLAGS}
-  ${GOBJECT_LIBRARIES}
-  ${LIBMOUNT_LIBRARIES}
-  ${LIBSELINUX_LIBRARIES}
+  ${GOBJECT_LINK_LIBRARIES}
+  ${LIBMOUNT_LINK_LIBRARIES}
+  ${LIBSELINUX_LINK_LIBRARIES}
   resolv
-  ${JSON_GLIB_LIB}
-  ${SOUP_LIB}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
