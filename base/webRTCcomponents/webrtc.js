@@ -22,8 +22,6 @@ var connect_attempts = 0;
 var peer_connection;
 var send_channel;
 var ws_conn;
-// Promise for local stream after constraints are approved by the user
-var local_stream_promise;
 
 function setConnectButtonState(value) {
     document.getElementById("peer-connect-button").value = value;
@@ -83,13 +81,6 @@ function setError(text) {
 }
 
 function resetVideo() {
-    // Release the webcam and mic
-    if (local_stream_promise)
-        local_stream_promise.then(stream => {
-            if (stream) {
-                stream.getTracks().forEach(function (track) { track.stop(); });
-            }
-        });
 
     // Reset the video element and stop showing the last received frame
     var videoElement = getVideoElement();
@@ -105,11 +96,9 @@ function onIncomingSDP(sdp) {
         if (sdp.type != "offer")
             return;
         setStatus("Got SDP offer");
-        local_stream_promise.then((stream) => {
-            setStatus("Got local stream, creating answer");
-            peer_connection.createAnswer()
-            .then(onLocalDescription).catch(setError);
-        }).catch(setError);
+        setStatus("Got local stream, creating answer");
+        peer_connection.createAnswer()
+        .then(onLocalDescription).catch(setError);
     }).catch(setError);
 }
 
@@ -120,6 +109,7 @@ function onLocalDescription(desc) {
         setStatus("Sending SDP " + desc.type);
         sdp = {'sdp': peer_connection.localDescription}
         ws_conn.send(JSON.stringify(sdp));
+        setStatus("Playing stream");
     });
 }
 
@@ -146,14 +136,6 @@ function onServerMessage(event) {
                 setStatus("Sent OFFER_REQUEST, waiting for offer");
                 return;
             }
-            if (!peer_connection)
-                createCall(null).then (generateOffer);
-            return;
-        case "OFFER_REQUEST":
-            // The peer wants us to set up and then send an offer
-            if (!peer_connection)
-                createCall(null).then (generateOffer);
-            return;
         default:
             if (event.data.startsWith("ERROR")) {
                 handleIncomingError(event.data);
@@ -202,26 +184,6 @@ function onServerError(event) {
     setError("Unable to connect to server, did you add an exception for the certificate?")
     // Retry after 3 seconds
     window.setTimeout(websocketServerConnect, 3000);
-}
-
-function getLocalStream() {
-    var constraints;
-    var textarea = document.getElementById('constraints');
-    try {
-        constraints = JSON.parse(textarea.value);
-    } catch (e) {
-        console.error(e);
-        setError('ERROR parsing constraints: ' + e.message + ', using default constraints');
-        constraints = default_constraints;
-    }
-    console.log(JSON.stringify(constraints));
-
-    // Add local stream
-    if (navigator.mediaDevices.getUserMedia) {
-        return navigator.mediaDevices.getUserMedia(constraints);
-    } else {
-        errorUserMediaHandler();
-    }
 }
 
 function websocketServerConnect() {
@@ -324,11 +286,6 @@ function createCall(msg) {
     peer_connection.ondatachannel = onDataChannel;
     peer_connection.ontrack = onRemoteTrack;
     /* Send our video/audio to the other peer */
-    local_stream_promise = getLocalStream().then((stream) => {
-        console.log('Adding local stream');
-        peer_connection.addStream(stream);
-        return stream;
-    }).catch(setError);
 
     if (msg != null && !msg.sdp) {
         console.log("WARNING: First message wasn't an SDP message!?");
@@ -348,5 +305,5 @@ function createCall(msg) {
         setStatus("Created peer connection for call, waiting for SDP");
 
     setConnectButtonState("Disconnect");
-    return local_stream_promise;
+    return null;
 }
