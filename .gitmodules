@@ -1,6 +1,3 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/Apra-Labs/vcpkg
-[submodule "thirdparty/gstreamer"]
-	path = thirdparty/gstreamer
-	url = https://gitlab.freedesktop.org/gstreamer/gstreamer.git
