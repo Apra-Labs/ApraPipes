@@ -303,12 +303,6 @@ public:
 				g_object_unref(ws_conn);
 		}
 
-		if (loop)
-		{
-			g_main_loop_quit(loop);
-			loop = NULL;
-		}
-
 		/* To allow usage as a GSourceFunc */
 		return G_SOURCE_REMOVE;
 	}
@@ -917,6 +911,7 @@ public:
 		connect_to_websocket_server_async();
 		g_print("Reached after server close.");
 		g_main_loop_run(loop);
+		g_main_loop_unref(loop);
 
 		return true;
 	}
