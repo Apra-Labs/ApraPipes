@@ -254,7 +254,7 @@ SET(IP_FILES
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/GstWebRTCSink.cpp
+	src/GstOnvifRtspSink.cpp
 )
 
 SET(IP_FILES_H
@@ -271,7 +271,7 @@ SET(IP_FILES_H
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/GstWebRTCSink.h
+	include/GstOnvifRtspSink.h
 )
 
 SET(CUDA_CORE_FILES
@@ -500,7 +500,7 @@ SET(UT_FILES
 	test/sound_record_tests.cpp	test/pullstratergy_tests.cpp
 	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
-	test/gstwebrtcsink_tests.cpp
+	test/gstrtsponvifsink_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
