@@ -25,7 +25,13 @@
     {
       "name": "glib",
       "default-features": false,
-      "features": ["libmount"]
+      "features": ["libmount"],
+      "platform": "!windows"
+    },
+    {
+      "name": "glib",
+      "default-features": true,
+      "platform": "!linux"
     },
     "bzip2",
     "zlib",
