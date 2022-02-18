@@ -47,7 +47,7 @@ jobs:
 
     - name: Build gstreamer
       working-directory: ${{github.workspace}}
-      run: cd thirdparty && build_gstreamer.bat && cd ..
+      run: cd thirdparty && ./build_gstreamer.bat && cd ..
 
     - name: Cache thirdparty
       id: cache-thirdparty
