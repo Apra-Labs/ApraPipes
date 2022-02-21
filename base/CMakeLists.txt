@@ -29,11 +29,11 @@ project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
 IF(ENABLE_LINUX)
-set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+	set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
-set(ENV{PKG_CONFIG_PATH} ".\thirdparty\gst-build\gst-build-1.16\outInstall\lib\x86_64-linux-gnu\pkgconfig\")
+	set(ENV{PKG_CONFIG_PATH} ".\thirdparty\gst-build\gst-build-1.16\outInstall\lib\x86_64-linux-gnu\pkgconfig\")
 ENDIF(ENABLE_WINDOWS)
 
 find_package(PkgConfig REQUIRED)
