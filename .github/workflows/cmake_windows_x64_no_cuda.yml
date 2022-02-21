@@ -65,7 +65,7 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
     
     - name: Build
-      run: set PKG_CONFIG_PATH="./thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/" && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: set PKG_CONFIG_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/" && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
       run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
