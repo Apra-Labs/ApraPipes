@@ -77,6 +77,18 @@ jobs:
        name: Unit Test Results
        path: |
          CI_test_result_windows.xml
+  
+    - name: Upload all build logs
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
+
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
