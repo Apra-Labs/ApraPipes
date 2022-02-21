@@ -28,7 +28,13 @@ ENDIF(ENABLE_ARM64)
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
+IF(ENABLE_LINUX)
 set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+ENDIF(ENABLE_LINUX)
+
+IF(ENABLE_WINDOWS)
+set(ENV{PKG_CONFIG_PATH} ".\thirdparty\gst-build\gst-build-1.16\outInstall\lib\x86_64-linux-gnu\pkgconfig\")
+ENDIF(ENABLE_WINDOWS)
 
 find_package(PkgConfig REQUIRED)
 
@@ -42,8 +48,7 @@ pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)
 pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
 pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
 pkg_search_module(GSTWEBRTC REQUIRED gstreamer-webrtc-1.0)
-pkg_search_module(LIBSOUP REQUIRED libsoup-2.4)
-pkg_search_module(JSONGLIB REQUIRED json-glib-1.0)
+
 pkg_search_module(PCRE REQUIRED libpcre)
 pkg_search_module(GTHREAD REQUIRED gthread-2.0)
 pkg_search_module(GMODULE REQUIRED gmodule-2.0)
@@ -408,8 +413,6 @@ ${GSTRTSPSERVER_INCLUDE_DIRS}
 ${GSTWEBRTC_INCLUDE_DIRS}
 ${PCRE_INCLUDE_DIRS}
 ${GLIB_INCLUDE_DIRS}
-${LIBSOUP_INCLUDE_DIRS}
-${JSONGLIB_INCLUDE_DIRS}
 ${GSTRTSP_INCLUDE_DIRS}
 ${GSTRTP_INCLUDE_DIRS}
 ${GSTSDP_INCLUDE_DIRS}
@@ -539,8 +542,6 @@ target_link_libraries(aprapipesut
   ${GSTRTP_LINK_LIBRARIES}
   ${GSTSDP_LINK_LIBRARIES}
   ${GSTNET_LINK_LIBRARIES}
-  ${LIBSOUP_LINK_LIBRARIES}
-  ${JSONGLIB_LINK_LIBRARIES}
   ${GSTPBUTILS_LINK_LIBRARIES}
   ${GSTRTPMANAGER_LINK_LIBRARIES}
   ${LIBFFI_LINK_LIBRARIES}
@@ -564,8 +565,6 @@ target_link_libraries(aprapipesut
   ${GSTRTP_LINK_LIBRARIES}
   ${GSTSDP_LINK_LIBRARIES}
   ${GSTNET_LINK_LIBRARIES}
-  ${LIBSOUP_LINK_LIBRARIES}
-  ${JSONGLIB_LINK_LIBRARIES}
   ${GSTPBUTILS_LINK_LIBRARIES}
   ${GSTRTPMANAGER_LINK_LIBRARIES}
   ${LIBFFI_LINK_LIBRARIES}
