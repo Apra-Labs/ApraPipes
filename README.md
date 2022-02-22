@@ -86,12 +86,26 @@ Build can take ~2 hours depending on the machine configuration.
 
 ### Prerequisites
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
-* sudo apt-get install libncurses5-dev
-* CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
-* Run ./bootstrap-vcpkg.sh in vcpkg/ directory
-* Run ./vcpkg integrate install
-* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.jetson.json to base/vcpkg.json
-
+* run the following 
+```
+sudo apt-get update && sudo apt-get -y install libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
+```
+* append following lines to ~/.bashrc
+```
+export VCPKG_FORCE_SYSTEM_BINARIES=1
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+```
+* reload ~/.bashrc:
+```
+source ~/.bashrc:
+```
+* Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
+* Run `./vcpkg integrate install`
+* Use the correct vcpkg for Jetson:
+```
+mv base/vcpk.json base/vcpkg.json.bkp && mv base/vcpkg.jetson.json base/vcpkg.json
+```
 
 ### Build
 * `chmod +x build_jetson.sh`
