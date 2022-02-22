@@ -399,7 +399,7 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
-
+message(STATUS "-------------Printing Include folder-----------------${GSTREAMER_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
@@ -519,16 +519,7 @@ IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
 
-target_link_libraries(aprapipesut   
-  aprapipes  
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
+add_library(gstreamer_dll SHARED 
   ${GSTAPP_LINK_LIBRARIES}
   ${GSTBASE_LINK_LIBRARIES}
   ${GSTREAMER_LINK_LIBRARIES}
@@ -573,7 +564,19 @@ target_link_libraries(aprapipesut
   ${GLIB_LDFLAGS}
   ${GOBJECT_LINK_LIBRARIES}
   ${LIBMOUNT_LINK_LIBRARIES}
-  ${LIBSELINUX_LINK_LIBRARIES}
+  ${LIBSELINUX_LINK_LIBRARIES} )
+
+target_link_libraries(aprapipesut   
+  aprapipes  
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  gstreamer_dll
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -582,3 +585,9 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   )
+
+#add_custom_command(TARGET aprapipesut
+#    POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gstreamer_dll> "${CMAKE_CURRENT_BINARY_DIR}"
+#    COMMENT "Copy dll file to ${CMAKE_CURRENT_BINARY_DIR} directory" VERBATIM
+#)
