@@ -525,7 +525,7 @@ ENDIF(ENABLE_ARM64)
 #add_library(gstreamer_dll SHARED 
 # )
 
-target_LIBRARY_DIRS(aprapipesut   
+target_link_libraries(aprapipesut   
   aprapipes  
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
