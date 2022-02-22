@@ -519,7 +519,19 @@ IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
 
-add_library(gstreamer_dll SHARED 
+#add_library(gstreamer_dll SHARED 
+# )
+
+target_link_libraries(aprapipesut   
+  aprapipes  
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
   ${GSTAPP_LINK_LIBRARIES}
   ${GSTBASE_LINK_LIBRARIES}
   ${GSTREAMER_LINK_LIBRARIES}
@@ -564,19 +576,7 @@ add_library(gstreamer_dll SHARED
   ${GLIB_LDFLAGS}
   ${GOBJECT_LINK_LIBRARIES}
   ${LIBMOUNT_LINK_LIBRARIES}
-  ${LIBSELINUX_LINK_LIBRARIES} )
-
-target_link_libraries(aprapipesut   
-  aprapipes  
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  gstreamer_dll
+  ${LIBSELINUX_LINK_LIBRARIES}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
