@@ -16,7 +16,7 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - uses: actions/checkout@v2
@@ -69,7 +69,8 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
     
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
 
     - name: Test
       run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
@@ -92,7 +93,8 @@ jobs:
           ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
           ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
-
+          ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
+          ${{ github.workspace }}/*/CMakeCache.txt
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
