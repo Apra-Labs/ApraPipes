@@ -52,11 +52,11 @@ pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer
 pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
 pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
-if(!ENABLE_WINDOWS)
+IF(NOT ENABLE_WINDOWS)
 	pkg_check_modules(libmount REQUIRED IMPORTED_TARGET GLOBAL libmount)
 	pkg_check_modules(libblkid REQUIRED IMPORTED_TARGET GLOBAL libblkid)
 	pkg_check_modules(libselinux REQUIRED IMPORTED_TARGET GLOBAL libselinux)
-endif()
+ENDIF(NOT ENABLE_WINDOWS)
 pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
