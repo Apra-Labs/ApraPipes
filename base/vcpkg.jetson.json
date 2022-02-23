@@ -2,12 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-arm64",
   "version": "0.0.1",
-  "builtin-baseline": "c0c11264c17c8323acb62e9bcc489217433a2383",
+  "builtin-baseline": "055b988daba6e8a64c15b7fd88fdae2d3444c96b",
   "dependencies": [
     {
       "name": "opencv4",
       "default-features": false,
-      "features": [ "nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
+      "features": ["cuda","cudnn","nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
     },
     "ffmpeg",
     "bigint",
