@@ -52,11 +52,6 @@ pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer
 pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
 pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
-IF(NOT ENABLE_WINDOWS)
-	pkg_check_modules(libmount REQUIRED IMPORTED_TARGET GLOBAL libmount)
-	pkg_check_modules(libblkid REQUIRED IMPORTED_TARGET GLOBAL libblkid)
-	pkg_check_modules(libselinux REQUIRED IMPORTED_TARGET GLOBAL libselinux)
-ENDIF(NOT ENABLE_WINDOWS)
 pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
@@ -417,14 +412,10 @@ ${gstreamer-rtp-1.0_INCLUDE_DIRS}
 ${gstreamer-net-1.0_INCLUDE_DIRS}
 # ${GSTPBUTILS_INCLUDE_DIRS}
 # ${GSTRTPMANAGER_INCLUDE_DIRS}
-${libffi_INCLUDE_DIRS}
-${libblkid_INCLUDE_DIRS}
 ${gio-2.0_INCLUDE_DIRS}
 ${gmodule-2.0_INCLUDE_DIRS}
 ${gthread-2.0_INCLUDE_DIRS}
 ${gobject-2.0_INCLUDE_DIRS}
-${libmount_INCLUDE_DIRS}
-${libselinux_INCLUDE_DIRS}
 )
 
 # aprapipes Unit Tests
@@ -510,7 +501,6 @@ IF(ENABLE_LINUX)
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
-	SET(LIBRESOLV resolv)
 ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
@@ -529,9 +519,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${libmount_LINK_LIBRARIES}
-  ${libblkid_LINK_LIBRARIES}
-  ${libselinux_LINK_LIBRARIES}
   PkgConfig::gstreamer-app-1.0
   PkgConfig::gstreamer-base-1.0
   PkgConfig::gstreamer-1.0
@@ -541,7 +528,6 @@ target_link_libraries(aprapipesut
   PkgConfig::gstreamer-rtsp-1.0
   PkgConfig::gstreamer-rtp-1.0
   PkgConfig::gstreamer-net-1.0
-  ${LIBRESOLV}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
