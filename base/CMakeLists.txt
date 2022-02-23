@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 
-SET(PKG_CONFIG_PATH ${CMAKE_SOURCE_DIR}/../thirdparty/gstreamer/outInstall/lib/pkgconfig)
-message(STATUS ${PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -31,36 +29,35 @@ project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
 IF(ENABLE_LINUX)
-	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gstreamer/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
-	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gstreamer/outInstall/lib/pkgconfig")
 ENDIF(ENABLE_WINDOWS)
+message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
 
-pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
-pkg_search_module(GOBJECT REQUIRED gobject-2.0)  
-pkg_search_module(GLIB REQUIRED glib-2.0)  
-pkg_search_module(GIO REQUIRED gio-2.0) 
-pkg_search_module(GSTRTP REQUIRED gstreamer-rtp-1.0)  
-pkg_search_module(GSTRTSP REQUIRED gstreamer-rtsp-1.0)  
-pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)  
-pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
-pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
-pkg_search_module(GSTWEBRTC REQUIRED gstreamer-webrtc-1.0)
-pkg_search_module(PCRE REQUIRED libpcre)
-pkg_search_module(GTHREAD REQUIRED gthread-2.0)
-pkg_search_module(GMODULE REQUIRED gmodule-2.0)
-
+pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
+pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
+pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
+pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
+pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
+pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
+pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
+pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
+pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
+pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
+pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
+pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 if(!ENABLE_WINDOWS)
-	pkg_search_module(LIBMOUNT REQUIRED libmount)
-	pkg_search_module(LIBBBLKID REQUIRED libblkid)
-	pkg_search_module(LIBSELINUX REQUIRED libselinux)
-
+	pkg_check_modules(libmount REQUIRED IMPORTED_TARGET GLOBAL libmount)
+	pkg_check_modules(libblkid REQUIRED IMPORTED_TARGET GLOBAL libblkid)
+	pkg_check_modules(libselinux REQUIRED IMPORTED_TARGET GLOBAL libselinux)
 endif()
-pkg_search_module(GSTBASE REQUIRED gstreamer-base-1.0)
+pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -171,7 +168,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/AudioCaptureSrc.cpp
+	# src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 )
 
@@ -214,7 +211,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	include/AudioCaptureSrc.h
+	# include/AudioCaptureSrc.h
 	include/QRReader.h
 )
 
@@ -515,6 +512,9 @@ IF(ENABLE_LINUX)
 	test/QRReader_tests.cpp
 	)
 	SET(LIBRESOLV resolv)
+	SET(LIBMOUNT PkgConfig::libmount)
+	SET(LIBBLKID PkgConfig::libblkid)
+	SET(LIBSELINUX PkgConfig::libselinux)
 ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
@@ -522,13 +522,6 @@ add_executable(aprapipesut ${UT_FILES})
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
-
-#add_library(gstreamer_dll SHARED 
-# )
-message(STATUS ${GSTRTSP_LIBRARIES}"RTSP LIBRARIES >>>>")
-message(STATUS ${GSTRTSP_LIBRARY_DIRS}"RTSP LIBRARIES >>>>")
-message(STATUS ${GSTRTSP_LINK_LIBRARIES}"RTSP LIBRARIES >>>>")
-
 
 target_link_libraries(aprapipesut   
   aprapipes  
@@ -540,68 +533,18 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${GSTAPP_LINK_LIBRARIES}
-  ${GSTBASE_LINK_LIBRARIES}
-  ${GSTREAMER_LINK_LIBRARIES}
-  ${GSTRTSPSERVER_LINK_LIBRARIES}
-  ${PCRE_LINK_LIBRARIES}
-  ${GLIB_LINK_LIBRARIES}
-  ${GSTRTSP_LIBRARY_DIRS}
-  ${GSTRTP_LINK_LIBRARIES}
-  ${GSTSDP_LINK_LIBRARIES}
-  ${GSTNET_LINK_LIBRARIES}
-  ${GSTPBUTILS_LINK_LIBRARIES}
-  ${GSTRTPMANAGER_LINK_LIBRARIES}
-  ${LIBFFI_LINK_LIBRARIES}
-  ${LIBBLKID_LINK_LIBRARIES}
-  ${GIO_LINK_LIBRARIES}
-  ${GMODULE_LINK_LIBRARIES}
-  ${GTHREAD_LINK_LIBRARIES}
-  ${GOBJECT_LINK_LIBRARIES}
-  ${LIBMOUNT_LINK_LIBRARIES}
-  ${LIBSELINUX_LINK_LIBRARIES}
-
-  ${GSTAPP_LINK_LIBRARIES}
-  ${GSTBASE_LINK_LIBRARIES}
-  ${GSTREAMER_LINK_LIBRARIES}
-  ${GSTRTSPSERVER_LINK_LIBRARIES}
-  ${PCRE_LINK_LIBRARIES}
-  ${GLIB_LINK_LIBRARIES}
-  ${GSTRTSP_LIBRARY_DIRS}
-  ${GSTRTP_LINK_LIBRARIES}
-  ${GSTSDP_LINK_LIBRARIES}
-  ${GSTNET_LINK_LIBRARIES}
-  ${GSTPBUTILS_LINK_LIBRARIES}
-  ${GSTRTPMANAGER_LINK_LIBRARIES}
-  ${LIBFFI_LINK_LIBRARIES}
-  ${LIBBLKID_LINK_LIBRARIES}
-  ${GIO_LINK_LIBRARIES}
-  ${GMODULE_LINK_LIBRARIES}
-  ${GTHREAD_LINK_LIBRARIES}
-  ${GOBJECT_LINK_LIBRARIES}
-  ${LIBMOUNT_LIBRARIES}
-  ${LIBSELINUX_LIBRARIES}
-  
-  ${GSTAPP_LINK_LIBRARIES}
-  ${GSTBASE_LINK_LIBRARIES}
-  ${GSTREAMER_LINK_LIBRARIES}
-  ${GSTRTSPSERVER_LINK_LIBRARIES}
-  ${PCRE_LINK_LIBRARIES}
-  ${GLIB_LINK_LIBRARIES}
-  ${GSTRTSP_LIBRARY_DIRS}
-  ${GSTRTP_LINK_LIBRARIES}
-  ${GSTSDP_LINK_LIBRARIES}
-  ${GSTNET_LINK_LIBRARIES}
-  ${GSTPBUTILS_LINK_LIBRARIES}
-  ${GSTRTPMANAGER_LINK_LIBRARIES}
-  ${LIBFFI_LINK_LIBRARIES}
-  ${LIBBLKID_LINK_LIBRARIES}
-  ${GIO_LINK_LIBRARIES}
-  ${GMODULE_LINK_LIBRARIES}
-  ${GTHREAD_LINK_LIBRARIES}
-  ${GOBJECT_LINK_LIBRARIES}
-  ${LIBMOUNT_LIBRARIES}
-  ${LIBSELINUX_LIBRARIES}
+  PkgConfig::gstreamer-app-1.0
+  PkgConfig::gstreamer-base-1.0
+  PkgConfig::gstreamer-1.0
+  PkgConfig::gstreamer-rtsp-server-1.0
+  PkgConfig::libpcre
+  PkgConfig::glib-2.0
+  PkgConfig::gstreamer-rtsp-1.0
+  PkgConfig::gstreamer-rtp-1.0
+  PkgConfig::gstreamer-net-1.0
+  ${LIBMOUNT}
+  ${LIBBLKID}
+  ${LIBSELINUX}
   ${LIBRESOLV}
   ZXing::Core
   ZXing::ZXing	
