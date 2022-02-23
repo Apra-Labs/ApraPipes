@@ -512,9 +512,6 @@ IF(ENABLE_LINUX)
 	test/QRReader_tests.cpp
 	)
 	SET(LIBRESOLV resolv)
-	SET(LIBMOUNT PkgConfig::libmount)
-	SET(LIBBLKID PkgConfig::libblkid)
-	SET(LIBSELINUX PkgConfig::libselinux)
 ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
@@ -533,6 +530,9 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${libmount_LINK_LIBRARIES}
+  ${libblkid_LINK_LIBRARIES}
+  ${libselinux_LINK_LIBRARIES}
   PkgConfig::gstreamer-app-1.0
   PkgConfig::gstreamer-base-1.0
   PkgConfig::gstreamer-1.0
@@ -542,9 +542,6 @@ target_link_libraries(aprapipesut
   PkgConfig::gstreamer-rtsp-1.0
   PkgConfig::gstreamer-rtp-1.0
   PkgConfig::gstreamer-net-1.0
-  ${LIBMOUNT}
-  ${LIBBLKID}
-  ${LIBSELINUX}
   ${LIBRESOLV}
   ZXing::Core
   ZXing::ZXing	
