@@ -83,7 +83,7 @@ jobs:
           ${{ github.workspace }}/*/CMakeCache.txt
 
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: EnricoMi/publish-unit-test-result-action/composite@branch-fix-reset-timestamp-utc
       if: always()
       with:
         files: CI_test_result_ubuntu.xml
