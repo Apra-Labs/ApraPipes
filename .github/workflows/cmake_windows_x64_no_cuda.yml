@@ -48,6 +48,9 @@ jobs:
           path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+    
+    - name: List vcvarsall location
+      run: cd / && dir vcvarsall.bat /s /p
 
     - name: Cache gstreamer dependencies
       id: cache-gstreamer
