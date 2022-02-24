@@ -59,7 +59,7 @@ jobs:
   
     - name: Build gstreamer
       # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
-      uses: ilammy/msvc-dev-cmd@v1.10.0
+      # uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}
       run: pip3 install ninja && pip3 install meson && cd thirdparty && ./build_gstreamer.bat && cd ..
 
