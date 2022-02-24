@@ -41,8 +41,8 @@ jobs:
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
           path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+          key: ${{ runner.os }}-${{env.RUNNER_ARCH}}-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.jetson.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+          restore-keys: ${{ runner.os }}-${{env.RUNNER_ARCH}}-${{ env.cache-name }}-
    
     - name: Make build folder
       run: mkdir -p build
@@ -82,17 +82,6 @@ jobs:
           ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
           ${{ github.workspace }}/*/CMakeCache.txt
 
-    - name: exhaust limit
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      run: |
-        gh api "https://api.github.com/rate_limit" -q '.resources.search'
-        for i in $(seq 1 40); do
-          gh api "https://api.github.com/search/issues?q=type%3Apr+repo%3A%22EnricoMi%2Fpublish-unit-test-result-action%22+ea2392a7b3ea985a4ed8c3cf084b3776e4a957b0&per_page=100"
-          gh api "https://api.github.com/rate_limit" -q '.resources.search'
-        done
-        gh api "https://api.github.com/rate_limit" -q '.resources.search'
-    
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()

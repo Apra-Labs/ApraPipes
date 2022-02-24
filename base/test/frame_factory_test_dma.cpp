@@ -67,21 +67,21 @@ BOOST_AUTO_TEST_CASE(save_yuv420)
 
             auto ptr = static_cast<DMAFDWrapper *>(frame->data());
             file.write((const char *)ptr->getHostPtrY(), sizeY);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
             BOOST_TEST(!file.fail());
 
             file.write((const char *)ptr->getHostPtrU(), sizeUV);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
             BOOST_TEST(!file.fail());
 
             file.write((const char *)ptr->getHostPtrV(), sizeUV);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
@@ -125,14 +125,14 @@ BOOST_AUTO_TEST_CASE(save_nv12)
 
             auto ptr = static_cast<DMAFDWrapper *>(frame->data());
             file.write((const char *)ptr->getHostPtrY(), sizeY);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
             BOOST_TEST(!file.fail());
 
             file.write((const char *)ptr->getHostPtrUV(), sizeUV);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(save_rgba)
 
             auto ptr = static_cast<DMAFDWrapper *>(frame->data());
             file.write((const char *)ptr->getHostPtr(), size);
-            LOG_ERROR << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
+            LOG_DEBUG << i << "<>" << file.bad() << "<>" << file.eof() << "<>" << file.fail();
 
             BOOST_TEST(!file.bad());
             BOOST_TEST(!file.eof());
