@@ -50,7 +50,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
     
     - name: List vcvarsall location
-      run: cd / && dir vcvarsall.bat /s /p
+      run: cd C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build && dir
 
     - name: Cache gstreamer dependencies
       id: cache-gstreamer
