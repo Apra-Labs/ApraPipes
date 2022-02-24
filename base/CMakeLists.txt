@@ -211,12 +211,12 @@ SET(GENERIC_FILES_H
 	include/QRReader.h
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND CORE_FILES src/KeyboardListener.cpp)
 	list(APPEND CORE_FILES_H include/KeyboardListener.h)
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -462,12 +462,12 @@ SET(UT_FILES
 	${CUDA_UT_FILES}
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 
