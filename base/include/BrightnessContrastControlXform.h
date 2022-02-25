@@ -13,7 +13,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(double) * 2;
+		return ModuleProps::getSerializeSize() + sizeof(contrast) + sizeof(brightness);
 	}
 
 private:
