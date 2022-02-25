@@ -41,8 +41,8 @@ jobs:
       with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
           path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.jetson.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-          restore-keys: ${{ runner.os }}-$RUNNER_ARCH-${{ env.cache-name }}-
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.jetson.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-
    
     - name: Make build folder
       run: mkdir -p build
