@@ -227,7 +227,6 @@ SET(IP_FILES
 	src/BrightnessContrastControl.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/UltraFace.cpp
 	src/FaceDetectorXform.cpp
 )
 
@@ -245,7 +244,6 @@ SET(IP_FILES_H
 	include/BrightnessContrastControl.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/UltraFace.hpp
 	include/ApraFaceInfo.h
 	include/FaceDetectsInfo.h
 	include/FaceDetectorXform.h
