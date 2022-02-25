@@ -6,15 +6,15 @@
 class FaceDetectorXformProps : public ModuleProps
 {
 public:
-    FaceDetectorXformProps(std::string _binPath = "./data/version-RFB/RFB-320.bin", std::string _paramPath = "./data/version-RFB/RFB-320.param") : binPath(_binPath), paramPath(_paramPath)
+    FaceDetectorXformProps(double _scaleFactor = 1.0, float _confidenceThreshold = 0.5) : scaleFactor(_scaleFactor), confidenceThreshold(_confidenceThreshold)
     {
     }
-    std::string binPath;
-    std::string paramPath;
+    double scaleFactor;
+    float confidenceThreshold;
 
     size_t getSerializeSize()
     {
-        return ModuleProps::getSerializeSize() + sizeof(binPath) + sizeof(paramPath) + binPath.length() + paramPath.length();
+        return ModuleProps::getSerializeSize() + sizeof(scaleFactor) + sizeof(confidenceThreshold);
     }
 
 private:
@@ -24,7 +24,7 @@ private:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar &boost::serialization::base_object<ModuleProps>(*this);
-        ar &binPath &paramPath;
+        ar &scaleFactor &confidenceThreshold;
     }
 };
 
