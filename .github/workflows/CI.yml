@@ -8,7 +8,7 @@ on:
 
   
 jobs:
-  build:
+  build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -40,6 +40,7 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+      TEST_EXE_DIR: build
 
     steps:
     - name: Checkout code
@@ -53,7 +54,7 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
 
-    - name: Cache VCPKG
+    - name: Cache VCPKG for fast cloud build
       if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
       uses: actions/cache@v2
       with:
@@ -61,7 +62,7 @@ jobs:
           key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}
 
-    - name: Install build dependecies
+    - name: Install build dependencies in linux cloud hosted
       if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
       run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
 
@@ -73,59 +74,54 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-#    - name: Configure CMake Linux
-#      if: ${{ runner.os != 'Windows' }}
-#      working-directory: ${{github.workspace}}/build
-#      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-#
-#    - name: Configure CMake Windows
-#      if: ${{ runner.os == 'Windows' }}
-#      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
-
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
 
-#    - name: Test
-#      run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
-#    
-#    - name: Upload Test Results
-#      if: always()
-#      uses: actions/upload-artifact@v2
-#      with:
-#       name: Unit Test Results
-#       path: |
-#         ${{ env.TEST_RES_XML }}
-#         
-#    - name: Upload all build logs
-#      if: always()
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: logs
-#        path: |
-#          ${{ github.workspace }}/build/**.log
-#          ${{ github.workspace }}/build/**.txt
-#        # ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
-#        # ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
-#        # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
-#        # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
-#        # ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
-#
-#    - name: Publish Unit Test Results
-#      uses: EnricoMi/publish-unit-test-result-action/composite@v1
-#      if: always()
-#      with:
-#        files: ${{ env.TEST_RES_XML }}
-#
-#  event_file:
-#    name: "Event File"
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#      matrix:
-#        os: [ubuntu-20.04, windows-2019, self-hosted]
-#    steps:
-#      - name: Upload
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: Event File
-#          path: ${{ github.event_path }}
+    - name: Windows Test Override
+      if: runner.os == 'Windows'
+      env:
+        TEST_EXE_DIR: build/${{env.BUILD_TYPE}}
+
+    - name: Test
+      run: ${{env.TEST_EXE_DIR}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults_${{ matrix.FLAV }}
+        path: |
+          ${{ env.TEST_RES_XML }}
+
+    - name: Upload build logs 
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: BuildLogs_${{ matrix.FLAV }}
+        path: |
+          ${{ github.workspace }}/build/**.log
+          ${{ github.workspace }}/build/**.txt
+        # ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
+        # ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
+        # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
+        # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
+        # ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
+  
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        working-directory: artifacts
+        run: ls -R
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/*/CI_test_result_*.xml
