@@ -43,6 +43,10 @@ env:
           key: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-
 
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+      
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
