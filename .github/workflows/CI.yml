@@ -17,22 +17,19 @@ jobs:
           - os: ubuntu-20.04
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
-            FLAV: "Linux-X64"
             VCPKG_FILE: "base/vcpkg.json"
           - os: self-hosted
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
-            FLAV: "Linux-ARM64"
             VCPKG_FILE: "base/vcpkg.jetson.json"
           - os: windows-2019
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
-            FLAV: "Windows-X64"
             VCPKG_FILE: "base/vcpkg.json"
     env:
       BUILD_TYPE: RelWithDebInfo
-      CACHE_REST_KEY: ${{ matrix.FLAV }}-cache-vcpkg-
-      TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+      CACHE_REST_KEY: ${{ runner.os }}-build-cache-vcpkg
+      TEST_RES_XML: CI_test_result_${{ runner.os }}_${{ runner.arch }}.xml
 
     steps:
     - name: Checkout code
