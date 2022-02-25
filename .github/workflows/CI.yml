@@ -19,7 +19,7 @@ jobs:
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
             VCPKG_FILE: "base/vcpkg.json"
-            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF../base -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake"
             NPROC: 3
           - os: self-hosted
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
