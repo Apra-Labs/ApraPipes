@@ -17,17 +17,24 @@ jobs:
           - os: ubuntu-20.04
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: ~/.cache/vcpkg/archives
+            CACHE_KEY: Linux-X64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+            CACHE_REST_KEY: Linux-X64-cache-vcpkg-
+            TEST_RES_XML: CI_test_result_Linux-X64.xml
           - os: self-hosted
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: ~/.cache/vcpkg/archives
+            CACHE_KEY: Linux-ARM64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+            CACHE_REST_KEY: Linux-ARM64-cache-vcpkg-
+            TEST_RES_XML: CI_test_result_Linux-ARM64.xml
           - os: windows-2019
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             CACHE_PATH: $Env:LOCALAPPDATA/vcpkg/archives
+            CACHE_KEY: Windows-X64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+            CACHE_REST_KEY: Windows-X64-cache-vcpkg-
+            TEST_RES_XML: CI_test_result_Windows-X64.xml
     env:
       BUILD_TYPE: RelWithDebInfo
-      CACHE_KEY: ${{ runner.os }}-${{ runner.arch }}-cache-vcpkg-${{ hashFiles('base/vcpkg.jetson.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-      CACHE_REST_KEY: ${{ runner.os }}-${{ runner.arch }}-cache-vcpkg-
-      TEST_RES_XML: CI_test_result_${{ runner.os }}_${{ runner.arch }}.xml
+      
 
     steps:
     - uses: actions/checkout@v2
