@@ -34,7 +34,6 @@ jobs:
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
-            CMAKE-CONF: ${{'cmake -B . -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64  ..\base -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake'}}
             NPROC: 3
     env:
       BUILD_TYPE: RelWithDebInfo
@@ -69,9 +68,14 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
       
-    - name: Configure CMake
+    - name: Configure CMake Linux
+      if: ${{ runner.os != 'Windows' }}
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Configure CMake Windows
+      if: ${{ runner.os == 'Windows' }}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       working-directory: ${{github.workspace}}/build
