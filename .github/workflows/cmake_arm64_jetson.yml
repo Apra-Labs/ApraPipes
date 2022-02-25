@@ -1,0 +1,100 @@
+name: CI_ARM64_Jetson
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: RelWithDebInfo
+  SUBMODS_TXT: submodule_ver.txt
+  
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v2
+      with: 
+        submodules: 'false'
+
+    - name: Checkout submodule
+      run: git submodule update --init --recursive
+
+    - name: Compute submodule status
+      run: (git submodule status > ${{env.SUBMODS_TXT}}) && (cat ${{env.SUBMODS_TXT}})
+      
+    - name: Run VCPKG bootstrap
+      working-directory: ${{github.workspace}}
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
+#    - name: Cache VCPKG 
+#      id: cache-vcpkg
+#      uses: actions/cache@v2
+#      env:
+#        cache-name: cache-vcpkg
+#      with:
+          # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
+#          path: ~/.cache/vcpkg/archives
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+   
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+      
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      working-directory: ${{github.workspace}}/build
+      run: cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_ARM64=ON ../base -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -j 7
+
+    - name: Test
+      run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+       name: Unit Test Results
+       path: |
+         CI_test_result_ubuntu.xml
+         
+    - name: Upload all build logs
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
+          ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
+          ${{ github.workspace }}/*/CMakeCache.txt
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: CI_test_result_ubuntu.xml
+
+  event_file:
+    name: "Event File"
+    runs-on: self-hosted
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
+          
