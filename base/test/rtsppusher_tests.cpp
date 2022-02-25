@@ -12,7 +12,12 @@ BOOST_AUTO_TEST_SUITE(rtsppusher_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
-	std::string dataPath = Test_Utils::getArgValue("data", "./data/ArgusCamera");
+	std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/frame.bin"); //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/9bfe"); //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/84e9");  //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-1");  //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-rec");  //works
+	
 	std::string rtspServer = Test_Utils::getArgValue("rtspserver", "rtsp://10.102.10.81:5544");
 	
 	auto encoderTargetKbpsStr = Test_Utils::getArgValue("bitrate", "4096");
