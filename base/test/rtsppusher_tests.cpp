@@ -42,13 +42,13 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(500000000000000));
 
-	LOG_ERROR << "STOPPING";
+	LOG_INFO << "STOPPING";
 
 	p.stop();
 	p.term();
-	LOG_ERROR << "WAITING";
+	LOG_INFO << "WAITING";
 	p.wait_for_all();
-	LOG_ERROR << "TEST DONE";
+	LOG_INFO << "TEST DONE";
 }
 
 BOOST_AUTO_TEST_SUITE_END()
