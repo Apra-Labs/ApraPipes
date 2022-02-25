@@ -82,6 +82,7 @@ jobs:
       if: runner.os == 'Windows'
       env:
         TEST_EXE_DIR: build/${{env.BUILD_TYPE}}
+      run: echo ${{env.TEST_EXE_DIR}}
 
     - name: Test
       run: ${{env.TEST_EXE_DIR}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
