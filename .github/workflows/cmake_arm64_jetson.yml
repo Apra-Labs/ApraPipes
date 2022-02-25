@@ -34,6 +34,7 @@ jobs:
       run: ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Cache VCPKG 
+      if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
       id: cache-vcpkg
       uses: actions/cache@v2
       env:
