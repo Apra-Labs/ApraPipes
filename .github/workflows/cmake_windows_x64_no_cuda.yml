@@ -34,24 +34,6 @@ jobs:
       working-directory: ${{github.workspace}}
       run: choco install pkgconfiglite
      
-    - name: Run VCPKG bootstrap
-      working-directory: ${{github.workspace}}
-      run: ./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install
-    
-    - name: Cache VCPKG 
-      id: cache-vcpkg
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-vcpkg
-      with:
-          # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
-          path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-    
-    - name: List vcvarsall location
-      run: cd / && dir vcvarsall.bat /s
-
     - name: Cache gstreamer dependencies
       id: cache-gstreamer
       uses: actions/cache@v2
@@ -69,6 +51,21 @@ jobs:
     - name: List directory
       working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
       run: dir lib
+     
+    - name: Run VCPKG bootstrap
+      working-directory: ${{github.workspace}}
+      run: ./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install
+    
+    - name: Cache VCPKG 
+      id: cache-vcpkg
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-vcpkg
+      with:
+          # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
+          path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
