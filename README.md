@@ -104,7 +104,7 @@ source ~/.bashrc:
 * Run `./vcpkg integrate install`
 * Use the correct vcpkg for Jetson:
 ```
-mv base/vcpk.json base/vcpkg.json.bkp && mv base/vcpkg.jetson.json base/vcpkg.json
+mv base/vcpkg.json base/vcpkg.json.bkp && mv base/vcpkg.jetson.json base/vcpkg.json
 ```
 
 ### Build
