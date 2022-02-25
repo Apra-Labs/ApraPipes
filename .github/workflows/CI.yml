@@ -16,28 +16,27 @@ jobs:
         include:
           - os: ubuntu-20.04
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-            CACHE_PATH: ~/.cache/vcpkg/archives
-            CACHE_KEY: Linux-X64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-            CACHE_REST_KEY: Linux-X64-cache-vcpkg-
-            TEST_RES_XML: CI_test_result_Linux-X64.xml
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux-X64"
+            VCPKG_FILE: "base/vcpkg.json"
           - os: self-hosted
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-            CACHE_PATH: ~/.cache/vcpkg/archives
-            CACHE_KEY: Linux-ARM64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-            CACHE_REST_KEY: Linux-ARM64-cache-vcpkg-
-            TEST_RES_XML: CI_test_result_Linux-ARM64.xml
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux-ARM64"
+            VCPKG_FILE: "base/vcpkg.jetson.json"
           - os: windows-2019
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            CACHE_PATH: $Env:LOCALAPPDATA/vcpkg/archives
-            CACHE_KEY: Windows-X64-cache-vcpkg-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-            CACHE_REST_KEY: Windows-X64-cache-vcpkg-
-            TEST_RES_XML: CI_test_result_Windows-X64.xml
+            CACHE_PATH: "C:\Users\runneradmin\AppData\Local\vcpkg\archives"
+            FLAV: "Windows-X64"
+            VCPKG_FILE: "base/vcpkg.json"
     env:
       BUILD_TYPE: RelWithDebInfo
-      
+      CACHE_REST_KEY: ${{ matrix.FLAV }}-cache-vcpkg-
+      TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
       with: 
         submodules: 'false'
 
@@ -52,7 +51,7 @@ jobs:
       uses: actions/cache@v2
       with:
           path: ${{ matrix.CACHE_PATH }}
-          key:  ${{ env.CACHE_KEY }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}
    
     - name: Make build folder
