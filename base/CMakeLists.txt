@@ -116,11 +116,7 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-add_subdirectory(../thirdparty/ncnn ncnn_build)
-include_directories(AFTER SYSTEM include
-					../thirdparty/ncnn/src
-					${CMAKE_BINARY_DIR}/ncnn_build/src
-)
+include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
 
@@ -476,8 +472,7 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
-  aprapipes
-  ncnn  
+  aprapipes  
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
