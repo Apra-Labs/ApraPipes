@@ -26,7 +26,7 @@ jobs:
             VCPKG_FILE: "base/vcpkg.jetson.json"
           - os: windows-2019
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            CACHE_PATH: "C:\Users\runneradmin\AppData\Local\vcpkg\archives"
+            CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows-X64"
             VCPKG_FILE: "base/vcpkg.json"
     env:
