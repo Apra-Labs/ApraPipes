@@ -32,17 +32,16 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ./vcpkg/bootstrap-vcpkg.sh
 
-    - name: Cache VCPKG 
-      if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
-      id: cache-vcpkg
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-vcpkg
-      with:
+#    - name: Cache VCPKG 
+#      id: cache-vcpkg
+#      uses: actions/cache@v2
+#      env:
+#        cache-name: cache-vcpkg
+#      with:
           # vcpkg cache files are stored in `~/.cache/vcpkg/archives` on Linux
-          path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.jetson.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-${{ env.cache-name }}-
+#          path: ~/.cache/vcpkg/archives
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+#          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
    
     - name: Make build folder
       run: mkdir -p build
