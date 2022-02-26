@@ -469,7 +469,7 @@ void testQueueClear(bounded_buffer<int>& queue)
 			BOOST_TEST(queue.size() == 0);
 		}
 
-		LOG_ERROR << "finished pushing " << i;
+		LOG_INFO << "finished pushing " << i;
 	}
 }
 
@@ -490,7 +490,7 @@ void testQueueClear2(bounded_buffer<int>& queue)
 			BOOST_TEST(queue.size() == 5);
 		}
 
-		LOG_ERROR << "finished pushing " << i;
+		LOG_INFO << "finished pushing " << i;
 	}
 }
 

@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
     std::shared_ptr<NvArgusCameraHelper> helper = NvArgusCameraHelper::create(
         10, [&](frame_sp &frame) -> void {
         auto ptr = static_cast<DMAFDWrapper *>(frame->data());
-        LOG_ERROR << " Received frame <>" << ptr->getFd();
+        LOG_DEBUG << " Received frame <>" << ptr->getFd();
         helper->queueFrameToCamera(); }, [&]() -> frame_sp { return frameFactory->create(size, frameFactory); });
 
     try
@@ -98,10 +98,10 @@ BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
     }
     catch(...)
     {
-        LOG_ERROR << "Testcase passed";
+        LOG_INFO << "Testcase passed";
     }
     helper.reset();
-    LOG_ERROR << "FINISHED";
+    LOG_INFO << "FINISHED";
 }
 
 BOOST_AUTO_TEST_SUITE_END()
