@@ -12,7 +12,7 @@
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "StatSink.h"
-#include "TextOverlayCPU.h"
+#include "TextOverlayXForm.h"
 #include "StatSink.h"
 #include "FileWriterModule.h"
 #include "ImageEncoderCV.h"
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(mono)
     auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayCPU>(new TextOverlayCPU(TextOverlayCPUProps(1920, 960, 0.5, text, "UpperRight", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(1920, 960, 0.5, text, "UpperRight", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
     auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(rgb)
     auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayCPU>(new TextOverlayCPU(TextOverlayCPUProps(1280, 720, 0.8, text, "BottomLeft", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(1280, 720, 0.8, text, "BottomLeft", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
     auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(bgra)
     auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayCPU>(new TextOverlayCPU(TextOverlayCPUProps(1920, 960, 1.0, text, "BottomRight", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(1920, 960, 1.0, text, "BottomRight", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
     auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());

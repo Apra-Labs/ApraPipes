@@ -1,4 +1,4 @@
-#include "TextOverlayCPU.h"
+#include "TextOverlayXForm.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -9,10 +9,10 @@
 #include <ctime>
 #include <iomanip>
 
-class TextOverlayCPU::Detail
+class TextOverlayXForm::Detail
 {
 public:
-	Detail(TextOverlayCPUProps &_props) : mProps(_props)
+	Detail(TextOverlayXFormProps &_props) : mProps(_props)
 	{
 	}
 	~Detail() {}
@@ -23,7 +23,7 @@ public:
 		mOutputImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 	}
 
-	void setProps(TextOverlayCPUProps &_props)
+	void setProps(TextOverlayXFormProps &_props)
 	{
 		mProps = _props;
 	}
@@ -33,17 +33,17 @@ public:
 	std::string mOutputPinId;
 	cv::Mat mInputImg;
 	cv::Mat mOutputImg;
-	TextOverlayCPUProps mProps;
+	TextOverlayXFormProps mProps;
 };
 
-TextOverlayCPU::TextOverlayCPU(TextOverlayCPUProps _props) : Module(TRANSFORM, "TextOverlayCPU", _props)
+TextOverlayXForm::TextOverlayXForm(TextOverlayXFormProps _props) : Module(TRANSFORM, "TextOverlayXForm", _props)
 {
 	mDetail.reset(new Detail(_props));
 }
 
-TextOverlayCPU::~TextOverlayCPU() {}
+TextOverlayXForm::~TextOverlayXForm() {}
 
-bool TextOverlayCPU::validateInputPins()
+bool TextOverlayXForm::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
@@ -62,7 +62,7 @@ bool TextOverlayCPU::validateInputPins()
 	return true;
 }
 
-bool TextOverlayCPU::validateOutputPins()
+bool TextOverlayXForm::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
@@ -81,7 +81,7 @@ bool TextOverlayCPU::validateOutputPins()
 	return true;
 }
 
-void TextOverlayCPU::addInputPin(framemetadata_sp &metadata, string &pinId)
+void TextOverlayXForm::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());
@@ -89,17 +89,17 @@ void TextOverlayCPU::addInputPin(framemetadata_sp &metadata, string &pinId)
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
-bool TextOverlayCPU::init()
+bool TextOverlayXForm::init()
 {
 	return Module::init();
 }
 
-bool TextOverlayCPU::term()
+bool TextOverlayXForm::term()
 {
 	return Module::term();
 }
 
-bool TextOverlayCPU::process(frame_container &frames)
+bool TextOverlayXForm::process(frame_container &frames)
 {
 	auto frame = frames.begin()->second;
 	mDetail->mInputImg.data = static_cast<uint8_t *>(frame->data());
@@ -185,7 +185,7 @@ bool TextOverlayCPU::process(frame_container &frames)
 	return true;
 }
 
-void TextOverlayCPU::setMetadata(framemetadata_sp &metadata)
+void TextOverlayXForm::setMetadata(framemetadata_sp &metadata)
 {
 	if (!metadata->isSet())
 	{
@@ -211,25 +211,25 @@ void TextOverlayCPU::setMetadata(framemetadata_sp &metadata)
 	}
 }
 
-TextOverlayCPUProps TextOverlayCPU::getProps()
+TextOverlayXFormProps TextOverlayXForm::getProps()
 {
 	fillProps(mDetail->mProps);
 	return mDetail->mProps;
 }
-void TextOverlayCPU::setProps(TextOverlayCPUProps &props)
+void TextOverlayXForm::setProps(TextOverlayXFormProps &props)
 {
 	Module::addPropsToQueue(props);
 }
 
-bool TextOverlayCPU::handlePropsChange(frame_sp &frame)
+bool TextOverlayXForm::handlePropsChange(frame_sp &frame)
 {
-	TextOverlayCPUProps props12(mDetail->mProps.frameWidth, mDetail->mProps.frameHeight, mDetail->mProps.alpha, mDetail->mProps.text, mDetail->mProps.position, mDetail->mProps.isDateTime, mDetail->mProps.fontSize, mDetail->mProps.fontColor, mDetail->mProps.backgroundColor);
+	TextOverlayXFormProps props12(mDetail->mProps.frameWidth, mDetail->mProps.frameHeight, mDetail->mProps.alpha, mDetail->mProps.text, mDetail->mProps.position, mDetail->mProps.isDateTime, mDetail->mProps.fontSize, mDetail->mProps.fontColor, mDetail->mProps.backgroundColor);
 	bool ret = Module::handlePropsChange(frame, props12);
 	mDetail->setProps(props12);
 	return ret;
 }
 
-bool TextOverlayCPU::processSOS(frame_sp &frame)
+bool TextOverlayXForm::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);

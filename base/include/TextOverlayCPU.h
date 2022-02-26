@@ -2,10 +2,10 @@
 
 #include "Module.h"
 
-class TextOverlayCPUProps : public ModuleProps
+class TextOverlayXFormProps : public ModuleProps
 {
 public:
-	TextOverlayCPUProps(int _frameWidth, int _frameHeight, double _alpha, std::string _text, std::string _position, bool _isDateTime, int _fontSize, std::string _fontColor, std::string _backgroundColor) : frameWidth(_frameWidth), frameHeight(_frameHeight), alpha(_alpha), text(_text), position(_position), isDateTime(_isDateTime), fontSize(_fontSize), fontColor(_fontColor), backgroundColor(_backgroundColor)
+	TextOverlayXFormProps(int _frameWidth, int _frameHeight, double _alpha, std::string _text, std::string _position, bool _isDateTime, int _fontSize, std::string _fontColor, std::string _backgroundColor) : frameWidth(_frameWidth), frameHeight(_frameHeight), alpha(_alpha), text(_text), position(_position), isDateTime(_isDateTime), fontSize(_fontSize), fontColor(_fontColor), backgroundColor(_backgroundColor)
 	{
 	}
 	std::string text, fontColor, position, backgroundColor;
@@ -29,16 +29,16 @@ private:
 	}
 };
 
-class TextOverlayCPU : public Module
+class TextOverlayXForm : public Module
 {
 
 public:
-	TextOverlayCPU(TextOverlayCPUProps _props);
-	virtual ~TextOverlayCPU();
+	TextOverlayXForm(TextOverlayXFormProps _props);
+	virtual ~TextOverlayXForm();
 	bool init();
 	bool term();
-	void setProps(TextOverlayCPUProps &props);
-	TextOverlayCPUProps getProps();
+	void setProps(TextOverlayXFormProps &props);
+	TextOverlayXFormProps getProps();
 
 protected:
 	bool process(frame_container &frames);
@@ -46,7 +46,7 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	void setProps(TextOverlayCPU);
+	void setProps(TextOverlayXForm);
 	bool handlePropsChange(frame_sp &frame);
 
 private:
