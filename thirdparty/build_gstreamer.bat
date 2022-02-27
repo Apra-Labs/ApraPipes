@@ -4,7 +4,8 @@ cd gst-build-1.16
 git checkout 1.16.2
 dir
 set VSLANG=1033
-set CC=clang-cl
+set CC=cl
+set CC_LD=link
 set link="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64\link.exe"
 echo "%VSLANG% %CC% %CC_LD%"
 meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled
