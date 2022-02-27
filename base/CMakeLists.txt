@@ -224,7 +224,7 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/BrightnessContrastControl.cpp
+	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
 	src/FaceDetectorXform.cpp
@@ -241,7 +241,7 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/BrightnessContrastControl.h
+	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
 	include/ApraFaceInfo.h
