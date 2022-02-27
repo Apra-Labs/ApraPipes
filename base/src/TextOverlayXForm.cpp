@@ -33,6 +33,8 @@ public:
 	std::string mOutputPinId;
 	cv::Mat mInputImg;
 	cv::Mat mOutputImg;
+	int width;
+	int height;
 	TextOverlayXFormProps mProps;
 };
 
@@ -128,17 +130,17 @@ bool TextOverlayXForm::process(frame_container &frames)
 	else if (mDetail->mProps.position == "LowerLeft")
 	{
 		x = padding;
-		y = mDetail->mProps.frameHeight - padding;
+		y = mDetail->height - padding;
 	}
 	else if (mDetail->mProps.position == "UpperRight")
 	{
-		x = mDetail->mProps.frameWidth - padding - textSize.width;
+		x = mDetail->width - padding - textSize.width;
 		y = padding + textSize.height;
 	}
 	else
 	{
-		x = mDetail->mProps.frameWidth - padding - textSize.width;
-		y = mDetail->mProps.frameHeight - padding;
+		x = mDetail->width - padding - textSize.width;
+		y = mDetail->height - padding;
 	}
 
 	cv::Point point1, point2;
@@ -146,12 +148,12 @@ bool TextOverlayXForm::process(frame_container &frames)
 	if (mDetail->mProps.position == "UpperLeft" || mDetail->mProps.position == "UpperRight")
 	{
 		point1 = cv::Point(0, textSize.height + 2 * padding);
-		point2 = cv::Point(mDetail->mProps.frameWidth, 0);
+		point2 = cv::Point(mDetail->width, 0);
 	}
 	else
 	{
-		point1 = cv::Point(0, mDetail->mProps.frameHeight);
-		point2 = cv::Point(mDetail->mProps.frameWidth, mDetail->mProps.frameHeight - textSize.height - 2 * padding);
+		point1 = cv::Point(0, mDetail->height);
+		point2 = cv::Point(mDetail->width, mDetail->height - textSize.height - 2 * padding);
 	}
 
 	sscanf(mDetail->mProps.backgroundColor.c_str(), "%02x%02x%02x", &backr, &backg, &backb);
@@ -193,7 +195,9 @@ void TextOverlayXForm::setMetadata(framemetadata_sp &metadata)
 	}
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 	RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
-	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->mOutputMetadata); //*****
+	mDetail->width = rawMetadata->getWidth();
+	mDetail->height = rawMetadata->getHeight(); 
+	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->mOutputMetadata);
 	rawOutMetadata->setData(outputMetadata);
 	auto imageType = rawMetadata->getImageType();
 	mDetail->initMatImages(metadata);
@@ -223,7 +227,7 @@ void TextOverlayXForm::setProps(TextOverlayXFormProps &props)
 
 bool TextOverlayXForm::handlePropsChange(frame_sp &frame)
 {
-	TextOverlayXFormProps props12(mDetail->mProps.frameWidth, mDetail->mProps.frameHeight, mDetail->mProps.alpha, mDetail->mProps.text, mDetail->mProps.position, mDetail->mProps.isDateTime, mDetail->mProps.fontSize, mDetail->mProps.fontColor, mDetail->mProps.backgroundColor);
+	TextOverlayXFormProps props12(mDetail->mProps.alpha, mDetail->mProps.text, mDetail->mProps.position, mDetail->mProps.isDateTime, mDetail->mProps.fontSize, mDetail->mProps.fontColor, mDetail->mProps.backgroundColor);
 	bool ret = Module::handlePropsChange(frame, props12);
 	mDetail->setProps(props12);
 	return ret;
