@@ -1,4 +1,4 @@
-#include "BrightnessContrastControl.h"
+#include "BrightnessContrastControlXform.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -51,6 +51,14 @@ bool BrightnessContrastControl::validateInputPins()
 	}
 
 	framemetadata_sp metadata = getFirstInputMetadata();
+
+	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+
+	if (rawMetadata->getDepth() != CV_8U)
+	{
+		throw AIPException(AIP_NOTIMPLEMENTED, "Bit depth not supported.");
+	}
+
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE)
 	{
@@ -105,7 +113,8 @@ bool BrightnessContrastControl::process(frame_container &frames)
 
 	mDetail->mInputImg.data = static_cast<uint8_t *>(frame->data());
 	mDetail->mOutputImg.data = static_cast<uint8_t *>(outFrame->data());
-	mDetail->mInputImg.convertTo(mDetail->mOutputImg, -1, mDetail->mProps.alpha, mDetail->mProps.beta);
+	auto beta = std::round(mDetail->mProps.brightness * 255);
+	mDetail->mInputImg.convertTo(mDetail->mOutputImg, -1, mDetail->mProps.contrast, beta);
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
 	return true;
@@ -117,7 +126,9 @@ void BrightnessContrastControl::setMetadata(framemetadata_sp &metadata)
 	{
 		return;
 	}
+
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+
 	RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->mOutputMetadata);
 	rawOutMetadata->setData(outputMetadata);
@@ -153,7 +164,7 @@ BrightnessContrastControlProps BrightnessContrastControl::getProps()
 
 bool BrightnessContrastControl::handlePropsChange(frame_sp &frame)
 {
-	BrightnessContrastControlProps props(0, 0);
+	BrightnessContrastControlProps props(1.0, 0.0);
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;

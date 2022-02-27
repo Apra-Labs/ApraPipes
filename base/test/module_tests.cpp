@@ -1514,7 +1514,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 		transform2->step(); // previously this step was in deadlock
 		BOOST_TEST(queue1->size() == 0);
 	}
-	LOG_ERROR << "COMPLETED";
+	LOG_INFO << "COMPLETED";
 }
 
 BOOST_AUTO_TEST_SUITE_END()
