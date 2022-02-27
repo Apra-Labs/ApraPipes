@@ -34,6 +34,24 @@ jobs:
       working-directory: ${{github.workspace}}
       run: choco install pkgconfiglite
      
+    - name: Cache gstreamer dependencies
+      id: cache-gstreamer
+      uses: actions/cache@v2
+      with:
+          path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+  
+    - name: Build gstreamer
+      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      # uses: ilammy/msvc-dev-cmd@v1.10.0
+      working-directory: ${{github.workspace}}
+      run: pip3 install ninja && pip3 install meson && cd thirdparty && ./build_gstreamer.bat && cd ..
+
+    - name: List directory
+      working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
+      run: dir lib
+     
     - name: Run VCPKG bootstrap
       working-directory: ${{github.workspace}}
       run: ./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install
@@ -48,23 +66,6 @@ jobs:
           path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-
-    - name: Cache gstreamer dependencies
-      id: cache-gstreamer
-      uses: actions/cache@v2
-      with:
-          path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-  
-    - name: Build gstreamer
-      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
-      working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install meson && cd thirdparty && ./build_gstreamer.bat && cd ..
-
-    - name: List directory
-      working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
-      run: dir lib
 
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
