@@ -42,11 +42,18 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
   
-    - name: Build gstreamer
+    - name: Install meson and ninja
       # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
       # uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install meson && cd thirdparty && start-process ./build_gstreamer.bat && cd ..
+      run: pip3 install ninja && pip3 install meson
+    
+    - name: Build Gstreamer
+      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      # uses: ilammy/msvc-dev-cmd@v1.10.0
+      working-directory: ${{github.workspace}}/thirdparty
+      run: ./build_gstreamer.bat
+      shell: cmd
 
     - name: List directory
       working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
