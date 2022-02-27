@@ -4,6 +4,6 @@ cd gst-build-1.16
 git checkout 1.16.2
 dir
 set VSLANG=1033
-meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled --backend vs
+meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled -Dgst-plugins-bad:openh264=disabled --backend vs
 meson compile -C builddir
 meson install -C builddir

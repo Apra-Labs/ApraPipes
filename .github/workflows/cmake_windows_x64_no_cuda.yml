@@ -52,7 +52,9 @@ jobs:
       # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
       # uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}/thirdparty
-      run: ./build_gstreamer.bat
+      run: | 
+       C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+       ./build_gstreamer.bat
       shell: cmd
 
     - name: List directory
