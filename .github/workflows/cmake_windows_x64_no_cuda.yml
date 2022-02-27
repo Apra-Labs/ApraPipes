@@ -46,7 +46,7 @@ jobs:
       # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
       # uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install meson && cd thirdparty && ./build_gstreamer.bat && cd ..
+      run: pip3 install ninja && pip3 install meson && cd thirdparty && start-process ./build_gstreamer.bat && cd ..
 
     - name: List directory
       working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
