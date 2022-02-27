@@ -5,5 +5,5 @@ git checkout 1.16.2
 dir
 set VSLANG=1033
 meson --prefix=%cd%\outInstall C:\gstreamerTemp\builddir -Dpython=disabled -Ddevtools=disabled 
-meson compile -C C:\gstreamerTemp\builddir
+meson compile -C C:\gstreamerTemp\builddir --vs-args /FS
 meson install -C C:\gstreamerTemp\builddir
