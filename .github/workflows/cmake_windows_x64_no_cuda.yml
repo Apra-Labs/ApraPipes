@@ -101,12 +101,7 @@ jobs:
       with:
         name: logs
         path: |
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
-          ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
-          ${{ github.workspace }}/*/CMakeCache.txt
+          C:\gstreamerTemp\builddir\meson-logs\*
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
