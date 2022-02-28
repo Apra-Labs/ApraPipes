@@ -47,7 +47,7 @@ jobs:
       run: pip3 install ninja && pip3 install meson
     
     - name: Build Gstreamer
-      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
       working-directory: ${{github.workspace}}/thirdparty
       run: | 
        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
