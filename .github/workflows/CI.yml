@@ -1,126 +1,125 @@
-# name: CI_All
+name: CI_All
 
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
   
-# jobs:
-#   build:
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         os: [ubuntu-20.04, windows-2019, self-hosted]
-#         include:
-#           - os: ubuntu-20.04
-#             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-#             CACHE_PATH: "~/.cache/vcpkg/archives"
-#             FLAV: "Linux"
-#             VCPKG_FILE: "base/vcpkg.json"
-#             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
-#             NPROC: 3
-#           - os: self-hosted
-#             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-#             CACHE_PATH: "~/.cache/vcpkg/archives"
-#             FLAV: "Linux_ARM64"
-#             VCPKG_FILE: "base/vcpkg.jetson.json"
-#             CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
-#             NPROC: 7
-#           - os: windows-2019
-#             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-#             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
-#             FLAV: "Windows"
-#             VCPKG_FILE: "base/vcpkg.json"
-#             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
-#             NPROC: 3
-#     env:
-#       BUILD_TYPE: RelWithDebInfo
-#       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
-#       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, windows-2019, self-hosted]
+        include:
+          - os: ubuntu-20.04
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux"
+            VCPKG_FILE: "base/vcpkg.json"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
+            NPROC: 3
+          - os: self-hosted
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux_ARM64"
+            VCPKG_FILE: "base/vcpkg.jetson.json"
+            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
+            NPROC: 7
+          - os: windows-2019
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
+            CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
+            FLAV: "Windows"
+            VCPKG_FILE: "base/vcpkg.json"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
+            NPROC: 3
+    env:
+      BUILD_TYPE: RelWithDebInfo
+      CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
+      TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
 
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
-#       with: 
-#         submodules: 'false'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with: 
+        submodules: 'false'
 
-#     - name: Checkout submodule
-#       run: git submodule update --init --recursive && git submodule status
+    - name: Checkout submodule
+      run: git submodule update --init --recursive && git submodule status
       
-#     - name: Run VCPKG bootstrap
-#       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
+    - name: Run VCPKG bootstrap
+      run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
 
-#     - name: Cache VCPKG for fast cloud build
-#       if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
-#       uses: actions/cache@v2
-#       with:
-#           path: ${{ matrix.CACHE_PATH }}
-#           key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-#           restore-keys: ${{ env.CACHE_REST_KEY }}
+    - name: Cache VCPKG for fast cloud build
+      if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
+      uses: actions/cache@v2
+      with:
+          path: ${{ matrix.CACHE_PATH }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json') }}
+          restore-keys: ${{ env.CACHE_REST_KEY }}
 
-#     - name: Install build dependencies in linux cloud hosted
-#       if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-#       run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
+    - name: Install build dependencies in linux cloud hosted
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
 
-#     - name: Make build folder
-#       run: mkdir -p build
-#       continue-on-error: true
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
       
-#     - name: Configure CMake Common
-#       working-directory: ${{github.workspace}}/build
-#       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+    - name: Configure CMake Common
+      working-directory: ${{github.workspace}}/build
+      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-#     - name: Build
-#       working-directory: ${{github.workspace}}/build
-#       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
 
-#     - name: Windows Test 
-#       if: runner.os == 'Windows'
-#       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+    - name: Windows Test 
+      if: runner.os == 'Windows'
+      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
-#     - name: Test
-#       if: runner.os != 'Windows'
-#       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+    - name: Test
+      if: runner.os != 'Windows'
+      run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
-#     - name: Upload Test Results
-#       if: always()
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: TestResults_${{ matrix.FLAV }}
-#         path: |
-#           ${{ env.TEST_RES_XML }}
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults_${{ matrix.FLAV }}
+        path: |
+          ${{ env.TEST_RES_XML }}
 
-#     - name: Upload build logs 
-#       if: always()
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: BuildLogs_${{ matrix.FLAV }}
-#         path: |
-#           ${{ github.workspace }}/build/**.log
-#           ${{ github.workspace }}/build/**.txt
-#         # ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
-#         # ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
-#         # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
-#         # ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
-#         # ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig/*.pc
+    - name: Upload build logs 
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: BuildLogs_${{ matrix.FLAV }}
+        path: |
+          ${{ github.workspace }}/build/**.log
+          ${{ github.workspace }}/build/**.txt
+        ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
+        ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
+        ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
+        ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
   
-#   publish-test-results:
-#     name: "Publish Unit Tests Results"
-#     needs: build
-#     runs-on: ubuntu-latest
-#     if: always()
-#     steps:
-#       - name: Download Artifacts
-#         uses: actions/download-artifact@v2
-#         with:
-#           path: artifacts
-#       - name: Display structure of downloaded files
-#         working-directory: artifacts
-#         run: ls -R
-#       - name: Publish Unit Test Results
-#         uses: EnricoMi/publish-unit-test-result-action@v1
-#         with:
-#           files: artifacts/*/CI_test_result_*.xml
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        working-directory: artifacts
+        run: ls -R
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/*/CI_test_result_*.xml
