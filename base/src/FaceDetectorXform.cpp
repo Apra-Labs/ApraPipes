@@ -40,6 +40,9 @@ public:
 	cv::Mat detection;
 	const std::string FACE_DETECTION_CONFIGURATION = "./data/assets/deploy.prototxt";
 	const std::string FACE_DETECTION_WEIGHTS = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
+	// scalar with mean values which are subtracted from channels.
+	// Values are intended to be in (mean-R, mean-G, mean-B) order if image has BGR ordering and swapRB is true.
+	const cv::Scalar meanValuesRGB = cv::Scalar({104., 177.0, 123.0});
 	ApraFaceInfo faceInfo;
 	std::vector<ApraFaceInfo> faces;
 	FaceDetectsInfo faceDetectsInfo;
@@ -106,8 +109,10 @@ bool FaceDetectorXform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	mDetail->mInputImg.data = static_cast<uint8_t *>(frame->data());
+
+	// Creates 4-dimensional blob from image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
 	mDetail->inputBlob = cv::dnn::blobFromImage(mDetail->mInputImg, mDetail->mProps.scaleFactor, cv::Size(mDetail->mInputImg.cols, mDetail->mInputImg.rows),
-												{104., 177.0, 123.0}, false, false);
+												mDetail->meanValuesRGB, false, false);
 	mDetail->network.setInput(mDetail->inputBlob, "data");
 
 	mDetail->detection = mDetail->network.forward("detection_out");
