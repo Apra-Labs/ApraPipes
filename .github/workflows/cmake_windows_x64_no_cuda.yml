@@ -43,14 +43,12 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
   
     - name: Install meson and ninja
-      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
-      # uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}
       run: pip3 install ninja && pip3 install meson
     
     - name: Build Gstreamer
-      # if: steps.cache-gstreamer.outputs.cache-hit != 'true'
-      # uses: ilammy/msvc-dev-cmd@v1.10.0
+      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      uses: ilammy/msvc-dev-cmd@v1.10.0
       working-directory: ${{github.workspace}}/thirdparty
       run: | 
        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
@@ -75,17 +73,17 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('base/vcpkg.json', 'base/CMakeLists.txt','vcpkg/baseline.json') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
-    # - name: Configure CMake
-    #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-    #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-    #   run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DENABLE_CUDA=OFF -A x64 ${{github.workspace}}/base -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
     
-    # - name: Build
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build . --config ${{env.BUILD_TYPE}}
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
 
-    # - name: Test
-    #   run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
+    - name: Test
+      run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
     
     - name: Upload Test Results
       if: always()
