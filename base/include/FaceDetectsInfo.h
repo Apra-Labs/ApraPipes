@@ -42,7 +42,7 @@ public:
 		{
 			totalFacesSize += face.getSerializeSize();
 		}
-		return 1024 + sizeof(FaceDetectsInfo) + sizeof(facesFound) + sizeof(faces) + totalFacesSize;
+		return sizeof(FaceDetectsInfo) + sizeof(facesFound) + sizeof(faces) + totalFacesSize;
 	}
 
 	bool facesFound;
