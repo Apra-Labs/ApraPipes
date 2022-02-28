@@ -7,7 +7,7 @@
     {
       "name": "opencv4",
       "default-features": false,
-      "features": ["nonfree","png","jpeg","tiff","dnn","webp","contrib"]
+      "features": ["nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
     },
     "ffmpeg",
     "bigint",
