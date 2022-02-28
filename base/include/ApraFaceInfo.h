@@ -19,7 +19,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return 1024 + sizeof(ApraFaceInfo) + sizeof(x1) + sizeof(x2) + sizeof(y1) + sizeof(y2) + sizeof(score);
+		return sizeof(x1) + sizeof(x2) + sizeof(y1) + sizeof(y2) + sizeof(score);
 	}
 
 private:
