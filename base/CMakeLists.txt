@@ -163,7 +163,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	# src/AudioCaptureSrc.cpp
+	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 )
 
@@ -206,7 +206,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	# include/AudioCaptureSrc.h
+	include/AudioCaptureSrc.h
 	include/QRReader.h
 )
 
@@ -492,8 +492,7 @@ SET(UT_FILES
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
 	test/sound_record_tests.cpp	
-  test/pullstratergy_tests.cpp
-	test/sound_record_tests.cpp
+  	test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/gstrtsponvifsink_tests.cpp
 	test/textoverlayxform_tests.cpp
