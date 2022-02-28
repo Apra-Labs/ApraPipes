@@ -541,8 +541,11 @@ target_link_libraries(aprapipesut
   sfml-audio
   )
 
-#add_custom_command(TARGET aprapipesut
-#    POST_BUILD
-#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gstreamer_dll> "${CMAKE_CURRENT_BINARY_DIR}"
-#    COMMENT "Copy dll file to ${CMAKE_CURRENT_BINARY_DIR} directory" VERBATIM
-#)
+IF(ENABLE_WINDOWS)
+	file(GLOB RUNTIME_DLLS
+	../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll
+	)
+
+	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
+ENDIF(ENABLE_WINDOWS)
