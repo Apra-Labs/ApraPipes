@@ -253,6 +253,7 @@ SET(IP_FILES
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
 	src/GstOnvifRtspSink.cpp
+	src/TextOverlayXForm.cpp
 )
 
 SET(IP_FILES_H
@@ -270,6 +271,7 @@ SET(IP_FILES_H
 	include/VirtualPTZ.h
 	include/WebCamSource.h
 	include/GstOnvifRtspSink.h
+	include/TextOverlayXForm.h
 )
 
 SET(CUDA_CORE_FILES
@@ -489,10 +491,12 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
-	test/sound_record_tests.cpp	test/pullstratergy_tests.cpp
+	test/sound_record_tests.cpp	
+  test/pullstratergy_tests.cpp
 	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
 	test/gstrtsponvifsink_tests.cpp
+	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
