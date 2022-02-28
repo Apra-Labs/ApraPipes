@@ -542,10 +542,7 @@ target_link_libraries(aprapipesut
   )
 
 IF(ENABLE_WINDOWS)
-	file(GLOB RUNTIME_DLLS
-	../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll
-	)
-
+	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
 ENDIF(ENABLE_WINDOWS)
