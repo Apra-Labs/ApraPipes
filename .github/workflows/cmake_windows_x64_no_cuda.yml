@@ -55,7 +55,7 @@ jobs:
 
     - name: List directory
       working-directory: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall
-      run: dir lib
+      run: dir bin
      
     - name: Run VCPKG bootstrap
       working-directory: ${{github.workspace}}
