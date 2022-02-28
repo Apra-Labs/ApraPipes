@@ -21,7 +21,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with: 
-        submodules: 'true'
+        submodules: 'false'
+        
+    - name: Checkout submodule
+      run: git submodule update --init --recursive    
     
     - name: Compute submodule status
       working-directory: ${{github.workspace}}
