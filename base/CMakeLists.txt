@@ -410,10 +410,7 @@ ${libpcre_INCLUDE_DIRS}
 ${glib-2.0_INCLUDE_DIRS}
 ${gstreamer-rtsp-1.0_INCLUDE_DIRS}
 ${gstreamer-rtp-1.0_INCLUDE_DIRS}
-# ${GSTSDP_INCLUDE_DIRS}
 ${gstreamer-net-1.0_INCLUDE_DIRS}
-# ${GSTPBUTILS_INCLUDE_DIRS}
-# ${GSTRTPMANAGER_INCLUDE_DIRS}
 ${gio-2.0_INCLUDE_DIRS}
 ${gmodule-2.0_INCLUDE_DIRS}
 ${gthread-2.0_INCLUDE_DIRS}
