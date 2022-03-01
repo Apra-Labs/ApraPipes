@@ -68,14 +68,72 @@ jobs:
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
+
+    - name: Cache gstreamer dependencies linux
+      id: cache-gstreamer
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      uses: actions/cache@v2
+      with:
+          path: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.sh') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+
+    - name: Build gstreamer linux
+      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      working-directory: ${{github.workspace}}
+      run: cd thirdparty && sh build_gstreamer.sh && cd ..
       
+    - name: Cache gstreamer dependencies Windows
+      if: runner.os == 'Windows'
+      id: cache-gstreamer
+      uses: actions/cache@v2
+      with:
+          path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+  
+    - name: Install meson and ninja Windows
+      if: runner.os == 'Windows'
+      working-directory: ${{github.workspace}}
+      run: pip3 install ninja && pip3 install
+
+    - name: Build Gstreamer Windows
+      if: runner.os == 'Windows'
+      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      working-directory: ${{github.workspace}}/thirdparty
+      run: | 
+       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
+      shell: cmd
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-    - name: Build
+    - name: Build linux
+      if: ${{ runner.os == 'Linux'}}
+      run: export PKG_CONFIG_PATH=${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig  && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test linux
+      if: ${{ runner.os == 'Linux'}}
+      run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
+
+    - name: Build Windows
+      if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
+
+    - name: Verify contents of Debug and Release
+      if: runner.os == 'Windows'
+      working-directory: ${{github.workspace}}/build/
+      run: dir RelWithDebInfo
+
+    # - name: Test Windows
+    #   run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
+
+    # - name: Build
+    #   working-directory: ${{github.workspace}}/build
+    #   run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
 
     - name: Windows Test 
       if: runner.os == 'Windows'
