@@ -97,6 +97,12 @@ bool FaceDetectorXform::init()
 		LOG_ERROR << "Failed to load network with the given settings. Please check the loaded parameters.";
 		return false;
 	}
+
+	#ifdef ENABLE_CUDA
+	mDetail->network.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
+	mDetail->network.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+	#endif
+
 	return Module::init();
 }
 
