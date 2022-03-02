@@ -7,13 +7,12 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "test_utils.h"
-#include "StatSink.h"
 #include "PipeLine.h"
 #include "AIPExceptions.h"
-#include "FileWriterModule.h"
 #include "FaceDetectorXform.h"
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
+#include "ImageDecoderCV.h"
 
 #ifdef ARM64
 BOOST_AUTO_TEST_SUITE(facedetector_tests, *boost::unit_test::disabled())
@@ -23,20 +22,28 @@ BOOST_AUTO_TEST_SUITE(facedetector_tests)
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
+
+	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
+    auto metadata2 = framemetadata_sp(new RawImageMetadata());
+    decoder->addOutputPin(metadata2);
+	fileReader->setNext(decoder);
+
 	FaceDetectorXformProps faceDetectorProps;
 	auto faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
-	fileReader->setNext(faceDetector);
+	decoder->setNext(faceDetector);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	faceDetector->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
+	BOOST_TEST(decoder->init());
 	BOOST_TEST(faceDetector->init());
 	BOOST_TEST(sink->init());
 
 	fileReader->step();
+	decoder->step();
 	faceDetector->step();
 	auto frames = sink->pop();
 	BOOST_TEST(frames.size() == 1);

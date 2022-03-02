@@ -26,30 +26,53 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 * Install CMake 3.22.1
 * Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
 * Run bootstrap-vcpkg.bat in the vcpkg/ directory
-* Run `vcpkg.exe integrate install`
+* Run 
+```
+vcpkg.exe integrate install
+```
 
 ## Build windows
 
 ### Without Cuda
-* `build_windows.bat`
+```
+build_windows.bat
+```
 
 ### With Cuda
-* `build_windows_cuda.bat`
+```
+build_windows_cuda.bat
+```
 
 
 ### Run Tests
-* list all tests `_build/BUILD_TYPE/aprapipesut.exe --list_content`
-* run all tests  `_build/BUILD_TYPE/aprapipesut.exe`
-* run one test `_build/BUILD_TYPE/aprapipesut.exe --run_test=filenamestrategy_tests/boostdirectorystrategy`
-* run one test with arguments `_build/BUILD_TYPE/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera`
+* list all tests
+```
+_build/BUILD_TYPE/aprapipesut.exe --list_content
+```
+* run all tests  
+```
+_build/BUILD_TYPE/aprapipesut.exe
+```
+* run one test 
+```
+_build/BUILD_TYPE/aprapipesut.exe --run_test=filenamestrategy_tests/boostdirectorystrategy
+```
+* run one test with arguments 
+```
+_build/BUILD_TYPE/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera
+```
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 
 
-## Prerequisites Ubuntu 18.04 x64
-* Run ```sudo apt-get update && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison```  to get latest build tools
+## Ubuntu 18.04 x64
+###  Prerequisites 
+* Run the following to get latest build tools
+```
+sudo apt-get update && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison
+```  
 * CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
-* Run ./bootstrap-vcpkg.sh in vcpkg/ directory
-* Run ./vcpkg integrate install
+* Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
+* Run `./vcpkg integrate install`
 
 
 ### Build Linux
@@ -63,12 +86,26 @@ Build can take ~2 hours depending on the machine configuration.
 
 ### Prerequisites
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
-* sudo apt-get install libncurses5-dev
-* CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
-* Run ./bootstrap-vcpkg.sh in vcpkg/ directory
-* Run ./vcpkg integrate install
-* Rename the file base/vcpk.json to base/vcpkg.json.bkp and base/vcpkg.jetson.json to base/vcpkg.json
-
+* run the following 
+```
+sudo apt-get update && sudo apt-get -y install libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
+```
+* append following lines to ~/.bashrc
+```
+export VCPKG_FORCE_SYSTEM_BINARIES=1
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+```
+* reload ~/.bashrc:
+```
+source ~/.bashrc:
+```
+* Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
+* Run `./vcpkg integrate install`
+* Use the correct vcpkg for Jetson:
+```
+mv base/vcpkg.json base/vcpkg.json.bkp && mv base/vcpkg.jetson.json base/vcpkg.json
+```
 
 ### Build
 * `chmod +x build_jetson.sh`

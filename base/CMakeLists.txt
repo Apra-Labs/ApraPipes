@@ -116,11 +116,7 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-add_subdirectory(../thirdparty/ncnn ncnn_build)
-include_directories(AFTER SYSTEM include
-					../thirdparty/ncnn/src
-					${CMAKE_BINARY_DIR}/ncnn_build/src
-)
+include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
 
@@ -211,12 +207,12 @@ SET(GENERIC_FILES_H
 	include/QRReader.h
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND CORE_FILES src/KeyboardListener.cpp)
 	list(APPEND CORE_FILES_H include/KeyboardListener.h)
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -228,11 +224,12 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/BrightnessContrastControl.cpp
+	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/UltraFace.cpp
 	src/FaceDetectorXform.cpp
+	src/TextOverlayXForm.cpp
+
 )
 
 SET(IP_FILES_H
@@ -246,13 +243,13 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/BrightnessContrastControl.h
+	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/UltraFace.hpp
 	include/ApraFaceInfo.h
 	include/FaceDetectsInfo.h
 	include/FaceDetectorXform.h
+	include/TextOverlayXForm.h
 )
 
 SET(CUDA_CORE_FILES
@@ -458,16 +455,17 @@ SET(UT_FILES
 	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -476,8 +474,7 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
-  aprapipes
-  ncnn  
+  aprapipes  
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}

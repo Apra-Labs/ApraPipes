@@ -4,9 +4,9 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
-#include "UltraFace.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include "opencv2/dnn.hpp"
 #include "AIPExceptions.h"
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
@@ -14,7 +14,7 @@
 class FaceDetectorXform::Detail
 {
 public:
-	Detail(FaceDetectorXformProps &_props) : mProps(_props), ultraface(mProps.binPath, mProps.paramPath, 320, 240, 1, 0.7)
+	Detail(FaceDetectorXformProps &_props) : mProps(_props)
 	{
 	}
 	~Detail() {}
@@ -34,11 +34,16 @@ public:
 	FaceDetectorXformProps mProps;
 	std::string mOutputPinId;
 	cv::Mat mInputImg;
-	ncnn::Mat inmat;
-	UltraFace ultraface;
 	int mFrameType;
+	cv::dnn::Net network;
+	cv::Mat inputBlob;
+	cv::Mat detection;
+	const std::string FACE_DETECTION_CONFIGURATION = "./data/assets/deploy.prototxt";
+	const std::string FACE_DETECTION_WEIGHTS = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
+	// scalar with mean values which are subtracted from channels.
+	// Values are intended to be in (mean-R, mean-G, mean-B) order if image has BGR ordering and swapRB is true.
+	const cv::Scalar meanValuesRGB = cv::Scalar({104., 177.0, 123.0});
 	ApraFaceInfo faceInfo;
-	std::vector<FaceInfo> face_info;
 	std::vector<ApraFaceInfo> faces;
 	FaceDetectsInfo faceDetectsInfo;
 };
@@ -86,6 +91,12 @@ void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 bool FaceDetectorXform::init()
 {
+	mDetail->network = cv::dnn::readNetFromCaffe(mDetail->FACE_DETECTION_CONFIGURATION, mDetail->FACE_DETECTION_WEIGHTS);
+	if (mDetail->network.empty())
+	{
+		LOG_ERROR << "Failed to load network with the given settings. Please check the loaded parameters.";
+		return false;
+	}
 	return Module::init();
 }
 
@@ -98,25 +109,38 @@ bool FaceDetectorXform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	mDetail->mInputImg.data = static_cast<uint8_t *>(frame->data());
-	mDetail->inmat = ncnn::Mat::from_pixels(mDetail->mInputImg.data, ncnn::Mat::PIXEL_BGR2RGB, mDetail->mInputImg.cols, mDetail->mInputImg.rows);
 
-	mDetail->ultraface.detect(mDetail->inmat, mDetail->face_info);
+	// Creates 4-dimensional blob from image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
+	mDetail->inputBlob = cv::dnn::blobFromImage(mDetail->mInputImg, mDetail->mProps.scaleFactor, cv::Size(mDetail->mInputImg.cols, mDetail->mInputImg.rows),
+												mDetail->meanValuesRGB, false, false);
+	mDetail->network.setInput(mDetail->inputBlob, "data");
 
-	for (int i = 0; i < mDetail->face_info.size(); i++)
+	mDetail->detection = mDetail->network.forward("detection_out");
+
+	cv::Mat detectionMatrix(mDetail->detection.size[2], mDetail->detection.size[3], CV_32F, mDetail->detection.ptr<float>());
+
+	for (int i = 0; i < detectionMatrix.rows; i++)
 	{
-		auto face = mDetail->face_info[i];
-		mDetail->faceInfo.x1 = face.x1;
-		mDetail->faceInfo.y1 = face.y1;
-		mDetail->faceInfo.x2 = face.x2;
-		mDetail->faceInfo.y2 = face.y2;
-		mDetail->faceInfo.score = face.score;
+		float confidence = detectionMatrix.at<float>(i, 2);
+
+		if (confidence < mDetail->mProps.confidenceThreshold)
+		{
+			continue;
+		}
+
+		mDetail->faceInfo.x1 = detectionMatrix.at<float>(i, 3) * mDetail->mInputImg.cols;
+		mDetail->faceInfo.y2 = detectionMatrix.at<float>(i, 4) * mDetail->mInputImg.rows;
+		mDetail->faceInfo.x2 = detectionMatrix.at<float>(i, 5) * mDetail->mInputImg.cols;
+		mDetail->faceInfo.y1 = detectionMatrix.at<float>(i, 6) * mDetail->mInputImg.rows;
+		mDetail->faceInfo.score = confidence;
+
 		mDetail->faces.emplace_back(mDetail->faceInfo);
 	}
+
 	mDetail->faceDetectsInfo.faces = mDetail->faces;
 	auto outFrame = makeFrame(mDetail->faceDetectsInfo.getSerializeSize());
 	mDetail->faceDetectsInfo.serialize(outFrame->data(), mDetail->faceDetectsInfo.getSerializeSize());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
-	mDetail->face_info.clear();
 	mDetail->faces.clear();
 	mDetail->faceDetectsInfo.faces.clear();
 	send(frames);
