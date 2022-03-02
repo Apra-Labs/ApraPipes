@@ -15,7 +15,11 @@
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
 
+#ifdef ARM64
+BOOST_AUTO_TEST_SUITE(facedetector_tests, *boost::unit_test::disabled())
+#else
 BOOST_AUTO_TEST_SUITE(facedetector_tests)
+#endif
 
 BOOST_AUTO_TEST_CASE(basic)
 {
