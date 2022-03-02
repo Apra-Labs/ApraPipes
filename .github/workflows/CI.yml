@@ -79,8 +79,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Build gstreamer linux
-      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}
       run: cd thirdparty && sh build_gstreamer.sh && cd ..
       
@@ -99,8 +98,7 @@ jobs:
       run: pip3 install ninja && pip3 install
 
     - name: Build Gstreamer Windows
-      if: runner.os == 'Windows'
-      if: steps.cache-gstreamer.outputs.cache-hit != 'true'
+      if: ${{steps.cache-gstreamer.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
       working-directory: ${{github.workspace}}/thirdparty
       run: | 
        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
@@ -111,11 +109,11 @@ jobs:
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build linux
-      if: ${{ runner.os == 'Linux'}}
+      if: runner.os == 'Linux'
       run: export PKG_CONFIG_PATH=${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig  && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test linux
-      if: ${{ runner.os == 'Linux'}}
+      if: runner.os == 'Linux'
       run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_ubuntu.xml
 
     - name: Build Windows
