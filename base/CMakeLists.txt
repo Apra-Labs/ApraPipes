@@ -254,7 +254,6 @@ SET(IP_FILES
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/GstOnvifRtspSink.cpp
 	src/TextOverlayXForm.cpp
 )
 
