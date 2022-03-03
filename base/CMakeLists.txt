@@ -39,20 +39,22 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
-pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
-pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
-pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
-pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
-pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
-pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
-pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
-pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
-pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
-pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
-pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
-pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
-pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+IF(NOT ENABLE_ARM64)
+	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
+	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
+	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
+	pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
+	pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
+	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
+	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
+	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
+	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
+	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
+	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+ENDIF(NOT ENABLE_ARM64)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -256,6 +258,12 @@ SET(IP_FILES
 	src/TextOverlayXForm.cpp
 )
 
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES
+	src/GstOnvifRtspSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
+
 SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
@@ -270,9 +278,14 @@ SET(IP_FILES_H
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/GstOnvifRtspSink.h
 	include/TextOverlayXForm.h
 )
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES_H
+	include/GstOnvifRtspSink.h
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -401,6 +414,10 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
+)
+
+IF(NOT ENABLE_ARM64)
+target_include_directories ( aprapipes PRIVATE
 ${gstreamer-app-1.0_INCLUDE_DIRS}
 ${gstreamer-base-1.0_INCLUDE_DIRS}
 ${gstreamer-1.0_INCLUDE_DIRS}
@@ -416,6 +433,7 @@ ${gmodule-2.0_INCLUDE_DIRS}
 ${gthread-2.0_INCLUDE_DIRS}
 ${gobject-2.0_INCLUDE_DIRS}
 )
+ENDIF(NOT ENABLE_ARM64)
 
 # aprapipes Unit Tests
 
@@ -491,7 +509,6 @@ SET(UT_FILES
 	test/sound_record_tests.cpp	
   	test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
-	test/gstrtsponvifsink_tests.cpp
 	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
@@ -503,6 +520,12 @@ IF(ENABLE_LINUX)
 	test/QRReader_tests.cpp
 	)
 ENDIF(ENABLE_LINUX)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND UT_FILES
+	test/gstrtsponvifsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -520,6 +543,17 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  )
+
+IF(NOT ENABLE_ARM64)
+target_link_libraries(aprapipesut
   PkgConfig::gstreamer-app-1.0
   PkgConfig::gstreamer-base-1.0
   PkgConfig::gstreamer-1.0
@@ -529,14 +563,8 @@ target_link_libraries(aprapipesut
   PkgConfig::gstreamer-rtsp-1.0
   PkgConfig::gstreamer-rtp-1.0
   PkgConfig::gstreamer-net-1.0
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  )
+)
+ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_WINDOWS)
 	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
