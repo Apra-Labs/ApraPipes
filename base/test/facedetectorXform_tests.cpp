@@ -14,13 +14,12 @@
 #include "FaceDetectsInfo.h"
 #include "ImageDecoderCV.h"
 
-#ifdef ARM64
-BOOST_AUTO_TEST_SUITE(facedetector_tests, *boost::unit_test::disabled())
-#else
 BOOST_AUTO_TEST_SUITE(facedetector_tests)
-#endif
-
+#ifdef ARM64
+BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
+#else
 BOOST_AUTO_TEST_CASE(basic)
+#endif
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
