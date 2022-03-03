@@ -227,7 +227,9 @@ SET(IP_FILES
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
+	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
+
 )
 
 SET(IP_FILES_H
@@ -244,6 +246,9 @@ SET(IP_FILES_H
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
+	include/ApraFaceInfo.h
+	include/FaceDetectsInfo.h
+	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 )
 
@@ -447,6 +452,7 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp

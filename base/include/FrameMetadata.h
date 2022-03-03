@@ -46,6 +46,7 @@ public:
 		LINE,
 		ROI,
 		DEFECTS_INFO,
+		FACEDETECTS_INFO,
 		BMP_IMAGE
 	};
 
