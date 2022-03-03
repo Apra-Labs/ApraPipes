@@ -129,17 +129,18 @@ jobs:
     # - name: Test Windows
     #   run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
 
-    - name: Build self-hosted
-      if: runner.arch == 'ARM64'
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
 
     - name: Windows Test 
       if: runner.os == 'Windows'
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
-    - name: Test
-      if: runner.os != 'Windows'
+    - name: Build self-hosted
+      if: runner.arch == 'ARM64'
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+
+    - name: Test self-hosted
+      if: runner.arch == 'ARM64'
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
     - name: Upload Test Results
