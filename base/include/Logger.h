@@ -50,6 +50,7 @@ public:
 	static void initLogger(LoggerProps props);
 	static Logger* getLogger();
 	static void setLogLevel(boost::log::trivial::severity_level severity);
+	static bool setLogLevel(const std::string& sSeverity);
 	static void setListener(void(*cb)(std::string&));
 
 	virtual ~Logger();	
