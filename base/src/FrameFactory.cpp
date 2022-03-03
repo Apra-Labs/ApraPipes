@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include "FrameFactory.h"
 #ifdef ARM64
 #include "DMAAllocator.h"
@@ -7,7 +7,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-
+using namespace boost::placeholders;
 #define LOG_FRAME_FACTORY
 
 FrameFactory::FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrames) : maxConcurrentFrames(_maxConcurrentFrames)

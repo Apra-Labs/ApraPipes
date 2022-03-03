@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
             return;
         }
         auto ptr = static_cast<DMAFDWrapper *>(frame->data());
-        LOG_ERROR << "Received frame <>" << ptr->tempFD;
+        LOG_INFO << "Received frame <>" << ptr->tempFD;
     },
     [&]() -> frame_sp {
         auto frame = framefactory->create(framemetadata->getDataSize(),framefactory);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
         }
         else
         {
-            LOG_ERROR << "SENDING VALID FRAME";
+            LOG_INFO << "SENDING VALID FRAME";
         }
         return frame;
         }
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
     BOOST_TEST(helper->stop());
     helper.reset();
-    LOG_ERROR << "FINISHED";
+    LOG_INFO << "FINISHED";
 }
 
 
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
 
         auto helper = std::make_shared<NvV4L2CameraHelper>([&](frame_sp &frame) -> void {
             auto ptr = static_cast<DMAFDWrapper *>(frame->data());
-            LOG_ERROR << "Received frame <>" << ptr->tempFD;
+            LOG_INFO << "Received frame <>" << ptr->tempFD;
             cacheFrame = frame;
         },
         [&]() -> frame_sp {return framefactory->create(framemetadata->getDataSize(),framefactory);}
@@ -75,10 +75,10 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
 
         BOOST_TEST(helper->stop());
         helper.reset();
-        LOG_ERROR << "RESET DONE";
+        LOG_INFO << "RESET DONE";
     }
     cacheFrame.reset();
-    LOG_ERROR << "FINISHED";
+    LOG_INFO << "FINISHED";
 }
 
 

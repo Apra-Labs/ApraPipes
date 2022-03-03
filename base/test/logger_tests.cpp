@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
 	for (auto i = 0; i < 100; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 		
 	boost::this_thread::sleep_for(boost::chrono::seconds(1));		
@@ -59,14 +59,14 @@ BOOST_AUTO_TEST_CASE(listener_test)
 
 	for (auto i = 0; i < 10; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 
 	Logger::setListener(listener);
 
 	for (auto i = 10; i < 20; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 
 	Logger::setListener(nullptr);
