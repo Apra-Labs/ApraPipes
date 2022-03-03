@@ -31,10 +31,10 @@ jobs:
             NPROC: 7
           - os: windows-2019
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            CACHE_PATH: ${{ 'C:/Users/runneradmin/AppData/Local/vcpkg/archives' }}
+            CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
-            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_CUDA=OFF -DENABLE_LINUX=OFF -A x64 ../base"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
     env:
       BUILD_TYPE: RelWithDebInfo
@@ -88,20 +88,20 @@ jobs:
       id: cache-gstreamer-windows
       uses: actions/cache@v2
       with:
-          path: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
+          path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
   
-    - name: Install meson, ninja and pkgconfiglite Windows
+    - name: Install meson and ninja Windows
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install meson && choco install pkgconfiglite
+      run: pip3 install ninja && pip3 install meson && && choco install pkgconfiglite
 
     - name: Build Gstreamer Windows
       if: ${{steps.cache-gstreamer-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
       working-directory: ${{github.workspace}}/thirdparty
       run: | 
-       "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
+       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
       shell: cmd
 
     - name: Configure CMake Common
