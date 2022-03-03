@@ -95,7 +95,7 @@ jobs:
     - name: Install meson and ninja Windows
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install
+      run: pip3 install ninja && pip3 install meson
 
     - name: Build Gstreamer Windows
       if: ${{steps.cache-gstreamer-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
