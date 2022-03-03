@@ -70,7 +70,7 @@ jobs:
       continue-on-error: true
 
     - name: Cache gstreamer dependencies linux
-      id: cache-gstreamer
+      id: cache-gstreamer-linux
       if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
       uses: actions/cache@v2
       with:
@@ -79,13 +79,13 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Build gstreamer linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-linux.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}
       run: cd thirdparty && sh build_gstreamer.sh && cd ..
       
     - name: Cache gstreamer dependencies Windows
       if: runner.os == 'Windows'
-      id: cache-gstreamer
+      id: cache-gstreamer-windows
       uses: actions/cache@v2
       with:
           path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
@@ -98,7 +98,7 @@ jobs:
       run: pip3 install ninja && pip3 install
 
     - name: Build Gstreamer Windows
-      if: ${{steps.cache-gstreamer.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
+      if: ${{steps.cache-gstreamer-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
       working-directory: ${{github.workspace}}/thirdparty
       run: | 
        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
@@ -129,9 +129,10 @@ jobs:
     # - name: Test Windows
     #   run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
 
-    # - name: Build
-    #   working-directory: ${{github.workspace}}/build
-    #   run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+    - name: Build self-hosted
+      if: runner.arch == 'ARM64'
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
 
     - name: Windows Test 
       if: runner.os == 'Windows'
