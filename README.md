@@ -1,6 +1,6 @@
 
 # ApraPipes
-A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning tooklits
+A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits. More details can be found here https://apra-labs.github.io/ApraPipes.
 
 # Build and Run Tests
 Tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community No Cuda
@@ -127,8 +127,8 @@ This project uses boost tests for unit tests.
 git submodule update --init --recursive
 ```
 
-## Documentation
-* Open `docs/build/html/index.html` using Google Chrome
+## Update Documentation
+If any changes are made in the documentation i.e. in /docs/source folder, the docs must be regenerated again follwing the steps given below. New contents from the /docs/build directory should be committed.
 
 ### To regenerate documentation
 ```
