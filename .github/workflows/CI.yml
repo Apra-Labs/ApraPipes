@@ -114,7 +114,7 @@ jobs:
 
     - name: Test linux
       if: runner.os == 'Linux'
-      run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_Linux.xml
+      run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
     - name: Build Windows
       if: runner.os == 'Windows'
