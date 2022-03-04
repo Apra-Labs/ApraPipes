@@ -234,7 +234,7 @@ public:
 			goto failed;
 
 		if (!mProps.htdigestPath.empty())
-			g_print("stream with htdigest users ready at rtsp://%s:%d%s\n", mProps.unicastAddress.c_str(), gst_rtsp_server_get_bound_port(server), mProps.mountPoint.c_str());
+			g_print("use this to connect : ffplay rtsp://admin:7ABCDE@%s:%d%s\n", mProps.unicastAddress.c_str(), gst_rtsp_server_get_bound_port(server), mProps.mountPoint.c_str());
 
 		g_main_loop_run(loop);
 
