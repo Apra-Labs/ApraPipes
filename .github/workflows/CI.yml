@@ -109,11 +109,11 @@ jobs:
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build linux
-      if: runner.os == 'Linux'
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
       run: export PKG_CONFIG_PATH=${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig  && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test linux
-      if: runner.os == 'Linux'
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
       run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
     - name: Build Windows
