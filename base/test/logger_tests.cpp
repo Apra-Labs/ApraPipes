@@ -15,11 +15,37 @@ BOOST_AUTO_TEST_CASE(basic)
 
 	for (auto i = 0; i < 100; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 		
 	boost::this_thread::sleep_for(boost::chrono::seconds(1));		
 }
+
+BOOST_AUTO_TEST_CASE(severity)
+{
+	LoggerProps props;
+	props.enableConsoleLog = true;
+	Logger::initLogger(props);
+
+	int i=1;
+	BOOST_TEST(!Logger::setLogLevel("foo-bar"),"bad setting test");
+	LOG_DEBUG <<"should see this on console "<<i++; 
+
+	BOOST_TEST(Logger::setLogLevel("info"),"info setting test");
+	LOG_INFO <<"should see this on console with INFO "<<i++; 
+	LOG_DEBUG <<"should not see this on console "<<i++; 
+	
+
+	BOOST_TEST(Logger::setLogLevel("fatal"),"fatal setting test");
+	LOG_FATAL <<"should see this on console with FATAL "<<i++; 
+	LOG_DEBUG <<"should not see this on console "<<i++; 
+	LOG_INFO <<"should not see this on console "<<i++; 
+	LOG_WARNING <<"should not see this on console "<<i++; 
+	
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(1));		
+}
+
 
 void listener(std::string& msg)
 {
@@ -33,14 +59,14 @@ BOOST_AUTO_TEST_CASE(listener_test)
 
 	for (auto i = 0; i < 10; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 
 	Logger::setListener(listener);
 
 	for (auto i = 10; i < 20; i++)
 	{
-		LOG_ERROR << "HELLO WORLD " << i;
+		LOG_INFO << "HELLO WORLD " << i;
 	}
 
 	Logger::setListener(nullptr);

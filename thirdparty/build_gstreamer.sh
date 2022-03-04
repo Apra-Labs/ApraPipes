@@ -5,4 +5,4 @@ git checkout 1.16.2
 sudo /root/.local/bin/meson --prefix=${PWD}/outInstall builddir -Dpython=disabled
 ninja -C builddir
 sudo /root/.local/bin/meson install -C builddir
-cd ..
+cd ../..

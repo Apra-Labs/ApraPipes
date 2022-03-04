@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	auto shouldrender = Test_Utils::getArgValue("r", "0");
 	auto n_shouldrender = atoi(shouldrender.c_str());
 
-	LOG_ERROR << "ARGVALUE " << argValue << " n_cams " << n_cams << " n_seconds " << n_seconds << " n_shouldrender " << n_shouldrender;
+	LOG_INFO << "ARGVALUE " << argValue << " n_cams " << n_cams << " n_seconds " << n_seconds << " n_shouldrender " << n_shouldrender;
 
 	PipeLine p("test");
 	for (auto i = 0; i < n_cams; i++)

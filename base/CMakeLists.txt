@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
@@ -28,33 +28,38 @@ ENDIF(ENABLE_ARM64)
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
-set(ENV{PKG_CONFIG_PATH} "./thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+IF(ENABLE_LINUX)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+ENDIF(ENABLE_LINUX)
+
+IF(ENABLE_WINDOWS)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+ENDIF(ENABLE_WINDOWS)
+message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
 
-pkg_search_module(GSTREAMER REQUIRED gstreamer-1.0)  
-pkg_search_module(GOBJECT REQUIRED gobject-2.0)  
-pkg_search_module(GLIB REQUIRED glib-2.0)  
-pkg_search_module(GIO REQUIRED gio-2.0) 
-pkg_search_module(GSTRTP REQUIRED gstreamer-rtp-1.0)  
-pkg_search_module(GSTRTSP REQUIRED gstreamer-rtsp-1.0)  
-pkg_search_module(GSTRTSPSERVER REQUIRED gstreamer-rtsp-server-1.0)  
-pkg_search_module(GSTAPP REQUIRED gstreamer-app-1.0)
-pkg_search_module(GSTNET REQUIRED gstreamer-net-1.0)
-pkg_search_module(GSTWEBRTC REQUIRED gstreamer-webrtc-1.0)
-pkg_search_module(LIBSOUP REQUIRED libsoup-2.4)
-pkg_search_module(JSONGLIB REQUIRED json-glib-1.0)
-pkg_search_module(PCRE REQUIRED libpcre)
-pkg_search_module(GTHREAD REQUIRED gthread-2.0)
-pkg_search_module(GMODULE REQUIRED gmodule-2.0)
-
-if(!ENABLE_WINDOWS)
-	pkg_search_module(LIBMOUNT REQUIRED libmount)
-	pkg_search_module(LIBBBLKID REQUIRED libblkid)
-	pkg_search_module(LIBSELINUX REQUIRED libselinux)
-
-endif()
-pkg_search_module(GSTBASE REQUIRED gstreamer-base-1.0)
+IF(NOT ENABLE_ARM64)
+	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
+	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
+	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
+	pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
+	pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
+	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
+	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
+	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
+	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
+	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
+	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+ENDIF(NOT ENABLE_ARM64)
+	
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+	pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -81,7 +86,7 @@ ENDIF(ENABLE_CUDA)
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
+		SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")					
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
@@ -251,11 +256,19 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/BrightnessContrastControl.cpp
+	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
-	src/GstWebRTCSink.cpp
+	src/FaceDetectorXform.cpp
+	src/TextOverlayXForm.cpp
+
 )
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND IP_FILES
+	src/GstWebRTCSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -268,11 +281,20 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/BrightnessContrastControl.h
+	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
-	include/GstWebRTCSink.h
+	include/ApraFaceInfo.h
+	include/FaceDetectsInfo.h
+	include/FaceDetectorXform.h
+	include/TextOverlayXForm.h
 )
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND IP_FILES_H
+	include/GstWebRTCSink.h
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -395,36 +417,41 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
-
+message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
-${GSTAPP_INCLUDE_DIRS}
-${GSTBASE_INCLUDE_DIRS}
-${GSTREAMER_INCLUDE_DIRS}
-${GSTRTSPSERVER_INCLUDE_DIRS}
-${GSTWEBRTC_INCLUDE_DIRS}
-${PCRE_INCLUDE_DIRS}
-${GLIB_INCLUDE_DIRS}
-${LIBSOUP_INCLUDE_DIRS}
-${JSONGLIB_INCLUDE_DIRS}
-${GSTRTSP_INCLUDE_DIRS}
-${GSTRTP_INCLUDE_DIRS}
-${GSTSDP_INCLUDE_DIRS}
-${GSTNET_INCLUDE_DIRS}
-${GSTPBUTILS_INCLUDE_DIRS}
-${GSTRTPMANAGER_INCLUDE_DIRS}
-${LIBFFI_INCLUDE_DIRS}
-${LIBBLKID_INCLUDE_DIRS}
-${GIO_INCLUDE_DIRS}
-${GMODULE_INCLUDE_DIRS}
-${GTHREAD_INCLUDE_DIRS}
-${GOBJECT_INCLUDE_DIRS}
-${LIBMOUNT_INCLUDE_DIRS}
-${LIBSELINUX_INCLUDE_DIRS}
 )
+
+IF(NOT ENABLE_ARM64)
+target_include_directories ( aprapipes PRIVATE
+${gstreamer-app-1.0_INCLUDE_DIRS}
+${gstreamer-base-1.0_INCLUDE_DIRS}
+${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
+${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+${libpcre_INCLUDE_DIRS}
+${glib-2.0_INCLUDE_DIRS}
+${gstreamer-rtsp-1.0_INCLUDE_DIRS}
+${gstreamer-rtp-1.0_INCLUDE_DIRS}
+${gstreamer-net-1.0_INCLUDE_DIRS}
+${gio-2.0_INCLUDE_DIRS}
+${gmodule-2.0_INCLUDE_DIRS}
+${gthread-2.0_INCLUDE_DIRS}
+${gobject-2.0_INCLUDE_DIRS}
+)
+ENDIF(NOT ENABLE_ARM64)
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+target_include_directories(
+${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+${json-glib-1.0_INCLUDE_DIRS}
+${libsoup-2.4_INCLUDE_DIRS}
+)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
 
 # aprapipes Unit Tests
 
@@ -497,9 +524,11 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
+  	test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
-	test/gstwebrtcsink_tests.cpp
+	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -510,6 +539,12 @@ IF(ENABLE_LINUX)
 	test/QRReader_tests.cpp
 	)
 ENDIF(ENABLE_LINUX)
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND UT_FILES
+	test/gstwebrtcsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -527,56 +562,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${GSTAPP_LINK_LIBRARIES}
-  ${GSTBASE_LINK_LIBRARIES}
-  ${GSTREAMER_LINK_LIBRARIES}
-  ${GSTWEBRTC_LINK_LIBRARIES}
-  ${GSTRTSPSERVER_LINK_LIBRARIES}
-  ${PCRE_LINK_LIBRARIES}
-  ${GLIB_LINK_LIBRARIES}
-  ${GSTRTSP_LINK_LIBRARIES}
-  ${GSTRTP_LINK_LIBRARIES}
-  ${GSTSDP_LINK_LIBRARIES}
-  ${GSTNET_LINK_LIBRARIES}
-  ${LIBSOUP_LINK_LIBRARIES}
-  ${JSONGLIB_LINK_LIBRARIES}
-  ${GSTPBUTILS_LINK_LIBRARIES}
-  ${GSTRTPMANAGER_LINK_LIBRARIES}
-  ${LIBFFI_LINK_LIBRARIES}
-  ${LIBBLKID_LINK_LIBRARIES}
-  ${GIO_LINK_LIBRARIES}
-  ${GMODULE_LINK_LIBRARIES}
-  ${GTHREAD_LINK_LIBRARIES}
-  ${GLIB_LDFLAGS}
-  ${GOBJECT_LINK_LIBRARIES}
-  ${LIBMOUNT_LINK_LIBRARIES}
-  ${LIBSELINUX_LINK_LIBRARIES}
-
-  ${GSTAPP_LINK_LIBRARIES}
-  ${GSTBASE_LINK_LIBRARIES}
-  ${GSTREAMER_LINK_LIBRARIES}
-  ${GSTWEBRTC_LINK_LIBRARIES}
-  ${GSTRTSPSERVER_LINK_LIBRARIES}
-  ${PCRE_LINK_LIBRARIES}
-  ${GLIB_LINK_LIBRARIES}
-  ${GSTRTSP_LINK_LIBRARIES}
-  ${GSTRTP_LINK_LIBRARIES}
-  ${GSTSDP_LINK_LIBRARIES}
-  ${GSTNET_LINK_LIBRARIES}
-  ${LIBSOUP_LINK_LIBRARIES}
-  ${JSONGLIB_LINK_LIBRARIES}
-  ${GSTPBUTILS_LINK_LIBRARIES}
-  ${GSTRTPMANAGER_LINK_LIBRARIES}
-  ${LIBFFI_LINK_LIBRARIES}
-  ${LIBBLKID_LINK_LIBRARIES}
-  ${GIO_LINK_LIBRARIES}
-  ${GMODULE_LINK_LIBRARIES}
-  ${GTHREAD_LINK_LIBRARIES}
-  ${GLIB_LDFLAGS}
-  ${GOBJECT_LINK_LIBRARIES}
-  ${LIBMOUNT_LINK_LIBRARIES}
-  ${LIBSELINUX_LINK_LIBRARIES}
-  resolv
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -585,3 +570,34 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   )
+
+IF(NOT ENABLE_ARM64)
+target_link_libraries(aprapipesut
+  PkgConfig::gstreamer-app-1.0
+  PkgConfig::gstreamer-base-1.0
+  PkgConfig::gstreamer-1.0
+  PkgConfig::gstreamer-rtsp-server-1.0
+  PkgConfig::libpcre
+  PkgConfig::glib-2.0
+  PkgConfig::gstreamer-rtsp-1.0
+  PkgConfig::gstreamer-rtp-1.0
+  PkgConfig::gstreamer-net-1.0
+)
+ENDIF(NOT ENABLE_ARM64)
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+target_link_libraries(
+  PkgConfig::gstreamer-webrtc-1.0
+  PkgConfig::json-glib-1.0
+  PkgConfig::libsoup-2.4
+)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
+IF(ENABLE_WINDOWS)
+	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
+	IF(GHA)
+		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
+	ENDIF(GHA)
+ENDIF(ENABLE_WINDOWS)

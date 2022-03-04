@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 		}
 		sys_clock::time_point frame_end = sys_clock::now();
 		std::chrono::nanoseconds frame_len = frame_end - frame_begin;
-		LOG_ERROR << "loopindex<" << j << "> timeelapsed<" << 1.0*frame_len.count() / (1000000000.0) << "> fps<" << 1000 / (1.0*frame_len.count() / (1000000000.0)) << ">";
+		LOG_DEBUG << "loopindex<" << j << "> timeelapsed<" << 1.0*frame_len.count() / (1000000000.0) << "> fps<" << 1000 / (1.0*frame_len.count() / (1000000000.0)) << ">";
 		j++;
 
 		if (j == 10)
