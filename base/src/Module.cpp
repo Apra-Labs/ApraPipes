@@ -834,7 +834,10 @@ frame_sp Module::getEmptyFrame()
 
 void Module::operator()()
 {
-	run();
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PUSH)
+	{
+		run();
+	}
 }
 bool Module::run()
 {
@@ -1194,15 +1197,16 @@ bool Module::handleStop()
 	{
 		return true;
 	}
-	if (myNature == SINK)
+	if (myNature != SINK)
 	{
-		mRunning = false;
-		return true;
+		sendEoPFrame();
 	}
-
-	sendEoPFrame();
-
 	mRunning = false;
+	// if pull and not source - call term
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PULL && myNature != SOURCE)
+	{
+		term();
+	}
 
 	return true;
 }
