@@ -6,7 +6,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <sw/redis++/redis++.h>
-#include "BrightnessContrastControl.h"
 #include "EventSource.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
