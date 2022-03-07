@@ -264,11 +264,18 @@ SET(IP_FILES
 
 )
 
+
 IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 	list(APPEND IP_FILES
 	src/GstWebRTCSink.cpp
 	)
 ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES
+	src/GstOnvifRtspSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -290,11 +297,18 @@ SET(IP_FILES_H
 	include/TextOverlayXForm.h
 )
 
+
 IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 	list(APPEND IP_FILES_H
 	include/GstWebRTCSink.h
 	)
 ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES_H
+	include/GstOnvifRtspSink.h
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -452,7 +466,6 @@ ${libsoup-2.4_INCLUDE_DIRS}
 )
 ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
-
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -526,7 +539,7 @@ SET(UT_FILES
 	test/webcam_source_tests.cpp
 	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
-  	test/pullstratergy_tests.cpp
+  test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
@@ -545,6 +558,12 @@ IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 	test/gstwebrtcsink_tests.cpp
 	)
 ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND UT_FILES
+	test/gstrtsponvifsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
 
