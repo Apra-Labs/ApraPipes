@@ -10,9 +10,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: ${{ matrix.SHELL }}
     strategy:
       fail-fast: false
       matrix:
@@ -84,6 +81,7 @@ jobs:
       if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
+      shell: ${{ matrix.SHELL }}
 
     - name: Make build folder
       run: mkdir -p build
