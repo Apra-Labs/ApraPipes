@@ -107,7 +107,7 @@ jobs:
       run: dir RelWithDebInfo
 
     - name: Test Linux
-      if: runner.os == 'Liunx'
+      if: runner.os == 'Linux'
       env:
         LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
