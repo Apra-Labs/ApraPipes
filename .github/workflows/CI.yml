@@ -50,6 +50,7 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+      GST_BUILD_SHELL: ${{ matrix.SHELL }}
 
     steps:
     - name: Install build dependencies in cloud hosted env
@@ -81,7 +82,7 @@ jobs:
       if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
-      shell: ${{ matrix.SHELL }}
+      shell: ${{ env.GST_BUILD_SHELL }}
 
     - name: Make build folder
       run: mkdir -p build
