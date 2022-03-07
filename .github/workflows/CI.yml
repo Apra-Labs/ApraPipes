@@ -69,19 +69,19 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
-    # - name: Cache gstreamer dependencies linux
-    #   id: cache-gstreamer-linux
-    #   if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-    #   uses: actions/cache@v2
-    #   with:
-    #       path: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-    #       key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.sh') }}
-    #       restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+    - name: Cache gstreamer dependencies linux
+      id: cache-gstreamer-ubuntu
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      uses: actions/cache@v2
+      with:
+          path: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.sh') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Build gstreamer linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-linux.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-ubuntu.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
-      run: sh build_gstreamer.sh && pkg-config --list-all | grep json
+      run: sh build_gstreamer.sh
       
     - name: Cache gstreamer dependencies Windows
       if: runner.os == 'Windows'
