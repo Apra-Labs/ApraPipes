@@ -63,7 +63,7 @@ jobs:
 
     - name: Install build dependencies in linux cloud hosted
       if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison  autopoint  libsoup-gnome2.4-dev
+      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison  autopoint  libsoup-gnome2.4-dev && pip3 install meson
 
     - name: Make build folder
       run: mkdir -p build
@@ -79,8 +79,7 @@ jobs:
     #       restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Build gstreamer linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-      # && steps.cache-gstreamer-linux.outputs.cache-hit != 'true'
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-linux.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: sh build_gstreamer.sh && pkg-config --list-all | grep json
       
