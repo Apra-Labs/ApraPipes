@@ -21,7 +21,7 @@ jobs:
           - os: ubuntu-20.04
             BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-            GST_BUILD_SCRIPT: "build_gstreamer.sh"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
             GST_BUILD_COMMAND: sh build_gstreamer.sh
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
@@ -41,7 +41,7 @@ jobs:
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            GST_BUILD_SCRIPT: "build_gstreamer.bat"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
             GST_BUILD_COMMAND:  ${{ 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat && call' }} ${{ github.workspace }}${{ '\thirdparty\'}}build_gstreamer.bat
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
@@ -77,7 +77,7 @@ jobs:
           path: |
             ${{ matrix.CACHE_PATH }}
             ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json', 'thirdparty/'matrix.GST_BUILD_SCRIPT) }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json', matrix.GST_BUILD_SCRIPT) }}
           restore-keys: ${{ env.CACHE_REST_KEY }}
 
     - name: Build Gstreamer
