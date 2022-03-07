@@ -79,7 +79,8 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
 
     - name: Build gstreamer linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-linux.outputs.cache-hit != 'true' }}
+      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
+      # && steps.cache-gstreamer-linux.outputs.cache-hit != 'true'
       working-directory: ${{github.workspace}}/thirdparty
       run: sh build_gstreamer.sh && pkg-config --list-all | grep json
       
