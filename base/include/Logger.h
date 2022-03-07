@@ -1,5 +1,4 @@
 #pragma once
-#define BOOST_USE_WINAPI_VERSION BOOST_WINAPI_VERSION_WIN7
 
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -51,6 +50,7 @@ public:
 	static void initLogger(LoggerProps props);
 	static Logger* getLogger();
 	static void setLogLevel(boost::log::trivial::severity_level severity);
+	static bool setLogLevel(const std::string& sSeverity);
 	static void setListener(void(*cb)(std::string&));
 
 	virtual ~Logger();	

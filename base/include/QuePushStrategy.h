@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonDefs.h"
+#include <string>
 
 class Module;
 class FrameContainerQueue;

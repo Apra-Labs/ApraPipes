@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
@@ -28,6 +28,33 @@ ENDIF(ENABLE_ARM64)
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
+IF(ENABLE_LINUX)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+ENDIF(ENABLE_LINUX)
+
+IF(ENABLE_WINDOWS)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+ENDIF(ENABLE_WINDOWS)
+message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
+
+find_package(PkgConfig REQUIRED)
+
+IF(NOT ENABLE_ARM64)
+	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
+	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
+	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
+	pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
+	pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
+	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
+	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
+	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
+	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
+	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
+	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+ENDIF(NOT ENABLE_ARM64)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -40,6 +67,7 @@ find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
 IF(NOT ENABLE_ARM64)
 	# hunter_add_package(ncursesw)
@@ -55,7 +83,7 @@ ENDIF(ENABLE_CUDA)
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
+		SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")					
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
@@ -81,11 +109,12 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-	ELSE()
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-	
+ 
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
 			libnvjpeg_static.a
@@ -94,15 +123,29 @@ IF(ENABLE_CUDA)
 			libnppidei_static.a
 			libnppial_static.a					
 			libculibos.a	
-		)	
-	ENDIF(ENABLE_ARM64)
+		) 
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSE()
+		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 
-	include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		SET(NVCUDAToolkit_LIBS		
+			cudart_static.lib
+			nvjpeg.lib
+			nppig.lib
+			nppicc.lib
+			nppidei.lib
+			nppial.lib					
+			cublas.lib	
+			cublasLt.lib
+		)
+		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
+	ENDIF(ENABLE_ARM64)
 
 ENDIF(ENABLE_CUDA)
 
 include_directories(AFTER SYSTEM include)
-
 
 # ApraPipes library
 
@@ -124,6 +167,7 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
+	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 )
 
@@ -166,6 +210,7 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
+	include/AudioCaptureSrc.h
 	include/QRReader.h
 )
 
@@ -191,12 +236,12 @@ SET(GENERIC_FILES_H
 	include/QRReader.h
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND CORE_FILES src/KeyboardListener.cpp)
 	list(APPEND CORE_FILES_H include/KeyboardListener.h)
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -208,12 +253,20 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/BrightnessContrastControl.cpp
+	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
 	src/RedisDBReader.cpp
 	src/EventSource.cpp
+	src/FaceDetectorXform.cpp
+	src/TextOverlayXForm.cpp
 )
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES
+	src/GstOnvifRtspSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -226,12 +279,22 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/BrightnessContrastControl.h
+	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
 	include/RedisDBReader.h
 	include/EventSource.h
+	include/ApraFaceInfo.h
+	include/FaceDetectsInfo.h
+	include/FaceDetectorXform.h
+	include/TextOverlayXForm.h
 )
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES_H
+	include/GstOnvifRtspSink.h
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -354,13 +417,32 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
-
+message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
 )
+
+IF(NOT ENABLE_ARM64)
+target_include_directories ( aprapipes PRIVATE
+${gstreamer-app-1.0_INCLUDE_DIRS}
+${gstreamer-base-1.0_INCLUDE_DIRS}
+${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
+${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+${libpcre_INCLUDE_DIRS}
+${glib-2.0_INCLUDE_DIRS}
+${gstreamer-rtsp-1.0_INCLUDE_DIRS}
+${gstreamer-rtp-1.0_INCLUDE_DIRS}
+${gstreamer-net-1.0_INCLUDE_DIRS}
+${gio-2.0_INCLUDE_DIRS}
+${gmodule-2.0_INCLUDE_DIRS}
+${gthread-2.0_INCLUDE_DIRS}
+${gobject-2.0_INCLUDE_DIRS}
+)
+ENDIF(NOT ENABLE_ARM64)
 
 # aprapipes Unit Tests
 
@@ -435,17 +517,27 @@ SET(UT_FILES
 	test/webcam_source_tests.cpp
 	test/redisreader_tests.cpp
 	test/eventsource_tests.cpp
+	test/facedetectorXform_tests.cpp
+	test/sound_record_tests.cpp
+  test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}	
+	${CUDA_UT_FILES}
 )
 
-IF(LINUX)
+IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
-ENDIF(LINUX)
+ENDIF(ENABLE_LINUX)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND UT_FILES
+	test/gstrtsponvifsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -469,4 +561,28 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   liblzma::liblzma
   bigint::bigint
+  sfml-audio
   )
+
+IF(NOT ENABLE_ARM64)
+target_link_libraries(aprapipesut
+  PkgConfig::gstreamer-app-1.0
+  PkgConfig::gstreamer-base-1.0
+  PkgConfig::gstreamer-1.0
+  PkgConfig::gstreamer-rtsp-server-1.0
+  PkgConfig::libpcre
+  PkgConfig::glib-2.0
+  PkgConfig::gstreamer-rtsp-1.0
+  PkgConfig::gstreamer-rtp-1.0
+  PkgConfig::gstreamer-net-1.0
+)
+ENDIF(NOT ENABLE_ARM64)
+
+IF(ENABLE_WINDOWS)
+	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
+	IF(GHA)
+		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
+	ENDIF(GHA)
+ENDIF(ENABLE_WINDOWS)

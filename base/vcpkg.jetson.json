@@ -2,11 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-arm64",
   "version": "0.0.1",
+  "builtin-baseline": "f2f670866645f78e53e3c01d02dbe74beeba24ae",
   "dependencies": [
     {
       "name": "opencv4",
       "default-features": false,
-      "features": [ "nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
+      "features": ["cuda","cudnn","nonfree","png","jpeg","tiff","dnn","webp","contrib" ]
     },
     "ffmpeg",
     "bigint",
@@ -19,16 +20,10 @@
     "boost-chrono",
     "boost-test",
     "boost-iostreams",
-    "zxing-cpp",
+    "nu-book-zxing-cpp",
     "liblzma",
     "bzip2",
-    "zlib"
-  ],
-  "builtin-baseline": "1b664707c109f5d48b0b142e96117a53deb653be",
-  "overrides": [
-      {
-          "name": "opencv4",
-          "version": "4.5.3#3"
-      }
+    "zlib",
+    "sfml"
   ]
 }

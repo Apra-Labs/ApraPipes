@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(sample2)
 
 BOOST_AUTO_TEST_CASE(sample3)
 {
-	LOG_ERROR << "HOLA SAMPLE3";
+	LOG_DEBUG << "HOLA SAMPLE3";
 	boost::this_thread::sleep_for(boost::chrono::seconds(2));
 }
 
