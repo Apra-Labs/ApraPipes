@@ -15,27 +15,27 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-2019, self-hosted]
         include:
-#          - os: ubuntu-20.04
-#            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
-#            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-#            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
-#            GST_BUILD_COMMAND1: "echo building Gstreamer"
-#            GST_BUILD_COMMAND2: "sh build_gstreamer.sh"
-#            CACHE_PATH: "~/.cache/vcpkg/archives"
-#            FLAV: "Linux"
-#            VCPKG_FILE: "base/vcpkg.json"
-#            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
-#            NPROC: 3
-#            SHELL: "bash"
-#          - os: self-hosted
-#            BUILDER_PREP_CMD: "echo No builder prep required"
-#            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-#            CACHE_PATH: "~/.cache/vcpkg/archives"
-#            FLAV: "Linux_ARM64"
-#            VCPKG_FILE: "base/vcpkg.jetson.json"
-#            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
-#            NPROC: 7
-#            SHELL: "bash"
+          - os: ubuntu-20.04
+            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
+            GST_BUILD_COMMAND1: "echo building Gstreamer"
+            GST_BUILD_COMMAND2: "sh build_gstreamer.sh"
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux"
+            VCPKG_FILE: "base/vcpkg.json"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
+            NPROC: 3
+            SHELL: "bash"
+          - os: self-hosted
+            BUILDER_PREP_CMD: "echo No builder prep required"
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+            CACHE_PATH: "~/.cache/vcpkg/archives"
+            FLAV: "Linux_ARM64"
+            VCPKG_FILE: "base/vcpkg.jetson.json"
+            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
+            NPROC: 7
+            SHELL: "bash"
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
@@ -64,7 +64,9 @@ jobs:
         submodules: 'false'
 
     - name: Checkout submodule
-      run: git submodule update --init --recursive && git submodule status
+      run: |
+        git submodule update --init --recursive 
+        git submodule status > submodule_ver.txt
       
     - name: Run VCPKG bootstrap
       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
@@ -77,9 +79,8 @@ jobs:
           path: |
             ${{ matrix.CACHE_PATH }}
             ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          #key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json', matrix.GST_BUILD_SCRIPT) }}
-          key:  ${{ env.CACHE_REST_KEY }}-2
-          restore-keys: ${{ env.CACHE_REST_KEY }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ env.CACHE_REST_KEY }}-
 
     - name: Build Gstreamer
       if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
@@ -95,20 +96,17 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
-      continue-on-error: true
       
     - name: Build
       env:
         PKG_CONFIG_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig 
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
-      if: false
       
     - name: Verify contents of Debug and Release in windows
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}/build/
-      run: dir RelWithDebInfo
-      continue-on-error: true
+      run: dir ${{env.BUILD_TYPE}}
 
     - name: Test Linux
       if: runner.os == 'Linux'
@@ -119,7 +117,6 @@ jobs:
     - name: Test Windows 
       if: runner.os == 'Windows'
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
-      continue-on-error: true
 
     - name: Upload Test Results
       if: always()
