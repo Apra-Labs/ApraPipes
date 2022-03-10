@@ -39,7 +39,7 @@ jobs:
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
@@ -84,6 +84,7 @@ jobs:
       if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
+      continue-on-error: true
       
     - name: Make build folder
       run: mkdir -p build
