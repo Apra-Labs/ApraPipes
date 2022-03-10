@@ -92,7 +92,7 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
-      continue-on-error: true
+      if: false
       
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -103,6 +103,7 @@ jobs:
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}/build/
       run: dir ${{env.BUILD_TYPE}}
+      continue-on-error: true
 
     - name: Test Linux
       if: runner.os == 'Linux'
