@@ -26,7 +26,7 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 IF(ENABLE_LINUX)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
