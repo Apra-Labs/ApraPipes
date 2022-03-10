@@ -22,5 +22,7 @@ set VSLANG=1033
 meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled 
 meson compile -C builddir "--vs-args=/MP"
 meson install -C builddir
-
+dir
+del /S /Q builddir
+dir
 cd ../..
