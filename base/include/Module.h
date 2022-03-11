@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>

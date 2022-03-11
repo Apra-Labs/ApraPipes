@@ -16,133 +16,102 @@ jobs:
         os: [ubuntu-20.04, windows-2019, self-hosted]
         include:
           - os: ubuntu-20.04
+            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
+            GST_BUILD_COMMAND: "sh build_gstreamer.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
             VCPKG_FILE: "base/vcpkg.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
             NPROC: 3
+            SHELL: "bash"
           - os: self-hosted
+            BUILDER_PREP_CMD: "echo No builder prep required"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux_ARM64"
             VCPKG_FILE: "base/vcpkg.jetson.json"
             CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
             NPROC: 7
+            SHELL: "bash"
           - os: windows-2019
+            BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
+            SHELL: "cmd"
     env:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+      GST_BUILD_SHELL: ${{ matrix.SHELL }}
 
     steps:
+    - name: Install build dependencies in cloud hosted env
+      run: ${{ matrix.BUILDER_PREP_CMD }}
+    
     - name: Checkout code
       uses: actions/checkout@v2
       with: 
         submodules: 'false'
 
     - name: Checkout submodule
-      run: git submodule update --init --recursive && git submodule status
+      run: |
+        git submodule update --init --recursive 
+        git submodule status > submodule_ver.txt
       
     - name: Run VCPKG bootstrap
       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
 
-    - name: Cache VCPKG for fast cloud build
+    - name: Cache dependencies for fast cloud build
+      id: cache-all
       if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
       uses: actions/cache@v2
       with:
-          path: ${{ matrix.CACHE_PATH }}
-          key:  ${{ env.CACHE_REST_KEY }}-${{hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt','vcpkg/baseline.json') }}
-          restore-keys: ${{ env.CACHE_REST_KEY }}
+          path: |
+            ${{ matrix.CACHE_PATH }}
+            ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ env.CACHE_REST_KEY }}-
 
-    - name: Install build dependencies in linux cloud hosted
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-      run: sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake   autopoint   build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison  libsoup-gnome2.4-dev && pip3 install meson
-
+    - name: Build Gstreamer
+      if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
+      working-directory: ${{github.workspace}}/thirdparty
+      run: ${{matrix.GST_BUILD_COMMAND}}
+          
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
 
-    # - name: Cache gstreamer dependencies linux
-    #   id: cache-gstreamer-ubuntu
-    #   if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-    #   uses: actions/cache@v2
-    #   with:
-    #       path: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-    #       key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.sh') }}
-    #       restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-
-    - name: Build gstreamer linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' && steps.cache-gstreamer-ubuntu.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: sh build_gstreamer.sh
-      
-    - name: Cache gstreamer dependencies Windows
-      if: runner.os == 'Windows'
-      id: cache-gstreamer-windows
-      uses: actions/cache@v2
-      with:
-          path: ${{github.workspace}}\thirdparty\gst-build\gst-build-1.16\outInstall\
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('thirdparty/build_gstreamer.bat') }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
-  
-    - name: Install meson and ninja Windows
-      if: runner.os == 'Windows'
-      working-directory: ${{github.workspace}}
-      run: pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite
-
-    - name: Build Gstreamer Windows
-      if: ${{steps.cache-gstreamer-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'}}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: | 
-       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && call ${{github.workspace}}/thirdparty/build_gstreamer.bat
-      shell: cmd
-
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-    - name: Build linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-      run: export PKG_CONFIG_PATH=${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig  && cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Test linux
-      if: ${{ runner.os == 'Linux' && runner.arch != 'ARM64' }}
-      run: export LD_LIBRARY_PATH="${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" && build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
-
-    - name: Build Windows
-      if: runner.os == 'Windows'
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}}
-
-    - name: Verify contents of Debug and Release
-      if: runner.os == 'Windows'
-      working-directory: ${{github.workspace}}/build/
-      run: dir RelWithDebInfo
-
-    # - name: Test Windows
-    #   run:  ${{github.workspace}}/build/RelWithDebInfo/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_windows.xml
-
-
-    - name: Windows Test 
-      if: runner.os == 'Windows'
-      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
-
-    - name: Build self-hosted
-      if: runner.arch == 'ARM64'
+      
+    - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
-
-    - name: Test self-hosted
-      if: runner.arch == 'ARM64'
+      
+    - name: Verify contents of Debug and Release in windows
+      if: runner.os == 'Windows'
+      working-directory: ${{github.workspace}}/build/
+      run: dir ${{env.BUILD_TYPE}}
+    
+    - name: Test Linux
+      if: runner.os == 'Linux'
+      env:
+        LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
 
+    - name: Test Windows 
+      if: runner.os == 'Windows'
+      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+    
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v2
@@ -152,7 +121,7 @@ jobs:
           ${{ env.TEST_RES_XML }}
 
     - name: Upload build logs 
-      if: always()
+      if: runner.arch != 'ARM64' # no need to upload logs as we can see them on self hosted
       uses: actions/upload-artifact@v2
       with:
         name: BuildLogs_${{ matrix.FLAV }}
