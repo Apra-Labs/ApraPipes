@@ -1,4 +1,3 @@
-# meson from pip3 only
 cd gst-build
 ./gst-worktree.py add gst-build-1.16 origin/1.16
 cd gst-build-1.16
