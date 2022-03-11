@@ -15,6 +15,7 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
+	add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 	add_compile_definitions(WINDOWS)
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 ENDIF(ENABLE_WINDOWS)
