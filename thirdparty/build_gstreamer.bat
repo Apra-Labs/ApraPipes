@@ -17,6 +17,7 @@ cd gst-build-1.16
 IF ERRORLEVEL 1 (echo "we can not cd into the above dir. Better to skip the build and fail" ) && ( cd..) && ( EXIT /B 1)
 
 git checkout 1.16.2
+
 set VSLANG=1033
 meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled 
 meson compile -C builddir "--vs-args=/MP"
