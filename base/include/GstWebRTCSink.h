@@ -5,7 +5,7 @@
 class GStreamerWebRTCSinkProps : public ModuleProps
 {
 public:
-	GStreamerWebRTCSinkProps(uint32_t _width = 640, uint32_t _height = 480, int _bitrate = 204800, int _goplength = 1, std::string _h264Profile = "high", std::string _peerId = "" , std::string _signallingSrvEndpoint="") : ModuleProps(), width(_width), height(_height), bitrate(_bitrate), goplength(_goplength), h264Profile(_h264Profile), peerId(_peerId), signallingSrvEndpoint(_signallingSrvEndpoint) {}
+	GStreamerWebRTCSinkProps(uint32_t _width = 640, uint32_t _height = 480, int _bitrate = 2048, int _goplength = 1, std::string _h264Profile = "high", std::string _peerId = "" , std::string _signallingSrvEndpoint="") : ModuleProps(), width(_width), height(_height), bitrate(_bitrate), goplength(_goplength), h264Profile(_h264Profile), peerId(_peerId), signallingSrvEndpoint(_signallingSrvEndpoint) {}
 	
 	uint32_t width;
 	uint32_t height;
