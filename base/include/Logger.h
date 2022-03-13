@@ -50,7 +50,7 @@ public:
 	static void initLogger(LoggerProps props);
 	static Logger* getLogger();
 	static void setLogLevel(boost::log::trivial::severity_level severity);
-	static void setListener(void(*cb)(std::string&));
+	static void setListener(void(*cb)(const std::string&));
 
 	virtual ~Logger();	
 	
@@ -59,7 +59,7 @@ public:
 	void setFileLog(bool enableLog);
 	bool push(boost::log::trivial::severity_level level, std::ostringstream& stream);
 
-	void _setListener(void(*cb)(std::string&));
+	void _setListener(void(*cb)(const std::string&));
 	
 	std::ostringstream& pre(std::ostringstream& stream, boost::log::trivial::severity_level lvl);
 	std::ostringstream& aipexceptionPre(std::ostringstream& stream, boost::log::trivial::severity_level lvl,int type);
@@ -72,12 +72,11 @@ private:
 	threadsafe_que<std::string> mQue;
 	boost::thread myThread;	
 	bool run();
-	bool process(std::string& message);
+	bool process(const std::string& message);
 	bool mRunning;
-	bool logDisabled;
 	LoggerProps mProps;	
 
-	void(*mListener)(std::string&);
+	void(*mListener)(const std::string&);
 
 	static boost::shared_ptr<Logger> instance;
 	boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;

@@ -29,9 +29,8 @@ Logger::Logger(LoggerProps props)
 	mProps = props;
 	initBoostLogger(props);
 	
-	logDisabled = !mProps.enableConsoleLog && !mProps.enableFileLog;
-	// start thread
-	if (!logDisabled)
+	// start thread if we has some form of logging
+	if (mProps.enableConsoleLog ||mProps.enableFileLog)
 	{
 		Logger& logger = *this;
 		myThread = boost::thread(std::ref(logger));
@@ -80,33 +79,43 @@ void Logger::initBoostLogger(LoggerProps props)
 Logger::~Logger()
 {
 	mRunning = false;
+	std::cout << "Logger exiting..." <<std::endl;
+	try{
+		if (myThread.get_id()!=boost::thread::id())// It is a real thread
+		{
+			mQue.setWake();
+			myThread.~thread(); // not the ideal way - thread exits before processing the queue
+			myThread.join();
+		}
+
+		if (mConsoleSink.get())
+		{
+			mConsoleSink->flush();
+		}
+		if (mFileSink.get())
+		{
+			mFileSink->flush();
+		}
+		mQue.clear();
+	}
+	catch(const std::exception& e)
+	{
+		std::cout << "Exception while logger exit: " << e.what() <<std::endl;
+	}
+	catch(...)
+	{
+		std::cout << "Uknown exception while logger exit"<<std::endl;
+	}
 	
-	if (!logDisabled)
-	{
-		mQue.setWake();
-		myThread.~thread(); // not the ideal way - thread exits before processing the queue
-		myThread.join();
-	}
-
-	if (mConsoleSink.get())
-	{
-		mConsoleSink->flush();
-	}
-	if (mFileSink.get())
-	{
-		mFileSink->flush();
-	}
-
-	mQue.clear();
 }
 
-void Logger::setListener(void(*cb)(std::string&))
+void Logger::setListener(void(*cb)(const std::string&))
 {
 	auto logger = Logger::getLogger();
 	logger->_setListener(cb);
 }
 
-void Logger::_setListener(void(*cb)(std::string&))
+void Logger::_setListener(void(*cb)(const std::string&))
 {
 	mListener = cb;
 }
@@ -144,25 +153,51 @@ void Logger::operator()()
 bool Logger::run()
 {
 	mRunning = true;
-	while (mRunning || mQue.size())
-	{
-		std::string message = mQue.try_pop_external();
-		if (!message.empty())
+	try{
+		while (mRunning || mQue.size())
 		{
-			process(message);
+			std::string message = mQue.try_pop_external();
+			if (!message.empty())
+			{
+				process(message);
+			}
 		}
 	}
-		
+	catch(const std::exception& e)
+	{
+		std::cout << "!!Logger thread exiting for : " << e.what() <<std::endl;
+		return false;
+	}
+	catch(...)
+	{
+		std::cout << "!!Logger thread exiting for uknown exception"<<std::endl;
+		return false;
+	}
+	
 	return true;
 }
 
-bool Logger::process(std::string& message)
+bool Logger::process(const std::string& message)
 {		
-	BOOST_LOG_SEV(lg, boost::log::trivial::info) << message;	
+	try{
+		BOOST_LOG_SEV(lg, boost::log::trivial::info) << message;	
 
-	if (mListener)
+		if (mListener)
+		{
+			mListener(message);
+		}
+	}
+	catch(const std::exception& e)
 	{
-		mListener(message);
+		std::cout << "!!logging raised exception: " << e.what() << ", log message follows "<<std::endl;
+		std::cout << message<<std::endl;
+		return false;
+	}
+	catch(...)
+	{
+		std::cout << "!!logging raised unknown exception, log message follows "<<std::endl;
+		std::cout << message<<std::endl;
+		return false;
 	}
 	
 	return true;
@@ -170,22 +205,32 @@ bool Logger::process(std::string& message)
 
 bool Logger::push(boost::log::trivial::severity_level level, std::ostringstream& stream)
 {
-	if (logDisabled)
-	{
-		return false;
-	}
+	//AK:first push should always return true else code after << gets stubbed !!
+	if(stream.tellp()==0) return true;  //avaoid unwanted copy
 
-	if (stream.str().empty())
-	{
-		return true;
-	}
-
+	//ignore log if severity is lower
 	if (level < mProps.logLevel)
 	{
 		return false;
 	}
-		
-	mQue.push(stream.str());	
+	
+	//ignore log if logging is not enabled
+
+	if (!mProps.enableConsoleLog && !mProps.enableFileLog)
+	{
+		return false;
+	}
+
+	//push to queue only if the thread is running
+	if(mRunning && myThread.get_id()!=boost::thread::id())	//log thread is running
+	{
+		mQue.push(stream.str());	
+	}
+	else
+	{
+		//the thread is not running, let's log it on the caller thread at least
+		process(stream.str()); 
+	}
 
 	return false;
 }
