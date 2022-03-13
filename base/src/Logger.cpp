@@ -119,7 +119,21 @@ void Logger::_setListener(void(*cb)(const std::string&))
 {
 	mListener = cb;
 }
-
+bool Logger::setLogLevel(const std::string& sSeverity)
+{
+	boost::log::trivial::severity_level log_severity=boost::log::trivial::severity_level::debug;
+	bool bRC=true;
+    if(!boost::log::trivial::from_string(sSeverity.c_str(),sSeverity.length(), log_severity))
+	{
+		std::cout 
+		<< "Valid severity level is one of [trace, debug, info, warning, error, fatal]. Provided " 
+		<< sSeverity
+		<< " defaulting to " << log_severity;
+		bRC=false;
+	}
+	setLogLevel(log_severity);
+	return bRC;
+}
 void Logger::setLogLevel(boost::log::trivial::severity_level severity)
 {
 	auto logger = Logger::getLogger();

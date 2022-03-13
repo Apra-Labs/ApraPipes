@@ -1,7 +1,7 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
 #ifdef ARM64
-#include "DMAFDWrapper.h"
+	#include "DMAFDWrapper.h"
 #endif
 #include "Frame.h"
 #include "Logger.h"
@@ -12,8 +12,9 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
-
-#include <unistd.h>
+#ifdef LINUX
+	#include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>

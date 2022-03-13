@@ -1,18 +1,11 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 
-SET( CONFIG_FILEPATH ${CMAKE_SOURCE_DIR}/../cmake/config.cmake)
-
-include("../cmake/HunterGate.cmake")
-HunterGate(
-	URL "https://github.com/saichaitanyaeruvaram/hunter/archive/opencv-4.5.0.tar.gz"
-    SHA1 "1258e48a1c06ce027b6d3aa141c7f9661ff0d843"
-	FILEPATH ${CONFIG_FILEPATH}
-  )
+set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
@@ -21,64 +14,87 @@ IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
 
+IF(ENABLE_WINDOWS)
+	add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+	add_compile_definitions(WINDOWS)
+	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
+ENDIF(ENABLE_WINDOWS)
+
 IF(ENABLE_ARM64)
-	add_compile_definitions(ARM64)	
+	add_compile_definitions(ARM64)
+	set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
 set(CMAKE_CXX_STANDARD 14)
 
-hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
-find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
+IF(ENABLE_LINUX)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+ENDIF(ENABLE_LINUX)
 
-hunter_add_package(OpenCV)
-find_package(OpenCV)
+IF(ENABLE_WINDOWS)
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+ENDIF(ENABLE_WINDOWS)
+message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
-hunter_add_package(BZip2)
-find_package(BZip2 CONFIG REQUIRED)
-
-hunter_add_package(ZLIB)
-find_package(ZLIB CONFIG REQUIRED)
-
-hunter_add_package(lzma)
-find_package(lzma CONFIG REQUIRED)
-
+find_package(PkgConfig REQUIRED)
 
 IF(NOT ENABLE_ARM64)
-	hunter_add_package(ncursesw)
-	find_package(ncursesw CONFIG REQUIRED)
-	SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-	SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
+	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
+	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
+	pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
+	pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
+	pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
+	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
+	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
+	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
+	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
+	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
+	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+ENDIF(NOT ENABLE_ARM64)
+
+find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
+
+find_package(OpenCV CONFIG REQUIRED)
+find_package(BZip2 REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(liblzma REQUIRED)
+find_package(FFMPEG REQUIRED)
+find_package(ZXing CONFIG REQUIRED)
+find_package(bigint CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+
+IF(NOT ENABLE_ARM64)
+	# hunter_add_package(ncursesw)
+	# find_package(ncursesw CONFIG REQUIRED)
+	# SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+	# SET(CURSES_LIBRARIES PkgConfig::ncursesw)
 ENDIF(NOT ENABLE_ARM64)
 
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
 ENDIF(ENABLE_CUDA)
 
-SET(FFMPEG_ROOT ../thirdparty/ffmpeg)
-find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFAULT_PATH)
-find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
-find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
-find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
-find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
-
-
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
+		SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")					
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(NVJPEGLIB_L4T nvjpeg)
-		find_library(V4L2LIB nvv4l2)
-		find_library(EGLLIB EGL)
-		find_library(GLESv2LIB GLESv2)
-		find_library(X11LIB X11)
-		find_library(NVBUFUTILSLIB nvbuf_utils)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
+		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		find_library(V4L2LIB nvv4l2 REQUIRED)
+		find_library(EGLLIB EGL REQUIRED)
+		find_library(GLESv2LIB GLESv2 REQUIRED)
+		find_library(X11LIB X11 REQUIRED)
+		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
+		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
@@ -92,11 +108,12 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-	ELSE()
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-	
+ 
 		SET(NVCUDAToolkit_LIBS		
 			libcudart_static.a
 			libnvjpeg_static.a
@@ -105,20 +122,29 @@ IF(ENABLE_CUDA)
 			libnppidei_static.a
 			libnppial_static.a					
 			libculibos.a	
-		)	
+		) 
+		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+	ELSE()
+		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
+		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 
+		SET(NVCUDAToolkit_LIBS		
+			cudart_static.lib
+			nvjpeg.lib
+			nppig.lib
+			nppicc.lib
+			nppidei.lib
+			nppial.lib					
+			cublas.lib	
+			cublasLt.lib
+		)
+		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
 	ENDIF(ENABLE_ARM64)
+
 ENDIF(ENABLE_CUDA)
 
-include_directories(AFTER SYSTEM include
-	${BOOST_ROOT}/include
-	${OPENCV_ROOT}/include/opencv4
-	/usr/local/cuda-10.2/include
-	../thirdparty/Video_Codec_SDK_10.0.26/Interface
-	../thirdparty/ffmpeg/include
-	${CURSES_INCLUDE_DIR}
-	../thirdparty/zxing-cpp/_install/include/ZXing
-)
+include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
 
@@ -140,10 +166,11 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/KeyboardListener.cpp
+	src/AudioCaptureSrc.cpp
+	src/QRReader.cpp
 )
 
-SET(include/CORE_FILES_H
+SET(CORE_FILES_H
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
@@ -182,7 +209,8 @@ SET(include/CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	include/KeyboardListener.h
+	include/AudioCaptureSrc.h
+	include/QRReader.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -193,7 +221,6 @@ IF(ENABLE_WINDOWS)
 ENDIF(ENABLE_WINDOWS)
 
 SET(GENERIC_FILES
-	src/VirtualCameraSink.cpp
 	src/RTSPPusher.cpp
 	src/H264FrameDemuxer.cpp
 	src/H264ParserUtils.cpp
@@ -201,13 +228,19 @@ SET(GENERIC_FILES
 	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
-	include/VirtualCameraSink.h
 	include/H264FrameDemuxer.h
 	include/H264ParserUtils.h
 	include/H264Utils.h
 	include/RTSPPusher.h
 	include/QRReader.h
 )
+
+IF(ENABLE_LINUX)
+	list(APPEND CORE_FILES src/KeyboardListener.cpp)
+	list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
+	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
+ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
@@ -219,10 +252,19 @@ SET(IP_FILES
 	src/ImageResizeCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/BrightnessContrastControl.cpp
+	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
+	src/FaceDetectorXform.cpp
+	src/TextOverlayXForm.cpp
+
 )
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES
+	src/GstOnvifRtspSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -235,10 +277,20 @@ SET(IP_FILES_H
 	include/ImageResizeCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/BrightnessContrastControl.h
+	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
+	include/ApraFaceInfo.h
+	include/FaceDetectsInfo.h
+	include/FaceDetectorXform.h
+	include/TextOverlayXForm.h
 )
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND IP_FILES_H
+	include/GstOnvifRtspSink.h
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -361,8 +413,32 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
+message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
+target_include_directories ( aprapipes PRIVATE 
+${JETSON_MULTIMEDIA_LIB_INCLUDE}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
+${Boost_INCLUDE_DIRS}
+)
 
-target_include_directories ( aprapipes PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+IF(NOT ENABLE_ARM64)
+target_include_directories ( aprapipes PRIVATE
+${gstreamer-app-1.0_INCLUDE_DIRS}
+${gstreamer-base-1.0_INCLUDE_DIRS}
+${gstreamer-1.0_INCLUDE_DIRS}
+${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
+${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+${libpcre_INCLUDE_DIRS}
+${glib-2.0_INCLUDE_DIRS}
+${gstreamer-rtsp-1.0_INCLUDE_DIRS}
+${gstreamer-rtp-1.0_INCLUDE_DIRS}
+${gstreamer-net-1.0_INCLUDE_DIRS}
+${gio-2.0_INCLUDE_DIRS}
+${gmodule-2.0_INCLUDE_DIRS}
+${gthread-2.0_INCLUDE_DIRS}
+${gobject-2.0_INCLUDE_DIRS}
+)
+ENDIF(NOT ENABLE_ARM64)
 
 # aprapipes Unit Tests
 
@@ -426,20 +502,36 @@ SET(UT_FILES
 	test/split_tests.cpp
 	test/imagemetadata_tests.cpp
 	test/bmpconverter_tests.cpp
-	test/virtualcamerasink_tests.cpp
 	test/rtsppusher_tests.cpp
 	test/findexstrategy_tests.cpp	
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
-	test/QRReader_tests.cpp
 	test/rotatecv_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
+	test/sound_record_tests.cpp
+  test/pullstratergy_tests.cpp
+	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
 	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}	
+	${CUDA_UT_FILES}
 )
+
+IF(ENABLE_LINUX)
+	list(APPEND UT_FILES
+	test/virtualcamerasink_tests.cpp
+	test/QRReader_tests.cpp
+	)
+ENDIF(ENABLE_LINUX)
+
+IF(NOT ENABLE_ARM64)
+	list(APPEND UT_FILES
+	test/gstrtsponvifsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -449,25 +541,42 @@ ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-  Boost::filesystem
-  Boost::serialization
-  Boost::log  
-  Boost::thread  
-  Boost::chrono
-  Boost::system
-  Boost::boost    
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   ${JETSON_LIBS}
-  ${OpenCV_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
-  ${LIB_AVFORMAT}
-  ${LIB_AVCODEC}
-  ${LIB_AVUTIL}
-  ${LIB_FFSWR}
   ${CURSES_LIBRARIES}
-  ${LIB_ZXING}
-  BZip2::bz2
-  ZLIB::zlib
-  lzma::lzma
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  )
+
+IF(NOT ENABLE_ARM64)
+target_link_libraries(aprapipesut
+  PkgConfig::gstreamer-app-1.0
+  PkgConfig::gstreamer-base-1.0
+  PkgConfig::gstreamer-1.0
+  PkgConfig::gstreamer-rtsp-server-1.0
+  PkgConfig::libpcre
+  PkgConfig::glib-2.0
+  PkgConfig::gstreamer-rtsp-1.0
+  PkgConfig::gstreamer-rtp-1.0
+  PkgConfig::gstreamer-net-1.0
 )
+ENDIF(NOT ENABLE_ARM64)
+
+IF(ENABLE_WINDOWS)
+	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
+	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
+	IF(GHA)
+		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
+	ENDIF(GHA)
+ENDIF(ENABLE_WINDOWS)

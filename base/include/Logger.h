@@ -1,5 +1,5 @@
 #pragma once
-
+#include "stdafx.h"
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -50,6 +50,7 @@ public:
 	static void initLogger(LoggerProps props);
 	static Logger* getLogger();
 	static void setLogLevel(boost::log::trivial::severity_level severity);
+  static bool setLogLevel(const std::string& sSeverity);
 	static void setListener(void(*cb)(const std::string&));
 
 	virtual ~Logger();	
