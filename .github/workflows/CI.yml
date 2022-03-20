@@ -39,7 +39,7 @@ jobs:
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
@@ -92,15 +92,18 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      continue-on-error: false
       
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+      continue-on-error: false
       
     - name: Verify contents of Debug and Release in windows
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}/build/
       run: dir ${{env.BUILD_TYPE}}
+      continue-on-error: false
     
     - name: Test Linux
       if: runner.os == 'Linux'
@@ -111,6 +114,7 @@ jobs:
     - name: Test Windows 
       if: runner.os == 'Windows'
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      continue-on-error: false
     
     - name: Upload Test Results
       if: always()
