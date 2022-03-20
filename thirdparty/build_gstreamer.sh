@@ -1,4 +1,5 @@
 cd gst-build
+rm -rf gst-build-1.16 || true
 ./gst-worktree.py add gst-build-1.16 origin/1.16
 cd gst-build-1.16
 git checkout 1.16.2
