@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-20.04, windows-2019, self-hosted]
         include:
           - os: ubuntu-20.04
-            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
+            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
