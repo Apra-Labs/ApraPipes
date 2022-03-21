@@ -125,7 +125,7 @@ jobs:
           ${{ env.TEST_RES_XML }}
 
     - name: Upload build logs 
-      if: runner.arch != 'ARM64' # no need to upload logs as we can see them on self hosted
+      if:  ${{ failure() }} # only upload logs when we have a fialure above
       uses: actions/upload-artifact@v2
       with:
         name: BuildLogs_${{ matrix.FLAV }}
