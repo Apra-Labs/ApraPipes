@@ -460,7 +460,7 @@ ${gobject-2.0_INCLUDE_DIRS}
 ENDIF(NOT ENABLE_ARM64)
 
 IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-target_include_directories(
+target_include_directories( aprapipes PRIVATE
 ${gstreamer-webrtc-1.0_INCLUDE_DIRS}
 ${json-glib-1.0_INCLUDE_DIRS}
 ${libsoup-2.4_INCLUDE_DIRS}
@@ -606,7 +606,7 @@ target_link_libraries(aprapipesut
 ENDIF(NOT ENABLE_ARM64)
 
 IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-target_link_libraries(
+target_link_libraries(aprapipesut
   PkgConfig::gstreamer-webrtc-1.0
   PkgConfig::json-glib-1.0
   PkgConfig::libsoup-2.4
