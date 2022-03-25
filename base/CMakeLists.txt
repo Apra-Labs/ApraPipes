@@ -56,6 +56,11 @@ IF(NOT ENABLE_ARM64)
 	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 ENDIF(NOT ENABLE_ARM64)
+	
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+	pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -260,6 +265,13 @@ SET(IP_FILES
 
 )
 
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND IP_FILES
+	src/GstWebRTCSink.cpp
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
 IF(NOT ENABLE_ARM64)
 	list(APPEND IP_FILES
 	src/GstOnvifRtspSink.cpp
@@ -285,6 +297,13 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 )
+
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND IP_FILES_H
+	include/GstWebRTCSink.h
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 IF(NOT ENABLE_ARM64)
 	list(APPEND IP_FILES_H
@@ -440,6 +459,14 @@ ${gobject-2.0_INCLUDE_DIRS}
 )
 ENDIF(NOT ENABLE_ARM64)
 
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+target_include_directories( aprapipes PRIVATE
+${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+${json-glib-1.0_INCLUDE_DIRS}
+${libsoup-2.4_INCLUDE_DIRS}
+)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -527,6 +554,12 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND UT_FILES
+	test/gstwebrtcsink_tests.cpp
+	)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+
 IF(NOT ENABLE_ARM64)
 	list(APPEND UT_FILES
 	test/gstrtsponvifsink_tests.cpp
@@ -571,6 +604,14 @@ target_link_libraries(aprapipesut
   PkgConfig::gstreamer-net-1.0
 )
 ENDIF(NOT ENABLE_ARM64)
+
+IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+target_link_libraries(aprapipesut
+  PkgConfig::gstreamer-webrtc-1.0
+  PkgConfig::json-glib-1.0
+  PkgConfig::libsoup-2.4
+)
+ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 IF(ENABLE_WINDOWS)
 	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
