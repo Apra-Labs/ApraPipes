@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-20.04, windows-2019, self-hosted]
         include:
           - os: ubuntu-20.04
-            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison"
+            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
@@ -39,7 +39,7 @@ jobs:
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.json"
@@ -92,15 +92,18 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      continue-on-error: false
       
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+      continue-on-error: false
       
     - name: Verify contents of Debug and Release in windows
       if: runner.os == 'Windows'
       working-directory: ${{github.workspace}}/build/
       run: dir ${{env.BUILD_TYPE}}
+      continue-on-error: false
     
     - name: Test Linux
       if: runner.os == 'Linux'
@@ -111,6 +114,7 @@ jobs:
     - name: Test Windows 
       if: runner.os == 'Windows'
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      continue-on-error: false
     
     - name: Upload Test Results
       if: always()
@@ -121,17 +125,15 @@ jobs:
           ${{ env.TEST_RES_XML }}
 
     - name: Upload build logs 
-      if: runner.arch != 'ARM64' # no need to upload logs as we can see them on self hosted
+      if:  ${{ failure() }} # only upload logs when we have a fialure above
       uses: actions/upload-artifact@v2
       with:
         name: BuildLogs_${{ matrix.FLAV }}
         path: |
-          ${{ github.workspace }}/build/**.log
-          ${{ github.workspace }}/build/**.txt
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*.txt
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/*/*/*.txt
+          ${{ github.workspace }}/build/**/*.log
+          ${{ github.workspace }}/build/**/*.txt
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
   
   publish-test-results:
     name: "Publish Unit Tests Results"

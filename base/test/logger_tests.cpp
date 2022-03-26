@@ -10,15 +10,16 @@ BOOST_AUTO_TEST_SUITE(logger_tests)
 BOOST_AUTO_TEST_CASE(basic)
 {
 	LoggerProps props;
-	props.enableConsoleLog = false;
+	props.enableConsoleLog = true;
+	props.enableFileLog = true;
+	
 	Logger::initLogger(props);
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-	for (auto i = 0; i < 100; i++)
+	for (auto i = 0; i < 1000; i++)
 	{
 		LOG_INFO << "HELLO WORLD " << i;
 	}
-		
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));		
 }
 
 BOOST_AUTO_TEST_CASE(severity)
@@ -42,12 +43,10 @@ BOOST_AUTO_TEST_CASE(severity)
 	LOG_INFO <<"should not see this on console "<<i++; 
 	LOG_WARNING <<"should not see this on console "<<i++; 
 	
-
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));		
 }
 
 
-void listener(std::string& msg)
+void listener(const std::string& msg)
 {
 	std::cout << msg << "-------------------------" << std::endl;
 }
@@ -55,7 +54,11 @@ void listener(std::string& msg)
 BOOST_AUTO_TEST_CASE(listener_test)
 {
 	LoggerProps props;
+	props.enableConsoleLog = true;
+	props.enableFileLog = true;
+	
 	Logger::initLogger(props);
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	for (auto i = 0; i < 10; i++)
 	{
@@ -70,8 +73,6 @@ BOOST_AUTO_TEST_CASE(listener_test)
 	}
 
 	Logger::setListener(nullptr);
-
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
