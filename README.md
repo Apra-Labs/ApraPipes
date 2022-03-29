@@ -68,11 +68,14 @@ _build/BUILD_TYPE/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 10.10
 ###  Prerequisites 
 * Run the following to get latest build tools
 ```
-sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   meson   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison curl zip unzip tar
+sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core   libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
 ```  
+* Note: start a new terminal as pip3 settings do not get effective on the same shell
 * CMake minimum version 3.22 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
 * Run `./vcpkg integrate install`
+* build gstreamer : ``` cd thirdparty && sh ./build_gstreamer.sh && cd -```
+   
 
 
 ### Build Linux
