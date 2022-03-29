@@ -15,7 +15,6 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
-	add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 	add_compile_definitions(WINDOWS)
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 ENDIF(ENABLE_WINDOWS)
@@ -26,8 +25,15 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 ENDIF(ENABLE_ARM64)
 
-project(APRAPIPES)
+#use /MP only for language CXX (and not CUDA) and MSVC for both targets
+
+add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
+
 set(CMAKE_CXX_STANDARD 14)
+
+project(APRAPIPES)
+
+
 
 IF(ENABLE_LINUX)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
@@ -432,6 +438,7 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
+
 message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
@@ -567,6 +574,7 @@ IF(NOT ENABLE_ARM64)
 ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
+
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
