@@ -101,7 +101,15 @@ build_windows_cuda.bat
 * CMake minimum version 3.22 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
 * Run `./vcpkg integrate install`
-* build gstreamer : ``` cd thirdparty && sh ./build_gstreamer.sh && cd -```
+* build gstreamer
+   * ``` cd thirdparty && sh ./build_gstreamer.sh && cd -```
+   * update .bashrc and append following line at the end of it. Adjust the path based on your environment.
+     ```
+     export LD_LIBRARY_PATH=~/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+     ```
+   * load symbols from .bashrc ```source ~/.bashrc```. 
+  
+  
  
 ### Build 
 
