@@ -2,14 +2,16 @@
 # ApraPipes
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits. More details can be found here https://apra-labs.github.io/ApraPipes.
 
-# Build and Run Tests
-Tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community No Cuda
+[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)
+
+Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community (without CUDA)
+
 
 ## Setup
 * Clone with submodules
-```
-git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
-```
+  ```
+  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+  ```
 
 ### Prerequisites for CUDA 
 * Make account on developer.nvidia.com, else the next steps will show HTTP 404/403 errors
@@ -43,9 +45,6 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
         sudo cp -P include/* /usr/local/cuda/include/
         sudo cp -P lib/* /usr/local/cuda/lib64/
         ```
-* Rename the file base/vcpkg.json to base/vcpkg.json.bkp and base/vcpkg.cuda.json to base/vcpkg.json
-
-
 ## Prerequisites Windows
 * Install Visual Studio 2017 Community 
   * Install Desktop development C++
@@ -131,18 +130,28 @@ Build can take ~2 hours depending on the machine configuration.
   ```
 * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
 * Run `./vcpkg integrate install`
-* Use the correct vcpkg for Jetson:
-  ```
-  mv base/vcpkg.json base/vcpkg.json.bkp && mv base/vcpkg.jetson.json base/vcpkg.json
-  ```
 
 ### Build
 * `chmod +x build_jetson.sh`
 * `./build_jetson.sh`
 
 Build can take ~12 hours on Jetson Nano. 
+Note: Jetson build can also be done using Ubuntu 18.04 x86_64 Laptop via cross compilation. 
 
-## Run Tests
+### Cross compilation using qemu
+Conceptual steps adapted from [here](https://github.com/zhj-buffer/Cross-Compile-Jetson):
+
+* On any Intel Ubuntu 18.04 computer (physical or virtual including wsl ) mount a Jetson SD Card Image as described above
+* Copy relevant files from mounted image to created a rootfs 
+* Install qemu on ubuntu host
+* chroot into emulated aarm64 environment using script provided in the github link above
+* install extra tools and build aprapipes and aprapipesut
+* the built aprapipesut can be copied to a Jetson board and run. 
+
+This approach can use all 12-16 cores of a laptop and hence builds faster.
+
+
+### Run Tests
 * list all tests `_build/aprapipesut --list_content`
 * run all tests  `_build/aprapipesut`
 * run one test `_build/aprapipesut --run_test=filenamestrategy_tests/boostdirectorystrategy`
