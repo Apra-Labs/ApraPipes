@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include <sw/redis++/redis++.h>
+//#include <sw/redis++/redis++.h>
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
