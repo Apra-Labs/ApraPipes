@@ -119,7 +119,7 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -134,7 +134,7 @@ IF(ENABLE_CUDA)
 			libnppial_static.a					
 			libculibos.a	
 		) 
-		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
