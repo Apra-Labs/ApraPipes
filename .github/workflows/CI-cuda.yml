@@ -8,7 +8,9 @@ on:
   
 jobs:
   build:
-    image: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
     strategy:
       fail-fast: false
       matrix:
