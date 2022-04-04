@@ -1,51 +1,61 @@
-name: CI_All
+name: CI_Cuda
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
   
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    image: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, self-hosted]
+        os: [ubuntu-18.04-cuda]
         include:
-          - os: ubuntu-20.04
-            BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
+          - os: ubuntu-18.04-cuda
+            BUILDER_PREP_CMD: "cmake --version && ninja --version && gcc --version && meson --version && nvcc --version && git --version"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
-            FLAV: "Linux"
-            VCPKG_FILE: "base/vcpkg.json"
-            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
+            FLAV: "Linux-Cuda"
+            VCPKG_FILE: "base/vcpkg.cuda.json"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=ON ../base"
             NPROC: 3
             SHELL: "bash"
-          - os: self-hosted
-            BUILDER_PREP_CMD: "echo No builder prep required"
-            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-            CACHE_PATH: "~/.cache/vcpkg/archives"
-            FLAV: "Linux_ARM64"
-            VCPKG_FILE: "base/vcpkg.jetson.json"
-            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
-            NPROC: 7
-            SHELL: "bash"
-          - os: windows-2019
-            BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
-            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
-            CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
-            FLAV: "Windows"
-            VCPKG_FILE: "base/vcpkg.json"
-            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
-            NPROC: 3
-            SHELL: "cmd"
+          # - os: ubuntu-20.04
+          #   BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core  git-lfs libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
+          #   VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+          #   GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
+          #   GST_BUILD_COMMAND: "sh build_gstreamer.sh"
+          #   CACHE_PATH: "~/.cache/vcpkg/archives"
+          #   FLAV: "Linux"
+          #   VCPKG_FILE: "base/vcpkg.json"
+          #   CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
+          #   NPROC: 3
+          #   SHELL: "bash"
+          # - os: self-hosted
+          #   BUILDER_PREP_CMD: "echo No builder prep required"
+          #   VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+          #   CACHE_PATH: "~/.cache/vcpkg/archives"
+          #   FLAV: "Linux_ARM64"
+          #   VCPKG_FILE: "base/vcpkg.jetson.json"
+          #   CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
+          #   NPROC: 7
+          #   SHELL: "bash"
+          # - os: windows-2019
+          #   BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
+          #   VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
+          #   GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
+          #   GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
+          #   CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
+          #   FLAV: "Windows"
+          #   VCPKG_FILE: "base/vcpkg.json"
+          #   CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
+          #   NPROC: 3
+          #   SHELL: "cmd"
     env:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
@@ -57,9 +67,10 @@ jobs:
       run: ${{ matrix.BUILDER_PREP_CMD }}
     
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with: 
         submodules: 'false'
+        lfs: 'true'
 
     - name: Checkout submodule
       run: |
