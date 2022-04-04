@@ -100,8 +100,12 @@ jobs:
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
 
-    -name: init cache temp
-      run: ( ls -al /root/.cache/vcpkg/archives/* ) && ( cp -R /root/.cache /github/home/ ) && ( ls -al /github/home/.cache/vcpkg/archives/* )
+    - name: init cache temp
+      run: |
+        ls -al /root/.cache/vcpkg/archives/*  
+        cp -R /root/.cache /github/home/  
+        ls -al /github/home/.cache/vcpkg/archives/* 
+      continue-on-error: true
 
     - name: Make build folder
       run: mkdir -p build
