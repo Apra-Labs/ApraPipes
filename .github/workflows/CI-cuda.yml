@@ -127,7 +127,7 @@ jobs:
       continue-on-error: true
     
     - name: Test Linux
-      if: ${{ runner.os == 'Linux' && env.ISCUDA != 'true' }}
+      if: ${{ runner.os == 'Linux' && matrix.ISCUDA != 'true' }}
       env:
         LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
