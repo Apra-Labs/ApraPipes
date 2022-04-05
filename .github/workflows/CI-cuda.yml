@@ -26,7 +26,6 @@ jobs:
             VCPKG_FILE: "base/vcpkg.cuda.json"
             CMAKE-CONF: "cp -f ../base/vcpkg.cuda.json ../base/vcpkg.json && cmake -B . -DENABLE_CUDA=ON ../base"
             NPROC: 3
-            ISCUDA: true
             SHELL: "bash"
           # - os: ubuntu-20.04
           #   BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core  git-lfs libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
@@ -64,7 +63,7 @@ jobs:
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
       GST_BUILD_SHELL: ${{ matrix.SHELL }}
-
+      ISCUDA: ${{ contains(matrix.os, 'cuda') }}
     steps:
     - name: Install build dependencies in cloud hosted env
       run: ${{ matrix.BUILDER_PREP_CMD }}
@@ -127,15 +126,17 @@ jobs:
       continue-on-error: true
     
     - name: Test Linux
-      if: ${{ runner.os == 'Linux' && matrix.ISCUDA != 'true' }}
+      if: ${{ runner.os == 'Linux' && env.ISCUDA != 'true'}}
       env:
         LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      timeout-minutes: 10
       continue-on-error: true
 
     - name: Test Windows 
       if: runner.os == 'Windows'
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      timeout-minutes: 10
       continue-on-error: true
     
     - name: Upload Test Results
