@@ -91,7 +91,7 @@ jobs:
         with:
             path: |
               /github/home/${{ matrix.CACHE_PATH }}
-              /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/
+              thirdparty/gst-build/gst-build-1.16/outInstall/
             key:  ${{ env.CACHE_REST_KEY }}-temp1-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
 
@@ -99,15 +99,15 @@ jobs:
         if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
         working-directory: ${{github.workspace}}/thirdparty
         run: |
-          ls -al /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/* || true
+          ls gst-build/gst-build-1.16/outInstall || true
           ${{matrix.GST_BUILD_COMMAND}}
 
       - name: cache check
         run: |
-          ls /github/home/.cache/vcpkg/archives/* || true
-          cp -R /root/.cache /github/home/ 
-          ls /github/home/.cache/vcpkg/archives/* || true
-          ls /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/* || true
+          ls /github/home/.cache/vcpkg/archives || true
+#          cp -R /root/.cache /github/home/ 
+#          ls /github/home/.cache/vcpkg/archives || true
+          ls thirdparty/gst-build/gst-build-1.16/outInstall || true
         continue-on-error: true
 
       - name: Make build folder
@@ -117,17 +117,17 @@ jobs:
       - name: Configure CMake Common
         working-directory: ${{github.workspace}}/build
         run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Build
         working-directory: ${{github.workspace}}/build
         run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Verify contents of our build
         working-directory: ${{github.workspace}}/build/
         run: dir *
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Override TESTEXE for windows
         if: runner.os == 'Windows'
@@ -142,7 +142,7 @@ jobs:
           LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
         run: |
           ${{ env.TESTEXE }} --list_content
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Test
         if: ${{ env.ISCUDA != 'true'}}
@@ -151,7 +151,7 @@ jobs:
         run: |
           ${{ env.TESTEXE }} --log_level=all --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
         timeout-minutes: 10
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Upload Test Results
         if: always()
