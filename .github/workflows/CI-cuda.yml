@@ -90,10 +90,8 @@ jobs:
         uses: actions/cache@v3
         with:
             path: |
-              /github/home/${{ matrix.CACHE_PATH }}
               /home/runner/work/_temp/_github_home/${{ matrix.CACHE_PATH }}
               ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/ 
-              /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/
             key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
 
@@ -101,16 +99,14 @@ jobs:
         if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
         working-directory: ${{github.workspace}}/thirdparty
         run: |
-          ls -al ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/*    || true
           ls -al /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/* || true
           ${{matrix.GST_BUILD_COMMAND}}
 
       - name: init cache temp
         run: |
-          ls -al /root/.cache/vcpkg/archives/* 
-          cp -R /root/.cache /github/home/
+          echo ignore ls /root/.cache/vcpkg/archives/*
+          echo ignore cp -R /root/.cache /github/home/
           ls -al /github/home/.cache/vcpkg/archives/* 
-          ls -al ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/*    || true
           ls -al /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/* || true
         continue-on-error: true
 
