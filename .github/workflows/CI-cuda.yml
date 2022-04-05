@@ -105,8 +105,6 @@ jobs:
       - name: cache check
         run: |
           ls /github/home/.cache/vcpkg/archives || true
-#          cp -R /root/.cache /github/home/ 
-#          ls /github/home/.cache/vcpkg/archives || true
           ls thirdparty/gst-build/gst-build-1.16/outInstall || true
         continue-on-error: true
 
