@@ -105,7 +105,7 @@ jobs:
       - name: init cache temp
         run: |
           echo ignore ls /root/.cache/vcpkg/archives/*
-          echo ignore cp -R /root/.cache /github/home/
+          cp -R /root/.cache /github/home/
           ls -al /github/home/.cache/vcpkg/archives/* 
           ls -al /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/* || true
         continue-on-error: true
