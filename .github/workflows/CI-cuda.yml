@@ -87,7 +87,7 @@ jobs:
       - name: Cache dependencies for fast cloud build
         id: cache-all
         if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
             path: |
               /home/runner/work/_temp/_github_home/${{ matrix.CACHE_PATH }}
