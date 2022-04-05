@@ -94,7 +94,7 @@ jobs:
               /home/runner/work/_temp/_github_home/${{ matrix.CACHE_PATH }}
               ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
               /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/
-            key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}-temp
+            key:  ${{ env.CACHE_REST_KEY }}-temp-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
 
       - name: Build Gstreamer
@@ -104,7 +104,8 @@ jobs:
 
       - name: init cache temp
         run: |
-          ls -al /root/.cache/vcpkg/archives/*  
+          ls -al /root/.cache/vcpkg/archives/* 
+          cp -R /root/.cache /github/home/
           ls -al /github/home/.cache/vcpkg/archives/* 
           ls -al ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/* 
           ls -al /__w/ApraPipes/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/*
