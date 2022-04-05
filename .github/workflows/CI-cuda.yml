@@ -92,7 +92,7 @@ jobs:
             path: |
               /github/home/${{ matrix.CACHE_PATH }}
               thirdparty/gst-build/gst-build-1.16/outInstall/
-            key:  ${{ env.CACHE_REST_KEY }}-temp1-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+            key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
 
       - name: Build Gstreamer
@@ -102,8 +102,9 @@ jobs:
           ls gst-build/gst-build-1.16/outInstall || true
           ${{matrix.GST_BUILD_COMMAND}}
 
-      - name: cache check
+      - name: cache init
         run: |
+          cp -R /root/.cache /github/home/ || true
           ls /github/home/.cache/vcpkg/archives || true
           ls thirdparty/gst-build/gst-build-1.16/outInstall || true
         continue-on-error: true
@@ -170,25 +171,25 @@ jobs:
             ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
             ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
   
-  publish-test-results:
-    name: "Publish Unit Tests Results"
-    needs: build
-    runs-on: ubuntu-latest
-    if: always()
+  # publish-test-results:
+  #   name: "Publish Unit Tests Results"
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: always()
 
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
+  #   steps:
+  #     - name: Download Artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: artifacts
 
-      - name: Display structure of downloaded files
-        working-directory: artifacts
-        run: ls -R
-        continue-on-error: true
+  #     - name: Display structure of downloaded files
+  #       working-directory: artifacts
+  #       run: ls -R
+  #       continue-on-error: true
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        with:
-          files: artifacts/*/CI_test_result_*.xml
-        continue-on-error: true
+  #     - name: Publish Unit Test Results
+  #       uses: EnricoMi/publish-unit-test-result-action@v1
+  #       with:
+  #         files: artifacts/*/CI_test_result_*.xml
+  #       continue-on-error: true
