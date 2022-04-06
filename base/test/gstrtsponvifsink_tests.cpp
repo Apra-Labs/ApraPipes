@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(propsSerialzationTest)
 	GStreamerOnvifRTSPSinkProps::User user;
 	user.username = "Hello world";
 	user.password = "Hello world";
-	for (int i = 0; i < 5000000; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		props.userList.push_back(user);
 	}
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(propsSerialzationTest)
 
 	BOOST_TEST(props.height == propsResult.height);
 	BOOST_TEST(props.width == propsResult.width);
-	for (int i = 0; i < 5000000; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		BOOST_TEST(props.userList[i].username.compare(propsResult.userList[i].username) == 0);
 		BOOST_TEST(props.userList[i].password.compare(propsResult.userList[i].password) == 0);
