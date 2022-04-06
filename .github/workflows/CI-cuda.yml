@@ -21,7 +21,7 @@ jobs:
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
-            CACHE_PATH: ".cache/vcpkg/archives"
+            CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux-Cuda"
             VCPKG_FILE: "base/vcpkg.cuda.json"
             CMAKE-CONF: "cp -f ../base/vcpkg.cuda.json ../base/vcpkg.json && cmake -B . -DENABLE_CUDA=ON ../base"
@@ -87,10 +87,10 @@ jobs:
       - name: Cache dependencies for fast cloud build
         id: cache-all
         if: runner.arch != 'ARM64' # let's not cache from self hosted runner as it is caching anyways
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
             path: |
-              /github/home/${{ matrix.CACHE_PATH }}
+              ${{ matrix.CACHE_PATH }}
               thirdparty/gst-build/gst-build-1.16/outInstall/
             key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
