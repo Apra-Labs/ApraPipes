@@ -2,16 +2,20 @@
 # ApraPipes
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits. More details can be found here https://apra-labs.github.io/ApraPipes.
 
-[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)
-
+## Build status
 Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community (without CUDA)
+|OS|Version|With Cuda|Tests|Status|
+|--|-------|---------|------|------|
+|Windows|2019|No|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
+|Ubuntu x64_86|20.04|No|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
+|Ubuntu ARM64 (Jetsons)|18.04|Yes|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
+|Ubuntu x64_86|18.04|Yes|No|[![CI_Cuda](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml)|
+
+
+
 
 
 ## Setup
-* Clone with submodules
-  ```
-  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
-  ```
 
 ### Prerequisites for CUDA 
 * Make account on developer.nvidia.com, else the next steps will show HTTP 404/403 errors
@@ -45,27 +49,33 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
         sudo cp -P include/* /usr/local/cuda/include/
         sudo cp -P lib/* /usr/local/cuda/lib64/
         ```
-## Prerequisites Windows
+## Windows
+###  Prerequisites 
 * Install Visual Studio 2017 Community 
   * Install Desktop development C++
   * .NET Desktop development
   * Universal Windows Development Platform
 * Install CMake 3.22.1
-* Download [Nvidia Video Codec SDK v10](https://developer.nvidia.com/designworks/video_codec_sdk/downloads/v10) and extract to `thirdparty` directory. Make sure `thirdparty/Video_Codec_SDK_10.0.26/Interface` and `thirdparty/Video_Codec_SDK_10.0.26/Lib` exist
+* Make sure git and git-lfs is installed
+* Clone with submodules and LFS. 
+  ```
+  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+  ```
 * Run bootstrap-vcpkg.bat in the vcpkg/ directory
 * Run 
   ```
   vcpkg.exe integrate install
   ```
 
-## Build windows
+### Build for windows
 
-### Without Cuda
+#### Without Cuda
+If your windows machies does not have a GPU use this script
 ```
 build_windows.bat
 ```
 
-### With Cuda
+#### With Cuda
 ```
 build_windows_cuda.bat
 ```
@@ -91,14 +101,18 @@ build_windows_cuda.bat
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 
 
-## Ubuntu 18.04 x64
+## Ubuntu 18.04 and 20.04 x64
 ###  Prerequisites 
 * Run the following to get latest build tools
   ```
-  sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core   libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
+  sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core  git-lfs libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
   ```  
 * Note: start a new terminal as pip3 settings do not get effective on the same shell
 * CMake minimum version 3.22 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+* Clone with submodules and LFS. 
+  ```
+  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+  ```
 * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
 * Run `./vcpkg integrate install`
 * build gstreamer
@@ -109,14 +123,27 @@ build_windows_cuda.bat
      ```
    * load symbols from .bashrc ```source ~/.bashrc```. 
   
-  
- 
-### Build 
+   
+### Build for linux
 
 * `chmod +x build_linux_x64.sh` or `chmod +x build_linux_no_cuda.sh`
 * `./build_linux_x64.sh` or `./build_linux_no_cuda.sh` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules
 
 Build can take ~2 hours depending on the machine configuration.
+
+### Build and test using docker
+* Use this [docker image](https://github.com/users/kumaakh/packages/container/package/aprapipes-build-x86-ubutu18.04-cuda) with all the software setup.
+  ```
+  docker pull ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+  ```
+* Run the docker container using above image
+* Mount an external volume as a build area
+* clone the repository with submodules and LFS as described above
+* build using build_linux_\*.sh scripts as described [above](#build-for-linux)
+
+This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with the docker image
+
+
 
 ## Jetson boards - Nano, TX2, NX, AGX
 
@@ -124,7 +151,7 @@ Build can take ~2 hours depending on the machine configuration.
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
 * run the following 
   ```
-  sudo apt-get update && sudo apt-get -y install libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
+  sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
   ```
 * append following lines to ~/.bashrc
   ```
@@ -136,10 +163,14 @@ Build can take ~2 hours depending on the machine configuration.
   ```
   source ~/.bashrc:
   ```
+* Clone with submodules and LFS. 
+  ```
+  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+  ```
 * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
 * Run `./vcpkg integrate install`
 
-### Build
+### Build for jetsons
 * `chmod +x build_jetson.sh`
 * `./build_jetson.sh`
 
