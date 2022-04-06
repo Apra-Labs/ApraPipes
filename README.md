@@ -66,6 +66,12 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
   ```
   vcpkg.exe integrate install
   ```
+* Build Gstreamer
+  ```
+  cd thirdparty
+  build_gstreamer.bat
+  cd ..\..\..
+  ```
 
 ### Build for windows
 
