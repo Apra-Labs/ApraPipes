@@ -62,7 +62,6 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
-      GST_BUILD_SHELL: ${{ matrix.SHELL }}
       GST_BUILD_OUTPUT: gst-build/gst-build-1.16/outInstall      
       ISCUDA: ${{ contains(matrix.os, 'cuda') }}
       TESTEXE: build/aprapipesut
@@ -85,6 +84,7 @@ jobs:
 
       - name: Run VCPKG bootstrap
         run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
+        shell: ${{ matrix.SHELL }}
 
       - name: Cache dependencies for fast cloud build
         id: cache-all
