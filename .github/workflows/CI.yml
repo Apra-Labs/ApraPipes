@@ -64,7 +64,7 @@ jobs:
           submodules: 'false'
           lfs: 'true'
   
-          - name: Checkout submodule
+      - name: Checkout submodule
         run: |
           git submodule update --init --recursive 
           git submodule status > submodule_ver.txt
@@ -86,15 +86,15 @@ jobs:
       - name: Build Gstreamer
         if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
         working-directory: ${{github.workspace}}/thirdparty
-          run: |
-            ls gst-build/gst-build-1.16/outInstall || true
-            ${{matrix.GST_BUILD_COMMAND}}
+        run: |
+          ls gst-build/gst-build-1.16/outInstall || true
+          ${{matrix.GST_BUILD_COMMAND}}
   
       - name: cache init
-          run: |
-            ls /github/home/.cache/vcpkg/archives || true
-            ls thirdparty/gst-build/gst-build-1.16/outInstall || true
-          continue-on-error: true
+        run: |
+          ls /github/home/.cache/vcpkg/archives || true
+          ls thirdparty/gst-build/gst-build-1.16/outInstall || true
+        continue-on-error: true
            
       - name: Make build folder
         run: mkdir -p build
@@ -111,9 +111,9 @@ jobs:
         continue-on-error: false
   
       - name: Verify contents of our build
-          working-directory: ${{github.workspace}}/build/
-          run: dir *
-          continue-on-error: false
+        working-directory: ${{github.workspace}}/build/
+        run: dir *
+        continue-on-error: false
 
       - name: Override TESTEXE for windows
         if: runner.os == 'Windows'
