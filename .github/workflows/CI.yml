@@ -51,8 +51,10 @@ jobs:
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
       GST_BUILD_SHELL: ${{ matrix.SHELL }}
+      GST_BUILD_OUTPUT: gst-build/gst-build-1.16/outInstall
       ISCUDA: ${{ contains(matrix.os, 'cuda') }}
       TESTEXE: build/aprapipesut
+      
 
     steps:
       - name: Install build dependencies in cloud hosted env
@@ -79,7 +81,7 @@ jobs:
         with:
             path: |
               ${{ matrix.CACHE_PATH }}
-              thirdparty/gst-build/gst-build-1.16/outInstall/
+              thirdparty/${{env.GST_BUILD_OUTPUT}}
             key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
             restore-keys: ${{ env.CACHE_REST_KEY }}-
   
@@ -87,13 +89,12 @@ jobs:
         if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
         working-directory: ${{github.workspace}}/thirdparty
         run: |
-          ls gst-build/gst-build-1.16/outInstall || true
           ${{matrix.GST_BUILD_COMMAND}}
   
       - name: cache init
         run: |
-          ls /github/home/.cache/vcpkg/archives || true
-          ls thirdparty/gst-build/gst-build-1.16/outInstall || true
+          dir ${{ matrix.CACHE_PATH }}
+          dir thirdparty/${{env.GST_BUILD_OUTPUT}}
         continue-on-error: true
            
       - name: Make build folder
@@ -125,7 +126,7 @@ jobs:
 
       - name: List test cases
         env:
-          LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+          LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/${{env.GST_BUILD_OUTPUT}}/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
         run: |
           ${{ env.TESTEXE }} --list_content
         continue-on-error: false
@@ -133,7 +134,7 @@ jobs:
       - name: Test
         if: ${{ env.ISCUDA != 'true'}}
         env:
-          LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+          LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/${{env.GST_BUILD_OUTPUT}}/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
         run: |
           ${{ env.TESTEXE }} --log_level=all --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
         timeout-minutes: 10
