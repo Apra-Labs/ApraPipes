@@ -65,7 +65,7 @@ jobs:
       GST_BUILD_OUTPUT: gst-build/gst-build-1.16/outInstall      
       ISCUDA: ${{ contains(matrix.os, 'cuda') }}
       TESTEXE: build/aprapipesut
-
+      SHELL: ${{ matrix.SHELL }}
 
     steps:
       - name: Install build dependencies in cloud hosted env
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run VCPKG bootstrap
         run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
-        shell: ${{ matrix.SHELL }}
+        shell: ${{ env.SHELL }}
 
       - name: Cache dependencies for fast cloud build
         id: cache-all
