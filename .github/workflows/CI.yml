@@ -25,7 +25,6 @@ jobs:
             VCPKG_FILE: "base/vcpkg.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
             NPROC: 3
-            SHELL: "bash"
           - os: self-hosted
             BUILDER_PREP_CMD: "echo No builder prep required"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
@@ -34,10 +33,9 @@ jobs:
             VCPKG_FILE: "base/vcpkg.jetson.json"
             CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
             NPROC: 7
-            SHELL: "bash"
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
-            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install && echo set(VCPKG_BUILD_TYPE release)>> ./vcpkg/triplets/x64-windows.cmake && echo set(VCPKG_BUILD_TYPE release)>> ./vcpkg/triplets/x64-windows-static.cmake" 
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install && Add-content -Path ./vcpkg/triplets/x64-windows.cmake 'set(VCPKG_BUILD_TYPE release)' && Add-content -Path ./vcpkg/triplets/x64-windows-static.cmake 'set(VCPKG_BUILD_TYPE release)' " 
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
             GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
@@ -45,7 +43,6 @@ jobs:
             VCPKG_FILE: "base/vcpkg.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
-            SHELL: "cmd"
     env:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
@@ -53,7 +50,6 @@ jobs:
       GST_BUILD_OUTPUT: gst-build/gst-build-1.16/outInstall
       ISCUDA: ${{ contains(matrix.os, 'cuda') }}
       TESTEXE: build/aprapipesut
-      SHELL: ${{ matrix.SHELL }}
 
     steps:
       - name: Install build dependencies in cloud hosted env
@@ -72,7 +68,6 @@ jobs:
       
       - name: Run VCPKG bootstrap
         run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
-        shell: ${{ env.SHELL }}
   
       - name: Cache dependencies for fast cloud build
         id: cache-all
