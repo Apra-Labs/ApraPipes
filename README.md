@@ -62,7 +62,7 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
 
 ### Without Cuda
 ```
-build_windows.bat
+build_windows_no_cuda.bat
 ```
 
 ### With Cuda
