@@ -24,6 +24,7 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
    * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)
 * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract where cuda is installed. Note: this is a painful process. Here are the steps:
    * Download the correct tar/zip file matching your cuda version. Do not download the exe/installer/deb package.
+   * Rename the file base/vcpkg.json to base/vcpkg.json.bkp and base/vcpkg.cuda.json to base/vcpkg.json
    * Windows: 
      * download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip). 
      * Extract the downloaded file and copy files to ```C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2``` using an __administrative command prompt__ as follows
