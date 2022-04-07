@@ -35,7 +35,7 @@ jobs:
             NPROC: 7
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
-            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install && Add-content -Path ./vcpkg/triplets/x64-windows.cmake 'set(VCPKG_BUILD_TYPE release)' && Add-content -Path ./vcpkg/triplets/x64-windows-static.cmake 'set(VCPKG_BUILD_TYPE release)' " 
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install && Add-content -Path ./vcpkg/triplets/x64-windows.cmake 'set(VCPKG_BUILD_TYPE release)'" 
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
             GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
