@@ -72,14 +72,28 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
   build_gstreamer.bat
   cd ..\..\..
   ```
-
+  **Note**
+  
+  While building gstreamer:
+  - If you get the error: `python` not found. Download Python 3.7.3 from [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64.exe)  
+  - If you get the error: `meson` not found. Install meson using ```python -m pip install meson```
 ### Build for windows
 
 #### Without Cuda
 If your windows machies does not have a GPU use this script
 ```
-build_windows.bat
+build_windows_no_cuda.bat
 ```
+**Note**
+
+If you get error: Could not find `pkgConfig`. Do the following:
+1. Install choco. Open Windows PowerShell as Administrator and run:
+  ```
+  Set-ExecutionPolicy AllSigned
+  Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  ``` 
+
+2. Run ```choco install pkgconfiglite```
 
 #### With Cuda
 ```
