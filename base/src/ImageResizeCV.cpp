@@ -10,9 +10,9 @@
 class ImageResizeCV::Detail
 {
 public:
-	Detail(ImageResizeCVProps &_props) : mProps(_props)
+	Detail(ImageResizeCVProps &_props) : props(_props)
 	{
-		outSize = cv::Size(mProps.width, mProps.height);
+		outSize = cv::Size(props.width, props.height);
 	}
 	~Detail() {}
 
@@ -21,22 +21,21 @@ public:
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
 		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 	}
-	void setProps(ImageResizeCVProps &props)
-	{
-		mProps = props;
-	}
 
 public:
-
+	
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	cv::Mat iImg;
 	cv::Mat oImg;
 	cv::Size outSize;
-	ImageResizeCVProps mProps;
+
+private:
+	ImageResizeCVProps props;
 };
-ImageResizeCV::ImageResizeCV(ImageResizeCVProps _props) : Module(TRANSFORM, "ImageResizeCV", _props), mProps(_props), mFrameType(FrameMetadata::GENERAL)
+
+ImageResizeCV::ImageResizeCV(ImageResizeCVProps _props) : Module(TRANSFORM, "ImageResizeCV", _props), props(_props), mFrameType(FrameMetadata::GENERAL)
 {
 	mDetail.reset(new Detail(_props));
 }
@@ -58,19 +57,7 @@ bool ImageResizeCV::validateInputPins()
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be Raw_Image. Actual<" << frameType << ">";
 		return false;
 	}
-	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	auto imageType = rawMetadata->getImageType();
-	switch (imageType)
-	{
-	case ImageMetadata::MONO:
-	case ImageMetadata::BGR:
-	case ImageMetadata::BGRA:
-	case ImageMetadata::RGB:
-	case ImageMetadata::RGBA:
-		break;
-	default:
-		throw AIPException(AIP_NOTIMPLEMENTED, "Encoder not supported for ImageType<" + std::to_string(imageType) + ">");
-	}
+
 	return true;
 }
 
@@ -96,17 +83,11 @@ bool ImageResizeCV::validateOutputPins()
 void ImageResizeCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	mDetail->mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mProps.width, mProps.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true));
+	mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());
 	mDetail->mOutputMetadata->copyHint(*metadata.get());
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
-std::string ImageResizeCV::addOutputPin(framemetadata_sp &metadata)
-{
-	mDetail->initMatImages(metadata);
-	mDetail->mFrameLength = metadata->getDataSize();
-	return Module::addOutputPin(metadata);
-}
+
 bool ImageResizeCV::init()
 {
 	return Module::init();
@@ -129,7 +110,7 @@ bool ImageResizeCV::process(frame_container &frames)
 
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
 	mDetail->oImg.data = static_cast<uint8_t *>(outFrame->data());
-	
+
 	cv::resize(mDetail->iImg, mDetail->oImg, mDetail->outSize);
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
@@ -138,29 +119,34 @@ bool ImageResizeCV::process(frame_container &frames)
 
 void ImageResizeCV::setMetadata(framemetadata_sp &metadata)
 {
+	if (!metadata->isSet())
+	{
+		return;
+	}
+	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+	RawImageMetadata outputMetadata(props.width, props.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
+	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mDetail->mOutputMetadata);//*****
+	rawOutMetadata->setData(outputMetadata);
+	auto imageType = rawMetadata->getImageType();
+
+	mDetail->mFrameLength = mDetail->mOutputMetadata->getDataSize();
+	mDetail->initMatImages(metadata);
+
+	switch (imageType)
+	{
+	case ImageMetadata::MONO:
+	case ImageMetadata::BGR:
+	case ImageMetadata::BGRA:
+	case ImageMetadata::RGB:
+	case ImageMetadata::RGBA:
+		break;
+	default:
+		throw AIPException(AIP_NOTIMPLEMENTED, "Encoder not supported for ImageType<" + std::to_string(imageType) + ">");
+	}
 }
 bool ImageResizeCV::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);
 	return true;
-}
-
-ImageResizeCVProps ImageResizeCV::getProps()
-{
-	fillProps(mDetail->mProps);
-	return mDetail->mProps;
-}
-
-bool ImageResizeCV::handlePropsChange(frame_sp &frame)
-{
-	ImageResizeCVProps props(1.0, 0.0);
-	auto ret = Module::handlePropsChange(frame, props);
-	mDetail->setProps(props);
-	return ret;
-}
-
-void ImageResizeCV::setProps(ImageResizeCVProps &props)
-{
-	Module::addPropsToQueue(props);
 }
