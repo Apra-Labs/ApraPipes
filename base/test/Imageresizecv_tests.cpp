@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(bgra_profile, *boost::unit_test::disabled())
 	m2->setNext(statSink);
 
 	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
+	p->appendModule(fileReader);1
 	p->init();
 	p->run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
