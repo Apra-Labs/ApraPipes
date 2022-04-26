@@ -126,7 +126,7 @@ jobs:
 
     - name: Upload build logs 
       if:  ${{ failure() }} # only upload logs when we have a fialure above
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: BuildLogs_${{ matrix.FLAV }}
         path: |
@@ -134,6 +134,7 @@ jobs:
           ${{ github.workspace }}/build/**/*.txt
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          !${{ github.workspace }}/build/vcpkg_installed/*
   
   publish-test-results:
     name: "Publish Unit Tests Results"
