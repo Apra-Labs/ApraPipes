@@ -1,3 +1,4 @@
+copy base\vcpkg.nocuda.json base\vcpkg.json
 cd vcpkg
 call bootstrap-vcpkg.bat
 vcpkg.exe integrate install

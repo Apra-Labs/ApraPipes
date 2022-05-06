@@ -15,7 +15,6 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
-	add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 	add_compile_definitions(WINDOWS)
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 ENDIF(ENABLE_WINDOWS)
@@ -27,7 +26,12 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
+
 set(CMAKE_CXX_STANDARD 17)
+
+#use /MP only for language CXX (and not CUDA) and MSVC for both targets
+
+add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
 
 IF(ENABLE_LINUX)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
@@ -115,7 +119,7 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -130,7 +134,7 @@ IF(ENABLE_CUDA)
 			libnppial_static.a					
 			libculibos.a	
 		) 
-		include_directories(AFTER SYSTEM /usr/local/cuda-10.2/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
@@ -437,6 +441,7 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 add_library(aprapipes STATIC ${SOURCE})
+
 message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
@@ -574,6 +579,7 @@ IF(NOT ENABLE_ARM64)
 ENDIF(NOT ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
+
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
