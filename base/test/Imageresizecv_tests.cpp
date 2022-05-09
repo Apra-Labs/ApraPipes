@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(mono1_1920x960_expand)
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(outputFrame->getMetadata());
 	BOOST_TEST(rawMetadata->getDepth() == CV_8U);
-	Test_Utils::saveOrCompare("./data/testOutput/mono_1920x960_shrink.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_1920x960_expand.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(color_rgb_1280x720)
@@ -109,38 +109,6 @@ BOOST_AUTO_TEST_CASE(color_rgb_1280x720)
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(outputFrame->getMetadata());
 	BOOST_TEST(rawMetadata->getDepth() == CV_8U);
 	Test_Utils::saveOrCompare("./data/testOutput/IMAGERESIZETEST2.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
-}
-
-BOOST_AUTO_TEST_CASE(color_rgb_1280x720)
-{
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-	fileReader->addOutputPin(metadata);
-
-	// auto stream = cudastream_sp(new ApraCudaStream);
-
-	auto resize = boost::shared_ptr<ImageResizeCV>(new ImageResizeCV(ImageResizeCVProps(200, 200)));
-	fileReader->setNext(resize);
-
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	resize->setNext(sink);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(resize->init());
-	// BOOST_TEST(copy->init());
-	BOOST_TEST(sink->init());
-
-	BOOST_TEST(sink->init());
-
-	fileReader->step();
-	resize->step();
-	// copy->step();
-	auto frames = sink->pop();
-	BOOST_TEST(frames.size() == 1);
-	auto outputFrame = frames.cbegin()->second;
-	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-
-	Test_Utils::saveOrCompare("./data/testOutput/IMAGERESIZECVRGB1.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())

@@ -130,11 +130,8 @@ jobs:
       with:
         name: BuildLogs_${{ matrix.FLAV }}
         path: |
-          ${{ github.workspace }}/build/**/*.log
-          ${{ github.workspace }}/build/**/*.txt
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
-          !${{ github.workspace }}/build/vcpkg_installed/*
   
   publish-test-results:
     name: "Publish Unit Tests Results"
