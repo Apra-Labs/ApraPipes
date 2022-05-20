@@ -788,7 +788,17 @@ frame_sp Module::makeFrame()
 {
 	auto size = mOutputPinIdFrameFactoryMap.begin()->second->getFrameMetadata()->getDataSize();
 	auto pinId = mOutputPinIdFrameFactoryMap.begin()->first;
-	return makeFrame(size,pinId);
+	auto frame = makeFrame(size,pinId);
+	while(isFrameEmpty(frame))
+	{
+		boost::this_thread::sleep_for(boost::chrono::microseconds(5000));
+		frame = makeFrame(size,pinId);
+	}
+	if(isFrameEmpty(frame))
+	{
+		LOG_ERROR<< "Frame is Empty";
+	}
+	return frame;
 }
 
 frame_sp Module::makeFrame(size_t size)

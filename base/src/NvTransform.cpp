@@ -7,13 +7,34 @@
 #include "AIPExceptions.h"
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
+#include "Command.h"
 
 #include "npp.h"
+
+class NvTransform::NvTransformResetCommands : public Command
+{
+public:
+    NvTransformResetCommands() : Command(static_cast<Command::CommandType>(Command::CommandType::PipelineReset))
+    {
+    }
+    size_t getSerializeSize()
+    {
+        return Command::getSerializeSize();
+    }
+
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /* file_version */)
+    {
+        ar &boost::serialization::base_object<Command>(*this);
+    }
+};
 
 class NvTransform::Detail
 {
 public:
-	Detail(NvTransformProps &_props) : props(_props)
+	Detail(NvTransformProps &_props) : props(_props), mFramesSaved(0), enableModule(false)
 	{
 		src_rect.top = _props.top;
 		src_rect.left = _props.left;
@@ -31,6 +52,7 @@ public:
 		{
 			transParams.transform_flag = NVBUFFER_TRANSFORM_FILTER;
 		}
+		// LOG_ERROR << "Setting Deafult Value in constructor ";
 	}
 
 	~Detail()
@@ -44,12 +66,24 @@ public:
 
 		return true;
 	}
+	void resetCurrentFrameSave()
+    {
+        mFramesSaved = 0;
+        enableModule = true;
+    }
+
+	void setProps(NvTransformProps &_props)
+    {
+        props = _props;
+    }
 
 public:
 	NvBufferRect src_rect;
 	framemetadata_sp outputMetadata;
 	std::string outputPinId;
 	NvTransformProps props;
+	int mFramesSaved;
+    bool enableModule;
 
 private:
 	NvBufferTransformParams transParams;
@@ -150,6 +184,36 @@ bool NvTransform::term()
 	return Module::term();
 }
 
+
+// bool NvTransform::process(frame_container &frames)
+// {
+// 	if (mDetail->mFramesSaved < mDetail->props.noOfframesToCapture && mDetail->enableModule) 
+// 	{
+// 		mDetail->mFramesSaved++;
+		
+// 		if (mDetail->mFramesSaved == mDetail->props.noOfframesToCapture)
+//         {
+//             mDetail->enableModule = false;
+//         }
+// 		auto frame = frames.cbegin()->second;
+// 		auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
+// 		if (!outFrame.get())
+// 		{
+// 			LOG_ERROR << "FAILED TO GET BUFFER";
+// 			return false;
+// 		}
+
+// 		auto dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
+// 		dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
+
+// 		mDetail->compute(frame, dmaFdWrapper->tempFD);
+
+// 		frames.insert(make_pair(mDetail->outputPinId, outFrame));
+// 		send(frames);
+// 	}
+// 	return true;
+// }
+
 bool NvTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
@@ -167,7 +231,6 @@ bool NvTransform::process(frame_container &frames)
 
 	frames.insert(make_pair(mDetail->outputPinId, outFrame));
 	send(frames);
-
 	return true;
 }
 
@@ -224,4 +287,43 @@ bool NvTransform::processEOS(string &pinId)
 {
 	mDetail->outputMetadata.reset();
 	return true;
+}
+
+bool NvTransform::handleCommand(Command::CommandType type, frame_sp &frame)
+{
+    if (type == Command::CommandType::PipelineReset)
+    {
+        NvTransformResetCommands cmd;
+        getCommand(cmd, frame);
+        mDetail->resetCurrentFrameSave();
+    }
+    else
+    {
+        return Module::handleCommand(type, frame);
+    }
+}
+
+bool NvTransform::resetFrameCapture()
+{
+    NvTransformResetCommands cmd;
+    return queueCommand(cmd);
+}
+
+NvTransformProps NvTransform::getProps()
+{
+	fillProps(mDetail->props);
+	return mDetail->props;
+}
+
+void NvTransform::setProps(NvTransformProps &props)
+{
+	Module::addPropsToQueue(props);
+}
+
+bool NvTransform::handlePropsChange(frame_sp &frame)
+{
+	NvTransformProps props(mDetail->props.imageType, 0, 0, 0, 0, 0);
+	bool ret = Module::handlePropsChange(frame, props);
+	mDetail->setProps(props);
+	return ret;
 }

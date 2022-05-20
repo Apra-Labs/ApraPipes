@@ -33,7 +33,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     }
 
     // Use NvBufferMemMapEx
-    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr));
+    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr)); //NvBufferMem_Read_Write
     if (res)
     {
         LOG_ERROR << "NvBufferMemMap Error<>" << res;
@@ -75,7 +75,18 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         }
 
         cudaFree(0);
-        buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
+        // buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
+        if (DMAUtils::getCudaPtrForAllChannels(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay, buffer->cudaAllPtr))
+        {
+            buffer->cudaPtr = buffer->cudaAllPtr[0];
+        }
+        else
+        {
+            buffer->cudaAllPtr[0] = NULL;
+            buffer->cudaAllPtr[1] = NULL;
+            buffer->cudaAllPtr[2] = NULL;
+            buffer->cudaAllPtr[3] = NULL;
+        }
     }
 
     return buffer;
@@ -177,6 +188,11 @@ void *DMAFDWrapper::getHostPtrUV()
 void *DMAFDWrapper::getCudaPtr() const
 {
     return cudaPtr;
+}
+
+void **DMAFDWrapper::getCudaAllPtr() const
+{
+    return (void **)cudaAllPtr;
 }
 
 int DMAFDWrapper::getIndex() const
