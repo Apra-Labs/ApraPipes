@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
-
+#include "FileWriterModule.h"
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -15,6 +15,10 @@
 #include "PipeLine.h"
 #include "test_utils.h"
 #include <fstream>
+#include "NvArgusCamera.h"
+#include "NvTransform.h"
+#include "CudaMemCopy.h"
+#include "DMAFDToHostCopy.h"
 
 BOOST_AUTO_TEST_SUITE(jpegencoderl4tm_tests)
 
@@ -68,15 +72,15 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
 	// metadata is known
 	auto width = 1280;
 	auto height = 720;
-	auto fileSize = width*height*3;
+	auto fileSize = width * height * 3;
 	unsigned char *in_buf = new unsigned char[fileSize];
 
 	auto in_file = new std::ifstream("./data/frame_1280x720_rgb.raw");
 	in_file->read((char *)in_buf, fileSize);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());	
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width * 3, CV_8U, FrameMetadata::HOST));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
 
@@ -153,10 +157,10 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 	auto encodedImageFrame = frames[encodedImagePin];
 	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
-	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm_scale_0.125.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0); 
+	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm_scale_0.125.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, *boost::unit_test::disabled())
 {
 	LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
@@ -165,10 +169,10 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	// metadata is known
 	auto width = 1280;
 	auto height = 720;
-	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1, 4*1024*1024);
+	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1, 4 * 1024 * 1024);
 	fileReaderProps.fps = 1000;
-	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width * 3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	JPEGEncoderL4TMProps encoderProps;
@@ -197,7 +201,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, *boost::unit_test::disabled())
 {
 
 	LoggerProps logprops;
@@ -247,7 +251,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, *boost::unit_test::disabled())
 {
 
 	LoggerProps logprops;
@@ -298,7 +302,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, *boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -334,7 +338,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, *boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -380,7 +384,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, *boost::unit_test::disabled())
 {
 	// metadata is known
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -407,7 +411,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::uni
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, *boost::unit_test::disabled())
 {
 	// metadata is known
 	auto img = cv::imread("./data/frame.jpg");
@@ -432,7 +436,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test:
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, *boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg");
@@ -474,6 +478,130 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 	{
 		BOOST_TEST(false);
 	}
+}
+
+// BOOST_AUTO_TEST_CASE(jpegenbcoderyuvtestcase)
+// {
+
+// 	auto width = 640;
+// 	auto height = 360;
+
+// 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+// 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+// 	fileReader->addOutputPin(metadata);
+
+// 	JPEGEncoderL4TMProps encoderProps;
+// 	auto m2 = boost::shared_ptr<Module>(new JPEGEncoderL4TM(encoderProps));
+// 	fileReader->setNext(m2);
+// 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+// 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
+
+// 	StatSinkProps sinkProps;
+// 	sinkProps.logHealth = true;
+// 	sinkProps.logHealthFrequency = 100;
+// 	auto m3 = boost::shared_ptr<Module>(new StatSink(sinkProps));
+// 	m2->setNext(m3);
+
+// 	PipeLine p("test");
+// 	p.appendModule(fileReader);
+// 	p.init();
+
+// 	p.run_all_threaded();
+// 	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+// 	LOG_INFO << "profiling done - stopping the pipeline";
+// 	p.stop();
+// 	p.term();
+// 	p.wait_for_all();
+
+// }
+
+BOOST_AUTO_TEST_CASE(jpegenbcoderyuvtestcase)
+{
+
+	auto width = 640;
+	auto height = 360;
+
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+	fileReader->addOutputPin(metadata);
+
+	JPEGEncoderL4TMProps encoderProps;
+	auto m2 = boost::shared_ptr<Module>(new JPEGEncoderL4TM(encoderProps));
+	fileReader->setNext(m2);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
+
+	StatSinkProps sinkProps;
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto m3 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("/home/developer/ApraPipes/data/testOutput/nvv4l2/x.jpeg")));
+	m2->setNext(m3);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(cameratest)
+{
+
+	int width = 1280;
+	int height = 720;
+
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+	boost::shared_ptr<Module> source;
+	boost::shared_ptr<Module> cuctx;
+	NvArgusCameraProps sourceProps(width, height);
+	sourceProps.maxConcurrentFrames = 10;
+	sourceProps.fps = 60;
+	sourceProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+
+	source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+
+	NvTransformProps nvtransformprops(ImageMetadata::YUV420, 1280, 720);
+	nvtransformprops.qlen = 1;
+	nvtransformprops.fps = 60;
+	nvtransformprops.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	nvtransformprops.logHealth = true;
+	nvtransformprops.logHealthFrequency = 100;
+
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(nvtransformprops));
+	source->setNext(nv_transform);
+
+	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	nv_transform->setNext(copy);
+
+	auto filew_raw = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("/home/developer/ApraPipes/data/testOutput/nvv4l2/Frame_????.raw")));
+	copy->setNext(filew_raw);
+
+	auto encoder = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	nv_transform->setNext(encoder);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE, FrameMetadata::MemType::HOST));
+	auto encodedImagePin = encoder->addOutputPin(encodedImageMetadata);
+
+	auto filew = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("/home/developer/ApraPipes/data/testOutput/nvv4l2/Frame_????.jpg")));
+	encoder->setNext(filew);
+
+	PipeLine p("test");
+	p.appendModule(source);
+
+	p.init();
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
