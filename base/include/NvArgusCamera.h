@@ -28,13 +28,20 @@ public:
 	virtual ~NvArgusCamera();
 	bool init();
 	bool term();
+	bool toggleAutoWB();
+	bool enableAutoWB();
+	bool disableAutoWB();
 
 protected:
 	bool produce();
 	bool validateOutputPins();
+	bool handleCommand(Command::CommandType type, frame_sp &frame);
 
 private:
 	std::string mOutputPinId;
 	std::shared_ptr<NvArgusCameraHelper> mHelper;
 	NvArgusCameraProps mProps;
+	class NvArgusCameraSetAWBCommand;
+	class NvArgusCameraEnableAWBCommand;
+	class NvArgusCameraDisableAWBCommand;
 };

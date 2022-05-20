@@ -48,6 +48,7 @@ public:
 		case ImageMetadata::MONO:
 			_step = _width;
 			break;
+		case ImageMetadata::YUYV:	
 		case ImageMetadata::UYVY:
 			_step = _width * 2;
 			break;
@@ -61,6 +62,9 @@ public:
 		case ImageMetadata::RGBA:
 		case ImageMetadata::BGRA:
 			_step = _width * 4;
+			break;
+		case ImageMetadata::BG10:
+			_step = _width * 2;
 			break;
 		default:
 			auto msg = "Unknown image type<" + std::to_string(imageType) + ">";
@@ -130,6 +134,7 @@ public:
 		case ImageMetadata::MONO:
 			multiple = 1;
 			break;
+		case ImageMetadata::YUYV:
 		case ImageMetadata::UYVY:
 			multiple = 2;
 			break;
@@ -144,6 +149,9 @@ public:
 		case ImageMetadata::BGRA:
 			multiple = 4;
 			break;
+		case ImageMetadata::BG10:
+			multiple = 2;
+			break;	
 		default:
 			auto msg = "Unknown image type<" + std::to_string(imageType) + ">";
 			throw AIPException(AIP_NOTIMPLEMENTED, msg);
@@ -197,6 +205,7 @@ protected:
 		case ImageMetadata::MONO:
 			channels = 1;
 			break;
+		case ImageMetadata::YUYV:	
 		case ImageMetadata::UYVY:
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
@@ -207,6 +216,9 @@ protected:
 		case ImageMetadata::BGRA:
 			channels = 4;
 			break;
+		case ImageMetadata::BG10:
+			channels = 1;
+			break;	
 		default:
 			auto msg = "Unknown image type<" + std::to_string(imageType) + ">";
 			throw AIPException(AIP_NOTIMPLEMENTED, msg);
