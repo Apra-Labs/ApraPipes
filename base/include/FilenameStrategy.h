@@ -11,7 +11,8 @@ public:
 		int startIndex,
 		int maxIndex,
 		bool readLoop,
-		const std::vector<std::string>& files = std::vector<std::string>()
+		const std::vector<std::string>& files = std::vector<std::string>(),
+		bool appendFlag = false
 	);
 		
 	virtual ~FilenameStrategy();
@@ -34,7 +35,8 @@ protected:
 	FilenameStrategy(const std::string& strPath,
 		int startIndex,
 		int maxIndex,
-		bool readLoop);
+		bool readLoop,
+		bool appendFlag);
 	
 	FilenameStrategy(bool readLoop);
 
@@ -42,6 +44,7 @@ protected:
 
 	bool mIsConnected;
 	bool mReadLoop;
+	bool mAppend;
 
 	std::string mDirName;
 	int mCurrentIndex;
