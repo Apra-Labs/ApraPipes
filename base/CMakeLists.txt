@@ -25,15 +25,13 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 ENDIF(ENABLE_ARM64)
 
+project(APRAPIPES)
+
+set(CMAKE_CXX_STANDARD 17)
+
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
 
 add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
-
-set(CMAKE_CXX_STANDARD 14)
-
-project(APRAPIPES)
-
-
 
 IF(ENABLE_LINUX)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
@@ -71,6 +69,8 @@ ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
 find_package(OpenCV CONFIG REQUIRED)
+find_package(redis++ CONFIG REQUIRED)
+find_package(hiredis CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(liblzma REQUIRED)
@@ -266,9 +266,10 @@ SET(IP_FILES
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
+	src/RedisDBReader.cpp
+	src/EventSource.cpp
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
-
 )
 
 
@@ -298,6 +299,8 @@ SET(IP_FILES_H
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
+	include/RedisDBReader.h
+	include/EventSource.h
 	include/ApraFaceInfo.h
 	include/FaceDetectsInfo.h
 	include/FaceDetectorXform.h
@@ -545,6 +548,8 @@ SET(UT_FILES
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
+	test/redisreader_tests.cpp
+	test/eventsource_tests.cpp
 	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
   test/pullstratergy_tests.cpp
