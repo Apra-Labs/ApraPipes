@@ -52,4 +52,62 @@ BOOST_AUTO_TEST_CASE(basic, * boost::unit_test::disabled())
 	delete[] pReadData;
 }
 
+BOOST_AUTO_TEST_CASE(append)
+{
+	const uint8_t* pReadData = nullptr;
+	unsigned int readDataSize = 0U;
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto pinId = m1->addOutputPin(metadata);
+	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample.txt", true)));
+	m1->setNext(m2);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	const char *stringToAppend = "Apra";
+	readDataSize = strlen(stringToAppend);
+	auto frame = m1->makeFrame(readDataSize, pinId);
+	memcpy(frame->data(), stringToAppend, readDataSize);
+
+
+	frame_container frames;
+	frames.insert(make_pair(pinId, frame));
+	for (auto i = 0; i < 4; i++)
+	{
+		m1->send(frames);
+		m2->step();
+	}
+	delete[] pReadData;
+}
+
+BOOST_AUTO_TEST_CASE(appendTestPattern)
+{
+	const uint8_t* pReadData = nullptr;
+	unsigned int readDataSize = 0U;
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto pinId = m1->addOutputPin(metadata);
+	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample_????.txt", true)));
+	m1->setNext(m2);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	const char *stringToAppend = "Apra";
+	readDataSize = strlen(stringToAppend);
+	auto frame = m1->makeFrame(readDataSize, pinId);
+	memcpy(frame->data(), stringToAppend, readDataSize);
+
+
+	frame_container frames;
+	frames.insert(make_pair(pinId, frame));
+	for (auto i = 0; i < 4; i++)
+	{
+		m1->send(frames);
+		m2->step();
+	}
+	delete[] pReadData;
+}
+
 BOOST_AUTO_TEST_SUITE_END()
