@@ -44,6 +44,10 @@ bool FileSequenceDriver::Connect()
 		LOG_TRACE << "FileSequenceDriver::Writing Empty File " << fileNameToUse;
 
 		auto mode = std::ios::out | std::ios::binary;
+		if (mAppend)
+		{
+			mode = mode | std::ios::app;
+		}
 		std::ofstream file(fileNameToUse.c_str(), mode);
 		if (file.is_open())
 		{
