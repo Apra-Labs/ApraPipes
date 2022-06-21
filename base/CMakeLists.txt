@@ -222,6 +222,9 @@ SET(CORE_FILES_H
 	include/FIndexStrategy.h
 	include/AudioCaptureSrc.h
 	include/QRReader.h
+	include/BayerToYUV420.h
+	include/V4L2CameraSourceHelper.h
+	include/V4l2cameraSource.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -268,6 +271,9 @@ SET(IP_FILES
 	src/WebCamSource.cpp
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
+	src/BayerToYUV420.cpp
+	src/V4L2CameraSourceHelper.cpp
+	src/V4l2cameraSource.cpp
 
 )
 
@@ -489,6 +495,7 @@ IF (ENABLE_ARM64)
 		test/nvv4l2camerahelper_test.cpp
 		test/nvtransform_tests.cpp
 		test/eglrenderer_test.cpp
+		test/V4L2CameraSource_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -550,6 +557,7 @@ SET(UT_FILES
   test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
+	test/bayerToYUV420_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
