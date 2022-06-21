@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -10,21 +11,30 @@
 #include "AudioCaptureSrc.h"
 #include "ExternalSinkModule.h"
 #include "Module.h"
+#include <string>
 #include<iostream>
 #include<fstream>
 
 BOOST_AUTO_TEST_SUITE(sound_record_tests)
 
+void fileClean(std::string path) {
+	boost::filesystem::path filePath(path);
+	if (boost::filesystem::exists(filePath))
+	{
+		boost::filesystem::remove(filePath);
+	}
+}
+
 BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
 {
-    // Manual test, listen to the file on audacity to for sanity check
-    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	// Manual test, listen to the file on audacity to for sanity check
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-    auto time_to_run = Test_Utils::getArgValue("s", "10");
-    auto n_seconds = atoi(time_to_run.c_str());
-    auto sampling_rate = 48000;
-    auto channels = 1;
-    auto sample_size_byte = 2;
+	auto time_to_run = Test_Utils::getArgValue("s", "10");
+	auto n_seconds = atoi(time_to_run.c_str());
+	auto sampling_rate = 48000;
+	auto channels = 1;
+	auto sample_size_byte = 2; 
 
     AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,200);
     auto source = boost::shared_ptr<Module>(new AudioCaptureSrc(sourceProps));
@@ -45,7 +55,9 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
                 channels * sampling_rate * sample_size_byte * n_seconds <= file_size_mono + (file_size_mono * 0.02)));
     p.stop();
     p.term();
-    p.wait_for_all();
+	p.wait_for_all();
+	in_file_mono.close();
+	fileClean("./data/AudiotestMono.wav");
 }
 
 BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
@@ -78,6 +90,8 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
     p.stop();
     p.term();
     p.wait_for_all();
+	in_file_stereo.close();
+	fileClean("./data/AudiotestStereo.wav");
 }
 BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
 {
@@ -109,7 +123,7 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     int file_size_mono = in_file_mono.tellg();
     BOOST_TEST((channels * sampling_rate * sample_size_byte * n_seconds >= file_size_mono - (file_size_mono * 0.02) &&
                 channels * sampling_rate * sample_size_byte * n_seconds <= file_size_mono + (file_size_mono * 0.02)));
-
+                
     auto currentProps = source->getProps();
     currentProps.channels = 2;
     currentProps.sampleRate = 48000;
@@ -117,6 +131,8 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     source->relay(outputFile,false);
     source->relay(outputFile2,true);
     boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
+	in_file_mono.close();
+	fileClean("./data/AudiotestMono.wav");
 
     ifstream in_file_stereo("./data/AudiotestStereo.wav", ios::binary);
     in_file_stereo.seekg(0, ios::end);
@@ -126,5 +142,7 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     p.stop();
     p.term();
     p.wait_for_all();
+	in_file_stereo.close();
+	fileClean("./data/AudiotestStereo.wav");
 }
 BOOST_AUTO_TEST_SUITE_END()
