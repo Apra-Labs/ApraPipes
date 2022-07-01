@@ -51,7 +51,7 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
         ```
 ## Windows
 ###  Prerequisites 
-* Install Visual Studio 2017 Community 
+* Install Visual Studio 2019 Community 
   * Install Desktop development C++
   * .NET Desktop development
   * Universal Windows Development Platform
