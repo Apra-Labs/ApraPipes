@@ -346,11 +346,6 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 }
 
 // default - open, sieve is enabled - feedback false
-bool Module::setNext(boost::shared_ptr<Module> next, bool open) 
-{
-	return setNext(next, open, true);
-}
-
 bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
 {
 	return setNext(next, open, false, sieve);

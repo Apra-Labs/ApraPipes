@@ -149,8 +149,7 @@ public:
 	vector<string> getAllOutputPinsByType(int type);
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
-	bool setNext(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
-	bool setNext(boost::shared_ptr<Module> next, bool open, bool sieve);
+	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = true); // take all the output pins			
 	bool addFeedback(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
