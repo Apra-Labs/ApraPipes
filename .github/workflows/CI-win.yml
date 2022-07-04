@@ -56,8 +56,13 @@ jobs:
           path: |
             ${{ matrix.CACHE_PATH }}
             ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}-p
           restore-keys: ${{ env.CACHE_REST_KEY }}-
+    
+    - name: Remove OpenCV from vcpkg
+      working-directory: ${{github.workspace}}/base
+      run: fix-vcpkg-json-win.ps1
+      shell: pwsh
 
     - name: Build Gstreamer
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
@@ -71,16 +76,6 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
-      continue-on-error: true
-      
-    - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
-      continue-on-error: true
-      
-    - name: Verify contents of Debug and Release in windows
-      working-directory: ${{github.workspace}}/build/
-      run: dir ${{env.BUILD_TYPE}}
       continue-on-error: true
     
     - name: Upload build logs 
