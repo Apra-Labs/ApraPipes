@@ -304,6 +304,7 @@ protected:
 	bool handlePausePlay(bool play);
 	virtual void notifyPlay(bool play) {}
 private:	
+	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
@@ -347,7 +348,7 @@ private:
 	bool mRunning;
 	uint32_t mStopCount;
 	uint32_t mForwardPins;
-	bool mIsSieveEnabled = true;
+	bool mIsSieveDisabledForAny = false;
 	boost::shared_ptr<FrameFactory> mpFrameFactory;
 	boost::shared_ptr<FrameFactory> mpCommandFactory;
 	boost::shared_ptr<PaceMaker> pacer;

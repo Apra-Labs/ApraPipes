@@ -214,6 +214,15 @@ void Module::addOutputPin(framemetadata_sp &metadata, string &pinId)
 	}
 }
 
+void Module::setSieveDisabledFlag(bool sieve)
+{
+	// mIsSieveDisabledForAny is true when atleast one downstream connection of this module has sieve disabled
+	if (!sieve)
+	{
+		mIsSieveDisabledForAny = !sieve;
+	}
+}
+
 bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open, bool isFeedback, bool sieve)
 {
 	if (next->getNature() < this->getNature())
@@ -237,8 +246,6 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	mModules[nextModuleId] = next;
 	mConnections.insert(make_pair(nextModuleId, boost::container::deque<string>()));
 
-	// important - flag used to send enough number of EOP frames
-	mIsSieveEnabled = sieve;
 	if (sieve)
 	{
 		for (auto &pinId : pinIdArr)
@@ -277,6 +284,8 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	}
 	else
 	{
+		// important - flag used to send enough number of EOP frames
+		setSieveDisabledFlag(sieve);
 		for (auto& pinId : pinIdArr)
 		{
 			bool pinFound = false;
@@ -1262,8 +1271,8 @@ bool Module::addEoPFrame(frame_container &frames)
 		frames.insert(make_pair(me.first, frame));
 	}
 
-	// if sieve is disabled - send additional EOP frames - extra EOP frames downstream shouldn't matter
-	if (!mIsSieveEnabled) 
+	// if sieve is disabled for atleast one connection - send additional EOP frames - extra EOP frames downstream shouldn't matter
+	if (mIsSieveDisabledForAny)
 	{
 		pair<string, framemetadata_sp> me; // map element
 		BOOST_FOREACH(me, mInputPinIdMetadataMap)
