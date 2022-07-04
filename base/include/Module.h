@@ -150,6 +150,7 @@ public:
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool setNext(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, bool open, bool sieve);
 	bool addFeedback(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
@@ -285,8 +286,8 @@ protected:
 	string getInputPinIdByType(int type);
 	string getOutputPinIdByType(int type);		
 	
-	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback); // take all the output pins			
-	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback); 
+	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback, bool sieve); 
 	void addInputPin(framemetadata_sp& metadata, string& pinId, bool isFeedback); 
 	virtual void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails	
 	boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
@@ -347,6 +348,7 @@ private:
 	bool mRunning;
 	uint32_t mStopCount;
 	uint32_t mForwardPins;
+	bool mIsSieveEnabled = true;
 	boost::shared_ptr<FrameFactory> mpFrameFactory;
 	boost::shared_ptr<FrameFactory> mpCommandFactory;
 	boost::shared_ptr<PaceMaker> pacer;

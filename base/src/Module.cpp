@@ -214,7 +214,7 @@ void Module::addOutputPin(framemetadata_sp &metadata, string &pinId)
 	}
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open, bool isFeedback)
+bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open, bool isFeedback, bool sieve)
 {
 	if (next->getNature() < this->getNature())
 	{
@@ -237,38 +237,107 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	mModules[nextModuleId] = next;
 	mConnections.insert(make_pair(nextModuleId, boost::container::deque<string>()));
 
-	for (auto &pinId : pinIdArr)
+	// important - flag used to send enough number of EOP frames
+	mIsSieveEnabled = sieve;
+	if (sieve)
 	{
-		if (mOutputPinIdFrameFactoryMap.find(pinId) == mOutputPinIdFrameFactoryMap.end())
+		for (auto &pinId : pinIdArr)
 		{
-			auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			throw AIPException(AIP_PIN_NOTFOUND, msg);
-		}
-		
-		framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
-		// Set input meta here
-		try
-		{
-			next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
-		}
-		catch (AIP_Exception &exception)
-		{
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			throw exception;
-		}
-		catch (...)
-		{
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			LOG_FATAL << "";
-			throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
-		}
+			if (mOutputPinIdFrameFactoryMap.find(pinId) == mOutputPinIdFrameFactoryMap.end())
+			{
+				auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw AIPException(AIP_PIN_NOTFOUND, msg);
+			}
 
-		// add next module here
-		mConnections[nextModuleId].push_back(pinId);
+			framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
+			// Set input meta here
+			try
+			{
+				next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+			}
+			catch (AIP_Exception& exception)
+			{
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw exception;
+			}
+			catch (...)
+			{
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				LOG_FATAL << "";
+				throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+			}
+
+			// add next module here
+			mConnections[nextModuleId].push_back(pinId);
+		}
+	}
+	else
+	{
+		for (auto& pinId : pinIdArr)
+		{
+			bool pinFound = false;
+			if (mOutputPinIdFrameFactoryMap.find(pinId) != mOutputPinIdFrameFactoryMap.end())
+			{
+				pinFound = true;
+				framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
+				// Set input meta here
+				try
+				{
+					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+				}
+				catch (AIP_Exception& exception)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					throw exception;
+				}
+				catch (...)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					LOG_FATAL << "";
+					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+				}
+			}
+			if (mInputPinIdMetadataMap.find(pinId) != mInputPinIdMetadataMap.end())
+			{
+				pinFound = true;
+				framemetadata_sp metadata = mInputPinIdMetadataMap[pinId];
+
+				// Set input meta here
+				try
+				{
+					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+				}
+				catch (AIP_Exception& exception)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					throw exception;
+				}
+				catch (...)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					LOG_FATAL << "";
+					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+				}
+			}
+
+			if (!pinFound)
+			{
+				auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw AIPException(AIP_PIN_NOTFOUND, msg);
+			}
+			// add next module here
+			mConnections[nextModuleId].push_back(pinId);
+		}
 	}
 
 	mRelay[nextModuleId] = open;
@@ -276,12 +345,18 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	return true;
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, bool open)
+// default - open, sieve is enabled - feedback false
+bool Module::setNext(boost::shared_ptr<Module> next, bool open) 
 {
-	return setNext(next, open, false);
+	return setNext(next, open, true);
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback)
+bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+{
+	return setNext(next, open, false, sieve);
+}
+
+bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve)
 {
 	pair<string, framefactory_sp> me; // map element
 	vector<string> pinIdArr;
@@ -290,23 +365,32 @@ bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback)
 		pinIdArr.push_back(me.first);
 	}
 
+	if (!sieve)
+	{
+		pair<string, framemetadata_sp> me; // map element
+		BOOST_FOREACH(me, mInputPinIdMetadataMap)
+		{
+			pinIdArr.push_back(me.first);
+		}
+	}
+
 	// sending all the outputpins
-	return setNext(next, pinIdArr, open, isFeedback);
+	return setNext(next, pinIdArr, open, isFeedback, sieve);
 }
 
 bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
 {
-	return setNext(next, pinIdArr, open, false);
+	return setNext(next, pinIdArr, open, false, true);
 }
 
 bool Module::addFeedback(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
 {
-	return setNext(next, pinIdArr, open, true);
+	return setNext(next, pinIdArr, open, true, true);
 }
 
 bool Module::addFeedback(boost::shared_ptr<Module> next, bool open)
 {
-	return setNext(next, open, true);
+	return setNext(next, open, true, true);
 }
 
 void Module::addInputPin(framemetadata_sp &metadata, string &pinId, bool isFeedback)
@@ -1181,6 +1265,18 @@ bool Module::addEoPFrame(frame_container &frames)
 		auto metadata = me.second->getFrameMetadata();
 		frame->setMetadata(metadata);
 		frames.insert(make_pair(me.first, frame));
+	}
+
+	// if sieve is disabled - send additional EOP frames - extra EOP frames downstream shouldn't matter
+	if (!mIsSieveEnabled) 
+	{
+		pair<string, framemetadata_sp> me; // map element
+		BOOST_FOREACH(me, mInputPinIdMetadataMap)
+		{
+			auto frame = frame_sp(new EoPFrame());
+			frame->setMetadata(me.second);
+			frames.insert(make_pair(me.first, frame));
+		}
 	}
 	return true;
 }
