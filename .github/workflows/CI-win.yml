@@ -61,7 +61,7 @@ jobs:
     
     - name: Remove OpenCV from vcpkg
       working-directory: ${{github.workspace}}/base
-      run: fix-vcpkg-json-win.ps1
+      run: .\fix-vcpkg-json-win.ps1
       shell: pwsh
 
     - name: Build Gstreamer
