@@ -49,6 +49,11 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
 
+    - name: Remove OpenCV from vcpkg
+      working-directory: ${{github.workspace}}/base
+      run: .\fix-vcpkg-json-win.ps1
+      shell: pwsh
+
     - name: Cache dependencies for fast cloud build
       id: cache-all
       uses: actions/cache@v2
@@ -56,13 +61,8 @@ jobs:
           path: |
             ${{ matrix.CACHE_PATH }}
             ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}-p
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}-
-    
-    - name: Remove OpenCV from vcpkg
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json-win.ps1
-      shell: pwsh
 
     - name: Build Gstreamer
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
