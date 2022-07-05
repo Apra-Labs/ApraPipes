@@ -431,6 +431,129 @@ BOOST_AUTO_TEST_CASE(module_setNext)
 	BOOST_TEST(connections.size() == 3);
 }
 
+BOOST_AUTO_TEST_CASE(disable_sieve)
+{
+	class TestModule1 : public TestModule
+	{
+	public:
+		TestModule1() : TestModule(SOURCE, "TestModule1", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule1() {}
+
+	protected:
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	};
+	};
+
+	class TestModule2 : public TestModule
+	{
+	public:
+		TestModule2() : TestModule(TRANSFORM, "TestModule2", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule2() {}
+
+	protected:
+		bool validateInputPins() { return true; } // invoked with setInputPin
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	
+	};
+
+	class TestModule3 : public TestModule
+	{
+	public:
+		TestModule3() : TestModule(TRANSFORM, "TestModule3", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule3() {}
+
+	protected:
+		bool validateInputPins() { return true; }
+		bool validateOutputPins() { return true; }
+	};
+
+	class TestModule4 : public TestModule
+	{
+	public:
+		TestModule4() : TestModule(TRANSFORM, "TestModule4", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule4() {}
+
+	protected:
+		bool validateInputPins() { return true; }
+		bool validateOutputPins() { return true; }
+	};
+
+	class TestModule5 : public TestModule
+	{
+	public:
+		TestModule5() : TestModule(SINK, "TestModule5", ModuleProps())
+		{
+
+		}
+		virtual ~TestModule5() {}
+	protected:
+		bool validateInputPins() { return true; }
+	};
+
+	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+	auto metadata2 = framemetadata_sp(new RawImageMetadata());
+	auto pinId2 = string("s_p2");
+	m1->addOutputPin(metadata2, pinId2);
+
+	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId3 = string("s_p3");
+	m2->addOutputPin(metadata3, pinId3);
+
+	auto m3 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto metadata4 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ARRAY));
+	auto pinId4 = string("s_p4");
+	m3->addOutputPin(metadata4, pinId4);
+
+	vector<string> pinIdArr = { string("s_p1"), string("s_p2") };
+	BOOST_TEST(m1->setNext(m2, pinIdArr));
+
+	// m2->m3 with sieve = false - expected all input pins of m2 come to m3 as 
+	BOOST_TEST(m2->setNext(m3, true, false));
+
+	// input pin validation for m3
+	BOOST_TEST(m3->getNumberOfInputPins() == 3);
+	auto m3InputMetadata = m3->getInputMetadata();
+	BOOST_TEST(m3InputMetadata["s_p1"]->getFrameType() == FrameMetadata::FrameType::ENCODED_IMAGE);
+	BOOST_TEST(m3InputMetadata["s_p2"]->getFrameType() == FrameMetadata::FrameType::RAW_IMAGE);
+	BOOST_TEST(m3InputMetadata["s_p3"]->getFrameType() == FrameMetadata::FrameType::GENERAL);
+
+
+	// m3 -> m4 with sieve = true - expected only the output pin of m3 to be input of m4
+	auto m4 = boost::shared_ptr<TestModule>(new TestModule4());
+	m3->setNext(m4); // sieve = true by default
+	BOOST_TEST(m4->getNumberOfInputPins() == 1);
+	auto m4InputMetadata = m4->getInputMetadata();
+	BOOST_TEST(m4InputMetadata["s_p4"]->getFrameType() == FrameMetadata::FrameType::ARRAY);
+
+	// m3 -> m5 with sieve = false - expected all input pins + output pins of m3 to be input of m5
+	auto m5 = boost::shared_ptr<TestModule>(new TestModule5());
+	m3->setNext(m5, true, false);
+	BOOST_TEST(m5->getNumberOfInputPins() == 4);
+	auto m5InputMetadata = m5->getInputMetadata();
+	BOOST_TEST(m5InputMetadata["s_p1"]->getFrameType() == FrameMetadata::FrameType::ENCODED_IMAGE);
+	BOOST_TEST(m5InputMetadata["s_p2"]->getFrameType() == FrameMetadata::FrameType::RAW_IMAGE);
+	BOOST_TEST(m5InputMetadata["s_p3"]->getFrameType() == FrameMetadata::FrameType::GENERAL);
+	BOOST_TEST(m5InputMetadata["s_p4"]->getFrameType() == FrameMetadata::FrameType::ARRAY);
+}
+
 BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 {
 	class TestModule2 : public TestModule
