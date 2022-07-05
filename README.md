@@ -6,7 +6,7 @@ A pipeline framework for developing video and image processing applications. Sup
 Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community (without CUDA)
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
-|Windows|2019|No|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
+|Windows|2019|No|Yes|[![CI_Win](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-win.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-win.yml)|
 |Ubuntu x64_86|20.04|No|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
 |Ubuntu ARM64 (Jetsons)|18.04|Yes|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
 |Ubuntu x64_86|18.04|Yes|No|[![CI_Cuda](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml)|
