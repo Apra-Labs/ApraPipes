@@ -272,8 +272,7 @@ protected:
 				
 	size_t getNumberOfOutputPins(bool implicit = false) 
 	{ 
-		size_t pinCount = 0; 
-		pinCount += mOutputPinIdFrameFactoryMap.size(); 
+		auto pinCount = mOutputPinIdFrameFactoryMap.size(); 
 		if (implicit) 
 		{ 
 			pinCount += mInputPinIdMetadataMap.size(); 
