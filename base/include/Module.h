@@ -270,7 +270,16 @@ protected:
 	virtual bool validateOutputPins(); // invoked with addOutputPin
 	virtual bool validateInputOutputPins() { return validateInputPins() && validateOutputPins(); } // invoked during Module::init before anything else
 				
-	size_t getNumberOfOutputPins() { return mOutputPinIdFrameFactoryMap.size(); }
+	size_t getNumberOfOutputPins(bool implicit = true) 
+	{ 
+		auto pinCount = mOutputPinIdFrameFactoryMap.size(); 
+		// override the implicit behaviour 
+		if (!implicit) 
+		{ 
+			pinCount += mInputPinIdMetadataMap.size(); 
+		} 
+		return pinCount;
+	}
 	size_t getNumberOfInputPins() { return mInputPinIdMetadataMap.size(); }
 	framemetadata_sp getFirstInputMetadata();
 	framemetadata_sp getFirstOutputMetadata();
