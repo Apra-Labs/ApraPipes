@@ -146,7 +146,7 @@ public:
 	uint64_t getTickCounter();
 		
 	string addOutputPin(framemetadata_sp& metadata); // throw exception
-	vector<string> getAllOutputPinsByType(int type, bool implicit = false);
+	vector<string> getAllOutputPinsByType(int type);
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = true); // take all the output pins			
@@ -270,10 +270,11 @@ protected:
 	virtual bool validateOutputPins(); // invoked with addOutputPin
 	virtual bool validateInputOutputPins() { return validateInputPins() && validateOutputPins(); } // invoked during Module::init before anything else
 				
-	size_t getNumberOfOutputPins(bool implicit = false) 
+	size_t getNumberOfOutputPins(bool implicit = true) 
 	{ 
 		auto pinCount = mOutputPinIdFrameFactoryMap.size(); 
-		if (implicit) 
+		// override the implicit behaviour 
+		if (!implicit) 
 		{ 
 			pinCount += mInputPinIdMetadataMap.size(); 
 		} 
@@ -286,12 +287,12 @@ protected:
 	framefactory_by_pin& getOutputFrameFactory() { return mOutputPinIdFrameFactoryMap; }
 	framemetadata_sp getInputMetadataByType(int type);
 	int getNumberOfInputsByType(int type);
-	int getNumberOfOutputsByType(int type, bool implicit = false);
+	int getNumberOfOutputsByType(int type);
 	framemetadata_sp getOutputMetadataByType(int type);
 	bool isMetadataEmpty(framemetadata_sp& metadata);
 	bool isFrameEmpty(frame_sp& frame);
 	string getInputPinIdByType(int type);
-	string getOutputPinIdByType(int type, bool implicit = false);		
+	string getOutputPinIdByType(int type);		
 	
 	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve); // take all the output pins			
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback, bool sieve); 

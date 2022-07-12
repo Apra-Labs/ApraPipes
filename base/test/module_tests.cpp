@@ -24,7 +24,7 @@ public:
 
 	virtual ~TestModule() {}
 
-	size_t getNumberOfOutputPins() { return Module::getNumberOfOutputPins(); }
+	size_t getNumberOfOutputPins(bool implicit = true) { return Module::getNumberOfOutputPins(implicit); }
 	size_t getNumberOfInputPins() { return Module::getNumberOfInputPins(); }
 	framemetadata_sp getFirstInputMetadata() { return Module::getFirstInputMetadata(); }
 	framemetadata_sp getFirstOutputMetadata() { return Module::getFirstOutputMetadata(); }
@@ -552,6 +552,83 @@ BOOST_AUTO_TEST_CASE(disable_sieve)
 	BOOST_TEST(m5InputMetadata["s_p2"]->getFrameType() == FrameMetadata::FrameType::RAW_IMAGE);
 	BOOST_TEST(m5InputMetadata["s_p3"]->getFrameType() == FrameMetadata::FrameType::GENERAL);
 	BOOST_TEST(m5InputMetadata["s_p4"]->getFrameType() == FrameMetadata::FrameType::ARRAY);
+}
+
+BOOST_AUTO_TEST_CASE(sieve_compl_outputPin_methods)
+{
+	class TestModule1 : public TestModule
+	{
+	public:
+		TestModule1() : TestModule(SOURCE, "TestModule1", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule1() {}
+
+	protected:
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	};
+	};
+
+	class TestModule2 : public TestModule
+	{
+	public:
+		TestModule2() : TestModule(TRANSFORM, "TestModule2", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule2() {}
+
+	protected:
+		bool validateInputPins() { return true; } // invoked with setInputPin
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	
+	};
+
+	class TestModule3 : public TestModule
+	{
+	public:
+		TestModule3() : TestModule(TRANSFORM, "TestModule3", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule3() {}
+
+	protected:
+		bool validateInputPins() { return true; }
+		bool validateOutputPins() { return true; }
+	};
+
+	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+	auto metadata2 = framemetadata_sp(new RawImageMetadata());
+	auto pinId2 = string("s_p2");
+	m1->addOutputPin(metadata2, pinId2);
+	BOOST_TEST(m1->getNumberOfOutputPins() == 2);
+
+	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId3 = string("s_p3");
+	m2->addOutputPin(metadata3, pinId3);
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m2->getNumberOfOutputPins() == 1);
+
+	auto m3 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto metadata4 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ARRAY));
+	auto pinId4 = string("s_p4");
+	m3->addOutputPin(metadata4, pinId4);
+	BOOST_TEST(m2->setNext(m3, true, false));
+
+	// with implicit behaviour 
+	BOOST_TEST(m2->getNumberOfOutputPins() == 1);
+	// with overridden implicit behaviour - no. of output pins should include i/p pins
+	BOOST_TEST(m2->getNumberOfOutputPins(false) == 3);
+
+	BOOST_TEST(m3->getNumberOfInputPins() == 3);
+	BOOST_TEST(m3->getNumberOfOutputPins() == 1);
 }
 
 BOOST_AUTO_TEST_CASE(module_frame_container_utils)

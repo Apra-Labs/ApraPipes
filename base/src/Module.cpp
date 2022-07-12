@@ -741,7 +741,7 @@ string getPinIdByType(int type, framefactory_by_pin &metadataMap)
 	return "";
 }
 
-vector<string> Module::getAllOutputPinsByType(int type, bool implicit)
+vector<string> Module::getAllOutputPinsByType(int type)
 {
 	vector<string> pins;
 
@@ -754,18 +754,6 @@ vector<string> Module::getAllOutputPinsByType(int type, bool implicit)
 		}
 	}
 
-	if (implicit) // also send the input pins
-	{
-		pair<string, framemetadata_sp> me; // map element
-		BOOST_FOREACH(me, mInputPinIdMetadataMap)
-		{
-			if (me.second->getFrameType() == type)
-			{
-				pins.push_back(me.first);
-			}
-		}
-	}
-
 	return pins;
 }
 
@@ -774,14 +762,9 @@ string Module::getInputPinIdByType(int type)
 	return getPinIdByType(type, mInputPinIdMetadataMap);
 }
 
-string Module::getOutputPinIdByType(int type, bool implicit)
+string Module::getOutputPinIdByType(int type)
 {
-	auto pinId = getPinIdByType(type, mOutputPinIdFrameFactoryMap);
-	if (pinId.empty() && implicit)
-	{
-		pinId = getPinIdByType(type, mInputPinIdMetadataMap);
-	}
-	return pinId;
+	return getPinIdByType(type, mOutputPinIdFrameFactoryMap);
 }
 
 framemetadata_sp getMetadataByType(int type, metadata_by_pin &metadataMap)
@@ -858,14 +841,9 @@ int Module::getNumberOfInputsByType(int type)
 	return getNumberOfPinsByType(type, mInputPinIdMetadataMap);
 }
 
-int Module::getNumberOfOutputsByType(int type, bool implicit)
+int Module::getNumberOfOutputsByType(int type)
 {
-	auto pins = getNumberOfPinsByType(type, mOutputPinIdFrameFactoryMap);
-	if (implicit)
-	{
-		pins += getNumberOfInputsByType(type);
-	}
-	return pins;
+	return getNumberOfPinsByType(type, mOutputPinIdFrameFactoryMap);
 }
 
 bool Module::isMetadataEmpty(framemetadata_sp &metatata)
