@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -17,26 +16,10 @@
 
 BOOST_AUTO_TEST_SUITE(sound_record_tests)
 
-struct FileCleaner {
-	FileCleaner(std::vector<std::string> paths) {
-		pathsOfFiles = paths;
-	};
-	~FileCleaner() {
-		for (int i = 0; i < pathsOfFiles.size(); i++) {
-			boost::filesystem::path filePath(pathsOfFiles[i]);
-			if (boost::filesystem::exists(filePath))
-			{
-				boost::filesystem::remove(filePath);
-			}
-		}
-	};
-	std::vector<std::string> pathsOfFiles;
-};
-
 BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
 {
 	std::vector<std::string> audioFiles = { "./data/AudiotestMono.wav" };
-	FileCleaner f(audioFiles);
+	Test_Utils::FileCleaner f(audioFiles);
     // Manual test, listen to the file on audacity to for sanity check
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
@@ -72,7 +55,7 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
 {
 	std::vector<std::string> audioFiles = { "./data/AudiotestStereo.wav" };
-	FileCleaner f(audioFiles);
+	Test_Utils::FileCleaner f(audioFiles);
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
     auto time_to_run = Test_Utils::getArgValue("s", "10");
@@ -106,7 +89,7 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
 {
 	std::vector<std::string> audioFiles = { "./data/AudiotestMono.wav", "./data/AudiotestStereo.wav" };
-	FileCleaner f(audioFiles);
+	Test_Utils::FileCleaner f(audioFiles);
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
     auto time_to_run = Test_Utils::getArgValue("s", "10");
