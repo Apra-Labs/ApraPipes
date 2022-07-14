@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 
 #include "ExternalSourceModule.h"
 #include "FileWriterModule.h"
@@ -13,25 +12,10 @@
 #include <vector>
 BOOST_AUTO_TEST_SUITE(filewritermodule_tests)
 
-struct FileCleaner {
-	FileCleaner(std::vector<std::string> paths) {
-		pathsOfFiles = paths;
-	};
-	~FileCleaner() {
-		for (int i = 0; i < pathsOfFiles.size(); i++) {
-			boost::filesystem::path filePath(pathsOfFiles[i]);
-			if (boost::filesystem::exists(filePath))
-			{
-				boost::filesystem::remove(filePath);
-			}
-		}
-	};
-	std::vector<std::string> pathsOfFiles;
-};
 BOOST_AUTO_TEST_CASE(basic)
 {
 	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleFrame_0000.jpg" , "./data/testOutput/fileWriterModuleFrame_0001.jpg", "./data/testOutput/fileWriterModuleFrame_0002.jpg", "./data/testOutput/fileWriterModuleFrame_0003.jpg" };
-	FileCleaner f(Files);
+	Test_Utils::FileCleaner f(Files);
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));
@@ -73,7 +57,7 @@ BOOST_AUTO_TEST_CASE(basic)
 BOOST_AUTO_TEST_CASE(append)
 {
 	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleSample.txt" };
-	FileCleaner f(Files);
+	Test_Utils::FileCleaner f(Files);
 	unsigned int readDataSize = 0U;
 	ofstream myFile("./data/testOutput/fileWriterModuleSample.txt");
 	myFile << "Foo";
@@ -105,7 +89,7 @@ BOOST_AUTO_TEST_CASE(append)
 BOOST_AUTO_TEST_CASE(appendTestPattern)
 {
 	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleSample_0000.txt" };
-	FileCleaner f(Files);
+	Test_Utils::FileCleaner f(Files);
 	unsigned int readDataSize = 0U;
 	
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
