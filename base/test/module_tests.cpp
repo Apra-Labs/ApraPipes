@@ -67,6 +67,250 @@ public:
 	
 */
 
+struct FlushQTests
+{
+	FlushQTests() {}
+	~FlushQTests() {}
+	class TestModuleProps : public ModuleProps
+	{
+	public:
+		TestModuleProps() :ModuleProps()
+		{
+		}
+		~TestModuleProps()
+		{}
+	};
+	class TestModule1 : public TestModule
+	{
+	public:
+		TestModule1() : TestModule(SOURCE, "TestModule1", TestModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule1() {}
+
+	protected:
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	};
+	};
+	class TestModule2 : public TestModule
+	{
+	public:
+		TestModule2() : TestModule(TRANSFORM, "TestModule2", TestModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule2() {}
+
+		bool process(frame_container& frames)
+		{
+			send(frames);
+			return true;
+		}
+	protected:
+		bool validateInputPins() { return true; } // invoked with setInputPin
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	
+	};
+	class TestModule3 : public TestModule
+	{
+	public:
+		TestModule3() : TestModule(SINK, "TestModule3", TestModuleProps())
+		{
+
+		}
+		virtual ~TestModule3() {}
+		bool process(frame_container& frames)
+		{
+			LOG_INFO << "process TestModule3";
+			return true;
+		}
+	protected:
+		bool validateInputPins() { return true; }
+	};
+};
+
+BOOST_AUTO_TEST_CASE(module_flushQ_linear)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->setNext(m3));
+	BOOST_TEST(m2->setNext(m4));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+	BOOST_TEST(m4->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+
+	m2->step();
+	m2->step();
+	m3->step();
+	m4->step();
+
+	auto m2Que = m2->getQue();
+	auto m3Que = m3->getQue();
+	auto m4Que = m4->getQue();
+
+	BOOST_TEST(m2Que->size() == 2);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 1);
+
+	// flushQue for m2 - expectation is m2, m4 que become empty, rest remain same
+	m2->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 0);
+
+	// m2 que should accept the next frame without requiring init
+	m1->send(frames);
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 4);
+	BOOST_TEST(m4Que->size() == 0);
+
+	// one more step
+	m2->step();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 4);
+	BOOST_TEST(m4Que->size() == 1);
+
+	// flushQue for source - expectation - all queues are empty
+	m1->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 0);
+	BOOST_TEST(m4Que->size() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(module_flushQ_branched)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	auto m5 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	m5->addOutputPin(metadata2, pinId2);
+
+	auto m6 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m7 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->setNext(m3));
+	BOOST_TEST(m1->setNext(m4));
+	BOOST_TEST(m2->setNext(m5));
+	BOOST_TEST(m2->setNext(m6));
+	BOOST_TEST(m5->setNext(m7));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+	BOOST_TEST(m4->init());
+	BOOST_TEST(m5->init());
+	BOOST_TEST(m6->init());
+	BOOST_TEST(m7->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+
+	m2->step();
+	m2->step();
+	m2->step();
+	m3->step();
+	m4->step();
+	m5->step();
+	auto m2Que = m2->getQue();
+	auto m3Que = m3->getQue();
+	auto m4Que = m4->getQue();
+	auto m5Que = m5->getQue();
+	auto m6Que = m6->getQue();
+	auto m7Que = m7->getQue();
+
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 3);
+	BOOST_TEST(m5Que->size() == 2);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 1);
+
+	// flushQ on m5 - expectation is m5, m7 q become empty, rest remain same
+	m5->flushQue();
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 3);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 0);
+
+	m1->send(frames);
+	m1->send(frames);
+	BOOST_TEST(m2Que->size() == 3);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 0);
+
+	m2->step();
+	m2->step();
+	m5->step();
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 1);
+	BOOST_TEST(m6Que->size() == 5);
+	BOOST_TEST(m7Que->size() == 1);
+
+	// flushQue on m2 - expectation m2, m5, m6, m7 (subtree) que should be empty, rest remains same
+	m2->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 0);
+	BOOST_TEST(m7Que->size() == 0);
+
+	// flushQue for source - expectation all queues are empty
+	m1->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 0);
+	BOOST_TEST(m4Que->size() == 0);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 0);
+	BOOST_TEST(m7Que->size() == 0);
+}
+
 BOOST_AUTO_TEST_CASE(module_addOutputPin)
 {
 	class TestModule1 : public TestModule
