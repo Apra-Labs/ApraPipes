@@ -119,6 +119,15 @@ public:
 		lock.unlock();
 	}
 
+	void flush() {
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_container.clear();
+		m_unread = 0;
+		m_not_full.notify_one();
+
+		lock.unlock();
+	}
+
 	void accept() {
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_accept = true;

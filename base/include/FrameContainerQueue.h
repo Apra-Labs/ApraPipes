@@ -16,6 +16,7 @@ public:
 
 	virtual bool isFull();
 	virtual void clear();
+	virtual void flush();
 	virtual void accept();
 	virtual size_t size();
 
