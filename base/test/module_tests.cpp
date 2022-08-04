@@ -130,7 +130,37 @@ struct FlushQTests
 	};
 };
 
-BOOST_AUTO_TEST_CASE(module_flushQ_linear)
+BOOST_AUTO_TEST_CASE(module_flushQ)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	
+	auto m2Que = m2->getQue();
+	BOOST_TEST(m2Que->size() == 2);
+
+	m2->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
 {
 	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
@@ -175,8 +205,8 @@ BOOST_AUTO_TEST_CASE(module_flushQ_linear)
 	BOOST_TEST(m3Que->size() == 3);
 	BOOST_TEST(m4Que->size() == 1);
 
-	// flushQue for m2 - expectation is m2, m4 que become empty, rest remain same
-	m2->flushQue();
+	// flushQueRecursive for m2 - expectation is m2, m4 que become empty, rest remain same
+	m2->flushQueRecursive();
 	BOOST_TEST(m2Que->size() == 0);
 	BOOST_TEST(m3Que->size() == 3);
 	BOOST_TEST(m4Que->size() == 0);
@@ -193,14 +223,14 @@ BOOST_AUTO_TEST_CASE(module_flushQ_linear)
 	BOOST_TEST(m3Que->size() == 4);
 	BOOST_TEST(m4Que->size() == 1);
 
-	// flushQue for source - expectation - all queues are empty
-	m1->flushQue();
+	// flushQueRecursive for source - expectation - all queues are empty
+	m1->flushQueRecursive();
 	BOOST_TEST(m2Que->size() == 0);
 	BOOST_TEST(m3Que->size() == 0);
 	BOOST_TEST(m4Que->size() == 0);
 }
 
-BOOST_AUTO_TEST_CASE(module_flushQ_branched)
+BOOST_AUTO_TEST_CASE(module_flushQRec_branched)
 {
 	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
@@ -265,7 +295,7 @@ BOOST_AUTO_TEST_CASE(module_flushQ_branched)
 	BOOST_TEST(m7Que->size() == 1);
 
 	// flushQ on m5 - expectation is m5, m7 q become empty, rest remain same
-	m5->flushQue();
+	m5->flushQueRecursive();
 	BOOST_TEST(m2Que->size() == 1);
 	BOOST_TEST(m3Que->size() == 3);
 	BOOST_TEST(m4Que->size() == 3);
@@ -292,8 +322,8 @@ BOOST_AUTO_TEST_CASE(module_flushQ_branched)
 	BOOST_TEST(m6Que->size() == 5);
 	BOOST_TEST(m7Que->size() == 1);
 
-	// flushQue on m2 - expectation m2, m5, m6, m7 (subtree) que should be empty, rest remains same
-	m2->flushQue();
+	// flushQueRecursive on m2 - expectation m2, m5, m6, m7 (subtree) que should be empty, rest remains same
+	m2->flushQueRecursive();
 	BOOST_TEST(m2Que->size() == 0);
 	BOOST_TEST(m3Que->size() == 5);
 	BOOST_TEST(m4Que->size() == 5);
@@ -301,8 +331,8 @@ BOOST_AUTO_TEST_CASE(module_flushQ_branched)
 	BOOST_TEST(m6Que->size() == 0);
 	BOOST_TEST(m7Que->size() == 0);
 
-	// flushQue for source - expectation all queues are empty
-	m1->flushQue();
+	// flushQueRecursive for source - expectation all queues are empty
+	m1->flushQueRecursive();
 	BOOST_TEST(m2Que->size() == 0);
 	BOOST_TEST(m3Que->size() == 0);
 	BOOST_TEST(m4Que->size() == 0);
