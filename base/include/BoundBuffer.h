@@ -124,8 +124,6 @@ public:
 		m_container.clear();
 		m_unread = 0;
 		m_not_full.notify_one();
-
-		lock.unlock();
 	}
 
 	void accept() {
