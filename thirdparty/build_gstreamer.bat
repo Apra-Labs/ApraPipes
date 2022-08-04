@@ -1,7 +1,7 @@
-for /F "tokens=*" %%A in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath') do SET VCVARSPATH="%%A\VC\Auxiliary\Build\"
-pushd %VCVARSPATH%
-call vcvars64.bat
-popd 
+@for /F "tokens=*" %%A in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath') do SET VCVARSPATH="%%A\VC\Auxiliary\Build\"
+@pushd %VCVARSPATH%
+@call vcvars64.bat
+@popd 
 @echo on 
 
 cd gst-build

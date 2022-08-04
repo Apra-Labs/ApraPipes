@@ -9,11 +9,29 @@
 #include "Logger.h"
 #include "AIPExceptions.h"
 #include "test_utils.h"
-#include "fstream"
+#include <fstream>
+#include <vector>
 BOOST_AUTO_TEST_SUITE(filewritermodule_tests)
 
-BOOST_AUTO_TEST_CASE(basic, * boost::unit_test::disabled())
+struct FileCleaner {
+	FileCleaner(std::vector<std::string> paths) {
+		pathsOfFiles = paths;
+	};
+	~FileCleaner() {
+		for (int i = 0; i < pathsOfFiles.size(); i++) {
+			boost::filesystem::path filePath(pathsOfFiles[i]);
+			if (boost::filesystem::exists(filePath))
+			{
+				boost::filesystem::remove(filePath);
+			}
+		}
+	};
+	std::vector<std::string> pathsOfFiles;
+};
+BOOST_AUTO_TEST_CASE(basic)
 {
+	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleFrame_0000.jpg" , "./data/testOutput/fileWriterModuleFrame_0001.jpg", "./data/testOutput/fileWriterModuleFrame_0002.jpg", "./data/testOutput/fileWriterModuleFrame_0003.jpg" };
+	FileCleaner f(Files);
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));
@@ -54,7 +72,8 @@ BOOST_AUTO_TEST_CASE(basic, * boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(append)
 {
-	const uint8_t* pReadData = nullptr;
+	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleSample.txt" };
+	FileCleaner f(Files);
 	unsigned int readDataSize = 0U;
 	ofstream myFile("./data/testOutput/fileWriterModuleSample.txt");
 	myFile << "Foo";
@@ -81,14 +100,12 @@ BOOST_AUTO_TEST_CASE(append)
 	std::getline(readFile, text);
 	readFile.close();
 	BOOST_TEST(text == "Foobar"); 
-
-	delete[] pReadData;
-	boost::filesystem::remove("./data/testOutput/fileWriterModuleSample.txt");
 }
 
 BOOST_AUTO_TEST_CASE(appendTestPattern)
 {
-	const uint8_t* pReadData = nullptr;
+	std::vector<std::string> Files = { "./data/testOutput/fileWriterModuleSample_0000.txt" };
+	FileCleaner f(Files);
 	unsigned int readDataSize = 0U;
 	
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
@@ -124,9 +141,6 @@ BOOST_AUTO_TEST_CASE(appendTestPattern)
 	std::getline(readFile, text);
 	readFile.close();
 	BOOST_TEST(text == "Foobar");
-
-	delete[] pReadData;
-	boost::filesystem::remove("./data/testOutput/fileWriterModuleSample_0000.txt");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
