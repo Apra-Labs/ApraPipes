@@ -1034,6 +1034,23 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	return queueCommand(cmd);
 }
 
+void Module::flushQueRecursive()
+{
+	flushQue();
+
+	// recursively call the flushQue for children modules
+	for (auto it = mModules.begin(); it != mModules.end(); ++it)
+	{
+		it->second->flushQueRecursive();
+	}
+}
+
+void Module::flushQue()
+{
+	LOG_INFO << "mQue flushed for <" << myId << ">";
+	mQue->flush();
+}
+
 bool Module::processSourceQue()
 {
 	frame_container frames;
