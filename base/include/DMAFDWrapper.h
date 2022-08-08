@@ -23,6 +23,7 @@ public:
     void* getHostPtrV();
     void* getHostPtrUV();
     void* getCudaPtr() const;
+    void** getCudaAllPtr() const;
     int getIndex() const;
 
     const void* getClientData() const;
@@ -47,6 +48,7 @@ private:
     void* hostPtrV;
 
     uint8_t* cudaPtr;
+    uint8_t* cudaAllPtr[4];
     const int index;
 
     const void* clientData;

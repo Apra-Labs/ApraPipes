@@ -5,41 +5,46 @@
 class FramesMuxerProps : public ModuleProps
 {
 public:
-	enum Strategy {
-		ALL_OR_NONE,
-		MAX_DELAY_ANY
-	};
-public:
-	FramesMuxerProps() : ModuleProps() 
+	enum Strategy
 	{
+		ALL_OR_NONE,
+		MAX_DELAY_ANY,
+		MAX_TIMESTAMP_DELAY
+	};
+
+public:
+	FramesMuxerProps() : ModuleProps()
+	{
+		maxTsDelay = 16.67;
 		maxDelay = 30;
-		strategy = ALL_OR_NONE;
+		strategy = MAX_TIMESTAMP_DELAY;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::NONE;
 	}
 
 	int maxDelay; // Difference between current frame and first frame in the queue
 	Strategy strategy;
+	double maxTsDelay; 
 };
 
 class FramesMuxerStrategy;
 
-class FramesMuxer : public Module {
+class FramesMuxer : public Module
+{
 public:
-
-	FramesMuxer(FramesMuxerProps _props=FramesMuxerProps());
+	FramesMuxer(FramesMuxerProps _props = FramesMuxerProps());
 	virtual ~FramesMuxer() {}
 
 	virtual bool init();
 	virtual bool term();
 
-protected:	
+protected: 
 	bool process(frame_container& frames);
 	bool validateInputPins();
-	bool validateOutputPins();	
+	bool validateOutputPins(); 
 	bool validateInputOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 
-private:		
+private:  
 	boost::shared_ptr<FramesMuxerStrategy> mDetail;
 };
 

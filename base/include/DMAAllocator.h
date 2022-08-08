@@ -38,6 +38,9 @@ private:
         case ImageMetadata::NV12:
             colorFormat = NvBufferColorFormat_NV12;
             break;
+        case ImageMetadata::MONO:
+            colorFormat = NvBufferColorFormat_GRAY8;
+            break;    
         default:
             throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12> Actual<" + std::to_string(imageType) + ">");
         }

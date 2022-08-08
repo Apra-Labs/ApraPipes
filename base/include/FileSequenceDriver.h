@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include "FrameMetadata.h"
+#include "FrameMetadataFactory.h"
+#include "Frame.h"
 
 class FilenameStrategy;
 
@@ -24,13 +27,21 @@ public:
     bool IsConnected() const;
 	bool canCache();
 
-    bool Read(uint8_t*& dataToRead, size_t& dataSize, uint64_t& index);
-	bool ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& index);
-    bool Write(const uint8_t* dataToWrite, size_t dataSize);
-	    
+    bool Read(uint8_t *&dataToRead, size_t &dataSize, uint64_t &index);
+    bool ReadP(uint8_t *dataToRead, size_t &dataSize, uint64_t &index);
+    bool Write(const uint8_t *dataToWrite, size_t dataSize);
+    bool Write1(frame_sp frame);
+    bool WriteFirst(frame_sp frame);
+
     void SetReadLoop(bool readLoop);
-	void notifyPlay(bool play);
-	void jump(uint64_t index);
+    void notifyPlay(bool play);
+    void jump(uint64_t index);
+    bool setNoOfFrame(int x);
+    bool getCurrentStatus();
+    bool resetInfo();
+    int noOFFramesToCapture = 10;
+    bool isPlaying = false;
+    int framesCaptured = 0;
 
 private:
     bool writeHelper(const std::string& fileName, const uint8_t* dataToWrite, size_t dataSize, bool append);

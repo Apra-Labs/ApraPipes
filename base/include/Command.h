@@ -10,7 +10,16 @@ public:
 		None,
 		FileReaderModule,
 		Relay,
-		Step
+		Step,
+		Mp4WriterSinkStopCommand,
+		Mp4WriterSinkStartCommand,
+		PipelineReset,
+		ModuleRestart,
+		SetAWB,
+		EnableAWB,
+		DisableAWB,
+		GetPipStatus,
+		SetNoFrameSave
 	};
 
 	Command()

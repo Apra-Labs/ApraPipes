@@ -1,5 +1,5 @@
 #include "NvArgusCameraHelper.h"
-
+#include <stdio.h>
 #include "Frame.h"
 #include "DMAFDWrapper.h"
 #include "Logger.h"
@@ -64,7 +64,6 @@ bool NvArgusCameraHelper::queueFrameToCamera()
     if (!frame.get())
     {
         LOG_ERROR << "Failed To Get Frame";
-        return false;
     }
     auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 
@@ -133,7 +132,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
     captureSession.reset(
         iCameraProvider->createCaptureSession(cameraDevices[cameraId]));
 
-    Argus::ICaptureSession *iCaptureSession = Argus::interface_cast<Argus::ICaptureSession>(captureSession);
+    iCaptureSession = Argus::interface_cast<Argus::ICaptureSession>(captureSession);
     if (!iCaptureSession)
     {
         LOG_ERROR << "Failed to get Argus::ICaptureSession interface";
@@ -157,7 +156,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
     /* Create the OutputStream */
     outputStream.reset(iCaptureSession->createOutputStream(streamSettings.get()));
     Argus::IBufferOutputStream *iBufferOutputStream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-    
+
     /* Create the Argus::BufferSettings object to configure Argus::Buffer creation */
     Argus::UniqueObj<Argus::BufferSettings> bufferSettings(iBufferOutputStream->createBufferSettings());
     Argus::IEGLImageBufferSettings *iBufferSettings =
@@ -206,8 +205,8 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
     mThread = std::thread(std::ref(*this));
 
     /* Create capture request and enable output stream */
-    Argus::UniqueObj<Argus::Request> request(iCaptureSession->createRequest());
-    Argus::IRequest *iRequest = Argus::interface_cast<Argus::IRequest>(request);
+    request = Argus::UniqueObj<Argus::Request>(iCaptureSession->createRequest());
+    iRequest = Argus::interface_cast<Argus::IRequest>(request);
     if (!iRequest)
     {
         LOG_ERROR << "Failed to create Argus::Request";
@@ -224,7 +223,7 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
     iSourceSettings->setFrameDurationRange(Argus::Range<uint64_t>(1e9 / fps));
 
     Argus::ICameraProperties *iCameraProperties = Argus::interface_cast<Argus::ICameraProperties>(cameraDevices[0]);
-    std::vector<Argus::SensorMode*> sensorModes;
+    std::vector<Argus::SensorMode *> sensorModes;
     Argus::Status status = iCameraProperties->getAllSensorModes(&sensorModes);
     if (status != Argus::STATUS_OK)
     {
@@ -260,7 +259,10 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
 
     iSourceSettings->setSensorMode(sensorModes[index]);
 
-    /* Submit capture requests */
+    iAutoControlSettings = Argus::interface_cast<Argus::IAutoControlSettings>(iRequest->getAutoControlSettings());
+    iAutoControlSettings->setAeLock(false);
+    iAutoControlSettings->setAwbMode(Argus::AWB_MODE_OFF);
+
     LOG_INFO << "Starting repeat capture requests";
     if (iCaptureSession->repeat(request.get()) != Argus::STATUS_OK)
     {
@@ -301,4 +303,40 @@ bool NvArgusCameraHelper::stop()
     LOG_INFO << "THREAD JOIN END";
 
     return true;
+}
+
+void NvArgusCameraHelper::toggleAutoWhiteBalance()
+{
+    Argus::UniqueObj<Argus::Request> request(iCaptureSession->createRequest());
+    Argus::IRequest *iRequest = Argus::interface_cast<Argus::IRequest>(request);
+    iAutoControlSettings = Argus::interface_cast<Argus::IAutoControlSettings>(iRequest->getAutoControlSettings());
+    iAutoControlSettings->setAwbMode(Argus::AWB_MODE_AUTO);
+}
+
+void NvArgusCameraHelper::enableAutoWhiteBalance()
+{
+    iAutoControlSettings->setAwbLock(false);
+    auto retLock = iAutoControlSettings->getAeLock();
+    iAutoControlSettings->setAwbMode(Argus::AWB_MODE_AUTO);
+    iAutoControlSettings->setAeLock(true);
+    retLock = iAutoControlSettings->getAeLock();
+    if (iCaptureSession->repeat(request.get()) != Argus::STATUS_OK)
+    {
+        LOG_ERROR << "Failed to start repeat capture request";
+        return;
+    }
+}
+
+void NvArgusCameraHelper::disableAutoWhiteBalance()
+{
+    iAutoControlSettings->setAwbLock(false);
+    auto retLock = iAutoControlSettings->getAeLock();
+    iAutoControlSettings->setAwbMode(Argus::AWB_MODE_OFF);
+    iAutoControlSettings->setAeLock(true);
+    retLock = iAutoControlSettings->getAeLock();
+    if (iCaptureSession->repeat(request.get()) != Argus::STATUS_OK)
+    {
+        LOG_ERROR << "Failed to start repeat capture request";
+        return;
+    }
 }

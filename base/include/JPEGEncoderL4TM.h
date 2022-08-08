@@ -35,4 +35,5 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	typedef Module inherited;
 };
