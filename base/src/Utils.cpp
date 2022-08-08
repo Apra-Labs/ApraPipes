@@ -2,13 +2,13 @@
 #include "Utils.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <iostream>
-#include <WinSock2.h>
 #include <locale>
-#ifndef _WIN64
+#include "RawImageMetadata.h"
+#ifdef _WIN64
+#include <WinSock2.h>
+#else
 #include <pthread.h>
 #endif
-
-#include "RawImageMetadata.h"
 
 #ifdef _WIN64
 // Windows
