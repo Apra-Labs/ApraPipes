@@ -7,7 +7,6 @@
 #include "Module.h"
 #include<iostream>
 #include<fstream>
-#include<thread>
 
 
 BOOST_AUTO_TEST_SUITE(pipeline_tests)
@@ -108,14 +107,10 @@ struct CheckThread {
 
 BOOST_AUTO_TEST_CASE(checkThreadname)
 {
-	std::vector<std::string> pipelineLoggerFile = {"./data/testOutput/pipeline_tests_00000.log"};
-	Test_Utils::FileCleaner clean(pipelineLoggerFile);
-
 	CheckThread f;
 	LoggerProps logprops;
 	logprops.enableConsoleLog = true;
-	logprops.fileLogPath = "./data/testOutput/pipeline_tests.log";
-	logprops.enableFileLog = true;
+	logprops.enableFileLog = false;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
 
@@ -146,9 +141,6 @@ BOOST_AUTO_TEST_CASE(checkThreadname)
 
 	// stop getting the logs
 	Logger::setListener(nullptr);
-	for (auto i = checkName.begin(); i != checkName.end(); i++)
-	{
-		BOOST_TEST((i->second) == true);
-	}
+	for_each(checkName.begin(), checkName.end(), [](auto& checkNamePair) { BOOST_TEST((checkNamePair.second) == true);});
 }
 BOOST_AUTO_TEST_SUITE_END()

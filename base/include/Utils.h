@@ -6,6 +6,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
+#include<boost/thread.hpp>
 
 class RawImageMetadata;
 
@@ -22,6 +23,7 @@ public:
 	static cv::Mat getMatHeader(int width, int height, int type);
 	static void round_roi(cv::Rect& roi, int alignLength);
 	static bool check_roi_bounds(cv::Rect& roi, int width, int height);
+	static void setModuleThreadName(boost::thread& thread, std::string moduleID);
 
 	template<class T>
 	static void serialize(T& obj, void* buffer, size_t size)
