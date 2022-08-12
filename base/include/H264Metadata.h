@@ -5,8 +5,11 @@
 class H264Metadata : public FrameMetadata
 {
 public:
+	H264Metadata() : FrameMetadata(FrameType::H264_DATA) {}
 	H264Metadata(int _width, int _height) : FrameMetadata(FrameType::H264_DATA) , width(_width), height(_height)
 	{
+		width = _width;
+		height = _height;
 	}
 
 	void reset()

@@ -47,7 +47,8 @@ public:
 		ROI,
 		DEFECTS_INFO,
 		FACEDETECTS_INFO,
-		BMP_IMAGE
+		BMP_IMAGE,
+		MP4_VIDEO_METADATA
 	};
 
 	enum MemType

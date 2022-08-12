@@ -10,6 +10,8 @@ IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
 
+SET ( LIBMP4_LIB_DIR "../thirdparty/libmp4/libs")
+
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
@@ -136,19 +138,23 @@ IF(ENABLE_CUDA)
 		) 
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
+		list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
+        find_library(LIBMP4_LIB mp4lib.lib)
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-
+		SET(NVCODEC_INCLUDE_DIR ../thirdparty/Video_Codec_SDK_10.0.26/Interface)
 		SET(NVCUDAToolkit_LIBS		
 			cudart_static.lib
 			nvjpeg.lib
+			cuda.lib
 			nppig.lib
 			nppicc.lib
 			nppidei.lib
 			nppial.lib					
 			cublas.lib	
 			cublasLt.lib
+			
 		)
 		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
 	ENDIF(ENABLE_ARM64)
@@ -179,6 +185,8 @@ SET(CORE_FILES
 	src/FIndexStrategy.cpp
 	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
+	src/Mp4WriterSink.cpp
+	src/Mp4WriterSinkUtils.cpp
 )
 
 SET(CORE_FILES_H
@@ -222,6 +230,10 @@ SET(CORE_FILES_H
 	include/FIndexStrategy.h
 	include/AudioCaptureSrc.h
 	include/QRReader.h
+	include/Mp4WriterSink.h
+	include/Mp4WriterSinkUtils.h
+	include/EncodedImageMetadata.h
+	include/PropsChangeMetadata.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -237,6 +249,7 @@ SET(GENERIC_FILES
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
 	src/QRReader.cpp
+	src/H264FrameUtils.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
@@ -244,6 +257,7 @@ SET(GENERIC_FILES_H
 	include/H264Utils.h
 	include/RTSPPusher.h
 	include/QRReader.h
+	include/H264FrameUtils.h
 )
 
 IF(ENABLE_LINUX)
@@ -268,7 +282,6 @@ SET(IP_FILES
 	src/WebCamSource.cpp
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
-
 )
 
 
@@ -346,6 +359,8 @@ SET(CUDA_IP_FILES
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp
+	src/H264EncoderNVCodecHelper.cpp
+	src/H264EncoderNVCodec.cpp		
 )
 
 IF(ENABLE_ARM64)
@@ -388,6 +403,8 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
+	include/H264EncoderNVCodecHelper.h
+	include/H264EncoderNVCodec.h
 )
 
 IF(ENABLE_ARM64)
@@ -445,6 +462,8 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
+${LIBMP4_LIB}
+${NVCODEC_INCLUDE_DIR}
 )
 
 IF(NOT ENABLE_ARM64)
@@ -459,6 +478,7 @@ ${glib-2.0_INCLUDE_DIRS}
 ${gstreamer-rtsp-1.0_INCLUDE_DIRS}
 ${gstreamer-rtp-1.0_INCLUDE_DIRS}
 ${gstreamer-net-1.0_INCLUDE_DIRS}
+${NVCODEC_INCLUDE_DIR}
 ${gio-2.0_INCLUDE_DIRS}
 ${gmodule-2.0_INCLUDE_DIRS}
 ${gthread-2.0_INCLUDE_DIRS}
@@ -514,6 +534,7 @@ IF (ENABLE_CUDA)
 			test/ccnppi_tests.cpp
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
+			test/h264encodernvcodec_tests.cpp
 		)
 	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
@@ -550,7 +571,8 @@ SET(UT_FILES
   test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
-	test/pipeline_tests.cpp
+	test/mp4writersink_tests.cpp
+	test/mp4_file_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -583,6 +605,7 @@ ENDIF(ENABLE_ARM64)
 
 target_link_libraries(aprapipesut   
   aprapipes  
+  ${LIBMP4_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
