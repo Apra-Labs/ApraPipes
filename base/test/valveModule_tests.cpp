@@ -177,13 +177,11 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
         frame_container sink1Frames = sink1Que->pop();
         sink1Frames = sink1Que->pop();
         BOOST_TEST((sink1Frames.size() == 2));
-        bool flagGen;
-        bool flagRaw;
+        bool flagGen = false;
+        bool flagRaw = false;
         for (auto framePair = sink1Frames.begin(); framePair != sink1Frames.end(); framePair++)
         {
             auto metadata = (framePair->second)->getMetadata();
-            bool flagGen = false;
-            bool flagRaw = false;
             if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
             {
                 flagGen = true;
