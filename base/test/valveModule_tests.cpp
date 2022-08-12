@@ -12,7 +12,7 @@
 #include "test_utils.h"
 #include "Module.h"
 
-BOOST_AUTO_TEST_SUITE(valvemodule_tests)
+BOOST_AUTO_TEST_SUITE(valveModule_tests)
 
 class SinkModuleProps : public ModuleProps
 {
@@ -260,7 +260,8 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     // rvw - getProps - change the value - sending in setProps
     auto currentProps = valve->getProps();
     currentProps.noOfFramesToCapture = 4;
-    valve->setProps(ValveModuleProps(currentProps.noOfFramesToCapture));
+    auto newValue = ValveModuleProps(currentProps.noOfFramesToCapture);
+    valve->setProps(newValue);
     valve->step();
 
     valve->allowFrames();
