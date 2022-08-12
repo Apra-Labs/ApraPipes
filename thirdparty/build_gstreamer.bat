@@ -23,4 +23,5 @@ meson --prefix=%cd%\outInstall builddir -Dpython=disabled -Ddevtools=disabled
 meson compile -C builddir "--vs-args=/MP"
 meson install -C builddir
 del /S /Q builddir
+del /S /Q subprojects
 dir

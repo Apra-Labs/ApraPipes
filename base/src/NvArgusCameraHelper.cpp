@@ -60,25 +60,23 @@ void NvArgusCameraHelper::operator()()
 
 bool NvArgusCameraHelper::queueFrameToCamera()
 {
-    while (true)
+    auto frame = mMakeFrame();
+    if (!frame.get())
     {
-        auto frame = mMakeFrame();
-        if (!frame.get())
-        {
-            break;
-        }
-        auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
-
-        Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
-        auto status = stream->releaseBuffer(static_cast<Argus::Buffer *>(const_cast<void *>(dmaFDWrapper->getClientData())));
-        if (Argus::STATUS_OK != status)
-        {
-            throw AIPException(AIP_FATAL, "Failed to release buffer to stream. queueFrameToCamera <" + std::to_string(status) + ">");
-        }
-
-        std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
-        mQueuedFrames[dmaFDWrapper] = frame;
+        LOG_ERROR << "Failed To Get Frame";
+        return false;
     }
+    auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
+
+    Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
+    auto status = stream->releaseBuffer(static_cast<Argus::Buffer *>(const_cast<void *>(dmaFDWrapper->getClientData())));
+    if (Argus::STATUS_OK != status)
+    {
+        throw AIPException(AIP_FATAL, "Failed to release buffer to stream. queueFrameToCamera <" + std::to_string(status) + ">");
+    }
+
+    std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
+    mQueuedFrames[dmaFDWrapper] = frame;
 }
 
 boost::shared_ptr<NvArgusCameraUtils> NvArgusCameraUtils::instance;

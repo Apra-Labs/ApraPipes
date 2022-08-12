@@ -550,6 +550,7 @@ SET(UT_FILES
   test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
+	test/pipeline_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

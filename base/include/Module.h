@@ -149,7 +149,7 @@ public:
 	vector<string> getAllOutputPinsByType(int type);
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
-	bool setNext(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = true); // take all the output pins			
 	bool addFeedback(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
@@ -170,7 +170,9 @@ public:
 	
 	void register_consumer(boost::function<void(Module*, unsigned short)>, bool bFatal=false);
 	boost::shared_ptr<PaceMaker> getPacer() { return pacer; }	
-	static frame_sp getFrameByType(frame_container& frames, int frameType);	
+	static frame_sp getFrameByType(frame_container& frames, int frameType); 
+	virtual void flushQue();
+	virtual void flushQueRecursive();
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
@@ -270,7 +272,16 @@ protected:
 	virtual bool validateOutputPins(); // invoked with addOutputPin
 	virtual bool validateInputOutputPins() { return validateInputPins() && validateOutputPins(); } // invoked during Module::init before anything else
 				
-	size_t getNumberOfOutputPins() { return mOutputPinIdFrameFactoryMap.size(); }
+	size_t getNumberOfOutputPins(bool implicit = true) 
+	{ 
+		auto pinCount = mOutputPinIdFrameFactoryMap.size(); 
+		// override the implicit behaviour 
+		if (!implicit) 
+		{ 
+			pinCount += mInputPinIdMetadataMap.size(); 
+		} 
+		return pinCount;
+	}
 	size_t getNumberOfInputPins() { return mInputPinIdMetadataMap.size(); }
 	framemetadata_sp getFirstInputMetadata();
 	framemetadata_sp getFirstOutputMetadata();
@@ -285,8 +296,8 @@ protected:
 	string getInputPinIdByType(int type);
 	string getOutputPinIdByType(int type);		
 	
-	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback); // take all the output pins			
-	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback); 
+	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback, bool sieve); 
 	void addInputPin(framemetadata_sp& metadata, string& pinId, bool isFeedback); 
 	virtual void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails	
 	boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
@@ -304,6 +315,7 @@ protected:
 	bool handlePausePlay(bool play);
 	virtual void notifyPlay(bool play) {}
 private:	
+	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
@@ -347,6 +359,7 @@ private:
 	bool mRunning;
 	uint32_t mStopCount;
 	uint32_t mForwardPins;
+	bool mIsSieveDisabledForAny = false;
 	boost::shared_ptr<FrameFactory> mpFrameFactory;
 	boost::shared_ptr<FrameFactory> mpCommandFactory;
 	boost::shared_ptr<PaceMaker> pacer;
