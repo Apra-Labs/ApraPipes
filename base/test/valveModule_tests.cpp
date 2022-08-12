@@ -46,11 +46,11 @@ BOOST_AUTO_TEST_CASE(basic)
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
-    source->setNext(valve);
+    source->setNext(valve, true, false);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->addOutputPin(metadata);
-    valve->setNext(sink);
-
+    valve->setNext(sink, true, false);
+     
 
     BOOST_TEST(source->init());
     BOOST_TEST(valve->init());

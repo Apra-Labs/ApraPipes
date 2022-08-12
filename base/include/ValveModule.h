@@ -1,8 +1,5 @@
 #pragma once 
 #include "Module.h"
-#include "CudaCommon.h"
-#include <chrono>
-#include <deque>
 
 class ValveModuleProps : public ModuleProps
 {

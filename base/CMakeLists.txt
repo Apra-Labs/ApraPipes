@@ -553,7 +553,7 @@ SET(UT_FILES
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
 	test/pipeline_tests.cpp
-	test/valvemodule_tests.cpp
+	test/valveModule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
