@@ -35,7 +35,7 @@ public:
 	~DetailAbs()
 	{
 	};
-	virtual bool set_video_decoder_config(mp4_video_codec codec) = 0;
+	virtual bool set_video_decoder_config() = 0;
 	virtual bool write(frame_container& frames) = 0;
 
 	void setImageMetadata(framemetadata_sp& metadata)
@@ -92,19 +92,10 @@ public:
 		params.timescale = timescale;
 		params.creation_time = now;
 		params.modification_time = now;
-
 		// add video track
 		videotrack = mp4_mux_add_track(mux, &params);
 
-		// sets vdc - replace this with strategy based impl
-		if (mFrameType == FrameMetadata::FrameType::H264_DATA)
-		{
-			set_video_decoder_config(MP4_VIDEO_CODEC_AVC);
-		}
-		else if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
-		{
-			set_video_decoder_config(MP4_VIDEO_CODEC_MP4V);
-		}
+		set_video_decoder_config();
 
 		mp4_mux_track_set_video_decoder_config(mux, videotrack, &vdc);
 
@@ -191,11 +182,11 @@ class DetailJpeg : public DetailAbs
 {
 public:
 	DetailJpeg(Mp4WriterSinkProps& _props) : DetailAbs(_props) {}
-	bool set_video_decoder_config(mp4_video_codec codec)
+	bool set_video_decoder_config()
 	{
 		vdc.width = mWidth;
 		vdc.height = mHeight;
-		vdc.codec = codec;
+		vdc.codec = MP4_VIDEO_CODEC_MP4V;
 		return true;
 	}
 	bool write(frame_container& frames);
@@ -218,11 +209,11 @@ public:
 
 	bool write(frame_container& frames);
 
-	bool set_video_decoder_config(mp4_video_codec codec)
+	bool set_video_decoder_config()
 	{
 		vdc.width = mWidth;
 		vdc.height = mHeight;
-		vdc.codec = codec;
+		vdc.codec = MP4_VIDEO_CODEC_AVC;
 		vdc.avc.sps = reinterpret_cast<uint8_t*>(const_cast<void*>(spsBuffer.data()));
 		vdc.avc.pps = reinterpret_cast<uint8_t*>(const_cast<void*>(ppsBuffer.data()));
 		vdc.avc.pps_size = ppsBuffer.size();
