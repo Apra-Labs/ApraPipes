@@ -178,7 +178,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(numOfFrames) + 128;
+		return Command::getSerializeSize() + sizeof(numOfFrames);
 	}
 
 	int numOfFrames;

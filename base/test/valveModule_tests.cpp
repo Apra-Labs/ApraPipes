@@ -61,14 +61,15 @@ BOOST_AUTO_TEST_CASE(basic)
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
     frames.insert(make_pair(pinId, frame));
-
-    // We are sending 4 frames with enable true so only two frames (moduleprops = 2) pass through the valve
+   
+    // We are sending 4 frames with enable false so only no frames pass through the valve
     for (int i = 0; i < 4; i++)
     {
         source->send(frames);
         valve->step();
     }
 
+    BOOST_TEST(sinkQue->size() == 0);
     //We are resetting the props to 4 by command and enable true 
     valve->allowFrames(4);
     valve->step();
@@ -284,4 +285,48 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 }
 
+BOOST_AUTO_TEST_CASE(open)
+{
+    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+    auto pinId = source->addOutputPin(metadata);
+    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
+    source->setNext(valve, true, false);
+    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    valve->addOutputPin(metadata);
+    valve->setNext(sink, true, false);
+
+
+    BOOST_TEST(source->init());
+    BOOST_TEST(valve->init());
+    BOOST_TEST(sink->init());
+
+    auto sinkQue = sink->getQue();
+
+    auto frame = source->makeFrame(1023, pinId);
+    frame_container frames;
+    frames.insert(make_pair(pinId, frame));
+ 
+    // We are sending 4 frames (moduleprops = -1) and the valve is open so all frames pass through the valve
+    for (int i = 0; i < 4; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 4);
+  
+    //Closing the valve module
+    valve->allowFrames(0);
+    valve->step();
+
+    for (int i = 0; i < 12; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 4);
+
+}
 BOOST_AUTO_TEST_SUITE_END()

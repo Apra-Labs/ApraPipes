@@ -33,6 +33,20 @@ public:
         mProps = _props;
     }
 
+    bool processTask()
+    {   
+        if (mFramesSaved < mProps.noOfFramesToCapture && enableFlow)
+        {
+            mFramesSaved++;
+            if (mFramesSaved == mProps.noOfFramesToCapture)
+            {
+                enableFlow = false;
+            }
+            return true;
+        }
+        return false;
+    }
+
 public:
     uint64 mFramesSaved = 0;
     bool enableFlow = false;
@@ -116,16 +130,12 @@ void ValveModule::setProps(ValveModuleProps& props)
 
 bool ValveModule::process(frame_container& frames) 
 {
-    if (mDetail->mFramesSaved < mDetail->mProps.noOfFramesToCapture && mDetail->enableFlow) 
+    if(mDetail->mProps.noOfFramesToCapture == -1)
     {
-        mDetail->mFramesSaved++;
-
-        if (mDetail->mFramesSaved == mDetail->mProps.noOfFramesToCapture)
-        {
-            mDetail->enableFlow = false;
-        }
-        // rvw - check send code, use sieve = disabled if required
-        
+        send(frames);
+    }
+    else if (mDetail->processTask())
+    {
         send(frames);
     }
     return true;

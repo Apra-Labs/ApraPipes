@@ -9,12 +9,11 @@ public:
 
 	}
 
-	ValveModuleProps(int _noOfFramesToCapture)
+	ValveModuleProps(uint64 _noOfFramesToCapture)
 	{
 		noOfFramesToCapture = _noOfFramesToCapture;
 	}
-	
-	int noOfFramesToCapture = 10;
+	uint64 noOfFramesToCapture = 10;
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(noOfFramesToCapture);
@@ -38,7 +37,9 @@ public:
 	~ValveModule();
 	bool init();
 	bool term();
-	bool allowFrames(int numframes);
+	/* We can set the number of frames property by passing as
+	arguement to allowFrames else module props value is taken */
+	bool allowFrames(int numframes); 
 	bool allowFrames();
 	void setProps(ValveModuleProps& props);
 	ValveModuleProps getProps();
