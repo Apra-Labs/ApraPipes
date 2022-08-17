@@ -157,14 +157,15 @@ void ValveModule::setMetadata(framemetadata_sp& metadata)
 }
 
 /* We can set the number of frames property by passing as 
-arguement to resetFlowParams else module props value is taken */
+arguement to allowFrames (used to enable Valve module) else module props value is taken if no arguements are passed. */
+//Here the no of frames to pass is sent as arguement
 bool ValveModule::allowFrames(int numframes)
 {
     ValvePassThroughCommand cmd;
     cmd.numOfFrames = numframes;
     return queueCommand(cmd);
 }
-
+//Here moduleProps value frames are passed.
 bool ValveModule::allowFrames()
 {
     ValvePassThroughCommand cmd;
