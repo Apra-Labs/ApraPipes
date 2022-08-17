@@ -100,6 +100,9 @@ bool ValveModule::handlePropsChange(frame_sp& frame)
     ValveModuleProps props;
     bool ret = Module::handlePropsChange(frame, props);
     mDetail->setProps(props);
+    ValvePassThroughCommand cmd;
+    cmd.numOfFrames = mDetail->mProps.noOfFramesToCapture;
+    queueCommand(cmd);
     return ret;
 }
 
@@ -157,18 +160,11 @@ void ValveModule::setMetadata(framemetadata_sp& metadata)
 }
 
 /* We can set the number of frames property by passing as 
-arguement to allowFrames (used to enable Valve module) else module props value is taken if no arguements are passed. */
-//Here the no of frames to pass is sent as arguement
+arguement to allowFrames else module props value is taken if no arguements are passed. */
+
 bool ValveModule::allowFrames(int numframes)
 {
     ValvePassThroughCommand cmd;
     cmd.numOfFrames = numframes;
-    return queueCommand(cmd);
-}
-//Here moduleProps value frames are passed.
-bool ValveModule::allowFrames()
-{
-    ValvePassThroughCommand cmd;
-    cmd.numOfFrames = mDetail->mProps.noOfFramesToCapture;
     return queueCommand(cmd);
 }

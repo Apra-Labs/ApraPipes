@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
     BOOST_TEST(sink1Que->size() == 0);
     BOOST_TEST(sink2Que->size() == 0);
 
-    valve->allowFrames();
+    valve->allowFrames(2);
     valve->step();
 
     for (int i = 0; i < 4; i++)
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     frames.insert(make_pair(pinId, frame));
 
     // default props is 2
-    valve->allowFrames();
+    valve->allowFrames(2);
     valve->step();
 
     // We are sending 4 frames with enable true so only two frames (moduleprops = 2) pass through the valve
@@ -262,8 +262,6 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     auto newValue = ValveModuleProps(currentProps.noOfFramesToCapture);
     valve->setProps(newValue);
     valve->step();
-
-    valve->allowFrames();
     valve->step();
 
     for (int i = 0; i < 4; i++)
