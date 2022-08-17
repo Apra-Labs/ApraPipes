@@ -534,7 +534,7 @@ IF (ENABLE_CUDA)
 			test/ccnppi_tests.cpp
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
-			test/h264encodernvcodec_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
 		)
 	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
