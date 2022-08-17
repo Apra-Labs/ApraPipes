@@ -19,6 +19,7 @@
 #include "StatSink.h"
 #include <thread>
 #include "CudaCommon.h"
+#include "initguid.h"
 #include "../../thirdparty/Video_Codec_SDK_10.0.26/Interface/nvEncodeAPI.h"
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)

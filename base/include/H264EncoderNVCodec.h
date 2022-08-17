@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
 #include "CudaCommon.h"
+#include "initguid.h"
 
 class H264EncoderNVCodecProps : public ModuleProps
 {
