@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(basic)
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
-    source->setNext(valve, true, false);
+    source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->addOutputPin(metadata);
     valve->setNext(sink, true, false);
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     // always use disable sieve with valve module 
-    source->setNext(valve, true, false);
+    source->setNext(valve);
 
     auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
-    source->setNext(valve, true, false);
+    source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->addOutputPin(metadata);
     valve->setNext(sink, true, false);
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(open)
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
-    source->setNext(valve, true, false);
+    source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->addOutputPin(metadata);
     valve->setNext(sink, true, false);
