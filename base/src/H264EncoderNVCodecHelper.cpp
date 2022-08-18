@@ -9,7 +9,7 @@
 #include <boost/pool/object_pool.hpp>
 #include <thread>
 #include <utility>
-#include "initguid.h"
+
 #include "CudaCommon.h"
 #include "nvEncodeAPI.h"
 

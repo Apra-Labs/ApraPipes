@@ -2,7 +2,7 @@
 
 #include "Module.h"
 #include "CudaCommon.h"
-#include "initguid.h"
+
 
 class H264EncoderNVCodecProps : public ModuleProps
 {

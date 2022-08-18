@@ -33,8 +33,21 @@ public:
 	{
 		return height;
 	}
+	void setData(H264Metadata& metadata)
+	{
+		FrameMetadata::setData(metadata);
+
+		width = metadata.width;
+		height = metadata.height;
+		//setDataSize();
+	}
 
 protected:
+	void initData(int _width, int _height, MemType _memType = MemType::HOST)
+	{
+		width = _width;
+		height = _height;
+	}
 	// https://docs.opencv.org/4.1.1/d3/d63/classcv_1_1Mat.html
 	int width = NOT_SET_NUM;
 	int height = NOT_SET_NUM;
