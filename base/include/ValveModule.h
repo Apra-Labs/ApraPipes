@@ -40,9 +40,9 @@ public:
 	/* We can set the number of frames property by passing as
 	arguement to allowFrames else module props value is taken */
 	bool allowFrames(int numframes); 
-	bool allowFrames();
 	void setProps(ValveModuleProps& props);
 	ValveModuleProps getProps();
+	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);

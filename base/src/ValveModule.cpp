@@ -78,6 +78,12 @@ bool ValveModule::validateInputOutputPins()
     return true;
 }
 
+// default - open, sieve is disabled - feedback false
+bool ValveModule::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+{
+    return Module::setNext(next, open, false, sieve);
+}
+
 void ValveModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
     Module::addInputPin(metadata, pinId);
