@@ -19,8 +19,6 @@
 #include "StatSink.h"
 #include <thread>
 #include "CudaCommon.h"
-#include "initguid.h"
-#include "../../thirdparty/Video_Codec_SDK_10.0.26/Interface/nvEncodeAPI.h"
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
@@ -34,7 +32,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	uint32_t enableBFrames = 1;
 
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/????.raw")));
@@ -77,7 +75,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
 	uint32_t enableBFrames = 1;
 	auto width = 640;
 	auto height = 360;
@@ -133,8 +131,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
 	uint32_t enableBFrames = 1;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::HIGH;
 	// metadata is known
 	auto width = 640;
 	auto height = 360;
@@ -185,8 +183,9 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	
 	uint32_t enableBFrames = 1;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	// metadata is known
 	auto width = 1920;
 	auto height = 960;
@@ -234,7 +233,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	uint32_t enableBFrames = 1;
 	// metadata is known
 	auto width = 1920;
@@ -291,7 +290,7 @@ void mono_1920x960_ext_sink_()
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	uint32_t enableBFrames = 1;
 	// metadata is known
 	auto width = 1920;

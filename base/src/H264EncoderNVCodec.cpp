@@ -18,7 +18,7 @@ class H264EncoderNVCodec::Detail
 public:
 	Detail(H264EncoderNVCodecProps &_props) : mProps(_props)
 	{
-		helper.reset(new H264EncoderNVCodecHelper(_props.bitRateKbps, _props.cuContext,_props.gopLength,_props.frameRate,_props.profile,_props.enableBFrames));
+		helper.reset(new H264EncoderNVCodecHelper(_props.bitRateKbps, _props.cuContext,_props.gopLength,_props.frameRate,_props.vProfile,_props.enableBFrames));
 	}
 
 	~Detail()

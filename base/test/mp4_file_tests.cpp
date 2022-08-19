@@ -21,7 +21,6 @@
 #include "H264EncoderNVCodec.h"
 #include "ResizeNPPI.h"
 #include "CudaCommon.h"
-#include "../../thirdparty/Video_Codec_SDK_10.0.26/Interface/nvEncodeAPI.h"
 #include <ExternalSinkModule.h>
 #include <H264FrameUtils.h>
 
@@ -36,7 +35,7 @@ BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer)
 	uint32_t gopLength = 30;
 	uint32_t bitRateKbps = 17000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	uint32_t enableBFrames = 1;
 
 	std::string inFolderPath = "./data/Raw_YUV420_640x360/????.raw";
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer_Chunktime)
 	uint32_t gopLength = 30;
 	uint32_t bitRateKbps = 17000;
 	uint32_t frameRate = 30;
-	GUID profile = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::HIGH;
 	uint32_t enableBFrames = 1;
 
 	std::string inFolderPath = "./data/Raw_YUV420_640x360/????.raw";

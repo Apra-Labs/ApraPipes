@@ -206,7 +206,6 @@ public:
 	DetailH264(Mp4WriterSinkProps& _props) : DetailAbs(_props)
 	{
 	}
-
 	bool write(frame_container& frames);
 
 	bool set_video_decoder_config()

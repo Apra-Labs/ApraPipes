@@ -9,7 +9,6 @@
 #include <boost/pool/object_pool.hpp>
 #include <thread>
 #include <utility>
-#include "initguid.h"
 #include "CudaCommon.h"
 #include "nvEncodeAPI.h"
 
@@ -162,11 +161,22 @@ public:
 
 class H264EncoderNVCodecHelper::Detail
 {
-
+	static GUID asNvidiaGUID(H264EncoderNVCodecProps::H264CodecProfile profileEnum)
+	{
+		switch (profileEnum)
+		{
+		case H264EncoderNVCodecProps::BASELINE:
+			return NV_ENC_H264_PROFILE_BASELINE_GUID;
+		case H264EncoderNVCodecProps::MAIN:
+			return NV_ENC_H264_PROFILE_MAIN_GUID;
+		case H264EncoderNVCodecProps::HIGH:
+			return NV_ENC_H264_PROFILE_HIGH_GUID;
+		default:
+			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for H264 Profile!");
+		}
+	}
 public:
-
-	
-	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,GUID& profile,uint32_t& enableBFrames) :
+	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,uint32_t& enableBFrames) :
 		m_nWidth(0),
 		m_nHeight(0),
 		m_eBufferFormat(NV_ENC_BUFFER_FORMAT_UNDEFINED),
@@ -374,7 +384,7 @@ private:
 		memcpy(pIntializeParams->encodeConfig, &presetConfig.presetCfg, sizeof(NV_ENC_CONFIG));
 		pIntializeParams->encodeConfig->frameIntervalP = 1;
 		pIntializeParams->encodeConfig->gopLength = m_nGopLength;// = NVENC_INFINITE_GOPLENGTH;
-		pIntializeParams->encodeConfig->profileGUID = m_nProfile;
+		pIntializeParams->encodeConfig->profileGUID = asNvidiaGUID(m_nProfile);
 	
 	
 		pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
@@ -550,7 +560,7 @@ private:
 	uint32_t m_nBitRateKbps;
 	uint32_t m_nGopLength ;
 	uint32_t m_nFrameRate;
-	GUID m_nProfile;
+	H264EncoderNVCodecProps::H264CodecProfile m_nProfile;
 	uint32_t m_nEnableBFrames;
 
 	NV_ENC_INITIALIZE_PARAMS m_initializeParams;
@@ -571,9 +581,9 @@ private:
 	boost::shared_ptr<NVCodecResources> m_nvcodecResources;
 };
 
-H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& cuContext , uint32_t& _gopLength, uint32_t& _frameRate,GUID &_profile,uint32_t& _enableBFrames)
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& _cuContext, uint32_t& _gopLength, uint32_t& _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, uint32_t& enableBFrames)
 {
-	mDetail.reset(new Detail(_bitRateKbps, cuContext,_gopLength,_frameRate,_profile,_enableBFrames));
+	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
 }
 
 H264EncoderNVCodecHelper::~H264EncoderNVCodecHelper()

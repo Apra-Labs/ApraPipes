@@ -124,6 +124,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	mp4FileName = std::to_string(ts) + ".mp4";
 
 	// cache new values
+	currentFolder = baseFolder;
 	lastVideoTS = t;
 	lastVideoFolderPath = relPath;
 	lastVideoMinute = tm.tm_min;
