@@ -10,7 +10,8 @@ public:
 		None,
 		FileReaderModule,
 		Relay,
-		Step
+		Step,
+		ValvePassThrough
 	};
 
 	Command()
@@ -166,4 +167,29 @@ private:
 	}
 
 
+};
+
+class ValvePassThroughCommand : public Command
+{
+public:
+	ValvePassThroughCommand() : Command(Command::CommandType::ValvePassThrough)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(numOfFrames);
+	}
+
+	int numOfFrames;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& numOfFrames;
+
+	}
 };
