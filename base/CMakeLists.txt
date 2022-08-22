@@ -234,6 +234,7 @@ SET(CORE_FILES_H
 	include/Mp4WriterSinkUtils.h
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
+	include/ValveModule.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -282,6 +283,7 @@ SET(IP_FILES
 	src/WebCamSource.cpp
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
+	src/ValveModule.cpp
 )
 
 
@@ -574,6 +576,8 @@ SET(UT_FILES
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
 	test/mp4_file_tests.cpp
+	test/pipeline_tests.cpp
+	test/valveModule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
