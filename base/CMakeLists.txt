@@ -333,7 +333,6 @@ ENDIF(NOT ENABLE_ARM64)
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
 	src/apra_cudamallochost_allocator.cu
-	src/CudaCommon.cpp
 	src/CudaMemCopy.cpp
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
@@ -358,9 +357,7 @@ SET(CUDA_IP_FILES
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp
-	src/H264EncoderNVCodecHelper.cpp
-	src/H264EncoderNVCodec.cpp		
+	src/RotateNPPI.cpp		
 )
 
 IF(ENABLE_ARM64)
@@ -390,6 +387,9 @@ ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
 		src/JPEGDecoderNVJPEG.cpp	
 		src/JPEGEncoderNVJPEG.cpp
+		src/CudaCommon.cpp
+		src/H264EncoderNVCodecHelper.cpp
+		src/H264EncoderNVCodec.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -403,8 +403,6 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
-	include/H264EncoderNVCodecHelper.h
-	include/H264EncoderNVCodec.h
 )
 
 IF(ENABLE_ARM64)
@@ -437,6 +435,9 @@ ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
 		include/JPEGEncoderNVJPEG.h	
 		include/JPEGDecoderNVJPEG.h
+		include/CudaCommon.h
+		include/H264EncoderNVCodecHelper.h
+		include/H264EncoderNVCodec.h
 	)
 ENDIF(ENABLE_ARM64)
 
