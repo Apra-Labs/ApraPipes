@@ -8,15 +8,15 @@ on:
   
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container:
       image: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04-cuda]
+        os: [ubuntu-20.04-cuda]
         include:
-          - os: ubuntu-18.04-cuda
+          - os: ubuntu-20.04-cuda
             BUILDER_PREP_CMD: "cmake --version && ninja --version && gcc --version && meson --version && nvcc --version && git --version"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
