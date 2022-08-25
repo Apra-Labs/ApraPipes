@@ -343,7 +343,6 @@ SET(CUDA_CORE_FILES
 SET(CUDA_CORE_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
-	include/CudaCommon.h	
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
