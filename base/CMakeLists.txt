@@ -10,8 +10,6 @@ IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
 
-SET ( LIBMP4_LIB_DIR "../thirdparty/libmp4/libs")
-
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
@@ -36,19 +34,24 @@ set(CMAKE_CXX_STANDARD 14)
 project(APRAPIPES)
 
 
-
+set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
+set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
 IF(ENABLE_LINUX)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
 ENDIF(ENABLE_WINDOWS)
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
-
+message(STATUS ${LIBMP4_LIB_DIR} ">>>>>> LIBMP4_LIB_DIR")
+message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
+list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
+find_library(LIBMP4_LIB mp4lib.lib REQUIRED)
 find_package(PkgConfig REQUIRED)
 
-IF(NOT ENABLE_ARM64)
+IF(NOT ENABLE_ARM64) #no gstreamer support for ARM
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
 	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
 	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
@@ -63,12 +66,17 @@ IF(NOT ENABLE_ARM64)
 	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
+	IF(NOT ENABLE_WINDOWS)
+		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
+	ENDIF(NOT ENABLE_WINDOWS)
+	# hunter_add_package(ncursesw)
+	# find_package(ncursesw CONFIG REQUIRED)
+	# SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
+	# SET(CURSES_LIBRARIES PkgConfig::ncursesw)
+
 ENDIF(NOT ENABLE_ARM64)
 	
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-	pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
-	pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -81,18 +89,8 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
-IF(NOT ENABLE_ARM64)
-	# hunter_add_package(ncursesw)
-	# find_package(ncursesw CONFIG REQUIRED)
-	# SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-	# SET(CURSES_LIBRARIES PkgConfig::ncursesw)
-ENDIF(NOT ENABLE_ARM64)
-
 IF(ENABLE_CUDA)
 	enable_language(CUDA)
-ENDIF(ENABLE_CUDA)
-
-IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
 		SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")					
@@ -138,8 +136,6 @@ IF(ENABLE_CUDA)
 		) 
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
-		list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
-        find_library(LIBMP4_LIB mp4lib.lib)
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
@@ -464,7 +460,7 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
-${LIBMP4_LIB}
+${LIBMP4_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
 )
 

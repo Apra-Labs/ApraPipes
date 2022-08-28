@@ -102,6 +102,10 @@ jobs:
           ls gst-build/gst-build-1.16/outInstall || true
           ${{matrix.GST_BUILD_COMMAND}}
 
+      - name: Build libmp4
+        working-directory: ${{github.workspace}}/thirdparty/libmp4
+        run: sh build.cmd
+
       - name: cache init
         run: |
           cp -R /root/.cache /github/home/ || true
