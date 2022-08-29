@@ -71,7 +71,7 @@ jobs:
     
     - name: Build libmp4
       working-directory: ${{github.workspace}}/thirdparty/libmp4
-      run: build.cmd
+      run: .\build.cmd
 
           
     - name: Make build folder

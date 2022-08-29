@@ -48,7 +48,7 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 message(STATUS ${LIBMP4_LIB_DIR} ">>>>>> LIBMP4_LIB_DIR")
 message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
 list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
-find_library(LIBMP4_LIB mp4lib.lib REQUIRED)
+find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 IF(NOT ENABLE_ARM64) #no gstreamer support for ARM
