@@ -1,11 +1,7 @@
 #include <boost/test/unit_test.hpp>
-#include "FrameMetadata.h"
-#include "FrameMetadataFactory.h"
 #include "Logger.h"
 #include "Frame.h"
-#include "AIPExceptions.h"
 #include "PipeLine.h"
-#include "FileWriterModule.h"
 #include "test_utils.h"
 #include "FileReaderModule.h"
 #include "Mp4WriterSink.h"

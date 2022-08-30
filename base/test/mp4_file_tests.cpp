@@ -1,28 +1,13 @@
 #include <boost/test/unit_test.hpp>
-#include "FrameMetadata.h"
-#include "FrameMetadataFactory.h"
 #include "Logger.h"
 #include "Frame.h"
-#include "AIPExceptions.h"
 #include "PipeLine.h"
-#include "FileWriterModule.h"
-#include "test_utils.h"
 #include "FileReaderModule.h"
-#include "CudaCommon.h"
 #include "Mp4WriterSink.h"
-#include "FramesMuxer.h"
-#include "StatSink.h"
 #include "EncodedImageMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "H264Metadata.h"
-#include "CudaMemCopy.h"
-#include "CCNPPI.h"
-#include "CudaStreamSynchronize.h"
 #include "H264EncoderNVCodec.h"
-#include "ResizeNPPI.h"
-#include "CudaCommon.h"
-#include <ExternalSinkModule.h>
-#include <H264FrameUtils.h>
 
 BOOST_AUTO_TEST_SUITE(mp4_file_tests)
 
