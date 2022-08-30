@@ -8,19 +8,12 @@
 #include "FileWriterModule.h"
 #include "test_utils.h"
 #include "FileReaderModule.h"
-#include "CudaCommon.h"
 #include "Mp4WriterSink.h"
 #include "FramesMuxer.h"
 #include "StatSink.h"
 #include "EncodedImageMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "H264Metadata.h"
-#include "CudaMemCopy.h"
-#include "CCNPPI.h"
-#include "CudaStreamSynchronize.h"
-#include "ResizeNPPI.h"
-#include "CudaCommon.h"
-#include "../../thirdparty/Video_Codec_SDK_10.0.26/Interface/nvEncodeAPI.h"
 #include <ExternalSinkModule.h>
 #include <H264FrameUtils.h>
 
