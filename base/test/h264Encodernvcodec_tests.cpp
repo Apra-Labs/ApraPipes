@@ -5,6 +5,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+#include "CudaMemCopy.h"
 #include "CCNPPI.h"
 #include "CudaStreamSynchronize.h"
 #include "H264EncoderNVCodec.h"

@@ -7,6 +7,7 @@
 #include "EncodedImageMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "H264Metadata.h"
+#include "CudaMemCopy.h"
 #include "H264EncoderNVCodec.h"
 
 BOOST_AUTO_TEST_SUITE(mp4_file_tests)
