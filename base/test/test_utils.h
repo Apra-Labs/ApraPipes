@@ -2,6 +2,7 @@
 
 #include <string>
 #include <boost/filesystem.hpp>
+#include "Logger.h"
 class Test_Utils
 {
 public:
@@ -25,4 +26,10 @@ public:
 		};
 		std::vector<std::string> pathsOfFiles;
 	};
+	static void sleep_for_seconds(unsigned short seconds)
+	{
+		LOG_INFO << " Sleeping for " << seconds << " seconds";
+		boost::this_thread::sleep_for(boost::chrono::seconds(60));
+		LOG_INFO << "Done sleeping for " << seconds << " seconds";
+	}
 };
