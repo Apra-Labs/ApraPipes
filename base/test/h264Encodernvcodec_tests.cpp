@@ -19,8 +19,14 @@
 #include "StatSink.h"
 #include <thread>
 #include "CudaCommon.h"
+#include "NVEncProxy.h"
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
+
+BOOST_AUTO_TEST_CASE(NVEncProxy)
+{
+	NVEncProxy p;
+}
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
 {

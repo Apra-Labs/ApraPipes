@@ -173,7 +173,8 @@ bool H264EncoderNVCodec::getSPSPPS(void*& buffer, size_t& size, int& width, int&
 
 bool H264EncoderNVCodec::processSOS(frame_sp &frame)
 {
-	mDetail->setMetadata(frame->getMetadata(),
+	auto metadata=frame->getMetadata();
+	mDetail->setMetadata(metadata,
 		[&](size_t size) -> frame_sp {return makeFrame(size, mOutputPinId); },
 		[&](frame_sp& inputFrame, frame_sp& outputFrame) {
 

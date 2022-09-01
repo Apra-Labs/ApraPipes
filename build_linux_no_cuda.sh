@@ -1,3 +1,4 @@
+cp base/vcpkg.nocuda.json base/vcpkg.json
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build

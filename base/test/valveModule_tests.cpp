@@ -29,7 +29,7 @@ public:
     boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 protected:
-    bool process() {};
+    bool process() {return false;}
     bool validateOutputPins()
     {
         return true;

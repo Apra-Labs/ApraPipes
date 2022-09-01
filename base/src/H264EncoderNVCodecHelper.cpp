@@ -29,7 +29,7 @@ class NVCodecResources
 {
 public:
 	NVCodecResources(apracucontext_sp& cuContext) : m_cuContext(cuContext),
-		m_hModule(NULL),
+		//m_hModule(NULL),
 		m_hEncoder(nullptr),
 		m_nFreeOutputBitstreams(0),
 		m_nBusyOutputBitstreams(0)
@@ -39,90 +39,90 @@ public:
 
 	void load()
 	{
-		m_hModule = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
-		if (m_hModule == NULL)
-		{
-			throw AIPException(AIP_FATAL, "NVENC library file is not found. Please ensure NV driver is installed. NV_ENC_ERR_NO_ENCODE_DEVICE");
-		}
+		// m_hModule = LoadLibrary(TEXT("nvEncodeAPI64.dll"));
+		// if (m_hModule == NULL)
+		// {
+		// 	throw AIPException(AIP_FATAL, "NVENC library file is not found. Please ensure NV driver is installed. NV_ENC_ERR_NO_ENCODE_DEVICE");
+		// }
 
-		typedef NVENCSTATUS(NVENCAPI * NvEncodeAPIGetMaxSupportedVersion_Type)(uint32_t *);
-		NvEncodeAPIGetMaxSupportedVersion_Type NvEncodeAPIGetMaxSupportedVersion = (NvEncodeAPIGetMaxSupportedVersion_Type)GetProcAddress(m_hModule, "NvEncodeAPIGetMaxSupportedVersion");
+		// typedef NVENCSTATUS(NVENCAPI * NvEncodeAPIGetMaxSupportedVersion_Type)(uint32_t *);
+		// NvEncodeAPIGetMaxSupportedVersion_Type NvEncodeAPIGetMaxSupportedVersion = (NvEncodeAPIGetMaxSupportedVersion_Type)GetProcAddress(m_hModule, "NvEncodeAPIGetMaxSupportedVersion");
 
-		uint32_t version = 0;
-		uint32_t currentVersion = (NVENCAPI_MAJOR_VERSION << 4) | NVENCAPI_MINOR_VERSION;
-		NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
-		if (currentVersion > version)
-		{
-			throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
-		}
+		// uint32_t version = 0;
+		// uint32_t currentVersion = (NVENCAPI_MAJOR_VERSION << 4) | NVENCAPI_MINOR_VERSION;
+		// NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
+		// if (currentVersion > version)
+		// {
+		// 	throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
+		// }
 
-		typedef NVENCSTATUS(NVENCAPI * NvEncodeAPICreateInstance_Type)(NV_ENCODE_API_FUNCTION_LIST *);
-		NvEncodeAPICreateInstance_Type NvEncodeAPICreateInstance = (NvEncodeAPICreateInstance_Type)GetProcAddress(m_hModule, "NvEncodeAPICreateInstance");
-		if (!NvEncodeAPICreateInstance)
-		{
-			throw AIPException(AIP_FATAL, "Cannot find NvEncodeAPICreateInstance() entry in NVENC library. NV_ENC_ERR_NO_ENCODE_DEVICE");
-		}
+		// typedef NVENCSTATUS(NVENCAPI * NvEncodeAPICreateInstance_Type)(NV_ENCODE_API_FUNCTION_LIST *);
+		// NvEncodeAPICreateInstance_Type NvEncodeAPICreateInstance = (NvEncodeAPICreateInstance_Type)GetProcAddress(m_hModule, "NvEncodeAPICreateInstance");
+		// if (!NvEncodeAPICreateInstance)
+		// {
+		// 	throw AIPException(AIP_FATAL, "Cannot find NvEncodeAPICreateInstance() entry in NVENC library. NV_ENC_ERR_NO_ENCODE_DEVICE");
+		// }
 
-		m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
-		NVENC_API_CALL(NvEncodeAPICreateInstance(&m_nvenc));
+		// m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
+		// NVENC_API_CALL(NvEncodeAPICreateInstance(&m_nvenc));
 
-		NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS encodeSessionExParams = { NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER };
-		encodeSessionExParams.device = m_cuContext->getContext();
-		encodeSessionExParams.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
-		encodeSessionExParams.apiVersion = NVENCAPI_VERSION;
+		// NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS encodeSessionExParams = { NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER };
+		// encodeSessionExParams.device = m_cuContext->getContext();
+		// encodeSessionExParams.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+		// encodeSessionExParams.apiVersion = NVENCAPI_VERSION;
 
-		NVENC_API_CALL(m_nvenc.nvEncOpenEncodeSessionEx(&encodeSessionExParams, &m_hEncoder));
+		// NVENC_API_CALL(m_nvenc.nvEncOpenEncodeSessionEx(&encodeSessionExParams, &m_hEncoder));
 	}
 
 	void unload()
 	{
-		if (m_hModule == nullptr)
-		{
-			return;
-		}
+		// if (m_hModule == nullptr)
+		// {
+		// 	return;
+		// }
 
-		for (auto const &element : registeredResources)
-		{
-			auto registeredPtr = element.second;
-			m_nvenc.nvEncUnregisterResource(m_hEncoder, registeredPtr);
-		}
-		registeredResources.clear();
+		// for (auto const &element : registeredResources)
+		// {
+		// 	auto registeredPtr = element.second;
+		// 	m_nvenc.nvEncUnregisterResource(m_hEncoder, registeredPtr);
+		// }
+		// registeredResources.clear();
 
-		while (m_qpCompletionEvent.size())
-		{
-			auto event = m_qpCompletionEvent.front();
-			NV_ENC_EVENT_PARAMS eventParams = { NV_ENC_EVENT_PARAMS_VER };
-			eventParams.completionEvent = event;
-			m_nvenc.nvEncUnregisterAsyncEvent(m_hEncoder, &eventParams);
-			CloseHandle(event);
-			m_qpCompletionEvent.pop_front();
-		}
+		// while (m_qpCompletionEvent.size())
+		// {
+		// 	auto event = m_qpCompletionEvent.front();
+		// 	NV_ENC_EVENT_PARAMS eventParams = { NV_ENC_EVENT_PARAMS_VER };
+		// 	eventParams.completionEvent = event;
+		// 	m_nvenc.nvEncUnregisterAsyncEvent(m_hEncoder, &eventParams);
+		// 	//CloseHandle(event);
+		// 	m_qpCompletionEvent.pop_front();
+		// }
 
-		while (m_qBitstreamOutputBitstream.size())
-		{
-			auto buffer = m_qBitstreamOutputBitstream.front();
-			m_nvenc.nvEncDestroyBitstreamBuffer(m_hEncoder, buffer);
-			m_qBitstreamOutputBitstream.pop_front();
-		}
+		// while (m_qBitstreamOutputBitstream.size())
+		// {
+		// 	auto buffer = m_qBitstreamOutputBitstream.front();
+		// 	m_nvenc.nvEncDestroyBitstreamBuffer(m_hEncoder, buffer);
+		// 	m_qBitstreamOutputBitstream.pop_front();
+		// }
 
-		m_nvenc.nvEncDestroyEncoder(m_hEncoder);
+		// m_nvenc.nvEncDestroyEncoder(m_hEncoder);
 
-		m_hEncoder = nullptr;
+		// m_hEncoder = nullptr;
 
-		FreeLibrary((HMODULE)m_hModule);
-		m_hModule = nullptr;
+		// //FreeLibrary((HMODULE)m_hModule);
+		// m_hModule = nullptr;
 	}
 
 	void unlockOutputBitstream(NV_ENC_OUTPUT_PTR outputBitstream)
 	{
-		boost::mutex::scoped_lock lock(m_mutex);
+		// boost::mutex::scoped_lock lock(m_mutex);
 
-		NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, outputBitstream));
+		// NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, outputBitstream));
 
-		m_qBitstreamOutputBitstream.push_back(outputBitstream);
+		// m_qBitstreamOutputBitstream.push_back(outputBitstream);
 
-		m_nFreeOutputBitstreams++;
-		m_not_empty.notify_one();
+		// m_nFreeOutputBitstreams++;
+		// m_not_empty.notify_one();
 	}
 
 	~NVCodecResources()
@@ -133,7 +133,7 @@ public:
 
 public:
 	apracucontext_sp m_cuContext;
-	HMODULE m_hModule;
+	//HMODULE m_hModule;
 	NV_ENCODE_API_FUNCTION_LIST m_nvenc;
 	void *m_hEncoder;
 
@@ -351,126 +351,128 @@ private:
 
 	void createDefaultEncoderParams(NV_ENC_INITIALIZE_PARAMS *pIntializeParams)
 	{
-		GUID codecGuid = NV_ENC_CODEC_H264_GUID;
-		GUID presetGuid = NV_ENC_PRESET_DEFAULT_GUID;
+		// GUID codecGuid = NV_ENC_CODEC_H264_GUID;
+		// GUID presetGuid = NV_ENC_PRESET_DEFAULT_GUID;
 
-		memset(pIntializeParams, 0, sizeof(NV_ENC_INITIALIZE_PARAMS));
-		pIntializeParams->encodeConfig = &m_encodeConfig;
-		memset(&m_encodeConfig, 0, sizeof(NV_ENC_CONFIG));
+		// memset(pIntializeParams, 0, sizeof(NV_ENC_INITIALIZE_PARAMS));
+		// pIntializeParams->encodeConfig = &m_encodeConfig;
+		// memset(&m_encodeConfig, 0, sizeof(NV_ENC_CONFIG));
 
-		pIntializeParams->encodeConfig->version = NV_ENC_CONFIG_VER;
-		pIntializeParams->version = NV_ENC_INITIALIZE_PARAMS_VER;
+		// pIntializeParams->encodeConfig->version = NV_ENC_CONFIG_VER;
+		// pIntializeParams->version = NV_ENC_INITIALIZE_PARAMS_VER;
 
-		pIntializeParams->encodeGUID = codecGuid;
-		pIntializeParams->presetGUID = presetGuid;
-		pIntializeParams->encodeWidth = m_nWidth;
-		pIntializeParams->encodeHeight = m_nHeight;
-		pIntializeParams->darWidth = m_nWidth;
-		pIntializeParams->darHeight = m_nHeight;
-		pIntializeParams->frameRateNum = m_nFrameRate;
-		pIntializeParams->frameRateDen = 1;
-		pIntializeParams->enablePTD = 1;
-		pIntializeParams->reportSliceOffsets = 0;
-		pIntializeParams->enableSubFrameWrite = 0;
-		pIntializeParams->maxEncodeWidth = m_nWidth;
-		pIntializeParams->maxEncodeHeight = m_nHeight;
-		pIntializeParams->enableMEOnlyMode = false;
-		pIntializeParams->enableOutputInVidmem = false;
+		// pIntializeParams->encodeGUID = codecGuid;
+		// pIntializeParams->presetGUID = presetGuid;
+		// pIntializeParams->encodeWidth = m_nWidth;
+		// pIntializeParams->encodeHeight = m_nHeight;
+		// pIntializeParams->darWidth = m_nWidth;
+		// pIntializeParams->darHeight = m_nHeight;
+		// pIntializeParams->frameRateNum = m_nFrameRate;
+		// pIntializeParams->frameRateDen = 1;
+		// pIntializeParams->enablePTD = 1;
+		// pIntializeParams->reportSliceOffsets = 0;
+		// pIntializeParams->enableSubFrameWrite = 0;
+		// pIntializeParams->maxEncodeWidth = m_nWidth;
+		// pIntializeParams->maxEncodeHeight = m_nHeight;
+		// pIntializeParams->enableMEOnlyMode = false;
+		// pIntializeParams->enableOutputInVidmem = false;
 
-		pIntializeParams->enableEncodeAsync = GetCapabilityValue(codecGuid, NV_ENC_CAPS_ASYNC_ENCODE_SUPPORT);
+		// pIntializeParams->enableEncodeAsync = GetCapabilityValue(codecGuid, NV_ENC_CAPS_ASYNC_ENCODE_SUPPORT);
 
-		NV_ENC_PRESET_CONFIG presetConfig = { NV_ENC_PRESET_CONFIG_VER, {NV_ENC_CONFIG_VER} };
-		m_nvcodecResources->m_nvenc.nvEncGetEncodePresetConfig(m_nvcodecResources->m_hEncoder, codecGuid, presetGuid, &presetConfig);
-		memcpy(pIntializeParams->encodeConfig, &presetConfig.presetCfg, sizeof(NV_ENC_CONFIG));
-		pIntializeParams->encodeConfig->frameIntervalP = 1;
-		pIntializeParams->encodeConfig->gopLength = m_nGopLength;// = NVENC_INFINITE_GOPLENGTH;
-		pIntializeParams->encodeConfig->profileGUID = asNvidiaGUID(m_nProfile);
+		// NV_ENC_PRESET_CONFIG presetConfig = { NV_ENC_PRESET_CONFIG_VER, {NV_ENC_CONFIG_VER} };
+		// m_nvcodecResources->m_nvenc.nvEncGetEncodePresetConfig(m_nvcodecResources->m_hEncoder, codecGuid, presetGuid, &presetConfig);
+		// memcpy(pIntializeParams->encodeConfig, &presetConfig.presetCfg, sizeof(NV_ENC_CONFIG));
+		// pIntializeParams->encodeConfig->frameIntervalP = 1;
+		// pIntializeParams->encodeConfig->gopLength = m_nGopLength;// = NVENC_INFINITE_GOPLENGTH;
+		// pIntializeParams->encodeConfig->profileGUID = asNvidiaGUID(m_nProfile);
 	
 	
-		pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
-		m_nencodeParam.capsToQuery = NV_ENC_CAPS_SUPPORT_DYN_BITRATE_CHANGE;
-			if (m_nBitRateKbps)
-			{
-				m_encodeConfig.rcParams.averageBitRate = m_nBitRateKbps;
-			}
+		// pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+		// m_nencodeParam.capsToQuery = NV_ENC_CAPS_SUPPORT_DYN_BITRATE_CHANGE;
+		// 	if (m_nBitRateKbps)
+		// 	{
+		// 		m_encodeConfig.rcParams.averageBitRate = m_nBitRateKbps;
+		// 	}
 		
 
 		
-		m_encodeConfig.rcParams.enableLookahead = m_nEnableBFrames;
+		// m_encodeConfig.rcParams.enableLookahead = m_nEnableBFrames;
 		
-		pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
+		// pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 
-		if (pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID && pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_HP_GUID)
-		{
-			pIntializeParams->encodeConfig->rcParams.constQP = { 28, 31, 25 };
-		}
+		// if (pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID && pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_HP_GUID)
+		// {
+		// 	pIntializeParams->encodeConfig->rcParams.constQP = { 28, 31, 25 };
+		// }
 
-		if (pIntializeParams->encodeGUID == NV_ENC_CODEC_H264_GUID)
-		{
-			if (m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444 || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT)
-			{
-				pIntializeParams->encodeConfig->encodeCodecConfig.h264Config.chromaFormatIDC = 3;
-			}
-			pIntializeParams->encodeConfig->encodeCodecConfig.h264Config.idrPeriod = pIntializeParams->encodeConfig->gopLength;
-		}
-		else if (pIntializeParams->encodeGUID == NV_ENC_CODEC_HEVC_GUID)
-		{
-			pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.pixelBitDepthMinus8 =
-				(m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV420_10BIT || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT) ? 2 : 0;
-			if (m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444 || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT)
-			{
-				pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.chromaFormatIDC = 3;
-			}
-			pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.idrPeriod = pIntializeParams->encodeConfig->gopLength;
-		}
+		// if (pIntializeParams->encodeGUID == NV_ENC_CODEC_H264_GUID)
+		// {
+		// 	if (m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444 || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT)
+		// 	{
+		// 		pIntializeParams->encodeConfig->encodeCodecConfig.h264Config.chromaFormatIDC = 3;
+		// 	}
+		// 	pIntializeParams->encodeConfig->encodeCodecConfig.h264Config.idrPeriod = pIntializeParams->encodeConfig->gopLength;
+		// }
+		// else if (pIntializeParams->encodeGUID == NV_ENC_CODEC_HEVC_GUID)
+		// {
+		// 	pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.pixelBitDepthMinus8 =
+		// 		(m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV420_10BIT || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT) ? 2 : 0;
+		// 	if (m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444 || m_eBufferFormat == NV_ENC_BUFFER_FORMAT_YUV444_10BIT)
+		// 	{
+		// 		pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.chromaFormatIDC = 3;
+		// 	}
+		// 	pIntializeParams->encodeConfig->encodeCodecConfig.hevcConfig.idrPeriod = pIntializeParams->encodeConfig->gopLength;
+		// }
 
-		return;
+		// return;
 	}
 
 	int GetCapabilityValue(GUID guidCodec, NV_ENC_CAPS capsToQuery)
 	{ 
-		NV_ENC_CAPS_PARAM capsParam = { NV_ENC_CAPS_PARAM_VER };
-		capsParam.capsToQuery = capsToQuery;
-		int v;
-		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncGetEncodeCaps(m_nvcodecResources->m_hEncoder, guidCodec, &capsParam, &v));
-		return v;
+		// NV_ENC_CAPS_PARAM capsParam = { NV_ENC_CAPS_PARAM_VER };
+		// capsParam.capsToQuery = capsToQuery;
+		// int v;
+		// NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncGetEncodeCaps(m_nvcodecResources->m_hEncoder, guidCodec, &capsParam, &v));
+		// return v;
+		return 0;
 	}
 
 	void initializeEncoder()
 	{
-		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
+		// NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 20;
-		m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
+		// m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 20;
+		// m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
-		for (int i = 0; i < m_nEncoderBuffer; i++)
-		{
-			auto event = CreateEvent(NULL, FALSE, FALSE, NULL);
-			NV_ENC_EVENT_PARAMS eventParams = { NV_ENC_EVENT_PARAMS_VER };
-			eventParams.completionEvent = event;
-			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterAsyncEvent(m_nvcodecResources->m_hEncoder, &eventParams));
-			m_nvcodecResources->m_qpCompletionEvent.push_back(event);
+		// for (int i = 0; i < m_nEncoderBuffer; i++)
+		// {
+		// 	auto event = CreateEvent(NULL, FALSE, FALSE, NULL);
+		// 	NV_ENC_EVENT_PARAMS eventParams = { NV_ENC_EVENT_PARAMS_VER };
+		// 	eventParams.completionEvent = event;
+		// 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterAsyncEvent(m_nvcodecResources->m_hEncoder, &eventParams));
+		// 	m_nvcodecResources->m_qpCompletionEvent.push_back(event);
 
-			NV_ENC_CREATE_BITSTREAM_BUFFER createBitstreamBuffer = { NV_ENC_CREATE_BITSTREAM_BUFFER_VER };
-			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncCreateBitstreamBuffer(m_nvcodecResources->m_hEncoder, &createBitstreamBuffer));
-			m_nvcodecResources->m_qBitstreamOutputBitstream.push_back(createBitstreamBuffer.bitstreamBuffer);
-		}
+		// 	NV_ENC_CREATE_BITSTREAM_BUFFER createBitstreamBuffer = { NV_ENC_CREATE_BITSTREAM_BUFFER_VER };
+		// 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncCreateBitstreamBuffer(m_nvcodecResources->m_hEncoder, &createBitstreamBuffer));
+		// 	m_nvcodecResources->m_qBitstreamOutputBitstream.push_back(createBitstreamBuffer.bitstreamBuffer);
+		// }
 	}
 
 	NV_ENC_REGISTERED_PTR RegisterResource(void *pBuffer, NV_ENC_INPUT_RESOURCE_TYPE eResourceType,
 		int width, int height, int pitch, NV_ENC_BUFFER_FORMAT bufferFormat, NV_ENC_BUFFER_USAGE bufferUsage)
 	{
-		NV_ENC_REGISTER_RESOURCE registerResource = { NV_ENC_REGISTER_RESOURCE_VER };
-		registerResource.resourceType = eResourceType;
-		registerResource.resourceToRegister = pBuffer;
-		registerResource.width = width;
-		registerResource.height = height;
-		registerResource.pitch = pitch;
-		registerResource.bufferFormat = bufferFormat;
-		registerResource.bufferUsage = bufferUsage;
-		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterResource(m_nvcodecResources->m_hEncoder, &registerResource));
+		// NV_ENC_REGISTER_RESOURCE registerResource = { NV_ENC_REGISTER_RESOURCE_VER };
+		// registerResource.resourceType = eResourceType;
+		// registerResource.resourceToRegister = pBuffer;
+		// registerResource.width = width;
+		// registerResource.height = height;
+		// registerResource.pitch = pitch;
+		// registerResource.bufferFormat = bufferFormat;
+		// registerResource.bufferUsage = bufferUsage;
+		// NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterResource(m_nvcodecResources->m_hEncoder, &registerResource));
 
-		return registerResource.registeredResource;
+		// return registerResource.registeredResource;
+		return nullptr;
 	}
 
 private:
@@ -478,60 +480,60 @@ private:
 
 	void processOutput()
 	{
-		m_bRunning = true;
-		while (true)
-		{
-			frame_sp inputFrame, outputFrame;
-			void * event;
-			NV_ENC_OUTPUT_PTR outputBitstream;
-			NV_ENC_INPUT_PTR mappedResource;
-			{
-				boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
-				m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
-				if (!m_bRunning)
-				{
-					break;
-				}
+		// m_bRunning = true;
+		// while (true)
+		// {
+		// 	frame_sp inputFrame, outputFrame;
+		// 	void * event;
+		// 	NV_ENC_OUTPUT_PTR outputBitstream;
+		// 	NV_ENC_INPUT_PTR mappedResource;
+		// 	{
+		// 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+		// 		m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
+		// 		if (!m_bRunning)
+		// 		{
+		// 			break;
+		// 		}
 
-				outputBitstream = m_nvcodecResources->m_qBitstreamOutputBitstreamBusy.front();
-				event = m_nvcodecResources->m_qpCompletionEventBusy.front();
-				inputFrame = m_nvcodecResources->m_mappedFrames.front();
-				mappedResource = m_nvcodecResources->m_mappedResources.front();
-			}
+		// 		outputBitstream = m_nvcodecResources->m_qBitstreamOutputBitstreamBusy.front();
+		// 		event = m_nvcodecResources->m_qpCompletionEventBusy.front();
+		// 		inputFrame = m_nvcodecResources->m_mappedFrames.front();
+		// 		mappedResource = m_nvcodecResources->m_mappedResources.front();
+		// 	}
 
-			if (WaitForSingleObject(event, 20000) == WAIT_FAILED)
-			{
-				throw AIPException(AIP_FATAL, "Failed to encode frame. WaitForSingleObject. <" + std::to_string(NV_ENC_ERR_GENERIC));
-			}
-			NV_ENC_LOCK_BITSTREAM lockBitstreamData = { NV_ENC_LOCK_BITSTREAM_VER };
-			lockBitstreamData.outputBitstream = outputBitstream;
-			lockBitstreamData.doNotWait = false;
-			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncLockBitstream(m_nvcodecResources->m_hEncoder, &lockBitstreamData));
+		// 	if (WaitForSingleObject(event, 20000) == WAIT_FAILED)
+		// 	{
+		// 		throw AIPException(AIP_FATAL, "Failed to encode frame. WaitForSingleObject. <" + std::to_string(NV_ENC_ERR_GENERIC));
+		// 	}
+		// 	NV_ENC_LOCK_BITSTREAM lockBitstreamData = { NV_ENC_LOCK_BITSTREAM_VER };
+		// 	lockBitstreamData.outputBitstream = outputBitstream;
+		// 	lockBitstreamData.doNotWait = false;
+		// 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncLockBitstream(m_nvcodecResources->m_hEncoder, &lockBitstreamData));
 
-			auto nvCodecResources = m_nvcodecResources;
-			outputFrame = frame_sp(m_nvcodecResources->frame_opool.construct(lockBitstreamData.bitstreamBufferPtr, lockBitstreamData.bitstreamSizeInBytes),
-				[&, outputBitstream, nvCodecResources](ExtFrame* pointer) {
-				nvCodecResources->frame_opool.free(pointer);
-				nvCodecResources->unlockOutputBitstream(outputBitstream);
-			});
-			outputFrame->pictureType = lockBitstreamData.pictureType;
+		// 	auto nvCodecResources = m_nvcodecResources;
+		// 	outputFrame = frame_sp(m_nvcodecResources->frame_opool.construct(lockBitstreamData.bitstreamBufferPtr, lockBitstreamData.bitstreamSizeInBytes),
+		// 		[&, outputBitstream, nvCodecResources](ExtFrame* pointer) {
+		// 		nvCodecResources->frame_opool.free(pointer);
+		// 		nvCodecResources->unlockOutputBitstream(outputBitstream);
+		// 	});
+		// 	outputFrame->pictureType = lockBitstreamData.pictureType;
 
-			send(inputFrame, outputFrame);
+		// 	send(inputFrame, outputFrame);
 
-			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncUnmapInputResource(m_nvcodecResources->m_hEncoder, mappedResource));
+		// 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncUnmapInputResource(m_nvcodecResources->m_hEncoder, mappedResource));
 
-			{
-				boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
-				m_nvcodecResources->m_mappedResources.pop_front();
-				m_nvcodecResources->m_mappedFrames.pop_front();
+		// 	{
+		// 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+		// 		m_nvcodecResources->m_mappedResources.pop_front();
+		// 		m_nvcodecResources->m_mappedFrames.pop_front();
 
-				m_nvcodecResources->m_qpCompletionEventBusy.pop_front();
-				m_nvcodecResources->m_qpCompletionEvent.push_back(event);
+		// 		m_nvcodecResources->m_qpCompletionEventBusy.pop_front();
+		// 		m_nvcodecResources->m_qpCompletionEvent.push_back(event);
 
-				m_nvcodecResources->m_qBitstreamOutputBitstreamBusy.pop_front();
-				m_nvcodecResources->m_nBusyOutputBitstreams--;
-			}
-		}
+		// 		m_nvcodecResources->m_qBitstreamOutputBitstreamBusy.pop_front();
+		// 		m_nvcodecResources->m_nBusyOutputBitstreams--;
+		// 	}
+		// }
 	}
 
 	bool is_not_empty() const
