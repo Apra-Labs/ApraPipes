@@ -331,11 +331,11 @@ SET(IP_FILES_H
 IF(ENABLE_GST)
 	IF(NOT ENABLE_WINDOWS)
 		list(APPEND IP_FILES
-			src/GstWebRTCSink.h
+			include/GstWebRTCSink.h
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
 		list(APPEND IP_FILES
-			src/GstOnvifRtspSink.h
+			include/GstOnvifRtspSink.h
 		)
 ENDIF(ENABLE_GST)
 
@@ -463,6 +463,7 @@ IF(ENABLE_CUDA)
 	)
 ENDIF(ENABLE_CUDA)
 
+message(STATUS "-------------Printing Soure file list-----------------${SOURCE}")
 add_library(aprapipes STATIC ${SOURCE})
 
 message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
@@ -595,14 +596,31 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_GST)
- 	IF(NOT ENABLE_WINDOWS)
-		list(APPEND UT_FILES
-			test/gstwebrtcsink_tests.cpp
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
+	SET(GST_LIBS		
+		PkgConfig::gstreamer-app-1.0
+		PkgConfig::gstreamer-base-1.0
+		PkgConfig::gstreamer-1.0
+		PkgConfig::gstreamer-rtsp-server-1.0
+		PkgConfig::libpcre
+		PkgConfig::glib-2.0
+		PkgConfig::gstreamer-rtsp-1.0
+		PkgConfig::gstreamer-rtp-1.0
+		PkgConfig::gstreamer-net-1.0	
+	)
 	list(APPEND UT_FILES
 		test/gstrtsponvifsink_tests.cpp
 	)
+
+	IF(NOT ENABLE_WINDOWS)
+		list(APPEND GST_LIBS
+			PkgConfig::gstreamer-webrtc-1.0
+			PkgConfig::json-glib-1.0
+			PkgConfig::libsoup-2.4
+		)
+		list(APPEND UT_FILES
+			test/gstrtsponvifsink_tests.cpp
+		)
+	ENDIF(NOT ENABLE_WINDOWS)
 ENDIF(ENABLE_GST)
 
 
@@ -628,6 +646,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${GST_LIBS}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -636,27 +655,6 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   )
-
-IF(ENABLE_GST)
-target_link_libraries(aprapipesut
-  	PkgConfig::gstreamer-app-1.0
-  	PkgConfig::gstreamer-base-1.0
-  	PkgConfig::gstreamer-1.0
-  	PkgConfig::gstreamer-rtsp-server-1.0
-  	PkgConfig::libpcre
-  	PkgConfig::glib-2.0
-  	PkgConfig::gstreamer-rtsp-1.0
-  	PkgConfig::gstreamer-rtp-1.0
-  	PkgConfig::gstreamer-net-1.0
-  	IF(NOT ENABLE_WINDOWS)
-	target_link_libraries(aprapipesut
- 		PkgConfig::gstreamer-webrtc-1.0
-		PkgConfig::json-glib-1.0
-		PkgConfig::libsoup-2.4
-	)
-	ENDIF(NOT ENABLE_WINDOWS)
-)
-ENDIF(ENABLE_GST)
 
 IF(ENABLE_WINDOWS)
 	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
