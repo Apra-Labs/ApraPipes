@@ -526,7 +526,6 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
-		test/NVEncProxy.cpp #temp to be moved to src
 	)
 	IF(ENABLE_ARM64)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}

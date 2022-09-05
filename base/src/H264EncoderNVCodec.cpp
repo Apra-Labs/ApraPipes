@@ -187,9 +187,28 @@ bool H264EncoderNVCodec::processSOS(frame_sp &frame)
 	}
 	);
 	auto inputMetadata = frame->getMetadata();
-	auto rawImageMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
-	int width = rawImageMetadata->getWidth(0);
-	int height = rawImageMetadata->getHeight(0);
+	int width, height;
+
+	switch (inputMetadata->getFrameType())
+	{
+		case FrameMetadata::RAW_IMAGE_PLANAR:
+		{
+			auto rawImageMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
+			width = rawImageMetadata->getWidth(0);
+			height = rawImageMetadata->getHeight(0);
+			break;
+		}
+		case FrameMetadata::RAW_IMAGE:
+		{
+			auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
+			width = rawImageMetadata->getWidth();
+			height = rawImageMetadata->getHeight();
+			break;
+		}
+		default:
+			throw new AIPException(AIP_NOTEXEPCTED, "Unsupported frame type! ");
+	}
+	
 
 	auto h264Metadata = H264Metadata(width, height);
 	auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(mOutputMetadata);

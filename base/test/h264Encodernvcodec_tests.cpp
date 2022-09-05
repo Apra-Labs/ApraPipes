@@ -19,14 +19,9 @@
 #include "StatSink.h"
 #include <thread>
 #include "CudaCommon.h"
-#include "NVEncProxy.h"
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
-BOOST_AUTO_TEST_CASE(NVEncProxy)
-{
-	NVEncProxy p;
-}
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
 {
@@ -41,7 +36,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	uint32_t enableBFrames = 1;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/????.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -91,12 +86,12 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
 
-	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width >> 4, height >> 4, cudaStream_)));
+	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width >> 2, height >> 2, cudaStream_)));
 	copy->setNext(resize);
 
 	auto sync = boost::shared_ptr<Module>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(cudaStream_)));
@@ -105,7 +100,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360_to_40x22.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360_to_160x90.h264", true)));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -148,7 +143,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_)));
 	fileReader->setNext(copy);
 
@@ -201,7 +196,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	copyProps.sync = true;
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
@@ -250,7 +245,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
@@ -307,7 +302,7 @@ void mono_1920x960_ext_sink_()
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
@@ -365,7 +360,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());;
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	copyProps.sync = true;
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
@@ -408,7 +403,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	cudastream_sp cudaStream_;
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
