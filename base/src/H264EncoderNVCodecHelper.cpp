@@ -21,6 +21,14 @@
 #endif
 #else
 #define NVENC_LIBNAME "libnvidia-encode.so"
+#include <cstring>
+static inline bool operator==(const GUID &guid1, const GUID &guid2) {
+    return !memcmp(&guid1, &guid2, sizeof(GUID));
+}
+
+static inline bool operator!=(const GUID &guid1, const GUID &guid2) {
+    return !(guid1 == guid2);
+}
 #endif
 
 #define NVENC_API_CALL( nvencAPI )                                                                                 \
