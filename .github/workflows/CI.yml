@@ -22,7 +22,7 @@ jobs:
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
             NPROC: 3
             SHELL: "bash"
@@ -32,7 +32,7 @@ jobs:
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux_ARM64"
             VCPKG_FILE: "base/vcpkg.jetson.json"
-            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
+            CMAKE-CONF: "export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
             NPROC: 7
             SHELL: "bash"
     env:
@@ -84,7 +84,9 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        cp -f ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json 
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: false
       
     - name: Build

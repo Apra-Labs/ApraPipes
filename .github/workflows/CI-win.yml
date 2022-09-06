@@ -22,7 +22,7 @@ jobs:
             GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
             SHELL: "cmd"
@@ -81,7 +81,9 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        copy ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: true
     
     - name: Upload build logs 
@@ -107,7 +109,7 @@ jobs:
             GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
             SHELL: "cmd"
@@ -161,7 +163,9 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        copy ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: false
       
     - name: Build
