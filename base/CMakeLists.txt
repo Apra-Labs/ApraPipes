@@ -139,7 +139,8 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-		SET(NVCUDAToolkit_LIBS		
+		SET(NVCUDAToolkit_LIBS
+			libcuda.so		
 			libcudart_static.a
 			libnvjpeg_static.a
 			libnppig_static.a
