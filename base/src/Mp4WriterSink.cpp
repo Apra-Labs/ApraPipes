@@ -1,7 +1,6 @@
 #include <ctime>
 #include <fstream>
 
-#include "H264EncoderNVCodec.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "H264Utils.h"

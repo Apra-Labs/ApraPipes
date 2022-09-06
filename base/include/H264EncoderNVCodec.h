@@ -13,20 +13,16 @@ public:
 		HIGH,
 	};
 
-	H264EncoderNVCodecProps(uint32_t &_bitRateKbps, apracucontext_sp& _cuContext, uint32_t &_gopLength,uint32_t &_frameRate,H264CodecProfile _vProfile,uint32_t& _enableBFrames) : cuContext(_cuContext), gopLength(_gopLength)
+	H264EncoderNVCodecProps(const uint32_t &_bitRateKbps, const apracucontext_sp& _cuContext, const uint32_t &_gopLength,const uint32_t &_frameRate,H264CodecProfile _vProfile,bool _enableBFrames) 
+		: cuContext(_cuContext), gopLength(_gopLength), frameRate(_frameRate), bitRateKbps(_bitRateKbps), vProfile(_vProfile), enableBFrames(_enableBFrames)
 	{
-		gopLength = _gopLength;
-		frameRate = _frameRate;
-		bitRateKbps = _bitRateKbps;
-		vProfile = _vProfile;
-		enableBFrames = _enableBFrames;
 	}
 	H264EncoderNVCodecProps(apracucontext_sp& _cuContext) : bitRateKbps(0), cuContext(_cuContext)
 	{
 
 	}
 	H264CodecProfile vProfile= H264EncoderNVCodecProps::BASELINE;
-	uint32_t enableBFrames;
+	bool enableBFrames=false;
 	uint32_t gopLength = 30;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;

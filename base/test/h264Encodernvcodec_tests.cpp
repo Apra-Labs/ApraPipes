@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = true;
 
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = true;
 	auto width = 640;
 	auto height = 360;
 
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = 1;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::HIGH;
 	// metadata is known
 	auto width = 640;
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = 1;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	// metadata is known
 	auto width = 1920;
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = 1;
 	// metadata is known
 	auto width = 1920;
 	auto height = 960;
@@ -292,7 +292,7 @@ void mono_1920x960_ext_sink_()
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
-	uint32_t enableBFrames = 1;
+	bool enableBFrames = 1;
 	// metadata is known
 	auto width = 1920;
 	auto height = 960;

@@ -14,7 +14,7 @@ public:
 	std::string format_2(int &min);
 	~Mp4WriterSinkUtils();
 private:
-	int lastVideoMinute;
+	int lastVideoMinute=0;
 	std::time_t lastVideoTS;
 	std::string lastVideoName;
 	std::time_t lastSyncTS;

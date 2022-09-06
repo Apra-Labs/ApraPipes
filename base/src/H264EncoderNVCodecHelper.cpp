@@ -175,7 +175,7 @@ class H264EncoderNVCodecHelper::Detail
 		}
 	}
 public:
-	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,uint32_t& enableBFrames) :
+	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,bool enableBFrames) :
 		m_nWidth(0),
 		m_nHeight(0),
 		m_eBufferFormat(NV_ENC_BUFFER_FORMAT_UNDEFINED),
@@ -185,7 +185,7 @@ public:
 		m_nGopLength(gopLength),
 		m_nFrameRate(frameRate),
 		m_nProfile(profile),
-		m_nEnableBFrames(enableBFrames)
+		m_bEnableBFrames(enableBFrames)
 	{
 		m_nvcodecResources.reset(new NVCodecResources(cuContext));
 
@@ -355,7 +355,6 @@ private:
 	void createDefaultEncoderParams(NV_ENC_INITIALIZE_PARAMS *pIntializeParams)
 	{
 		 GUID codecGuid = NV_ENC_CODEC_H264_GUID;
-		 GUID presetGuid = NV_ENC_PRESET_DEFAULT_GUID;
 
 		 memset(pIntializeParams, 0, sizeof(NV_ENC_INITIALIZE_PARAMS));
 		 pIntializeParams->encodeConfig = &m_encodeConfig;
@@ -365,7 +364,7 @@ private:
 		 pIntializeParams->version = NV_ENC_INITIALIZE_PARAMS_VER;
 
 		 pIntializeParams->encodeGUID = codecGuid;
-		 pIntializeParams->presetGUID = presetGuid;
+		 pIntializeParams->presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
 		 pIntializeParams->encodeWidth = m_nWidth;
 		 pIntializeParams->encodeHeight = m_nHeight;
 		 pIntializeParams->darWidth = m_nWidth;
@@ -383,7 +382,7 @@ private:
 		 pIntializeParams->enableEncodeAsync = GetCapabilityValue(codecGuid, NV_ENC_CAPS_ASYNC_ENCODE_SUPPORT);
 #endif
 		 NV_ENC_PRESET_CONFIG presetConfig = { NV_ENC_PRESET_CONFIG_VER, {NV_ENC_CONFIG_VER} };
-		 m_nvcodecResources->m_nvenc.nvEncGetEncodePresetConfig(m_nvcodecResources->m_hEncoder, codecGuid, presetGuid, &presetConfig);
+		 m_nvcodecResources->m_nvenc.nvEncGetEncodePresetConfig(m_nvcodecResources->m_hEncoder, codecGuid, pIntializeParams->presetGUID, &presetConfig);
 		 memcpy(pIntializeParams->encodeConfig, &presetConfig.presetCfg, sizeof(NV_ENC_CONFIG));
 		 pIntializeParams->encodeConfig->frameIntervalP = 1;
 		 pIntializeParams->encodeConfig->gopLength = m_nGopLength;// = NVENC_INFINITE_GOPLENGTH;
@@ -399,13 +398,13 @@ private:
 		
 
 		
-		 m_encodeConfig.rcParams.enableLookahead = m_nEnableBFrames;
+		 m_encodeConfig.rcParams.enableLookahead = m_bEnableBFrames;
 		
 		 pIntializeParams->encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 
-		 if (pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_DEFAULT_GUID && pIntializeParams->presetGUID != NV_ENC_PRESET_LOSSLESS_HP_GUID)
+		 if (pIntializeParams->tuningInfo != NV_ENC_TUNING_INFO_LOSSLESS)
 		 {
-		 	pIntializeParams->encodeConfig->rcParams.constQP = { 28, 31, 25 };
+			 pIntializeParams->encodeConfig->rcParams.constQP = { 28, 31, 25 }; //quality params for P, B and I frames
 		 }
 
 		 if (pIntializeParams->encodeGUID == NV_ENC_CODEC_H264_GUID)
@@ -434,10 +433,9 @@ private:
 	{ 
 		 NV_ENC_CAPS_PARAM capsParam = { NV_ENC_CAPS_PARAM_VER };
 		 capsParam.capsToQuery = capsToQuery;
-		 int v;
+		 int v=0;
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncGetEncodeCaps(m_nvcodecResources->m_hEncoder, guidCodec, &capsParam, &v));
 		 return v;
-		return 0;
 	}
 
 	void initializeEncoder()
@@ -571,7 +569,7 @@ private:
 	uint32_t m_nGopLength ;
 	uint32_t m_nFrameRate;
 	H264EncoderNVCodecProps::H264CodecProfile m_nProfile;
-	uint32_t m_nEnableBFrames;
+	bool m_bEnableBFrames;
 
 	NV_ENC_INITIALIZE_PARAMS m_initializeParams;
 	NV_ENC_CONFIG m_encodeConfig;
@@ -591,7 +589,7 @@ private:
 	boost::shared_ptr<NVCodecResources> m_nvcodecResources;
 };
 
-H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& _cuContext, uint32_t& _gopLength, uint32_t& _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, uint32_t& enableBFrames)
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& _cuContext, uint32_t& _gopLength, uint32_t& _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
 {
 	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
 }
