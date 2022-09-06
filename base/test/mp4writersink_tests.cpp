@@ -1,26 +1,15 @@
 #include <boost/test/unit_test.hpp>
-#include "FrameMetadata.h"
-#include "FrameMetadataFactory.h"
 #include "Logger.h"
 #include "Frame.h"
-#include "AIPExceptions.h"
 #include "PipeLine.h"
-#include "FileWriterModule.h"
 #include "test_utils.h"
 #include "FileReaderModule.h"
-#include "CudaCommon.h"
 #include "Mp4WriterSink.h"
 #include "FramesMuxer.h"
 #include "StatSink.h"
 #include "EncodedImageMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "H264Metadata.h"
-#include "CudaMemCopy.h"
-#include "CCNPPI.h"
-#include "CudaStreamSynchronize.h"
-#include "ResizeNPPI.h"
-#include "CudaCommon.h"
-#include "../../thirdparty/Video_Codec_SDK_10.0.26/Interface/nvEncodeAPI.h"
 #include <ExternalSinkModule.h>
 #include <H264FrameUtils.h>
 
@@ -61,7 +50,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+	Test_Utils::sleep_for_seconds(60);
 
 	p->stop();
 	p->term();
@@ -117,7 +106,7 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	Test_Utils::sleep_for_seconds(10);
 
 	p->stop();
 	p->term();
@@ -147,7 +136,7 @@ BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v)
 	write(inFolderPath, outFolderPath, width, height);
 }
 
-BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata)
+BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata, *boost::unit_test::disabled())
 {
 	int width = 1280;
 	int height = 720;
@@ -159,7 +148,7 @@ BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata)
 	write_metadata(inFolderPath, outFolderPath, metadataPath, width, height, 30);
 }
 
-BOOST_AUTO_TEST_CASE(jpeg_metadata)
+BOOST_AUTO_TEST_CASE(jpeg_metadata, *boost::unit_test::disabled())
 {
 	/* metadata, RGB, 24bpp, 960x480 */
 	int width = 1280;
@@ -213,14 +202,14 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(70));
+	Test_Utils::sleep_for_seconds(70);
 
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(130));
+	Test_Utils::sleep_for_seconds(130);
 
 	p->stop();
 	p->term();
@@ -228,7 +217,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(h264_to_mp4v)
+BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 {
 	int width = 640;
 	int height = 360;
@@ -269,7 +258,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(2500));
+	Test_Utils::sleep_for_seconds(2500);
 
 	p->stop();
 	p->term();
@@ -318,7 +307,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(250));
+	Test_Utils::sleep_for_seconds(250);
 
 	p->stop();
 	p->term();
@@ -326,7 +315,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(h264_metadata)
+BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 {
 	int width = 704;
 	int height = 576;
@@ -381,7 +370,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	Test_Utils::sleep_for_seconds(10);
 
 	p->stop();
 	p->term();
@@ -389,7 +378,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata)
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(parsenalu)
+BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
 {
 	int width = 640;
 	int height = 360;
@@ -496,15 +485,15 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(70));
-
+	Test_Utils::sleep_for_seconds(70);
+	
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(130));
-
+	Test_Utils::sleep_for_seconds(130);
+	
 	p->stop();
 	p->term();
 	p->wait_for_all();

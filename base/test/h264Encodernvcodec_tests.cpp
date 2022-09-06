@@ -1,10 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
-#include "FrameMetadata.h"
-#include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -17,8 +14,6 @@
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "StatSink.h"
-#include <thread>
-#include "CudaCommon.h"
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 

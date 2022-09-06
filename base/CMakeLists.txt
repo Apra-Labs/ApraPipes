@@ -526,6 +526,7 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
+		test/nv_mp4_file_tests.cpp
 	)
 	IF(ENABLE_ARM64)
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
@@ -580,7 +581,6 @@ SET(UT_FILES
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
-	test/mp4_file_tests.cpp
 	test/pipeline_tests.cpp
 	test/valveModule_tests.cpp
 	${ARM64_UT_FILES}
