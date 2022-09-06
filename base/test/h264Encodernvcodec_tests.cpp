@@ -20,6 +20,7 @@ BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360)
 {
+	Logger::setLogLevel("info");
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 
 	// metadata is known

@@ -51,7 +51,7 @@ public:
 		m_nFreeOutputBitstreams(0),
 		m_nBusyOutputBitstreams(0)
 	{
-		load();
+		load2();
 	}
 
 	void load()
@@ -74,6 +74,26 @@ public:
 		}
 		{
 			boost::function<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)> NvEncodeAPICreateInstance = m_lib.get<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)>("NvEncodeAPICreateInstance");
+			m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
+			NVENC_API_CALL(NvEncodeAPICreateInstance(&m_nvenc));
+			NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS encodeSessionExParams = { NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER };
+			encodeSessionExParams.device = m_cuContext->getContext();
+			encodeSessionExParams.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+			encodeSessionExParams.apiVersion = NVENCAPI_VERSION;
+			NVENC_API_CALL(m_nvenc.nvEncOpenEncodeSessionEx(&encodeSessionExParams, &m_hEncoder));
+		}
+	}
+
+	void load2()
+	{
+		{
+			uint32_t version = 0;
+			uint32_t currentVersion = (NVENCAPI_MAJOR_VERSION << 4) | NVENCAPI_MINOR_VERSION;
+			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
+			if (currentVersion > version)
+			{
+				throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
+			}
 			m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
 			NVENC_API_CALL(NvEncodeAPICreateInstance(&m_nvenc));
 			NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS encodeSessionExParams = { NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER };

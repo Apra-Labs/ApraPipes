@@ -346,6 +346,8 @@ SET(CUDA_CORE_FILES
 	src/CudaMemCopy.cpp
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
+	src/CudaCommon.cpp
+
 )
 
 SET(CUDA_CORE_FILES_H
@@ -354,6 +356,8 @@ SET(CUDA_CORE_FILES_H
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
+	include/CudaCommon.h
+
 )
 
 SET(CUDA_IP_FILES
@@ -366,7 +370,11 @@ SET(CUDA_IP_FILES
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp		
+	src/RotateNPPI.cpp
+	src/JPEGDecoderNVJPEG.cpp	
+	src/JPEGEncoderNVJPEG.cpp
+	src/H264EncoderNVCodecHelper.cpp
+	src/H264EncoderNVCodec.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -392,14 +400,6 @@ IF(ENABLE_ARM64)
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 	)
-ELSE()
-	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
-		src/JPEGDecoderNVJPEG.cpp	
-		src/JPEGEncoderNVJPEG.cpp
-		src/CudaCommon.cpp
-		src/H264EncoderNVCodecHelper.cpp
-		src/H264EncoderNVCodec.cpp
-	)
 ENDIF(ENABLE_ARM64)
 
 SET(CUDA_IP_FILES_H
@@ -412,6 +412,10 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
+	include/JPEGEncoderNVJPEG.h	
+	include/JPEGDecoderNVJPEG.h
+	include/H264EncoderNVCodecHelper.h
+	include/H264EncoderNVCodec.h
 )
 
 IF(ENABLE_ARM64)
@@ -439,14 +443,6 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
-	)
-ELSE()
-	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
-		include/JPEGEncoderNVJPEG.h	
-		include/JPEGDecoderNVJPEG.h
-		include/CudaCommon.h
-		include/H264EncoderNVCodecHelper.h
-		include/H264EncoderNVCodec.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -519,6 +515,9 @@ IF (ENABLE_ARM64)
 		test/nvv4l2camerahelper_test.cpp
 		test/nvtransform_tests.cpp
 		test/eglrenderer_test.cpp
+		test/cuda_arm_tests.cpp
+		test/apraegldisplay_tests.cpp
+		test/frame_factory_test_dma.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -528,25 +527,15 @@ IF (ENABLE_CUDA)
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
 		test/nv_mp4_file_tests.cpp
+		test/jpegencodernvjpeg_tests.cpp
+		test/jpegdecodernvjpeg_tests.cpp			
+		test/resizenppi_jpegencodernvjpeg_tests.cpp
+		test/nvjpeg_combo_tests.cpp			
+		test/ccnppi_tests.cpp
+		test/overlaynppi_tests.cpp
+		test/effectsnppi_tests.cpp
+		test/h264Encodernvcodec_tests.cpp
 	)
-	IF(ENABLE_ARM64)
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
-			test/cuda_arm_tests.cpp
-			test/apraegldisplay_tests.cpp
-			test/frame_factory_test_dma.cpp
-		)
-	ELSE()
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			test/jpegencodernvjpeg_tests.cpp
-			test/jpegdecodernvjpeg_tests.cpp			
-			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			test/nvjpeg_combo_tests.cpp			
-			test/ccnppi_tests.cpp
-			test/overlaynppi_tests.cpp
-			test/effectsnppi_tests.cpp
-			test/h264Encodernvcodec_tests.cpp
-		)
-	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
