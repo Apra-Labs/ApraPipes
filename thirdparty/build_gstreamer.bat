@@ -8,6 +8,7 @@ cd gst-build
 
 rem use on GHA to cleanup the folder
 IF /I NOT "%1"=="clean" GOTO NOCLEAN
+git worktree prune
 rmdir /s /q gst-build-1.16
 
 :NOCLEAN
