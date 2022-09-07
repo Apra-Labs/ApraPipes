@@ -370,11 +370,7 @@ SET(CUDA_IP_FILES
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp
-	src/JPEGDecoderNVJPEG.cpp	
-	src/JPEGEncoderNVJPEG.cpp
-	src/H264EncoderNVCodecHelper.cpp
-	src/H264EncoderNVCodec.cpp
+	src/RotateNPPI.cpp		
 )
 
 IF(ENABLE_ARM64)
@@ -400,6 +396,13 @@ IF(ENABLE_ARM64)
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 	)
+ELSE()
+	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
+		src/JPEGDecoderNVJPEG.cpp	
+		src/JPEGEncoderNVJPEG.cpp
+		src/H264EncoderNVCodecHelper.cpp
+		src/H264EncoderNVCodec.cpp
+	)
 ENDIF(ENABLE_ARM64)
 
 SET(CUDA_IP_FILES_H
@@ -412,10 +415,6 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
-	include/JPEGEncoderNVJPEG.h	
-	include/JPEGDecoderNVJPEG.h
-	include/H264EncoderNVCodecHelper.h
-	include/H264EncoderNVCodec.h
 )
 
 IF(ENABLE_ARM64)
@@ -443,6 +442,13 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+	)
+ELSE()
+	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
+		include/JPEGEncoderNVJPEG.h	
+		include/JPEGDecoderNVJPEG.h
+		include/H264EncoderNVCodecHelper.h
+		include/H264EncoderNVCodec.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -527,15 +533,20 @@ IF (ENABLE_CUDA)
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
 		test/nv_mp4_file_tests.cpp
-		test/jpegencodernvjpeg_tests.cpp
-		test/jpegdecodernvjpeg_tests.cpp			
-		test/resizenppi_jpegencodernvjpeg_tests.cpp
-		test/nvjpeg_combo_tests.cpp			
-		test/ccnppi_tests.cpp
-		test/overlaynppi_tests.cpp
-		test/effectsnppi_tests.cpp
-		test/h264Encodernvcodec_tests.cpp
 	)
+	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
+
+		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
+			test/jpegencodernvjpeg_tests.cpp
+			test/jpegdecodernvjpeg_tests.cpp			
+			test/resizenppi_jpegencodernvjpeg_tests.cpp
+			test/nvjpeg_combo_tests.cpp			
+			test/ccnppi_tests.cpp
+			test/overlaynppi_tests.cpp
+			test/effectsnppi_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
+		)
+	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
