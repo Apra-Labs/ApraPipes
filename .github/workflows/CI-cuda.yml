@@ -147,7 +147,7 @@ jobs:
           LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
         run: |
           ${{ env.TESTEXE }} --list_content
-        continue-on-error: false
+        continue-on-error: true
 
       - name: Test
         if: ${{ env.ISCUDA != 'true'}}
