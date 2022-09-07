@@ -532,7 +532,6 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
-		test/nv_mp4_file_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -545,6 +544,7 @@ IF (ENABLE_CUDA)
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
 			test/h264Encodernvcodec_tests.cpp
+			test/nv_mp4_file_tests.cpp
 		)
 	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
