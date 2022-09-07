@@ -53,10 +53,12 @@ jobs:
     - name: Build Gstreamer
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
+      shell: cmd
     
     - name: Build libmp4
       working-directory: ${{github.workspace}}/thirdparty/libmp4
       run: .\build.cmd
+      shell: cmd
 
     - name: Make build folder
       run: mkdir -p build
