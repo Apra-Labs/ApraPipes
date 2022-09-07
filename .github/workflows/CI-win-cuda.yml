@@ -1,0 +1,116 @@
+name: CI_Win_CUDA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-cuda]
+        include:
+          - os: windows-cuda
+            BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
+            VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
+            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
+            FLAV: "Windows"
+            VCPKG_FILE: "base/vcpkg.cuda.json"
+            CMAKE-CONF: "cmake -B . -DENABLE_CUDA=ON -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
+            NPROC: 6
+            SHELL: "cmd"
+    env:
+      BUILD_TYPE: RelWithDebInfo
+      TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
+      GST_BUILD_SHELL: ${{ matrix.SHELL }}
+
+    steps:
+    - name: Install build dependencies in cloud hosted env
+      run: ${{ matrix.BUILDER_PREP_CMD }}
+    
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with: 
+        submodules: 'false'
+
+    - name: Checkout submodule
+      run: |
+        git submodule update --init --recursive 
+        git submodule status > submodule_ver.txt
+      
+    - name: Run VCPKG bootstrap
+      run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
+
+    - name: Build Gstreamer
+      working-directory: ${{github.workspace}}/thirdparty
+      run: ${{matrix.GST_BUILD_COMMAND}}
+    
+    - name: Build libmp4
+      working-directory: ${{github.workspace}}/thirdparty/libmp4
+      run: .\build.cmd
+
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+
+    - name: Configure CMake Common
+      working-directory: ${{github.workspace}}/build
+      run: |
+        copy ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      continue-on-error: false
+      
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ matrix.NPROC }}
+      continue-on-error: false
+      
+    - name: Verify contents of Debug and Release in windows
+      working-directory: ${{github.workspace}}/build/
+      run: dir ${{env.BUILD_TYPE}}
+      continue-on-error: false
+    
+    - name: Test Windows 
+      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      continue-on-error: false
+    
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults_${{ matrix.FLAV }}
+        path: |
+          ${{ env.TEST_RES_XML }}
+
+    - name: Upload build logs 
+      if:  ${{ failure() }} # only upload logs when we have a fialure above
+      uses: actions/upload-artifact@v3
+      with:
+        name: BuildLogs_${{ matrix.FLAV }}
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+  
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        working-directory: artifacts
+        run: ls -R
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/*/CI_test_result_*.xml
