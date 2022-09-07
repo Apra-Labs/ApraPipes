@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, self-hosted]
+        os: [ubuntu-20.04, AGX]
         include:
           - os: ubuntu-20.04
             BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
@@ -26,7 +26,7 @@ jobs:
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
             NPROC: 3
             SHELL: "bash"
-          - os: self-hosted
+          - os: AGX
             BUILDER_PREP_CMD: "echo No builder prep required"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
