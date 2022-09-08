@@ -260,7 +260,6 @@ SET(GENERIC_FILES
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
 	src/QRReader.cpp
-	src/H264FrameUtils.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
@@ -268,7 +267,6 @@ SET(GENERIC_FILES_H
 	include/H264Utils.h
 	include/RTSPPusher.h
 	include/QRReader.h
-	include/H264FrameUtils.h
 )
 
 IF(ENABLE_LINUX)

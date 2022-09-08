@@ -10,7 +10,6 @@
 #include "EncodedImageMetadata.h"
 #include "Module.h"
 #include "libmp4.h"
-#include "H264FrameUtils.h"
 #include "PropsChangeMetadata.h"
 #include "H264Metadata.h"
 
@@ -218,7 +217,6 @@ public:
 		return true;
 	}
 private:
-	H264FrameUtils H264FrameObj;
 };
 
 bool DetailJpeg::write(frame_container& frames)
@@ -300,7 +298,7 @@ bool DetailH264::write(frame_container& frames)
 	}
 
 	mutable_buffer& frame = *(inH264ImageFrame.get());
-	auto ret = H264FrameObj.parseNalu(frame);
+	auto ret = H264Utils::parseNalu(frame);
 	tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
 
 	if (inH264ImageFrame->fIndex == 0)

@@ -10,8 +10,8 @@
 #include "EncodedImageMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "H264Metadata.h"
-#include <ExternalSinkModule.h>
-#include <H264FrameUtils.h>
+#include "H264Utils.h"
+#include "ExternalSinkModule.h"
 
 BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
@@ -408,8 +408,7 @@ BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
 		auto frames = sink->pop();
 		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
 		boost::asio::mutable_buffer frame1 = *(frame.get());
-		H264FrameUtils obj;
-		auto ret = obj.parseNalu(frame1);
+		auto ret = H264Utils::parseNalu(frame1);
 		const_buffer spsBuff, ppsBuff, inFrame;
 		short typeFound;
 		tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;

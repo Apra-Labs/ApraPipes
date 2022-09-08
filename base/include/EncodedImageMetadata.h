@@ -1,8 +1,6 @@
 #pragma once
 
 #include "FrameMetadata.h"
-#include "ImageMetadata.h"
-#include <opencv2/opencv.hpp>
 
 class EncodedImageMetadata : public FrameMetadata
 {

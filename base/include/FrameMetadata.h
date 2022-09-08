@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <opencv2/opencv.hpp>
 #include "CommonDefs.h"
 #include "AIPExceptions.h"
 
