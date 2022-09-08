@@ -121,7 +121,7 @@ jobs:
       - name: Test
         if: ${{ env.ISCUDA != 'true'}}
         env:
-          LD_LIBRARY_PATH: LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+          LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
         run: |
           ${{ env.TESTEXE }} --log_level=all --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
         timeout-minutes: 10
