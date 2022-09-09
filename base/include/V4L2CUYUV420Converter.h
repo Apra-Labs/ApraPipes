@@ -3,7 +3,7 @@
 #include "CommonDefs.h"
 #include "AV4L2Buffer.h"
 
-#include "EGL/egl.h"
+#include "ApraEGLDisplay.h" // this is added to address the following issue: https://github.com/opencv/opencv/issues/7113
 #include "cudaEGL.h"
 #include "npp.h"
 
