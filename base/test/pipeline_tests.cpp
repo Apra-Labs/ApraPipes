@@ -54,7 +54,7 @@ struct CheckThread {
 		};
 
 	protected:
-		bool process() {}
+		bool process() {return false;}
 		bool validateOutputPins()
 		{
 			return true;
@@ -69,7 +69,7 @@ struct CheckThread {
 	public:
 		TransformModule(TransformModuleProps props) :Module(TRANSFORM, "transformModule", props) {};
 	protected:
-		bool process() {}
+		bool process() {return false;}
 		bool validateOutputPins()
 		{
 			return true;
@@ -84,7 +84,7 @@ struct CheckThread {
 	public:
 		SinkModule(SinkModuleProps props) :Module(SINK, "sinkModule", props) {};
 	protected:
-		bool process() {}
+		bool process() {return false;}
 		bool validateOutputPins()
 		{
 			return true;

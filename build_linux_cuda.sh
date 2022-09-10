@@ -1,3 +1,9 @@
+cp base/vcpkg.cuda.json base/vcpkg.json
+cd vcpkg
+./bootstrap-vcpkg.sh
+vcpkg integrate install
+cd ..
+
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build

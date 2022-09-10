@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, self-hosted]
+        os: [ubuntu-20.04, AGX]
         include:
           - os: ubuntu-20.04
             BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
@@ -22,17 +22,17 @@ jobs:
             GST_BUILD_COMMAND: "sh build_gstreamer.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF ../base"
             NPROC: 3
             SHELL: "bash"
-          - os: self-hosted
+          - os: AGX
             BUILDER_PREP_CMD: "echo No builder prep required"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux_ARM64"
             VCPKG_FILE: "base/vcpkg.jetson.json"
-            CMAKE-CONF: "cp -f ../base/vcpkg.jetson.json ../base/vcpkg.json && export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
+            CMAKE-CONF: "export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
             NPROC: 7
             SHELL: "bash"
     env:
@@ -73,6 +73,10 @@ jobs:
       if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: ${{matrix.GST_BUILD_COMMAND}}
+
+    - name: Build libmp4
+      working-directory: ${{github.workspace}}/thirdparty/libmp4
+      run: sh build.cmd
           
     - name: Make build folder
       run: mkdir -p build
@@ -80,7 +84,9 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        cp -f ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json 
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: false
       
     - name: Build
