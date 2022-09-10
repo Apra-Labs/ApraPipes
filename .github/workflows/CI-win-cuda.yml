@@ -19,7 +19,7 @@ jobs:
         os: [windows-cuda]
         include:
           - os: windows-cuda
-            BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
+            BUILDER_PREP_CMD: "choco feature enable -n allowEmptyChecksums && choco install 7zip git python3 pip3 cmake pkgconfiglite -y && pip3 install ninja && pip3 install meson" #self hosted builder needs more setup
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
             GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
             FLAV: "Windows"
