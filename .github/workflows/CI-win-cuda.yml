@@ -42,10 +42,11 @@ jobs:
         submodules: 'false'
         lfs: 'true'
 
-    - name: Checkout submodule
+    - name: Checkout submodule and LFS
       run: |
         git submodule update --init --recursive 
         git submodule status > submodule_ver.txt
+        git lfs checkout
       
     - name: Run VCPKG bootstrap
       run: ${{ matrix.VCPKG_BOOTSTRAP_CMD }}
