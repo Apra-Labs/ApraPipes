@@ -21,7 +21,7 @@ jobs:
           - os: windows-cuda
             BUILDER_PREP_CMD: "choco feature enable -n allowEmptyChecksums && choco install 7zip git python3 cmake pkgconfiglite -y && pip3 install ninja && pip3 install meson" #self hosted builder needs more setup
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat clean' }}
+            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             FLAV: "Windows"
             VCPKG_FILE: "base/vcpkg.cuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=ON -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
@@ -39,6 +39,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with: 
+        clean: 'false'
         submodules: 'false'
         lfs: 'true'
 
