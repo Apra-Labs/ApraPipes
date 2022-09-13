@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-x64-nocuda",
   "version": "0.0.1",
-  "builtin-baseline": "f2f670866645f78e53e3c01d02dbe74beeba24ae",
+  "builtin-baseline": "664f4fa445147be58f632bbe8c8ee221a124552c",
   "dependencies": [
     {
       "name": "opencv4",
@@ -41,6 +41,7 @@
     "sfml",
     {
       "name": "gstreamer",
+      "version>=": "1.19.2#3",
       "features": ["plugins-good","plugins-bad","plugins-ugly" ]
     },
     "gst-rtsp-server"
