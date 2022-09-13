@@ -41,14 +41,14 @@ project(APRAPIPES)
 
 set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
 set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
-IF(ENABLE_LINUX)
-	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
-ENDIF(ENABLE_LINUX)
+# IF(ENABLE_LINUX)
+# 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+# ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
-	IF(ENABLE_GST)
-		set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
-	ENDIF(ENABLE_GST)
+	# IF(ENABLE_GST)
+	# 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+	# ENDIF(ENABLE_GST)
 	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
 ENDIF(ENABLE_WINDOWS)
 
@@ -79,11 +79,7 @@ IF(ENABLE_GST)
 		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
 		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
 	ENDIF(NOT ENABLE_WINDOWS)
-	# hunter_add_package(ncursesw)
-	# find_package(ncursesw CONFIG REQUIRED)
-	# SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-	# SET(CURSES_LIBRARIES PkgConfig::ncursesw)
-
+	
 ENDIF(ENABLE_GST)
 	
 
@@ -655,7 +651,7 @@ target_link_libraries(aprapipesut
   )
 
 IF(ENABLE_WINDOWS)
-	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
+	#file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
 	IF(GHA)

@@ -38,6 +38,11 @@
     "zlib",
     "hiredis",
     "redis-plus-plus",
-    "sfml"
+    "sfml",
+    {
+      "name": "gstreamer",
+      "features": ["plugins-good","plugins-bad","plugins-ugly" ]
+    },
+    "gst-rtsp-server"
     ]
 }

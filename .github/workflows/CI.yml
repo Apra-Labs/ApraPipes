@@ -18,8 +18,6 @@ jobs:
           - os: ubuntu-20.04
             BUILDER_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
-            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.sh"
-            GST_BUILD_COMMAND: "sh build_gstreamer.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux"
             VCPKG_FILE: "base/vcpkg.nocuda.json"
@@ -39,7 +37,6 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
-      GST_BUILD_SHELL: ${{ matrix.SHELL }}
 
     steps:
     - name: Install build dependencies in cloud hosted env
@@ -65,14 +62,8 @@ jobs:
       with:
           path: |
             ${{ matrix.CACHE_PATH }}
-            ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}-
-
-    - name: Build Gstreamer
-      if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: ${{matrix.GST_BUILD_COMMAND}}
 
     - name: Build libmp4
       working-directory: ${{github.workspace}}/thirdparty/libmp4
@@ -96,10 +87,9 @@ jobs:
       
     - name: Test Linux
       if: runner.os == 'Linux'
-      env:
-        LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-      run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
-
+      run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }} -p -l all
+      timeout-minutes: 10
+      
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v2
