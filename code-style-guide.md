@@ -13,6 +13,7 @@ Checklist for code style guide:
 9.  Module Properties:
    - No hardcoding
    - Dynamic support to change properties
+10. Use boost test fixtures while writing the unit tests (if applicable). 
 
 Checklist for performance:
 1. No memcopy
