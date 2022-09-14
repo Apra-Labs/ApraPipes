@@ -1,4 +1,4 @@
-cp base/vcpkg.jetson.json base/vcpkg.json
+cp base/vcpkg.cuda.json base/vcpkg.json
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build
