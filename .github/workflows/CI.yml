@@ -137,7 +137,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           junit_files: artifacts/TestResults_Linux/CI_test_result*.xml
-          check_name: Linux No Cuda Test Results
+          check_name: Linux_x64 No Cuda Test Results
       - name: Publish Linux_ARM64 Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
