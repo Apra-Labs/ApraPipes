@@ -41,14 +41,12 @@ project(APRAPIPES)
 
 set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
 set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
-# IF(ENABLE_LINUX)
-# 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
-# ENDIF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND ENABLE_GST)
+	# no gst on arm64 yet, linux:x64 uses a non-vcpk build of gst
+	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
+ENDIF(ENABLE_LINUX AND ENABLE_GST)
 
 IF(ENABLE_WINDOWS)
-	# IF(ENABLE_GST)
-	# 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
-	# ENDIF(ENABLE_GST)
 	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
 ENDIF(ENABLE_WINDOWS)
 
@@ -297,9 +295,9 @@ IF(ENABLE_GST)
 			src/GstWebRTCSink.cpp
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
-		list(APPEND IP_FILES
-			src/GstOnvifRtspSink.cpp
-		)
+	list(APPEND IP_FILES
+		src/GstOnvifRtspSink.cpp
+	)
 ENDIF(ENABLE_GST)
 
 SET(IP_FILES_H
@@ -329,9 +327,9 @@ IF(ENABLE_GST)
 			include/GstWebRTCSink.h
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
-		list(APPEND IP_FILES
-			include/GstOnvifRtspSink.h
-		)
+	list(APPEND IP_FILES
+		include/GstOnvifRtspSink.h
+	)
 ENDIF(ENABLE_GST)
 
 SET(CUDA_CORE_FILES
@@ -612,7 +610,7 @@ IF(ENABLE_GST)
 			PkgConfig::libsoup-2.4
 		)
 		list(APPEND UT_FILES
-			test/gstrtsponvifsink_tests.cpp
+			test/gstwebrtcsink_tests.cpp
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
 ENDIF(ENABLE_GST)
