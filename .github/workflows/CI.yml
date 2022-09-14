@@ -31,7 +31,7 @@ jobs:
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
             CACHE_PATH: "~/.cache/vcpkg/archives"
             FLAV: "Linux_ARM64"
-            VCPKG_FILE: "base/vcpkg.nocuda.json"
+            VCPKG_FILE: "base/vcpkg.cuda.json"
             CMAKE-CONF: "export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base"
             NPROC: 7
             SHELL: "bash"
