@@ -133,7 +133,14 @@ jobs:
       - name: Display structure of downloaded files
         working-directory: artifacts
         run: ls -R
-      - name: Publish Unit Test Results
+      - name: Publish Linux_x64 Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: artifacts/*/CI_test_result_*.xml
+          junit_files: artifacts/TestResults_Linux/CI_test_result*.xml
+          check_name: Linux No Cuda Test Results
+      - name: Publish Linux_ARM64 Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: artifacts/TestResults_Linux_ARM64/CI_test_result*.xml
+          check_name: Linux_ARM64 Test Results
+

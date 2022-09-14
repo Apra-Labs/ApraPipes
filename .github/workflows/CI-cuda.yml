@@ -146,28 +146,3 @@ jobs:
             ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
             ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
   
-  # publish-test-results:
-  #   name: "Publish Unit Tests Results"
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     checks: write
-  #     pull-requests: write
-  #   if: always()
-
-  #   steps:
-  #     - name: Download Artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         path: artifacts
-
-  #     - name: Display structure of downloaded files
-  #       working-directory: artifacts
-  #       run: ls -R
-  #       continue-on-error: true
-
-  #     - name: Publish Unit Test Results
-  #       uses: EnricoMi/publish-unit-test-result-action@v2
-  #       with:
-  #         files: artifacts/*/CI_test_result_*.xml
-  #       continue-on-error: true
