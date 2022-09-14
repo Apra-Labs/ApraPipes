@@ -13,8 +13,6 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
 
 
 
-
-
 ## Setup
 
 ### Prerequisites for CUDA 
@@ -55,52 +53,38 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
   * Install Desktop development C++
   * .NET Desktop development
   * Universal Windows Development Platform
-* Install CMake 3.22.1
-* Make sure git and git-lfs is installed
-* Clone with submodules and LFS. 
-  ```
-  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
-  ```
-* Run bootstrap-vcpkg.bat in the vcpkg/ directory
-* Run 
-  ```
-  vcpkg.exe integrate install
-  ```
-* Build Gstreamer
-  ```
-  cd thirdparty
-  build_gstreamer.bat
-  cd ..\..\..
-  ```
-  **Note**
-  
-  While building gstreamer:
-  - If you get the error: `python` not found. Download Python 3.7.3 from [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64.exe)  
-  - If you get the error: `meson` not found. Install meson using ```python -m pip install meson```
-### Build for windows
-
-#### Without Cuda
-If your windows machies does not have a GPU use this script
-```
-build_windows_no_cuda.bat
-```
-**Note**
-
-If you get error: Could not find `pkgConfig`. Do the following:
-1. Install choco. Open Windows PowerShell as Administrator and run:
+* Install choco:
+  Open Windows PowerShell as Administrator and run:
   ```
   Set-ExecutionPolicy AllSigned
   Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
   ``` 
+* Install build dependencies using choco: 
+  ```
+  choco feature enable -n allowEmptyChecksums && choco install 7zip git python3 cmake pkgconfiglite -y && pip3 install ninja && pip3 install meson
+  ```
+* Clone with submodules and LFS. 
+  ```
+  git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+  ```
+* Build libmp4
+  ```
+  cd thirdparty\libmp4
+  .\build.cmd
+  ```
+* __Note__ As of this revision, there is no need to build thirdparty\gstreamer for windows as we leverage vcpkg for the same.
 
-2. Run ```choco install pkgconfiglite```
+### Build for windows
 
-#### With Cuda
+#### Build Without Cuda
+If your windows machies does not have an NVIDIA GPU use this script
+```
+build_windows_no_cuda.bat
+```
+#### Build With Cuda
 ```
 build_windows_cuda.bat
 ```
-
-
 ### Run Tests
 * list all tests
   ```
@@ -109,6 +93,10 @@ build_windows_cuda.bat
 * run all tests  
   ```
   _build/BUILD_TYPE/aprapipesut.exe
+  ```
+* run all tests disabling memory leak dumps and better progress logging
+  ```
+  _build/BUILD_TYPE/aprapipesut.exe -p -l all --detect_memory_leaks=0
   ```
 * run one test 
   ```
@@ -119,7 +107,7 @@ build_windows_cuda.bat
   _build/BUILD_TYPE/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera
   ```
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
-
+ 
 
 ## Ubuntu 18.04 and 20.04 x64
 ###  Prerequisites 
@@ -128,13 +116,11 @@ build_windows_cuda.bat
   sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core  git-lfs libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
   ```  
 * Note: start a new terminal as pip3 settings do not get effective on the same shell
-* CMake minimum version 3.22 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+* CMake minimum version 3.24 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * Clone with submodules and LFS. 
   ```
   git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
   ```
-* Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
-* Run `./vcpkg integrate install`
 * build gstreamer
    * ``` cd thirdparty && sh ./build_gstreamer.sh && cd -```
    * update .bashrc and append following line at the end of it. Adjust the path based on your environment.
@@ -146,8 +132,8 @@ build_windows_cuda.bat
    
 ### Build for linux
 
-* `chmod +x build_linux_x64.sh` or `chmod +x build_linux_no_cuda.sh`
-* `./build_linux_x64.sh` or `./build_linux_no_cuda.sh` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules
+* ```chmod +x build_linux_*.sh```
+* ```./build_linux_x64.sh``` or ```./build_linux_no_cuda.sh``` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules. Use this if there is no nvidia GPU present on your host
 
 Build can take ~2 hours depending on the machine configuration.
 
@@ -162,8 +148,6 @@ Build can take ~2 hours depending on the machine configuration.
 * build using build_linux_\*.sh scripts as described [above](#build-for-linux)
 
 This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with the docker image
-
-
 
 ## Jetson boards - Nano, TX2, NX, AGX
 

@@ -186,6 +186,9 @@ jobs:
     name: "Publish Unit Tests Results"
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     if: always()
     steps:
       - name: Download Artifacts
@@ -196,6 +199,6 @@ jobs:
         working-directory: artifacts
         run: ls -R
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: artifacts/*/CI_test_result_*.xml
