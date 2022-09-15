@@ -127,7 +127,10 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 
 	return compareRes;
 }
-
+bool Test_Utils::saveOrCompare(std::string fileName, int tolerance)
+{
+	return saveOrCompare(fileName.c_str(),tolerance);
+}
 bool Test_Utils::saveOrCompare(const char* fileName, int tolerance)
 {
 	bool res = false;
