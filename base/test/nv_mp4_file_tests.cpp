@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer)
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	bool enableBFrames = 1;
 
-	std::string inFolderPath = "./data/Raw_YUV420_640x360/????.raw";
+	std::string inFolderPath = "./data/Raw_YUV420_640x360/Image???_YUV420.raw";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/";
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer_Chunktime)
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::HIGH;
 	bool enableBFrames = 1;
 
-	std::string inFolderPath = "./data/Raw_YUV420_640x360/????.raw";
+	std::string inFolderPath = "./data/Raw_YUV420_640x360/Image???_YUV420.raw";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/";
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
