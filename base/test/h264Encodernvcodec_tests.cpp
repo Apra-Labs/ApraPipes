@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360_to_160x90.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360_to_160x90.h264")));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360_to_40x22.h264", 0);
+	Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360_to_160x90.h264", 0);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360.h264")));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	copy->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/overlay_1920x960_BGRA.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/overlay_1920x960_BGRA.h264")));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/mono_1920x960.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/mono_1920x960.h264")));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
