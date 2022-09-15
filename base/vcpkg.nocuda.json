@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-nocuda",
   "version": "0.0.1",
-  "builtin-baseline": "664f4fa445147be58f632bbe8c8ee221a124552c",
+  "builtin-baseline": "b7b806799d987389fa0900f8db5edba3f573d0ad",
   "dependencies": [
     {
       "name": "opencv4",

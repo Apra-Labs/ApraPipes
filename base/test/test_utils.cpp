@@ -92,10 +92,10 @@ void Test_Utils::createDirIfNotExist(std::string path)
 	// it always goes 1 back and creates that directory if not exists
 	// example - /a/b/c/d - then it recursively creates /a/b/c if any doesnt exist - doesnt care about d
 	// example - /a/b/c/d.abc - recursively creates /a/b/c if any doesnt exist
-	
+
 	boost::filesystem::path p(path);
 	boost::filesystem::path dirPath = p.parent_path();
-	
+
 	if (!boost::filesystem::exists(dirPath))
 	{
 		boost::filesystem::create_directories(dirPath);
@@ -127,7 +127,10 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 
 	return compareRes;
 }
-
+bool Test_Utils::saveOrCompare(std::string fileName, int tolerance)
+{
+	return saveOrCompare(fileName.c_str(), tolerance);
+}
 bool Test_Utils::saveOrCompare(const char* fileName, int tolerance)
 {
 	bool res = false;
@@ -171,18 +174,43 @@ bool Test_Utils::saveOrCompare(const char* fileName, int tolerance)
 std::string Test_Utils::getArgValue(std::string argName, std::string argDefaultValue)
 {
 	argName = "-" + argName;
-	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
+	for (int i = 1; i < boost::unit_test::framework::master_test_suite().argc; i++)
 	{
-		LOG_DEBUG << "Arg[" << i <<"] is ------------ " << boost::unit_test::framework::master_test_suite().argv[i];
+		LOG_DEBUG << "Arg[" << i << "] is ------------ " << boost::unit_test::framework::master_test_suite().argv[i];
 	}
-	
-	for(int i=1;i<boost::unit_test::framework::master_test_suite().argc;i++)
+
+	for (int i = 1; i < boost::unit_test::framework::master_test_suite().argc; i++)
 	{
-		if(boost::unit_test::framework::master_test_suite().argv[i] == argName )
+		if (boost::unit_test::framework::master_test_suite().argv[i] == argName)
 		{
-			return boost::unit_test::framework::master_test_suite().argv[i+1];
+			return boost::unit_test::framework::master_test_suite().argv[i + 1];
 		}
 	}
 
 	return argDefaultValue;
 }
+void Test_Utils::deleteFolder(std::string folderPath)
+{
+	boost::filesystem::remove_all(folderPath);
+}
+
+void Test_Utils::sleep_for_seconds(unsigned short seconds)
+{
+	if (seconds <= 0) return;
+	LOG_INFO << " Sleeping for " << seconds << " seconds";
+	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
+	LOG_INFO << "Done sleeping for " << seconds << " seconds";
+}
+
+Test_Utils::FileCleaner::FileCleaner(std::vector<std::string> paths) {
+	pathsOfFiles = paths;
+};
+Test_Utils::FileCleaner::~FileCleaner() {
+	for (int i = 0; i < pathsOfFiles.size(); i++) {
+		boost::filesystem::path filePath(pathsOfFiles[i]);
+		if (boost::filesystem::exists(filePath))
+		{
+			boost::filesystem::remove(filePath);
+		}
+	}
+};
