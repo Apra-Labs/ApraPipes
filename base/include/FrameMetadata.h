@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <opencv2/opencv.hpp>
 #include "CommonDefs.h"
 #include "AIPExceptions.h"
 
@@ -47,7 +45,8 @@ public:
 		ROI,
 		DEFECTS_INFO,
 		FACEDETECTS_INFO,
-		BMP_IMAGE
+		BMP_IMAGE,
+		MP4_VIDEO_METADATA
 	};
 
 	enum MemType

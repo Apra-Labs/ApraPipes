@@ -18,11 +18,9 @@ jobs:
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
             SHELL: "cmd"
@@ -30,7 +28,6 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
-      GST_BUILD_SHELL: ${{ matrix.SHELL }}
 
     steps:
     - name: Install build dependencies in cloud hosted env
@@ -60,14 +57,14 @@ jobs:
       with:
           path: |
             ${{ matrix.CACHE_PATH }}
-            ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+            ${{github.workspace}}/thirdparty/libmp4/build
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}-
 
-    - name: Build Gstreamer
+    - name: Build libmp4
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: ${{matrix.GST_BUILD_COMMAND}}
+      working-directory: ${{github.workspace}}/thirdparty/libmp4
+      run: .\build.cmd
           
     - name: Make build folder
       run: mkdir -p build
@@ -75,7 +72,9 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        copy ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: true
     
     - name: Upload build logs 
@@ -97,11 +96,9 @@ jobs:
           - os: windows-2019
             BUILDER_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
             VCPKG_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
-            GST_BUILD_SCRIPT: "thirdparty/build_gstreamer.bat"
-            GST_BUILD_COMMAND:  ${{ '.\build_gstreamer.bat noclean' }}
             CACHE_PATH: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
             FLAV: "Windows"
-            VCPKG_FILE: "base/vcpkg.json"
+            VCPKG_FILE: "base/vcpkg.nocuda.json"
             CMAKE-CONF: "cmake -B . -DENABLE_CUDA=OFF -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base"
             NPROC: 3
             SHELL: "cmd"
@@ -109,7 +106,6 @@ jobs:
       BUILD_TYPE: RelWithDebInfo
       CACHE_REST_KEY: ${{ matrix.FLAV }}-build-cache-vcpkg
       TEST_RES_XML: CI_test_result_${{ matrix.FLAV }}.xml
-      GST_BUILD_SHELL: ${{ matrix.SHELL }}
 
     steps:
     - name: Install build dependencies in cloud hosted env
@@ -134,22 +130,24 @@ jobs:
       with:
           path: |
             ${{ matrix.CACHE_PATH }}
-            ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/
-          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, matrix.GST_BUILD_SCRIPT, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+            ${{github.workspace}}/thirdparty/libmp4/build
+          key:  ${{ env.CACHE_REST_KEY }}-${{ hashFiles( matrix.VCPKG_FILE, 'base/CMakeLists.txt', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ env.CACHE_REST_KEY }}-
-
-    - name: Build Gstreamer
+   
+    - name: Build libmp4
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: ${{matrix.GST_BUILD_COMMAND}}
-          
+      working-directory: ${{github.workspace}}/thirdparty/libmp4
+      run: .\build.cmd
+
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: |
+        copy ../${{matrix.VCPKG_FILE}} ../base/vcpkg.json
+        ${{ matrix.CMAKE-CONF }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGHA=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake
       continue-on-error: false
       
     - name: Build
@@ -163,7 +161,8 @@ jobs:
       continue-on-error: false
     
     - name: Test Windows 
-      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }}
+      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }} -p -l all
+      timeout-minutes: 10
       continue-on-error: false
     
     - name: Upload Test Results
@@ -187,6 +186,9 @@ jobs:
     name: "Publish Unit Tests Results"
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     if: always()
     steps:
       - name: Download Artifacts
@@ -196,7 +198,40 @@ jobs:
       - name: Display structure of downloaded files
         working-directory: artifacts
         run: ls -R
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+      - name: Publish Windows_x64 Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: test-results-win-x64
         with:
-          files: artifacts/*/CI_test_result_*.xml
+          junit_files: artifacts/*/CI_test_result_*.xml
+          check_name: Windows_x64 No Cuda Test Results
+      - name: Set badge color
+        shell: bash
+        run: |
+          case ${{ fromJSON( steps.test-results-win-x64.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+      - name: Create badge
+        uses: emibcn/badge-action@v1.2.4
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results-win-x64.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results-win-x64.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results-win-x64.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge_winx64.svg
+      - name: Upload badge to Gist
+        # Upload only for main branch
+        if: >
+          github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' ||
+          github.event_name != 'workflow_run' && github.ref == 'refs/heads/main'
+        uses: andymckay/append-gist-action@1fbfbbce708a39bd45846f0955ed5521f2099c6d
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gistURL: https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944
+          file: badge_winx64.svg

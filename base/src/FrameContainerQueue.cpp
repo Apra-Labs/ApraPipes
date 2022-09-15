@@ -39,6 +39,11 @@ void FrameContainerQueue::clear()
 	return bounded_buffer<frame_container>::clear();
 }
 
+void FrameContainerQueue::flush()
+{
+	return bounded_buffer<frame_container>::flush();
+}
+
 void FrameContainerQueue::accept()
 {
 	return bounded_buffer<frame_container>::accept();

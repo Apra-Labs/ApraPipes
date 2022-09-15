@@ -4,6 +4,11 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
+
+IF(ENABLE_ARM64) #no GST build for ARM64 yet
+	set(ENABLE_GST OFF)
+ENDIF(ENABLE_ARM64)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
@@ -34,19 +39,26 @@ set(CMAKE_CXX_STANDARD 14)
 project(APRAPIPES)
 
 
-
-IF(ENABLE_LINUX)
+set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
+set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
+IF(ENABLE_LINUX AND ENABLE_GST)
+	# no gst on arm64 yet, linux:x64 uses a non-vcpk build of gst
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
-ENDIF(ENABLE_LINUX)
+ENDIF(ENABLE_LINUX AND ENABLE_GST)
 
 IF(ENABLE_WINDOWS)
-	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/pkgconfig")
+	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
 ENDIF(ENABLE_WINDOWS)
+
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
+message(STATUS ${LIBMP4_LIB_DIR} ">>>>>> LIBMP4_LIB_DIR")
+message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
+list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
+find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
 
-IF(NOT ENABLE_ARM64)
+IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
 	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
 	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
@@ -61,12 +73,13 @@ IF(NOT ENABLE_ARM64)
 	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
-ENDIF(NOT ENABLE_ARM64)
+	IF(NOT ENABLE_WINDOWS)
+		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
+	ENDIF(NOT ENABLE_WINDOWS)
 	
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-	pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
-	pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+ENDIF(ENABLE_GST)
+	
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -79,22 +92,18 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
-IF(NOT ENABLE_ARM64)
-	# hunter_add_package(ncursesw)
-	# find_package(ncursesw CONFIG REQUIRED)
-	# SET(CURSES_INCLUDE_DIR ${NCURSESW_ROOT}/include/ncursesw)
-	# SET(CURSES_LIBRARIES PkgConfig::ncursesw)
-ENDIF(NOT ENABLE_ARM64)
-
 IF(ENABLE_CUDA)
+	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
+  		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
+	endif()
+
+	message ("CUDA ARCHS: ${CMAKE_CUDA_ARCHITECTURES}")
 	enable_language(CUDA)
-ENDIF(ENABLE_CUDA)
-
-IF(ENABLE_CUDA)
+	SET(NVCODEC_INCLUDE_DIR ../thirdparty/Video_Codec_SDK_10.0.26/Interface)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
 		SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")					
-
+		
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
@@ -124,8 +133,8 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
- 
-		SET(NVCUDAToolkit_LIBS		
+		SET(NVCUDAToolkit_LIBS
+			libcuda.so		
 			libcudart_static.a
 			libnvjpeg_static.a
 			libnppig_static.a
@@ -139,16 +148,17 @@ IF(ENABLE_CUDA)
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
-
 		SET(NVCUDAToolkit_LIBS		
 			cudart_static.lib
 			nvjpeg.lib
+			cuda.lib
 			nppig.lib
 			nppicc.lib
 			nppidei.lib
 			nppial.lib					
 			cublas.lib	
 			cublasLt.lib
+			
 		)
 		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
 	ENDIF(ENABLE_ARM64)
@@ -179,6 +189,8 @@ SET(CORE_FILES
 	src/FIndexStrategy.cpp
 	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
+	src/Mp4WriterSink.cpp
+	src/Mp4WriterSinkUtils.cpp
 )
 
 SET(CORE_FILES_H
@@ -222,6 +234,11 @@ SET(CORE_FILES_H
 	include/FIndexStrategy.h
 	include/AudioCaptureSrc.h
 	include/QRReader.h
+	include/Mp4WriterSink.h
+	include/Mp4WriterSinkUtils.h
+	include/EncodedImageMetadata.h
+	include/PropsChangeMetadata.h
+	include/ValveModule.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -268,21 +285,20 @@ SET(IP_FILES
 	src/WebCamSource.cpp
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
-
+	src/ValveModule.cpp
 )
 
 
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+IF(ENABLE_GST)
+	IF(NOT ENABLE_WINDOWS)
+		list(APPEND IP_FILES
+			src/GstWebRTCSink.cpp
+		)
+	ENDIF(NOT ENABLE_WINDOWS)
 	list(APPEND IP_FILES
-	src/GstWebRTCSink.cpp
+		src/GstOnvifRtspSink.cpp
 	)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-
-IF(NOT ENABLE_ARM64)
-	list(APPEND IP_FILES
-	src/GstOnvifRtspSink.cpp
-	)
-ENDIF(NOT ENABLE_ARM64)
+ENDIF(ENABLE_GST)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -305,34 +321,35 @@ SET(IP_FILES_H
 )
 
 
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-	list(APPEND IP_FILES_H
-	include/GstWebRTCSink.h
+IF(ENABLE_GST)
+	IF(NOT ENABLE_WINDOWS)
+		list(APPEND IP_FILES
+			include/GstWebRTCSink.h
+		)
+	ENDIF(NOT ENABLE_WINDOWS)
+	list(APPEND IP_FILES
+		include/GstOnvifRtspSink.h
 	)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-
-IF(NOT ENABLE_ARM64)
-	list(APPEND IP_FILES_H
-	include/GstOnvifRtspSink.h
-	)
-ENDIF(NOT ENABLE_ARM64)
+ENDIF(ENABLE_GST)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
 	src/apra_cudamallochost_allocator.cu
-	src/CudaCommon.cpp
 	src/CudaMemCopy.cpp
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
+	src/CudaCommon.cpp
+
 )
 
 SET(CUDA_CORE_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
-	include/CudaCommon.h	
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
+	include/CudaCommon.h
+
 )
 
 SET(CUDA_IP_FILES
@@ -345,7 +362,7 @@ SET(CUDA_IP_FILES
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp
+	src/RotateNPPI.cpp		
 )
 
 IF(ENABLE_ARM64)
@@ -372,9 +389,11 @@ IF(ENABLE_ARM64)
 		src/DMAFDToHostCopy.cpp
 	)
 ELSE()
-	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		
+	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
 		src/JPEGDecoderNVJPEG.cpp	
 		src/JPEGEncoderNVJPEG.cpp
+		src/H264EncoderNVCodecHelper.cpp
+		src/H264EncoderNVCodec.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -417,9 +436,11 @@ IF(ENABLE_ARM64)
 		include/DMAFDToHostCopy.h
 	)
 ELSE()
-	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		
+	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
 		include/JPEGEncoderNVJPEG.h	
 		include/JPEGDecoderNVJPEG.h
+		include/H264EncoderNVCodecHelper.h
+		include/H264EncoderNVCodec.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -437,6 +458,7 @@ IF(ENABLE_CUDA)
 	)
 ENDIF(ENABLE_CUDA)
 
+message(STATUS "-------------Printing Soure file list-----------------${SOURCE}")
 add_library(aprapipes STATIC ${SOURCE})
 
 message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
@@ -445,34 +467,36 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
+${LIBMP4_INC_DIR}
+${NVCODEC_INCLUDE_DIR}
 )
 
-IF(NOT ENABLE_ARM64)
-target_include_directories ( aprapipes PRIVATE
-${gstreamer-app-1.0_INCLUDE_DIRS}
-${gstreamer-base-1.0_INCLUDE_DIRS}
-${gstreamer-1.0_INCLUDE_DIRS}
-${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
-${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-${libpcre_INCLUDE_DIRS}
-${glib-2.0_INCLUDE_DIRS}
-${gstreamer-rtsp-1.0_INCLUDE_DIRS}
-${gstreamer-rtp-1.0_INCLUDE_DIRS}
-${gstreamer-net-1.0_INCLUDE_DIRS}
-${gio-2.0_INCLUDE_DIRS}
-${gmodule-2.0_INCLUDE_DIRS}
-${gthread-2.0_INCLUDE_DIRS}
-${gobject-2.0_INCLUDE_DIRS}
-)
-ENDIF(NOT ENABLE_ARM64)
+IF(ENABLE_GST)
+	target_include_directories ( aprapipes PRIVATE
+		${gstreamer-app-1.0_INCLUDE_DIRS}
+		${gstreamer-base-1.0_INCLUDE_DIRS}
+		${gstreamer-1.0_INCLUDE_DIRS}
+		${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
+		${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+		${libpcre_INCLUDE_DIRS}
+		${glib-2.0_INCLUDE_DIRS}
+		${gstreamer-rtsp-1.0_INCLUDE_DIRS}
+		${gstreamer-rtp-1.0_INCLUDE_DIRS}
+		${gstreamer-net-1.0_INCLUDE_DIRS}
+		${gio-2.0_INCLUDE_DIRS}
+		${gmodule-2.0_INCLUDE_DIRS}
+		${gthread-2.0_INCLUDE_DIRS}
+		${gobject-2.0_INCLUDE_DIRS}
+	)
+	IF(NOT ENABLE_WINDOWS)
+		target_include_directories( aprapipes PRIVATE
+			${gstreamer-webrtc-1.0_INCLUDE_DIRS}
+			${json-glib-1.0_INCLUDE_DIRS}
+			${libsoup-2.4_INCLUDE_DIRS}
+		)
+	ENDIF(NOT ENABLE_WINDOWS)
+ENDIF(ENABLE_GST)
 
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-target_include_directories( aprapipes PRIVATE
-${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-${json-glib-1.0_INCLUDE_DIRS}
-${libsoup-2.4_INCLUDE_DIRS}
-)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
 
 # aprapipes Unit Tests
 
@@ -489,6 +513,9 @@ IF (ENABLE_ARM64)
 		test/nvv4l2camerahelper_test.cpp
 		test/nvtransform_tests.cpp
 		test/eglrenderer_test.cpp
+		test/cuda_arm_tests.cpp
+		test/apraegldisplay_tests.cpp
+		test/frame_factory_test_dma.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -498,14 +525,8 @@ IF (ENABLE_CUDA)
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
 	)
+	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
-	IF(ENABLE_ARM64)
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
-			test/cuda_arm_tests.cpp
-			test/apraegldisplay_tests.cpp
-			test/frame_factory_test_dma.cpp
-		)
-	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
 			test/jpegencodernvjpeg_tests.cpp
 			test/jpegdecodernvjpeg_tests.cpp			
@@ -514,6 +535,8 @@ IF (ENABLE_CUDA)
 			test/ccnppi_tests.cpp
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
+			test/nv_mp4_file_tests.cpp
 		)
 	ENDIF(ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
@@ -547,9 +570,12 @@ SET(UT_FILES
 	test/webcam_source_tests.cpp
 	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
-  test/pullstratergy_tests.cpp
+	test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
+	test/mp4writersink_tests.cpp
+	test/pipeline_tests.cpp
+	test/valveModule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -561,27 +587,49 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-	list(APPEND UT_FILES
-	test/gstwebrtcsink_tests.cpp
+IF(ENABLE_GST)
+	SET(GST_LIBS		
+		PkgConfig::gstreamer-app-1.0
+		PkgConfig::gstreamer-base-1.0
+		PkgConfig::gstreamer-1.0
+		PkgConfig::gstreamer-rtsp-server-1.0
+		PkgConfig::libpcre
+		PkgConfig::glib-2.0
+		PkgConfig::gstreamer-rtsp-1.0
+		PkgConfig::gstreamer-rtp-1.0
+		PkgConfig::gstreamer-net-1.0	
 	)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
+	list(APPEND UT_FILES
+		test/gstrtsponvifsink_tests.cpp
+	)
 
-IF(NOT ENABLE_ARM64)
-	list(APPEND UT_FILES
-	test/gstrtsponvifsink_tests.cpp
-	)
-ENDIF(NOT ENABLE_ARM64)
+	IF(NOT ENABLE_WINDOWS)
+		list(APPEND GST_LIBS
+			PkgConfig::gstreamer-webrtc-1.0
+			PkgConfig::json-glib-1.0
+			PkgConfig::libsoup-2.4
+		)
+		list(APPEND UT_FILES
+			test/gstwebrtcsink_tests.cpp
+		)
+	ENDIF(NOT ENABLE_WINDOWS)
+ENDIF(ENABLE_GST)
+
 
 add_executable(aprapipesut ${UT_FILES})
-
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
 
+IF (ENABLE_CUDA)
+	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+ENDIF (ENABLE_CUDA)
+
+
 target_link_libraries(aprapipesut   
   aprapipes  
+  ${LIBMP4_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
@@ -590,6 +638,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${GST_LIBS}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -599,30 +648,8 @@ target_link_libraries(aprapipesut
   sfml-audio
   )
 
-IF(NOT ENABLE_ARM64)
-target_link_libraries(aprapipesut
-  PkgConfig::gstreamer-app-1.0
-  PkgConfig::gstreamer-base-1.0
-  PkgConfig::gstreamer-1.0
-  PkgConfig::gstreamer-rtsp-server-1.0
-  PkgConfig::libpcre
-  PkgConfig::glib-2.0
-  PkgConfig::gstreamer-rtsp-1.0
-  PkgConfig::gstreamer-rtp-1.0
-  PkgConfig::gstreamer-net-1.0
-)
-ENDIF(NOT ENABLE_ARM64)
-
-IF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-target_link_libraries(aprapipesut
-  PkgConfig::gstreamer-webrtc-1.0
-  PkgConfig::json-glib-1.0
-  PkgConfig::libsoup-2.4
-)
-ENDIF(NOT ENABLE_ARM64 AND NOT ENABLE_WINDOWS)
-
 IF(ENABLE_WINDOWS)
-	file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
+	#file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
 	IF(GHA)

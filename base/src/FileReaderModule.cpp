@@ -84,6 +84,10 @@ bool FileReaderModule::produce()
 	auto frame = makeFrame(bufferFrame, buffer_size, mPinId);
 	frame->fIndex2 = fIndex2;
 	
+	std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+	frame->timestamp = dur.count();
+
 	frame_container frames;
 	frames.insert(make_pair(mPinId, frame));
 	send(frames);

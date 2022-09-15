@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "name": "apra-pipes-x64-cuda",
+  "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "f2f670866645f78e53e3c01d02dbe74beeba24ae",
+  "builtin-baseline": "664f4fa445147be58f632bbe8c8ee221a124552c",
   "dependencies": [
     {
       "name": "opencv4",
@@ -20,23 +20,42 @@
     "boost-chrono",
     "boost-test",
     "boost-iostreams",
+    "boost-dll",
     "nu-book-zxing-cpp",
     "liblzma",
+    "bzip2",
+    "zlib",
+    "sfml",
     {
       "name": "glib",
       "default-features": false,
       "features": ["libmount"],
-      "platform": "!windows"
+      "platform": "(linux & x64)",
+      "$reason" : "skip linux:arm64 and windows"
     },
     {
       "name": "glib",
       "default-features": true,
-      "platform": "!linux"
+      "platform": "windows"
     },
-    "bzip2",
-    "zlib",
-    "hiredis",
-    "redis-plus-plus",
-    "sfml"
+    {
+      "name": "hiredis",
+      "platform": "!arm64"
+    },
+    {
+      "name": "redis-plus-plus",
+      "platform": "!arm64"
+    },
+    {
+      "name": "gstreamer",
+      "features": ["plugins-good","plugins-bad","plugins-ugly" ],
+      "platform": "!linux",
+      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+    },
+    {
+      "name":"gst-rtsp-server",
+      "platform": "!linux",
+      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+    }
   ]
 }

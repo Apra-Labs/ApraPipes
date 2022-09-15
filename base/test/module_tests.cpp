@@ -24,7 +24,7 @@ public:
 
 	virtual ~TestModule() {}
 
-	size_t getNumberOfOutputPins() { return Module::getNumberOfOutputPins(); }
+	size_t getNumberOfOutputPins(bool implicit = true) { return Module::getNumberOfOutputPins(implicit); }
 	size_t getNumberOfInputPins() { return Module::getNumberOfInputPins(); }
 	framemetadata_sp getFirstInputMetadata() { return Module::getFirstInputMetadata(); }
 	framemetadata_sp getFirstOutputMetadata() { return Module::getFirstOutputMetadata(); }
@@ -66,6 +66,280 @@ public:
 	virtual bool shouldTriggerSOS();
 	
 */
+
+struct FlushQTests
+{
+	FlushQTests() {}
+	~FlushQTests() {}
+	class TestModuleProps : public ModuleProps
+	{
+	public:
+		TestModuleProps() :ModuleProps()
+		{
+		}
+		~TestModuleProps()
+		{}
+	};
+	class TestModule1 : public TestModule
+	{
+	public:
+		TestModule1() : TestModule(SOURCE, "TestModule1", TestModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule1() {}
+
+	protected:
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	};
+	};
+	class TestModule2 : public TestModule
+	{
+	public:
+		TestModule2() : TestModule(TRANSFORM, "TestModule2", TestModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule2() {}
+
+		bool process(frame_container& frames)
+		{
+			send(frames);
+			return true;
+		}
+	protected:
+		bool validateInputPins() { return true; } // invoked with setInputPin
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	
+	};
+	class TestModule3 : public TestModule
+	{
+	public:
+		TestModule3() : TestModule(SINK, "TestModule3", TestModuleProps())
+		{
+
+		}
+		virtual ~TestModule3() {}
+		bool process(frame_container& frames)
+		{
+			LOG_INFO << "process TestModule3";
+			return true;
+		}
+	protected:
+		bool validateInputPins() { return true; }
+	};
+};
+
+BOOST_AUTO_TEST_CASE(module_flushQ)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	
+	auto m2Que = m2->getQue();
+	BOOST_TEST(m2Que->size() == 2);
+
+	m2->flushQue();
+	BOOST_TEST(m2Que->size() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->setNext(m3));
+	BOOST_TEST(m2->setNext(m4));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+	BOOST_TEST(m4->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+
+	m2->step();
+	m2->step();
+	m3->step();
+	m4->step();
+
+	auto m2Que = m2->getQue();
+	auto m3Que = m3->getQue();
+	auto m4Que = m4->getQue();
+
+	BOOST_TEST(m2Que->size() == 2);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 1);
+
+	// flushQueRecursive for m2 - expectation is m2, m4 que become empty, rest remain same
+	m2->flushQueRecursive();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 0);
+
+	// m2 que should accept the next frame without requiring init
+	m1->send(frames);
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 4);
+	BOOST_TEST(m4Que->size() == 0);
+
+	// one more step
+	m2->step();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 4);
+	BOOST_TEST(m4Que->size() == 1);
+
+	// flushQueRecursive for source - expectation - all queues are empty
+	m1->flushQueRecursive();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 0);
+	BOOST_TEST(m4Que->size() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(module_flushQRec_branched)
+{
+	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+
+	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId2 = string("s_p1");
+	m2->addOutputPin(metadata2, pinId2);
+
+	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	auto m5 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	m5->addOutputPin(metadata2, pinId2);
+
+	auto m6 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m7 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m1->setNext(m3));
+	BOOST_TEST(m1->setNext(m4));
+	BOOST_TEST(m2->setNext(m5));
+	BOOST_TEST(m2->setNext(m6));
+	BOOST_TEST(m5->setNext(m7));
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+	BOOST_TEST(m4->init());
+	BOOST_TEST(m5->init());
+	BOOST_TEST(m6->init());
+	BOOST_TEST(m7->init());
+
+	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto frame = m1->makeFrame(512, "s_p1");
+	frame_container frames;
+	frames.insert(make_pair("s_p1", frame));
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+	m1->send(frames);
+
+	m2->step();
+	m2->step();
+	m2->step();
+	m3->step();
+	m4->step();
+	m5->step();
+	auto m2Que = m2->getQue();
+	auto m3Que = m3->getQue();
+	auto m4Que = m4->getQue();
+	auto m5Que = m5->getQue();
+	auto m6Que = m6->getQue();
+	auto m7Que = m7->getQue();
+
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 3);
+	BOOST_TEST(m5Que->size() == 2);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 1);
+
+	// flushQ on m5 - expectation is m5, m7 q become empty, rest remain same
+	m5->flushQueRecursive();
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 3);
+	BOOST_TEST(m4Que->size() == 3);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 0);
+
+	m1->send(frames);
+	m1->send(frames);
+	BOOST_TEST(m2Que->size() == 3);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 3);
+	BOOST_TEST(m7Que->size() == 0);
+
+	m2->step();
+	m2->step();
+	m5->step();
+	BOOST_TEST(m2Que->size() == 1);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 1);
+	BOOST_TEST(m6Que->size() == 5);
+	BOOST_TEST(m7Que->size() == 1);
+
+	// flushQueRecursive on m2 - expectation m2, m5, m6, m7 (subtree) que should be empty, rest remains same
+	m2->flushQueRecursive();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 5);
+	BOOST_TEST(m4Que->size() == 5);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 0);
+	BOOST_TEST(m7Que->size() == 0);
+
+	// flushQueRecursive for source - expectation all queues are empty
+	m1->flushQueRecursive();
+	BOOST_TEST(m2Que->size() == 0);
+	BOOST_TEST(m3Que->size() == 0);
+	BOOST_TEST(m4Que->size() == 0);
+	BOOST_TEST(m5Que->size() == 0);
+	BOOST_TEST(m6Que->size() == 0);
+	BOOST_TEST(m7Que->size() == 0);
+}
 
 BOOST_AUTO_TEST_CASE(module_addOutputPin)
 {
@@ -552,6 +826,83 @@ BOOST_AUTO_TEST_CASE(disable_sieve)
 	BOOST_TEST(m5InputMetadata["s_p2"]->getFrameType() == FrameMetadata::FrameType::RAW_IMAGE);
 	BOOST_TEST(m5InputMetadata["s_p3"]->getFrameType() == FrameMetadata::FrameType::GENERAL);
 	BOOST_TEST(m5InputMetadata["s_p4"]->getFrameType() == FrameMetadata::FrameType::ARRAY);
+}
+
+BOOST_AUTO_TEST_CASE(sieve_compl_outputPin_methods)
+{
+	class TestModule1 : public TestModule
+	{
+	public:
+		TestModule1() : TestModule(SOURCE, "TestModule1", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule1() {}
+
+	protected:
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	};
+	};
+
+	class TestModule2 : public TestModule
+	{
+	public:
+		TestModule2() : TestModule(TRANSFORM, "TestModule2", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule2() {}
+
+	protected:
+		bool validateInputPins() { return true; } // invoked with setInputPin
+		bool validateOutputPins() { return true; } // invoked with addOutputPin	
+	};
+
+	class TestModule3 : public TestModule
+	{
+	public:
+		TestModule3() : TestModule(TRANSFORM, "TestModule3", ModuleProps())
+		{
+
+		}
+
+		virtual ~TestModule3() {}
+
+	protected:
+		bool validateInputPins() { return true; }
+		bool validateOutputPins() { return true; }
+	};
+
+	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId1 = string("s_p1");
+	m1->addOutputPin(metadata1, pinId1);
+	auto metadata2 = framemetadata_sp(new RawImageMetadata());
+	auto pinId2 = string("s_p2");
+	m1->addOutputPin(metadata2, pinId2);
+	BOOST_TEST(m1->getNumberOfOutputPins() == 2);
+
+	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId3 = string("s_p3");
+	m2->addOutputPin(metadata3, pinId3);
+	BOOST_TEST(m1->setNext(m2));
+	BOOST_TEST(m2->getNumberOfOutputPins() == 1);
+
+	auto m3 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto metadata4 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ARRAY));
+	auto pinId4 = string("s_p4");
+	m3->addOutputPin(metadata4, pinId4);
+	BOOST_TEST(m2->setNext(m3, true, false));
+
+	// with implicit behaviour 
+	BOOST_TEST(m2->getNumberOfOutputPins() == 1);
+	// with overridden implicit behaviour - no. of output pins should include i/p pins
+	BOOST_TEST(m2->getNumberOfOutputPins(false) == 3);
+
+	BOOST_TEST(m3->getNumberOfInputPins() == 3);
+	BOOST_TEST(m3->getNumberOfOutputPins() == 1);
 }
 
 BOOST_AUTO_TEST_CASE(module_frame_container_utils)
