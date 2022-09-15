@@ -90,14 +90,14 @@ jobs:
         path: |
           ${{ env.TEST_RES_XML }}
 
-    - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a fialure above
-      uses: actions/upload-artifact@v3
-      with:
-        name: BuildLogs_${{ matrix.FLAV }}
-        path: |
-          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+    # - name: Upload build logs 
+    #   if:  ${{ failure() }} # only upload logs when we have a fialure above
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: BuildLogs_${{ matrix.FLAV }}
+    #     path: |
+    #       ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+    #       ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
   
   publish-test-results:
     name: "Publish Unit Tests Results"
