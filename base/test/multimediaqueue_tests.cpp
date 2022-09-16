@@ -14,9 +14,6 @@
 #include "EncodedImageMetadata.h"
 #include "PipeLine.h"
 #include "FileWriterModule.h"
-#include <time.h>
-#include <chrono>
-
 
 BOOST_AUTO_TEST_SUITE(multimediaqueue_tests)
 
@@ -94,12 +91,13 @@ BOOST_AUTO_TEST_CASE(export_state)
 {
     //In this case both the timestamps (query startTime and query endTime) are in the queue and we pass all the frames requested.
 
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now + 19000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 24000;
     endTime = (endTime / 1000) * 1000;
- 
+
     int queueSize = testQueue(10000,5000,true, 20, 5, startTime, endTime);
     BOOST_TEST(queueSize  == 5);
 }
@@ -108,7 +106,8 @@ BOOST_AUTO_TEST_CASE(idle_state)
 {
     //In this case both the timestamps (query startTime and endTime) are in the past of the oldest timestamp of queue so state is Idle all the time
 
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now - 5000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now;
@@ -122,7 +121,8 @@ BOOST_AUTO_TEST_CASE(wait_state)
 {
     //In this case both the timestamps (query startTime and endTime) are in the future of the latest timestamp of queue so state is Waiting all the time
    
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now + 33000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 38000;
@@ -136,7 +136,8 @@ BOOST_AUTO_TEST_CASE(wait_to_export_state)
 {
     //In this case initially we are in wait state then go to export after sometime.
    
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now + 24000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 33000;
@@ -149,7 +150,8 @@ BOOST_AUTO_TEST_CASE(wait_to_export_state)
 BOOST_AUTO_TEST_CASE(future_export)
 {
     //In this case the timestamp of startTime is in the queue while endTime is in future so we start with export and continue to stay in export as frames are passed.
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now + 19000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 27000;
@@ -185,7 +187,8 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
         fileReader->step();
         multiQueue->step();
     }
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now - 10000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 25000;
@@ -232,7 +235,6 @@ BOOST_AUTO_TEST_CASE(prop_change)
         fileReader->step();
         multiQueue->step();
     }
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     //We get props and manually change queuelength then set props.
     auto currentProps = multiQueue->getProps();
@@ -241,6 +243,8 @@ BOOST_AUTO_TEST_CASE(prop_change)
     auto newValue = MultimediaQueueProps(currentProps.lowerWaterMark, 2000, currentProps.isMapDelayInTime);
     multiQueue->setProps(newValue);
 
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now - 9000;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now - 4000;
@@ -302,8 +306,8 @@ BOOST_AUTO_TEST_CASE(mp4_test, *boost::unit_test::disabled())
 
     Test_Utils::sleep_for_seconds(30);
 
-    unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now;
     startTime = (startTime / 1000) * 1000;
     uint64_t endTime = now + 15000;
