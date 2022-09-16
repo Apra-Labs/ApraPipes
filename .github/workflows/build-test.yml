@@ -35,5 +35,5 @@ jobs:
         if: ${{ !inputs.skip-build }}
         run: echo I did not skip-build
       - name: test
-         if: ${{ !inputs.skip-test }}
+        if: ${{ !inputs.skip-test }}
         run: echo I did not skip-test
