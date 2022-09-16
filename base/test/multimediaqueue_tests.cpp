@@ -52,8 +52,6 @@ protected:
 
 //The multimedia queue takes two arguements queue length (time or no of frames) and bool isDelayInTime. If the bool is true then the length is taken in time else in frames.
 
-//  # BOOST FIXTURE TEST CASES 
-
 int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1, int i2, uint64_t startTime, uint64_t endTime)
 {
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
