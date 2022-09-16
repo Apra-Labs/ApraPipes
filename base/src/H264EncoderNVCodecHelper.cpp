@@ -106,8 +106,7 @@ public:
 
 	void unload()
 	{
-		if (!m_lib.is_loaded()){ return; }
-
+		
 		 for (auto const &element : registeredResources)
 		 {
 		 	auto registeredPtr = element.second;
@@ -137,7 +136,7 @@ public:
 
 		 m_hEncoder = nullptr;
 
-		 m_lib.unload();
+		 if (m_lib.is_loaded()) m_lib.unload();
 	}
 
 	void unlockOutputBitstream(NV_ENC_OUTPUT_PTR outputBitstream)
