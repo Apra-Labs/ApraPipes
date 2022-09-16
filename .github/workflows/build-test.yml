@@ -32,8 +32,8 @@ jobs:
       - name: intro
         run: echo building on ${{ inputs.runner }} with flav=${{ inputs.flav }} skip-build=${{ inputs.skip-build }} skip-test=${{ inputs.skip-test }} iscuda=${{ inputs.iscuda }}
       - name: build
-        if: !inputs.skip-build
+        if: ${{ !inputs.skip-build }}
         run: echo I did not skip-build
       - name: test
-        if: !inputs.skip-test
+         if: ${{ !inputs.skip-test }}
         run: echo I did not skip-test
