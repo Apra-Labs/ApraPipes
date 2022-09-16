@@ -29,7 +29,7 @@ public:
 	static void sleep_for_seconds(unsigned short seconds)
 	{
 		LOG_INFO << " Sleeping for " << seconds << " seconds";
-		boost::this_thread::sleep_for(boost::chrono::seconds(60));
+		boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
 		LOG_INFO << "Done sleeping for " << seconds << " seconds";
 	}
 };
