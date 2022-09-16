@@ -98,7 +98,7 @@ jobs:
       env:
         LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH      
       run: build/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }} -p -l all
-      timeout-minutes: 10
+      timeout-minutes: 15
       
     - name: Upload Test Results
       if: always()
