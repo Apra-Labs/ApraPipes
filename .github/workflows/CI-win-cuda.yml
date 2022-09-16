@@ -117,14 +117,14 @@ jobs:
         run: ls -R
       - name: Publish Windows_x64_Cuda Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        id: test-results-win-x64-cuda
+        id: test-results
         with:
           junit_files: artifacts/*/CI_test_result_*.xml
           check_name: Windows_x64 Cuda Test Results
       - name: Set badge color
         shell: bash
         run: |
-          case ${{ fromJSON( steps.test-results-win-x64.outputs.json ).conclusion }} in
+          case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
             success)
               echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
               ;;
@@ -139,7 +139,7 @@ jobs:
         uses: emibcn/badge-action@v1.2.4
         with:
           label: Tests
-          status: '${{ fromJSON( steps.test-results-win-x64.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results-win-x64.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results-win-x64.outputs.json ).conclusion }}'
+          status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
           color: ${{ env.BADGE_COLOR }}
           path: badge_winx64_cuda.svg
       - name: Upload badge to Gist
