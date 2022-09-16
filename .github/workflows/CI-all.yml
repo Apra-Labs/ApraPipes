@@ -69,21 +69,22 @@ jobs:
   
   win-nocuda-publish:
     needs: win-nocuda-build-test
-      uses: ./.github/workflows/publish-test.yml  
-      with:
-        badge: 'win-no-cuda'
+    uses: ./.github/workflows/publish-test.yml  
+    with:
+      badge: 'win-no-cuda'
+  
   win-cuda-publish:
     needs: win-cuda-build-test
-      uses: ./.github/workflows/publish-test.yml
-      with:
-        badge: 'win-cuda'
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      badge: 'win-cuda'
   jetson-publish:
     needs: jetson-build-test
-      uses: ./.github/workflows/publish-test.yml
-      with:
-        badge: 'jetson'
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      badge: 'jetson'
   linux-nocuda-publish:
     needs: linux-nocuda-build-test
-      uses: ./.github/workflows/publish-test.yml
-      with:
-        badge: 'linux-no-cuda'
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      badge: 'linux-no-cuda'
