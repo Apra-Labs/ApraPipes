@@ -35,13 +35,13 @@ on:
         description: 'commands required to boot strap builder after code checkout'
         required: true
 jobs:
-    build:
-      runs-on: ${{ inputs.runner }}
-      steps:
-      - name: Prepare builder
-        run: ${{ inputs.prepcmd }}
-      
-      - name: Checkout code
+  build:
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - name: Prepare builder
+      run: ${{ inputs.prepcmd }}
+    
+    - name: Checkout code
       uses: actions/checkout@v2
       with: 
         submodules: 'false'
@@ -55,11 +55,11 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootsrapcmd }}
 
-      - name: intro
-        run: echo building on ${{ inputs.runner }} with flav=${{ inputs.flav }} skip-build=${{ inputs.skip-build }} skip-test=${{ inputs.skip-test }} iscuda=${{ inputs.iscuda }}
-      - name: build
-        if: ${{ !inputs.skip-build }}
-        run: echo I did not skip-build
-      - name: test
-        if: ${{ !inputs.skip-test }}
-        run: echo I did not skip-test
+    # - name: intro
+    #     run: echo building on ${{ inputs.runner }} with flav=${{ inputs.flav }} skip-build=${{ inputs.skip-build }} skip-test=${{ inputs.skip-test }} iscuda=${{ inputs.iscuda }}
+    #   - name: build
+    #     if: ${{ !inputs.skip-build }}
+    #     run: echo I did not skip-build
+    #   - name: test
+    #     if: ${{ !inputs.skip-test }}
+    #     run: echo I did not skip-test
