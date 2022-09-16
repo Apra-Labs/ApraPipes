@@ -1,0 +1,39 @@
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        description: 'runner where this job will run'
+        default: 'ubuntu-20.04'
+        required: false
+      flav: 
+        type: string
+        description: 'flavour of the build: windows/linux_x64/linux_arm64'
+        required: true
+      skip-build: 
+        type: boolean
+        description: 'should build steps be skipped'
+        default: false
+        required: false
+      skip-test: 
+        type: boolean
+        description: 'should test steps be skipped'
+        default: false
+        required: false
+      iscuda: 
+        type: boolean
+        description: 'does this runner support cuda'
+        default: false
+        required: false
+jobs:
+    build:
+      runs-on: ${{ inputs.runner }}
+      steps:
+      - name: intro
+        run: echo building on ${{ inputs.runner }} with flav=${{ inputs.flav }} skip-build=${{ inputs.skip-build }} skip-test=${{ inputs.skip-test }} iscuda=${{ inputs.iscuda }}
+      - name: build
+        if: !inputs.skip-build
+        run: echo I did not skip-build
+      - name: test
+        if: !inputs.skip-test
+        run: echo I did not skip-test

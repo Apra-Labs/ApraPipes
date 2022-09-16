@@ -1,0 +1,63 @@
+name: CI_All
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  
+jobs:
+  win-nocuda-build-prep:
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: windows-2019
+      flav: windows
+      skip-build: true
+      skip-test: true
+      iscuda: false
+  win-nocuda-build-test:
+    needs: win-nocuda-build-prep
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: windows-2019
+      flav: windows
+      iscuda: false
+  win-cuda-build-test:
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: windows-cuda
+      flav: windows
+      iscuda: true
+  jetson-build-test:
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: AGX
+      flav: linux_arm64
+      iscuda: true
+  linux-nocuda-build-test:
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: ubuntu-20.04
+      flav: linux_x64
+      iscuda: false
+  linux-cuda-build:
+    uses: ./.github/common/build-test.yml
+    with:
+      runner: ubuntu-20.04
+      flav: linux_x64
+      skip-test: true 
+      iscuda: true    
+  
+  # win-nocuda-publish:
+  #   needs: win-nocuda-build-test
+  #     uses: ./.github/common/publish-test.yml  
+  # win-cuda-publish:
+  #   needs: win-cuda-build-test
+  #     uses: ./.github/common/publish-test.yml
+  # jetson-publish:
+  #   needs: jetson-build-test
+  #     uses: ./.github/common/publish-test.yml
+  # linux-nocuda-publish:
+  #   needs: linux-nocuda-build-test
+  #     uses: ./.github/common/publish-test.yml
