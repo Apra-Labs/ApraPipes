@@ -79,7 +79,7 @@ jobs:
     
     - name: Test Windows 
       run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=${{ env.TEST_RES_XML }} -p -l all
-      timeout-minutes: 15
+      timeout-minutes: 30
       continue-on-error: false
     
     - name: Upload Test Results
