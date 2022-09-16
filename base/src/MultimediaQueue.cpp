@@ -300,7 +300,7 @@ bool MultimediaQueue::process(frame_container& frames)
 	{
 		setState(queryStartTime, queryEndTime);
 	}
-	// # 14 SepReview - handleCommand case
+	
 	if (mState->Type == State::EXPORT)
 	{
 		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue);
@@ -346,8 +346,8 @@ bool MultimediaQueue::handlePropsChange(frame_sp& frame)
 		MultimediaQueueProps props(10, 5, false);
 		auto ret = Module::handlePropsChange(frame, props);
 		return ret;
-		//setProps(props);
 	}
+
 	else
 	{
 		BOOST_LOG_TRIVIAL(info) << "Currently in export state, wait until export is completed";

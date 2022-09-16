@@ -33,8 +33,6 @@ public:
 
 	virtual ~MultimediaQueue() {
 	}
-
-	// variable names - start with small letters
 	bool init();
 	bool term();
 	void setState(uint64_t ts, uint64_t te);
@@ -71,10 +69,8 @@ class State {
 public:
 	boost::shared_ptr<QueueClass> queueObject;
 	State() {}
-	//State(MultimediaQueueProps& _props) {}
 	virtual ~State() {}
 	typedef std::map<uint64_t, frame_container> mQueueMap;
-	// check this once
 	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue) { return true; };
 
 	enum StateType
