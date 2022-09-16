@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
     BOOST_TEST(sinkQueue->size() == 5);
 }
 
-BOOST_AUTO_TEST_CASE(mp4_test)
+BOOST_AUTO_TEST_CASE(mp4_test, *boost::unit_test::disabled())
 {
     //In this case we are sending frames from Multimedia Queue to MP4 writer and writing a video 
     //The test is written in run_all_threaded method
