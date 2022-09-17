@@ -11,6 +11,11 @@ on:
         description: 'flavour of the build: windows/linux_x64/linux_arm64'
         default: 'Windows'
         required: false
+      buildConf:
+        type: string
+        description: 'build configuration e.g. Release/Debug etc.'
+        default: 'RelWithDebInfo'
+        required: false
       is-selfhosted: 
         type: boolean
         description: 'self hosted runners do not need to use cache'
@@ -118,22 +123,22 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ inputs.cmake-conf-cmd }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_CUDA=${{inputs.cuda}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake 
+      run: ${{ inputs.cmake-conf-cmd }} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake 
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}} -j ${{ inputs.nProc }}
+      run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
     
     - name: List Test cases
       if: ${{!inputs.is-prep-phase}}
-      run: build/${{env.BUILD_TYPE}}/aprapipesut --list_content > tests.txt
+      run: build/${{inputs.buildConf}}/aprapipesut --list_content > tests.txt
       timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      run: build/${{env.BUILD_TYPE}}/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+      run: build/${{inputs.buildConf}}/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results

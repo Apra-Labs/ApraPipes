@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  LIN_CHECK_CMD: "cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version"
-  BUILD_TYPE: 'RelWithDebInfo'
+  NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
   win-nocuda-build-prep:
