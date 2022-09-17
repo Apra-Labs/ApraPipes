@@ -27,7 +27,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         id: test-results
         with:
-          junit_files: artifacts/TestResults_${{inputs.flav}}/CI_test_result_*.xml
+          junit_files: artifacts/CI_test_result_${{inputs.flav}}.xml
           check_name:  'Test Results ${{inputs.flav}}'
       - name: Set badge color
         shell: bash
