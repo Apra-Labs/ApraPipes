@@ -27,14 +27,6 @@ jobs:
     with:
       flav: 'Windows'
 
-  win-cuda-publish:
-    needs: win-cuda-build-test
-    permissions:
-      checks: write
-      pull-requests: write
-    uses: ./.github/workflows/publish-test.yml
-    with:
-      flav: 'Windows-cuda'
   win-cuda-build-test:
     uses: ./.github/workflows/build-test-win.yml
     with:
@@ -44,6 +36,14 @@ jobs:
       is-selfhosted: true
       nProc: 8
       nTestTimeoutMins: 20
+  win-cuda-publish:
+    needs: win-cuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: 'Windows-cuda'
       
   jetson-build-test:
     uses: ./.github/workflows/build-test-lin.yml
@@ -57,6 +57,9 @@ jobs:
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
+    permissions:
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux_ARM64
@@ -67,6 +70,9 @@ jobs:
       flav: Linux
   linux-nocuda-publish:
     needs: linux-nocuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux
