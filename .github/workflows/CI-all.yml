@@ -78,12 +78,14 @@ jobs:
 
   linux-cuda-build-no-test:
     container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
-    prep-cmd: 'cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version'
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      flav: Linux_Cuda
+      flav: Linux-Cuda
       skip-test: true 
       cuda: 'ON'
+      prep-cmd: 'cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version'
+      cache-path: '/github/home/.cache/vcpkg/archives'
+
   
   
 
