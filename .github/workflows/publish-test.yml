@@ -1,11 +1,11 @@
 on:
   workflow_call:
     inputs:
-      badge:
+      flav: 
         type: string
-        description: 'badge svg file prefix'
-        required: true
-
+        description: 'flavour of the build: windows/linux_x64/linux_arm64'
+        default: 'Windows'
+        required: false
 jobs:
   publish-test-results:
     name: "Publish Tests Results"
@@ -26,8 +26,8 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         id: test-results
         with:
-          junit_files: artifacts/*/CI_test_result_*.xml
-          check_name: ${{inputs.badge}} Test Results
+          junit_files: artifacts/${{inputs.flav}}/CI_test_result_*.xml
+          check_name: ${{inputs.flav}} Test Results
       - name: Set badge color
         shell: bash
         run: |
@@ -48,7 +48,7 @@ jobs:
           label: Tests
           status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
           color: ${{ env.BADGE_COLOR }}
-          path: badge_${{inputs.badge}}.svg
+          path: badge_${{inputs.flav}}.svg
       - name: Upload badge to Gist
         # Upload only for main branch
         if: >
@@ -58,4 +58,4 @@ jobs:
         with:
           token: ${{ secrets.GIST_TOKEN }}
           gistURL: https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944
-          file: badge_${{inputs.badge}}.svg
+          file: badge_${{inputs.flav}}.svg

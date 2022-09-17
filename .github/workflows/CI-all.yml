@@ -7,42 +7,28 @@ on:
     branches: [ main ]
 
 env:
-  WIN_PREP_CMD: "pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite"
   LIN_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
   LIN_CHECK_CMD: "cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version"
-  WIN_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install"
   LIN_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
+  BUILD_TYPE: 'RelWithDebInfo'
   
 jobs:
   win-nocuda-build-prep:
-    env:
-      prepcmd: {{ env.WIN_PREP_CMD }}
-      bootsrapcmd: {{ env.WIN_BOOTSTRAP_CMD }}
-    uses: ./.github/workflows/build-test.yml
+    uses: ./.github/workflows/build-test-win.yml
     with:
-      runner: windows-2019
-      flav: windows
-      skip-build: true
-      skip-test: true
-      iscuda: false
-      
-  # win-nocuda-build-test:
-  #   needs: win-nocuda-build-prep
-  #   uses: ./.github/workflows/build-test.yml
-  #   with:
-  #     runner: windows-2019
-  #     flav: windows
-  #     iscuda: false
-  #     prepcmd: {{ env.WIN_PREP_CMD }}
-  #     bootsrapcmd: {{ env.WIN_BOOTSTRAP_CMD }}
-  # win-cuda-build-test:
-  #   uses: ./.github/workflows/build-test.yml
-  #   with:
-  #     runner: windows-cuda
-  #     flav: windows
-  #     iscuda: true
-  #     prepcmd: {{ env.WIN_PREP_CMD }}
-  #     bootsrapcmd: {{ env.WIN_BOOTSTRAP_CMD }}
+      is-prep-phase: true
+
+  win-nocuda-build-test:
+    needs: win-nocuda-build-prep
+    uses: ./.github/workflows/build-test-win.yml
+
+  win-cuda-build-test:
+    uses: ./.github/workflows/build-test-win.yml
+    with:
+      runner: windows-cuda
+      cuda: 'ON'
+      flav: 'Windows-cuda'
+
   # jetson-build-test:
   #   uses: ./.github/workflows/build-test.yml
   #   with:
@@ -69,17 +55,18 @@ jobs:
   #     prepcmd: {{ env.LIN_CHECK_CMD }}
   #     bootsrapcmd: {{ env.LIN_BOOTSTRAP_CMD }}
   
-  # win-nocuda-publish:
-  #   needs: win-nocuda-build-test
-  #   uses: ./.github/workflows/publish-test.yml  
-  #   with:
-  #     badge: 'win-no-cuda'
+  win-nocuda-publish:
+    needs: win-nocuda-build-test
+    uses: ./.github/workflows/publish-test.yml  
+    with:
+      flav: 'Windows'
   
-  # win-cuda-publish:
-  #   needs: win-cuda-build-test
-  #   uses: ./.github/workflows/publish-test.yml
-  #   with:
-  #     badge: 'win-cuda'
+  win-cuda-publish:
+    needs: win-cuda-build-test
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: 'Windows-cuda'
+
   # jetson-publish:
   #   needs: jetson-build-test
   #   uses: ./.github/workflows/publish-test.yml

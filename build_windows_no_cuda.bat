@@ -1,4 +1,9 @@
-copy base\vcpkg.nocuda.json base\vcpkg.json
+@echo off
+set batdir=%~dp0
+cd %batdir%/base
+powershell -nologo -executionpolicy bypass -File fix-vcpkg-json.ps1 -removeCuda
+cd ..
+
 cd vcpkg
 call bootstrap-vcpkg.bat
 vcpkg.exe integrate install
