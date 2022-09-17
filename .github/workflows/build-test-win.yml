@@ -136,7 +136,7 @@ jobs:
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
-          ${{ CI_test_result_${{inputs.flav}}.xml }}
+          CI_test_result_${{inputs.flav}}.xml
 
     - name: Upload build logs 
       if:  ${{ failure() }} # only upload logs when we have a fialure above
