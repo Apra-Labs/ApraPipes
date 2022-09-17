@@ -1,9 +1,9 @@
 #inplace fixing of a vcpkg file
-param([String]$fileName='vcpkg.json', [switch]$removeOpenCV,  [switch]$removeCuda)
+param([String]$fileName='vcpkg.json', [switch]$removeOpenCV,  [switch]$removeCUDA)
 
 $v = Get-Content $fileName -raw | ConvertFrom-Json
 
-if($removeCuda.IsPresent)
+if($removeCUDA.IsPresent)
 {
     $opencv = $v.dependencies | Where-Object { $_.name -eq 'opencv4'}
     $opencv.features= $opencv.features | Where-Object { $_ -ne 'cuda' }

@@ -7,9 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  LIN_PREP_CMD: "sudo apt-get update -qq && sudo apt-get -y install   autoconf   automake  autopoint build-essential  cmake   git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison && pip3 install meson"
   LIN_CHECK_CMD: "cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version"
-  LIN_BOOTSTRAP_CMD: "./vcpkg/bootstrap-vcpkg.sh"
   BUILD_TYPE: 'RelWithDebInfo'
   
 jobs:
@@ -17,44 +15,9 @@ jobs:
     uses: ./.github/workflows/build-test-win.yml
     with:
       is-prep-phase: true
-
   win-nocuda-build-test:
     needs: win-nocuda-build-prep
     uses: ./.github/workflows/build-test-win.yml
-
-  win-cuda-build-test:
-    uses: ./.github/workflows/build-test-win.yml
-    with:
-      runner: windows-cuda
-      cuda: 'ON'
-      flav: 'Windows-cuda'
-
-  # jetson-build-test:
-  #   uses: ./.github/workflows/build-test.yml
-  #   with:
-  #     runner: AGX
-  #     flav: linux_arm64
-  #     iscuda: true
-  #     prepcmd: {{ env.LIN_CHECK_CMD }}
-  #     bootsrapcmd: {{ env.LIN_BOOTSTRAP_CMD }}
-  # linux-nocuda-build-test:
-  #   uses: ./.github/workflows/build-test.yml
-  #   with:
-  #     runner: ubuntu-20.04
-  #     flav: linux_x64
-  #     iscuda: false
-  #     prepcmd: {{ env.LIN_PREP_CMD }}
-  #     bootsrapcmd: {{ env.LIN_BOOTSTRAP_CMD }}
-  # linux-cuda-build:
-  #   uses: ./.github/workflows/build-test.yml
-  #   with:
-  #     runner: ubuntu-20.04
-  #     flav: linux_x64
-  #     skip-test: true 
-  #     iscuda: true
-  #     prepcmd: {{ env.LIN_CHECK_CMD }}
-  #     bootsrapcmd: {{ env.LIN_BOOTSTRAP_CMD }}
-  
   win-nocuda-publish:
     needs: win-nocuda-build-test
     permissions:
@@ -63,7 +26,7 @@ jobs:
     uses: ./.github/workflows/publish-test.yml  
     with:
       flav: 'Windows'
-  
+
   win-cuda-publish:
     needs: win-cuda-build-test
     permissions:
@@ -72,14 +35,48 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: 'Windows-cuda'
+  win-cuda-build-test:
+    uses: ./.github/workflows/build-test-win.yml
+    with:
+      runner: windows-cuda
+      cuda: 'ON'
+      flav: 'Windows-cuda'
+      is-selfhosted: true
+      nProc: 8
+      nTestTimeoutMins: 20
+      
+  jetson-build-test:
+    uses: ./.github/workflows/build-test-lin.yml
+    with:
+      runner: AGX
+      flav: Linux_ARM64
+      cuda: 'ON'
+      is-selfhosted: true
+      prep-cmd: 'cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version'
+      cmake-conf-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base'
+      nProc: 6
+  jetson-publish:
+    needs: jetson-build-test
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: Linux_ARM64
+  
+  linux-nocuda-build-test:
+    uses: ./.github/workflows/build-test-lin.yml
+    with:
+      flav: Linux
+  linux-nocuda-publish:
+    needs: linux-nocuda-build-test
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: Linux
 
-  # jetson-publish:
-  #   needs: jetson-build-test
-  #   uses: ./.github/workflows/publish-test.yml
+  # linux-cuda-build:
+  #   uses: ./.github/workflows/build-test-lin.yml
   #   with:
-  #     badge: 'jetson'
-  # linux-nocuda-publish:
-  #   needs: linux-nocuda-build-test
-  #   uses: ./.github/workflows/publish-test.yml
-  #   with:
-  #     badge: 'linux-no-cuda'
+  #     flav: Linux_Cuda
+  #     skip-test: true 
+  #     cuda: 'ON'
+  
+  
+
