@@ -25,21 +25,21 @@ on:
         description: 'does this runner support cuda'
         default: false
         required: false
-      prepcmd:
-        type: string
-        description: 'commands required to be run on a builder to prep it for build'
-        default: 'echo no prep needed'
-        required: false
-      bootstrapcmd:
-        type: string
-        description: 'commands required to boot strap builder after code checkout'
-        required: true
+      # prepcmd:
+      #   type: string
+      #   description: 'commands required to be run on a builder to prep it for build'
+      #   default: 'echo no prep needed'
+      #   required: false
+      # bootstrapcmd:
+      #   type: string
+      #   description: 'commands required to boot strap builder after code checkout'
+      #   required: true
 jobs:
   build:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
-      run: ${{ inputs.prepcmd }}
+      run: ${{ env.prepcmd }}
     
     - name: Checkout code
       uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
         git lfs checkout
     
     - name: Run VCPKG bootstrap
-      run: ${{ inputs.bootsrapcmd }}
+      run: ${{ env.bootsrapcmd }}
 
     # - name: intro
     #     run: echo building on ${{ inputs.runner }} with flav=${{ inputs.flav }} skip-build=${{ inputs.skip-build }} skip-test=${{ inputs.skip-test }} iscuda=${{ inputs.iscuda }}
