@@ -84,6 +84,7 @@ jobs:
       cuda: 'ON'
       prep-cmd: 'cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version'
       cache-path: '/github/home/.cache/vcpkg/archives'
+      cmake-toolchain-location: '..'
 
   
   
