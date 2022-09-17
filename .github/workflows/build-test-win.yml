@@ -92,7 +92,7 @@ jobs:
       shell: pwsh
 
     - name: Cache dependencies for fast cloud build
-      if: ${{ !is-selfhosted }}
+      if: ${{ !inputs.is-selfhosted }}
       id: cache-all
       uses: actions/cache@v2
       with:
