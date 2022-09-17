@@ -77,8 +77,7 @@ jobs:
       flav: Linux
 
   linux-cuda-build-no-test:
-    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
-    uses: ./.github/workflows/build-test-lin.yml
+    uses: ./.github/workflows/build-test-lin-container.yml
     with:
       flav: Linux-Cuda
       skip-test: true 
