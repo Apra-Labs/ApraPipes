@@ -57,21 +57,19 @@ jobs:
   
   win-nocuda-publish:
     needs: win-nocuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/publish-test.yml  
     with:
       flav: 'Windows'
   
   win-cuda-publish:
-    needs: win-nocuda-build-test
-    permissions:
-      checks: write
-      pull-requests: write
-
     needs: win-cuda-build-test
-    uses: ./.github/workflows/publish-test.yml
     permissions:
       checks: write
       pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
     with:
       flav: 'Windows-cuda'
 
