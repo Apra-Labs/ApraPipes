@@ -86,7 +86,7 @@ jobs:
       run: ${{ inputs.bootsrapcmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF'}} 
+      if: ${{ contains(inputs.cuda,'OFF')}} 
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
