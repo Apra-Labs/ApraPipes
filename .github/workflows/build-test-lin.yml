@@ -114,7 +114,7 @@ jobs:
           key:  ${{ inputs.flav }}-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
     - name: cache init
-      if: ${{ contains(toJSON(job.container),"{}"}} # we are running on a container... move the cache "initially"
+      if: ${{ contains(toJSON(job.container),'{}')}} # we are running on a container... move the cache "initially"
       run: |
         cp -R /root/.cache /github/home/ || true
         ls ${{ inputs.cache-path }} || true
