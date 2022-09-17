@@ -74,7 +74,7 @@ jobs:
         shell: bash  
     steps:
     - name: Prepare builder
-      run: ${{ inputs.prepcmd }} 
+      run: ${{ inputs.prep-cmd }} 
     
     - name: Checkout code
       uses: actions/checkout@v2
@@ -88,7 +88,7 @@ jobs:
         git lfs checkout
     
     - name: Run VCPKG bootstrap
-      run: ${{ inputs.bootsrapcmd }}
+      run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}} 

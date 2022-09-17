@@ -16,9 +16,10 @@ jobs:
     if: always()
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
+          name: TestResults_${{inputs.flav}}
       - name: Display structure of downloaded files
         working-directory: artifacts
         run: ls -R
@@ -26,8 +27,8 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         id: test-results
         with:
-          junit_files: artifacts/${{inputs.flav}}/CI_test_result_*.xml
-          check_name: ${{inputs.flav}} Test Results
+          junit_files: artifacts/TestResults_${{inputs.flav}}/CI_test_result_*.xml
+          check_name:  'Test Results ${{inputs.flav}}'
       - name: Set badge color
         shell: bash
         run: |
