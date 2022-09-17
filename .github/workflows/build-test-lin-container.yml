@@ -73,11 +73,14 @@ on:
         required: false        
 jobs:
   build:
-    runs-on: ${{ inputs.runner }}
+    env:
+      TEST_EXE: build/aprapipesut
+      LD_LIBRARY_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
     container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
     defaults:
       run:
         shell: bash  
+    runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
       run: ${{ inputs.prep-cmd }} 
@@ -119,7 +122,7 @@ jobs:
             ${{ github.workspace }}/thirdparty/libmp4/build
           key:  ${{ inputs.flav }}-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
-    - name: cache init
+    - name: cache init on container build
       if: ${{ job.container != null }} # we are running on a container... move the cache "initially"
       run: |
         cp -R /root/.cache /github/home/ || true
@@ -127,8 +130,8 @@ jobs:
         ls thirdparty/gst-build/gst-build-1.16/outInstall || true
       continue-on-error: true
 
-    - name: Build Gstreamer
-      if: ${{ runner.arch != 'ARM64' && steps.cache-all.outputs.cache-hit != 'true' }}
+    - name: Build Gstreamer On Linux_x64 when it is not cached
+      if: ${{ runner.arch == 'X64' && runner.os == 'Linux' && ! steps.cache-all.outputs.cache-hit }}
       working-directory: ${{github.workspace}}/thirdparty
       run: sh build_gstreamer.sh
     
@@ -152,16 +155,16 @@ jobs:
     
     - name: List Test cases
       env:
-        LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+        LD_LIBRARY_PATH: ${{env.LD_LIBRARY_PATH}}
       if: ${{!inputs.is-prep-phase}}
-      run: build/aprapipesut --list_content > tests.txt
+      run: ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       env:
-        LD_LIBRARY_PATH: ${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-      run: build/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+        LD_LIBRARY_PATH: ${{env.LD_LIBRARY_PATH}}
+      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
