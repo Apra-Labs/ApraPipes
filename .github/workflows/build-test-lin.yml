@@ -71,6 +71,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       LD_LIBRARY_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+      CMAKE_TOOLCHAIN_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -136,7 +137,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TOOLCHAIN_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
