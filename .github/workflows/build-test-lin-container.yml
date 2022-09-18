@@ -90,8 +90,9 @@ jobs:
 
     - name: Checkout submodule
       run: |
-        git submodule update --init --recursive
+        cd vcpkg; git fetch --depth=4; cd -
         git submodule status > submodule_ver.txt
+        cat submodule_ver.txt
     
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
