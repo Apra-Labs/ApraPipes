@@ -70,8 +70,8 @@ jobs:
   build:
     env:
       TEST_EXE: build/aprapipesut
-      LD_LIBRARY_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
-      CMAKE_TOOLCHAIN_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
+      LD_LIB_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+      CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -139,7 +139,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TOOLCHAIN_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
@@ -149,7 +149,7 @@ jobs:
     
     - name: List Test cases
       env:
-        LD_LIBRARY_PATH: ${{env.LD_LIBRARY_PATH}}
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
       run: ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
@@ -157,7 +157,7 @@ jobs:
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       env:
-        LD_LIBRARY_PATH: ${{env.LD_LIBRARY_PATH}}
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
