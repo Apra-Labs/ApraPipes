@@ -82,7 +82,7 @@ jobs:
       with: 
         submodules: 'recursive' 
         lfs: true
-
+        fetch-depth: 0
     - name: Checkout submodule
       run: |
         git submodule status > submodule_ver.txt
