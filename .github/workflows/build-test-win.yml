@@ -80,12 +80,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with: 
-        submodules: false # do not fetch here, as we need to fetch full depth of vcpkg
+        submodules: true 
         lfs: true
+        fetch-depth: 0
 
     - name: Checkout submodule
       run: |
-        git submodule update --init --recursive --depth=0
+        git submodule update --init --recursive
         git submodule status > submodule_ver.txt
     
     - name: Run VCPKG bootstrap
