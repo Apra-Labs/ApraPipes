@@ -22,3 +22,5 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      

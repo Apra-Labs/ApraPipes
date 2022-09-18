@@ -29,3 +29,5 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux_ARM64
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

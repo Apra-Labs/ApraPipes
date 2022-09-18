@@ -6,6 +6,9 @@ on:
         description: 'flavour of the build: windows/linux_x64/linux_arm64'
         default: 'Windows'
         required: false
+    secrets:
+      GIST_TOKEN:
+        required: true
 jobs:
   publish-test-results:
     name: "Publish Tests Results"

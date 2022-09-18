@@ -27,3 +27,5 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: 'Windows-cuda'
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
