@@ -1,5 +1,7 @@
-copy base\vcpkg.cuda.json base\vcpkg.json
-cd vcpkg
+@echo off
+set batdir=%~dp0
+cd %batdir%/vcpkg
+
 call bootstrap-vcpkg.bat
 @echo on 
 vcpkg.exe integrate install

@@ -68,6 +68,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 {
+	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360_to_160x90.h264" };
+	Test_Utils::FileCleaner f(outFile);
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
@@ -96,7 +98,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360_to_160x90.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -119,11 +121,14 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360_to_40x22.h264", 0);
+	Test_Utils::saveOrCompare(outFile[0], 0);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 {
+	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360.h264" };
+	Test_Utils::FileCleaner f(outFile);
+
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
@@ -149,7 +154,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -170,12 +175,15 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360.h264", 0);
+	Test_Utils::saveOrCompare(outFile[0], 0);
 	
 }
 
 BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 {
+	std::vector<std::string> outFile = { "./data/testOutput/overlay_1920x960_BGRA.h264" };
+	Test_Utils::FileCleaner f(outFile);
+
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
@@ -201,7 +209,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	copy->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/overlay_1920x960_BGRA.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -220,12 +228,15 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/overlay_1920x960_BGRA.h264", 0);
+	Test_Utils::saveOrCompare(outFile[0], 0);
 	
 }
 
 BOOST_AUTO_TEST_CASE(mono_1920x960)
 {	
+	std::vector<std::string> outFile = { "./data/testOutput/mono_1920x960.h264" };
+	Test_Utils::FileCleaner f(outFile);
+
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
@@ -255,7 +266,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/mono_1920x960.h264", true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
 	BOOST_TEST(fileReader->init());
@@ -278,7 +289,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/mono_1920x960.h264", 0);
+	Test_Utils::saveOrCompare(outFile[0], 0);
 }
 
 void mono_1920x960_ext_sink_()
