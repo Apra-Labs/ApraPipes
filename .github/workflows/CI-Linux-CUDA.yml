@@ -1,4 +1,4 @@
-name: CI-Linux-NoCUDA
+name: CI-Linux-CUDA
 
 on:
   push:
@@ -10,15 +10,20 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  linux-nocuda-build-test:
+  linux-cuda-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      flav: Linux
-  linux-nocuda-publish:
-    needs: linux-nocuda-build-test
+      flav: Linux-CudaT
+      cuda: 'ON'
+      is-selfhosted: true
+      runner: 'linux-cuda'
+      nProc: 6
+      nTestTimeoutMins: 20
+  linux-cuda-publish:
+    needs: linux-cuda-build-test
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: Linux
+      flav: Linux-CudaT
