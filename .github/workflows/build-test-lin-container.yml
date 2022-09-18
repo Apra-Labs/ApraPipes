@@ -82,9 +82,11 @@ jobs:
       run: ${{ inputs.prep-cmd }} 
     
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with: 
-        submodules: 'false'
+        submodules: 'true'
+        lfs: 'true'
+        clean: 'true'
 
     - name: Checkout submodule and lfs
       run: |
