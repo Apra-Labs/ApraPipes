@@ -79,8 +79,9 @@ jobs:
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
-      run: 'cd .. ; Remove-Item -Recurse -Force ${{github.workspace}}'
+      run: 'cd .. ; Remove-Item -Recurse -Force ${{github.workspace}}; mkdir ${{github.workspace}}'
       shell: pwsh
+      continue-on-error: true
 
     - name: Checkout code
       uses: actions/checkout@v3
