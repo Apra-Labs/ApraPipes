@@ -80,9 +80,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with: 
-        submodules: 'true'
-        lfs: 'true'
-        clean: 'true'
+        submodules: 'false' # do not fetch here, as we need to fetch full depth of vcpkg
 
     - name: Checkout submodule and lfs
       run: |
