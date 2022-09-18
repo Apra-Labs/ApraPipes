@@ -79,7 +79,7 @@ jobs:
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
-      run: 'cd .. ; rm -Recurse -Force ${{github.workspace}}'
+      run: 'cd .. ; Remove-Item -Recurse -Force ${{github.workspace}}'
       shell: pwsh
 
     - name: Checkout code
