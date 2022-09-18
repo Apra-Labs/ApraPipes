@@ -56,11 +56,6 @@ on:
         description: 'command needed for installing and configuring cmake'
         default: 'cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
         required: false
-      cmake-toolchain-location:
-        type: string
-        description: 'the rool folder for vcpkg-cmake-toolchain file'
-        default: ${{github.workspace}}
-        required: false
       nProc:
         type: number
         description: 'number of threads to be used by cmake/make'
@@ -141,7 +136,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: ${{ inputs.cmake-conf-cmd }} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}} -DCMAKE_TOOLCHAIN_FILE=${{inputs.cmake-toolchain-location}}/vcpkg/scripts/buildsystems/vcpkg.cmake 
+      run: ${{ inputs.cmake-conf-cmd }} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}} -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake 
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
