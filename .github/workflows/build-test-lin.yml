@@ -77,6 +77,11 @@ jobs:
     - name: Prepare builder
       run: ${{ inputs.prep-cmd }} 
     
+    - name: Cleanup workspace on self hosted runners
+      if: inputs.is-selfhosted
+      run: 'cd .. ; rm -Recurse -Force ${{github.workspace}}'
+      shell: pwsh
+
     - name: Checkout code
       uses: actions/checkout@v3
       with: 
