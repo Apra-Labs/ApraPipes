@@ -79,7 +79,7 @@ jobs:
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
-      run: 'cd .. ; Remove-Item -Recurse -Force ${{github.workspace}}; mkdir ${{github.workspace}}'
+      run: 'Remove-Item -Recurse -Force *'
       shell: pwsh
       continue-on-error: true
 
