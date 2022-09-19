@@ -233,7 +233,7 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 		endTimeSaved = cmd.endTime;
 
 		bool reset = false;
-		bool pushNext = true;
+		pushNext = true;
 		if (mState->Type == State::EXPORT)
 		{
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue);
@@ -244,7 +244,8 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 					if (isNextModuleQueFull())
 					{
 						pushNext = false;
-						break;
+						queryStartTime = it->first;
+						return true;
 					}
 					else
 					{
@@ -311,12 +312,16 @@ bool MultimediaQueue::process(frame_container& frames)
 				if (isNextModuleQueFull())
 				{
 					pushNext = false;
+					queryStartTime = it->first;
+					queryStartTime--;
+					return true;
 				}
 				else
 				{
 					send(it->second);
 				}
 			}
+			
 		}
 	}
 	if (mState->Type == State::EXPORT)
