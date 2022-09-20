@@ -195,8 +195,6 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
     multiQueue->allowFrames(startTime, endTime);
     multiQueue->step();
 
-    LOG_ERROR << "frames in the queue" << sinkQueue->size();
-
     for (int i = 0; i < 20; i++)
     {
         fileReader->step();
@@ -298,7 +296,7 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
         throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
     }
 
-    LOG_ERROR << "processing folder <" << inFolderPath << ">";
+    LOG_INFO << "processing folder <" << inFolderPath << ">";
     p->run_all_threaded();
 
     Test_Utils::sleep_for_seconds(11);
