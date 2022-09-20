@@ -135,7 +135,7 @@ jobs:
           restore-keys: ${{ inputs.flav }}-
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
-      if: ${{ runner.arch == 'X64' && runner.os == 'Linux' && ! steps.cache-all.outputs.cache-hit }}
+      if: ${{ runner.arch == 'X64' && runner.os == 'Linux' }}
       working-directory: ${{github.workspace}}/thirdparty
       run: sh build_gstreamer.sh
     
