@@ -53,7 +53,7 @@ int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1
 {
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
-    fileReaderProps.fps = 1;
+    fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -92,13 +92,13 @@ BOOST_AUTO_TEST_CASE(export_state)
 
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now + 19000;
+    uint64_t startTime = now + 1000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 24000;
+    uint64_t endTime = now + 2000;
     endTime = (endTime / 1000) * 1000;
 
-    int queueSize = testQueue(10000,5000,true, 20, 5, startTime, endTime);
-    BOOST_TEST(queueSize  == 5);
+    int queueSize = testQueue(10000,5000,true, 40, 15, startTime, endTime);
+    BOOST_TEST(queueSize  == 20);
 }
 
 BOOST_AUTO_TEST_CASE(idle_state)
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(idle_state)
     uint64_t endTime = now;
     endTime = (endTime / 1000) * 1000;
 
-    int queueSize = testQueue(10000, 5000, true, 20, 5, startTime, endTime);
+    int queueSize = testQueue(10000, 5000, true, 40, 10, startTime, endTime);
     BOOST_TEST(queueSize == 0);
 }
 
@@ -122,12 +122,12 @@ BOOST_AUTO_TEST_CASE(wait_state)
    
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now + 33000;
+    uint64_t startTime = now + 5000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 38000;
+    uint64_t endTime = now + 8000;
     endTime = (endTime / 1000) * 1000;
     
-    int queueSize = testQueue(10000, 5000, true, 20, 5, startTime, endTime);
+    int queueSize = testQueue(10000, 5000, true, 40, 10, startTime, endTime);
     BOOST_TEST(queueSize == 0);
 }
 
@@ -137,13 +137,13 @@ BOOST_AUTO_TEST_CASE(wait_to_export_state)
    
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now + 24000;
+    uint64_t startTime = now + 2000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 33000;
+    uint64_t endTime = now + 3000;
     endTime = (endTime / 1000) * 1000;
     
-    int queueSize = testQueue(10000, 5000, true, 20, 6, startTime, endTime);
-    BOOST_TEST(queueSize == 2);
+    int queueSize = testQueue(10000, 5000, true, 10, 60, startTime, endTime);
+    BOOST_TEST(queueSize == 20);
 }
 
 BOOST_AUTO_TEST_CASE(future_export)
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
     //In this case, while the frames are being sent to next module the queue of next module must becme full 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
-    fileReaderProps.fps = 1;
+    fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -181,16 +181,16 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
     BOOST_TEST(multiQueue->init());
     BOOST_TEST(sink->init());
     auto sinkQueue = sink->getQue();
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 50; i++)
     {
         fileReader->step();
         multiQueue->step();
     }
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now - 10000;
+    uint64_t startTime = now - 2000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 25000;
+    uint64_t endTime = now ;
     endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
     multiQueue->step();
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
     // This testcase is getProps, setProps test - dynamic prop change 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
-    fileReaderProps.fps = 1;
+    fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
     BOOST_TEST(multiQueue->init());
     BOOST_TEST(sink->init());
     auto sinkQueue = sink->getQue();
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 40; i++)
     {
         fileReader->step();
         multiQueue->step();
@@ -242,22 +242,22 @@ BOOST_AUTO_TEST_CASE(prop_change)
 
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now - 9000;
+    uint64_t startTime = now - 2000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now - 4000;
+    uint64_t endTime = now + 1000;
     endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
     multiQueue->step();
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 20; i++)
     {
         fileReader->step();
         multiQueue->step();
     }
-    BOOST_TEST(sinkQueue->size() == 5);
+    BOOST_TEST(sinkQueue->size() == 20);
 }
 
-BOOST_AUTO_TEST_CASE(mp4_test, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
 {
     //In this case we are sending frames from Multimedia Queue to MP4 writer and writing a video 
     //The test is written in run_all_threaded method
