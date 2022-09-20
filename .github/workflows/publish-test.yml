@@ -1,0 +1,65 @@
+on:
+  workflow_call:
+    inputs:
+      flav: 
+        type: string
+        description: 'flavour of the build: windows/linux_x64/linux_arm64'
+        default: 'Windows'
+        required: false
+    secrets:
+      GIST_TOKEN:
+        required: true
+jobs:
+  publish-test-results:
+    name: "Publish Tests Results"
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+          name: TestResults_${{inputs.flav}}
+      - name: Display structure of downloaded files
+        working-directory: artifacts
+        run: ls -R
+      - name: Publish
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        id: test-results
+        with:
+          junit_files: artifacts/CI_test_result_${{inputs.flav}}.xml
+          check_name:  'Test Results ${{inputs.flav}}'
+      - name: Set badge color
+        shell: bash
+        run: |
+          case ${{ fromJSON( steps.test-results.outputs.json ).conclusion }} in
+            success)
+              echo "BADGE_COLOR=31c653" >> $GITHUB_ENV
+              ;;
+            failure)
+              echo "BADGE_COLOR=800000" >> $GITHUB_ENV
+              ;;
+            neutral)
+              echo "BADGE_COLOR=696969" >> $GITHUB_ENV
+              ;;
+          esac
+      - name: Create badge
+        uses: emibcn/badge-action@v1.2.4
+        with:
+          label: Tests
+          status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
+          path: badge_${{inputs.flav}}.svg
+      - name: Upload badge to Gist
+        # Upload only for main branch
+        if: >
+          github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' ||
+          github.event_name != 'workflow_run' && github.ref == 'refs/heads/main'
+        uses: andymckay/append-gist-action@1fbfbbce708a39bd45846f0955ed5521f2099c6d
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gistURL: https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944
+          file: badge_${{inputs.flav}}.svg
