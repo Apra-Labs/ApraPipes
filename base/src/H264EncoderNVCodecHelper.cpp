@@ -69,6 +69,7 @@ public:
 			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
 			if (currentVersion > version)
 			{
+				LOG_ERROR << "NvEncodeAPIGetMaxSupportedVersion " << version << " required " << currentVersion;
 				throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
 			}
 		}
@@ -92,6 +93,7 @@ public:
 			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
 			if (currentVersion > version)
 			{
+				LOG_ERROR << "NvEncodeAPIGetMaxSupportedVersion " << version << " required " << currentVersion;
 				throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
 			}
 			m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
