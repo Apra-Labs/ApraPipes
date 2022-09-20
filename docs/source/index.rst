@@ -12,4 +12,4 @@ Welcome to Apra Pipes documentation!
    Tutorial_Adding_New_Module
    NvidiaCUDAModules
    CUDAKernelProgrammingGuide
-
+   DisablingSieveFeatureGuide
