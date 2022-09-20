@@ -13,6 +13,7 @@
 #include "CCNPPI.h"
 #include "JPEGEncoderNVJPEG.h"
 #include "test_utils.h"
+#include "PipeLine.h"
 
 BOOST_AUTO_TEST_SUITE(ccnppi_tests)
 
@@ -40,6 +41,9 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -58,6 +62,8 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv411_I_1920x1080_to_yuv444_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(mono_1920x1080_to_bgra_1920x1080)
@@ -84,6 +90,9 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_bgra_1920x1080)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -102,6 +111,9 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_bgra_1920x1080)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x1080_to_bgra_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960)
@@ -128,6 +140,9 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -146,6 +161,8 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_overlay_1920x960_BGRA_to_yuv420_1920x960.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360)
@@ -172,6 +189,9 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -190,6 +210,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv420_640x360_to_bgra_640x360.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080__resize_to_jpg)
@@ -220,6 +242,9 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080__resize_to_jpg)
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy->init());
 	BOOST_TEST(cc->init());
@@ -240,6 +265,8 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080__resize_to_jpg)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv411_I_1920x1080_to_yuv444_960x540.jpg", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();	
 }
 
 BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080)
@@ -266,6 +293,10 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -284,6 +315,8 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x1080_to_yuv420_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960)
@@ -310,6 +343,9 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -328,6 +364,8 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x960_to_yuv420_1920x960.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360)
@@ -354,6 +392,10 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360)
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -372,6 +414,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv420_640x360_to_yuv420_640x360.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	p.term();
+	p.stop();	
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
@@ -403,6 +447,9 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
+	PipeLine p("test");
+	p.appendModule(fileReader);
+
 	BOOST_TEST(fileReader->init());
 	BOOST_TEST(copy1->init());
 	BOOST_TEST(m2->init());
@@ -417,6 +464,8 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 		copy2->step();
 		m3->pop();
 	}
+	p.term();
+	p.stop();	
 }
 
 BOOST_AUTO_TEST_SUITE_END()

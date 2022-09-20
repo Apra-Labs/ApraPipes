@@ -616,7 +616,7 @@ private:
 	boost::shared_ptr<NVCodecResources> m_nvcodecResources;
 };
 
-H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& _cuContext, uint32_t& _gopLength, uint32_t& _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
 {
 	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
 }

@@ -14,11 +14,35 @@
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "StatSink.h"
+#include "H264EncoderNVCodecHelper.h"
+
+
+namespace utf = boost::unit_test;
+namespace tt = boost::test_tools;
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
+//preempt test failure if the platform does not support H264 encode
+struct if_h264_encoder_supported{
+  tt::assertion_result operator()(utf::test_unit_id)
+  {
+	try{
+		auto cuContext = apracucontext_sp(new ApraCUcontext());
+		H264EncoderNVCodecHelper h(1000, cuContext, 30, 30, H264EncoderNVCodecProps::BASELINE, false);
+		
+	}
+	catch(AIP_Exception& ex)
+	{
+		LOG_ERROR << ex.what();
+		LOG_ERROR << "skipping tests";
+		return false;
+	}
+	return true;
+  }
+};
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360,
+* utf::precondition(if_h264_encoder_supported()))
 {
 	Logger::setLogLevel("info");
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
@@ -66,7 +90,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	}	
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
+BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
+* utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360_to_160x90.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -124,7 +149,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize)
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
+BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
+* utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -179,7 +205,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync)
 	
 }
 
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
+BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA,
+* utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/overlay_1920x960_BGRA.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -232,7 +259,8 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960)
+BOOST_AUTO_TEST_CASE(mono_1920x960,
+* utf::precondition(if_h264_encoder_supported()))
 {	
 	std::vector<std::string> outFile = { "./data/testOutput/mono_1920x960.h264" };
 	Test_Utils::FileCleaner f(outFile);
