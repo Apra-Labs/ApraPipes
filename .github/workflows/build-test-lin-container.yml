@@ -114,6 +114,14 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
+    - name: cache init on container build
+      if: ${{ job.container != null }} # we are running on a container... move the cache "initially"
+      run: |
+        cp -R /root/.cache /github/home/ || true
+        ls ${{ inputs.cache-path }} || true
+        ls thirdparty/gst-build/gst-build-1.16/outInstall || true
+      continue-on-error: true
+
     - name: Cache dependencies for fast cloud build
       if: ${{ !inputs.is-selfhosted }}
       id: cache-all
@@ -125,13 +133,6 @@ jobs:
             ${{ github.workspace }}/thirdparty/libmp4/build
           key:  ${{ inputs.flav }}-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
-    - name: cache init on container build
-      if: ${{ job.container != null }} # we are running on a container... move the cache "initially"
-      run: |
-        cp -R /root/.cache /github/home/ || true
-        ls ${{ inputs.cache-path }} || true
-        ls thirdparty/gst-build/gst-build-1.16/outInstall || true
-      continue-on-error: true
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
       if: ${{ runner.arch == 'X64' && runner.os == 'Linux' && ! steps.cache-all.outputs.cache-hit }}
