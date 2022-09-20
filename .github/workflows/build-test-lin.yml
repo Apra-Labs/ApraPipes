@@ -78,7 +78,7 @@ jobs:
       run: ${{ inputs.prep-cmd }} 
     
     - name: Cleanup workspace on self hosted runners
-      if: false
+      if: inputs.is-selfhosted
       run: 'Remove-Item -Recurse -Force *'
       shell: pwsh
       continue-on-error: true
