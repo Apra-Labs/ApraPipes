@@ -34,6 +34,14 @@ struct if_compute_cap_supported{
 		if(!cuContext->getComputeCapability(major,minor))
             return false;
 		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return false;
+			}
+		}
 	}
 	catch(AIP_Exception& ex)
 	{
