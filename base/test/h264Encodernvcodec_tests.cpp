@@ -11,35 +11,16 @@
 #include "H264EncoderNVCodec.h"
 #include "ResizeNPPI.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "StatSink.h"
 #include "H264EncoderNVCodecHelper.h"
 
 
-namespace utf = boost::unit_test;
-namespace tt = boost::test_tools;
-
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
-//preempt test failure if the platform does not support H264 encode
-struct if_h264_encoder_supported{
-  tt::assertion_result operator()(utf::test_unit_id)
-  {
-	try{
-		auto cuContext = apracucontext_sp(new ApraCUcontext());
-		H264EncoderNVCodecHelper h(1000, cuContext, 30, 30, H264EncoderNVCodecProps::BASELINE, false);
-		
-	}
-	catch(AIP_Exception& ex)
-	{
-		LOG_ERROR << ex.what();
-		LOG_ERROR << "skipping tests";
-		return false;
-	}
-	return true;
-  }
-};
+
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360,
 * utf::precondition(if_h264_encoder_supported()))
