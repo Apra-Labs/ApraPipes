@@ -30,3 +30,20 @@ jobs:
       flav: Linux-CudaT
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+  
+  wsl-cuda-build-test:
+    uses: ./.github/workflows/build-test-wsl.yml
+    with:
+      flav: WSL
+      nProc: 6
+      nTestTimeoutMins: 20
+  wsl-cuda-publish:
+    needs: wsl-cuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: WSL
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
