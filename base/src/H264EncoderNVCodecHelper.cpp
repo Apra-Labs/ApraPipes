@@ -377,7 +377,8 @@ private:
 			m_nvcodecResources->m_wait_for_output.notify_one();
 		}
 
-		m_thread.join();
+		if(m_thread.joinable())
+			m_thread.join();
 
 	}
 
