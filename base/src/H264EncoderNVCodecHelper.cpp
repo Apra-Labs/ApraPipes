@@ -69,6 +69,7 @@ public:
 			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
 			if (currentVersion > version)
 			{
+				LOG_ERROR << "NvEncodeAPIGetMaxSupportedVersion " << version << " required " << currentVersion;
 				throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
 			}
 		}
@@ -92,6 +93,7 @@ public:
 			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
 			if (currentVersion > version)
 			{
+				LOG_ERROR << "NvEncodeAPIGetMaxSupportedVersion " << version << " required " << currentVersion;
 				throw AIPException(AIP_FATAL, "Current Driver Version does not support this NvEncodeAPI version, please upgrade driver. NV_ENC_ERR_INVALID_VERSION");
 			}
 			m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
@@ -375,7 +377,8 @@ private:
 			m_nvcodecResources->m_wait_for_output.notify_one();
 		}
 
-		m_thread.join();
+		if(m_thread.joinable())
+			m_thread.join();
 
 	}
 
@@ -616,7 +619,7 @@ private:
 	boost::shared_ptr<NVCodecResources> m_nvcodecResources;
 };
 
-H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t& _bitRateKbps, apracucontext_sp& _cuContext, uint32_t& _gopLength, uint32_t& _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
 {
 	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
 }

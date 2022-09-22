@@ -10,8 +10,11 @@
 #include "CudaMemCopy.h"
 #include "H264EncoderNVCodec.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(nv_mp4_file_tests)
+
+
 
 void run_h264EncoderNV_to_h264writer(bool loop, int sleepTime)
 {
@@ -77,11 +80,13 @@ void run_h264EncoderNV_to_h264writer(bool loop, int sleepTime)
 
 };
 
-BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer) 
+BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer,
+* utf::precondition(if_h264_encoder_supported())) 
 {
 	run_h264EncoderNV_to_h264writer(false, 5);
 }
-BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer_Chunktime) 
+BOOST_AUTO_TEST_CASE(h264EncoderNV_to_h264writer_Chunktime,
+* utf::precondition(if_h264_encoder_supported())) 
 {
 	run_h264EncoderNV_to_h264writer(true, 70);
 }
