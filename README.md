@@ -156,7 +156,7 @@ This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with 
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
 * run the following 
   ```
-  sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
+  sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev libssl-dev && sudo snap install cmake --classic
   ```
 * append following lines to ~/.bashrc
   ```
