@@ -3,8 +3,52 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <iostream>
 #include <locale>
-
 #include "RawImageMetadata.h"
+#ifdef _WIN64
+#include <WinSock2.h>
+#else
+#include <pthread.h>
+#endif
+
+#ifdef _WIN64
+// Windows
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+typedef struct THREADNAME_INFO {
+	DWORD dwType; // Must be 0x1000.
+	LPCSTR szName; // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags;
+} THREADNAME_INFO;
+#pragma pack(pop)
+
+void _SetThreadNameWIN(DWORD threadID, const char* threadName) {
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = threadID;
+	info.dwFlags = 0;
+	__try
+	{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+}
+void SetThreadNameWIN(boost::thread::id threadId, std::string threadName)
+{
+	// convert string to char*
+	const char* cchar = threadName.c_str();
+	// convert HEX string to DWORD
+	unsigned int dwThreadId;
+	std::stringstream ss;
+	ss << std::hex << threadId;
+	ss >> dwThreadId;
+	// set thread name
+	_SetThreadNameWIN((DWORD)dwThreadId, cchar);
+}
+#endif
 
 int64_t Utils::GetEpocFromTime(const char * inp) {
 	int64_t x = 0;
@@ -157,4 +201,15 @@ bool Utils::check_roi_bounds(cv::Rect& roi, int width, int height)
 	}
 
 	return true;
+}
+
+void Utils::setModuleThreadName(boost::thread& thread, std::string moduleID)
+{
+#ifdef _WIN64
+	SetThreadNameWIN((thread).get_id(), moduleID);
+#else
+	auto ptr = thread.native_handle();
+	pthread_setname_np(ptr, moduleID.c_str());
+#endif
+
 }

@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
 
 BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/testOutput/effects/hue_img_864x576")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 

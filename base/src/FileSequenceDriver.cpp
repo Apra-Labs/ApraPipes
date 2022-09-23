@@ -15,7 +15,7 @@ FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 {
     //maxIndex should be greater than StartIndex
     assert(maxIndex < 0 || startIndex < maxIndex);
-	mStrategy = FilenameStrategy::getStrategy(strPath, startIndex, maxIndex, readLoop, files);
+	mStrategy = FilenameStrategy::getStrategy(strPath, startIndex, maxIndex, readLoop, files, mAppend);
 }
 
 FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
@@ -24,7 +24,7 @@ FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 {
 	// use this to append to 1 single file - FileWriterModule
 	auto files = std::vector<std::string>();
-	mStrategy = FilenameStrategy::getStrategy(strPath, 0, -1, false, files);
+	mStrategy = FilenameStrategy::getStrategy(strPath, 0, -1, false, files, mAppend);
 }
 
 FileSequenceDriver::~FileSequenceDriver()
@@ -44,6 +44,10 @@ bool FileSequenceDriver::Connect()
 		LOG_TRACE << "FileSequenceDriver::Writing Empty File " << fileNameToUse;
 
 		auto mode = std::ios::out | std::ios::binary;
+		if (mAppend)
+		{
+			mode = mode | std::ios::app;
+		}
 		std::ofstream file(fileNameToUse.c_str(), mode);
 		if (file.is_open())
 		{

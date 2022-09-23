@@ -1,4 +1,5 @@
 #pragma once
+#include "ApraEGLDisplay.h" // this is added to address the following issue: https://github.com/opencv/opencv/issues/7113
 #include "nvbuf_utils.h"
 #include "EGL/egl.h"
 #include "cudaEGL.h"
