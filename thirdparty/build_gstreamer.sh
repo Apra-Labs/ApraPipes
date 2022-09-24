@@ -1,4 +1,6 @@
 #!/bin/bash
+pwd 
+ls
 cd gst-build
 git worktree list
 
