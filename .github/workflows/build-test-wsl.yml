@@ -139,7 +139,7 @@ jobs:
     - name: Build Gstreamer On Linux_x64 when it is not cached
       if: true # need to come up with proper clause to decide when this build should happen
       working-directory: ${{github.workspace}}/thirdparty
-      run: build_gstreamer.sh
+      run: ./build_gstreamer.sh
       shell: wsl-bash {0}
     
     - name: Build libmp4
