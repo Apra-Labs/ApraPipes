@@ -38,6 +38,7 @@ public:
 	void setState(uint64_t ts, uint64_t te);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool allowFrames(uint64_t& ts, uint64_t& te);
+	//frame_sp makeFrame(size_t size);
 	// default behaviour is overridden
 	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
 	void setProps(MultimediaQueueProps _props);
@@ -61,9 +62,12 @@ private:
 	uint64_t endTimeSaved = 0;
 	uint64_t queryStartTime = 0;
 	uint64_t queryEndTime = 0;
+	FrameMetadata::FrameType mFrameType;
 };
 
 class QueueClass;
+class JpegQueueClass;
+class JpegQueueClass;
 
 class State {
 public:
@@ -71,7 +75,13 @@ public:
 	State() {}
 	virtual ~State() {}
 	typedef std::map<uint64_t, frame_container> mQueueMap;
-	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue) { return true; };
+	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue, uint64_t& endTimeSaved) { return true; };
+	virtual bool exportSend(frame_container& frames) { return true; };
+	std::function<bool(frame_container& frames, bool forceBlockingPush )> send;
+	std::function<std::string(int type)> getInputPinIdByType;
+
+	bool isBFrameEnabled = true;
+	bool isProcessCall = false;
 
 	enum StateType
 	{

@@ -14,6 +14,7 @@
 #include "EncodedImageMetadata.h"
 #include "PipeLine.h"
 #include "FileWriterModule.h"
+#include "H264Metadata.h"
 
 BOOST_AUTO_TEST_SUITE(multimediaqueue_tests)
 
@@ -316,5 +317,122 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
     p->wait_for_all();
     p.reset();
 }
+
+BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
+{
+    //In this case we are sending frames from Multimedia Queue to MP4 writer and writing a video
+    //The test is written in run_all_threaded method
+    int width = 704;
+    int height = 576;
+    std::string inFolderPath = "./data/h264_zaki/";
+    std::string outFolderPath = "./data/testOutput/mp4_videos/24bpp/";
+
+    LoggerProps loggerProps;
+    loggerProps.logLevel = boost::log::trivial::severity_level::info;
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+    Logger::initLogger(loggerProps);
+
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    fileReaderProps.fps = 24;
+    fileReaderProps.readLoop = true;
+    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+
+    auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
+    auto pinId = fileReader->addOutputPin(h264ImageMetadata);
+
+    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); //
+    fileReader->setNext(multiQueue);
+
+    auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
+    mp4WriterSinkProps.logHealth = true;
+    mp4WriterSinkProps.logHealthFrequency = 10;
+    auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+    multiQueue->setNext(mp4WriterSink);
+
+    boost::shared_ptr<PipeLine> p;
+    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    p->appendModule(fileReader);
+    if (!p->init())
+    {
+        throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+    }
+    LOG_ERROR << "processing folder <" << inFolderPath << ">";
+    p->run_all_threaded();
+
+    Test_Utils::sleep_for_seconds(20);
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now - 14000;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now - 2000;
+    endTime = (endTime / 1000) * 1000;
+    multiQueue->allowFrames(startTime, endTime);
+
+    Test_Utils::sleep_for_seconds(10);
+
+    p->stop();
+    p->term();
+    p->wait_for_all();
+    p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
+{
+    //In this case we are sending frames from Multimedia Queue to file writer and writing the frames
+    //The test is written in run_all_threaded method
+    int width = 704;
+    int height = 576;
+    std::string inFolderPath = "./data/h264_zaki";
+    std::string outFolderPath = "./data/testOutput/h264images/";
+
+    LoggerProps loggerProps;
+    loggerProps.logLevel = boost::log::trivial::severity_level::info;
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+    Logger::initLogger(loggerProps);
+
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    fileReaderProps.fps = 20;
+    fileReaderProps.readLoop = true;
+    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+
+    auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
+    auto pinId = fileReader->addOutputPin(h264ImageMetadata);
+
+    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); //
+    fileReader->setNext(multiQueue);
+    
+    auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
+    multiQueue->setNext(fileWriter);
+
+    boost::shared_ptr<PipeLine> p;
+    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    p->appendModule(fileReader);
+    if (!p->init())
+    {
+        throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+    }
+    LOG_ERROR << "processing folder <" << inFolderPath << ">";
+
+    p->run_all_threaded();
+
+    Test_Utils::sleep_for_seconds(21);
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now - 14000;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now - 6000;
+    endTime = (endTime / 1000) * 1000;
+    multiQueue->allowFrames(startTime, endTime);
+
+    Test_Utils::sleep_for_seconds(12);
+
+    p->stop();
+    p->term();
+    p->wait_for_all();
+    p.reset();
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
