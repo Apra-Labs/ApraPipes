@@ -14,9 +14,12 @@ jobs:
     uses: ./.github/workflows/build-test-win.yml
     with:
       is-prep-phase: true
+      flav: 'Win-nocuda'
   win-nocuda-build-test:
     needs: win-nocuda-build-prep
     uses: ./.github/workflows/build-test-win.yml
+    with:
+      flav: 'Win-nocuda'
   win-nocuda-publish:
     needs: win-nocuda-build-test
     permissions:
@@ -24,6 +27,6 @@ jobs:
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml  
     with:
-      flav: 'Windows'
+      flav: 'Win-nocuda'
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
