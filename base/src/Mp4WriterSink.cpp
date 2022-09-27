@@ -301,7 +301,7 @@ bool DetailH264::write(frame_container& frames)
 	auto ret = H264Utils::parseNalu(frame);
 	tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
 
-	if (inH264ImageFrame->fIndex == 0)
+	if ((inH264ImageFrame->fIndex == 0) || (spsBuff.size() != 0))
 	{
 		m_headerFrame = inH264ImageFrame; //remember this forever.
 		spsBuffer = spsBuff;

@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
     //The test is written in run_all_threaded method
     int width = 704;
     int height = 576;
-    std::string inFolderPath = "./data/h264_zaki/";
+    std::string inFolderPath = "./data/h264_data/";
     std::string outFolderPath = "./data/testOutput/mp4_videos/24bpp/";
 
     LoggerProps loggerProps;
@@ -359,17 +359,17 @@ BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
     LOG_ERROR << "processing folder <" << inFolderPath << ">";
     p->run_all_threaded();
 
-    Test_Utils::sleep_for_seconds(20);
+    Test_Utils::sleep_for_seconds(40);
 
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now - 14000;
+    uint64_t startTime = now - 8000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now - 2000;
+    uint64_t endTime = now + 8000;
     endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
 
-    Test_Utils::sleep_for_seconds(10);
+    Test_Utils::sleep_for_seconds(40);
 
     p->stop();
     p->term();
@@ -400,6 +400,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
     auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); //
+   
     fileReader->setNext(multiQueue);
     
     auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
@@ -422,7 +423,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
     uint64_t startTime = now - 14000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now - 6000;
+    uint64_t endTime = now - 2000;
     endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
 

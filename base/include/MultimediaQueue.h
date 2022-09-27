@@ -40,7 +40,8 @@ public:
 	bool allowFrames(uint64_t& ts, uint64_t& te);
 	//frame_sp makeFrame(size_t size);
 	// default behaviour is overridden
-	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
+	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	//bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
 	void setProps(MultimediaQueueProps _props);
 	MultimediaQueueProps getProps();
 	bool handlePropsChange(frame_sp& frame);
@@ -55,7 +56,7 @@ protected:
 
 private:
 	void getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew);
-
+	std::string mOutputPinId;
 	bool pushNext = true;
 	bool reset = false;
 	uint64_t startTimeSaved = 0;
@@ -75,7 +76,7 @@ public:
 	State() {}
 	virtual ~State() {}
 	typedef std::map<uint64_t, frame_container> mQueueMap;
-	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue, uint64_t& endTimeSaved) { return true; };
+	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue, uint64_t& endTimeSaved,std::string mOutputPinId) { return true; };
 	virtual bool exportSend(frame_container& frames) { return true; };
 	std::function<bool(frame_container& frames, bool forceBlockingPush )> send;
 	std::function<std::string(int type)> getInputPinIdByType;

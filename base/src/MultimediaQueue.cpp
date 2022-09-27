@@ -6,6 +6,8 @@
 #include "MultimediaQueue.h"
 #include "Logger.h"
 #include "H264Utils.h"
+#include "EncodedImageMetadata.h"
+#include "H264Metadata.h"
 
 class QueueClass
 {
@@ -220,7 +222,7 @@ class Export : public State {
 public:
 	Export(State::StateType type) : State(StateType::EXPORT) {}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override { return true; }
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved,std::string mOutputPinId) override { return true; }
 };
 
 class ExportJpeg : public Export
@@ -238,7 +240,7 @@ public:
 		return true;
 	}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved,std::string mOutputPinId) override
 	{
 		auto tOld = queueMap.begin()->first;
 		auto temp = queueMap.end();
@@ -282,24 +284,26 @@ public:
 
 	bool exportSend(frame_container& frames)
 	{
-		//int count = 0;
-		//if (count == 0)
-		//{
-		//	auto pinID = getInputPinIdByType(FrameMetadata::FrameType::H264_DATA);
-		//	auto tempFrame= makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8,pinID );
-		//	//tempFrame.get()
-		//	boost::asio::mutable_buffer tempBuffer(tempFrame->data(), tempFrame->size());
-		//	prependSpsPps(tempBuffer,frames);
-		//	frame_container IFrameToSend;
-		//	IFrameToSend.insert(make_pair(frames.begin()->first, tempFrame));
-		//	send(IFrameToSend, false);
-		//	count++;
-		//}
-		//else
-		//{
-		//	send(frames, false);
-		//}
-		send(frames, false);
+		if (count == 0)
+		{
+			//mOutputPinId = "MultimediaQueue_2_pin_1";
+
+			auto tempFrame= makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8, mOutputPinId);
+			//tempFrame.get()
+			boost::asio::mutable_buffer tempBuffer(tempFrame->data(), tempFrame->size());
+			prependSpsPps(tempBuffer,frames);
+			frame_container IFrameToSend;
+			IFrameToSend.insert(make_pair(frames.begin()->first, tempFrame));
+			IFrameToSend.begin()->second->timestamp = frames.begin()->second->timestamp;
+			IFrameToSend.begin()->second->fIndex2 = frames.begin()->second->fIndex2;
+			send(IFrameToSend, false);
+			count++;
+		}
+		else
+		{
+			send(frames, false);
+		}
+		//send(frames, false);
 		return true;
 	}
 
@@ -322,8 +326,9 @@ public:
 		
 	}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string _mOutputPinId) override
 	{
+		mOutputPinId = _mOutputPinId;
 		auto tOld = queueMap.begin()->first;
 		auto temp = queueMap.end();
 		temp--;
@@ -461,6 +466,8 @@ private:
 	const_buffer ppsBuff;
 	const_buffer inFrame;
 	short typeFound;
+	string mOutputPinId;
+	int count = 0;
 };
 
 
@@ -470,7 +477,7 @@ public:
 	Waiting(boost::shared_ptr<QueueClass> queueObj) : State(State::StateType::WAITING) {
 		queueObject = queueObj;
 	}
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
 	{
 		BOOST_LOG_TRIVIAL(info) << "WAITING STATE : THE FRAMES ARE IN FUTURE!! WE ARE WAITING FOR THEM..";
 		return true;
@@ -483,7 +490,7 @@ public:
 	Idle(boost::shared_ptr<QueueClass> queueObj) : State(StateType::IDLE) {
 		queueObject = queueObj;
 	}
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
 	{
 		//The code will not come here
 		return true;
@@ -510,15 +517,44 @@ bool MultimediaQueue::validateInputOutputPins()
 	return Module::validateInputOutputPins();
 }
 
-//frame_sp MultimediaQueue::makeFrame(size_t size)
-//{
-	
-//}
-
-bool MultimediaQueue::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+void MultimediaQueue::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
-	return Module::setNext(next, open, false, sieve);
+	Module::addInputPin(metadata, pinId);
+	auto mType = metadata->getFrameType();
+	framemetadata_sp mOutputMetadata;
+	if (mType == FrameMetadata::H264_DATA)
+	{
+		auto rawMetadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+		auto height = rawMetadata->getHeight();
+		auto width = rawMetadata->getWidth();
+		mOutputMetadata = framemetadata_sp(new H264Metadata(width, height));
+	}
+	else if(mType == FrameMetadata::ENCODED_IMAGE)
+	{
+		auto rawMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
+		auto height = rawMetadata->getHeight();
+		auto width = rawMetadata->getWidth();
+		mOutputMetadata = framemetadata_sp(new EncodedImageMetadata(width,height));
+	}
+	else if (mFrameType == FrameMetadata::RAW_IMAGE)
+	{
+		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		auto height = rawMetadata->getHeight();
+		auto width = rawMetadata->getWidth();
+		mOutputMetadata = framemetadata_sp(new RawImageMetadata(width,height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true));
+	}
+	mOutputMetadata->copyHint(*metadata.get());
+	mOutputPinId = pinId;
+	addOutputPin(metadata, pinId);
+	
 }
+
+//bool MultimediaQueue::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+//{
+//	//auto inputpinidmetadatamap = getinputmetadatabytype(framemetadata::h264_data);
+//	//addoutputpin(inputpinidmetadatamap);
+//	return Module::setNext(next, open, false, sieve);
+//}
 
 bool MultimediaQueue::init()
 {
@@ -616,7 +652,7 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 		pushNext = true;
 		if (mState->Type == State::EXPORT)
 		{
-			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
+			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved, mOutputPinId);
 			for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
@@ -688,7 +724,7 @@ bool MultimediaQueue::process(frame_container& frames)
 	if (mState->Type == State::EXPORT)
 	{
 		mState->isProcessCall = true;
-		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
+		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved, mOutputPinId);
 		for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
