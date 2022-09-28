@@ -36,7 +36,7 @@ public:
         ck(cuDeviceGet(&m_cuDevice, 0));
         char szDeviceName[80];
         ck(cuDeviceGetName(szDeviceName, sizeof(szDeviceName), m_cuDevice));
-        LOG_INFO << "GPU in use: " << szDeviceName;
+        LOG_INFO << "GPU "<<nGpu<<" in use: " << szDeviceName;
 
         ck(cuDevicePrimaryCtxRetain(&m_cuContext, m_cuDevice));
     }
@@ -49,6 +49,12 @@ public:
     CUcontext getContext()
     {
         return m_cuContext;
+    }
+    bool getComputeCapability(int& major, int& minor)
+    {
+        auto rc1=cudaDeviceGetAttribute(& major, ::cudaDevAttrComputeCapabilityMajor, 0);
+        auto rc2=cudaDeviceGetAttribute(& minor, ::cudaDevAttrComputeCapabilityMinor, 0);
+        return (rc1==::cudaSuccess && rc2==::cudaSuccess);
     }
 
 private:

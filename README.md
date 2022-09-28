@@ -6,10 +6,12 @@ A pipeline framework for developing video and image processing applications. Sup
 Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64 Visual Studio 2017 Community (without CUDA)
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
-|Windows|2019|No|Yes[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_winx64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_winx64.svg) |[![CI_Win](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-win.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-win.yml)|
-|Ubuntu x64_86|20.04|No|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
-|Ubuntu ARM64 (Jetsons)|18.04|Yes|Yes|[![CI_All](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI.yml)|
-|Ubuntu x64_86|18.04|Yes|No|[![CI_Cuda](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-cuda.yml)|
+|Windows|2019|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)|[![CI-Win-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml)|
+|Windows|2019|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows-cuda.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows-cuda.svg)|[![CI-Win-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-CUDA.yml)|
+|Ubuntu x64_86|20.04|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)|[![CI-Linux-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml)|
+|Ubuntu x64_86|18.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)|[![CI-Linux-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml)|
+|Ubuntu ARM64 (Jetsons)|18.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)|[![CI-Linux-ARM64](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml)|
+|Ubuntu x64_86-docker|18.04|Yes|No|[![CI-Linux-CUDA-Docker](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml)|
 
 
 
@@ -17,11 +19,11 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
 
 ### Prerequisites for CUDA 
 * Make account on developer.nvidia.com, else the next steps will show HTTP 404/403 errors
-* Download and install CUDA tool kit based on your OS:
-   * Ubuntu 18.04 : [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork)
-   * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)
+* Download and install CUDA tool kit based on your OS: __Note: we test both with CUDA v10.2 and v11.7 so either is fine__
+   * Ubuntu 18.04 : [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork) or [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=18.04&target_type=deb_network)
+   * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal) or [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
 * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract where cuda is installed. Note: this is a painful process. Here are the steps:
-   * Download the correct tar/zip file matching your cuda version. Do not download the exe/installer/deb package.
+   * Download the correct tar/zip file matching your cuda version. _Do not download the exe/installer/deb package._
    * Windows: 
      * download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip). 
      * Extract the downloaded file and copy files to ```C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2``` using an __administrative command prompt__ as follows
@@ -155,7 +157,7 @@ This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with 
 * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html)
 * run the following 
   ```
-  sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev && sudo snap install cmake --classic
+  sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev libssl-dev && sudo snap install cmake --classic
   ```
 * append following lines to ~/.bashrc
   ```
