@@ -241,7 +241,6 @@ SET(CORE_FILES_H
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
-	include/MultimediaQueue.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -257,7 +256,6 @@ SET(GENERIC_FILES
 	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
 	src/QRReader.cpp
-	src/H264FrameUtils.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
