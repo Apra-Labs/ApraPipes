@@ -37,6 +37,7 @@ public:
 				largestTimeStamp = it->second->timestamp;
 			}
 		}
+
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
 			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushNext == true))
@@ -63,6 +64,7 @@ public:
 				pushNext = true;
 			};
 		}
+
 		else // If the lower and upper water mark are given in number of frames
 		{
 			if ((mQueue.size() > lowerWaterMark) && (pushNext == true))
@@ -107,6 +109,8 @@ public:
 			mutable_buffer& h264Frame = *(frame.get());
 			auto ret = H264Utils::parseNalu(h264Frame);
 			tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+			BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
+
 			if (spsBuff.size() != 0)
 			{
 				m_headerFrame = frame;
@@ -114,6 +118,7 @@ public:
 				ppsBuffer = ppsBuff;
 			}
 			mQueue.insert({ it->second->timestamp, frames });
+
 			if (largestTimeStamp < it->second->timestamp)
 			{
 				largestTimeStamp = it->second->timestamp;
@@ -132,9 +137,9 @@ public:
 					++it;
 					auto frame = itr->second.begin()->second;
 					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);			
+					auto ret = H264Utils::parseNalu(h264Frame);
 					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
-					
+
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 					{
 						break;
@@ -160,7 +165,7 @@ public:
 					mutable_buffer& h264Frame = *(frame.get());
 					auto ret = H264Utils::parseNalu(h264Frame);
 					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
-					
+
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
 					{
 						break;
@@ -176,6 +181,7 @@ public:
 				pushNext = true;
 			};
 		}
+
 		else // If the lower and upper water mark are given in number of frames
 		{
 			if ((mQueue.size() > lowerWaterMark) && (pushNext == true))
@@ -198,6 +204,7 @@ public:
 					mutable_buffer& h264Frame = *(frame.get());
 					auto ret = H264Utils::parseNalu(h264Frame);
 					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 					{
 						break;
@@ -222,7 +229,7 @@ class Export : public State {
 public:
 	Export(State::StateType type) : State(StateType::EXPORT) {}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved,std::string mOutputPinId) override { return true; }
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override { return true; }
 };
 
 class ExportJpeg : public Export
@@ -240,19 +247,21 @@ public:
 		return true;
 	}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved,std::string mOutputPinId) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
 	{
 		auto tOld = queueMap.begin()->first;
 		auto temp = queueMap.end();
 		temp--;
 		auto tNew = temp->first;
 		queryEnd = queryEnd - 1;
+
 		if ((queryStart < tOld) && (queueMap.upper_bound(queryEnd) != queueMap.end()))
 		{
 			queryStart = tOld;
 			timeReset = true;
 			return true;
 		}
+
 		else if ((queryEnd > tNew) && (queueMap.upper_bound(queryStart) != queueMap.end()))
 		{
 			if (tNew >= queryEnd)
@@ -263,6 +272,7 @@ public:
 
 			return true;
 		}
+
 		else
 		{
 			timeReset = true;
@@ -275,7 +285,7 @@ class ExportH264 : public Export
 {
 public:
 	ExportH264() : Export(StateType::EXPORT) {}
-	ExportH264(boost::shared_ptr<QueueClass> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size,string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType) : Export(StateType::EXPORT) {
+	ExportH264(boost::shared_ptr<QueueClass> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType) : Export(StateType::EXPORT) {
 		getInputPinIdByType = _getInputPinIdByType;
 		makeFrame = _makeFrame;
 		send = _send;
@@ -283,15 +293,13 @@ public:
 	}
 
 	bool exportSend(frame_container& frames)
-	{
+	{  
+		//This function adds SPS/PPS data to the first I-Frame before sending 
 		if (count == 0)
 		{
-			//mOutputPinId = "MultimediaQueue_2_pin_1";
-
-			auto tempFrame= makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8, mOutputPinId);
-			//tempFrame.get()
+			auto tempFrame = makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8, mOutputPinId);
 			boost::asio::mutable_buffer tempBuffer(tempFrame->data(), tempFrame->size());
-			prependSpsPps(tempBuffer,frames);
+			prependSpsPps(tempBuffer, frames);
 			frame_container IFrameToSend;
 			IFrameToSend.insert(make_pair(frames.begin()->first, tempFrame));
 			IFrameToSend.begin()->second->timestamp = frames.begin()->second->timestamp;
@@ -299,17 +307,17 @@ public:
 			send(IFrameToSend, false);
 			count++;
 		}
+
 		else
 		{
 			send(frames, false);
 		}
-		//send(frames, false);
 		return true;
 	}
 
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer, frame_container& iFrame)
 	{
-		frame_sp &iFrameData =  iFrame.begin()->second;
+		frame_sp& iFrameData = iFrame.begin()->second;
 		boost::asio::mutable_buffer tBuffer(iFrameData->data(), iFrameData->size());
 
 		char NaluSeprator[4] = { 00 ,00, 00 ,01 };
@@ -323,7 +331,7 @@ public:
 		memcpy(iFrameBuffer.data(), queueObject->ppsBuffer.data(), queueObject->ppsBuffer.size());
 		iFrameBuffer += queueObject->ppsBuffer.size();
 		memcpy(iFrameBuffer.data(), tBuffer.data(), tBuffer.size());
-		
+
 	}
 
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string _mOutputPinId) override
@@ -336,14 +344,11 @@ public:
 		queryEnd = queryEnd - 1;
 		bool foundIFrame = false;
 		bool updateQueryStart = true;
+
 		if ((queryStart < tOld) && (queueMap.upper_bound(queryEnd) != queueMap.end())) //queryStart is past and queryEnd is present in map
 		{
 			queryStart = tOld;
-			//frame_sp tmpFrame;
-			/*auto frame = queueMap.begin()->second.begin()->second;
-			boost::asio::mutable_buffer tmpBuffer(frame->data(), frame->size());
-			prependSpsPps(tmpBuffer);*/
-			updateAllTimestamp = false;
+
 			if (isBFrameEnabled) // If B frame is present we must export GOP's till I-Frame
 			{
 				for (auto it = queueMap.begin(); it != queueMap.end(); it++)
@@ -358,9 +363,11 @@ public:
 						endTimeSaved = queryEnd;
 						timeReset = true;
 						foundIFrame = true;
+						updateAllTimestamp = false;
 						break;
 					}
-				}	
+				}
+
 				if (!foundIFrame) // If I-Frame is not present then send till p frame.
 				{
 					queryEnd = tNew;
@@ -368,12 +375,14 @@ public:
 				}
 				return true;
 			}
+
 			else
 			{
 				timeReset = true;
 				return true;
 			}
 		}
+
 		else if ((queryEnd > tNew) && (queueMap.upper_bound(queryStart) != queueMap.end())) //queryStart is present in map and queryEnd is in future
 		{
 			if (tNew >= queryEnd)
@@ -381,7 +390,7 @@ public:
 				timeReset = true;
 			}
 
-			for (auto it = queueMap.lower_bound(queryStart); it != queueMap.begin(); it--)
+			for (auto it = queueMap.lower_bound(queryStart);; it--)
 			{
 				auto frame = it->second.begin()->second;
 				mutable_buffer& h264Frame = *(frame.get());
@@ -398,13 +407,14 @@ public:
 			updateQueryStart = false;
 			return true;
 		}
+
 		else //Both queryStart and queryEnd are present in the queue
 		{
 			if (updateQueryStart)
 			{
 				if (!isProcessCall)
 				{
-					for (auto it = queueMap.lower_bound(queryStart); it != queueMap.begin(); it--) // Setting queryStart time
+					for (auto it = queueMap.lower_bound(queryStart);; it--) // Setting queryStart time
 					{
 						auto frame = it->second.begin()->second;
 						mutable_buffer& h264Frame = *(frame.get());
@@ -412,7 +422,7 @@ public:
 						tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
 						if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 						{
-							queryStart = it->first; 
+							queryStart = it->first;
 							queryStart--;
 							break;
 						}
@@ -425,6 +435,7 @@ public:
 			temp--;
 			auto tNew = temp->first;
 			// Setting queryEnd time
+
 			if ((isBFrameEnabled) && (updateAllTimestamp))
 			{
 				auto tempEndTime = endTimeSaved;
@@ -520,41 +531,9 @@ bool MultimediaQueue::validateInputOutputPins()
 void MultimediaQueue::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	auto mType = metadata->getFrameType();
-	framemetadata_sp mOutputMetadata;
-	if (mType == FrameMetadata::H264_DATA)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
-		auto height = rawMetadata->getHeight();
-		auto width = rawMetadata->getWidth();
-		mOutputMetadata = framemetadata_sp(new H264Metadata(width, height));
-	}
-	else if(mType == FrameMetadata::ENCODED_IMAGE)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
-		auto height = rawMetadata->getHeight();
-		auto width = rawMetadata->getWidth();
-		mOutputMetadata = framemetadata_sp(new EncodedImageMetadata(width,height));
-	}
-	else if (mFrameType == FrameMetadata::RAW_IMAGE)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		auto height = rawMetadata->getHeight();
-		auto width = rawMetadata->getWidth();
-		mOutputMetadata = framemetadata_sp(new RawImageMetadata(width,height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true));
-	}
-	mOutputMetadata->copyHint(*metadata.get());
 	mOutputPinId = pinId;
 	addOutputPin(metadata, pinId);
-	
 }
-
-//bool MultimediaQueue::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
-//{
-//	//auto inputpinidmetadatamap = getinputmetadatabytype(framemetadata::h264_data);
-//	//addoutputpin(inputpinidmetadatamap);
-//	return Module::setNext(next, open, false, sieve);
-//}
 
 bool MultimediaQueue::init()
 {
@@ -568,6 +547,7 @@ bool MultimediaQueue::init()
 	{
 		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
+
 		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
 		{
 			mState->queueObject.reset(new JpegQueueClass());
@@ -610,10 +590,12 @@ void MultimediaQueue::setState(uint64_t tStart, uint64_t tEnd)
 		BOOST_LOG_TRIVIAL(info) << "IDLE STATE : MAYBE THE FRAMES HAVE PASSED THE QUEUE";
 		mState.reset(new Idle(mState->queueObject));
 	}
+
 	else if (tStart > tNew)
 	{
 		mState.reset(new Waiting(mState->queueObject));
 	}
+
 	else
 	{
 		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
@@ -622,13 +604,14 @@ void MultimediaQueue::setState(uint64_t tStart, uint64_t tEnd)
 				[&](frame_container& frames, bool forceBlockingPush = false)
 			{return send(frames, forceBlockingPush); }));
 		}
+
 		else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
-		{ 
+		{
 			mState.reset(new ExportH264(mState->queueObject,
 				[&](frame_container& frames, bool forceBlockingPush = false)
-			{return send(frames, forceBlockingPush);},
+			{return send(frames, forceBlockingPush); },
 				[&](size_t size, string pinID)
-			{ return makeFrame(size,pinID); },
+			{ return makeFrame(size, pinID); },
 				[&](int type)
 			{return getInputPinIdByType(type); }));
 		}
@@ -650,6 +633,7 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 
 		bool reset = false;
 		pushNext = true;
+
 		if (mState->Type == State::EXPORT)
 		{
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved, mOutputPinId);
@@ -677,13 +661,15 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 		{
 			uint64_t tOld = 0, tNew = 0;
 			getQueueBoundaryTS(tOld, tNew);
+
 			if (endTimeSaved > tNew)
 			{
 				reset = false;
 			}
 			queryStartTime = tNew;
-			
+
 		}
+
 		if (reset)
 		{
 			queryStartTime = 0;
@@ -745,6 +731,7 @@ bool MultimediaQueue::process(frame_container& frames)
 
 		}
 	}
+
 	if (mState->Type == State::EXPORT)
 	{
 		uint64_t tOld, tNew = 0;
@@ -794,6 +781,7 @@ void  MultimediaQueue::setProps(MultimediaQueueProps _props)
 		mProps = _props;
 		Module::addPropsToQueue(mProps);
 	}
+
 	else
 	{
 		BOOST_LOG_TRIVIAL(info) << "Currently in export state, wait until export is completed";

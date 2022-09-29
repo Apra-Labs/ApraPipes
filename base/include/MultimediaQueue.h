@@ -38,10 +38,7 @@ public:
 	void setState(uint64_t ts, uint64_t te);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool allowFrames(uint64_t& ts, uint64_t& te);
-	//frame_sp makeFrame(size_t size);
-	// default behaviour is overridden
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	//bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
 	void setProps(MultimediaQueueProps _props);
 	MultimediaQueueProps getProps();
 	bool handlePropsChange(frame_sp& frame);
@@ -83,7 +80,6 @@ public:
 
 	bool isBFrameEnabled = true;
 	bool isProcessCall = false;
-
 	enum StateType
 	{
 		IDLE = 0,

@@ -318,7 +318,9 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
     p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
+//H264 Testcases begin here
+
+void testMP4Queue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, uint64_t startTime, uint64_t endTime)
 {
     //In this case we are sending frames from Multimedia Queue to MP4 writer and writing a video
     //The test is written in run_all_threaded method
@@ -333,14 +335,14 @@ BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
     Logger::initLogger(loggerProps);
 
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
-    fileReaderProps.fps = 24;
+    fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
 
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); //
+    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(queuelength, tolerance, true))); //
     fileReader->setNext(multiQueue);
 
     auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
@@ -348,7 +350,6 @@ BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
     mp4WriterSinkProps.logHealthFrequency = 10;
     auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
     multiQueue->setNext(mp4WriterSink);
-
     boost::shared_ptr<PipeLine> p;
     p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
     p->appendModule(fileReader);
@@ -359,22 +360,76 @@ BOOST_AUTO_TEST_CASE(mp4_test_h264, *boost::unit_test::disabled())
     LOG_ERROR << "processing folder <" << inFolderPath << ">";
     p->run_all_threaded();
 
-    Test_Utils::sleep_for_seconds(40);
+    Test_Utils::sleep_for_seconds(20);
 
-    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
-    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now - 8000;
-    startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 8000;
-    endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
 
-    Test_Utils::sleep_for_seconds(40);
+    Test_Utils::sleep_for_seconds(30);
 
     p->stop();
     p->term();
     p->wait_for_all();
     p.reset();
+    std::string videoFolder = { "./data/testOutput/mp4_videos/24bpp" };
+    Test_Utils::deleteFolder(videoFolder);
+}
+
+
+BOOST_AUTO_TEST_CASE(mp4_h264_past_export, *boost::unit_test::disabled())
+{
+    //In this case queryStart is in past and queryEnd is in queue
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now + 8000;
+    endTime = (endTime / 1000) * 1000;
+    testMP4Queue(60000, 5000, true, startTime, endTime);
+
+}
+
+
+BOOST_AUTO_TEST_CASE(mp4_h264_present_export, *boost::unit_test::disabled())
+{
+    //In this case queryStart and queryEnd both are in queue
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now + 3000;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now + 10000;
+    endTime = (endTime / 1000) * 1000;
+    testMP4Queue(60000, 5000, true, startTime, endTime);
+
+}
+
+BOOST_AUTO_TEST_CASE(mp4_h264_present_future_export, *boost::unit_test::disabled())
+{
+    //In this case queryStart is in queue and queryEnd is in future
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now + 5000;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now + 30000;
+    endTime = (endTime / 1000) * 1000;
+    testMP4Queue(10000, 5000, true, startTime, endTime);
+
+}
+
+BOOST_AUTO_TEST_CASE(mp4_h264_future_export, *boost::unit_test::disabled())
+{
+    //In this case queryStart is in queue and queryEnd is in future
+
+    boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+    auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+    uint64_t startTime = now + 30000;
+    startTime = (startTime / 1000) * 1000;
+    uint64_t endTime = now + 40000;
+    endTime = (endTime / 1000) * 1000;
+    testMP4Queue(30000, 5000, true, startTime, endTime);
+
 }
 
 BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
@@ -383,7 +438,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     //The test is written in run_all_threaded method
     int width = 704;
     int height = 576;
-    std::string inFolderPath = "./data/h264_zaki";
+    std::string inFolderPath = "./data/h264_data";
     std::string outFolderPath = "./data/testOutput/h264images/";
 
     LoggerProps loggerProps;
@@ -399,7 +454,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); //
+    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(60000, 5000, true))); //
    
     fileReader->setNext(multiQueue);
     
@@ -417,17 +472,17 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
 
     p->run_all_threaded();
 
-    Test_Utils::sleep_for_seconds(21);
+    Test_Utils::sleep_for_seconds(20);
 
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now - 14000;
+    uint64_t startTime = now + 12000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now - 2000;
+    uint64_t endTime = now + 17000;
     endTime = (endTime / 1000) * 1000;
     multiQueue->allowFrames(startTime, endTime);
 
-    Test_Utils::sleep_for_seconds(12);
+    Test_Utils::sleep_for_seconds(30);
 
     p->stop();
     p->term();
