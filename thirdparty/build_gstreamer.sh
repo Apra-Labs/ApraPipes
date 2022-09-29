@@ -8,6 +8,8 @@ rm -rf gst-build-1.16 || true
 git worktree prune
 git worktree list
 
+dos2unix ./gst-worktree.py
+
 ./gst-worktree.py add gst-build-1.16 origin/1.16
 cd gst-build-1.16
 git checkout 1.16.2

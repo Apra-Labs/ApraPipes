@@ -34,7 +34,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'sudo apt-get update -qq && sudo apt-get -y install curl zip unzip tar  autoconf   automake  autopoint build-essential  git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix && pip3 install meson'
+        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix && pip3 install meson'
         required: false
       bootstrap-cmd:
         type: string
@@ -83,6 +83,8 @@ jobs:
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
         pip3 install cmake --upgrade
+        nvcc --version || echo 'please install cuda and add /usr/local/cuda/bin into path'
+        test -f /usr/local/cuda/include/cudnn.h || echo 'install cudnn as described in the readme.md'
 
       shell: wsl-bash {0}
 
