@@ -83,9 +83,13 @@ jobs:
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
         pip3 install cmake --upgrade
-        nvcc --version || echo 'please install cuda and add /usr/local/cuda/bin into path'
-        test -f /usr/local/cuda/include/cudnn.h || echo 'install cudnn as described in the readme.md'
+      shell: wsl-bash {0}
 
+    - name: Check builder for CUDA
+      if: ${{ contains(inputs.cuda,'ON')}} 
+      run: |
+        (PATH=/usr/local/cuda/bin:$PATH && nvcc --version) || echo 'please install cuda and add /usr/local/cuda/bin into path'
+        test -f /usr/local/cuda/include/cudnn.h || echo 'install cudnn as described in the readme.md'
       shell: wsl-bash {0}
 
     - name: Cleanup workspace on self hosted runners
