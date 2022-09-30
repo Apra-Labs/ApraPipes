@@ -49,12 +49,12 @@ on:
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ '~/.cache/vcpkg/archives' }}
+        default: ${{ './none' }}
         required: false
       cmake-conf-cmd:
         type: string
         description: 'command needed for installing and configuring cmake'
-        default: 'cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
+        default: '(PATH=/usr/local/cuda/bin:$PATH) || cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
         required: false
       nProc:
         type: number
@@ -127,7 +127,7 @@ jobs:
       shell: pwsh
 
     - name: cache init on container build
-      if: ${{ job.container != null }} # we are running on a container... move the cache "initially"
+      if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
       run: |
         cp -R /root/.cache /github/home/ || true
         ls ${{ inputs.cache-path }} || true
@@ -135,7 +135,6 @@ jobs:
       continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
-      if: ${{ !inputs.is-selfhosted }}
       id: cache-all
       uses: actions/cache@v2
       with:
@@ -147,7 +146,7 @@ jobs:
           restore-keys: ${{ inputs.flav }}-
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
-      if: true # need to come up with proper clause to decide when this build should happen
+      if: ${{ runner.arch == 'X64' && runner.os == 'Linux' && ! steps.cache-all.outputs.cache-hit }}
       working-directory: ${{github.workspace}}/thirdparty
       run: |
         dos2unix ./build_gstreamer.sh
