@@ -153,7 +153,8 @@ jobs:
         ./build_gstreamer.sh
       shell: wsl-bash {0}
     
-    - name: Build libmp4
+    - name: Build libmp4 when it is not cached
+      if: ${{ ! steps.cache-all.outputs.cache-hit }}
       working-directory: ${{github.workspace}}/thirdparty/libmp4
       run: |
         dos2unix ./build.cmd
@@ -164,50 +165,50 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
-    - name: Configure CMake Common
-      working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      shell: wsl-bash {0}      
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+    # - name: Configure CMake Common
+    #   working-directory: ${{github.workspace}}/build
+    #   run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+    #   shell: wsl-bash {0}      
+    #   continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
-    - name: Build
-      if: ${{!inputs.is-prep-phase}}
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
-      shell: wsl-bash {0}
+    # - name: Build
+    #   if: ${{!inputs.is-prep-phase}}
+    #   working-directory: ${{github.workspace}}/build
+    #   run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
+    #   shell: wsl-bash {0}
 
-    - name: List Test cases
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
-      if: ${{!inputs.is-prep-phase}}
-      run: ${{env.TEST_EXE}} --list_content > tests.txt
-      shell: wsl-bash {0}
-      timeout-minutes: 1
+    # - name: List Test cases
+    #   env:
+    #     LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
+    #   if: ${{!inputs.is-prep-phase}}
+    #   run: ${{env.TEST_EXE}} --list_content > tests.txt
+    #   shell: wsl-bash {0}
+    #   timeout-minutes: 1
       
-    - name: Run Tests
-      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
-      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
-      shell: wsl-bash {0}
-      timeout-minutes: ${{ inputs.nTestTimeoutMins}}
+    # - name: Run Tests
+    #   if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+    #   env:
+    #     LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
+    #   run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+    #   shell: wsl-bash {0}
+    #   timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
-    - name: Upload Test Results
-      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: TestResults_${{ inputs.flav }}
-        path: |
-          CI_test_result_${{inputs.flav}}.xml
+    # - name: Upload Test Results
+    #   if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: TestResults_${{ inputs.flav }}
+    #     path: |
+    #       CI_test_result_${{inputs.flav}}.xml
 
-    - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a fialure above
-      uses: actions/upload-artifact@v3
-      with:
-        name: BuildLogs_${{ inputs.flav }}
-        path: |
-          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
-          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+    # - name: Upload build logs 
+    #   if:  ${{ failure() }} # only upload logs when we have a fialure above
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: BuildLogs_${{ inputs.flav }}
+    #     path: |
+    #       ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+    #       ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
 
 
 
