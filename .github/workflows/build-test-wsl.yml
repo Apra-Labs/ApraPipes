@@ -183,18 +183,14 @@ jobs:
       shell: wsl-bash {0}
 
     - name: List Test cases
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
-      run: ${{env.TEST_EXE}} --list_content > tests.txt
+      run: LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --list_content > tests.txt
       shell: wsl-bash {0}
       timeout-minutes: 1
       
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
-      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+      run: LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       shell: wsl-bash {0}
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
