@@ -75,7 +75,7 @@ jobs:
   build:
     env:
       TEST_EXE: build/aprapipesut
-      LD_LIB_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+      LD_LIB_PATH: './thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
     runs-on: ${{ inputs.runner }}
     steps:
@@ -98,7 +98,7 @@ jobs:
       shell: wsl-bash {0}
 
     - name: Cleanup workspace on self hosted runners
-      if: inputs.is-selfhosted
+      if: false #inputs.is-selfhosted
       run: 'Remove-Item -Recurse -Force *'
       shell: pwsh
       continue-on-error: true
