@@ -59,7 +59,7 @@ on:
       cmake-conf-cmd:
         type: string
         description: 'command needed for installing and configuring cmake'
-        default: '(PATH=/usr/local/cuda/bin:$PATH) || cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
+        default: 'cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
         required: false
       nProc:
         type: number
