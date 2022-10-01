@@ -289,6 +289,11 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 		for (auto& pinId : pinIdArr)
 		{
 			bool pinFound = false;
+			if (mOutputPinIdFrameFactoryMap.find(pinId) == mOutputPinIdFrameFactoryMap.end())
+			{
+				framemetadata_sp metadata = mInputPinIdMetadataMap[pinId];
+				addOutputPin(metadata, pinId);
+			}
 			if (mOutputPinIdFrameFactoryMap.find(pinId) != mOutputPinIdFrameFactoryMap.end())
 			{
 				pinFound = true;
@@ -296,31 +301,10 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 				// Set input meta here
 				try
 				{
-					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
-				}
-				catch (AIP_Exception& exception)
-				{
-					mModules.erase(nextModuleId);
-					mConnections.erase(nextModuleId);
-					throw exception;
-				}
-				catch (...)
-				{
-					mModules.erase(nextModuleId);
-					mConnections.erase(nextModuleId);
-					LOG_FATAL << "";
-					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
-				}
-			}
-			if (mInputPinIdMetadataMap.find(pinId) != mInputPinIdMetadataMap.end())
-			{
-				pinFound = true;
-				framemetadata_sp metadata = mInputPinIdMetadataMap[pinId];
-
-				// Set input meta here
-				try
-				{
-					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+					if (mConnections.size() < 2)
+					{
+						next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+					}
 				}
 				catch (AIP_Exception& exception)
 				{
