@@ -17,6 +17,7 @@ jobs:
       flav: WSL
       is-selfhosted: true
       cuda: 'ON'
+      prep-check-command: 'cmake --version ; ninja --version ; gcc --version ; git --version'
       cache-path: './none'
       nProc: 6
   wsl-cuda-publish:
