@@ -83,9 +83,9 @@ jobs:
     steps:
     - name: Prepare builder
       run: |
-      ${{ inputs.prep-cmd }} 
-      pip3 install cmake --upgrade || echo 'did not update cmake'
-      ${{ inputs.prep-check-cmd }} 
+        ${{ inputs.prep-cmd }} 
+        pip3 install cmake --upgrade || echo 'did not update cmake'
+        ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
       if: ${{ contains(inputs.cuda,'ON')}} 
