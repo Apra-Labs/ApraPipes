@@ -17,6 +17,7 @@ jobs:
       flav: Linux-CudaT
       is-selfhosted: true
       cuda: 'ON'
+      prep-cmd: 'echo skipping builder prep as I can not sudo'
       cache-path: './none'
       nProc: 6
   linux-cuda-publish:
