@@ -1,4 +1,4 @@
-name: CI-Linux-CUDA
+name: CI-Linux-ARM64
 
 on:
   push:
@@ -10,22 +10,24 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  linux-cuda-build-test:
+  jetson-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      runner: 'linux-cuda'
-      flav: Linux-CudaT
+      runner: AGX
+      flav: Linux_ARM64
       is-selfhosted: true
       cuda: 'ON'
+      is-build-gst: false
       cache-path: './none'
+      cmake-conf-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && cmake -B . -DENABLE_ARM64=ON ../base'
       nProc: 6
-  linux-cuda-publish:
-    needs: linux-cuda-build-test
+  jetson-publish:
+    needs: jetson-build-test
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: Linux-CudaT
+      flav: Linux_ARM64
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

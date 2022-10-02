@@ -4,13 +4,11 @@ on:
       runner:
         type: string
         description: 'runner where this job will run'
-        default: 'windows-cuda'
-        required: false
+        required: true
       flav: 
         type: string
         description: 'flavour of the build: Windows/linux_x64/linux_arm64'
-        default: 'WSL'
-        required: false
+        required: true
       buildConf:
         type: string
         description: 'build configuration e.g. Release/Debug etc.'
@@ -19,8 +17,7 @@ on:
       is-selfhosted: 
         type: boolean
         description: 'self hosted runners do not need to use cache'
-        default: true
-        required: false
+        required: true
       skip-test: 
         type: boolean
         description: 'should test steps be skipped'
@@ -29,13 +26,18 @@ on:
       cuda: 
         type: string
         description: 'ON/OFF based on this runner support cuda'
-        default: 'ON'
-        required: false
+        required: true
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
         default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix && pip3 install meson'
         required: false
+      prep-check-cmd:
+        type: string
+        description: 'command to check if the builder is ready'
+        default: 'cmake --version ; ninja --version ; gcc --version ; git --version; pwsh --version'
+        #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
+        required: false        
       bootstrap-cmd:
         type: string
         description: 'commands required to boot strap builder after code checkout'
@@ -54,7 +56,7 @@ on:
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ './none' }}
+        default: ${{ '~/.cache/vcpkg/archives' }}
         required: false
       cmake-conf-cmd:
         type: string
@@ -69,7 +71,7 @@ on:
       nTestTimeoutMins:
         type: number
         description: 'number of mins of timeout for tests run'
-        default: 15
+        default: 20
         required: false        
 jobs:
   build:
@@ -88,8 +90,9 @@ jobs:
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
         pip3 install cmake --upgrade
+        ${{ inputs.prep-check-cmd }} 
       shell: wsl-bash {0}
-
+    
     - name: Check builder for CUDA
       if: ${{ contains(inputs.cuda,'ON')}} 
       run: |
@@ -147,7 +150,7 @@ jobs:
             ${{ inputs.cache-path }}
             ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/
             ${{ github.workspace }}/thirdparty/libmp4/build
-          key:  ${{ inputs.flav }}-2-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
@@ -165,7 +168,7 @@ jobs:
         dos2unix ./build.cmd
         ./build.cmd
       shell: wsl-bash {0}
-
+    
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
@@ -173,8 +176,8 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      shell: wsl-bash {0}      
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+      shell: wsl-bash {0}      
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
@@ -183,16 +186,20 @@ jobs:
       shell: wsl-bash {0}
 
     - name: List Test cases
+      env:
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
-      run: export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --list_content > tests.txt
-      shell: wsl-bash {0}
+      run: ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
+      shell: wsl-bash {0}
       
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      run: export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
-      shell: wsl-bash {0}
+      env:
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
+      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
+      shell: wsl-bash {0}
     
     - name: Upload Test Results
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
