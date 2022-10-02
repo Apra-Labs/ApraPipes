@@ -98,7 +98,7 @@ jobs:
       shell: wsl-bash {0}
 
     - name: Cleanup workspace on self hosted runners
-      if: false #inputs.is-selfhosted
+      if: inputs.is-selfhosted
       run: 'Remove-Item -Recurse -Force *'
       shell: pwsh
       continue-on-error: true
@@ -184,13 +184,13 @@ jobs:
 
     - name: List Test cases
       if: ${{!inputs.is-prep-phase}}
-      run: LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --list_content > tests.txt
+      run: export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --list_content > tests.txt
       shell: wsl-bash {0}
       timeout-minutes: 1
       
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      run: LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+      run: export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}} ; ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
       shell: wsl-bash {0}
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
