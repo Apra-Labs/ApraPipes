@@ -396,4 +396,157 @@ BOOST_AUTO_TEST_CASE(valve_relay)
     BOOST_TEST(sink2Que->size() == 2);
 }
 
+BOOST_AUTO_TEST_CASE(multiType_frames)
+{
+    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+    auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
+    auto pinId = source->addOutputPin(metadata);
+    auto pinId1 = source->addOutputPin(metadata1);
+
+    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(4)));
+    source->setNext(valve);
+    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    valve->setNext(sink);
+
+
+    BOOST_TEST(source->init());
+    BOOST_TEST(valve->init());
+    BOOST_TEST(sink->init());
+
+    auto frame = source->makeFrame(1023, pinId);
+    frame_container bothframes;
+    bothframes.insert(make_pair(pinId, frame));
+    auto frame1 = source->makeFrame(1023, pinId1);
+    bothframes.insert(make_pair(pinId1, frame1));
+
+    auto gframe = source->makeFrame(1023, pinId);
+    frame_container generalframes;
+    generalframes.insert(make_pair(pinId, gframe));
+
+    auto rframe = source->makeFrame(1023, pinId1);
+    frame_container rawframes;
+    rawframes.insert(make_pair(pinId1, rframe));
+
+    valve->allowFrames(4);
+    valve->step();
+
+    auto sinkQue = sink->getQue();
+    int framesGen = 0;
+    int framesRaw = 0;
+
+    source->send(generalframes);
+    valve->step();
+    frame_container sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 1);
+    BOOST_TEST(framesRaw == 0);
+
+    source->send(generalframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 2);
+    BOOST_TEST(framesRaw == 0);
+
+    source->send(bothframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 3);
+    BOOST_TEST(framesRaw == 1);
+
+    source->send(bothframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 2);
+
+    source->send(rawframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 3);
+
+    source->send(rawframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 4);
+
+    source->send(bothframes);
+    valve->step();
+
+    BOOST_TEST(sinkQue->size() == 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
