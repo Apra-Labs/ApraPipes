@@ -172,7 +172,7 @@ jobs:
       if: ${{!inputs.is-prep-phase}}
       run: |
         ${{env.TEST_EXE}} --list_content > tests.txt
-        timeout-minutes: 1
+      timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
