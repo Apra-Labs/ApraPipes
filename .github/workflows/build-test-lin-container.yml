@@ -178,7 +178,7 @@ jobs:
       if: ${{!inputs.is-prep-phase}}
       run: |
         export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
-        ldd ${{env.TEST_EXE}} || grep 'not found'
+        ldd ${{env.TEST_EXE}} | grep 'not found'
         ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
