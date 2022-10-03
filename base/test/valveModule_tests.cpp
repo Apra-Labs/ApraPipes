@@ -48,7 +48,6 @@ BOOST_AUTO_TEST_CASE(basic)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
      
 
@@ -87,40 +86,39 @@ BOOST_AUTO_TEST_CASE(basic)
     valve->step();
 
  
-for (int i = 0; i < 2; i++)
-{
+    for (int i = 0; i < 2; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 6);
+    
+    //We are sending 4 frames again with enable false
+    for (int i = 0; i < 4; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 6);
+
+    // The props are changed by passing 0 in allowFrames()
+    valve->allowFrames(0);
+    valve->step();
+
+    for (int i = 0; i < 2; i++)
+    {
     source->send(frames);
     valve->step();
-}
-
-BOOST_TEST(sinkQue->size() == 6);
-
-//We are sending 4 frames again with enable false
-for (int i = 0; i < 4; i++)
-{
-    source->send(frames);
-    valve->step();
-}
-
-BOOST_TEST(sinkQue->size() == 6);
-
-// The props are changed by passing 0 in allowFrames()
-valve->allowFrames(0);
-valve->step();
-
-
-for (int i = 0; i < 2; i++)
-{
-    source->send(frames);
-    valve->step();
-}
+    }
 }
 
 BOOST_AUTO_TEST_CASE(multiple_pins)
 {
     /*src - 2 output pins
     valve module - sieve = disabled
-    2 children modules of valve */
+    2 succesive modules of valve */
     auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
@@ -133,8 +131,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
-    valve->addOutputPin(metadata1);
+
     valve->setNext(sink1);
     valve->setNext(sink2);
 
@@ -228,7 +225,6 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
 
 
@@ -291,7 +287,6 @@ BOOST_AUTO_TEST_CASE(start_open)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
 
 
@@ -341,8 +336,7 @@ BOOST_AUTO_TEST_CASE(valve_relay)
 
     auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
-    valve->addOutputPin(metadata1);
+
     valve->setNext(sink1, false); //Sink1 is closed
     valve->setNext(sink2); //Sink2 is open
 
@@ -401,4 +395,5 @@ BOOST_AUTO_TEST_CASE(valve_relay)
     BOOST_TEST(sink1Que->size() == 2);
     BOOST_TEST(sink2Que->size() == 2);
 }
+
 BOOST_AUTO_TEST_SUITE_END()

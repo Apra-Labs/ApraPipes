@@ -1,4 +1,5 @@
-#include "stdafx.h"
+#include <map>
+#include <stdafx.h>
 #include <boost/filesystem.hpp>
 #include "ValveModule.h"
 #include "Module.h"
@@ -26,6 +27,7 @@ public:
         mProps.noOfFramesToCapture = numOfFrames;
         mFramesSaved = 0;
         enableFlow = true;
+        pinMap.clear();
     }
 
     void setProps(ValveModuleProps _props)
@@ -33,24 +35,58 @@ public:
         mProps = _props;
     }
 
-    bool processTask()
-    {   
-        if (mFramesSaved < mProps.noOfFramesToCapture && enableFlow)
+    void createPinMap(frame_container frames)
+    {
+        for (auto it = frames.begin(); it != frames.end(); it++)
         {
-            mFramesSaved++;
-            if (mFramesSaved == mProps.noOfFramesToCapture)
+            if (pinMap.find(it->first) == pinMap.end())
+            {
+                auto itr = it;
+                pinMap.insert(pair<string, int>(itr->first, mProps.noOfFramesToCapture));
+            }
+        }
+    }
+
+    bool processTask(frame_container &frames)
+    {  
+        if(enableFlow)
+        {
+            bool reset = true;
+            for (auto it = pinMap.begin(); it != pinMap.end(); it++)
+            {
+                if (it->second > 0)
+                {
+                    reset = false;
+                }
+            }
+            if (reset)
             {
                 enableFlow = false;
+                pinMap.clear();
+                return false;
+            }
+            for (auto it = frames.begin(); it != frames.end(); it++)
+            {
+                if (pinMap[it->first] == 0)
+                {
+                    auto itr = it;
+                    frames.erase(itr->first);
+                }
+                else
+                {
+                    pinMap[it->first]--;
+                }
             }
             return true;
         }
-        return false;
+    return false;
     }
 
 public:
     uint64 mFramesSaved = 0;
     bool enableFlow = false;
     ValveModuleProps mProps;
+    std::map<string,int> pinMap;
 };
 
 
@@ -139,11 +175,12 @@ void ValveModule::setProps(ValveModuleProps& props)
 
 bool ValveModule::process(frame_container& frames) 
 {
+    mDetail->createPinMap(frames);
     if(mDetail->mProps.noOfFramesToCapture == -1)
     {
         send(frames);
     }
-    else if (mDetail->processTask())
+    else if (mDetail->processTask(frames))
     {
         send(frames);
     }
