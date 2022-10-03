@@ -37,7 +37,7 @@ on:
         description: 'command to check if the builder is ready'
         default: 'cmake --version ; ninja --version ; gcc --version ; git --version; pwsh --version ||true '
         #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
-        required: false        
+        required: false
       bootstrap-cmd:
         type: string
         description: 'commands required to boot strap builder after code checkout'
@@ -198,12 +198,12 @@ jobs:
         ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
       shell: wsl-bash {0}
-      
+
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
-      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+      run: |
+        export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
       shell: wsl-bash {0}
     
