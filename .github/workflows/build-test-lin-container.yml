@@ -97,7 +97,7 @@ jobs:
       run: |
         (PATH=/usr/local/cuda/bin:$PATH && nvcc --version) || echo 'please install cuda and add /usr/local/cuda/bin into path'
         test -f /usr/local/cuda/include/cudnn.h || echo 'install cudnn as described in the readme.md'
-    
+
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
       run: 'Remove-Item -Recurse -Force *'
@@ -173,19 +173,21 @@ jobs:
       if: ${{!inputs.is-prep-phase}}
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
-    
+
     - name: List Test cases
       if: ${{!inputs.is-prep-phase}}
+      env:
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       run: |
-        export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
         ldd ${{env.TEST_EXE}} | grep 'not found' || true
         ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      env:
+        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       run: |
-        export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
         ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
