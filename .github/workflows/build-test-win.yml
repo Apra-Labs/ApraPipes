@@ -169,10 +169,9 @@ jobs:
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
     
     - name: List Test cases
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
-      run: ${{env.TEST_EXE}} --list_content > tests.txt
+      run: |
+      ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
     - name: Run Tests

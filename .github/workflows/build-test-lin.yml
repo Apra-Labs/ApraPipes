@@ -171,12 +171,10 @@ jobs:
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
     
     - name: List Test cases
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
       run: |
         export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
-        ldconfig || grep 'not found'
+        ldd ${{env.TEST_EXE}} || grep 'not found'
         ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 

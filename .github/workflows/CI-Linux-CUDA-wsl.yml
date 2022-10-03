@@ -11,7 +11,7 @@ env:
   
 jobs:
   wsl-cuda-build-test:
-    uses: ./.github/workflows/build-test-wsl.yml
+    uses: ./.github/workflows/build-test-lin-wsl.yml
     with:
       runner: windows-cuda
       flav: WSL
