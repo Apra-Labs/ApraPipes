@@ -175,8 +175,8 @@ jobs:
         LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
       run: |
-        ldconfig || true
-        ldd ${{env.TEST_EXE}}
+        export LD_LIBRARY_PATH=${{env.LD_LIB_PATH}}
+        ldconfig || grep 'not found'
         ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
