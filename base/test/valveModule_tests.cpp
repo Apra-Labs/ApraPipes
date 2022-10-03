@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <stdafx.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include "ExternalSourceModule.h"
@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(valveModule_tests)
 
 class SinkModuleProps : public ModuleProps
 {
-public: 
+public:
     SinkModuleProps() : ModuleProps()
     {};
 };
@@ -29,7 +29,7 @@ public:
     boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 protected:
-    bool process() {return false;}
+    bool process() { return false; }
     bool validateOutputPins()
     {
         return true;
@@ -48,9 +48,8 @@ BOOST_AUTO_TEST_CASE(basic)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
-     
+
 
     BOOST_TEST(source->init());
     BOOST_TEST(valve->init());
@@ -61,7 +60,7 @@ BOOST_AUTO_TEST_CASE(basic)
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
     frames.insert(make_pair(pinId, frame));
-   
+
     // We are sending 4 frames with enable false so only no frames pass through the valve
     for (int i = 0; i < 4; i++)
     {
@@ -86,41 +85,40 @@ BOOST_AUTO_TEST_CASE(basic)
     valve->allowFrames(2);
     valve->step();
 
- 
-for (int i = 0; i < 2; i++)
-{
-    source->send(frames);
+
+    for (int i = 0; i < 2; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 6);
+
+    //We are sending 4 frames again with enable false
+    for (int i = 0; i < 4; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
+
+    BOOST_TEST(sinkQue->size() == 6);
+
+    // The props are changed by passing 0 in allowFrames()
+    valve->allowFrames(0);
     valve->step();
-}
 
-BOOST_TEST(sinkQue->size() == 6);
-
-//We are sending 4 frames again with enable false
-for (int i = 0; i < 4; i++)
-{
-    source->send(frames);
-    valve->step();
-}
-
-BOOST_TEST(sinkQue->size() == 6);
-
-// The props are changed by passing 0 in allowFrames()
-valve->allowFrames(0);
-valve->step();
-
-
-for (int i = 0; i < 2; i++)
-{
-    source->send(frames);
-    valve->step();
-}
+    for (int i = 0; i < 2; i++)
+    {
+        source->send(frames);
+        valve->step();
+    }
 }
 
 BOOST_AUTO_TEST_CASE(multiple_pins)
 {
     /*src - 2 output pins
     valve module - sieve = disabled
-    2 children modules of valve */
+    2 succesive modules of valve */
     auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
@@ -133,8 +131,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
-    valve->addOutputPin(metadata1);
+
     valve->setNext(sink1);
     valve->setNext(sink2);
 
@@ -174,7 +171,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     // check the number of frames in the frame container of the sinks
     while (sink1Que->size() != 0)
-    { 
+    {
         frame_container sink1Frames = sink1Que->pop();
         sink1Frames = sink1Que->pop();
         BOOST_TEST((sink1Frames.size() == 2));
@@ -195,7 +192,7 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
         BOOST_TEST(flagGen);
         BOOST_TEST(flagRaw);
     }
- 
+
     while (sink2Que->size() != 0)
     {
         frame_container sink2Frames = sink2Que->pop();
@@ -228,7 +225,6 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
 
 
@@ -269,7 +265,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
         source->send(frames);
         valve->step();
     }
- 
+
     BOOST_TEST(sinkQue->size() == 6);
 
     //We are sending 4 frames again with enable false
@@ -291,7 +287,6 @@ BOOST_AUTO_TEST_CASE(start_open)
     auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
     source->setNext(valve);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
     valve->setNext(sink);
 
 
@@ -304,7 +299,7 @@ BOOST_AUTO_TEST_CASE(start_open)
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
     frames.insert(make_pair(pinId, frame));
- 
+
     // We are sending 4 frames (moduleprops = -1) and the valve is open so all frames pass through the valve
     for (int i = 0; i < 4; i++)
     {
@@ -313,7 +308,7 @@ BOOST_AUTO_TEST_CASE(start_open)
     }
 
     BOOST_TEST(sinkQue->size() == 4);
-  
+
     //Closing the valve module
     valve->allowFrames(0);
     valve->step();
@@ -341,8 +336,7 @@ BOOST_AUTO_TEST_CASE(valve_relay)
 
     auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    valve->addOutputPin(metadata);
-    valve->addOutputPin(metadata1);
+
     valve->setNext(sink1, false); //Sink1 is closed
     valve->setNext(sink2); //Sink2 is open
 
@@ -401,4 +395,158 @@ BOOST_AUTO_TEST_CASE(valve_relay)
     BOOST_TEST(sink1Que->size() == 2);
     BOOST_TEST(sink2Que->size() == 2);
 }
+
+BOOST_AUTO_TEST_CASE(multiType_frames)
+{
+    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+    auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
+    auto pinId = source->addOutputPin(metadata);
+    auto pinId1 = source->addOutputPin(metadata1);
+
+    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(4)));
+    source->setNext(valve);
+    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    valve->setNext(sink);
+
+
+    BOOST_TEST(source->init());
+    BOOST_TEST(valve->init());
+    BOOST_TEST(sink->init());
+
+    auto frame = source->makeFrame(1023, pinId);
+    frame_container bothframes;
+    bothframes.insert(make_pair(pinId, frame));
+    auto frame1 = source->makeFrame(1023, pinId1);
+    bothframes.insert(make_pair(pinId1, frame1));
+
+    auto gframe = source->makeFrame(1023, pinId);
+    frame_container generalframes;
+    generalframes.insert(make_pair(pinId, gframe));
+
+    auto rframe = source->makeFrame(1023, pinId1);
+    frame_container rawframes;
+    rawframes.insert(make_pair(pinId1, rframe));
+
+    valve->allowFrames(4);
+    valve->step();
+
+    auto sinkQue = sink->getQue();
+    int framesGen = 0;
+    int framesRaw = 0;
+
+    source->send(generalframes);
+    valve->step();
+    frame_container sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 1);
+    BOOST_TEST(framesRaw == 0);
+
+    source->send(generalframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 2);
+    BOOST_TEST(framesRaw == 0);
+
+    source->send(bothframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+	}
+    BOOST_TEST(framesGen == 3);
+    BOOST_TEST(framesRaw == 1);
+
+    source->send(bothframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 2);
+
+    source->send(rawframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 3);
+
+    source->send(rawframes);
+    valve->step();
+    sinkFrames = sinkQue->pop();
+    for (auto framePair = sinkFrames.begin(); framePair != sinkFrames.end(); framePair++)
+    {
+        auto metadata = (framePair->second)->getMetadata();
+        if ((metadata->getFrameType()) == FrameMetadata::GENERAL)
+        {
+            framesGen++;
+        }
+        if ((metadata->getFrameType()) == FrameMetadata::RAW_IMAGE)
+        {
+            framesRaw++;
+        }
+    }
+    BOOST_TEST(framesGen == 4);
+    BOOST_TEST(framesRaw == 4);
+
+    source->send(bothframes);
+    valve->step();
+
+    BOOST_TEST(sinkQue->size() == 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
