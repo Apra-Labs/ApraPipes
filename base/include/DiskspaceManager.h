@@ -6,7 +6,7 @@ class DiskspaceManager;
 class DiskspaceManagerProps : public ModuleProps
 {
 public:
-	DiskspaceManagerProps(uint32_t lowerDiskspace, uint32_t higherDiskspace,string watchPath, string clearPattern)
+	DiskspaceManagerProps(uint32_t lowerDiskspace, uint32_t higherDiskspace, string watchPath, string clearPattern)
 	{
 		lowerWaterMark = lowerDiskspace;
 		upperWaterMark = higherDiskspace;

@@ -1,5 +1,8 @@
 #include <stdafx.h>
+#include<iostream>
+#include<cstdint>
 #include <boost/filesystem.hpp>
+#include<map>
 #include "Module.h"
 #include "DiskspaceManager.h"
 
@@ -20,11 +23,34 @@ public:
     }
     void checkDirectory()
     {
-    }
-
-public:
-    void checkDirectory();
+        namespace bf = boost::filesystem;
+        bf::path p = bf::current_path();
+        bf::path n = mProps.pathToWatch;
+        for (bf::recursive_directory_iterator it(n); it != bf::recursive_directory_iterator(); ++it)
+        {
+            if (!bf::is_directory(*it))
+            {
+                diskSize += bf::file_size(*it);
+                fileMap.insert(pair<bf::path, uintmax_t>(it->path(), bf::file_size(*it)));
+            }
+        }
+        if (diskSize > mProps.upperWaterMark)
+        {
+            for (auto& file : boost::filesystem::directory_iterator(n))
+            {
+                auto filesize = boost::filesystem::file_size(file);
+                //boost::filesystem::remove(file);
+                diskSize = diskSize - filesize;
+                if (diskSize <= mProps.lowerWaterMark)
+                {
+                    break;
+                }
+            }
+        }
+    };
     DiskspaceManagerProps mProps;
+    uintmax_t diskSize = 0;
+    map<boost::filesystem::path, uintmax_t> fileMap;
 };
 
 
@@ -33,8 +59,6 @@ DiskspaceManager::DiskspaceManager(DiskspaceManagerProps _props)
 {
     mDetail.reset(new Detail(_props));
 }
-
-DiskspaceManager::~DiskspaceManager() {}
 
 bool DiskspaceManager::validateInputPins()
 {
@@ -82,12 +106,8 @@ void DiskspaceManager::setProps(DiskspaceManagerProps& props)
     Module::addPropsToQueue(props);
 }
 
-void DiskspaceManager::setProps(DiskspaceManagerProps& props)
-{
-    Module::addPropsToQueue(props);
-}
-
 bool DiskspaceManager::process(frame_container& frames)
 {
-    
+    mDetail->checkDirectory();
+    return true;
 }
