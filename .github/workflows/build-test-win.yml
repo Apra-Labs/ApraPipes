@@ -4,13 +4,11 @@ on:
       runner:
         type: string
         description: 'runner where this job will run'
-        default: 'windows-2019'
-        required: false
+        required: true
       flav: 
         type: string
-        description: 'flavour of the build: windows/linux_x64/linux_arm64'
-        default: 'Windows'
-        required: false
+        description: 'flavour of the build: Windows/linux_x64/linux_arm64'
+        required: true
       buildConf:
         type: string
         description: 'build configuration e.g. Release/Debug etc.'
@@ -19,8 +17,7 @@ on:
       is-selfhosted: 
         type: boolean
         description: 'self hosted runners do not need to use cache'
-        default: false
-        required: false
+        required: true
       skip-test: 
         type: boolean
         description: 'should test steps be skipped'
@@ -29,13 +26,18 @@ on:
       cuda: 
         type: string
         description: 'ON/OFF based on this runner support cuda'
-        default: 'OFF'
-        required: false
+        required: true
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
         default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite'
         required: false
+      prep-check-cmd:
+        type: string
+        description: 'command to check if the builder is ready'
+        default: 'cmake --version ; ninja --version ; git --version; pwsh --version'
+        #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
+        required: false                
       bootstrap-cmd:
         type: string
         description: 'commands required to boot strap builder after code checkout'
@@ -45,6 +47,11 @@ on:
         type: boolean
         description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
         default: false
+        required: false
+      is-build-gst:
+        type: boolean
+        description: 'should we build GStreamer? we dont build on windows and ARM_Linux.'
+        default: true
         required: false
       cache-path:
         type: string
@@ -59,7 +66,7 @@ on:
       nProc:
         type: number
         description: 'number of threads to be used by cmake/make'
-        default: 3
+        default: 6
         required: false
       nTestTimeoutMins:
         type: number
@@ -75,7 +82,15 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
-      run: ${{ inputs.prep-cmd }} 
+      run: |
+        ${{ inputs.prep-cmd }} 
+        ${{ inputs.prep-check-cmd }} 
+    
+    - name: Check builder for CUDA
+      if: ${{ contains(inputs.cuda,'ON')}} 
+      run: |
+        (nvcc --version) || echo 'please install cuda'
+        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
@@ -111,7 +126,7 @@ jobs:
       shell: pwsh
 
     - name: cache init on container build
-      if: ${{ job.container != null }} # we are running on a container... move the cache "initially"
+      if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
       run: |
         cp -R /root/.cache /github/home/ || true
         ls ${{ inputs.cache-path }} || true
@@ -119,7 +134,6 @@ jobs:
       continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
-      if: ${{ !inputs.is-selfhosted }}
       id: cache-all
       uses: actions/cache@v2
       with:
@@ -127,15 +141,16 @@ jobs:
             ${{ inputs.cache-path }}
             ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/
             ${{ github.workspace }}/thirdparty/libmp4/build
-          key:  ${{ inputs.flav }}-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-3-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
-      if: ${{ runner.arch == 'X64' && runner.os == 'Linux' && ! steps.cache-all.outputs.cache-hit }}
+      if: ${{ inputs.is-build-gst && steps.cache-all.outputs.cache-hit != 'true'}}
       working-directory: ${{github.workspace}}/thirdparty
-      run: sh build_gstreamer.sh
+      run: sh ./build_gstreamer.sh
     
-    - name: Build libmp4
+    - name: Build libmp4 when it is not cached
+      if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty/libmp4
       run: ./build.cmd
 
@@ -154,17 +169,16 @@ jobs:
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
     
     - name: List Test cases
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       if: ${{!inputs.is-prep-phase}}
-      run: ${{env.TEST_EXE}} --list_content > tests.txt
+      run: |
+        ${{env.TEST_EXE}} --list_content > tests.txt
       timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       env:
         LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
-      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+      run: ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results

@@ -1,4 +1,4 @@
-name: CI-Linux-CUDA
+name: CI-Linux-CUDA-WSL
 
 on:
   push:
@@ -10,23 +10,22 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  linux-cuda-build-test:
-    uses: ./.github/workflows/build-test-lin.yml
+  wsl-cuda-build-test:
+    uses: ./.github/workflows/build-test-lin-wsl.yml
     with:
-      runner: 'linux-cuda'
-      flav: Linux-CudaT
+      runner: windows-cuda
+      flav: WSL
       is-selfhosted: true
       cuda: 'ON'
-      prep-cmd: 'echo skipping builder prep as I can not sudo'
       cache-path: './none'
       nProc: 6
-  linux-cuda-publish:
-    needs: linux-cuda-build-test
+  wsl-cuda-publish:
+    needs: wsl-cuda-build-test
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: Linux-CudaT
+      flav: WSL
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

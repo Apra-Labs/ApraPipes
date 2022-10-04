@@ -14,9 +14,10 @@ jobs:
     uses: ./.github/workflows/build-test-win.yml
     with:
       runner: windows-cuda
-      cuda: 'ON'
       flav: 'Windows-cuda'
+      cuda: 'ON'
       is-selfhosted: true
+      is-build-gst: false # part of vcpkg on windows
       nProc: 8
       nTestTimeoutMins: 20
   win-cuda-publish:

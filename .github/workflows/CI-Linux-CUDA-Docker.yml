@@ -13,11 +13,14 @@ jobs:
   linux-cuda-build-no-test:
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
+      runner: 'ubuntu-20.04'
       flav: Linux-Cuda
-      skip-test: true 
+      is-selfhosted: false      
       cuda: 'ON'
-      prep-cmd: 'cmake --version ; ninja --version ; gcc --version ; meson --version ; nvcc --version ; git --version'
+      prep-cmd: 'echo skipping builder prep as I can not sudo'
+      skip-test: true 
       cache-path: '/github/home/.cache/vcpkg/archives'
+      nProc: 3
   
   
 
