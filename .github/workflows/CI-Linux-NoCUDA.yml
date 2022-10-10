@@ -13,7 +13,11 @@ jobs:
   linux-nocuda-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
+      runner: 'ubuntu-20.04'
       flav: Linux
+      is-selfhosted: false
+      cuda: 'OFF'
+      nProc: 3
   linux-nocuda-publish:
     needs: linux-nocuda-build-test
     permissions:

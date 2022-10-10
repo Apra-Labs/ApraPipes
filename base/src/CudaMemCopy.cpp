@@ -94,7 +94,10 @@ bool CudaMemCopy::process(frame_container &frames)
 			cudaStatus = cudaMemcpy2DAsync(dst, mDstPitch[i], src, mSrcPitch[i], mRowSize[i], mHeight[i], props.memcpyKind, props.stream);
 			if (cudaStatus != cudaSuccess)
 			{
-				break;
+				// not throwing error and not returning false - next frame will also be attempted		
+				LOG_ERROR << "cudaMemcpy2DAsync failed <" << cudaStatus << "> Kind :"<< props.memcpyKind
+				<<" from "<<(uint64_t)src<<" to "<<(uint64_t)dst<<" for "<<mDstPitch[i]<<","<<mSrcPitch[i]<<","<<mRowSize[i]<<" x "<<mHeight[i];
+			return true;			
 			}
 		}
 	}
@@ -103,12 +106,13 @@ bool CudaMemCopy::process(frame_container &frames)
 		auto copySize = frame->size();
 		outFrame = makeFrame(copySize);
 		cudaStatus = cudaMemcpyAsync(outFrame->data(), frame->data(), copySize, props.memcpyKind, props.stream);
-	}
-	if (cudaStatus != cudaSuccess)
-	{
-		// not throwing error and not returning false - next frame will also be attempted		
-		LOG_ERROR << "cudaMemcpyAsync failed <" << cudaStatus << ">";
-		return true;
+		if (cudaStatus != cudaSuccess)
+		{
+			// not throwing error and not returning false - next frame will also be attempted		
+			LOG_ERROR << "cudaMemcpyAsync failed <" << cudaStatus << "> Kind :"<< props.memcpyKind
+				<<" from "<<(uint64_t)frame->data()<<" to "<<(uint64_t)outFrame->data()<<" for "<<copySize<<" bytes";
+			return true;
+		}
 	}
 	
 	

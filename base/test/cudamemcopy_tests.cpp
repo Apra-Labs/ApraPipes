@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE(cudamemcopy_tests)
 
 BOOST_AUTO_TEST_CASE(isCudaSupported)
 {
-	std::cout << CudaUtils::isCudaSupported() << std::endl;
+	BOOST_TEST(CudaUtils::isCudaSupported());
 }
 
 BOOST_AUTO_TEST_CASE(general)
