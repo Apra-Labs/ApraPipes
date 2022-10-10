@@ -3,30 +3,39 @@
 #include <stdafx.h>
 #include <map>
 #include "Frame.h"
-#include "MultimediaQueue.h"
+#include "MultimediaQueueXform.h"
 #include "Logger.h"
 #include "H264Utils.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
 
-class QueueClass
+class FramesQueue
 {
 public:
-	typedef std::map<uint64_t, frame_container> MultimediaQueueMap;
-	MultimediaQueueMap mQueue;
-	virtual bool enqueue(frame_container& frames, uint32_t lowerWaterMark, uint32_t upperWaterMark, bool isMapDelayInTime, bool  pushNext) { return true; }
+	typedef std::map<uint64_t, frame_container> MultimediaQueueXformMap;
+	MultimediaQueueXformMap mQueue;
+	virtual bool enqueue(frame_container& frames, bool  pushToNextModule) { return true; }
 	const_buffer spsBuffer;
 	const_buffer ppsBuffer;
+	uint32_t lowerWaterMark = 0;
+	uint32_t upperWaterMark = 0;
+	bool isMapDelayInTime = true;
 };
 
-class JpegQueueClass : public QueueClass
+class IndependentFramesQueue : public FramesQueue
 {
 
 public:
-	~JpegQueueClass()
+	IndependentFramesQueue(uint32_t _lowerWaterMark, uint32_t _upperWaterMark, bool _isMapDelayInTime)
+	{
+		lowerWaterMark = _lowerWaterMark;
+		upperWaterMark = _upperWaterMark;
+		isMapDelayInTime = _isMapDelayInTime;
+	}
+	~IndependentFramesQueue()
 	{}
 
-	bool enqueue(frame_container& frames, uint32_t lowerWaterMark, uint32_t upperWaterMark, bool isMapDelayInTime, bool  pushNext)
+	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
 		for (auto it = frames.cbegin(); it != frames.cend(); it++)
@@ -40,12 +49,12 @@ public:
 
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
-			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushNext == true))
+			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushToNextModule))
 			{
 				mQueue.erase(mQueue.begin()->first);
 			}
 
-			else if ((largestTimeStamp - mQueue.begin()->first > upperWaterMark) && (pushNext == false))
+			else if ((largestTimeStamp - mQueue.begin()->first > upperWaterMark) && (pushToNextModule == false))
 			{
 				auto it = mQueue.begin();
 				auto lastElement = mQueue.end();
@@ -61,18 +70,18 @@ public:
 					++it;
 					mQueue.erase(itr->first);
 				}
-				pushNext = true;
+				pushToNextModule = true;
 			};
 		}
 
 		else // If the lower and upper water mark are given in number of frames
 		{
-			if ((mQueue.size() > lowerWaterMark) && (pushNext == true))
+			if ((mQueue.size() > lowerWaterMark) && (pushToNextModule == true))
 			{
 				mQueue.erase(mQueue.begin()->first);
 			}
 
-			else if ((mQueue.size() > upperWaterMark) && (pushNext == false))
+			else if ((mQueue.size() > upperWaterMark) && (pushToNextModule == false))
 			{
 				auto it = mQueue.begin();
 				while (it != mQueue.end())
@@ -85,7 +94,7 @@ public:
 					++it;
 					mQueue.erase(itr->first);
 				}
-				pushNext = true;
+				pushToNextModule = true;
 			};
 		}
 		return true;
@@ -93,14 +102,20 @@ public:
 
 };
 
-class H264QueueClass : public QueueClass
+class GroupedFramesQueue : public FramesQueue
 {
 
 public:
-	~H264QueueClass()
+	GroupedFramesQueue(uint32_t _lowerWaterMark, uint32_t _upperWaterMark, bool _isMapDelayInTime)
+	{
+		lowerWaterMark = _lowerWaterMark;
+		upperWaterMark = _upperWaterMark;
+		isMapDelayInTime = _isMapDelayInTime;
+	}
+	~GroupedFramesQueue()
 	{}
 
-	bool enqueue(frame_container& frames, uint32_t lowerWaterMark, uint32_t upperWaterMark, bool isMapDelayInTime, bool  pushNext)
+	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
 		for (auto it = frames.cbegin(); it != frames.cend(); it++)
@@ -127,7 +142,7 @@ public:
 		BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
-			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushNext == true))
+			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushToNextModule == true))
 			{
 				mQueue.erase(mQueue.begin()->first);
 				auto it = mQueue.begin();
@@ -149,7 +164,7 @@ public:
 
 			}
 
-			else if ((largestTimeStamp - mQueue.begin()->first > upperWaterMark) && (pushNext == false))
+			else if ((largestTimeStamp - mQueue.begin()->first > upperWaterMark) && (pushToNextModule == false))
 			{
 				auto lastElement = mQueue.end();
 				lastElement--;
@@ -178,18 +193,18 @@ public:
 					}
 
 				}
-				pushNext = true;
+				pushToNextModule = true;
 			};
 		}
 
 		else // If the lower and upper water mark are given in number of frames
 		{
-			if ((mQueue.size() > lowerWaterMark) && (pushNext == true))
+			if ((mQueue.size() > lowerWaterMark) && (pushToNextModule == true))
 			{
 				mQueue.erase(mQueue.begin()->first);
 			}
 
-			if ((mQueue.size() > upperWaterMark) && (pushNext == false))
+			if ((mQueue.size() > upperWaterMark) && (pushToNextModule == false))
 			{
 				auto it = mQueue.begin();
 				while (it != mQueue.end())
@@ -211,7 +226,7 @@ public:
 					}
 					mQueue.erase(itr->first);
 				}
-				pushNext = true;
+				pushToNextModule = true;
 			};
 		}
 		return true;
@@ -224,19 +239,46 @@ protected:
 	short typeFound;
 };
 
-//State Design begins here
-class Export : public State {
+class State {
 public:
-	Export(State::StateType type) : State(StateType::EXPORT) {}
+	boost::shared_ptr<FramesQueue> queueObject;
+	State() {}
+	virtual ~State() {}
+	typedef std::map<uint64_t, frame_container> mQueueMap;
+	virtual bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& mQueue, uint64_t& endTimeSaved) { return true; };
+	virtual bool exportSend(frame_container& frames) { return true; };
+	std::function<bool(frame_container& frames, bool forceBlockingPush )> send;
+	std::function<std::string(int type)> getInputPinIdByType;
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override { return true; }
+	bool isBFrameEnabled = true;
+	bool isProcessCall = false;
+	enum StateType
+	{
+		IDLE = 0,
+		WAITING,
+		EXPORT
+	};
+
+	State(StateType type_)
+	{
+		Type = type_;
+	}
+	StateType Type = StateType::IDLE;
 };
 
-class ExportJpeg : public Export
+//State Design begins here
+class ExportQState : public State {
+public:
+	ExportQState(State::StateType type) : State(StateType::EXPORT) {}
+
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override { return true; }
+};
+
+class ExportJpeg : public ExportQState
 {
 public:
-	ExportJpeg() : Export(StateType::EXPORT) {}
-	ExportJpeg(boost::shared_ptr<QueueClass> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : Export(StateType::EXPORT) {
+	ExportJpeg() : ExportQState(StateType::EXPORT) {}
+	ExportJpeg(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : ExportQState(StateType::EXPORT) {
 		send = _send;
 		queueObject = queueObj;
 	}
@@ -247,7 +289,7 @@ public:
 		return true;
 	}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
 	{
 		auto tOld = queueMap.begin()->first;
 		auto temp = queueMap.end();
@@ -281,15 +323,16 @@ public:
 	}
 };
 
-class ExportH264 : public Export
+class ExportH264 : public ExportQState
 {
 public:
-	ExportH264() : Export(StateType::EXPORT) {}
-	ExportH264(boost::shared_ptr<QueueClass> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType) : Export(StateType::EXPORT) {
+	ExportH264() : ExportQState(StateType::EXPORT) {}
+	ExportH264(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType,std::string _mOutputPinId) : ExportQState(StateType::EXPORT) {
 		getInputPinIdByType = _getInputPinIdByType;
 		makeFrame = _makeFrame;
 		send = _send;
 		queueObject = queueObj;
+		mOutputPinId = _mOutputPinId;
 	}
 
 	bool exportSend(frame_container& frames)
@@ -334,9 +377,8 @@ public:
 
 	}
 
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string _mOutputPinId) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
 	{
-		mOutputPinId = _mOutputPinId;
 		auto tOld = queueMap.begin()->first;
 		auto temp = queueMap.end();
 		temp--;
@@ -485,10 +527,10 @@ private:
 class Waiting : public State {
 public:
 	Waiting() : State(State::StateType::WAITING) {}
-	Waiting(boost::shared_ptr<QueueClass> queueObj) : State(State::StateType::WAITING) {
+	Waiting(boost::shared_ptr<FramesQueue> queueObj) : State(State::StateType::WAITING) {
 		queueObject = queueObj;
 	}
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
 	{
 		BOOST_LOG_TRIVIAL(info) << "WAITING STATE : THE FRAMES ARE IN FUTURE!! WE ARE WAITING FOR THEM..";
 		return true;
@@ -498,44 +540,44 @@ public:
 class Idle : public State {
 public:
 	Idle() : State(StateType::IDLE) {}
-	Idle(boost::shared_ptr<QueueClass> queueObj) : State(StateType::IDLE) {
+	Idle(boost::shared_ptr<FramesQueue> queueObj) : State(StateType::IDLE) {
 		queueObject = queueObj;
 	}
-	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved, std::string mOutputPinId) override
+	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
 	{
 		//The code will not come here
 		return true;
 	}
 };
 
-MultimediaQueue::MultimediaQueue(MultimediaQueueProps _props) :Module(TRANSFORM, "MultimediaQueue", _props), mProps(_props)
+MultimediaQueueXform::MultimediaQueueXform(MultimediaQueueXformProps _props) :Module(TRANSFORM, "MultimediaQueueXform", _props), mProps(_props)
 {
 	mState.reset(new State());
 }
 
-bool MultimediaQueue::validateInputPins()
+bool MultimediaQueueXform::validateInputPins()
 {
 	return true;
 }
 
-bool MultimediaQueue::validateOutputPins()
+bool MultimediaQueueXform::validateOutputPins()
 {
 	return true;
 }
 
-bool MultimediaQueue::validateInputOutputPins()
+bool MultimediaQueueXform::validateInputOutputPins()
 {
 	return Module::validateInputOutputPins();
 }
 
-void MultimediaQueue::addInputPin(framemetadata_sp& metadata, string& pinId)
+void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mOutputPinId = pinId;
 	addOutputPin(metadata, pinId);
 }
 
-bool MultimediaQueue::init()
+bool MultimediaQueueXform::init()
 {
 	if (!Module::init())
 	{
@@ -550,12 +592,12 @@ bool MultimediaQueue::init()
 
 		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
 		{
-			mState->queueObject.reset(new JpegQueueClass());
+			mState->queueObject.reset(new IndependentFramesQueue(mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime));
 		}
 
 		else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 		{
-			mState->queueObject.reset(new H264QueueClass());
+			mState->queueObject.reset(new GroupedFramesQueue(mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime));
 		}
 	}
 	mState.reset(new Idle(mState->queueObject));
@@ -563,13 +605,13 @@ bool MultimediaQueue::init()
 	return true;
 }
 
-bool MultimediaQueue::term()
+bool MultimediaQueueXform::term()
 {
 	mState.reset();
 	return Module::term();
 }
 
-void MultimediaQueue::getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew)
+void MultimediaQueueXform::getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew)
 {
 	auto queueMap = mState->queueObject->mQueue;
 	tOld = queueMap.begin()->first;
@@ -578,7 +620,7 @@ void MultimediaQueue::getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew)
 	tNew = tempIT->first;
 }
 
-void MultimediaQueue::setState(uint64_t tStart, uint64_t tEnd)
+void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 {
 	uint64_t tOld, tNew = 0;
 	getQueueBoundaryTS(tOld, tNew);
@@ -613,17 +655,17 @@ void MultimediaQueue::setState(uint64_t tStart, uint64_t tEnd)
 				[&](size_t size, string pinID)
 			{ return makeFrame(size, pinID); },
 				[&](int type)
-			{return getInputPinIdByType(type); }));
+			{return getInputPinIdByType(type); },mOutputPinId));
 		}
 	}
 
 }
 
-bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
+bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	if (type == Command::CommandType::MultimediaQueue)
+	if (type == Command::CommandType::MultimediaQueueXform)
 	{
-		MultimediaQueueCommand cmd;
+		MultimediaQueueXformCommand cmd;
 		getCommand(cmd, frame);
 		setState(cmd.startTime, cmd.endTime);
 		queryStartTime = cmd.startTime;
@@ -632,18 +674,18 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 		endTimeSaved = cmd.endTime;
 
 		bool reset = false;
-		pushNext = true;
+		pushToNextModule = true;
 
 		if (mState->Type == State::EXPORT)
 		{
-			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved, mOutputPinId);
+			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
 			for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
 				{
 					if (isNextModuleQueFull())
 					{
-						pushNext = false;
+						pushToNextModule = false;
 						queryStartTime = it->first;
 						queryStartTime--;
 						BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for queue to be free";
@@ -680,11 +722,11 @@ bool MultimediaQueue::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 }
 
-bool MultimediaQueue::allowFrames(uint64_t& ts, uint64_t& te)
+bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
 {
 	if (mState->Type != mState->EXPORT)
 	{
-		MultimediaQueueCommand cmd;
+		MultimediaQueueXformCommand cmd;
 		cmd.startTime = ts;
 		cmd.endTime = te;
 		return queueCommand(cmd);
@@ -692,9 +734,9 @@ bool MultimediaQueue::allowFrames(uint64_t& ts, uint64_t& te)
 	return true;
 }
 
-bool MultimediaQueue::process(frame_container& frames)
+bool MultimediaQueueXform::process(frame_container& frames)
 {
-	mState->queueObject->enqueue(frames, mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime, pushNext);
+	mState->queueObject->enqueue(frames, pushToNextModule);
 	if (mState->Type == State::EXPORT)
 	{
 		uint64_t tOld, tNew = 0;
@@ -710,14 +752,14 @@ bool MultimediaQueue::process(frame_container& frames)
 	if (mState->Type == State::EXPORT)
 	{
 		mState->isProcessCall = true;
-		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved, mOutputPinId);
+		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
 		for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
 			{
 				if (isNextModuleQueFull())
 				{
-					pushNext = false;
+					pushToNextModule = false;
 					queryStartTime = it->first;
 					queryStartTime--;
 					BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
@@ -752,11 +794,11 @@ bool MultimediaQueue::process(frame_container& frames)
 	return true;
 }
 
-bool MultimediaQueue::handlePropsChange(frame_sp& frame)
+bool MultimediaQueueXform::handlePropsChange(frame_sp& frame)
 {
 	if (mState->Type != State::EXPORT)
 	{
-		MultimediaQueueProps props(10, 5, false);
+		MultimediaQueueXformProps props(10, 5, false);
 		auto ret = Module::handlePropsChange(frame, props);
 		return ret;
 	}
@@ -768,13 +810,13 @@ bool MultimediaQueue::handlePropsChange(frame_sp& frame)
 	}
 }
 
-MultimediaQueueProps MultimediaQueue::getProps()
+MultimediaQueueXformProps MultimediaQueueXform::getProps()
 {
 	fillProps(mProps);
 	return mProps;
 }
 
-void  MultimediaQueue::setProps(MultimediaQueueProps _props)
+void  MultimediaQueueXform::setProps(MultimediaQueueXformProps _props)
 {
 	if (mState->Type != State::EXPORT)
 	{

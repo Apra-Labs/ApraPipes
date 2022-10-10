@@ -191,7 +191,7 @@ SET(CORE_FILES
 	src/QRReader.cpp
 	src/Mp4WriterSink.cpp
 	src/Mp4WriterSinkUtils.cpp
-	src/MultimediaQueue.cpp
+	src/MultimediaQueueXform.cpp
 )
 
 SET(CORE_FILES_H
@@ -240,7 +240,7 @@ SET(CORE_FILES_H
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
-	include/MultimediaQueue.h
+	include/MultimediaQueueXform.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -579,7 +579,7 @@ SET(UT_FILES
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
 	test/valveModule_tests.cpp
-	test/multimediaqueue_tests.cpp
+	test/multimediaqueuexform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include"FileReaderModule.h"
-#include "MultimediaQueue.h"
+#include "MultimediaQueueXform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
@@ -16,7 +16,7 @@
 #include "FileWriterModule.h"
 #include "H264Metadata.h"
 
-BOOST_AUTO_TEST_SUITE(multimediaqueue_tests)
+BOOST_AUTO_TEST_SUITE(multimediaqueuexform_tests)
 
 class SinkModuleProps : public ModuleProps
 {
@@ -60,7 +60,7 @@ int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(queuelength, tolerance, isMapInTime))); // 
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, isMapInTime))); // 
     fileReader->setNext(multiQueue);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(idle_state)
     endTime = (endTime / 1000) * 1000;
 
     int queueSize = testQueue(10000, 5000, true, 40, 10, startTime, endTime);
-    BOOST_TEST(queueSize == 0);
+    BOOST_TEST(queueSize == 0,"No frames are passed and zero frames are there in queue of Sink");
 }
 
 BOOST_AUTO_TEST_CASE(wait_state)
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(wait_state)
     endTime = (endTime / 1000) * 1000;
     
     int queueSize = testQueue(10000, 5000, true, 40, 10, startTime, endTime);
-    BOOST_TEST(queueSize == 0);
+    BOOST_TEST(queueSize == 0, "No frames are passed and zero frames are there in queue of Sink");
 }
 
 BOOST_AUTO_TEST_CASE(wait_to_export_state)
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(wait_to_export_state)
     endTime = (endTime / 1000) * 1000;
     
     int queueSize = testQueue(10000, 5000, true, 10, 60, startTime, endTime);
-    BOOST_TEST(queueSize == 20);
+    BOOST_TEST(queueSize == 20,"20 frames are passed after state changes to export, due to 20fps, 1sec frames are there in queue of Sink");
 }
 
 BOOST_AUTO_TEST_CASE(future_export)
@@ -152,13 +152,13 @@ BOOST_AUTO_TEST_CASE(future_export)
     //In this case the timestamp of startTime is in the queue while endTime is in future so we start with export and continue to stay in export as frames are passed.
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now + 19000;
+    uint64_t startTime = now + 3000;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 27000;
+    uint64_t endTime = now + 4000;
     endTime = (endTime / 1000) * 1000;
     
-    int queueSize = testQueue(10000, 5000, true, 20, 15, startTime, endTime);
-    BOOST_TEST(queueSize == 8);
+    int queueSize = testQueue(10000, 5000, true, 20, 60, startTime, endTime);
+    BOOST_TEST(queueSize == 20, "20 frames are passed after state changes to export, due to 20fps, 1sec frames are there in queue of Sink");
 }
 
 BOOST_AUTO_TEST_CASE(nextQueue_full)
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, true)));
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, true)));
     fileReader->setNext(multiQueue);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
         multiQueue->step();
     }
 
-    BOOST_TEST(sinkQueue->size() == 20);
+    BOOST_TEST(sinkQueue->size() == 20, "20 frames are passed in total before next module queue becomes full and after next module queue becomes free");
 }
 
 BOOST_AUTO_TEST_CASE(prop_change)
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(10000, 5000, true))); // 
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true))); // 
     fileReader->setNext(multiQueue);
     auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
     auto currentProps = multiQueue->getProps();
     currentProps.lowerWaterMark = 12000;
     currentProps.isMapDelayInTime = true;
-    auto newValue = MultimediaQueueProps(currentProps.lowerWaterMark, 2000, currentProps.isMapDelayInTime);
+    auto newValue = MultimediaQueueXformProps(currentProps.lowerWaterMark, 2000, currentProps.isMapDelayInTime);
     multiQueue->setProps(newValue);
 
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
         fileReader->step();
         multiQueue->step();
     }
-    BOOST_TEST(sinkQueue->size() == 20);
+    BOOST_TEST(sinkQueue->size() == 20,"Props are changed and 1 sec frames are sent to sink queue");
 }
 
 BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
     auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
     auto pinId = fileReader->addOutputPin(encodedImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(12000, 5000, true))); // 
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(12000, 5000, true))); // 
     fileReader->setNext(multiQueue);
     fileReader->play(true);
     auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
@@ -342,7 +342,7 @@ void testMP4Queue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, ui
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(queuelength, tolerance, true))); //
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, true))); //
     fileReader->setNext(multiQueue);
 
     auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueue>(new MultimediaQueue(MultimediaQueueProps(60000, 5000, true))); //
+    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(60000, 5000, true))); //
    
     fileReader->setNext(multiQueue);
     

@@ -12,7 +12,7 @@ public:
 		Relay,
 		Step,
 		ValvePassThrough,
-		MultimediaQueue
+		MultimediaQueueXform
 	};
 
 	Command()
@@ -195,10 +195,10 @@ private:
 	}
 };
 
-class MultimediaQueueCommand : public Command
+class MultimediaQueueXformCommand : public Command
 {
 public:
-	MultimediaQueueCommand() : Command(Command::CommandType::MultimediaQueue)
+	MultimediaQueueXformCommand() : Command(Command::CommandType::MultimediaQueueXform)
 	{
 	}
 
