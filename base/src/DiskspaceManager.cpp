@@ -3,9 +3,11 @@
 #include<cstdint>
 #include <boost/filesystem.hpp>
 #include<map>
+#include <boost/regex.hpp>
 #include "Module.h"
 #include "DiskspaceManager.h"
 
+typedef std::pair<boost::filesystem::path, uint> elem;
 class DiskspaceManager::Detail
 {
 public:
@@ -21,36 +23,50 @@ public:
     {
         mProps = _props;
     }
+
     void checkDirectory()
     {
         namespace bf = boost::filesystem;
-        bf::path p = bf::current_path();
         bf::path n = mProps.pathToWatch;
-        for (bf::recursive_directory_iterator it(n); it != bf::recursive_directory_iterator(); ++it)
+        boost::regex delPattern = boost::regex(mProps.deletePattern);
+        for (const auto& entry : boost::filesystem::recursive_directory_iterator(n))
         {
-            if (!bf::is_directory(*it))
+            if ((boost::filesystem::is_regular_file(entry) && !boost::filesystem::is_symlink(entry)) && (fileMap.find(bf::path(entry)) == fileMap.end()))
             {
-                diskSize += bf::file_size(*it);
-                fileMap.insert(pair<bf::path, uintmax_t>(it->path(), bf::file_size(*it)));
+                diskSize += boost::filesystem::file_size(entry);
+                uint timeStamp = bf::last_write_time(bf::path(entry));
+                fileMap[bf::path(entry)] = { timeStamp, bf::file_size(entry) };
+                fileVector.push_back({ bf::path(entry), timeStamp });
             }
         }
+        auto comparator = [](elem& a, elem& b) {return a.second < b.second; };
+        sort(fileVector.begin(), fileVector.end(), comparator);
+        iterateFlag = false;
+       
         if (diskSize > mProps.upperWaterMark)
         {
-            for (auto& file : boost::filesystem::directory_iterator(n))
+            for (int i = 0; i < fileVector.size(); i++)
             {
-                auto filesize = boost::filesystem::file_size(file);
-                //boost::filesystem::remove(file);
-                diskSize = diskSize - filesize;
-                if (diskSize <= mProps.lowerWaterMark)
+                std::string pathInString = (fileVector[i].first).string();
+                if (boost::regex_match(pathInString, delPattern))
                 {
-                    break;
+                    auto size = bf::file_size(fileVector[i].first);
+                    diskSize = diskSize - size;
+                    //bf::remove(fileVector[i].first);
+                    if (diskSize <= mProps.lowerWaterMark)
+                    {
+                        break;
+                    }
                 }
             }
         }
     };
     DiskspaceManagerProps mProps;
     uintmax_t diskSize = 0;
-    map<boost::filesystem::path, uintmax_t> fileMap;
+    bool iterateFlag = true;
+    std::map<boost::filesystem::path, std::vector<uint64_t>> fileMap;
+    std::vector<elem>fileVector;
+
 };
 
 

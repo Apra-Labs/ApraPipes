@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "DiskspaceManager.h"
@@ -10,7 +11,6 @@
 #include "Module.h"
 #include "PipeLine.h"
 
-
 BOOST_AUTO_TEST_SUITE(diskspaceManager_tests)
 
 BOOST_AUTO_TEST_CASE(basic)
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(2097152,3145728,"C://Users//Vinayak//workspace//ApraPipes//data//testOutput//h264images",".h264")));
+	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(150000,190000,"C://Users//Vinayak//Workspace_ApraPipes//ApraPipes//data//RedBull",".*[t][x][t]")));
 	//auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(600, 900, "/data/testOutput/h264images", ".h264")));
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	//p->init();
 	p->run_all_threaded();
 	//Test_Utils::sleep_for_seconds(20);
-	Test_Utils::sleep_for_seconds(30);
+	Test_Utils::sleep_for_seconds(600);
 	p->stop();
 	p->term();
 	p->wait_for_all();

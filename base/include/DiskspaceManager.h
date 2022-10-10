@@ -1,8 +1,7 @@
 #pragma once
-
+#include <boost/regex.hpp>
 #include "Module.h"
 
-class DiskspaceManager;
 class DiskspaceManagerProps : public ModuleProps
 {
 public:
