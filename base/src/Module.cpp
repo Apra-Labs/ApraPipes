@@ -579,6 +579,21 @@ bool Module::isFull()
 	return ret;
 }
 
+bool Module::isNextModuleQueFull()
+{
+	bool ret = false;
+	for (auto it = mModules.cbegin(); it != mModules.end(); it++)
+	{
+		if (it->second->mQue->isFull())
+		{
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
 bool Module::send(frame_container &frames, bool forceBlockingPush)
 {
 	// mFindex may be propagated for EOS, EOP, Command, PropsChange also - which is wrong
