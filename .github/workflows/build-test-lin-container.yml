@@ -145,9 +145,9 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-            ${{ github.workspace }}/thirdparty/gst-build/gst-build-1.16/outInstall/
-            ${{ github.workspace }}/thirdparty/libmp4/build
-          key:  ${{ inputs.flav }}-3-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+            ./thirdparty/gst-build/gst-build-1.16/outInstall/
+            ./thirdparty/libmp4/build
+          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
@@ -192,15 +192,17 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      if: ${{ always() }}
+      continue-on-error: true
       uses: actions/upload-artifact@v2
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
           CI_test_result_${{inputs.flav}}.xml
+      
 
     - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a fialure above
+      if:  ${{ failure() }} # only upload logs when we have a failure above
       uses: actions/upload-artifact@v3
       with:
         name: BuildLogs_${{ inputs.flav }}
