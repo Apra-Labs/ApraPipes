@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(150000,190000,"C://Users//Vinayak//Workspace_ApraPipes//ApraPipes//data//RedBull",".*[t][x][t]")));
-	//auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(600, 900, "/data/testOutput/h264images", ".h264")));
+	//auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(150000,190000, "C://Users//Vinayak//Desktop//Work//RedBull",".*[t][x][t]")));
+	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(600, 900, "C://Users//Vinayak//Desktop//Work//RedBull 2.0//October", ".h264"))); 
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);

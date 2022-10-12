@@ -26,23 +26,35 @@ public:
 
     void checkDirectory()
     {
-        namespace bf = boost::filesystem;
-        bf::path n = mProps.pathToWatch;
+        fileVector.reserve(50000);
+        boost::filesystem::path n = mProps.pathToWatch;
         boost::regex delPattern = boost::regex(mProps.deletePattern);
+      
+        boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+        auto before = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+        BOOST_LOG_TRIVIAL(info) << before;
+
         for (const auto& entry : boost::filesystem::recursive_directory_iterator(n))
         {
-            if ((boost::filesystem::is_regular_file(entry) && !boost::filesystem::is_symlink(entry)) && (fileMap.find(bf::path(entry)) == fileMap.end()))
+            if ((boost::filesystem::is_regular_file(entry))) //&& !boost::filesystem::is_symlink(entry)) && (fileMap.find(boost::filesystem::path(entry)) == fileMap.end()))
             {
                 diskSize += boost::filesystem::file_size(entry);
-                uint timeStamp = bf::last_write_time(bf::path(entry));
-                fileMap[bf::path(entry)] = { timeStamp, bf::file_size(entry) };
-                fileVector.push_back({ bf::path(entry), timeStamp });
+                uint timeStamp = boost::filesystem::last_write_time(boost::filesystem::path(entry));
+                fileVector.push_back({ boost::filesystem::path(""), timeStamp});
             }
         }
-        auto comparator = [](elem& a, elem& b) {return a.second < b.second; };
-        sort(fileVector.begin(), fileVector.end(), comparator);
-        iterateFlag = false;
        
+        boost::posix_time::ptime const time_epoch1(boost::gregorian::date(1970, 1, 1));
+        auto after = (boost::posix_time::microsec_clock::universal_time() - time_epoch1).total_milliseconds();
+        BOOST_LOG_TRIVIAL(info) <<"After list" << after;
+
+        auto comparator = [](elem& a, elem& b) {return a.second < b.second; };
+        sort(fileVector.begin(), fileVector.end(), comparator); //Sorting
+
+        boost::posix_time::ptime const time_epoch2(boost::gregorian::date(1970, 1, 1));
+        auto after2 = (boost::posix_time::microsec_clock::universal_time() - time_epoch2).total_milliseconds();
+        BOOST_LOG_TRIVIAL(info) <<"After sort" << after2;
+
         if (diskSize > mProps.upperWaterMark)
         {
             for (int i = 0; i < fileVector.size(); i++)
@@ -50,7 +62,7 @@ public:
                 std::string pathInString = (fileVector[i].first).string();
                 if (boost::regex_match(pathInString, delPattern))
                 {
-                    auto size = bf::file_size(fileVector[i].first);
+                    auto size = boost::filesystem::file_size(fileVector[i].first);
                     diskSize = diskSize - size;
                     //bf::remove(fileVector[i].first);
                     if (diskSize <= mProps.lowerWaterMark)
@@ -66,6 +78,7 @@ public:
     bool iterateFlag = true;
     std::map<boost::filesystem::path, std::vector<uint64_t>> fileMap;
     std::vector<elem>fileVector;
+    int count = 0;
 
 };
 
