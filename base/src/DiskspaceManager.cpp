@@ -3,6 +3,9 @@
 #include<cstdint>
 #include <boost/filesystem.hpp>
 #include<map>
+#include<vector>
+#include<algorithm>
+#include<chrono>
 #include <boost/regex.hpp>
 #include "Module.h"
 #include "DiskspaceManager.h"
@@ -23,61 +26,74 @@ public:
     {
         mProps = _props;
     }
-
-    void checkDirectory()
+  
+    uint estimateDirectorySize(boost::filesystem::path _dir)
     {
-        fileVector.reserve(50000);
-        boost::filesystem::path n = mProps.pathToWatch;
-        boost::regex delPattern = boost::regex(mProps.deletePattern);
-      
-        boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
-        auto before = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-        BOOST_LOG_TRIVIAL(info) << before;
-
+        uint dirSize = 0;
+        int count = 0;
+        uint tempSize;
+        boost::filesystem::path n =_dir;
         for (const auto& entry : boost::filesystem::recursive_directory_iterator(n))
         {
-            if ((boost::filesystem::is_regular_file(entry))) //&& !boost::filesystem::is_symlink(entry)) && (fileMap.find(boost::filesystem::path(entry)) == fileMap.end()))
+            if ((boost::filesystem::is_regular_file(entry)))
             {
-                diskSize += boost::filesystem::file_size(entry);
-                uint timeStamp = boost::filesystem::last_write_time(boost::filesystem::path(entry));
-                fileVector.push_back({ boost::filesystem::path(""), timeStamp});
+                if (count % 15 == 0)
+                {
+                    tempSize = boost::filesystem::file_size(entry);
+                }
+                dirSize += tempSize;
+                count++;
             }
         }
-       
-        boost::posix_time::ptime const time_epoch1(boost::gregorian::date(1970, 1, 1));
-        auto after = (boost::posix_time::microsec_clock::universal_time() - time_epoch1).total_milliseconds();
-        BOOST_LOG_TRIVIAL(info) <<"After list" << after;
+        return dirSize;
+    }
 
-        auto comparator = [](elem& a, elem& b) {return a.second < b.second; };
-        sort(fileVector.begin(), fileVector.end(), comparator); //Sorting
-
-        boost::posix_time::ptime const time_epoch2(boost::gregorian::date(1970, 1, 1));
-        auto after2 = (boost::posix_time::microsec_clock::universal_time() - time_epoch2).total_milliseconds();
-        BOOST_LOG_TRIVIAL(info) <<"After sort" << after2;
-
-        if (diskSize > mProps.upperWaterMark)
+    boost::filesystem::path getOldestDirectory(boost::filesystem::path _cam)
+    {
+        for (const auto& camFolder : boost::filesystem::directory_iterator(_cam))
         {
-            for (int i = 0; i < fileVector.size(); i++)
+            for (const auto& folder : boost::filesystem::recursive_directory_iterator(camFolder))
             {
-                std::string pathInString = (fileVector[i].first).string();
-                if (boost::regex_match(pathInString, delPattern))
+                if (boost::filesystem::is_regular_file(folder))
                 {
-                    auto size = boost::filesystem::file_size(fileVector[i].first);
-                    diskSize = diskSize - size;
-                    //bf::remove(fileVector[i].first);
-                    if (diskSize <= mProps.lowerWaterMark)
-                    {
-                        break;
-                    }
+                    boost::filesystem::path p = folder.path().parent_path();
+                    return p;
                 }
             }
         }
     };
+
+    void deleteDirectory()
+    {
+        while (diskSize > mProps.lowerWaterMark)
+        {
+            for (const auto& camFolder : boost::filesystem::directory_iterator(mProps.pathToWatch))
+            {
+                uint tempSize = 0;
+                boost::filesystem::path oldDir = getOldestDirectory(camFolder);
+                tempSize = estimateDirectorySize(oldDir);
+                diskSize = diskSize - tempSize;
+                boost::filesystem::remove_all(oldDir);
+                if (diskSize < mProps.lowerWaterMark)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    void operation()
+    {
+        diskSize = estimateDirectorySize(mProps.pathToWatch);
+        if (diskSize > mProps.upperWaterMark)
+        {
+            deleteDirectory();
+        }
+    }
+
     DiskspaceManagerProps mProps;
     uintmax_t diskSize = 0;
-    bool iterateFlag = true;
-    std::map<boost::filesystem::path, std::vector<uint64_t>> fileMap;
-    std::vector<elem>fileVector;
+    std::map<uintmax_t,uint>fileMap;
     int count = 0;
 
 };
@@ -137,6 +153,8 @@ void DiskspaceManager::setProps(DiskspaceManagerProps& props)
 
 bool DiskspaceManager::process(frame_container& frames)
 {
-    mDetail->checkDirectory();
+    mDetail->operation();
+    //boost::filesystem::path par = mDetail->getOldestDirectory();
+    int i = 0;
     return true;
 }

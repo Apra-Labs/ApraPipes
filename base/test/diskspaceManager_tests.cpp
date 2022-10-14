@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
 	//auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(150000,190000, "C://Users//Vinayak//Desktop//Work//RedBull",".*[t][x][t]")));
-	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(600, 900, "C://Users//Vinayak//Desktop//Work//RedBull 2.0//October", ".h264"))); 
+	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(15000, 20000, "C://Users//Vinayak//Desktop//Work//RedBull 2.1//October", ".*[t][x][t]"))); 
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
@@ -36,11 +36,35 @@ BOOST_AUTO_TEST_CASE(basic)
 	p->appendModule(source);
 	//p->init();
 	p->run_all_threaded();
-	//Test_Utils::sleep_for_seconds(20);
 	Test_Utils::sleep_for_seconds(600);
 	p->stop();
-	p->term();
+	p->term(); 
 	p->wait_for_all();
 	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(basic2)
+{
+	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinId = source->addOutputPin(metadata);
+	//auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(150000,190000, "C://Users//Vinayak//Desktop//Work//RedBull",".*[t][x][t]")));
+	auto diskMan = boost::shared_ptr<DiskspaceManager>(new DiskspaceManager(DiskspaceManagerProps(700000, 800000, "C://Users//Vinayak//Desktop//Work//RedBull 2.0", ".*[t][x][t]")));
+	source->setNext(diskMan);
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	diskMan->setNext(sink);
+
+	BOOST_TEST(source->init());
+	BOOST_TEST(diskMan->init());
+	BOOST_TEST(sink->init());
+	auto frame = source->makeFrame(1023, pinId);
+	frame_container frames;
+	frames.insert(make_pair(pinId, frame));
+
+	for (int i = 0; i < 3; i++)
+	{
+		source->send(frames);
+		diskMan->step();
+	}
 }
 BOOST_AUTO_TEST_SUITE_END()
