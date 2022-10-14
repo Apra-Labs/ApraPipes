@@ -152,12 +152,12 @@ BOOST_AUTO_TEST_CASE(future_export)
     //In this case the timestamp of startTime is in the queue while endTime is in future so we start with export and continue to stay in export as frames are passed.
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
     auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-    uint64_t startTime = now + 3000;
+    uint64_t startTime = now + 3500;
     startTime = (startTime / 1000) * 1000;
-    uint64_t endTime = now + 4000;
+    uint64_t endTime = now + 4500;
     endTime = (endTime / 1000) * 1000;
 
-    int queueSize = testQueue(10000, 5000, true, 20, 60, startTime, endTime);
+    int queueSize = testQueue(10000, 5000, true, 50, 50, startTime, endTime);
     BOOST_TEST(queueSize == 20, "20 frames are passed after state changes to export, due to 20fps, 1sec frames are there in queue of Sink");
 }
 
