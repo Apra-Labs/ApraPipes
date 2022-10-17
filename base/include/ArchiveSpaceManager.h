@@ -1,0 +1,71 @@
+#pragma once
+#include "Module.h"
+#include "AIPExceptions.h"
+
+class ArchiveSpaceManagerProps : public ModuleProps
+{
+public:
+	ArchiveSpaceManagerProps(uint32_t _lowerWaterMark, uint32_t _upperWaterMark, string _pathToWatch, int _samplingFreq)
+	{
+		lowerWaterMark = _lowerWaterMark;
+		upperWaterMark = _upperWaterMark;
+		pathToWatch = _pathToWatch; 
+		samplingFreq = _samplingFreq;
+		
+		auto totalSpace = boost::filesystem::space(pathToWatch);
+		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.available))
+        {
+			LOG_ERROR << "Please enter correct properties!";
+			std::string errorMsg = "Incorrect properties set for Archive Manager. TotalDiskSpace <" + std::to_string(totalSpace.available) + ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<" + std::to_string(upperWaterMark) + ">";
+			throw AIPException(AIP_FATAL,errorMsg );
+        }
+	}
+
+	uint32_t lowerWaterMark = 1000000000; // Lower disk space
+	uint32_t upperWaterMark = 2000000000; // Higher disk space
+	std::string pathToWatch = "";
+	int samplingFreq = 15;
+	size_t getSerializeSize()
+	{
+		return ModuleProps::getSerializeSize() + sizeof(lowerWaterMark) + sizeof(upperWaterMark) + sizeof(pathToWatch) + sizeof(samplingFreq);
+	}
+private:
+	friend class boost::serialization::access;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& boost::serialization::base_object<ModuleProps>(*this);
+		ar& lowerWaterMark;
+		ar& upperWaterMark;
+		ar& pathToWatch;
+		ar& samplingFreq;
+	}
+};
+
+
+class ArchiveSpaceManager : public Module {
+public:
+	ArchiveSpaceManager(ArchiveSpaceManagerProps _props);
+
+	virtual ~ArchiveSpaceManager() {
+	}
+	bool init();
+	bool term();
+	uint32_t finalArchiveSpace = 0;
+	void setProps(ArchiveSpaceManagerProps& props);
+	ArchiveSpaceManagerProps getProps();
+
+protected:
+	bool process(frame_container& frames);
+	bool validateInputPins();
+	bool validateOutputPins();
+	bool validateInputOutputPins();
+	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool handlePropsChange(frame_sp& frame);
+private:
+
+	class Detail;
+	boost::shared_ptr<Detail> mDetail;
+	bool checkDirectory = true;
+};

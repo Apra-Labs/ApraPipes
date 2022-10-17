@@ -239,7 +239,7 @@ SET(CORE_FILES_H
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
-	include/DiskspaceManager.h
+	include/ArchiveSpaceManager.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -287,7 +287,7 @@ SET(IP_FILES
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
 	src/ValveModule.cpp
-	src/DiskspaceManager.cpp
+	src/ArchiveSpaceManager.cpp
 )
 
 
@@ -579,7 +579,7 @@ SET(UT_FILES
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
 	test/valveModule_tests.cpp
-	test/diskspaceManager_tests.cpp
+	test/archivespaceManager_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
