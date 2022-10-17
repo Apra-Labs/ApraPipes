@@ -579,7 +579,7 @@ SET(UT_FILES
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
 	test/valveModule_tests.cpp
-	test/archivespaceManager_tests.cpp
+	test/archivespacemanager_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
