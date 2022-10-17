@@ -3,7 +3,7 @@
 #include "ExternalSinkModule.h"
 #include "test_utils.h"
 #include "PipeLine.h"
-#include "ColorConversion.h"
+#include "ColorConversionXForm.h"
 
 #ifdef ARM64
 BOOST_AUTO_TEST_SUITE(color_conversion_tests, *boost::unit_test::disabled())
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_yuv420Planar)
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
 
 	BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	Test_Utils::saveOrCompare("./data/testOutput/_frame_1280X720_RGB_cc_YUV420Planar.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/frame_1280X720_RGB_cc_YUV420Planar.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 
 }
 

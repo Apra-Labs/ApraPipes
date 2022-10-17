@@ -286,7 +286,7 @@ SET(IP_FILES
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
 	src/ValveModule.cpp
-	src/ColorConversion.cpp
+	src/ColorConversionXForm.cpp
 	src/AbsColorConversionFactory.cpp
 	src/ColorConversionStrategy.h
 )
@@ -321,7 +321,7 @@ SET(IP_FILES_H
 	include/FaceDetectsInfo.h
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
-	include/ColorConversion.h
+	include/ColorConversionXForm.h
 	include/AbsColorConversionFactory.h
 )
 
