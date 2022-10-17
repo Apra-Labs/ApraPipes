@@ -19,7 +19,12 @@ public:
         YUV444, // Planar
 		YUV420, // Planar
 		UYVY,	// Interleaved		
-		NV12
+		NV12,
+		BAYERBG10, // BGGR
+		BAYERBG8, // BGGR
+		BAYERGB8, // GBRG
+		BAYERGR8, // GRBG
+		BAYERRG8  // RGGB
 	};
 
 	static size_t getElemSize(int depth)
