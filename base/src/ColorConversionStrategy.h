@@ -37,7 +37,7 @@ public:
 	CpuRGB2YUV420Planar() {}
 	~CpuRGB2YUV420Planar() {}
 
-	void CpuRGB2YUV420Planar::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_RGB2YUV_I420);
@@ -68,7 +68,7 @@ class CpuRGB2BGR : public CpuInterleaved2Interleaved
 public:
 	CpuRGB2BGR() {}
 	~CpuRGB2BGR() {}
-	void CpuRGB2BGR::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_RGB2BGR);
@@ -81,7 +81,7 @@ public:
 	CpuBGR2RGB() {}
 	~CpuBGR2RGB() {}
 
-	void CpuBGR2RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BGR2RGB);
@@ -94,7 +94,7 @@ public:
 	CpuRGB2MONO() {}
 	~CpuRGB2MONO() {}
 
-	void CpuRGB2MONO::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_RGB2GRAY);
@@ -107,7 +107,7 @@ public:
 	CpuBGR2MONO() {}
 	~CpuBGR2MONO() {}
 
-	void CpuBGR2MONO::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BGR2GRAY);
@@ -120,7 +120,7 @@ public:
 	CpuBayerBG82RGB() {}
 	~CpuBayerBG82RGB() {}
 
-	void CpuBayerBG82RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BayerRG2RGB);
@@ -133,7 +133,7 @@ public:
 	CpuBayerGB82RGB() {}
 	~CpuBayerGB82RGB() {}
 
-	void CpuBayerGB82RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BayerGR2RGB);
@@ -146,7 +146,7 @@ public:
 	CpuBayerGR82RGB() {}
 	~CpuBayerGR82RGB() {}
 
-	void CpuBayerGR82RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BayerGB2RGB);
@@ -159,7 +159,7 @@ public:
 	CpuBayerRG82RGB() {}
 	~CpuBayerRG82RGB() {}
 
-	void CpuBayerRG82RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BayerBG2RGB);
@@ -172,7 +172,7 @@ public:
 	CpuBayerBG82Mono() {}
 	~CpuBayerBG82Mono() {}
 
-	void CpuBayerBG82Mono::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_BayerBG2GRAY);
@@ -203,7 +203,7 @@ public:
 	CpuYUV420Planar2RGB() {}
 	~CpuYUV420Planar2RGB() {}
 
-	void CpuYUV420Planar2RGB::convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
 	{
 		initMatImages(inputFrame, outputFrame, outputMetadata);
 		cv::cvtColor(iImg, oImg, cv::COLOR_YUV420p2RGB);
