@@ -286,6 +286,9 @@ SET(IP_FILES
 	src/FaceDetectorXform.cpp
 	src/TextOverlayXForm.cpp
 	src/ValveModule.cpp
+	src/ColorConversion.cpp
+	src/AbsColorConversionFactory.cpp
+	src/ColorConversionStrategy.h
 )
 
 
@@ -318,6 +321,8 @@ SET(IP_FILES_H
 	include/FaceDetectsInfo.h
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
+	include/ColorConversion.h
+	include/AbsColorConversionFactory.h
 )
 
 
@@ -577,6 +582,7 @@ SET(UT_FILES
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
 	test/valveModule_tests.cpp
+	test/color_conversion_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
