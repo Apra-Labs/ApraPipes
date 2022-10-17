@@ -87,18 +87,11 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 			mapper = boost::shared_ptr<DetailAbstract>(new CpuYUV420Planar2RGB());
 		}
 	}
-	else if (memType == FrameMetadata::CUDA_DEVICE && inputFrameType == FrameMetadata::RAW_IMAGE && outputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	else
 	{
-		throw AIPException(AIP_FATAL, "GPU conversion not supported for this conversion");
+		throw AIPException(AIP_FATAL, "this conversion is not supported");
 	}
-	else if (memType == FrameMetadata::CUDA_DEVICE && inputFrameType == FrameMetadata::RAW_IMAGE && outputFrameType == FrameMetadata::RAW_IMAGE)
-	{
-		throw AIPException(AIP_FATAL, "GPU conversion not supported for this conversion");
-	}
-	else if (memType == FrameMetadata::CUDA_DEVICE && inputFrameType == FrameMetadata::RAW_IMAGE_PLANAR && outputFrameType == FrameMetadata::RAW_IMAGE)
-	{
-		throw AIPException(AIP_FATAL, "GPU conversion not supported for this conversion");
-	}
+	
 	requiredMapper = std::make_pair(inputImageType, outputImageType);
 	cache[requiredMapper] = mapper;
 	return mapper;
