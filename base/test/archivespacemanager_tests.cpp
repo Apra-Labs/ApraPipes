@@ -14,22 +14,22 @@ BOOST_AUTO_TEST_SUITE(archivespacemanager_tests)
 
 void createDiskFiles ()
 {
-	boost::filesystem::create_directories("data//archive//Cam1//2022//10//01");
-	boost::filesystem::create_directories("data//archive//Cam2//2022//10//01");
-	boost::filesystem::create_directories("data//archive//Cam3//2022//10//01");
-	boost::filesystem::ofstream a("data//archive//Cam1//2022//10//01//file0.txt");
+	boost::filesystem::create_directories(boost::filesystem::path("data/archive/Cam1/2022/10/01"));
+	boost::filesystem::create_directories(boost::filesystem::path("data/archive/Cam2/2022/10/01"));
+	boost::filesystem::create_directories(boost::filesystem::path("data/archive/Cam3/2022/10/01"));
+	boost::filesystem::ofstream a(boost::filesystem::path("data/archive/Cam1/2022/10/01/file0.txt"));
 	for (int i = 0; i < 10023; i++)
 	{
 		a << "a";
 	}
 	a.close();
-	boost::filesystem::ofstream b("data//archive//Cam2//2022//10//01//file0.txt");
+	boost::filesystem::ofstream b(boost::filesystem::path("data/archive/Cam2/2022/10/01/file0.txt"));
 	for (int i = 0; i < 10023; i++)
 	{
 		b << "b";
 	}
 	b.close();
-	boost::filesystem::ofstream c("data//archive//Cam3//2022//10//01//file0.txt");
+	boost::filesystem::ofstream c(boost::filesystem::path("data/archive/Cam3/2022/10/01/file0.txt"));
 	for (int i = 0; i < 10023; i++)
 	{
 		c << "c";
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "C://Users//Vinayak//Workspace_ApraPipes//ApraPipes//data//archive",1)));
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(create_files)
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "C://Users//Vinayak//Workspace_ApraPipes//ApraPipes//data//archive",1)));
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "C://Users//Vinayak//Workspace_ApraPipes//ApraPipes//data//archive",1)));
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
 	source->setNext(diskMan);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(profile,*boost::unit_test::disabled())
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinid = source->addOutputPin(metadata);
-	auto diskman = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerwatermark, upperwatermark, "c://users//vinayak//desktop//work//redbull 3.0", samplerate)));
+	auto diskman = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerwatermark, upperwatermark, "c:/users/vinayak/desktop/work/redbull 3.0", samplerate)));
 
 	source->setNext(diskman);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
