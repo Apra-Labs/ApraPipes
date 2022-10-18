@@ -366,9 +366,8 @@ private:
 
 	bool shouldForceStep();
 	bool shouldSkip();
-
 	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
-	
+	boost::shared_ptr<Module> controlModule = nullptr;
 	bool mPlay;
 	uint32_t mForceStepCount;
 	int mSkipIndex;

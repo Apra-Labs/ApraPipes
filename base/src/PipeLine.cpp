@@ -32,6 +32,16 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
+bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+{
+	for (int i = 0; i < modules.size(); i++)
+	{
+		modules[i]->controlModule = cModule;
+	}
+	cModule->pipelineModules = modules;
+	return true;
+}
+
 bool PipeLine::checkCyclicDependency()
 {
 	std::map< std::string, std::vector<std::string> > dependencyMap;

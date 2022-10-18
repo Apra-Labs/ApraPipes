@@ -14,6 +14,8 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
+		NVRStartStop,
+		NVRExport
 	};
 
 	Command()
@@ -249,5 +251,61 @@ private:
 	{
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& skipTS;
+	}
+};
+
+//NVRCommands
+
+class NVRCommandStartStop : public Command
+{
+public:
+	NVRCommandStartStop() : Command(Command::CommandType::NVRStartStop)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startRecording) + sizeof(stopRecording);
+	}
+
+	bool startRecording = false;
+	bool stopRecording = false;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startRecording;
+		ar& stopRecording;
+	}
+};
+
+class NVRCommandExport : public Command
+{
+public:
+	NVRCommandExport() : Command(Command::CommandType::NVRExport)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startExport) + sizeof(stopExport);
+	}
+
+	bool doExport = false;
+	uint64_t startExport = 0;
+	uint64_t stopExport = 0;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startExport;
+		ar& stopExport;
+		ar& doExport;
 	}
 };

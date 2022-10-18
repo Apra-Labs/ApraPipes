@@ -253,6 +253,8 @@ SET(CORE_FILES_H
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/NVRControlModule.h
+	include/AbsControlModule.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -305,6 +307,8 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/NVRControlModule.cpp
+	src/AbsControlModule.cpp
 )
 
 
@@ -606,6 +610,8 @@ SET(UT_FILES
 	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
+	test/nvrcontrolmodule_tests.cpp
+	test/abscontrolmodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
