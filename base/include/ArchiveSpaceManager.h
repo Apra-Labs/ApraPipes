@@ -11,20 +11,37 @@ public:
 		upperWaterMark = _upperWaterMark;
 		pathToWatch = _pathToWatch; 
 		samplingFreq = _samplingFreq;
-		
+  
 		auto totalSpace = boost::filesystem::space(pathToWatch);
-		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.available))
-        {
+		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
+		{
 			LOG_ERROR << "Please enter correct properties!";
-			std::string errorMsg = "Incorrect properties set for Archive Manager. TotalDiskSpace <" + std::to_string(totalSpace.available) + ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<" + std::to_string(upperWaterMark) + ">";
-			throw AIPException(AIP_FATAL,errorMsg );
-        }
+			std::string errorMsg = "Incorrect properties set for Archive Manager. TotalDiskCapacity <" + std::to_string(totalSpace.capacity) + ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<" + std::to_string(upperWaterMark) + ">";
+			throw AIPException(AIP_FATAL, errorMsg);
+		}
 	}
 
-	uint32_t lowerWaterMark = 1000000000; // Lower disk space
-	uint32_t upperWaterMark = 2000000000; // Higher disk space
-	std::string pathToWatch = "";
-	int samplingFreq = 15;
+	ArchiveSpaceManagerProps(uint32_t maxSizeAllowed, string _pathToWatch, int _samplingFreq)
+	{
+		lowerWaterMark = maxSizeAllowed - (maxSizeAllowed / 10);
+		upperWaterMark = maxSizeAllowed;
+		pathToWatch = _pathToWatch;
+		samplingFreq = _samplingFreq;
+
+		auto totalSpace = boost::filesystem::space(pathToWatch);
+		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
+		{
+			LOG_ERROR << "Please enter correct properties!";
+			std::string errorMsg = "Incorrect properties set for Archive Manager. TotalDiskCapacity <" + std::to_string(totalSpace.capacity) + ">lowerWaterMark<" + std::to_string(lowerWaterMark) + "> UpperWaterMark<" + std::to_string(upperWaterMark) + ">";
+			throw AIPException(AIP_FATAL, errorMsg);
+		}
+	}
+
+
+	uint32_t lowerWaterMark; // Lower disk space
+	uint32_t upperWaterMark; // Higher disk space
+	std::string pathToWatch;
+	int samplingFreq;
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(lowerWaterMark) + sizeof(upperWaterMark) + sizeof(pathToWatch) + sizeof(samplingFreq);
@@ -57,7 +74,7 @@ public:
 	ArchiveSpaceManagerProps getProps();
 
 protected:
-	bool process(frame_container& frames);
+	bool process();
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool validateInputOutputPins();

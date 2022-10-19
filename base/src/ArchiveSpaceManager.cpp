@@ -19,7 +19,7 @@ public:
     {
         mProps = _props;
     }
-  
+
     uint32_t estimateDirectorySize(boost::filesystem::path _dir)
     {
         uint32_t dirSize = 0;
@@ -27,7 +27,7 @@ public:
         int inCount = 0;
         int countFreq = 0;
         uint32_t tempSize = 0;
-       
+
         for (const auto& entry : boost::filesystem::recursive_directory_iterator(_dir))
         {
             if ((boost::filesystem::is_regular_file(entry)))
@@ -76,16 +76,23 @@ public:
             for (const auto& camFolder : boost::filesystem::directory_iterator(mProps.pathToWatch))
             {
                 boost::filesystem::path oldHrDir = getOldestDirectory(camFolder);
-                foldVector.push_back({oldHrDir,boost::filesystem::last_write_time(oldHrDir) });
+                foldVector.push_back({ oldHrDir,boost::filesystem::last_write_time(oldHrDir) });
             }
             sort(foldVector.begin(), foldVector.end(), comparator); //Sorting the vector
 
             uint32_t tempSize = 0;
             boost::filesystem::path delDir = foldVector[0].first;
-            BOOST_LOG_TRIVIAL(info) <<"Deleting file : "<< delDir.string();
+            BOOST_LOG_TRIVIAL(info) << "Deleting file : " << delDir.string();
             tempSize = estimateDirectorySize(delDir);
             archiveSize = archiveSize - tempSize;
-            boost::filesystem::remove_all(delDir);
+            try
+            {
+                boost::filesystem::remove_all(delDir);
+            }
+            catch (...)
+            {
+                LOG_ERROR << "Could not delete directory!..";
+            }
             foldVector.clear();
         }
     }
@@ -108,7 +115,7 @@ public:
 
 
 ArchiveSpaceManager::ArchiveSpaceManager(ArchiveSpaceManagerProps _props)
-    :Module(TRANSFORM, "DiskspaceManager", _props)
+    :Module(SOURCE, "ArchiveSpaceManager", _props)
 {
     mDetail.reset(new Detail(_props));
 }
@@ -160,19 +167,19 @@ void ArchiveSpaceManager::setProps(ArchiveSpaceManagerProps& props)
 
 bool ArchiveSpaceManager::handlePropsChange(frame_sp& frame)
 {
-   ArchiveSpaceManagerProps props(mDetail->mProps);
-   auto ret = Module::handlePropsChange(frame, props);
-   mDetail->setProps(props);
-   return ret;
+    ArchiveSpaceManagerProps props(mDetail->mProps);
+    auto ret = Module::handlePropsChange(frame, props);
+    mDetail->setProps(props);
+    return ret;
 }
 
-bool ArchiveSpaceManager::process(frame_container& frames)
+bool ArchiveSpaceManager::process()
 {
     try
     {
         finalArchiveSpace = mDetail->diskOperation();
     }
-    catch(...)
+    catch (...)
     {
         LOG_ERROR << "Archive Disk Manager encountered an error.";
     }

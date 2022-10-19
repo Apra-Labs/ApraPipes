@@ -12,7 +12,7 @@
 
 BOOST_AUTO_TEST_SUITE(archivespacemanager_tests)
 
-void createDiskFiles ()
+void createDiskFiles()
 {
 	boost::filesystem::create_directories(boost::filesystem::path("data/archive/Cam1/2022/10/01"));
 	boost::filesystem::create_directories(boost::filesystem::path("data/archive/Cam2/2022/10/01"));
@@ -44,22 +44,14 @@ BOOST_AUTO_TEST_CASE(basic)
 	Test_Utils::FileCleaner f(folder);
 	uint32_t lowerWaterMark = 25000;
 	uint32_t upperWaterMark = 30000;
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive", 1)));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
-	source->setNext(diskMan);
+	auto pinId = diskMan->addOutputPin(metadata);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
-
-	BOOST_TEST(source->init());
 	BOOST_TEST(diskMan->init());
 	BOOST_TEST(sink->init());
-	auto frame = source->makeFrame(1023, pinId);
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
-
-	source->send(frames);
 	diskMan->step();
 	BOOST_ASSERT(diskMan->finalArchiveSpace < lowerWaterMark);
 
@@ -68,32 +60,23 @@ BOOST_AUTO_TEST_CASE(basic)
 BOOST_AUTO_TEST_CASE(create_files)
 {
 	createDiskFiles();
-	std::vector<std::string> folder = {"./data/archive"};
+	std::vector<std::string> folder = { "./data/archive" };
 	Test_Utils::FileCleaner f(folder);
 	uint32_t lowerWaterMark = 25000;
 	uint32_t upperWaterMark = 30000;
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive", 1)));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
-	source->setNext(diskMan);
+	auto pinId = diskMan->addOutputPin(metadata);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
 
-	BOOST_TEST(source->init());
 	BOOST_TEST(diskMan->init());
 	BOOST_TEST(sink->init());
 
-	auto frame = source->makeFrame(1023, pinId);
-	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
-
-	source->send(frames);
 	diskMan->step();
 	BOOST_ASSERT(diskMan->finalArchiveSpace < lowerWaterMark);
 
 	createDiskFiles();
-	source->send(frames);
 	diskMan->step();
 
 	BOOST_ASSERT(diskMan->finalArchiveSpace < lowerWaterMark);
@@ -107,23 +90,15 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	uint32_t lowerWaterMark = 25000;
 	uint32_t newLowerWaterMark = 15000;
 	uint32_t upperWaterMark = 30000;
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive", 1)));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	auto pinId = source->addOutputPin(metadata);
-	auto diskMan = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerWaterMark, upperWaterMark, "./data/archive",1)));
-	source->setNext(diskMan);
+	auto pinId = diskMan->addOutputPin(metadata);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskMan->setNext(sink);
 
-	BOOST_TEST(source->init());
 	BOOST_TEST(diskMan->init());
 	BOOST_TEST(sink->init());
 
-	auto frame = source->makeFrame(1023, pinId);
-	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
-
-	source->send(frames);
 	diskMan->step();
 	BOOST_ASSERT(diskMan->finalArchiveSpace < lowerWaterMark);
 
@@ -134,34 +109,23 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	diskMan->step();
 
 	createDiskFiles();
-
-	source->send(frames);
 	diskMan->step();
 	BOOST_ASSERT(diskMan->finalArchiveSpace < newLowerWaterMark);
 }
 
-BOOST_AUTO_TEST_CASE(profile,*boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(profile, *boost::unit_test::disabled())
 {
 	uint32_t lowerwatermark = 750000;
 	uint32_t upperwatermark = 800000;
 	int samplerate = 15;
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
-	auto pinid = source->addOutputPin(metadata);
 	auto diskman = boost::shared_ptr<ArchiveSpaceManager>(new ArchiveSpaceManager(ArchiveSpaceManagerProps(lowerwatermark, upperwatermark, "c:/users/vinayak/desktop/work/redbull 3.0", samplerate)));
-
-	source->setNext(diskman);
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
+	auto pinid = diskman->addOutputPin(metadata);
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	diskman->setNext(sink);
-
-	BOOST_TEST(source->init());
 	BOOST_TEST(diskman->init());
 	BOOST_TEST(sink->init());
-	auto frame = source->makeFrame(1023, pinid);
-	frame_container frames;
-	frames.insert(make_pair(pinid, frame));
 
-	source->send(frames);
 	diskman->step();
 	BOOST_ASSERT(diskman->finalArchiveSpace < lowerwatermark);
 }
