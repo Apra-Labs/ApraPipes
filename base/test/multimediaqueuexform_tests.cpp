@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(export_state)
     uint64_t endTime = now + 2000;
     endTime = (endTime / 1000) * 1000;
 
-    int queueSize = testQueue(10000, 5000, true, 40, 15, startTime, endTime);
+    int queueSize = testQueue(20000, 5000, true, 40, 40, startTime, endTime);
     BOOST_TEST(queueSize == 20);
 }
 
