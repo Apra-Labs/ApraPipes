@@ -59,13 +59,15 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         }
         else if (cmd.stopRecording)
         {
-
+            //In deque identify correct mp4 writer and pass stop recording command
         }
     }
     if (type == Command::CommandType::NVRExport)
     {
         NVRCommandExport cmd;
         getCommand(cmd, frame);
+        uint64_t startTime = cmd.startExport;
+        uint64_t stopTime = cmd.stopExport;
     }
     return Module::handleCommand(type, frame);
 }

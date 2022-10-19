@@ -10,6 +10,7 @@ IF(ENABLE_ARM64) #no GST build for ARM64 yet
 	set(ENABLE_GST OFF)
 ENDIF(ENABLE_ARM64)
 
+SET(APRA_NVR ON)
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -616,6 +617,11 @@ SET(UT_FILES
 	${CUDA_UT_FILES}
 )
 
+SET(NVR_UT_FILES
+    test/utmain.cpp
+	test/nvrcontrolmodule_tests.cpp
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -653,17 +659,43 @@ ENDIF(ENABLE_GST)
 
 
 add_executable(aprapipesut ${UT_FILES})
+#IF(APRA_NVR)
+add_executable(aprapipesnvr ${NVR_UT_FILES})
+#ENDIF(APRA_NVR)
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+	target_include_directories ( aprapipesnvr PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+	target_include_directories ( aprapipesnvr PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
 
 target_link_libraries(aprapipesut   
+  aprapipes  
+  ${LIBMP4_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ${GST_LIBS}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  )
+
+  target_link_libraries(aprapipesnvr   
   aprapipes  
   ${LIBMP4_LIB}
   ${Boost_LIBRARIES}
