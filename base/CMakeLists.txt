@@ -5,6 +5,7 @@ OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
+OPTION(ENABLE_NVR "Use this switch to enable ApraPipesNVR" ON)
 
 IF(ENABLE_ARM64) #no GST build for ARM64 yet
 	set(ENABLE_GST OFF)
