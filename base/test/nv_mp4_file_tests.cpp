@@ -33,7 +33,7 @@ void run_h264EncoderNV_to_h264writer(bool loop, int sleepTime)
 	bool enableBFrames = 1;
 
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 300;
 	fileReaderProps.readLoop = loop;
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));

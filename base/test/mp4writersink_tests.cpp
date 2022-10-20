@@ -22,7 +22,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
@@ -32,7 +32,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 10;
+	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
@@ -65,7 +65,7 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = true;
 
@@ -74,7 +74,7 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	fileReader->addOutputPin(encodedImageMetadata);
 
 
-	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1, 1 * 1024 * 1024);
+	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1);
 	fileReaderProps2.fps = 24;
 	fileReaderProps2.readLoop = true;
 	auto metadataReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
 
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 100;
 	fileReaderProps.readLoop = false;
 
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(41, 1, 100, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 10;
+	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 100;
 	fileReaderProps.readLoop = true;
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 100, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 10;
+	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = true;
 
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	fileReader->addOutputPin(encodedImageMetadata);
 
 
-	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1, 1 * 1024 * 1024);
+	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1);
 	fileReaderProps2.fps = 24;
 	fileReaderProps2.readLoop = true;
 	auto metadataReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
 	
 	std::string inFolderPath = "./data/h264_data/";
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
 

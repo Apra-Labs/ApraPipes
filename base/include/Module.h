@@ -16,6 +16,7 @@
 #include "QuePushStrategy.h"
 #include "FIndexStrategy.h"
 #include "Command.h"
+#include "BufferMaker.h"
 
 using namespace std;
 
@@ -314,6 +315,22 @@ protected:
 	bool processSourceQue();
 	bool handlePausePlay(bool play);
 	virtual void notifyPlay(bool play) {}
+
+	//makes buffers from frameFactory
+	class FFBufferMaker : public BufferMaker {
+	public:
+		FFBufferMaker(Module& module);
+		virtual void* make(size_t dataSize);
+		frame_sp getFrame() {
+			return frameIMade;
+		}
+	private:
+		Module& myModule;
+		frame_sp frameIMade;
+	};
+
+	FFBufferMaker createFFBufferMaker();
+
 private:	
 	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);

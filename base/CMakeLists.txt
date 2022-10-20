@@ -194,6 +194,7 @@ SET(CORE_FILES
 )
 
 SET(CORE_FILES_H
+	include/BufferMaker.h	
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
