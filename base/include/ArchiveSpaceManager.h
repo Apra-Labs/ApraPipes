@@ -11,6 +11,7 @@ public:
 		upperWaterMark = _upperWaterMark;
 		pathToWatch = _pathToWatch; 
 		samplingFreq = _samplingFreq;
+		fps = 0.001;
   
 		auto totalSpace = boost::filesystem::space(pathToWatch);
 		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
@@ -27,6 +28,7 @@ public:
 		upperWaterMark = maxSizeAllowed;
 		pathToWatch = _pathToWatch;
 		samplingFreq = _samplingFreq;
+		fps = 0.001;
 
 		auto totalSpace = boost::filesystem::space(pathToWatch);
 		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
