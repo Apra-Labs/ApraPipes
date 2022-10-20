@@ -256,20 +256,19 @@ private:
 
 //NVRCommands
 
-class NVRCommandStartStop : public Command
+class NVRCommandRecord : public Command
 {
 public:
-	NVRCommandStartStop() : Command(Command::CommandType::NVRStartStop)
+	NVRCommandRecord() : Command(Command::CommandType::NVRStartStop)
 	{
 	}
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(startRecording) + sizeof(stopRecording);
+		return Command::getSerializeSize() + sizeof(doRecording);
 	}
 
-	bool startRecording = false;
-	bool stopRecording = false;
+	bool doRecording = false;
 
 private:
 	friend class boost::serialization::access;
@@ -277,8 +276,7 @@ private:
 	void serialize(Archive& ar, const unsigned int /* file_version */)
 	{
 		ar& boost::serialization::base_object<Command>(*this);
-		ar& startRecording;
-		ar& stopRecording;
+		ar& doRecording;
 	}
 };
 
@@ -294,7 +292,6 @@ public:
 		return Command::getSerializeSize() + sizeof(startExport) + sizeof(stopExport);
 	}
 
-	bool doExport = false;
 	uint64_t startExport = 0;
 	uint64_t stopExport = 0;
 
@@ -306,6 +303,5 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& startExport;
 		ar& stopExport;
-		ar& doExport;
 	}
 };

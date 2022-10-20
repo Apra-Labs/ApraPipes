@@ -28,8 +28,7 @@ protected:
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool handlePropsChange(frame_sp& frame);
-	bool startRecord();
-	bool stopRecord();
+	bool Record(bool record);
 	bool Export(uint64_t startTime,uint64_t stopTime);
 
 private:

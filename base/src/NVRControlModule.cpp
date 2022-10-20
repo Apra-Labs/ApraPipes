@@ -17,6 +17,32 @@ public:
     NVRControlModuleProps mProps;
 };
 
+class NVRCommand
+{
+
+};
+class RecordCommand : public NVRCommand
+{
+public:
+    RecordCommand(bool _doRecord)
+    {
+        doRecord = _doRecord;
+    }
+    bool doRecord = false;
+};
+class ExportCommand : public NVRCommand
+{
+public:
+    ExportCommand(uint64_t _startTime, uint64_t _stopTime)
+    {
+        startTime = _startTime;
+        stopTime = _stopTime;
+    }
+    uint64_t startTime = 0;
+    uint64_t stopTime = 0;
+};
+
+
 NVRControlModule::NVRControlModule(NVRControlModuleProps _props)
     :AbsControlModule(_props)
 {
@@ -49,25 +75,26 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
     if (type == Command::CommandType::NVRStartStop)
     {
-        NVRCommandStartStop cmd;
+        NVRCommandRecord cmd;
         getCommand(cmd, frame);
-        if (cmd.startRecording)
+        if (cmd.doRecording)
         {
-            //In deque identify correct mp4 writer 
-            //Call a mp4Writer->start writing command
-
+            boost::shared_ptr<RecordCommand>Record;
+            Record->doRecord = true;
         }
-        else if (cmd.stopRecording)
+        else
         {
-            //In deque identify correct mp4 writer and pass stop recording command
+            boost::shared_ptr<RecordCommand>Record;
         }
+    
     }
     if (type == Command::CommandType::NVRExport)
     {
         NVRCommandExport cmd;
         getCommand(cmd, frame);
-        uint64_t startTime = cmd.startExport;
-        uint64_t stopTime = cmd.stopExport;
+        boost::shared_ptr<ExportCommand>Export;
+        Export->startTime = cmd.startExport;
+        Export->stopTime = cmd.stopExport;
     }
     return Module::handleCommand(type, frame);
 }
@@ -107,24 +134,20 @@ bool NVRControlModule::process(frame_container& frames)
     return true;
 }
 
-bool NVRControlModule::startRecord()
+bool NVRControlModule::Record(bool record)
 {
-    NVRCommandStartStop cmd;
-    cmd.startRecording = true;
+    NVRCommandRecord cmd;
+    if (record)
+    {
+        cmd.doRecording = true;
+    }
     return queueCommand(cmd);
 }
 
-bool NVRControlModule::stopRecord()
-{
-    NVRCommandStartStop cmd;
-    cmd.stopRecording = true;
-    return queueCommand(cmd);
-}
 
 bool NVRControlModule::Export(uint64_t ts, uint64_t te)
 {
     NVRCommandExport cmd;
-    cmd.doExport = true;
     cmd.startExport = ts;
     cmd.stopExport = te;
     return queueCommand(cmd);
