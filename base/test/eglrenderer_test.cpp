@@ -13,7 +13,6 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
     FileReaderModuleProps fileReaderProps("./data/ArgusCamera");
 	fileReaderProps.fps = 30;
-	fileReaderProps.maxFileSize = 200*1024;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::UYVY, CV_8UC1, 0, CV_8U, FrameMetadata::MemType::DMABUF, true));
 

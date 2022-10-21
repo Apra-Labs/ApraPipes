@@ -505,6 +505,7 @@ IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
 		test/jpegencoderl4tm_tests.cpp
 		test/jpegdecoderl4tm_tests.cpp
+#		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2helper_tests.cpp
 		test/h264encoderv4l2_tests.cpp
@@ -554,6 +555,7 @@ SET(UT_FILES
 	test/test_utils.h	
 	test/filewritermodule_tests.cpp
 	test/logger_tests.cpp
+#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
 	test/quepushstrategy_tests.cpp	
 	test/framesmuxer_tests.cpp
 	test/filereadermodule_tests.cpp
@@ -577,6 +579,7 @@ SET(UT_FILES
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
+#	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	test/valveModule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
