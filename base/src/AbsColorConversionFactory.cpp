@@ -1,7 +1,7 @@
 #include "AbsColorConversionFactory.h"
 #include "ColorConversionStrategy.h"
 
-boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadata_sp input, framemetadata_sp output)
+boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadata_sp input, framemetadata_sp output, cv::Mat& inpImg, cv::Mat& outImg)
 {
 	boost::shared_ptr<DetailAbstract> mapper;
 	static std::map<std::pair<ImageMetadata::ImageType, ImageMetadata::ImageType>, boost::shared_ptr<DetailAbstract>> cache;
@@ -25,6 +25,9 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		auto rawOutputMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
 		inputImageType = rawInputMetadata->getImageType();
 		outputImageType = rawOutputMetadata->getImageType();
+		
+		inpImg = Utils::getMatHeader(rawInputMetadata);
+		outImg = Utils::getMatHeader(rawOutputMetadata);
 
 		if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::BGR)
 		{
@@ -69,6 +72,11 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		auto rawOutputMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(output);
 		inputImageType = rawMetadata->getImageType();
 		outputImageType = rawOutputMetadata->getImageType();
+		auto height = rawOutputMetadata->getHeight(0);
+		int outputRows = height * 1.5;
+		
+		inpImg = Utils::getMatHeader(rawMetadata);
+		outImg = Utils::getMatHeader(rawOutputMetadata, outputRows);
 
 		if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::YUV420)
 		{
@@ -81,6 +89,11 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		auto rawPlanarMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
 		inputImageType = rawMetadata->getImageType();
 		outputImageType = rawPlanarMetadata->getImageType();
+		auto height = rawMetadata->getHeight(0);
+		int inputRows = height * 1.5;
+
+		inpImg = Utils::getMatHeader(rawMetadata, inputRows);
+		outImg = Utils::getMatHeader(rawPlanarMetadata);
 
 		if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::RGB)
 		{

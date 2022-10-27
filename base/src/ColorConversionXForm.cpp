@@ -88,11 +88,12 @@ bool ColorConversion::validateOutputPins()
 
 void ColorConversion::setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata)
 {
-	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata);
+	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,inpImg,outImg);
 }
 
 void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
+	mInputMetadata = metadata;
 	Module::addInputPin(metadata, pinId);
 	auto inputFrameType = metadata->getFrameType();
 
@@ -111,30 +112,29 @@ void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 	switch (mProps.type)
 	{
-	case ColorConversionProps::ConversionType::RGB_2_MONO:
-	case ColorConversionProps::ConversionType::BGR_2_MONO:
-	case ColorConversionProps::ConversionType::BAYERBG8_2_MONO:
+	case ColorConversionProps::ConversionType::RGB_TO_MONO:
+	case ColorConversionProps::ConversionType::BGR_TO_MONO:
+	case ColorConversionProps::ConversionType::BAYERBG8_TO_MONO:
 		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 		break;
-	case ColorConversionProps::ConversionType::BGR_2_RGB:
-	case ColorConversionProps::ConversionType::BAYERBG8_2_RGB:
-	case ColorConversionProps::ConversionType::YUV420PLANAR_2_RGB:
-	case ColorConversionProps::ConversionType::BAYERGB8_2_RGB:
-	case ColorConversionProps::ConversionType::BAYERGR8_2_RGB:
-	case ColorConversionProps::ConversionType::BAYERRG8_2_RGB:
+	case ColorConversionProps::ConversionType::BGR_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERBG8_TO_RGB:
+	case ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERGB8_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERGR8_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERRG8_TO_RGB:
 		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 		break;
-	case ColorConversionProps::ConversionType::RGB_2_BGR:
+	case ColorConversionProps::ConversionType::RGB_TO_BGR:
 		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 		break;
-	case ColorConversionProps::ConversionType::RGB_2_YUV420PLANAR:
+	case ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR:
 		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(mWidth, mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST));
 		break;
 	default:
 		throw AIPException(AIP_FATAL, "conversion not supported");
 	}
 	mOutputPinId = addOutputPin(mOutputMetadata);
-	setConversionStrategy(metadata, mOutputMetadata);
 }
 
 std::string ColorConversion::addOutputPin(framemetadata_sp& metadata)
@@ -144,6 +144,7 @@ std::string ColorConversion::addOutputPin(framemetadata_sp& metadata)
 
 bool ColorConversion::init()
 {
+	setConversionStrategy(mInputMetadata, mOutputMetadata);
 	return Module::init();
 }
 
@@ -155,7 +156,7 @@ bool ColorConversion::term()
 bool ColorConversion::process(frame_container& frames)
 {
 	auto outFrame = makeFrame();
-	mDetail->convert(frames, outFrame, mOutputMetadata);
+	mDetail->convert(frames, outFrame, mOutputMetadata,inpImg,outImg);
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
 	return true;
