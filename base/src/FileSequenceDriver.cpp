@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cassert>
 #include "Logger.h"
+#include "BufferMaker.h"
 
 FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 	int startIndex,
@@ -78,8 +79,7 @@ void FileSequenceDriver::jump(uint64_t index)
 	mStrategy->jump(index);
 }
 
-//reads on the supplied buffer throws error if it is too small
-bool FileSequenceDriver::ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& index)
+bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index)
 {
     bool readRes = false;
 
@@ -97,25 +97,17 @@ bool FileSequenceDriver::ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& 
 			size_t req_size = static_cast<size_t>(file.tellg());
 			if (req_size > 0U)
 			{
-				if(dataSize >= req_size)
-				{
-					dataSize = req_size; //let them know how much did I read
-					file.seekg(0, std::ios::beg);
-					file.read((char*)dataToRead, dataSize);
+				auto dataToRead = buffMaker.make(req_size);
+				file.seekg(0, std::ios::beg);
+				file.read((char*)dataToRead, req_size);
 
-					LOG_TRACE << "FileSequenceDriver::Read " << dataSize << " Bytes ";
+				LOG_TRACE << "FileSequenceDriver::Read " << req_size << " Bytes ";
 
-					readRes = true;
-				}
-				else {
-					LOG_WARNING << "FileSequenceDriver::Read requires " << req_size << " Bytes supplied " << dataSize;
-					//let them know how much do I need
-					dataSize = req_size;
-				}
+				readRes = true;
+
 			}
 			else {
 				LOG_ERROR << "FileSequenceDriver::Read can not read file " << fileNameToUse;
-				dataSize = 0;
 			}
             
             file.close();

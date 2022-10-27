@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 {
 	std::string rootDir = "RecordingFolder/5e9ee85ba832470bc8331109"; // point to folder of jpegs
-	auto fileReaderProps = FileReaderModuleProps(rootDir, 0, -1, 4 * 1024 * 1024);
+	auto fileReaderProps = FileReaderModuleProps(rootDir, 0, -1);
 	fileReaderProps.fps = 10;
 	fileReaderProps.readLoop = false;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));

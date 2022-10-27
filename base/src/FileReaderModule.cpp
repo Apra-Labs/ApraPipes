@@ -68,20 +68,14 @@ bool FileReaderModule::produce()
 		return true;
 	}
 	
-	
-	auto bufferFrame = makeFrame(mProps.maxFileSize);
-	size_t buffer_size = mProps.maxFileSize;
+	FFBufferMaker buffMaker(*this);
+		
 	uint64_t fIndex2 = 0;
-	if (!mDriver->ReadP(static_cast<uint8_t*>(bufferFrame->data()), buffer_size, fIndex2))
+	if (!mDriver->ReadP(buffMaker, fIndex2))
 	{
-		if (buffer_size > mProps.maxFileSize)
-		{
-			mProps.maxFileSize = buffer_size;
-			return produce(); //danger: may be reentrant
-		}
 		return false;
 	}
-	auto frame = makeFrame(bufferFrame, buffer_size, mPinId);
+	auto frame = buffMaker.getFrame();
 	frame->fIndex2 = fIndex2;
 	
 	std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
