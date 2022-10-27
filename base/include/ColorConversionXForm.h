@@ -1,24 +1,24 @@
 #pragma once
 #include "FrameMetadata.h"
 #include "Module.h"
-#include "AbsColorConversionFactory.h"
 
+class DetailAbstract;
 class ColorConversionProps : public ModuleProps
 {
 public:
 	enum ConversionType
 	{
-		RGB_2_MONO = 0,
-		BGR_2_MONO,
-		BGR_2_RGB,
-		RGB_2_BGR,
-		BAYERBG8_2_MONO,
-		RGB_2_YUV420PLANAR,
-		YUV420PLANAR_2_RGB,
-		BAYERBG8_2_RGB,
-		BAYERGB8_2_RGB,
-		BAYERRG8_2_RGB,
-		BAYERGR8_2_RGB
+		RGB_TO_MONO = 0,
+		BGR_TO_MONO,
+		BGR_TO_RGB,
+		RGB_TO_BGR,
+		RGB_TO_YUV420PLANAR,
+		YUV420PLANAR_TO_RGB,
+		BAYERBG8_TO_MONO,
+		BAYERBG8_TO_RGB,
+		BAYERGB8_TO_RGB,
+		BAYERRG8_TO_RGB,
+		BAYERGR8_TO_RGB
 	};
 	ColorConversionProps(ConversionType _type) : ModuleProps()
 	{
@@ -48,7 +48,6 @@ protected:
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:
-	void setMetadata(framemetadata_sp& metadata);
 	int mFrameType;
 	ColorConversionProps mProps;
 	boost::shared_ptr<DetailAbstract> mDetail;
@@ -56,5 +55,8 @@ private:
 	uint16_t mWidth;
 	uint16_t mHeight;
 	framemetadata_sp mOutputMetadata;
+	framemetadata_sp mInputMetadata;
+	cv::Mat inpImg;
+	cv::Mat outImg;
 };
 

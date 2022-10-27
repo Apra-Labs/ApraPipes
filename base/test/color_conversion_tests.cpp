@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_mono)
 {
 	std::string inputPathName = "./data/frame_1280x720_rgb.raw";
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-	auto conversionType = ColorConversionProps::ConversionType::RGB_2_MONO;
+	auto conversionType = ColorConversionProps::ConversionType::RGB_TO_MONO;
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
 
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_mono)
 BOOST_AUTO_TEST_CASE(bgr_2_mono)
 {
 	std::string inputPathName = "./data/BGR_1080x720.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BGR_2_MONO;
+	auto conversionType = ColorConversionProps::ConversionType::BGR_TO_MONO;
 	auto metadata = framemetadata_sp(new RawImageMetadata(1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(bgr_2_mono)
 BOOST_AUTO_TEST_CASE(bgr_2_rgb)
 {
 	std::string inputPathName = "./data/BGR_1080x720.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BGR_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::BGR_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImageMetadata(1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_bgr)
 {
 
 	std::string inputPathName = "./data/frame_1280x720_rgb.raw";
-	auto conversionType = ColorConversionProps::ConversionType::RGB_2_BGR;
+	auto conversionType = ColorConversionProps::ConversionType::RGB_TO_BGR;
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_bgr)
 BOOST_AUTO_TEST_CASE(rgb_2_yuv420Planar)
 {
 	std::string inputPathName = "./data/frame_1280x720_rgb.raw";
-	auto conversionType = ColorConversionProps::ConversionType::RGB_2_YUV420PLANAR;
+	auto conversionType = ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR;
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(rgb_2_yuv420Planar)
 BOOST_AUTO_TEST_CASE(yuv420Planar_2_rgb)
 {
 	std::string inputPathName = "./data/YUV_420_planar.raw";
-	auto conversionType = ColorConversionProps::ConversionType::YUV420PLANAR_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(1280, 720, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(yuv420Planar_2_rgb)
 BOOST_AUTO_TEST_CASE(BayerBG8Bit_2_RGB)
 {
 	std::string inputPathName = "./data/Bayer_images/Rubiks_BayerBG8_800x800.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BAYERBG8_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::BAYERBG8_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImageMetadata(800, 800, ImageMetadata::ImageType::BAYERBG8, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(BayerBG8Bit_2_RGB)
 BOOST_AUTO_TEST_CASE(BayerBG8Bit_2_Mono)
 {
 	std::string inputPathName = "./data/Bayer_images/Rubiks_BayerBG8_800x800.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BAYERBG8_2_MONO;
+	auto conversionType = ColorConversionProps::ConversionType::BAYERBG8_TO_MONO;
 	auto metadata = framemetadata_sp(new RawImageMetadata(800, 800, ImageMetadata::ImageType::BAYERBG8, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(BayerBG8Bit_2_Mono)
 BOOST_AUTO_TEST_CASE(BayerGB8Bit_2_RGB)
 {
 	std::string inputPathName = "./data/Bayer_images/Rubiks_bayerGB8_799xx800.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BAYERGB8_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::BAYERGB8_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImageMetadata(799, 800, ImageMetadata::ImageType::BAYERGB8, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(BayerGB8Bit_2_RGB)
 BOOST_AUTO_TEST_CASE(BayerGR8Bit_2_RGB)
 {
 	std::string inputPathName = "./data/Bayer_images/Rubiks_bayerGR8_800x799.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BAYERGR8_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::BAYERGR8_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImageMetadata(800, 799, ImageMetadata::ImageType::BAYERGR8, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(BayerGR8Bit_2_RGB)
 BOOST_AUTO_TEST_CASE(BayerRG8Bit_2_RGB)
 {
 	std::string inputPathName = "./data/Bayer_images/Rubiks_bayerRG8_799x799.raw";
-	auto conversionType = ColorConversionProps::ConversionType::BAYERRG8_2_RGB;
+	auto conversionType = ColorConversionProps::ConversionType::BAYERRG8_TO_RGB;
 	auto metadata = framemetadata_sp(new RawImageMetadata(799, 799, ImageMetadata::ImageType::BAYERRG8, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto outputFrame = colorConversion(inputPathName, metadata, conversionType);

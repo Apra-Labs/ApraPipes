@@ -289,6 +289,7 @@ SET(IP_FILES
 	src/ColorConversionXForm.cpp
 	src/AbsColorConversionFactory.cpp
 	src/ColorConversionStrategy.h
+	src/AbsColorConversionFactory.h
 )
 
 
@@ -322,7 +323,6 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
-	include/AbsColorConversionFactory.h
 )
 
 
