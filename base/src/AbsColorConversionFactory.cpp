@@ -72,14 +72,14 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		auto rawOutputMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(output);
 		inputImageType = rawMetadata->getImageType();
 		outputImageType = rawOutputMetadata->getImageType();
-		auto height = rawOutputMetadata->getHeight(0);
-		int outputRows = height * 1.5;
-		
-		inpImg = Utils::getMatHeader(rawMetadata);
-		outImg = Utils::getMatHeader(rawOutputMetadata, outputRows);
 
 		if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::YUV420)
 		{
+			auto height = rawOutputMetadata->getHeight(0);
+			int outputRows = height * 1.5;
+
+			inpImg = Utils::getMatHeader(rawMetadata);
+			outImg = Utils::getMatHeader(rawOutputMetadata, outputRows);
 			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2YUV420Planar());
 		}
 	}
@@ -89,14 +89,14 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		auto rawPlanarMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
 		inputImageType = rawMetadata->getImageType();
 		outputImageType = rawPlanarMetadata->getImageType();
-		auto height = rawMetadata->getHeight(0);
-		int inputRows = height * 1.5;
-
-		inpImg = Utils::getMatHeader(rawMetadata, inputRows);
-		outImg = Utils::getMatHeader(rawPlanarMetadata);
 
 		if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::RGB)
 		{
+			auto height = rawMetadata->getHeight(0);
+			int inputRows = height * 1.5;
+
+			inpImg = Utils::getMatHeader(rawMetadata, inputRows);
+			outImg = Utils::getMatHeader(rawPlanarMetadata);
 			mapper = boost::shared_ptr<DetailAbstract>(new CpuYUV420Planar2RGB());
 		}
 	}
