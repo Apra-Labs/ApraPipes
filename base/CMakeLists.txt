@@ -256,6 +256,7 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/NVRControlModule.h
+	include/NVRHelper.h
 	include/AbsControlModule.h
 )
 

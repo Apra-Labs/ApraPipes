@@ -32,7 +32,7 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
-bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+bool PipeLine::addControlModule(boost::shared_ptr<NVRControlModule> cModule)
 {
 	for (int i = 0; i < modules.size(); i++)
 	{

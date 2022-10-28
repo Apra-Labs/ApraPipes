@@ -64,7 +64,7 @@ struct CheckThread {
 	class SinkModule : public Module
 	{
 	public:
-		SinkModule(SinkModuleProps props) :Module(SINK, "sinkModule", props) {};
+		SinkModule(SinkModuleProps props) :Module(SINK, "mp4WritersinkModule", props) {};
 	protected:
 		bool process() { return false; }
 		bool validateOutputPins()
@@ -95,12 +95,18 @@ BOOST_AUTO_TEST_CASE(basic)
 	m3->addOutputPin(metadata3);
 	auto m4 = boost::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
 	m3->setNext(m4);
-	auto nvrControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+
 	PipeLine p("test");
 	p.appendModule(m1);
 	p.init();
-	p.addControlModule(nvrControl);
+	mControl->init();
+	p.addControlModule(mControl);
 	p.run_all_threaded();
+	mControl->Record(true);
+	mControl->step();
+	mControl->Record(false);
+	mControl->step();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	p.stop();
 	p.term();

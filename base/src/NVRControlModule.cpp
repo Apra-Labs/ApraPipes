@@ -1,6 +1,7 @@
-#include "stdafx.h"
+#include <stdafx.h>
 #include <boost/filesystem.hpp>
 #include "NVRControlModule.h"
+#include "Mp4WriterSink.h"
 #include "Module.h"
 #include "Command.h"
 
@@ -14,32 +15,11 @@ public:
     ~Detail()
     {
     }
+    void setProps(NVRControlModuleProps _props)
+    {
+        mProps = _props;
+    }
     NVRControlModuleProps mProps;
-};
-
-class NVRCommand
-{
-
-};
-class RecordCommand : public NVRCommand
-{
-public:
-    RecordCommand(bool _doRecord)
-    {
-        doRecord = _doRecord;
-    }
-    bool doRecord = false;
-};
-class ExportCommand : public NVRCommand
-{
-public:
-    ExportCommand(uint64_t _startTime, uint64_t _stopTime)
-    {
-        startTime = _startTime;
-        stopTime = _stopTime;
-    }
-    uint64_t startTime = 0;
-    uint64_t stopTime = 0;
 };
 
 
@@ -73,35 +53,60 @@ void NVRControlModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-    if (type == Command::CommandType::NVRStartStop)
+    if (type == Command::CommandType::NVRCommandRecord)
     {
         NVRCommandRecord cmd;
         getCommand(cmd, frame);
         if (cmd.doRecording)
         {
-            boost::shared_ptr<RecordCommand>Record;
-            Record->doRecord = true;
+            auto RecordObj = RecordCommand(true);
+            for (int i = 0; i < pipelineModules.size(); i++)
+            {
+                if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
+                {
+                     auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
+                     bool isTaskDone = mp4Writer->stub(RecordObj);
+                }
+            }
         }
         else
         {
-            boost::shared_ptr<RecordCommand>Record;
+            auto RecordObj = RecordCommand(false);
+            for (int i = 0; i < pipelineModules.size(); i++)
+            {
+                if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
+                {
+                    auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
+                    bool isTaskDone = mp4Writer->stub(RecordObj);
+                }
+            }
         }
-    
+        return true;
     }
-    if (type == Command::CommandType::NVRExport)
+    if (type == Command::CommandType::NVRCommandExport)
     {
         NVRCommandExport cmd;
         getCommand(cmd, frame);
-        boost::shared_ptr<ExportCommand>Export;
-        Export->startTime = cmd.startExport;
-        Export->stopTime = cmd.stopExport;
+        boost::shared_ptr<ExportCommand>ExportObj;
+        ExportObj->startTime = cmd.startExport;
+        ExportObj->stopTime = cmd.stopExport;
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
+            {
+                auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
+            }
+        }
     }
     return Module::handleCommand(type, frame);
 }
 
 bool NVRControlModule::handlePropsChange(frame_sp& frame)
 {
-    return true;
+    NVRControlModuleProps props(mDetail->mProps);
+    auto ret = Module::handlePropsChange(frame, props);
+    mDetail->setProps(props);
+    return ret;
 }
 
 bool NVRControlModule::init()
@@ -137,10 +142,7 @@ bool NVRControlModule::process(frame_container& frames)
 bool NVRControlModule::Record(bool record)
 {
     NVRCommandRecord cmd;
-    if (record)
-    {
-        cmd.doRecording = true;
-    }
+    cmd.doRecording = record;
     return queueCommand(cmd);
 }
 

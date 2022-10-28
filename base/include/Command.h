@@ -16,6 +16,8 @@ public:
 		Seek,
 		NVRStartStop,
 		NVRExport
+		NVRCommandRecord,
+		NVRCommandExport
 	};
 
 	Command()
@@ -259,7 +261,7 @@ private:
 class NVRCommandRecord : public Command
 {
 public:
-	NVRCommandRecord() : Command(Command::CommandType::NVRStartStop)
+	NVRCommandRecord() : Command(Command::CommandType::NVRCommandRecord)
 	{
 	}
 
@@ -283,7 +285,7 @@ private:
 class NVRCommandExport : public Command
 {
 public:
-	NVRCommandExport() : Command(Command::CommandType::NVRExport)
+	NVRCommandExport() : Command(Command::CommandType::NVRCommandExport)
 	{
 	}
 

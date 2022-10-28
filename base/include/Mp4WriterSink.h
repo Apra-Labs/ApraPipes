@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-
+#include "NVRHelper.h"
 class DetailAbs;
 class DetailJpeg;
 class DetailH264;
@@ -75,6 +75,9 @@ public:
 	bool term();
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
+	bool stub(RecordCommand object) { 
+		bool record = object.doRecord;
+	    return true; };
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
