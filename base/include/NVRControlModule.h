@@ -31,16 +31,13 @@ class NVRControlModule : public AbsControlModule
 	bool term();
 	void setProps(NVRControlModuleProps& props);
 	NVRControlModuleProps getProps();
-	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
-	bool Record(bool record);
-	bool Export(uint64_t startTime, uint64_t stopTime);
+	bool record(bool record);
+	bool export(uint64_t startTime, uint64_t stopTime);
 
 protected:
-	bool process(frame_container& frames);
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool validateInputOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool handlePropsChange(frame_sp& frame);
 

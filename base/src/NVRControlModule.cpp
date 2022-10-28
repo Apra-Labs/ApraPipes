@@ -46,48 +46,30 @@ bool NVRControlModule::validateInputOutputPins()
     return true;
 }
 
-void NVRControlModule::addInputPin(framemetadata_sp& metadata, string& pinId)
-{
-    Module::addInputPin(metadata, pinId);
-}
-
 bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
     if (type == Command::CommandType::NVRCommandRecord)
     {
         NVRCommandRecord cmd;
         getCommand(cmd, frame);
-        if (cmd.doRecording)
+        auto RecordObj = RecordCommand(cmd.doRecording);
+        for (int i = 0; i < pipelineModules.size(); i++)
         {
-            auto RecordObj = RecordCommand(true);
-            for (int i = 0; i < pipelineModules.size(); i++)
+            if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
             {
-                if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
-                {
-                     auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
-                     bool isTaskDone = mp4Writer->stub(RecordObj);
-                }
-            }
-        }
-        else
-        {
-            auto RecordObj = RecordCommand(false);
-            for (int i = 0; i < pipelineModules.size(); i++)
-            {
-                if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
-                {
-                    auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
-                    bool isTaskDone = mp4Writer->stub(RecordObj);
-                }
+                auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
+                bool isTaskDone = mp4Writer->stub(RecordObj);
             }
         }
         return true;
     }
     if (type == Command::CommandType::NVRCommandExport)
     {
+        // mp4writer export command
         NVRCommandExport cmd;
         getCommand(cmd, frame);
         boost::shared_ptr<ExportCommand>ExportObj;
+        // change to cmd.startExportTS
         ExportObj->startTime = cmd.startExport;
         ExportObj->stopTime = cmd.stopExport;
         for (int i = 0; i < pipelineModules.size(); i++)
@@ -134,20 +116,14 @@ void NVRControlModule::setProps(NVRControlModuleProps& props)
     Module::addPropsToQueue(props);
 }
 
-bool NVRControlModule::process(frame_container& frames)
-{
-    return true;
-}
-
-bool NVRControlModule::Record(bool record)
+bool NVRControlModule::record(bool record)
 {
     NVRCommandRecord cmd;
     cmd.doRecording = record;
     return queueCommand(cmd);
 }
 
-
-bool NVRControlModule::Export(uint64_t ts, uint64_t te)
+bool NVRControlModule::export(uint64_t ts, uint64_t te)
 {
     NVRCommandExport cmd;
     cmd.startExport = ts;

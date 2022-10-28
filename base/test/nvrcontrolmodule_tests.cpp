@@ -98,14 +98,21 @@ BOOST_AUTO_TEST_CASE(basic)
 	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
 
 	PipeLine p("test");
+	// add all source  modules
 	p.appendModule(m1);
-	p.init();
-	mControl->init();
+	// add control module if any
 	p.addControlModule(mControl);
+	// init
+	p.init();
+	// control init - do inside pipeline init
+	mControl->init();
+	
 	p.run_all_threaded();
-	mControl->Record(true);
+	mControl->record(true);
+	// dont need step in run_all_threaded
 	mControl->step();
-	mControl->Record(false);
+	mControl->record(false);
+	// dont need step in run_all_threaded
 	mControl->step();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	p.stop();

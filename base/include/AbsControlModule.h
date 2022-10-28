@@ -18,6 +18,7 @@ public:
 	bool term();
 	void setProps(AbsControlModuleProps& props);
 	AbsControlModuleProps getProps();
+	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 
 protected:
 	bool process(frame_container& frames);
