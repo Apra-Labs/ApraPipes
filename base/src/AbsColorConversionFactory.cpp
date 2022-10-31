@@ -4,20 +4,12 @@
 boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadata_sp input, framemetadata_sp output, cv::Mat& inpImg, cv::Mat& outImg)
 {
 	boost::shared_ptr<DetailAbstract> mapper;
-	static std::map<std::pair<ImageMetadata::ImageType, ImageMetadata::ImageType>, boost::shared_ptr<DetailAbstract>> cache;
 
 	auto memType = input->getMemType();
 	auto inputFrameType = input->getFrameType();
 	auto outputFrameType = output->getFrameType();
 	ImageMetadata::ImageType inputImageType;
 	ImageMetadata::ImageType outputImageType;
-
-	std::pair<ImageMetadata::ImageType, ImageMetadata::ImageType> requiredMapper;
-
-	if (cache.find(requiredMapper) != cache.end())
-	{
-		return cache[requiredMapper];
-	}
 
 	if (memType == FrameMetadata::HOST && inputFrameType == FrameMetadata::RAW_IMAGE && outputFrameType == FrameMetadata::RAW_IMAGE)
 	{
@@ -31,39 +23,43 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 
 		if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::BGR)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2BGR());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2BGR(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::RGB)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBGR2RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBGR2RGB(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::MONO)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBGR2MONO());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBGR2MONO(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::MONO)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2MONO());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2MONO(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BAYERBG8 && outputImageType == ImageMetadata::RGB)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerBG82RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerBG82RGB(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BAYERBG8 && outputImageType == ImageMetadata::MONO)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerBG82Mono());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerBG82Mono(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BAYERGB8 && outputImageType == ImageMetadata::RGB)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerGB82RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerGB82RGB(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BAYERRG8 && outputImageType == ImageMetadata::RGB)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerRG82RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerRG82RGB(inpImg, outImg));
 		}
 		else if (inputImageType == ImageMetadata::BAYERGR8 && outputImageType == ImageMetadata::RGB)
 		{
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerGR82RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuBayerGR82RGB(inpImg, outImg));
+		}
+		else
+		{
+			throw AIPException(AIP_FATAL, "This conversion is not supported");
 		}
 	}
 	else if (memType == FrameMetadata::HOST && inputFrameType == FrameMetadata::RAW_IMAGE && outputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
@@ -80,8 +76,14 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 
 			inpImg = Utils::getMatHeader(rawMetadata);
 			outImg = Utils::getMatHeader(rawOutputMetadata, outputRows);
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2YUV420Planar());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuRGB2YUV420Planar(inpImg, outImg));//inpImg,outImg
 		}
+
+		else
+		{
+			throw AIPException(AIP_FATAL, "This conversion is not supported");
+		}
+
 	}
 	else if (memType == FrameMetadata::HOST && inputFrameType == FrameMetadata::RAW_IMAGE_PLANAR && outputFrameType == FrameMetadata::RAW_IMAGE)
 	{
@@ -97,15 +99,19 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 
 			inpImg = Utils::getMatHeader(rawMetadata, inputRows);
 			outImg = Utils::getMatHeader(rawPlanarMetadata);
-			mapper = boost::shared_ptr<DetailAbstract>(new CpuYUV420Planar2RGB());
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuYUV420Planar2RGB(inpImg, outImg));
 		}
+
+		else
+		{
+			throw AIPException(AIP_FATAL, "This conversion is not supported");
+		}
+
 	}
 	else
 	{
-		throw AIPException(AIP_FATAL, "this conversion is not supported");
+		throw AIPException(AIP_FATAL, "This conversion is not supported");
 	}
-	
-	requiredMapper = std::make_pair(inputImageType, outputImageType);
-	cache[requiredMapper] = mapper;
+
 	return mapper;
 }

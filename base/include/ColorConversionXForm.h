@@ -48,15 +48,10 @@ protected:
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:
-	int mFrameType;
 	ColorConversionProps mProps;
 	boost::shared_ptr<DetailAbstract> mDetail;
 	std::string mOutputPinId;
-	uint16_t mWidth;
-	uint16_t mHeight;
 	framemetadata_sp mOutputMetadata;
 	framemetadata_sp mInputMetadata;
-	cv::Mat inpImg;
-	cv::Mat outImg;
 };
 

@@ -217,8 +217,6 @@ protected:
 			channels = 4;
 			break;
 		case ImageMetadata::BAYERBG10:
-			channels = 1;
-			break;
 		case ImageMetadata::BAYERBG8:
 		case ImageMetadata::BAYERGB8:
 		case ImageMetadata::BAYERGR8:
