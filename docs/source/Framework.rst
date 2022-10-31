@@ -94,7 +94,7 @@ FileReaderModuleProps
 
 .. code-block:: c++
 
-   FileReaderModuleProps(const std::string& strFullFileNameWithPattern, int startIndex = 0, int maxIndex = -1, size_t maxFileSize =10000);
+   FileReaderModuleProps(const std::string& strFullFileNameWithPattern, int startIndex = 0, int maxIndex = -1);
 
 - loops till the ``maxIndex`` is reached
   ``-1`` loop the entire pattern/directory
