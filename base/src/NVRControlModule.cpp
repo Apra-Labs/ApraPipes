@@ -69,9 +69,8 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         NVRCommandExport cmd;
         getCommand(cmd, frame);
         boost::shared_ptr<ExportCommand>ExportObj;
-        // change to cmd.startExportTS
-        ExportObj->startTime = cmd.startExport;
-        ExportObj->stopTime = cmd.stopExport;
+        ExportObj->startTime = cmd.startExportTS;
+        ExportObj->stopTime = cmd.stopExportTS;
         for (int i = 0; i < pipelineModules.size(); i++)
         {
             if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
@@ -116,17 +115,17 @@ void NVRControlModule::setProps(NVRControlModuleProps& props)
     Module::addPropsToQueue(props);
 }
 
-bool NVRControlModule::record(bool record)
+bool NVRControlModule::nvrRecord(bool record)
 {
     NVRCommandRecord cmd;
     cmd.doRecording = record;
     return queueCommand(cmd);
 }
 
-bool NVRControlModule::export(uint64_t ts, uint64_t te)
+bool NVRControlModule::nvrExport(uint64_t ts, uint64_t te)
 {
     NVRCommandExport cmd;
-    cmd.startExport = ts;
-    cmd.stopExport = te;
+    cmd.startExportTS = ts;
+    cmd.stopExportTS = te;
     return queueCommand(cmd);
 }

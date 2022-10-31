@@ -291,11 +291,11 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(startExport) + sizeof(stopExport);
+		return Command::getSerializeSize() + sizeof(startExportTS) + sizeof(stopExportTS);
 	}
 
-	uint64_t startExport = 0;
-	uint64_t stopExport = 0;
+	uint64_t startExportTS = 0;
+	uint64_t stopExportTS = 0;
 
 private:
 	friend class boost::serialization::access;
@@ -303,7 +303,7 @@ private:
 	void serialize(Archive& ar, const unsigned int /* file_version */)
 	{
 		ar& boost::serialization::base_object<Command>(*this);
-		ar& startExport;
-		ar& stopExport;
+		ar& startExportTS;
+		ar& stopExportTS;
 	}
 };

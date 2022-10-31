@@ -37,7 +37,7 @@ public:
 	~PipeLine();
 	std::string getName() { return mName; }
 	bool appendModule(boost::shared_ptr<Module> pModule);
-	bool addControlModule(boost::shared_ptr<NVRControlModule>cModule);
+	bool addControlModule(boost::shared_ptr<AbsControlModule>cModule);
 	bool init();
 	void run_all_threaded();
 	void run_all_threaded_withpause();

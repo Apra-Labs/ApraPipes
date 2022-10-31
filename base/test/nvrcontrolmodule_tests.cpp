@@ -1,8 +1,9 @@
 #include <boost/test/unit_test.hpp>
-#include "stdafx.h"
+#include <stdafx.h>
 #include "PipeLine.h"
 #include "Module.h"
 #include "Utils.h"
+#include "NVRPipeline.h"
 #include "NVRControlModule.h"
 #include <string>
 
@@ -108,10 +109,10 @@ BOOST_AUTO_TEST_CASE(basic)
 	mControl->init();
 	
 	p.run_all_threaded();
-	mControl->record(true);
+	mControl->nvrRecord(true);
 	// dont need step in run_all_threaded
 	mControl->step();
-	mControl->record(false);
+	mControl->nvrRecord(false);
 	// dont need step in run_all_threaded
 	mControl->step();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
@@ -120,4 +121,10 @@ BOOST_AUTO_TEST_CASE(basic)
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(checkNVR)
+{
+	auto nvrPipe = boost::shared_ptr<NVRPipeline>(new NVRPipeline());
+	nvrPipe->open();
+	nvrPipe->close();
+}
 BOOST_AUTO_TEST_SUITE_END()

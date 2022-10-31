@@ -257,6 +257,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/NVRControlModule.h
 	include/NVRHelper.h
+	include/NVRPipeline.h
 	include/AbsControlModule.h
 )
 
@@ -311,6 +312,7 @@ SET(IP_FILES
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
 	src/NVRControlModule.cpp
+	src/NVRPipeline.cpp
 	src/AbsControlModule.cpp
 )
 

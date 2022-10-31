@@ -31,8 +31,8 @@ class NVRControlModule : public AbsControlModule
 	bool term();
 	void setProps(NVRControlModuleProps& props);
 	NVRControlModuleProps getProps();
-	bool record(bool record);
-	bool export(uint64_t startTime, uint64_t stopTime);
+	bool nvrRecord(bool record);
+	bool nvrExport(uint64_t startTime, uint64_t stopTime);
 
 protected:
 	bool validateInputPins();
