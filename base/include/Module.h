@@ -43,7 +43,7 @@ public:
 		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
-	ModuleProps(int _fps)
+	ModuleProps(float _fps)
 	{
 		fps = _fps;
 		qlen = 20;
@@ -55,7 +55,7 @@ public:
 		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
-	ModuleProps(int _fps, size_t _qlen, bool _logHealth)
+	ModuleProps(float _fps, size_t _qlen, bool _logHealth)
 	{
 		fps = _fps;
 		qlen = _qlen;
@@ -90,7 +90,7 @@ public:
 		return 1024 + sizeof(fps) + sizeof(qlen) + sizeof(logHealth) + sizeof(logHealthFrequency) + sizeof(maxConcurrentFrames) + sizeof(skipN) + sizeof(skipD) + sizeof(quePushStrategyType) + sizeof(fIndexStrategyType);
 	}
 
-	int fps; // can be updated during runtime with setProps
+	float fps; // can be updated during runtime with setProps
 	size_t qlen; // run time changing doesn't effect this
 	bool logHealth; // can be updated during runtime with setProps
 	int logHealthFrequency; // 1000 by default - logs the health stats frequency

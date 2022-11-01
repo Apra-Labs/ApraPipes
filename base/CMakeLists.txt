@@ -240,6 +240,7 @@ SET(CORE_FILES_H
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
+	include/ArchiveSpaceManager.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -291,6 +292,7 @@ SET(IP_FILES
 	src/AbsColorConversionFactory.cpp
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
+	src/ArchiveSpaceManager.cpp
 )
 
 
@@ -587,6 +589,7 @@ SET(UT_FILES
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	test/valveModule_tests.cpp
 	test/color_conversion_tests.cpp
+	test/archivespacemanager_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
