@@ -4,6 +4,7 @@
 #include <iostream>
 #include <locale>
 #include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #ifdef _WIN64
 #include <WinSock2.h>
 #else
@@ -146,6 +147,12 @@ cv::Mat Utils::getMatHeader(RawImageMetadata* metadata)
 {
 	uint8_t data;	
 	return cv::Mat(metadata->getHeight(), metadata->getWidth(), metadata->getType(), static_cast<void*>(&data), metadata->getStep());
+}
+
+cv::Mat Utils::getMatHeader(RawImagePlanarMetadata* metadata, int rows)
+{
+	uint8_t data = 0;
+	return cv::Mat(rows, metadata->getWidth(0), CV_8UC1, static_cast<void*>(&data));
 }
 
 cv::Mat Utils::getMatHeader(cv::Rect& roi, RawImageMetadata* metadata)

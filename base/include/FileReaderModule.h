@@ -11,21 +11,19 @@ class FileSequenceDriver;
 class FileReaderModuleProps : public ModuleProps
 {
 public:
-	FileReaderModuleProps(const std::string& _strFullFileNameWithPattern, int _startIndex = 0, int _maxIndex = -1, size_t _maxFileSize = 10000): ModuleProps()
+	FileReaderModuleProps(const std::string& _strFullFileNameWithPattern, int _startIndex = 0, int _maxIndex = -1): ModuleProps()
 	{
 		strFullFileNameWithPattern = _strFullFileNameWithPattern;
 		startIndex = _startIndex;
 		maxIndex = _maxIndex;
-		maxFileSize = _maxFileSize;
 		readLoop = true;
 	}
 
-	FileReaderModuleProps(size_t _maxFileSize = 10000)
+	FileReaderModuleProps()
 	{
 		strFullFileNameWithPattern = "";
 		startIndex = 0;
 		maxIndex = -1;
-		maxFileSize = _maxFileSize;
 		readLoop = true;
 	}
 
@@ -38,13 +36,12 @@ public:
 			len += files[i].length();
 		}
 
-		return ModuleProps::getSerializeSize() + sizeof(startIndex) + sizeof(maxIndex) + strFullFileNameWithPattern.length() + sizeof(string) + sizeof(maxFileSize) + sizeof(readLoop) + sizeof(files) + len;
+		return ModuleProps::getSerializeSize() + sizeof(startIndex) + sizeof(maxIndex) + strFullFileNameWithPattern.length() + sizeof(string) + sizeof(readLoop) + sizeof(files) + len;
 	}
 
 	int startIndex;
 	int maxIndex;
 	string strFullFileNameWithPattern;
-	size_t maxFileSize;
 	bool readLoop;
 	std::vector<std::string> files;
 
@@ -57,7 +54,6 @@ private:
 		ar & boost::serialization::base_object<ModuleProps>(*this);
 		ar & startIndex;
 		ar & strFullFileNameWithPattern;
-		ar & maxFileSize;
 		ar & readLoop;
 		ar & files;
 	}
