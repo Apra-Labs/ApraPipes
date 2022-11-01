@@ -53,7 +53,7 @@ protected:
 int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1, int i2, uint64_t startTime, uint64_t endTime)
 {
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
 {
     //In this case, while the frames are being sent to next module the queue of next module must becme full 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(prop_change)
 {
     // This testcase is getProps, setProps test - dynamic prop change 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
     Logger::initLogger(loggerProps);
 
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 24;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
@@ -334,7 +334,7 @@ void testMP4Queue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, ui
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
     Logger::initLogger(loggerProps);
 
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
     Logger::initLogger(loggerProps);
 
-    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1, 4 * 1024 * 1024);
+    auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
