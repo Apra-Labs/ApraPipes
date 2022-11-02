@@ -191,6 +191,7 @@ SET(CORE_FILES
 	src/QRReader.cpp
 	src/Mp4WriterSink.cpp
 	src/Mp4WriterSinkUtils.cpp
+	src/MultimediaQueueXform.cpp
 )
 
 SET(CORE_FILES_H
@@ -241,6 +242,7 @@ SET(CORE_FILES_H
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
 	include/ArchiveSpaceManager.h
+	include/MultimediaQueueXform.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -590,6 +592,7 @@ SET(UT_FILES
 	test/valveModule_tests.cpp
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
+	test/multimediaqueuexform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
