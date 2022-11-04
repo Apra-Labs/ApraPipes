@@ -13,6 +13,19 @@
 #include "FrameMetadata.h"
 
 #include "PaceMaker.h"
+#include "BufferMaker.h"
+
+// makes frames from this module's frame factory
+Module::FFBufferMaker::FFBufferMaker(Module& module):myModule(module){}
+void * Module::FFBufferMaker::make(size_t dataSize)
+{
+	if(frameIMade.get()!=nullptr) 
+	{	throw AIPException(AIP_NOTEXEPCTED,"The frame was already made"); }
+
+	frameIMade=myModule.makeFrame(dataSize);
+	return frameIMade->data();
+}
+
 
 class Module::Profiler
 {
@@ -570,6 +583,21 @@ bool Module::isFull()
 	for (auto it = mModules.cbegin(); it != mModules.end(); it++)
 	{
 		if (it->second->isFull())
+		{
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+bool Module::isNextModuleQueFull()
+{
+	bool ret = false;
+	for (auto it = mModules.cbegin(); it != mModules.end(); it++)
+	{
+		if (it->second->mQue->isFull())
 		{
 			ret = true;
 			break;

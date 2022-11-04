@@ -3,8 +3,9 @@
 #include "ColorConversionStrategy.h"
 #include "AbsColorConversionFactory.h"
 
-ColorConversion::ColorConversion(ColorConversionProps _props) : Module(TRANSFORM, "ColorConversion", _props), mProps(_props), mFrameType(FrameMetadata::GENERAL)
+ColorConversion::ColorConversion(ColorConversionProps _props) : Module(TRANSFORM, "ColorConversion", _props), mProps(_props)
 {
+	mDetail.reset(new (DetailAbstract));
 }
 
 ColorConversion::~ColorConversion()
@@ -88,7 +89,7 @@ bool ColorConversion::validateOutputPins()
 
 void ColorConversion::setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata)
 {
-	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,inpImg,outImg);
+	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,mDetail->inpImg,mDetail->outImg);
 }
 
 void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
@@ -96,6 +97,8 @@ void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 	mInputMetadata = metadata;
 	Module::addInputPin(metadata, pinId);
 	auto inputFrameType = metadata->getFrameType();
+	uint16_t mWidth;
+	uint16_t mHeight;
 
 	if (inputFrameType == FrameMetadata::RAW_IMAGE)
 	{
@@ -156,7 +159,7 @@ bool ColorConversion::term()
 bool ColorConversion::process(frame_container& frames)
 {
 	auto outFrame = makeFrame();
-	mDetail->convert(frames, outFrame, mOutputMetadata,inpImg,outImg);
+	mDetail->convert(frames, outFrame, mOutputMetadata);
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
 	return true;

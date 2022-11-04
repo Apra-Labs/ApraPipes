@@ -12,7 +12,8 @@ public:
 		Relay,
 		Step,
 		ValvePassThrough,
-		Mp4Seek
+		Mp4Seek,
+		MultimediaQueueXform
 	};
 
 	Command()
@@ -222,5 +223,31 @@ private:
 	{
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& skipTS;
+	}
+};
+
+class MultimediaQueueXformCommand : public Command
+{
+public:
+	MultimediaQueueXformCommand() : Command(Command::CommandType::MultimediaQueueXform)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startTime) + sizeof(endTime);
+	}
+
+	int64_t startTime = 0;
+	int64_t endTime = 0;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startTime;
+		ar& endTime;
 	}
 };

@@ -210,7 +210,14 @@ Test_Utils::FileCleaner::~FileCleaner() {
 		boost::filesystem::path filePath(pathsOfFiles[i]);
 		if (boost::filesystem::exists(filePath))
 		{
-			boost::filesystem::remove(filePath);
+			if (boost::filesystem::is_regular_file(filePath))
+			{
+				boost::filesystem::remove(filePath);
+			}
+			else
+			{
+				boost::filesystem::remove_all(filePath);
+			}
 		}
 	}
 };
