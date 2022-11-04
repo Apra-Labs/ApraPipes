@@ -15,14 +15,14 @@ class Detail
 {
 public:
 	Detail(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<string(framemetadata_sp& _metadata)> _addOutputPin)
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe,std::function<void()> _sendEOS)
 	{
 		setProps(props);
 		makeFrame = _makeFrame;
 		makeframe = _makeframe;
-		addOutputPin = _addOutputPin;
 		getOutputMetadataByType = _getOutputMetadataByType;
 		getOutputPinIdByType = _getOutputPinIdByType;
+		sendEOS = _sendEOS;
 		mFSParser = boost::shared_ptr<FileStructureParser>(new FileStructureParser());
 	}
 
@@ -30,8 +30,8 @@ public:
 	{
 	}
 	virtual void setMetadata() = 0;
+	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
-	virtual string addOutPutPin(framemetadata_sp& metadata) = 0;
 	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
 
 	void setProps(Mp4ReaderSourceProps& props)
@@ -164,7 +164,6 @@ public:
 			throw AIPException(AIP_FATAL, "No video track found");
 		}
 
-		//auto tempEncodedImgMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 		setMetadata();
 		return true;
 	}
@@ -240,10 +239,11 @@ public:
 
 	void readNextFrame(uint8_t* sampleFrame, uint8_t* sampleMetadataFrame, size_t& imageFrameSize, size_t& metadataFrameSize)
 	{
-
+		
 		// all frames of the open video are already read and end has not reached
 		if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
 		{
+			sendEndOfStream();
 			// if parseFS is unset, it is the end
 			LOG_ERROR << "frames number" << mState.mFrameCounter;
 			mState.end = !mProps.parseFS;
@@ -322,8 +322,8 @@ public:
 	std::function<framemetadata_sp(int type)> getOutputMetadataByType;
 	std::function<string(int type)> getOutputPinIdByType;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
+	std::function<void()> sendEOS;
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
-	std::function<string(framemetadata_sp& _metadata)> addOutputPin;
 	boost::shared_ptr<FileStructureParser> mFSParser;
 	std::string h264ImagePinId;
 	std::string encodedImagePinId;
@@ -333,36 +333,31 @@ public:
 class DetailJpeg : public Detail
 {
 public:
-	DetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe,
-		std::function<string(framemetadata_sp& _metadata)> addOutputPin) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe, addOutputPin)
+	DetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, 
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe, _sendEOS)
 	{}
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
-	string addOutPutPin(framemetadata_sp& metadata);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
+	void sendEndOfStream() {}
 };
 
 class DetailH264 : public Detail
 {
 public:
-	DetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe
-		, std::function<string(framemetadata_sp& _metadata)> _addOutputPin) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe, _addOutputPin)
+	DetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, 
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe,_sendEOS)
 	{}
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
-	string addOutPutPin(framemetadata_sp& metadata);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
+	void sendEndOfStream();
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
 };
-
-string DetailJpeg::addOutPutPin(framemetadata_sp& metadata)
-{
-	return 0;// encodedImagePinId = addOutputPin(metadata);
-}
 
 void DetailJpeg::setMetadata()
 {
@@ -411,11 +406,6 @@ bool DetailJpeg::produceFrames(frame_container& frames)
 	return true;
 }
 
-string DetailH264::addOutPutPin(framemetadata_sp& metadata)
-{
-	return 0; //h264IamgePinId = addOutputPin(metadata);
-}
-
 void DetailH264::setMetadata()
 {
 	auto metadata = framemetadata_sp(new H264Metadata(width, height));
@@ -446,6 +436,11 @@ void DetailH264::setMetadata()
 	spsSize = vdc->avc.sps_size;
 	ppsSize = vdc->avc.pps_size;
 	return;
+}
+
+void DetailH264::sendEndOfStream()
+{
+	sendEOS();
 }
 
 void DetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
@@ -528,8 +523,8 @@ bool Mp4ReaderSource::init()
 			{ return getOutputPinIdByType(type); },
 			[&](frame_sp& frame, size_t& size, string& pinId)
 			{ return makeFrame(frame, size, pinId); },
-			[&](framemetadata_sp& metadata)
-			{ return addOutputPin(metadata); }));
+			[&](void)
+			{return sendEOS(); }));
 	}
 	else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 	{
@@ -542,10 +537,9 @@ bool Mp4ReaderSource::init()
 			{ return getOutputPinIdByType(type); },
 			[&](frame_sp& frame, size_t& size, string& pinId)
 			{ return makeFrame(frame, size, pinId); },
-			[&](framemetadata_sp& metadata)
-			{ return addOutputPin(metadata); }));
+			[&](void)
+			{return sendEOS(); }));
 	}
-	//mDetail->addOutputPin(inputPinIdMetadataMap);
 	mDetail->Init();
 	return true;
 }
@@ -600,7 +594,7 @@ bool Mp4ReaderSource::validateOutputPins()
 
 	FrameMetadata::FrameType frameType = outputMetadataByPin->getFrameType();
 
-	if (frameType != FrameMetadata::MP4_VIDEO_METADATA && frameType != FrameMetadata::ENCODED_IMAGE)
+	if (frameType != FrameMetadata::MP4_VIDEO_METADATA && frameType != FrameMetadata::ENCODED_IMAGE && frameType != FrameMetadata::H264_DATA)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MP4_VIDEO_METADATA or ENCODED_IMAGE. Actual<" << frameType << ">";
 		return false;

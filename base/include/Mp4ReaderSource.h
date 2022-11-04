@@ -74,7 +74,6 @@ public:
 	void setProps(Mp4ReaderSourceProps &props);
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool randomSeek(uint64_t skipTS);
-	void setMetadata(framemetadata_sp metadata);
 protected:
 	bool produce();
 	bool validateOutputPins();
