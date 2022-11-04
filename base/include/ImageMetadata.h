@@ -24,7 +24,8 @@ public:
 		BAYERBG8, // BGGR
 		BAYERGB8, // GBRG
 		BAYERGR8, // GRBG
-		BAYERRG8  // RGGB
+		BAYERRG8,  // RGGB
+		YUYV
 	};
 
 	static size_t getElemSize(int depth)

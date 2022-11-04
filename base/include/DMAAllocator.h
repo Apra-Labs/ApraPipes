@@ -26,6 +26,9 @@ private:
         case ImageMetadata::UYVY:
             colorFormat = NvBufferColorFormat_UYVY;
             break;
+        case ImageMetadata::YUYV:
+            colorFormat = NvBufferColorFormat_YUYV;
+            break;      
         case ImageMetadata::RGBA:
             colorFormat = NvBufferColorFormat_ABGR32;
             break;
@@ -131,6 +134,9 @@ public:
             case ImageMetadata::ImageType::UYVY:
                 type = CV_8UC3;
                 break;
+            case ImageMetadata::ImageType::YUYV:
+                type = CV_8UC3;
+                break;    
             default:
                 throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
             }
