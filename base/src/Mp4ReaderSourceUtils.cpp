@@ -1,8 +1,7 @@
 #include "Mp4ReaderSourceUtils.h"
 #include "Logger.h"
 
-
-void FileStructureParser::boostPathToStrUtil(std::vector<boost::filesystem::path> &boost_paths, std::vector<std::string> &paths)
+void FileStructureParser::boostPathToStrUtil(std::vector<boost::filesystem::path>& boost_paths, std::vector<std::string>& paths)
 {
 	for (auto i = 0; i < boost_paths.size(); ++i)
 	{
@@ -17,7 +16,7 @@ bool FileStructureParser::setParseLimit(uint32_t _nParseFiles)
 	return true;
 }
 
-std::string FileStructureParser::format_2(int &num)
+std::string FileStructureParser::format_2(int& num)
 {
 	if (num < 10)
 	{
@@ -29,7 +28,7 @@ std::string FileStructureParser::format_2(int &num)
 	}
 }
 
-std::string FileStructureParser::format_hrs(int &hr)
+std::string FileStructureParser::format_hrs(int& hr)
 {
 	if (hr < 10)
 	{
@@ -45,9 +44,9 @@ FileStructureParser::FileStructureParser()
 {
 }
 
-void FileStructureParser::parseFilesInDirectory(boost::filesystem::path &folderPath, std::vector<boost::filesystem::path> &files)
+void FileStructureParser::parseFilesInDirectory(boost::filesystem::path& folderPath, std::vector<boost::filesystem::path>& files)
 {
-	for (auto &&itr : boost::filesystem::directory_iterator(folderPath))
+	for (auto&& itr : boost::filesystem::directory_iterator(folderPath))
 	{
 		auto dirPath = itr.path();
 		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
@@ -57,7 +56,7 @@ void FileStructureParser::parseFilesInDirectory(boost::filesystem::path &folderP
 	}
 }
 
-void FileStructureParser::parseFilesInDirectories(std::vector<boost::filesystem::path> &dirs, std::vector<boost::filesystem::path> &files)
+void FileStructureParser::parseFilesInDirectories(std::vector<boost::filesystem::path>& dirs, std::vector<boost::filesystem::path>& files)
 {
 	/* updates the files with the files found in dirs - non-recursive */
 	for (auto itr = dirs.begin(); itr != dirs.end(); ++itr)
@@ -67,9 +66,9 @@ void FileStructureParser::parseFilesInDirectories(std::vector<boost::filesystem:
 
 }
 
-void FileStructureParser::parseDirectoriesInDirectory(boost::filesystem::path &folderPath, std::vector<boost::filesystem::path> &hourDirectories)
+void FileStructureParser::parseDirectoriesInDirectory(boost::filesystem::path& folderPath, std::vector<boost::filesystem::path>& hourDirectories)
 {
-	for (auto &&itr : boost::filesystem::directory_iterator(folderPath))
+	for (auto&& itr : boost::filesystem::directory_iterator(folderPath))
 	{
 		auto dirPath = itr.path();
 		if (boost::filesystem::is_directory(dirPath))
@@ -79,7 +78,7 @@ void FileStructureParser::parseDirectoriesInDirectory(boost::filesystem::path &f
 	}
 }
 
-void FileStructureParser::filterRelevantPaths(std::vector<boost::filesystem::path> &allPaths, boost::filesystem::path &startingPath, std::vector<boost::filesystem::path> &revelantPaths)
+void FileStructureParser::filterRelevantPaths(std::vector<boost::filesystem::path>& allPaths, boost::filesystem::path& startingPath, std::vector<boost::filesystem::path>& revelantPaths)
 {
 	/*
 	assumes allPaths is sorted
@@ -100,7 +99,7 @@ void FileStructureParser::filterRelevantPaths(std::vector<boost::filesystem::pat
 	}
 }
 
-void FileStructureParser::parseDayDirectories(std::vector<boost::filesystem::path> &relevantDayDirectories, std::vector<boost::filesystem::path> &relevantVideoFiles)
+void FileStructureParser::parseDayDirectories(std::vector<boost::filesystem::path>& relevantDayDirectories, std::vector<boost::filesystem::path>& relevantVideoFiles)
 {
 	/*
 		Parses the all day/hour dirs for given arg - 2 level deep only
@@ -108,7 +107,7 @@ void FileStructureParser::parseDayDirectories(std::vector<boost::filesystem::pat
 	*/
 	for (auto i = 0; i < relevantDayDirectories.size(); ++i)
 	{
-		for (auto &&hrDiritr : boost::filesystem::directory_iterator(relevantDayDirectories[i]))
+		for (auto&& hrDiritr : boost::filesystem::directory_iterator(relevantDayDirectories[i]))
 		{
 			auto hrDirPath = hrDiritr.path();
 			if (boost::filesystem::is_directory(hrDirPath)) // hr directory
@@ -125,7 +124,7 @@ void FileStructureParser::parseDayDirectories(std::vector<boost::filesystem::pat
 	}
 }
 
-bool FileStructureParser::parse(std::string &startingVideoFile, std::vector<std::string> &parsedVideoFiles, bool includeStarting)
+bool FileStructureParser::parse(std::string& startingVideoFile, std::vector<std::string>& parsedVideoFiles, bool includeStarting)
 {
 	auto startingVideoPath = boost::filesystem::path(startingVideoFile);
 	auto startingHourDirPath = startingVideoPath.parent_path();
@@ -182,11 +181,11 @@ bool FileStructureParser::parse(std::string &startingVideoFile, std::vector<std:
 	return true;
 }
 
-bool FileStructureParser::init(std::string &startingVideoFile, std::vector<std::string> &parsedVideoFiles, bool includeStarting, bool parseDirs)
+bool FileStructureParser::init(std::string& startingVideoFile, std::vector<std::string>& parsedVideoFiles, bool includeStarting, bool parseDirs)
 {
-	/* 
-		parse the dir stucture format of mp4WriterSink if parseDirs is set 
-		otherwise read the individual mp4 file 
+	/*
+		parse the dir stucture format of mp4WriterSink if parseDirs is set
+		otherwise read the individual mp4 file
 	*/
 	if (parseDirs)
 	{
@@ -203,10 +202,10 @@ bool FileStructureParser::init(std::string &startingVideoFile, std::vector<std::
 	return true;
 }
 
-int FileStructureParser::firstOfNextDay(boost::filesystem::path &baseFolder, std::string &yyyymmdd, std::string &videoFile)
+int FileStructureParser::firstOfNextDay(boost::filesystem::path& baseFolder, std::string& yyyymmdd, std::string& videoFile)
 {
 	std::vector<std::string> dates;
-	for (auto &&itr : boost::filesystem::directory_iterator(baseFolder))
+	for (auto&& itr : boost::filesystem::directory_iterator(baseFolder))
 	{
 		auto filePath = itr.path();
 		if (boost::filesystem::is_directory(filePath))
@@ -226,17 +225,17 @@ int FileStructureParser::firstOfNextDay(boost::filesystem::path &baseFolder, std
 	std::string hr = "0"; // hint: "00" > "0"
 	int ret = firstOfNextHour(yyyymmddDir, hr, videoFile);
 	if (ret < 0)
-	{	
+	{
 		LOG_ERROR << "end of recordings <" << ParseStatus::END_OF_RECORDINGS << ">";
 		return ParseStatus::END_OF_RECORDINGS; //should never come here if empty directories are not present
 	}
 	return ParseStatus::FOUND_NEXT;
 }
 
-int FileStructureParser::firstOfNextHour(boost::filesystem::path &yyyymmddDir, std::string &hr, std::string &videoFile)
+int FileStructureParser::firstOfNextHour(boost::filesystem::path& yyyymmddDir, std::string& hr, std::string& videoFile)
 {
 	std::vector<std::string> hrs;
-	for (auto &&itr : boost::filesystem::directory_iterator(yyyymmddDir))
+	for (auto&& itr : boost::filesystem::directory_iterator(yyyymmddDir))
 	{
 		auto filePath = itr.path();
 		if (boost::filesystem::is_directory(filePath))
@@ -256,12 +255,12 @@ int FileStructureParser::firstOfNextHour(boost::filesystem::path &yyyymmddDir, s
 	return findFileWithMinute(hrDir, min, videoFile);
 }
 
-int FileStructureParser::findFileWithMinute(boost::filesystem::path &hrDir, std::string &min, std::string &videoFile)
+int FileStructureParser::findFileWithMinute(boost::filesystem::path& hrDir, std::string& min, std::string& videoFile)
 {
 	// returns the possible file with the given minute.
 	// whether the file actually has the minute depends on the video file.
 	std::vector <std::string> mins;
-	for (auto &&itr : boost::filesystem::directory_iterator(hrDir))
+	for (auto&& itr : boost::filesystem::directory_iterator(hrDir))
 	{
 		auto filePath = itr.path();
 		if (boost::filesystem::is_regular_file(filePath) && boost::filesystem::extension(filePath) == ".mp4")
@@ -306,7 +305,7 @@ int FileStructureParser::findFileWithMinute(boost::filesystem::path &hrDir, std:
 	return ParseStatus::FOUND_NEXT;
 }
 
-int FileStructureParser::randomSeek(uint64_t &skipTS, std::string &skipDir, std::string &videoFile, uint64_t &skipMsecsInFile)
+int FileStructureParser::randomSeek(uint64_t& skipTS, std::string& skipDir, std::string& videoFile, uint64_t& skipMsecsInFile)
 {
 	skipMsecsInFile = 0;
 	nextToVideoFile = "";

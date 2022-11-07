@@ -2,20 +2,17 @@
 #include "FrameMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "Mp4ReaderSourceUtils.h"
-#include "PropsChangeMetadata.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
-#include "libmp4.h"
 #include "Frame.h"
 #include "Command.h"
 #include "libmp4.h"
-#include "Module.h"
 
 class Detail
 {
 public:
 	Detail(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe,std::function<void()> _sendEOS)
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS)
 	{
 		setProps(props);
 		makeFrame = _makeFrame;
@@ -239,7 +236,7 @@ public:
 
 	void readNextFrame(uint8_t* sampleFrame, uint8_t* sampleMetadataFrame, size_t& imageFrameSize, size_t& metadataFrameSize)
 	{
-		
+
 		// all frames of the open video are already read and end has not reached
 		if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
 		{
@@ -267,7 +264,7 @@ public:
 				sampleMetadataFrame,
 				mProps.biggerMetadataFrameSize,
 				&mState.sample);
-			imageFrameSize = mState.sample.size;
+			imageFrameSize = imageFrameSize + mState.sample.size;
 			metadataFrameSize = mState.sample.metadata_size;
 			/* To get only info about the frames
 			ret = mp4_demux_get_track_sample(
@@ -333,7 +330,7 @@ public:
 class DetailJpeg : public Detail
 {
 public:
-	DetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, 
+	DetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe, _sendEOS)
 	{}
 	void setMetadata();
@@ -345,8 +342,8 @@ public:
 class DetailH264 : public Detail
 {
 public:
-	DetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType, 
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe,_sendEOS)
+	DetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<framemetadata_sp(int type)> _getOutputMetadataByType, std::function<string(int type)> _getOutputPinIdByType,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _getOutputMetadataByType, _getOutputPinIdByType, _makeframe, _sendEOS)
 	{}
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
@@ -386,8 +383,8 @@ bool DetailJpeg::produceFrames(frame_container& frames)
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, getOutputPinIdByType(FrameMetadata::MP4_VIDEO_METADATA));
 	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(imgFrame->data());
 	uint8_t* sampleMetadataFrame = reinterpret_cast<uint8_t*>(metadataFrame->data());
-	size_t imageActualSize;
-	size_t metadataActualSize;
+	size_t imageActualSize = 0;
+	size_t metadataActualSize = 0;
 	readNextFrame(sampleFrame, sampleMetadataFrame, imageActualSize, metadataActualSize);
 
 	if (!imageActualSize || !sampleFrame)
@@ -468,16 +465,17 @@ bool DetailH264::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, getOutputPinIdByType(FrameMetadata::H264_DATA));
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
+	size_t imageActualSize = 0;
 
-	if (mState.mFrameCounter == 0)
+	if (mState.mFrameCounter == 0 || mState.randomSeekParseFlag)
 	{
 		prependSpsPps(tmpBuffer);
+		imageActualSize = spsSize + ppsSize + 8;
 	}
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, getOutputPinIdByType(FrameMetadata::MP4_VIDEO_METADATA));
 	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(tmpBuffer.data());
 	uint8_t* sampleMetadataFrame = reinterpret_cast<uint8_t*>(metadataFrame->data());
-	size_t imageActualSize;
-	size_t metadataActualSize;
+	size_t metadataActualSize = 0;
 	readNextFrame(sampleFrame, sampleMetadataFrame, imageActualSize, metadataActualSize);
 
 	if (!imageActualSize || !sampleFrame)
@@ -540,6 +538,11 @@ bool Mp4ReaderSource::init()
 			[&](void)
 			{return sendEOS(); }));
 	}
+
+	mDetail->encodedImagePinId = encodedImagePinId;
+	mDetail->h264ImagePinId = h264ImagePinId;
+	mDetail->mp4FramePinId = mp4FramePinId;
+
 	mDetail->Init();
 	return true;
 }
@@ -574,9 +577,6 @@ std::string Mp4ReaderSource::addOutPutPin(framemetadata_sp& metadata)
 
 bool Mp4ReaderSource::produce()
 {
-	mDetail->encodedImagePinId = encodedImagePinId;
-	mDetail->h264ImagePinId = h264ImagePinId;
-	mDetail->mp4FramePinId = mp4FramePinId;
 	frame_container frames;
 	mDetail->produceFrames(frames);
 	send(frames);
@@ -615,7 +615,7 @@ Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 	return mDetail->mProps;
 }
 
-bool Mp4ReaderSource::handlePropsChange(frame_sp & frame)
+bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
 	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.biggerFrameSize, mDetail->mProps.biggerMetadataFrameSize);
 	bool ret = Module::handlePropsChange(frame, props);
@@ -624,12 +624,12 @@ bool Mp4ReaderSource::handlePropsChange(frame_sp & frame)
 	return ret;
 }
 
-void Mp4ReaderSource::setProps(Mp4ReaderSourceProps & props)
+void Mp4ReaderSource::setProps(Mp4ReaderSourceProps& props)
 {
 	Module::addPropsToQueue(props);
 }
 
-bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp & frame)
+bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
 	if (type == Command::CommandType::Mp4Seek)
 	{

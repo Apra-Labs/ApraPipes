@@ -25,7 +25,7 @@ public:
 		}
 
 	}
-	
+
 	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS) : ModuleProps()
 	{
 		videoPath = _videoPath;
@@ -52,14 +52,14 @@ private:
 	friend class boost::serialization::access;
 
 	template <class Archive>
-	void serialize(Archive &ar, const unsigned int version)
+	void serialize(Archive& ar, const unsigned int version)
 	{
-		ar &boost::serialization::base_object<ModuleProps>(*this);
-		ar &videoPath;
-		ar &parseFS;
-		ar &skipDir;
-		ar &biggerFrameSize;
-		ar &biggerMetadataFrameSize;
+		ar& boost::serialization::base_object<ModuleProps>(*this);
+		ar& videoPath;
+		ar& parseFS;
+		ar& skipDir;
+		ar& biggerFrameSize;
+		ar& biggerMetadataFrameSize;
 	}
 };
 
@@ -71,14 +71,14 @@ public:
 	bool init();
 	bool term();
 	Mp4ReaderSourceProps getProps();
-	void setProps(Mp4ReaderSourceProps &props);
+	void setProps(Mp4ReaderSourceProps& props);
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool randomSeek(uint64_t skipTS);
 protected:
 	bool produce();
 	bool validateOutputPins();
 	bool handleCommand(Command::CommandType type, frame_sp& fame);
-	bool handlePropsChange(frame_sp &frame);
+	bool handlePropsChange(frame_sp& frame);
 private:
 	std::string h264ImagePinId;
 	std::string encodedImagePinId;
