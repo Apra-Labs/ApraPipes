@@ -225,12 +225,12 @@ private:
 class Mp4SeekCommand : public Command
 {
 public:
-	Mp4SeekCommand() : Command(CommandType::Mp4Seek)
+	Mp4SeekCommand() : Command(CommandType::Seek)
 	{
 
 	}
 
-	Mp4SeekCommand(uint64_t _skipTS) : Command(CommandType::Mp4Seek)
+	Mp4SeekCommand(uint64_t _skipTS) : Command(CommandType::Seek)
 	{
 		skipTS = _skipTS;
 	}
