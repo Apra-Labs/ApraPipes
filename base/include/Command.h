@@ -13,7 +13,7 @@ public:
 		Step,
 		ValvePassThrough,
 		MultimediaQueueXform,
-		Mp4Seek,
+		Seek,
 	};
 
 	Command()
