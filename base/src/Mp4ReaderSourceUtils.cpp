@@ -292,12 +292,14 @@ int FileStructureParser::findFileWithMinute(boost::filesystem::path& hrDir, std:
 		else
 		{	// parse for next file in next folders
 			auto hrDirStr = hrDir.filename().string();
-			int ret = firstOfNextHour(hrDir.parent_path(), hrDirStr, nextToVideoFile);
+			auto mReturn = firstOfNextHour(hrDir.parent_path(), hrDirStr, nextToVideoFile);
+			auto ret = mReturn;
 			nextToVideoFileFlag = ret;
 			if (ret < 0)
 			{
 				auto yyyymmddDir = hrDir.parent_path().filename().string();
-				nextToVideoFileFlag = firstOfNextDay(hrDir.parent_path().parent_path(), yyyymmddDir, nextToVideoFile);
+				auto mNextToVideoFileFlag = firstOfNextDay(hrDir.parent_path().parent_path(), yyyymmddDir, nextToVideoFile);
+				nextToVideoFileFlag = mNextToVideoFileFlag;
 			}
 		}
 		return ParseStatus::FOUND;
@@ -329,7 +331,8 @@ int FileStructureParser::randomSeek(uint64_t& skipTS, std::string& skipDir, std:
 	boost::filesystem::path hrDir = baseFolder / yyyymmdd / format_hrs(tm.tm_hour);
 	if (!boost::filesystem::is_directory(hrDir))
 	{
-		int retHr = firstOfNextHour(yyyymmddDir, format_hrs(tm.tm_hour), videoFile);
+		auto mRetHr = firstOfNextHour(yyyymmddDir, format_hrs(tm.tm_hour), videoFile);
+		auto retHr = mRetHr;
 		if (retHr < 0)
 		{
 			return firstOfNextDay(baseFolder, yyyymmdd, videoFile); // if no next hour found on this day, move to next day
@@ -345,7 +348,8 @@ int FileStructureParser::randomSeek(uint64_t& skipTS, std::string& skipDir, std:
 	uint64_t tsTillMinInMsecs = std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
 
 	std::string fileToSearch = std::to_string(tsTillMinInMsecs) + ".mp4";
-	int ret = findFileWithMinute(hrDir, fileToSearch, videoFile);
+	auto mReturn = findFileWithMinute(hrDir, fileToSearch, videoFile);
+	auto ret = mReturn;
 	if (ret < 0)
 	{
 		auto retHr = firstOfNextHour(yyyymmddDir, format_hrs(tm.tm_hour), videoFile);
