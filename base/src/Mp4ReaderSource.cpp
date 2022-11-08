@@ -615,7 +615,7 @@ void Mp4ReaderSource::setProps(Mp4ReaderSourceProps& props)
 
 bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	if (type == Command::CommandType::Mp4Seek)
+	if (type == Command::CommandType::Seek)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
