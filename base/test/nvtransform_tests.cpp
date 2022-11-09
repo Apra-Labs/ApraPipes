@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(cropAndScale, *boost::unit_test::disabled())
 
 	float scaleHeight = 1;
 	float scaleWidth = 0.5;
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400, scaleHeight, scaleWidth, NvTransformProps::NvTransformFilter::BILINEAR)));
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400, scaleWidth, scaleHeight, NvTransformProps::NvTransformFilter::BILINEAR)));
 	source->setNext(nv_transform);
 
 	PipeLine p("test");
