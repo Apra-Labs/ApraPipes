@@ -121,9 +121,10 @@ public:
 		for (auto it = frames.cbegin(); it != frames.cend(); it++)
 		{
 			auto frame = it->second;
-			mutable_buffer& h264Frame = *(frame.get());
-			auto ret = H264Utils::parseNalu(h264Frame);
-			tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+			auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+			auto ret = H264Utils::parseNalu(mFrameBuffer);
+			tie(typeFound, spsBuff, ppsBuff) = ret;
+
 			BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
 
 			if (spsBuff.size() != 0)
@@ -151,9 +152,9 @@ public:
 					auto itr = it;
 					++it;
 					auto frame = itr->second.begin()->second;
-					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);
-					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+					auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+					auto ret = H264Utils::parseNalu(mFrameBuffer);
+					tie(typeFound, spsBuff, ppsBuff) = ret;
 
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 					{
@@ -177,9 +178,9 @@ public:
 					auto itr = it;
 					++it;
 					auto frame = itr->second.begin()->second;
-					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);
-					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+					auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+					auto ret = H264Utils::parseNalu(mFrameBuffer);
+					tie(typeFound, spsBuff, ppsBuff) = ret;
 
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
 					{
@@ -216,9 +217,9 @@ public:
 					auto itr = it;
 					++it;
 					auto frame = it->second.begin()->second;
-					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);
-					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+					auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+					auto ret = H264Utils::parseNalu(mFrameBuffer);
+					tie(typeFound, spsBuff, ppsBuff) = ret;
 
 					if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 					{
@@ -235,7 +236,6 @@ protected:
 	frame_sp m_headerFrame;
 	const_buffer spsBuff;
 	const_buffer ppsBuff;
-	const_buffer inFrame;
 	short typeFound;
 };
 
@@ -337,44 +337,8 @@ public:
 
 	bool exportSend(frame_container& frames)
 	{
-		//This function adds SPS/PPS data to the first I-Frame before sending 
-		if (count == 0)
-		{
-			auto tempFrame = makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8, mOutputPinId);
-			boost::asio::mutable_buffer tempBuffer(tempFrame->data(), tempFrame->size());
-			prependSpsPps(tempBuffer, frames);
-			frame_container IFrameToSend;
-			IFrameToSend.insert(make_pair(frames.begin()->first, tempFrame));
-			IFrameToSend.begin()->second->timestamp = frames.begin()->second->timestamp;
-			IFrameToSend.begin()->second->fIndex2 = frames.begin()->second->fIndex2;
-			send(IFrameToSend, false);
-			count++;
-		}
-
-		else
-		{
-			send(frames, false);
-		}
+		send(frames, false);
 		return true;
-	}
-
-	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer, frame_container& iFrame)
-	{
-		frame_sp& iFrameData = iFrame.begin()->second;
-		boost::asio::mutable_buffer tBuffer(iFrameData->data(), iFrameData->size());
-
-		char NaluSeprator[4] = { 00 ,00, 00 ,01 };
-		auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
-		memcpy(iFrameBuffer.data(), nalu, 4);
-		iFrameBuffer += 4;
-		memcpy(iFrameBuffer.data(), queueObject->spsBuffer.data(), queueObject->spsBuffer.size());
-		iFrameBuffer += queueObject->spsBuffer.size();
-		memcpy(iFrameBuffer.data(), nalu, 4);
-		iFrameBuffer += 4;
-		memcpy(iFrameBuffer.data(), queueObject->ppsBuffer.data(), queueObject->ppsBuffer.size());
-		iFrameBuffer += queueObject->ppsBuffer.size();
-		memcpy(iFrameBuffer.data(), tBuffer.data(), tBuffer.size());
-
 	}
 
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
@@ -396,9 +360,9 @@ public:
 				for (auto it = queueMap.begin(); it != queueMap.end(); it++)
 				{
 					auto frame = it->second.begin()->second;
-					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);
-					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+					auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+					auto ret = H264Utils::parseNalu(mFrameBuffer);
+					tie(typeFound, spsBuff, ppsBuff) = ret;
 					if ((typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE) && (it->first > queryEnd))
 					{
 						queryEnd = it->first;
@@ -435,9 +399,10 @@ public:
 			for (auto it = queueMap.lower_bound(queryStart);; it--)
 			{
 				auto frame = it->second.begin()->second;
-				mutable_buffer& h264Frame = *(frame.get());
-				auto ret = H264Utils::parseNalu(h264Frame);
-				tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+				auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+				auto ret = H264Utils::parseNalu(mFrameBuffer);
+				tie(typeFound, spsBuff, ppsBuff) = ret;
+
 				if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 				{
 					queryStart = it->first;
@@ -459,9 +424,10 @@ public:
 					for (auto it = queueMap.lower_bound(queryStart);; it--) // Setting queryStart time
 					{
 						auto frame = it->second.begin()->second;
-						mutable_buffer& h264Frame = *(frame.get());
-						auto ret = H264Utils::parseNalu(h264Frame);
-						tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+						auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+						auto ret = H264Utils::parseNalu(mFrameBuffer);
+						tie(typeFound, spsBuff, ppsBuff) = ret;
+
 						if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 						{
 							queryStart = it->first;
@@ -484,9 +450,10 @@ public:
 				for (auto it = queueMap.begin(); it != queueMap.end(); it++)
 				{
 					auto frame = it->second.begin()->second;
-					mutable_buffer& h264Frame = *(frame.get());
-					auto ret = H264Utils::parseNalu(h264Frame);
-					tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+					auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+					auto ret = H264Utils::parseNalu(mFrameBuffer);
+					tie(typeFound, spsBuff, ppsBuff) = ret;
+
 					if ((typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE) && (it->first > tempEndTime))
 					{
 						if ((it->first > endTimeSaved) && (updateEndTimeSaved))
@@ -517,7 +484,6 @@ private:
 	const_buffer ppsBuffer;
 	const_buffer spsBuff;
 	const_buffer ppsBuff;
-	const_buffer inFrame;
 	short typeFound;
 	string mOutputPinId;
 	int count = 0;

@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(70);
+	Test_Utils::sleep_for_seconds(20);
 
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
@@ -219,8 +219,8 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 
 BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 {
-	int width = 640;
-	int height = 360;
+	int width = 704;
+	int height = 576;
 
 	std::string inFolderPath = "./data/h264_data/";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(2500);
+	Test_Utils::sleep_for_seconds(10);
 
 	p->stop();
 	p->term();
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(250);
+	Test_Utils::sleep_for_seconds(130);
 
 	p->stop();
 	p->term();
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
-	fileReaderProps.readLoop = true;
+	fileReaderProps.readLoop = false;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new H264Metadata(width, height));
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
 	int width = 640;
 	int height = 360;
 	
-	std::string inFolderPath = "./data/h264_data/";
+	std::string inFolderPath = "./data/h264_frames/";
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
@@ -407,11 +407,11 @@ BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
 		fileReader->step();
 		auto frames = sink->pop();
 		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
-		boost::asio::mutable_buffer frame1 = *(frame.get());
-		auto ret = H264Utils::parseNalu(frame1);
-		const_buffer spsBuff, ppsBuff, inFrame;
+		auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+		auto ret = H264Utils::parseNalu(mFrameBuffer);
+		const_buffer spsBuff, ppsBuff;
 		short typeFound;
-		tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+		tie(typeFound, spsBuff, ppsBuff) = ret;
 		auto spsBuffer = static_cast<const char*>(spsBuff.data());
 		auto ppsBuffer = static_cast<const char*>(ppsBuff.data());
 		
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(70);
+	Test_Utils::sleep_for_seconds(20);
 	
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
