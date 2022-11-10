@@ -29,5 +29,5 @@ public:
 		static H264_NAL_TYPE getNALUType(const char *buffer);
 		static H264_NAL_TYPE getNALUType(Frame *frm);
 		static bool getNALUnit(const char *buffer, size_t length, size_t &offset);
-		static std::tuple<short, const_buffer, const_buffer, const_buffer> parseNalu(mutable_buffer& input);
+		static std::tuple<short, const_buffer, const_buffer> parseNalu(const const_buffer input);
 };
