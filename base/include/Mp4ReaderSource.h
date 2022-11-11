@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Module.h"
-class Detail;
-class DetailJpeg;
-class DetailH264;
+class Mp4readerDetailAbs;
+class Mp4readerDetailJpeg;
+class Mp4readerDetailH264;
 
 class Mp4ReaderSourceProps : public ModuleProps
 {
@@ -84,7 +84,7 @@ private:
 	std::string encodedImagePinId;
 	std::string mp4FramePinId;
 	int outImageFrameType;
-	boost::shared_ptr<Detail> mDetail;
+	boost::shared_ptr<Mp4readerDetailAbs> mDetail;
 	Mp4ReaderSourceProps props;
 	std::function<frame_sp(size_t size)> _makeFrame;
 	std::function<framemetadata_sp(int type)> _getOutputMetadataByType;
