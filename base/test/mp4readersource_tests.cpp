@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(random_seek_jpg)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264frames_metadata)
 {
-	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20220931/0016/1667214922765.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20221009/0019/1668001826042.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	bool parseFS = false;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264frames_metadata)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264frames)
 {
-	std::string videoPath = "./data/Mp4_videos/h264_video/20220724/0011/1661319781950.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	bool parseFS = false;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264frames)
 BOOST_AUTO_TEST_CASE(random_seek_h264)
 {
 	std::string skipDir = "data/Mp4_videos/h264_video/";
-	std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221002/0013/1667375116029.mp4";
+	std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	uint64_t skipTS = 1667375120029;
 	boost::filesystem::path file("frame_??????.h264");
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE(random_seek_h264)
 BOOST_AUTO_TEST_CASE(fs_parsing_h264)
 {
 	/* file structure parsing test */
-	std::string videoPath = "./data/Mp4_videos/h264_video/20220724/0011/1661319781950.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	boost::filesystem::path file("frame_??????.h264");
 	auto frameType = FrameMetadata::FrameType::H264_DATA;

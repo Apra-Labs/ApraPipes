@@ -459,7 +459,7 @@ bool DetailH264::produceFrames(frame_container& frames)
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 	size_t imageActualSize = 0;
 
-	if (mState.mFrameCounter == 0 || mState.randomSeekParseFlag)
+	if (mState.randomSeekParseFlag)
 	{
 		prependSpsPps(tmpBuffer);
 		imageActualSize = spsSize + ppsSize + 8;
