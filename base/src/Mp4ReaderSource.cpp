@@ -8,10 +8,10 @@
 #include "Command.h"
 #include "libmp4.h"
 
-class Detail
+class Mp4readerDetailAbs
 {
 public:
-	Detail(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
+	Mp4readerDetailAbs(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS)
 	{
 		setProps(props);
@@ -21,7 +21,7 @@ public:
 		mFSParser = boost::shared_ptr<FileStructureParser>(new FileStructureParser());
 	}
 
-	~Detail()
+	~Mp4readerDetailAbs()
 	{
 	}
 	virtual void setMetadata() = 0;
@@ -323,26 +323,26 @@ public:
 	std::string mp4FramePinId;
 };
 
-class DetailJpeg : public Detail
+class Mp4readerDetailJpeg : public Mp4readerDetailAbs
 {
 public:
-	DetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _makeframe, _sendEOS)
+	Mp4readerDetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Mp4readerDetailAbs(props, _makeFrame, _makeframe, _sendEOS)
 	{}
-	~DetailJpeg() {}
+	~Mp4readerDetailJpeg() { mp4_demux_close(mState.demux); }
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
 	void sendEndOfStream() {}
 };
 
-class DetailH264 : public Detail
+class Mp4readerDetailH264 : public Mp4readerDetailAbs
 {
 public:
-	DetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Detail(props, _makeFrame, _makeframe, _sendEOS)
+	Mp4readerDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void()> _sendEOS) : Mp4readerDetailAbs(props, _makeFrame, _makeframe, _sendEOS)
 	{}
-	~DetailH264() {}
+	~Mp4readerDetailH264() { mp4_demux_close(mState.demux); }
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
@@ -354,7 +354,7 @@ private:
 	size_t ppsSize = 0;
 };
 
-void DetailJpeg::setMetadata()
+void Mp4readerDetailJpeg::setMetadata()
 {
 	auto metadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	if (!metadata->isSet())
@@ -372,7 +372,7 @@ void DetailJpeg::setMetadata()
 	return;
 }
 
-bool DetailJpeg::produceFrames(frame_container& frames)
+bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, encodedImagePinId);
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, mp4FramePinId);
@@ -398,7 +398,7 @@ bool DetailJpeg::produceFrames(frame_container& frames)
 	return true;
 }
 
-void DetailH264::setMetadata()
+void Mp4readerDetailH264::setMetadata()
 {
 	auto metadata = framemetadata_sp(new H264Metadata(width, height));
 	if (!metadata->isSet())
@@ -427,12 +427,12 @@ void DetailH264::setMetadata()
 	return;
 }
 
-void DetailH264::sendEndOfStream()
+void Mp4readerDetailH264::sendEndOfStream()
 {
 	sendEOS();
 }
 
-void DetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
+void Mp4readerDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
 {
 	//1a write sps on tmpBuffer.data()
 	//1b tmpBuffer+=sizeof_sps
@@ -453,7 +453,7 @@ void DetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
 	iFrameBuffer += ppsSize;
 }
 
-bool DetailH264::produceFrames(frame_container& frames)
+bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, h264ImagePinId);
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
@@ -503,7 +503,7 @@ bool Mp4ReaderSource::init()
 	auto  mFrameType = inputPinIdMetadataMap->getFrameType();
 	if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 	{
-		mDetail.reset(new DetailJpeg(
+		mDetail.reset(new Mp4readerDetailJpeg(
 			props,
 			[&](size_t size, string& pinId)
 			{ return makeFrame(size, pinId); },
@@ -514,7 +514,7 @@ bool Mp4ReaderSource::init()
 	}
 	else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 	{
-		mDetail.reset(new DetailH264(props,
+		mDetail.reset(new Mp4readerDetailH264(props,
 			[&](size_t size, string& pinId)
 			{ return makeFrame(size, pinId); },
 			[&](frame_sp& frame, size_t& size, string& pinId)
