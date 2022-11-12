@@ -83,3 +83,14 @@ bool AbsControlModule::process(frame_container& frames)
 {
     return true;
 }
+
+bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
+{
+    moduleRoles[role] = module;
+    return true;
+}
+
+boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
+{
+    return moduleRoles[role];
+}

@@ -52,33 +52,70 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
     {
         NVRCommandRecord cmd;
         getCommand(cmd, frame);
-        auto RecordObj = RecordCommand(cmd.doRecording);
         for (int i = 0; i < pipelineModules.size(); i++)
         {
-            if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
+            if (pipelineModules[i] == getModuleofRole("writer")) // Logic for detecting modules to add
             {
-                auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
-                bool isTaskDone = mp4Writer->stub(RecordObj);
+                pipelineModules[i]->queueCommand(cmd);
             }
         }
         return true;
     }
     if (type == Command::CommandType::NVRCommandExport)
     {
-        // mp4writer export command
         NVRCommandExport cmd;
         getCommand(cmd, frame);
-        boost::shared_ptr<ExportCommand>ExportObj;
-        ExportObj->startTime = cmd.startExportTS;
-        ExportObj->stopTime = cmd.stopExportTS;
+        uint64_t testStart = firstMMQtimestamp + 1000;
+        uint64_t testStop = firstMMQtimestamp + 5000;
+        MMQtimestamps cmdMMQ;
+        cmdMMQ.nvrExportStart = testStart;
+        cmdMMQ.nvrExportStop = testStop;
         for (int i = 0; i < pipelineModules.size(); i++)
         {
-            if (pipelineModules[i]->getId() == "mp4WritersinkModule_4")
+            auto leftId = pipelineModules[i]->getId();
+            auto rightId = getModuleofRole("multimediaQueue")->getId();
+            if (pipelineModules[i] == getModuleofRole("multimediaQueue")) // Logic for detecting modules to add
             {
-                auto mp4Writer = reinterpret_pointer_cast<Mp4WriterSink>(pipelineModules[i]);
+                auto myId = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(cmdMMQ);
             }
         }
+        return true;
     }
+    if (type == Command::CommandType::NVRCommandView)
+    {
+        NVRCommandView cmd;
+        getCommand(cmd, frame);
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            if (pipelineModules[i] == getModuleofRole("viewer")) // Logic for detecting modules to add
+            {
+                auto myId = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(cmd);
+            }
+        }
+        return true;
+    }
+    if (type == Command::CommandType::MP4WriterLastTS)
+    {
+        MP4WriterLastTS cmd;
+        getCommand(cmd, frame);
+        auto tempMod = getModuleofRole("writer");
+        if (cmd.moduleId == tempMod->getId())
+        {
+            mp4lastWrittenTS = cmd.lastWrittenTimeStamp; //We can save the last timestamp for a single writer using role
+        }
+        return true;
+    }
+     if (type == Command::CommandType::MMQtimestamps)
+    {
+        MMQtimestamps cmd;
+        getCommand(cmd, frame);
+        firstMMQtimestamp = cmd.firstTimeStamp;
+        lastMMQtimestamp = cmd.lastTimeStamp;
+        return true;
+    }
+
     return Module::handleCommand(type, frame);
 }
 
@@ -115,6 +152,26 @@ void NVRControlModule::setProps(NVRControlModuleProps& props)
     Module::addPropsToQueue(props);
 }
 
+bool NVRControlModule::validateModuleRoles()
+{
+    for (int i = 0; i < pipelineModules.size(); i++)
+    {
+        bool modPresent = false;
+        for (auto it = moduleRoles.begin(); it != moduleRoles.end(); it++)
+        {
+            if (pipelineModules[i] == it->second)
+            {
+                modPresent = true;
+            }
+        }
+        if (!modPresent)
+        {
+            LOG_ERROR << "Modules and roles validation failed!!";
+        }
+    }
+    return true;
+}
+
 bool NVRControlModule::nvrRecord(bool record)
 {
     NVRCommandRecord cmd;
@@ -127,5 +184,12 @@ bool NVRControlModule::nvrExport(uint64_t ts, uint64_t te)
     NVRCommandExport cmd;
     cmd.startExportTS = ts;
     cmd.stopExportTS = te;
+    return queueCommand(cmd);
+}
+
+bool NVRControlModule::nvrView(bool view)
+{
+    NVRCommandView cmd;
+    cmd.doView = view;
     return queueCommand(cmd);
 }

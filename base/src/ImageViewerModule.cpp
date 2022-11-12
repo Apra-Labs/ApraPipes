@@ -32,7 +32,7 @@ public:
 	{
 		return !mImg.rows;
 	}
-		
+	bool showFlag = true;
 private:
 	cv::Mat mImg;	
 	std::string mStrTitle;
@@ -75,6 +75,24 @@ bool ImageViewerModule::init()
 
 bool ImageViewerModule::term() { return Module::term(); }
 
+bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp& frame)
+{
+	if (type == Command::CommandType::NVRCommandView)
+	{
+		NVRCommandView cmd;
+		getCommand(cmd, frame);
+		if (cmd.doView == false)
+		{
+			mDetail->showFlag = false;
+		}
+		if (cmd.doView)
+		{
+			mDetail->showFlag = true;
+		}
+	}
+	return true;
+}
+
 bool ImageViewerModule::process(frame_container& frames)
 {
 	auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE);
@@ -82,8 +100,10 @@ bool ImageViewerModule::process(frame_container& frames)
 	{
 		return true;
 	}
-	
-	mDetail->showImage(frame);
+	if (mDetail->showFlag)
+	{
+		mDetail->showImage(frame);
+	}
 	return true;
 }
 

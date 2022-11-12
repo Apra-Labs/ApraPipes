@@ -17,7 +17,10 @@ public:
 		NVRStartStop,
 		NVRExport
 		NVRCommandRecord,
-		NVRCommandExport
+		NVRCommandExport,
+		NVRCommandView,
+		MP4WriterLastTS,
+		MMQtimestamps
 	};
 
 	Command()
@@ -305,5 +308,87 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& startExportTS;
 		ar& stopExportTS;
+	}
+};
+
+class NVRCommandView : public Command
+{
+public:
+	NVRCommandView() : Command(Command::CommandType::NVRCommandView)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(doView);
+	}
+
+	bool doView = false;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& doView;
+	}
+};
+
+class MP4WriterLastTS : public Command
+{
+public:
+	MP4WriterLastTS() : Command(Command::CommandType::MP4WriterLastTS)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(lastWrittenTimeStamp) + sizeof(moduleId);
+	}
+
+	uint64_t lastWrittenTimeStamp = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& lastWrittenTimeStamp;
+		ar& moduleId;
+	}
+};
+
+class MMQtimestamps : public Command
+{
+public:
+	MMQtimestamps() : Command(Command::CommandType::MMQtimestamps)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(firstTimeStamp) + sizeof(lastTimeStamp) + sizeof(nvrExportStart) + sizeof(nvrExportStop) +sizeof(moduleId);
+	}
+
+	uint64_t firstTimeStamp = 0;
+	uint64_t lastTimeStamp = 0;
+	uint64_t nvrExportStart = 0;
+	uint64_t nvrExportStop = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& firstTimeStamp;
+		ar& lastTimeStamp;
+		ar& nvrExportStart;
+		ar& nvrExportStop;
+		ar& moduleId;
 	}
 };

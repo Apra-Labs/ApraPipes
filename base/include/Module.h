@@ -177,6 +177,21 @@ public:
 	static frame_sp getFrameByType(frame_container& frames, int frameType); 
 	virtual void flushQue();
 	virtual void flushQueRecursive();
+	template<class T>
+	bool queueCommand(T& cmd)
+	{
+		auto size = cmd.getSerializeSize();
+		auto frame = makeCommandFrame(size, mCommandMetadata);
+
+		Utils::serialize(cmd, frame->data(), size);
+
+		// add to que
+		frame_container frames;
+		frames.insert(make_pair("command", frame));
+		Module::push(frames);
+
+		return true;
+	}
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
@@ -214,22 +229,6 @@ protected:
 
 		// set props		
 		Module::setProps(props);
-
-		return true;
-	}
-
-	template<class T>
-	bool queueCommand(T& cmd)
-	{
-		auto size = cmd.getSerializeSize();
-		auto frame = makeCommandFrame(size, mCommandMetadata);
-
-		Utils::serialize(cmd, frame->data(), size);
-
-		// add to que
-		frame_container frames;
-		frames.insert(make_pair("command", frame));
-		Module::push(frames);
 
 		return true;
 	}
@@ -334,7 +333,7 @@ protected:
 	};
 
 	FFBufferMaker createFFBufferMaker();
-
+	boost::shared_ptr<Module> controlModule = nullptr;
 private:	
 	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
@@ -367,7 +366,6 @@ private:
 	bool shouldForceStep();
 	bool shouldSkip();
 	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
-	boost::shared_ptr<Module> controlModule = nullptr;
 	bool mPlay;
 	uint32_t mForceStepCount;
 	int mSkipIndex;

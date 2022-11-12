@@ -1170,6 +1170,8 @@ bool Module::step()
 	else
 	{
 		mProfiler->startPipelineLap();
+		
+		//LOG_ERROR  << "Module Id is " << Module::getId() << "Module QUe Size " << mQue->size();
 		auto frames = mQue->pop();
 		preProcessNonSource(frames);
 

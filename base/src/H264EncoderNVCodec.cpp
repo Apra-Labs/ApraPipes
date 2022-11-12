@@ -162,7 +162,6 @@ bool H264EncoderNVCodec::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;
 
 	mDetail->compute(frame);
-
 	return true;
 }
 

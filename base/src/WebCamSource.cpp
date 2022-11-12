@@ -24,6 +24,9 @@ public:
     bool produce(frame_sp &outFrame)
 
     {
+        std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+        outFrame->timestamp = dur.count();
         frame.data = static_cast<uchar *>(outFrame->data());
         cameraInstance >> frame;
         cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);

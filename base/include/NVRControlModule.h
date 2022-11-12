@@ -1,7 +1,7 @@
 #pragma once
 #include "Module.h"
 #include "AbsControlModule.h"
-#include "NVRHelper.h"
+
 class NVRControlModuleProps : public AbsControlModuleProps
 {
 public:
@@ -31,8 +31,13 @@ class NVRControlModule : public AbsControlModule
 	bool term();
 	void setProps(NVRControlModuleProps& props);
 	NVRControlModuleProps getProps();
+	bool validateModuleRoles();
 	bool nvrRecord(bool record);
 	bool nvrExport(uint64_t startTime, uint64_t stopTime);
+	bool nvrView(bool view);
+	uint64_t mp4lastWrittenTS = 0;
+	uint64_t firstMMQtimestamp = 0;
+	uint64_t lastMMQtimestamp = 0;
 
 protected:
 	bool validateInputPins();

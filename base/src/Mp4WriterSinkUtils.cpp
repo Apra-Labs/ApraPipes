@@ -165,7 +165,7 @@ void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName 
 	boost::filesystem::path finalPath;
 	std::string mp4FileName;
 	boost::filesystem::path relPath;
-
+	
 	if (frameType == FrameMetadata::FrameType::H264_DATA)
 	{
 		parseTSH264(timestamp, chunkTimeInMinutes, syncTimeInSeconds, relPath, mp4FileName, syncFlag, frameType, naluType, basefolder, nextFrameFileName);

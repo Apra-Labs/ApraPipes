@@ -134,7 +134,6 @@ public:
 				ppsBuffer = ppsBuff;
 			}
 			mQueue.insert({ it->second->timestamp, frames });
-
 			if (largestTimeStamp < it->second->timestamp)
 			{
 				largestTimeStamp = it->second->timestamp;
@@ -686,6 +685,16 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		}
 		return true;
 	}
+	if (type == Command::CommandType::MMQtimestamps)
+	{
+		MMQtimestamps cmd;
+		getCommand(cmd, frame);
+		uint64_t startExport = cmd.nvrExportStart;
+		uint64_t stopExport = cmd.nvrExportStop;
+		allowFrames(startExport, stopExport);
+		return true;
+	}
+}
 	return Module::handleCommand(type, frame);
 }
 
@@ -703,6 +712,7 @@ bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
 
 bool MultimediaQueueXform::process(frame_container& frames)
 {
+	
 	mState->queueObject->enqueue(frames, pushToNextModule);
 	if (mState->Type == State::EXPORT)
 	{
@@ -758,6 +768,28 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		queryEndTime = 0;
 		setState(queryStartTime, queryEndTime);
 	}
+
+	//This part is done only when Control module is connected 
+	if (controlModule != nullptr)
+	{
+		//Send commmand to NVRControl module 
+		if (mState->queueObject->mQueue.size() != 0)
+		{
+			MMQtimestamps cmd;
+			auto front = mState->queueObject->mQueue.begin();
+			if (front != mState->queueObject->mQueue.end())
+			{
+				uint64_t firstTimeStamp = front->first;
+				cmd.firstTimeStamp = firstTimeStamp;
+			}
+			auto back = mState->queueObject->mQueue.crbegin();
+			uint64_t lastTimeStamp = back->first;
+			cmd.lastTimeStamp = lastTimeStamp;
+			controlModule->queueCommand(cmd);
+		}
+		return true;
+	}
+
 	return true;
 }
 

@@ -1,6 +1,6 @@
 #include <ctime>
 #include <fstream>
-
+#include <iostream>
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "H264Utils.h"
@@ -12,6 +12,8 @@
 #include "libmp4.h"
 #include "PropsChangeMetadata.h"
 #include "H264Metadata.h"
+#include "Command.h"
+#include <boost/lexical_cast.hpp>
 
 class DetailAbs
 {
@@ -152,6 +154,7 @@ public:
 	boost::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
+	std::string lastWrittenTimeStamp;
 protected:
 	int videotrack;
 	int metatrack;
@@ -504,6 +507,24 @@ bool Mp4WriterSink::process(frame_container& frames)
 		// close any open file
 		mDetail->attemptFileClose();
 	}
+
+	//This part is executed only if Control Module is connected to MP4Writer
+	if (controlModule != nullptr)
+	{
+		//Send commmand to NVRControl module 
+
+		std::string subString = ".mp4";
+		std::size_t ind = mDetail->lastWrittenTimeStamp.find(subString);
+		if (ind != std::string::npos)
+		{
+			mDetail->lastWrittenTimeStamp.erase(ind, subString.length());
+		}
+		MP4WriterLastTS cmd;
+		cmd.lastWrittenTimeStamp = boost::lexical_cast<uint64_t>(mDetail->lastWrittenTimeStamp);
+		cmd.moduleId = Module::getId();
+		controlModule->queueCommand(cmd);
+	}
+
 	return true;
 }
 

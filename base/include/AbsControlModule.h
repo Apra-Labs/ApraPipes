@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include "Module.h"
 
 class AbsControlModuleProps : public ModuleProps
@@ -17,8 +18,11 @@ public:
 	bool init();
 	bool term();
 	void setProps(AbsControlModuleProps& props);
+	bool enrollModule(std::string role, boost::shared_ptr<Module> module);
+	boost::shared_ptr<Module> getModuleofRole(std::string role);
 	AbsControlModuleProps getProps();
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
+	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
 
 protected:
 	bool process(frame_container& frames);
