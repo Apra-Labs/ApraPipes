@@ -5,6 +5,7 @@
 #include "HistogramOverlay.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
+#include "ArrayMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Utils.h"
 #include "Logger.h"

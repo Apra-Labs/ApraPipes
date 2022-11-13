@@ -1,5 +1,8 @@
 #include "AbsColorConversionFactory.h"
 #include "ColorConversionStrategy.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
+
 
 boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadata_sp input, framemetadata_sp output, cv::Mat& inpImg, cv::Mat& outImg)
 {
