@@ -66,6 +66,7 @@ public:
                 }
             }
         }
+        return _cam;
     };
 
     void manageDirectory()
