@@ -1,4 +1,5 @@
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
 #include "ColorConversionXForm.h"
 #include "ColorConversionStrategy.h"
 #include "AbsColorConversionFactory.h"
