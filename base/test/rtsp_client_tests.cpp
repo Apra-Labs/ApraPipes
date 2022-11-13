@@ -28,7 +28,8 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	auto url=string("rtsp://127.0.0.1:5544/vod/mp4:bunny.mp4"); //drop bunny/mp4 into evostream folder
 	
 	auto m = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
-	m->addOutputPin(framemetadata_sp(new H264Metadata()));
+	auto meta = framemetadata_sp(new H264Metadata());
+	m->addOutputPin(meta);
 	
 	//filewriter for saving output
 	auto fw = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(d.outFile, true)));
