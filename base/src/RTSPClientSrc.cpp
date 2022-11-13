@@ -95,7 +95,8 @@ public:
                 {
                     videoStream = i;
                     auto meta= FrameMetadataFactory::downcast<H264Metadata>(myModule->getOutputMetadata(outPin));
-                    meta->setData(H264Metadata(pCodecCtx->width, pCodecCtx->height, pCodecCtx->gop_size, pCodecCtx->max_b_frames));
+                    H264Metadata tmp(pCodecCtx->width, pCodecCtx->height, pCodecCtx->gop_size, pCodecCtx->max_b_frames);
+                    meta->setData(tmp);
                 }
             }
         }
