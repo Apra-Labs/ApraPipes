@@ -404,6 +404,8 @@ ELSE()
 		src/JPEGEncoderNVJPEG.cpp
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
+		src/H264Decoder.cpp
+		src/H264DecoderHelper.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -451,6 +453,8 @@ ELSE()
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
+		include/H264Decoder.h
+		include/H264DecoderHelper.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -593,6 +597,7 @@ SET(UT_FILES
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
+	test/h264decoder_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
