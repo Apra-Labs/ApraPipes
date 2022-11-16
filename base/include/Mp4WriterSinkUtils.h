@@ -5,10 +5,10 @@ class Mp4WriterSinkUtils
 public:
 	Mp4WriterSinkUtils();
 	void getFilenameForNextFrame(std::string& nextFrameFileName ,uint64_t &timestamp, std::string &basefolder,
-		uint32_t chunkTimeInMinutes, uint32_t syncTimeInMinutes, bool &syncFlag,short& frameType, short naluType);
-	void parseTSJpeg(uint64_t &tm, uint32_t &chunkTimeInMinutes, uint32_t &syncTimeInMinutes,
+		uint32_t chunkTimeInMinutes, uint32_t syncTimeInSeconds, bool &syncFlag,short& frameType, short naluType);
+	void parseTSJpeg(uint64_t &tm, uint32_t &chunkTimeInMinutes, uint32_t & syncTimeInSeconds,
 		boost::filesystem::path &relPath, std::string &mp4FileName, bool &syncFlag, std::string baseFolder, std::string& nextFrameFileName);
-	void parseTSH264(uint64_t& tm, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInMinutes,boost::filesystem::path& relPath, 
+	void parseTSH264(uint64_t& tm, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath,
 		std::string& mp4FileName, bool& syncFlag,short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName);
 	std::string format_hrs(int &hr);
 	std::string format_2(int &min);
