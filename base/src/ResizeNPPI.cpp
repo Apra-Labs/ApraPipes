@@ -1,5 +1,7 @@
 #include "ResizeNPPI.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"

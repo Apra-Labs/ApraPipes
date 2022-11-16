@@ -137,7 +137,7 @@ jobs:
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
           path: |
             ${{ inputs.cache-path }}
@@ -190,7 +190,7 @@ jobs:
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: TestResults_${{ inputs.flav }}
         path: |

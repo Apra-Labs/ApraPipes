@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 
 BOOST_AUTO_TEST_SUITE(imagemetadata_tests)

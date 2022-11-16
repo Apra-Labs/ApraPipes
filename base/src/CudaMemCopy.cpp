@@ -1,4 +1,5 @@
 #include "CudaMemCopy.h"
+#include "RawImageMetadata.h"
 
 
 CudaMemCopy::CudaMemCopy(CudaMemCopyProps _props) : Module(TRANSFORM, "CudaMemCopy", _props), props(_props), mOutputPinId(""), mCopy2D(false), mChannels(NOT_SET_NUM)

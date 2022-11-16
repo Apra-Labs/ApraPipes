@@ -1,5 +1,6 @@
 #include "BrightnessContrastControlXform.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
