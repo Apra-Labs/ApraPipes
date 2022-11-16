@@ -75,6 +75,7 @@ public:
 	bool term();
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
+	uint64_t stopWriterTS = 0;
 
 protected:
 	bool process(frame_container& frames);
@@ -83,6 +84,7 @@ protected:
 	bool validateInputPins();
 	bool validateInputOutputPins();
 	bool setMetadata(framemetadata_sp &inputMetadata);
+	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool handlePropsChange(frame_sp &frame);
 	bool shouldTriggerSOS();
 	boost::shared_ptr<DetailAbs> mDetail;

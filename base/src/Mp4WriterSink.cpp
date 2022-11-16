@@ -37,6 +37,11 @@ public:
 	virtual bool set_video_decoder_config() = 0;
 	virtual bool write(frame_container& frames) = 0;
 
+	void closeMp4Video()
+	{
+		mp4_mux_close(mux);
+	}
+
 	void setImageMetadata(framemetadata_sp& metadata)
 	{
 		mInputMetadata = metadata;
@@ -491,6 +496,19 @@ bool Mp4WriterSink::term()
 	return true;
 }
 
+bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp& frame)
+{
+
+	if (type == Command::CommandType::MP4WriterStopTS)
+	{
+		MP4WriterStopTS cmd;
+		getCommand(cmd, frame);
+		stopWriterTS = cmd.stopTimeStamp;
+		return true;
+	}
+	return Module::handleCommand(type, frame);
+}
+
 bool Mp4WriterSink::process(frame_container& frames)
 {
 	try
@@ -523,6 +541,12 @@ bool Mp4WriterSink::process(frame_container& frames)
 		cmd.lastWrittenTimeStamp = boost::lexical_cast<uint64_t>(mDetail->lastWrittenTimeStamp);
 		cmd.moduleId = Module::getId();
 		controlModule->queueCommand(cmd);
+
+		//Check written timeStamp and Stop
+		if (stopWriterTS >= frames.cbegin()->second->timestamp)
+		{
+			mDetail->closeMp4Video();
+		}
 	}
 
 	return true;

@@ -23,6 +23,7 @@
 #include "MultimediaQueueXform.h"
 #include "H264Metadata.h"
 #include "ValveModule.h"
+#include "FileWriterModule.h"
 
 BOOST_AUTO_TEST_SUITE(nvrcontrolmodule_tests)
 
@@ -172,7 +173,7 @@ BOOST_AUTO_TEST_CASE(checkNVR)
 {
 	auto nvrPipe = boost::shared_ptr<NVRPipeline>(new NVRPipeline());
 	nvrPipe->open();
-	nvrPipe->startRecording();
+	//nvrPipe->startRecording();
 	nvrPipe->close();
 }
 
@@ -463,7 +464,7 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view)
 	inp.join();
 }
 
-BOOST_AUTO_TEST_CASE(NVR_mmq_view_fileReader)
+BOOST_AUTO_TEST_CASE(checkNVR2) //Use this for testing pipeline note - Only one mp4Writer is present in this pipeline 
 {
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
@@ -480,11 +481,23 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_fileReader)
 	auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
 	webCam->setNext(colorConvt);
 
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
+	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	colorConvt->setNext(copy);
+	auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR)));
+	webCam->setNext(colorConvtView);
+	auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
+	colorConvtView->setNext(view);
+	H264EncoderNVCodecProps encProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
+	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(encProps));
+	copy->setNext(encoder);
+
 	auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true)));
-	webCam->setNext(multiQueue);
+	encoder->setNext(multiQueue);
 
 	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
-	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_1);
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
 	mp4WriterSinkProps_1.logHealth = true;
 	mp4WriterSinkProps_1.logHealthFrequency = 10;
 	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
@@ -496,22 +509,98 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_fileReader)
 	std::thread inp(key_func, mControl);
 	p.appendModule(webCam);
 	p.addControlModule(mControl);
-	mControl->enrollModule("webcamera", webCam);
-	mControl->enrollModule("multimediaQueue", multiQueue);
-	mControl->enrollModule("writer", mp4Writer_1);
+	mControl->enrollModule("WebCamera", webCam);
+	mControl->enrollModule("Renderer", view);
+	mControl->enrollModule("Writer-1", mp4Writer_1);
+	mControl->enrollModule("MultimediaQueue", multiQueue);
 
 	p.init();
 	mControl->init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	boost::this_thread::sleep_for(boost::chrono::seconds(360));
 	p.stop();
 	p.term();
 	p.wait_for_all();
+	BOOST_LOG_TRIVIAL(info) << "The first thread has stopped";
 	inp.join();
 }
 
+BOOST_AUTO_TEST_CASE(checkNVR3) //Use this for testing pipeline note - Mimics the actual pipeline
+{
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+	uint32_t gopLength = 25;
+	uint32_t bitRateKbps = 1000;
+	uint32_t frameRate = 30;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
+	bool enableBFrames = true;
+	auto width = 640; //1920
+	auto height = 360; //1020
+
+
+	WebCamSourceProps webCamSourceprops(0, 640, 360);
+	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
+	webCam->setNext(colorConvt);
+
+	auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR)));
+	webCam->setNext(colorConvtView);
+
+	auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
+	colorConvtView->setNext(view);
+
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
+	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	colorConvt->setNext(copy);
+
+	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
+	copy->setNext(encoder);
+
+	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
+	mp4WriterSinkProps_1.logHealth = true;
+	mp4WriterSinkProps_1.logHealthFrequency = 10;
+	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
+	encoder->setNext(mp4Writer_1);
+
+	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(1000, 1020, false)));
+	encoder->setNext(multiQue);
+	std::string outFolderPath_2 = "./data/testOutput/mp4_videos/ExportVids/";
+	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_2);
+	mp4WriterSinkProps_2.logHealth = true;
+	mp4WriterSinkProps_2.logHealthFrequency = 10;
+	auto mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
+	multiQue->setNext(mp4Writer_2);
+
+	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+	PipeLine p("test");
+	std::thread inp(key_func, mControl);
+	p.appendModule(webCam);
+	p.addControlModule(mControl);
+	mControl->enrollModule("WebCamera", webCam);
+	mControl->enrollModule("Renderer", view);
+	mControl->enrollModule("Writer-1", mp4Writer_1);
+	mControl->enrollModule("MultimediaQueue", multiQue);
+	mControl->enrollModule("Writer-2", mp4Writer_2);
+
+	p.init();
+	mControl->init();
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(360));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+	BOOST_LOG_TRIVIAL(info) << "The first thread has stopped";
+	inp.join();
+}
+
+
 BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
 {
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
@@ -523,7 +612,7 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
 
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw");
-	fileReaderProps.fps = 100;
+	fileReaderProps.fps = 20;
 	fileReaderProps.readLoop = true;
 	
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
@@ -539,29 +628,26 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
 
 	//auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
 
-	auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
+	//auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
 	//fileReader->setNext(colorConvtView);
 
-	auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
+	//auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
 	//colorConvtView->setNext(view);
 
 	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
 	//auto copyProps = CudaMemCopyProps(cudaMemcpyDeviceToHost, cudaStream_);
-	copyProps.qlen = 10;
 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	//fileReader->setNext(colorConvt);
 	fileReader->setNext(copy);
 
 	H264EncoderNVCodecProps encProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
-	encProps.fps = 100;
 	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(encProps));
 	copy->setNext(encoder);
 
 	//auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(0)));
 	//encoder->setNext(valve);
-	MultimediaQueueXformProps multProps(10000, 2000, true);
-	multProps.fps = 100;
+	MultimediaQueueXformProps multProps(1500, 2000, false);
 	auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multProps));
 	encoder->setNext(multiQueue);
 
@@ -570,8 +656,8 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
 	mp4WriterSinkProps_1.logHealth = true;
 	mp4WriterSinkProps_1.logHealthFrequency = 10;
 	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
 	multiQueue->setNext(mp4Writer_1);
-
 	//auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
 
 	PipeLine p("test");
@@ -585,7 +671,7 @@ BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
 	p.init();
 	//mControl->init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+	boost::this_thread::sleep_for(boost::chrono::seconds(180));
 	p.stop();
 	p.term();
 	p.wait_for_all();

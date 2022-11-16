@@ -108,6 +108,12 @@ public:
 				mControl->nvrView(false);
 				mControl->step();
 			}
+			if (k == 101)
+			{
+				BOOST_LOG_TRIVIAL(info) << "Starting Export!";
+				mControl->nvrExport(0, 5);
+				mControl->step();
+			}
 		}
 	}
 
@@ -143,24 +149,20 @@ public:
 		copy->setNext(encoder);
 
 		std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
-		auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_1);
+		auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
 		mp4WriterSinkProps_1.logHealth = true;
 		mp4WriterSinkProps_1.logHealthFrequency = 10;
 		mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
 		encoder->setNext(mp4Writer_1);
 
-		multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true)));
-		//encoder->setNext(valve);
-
-		valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
-		//multiQue->setNext(valve);
-		//encoder->setNext(valve);
+		multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(30, 40, false)));
+		encoder->setNext(multiQue);
 		std::string outFolderPath_2 = "./data/testOutput/mp4_videos/ExportVids/";
 		auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_2);
 		mp4WriterSinkProps_2.logHealth = true;
 		mp4WriterSinkProps_2.logHealthFrequency = 10;
 		mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
-		//encoder->setNext(mp4Writer_2);
+		multiQue->setNext(mp4Writer_2);
 
 		mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
 
@@ -168,7 +170,6 @@ public:
 		mControl->enrollModule("Renderer", view);
 		mControl->enrollModule("Writer-1", mp4Writer_1);
 		mControl->enrollModule("MultimediaQueue", multiQue);
-		mControl->enrollModule("Valve", valve);
 		mControl->enrollModule("Writer-2", mp4Writer_2);
 
 		p = boost::shared_ptr<PipeLine>(new PipeLine("test"));

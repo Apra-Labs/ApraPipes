@@ -54,7 +54,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         getCommand(cmd, frame);
         for (int i = 0; i < pipelineModules.size(); i++)
         {
-            if (pipelineModules[i] == getModuleofRole("writer")) // Logic for detecting modules to add
+            if (pipelineModules[i] == getModuleofRole("Writer-1")) // Logic for detecting modules to add
             {
                 pipelineModules[i]->queueCommand(cmd);
             }
@@ -66,18 +66,30 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         NVRCommandExport cmd;
         getCommand(cmd, frame);
         uint64_t testStart = firstMMQtimestamp + 1000;
-        uint64_t testStop = firstMMQtimestamp + 5000;
+        uint64_t testStop = firstMMQtimestamp + 15000;
         MMQtimestamps cmdMMQ;
         cmdMMQ.nvrExportStart = testStart;
         cmdMMQ.nvrExportStop = testStop;
         for (int i = 0; i < pipelineModules.size(); i++)
         {
             auto leftId = pipelineModules[i]->getId();
-            auto rightId = getModuleofRole("multimediaQueue")->getId();
-            if (pipelineModules[i] == getModuleofRole("multimediaQueue")) // Logic for detecting modules to add
+            auto rightId = getModuleofRole("MultimediaQueue")->getId();
+            if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Logic for detecting modules to add
             {
                 auto myId = pipelineModules[i]->getId();
                 pipelineModules[i]->queueCommand(cmdMMQ);
+            }
+        }
+        MP4WriterStopTS cmdMP4;
+        cmdMP4.stopTimeStamp = firstMMQtimestamp + 15000;
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            auto leftId = pipelineModules[i]->getId();
+            auto rightId = getModuleofRole("Writer-1")->getId();
+            if (pipelineModules[i] == getModuleofRole("Writer-1")) // Logic for detecting modules to add
+            {
+                auto myId = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(cmdMP4);
             }
         }
         return true;
@@ -88,7 +100,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         getCommand(cmd, frame);
         for (int i = 0; i < pipelineModules.size(); i++)
         {
-            if (pipelineModules[i] == getModuleofRole("viewer")) // Logic for detecting modules to add
+            if (pipelineModules[i] == getModuleofRole("Renderer")) // Logic for detecting modules to add
             {
                 auto myId = pipelineModules[i]->getId();
                 pipelineModules[i]->queueCommand(cmd);
@@ -100,14 +112,19 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
     {
         MP4WriterLastTS cmd;
         getCommand(cmd, frame);
-        auto tempMod = getModuleofRole("writer");
+        auto tempMod = getModuleofRole("Writer-1");
         if (cmd.moduleId == tempMod->getId())
         {
             mp4lastWrittenTS = cmd.lastWrittenTimeStamp; //We can save the last timestamp for a single writer using role
         }
+        //auto tempMod2 = getModuleofRole("Writer-2");
+        //if (cmd.moduleId == tempMod2->getId())
+        //{
+        //    mp4_2_lastWrittenTS = cmd.lastWrittenTimeStamp; //We can save the last timestamp for a single writer using role
+        //}
         return true;
     }
-     if (type == Command::CommandType::MMQtimestamps)
+    if (type == Command::CommandType::MMQtimestamps)
     {
         MMQtimestamps cmd;
         getCommand(cmd, frame);

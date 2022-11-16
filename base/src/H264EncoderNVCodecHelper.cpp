@@ -472,7 +472,7 @@ private:
 	{
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 20;
+		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 1050;
 		 m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
 		 for (int i = 0; i < m_nEncoderBuffer; i++)
@@ -516,10 +516,12 @@ private:
 		 m_bRunning = true;
 		 while (true)
 		 {
-		 	frame_sp inputFrame, outputFrame;
+			 frame_sp inputFrame, outputFrame;
+			
 		 	void * event=nullptr;
 		 	NV_ENC_OUTPUT_PTR outputBitstream;
 		 	NV_ENC_INPUT_PTR mappedResource;
+			
 		 	{
 		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
 		 		m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
@@ -558,6 +560,7 @@ private:
 
 		 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncUnmapInputResource(m_nvcodecResources->m_hEncoder, mappedResource));
 
+
 		 	{
 		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
 		 		m_nvcodecResources->m_mappedResources.pop_front();
@@ -576,9 +579,8 @@ private:
 	{
 		if (!m_nvcodecResources->m_nFreeOutputBitstreams)
 		{
-			LOG_INFO << "waiting for free outputbitstream<> busy streams<" << m_nvcodecResources->m_nBusyOutputBitstreams << ">";
+			LOG_INFO << "waiting for free outputbitstream <"<< m_nvcodecResources->m_nFreeOutputBitstreams << ">  busy streams <" << m_nvcodecResources->m_nBusyOutputBitstreams << ">";
 		}
-
 		return m_nvcodecResources->m_nFreeOutputBitstreams > 0;
 	}
 

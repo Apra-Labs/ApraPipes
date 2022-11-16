@@ -20,6 +20,7 @@ public:
 		NVRCommandExport,
 		NVRCommandView,
 		MP4WriterLastTS,
+		MP4WriterStopTS,
 		MMQtimestamps
 	};
 
@@ -389,6 +390,32 @@ private:
 		ar& lastTimeStamp;
 		ar& nvrExportStart;
 		ar& nvrExportStop;
+		ar& moduleId;
+	}
+};
+
+class MP4WriterStopTS : public Command
+{
+public:
+	MP4WriterStopTS() : Command(Command::CommandType::MP4WriterStopTS)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(stopTimeStamp) + sizeof(moduleId);
+	}
+
+	uint64_t stopTimeStamp = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& stopTimeStamp;
 		ar& moduleId;
 	}
 };

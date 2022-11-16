@@ -687,6 +687,9 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 	}
 	if (type == Command::CommandType::MMQtimestamps)
 	{
+		queryStartTime = 0;
+		queryEndTime = 0;
+		setState(queryStartTime, queryEndTime);
 		MMQtimestamps cmd;
 		getCommand(cmd, frame);
 		uint64_t startExport = cmd.nvrExportStart;

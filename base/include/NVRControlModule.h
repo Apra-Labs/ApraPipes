@@ -38,6 +38,7 @@ class NVRControlModule : public AbsControlModule
 	uint64_t mp4lastWrittenTS = 0;
 	uint64_t firstMMQtimestamp = 0;
 	uint64_t lastMMQtimestamp = 0;
+	uint64_t mp4_2_lastWrittenTS = 0;
 
 protected:
 	bool validateInputPins();
