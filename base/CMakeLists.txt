@@ -192,6 +192,8 @@ SET(CORE_FILES
 	src/Mp4WriterSink.cpp
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
+	src/Mp4ReaderSource.cpp
+   	src/Mp4ReaderSourceUtils.cpp
 )
 
 SET(CORE_FILES_H
@@ -243,6 +245,8 @@ SET(CORE_FILES_H
 	include/ValveModule.h
 	include/ArchiveSpaceManager.h
 	include/MultimediaQueueXform.h
+	include/Mp4ReaderSource.h
+    include/Mp4ReaderSourceUtils.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -593,6 +597,7 @@ SET(UT_FILES
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
+	test/mp4readersource_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
