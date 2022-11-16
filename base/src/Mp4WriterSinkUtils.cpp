@@ -59,7 +59,7 @@ std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::s
 	}
 }
 
-void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes, uint32_t &syncTimeInMinutes,
+void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes, uint32_t &syncTimeInSeconds,
 	boost::filesystem::path &relPath, std::string &mp4FileName, bool &syncFlag, std::string baseFolder, std::string& nextFrameFileName)
 {
 	std::chrono::milliseconds duration(ts);
@@ -71,8 +71,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	std::tm tm = *std::localtime(&t);
 	uint16_t msecs = msecsInDuration.count();
 
-	auto syncTimeInSecs = 60 * syncTimeInMinutes;
-	if ((t - lastSyncTS) >= syncTimeInSecs)
+	if ((t - lastSyncTS) >= syncTimeInSeconds)
 	{
 		syncFlag = true;
 		lastSyncTS = t;
@@ -106,7 +105,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
 }
-void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInMinutes,boost::filesystem::path& relPath, 
+void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath, 
 	std::string& mp4FileName, bool& syncFlag, short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName)
 {
 	std::chrono::milliseconds duration(ts);
@@ -118,8 +117,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	std::tm tm = *std::localtime(&t);
 	uint16_t msecs = msecsInDuration.count();
 
-	auto syncTimeInSecs = 60 * syncTimeInMinutes;
-	if ((t - lastSyncTS) >= syncTimeInSecs)
+	if ((t - lastSyncTS) >= syncTimeInSeconds)
 	{
 		syncFlag = true;
 		lastSyncTS = t;
@@ -162,7 +160,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 }
 
 void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName ,uint64_t& timestamp, std::string& basefolder,
-	uint32_t chunkTimeInMinutes, uint32_t syncTimeInMinutes, bool& syncFlag, short& frameType , short naluType)
+	uint32_t chunkTimeInMinutes, uint32_t syncTimeInSeconds, bool& syncFlag, short& frameType , short naluType)
 {
 	boost::filesystem::path finalPath;
 	std::string mp4FileName;
@@ -170,11 +168,11 @@ void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName 
 
 	if (frameType == FrameMetadata::FrameType::H264_DATA)
 	{
-		parseTSH264(timestamp, chunkTimeInMinutes, syncTimeInMinutes, relPath, mp4FileName, syncFlag, frameType, naluType, basefolder, nextFrameFileName);
+		parseTSH264(timestamp, chunkTimeInMinutes, syncTimeInSeconds, relPath, mp4FileName, syncFlag, frameType, naluType, basefolder, nextFrameFileName);
 	}
 	else if (frameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 	{
-		parseTSJpeg(timestamp, chunkTimeInMinutes, syncTimeInMinutes, relPath, mp4FileName, syncFlag, basefolder, nextFrameFileName);
+		parseTSJpeg(timestamp, chunkTimeInMinutes, syncTimeInSeconds, relPath, mp4FileName, syncFlag, basefolder, nextFrameFileName);
 	}
 	
 }

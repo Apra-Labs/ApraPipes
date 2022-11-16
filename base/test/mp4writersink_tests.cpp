@@ -30,7 +30,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -85,7 +85,7 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	fileReader->setNext(readerMuxer);
 	metadataReader->setNext(readerMuxer);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, fileReaderProps.fps, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, fileReaderProps.fps, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
