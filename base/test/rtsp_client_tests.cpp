@@ -25,7 +25,10 @@ struct rtsp_client_tests_data {
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
 	rtsp_client_tests_data d;
-	auto url=string("rtsp://127.0.0.1:5544/vod/mp4:bunny.mp4"); //drop bunny/mp4 into evostream folder
+
+	//drop bunny/mp4 into evostream folder, 
+	//also set it up for RTSP client authentication as shown here: https://sites.google.com/apra.in/development/home/evostream/rtsp-authentication?authuser=1
+	auto url=string("rtsp://user1:password1@127.0.0.1:5544/vod/mp4:bunny.mp4"); 
 	
 	auto m = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
