@@ -1,4 +1,6 @@
 #include "WebCamSource.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include <opencv2/opencv.hpp> //#Sai review use only relevant header
 
 class WebCamSource::Detail

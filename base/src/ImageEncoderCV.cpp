@@ -1,5 +1,8 @@
 #include "ImageEncoderCV.h"
 #include "FrameMetadata.h"
+#include "ImageMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"

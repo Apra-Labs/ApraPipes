@@ -6,6 +6,7 @@
 #include "PipeLine.h"
 #include "Module.h"
 #include "FrameMetadata.h"
+#include "ArrayMetadata.h"
 #include "Frame.h"
 #include "FrameContainerQueue.h"
 #include "AIPExceptions.h"

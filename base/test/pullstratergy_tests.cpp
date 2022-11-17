@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(pullAnalogy)
     std::thread t1(pull, sink);
     t1.join();
     p.stop();
-    p.wait_for_all();
+    p.wait_for_all(true);
     p.term();
    
 }
