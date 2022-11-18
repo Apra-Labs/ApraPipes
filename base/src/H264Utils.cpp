@@ -2,23 +2,18 @@
 #include "H264Utils.h"
 #include "Frame.h"
 
-
-
-
-H264Utils::H264_NAL_TYPE H264Utils::getNALUType(Frame *frm)
+H264Utils::H264_NAL_TYPE H264Utils::getNALUType(Frame* frm)
 {
 	char* p1 = static_cast<char*>(frm->data());
 	return getNALUType(p1);
 }
 
-H264Utils::H264_NAL_TYPE H264Utils::getNALUType(const char *buffer)
+H264Utils::H264_NAL_TYPE H264Utils::getNALUType(const char* buffer)
 {
 	return (H264_NAL_TYPE)(buffer[4] & 0x1F);
 }
 
-
-
-bool H264Utils::getNALUnit(const char *buffer, size_t length, size_t &offset)
+bool H264Utils::getNALUnit(const char* buffer, size_t length, size_t& offset)
 {
 	if (length < 3) return false;
 	size_t cnt = 3;
@@ -37,16 +32,16 @@ bool H264Utils::getNALUnit(const char *buffer, size_t length, size_t &offset)
 }
 
 // typefound, iFrame/PFrame, sps(optional),pps (optional)
-std::tuple<short, const_buffer, const_buffer, const_buffer> H264Utils::parseNalu(mutable_buffer& input) 
+std::tuple<short, const_buffer, const_buffer> H264Utils::parseNalu(const const_buffer input)
 {
 	short typeFound = 0;
-	char* p1 = static_cast<char*>(input.data());
+	char* p1 = reinterpret_cast<char*>(const_cast<void*>(input.data()));
 	size_t offset = 0;
 	typeFound = getNALUType(p1);
 
 	if (typeFound == H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 	{
-		return { typeFound, input, const_buffer(), const_buffer() };
+		return { typeFound, const_buffer(), const_buffer() };
 	}
 
 	if (typeFound == H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
@@ -55,9 +50,8 @@ std::tuple<short, const_buffer, const_buffer, const_buffer> H264Utils::parseNalu
 
 		if (getNALUnit(p1, input.size(), offset)) // where does it start
 		{
-			input += offset;
+			p1 = p1 + offset;
 			offset = 0;
-			p1 = static_cast<char*>(input.data());
 
 			if (getNALUnit(p1, input.size(), offset)) // where does it end
 			{
@@ -68,8 +62,7 @@ std::tuple<short, const_buffer, const_buffer, const_buffer> H264Utils::parseNalu
 					nSize--;
 				size_t spsSize = nSize;
 				auto spsBuffer = const_buffer(spsBits, spsSize);
-				input += offset;
-				p1 = static_cast<char*>(input.data());
+				p1 = p1 + offset;
 
 				if (getNALUnit(p1, input.size(), offset))
 				{
@@ -81,15 +74,15 @@ std::tuple<short, const_buffer, const_buffer, const_buffer> H264Utils::parseNalu
 					auto ppsBuffer = const_buffer(ppsBits, ppsSize);
 					// since we are here lets find the next type
 					typeFound = getNALUType(p1 + offset - 4); // always looks at 5th byte
-					input += offset - 4;
-					p1 = static_cast<char*>(input.data());
+					p1 = p1 + offset - 4;
+
 					auto frameSize = static_cast<size_t>(input.size());
 					auto frame = const_buffer(p1, frameSize);
-					return { typeFound, frame, spsBuffer, ppsBuffer };
+					return { typeFound, spsBuffer, ppsBuffer };
 				}
 			}
 		}
 	}
 	typeFound = getNALUType(p1 + offset - 4);
-	return { typeFound, input, const_buffer(), const_buffer() };
+	return { typeFound, const_buffer(), const_buffer() };
 }

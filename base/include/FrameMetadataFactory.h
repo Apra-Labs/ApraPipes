@@ -1,10 +1,6 @@
 #pragma once
 
 #include "FrameMetadata.h"
-#include "PausePlayMetadata.h"
-#include "RawImageMetadata.h"
-#include "RawImagePlanarMetadata.h"
-#include "ArrayMetadata.h"
 
 class FrameMetadataFactory
 {

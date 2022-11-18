@@ -194,6 +194,8 @@ SET(CORE_FILES
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
    	src/Mp4ReaderSourceUtils.cpp
+	src/RTSPClientSrc.cpp
+	src/RTSPClientSrc.cpp
 )
 
 SET(CORE_FILES_H
@@ -245,8 +247,12 @@ SET(CORE_FILES_H
 	include/ValveModule.h
 	include/ArchiveSpaceManager.h
 	include/MultimediaQueueXform.h
+	include/RTSPClientSrc.h
+	include/H264Metadata.h
 	include/Mp4ReaderSource.h
     include/Mp4ReaderSourceUtils.h
+	include/RTSPClientSrc.h
+	include/H264Metadata.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -598,6 +604,8 @@ SET(UT_FILES
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
 	test/mp4readersource_tests.cpp
+	test/rtsp_client_tests.cpp
+	test/rtsp_client_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

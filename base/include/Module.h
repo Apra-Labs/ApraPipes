@@ -12,6 +12,8 @@
 #include "FrameFactory.h"
 #include "CommonDefs.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "QuePushStrategy.h"
 #include "FIndexStrategy.h"
@@ -287,6 +289,7 @@ protected:
 	size_t getNumberOfInputPins() { return mInputPinIdMetadataMap.size(); }
 	framemetadata_sp getFirstInputMetadata();
 	framemetadata_sp getFirstOutputMetadata();
+	framemetadata_sp getOutputMetadata(string outPinID);
 	metadata_by_pin& getInputMetadata() { return mInputPinIdMetadataMap; }
 	framefactory_by_pin& getOutputFrameFactory() { return mOutputPinIdFrameFactoryMap; }
 	framemetadata_sp getInputMetadataByType(int type);

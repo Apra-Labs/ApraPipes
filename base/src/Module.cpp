@@ -14,6 +14,7 @@
 
 #include "PaceMaker.h"
 #include "BufferMaker.h"
+#include "PausePlayMetadata.h"
 
 // makes frames from this module's frame factory
 Module::FFBufferMaker::FFBufferMaker(Module& module):myModule(module){}
@@ -862,6 +863,16 @@ framemetadata_sp Module::getInputMetadataByType(int type)
 framemetadata_sp Module::getOutputMetadataByType(int type)
 {
 	return getMetadataByType(type, mOutputPinIdFrameFactoryMap);
+}
+framemetadata_sp Module::getOutputMetadata(string outPinID)
+{
+	auto it = mOutputPinIdFrameFactoryMap.find(outPinID);
+	
+	if (it == mOutputPinIdFrameFactoryMap.end())
+	{
+		throw AIPException(AIP_FATAL, string("No metadata defined for output pin ")+ outPinID);
+	}
+	return it->second->getFrameMetadata();
 }
 
 int Module::getNumberOfInputsByType(int type)

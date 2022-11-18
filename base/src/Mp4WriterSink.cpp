@@ -197,7 +197,6 @@ public:
 	const_buffer ppsBuffer;
 	const_buffer spsBuff;
 	const_buffer ppsBuff;
-	const_buffer inFrame;
 	short typeFound;
 
 	DetailH264(Mp4WriterSinkProps& _props) : DetailAbs(_props)
@@ -229,7 +228,8 @@ bool DetailJpeg::write(frame_container& frames)
 		return true;
 	}
 	short naluType = 0;
-	std::string _nextFrameFileName = mWriterSinkUtils.getFilenameForNextFrame(inJpegImageFrame->timestamp, mProps->baseFolder,
+	std::string _nextFrameFileName;
+	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inJpegImageFrame->timestamp, mProps->baseFolder,
 		mProps->chunkTime, mProps->syncTime, syncFlag ,mFrameType, naluType);
 
 	if (_nextFrameFileName == "")
@@ -297,9 +297,9 @@ bool DetailH264::write(frame_container& frames)
 		return true;
 	}
 
-	mutable_buffer& frame = *(inH264ImageFrame.get());
-	auto ret = H264Utils::parseNalu(frame);
-	tie(typeFound, inFrame, spsBuff, ppsBuff) = ret;
+	auto mFrameBuffer = const_buffer(inH264ImageFrame->data(), inH264ImageFrame->size());
+	auto ret = H264Utils::parseNalu(mFrameBuffer);
+	tie(typeFound, spsBuff, ppsBuff) = ret;
 
 	if ((spsBuff.size() !=0 ) || (ppsBuff.size() != 0))
 	{
@@ -308,7 +308,8 @@ bool DetailH264::write(frame_container& frames)
 		ppsBuffer = ppsBuff;
 	}
 
-	std::string _nextFrameFileName = mWriterSinkUtils.getFilenameForNextFrame(inH264ImageFrame->timestamp, mProps->baseFolder,
+	std::string _nextFrameFileName;
+	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName,inH264ImageFrame->timestamp, mProps->baseFolder,
 		mProps->chunkTime, mProps->syncTime, syncFlag,mFrameType, typeFound);
 
 	if (_nextFrameFileName == "")
