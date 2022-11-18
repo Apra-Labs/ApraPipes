@@ -608,7 +608,7 @@ SET(UT_FILES
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
-  test/mp4readersource_tests.cpp
+  	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	${ARM64_UT_FILES}
