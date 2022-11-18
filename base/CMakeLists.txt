@@ -553,6 +553,7 @@ IF (ENABLE_CUDA)
 			test/h264Encodernvcodec_tests.cpp
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
+			test/h264decoder_tests.cpp
 		)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
@@ -597,7 +598,6 @@ SET(UT_FILES
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
-	test/h264decoder_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

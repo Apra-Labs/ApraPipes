@@ -141,7 +141,8 @@ bool H264DecoderNvCodec::process(frame_container& frames)
 
 bool H264DecoderNvCodec::processSOS(frame_sp& frame)
 {
-	mDetail->setMetadata(frame->getMetadata(), frame,
+	auto metadata = frame->getMetadata();
+	mDetail->setMetadata(metadata, frame,
 		[&](frame_sp& outputFrame) {
 			frame_container frames;
 			frames.insert(make_pair(mOutputPinId, outputFrame));
