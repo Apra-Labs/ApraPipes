@@ -3,6 +3,7 @@
 
 #include "Module.h"
 #include "FrameMetadata.h"
+#include "ArrayMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "CalcHistogramCV.h"
