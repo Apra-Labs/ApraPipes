@@ -159,17 +159,20 @@ public:
 			throw AIPException(AIP_FATAL, "No video track found");
 		}
 
+		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+		openVideoStartingTS = std::stoull(boostVideoTS);
+
 		setMetadata();
 		return true;
 	}
 
-	bool randomSeek(uint64_t& skipTS)
+	bool randomSeek(uint64_t& skipTS, uint64_t _seekEndTS)
 	{
 		/* Takes a timestamp and sets proper mVideoFile and mParsedFilesCount (in case new parse is required) and initNewVideo().
 		* Also, seeks to correct frame in the mVideoFile. If seek within in the videoFile fails, moving to next available video is attempted.
 		* If all ways to seek fails, the read state is reset.
 		*/
-
+		seekEndTS = _seekEndTS;
 		DemuxAndParserState tempState = mState;
 		std::string skipVideoFile;
 		uint64_t skipMsecsInFile;
@@ -202,7 +205,7 @@ public:
 		{
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
 			int seekedToFrame = -1;
-			int returnCode = mp4_demux_seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC, &seekedToFrame);
+			int returnCode = mp4_demux_seek_jpeg(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC, &seekedToFrame);
 			// to determine the end of video
 			mState.mFrameCounter = seekedToFrame;
 
@@ -279,6 +282,16 @@ public:
 			}
 			++mState.mFrameCounter;
 		}
+		uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+		auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+
+		/*if (seekEndTS <= frameTSInMsecs)
+		{
+			mState.has_more_video = 0;
+			sampleFrame = nullptr;
+			imageFrameSize = 0;
+		}*/
+
 		return;
 	}
 	Mp4ReaderSourceProps mProps;
@@ -304,7 +317,8 @@ protected:
 		bool end = false;
 		Mp4ReaderSourceProps props;
 	} mState;
-
+	uint64_t openVideoStartingTS = 0;
+	uint64_t seekEndTS = 0;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -619,7 +633,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
-		return mDetail->randomSeek(seekCmd.skipTS);
+		return mDetail->randomSeek(seekCmd.seekStartTS,seekCmd.seekEndTS);
 	}
 	else
 	{
@@ -627,8 +641,8 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 }
 
-bool Mp4ReaderSource::randomSeek(uint64_t skipTS)
+bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS, uint64_t seekEndTS)
 {
-	Mp4SeekCommand cmd(skipTS);
+	Mp4SeekCommand cmd(seekStartTS, seekEndTS);
 	return queueCommand(cmd);
 }

@@ -767,6 +767,10 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				}
 				else
 				{
+					if (it->second.cbegin()->second->size() == 64293)
+					{
+						int a = 0;
+					}
 					mState->exportSend(it->second);
 				}
 			}
