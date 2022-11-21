@@ -37,11 +37,6 @@ public:
 	virtual bool set_video_decoder_config() = 0;
 	virtual bool write(frame_container& frames) = 0;
 
-	void closeMp4Video()
-	{
-		mp4_mux_close(mux);
-	}
-
 	void setImageMetadata(framemetadata_sp& metadata)
 	{
 		mInputMetadata = metadata;
@@ -69,12 +64,15 @@ public:
 
 	void initNewMp4File(std::string& filename)
 	{
-		if (mux)
+		if (isVideoClosed)
 		{
-			mp4_mux_close(mux);
+			if (mux)
+			{
+				mp4_mux_close(mux);
+			}
+			syncFlag = false;
+			lastFrameTS = 0;
 		}
-		syncFlag = false;
-		lastFrameTS = 0;
 
 		uint32_t timescale = 30000;
 		now = std::time(nullptr);
@@ -82,7 +80,7 @@ public:
 		auto ret = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
 		if (mMetadataEnabled)
 		{
-			/* \251too -> �too */
+		    /* \251too -> �too */
 			std::string key = "\251too";
 			std::string val = mSerFormatVersion.c_str();
 			mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
@@ -148,6 +146,8 @@ public:
 		{
 			mp4_mux_close(mux);
 		}
+		isVideoClosed = true;
+		_nextFrameFileName = "";		
 		return true;
 	}
 
@@ -181,6 +181,8 @@ protected:
 	std::string mSerFormatVersion;
 	framemetadata_sp mInputMetadata;
 	uint64_t lastFrameTS = 0;
+	std::string _nextFrameFileName;
+	bool isVideoClosed = false;
 };
 
 class DetailJpeg : public DetailAbs
@@ -238,7 +240,7 @@ bool DetailJpeg::write(frame_container& frames)
 	short naluType = 0;
 	std::string _nextFrameFileName;
 	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inJpegImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTime, syncFlag ,mFrameType, naluType);
+		mProps->chunkTime, mProps->syncTime, syncFlag ,mFrameType, naluType, lastWrittenTimeStamp, isVideoClosed);
 
 	if (_nextFrameFileName == "")
 	{
@@ -316,9 +318,8 @@ bool DetailH264::write(frame_container& frames)
 		ppsBuffer = ppsBuff;
 	}
 
-	std::string _nextFrameFileName;
-	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName,inH264ImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTime, syncFlag,mFrameType, typeFound);
+	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inH264ImageFrame->timestamp, mProps->baseFolder,
+		mProps->chunkTime, mProps->syncTime, syncFlag, mFrameType, typeFound, lastWrittenTimeStamp, isVideoClosed);
 
 	if (_nextFrameFileName == "")
 	{
@@ -498,14 +499,6 @@ bool Mp4WriterSink::term()
 
 bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-
-	if (type == Command::CommandType::MP4WriterStopTS)
-	{
-		MP4WriterStopTS cmd;
-		getCommand(cmd, frame);
-		stopWriterTS = cmd.stopTimeStamp;
-		return true;
-	}
 	return Module::handleCommand(type, frame);
 }
 
@@ -541,12 +534,6 @@ bool Mp4WriterSink::process(frame_container& frames)
 		cmd.lastWrittenTimeStamp = boost::lexical_cast<uint64_t>(mDetail->lastWrittenTimeStamp);
 		cmd.moduleId = Module::getId();
 		controlModule->queueCommand(cmd);
-
-		//Check written timeStamp and Stop
-		if (stopWriterTS >= frames.cbegin()->second->timestamp)
-		{
-			mDetail->closeMp4Video();
-		}
 	}
 
 	return true;
@@ -558,6 +545,7 @@ bool Mp4WriterSink::processEOS(string& pinId)
 	// in current state after EOS, SOS is not triggered - is it by design ? 
 	// Example EOS can be triggered if there is some resolution change in upstream module
 	// so you want to do mDetail->mInputMetadata.reset() - so that SOS gets triggered
+	mDetail->attemptFileClose();
 	return true;
 }
 

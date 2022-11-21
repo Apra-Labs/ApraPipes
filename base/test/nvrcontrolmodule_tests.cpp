@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(checkNVR3) //Use this for testing pipeline note - Mimics th
 	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
 	encoder->setNext(mp4Writer_1);
 
-	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(1000, 1020, false)));
+	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true)));
 	encoder->setNext(multiQue);
 	std::string outFolderPath_2 = "./data/testOutput/mp4_videos/ExportVids/";
 	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_2);
@@ -571,6 +571,9 @@ BOOST_AUTO_TEST_CASE(checkNVR3) //Use this for testing pipeline note - Mimics th
 	mp4WriterSinkProps_2.logHealthFrequency = 10;
 	auto mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
 	multiQue->setNext(mp4Writer_2);
+
+	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
+	//multiQue->setNext(fileWriter);
 
 	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
 	PipeLine p("test");

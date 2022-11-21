@@ -336,9 +336,54 @@ public:
 
 	bool exportSend(frame_container& frames)
 	{
-		send(frames, false);
+		//This function adds SPS/PPS data to the first I-Frame before sending 
+		if (count == 0)
+		{
+			auto tempFrame = makeFrame(frames.begin()->second->size() + queueObject->spsBuffer.size() + queueObject->ppsBuffer.size() + 8, mOutputPinId);
+			boost::asio::mutable_buffer tempBuffer(tempFrame->data(), tempFrame->size());
+			auto mFrameBuffer = const_buffer(tempFrame->data(), tempFrame->size());
+			auto ret = H264Utils::parseNalu(mFrameBuffer);
+			tie(typeFound, spsBuff, ppsBuff) = ret;
+			if (spsBuff.size() == 0)
+			{
+				prependSpsPps(tempBuffer, frames);
+			}
+			frame_container IFrameToSend;
+			IFrameToSend.insert(make_pair(frames.begin()->first, tempFrame));
+			IFrameToSend.begin()->second->timestamp = frames.begin()->second->timestamp;
+			IFrameToSend.begin()->second->fIndex2 = frames.begin()->second->fIndex2;
+
+		
+			send(IFrameToSend, false);
+			count++;
+		}
+
+		else
+		{
+			send(frames, false);
+		}
 		return true;
 	}
+
+	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer, frame_container& iFrame)
+	{
+		frame_sp& iFrameData = iFrame.begin()->second;
+		boost::asio::mutable_buffer tBuffer(iFrameData->data(), iFrameData->size());
+
+		char NaluSeprator[4] = { 00 ,00, 00 ,01 };
+		auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
+		memcpy(iFrameBuffer.data(), nalu, 4);
+		iFrameBuffer += 4;
+		memcpy(iFrameBuffer.data(), queueObject->spsBuffer.data(), queueObject->spsBuffer.size());
+		iFrameBuffer += queueObject->spsBuffer.size();
+		memcpy(iFrameBuffer.data(), nalu, 4);
+		iFrameBuffer += 4;
+		memcpy(iFrameBuffer.data(), queueObject->ppsBuffer.data(), queueObject->ppsBuffer.size());
+		iFrameBuffer += queueObject->ppsBuffer.size();
+		memcpy(iFrameBuffer.data(), tBuffer.data(), tBuffer.size());
+
+	}
+	
 
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
 	{
@@ -660,6 +705,14 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						mState->exportSend(it->second);
 					}
+					if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
+					{
+						setState(queryStartTime, endTimeSaved);
+						if (mState->Type == mState->IDLE)
+						{
+							reset = true;
+						}
+					}
 				}
 			}
 		}
@@ -681,23 +734,23 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		{
 			queryStartTime = 0;
 			queryEndTime = 0;
+			sendEOS();
 			setState(queryStartTime, queryEndTime);
 		}
 		return true;
 	}
-	if (type == Command::CommandType::MMQtimestamps)
+	if (type == Command::CommandType::NVRCommandExport)
 	{
 		queryStartTime = 0;
 		queryEndTime = 0;
 		setState(queryStartTime, queryEndTime);
-		MMQtimestamps cmd;
+		NVRCommandExport cmd;
 		getCommand(cmd, frame);
-		uint64_t startExport = cmd.nvrExportStart;
-		uint64_t stopExport = cmd.nvrExportStop;
+		uint64_t startExport = cmd.startExportTS;
+		uint64_t stopExport = cmd.stopExportTS;
 		allowFrames(startExport, stopExport);
 		return true;
 	}
-}
 	return Module::handleCommand(type, frame);
 }
 
@@ -749,6 +802,14 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				{
 					mState->exportSend(it->second);
 				}
+				if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
+				{
+					setState(queryStartTime, endTimeSaved);
+					if (mState->Type == mState->IDLE)
+					{
+						reset = true;
+					}
+				}
 			}
 
 		}
@@ -769,6 +830,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		queryStartTime = 0;
 		queryEndTime = 0;
+		sendEOS();
 		setState(queryStartTime, queryEndTime);
 	}
 

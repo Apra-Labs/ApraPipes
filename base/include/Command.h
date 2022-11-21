@@ -14,13 +14,10 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
-		NVRStartStop,
-		NVRExport
 		NVRCommandRecord,
 		NVRCommandExport,
 		NVRCommandView,
 		MP4WriterLastTS,
-		MP4WriterStopTS,
 		MMQtimestamps
 	};
 
@@ -42,7 +39,7 @@ public:
 	CommandType getType()
 	{
 		return type;
-	}	
+	} 
 
 private:
 	friend class boost::serialization::access;
@@ -152,7 +149,7 @@ private:
 		ar & nextModuleId & open;
 	}
 
-	
+ 
 };
 
 class StepCommand : public Command
@@ -162,7 +159,7 @@ public:
 	{
 
 	}
-		
+  
 	size_t getSerializeSize()
 	{
 		return Command::getSerializeSize();
@@ -173,7 +170,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & boost::serialization::base_object<Command>(*this);		
+		ar & boost::serialization::base_object<Command>(*this);  
 	}
 
 
@@ -390,32 +387,6 @@ private:
 		ar& lastTimeStamp;
 		ar& nvrExportStart;
 		ar& nvrExportStop;
-		ar& moduleId;
-	}
-};
-
-class MP4WriterStopTS : public Command
-{
-public:
-	MP4WriterStopTS() : Command(Command::CommandType::MP4WriterStopTS)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(stopTimeStamp) + sizeof(moduleId);
-	}
-
-	uint64_t stopTimeStamp = 0;
-	std::string moduleId;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& stopTimeStamp;
 		ar& moduleId;
 	}
 };

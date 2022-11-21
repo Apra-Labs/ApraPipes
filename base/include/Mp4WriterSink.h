@@ -75,7 +75,6 @@ public:
 	bool term();
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
-	uint64_t stopWriterTS = 0;
 
 protected:
 	bool process(frame_container& frames);
