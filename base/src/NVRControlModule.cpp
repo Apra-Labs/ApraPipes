@@ -61,6 +61,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         }
         return true;
     }
+
     if (type == Command::CommandType::NVRCommandExport)
     {
         NVRCommandExport cmd;
@@ -77,6 +78,19 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
                 pipelineModules[i]->queueCommand(cmd);
             }
         }
+        //boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+        //auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+        //Mp4SeekCommand command;
+        //command.seekStartTS = now - 150000;
+        //command.seekEndTS = now - 120000;
+        //for (int i = 0; i < pipelineModules.size(); i++)
+        //{
+        //    if (pipelineModules[i] == getModuleofRole("Reader")) // Logic for detecting modules to add
+        //    {
+        //        auto myId = pipelineModules[i]->getId();
+        //        pipelineModules[i]->queueCommand(command);
+        //    }
+        //}
         return true;
     }
     if (type == Command::CommandType::NVRCommandView)

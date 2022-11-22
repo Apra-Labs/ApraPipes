@@ -64,7 +64,7 @@ public:
 
 	void initNewMp4File(std::string& filename)
 	{
-		if (isVideoClosed)
+		if (!isVideoClosed)
 		{
 			if (mux)
 			{
@@ -142,7 +142,7 @@ public:
 
 	bool attemptFileClose()
 	{
-		if (mux)
+		if ((mux)&&(!isVideoClosed))
 		{
 			mp4_mux_close(mux);
 		}

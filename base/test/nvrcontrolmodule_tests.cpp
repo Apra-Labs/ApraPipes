@@ -124,9 +124,61 @@ void key_func(boost::shared_ptr<NVRControlModule>& mControl)
 			mControl->nvrExport(0, 5);
 			mControl->step();
 		}
+		if (k == 114)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+			uint64_t seekStartTS = now - 5000;
+			uint64_t seekEndTS = now;
+			mControl->nvrExport(seekStartTS, seekEndTS);
+			mControl->step();
+		}
 		else
 		{
 			BOOST_LOG_TRIVIAL(info) << "The value pressed is .."<< k;
+		}
+	}
+}
+
+void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_ptr<Mp4ReaderSource>& mp4Reader)
+{
+
+	while (true) {
+		int k;
+		k = getchar();
+		if (k == 97)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Starting Render!!";
+			mControl->nvrView(true);
+			mControl->step();
+		}
+		if (k == 100)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Stopping Render!!";
+			mControl->nvrView(false);
+			mControl->step();
+		}
+		if (k == 101)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Starting Export!!";
+			mControl->nvrExport(0, 5);
+			mControl->step();
+		}
+		if (k == 114)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+			uint64_t seekStartTS = now - 5000;
+			uint64_t seekEndTS = now;
+			mControl->nvrExport(seekStartTS, seekEndTS);
+			mControl->step();
+			mp4Reader->play(true);
+		}
+		else
+		{
+			BOOST_LOG_TRIVIAL(info) << "The value pressed is .." << k;
 		}
 	}
 }
@@ -608,91 +660,6 @@ BOOST_AUTO_TEST_CASE(checkNVR3) //Use this for testing pipeline note - Mimics th
 	inp.join();
 }
 
-
-BOOST_AUTO_TEST_CASE(NVR_mmq_view_mp4Write)
-{
-	LoggerProps loggerProps;
-	loggerProps.logLevel = boost::log::trivial::severity_level::info;
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	Logger::initLogger(loggerProps);
-	auto cuContext = apracucontext_sp(new ApraCUcontext());
-	uint32_t gopLength = 25;
-	uint32_t bitRateKbps = 1000;
-	uint32_t frameRate = 30;
-	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
-	bool enableBFrames = true;
-	auto width = 640;
-	auto height = 360;
-
-
-	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw");
-	fileReaderProps.fps = 20;
-	fileReaderProps.readLoop = true;
-	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
-	fileReader->addOutputPin(metadata);
-	//std::string inFolderPath = "./data/h264_data";
-	//auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	//fileReaderProps.fps = 20;
-	//fileReaderProps.readLoop = true;
-	//auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
-	//auto encodedImageMetadata = framemetadata_sp(new H264Metadata(704, 576));
-	//auto pinId = fileReader->addOutputPin(encodedImageMetadata);
-
-	//auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
-
-	//auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
-	//fileReader->setNext(colorConvtView);
-
-	//auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
-	//colorConvtView->setNext(view);
-
-	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
-	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
-	//auto copyProps = CudaMemCopyProps(cudaMemcpyDeviceToHost, cudaStream_);
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
-	//fileReader->setNext(colorConvt);
-	fileReader->setNext(copy);
-
-	H264EncoderNVCodecProps encProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
-	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(encProps));
-	copy->setNext(encoder);
-
-	//auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(0)));
-	//encoder->setNext(valve);
-	MultimediaQueueXformProps multProps(1500, 2000, false);
-	auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multProps));
-	encoder->setNext(multiQueue);
-
-	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
-	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 1, 5, outFolderPath_1);
-	mp4WriterSinkProps_1.logHealth = true;
-	mp4WriterSinkProps_1.logHealthFrequency = 10;
-	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
-	multiQueue->setNext(mp4Writer_1);
-	//auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
-
-	PipeLine p("test");
-	//std::thread inp(key_func, mControl);
-	p.appendModule(fileReader);
-	//p.addControlModule(mControl);
-	//mControl->enrollModule("webcamera", fileReader);
-	//mControl->enrollModule("multimediaQueue", multiQueue);
-	//mControl->enrollModule("writer", mp4Writer_1);
-
-	p.init();
-	//mControl->init();
-	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(180));
-	p.stop();
-	p.term();
-	p.wait_for_all();
-	BOOST_LOG_TRIVIAL(info) << "The first thread has stopped";
-	//inp.join();
-}
-
 BOOST_AUTO_TEST_CASE(mp4Read)
 {
 	LoggerProps loggerProps;
@@ -700,28 +667,33 @@ BOOST_AUTO_TEST_CASE(mp4Read)
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/streamer_mp4v.mp4";
-	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
-	auto inputMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	bool parseFS = true;
+	std::string skipDir = "data/Mp4_videos/h264_video/";
+	std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	std::string outPath = "data/testOutput/outFrames";
+	uint64_t seekStartTS = 1668064030062;
+	uint64_t seekEndTS = 1668064032062;
+	boost::filesystem::path file("frame_??????.h264");
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	boost::filesystem::path dir(outPath);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, true);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-
-	mp4Reader->addOutPutPin(inputMetadata);
-
+	mp4Reader->addOutPutPin(h264ImageMetadata);
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
-	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
-	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 1, 5, outFolderPath_1);
-	mp4WriterSinkProps_1.logHealth = true;
-	mp4WriterSinkProps_1.logHealthFrequency = 10;
-	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
+	mp4ReaderProps.skipDir = skipDir;
 
-	mp4Reader->setNext(mp4Writer_1);
-
-	
+	boost::filesystem::path full_path = dir / file;
+	LOG_INFO << full_path;
+	std::string outFolderPath_2 = "./data/testOutput/testVids";
+	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_2);
+	mp4WriterSinkProps_2.logHealth = true;
+	mp4WriterSinkProps_2.logHealthFrequency = 10;
+	auto mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
+	mp4Reader->setNext(mp4Writer_2);
 
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
@@ -732,14 +704,113 @@ BOOST_AUTO_TEST_CASE(mp4Read)
 		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
 
+	mp4Reader->setProps(mp4ReaderProps);
+	mp4Reader->randomSeek(seekStartTS, seekEndTS);
+
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(15));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
 	p->stop();
 	p->term();
 	p->wait_for_all();
 	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(mp4ReadView)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+	uint32_t gopLength = 25;
+	uint32_t bitRateKbps = 1000;
+	uint32_t frameRate = 30;
+	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
+	bool enableBFrames = true;
+	auto width = 640; //1920
+	auto height = 360; //1020
+
+	//WebCam pipeline
+	WebCamSourceProps webCamSourceprops(0, 640, 360);
+	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
+	webCam->setNext(colorConvt);
+
+	auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR)));
+	webCam->setNext(colorConvtView);
+
+	auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
+	colorConvtView->setNext(view);
+
+	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
+	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	colorConvt->setNext(copy);
+
+	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
+	copy->setNext(encoder);
+
+	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
+	mp4WriterSinkProps_1.logHealth = true;
+	mp4WriterSinkProps_1.logHealthFrequency = 10;
+	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
+	encoder->setNext(mp4Writer_1);
+
+	//Reader pipeline
+	std::string skipDir = "./data/testOutput/mp4_videos/24bpp";
+	std::string startingVideoPath = "./data/testOutput/mp4_videos/24bpp/20221022/0015/";
+	std::string outPath = "data/testOutput/outFrames";
+	boost::filesystem::path file("frame_??????.h264");
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	boost::filesystem::path dir(outPath);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, true);
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	mp4ReaderProps.skipDir = skipDir;
+
+	boost::filesystem::path full_path = dir / file;
+	LOG_INFO << full_path;
+	std::string outFolderPath_2 = "./data/testOutput/testVids";
+	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_2);
+	mp4WriterSinkProps_2.logHealth = true;
+	mp4WriterSinkProps_2.logHealthFrequency = 10;
+	auto mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
+	mp4Reader->setNext(mp4Writer_2);
+
+	//Pipeline
+
+	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+	PipeLine p("test");
+	std::thread inp(key_Read_func,mControl, mp4Reader);
+	p.appendModule(webCam);
+	p.appendModule(mp4Reader);
+	p.addControlModule(mControl);
+	mControl->enrollModule("WebCamera", webCam);
+	mControl->enrollModule("Renderer", view);
+	mControl->enrollModule("Writer-1", mp4Writer_1);
+	mControl->enrollModule("Reader", mp4Reader);
+	mControl->enrollModule("Writer-2", mp4Writer_2);
+
+	p.init();
+	mControl->init();
+	mp4Reader->play(false);
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(360));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+	BOOST_LOG_TRIVIAL(info) << "The first thread has stopped";
+	inp.join();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
