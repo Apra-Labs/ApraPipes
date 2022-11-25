@@ -14,6 +14,7 @@ public:
 	static void deleteFolder(std::string folderPath);
 	struct FileCleaner {
 		FileCleaner(std::vector<std::string> paths);
+		FileCleaner() {}
 		~FileCleaner();
 		std::vector<std::string> pathsOfFiles;
 	};
