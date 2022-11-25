@@ -240,9 +240,13 @@ public:
     {
 
         // all frames of the open video are already read and end has not reached
-        if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
+        if ((mState.mFrameCounter == mState.mFramesInVideo && !mState.end) && (seekedToEndTS))
         {
             sendEndOfStream();
+        }
+
+        if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
+        {
             // if parseFS is unset, it is the end
             LOG_ERROR << "frames number" << mState.mFrameCounter;
             mState.end = !mProps.parseFS;
@@ -312,6 +316,7 @@ protected:
     uint64_t openVideoStartingTS = 0;
     uint64_t seekEndTS = 0;
     int seekedToFrame = -1;
+    
     /*
         mState.end = true is possible only in two cases:
         - if parseFS found no more relevant files on the disk
@@ -328,6 +333,8 @@ public:
     std::string h264ImagePinId;
     std::string encodedImagePinId;
     std::string mp4FramePinId;
+    bool isNVRread = false;
+    bool seekedToEndTS = false;
 };
 
 class Mp4readerDetailJpeg : public Mp4readerDetailAbs
@@ -361,7 +368,6 @@ private:
     uint8_t* pps = nullptr;
     size_t spsSize = 0;
     size_t ppsSize = 0;
-    bool seekedToEndTS = false;
     bool isRandomSeek = true;
 };
 
@@ -485,11 +491,12 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
     boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
     size_t imageActualSize = 0;
 
-    if (mState.randomSeekParseFlag && isRandomSeek)
+    if ((mState.randomSeekParseFlag && isRandomSeek) || (isNVRread))
     {
         prependSpsPps(tmpBuffer);
         imageActualSize = spsSize + ppsSize + 8;
         isRandomSeek = false;
+        isNVRread = false;
     }
     frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, mp4FramePinId);
     uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(tmpBuffer.data());
@@ -521,6 +528,8 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 
     if (seekEndTS <= frameTSInMsecs && !mProps.bFramesEnabled)
     {
+        sendEndOfStream();
+        seekedToEndTS = true;
         return true;
     }
 
@@ -528,6 +537,7 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
     {
         if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
         {
+            sendEndOfStream();
             frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
             seekedToEndTS = true;
             return true;
@@ -673,6 +683,8 @@ void Mp4ReaderSource::setProps(Mp4ReaderSourceProps& props)
 
 bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
+    mDetail->isNVRread = true;
+    mDetail->seekedToEndTS = false;
     if (type == Command::CommandType::Seek)
     {
         Mp4SeekCommand seekCmd;

@@ -64,33 +64,34 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 
     if (type == Command::CommandType::NVRCommandExport)
     {
-        NVRCommandExport cmd;
-        getCommand(cmd, frame);
-        uint64_t testStart = firstMMQtimestamp + 1000;
-        uint64_t testStop = firstMMQtimestamp + 5000;
-        cmd.startExportTS = testStart;
-        cmd.stopExportTS = testStop;
+        boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+        auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+        Mp4SeekCommand command;
+        command.seekStartTS = now - 120000;
+        command.seekEndTS = now - 60000;
         for (int i = 0; i < pipelineModules.size(); i++)
         {
-            if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Logic for detecting modules to add
+            if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
             {
                 auto myId = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(command);
+            }
+        }
+
+        NVRCommandExport cmd;
+        getCommand(cmd, frame);
+        uint64_t teststart = firstMMQtimestamp + 1000;
+        uint64_t teststop = firstMMQtimestamp + 9000;
+        cmd.startExportTS = teststart;
+        cmd.stopExportTS = teststop;
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+            {
+                auto myid = pipelineModules[i]->getId();
                 pipelineModules[i]->queueCommand(cmd);
             }
         }
-        //boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
-        //auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-        //Mp4SeekCommand command;
-        //command.seekStartTS = now - 150000;
-        //command.seekEndTS = now - 120000;
-        //for (int i = 0; i < pipelineModules.size(); i++)
-        //{
-        //    if (pipelineModules[i] == getModuleofRole("Reader")) // Logic for detecting modules to add
-        //    {
-        //        auto myId = pipelineModules[i]->getId();
-        //        pipelineModules[i]->queueCommand(command);
-        //    }
-        //}
         return true;
     }
     if (type == Command::CommandType::NVRCommandView)

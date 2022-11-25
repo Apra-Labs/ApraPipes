@@ -472,7 +472,7 @@ private:
 	{
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 1050;
+		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 5000;
 		 m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
 		 for (int i = 0; i < m_nEncoderBuffer; i++)
