@@ -162,8 +162,12 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 		}
 		if (k == 101)
 		{
-			BOOST_LOG_TRIVIAL(info) << "Starting Export!!";
-			mControl->nvrExport(0, 5);
+			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+			uint64_t seekStartTS = now - 240000;
+			uint64_t seekEndTS = now + 60000;
+			mControl->nvrExport(seekStartTS, seekEndTS);
 			mControl->step();
 			mp4Reader->play(true);
 		}
@@ -172,8 +176,8 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
 			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
 			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-			uint64_t seekStartTS = now - 5000;
-			uint64_t seekEndTS = now;
+			uint64_t seekStartTS = now - 60000;
+			uint64_t seekEndTS = now + 60000;
 			mControl->nvrExport(seekStartTS, seekEndTS);
 			mControl->step();
 			mp4Reader->play(true);
@@ -990,7 +994,7 @@ BOOST_AUTO_TEST_CASE(checkNVR4) //Use this for testing pipeline note - Mimics th
 	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
 	encoder->setNext(mp4Writer_1);
 
-	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(120000, 30000, true)));
+	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 3000, true)));
 	encoder->setNext(multiQue);
 
 	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
@@ -1043,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(checkNVR4) //Use this for testing pipeline note - Mimics th
 	mp4Reader->play(false);
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(150));
-	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221025/0015/")))
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221025/0017/")))
 	{
 		if (boost::filesystem::is_regular_file(folder))
 		{
@@ -1054,7 +1058,7 @@ BOOST_AUTO_TEST_CASE(checkNVR4) //Use this for testing pipeline note - Mimics th
 	}
 	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
 	mp4Reader->setProps(propsChange);
-	boost::this_thread::sleep_for(boost::chrono::seconds(360));
+	boost::this_thread::sleep_for(boost::chrono::seconds(480));
 	p.stop();
 	p.term();
 	p.wait_for_all();

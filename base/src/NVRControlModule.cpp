@@ -64,34 +64,102 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 
     if (type == Command::CommandType::NVRCommandExport)
     {
-        boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
-        auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-        Mp4SeekCommand command;
-        command.seekStartTS = now - 120000;
-        command.seekEndTS = now - 60000;
-        for (int i = 0; i < pipelineModules.size(); i++)
-        {
-            if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
-            {
-                auto myId = pipelineModules[i]->getId();
-                pipelineModules[i]->queueCommand(command);
-            }
-        }
-
         NVRCommandExport cmd;
         getCommand(cmd, frame);
-        uint64_t teststart = firstMMQtimestamp + 1000;
-        uint64_t teststop = firstMMQtimestamp + 9000;
-        cmd.startExportTS = teststart;
-        cmd.stopExportTS = teststop;
-        for (int i = 0; i < pipelineModules.size(); i++)
+        uint64_t givenStart = cmd.startExportTS;
+        uint64_t givenStop = cmd.stopExportTS;
+
+        if ((givenStart < firstMMQtimestamp) && (givenStop < firstMMQtimestamp)) // Send command to mp4Reader only entire export is from disk
         {
-            if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+            //Reader
+            boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+            auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+            Mp4SeekCommand command;
+            command.seekStartTS = givenStart;
+            command.seekEndTS = givenStop;
+            for (int i = 0; i < pipelineModules.size(); i++)
             {
-                auto myid = pipelineModules[i]->getId();
-                pipelineModules[i]->queueCommand(cmd);
+                if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
+                {
+                    auto myId = pipelineModules[i]->getId();
+                    pipelineModules[i]->queueCommand(command);
+                }
             }
+            return true;
         }
+        //
+        else if((givenStart < firstMMQtimestamp) && (givenStop > firstMMQtimestamp)) //Hybrid export
+        {
+            //Hybrid
+            boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+            auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+            Mp4SeekCommand command;
+            command.seekStartTS = givenStart;
+            command.seekEndTS = firstMMQtimestamp;
+            for (int i = 0; i < pipelineModules.size(); i++)
+            {
+                if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
+                {
+                    auto myId = pipelineModules[i]->getId();
+                    pipelineModules[i]->queueCommand(command);
+                }
+            }
+            cmd.startExportTS = firstMMQtimestamp;
+            cmd.stopExportTS = givenStop;
+            for (int i = 0; i < pipelineModules.size(); i++)
+            {
+                if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+                {
+                    auto myid = pipelineModules[i]->getId();
+                    pipelineModules[i]->queueCommand(cmd);
+                }
+            }
+            return true;
+        }
+        //
+        else if ((givenStart > firstMMQtimestamp) && ((givenStop > firstMMQtimestamp))) // Export from mmq only
+        {
+            //MMQ
+            cmd.startExportTS = givenStart;
+            cmd.stopExportTS = givenStop;
+            for (int i = 0; i < pipelineModules.size(); i++)
+            {
+                if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+                {
+                    auto myid = pipelineModules[i]->getId();
+                    pipelineModules[i]->queueCommand(cmd);
+                }
+            }
+            return true;
+        }
+
+
+        //boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+        //auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+        //Mp4SeekCommand command;
+        //command.seekStartTS = now - 120000;
+        //command.seekEndTS = now - 60000;
+        //for (int i = 0; i < pipelineModules.size(); i++)
+        //{
+        //    if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
+        //    {
+        //        auto myId = pipelineModules[i]->getId();
+        //        pipelineModules[i]->queueCommand(command);
+        //    }
+        //}
+
+        //uint64_t teststart = firstMMQtimestamp + 1000;
+        //uint64_t teststop = firstMMQtimestamp + 9000;
+        //cmd.startExportTS = teststart;
+        //cmd.stopExportTS = teststop;
+        //for (int i = 0; i < pipelineModules.size(); i++)
+        //{
+        //    if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+        //    {
+        //        auto myid = pipelineModules[i]->getId();
+        //        pipelineModules[i]->queueCommand(cmd);
+        //    }
+        //}
         return true;
     }
     if (type == Command::CommandType::NVRCommandView)
