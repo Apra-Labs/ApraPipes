@@ -56,6 +56,7 @@ private:
 	std::string mOutputPinId;
 	bool pushToNextModule = true;
 	bool reset = false;
+	bool isCommandRequest = false;
 	uint64_t startTimeSaved = 0;
 	uint64_t endTimeSaved = 0;
 	uint64_t queryStartTime = 0;

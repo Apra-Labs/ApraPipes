@@ -440,7 +440,7 @@ public:
 				timeReset = true;
 			}
 
-			for (auto it = queueMap.lower_bound(queryStart);; it--)
+			for (auto it = queueMap.lower_bound(queryStart);it != queueMap.end(); it--)
 			{
 				auto frame = it->second.begin()->second;
 				auto mFrameBuffer = const_buffer(frame->data(), frame->size());
@@ -465,7 +465,7 @@ public:
 			{
 				if (!isProcessCall)
 				{
-					for (auto it = queueMap.lower_bound(queryStart);; it--) // Setting queryStart time
+					for (auto it = queueMap.lower_bound(queryStart);it != queueMap.end() ; it--) // Setting queryStart time
 					{
 						auto frame = it->second.begin()->second;
 						auto mFrameBuffer = const_buffer(frame->data(), frame->size());
@@ -675,6 +675,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 {
 	if (type == Command::CommandType::MultimediaQueueXform)
 	{
+		isCommandRequest = true;
 		MultimediaQueueXformCommand cmd;
 		getCommand(cmd, frame);
 		setState(cmd.startTime, cmd.endTime);
@@ -705,14 +706,22 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						mState->exportSend(it->second);
 					}
-					if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
+					/*if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
 					{
 						setState(queryStartTime, endTimeSaved);
 						if (mState->Type == mState->IDLE)
 						{
 							reset = true;
 						}
-					}
+					}*/
+				}
+				if ((it->first > endTimeSaved) && (isCommandRequest))
+				{
+					queryStartTime = 0;
+					queryEndTime = 0;
+					sendEOS();
+					setState(queryStartTime, queryEndTime);
+					isCommandRequest = false;
 				}
 			}
 		}
@@ -802,14 +811,22 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				{
 					mState->exportSend(it->second);
 				}
-				if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
+				/*if (mState->queueObject->mQueue.find(endTimeSaved) != mState->queueObject->mQueue.end())
 				{
 					setState(queryStartTime, endTimeSaved);
 					if (mState->Type == mState->IDLE)
 					{
 						reset = true;
 					}
-				}
+				}*/
+			}
+			if ((it->first > endTimeSaved) && (isCommandRequest))
+			{
+				queryStartTime = 0;
+				queryEndTime = 0;
+				sendEOS();
+				setState(queryStartTime, queryEndTime);
+				isCommandRequest = false;
 			}
 
 		}
@@ -830,7 +847,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		queryStartTime = 0;
 		queryEndTime = 0;
-		sendEOS();
+		//sendEOS();
 		setState(queryStartTime, queryEndTime);
 	}
 

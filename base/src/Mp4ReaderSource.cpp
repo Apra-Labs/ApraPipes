@@ -334,6 +334,7 @@ public:
     std::string encodedImagePinId;
     std::string mp4FramePinId;
     bool isNVRread = false;
+    bool stopReadingFiles = false;
     bool seekedToEndTS = false;
 };
 
@@ -462,6 +463,7 @@ int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp
 void Mp4readerDetailH264::sendEndOfStream()
 {
     sendEOS();
+    stopReadingFiles = true;
 }
 
 void Mp4readerDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
@@ -487,6 +489,7 @@ void Mp4readerDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffe
 
 bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 {
+    
     frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, h264ImagePinId);
     boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
     size_t imageActualSize = 0;
@@ -630,9 +633,16 @@ std::string Mp4ReaderSource::addOutPutPin(framemetadata_sp& metadata)
 bool Mp4ReaderSource::produce()
 {
     frame_container frames;
-    mDetail->produceFrames(frames);
-    send(frames);
-    return true;
+    if (!mDetail->stopReadingFiles)
+    {
+        mDetail->produceFrames(frames);
+        send(frames);
+        return true;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 bool Mp4ReaderSource::validateOutputPins()
@@ -684,11 +694,14 @@ void Mp4ReaderSource::setProps(Mp4ReaderSourceProps& props)
 bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
     mDetail->isNVRread = true;
+    mDetail->stopReadingFiles = false;
     mDetail->seekedToEndTS = false;
     if (type == Command::CommandType::Seek)
     {
         Mp4SeekCommand seekCmd;
         getCommand(seekCmd, frame);
+        auto x = seekCmd.seekStartTS;
+        auto y = seekCmd.seekEndTS;
         return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.seekEndTS);
     }
     else
