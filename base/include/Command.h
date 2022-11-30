@@ -16,6 +16,7 @@ public:
 		Seek,
 		NVRCommandRecord,
 		NVRCommandExport,
+		NVRCommandExportMMQ,
 		NVRCommandView,
 		MP4WriterLastTS,
 		MMQtimestamps
@@ -306,6 +307,31 @@ private:
 		ar& stopExportTS;
 	}
 };
+
+class NVRCommandExportMMQ : public Command
+{
+public:
+	NVRCommandExportMMQ() : Command(Command::CommandType::NVRCommandExportMMQ)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startExportMMQ);
+	}
+
+	bool startExportMMQ = true;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startExportMMQ;
+	}
+};
+
 
 class NVRCommandView : public Command
 {

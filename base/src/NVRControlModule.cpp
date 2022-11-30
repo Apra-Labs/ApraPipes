@@ -66,8 +66,8 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
     {
         NVRCommandExport cmd;
         getCommand(cmd, frame);
-        uint64_t givenStart = cmd.startExportTS;
-        uint64_t givenStop = cmd.stopExportTS;
+        givenStart = cmd.startExportTS;
+        givenStop = cmd.stopExportTS;
 
         if ((givenStart < firstMMQtimestamp) && (givenStop < firstMMQtimestamp)) // Send command to mp4Reader only entire export is from disk
         {
@@ -104,16 +104,16 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
                     pipelineModules[i]->queueCommand(command);
                 }
             }
-            cmd.startExportTS = firstMMQtimestamp;
-            cmd.stopExportTS = givenStop;
-            for (int i = 0; i < pipelineModules.size(); i++)
-            {
-                if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
-                {
-                    auto myid = pipelineModules[i]->getId();
-                    pipelineModules[i]->queueCommand(cmd);
-                }
-            }
+            //cmd.startExportTS = firstMMQtimestamp;
+            //cmd.stopExportTS = givenStop;
+            //for (int i = 0; i < pipelineModules.size(); i++)
+            //{
+            //    if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+            //    {
+            //        auto myid = pipelineModules[i]->getId();
+            //        pipelineModules[i]->queueCommand(cmd);
+            //    }
+            //}
             return true;
         }
         //
@@ -160,6 +160,22 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         //        pipelineModules[i]->queueCommand(cmd);
         //    }
         //}
+        return true;
+    }
+
+    if (type == Command::CommandType::NVRCommandExportMMQ)
+    {
+        NVRCommandExport cmd;
+        cmd.startExportTS = firstMMQtimestamp;
+        cmd.stopExportTS = givenStop;
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            if (pipelineModules[i] == getModuleofRole("MultimediaQueue")) // Sending command to multimediaQueue
+            {
+                auto myid = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(cmd);
+            }
+        }
         return true;
     }
     if (type == Command::CommandType::NVRCommandView)

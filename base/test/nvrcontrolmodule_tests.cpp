@@ -1117,7 +1117,7 @@ BOOST_AUTO_TEST_CASE(checkNVR5) //Use this for testing pipeline note - Mimics th
 	auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
 	encoder->setNext(mp4Writer_1);
 
-	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 3000, true)));
+	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(120000, 30000, true)));
 	encoder->setNext(multiQue);
 
 	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
@@ -1170,7 +1170,7 @@ BOOST_AUTO_TEST_CASE(checkNVR5) //Use this for testing pipeline note - Mimics th
 	mp4Reader->play(false);
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(150));
-	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221030/0012/")))
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221030/0015/")))
 	{
 		if (boost::filesystem::is_regular_file(folder))
 		{
@@ -1181,7 +1181,7 @@ BOOST_AUTO_TEST_CASE(checkNVR5) //Use this for testing pipeline note - Mimics th
 	}
 	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
 	mp4Reader->setProps(propsChange);
-	boost::this_thread::sleep_for(boost::chrono::seconds(480));
+	boost::this_thread::sleep_for(boost::chrono::seconds(1200));
 	p.stop();
 	p.term();
 	p.wait_for_all();

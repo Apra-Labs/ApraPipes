@@ -637,6 +637,11 @@ bool Mp4ReaderSource::produce()
     {
         mDetail->produceFrames(frames);
         send(frames);
+        if ((controlModule != nullptr) && (mDetail->stopReadingFiles))
+        {
+            NVRCommandExportMMQ cmd;
+            controlModule->queueCommand(cmd);
+        }
         return true;
     }
     else
