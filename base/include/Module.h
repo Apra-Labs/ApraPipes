@@ -35,7 +35,7 @@ public:
 	};
 	ModuleProps()
 	{
-		fps = 60;
+		fps = 30;
 		qlen = 20;
 		logHealth = false;		
 		logHealthFrequency = 1000;
@@ -71,7 +71,7 @@ public:
 
 	ModuleProps(FrameFetchStrategy _frameFetchStrategy)
 	{
-		fps = 60;
+		fps = 30;
 		qlen = 20;
 		logHealth = false;		
 		logHealthFrequency = 1000;

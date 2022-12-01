@@ -125,7 +125,7 @@ public:
 			auto ret = H264Utils::parseNalu(mFrameBuffer);
 			tie(typeFound, spsBuff, ppsBuff) = ret;
 
-			BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
+			//BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
 
 			if (spsBuff.size() != 0)
 			{
@@ -139,7 +139,7 @@ public:
 				largestTimeStamp = it->second->timestamp;
 			}
 		}
-		BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
+		//BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
 			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushToNextModule == true))

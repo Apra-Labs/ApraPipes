@@ -83,6 +83,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
                 {
                     auto myId = pipelineModules[i]->getId();
                     pipelineModules[i]->queueCommand(command);
+                    pipelineModules[i]->play(true);
                 }
             }
             return true;
@@ -102,6 +103,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
                 {
                     auto myId = pipelineModules[i]->getId();
                     pipelineModules[i]->queueCommand(command);
+                    pipelineModules[i]->play(true);
                 }
             }
             //cmd.startExportTS = firstMMQtimestamp;

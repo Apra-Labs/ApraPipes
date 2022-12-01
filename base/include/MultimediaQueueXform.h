@@ -6,14 +6,14 @@ class MultimediaQueueXform;
 class MultimediaQueueXformProps : public ModuleProps
 {
 public:
-	MultimediaQueueXformProps()
+	MultimediaQueueXformProps() : ModuleProps()
 	{
 		// watermark can be passed in millisec or number of frames
 		lowerWaterMark = 10000;
 		upperWaterMark = 15000;
 		isMapDelayInTime = true;
 	}
-	MultimediaQueueXformProps(uint32_t queueLength = 10000, uint16_t tolerance = 5000, bool _isDelayTime = true)
+	MultimediaQueueXformProps(uint32_t queueLength = 10000, uint16_t tolerance = 5000, bool _isDelayTime = true) : ModuleProps()
 	{
 		lowerWaterMark = queueLength;
 		upperWaterMark = queueLength + tolerance;
