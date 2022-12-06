@@ -49,8 +49,6 @@ public:
 			_step = _width;
 			break;
 		case ImageMetadata::UYVY:
-			_step = _width * 2;
-			break;
 		case ImageMetadata::YUYV:
 			_step = _width * 2;
 			break;	
@@ -143,8 +141,6 @@ public:
 			multiple = 1;
 			break;
 		case ImageMetadata::YUYV:
-			multiple = 2;
-			break;	
 		case ImageMetadata::UYVY:
 			multiple = 2;
 			break;

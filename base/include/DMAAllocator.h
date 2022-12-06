@@ -135,8 +135,6 @@ public:
                 type = CV_8UC4;
                 break;
             case ImageMetadata::ImageType::UYVY:
-                type = CV_8UC3;
-                break;
             case ImageMetadata::ImageType::YUYV:
                 type = CV_8UC3;
                 break;    
