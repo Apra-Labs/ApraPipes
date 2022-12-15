@@ -6,10 +6,11 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
+#include "H264Metadata.h"
 
 H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM, "H264EncoderV4L2", props), mProps(props)
 {
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
+	mOutputMetadata = framemetadata_sp(new H264Metadata());
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
@@ -90,6 +91,7 @@ bool H264EncoderV4L2::term()
 bool H264EncoderV4L2::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
+	mHelper->mFrameTimeStamp = frame->timestamp;
 	mHelper->process(frame);
 
 	return true;
@@ -137,21 +139,24 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 			}
 		}
 	}
+	auto h264Metadata = H264Metadata(width, height);
+	auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(mOutputMetadata);
+	rawOutMetadata->setData(h264Metadata);
 
 	auto v4l2MemType = V4L2_MEMORY_MMAP;
 	if(metadata->getMemType() == FrameMetadata::DMABUF)
 	{
 		v4l2MemType = V4L2_MEMORY_DMABUF;
 	}
-
+	
 	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
 		frame->setMetadata(mOutputMetadata);
 
 		frame_container frames;
 		frames.insert(make_pair(mOutputPinId, frame));
 		send(frames);
-	});
-
+	}, [&]() -> frame_sp { 
+		return makeFrame(); });
 	return true;
 }
 

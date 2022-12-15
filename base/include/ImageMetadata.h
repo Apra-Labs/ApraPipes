@@ -15,12 +15,13 @@ public:
 		BGRA, // Interleaved
 		RGB, // Interleaved
 		RGBA, // Interleaved
-		YUV411_I, // Interleaved
+		YUV411_I = 10, // Interleaved
         YUV444, // Planar
 		YUV420, // Planar
 		UYVY,	// Interleaved		
+		YUYV,
 		NV12,
-		BAYERBG10, // BGGR
+		BAYERBG10 = 20, // BGGR
 		BAYERBG8, // BGGR
 		BAYERGB8, // GBRG
 		BAYERGR8, // GRBG

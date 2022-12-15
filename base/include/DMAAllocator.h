@@ -32,6 +32,9 @@ private:
         case ImageMetadata::RGBA:
             colorFormat = NvBufferColorFormat_ABGR32;
             break;
+        case ImageMetadata::YUYV:
+            colorFormat = NvBufferColorFormat_YUYV;
+            break; 
         case ImageMetadata::BGRA:
             colorFormat = NvBufferColorFormat_ARGB32;
             break;
@@ -132,6 +135,9 @@ public:
                 type = CV_8UC4;
                 break;
             case ImageMetadata::ImageType::UYVY:
+                type = CV_8UC3;
+                break;
+             case ImageMetadata::ImageType::YUYV:
                 type = CV_8UC3;
                 break;
             default:

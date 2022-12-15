@@ -10,17 +10,17 @@ class H264EncoderV4L2Helper
 {
 public:
     typedef std::function<void(frame_sp &)> SendFrame;
+    typedef std::function<frame_sp()> MakeFrame;
+    static std::shared_ptr<H264EncoderV4L2Helper> create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame, MakeFrame makeFrame);
 
-    static std::shared_ptr<H264EncoderV4L2Helper> create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
-
-    H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame);
+    H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame, MakeFrame makeFrame);
     ~H264EncoderV4L2Helper();
 
     void stop();
 
     // data is cuda rgb data pointer and should be already synced
     bool process(frame_sp& frame);
-
+    uint64_t mFrameTimeStamp = 0;
 private:
     void setSelf(std::shared_ptr<H264EncoderV4L2Helper> &mother);
 
@@ -48,6 +48,6 @@ private:
 
     boost::object_pool<ExtFrame> frame_opool;
     SendFrame mSendFrame;
-
+    MakeFrame mMakeFrame;
     std::unique_ptr<V4L2CUYUV420Converter> mConverter;
 };

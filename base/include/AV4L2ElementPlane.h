@@ -39,6 +39,7 @@ private:
  
 public:
     struct v4l2_format mFormat;
+    AV4L2Buffer **mBuffers;
 
 private:
     int mCount;
@@ -48,8 +49,6 @@ private:
     enum v4l2_memory mMemType;
     uint32_t mNumPlanes;
     int mFD;
-
-    AV4L2Buffer **mBuffers;
     AV4L2Buffer *mTempBuffer;
 
     bool mStreamOn;

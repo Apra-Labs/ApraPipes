@@ -43,6 +43,7 @@ public:
 		return !renderer;
 	}
 
+    bool showFlag = true;
 	NvEglRenderer *renderer = nullptr;
     uint32_t x_offset,y_offset,width,height;
 };
@@ -62,6 +63,24 @@ bool EglRenderer::init(){
     return true;
 }
 
+bool EglRenderer::handleCommand(Command::CommandType type, frame_sp& frame)
+{
+    if (type == Command::CommandType::NVRCommandView)
+	{
+		NVRCommandView cmd;
+		getCommand(cmd, frame);
+		if (cmd.doView == false)
+		{
+			mDetail->showFlag = false;
+		}
+		if (cmd.doView)
+		{
+			mDetail->showFlag = true;
+		}
+	}
+	return true;
+}
+
 bool EglRenderer::process(frame_container& frames)
 {
     auto frame = frames.cbegin()->second;
@@ -69,8 +88,10 @@ bool EglRenderer::process(frame_container& frames)
 	{
 		return true;
 	}
-
-    mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
+    if (mDetail->showFlag)
+	{
+        mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
+    }
     return true;
 }
 

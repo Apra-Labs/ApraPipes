@@ -10,7 +10,7 @@ NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_s
     // hardcoded device name and pixfmt which is fine for now 
     mCamDevname = "/dev/video0";
     mCamFD = -1;
-    mCamPixFmt = V4L2_PIX_FMT_UYVY;
+    mCamPixFmt = V4L2_PIX_FMT_YUYV;
 
     mRunning = false;
     mSendFrame = sendFrame;
@@ -36,15 +36,15 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
         return false;
     }
 
-    struct v4l2_control inp;
-    memset(&inp, 0, sizeof(inp));
-    inp.id = V4L2_CID_HFLIP;
-    inp.value = !isMirror;
+    // struct v4l2_control inp;
+    // memset(&inp, 0, sizeof(inp));
+    // inp.id = V4L2_CID_HFLIP;
+    // inp.value = !isMirror;
 
-    if(ioctl(mCamFD, VIDIOC_S_CTRL, &inp) < 0){
-        LOG_ERROR << "Flip failed";
-        return false;
-    }
+    // if(ioctl(mCamFD, VIDIOC_S_CTRL, &inp) < 0){
+    //     LOG_ERROR << "Flip failed";
+    //     return false;
+    // }
 
     /* Set camera output format */
     memset(&fmt, 0, sizeof(fmt));
@@ -145,6 +145,9 @@ void NvV4L2CameraHelper::operator()()
             {
                 LOG_FATAL << " mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
             }
+            std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+            auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+            frameItr->second->timestamp = dur.count();
             mSendFrame(frameItr->second);
             mBufferFD.erase(frameItr);
         }

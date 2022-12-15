@@ -34,6 +34,7 @@ public:
     bool init();
     bool term();
 protected:
+	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
 	bool validateInputPins();

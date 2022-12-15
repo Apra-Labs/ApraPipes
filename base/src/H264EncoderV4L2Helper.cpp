@@ -23,9 +23,9 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame, MakeFrame makeFrame)
 {
-    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, fps, sendFrame);
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, fps, sendFrame, makeFrame);
     instance->setSelf(instance);
 
     return instance;
@@ -36,7 +36,7 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
     mSelf = self;
 }
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame, MakeFrame makeFrame) : mSendFrame(sendFrame), mFD(-1), mMakeFrame(makeFrame), mFrameTimeStamp(0)
 {
     initV4L2();
 
@@ -202,8 +202,11 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
 
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
+    auto tempFrame = mMakeFrame();
     auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
-    mSendFrame(frame);
+    memcpy(tempFrame->data(), frame->data(), frame->size());
+    tempFrame->timestamp = mFrameTimeStamp;
+    mSendFrame(tempFrame);
     mConverter->releaseFrame();
 }
 
@@ -221,6 +224,7 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
     {
         return true;
     }
+    mFrameTimeStamp = frame->timestamp;
 
     mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
