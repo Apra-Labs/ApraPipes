@@ -546,7 +546,19 @@ bool Mp4WriterSink::processEOS(string& pinId)
 	// in current state after EOS, SOS is not triggered - is it by design ? 
 	// Example EOS can be triggered if there is some resolution change in upstream module
 	// so you want to do mDetail->mInputMetadata.reset() - so that SOS gets triggered
-	mDetail->attemptFileClose();
+	auto myPinId = pinId;
+	if (myPinId == "Mp4ReaderSource_9_pin_1") 
+	{
+		return true;
+	}
+	else if (myPinId == "Mp4ReaderSource_9_pin_2")
+	{
+		return true;
+	}
+	else
+	{
+		mDetail->attemptFileClose();
+	}
 	return true;
 }
 

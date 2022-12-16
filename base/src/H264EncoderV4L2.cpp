@@ -155,8 +155,8 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		frame_container frames;
 		frames.insert(make_pair(mOutputPinId, frame));
 		send(frames);
-	}, [&]() -> frame_sp { 
-		return makeFrame(); });
+	}, [&](size_t size) -> frame_sp { 
+		return makeFrame(size); });
 	return true;
 }
 

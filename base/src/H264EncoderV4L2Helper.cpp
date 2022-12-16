@@ -202,8 +202,8 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
 
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
-    auto tempFrame = mMakeFrame();
     auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
+    auto tempFrame = mMakeFrame(frame->size());
     memcpy(tempFrame->data(), frame->data(), frame->size());
     tempFrame->timestamp = mFrameTimeStamp;
     mSendFrame(tempFrame);

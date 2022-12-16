@@ -47,8 +47,8 @@ void key_func(boost::shared_ptr<NVRControlModule>& mControl)
 		{
 			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
 			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-			uint64_t seekStartTS = now + 4000;
-			uint64_t seekEndTS = now + 5000;
+			uint64_t seekStartTS = now - 120000;
+			uint64_t seekEndTS = now + 120000;
 			LOG_ERROR << "Starting export!!";
 			mControl->nvrExport(seekStartTS, seekEndTS);
 			mControl->step();
@@ -89,7 +89,7 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
 			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
 			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
-			uint64_t seekStartTS = now - 180000;
+			uint64_t seekStartTS = now - 120000;
 			uint64_t seekEndTS = now + 120000;
 			mControl->nvrExport(seekStartTS, seekEndTS);
 			mControl->step();
@@ -205,40 +205,70 @@ BOOST_AUTO_TEST_CASE(NXPipeline)
 BOOST_AUTO_TEST_CASE(NXPipeline_2)
 {
     Logger::setLogLevel(boost::log::trivial::severity_level::error);
-
-	auto v4L2Source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(1280, 720, 10)));
+	//v4L2-Source
+	auto v4L2props = NvV4L2CameraProps(1280, 720, 10);
+	v4L2props.logHealth = true;
+	v4L2props.logHealthFrequency = 100;
+	v4L2props.fps = 30;
+	auto v4L2Source = boost::shared_ptr<Module>(new NvV4L2Camera(v4L2props));
     
 	//NV_Transform
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	auto nv_transform1Props = NvTransformProps(ImageMetadata::RGBA);
+	nv_transform1Props.logHealth = true;
+	nv_transform1Props.logHealthFrequency = 100;
+	nv_transform1Props.fps = 30;
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(nv_transform1Props));
 	v4L2Source->setNext(nv_transform);
 	
 	//EGL_Renderer
-    auto renderer = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	auto rendererProps = EglRendererProps(0, 0);
+	rendererProps.logHealth = true;
+	rendererProps.logHealthFrequency = 100;
+	rendererProps.fps = 30;
+    auto renderer = boost::shared_ptr<Module>(new EglRenderer(rendererProps));
     nv_transform->setNext(renderer);
 
 	//NV_Transform for encoder
-	auto nv_transform_encode = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	auto nv_transform2Props = NvTransformProps(ImageMetadata::YUV420);
+	nv_transform2Props.logHealth = true;
+	nv_transform2Props.logHealthFrequency = 100;
+	nv_transform2Props.fps = 30;
+	auto nv_transform_encode = boost::shared_ptr<Module>(new NvTransform(nv_transform2Props));
 	v4L2Source->setNext(nv_transform_encode);
 
 	//v4l2Encoder
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 2048;
+	encoderProps.logHealth = true;
+	encoderProps.logHealthFrequency = 100;
+	encoderProps.fps = 30;
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	nv_transform_encode->setNext(encoder);
 
 	//mp4Writer-1
 	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
+	mp4WriterSinkProps_1.logHealth = true;
+	mp4WriterSinkProps_1.logHealthFrequency = 100;
+	mp4WriterSinkProps_1.fps = 30;
 	auto mp4writer_1 = boost::shared_ptr<Module>(new Mp4WriterSink(Mp4WriterSinkProps(1, 10, 24, outFolderPath_1)));
 	encoder->setNext(mp4writer_1);
 
 	//MultimediaQueue
 	auto multiProps = MultimediaQueueXformProps(120000, 30000, true);
+	multiProps.logHealth = true;
+	multiProps.logHealthFrequency = 100;
+	multiProps.fps = 30;
 	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multiProps));
 	encoder->setNext(multiQue);
 	
 	//mp4Writer-2
 	std::string outFolderPath_2 = "./data/testOutput/mp4_videos/Export_Videos/";
-	auto mp4writer_2 = boost::shared_ptr<Module>(new Mp4WriterSink(Mp4WriterSinkProps(1, 10, 24, outFolderPath_2)));
+	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(60, 10, 24, outFolderPath_2);
+	mp4WriterSinkProps_2.logHealth = true;
+	mp4WriterSinkProps_2.logHealthFrequency = 100;
+	mp4WriterSinkProps_2.fps = 30;
+	auto mp4writer_2 = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps_2));
 	multiQue->setNext(mp4writer_2);
 	
 	//mp4Reader
@@ -261,7 +291,11 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 
 
 	//ControlModule 
-	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+	auto controlProps = NVRControlModuleProps();
+	controlProps.logHealth = true;
+	controlProps.logHealthFrequency = 100;
+	controlProps.fps = 30;
+	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(controlProps));
 
     PipeLine p("test");
 	std::thread inp(key_Read_func, std::ref(mControl), std::ref(mp4Reader));
@@ -273,7 +307,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 	mControl->enrollModule("Renderer", renderer);
 	mControl->enrollModule("Writer-1", mp4writer_1);
 	mControl->enrollModule("MultimediaQueue", multiQue);
-	mControl->enrollModule("Writer-1", mp4writer_2);
+	mControl->enrollModule("Writer-2", mp4writer_2);
 
 	BOOST_TEST(p.init());
 	mControl->init();
@@ -281,7 +315,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(240));
-	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221115/0012/")))
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221116/0015/")))
 	{
 		if (boost::filesystem::is_regular_file(folder))
 		{
@@ -296,6 +330,8 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 	p.stop();
 	p.term();
 	p.wait_for_all();
+	LOG_ERROR << "The first thread has stopped";
+	inp.join();
 }
 
 BOOST_AUTO_TEST_CASE(NXPipeline_3)

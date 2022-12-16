@@ -113,6 +113,7 @@ bool PipeLine::init()
 	{
 		bool bRCInit = false;
 		try {
+			auto s = i->get()->getId();
 			bRCInit = i->get()->init();
 			LOG_TRACE << " Initialized pipeline" << i->get()->getId();
 		}
@@ -128,6 +129,7 @@ bool PipeLine::init()
 		}
 		if (!bRCInit)
 		{
+			auto s = i->get()->getId();
 			LOG_ERROR << " Failed init " << i->get()->getId();
 			myStatus = PL_INITFAILED;
 			return false;
