@@ -17,6 +17,9 @@
 #include "ImageViewerModule.h"
 #include "MultimediaQueueXform.h"
 #include "ValveModule.h"
+#include "Mp4ReaderSource.h"
+#include "H264Metadata.h"
+#include "Mp4VideoMetadata.h"
 
 class NVRPipeline_Detail {
 public:
@@ -110,8 +113,12 @@ public:
 			}
 			if (k == 101)
 			{
-				BOOST_LOG_TRIVIAL(info) << "Starting Export!";
-				mControl->nvrExport(0, 5);
+				BOOST_LOG_TRIVIAL(info) << "Starting Requested Export!!";
+				boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+				auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+				uint64_t seekStartTS = now - 180000;
+				uint64_t seekEndTS = now + 120000;
+				mControl->nvrExport(seekStartTS, seekEndTS);
 				mControl->step();
 			}
 		}
@@ -119,52 +126,114 @@ public:
 
 	bool startPipeline()
 	{
+		Logger::setLogLevel(boost::log::trivial::severity_level::info);
+		//Logger::initLogger(logprops);
+
 		auto cuContext = apracucontext_sp(new ApraCUcontext());
 		uint32_t gopLength = 25;
 		uint32_t bitRateKbps = 1000;
 		uint32_t frameRate = 30;
 		H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
 		bool enableBFrames = true;
-		auto width = 1920;
-		auto height = 1020;
+		auto width = 640; //1920
+		auto height = 360; //1020
 
+		//WebCam
+		WebCamSourceProps webCamSourceprops(0, 640, 360);
+		webCamSourceprops.logHealth = true;
+		webCamSourceprops.logHealthFrequency = 100;
+		auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-		WebCamSourceProps webCamSourceprops(0, 1920, 1080);
-		webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
-		auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
-		webCam->setNext(colorConvt);
+		//Color Conversion View
+		auto colorProps1 = ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR);
+		colorProps1.logHealth = true;
+		colorProps1.logHealthFrequency = 100;
+		auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(colorProps1));
+		//webCam->setNext(colorConvtView);
 
-		auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR)));
-		webCam->setNext(colorConvtView);
+		//ImageViewer
+		ImageViewerModuleProps imgViewerProps("NVR-View");
+		imgViewerProps.logHealth = true;
+		imgViewerProps.logHealthFrequency = 100;
+		auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(imgViewerProps));
+		//colorConvtView->setNext(view);
 
-		view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("NVR-View")));
-		colorConvtView->setNext(view);
+		//Color Conversion to encoder
+		auto colorProps2 = ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR);
+		colorProps2.logHealth = true;
+		colorProps2.logHealthFrequency = 100;
+		auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(colorProps2));
+		webCam->setNext(colorConvt); //WebCam->ColorConversion
 
+		//Cuda Mem Copy
 		cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 		auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
+		copyProps.logHealth = true;
+		copyProps.logHealthFrequency = 100;
 		auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
 		colorConvt->setNext(copy);
 
-		encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
+		//H264 Encoder
+		auto encoderProps = H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
+		encoderProps.logHealth = true;
+		encoderProps.logHealthFrequency = 100;
+		auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(encoderProps));
 		copy->setNext(encoder);
 
+		//MP4 Writer-1 (24/7 writer)
 		std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
 		auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
 		mp4WriterSinkProps_1.logHealth = true;
-		mp4WriterSinkProps_1.logHealthFrequency = 10;
-		mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
+		mp4WriterSinkProps_1.logHealthFrequency = 100;
+		auto mp4Writer_1 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_1));
 		encoder->setNext(mp4Writer_1);
 
-		multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(30, 40, false)));
+		//MultimediaQueue 
+		auto multiProps = MultimediaQueueXformProps(120000, 30000, true);
+		multiProps.logHealth = true;
+		multiProps.logHealthFrequency = 100;
+		multiProps.fps = 30;
+		auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multiProps));
 		encoder->setNext(multiQue);
-		std::string outFolderPath_2 = "./data/testOutput/mp4_videos/ExportVids/";
-		auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 1, 24, outFolderPath_2);
-		mp4WriterSinkProps_2.logHealth = true;
-		mp4WriterSinkProps_2.logHealthFrequency = 10;
-		mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
-		multiQue->setNext(mp4Writer_2);
 
-		mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+		//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
+		//multiQue->setNext(fileWriter);
+
+		//MP4 Reader [Source]
+		std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+		std::string outPath = "./data/testOutput/mp4_videos/24bpp";
+		std::string changedVideoPath = "./data/testOutput/mp4_videos/24bpp/20221023/0017/";
+		boost::filesystem::path file("frame_??????.h264");
+		auto frameType = FrameMetadata::FrameType::H264_DATA;
+		auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+		boost::filesystem::path dir(outPath);
+		auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, true);
+		mp4ReaderProps.logHealth = true;
+		mp4ReaderProps.logHealthFrequency = 100;
+		mp4ReaderProps.fps = 30;
+		auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader->addOutPutPin(h264ImageMetadata);
+		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+		mp4Reader->addOutPutPin(mp4Metadata);
+
+		//MP4 Writer-2 exports
+		std::string outFolderPath_2 = "./data/testOutput/mp4_videos/ExportVids/";
+		auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_2);
+		mp4WriterSinkProps_2.logHealth = false;
+		mp4WriterSinkProps_2.logHealthFrequency = 100;
+		auto mp4Writer_2 = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps_2));
+		multiQue->setNext(mp4Writer_2);
+		boost::filesystem::path full_path = dir / file;
+		LOG_INFO << full_path;
+		mp4Reader->setNext(mp4Writer_2);
+
+		//NVR ControlModule
+		auto controlProps = NVRControlModuleProps();
+		controlProps.logHealth = true;
+		controlProps.logHealthFrequency = 100;
+		auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(controlProps));
+		Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
 
 		mControl->enrollModule("WebCamera", webCam);
 		mControl->enrollModule("Renderer", view);
