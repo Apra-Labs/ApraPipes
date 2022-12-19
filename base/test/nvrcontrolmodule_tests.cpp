@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_SUITE(nvrcontrolmodule_tests)
 // 	};
 // };
 
-// void key_func(boost::shared_ptr<NVRControlModule>& mControl)
-// {
+ void key_func(boost::shared_ptr<NVRControlModule>& mControl)
+ {
 
 	while (true) {
 		int k;
@@ -148,8 +148,8 @@ BOOST_AUTO_TEST_SUITE(nvrcontrolmodule_tests)
 	}
 }
 
-// void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_ptr<Mp4ReaderSource>& mp4Reader)
-// {
+ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_ptr<Mp4ReaderSource>& mp4Reader)
+ {
 
 	while (true) {
 		int k;
@@ -268,25 +268,25 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 	auto width = 640;
 	auto height = 360;
 
-// 	// test with 0 - with multiple cameras
+ 	// test with 0 - with multiple cameras
 
-// 	WebCamSourceProps webCamSourceprops(0, 1920, 1080);
-// 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
-// 	auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
-// 	webCam->setNext(colorConvt);
-// 	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
-// 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
-// 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
-// 	colorConvt->setNext(copy);
-// 	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
-// 	copy->setNext(encoder);
-// 	std::string outFolderPath = "./data/testOutput/mp4_videos/24bpp/";
-// 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
-// 	mp4WriterSinkProps.logHealth = true;
-// 	mp4WriterSinkProps.logHealthFrequency = 10;
-// 	auto mp4Writer = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
-// 	encoder->setNext(mp4Writer);
-// 	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
+ 	WebCamSourceProps webCamSourceprops(0, 1920, 1080);
+ 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+ 	auto colorConvt = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR)));
+ 	webCam->setNext(colorConvt);
+ 	cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+ 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_);
+ 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+ 	colorConvt->setNext(copy);
+ 	auto encoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
+ 	copy->setNext(encoder);
+ 	std::string outFolderPath = "./data/testOutput/mp4_videos/24bpp/";
+ 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
+ 	mp4WriterSinkProps.logHealth = true;
+ 	mp4WriterSinkProps.logHealthFrequency = 10;
+ 	auto mp4Writer = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+ 	encoder->setNext(mp4Writer);
+ 	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(NVRControlModuleProps()));
 
 	PipeLine p("test");
 	p.appendModule(webCam);
@@ -1090,10 +1090,10 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 // 	inp.join();
 // }
 
-// BOOST_AUTO_TEST_CASE(checkNVR5) //Use this for testing pipeline note - Mimics the actual pipeline
-// {
-// 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-// 	//Logger::initLogger(logprops);
+ BOOST_AUTO_TEST_CASE(checkNVR5) //Use this for testing pipeline note - Mimics the actual pipeline
+ {
+ 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+ 	//Logger::initLogger(logprops);
 
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
@@ -1104,11 +1104,11 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 	auto width = 640; 
 	auto height = 360; 
 
-// 	//WebCam
-// 	WebCamSourceProps webCamSourceprops(0, 640, 360);
-// 	webCamSourceprops.logHealth = true;
-// 	webCamSourceprops.logHealthFrequency = 100;
-// 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+ 	//WebCam
+ 	WebCamSourceProps webCamSourceprops(0, 640, 360);
+ 	webCamSourceprops.logHealth = true;
+ 	webCamSourceprops.logHealthFrequency = 100;
+ 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 	
 	//Color Conversion View
 	auto colorProps1 = ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR);
@@ -1164,16 +1164,16 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 	//encoder->setNext(mp4Writer_1);
 	encoder->setNext(sink);
 
-// 	//MultimediaQueue 
-// 	auto multiProps = MultimediaQueueXformProps(120000, 30000, true);
-// 	multiProps.logHealth = true;
-// 	multiProps.logHealthFrequency = 100;
-// 	multiProps.fps = 30;
-// 	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multiProps));
-// 	encoder->setNext(multiQue);
+ 	//MultimediaQueue 
+ 	auto multiProps = MultimediaQueueXformProps(120000, 30000, true);
+ 	multiProps.logHealth = true;
+ 	multiProps.logHealthFrequency = 100;
+ 	multiProps.fps = 30;
+ 	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multiProps));
+ 	encoder->setNext(multiQue);
 
-// 	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
-// 	//multiQue->setNext(fileWriter);
+ 	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
+ 	//multiQue->setNext(fileWriter);
 
 	//MP4 Reader [Source]
 	std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
@@ -1253,15 +1253,15 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 	inp.join();
 }
 
-// BOOST_AUTO_TEST_CASE(dummyTester)
-// {
-// 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+ BOOST_AUTO_TEST_CASE(dummyTester)
+ {
+ 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	
-// 	//WebCam
-// 	WebCamSourceProps webCamSourceprops(0, 640, 360);
-// 	webCamSourceprops.logHealth = true;
-// 	webCamSourceprops.logHealthFrequency = 100;
-// 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+ 	//WebCam
+ 	WebCamSourceProps webCamSourceprops(0, 640, 360);
+ 	webCamSourceprops.logHealth = true;
+ 	webCamSourceprops.logHealthFrequency = 100;
+ 	auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
 	//Color Conversion View
 	auto colorProps1 = ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR);
@@ -1284,76 +1284,15 @@ BOOST_AUTO_TEST_CASE(NVRTest)
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule(sinkProps));
 	//colorConvtView->setNext(sink);
 
-// 	PipeLine p("test");
-// 	p.appendModule(webCam);
-// 	p.init();
-// 	p.run_all_threaded();
-// 	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
-// 	p.stop();
-// 	p.term();
-// 	p.wait_for_all();
-// }
-
-// BOOST_AUTO_TEST_CASE(dummyTester2)
-// {
-// 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-// 	//FileReader
-// 	std::string inFolderPath = "./data/Raw_YUV420_640x360";
-// 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-// 	fileReaderProps.fps = 30;
-// 	fileReaderProps.readLoop = true;
-// 	fileReaderProps.logHealth = true;
-// 	fileReaderProps.logHealthFrequency = 100;
-// 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
-// 	auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-// 	//auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
-// 	auto pinId = fileReader->addOutputPin(metadata);
-
-// 	//Color Conversion View
-// 	auto colorProps1 = ColorConversionProps(ColorConversionProps::ConversionType::RGB_TO_BGR);
-// 	colorProps1.logHealth = true;
-
-// 	colorProps1.logHealthFrequency = 100;
-// 	auto colorConvtView = boost::shared_ptr<ColorConversion>(new ColorConversion(colorProps1));
-// 	fileReader->setNext(colorConvtView);
-
-// 	//ImageViewer
-// 	ImageViewerModuleProps imgViewerProps("NVR-View");
-// 	imgViewerProps.logHealth = true;
-// 	imgViewerProps.logHealthFrequency = 100;
-// 	auto view = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(imgViewerProps));
-// 	colorConvtView->setNext(view);
-
-// 	PipeLine p("test");
-// 	p.appendModule(fileReader);
-// 	p.init();
-// 	p.run_all_threaded();
-// 	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
-// 	p.stop();
-// 	p.term();
-// 	p.wait_for_all();
-// }
-
-// BOOST_AUTO_TEST_CASE(NXPipeline)
-// {
-//     Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-// 	auto v4L2Source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(1920, 1080, 10)));
-//     auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
-// 	v4L2Source->setNext(nv_transform);
-//     auto renderer = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
-//     nv_transform->setNext(renderer);
-//     PipeLine p("test");
-// 	p.appendModule(v4L2Source);
-// 	BOOST_TEST(p.init());
-
-// 	p.run_all_threaded();
-// 	boost::this_thread::sleep_for(boost::chrono::seconds(120));
-// 	p.stop();
-// 	p.term();
-// 	p.wait_for_all();
-// }
+ 	PipeLine p("test");
+ 	p.appendModule(webCam);
+ 	p.init();
+ 	p.run_all_threaded();
+ 	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
+ 	p.stop();
+ 	p.term();
+ 	p.wait_for_all();
+ }
 
 
 BOOST_AUTO_TEST_SUITE_END()
