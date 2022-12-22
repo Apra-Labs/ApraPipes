@@ -1306,7 +1306,6 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
 }
 int h264DecoderV4L2Helper::process(frame_sp inputFrame)
 {
-    imgSeq++;
     uint32_t idx = 0;
     while (!ctx.eos && !ctx.in_error && idx < ctx.op_num_buffers)
     {
