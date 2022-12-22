@@ -305,7 +305,6 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
-	src/H264Decoder.cpp
 )
 
 
@@ -339,7 +338,6 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
-	include/H264Decoder.h
 )
 
 
@@ -410,6 +408,7 @@ IF(ENABLE_ARM64)
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
+		src/H264Decoder.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -418,6 +417,7 @@ ELSE()
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
 		src/H264DecoderNvCodecHelper.cpp
+		src/H264Decoder.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -459,6 +459,7 @@ IF(ENABLE_ARM64)
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
 		include/H264DecoderV4L2Helper.h
+		include/H264Decoder.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -467,6 +468,7 @@ ELSE()
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
 		include/H264DecoderNvCodecHelper.h
+		include/H264Decoder.h
 	)
 ENDIF(ENABLE_ARM64)
 
