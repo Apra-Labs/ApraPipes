@@ -235,10 +235,11 @@ public:
     H264DecoderNvCodecHelper() {}
     ~H264DecoderNvCodecHelper() {}
 
-    bool init(std::function<void(frame_sp&)> send);
+    bool init(std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame);
     void ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth);
-    bool process(frame_sp& frame,frame_sp outputFrame);
+    bool process(frame_sp& frame);
     std::function<void( frame_sp&)> send;
+    std::function<frame_sp()> makeFrame;
 private:
     boost::shared_ptr<NvDecoder> helper;
 };

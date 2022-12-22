@@ -1,20 +1,18 @@
 #pragma once
 
 #include "Module.h"
-#include <cuda_runtime_api.h>
-#include "CudaCommon.h"
 
-class H264DecoderNvCodecProps : public ModuleProps
+class H264DecoderProps : public ModuleProps
 {
 public:
-	H264DecoderNvCodecProps() {}
+	H264DecoderProps() {}
 };
 
-class H264DecoderNvCodec : public Module
+class H264Decoder : public Module
 {
 public:
-	H264DecoderNvCodec(H264DecoderNvCodecProps _props);
-	virtual ~H264DecoderNvCodec();
+	H264Decoder(H264DecoderProps _props);
+	virtual ~H264Decoder();
 	bool init();
 	bool term();
 	bool processEOS(string& pinId);
@@ -33,5 +31,5 @@ private:
 	bool mShouldTriggerSOS;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
-	H264DecoderNvCodecProps props;
+	H264DecoderProps mProps;
 };

@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include "nvcuvid.h"
-#include "H264DecoderHelper.h"
+#include "H264DecoderNvCodecHelper.h"
 #include "Frame.h"
 
 #define START_TIMER auto start = std::chrono::high_resolution_clock::now();
@@ -707,8 +707,9 @@ H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
 }
 
-bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send)
+bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
 {
+	makeFrame = _makeFrame;
 	send = _send;
 	return false;
 }
@@ -726,10 +727,11 @@ void H264DecoderNvCodecHelper::ConvertToPlanar(uint8_t* pHostFrame, int nWidth, 
 	}
 }
 
-bool H264DecoderNvCodecHelper::process(frame_sp& frame, frame_sp outputFrame)
+bool H264DecoderNvCodecHelper::process(frame_sp& frame)
 {
 	uint8_t* inputBuffer = NULL;
 	int inputBufferSize = 0;
+	frame_sp outputFrame = makeFrame();
 	uint8_t** outBuffer = reinterpret_cast<uint8_t**>(outputFrame->data());
 	
 	inputBuffer = static_cast<uint8_t*>(frame->data());

@@ -10,7 +10,7 @@
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "H264Metadata.h"
-#include "H264DecoderHelper.h"
+#include "H264DecoderNvCodecHelper.h"
 
 BOOST_AUTO_TEST_SUITE(h264decodernvcodec_tests)
 
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(h264_to_yuv420)
 
 	auto rawImagePin = fileReader->addOutputPin(h264ImageMetadata);
 
-	auto Decoder = boost::shared_ptr<Module>(new H264DecoderNvCodec(H264DecoderNvCodecProps()));
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
 	fileReader->setNext(Decoder);
 
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/yuv420Frames/Yuv420_704x576????.raw")));
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(Encoder_to_Decoder)
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	copy->setNext(encoder);
 
-	auto Decoder = boost::shared_ptr<Module>(new H264DecoderNvCodec(H264DecoderNvCodecProps()));
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
 	encoder->setNext(Decoder);
 
 	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
