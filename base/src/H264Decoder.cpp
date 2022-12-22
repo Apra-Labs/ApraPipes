@@ -50,7 +50,7 @@ public:
 
 #elif ARM64
 		helper.reset(new h264DecoderV4L2Helper());
-		return helper->init(send, _makeFrame);
+		return helper->init(send, makeFrame);
 #endif
 	}
 
