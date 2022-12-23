@@ -22,7 +22,6 @@ public:
 
 	~Detail()
 	{
-		helper.reset();
 	}
 
 	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
