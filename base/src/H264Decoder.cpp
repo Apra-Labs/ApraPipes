@@ -3,6 +3,10 @@
 #include "H264DecoderNvCodecHelper.h"
 #endif
 
+#ifdef __linux__
+#include "H264DecoderNvCodecHelper.h"
+#endif 
+
 #ifdef ARM64
 #include "H264DecoderV4L2Helper.h"
 #endif
@@ -22,6 +26,7 @@ public:
 
 	~Detail()
 	{
+		helper.reset();
 	}
 
 	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
@@ -46,7 +51,9 @@ public:
 #ifdef _WIN64
 		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
 		return helper->init(send, makeFrame);
-
+#elif  __linux__
+		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+		return helper->init(send, makeFrame);
 #elif ARM64
 		helper.reset(new h264DecoderV4L2Helper());
 		return helper->init(send, makeFrame);
@@ -62,8 +69,12 @@ public:
 	int mHeight;
 private:
 
-#ifdef _WIN64
+#ifdef _WIN64 
 	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
+
+#elif  __linux__
+	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
+
 #elif ARM64
 	boost::shared_ptr<h264DecoderV4L2Helper> helper;
 #endif
@@ -121,6 +132,9 @@ void H264Decoder::addInputPin(framemetadata_sp& metadata, string& pinId)
 #ifdef _WIN64
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
 
+#elif  __linux__
+	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
+
 #elif ARM64
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 #endif
@@ -163,10 +177,16 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		);
 	mShouldTriggerSOS = false;
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-#ifdef _WIN64
+#ifdef _WIN64 
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 	rawOutMetadata->setData(OutputMetadata);
 	return true;
+
+#elif  __linux__
+	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
+	rawOutMetadata->setData(OutputMetadata);
+	return true;
+
 #elif ARM64
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 	rawOutMetadata->setData(OutputMetadata);
