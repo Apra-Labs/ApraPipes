@@ -163,14 +163,16 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		}, [&]() -> frame_sp {return makeFrame(); }
 		);
 	mShouldTriggerSOS = false;
+	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 #ifdef _WIN64
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
-#elif ARM64
-	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
-#endif
-	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 	rawOutMetadata->setData(OutputMetadata);
 	return true;
+#elif ARM64
+	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
+	rawOutMetadata->setData(OutputMetadata);
+	return true;
+#endif
 }
 
 bool H264Decoder::shouldTriggerSOS()
