@@ -7,6 +7,7 @@
 #include "Frame.h"
 #include "Command.h"
 #include "libmp4.h"
+#include "H264Utils.h"
 
 class Mp4readerDetailAbs
 {
@@ -28,6 +29,7 @@ public:
 	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
+	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType) = 0;
 
 	void setProps(Mp4ReaderSourceProps& props)
 	{
@@ -204,8 +206,7 @@ public:
 		if (skipMsecsInFile)
 		{
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
-			int seekedToFrame = -1;
-			int returnCode = mp4_demux_seek_jpeg(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC, &seekedToFrame);
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
 			// to determine the end of video
 			mState.mFrameCounter = seekedToFrame;
 
@@ -282,16 +283,7 @@ public:
 			}
 			++mState.mFrameCounter;
 		}
-		uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
-		auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
-
-		/*if (seekEndTS <= frameTSInMsecs)
-		{
-			mState.has_more_video = 0;
-			sampleFrame = nullptr;
-			imageFrameSize = 0;
-		}*/
-
+		
 		return;
 	}
 	Mp4ReaderSourceProps mProps;
@@ -319,6 +311,7 @@ protected:
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t seekEndTS = 0;
+	int seekedToFrame = -1;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -348,6 +341,7 @@ public:
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
 	void sendEndOfStream() {}
+	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 };
 
 class Mp4readerDetailH264 : public Mp4readerDetailAbs
@@ -361,11 +355,14 @@ public:
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
 	void sendEndOfStream();
+	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
+	bool seekedToEndTS = false;
+	bool isRandomSeek = true;
 };
 
 void Mp4readerDetailJpeg::setMetadata()
@@ -384,6 +381,12 @@ void Mp4readerDetailJpeg::setMetadata()
 	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
 	mp4VideoMetadata->setData(serFormatVersion);
 	return;
+}
+
+int Mp4readerDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType) 
+{
+	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
+	return ret;
 }
 
 bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
@@ -441,6 +444,12 @@ void Mp4readerDetailH264::setMetadata()
 	return;
 }
 
+int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType)
+{
+	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+	return ret;
+}
+
 void Mp4readerDetailH264::sendEndOfStream()
 {
 	sendEOS();
@@ -473,10 +482,11 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 	size_t imageActualSize = 0;
 
-	if (mState.randomSeekParseFlag)
+	if (mState.randomSeekParseFlag && isRandomSeek)
 	{
 		prependSpsPps(tmpBuffer);
 		imageActualSize = spsSize + ppsSize + 8;
+		isRandomSeek = false;
 	}
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize,mp4FramePinId);
 	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(tmpBuffer.data());
@@ -490,6 +500,35 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, h264ImagePinId);
+	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
+	auto ret = H264Utils::parseNalu(tempBuffer);
+	short typeFound;
+	const_buffer spsBuff, ppsBuff;
+	tie(typeFound, spsBuff, ppsBuff) = ret; 
+
+	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+
+	if (seekedToEndTS)
+	{
+		return true;
+	}
+
+	if (seekEndTS <= frameTSInMsecs && !mProps.bFramesEnabled)
+	{
+		return true;
+	}
+
+	if (seekEndTS <= frameTSInMsecs && mProps.bFramesEnabled)
+	{
+		if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
+		{
+			frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
+			seekedToEndTS = true;
+			return true;
+		}
+	}
+
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{

@@ -13,12 +13,13 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		biggerFrameSize = _biggerFrameSize;
 		biggerMetadataFrameSize = _biggerMetadataFrameSize;
 		videoPath = _videoPath;
 		parseFS = _parseFS;
+		bFramesEnabled = _bFramesEnabled;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -26,10 +27,11 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		videoPath = _videoPath;
 		parseFS = _parseFS;
+		bFramesEnabled = _bFramesEnabled;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -48,6 +50,7 @@ public:
 	size_t biggerFrameSize = 600000;
 	size_t biggerMetadataFrameSize = 60000;
 	bool parseFS = true;
+	bool bFramesEnabled = false;
 private:
 	friend class boost::serialization::access;
 
@@ -60,6 +63,7 @@ private:
 		ar& skipDir;
 		ar& biggerFrameSize;
 		ar& biggerMetadataFrameSize;
+		ar& bFramesEnabled;
 	}
 };
 
