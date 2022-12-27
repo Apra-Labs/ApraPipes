@@ -1,15 +1,11 @@
 #include "H264Decoder.h"
-#ifdef _WIN64
-#include "H264DecoderNvCodecHelper.h"
-#endif
-
-#ifdef __linux__
-#include "H264DecoderNvCodecHelper.h"
-#endif 
 
 #ifdef ARM64
 #include "H264DecoderV4L2Helper.h"
-#endif
+#else
+#include "H264DecoderNvCodecHelper.h"
+#endif 
+
 #include "H264ParserUtils.h"
 #include "FrameMetadata.h"
 #include "H264Metadata.h"
@@ -47,16 +43,13 @@ public:
 		{
 			throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
 		}
-
-#ifdef _WIN64
-		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-		return helper->init(send, makeFrame);
-#elif  __linux__
-		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-		return helper->init(send, makeFrame);
-#elif ARM64
+		
+#ifdef ARM64
 		helper.reset(new h264DecoderV4L2Helper());
 		return helper->init(send, makeFrame);
+#else
+		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+		return helper->init(send, makeFrame);//
 #endif
 	}
 
@@ -69,14 +62,10 @@ public:
 	int mHeight;
 private:
 
-#ifdef _WIN64 
-	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
-
-#elif  __linux__
-	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
-
-#elif ARM64
+#ifdef ARM64
 	boost::shared_ptr<h264DecoderV4L2Helper> helper;
+#else
+	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
 #endif
 };
 
@@ -129,15 +118,13 @@ bool H264Decoder::validateOutputPins()
 void H264Decoder::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
-#ifdef _WIN64
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
 
-#elif  __linux__
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
-
-#elif ARM64
+#ifdef ARM64
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+#else
+	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
 #endif
+
 	mOutputPinId = Module::addOutputPin(mOutputMetadata);
 }
 
@@ -177,21 +164,17 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		);
 	mShouldTriggerSOS = false;
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-#ifdef _WIN64 
-	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
-	rawOutMetadata->setData(OutputMetadata);
-	return true;
 
-#elif  __linux__
-	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
-	rawOutMetadata->setData(OutputMetadata);
-	return true;
-
-#elif ARM64
+#ifdef ARM64
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 	rawOutMetadata->setData(OutputMetadata);
 	return true;
+#else
+	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
+	rawOutMetadata->setData(OutputMetadata);
+	return true;
 #endif
+
 }
 
 bool H264Decoder::shouldTriggerSOS()
