@@ -15,22 +15,27 @@
 
 BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
-void write(std::string inFolderPath, std::string outFolderPath, int width, int height)
+void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int chunkTime = 1)
 {
+	int width = 704;
+	int height = 576;
+
+	std::string inFolderPath = "./data/h264_data/";
+
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 24;
-	fileReaderProps.readLoop = false;
+	fileReaderProps.fps = 100;
+	fileReaderProps.readLoop = readLoop;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
-	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
-	fileReader->addOutputPin(encodedImageMetadata);
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
+	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 100, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -50,7 +55,49 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(60);
+	Test_Utils::sleep_for_seconds(sleepSeconds);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+void write(std::string inFolderPath, std::string outFolderPath, int width, int height, int chunkTime = 1)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
+	fileReaderProps.fps = 24;
+	fileReaderProps.readLoop = true;
+
+	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
+	fileReader->addOutputPin(encodedImageMetadata);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 24, outFolderPath);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 100;
+	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	fileReader->setNext(mp4WriterSink);
+
+	// #Dec_27_Review - do manual init, step and use saveorcompare
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	LOG_ERROR << "processing folder <" << inFolderPath << ">";
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(120);
 
 	p->stop();
 	p->term();
@@ -219,100 +266,14 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 
 BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
 {
-	int width = 704;
-	int height = 576;
-
-	std::string inFolderPath = "./data/h264_data/";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
-
-	LoggerProps loggerProps;
-	loggerProps.logLevel = boost::log::trivial::severity_level::info;
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	Logger::initLogger(loggerProps);
-
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 100;
-	fileReaderProps.readLoop = false;
-
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
-	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
-	fileReader->addOutputPin(h264ImageMetadata);
-
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(41, 1, 100, outFolderPath);
-	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
-	fileReader->setNext(mp4WriterSink);
-
-	// #Dec_27_Review - do manual init, step and use saveorcompare
-
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
-
-	if (!p->init())
-	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
-	}
-
-	LOG_ERROR << "processing folder <" << inFolderPath << ">";
-	p->run_all_threaded();
-
-	Test_Utils::sleep_for_seconds(10);
-
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
+	writeH264(false, 10, outFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 {
-	int width = 704;
-	int height = 576;
-
-	std::string inFolderPath = "./data/h264_data/";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
-
-	LoggerProps loggerProps;
-	loggerProps.logLevel = boost::log::trivial::severity_level::info;
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	Logger::initLogger(loggerProps);
-
-	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 100;
-	fileReaderProps.readLoop = true;
-
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
-	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
-	fileReader->addOutputPin(h264ImageMetadata);
-
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 100, outFolderPath);
-	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
-	fileReader->setNext(mp4WriterSink);
-
-	// #Dec_27_Review - do manual init, step and use saveorcompare
-
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
-
-	if (!p->init())
-	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
-	}
-
-	LOG_ERROR << "processing folder <" << inFolderPath << ">";
-	p->run_all_threaded();
-
-	Test_Utils::sleep_for_seconds(130);
-
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
+	writeH264(true, 130, outFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
@@ -497,6 +458,26 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	p->term();
 	p->wait_for_all();
 	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(single_file_given_name_jpeg)
+{
+	// custom name is only supported while writing to single video file (chunktime = UINT32_MAX).
+	int width = 1280;
+	int height = 720;
+
+	std::string inFolderPath = "./data/re3_filtered_mono";
+	std::string outFolderPath = "./data/testOutput/mp4_videos/mono_8bpp/apra.mp4";
+
+	write(inFolderPath, outFolderPath, width, height, UINT32_MAX);
+}
+
+BOOST_AUTO_TEST_CASE(single_file_given_name_h264)
+{
+	// custom name is only supported while writing to single video file (chunktime = UINT32_MAX).
+	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/apraH264.mp4";
+
+	writeH264(true,80,outFolderPath, UINT32_MAX);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

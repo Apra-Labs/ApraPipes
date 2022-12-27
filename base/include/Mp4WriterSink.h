@@ -13,7 +13,7 @@ public:
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
-		if (_chunkTime >= 1 && _chunkTime <= 60)
+		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
 		}

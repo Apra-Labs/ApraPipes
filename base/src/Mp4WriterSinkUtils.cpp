@@ -83,7 +83,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 
 	// used cached values if the difference in ts is less than chunkTime
 	uint32_t chunkTimeInSecs = 60 * chunkTimeInMinutes;
-	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder)
+	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder && chunkTimeInMinutes != UINT32_MAX)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
@@ -91,16 +91,47 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 		return;
 	}
 
-	// get new video path
-	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
-	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
-	mp4FileName = std::to_string(ts) + ".mp4";
-
 	// cache new values
 	currentFolder = baseFolder;
 	lastVideoTS = t;
 	lastVideoFolderPath = relPath;
 	lastVideoMinute = tm.tm_min;
+
+	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	{
+		if (chunkTimeInMinutes == UINT32_MAX)
+		{
+			auto folderPath = boost::filesystem::path(baseFolder) / relPath;
+			auto path = folderPath.remove_filename();
+			if (boost::filesystem::is_directory(path))
+			{
+				nextFrameFileName = baseFolder;
+				return;
+			}
+
+			if (boost::filesystem::create_directories(path))
+			{
+				nextFrameFileName = baseFolder;
+				return;
+			}
+			else
+			{
+				LOG_ERROR << "Failed to create the directory <" << folderPath << ">";
+				LOG_ERROR << "Check the dir permissions.";
+				return;
+			}
+		}
+		else
+		{
+			LOG_ERROR << "Custom video file name only supported while writing to a single file.";
+			throw AIPException(AIP_FATAL, "Custom video file name only supported while writing to a single file.");
+		}
+	}
+
+	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
+	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
+	mp4FileName = std::to_string(ts) + ".mp4";
+
 	lastVideoName = mp4FileName;
 	
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
@@ -128,7 +159,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	}
 	// used cached values if the difference in ts is less than chunkTime
 	uint32_t chunkTimeInSecs = 60 * chunkTimeInMinutes;
-	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder)
+	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder && chunkTimeInMinutes != UINT32_MAX)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
@@ -136,7 +167,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		return;
 	}
 	// cannot be merged with if condition above.
-	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
+	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE && chunkTimeInMinutes != UINT32_MAX)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
@@ -144,15 +175,47 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		return;
 	}
 	// get new video path
-	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
-	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
-	mp4FileName = std::to_string(ts) + ".mp4";
 
 	// cache new values
 	currentFolder = baseFolder;
 	lastVideoTS = t;
 	lastVideoFolderPath = relPath;
 	lastVideoMinute = tm.tm_min;
+
+	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	{
+		if (chunkTimeInMinutes == UINT32_MAX)
+		{
+			auto folderPath = boost::filesystem::path(baseFolder) / relPath;
+			auto path = folderPath.remove_filename();
+			if (boost::filesystem::is_directory(path))
+			{
+				nextFrameFileName = baseFolder;
+				return;
+			}
+
+			if (boost::filesystem::create_directories(path))
+			{
+				nextFrameFileName = baseFolder;
+				return;
+			}
+			else
+			{
+				LOG_ERROR << "Failed to create the directory <" << folderPath << ">";
+				LOG_ERROR << "Check the dir permissions.";
+				return ;
+			}
+		}
+		else
+		{
+			LOG_ERROR << "Custom video file name only supported while writing to a single file.";
+			throw AIPException(AIP_FATAL, "Custom video file name only supported while writing to a single file.");
+		}
+	}
+
+	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
+	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
+	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoName = mp4FileName;
 
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
