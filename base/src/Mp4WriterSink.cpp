@@ -249,6 +249,15 @@ bool DetailJpeg::write(frame_container& frames)
 		mp4_mux_sync(mux);
 		syncFlag = false;
 	}
+
+	if (!lastFrameTS)
+	{
+		/* \251sts -> ©sts */
+		std::string key = "\251sts";
+		std::string val = std::to_string(inJpegImageFrame->timestamp);
+		mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+	}
+
 	mux_sample.buffer = static_cast<uint8_t*>(inJpegImageFrame->data());
 	mux_sample.len = inJpegImageFrame->size();
 	mux_sample.sync = 0;
@@ -338,6 +347,15 @@ bool DetailH264::write(frame_container& frames)
 	{
 		isKeyFrame = false;
 	}
+
+	if (!lastFrameTS)
+	{
+		/* \251sts -> ©sts */
+		std::string key = "\251sts";
+		std::string val = std::to_string(inH264ImageFrame->timestamp);
+		mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+	}
+
 	mux_sample.buffer = static_cast<uint8_t*>(inH264ImageFrame->data());
 	mux_sample.len = inH264ImageFrame->size();
 	mux_sample.sync = isKeyFrame ? 1 : 0;

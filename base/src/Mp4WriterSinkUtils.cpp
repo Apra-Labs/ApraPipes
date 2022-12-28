@@ -94,7 +94,6 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	// cache new values
 	currentFolder = baseFolder;
 	lastVideoTS = t;
-	lastVideoFolderPath = relPath;
 	lastVideoMinute = tm.tm_min;
 
 	if (boost::filesystem::extension(baseFolder) == ".mp4")
@@ -131,6 +130,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
 	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
+	lastVideoFolderPath = relPath;
 
 	lastVideoName = mp4FileName;
 	
@@ -179,7 +179,6 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	// cache new values
 	currentFolder = baseFolder;
 	lastVideoTS = t;
-	lastVideoFolderPath = relPath;
 	lastVideoMinute = tm.tm_min;
 
 	if (boost::filesystem::extension(baseFolder) == ".mp4")
@@ -217,6 +216,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoName = mp4FileName;
+	lastVideoFolderPath = relPath;
 
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
 	tempNextFrameFileName = nextFrameFileName;

@@ -71,7 +71,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
-	fileReaderProps.readLoop = true;
+	fileReaderProps.readLoop = false;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
@@ -97,7 +97,7 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(120);
+	Test_Utils::sleep_for_seconds(15);
 
 	p->stop();
 	p->term();
@@ -163,10 +163,10 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 
 BOOST_AUTO_TEST_CASE(jpg_rgb_24_to_mp4v)
 {
-	int width = 960;
-	int height = 480;
+	int width = 1280;
+	int height = 720;
 
-	std::string inFolderPath = "./data/streamer_frames";
+	std::string inFolderPath = "./data/re3_filtered";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/";
 
 	write(inFolderPath, outFolderPath, width, height);
