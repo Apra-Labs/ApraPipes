@@ -126,10 +126,18 @@ public:
 		if (count > 0) {
 			LOG_INFO << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
-				if ((keys[i]) && (values[i]) && !strcmp(keys[i], "\251too"))
+				if ((keys[i]) && (values[i]))
 				{
-					LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
-					mState.mSerFormatVersion.assign(values[i]);
+					if (!strcmp(keys[i], "\251too"))
+					{
+						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+						mState.mSerFormatVersion.assign(values[i]);
+					}
+					if (!strcmp(keys[i], "\251sts"))
+					{
+						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+						mState.startTimeStamp = std::stoull(values[i]);
+					}
 				}
 			}
 		}
@@ -162,7 +170,19 @@ public:
 		}
 
 		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-		openVideoStartingTS = std::stoull(boostVideoTS);
+
+		try
+		{
+			openVideoStartingTS = std::stoull(boostVideoTS);
+		}
+		catch (std::invalid_argument)
+		{
+			if (!mState.startTimeStamp)
+			{
+				throw AIPException(AIP_FATAL, "unexpected state - starting ts not found in video name or metadata");
+			}
+			openVideoStartingTS = mState.startTimeStamp;
+		}
 
 		setMetadata();
 		return true;
@@ -299,6 +319,7 @@ protected:
 		int videotrack = -1;
 		int metatrack = -1;
 		int ntracks = -1;
+		uint64_t startTimeStamp = 0;
 		uint32_t mParsedFilesCount = 0;
 		uint32_t mVideoCounter = 0;
 		uint32_t mFrameCounter = 0;
@@ -405,11 +426,17 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
+
+	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{
 		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-
+		metadataSizeFrame->timestamp = frameTSInMsecs;
 		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
 	}
 	return true;
@@ -509,6 +536,8 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
 	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
 
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+
 	if (seekedToEndTS)
 	{
 		return true;
@@ -533,7 +562,7 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	if (metadataActualSize)
 	{
 		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-
+		metadataSizeFrame->timestamp = frameTSInMsecs;
 		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
 	}
 	return true;
