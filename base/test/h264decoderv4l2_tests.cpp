@@ -9,6 +9,7 @@
 #include "H264DecoderV4L2Helper.h"
 #include "EglRenderer.h"
 #include "Mp4ReaderSource.h"
+#include "Mp4VideoMetadata.h"
 
 BOOST_AUTO_TEST_SUITE(h264decoderv4l2codec_tests)
 
