@@ -310,7 +310,7 @@ protected:
 		Mp4ReaderSourceProps props;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
-	uint64_t seekEndTS = 0;
+	uint64_t seekEndTS = 9999999999999;
 	int seekedToFrame = -1;
 	/*
 		mState.end = true is possible only in two cases:
