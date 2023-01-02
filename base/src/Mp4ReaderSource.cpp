@@ -403,8 +403,19 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	{
 		return true;
 	}
-
+	
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
+	
+	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+	
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+
+	if (seekEndTS <= frameTSInMsecs)
+	{
+		return true;
+	}
+
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{
