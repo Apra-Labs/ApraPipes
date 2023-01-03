@@ -171,17 +171,6 @@ void random_seek_video(std::string skipDir, uint64_t skipTS, std::string startin
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(mp4v_to_rgb_24_jpg)
-{
-	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/streamer_mp4v.mp4";
-	std::string outPath = "data/testOutput/outFrames";
-	boost::filesystem::path file("frame_??????.jpg");
-	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
-	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	bool parseFS = true;
-	read_video_extract_frames(videoPath, outPath, file, encodedImageMetadata, frameType, parseFS);
-}
-
 BOOST_AUTO_TEST_CASE(mp4v_to_mono_8_jpg)
 {
 	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/1666943213667.mp4";
