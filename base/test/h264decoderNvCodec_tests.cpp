@@ -11,6 +11,9 @@
 #include "ExternalSinkModule.h"
 #include "H264Metadata.h"
 #include "H264DecoderNvCodecHelper.h"
+#include "Mp4ReaderSource.h"
+#include "Mp4VideoMetadata.h"
+#include "StatSink.h"
 
 BOOST_AUTO_TEST_SUITE(h264decodernvcodec_tests)
 
@@ -126,6 +129,44 @@ BOOST_AUTO_TEST_CASE(Encoder_to_Decoder)
 			index++;
 		}
 	}
+}
+
+BOOST_AUTO_TEST_CASE(h264_to_yuv420_extSink)
+{
+	Logger::setLogLevel("info");
+	//MP4 Reader - 2
+	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false);
+	mp4ReaderProps_2.logHealth = true;
+	mp4ReaderProps_2.logHealthFrequency = 100;
+	mp4ReaderProps_2.fps = 30;
+	auto mp4Reader_2 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_2));
+	auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader_2->addOutPutPin(h264ImageMetadata_2);
+	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader_2->addOutPutPin(mp4Metadata_2);
+	// metadata is known
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	mp4Reader_2->setNext(Decoder);
+	StatSinkProps sinkProps;
+	sinkProps.logHealth = true;
+	sinkProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	Decoder->setNext(sink);
+	mp4Reader_2->play(true);
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader_2);
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(70);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();//
 }
 
 BOOST_AUTO_TEST_SUITE_END()
