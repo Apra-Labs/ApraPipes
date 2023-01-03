@@ -72,6 +72,12 @@ private:
 H264Decoder::H264Decoder(H264DecoderProps _props) : Module(TRANSFORM, "H264Decoder", _props), mShouldTriggerSOS(true), mProps(_props)
 {
 	mDetail.reset(new Detail(mProps));
+#ifdef ARM64
+	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+#else
+	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
+#endif
+	mOutputPinId = Module::addOutputPin(mOutputMetadata);
 }
 
 H264Decoder::~H264Decoder() {}
@@ -118,14 +124,6 @@ bool H264Decoder::validateOutputPins()
 void H264Decoder::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
-
-#ifdef ARM64
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
-#else
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
-#endif
-
-	mOutputPinId = Module::addOutputPin(mOutputMetadata);
 }
 
 bool H264Decoder::init()
