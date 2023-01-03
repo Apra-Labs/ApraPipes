@@ -123,6 +123,8 @@ public:
 			LOG_ERROR << "mp4_demux_get_metadata_strings <" << -ret;
 		}
 
+		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+
 		if (count > 0) {
 			LOG_INFO << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
@@ -169,11 +171,10 @@ public:
 			throw AIPException(AIP_FATAL, "No video track found");
 		}
 
-		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-
 		try
 		{
 			openVideoStartingTS = std::stoull(boostVideoTS);
+			mState.startTimeStamp = std::stoull(boostVideoTS);
 		}
 		catch (std::invalid_argument)
 		{
@@ -195,6 +196,45 @@ public:
 		* If all ways to seek fails, the read state is reset.
 		*/
 		seekEndTS = _seekEndTS;
+
+		if (!mProps.parseFS)
+		{
+			int seekedToFrame = -1;
+			uint64_t skipMsecsInFile = 0;
+
+			if (!mState.startTimeStamp)
+			{
+				LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
+				return false;
+			}
+			if (skipTS < mState.startTimeStamp)
+			{
+				LOG_INFO << "seek time outside range. Seeking to start of video.";
+				skipMsecsInFile = 0;
+			}
+			else
+			{
+				skipMsecsInFile = skipTS - mState.startTimeStamp;
+			}
+
+			LOG_INFO << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+
+			uint64_t time_offset_usec = skipMsecsInFile * 1000;
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
+			mState.mFrameCounter = seekedToFrame;
+			if (returnCode == -ENFILE)
+			{
+				LOG_INFO << "Query time beyond the EOF. Resuming...";
+				return true;
+			}
+			if (returnCode < 0)
+			{
+				LOG_ERROR << "Seek failed. Unexpected error.";
+				return false;
+			}
+			return true;
+		}
+
 		DemuxAndParserState tempState = mState;
 		std::string skipVideoFile;
 		uint64_t skipMsecsInFile;
@@ -331,7 +371,7 @@ protected:
 		Mp4ReaderSourceProps props;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
-	uint64_t seekEndTS = 0;
+	uint64_t seekEndTS = 9999999999999;
 	int seekedToFrame = -1;
 	/*
 		mState.end = true is possible only in two cases:
@@ -431,6 +471,11 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
+
+	if (seekEndTS <= frameTSInMsecs)
+	{
+		return true;
+	}
 
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
