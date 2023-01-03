@@ -686,6 +686,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		}
 		return true;
 	}
+	return Module::handleCommand(type, frame);
 }
 
 bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
