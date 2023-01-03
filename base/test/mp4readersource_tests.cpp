@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(fs_parsing_h264, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName, *boost::unit_test::disabled())
 {
 	/* file structure parsing test */
-	std::string videoPath = "./data/Mp4_videos/h264_video/muxerh264.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/apraH264.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	boost::filesystem::path file("frame_??????.h264");
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
