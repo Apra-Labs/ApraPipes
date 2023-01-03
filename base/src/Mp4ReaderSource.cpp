@@ -121,6 +121,8 @@ public:
 			LOG_ERROR << "mp4_demux_get_metadata_strings <" << -ret;
 		}
 
+		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+
 		if (count > 0) {
 			LOG_INFO << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
@@ -157,6 +159,20 @@ public:
 		{
 			LOG_ERROR << "No Videotrack found in the video <" << mState.mVideoPath << " Stopping.";
 			throw AIPException(AIP_FATAL, "No video track found");
+		}
+
+		try
+		{
+			openVideoStartingTS = std::stoull(boostVideoTS);
+			mState.startTimeStamp = std::stoull(boostVideoTS);
+		}
+		catch (std::invalid_argument)
+		{
+			if (!mState.startTimeStamp)
+			{
+				throw AIPException(AIP_FATAL, "unexpected state - starting ts not found in video name or metadata");
+			}
+			openVideoStartingTS = mState.startTimeStamp;
 		}
 
 		setMetadata();
@@ -294,6 +310,7 @@ protected:
 		int videotrack = -1;
 		int metatrack = -1;
 		int ntracks = -1;
+		uint64_t startTimeStamp = 0;
 		uint32_t mParsedFilesCount = 0;
 		uint32_t mVideoCounter = 0;
 		uint32_t mFrameCounter = 0;
@@ -304,7 +321,7 @@ protected:
 		bool end = false;
 		Mp4ReaderSourceProps props;
 	} mState;
-
+	uint64_t openVideoStartingTS = 0;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -388,6 +405,12 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
+
+	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{
@@ -476,6 +499,12 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, h264ImagePinId);
+
+	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+
+	trimmedImgFrame->timestamp = frameTSInMsecs;
+
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{

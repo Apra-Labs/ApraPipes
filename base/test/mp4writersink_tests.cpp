@@ -12,6 +12,7 @@
 #include "H264Metadata.h"
 #include "H264Utils.h"
 #include "ExternalSinkModule.h"
+#include "Mp4ReaderSource.h"
 
 BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
@@ -113,6 +114,52 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	p->wait_for_all();
 	p.reset();
 }
+
+void read_write(std::string videoPath, std::string outPath, int width, int height,framemetadata_sp metadata,
+	bool recordedTSBasedDTS, bool parseFS = true, int chunkTime = 1)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	boost::filesystem::path dir(outPath);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	mp4ReaderProps.logHealth = true;
+	mp4ReaderProps.logHealthFrequency = 300;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	
+	mp4Reader->addOutPutPin(metadata);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 30, outPath, recordedTSBasedDTS);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 300;
+	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	mp4Reader->setNext(mp4WriterSink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(45));
+
+	p->stop();
+	p->term();
+
+	p->wait_for_all();
+
+	p.reset();
+}
+
 
 BOOST_AUTO_TEST_CASE(jpg_rgb_24_to_mp4v)
 {
@@ -497,6 +544,20 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	p->term();
 	p->wait_for_all();
 	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(read_mul_write_one_as_recorded)
+{
+	// two videos (19sec, 60 sec) with 101sec time gap
+	// writes a 79 sec video
+	std::string videoPath = "data/mp4_videos/h264_videos_dts_test/20221010/0012/1668001826042.mp4";
+	std::string outPath = "data/testOutput/file_as_rec.mp4";
+	bool parseFS = true;
+
+	// write a fixed rate video with no gaps
+	bool recordedTSBasedDTS = true;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0,0));
+	read_write(videoPath, outPath, 704, 576, h264ImageMetadata, recordedTSBasedDTS, parseFS, UINT32_MAX);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
