@@ -7,4 +7,4 @@
 [submodule "thirdparty/libmp4"]
 	path = thirdparty/libmp4
 	url = https://github.com/Apra-Labs/libmp4.git
-	branch = forApraPipes
+	branch = forApraPipes2
