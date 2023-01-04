@@ -16,6 +16,7 @@ jobs:
       runner: 'macos-latest'
       flav: Mac
       is-selfhosted: false
+      is-build-gst: false
       cuda: 'OFF'
       nProc: 3
   mac-nocuda-publish:
