@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'brew install ca-certificates curl zip unzip tar  autoconf   automake  autopoint flex git-core   libass-dev   libfreetype6-dev   gnutls   libmp3lame-dev   libsdl2-dev   libtool   libsoup  libva-dev   libvdpau-dev   libvorbis-dev   libxcb libncurses5-dev libncursesw5-dev  ninja   pkg-config  texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix && pip3 install meson'
+        default: 'brew install ca-certificates curl zip unzip gnu-tar  autoconf   automake  autopoint flex git-core   libass-dev   libfreetype6-dev   gnutls   libmp3lame-dev   libsdl2-dev   libtool   libsoup  libva-dev   libvdpau-dev   libvorbis-dev   libxcb libncurses5-dev libncursesw5-dev  ninja   pkg-config  texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix && pip3 install meson'
         required: false
       prep-check-cmd:
         type: string
