@@ -1,4 +1,4 @@
-name: CI-Linux-NoCUDA
+name: CI-Mac-NoCUDA
 
 on:
   push:
@@ -10,21 +10,21 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  linux-nocuda-build-test:
-    uses: ./.github/workflows/build-test-lin.yml
+  mac-nocuda-build-test:
+    uses: ./.github/workflows/build-test-mac.yml
     with:
-      runner: 'ubuntu-20.04'
-      flav: Linux
+      runner: 'macos-latest'
+      flav: Mac
       is-selfhosted: false
       cuda: 'OFF'
       nProc: 3
-  linux-nocuda-publish:
-    needs: linux-nocuda-build-test
+  mac-nocuda-publish:
+    needs: mac-nocuda-build-test
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: Linux
+      flav: Mac
     secrets:
-      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
