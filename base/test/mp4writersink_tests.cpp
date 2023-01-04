@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata)
 
 	std::string inFolderPath = "./data/re3_filtered_mono";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/mono_metadata_video/";
-	std::string metadataPath = "./data/metadata/";
+	std::string metadataPath = "./data/Metadata/";
 
 	write_metadata(inFolderPath, outFolderPath, metadataPath, width, height, 30);
 }
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(jpeg_metadata)
 
 	std::string inFolderPath = "./data/re3_filtered";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_metadata_video";
-	std::string metadataPath = "./data/metadata/";
+	std::string metadataPath = "./data/Metadata/";
 
 	write_metadata(inFolderPath, outFolderPath, metadataPath, width, height, fps);
 }
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 
 	std::string inFolderPath = "./data/h264_data/";
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_metadata/";
-	std::string metadataPath = "./data/metadata/";
+	std::string metadataPath = "./data/Metadata/";
 
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
