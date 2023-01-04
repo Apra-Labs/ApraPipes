@@ -35,7 +35,7 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 100, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 100, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v)
 	write(inFolderPath, outFolderPath, width, height);
 }
 
-BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata)
 {
 	int width = 1280;
 	int height = 720;
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(jpg_mono_8_to_mp4v_metadata, *boost::unit_test::disabled())
 	write_metadata(inFolderPath, outFolderPath, metadataPath, width, height, 30);
 }
 
-BOOST_AUTO_TEST_CASE(jpeg_metadata, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpeg_metadata)
 {
 	/* metadata, RGB, 24bpp, 960x480 */
 	int width = 1280;
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 30, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 30, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(h264_to_mp4v, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(h264_to_mp4v)
 {
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
 	writeH264(false, 10, outFolderPath);
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	fileReader->setNext(readerMuxer);
 	metadataReader->setNext(readerMuxer);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, fileReaderProps.fps, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, fileReaderProps.fps, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -339,12 +339,12 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(parsenalu, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(parsenalu)
 {
 	int width = 640;
 	int height = 360;
 	
-	std::string inFolderPath = "./data/h264_frames/";
+	std::string inFolderPath = "./data/h264_frames/Raw_YUV420_640x360_????.h264";
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 24;
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 30, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 30, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE(single_file_given_name_jpeg)
 	int height = 720;
 
 	std::string inFolderPath = "./data/re3_filtered_mono";
-	std::string outFolderPath = "./data/testOutput/mp4_videos/mono_8bpp/apra.mp4";
+	std::string outFolderPath = "./data/testOutput/mp4_videos/apra.mp4";
 
 	write(inFolderPath, outFolderPath, width, height, UINT32_MAX);
 }
