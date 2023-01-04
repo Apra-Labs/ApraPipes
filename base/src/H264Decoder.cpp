@@ -85,9 +85,9 @@ H264Decoder::~H264Decoder() {}
 bool H264Decoder::validateInputPins()
 {
 	auto numberOfInputPins = getNumberOfInputPins();
-	if (numberOfInputPins > 2)
+	if (numberOfInputPins != 1 && numberOfInputPins != 2)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1 or 2. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -165,14 +165,12 @@ bool H264Decoder::processSOS(frame_sp& frame)
 
 #ifdef ARM64
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
-	rawOutMetadata->setData(OutputMetadata);
-	return true;
 #else
 	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
-	rawOutMetadata->setData(OutputMetadata);
-	return true;
 #endif
 
+	rawOutMetadata->setData(OutputMetadata);
+	return true;
 }
 
 bool H264Decoder::shouldTriggerSOS()

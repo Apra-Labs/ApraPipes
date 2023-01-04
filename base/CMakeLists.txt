@@ -408,6 +408,7 @@ IF(ENABLE_ARM64)
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
+		src/H264DecoderV4L2Helper.h
 		src/H264Decoder.cpp
 	)
 ELSE()
@@ -417,6 +418,7 @@ ELSE()
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
 		src/H264DecoderNvCodecHelper.cpp
+		src/H264DecoderNvCodecHelper.h
 		src/H264Decoder.cpp
 	)
 ENDIF(ENABLE_ARM64)
@@ -458,7 +460,6 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
-		include/H264DecoderV4L2Helper.h
 		include/H264Decoder.h
 	)
 ELSE()
@@ -467,7 +468,6 @@ ELSE()
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
-		include/H264DecoderNvCodecHelper.h
 		include/H264Decoder.h
 	)
 ENDIF(ENABLE_ARM64)

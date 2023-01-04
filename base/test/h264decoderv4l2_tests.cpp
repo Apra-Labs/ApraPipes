@@ -6,7 +6,6 @@
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "H264Metadata.h"
-#include "H264DecoderV4L2Helper.h"
 #include "EglRenderer.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"

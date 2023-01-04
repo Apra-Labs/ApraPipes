@@ -10,7 +10,6 @@
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "H264Metadata.h"
-#include "H264DecoderNvCodecHelper.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
