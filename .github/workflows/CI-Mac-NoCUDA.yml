@@ -1,0 +1,43 @@
+name: CI-Mac-NoCUDA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
+  
+jobs:
+  mac-nocuda-build-prep:
+    uses: ./.github/workflows/build-test-mac.yml
+    with:
+      runner: 'macos-latest'
+      flav: Mac
+      is-selfhosted: false
+      is-build-gst: false
+      is-prep-phase: true
+      cuda: 'OFF'
+      nProc: 3
+  mac-nocuda-build-test:
+    needs: mac-nocuda-build-prep
+    uses: ./.github/workflows/build-test-mac.yml
+    with:
+      runner: 'macos-latest'
+      flav: Mac
+      is-selfhosted: false
+      is-build-gst: false # part of vcpkg on mac
+      is-prep-phase: false
+      cuda: 'OFF'
+      nProc: 3
+  mac-nocuda-publish:
+    needs: mac-nocuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: Mac
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
