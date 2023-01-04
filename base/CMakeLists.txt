@@ -416,6 +416,8 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
+		src/H264Decoder.cpp
+		src/H264DecoderV4L2Helper.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -423,6 +425,8 @@ ELSE()
 		src/JPEGEncoderNVJPEG.cpp
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
+		src/H264DecoderNvCodecHelper.cpp
+		src/H264Decoder.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -463,6 +467,8 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+		include/H264Decoder.h
+		include/H264DecoderV4L2Helper.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -470,6 +476,8 @@ ELSE()
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
+		include/H264DecoderNvCodecHelper.h
+		include/H264Decoder.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -546,6 +554,7 @@ IF (ENABLE_ARM64)
 		test/cuda_arm_tests.cpp
 		test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
+		test/h264decoderv4l2_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -568,6 +577,7 @@ IF (ENABLE_CUDA)
 			test/h264Encodernvcodec_tests.cpp
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
+			test/h264decoderNvCodec_tests.cpp
 		)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)

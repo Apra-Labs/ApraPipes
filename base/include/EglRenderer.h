@@ -33,10 +33,13 @@ public:
 
     bool init();
     bool term();
+	uint32_t renderHeight = 0;
+	uint32_t renderWidth = 0;
 protected:
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
+	bool processEOS(string &pinId);
 	bool validateInputPins();
 	bool shouldTriggerSOS();
 private:

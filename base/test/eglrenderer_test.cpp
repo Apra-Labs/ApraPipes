@@ -6,19 +6,26 @@
 #include <boost/filesystem.hpp>
 #include "NvV4L2Camera.h" //Jetson
 #include "NvTransform.h"
+#include "H264DecoderV4L2Helper.h"
 #include "H264EncoderV4L2.h"
 #include "DMAFDToHostCopy.h"
+#include "H264Decoder.h"
 #include "FrameMetadata.h"
+#include "DMAFrameUtils.h"
 #include "Frame.h"
+#include "DMAFDToHostCopy.h"
 #include "H264Utils.h"
 #include "Mp4ReaderSource.h"
+#include "RTSPClientSrc.h"
 #include "Mp4VideoMetadata.h"
 #include "Mp4WriterSink.h"
+#include "test_utils.h"
 #include "Mp4WriterSinkUtils.h"
 #include "EncodedImageMetadata.h"
 #include "Module.h"
 #include "PropsChangeMetadata.h"
 #include "MultimediaQueueXform.h"
+#include "ValveModule.h"
 #include "H264Metadata.h"
 #include "Command.h"
 #include <boost/lexical_cast.hpp>
@@ -53,6 +60,16 @@ void key_func(boost::shared_ptr<NVRControlModule>& mControl)
 			mControl->nvrExport(seekStartTS, seekEndTS);
 			mControl->step();
 		}
+		else if (k == 111)
+		{
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+			uint64_t seekStartTS = now - 120000;
+			uint64_t seekEndTS = now + 120000;
+			LOG_ERROR << "Starting export!!";
+			mControl->nvrExport(seekStartTS, seekEndTS);
+			mControl->step();
+		}
 		else
 		{
 			BOOST_LOG_TRIVIAL(info) << "The value pressed is .."<< k;
@@ -60,7 +77,7 @@ void key_func(boost::shared_ptr<NVRControlModule>& mControl)
 	}
 }
 
-void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_ptr<Mp4ReaderSource>& mp4Reader)
+void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_ptr<Mp4ReaderSource>& mp4Reader_1)
 {
 
 	while (true) {
@@ -92,6 +109,16 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 			uint64_t seekStartTS = now - 120000;
 			uint64_t seekEndTS = now + 120000;
 			mControl->nvrExport(seekStartTS, seekEndTS);
+			mControl->step();
+		}
+		else if (k == 111)
+		{
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+			uint64_t seekStartTS = now - 120000;
+			uint64_t seekEndTS = now - 60000;
+			LOG_ERROR << "Starting export View!!";
+			mControl->nvrExportView(seekStartTS, seekEndTS);
 			mControl->step();
 		}
 		if (k == 112)
@@ -202,16 +229,34 @@ BOOST_AUTO_TEST_CASE(NXPipeline)
 	p.wait_for_all();
 }
 
+struct rtsp_client_tests_data {
+	rtsp_client_tests_data()
+	{
+		outFile = string("./data/testOutput/bunny.h264");
+		Test_Utils::FileCleaner fc;
+		fc.pathsOfFiles.push_back(outFile); //clear any occurance before starting the tests
+	}
+	string outFile;
+	string empty;
+};
+
 BOOST_AUTO_TEST_CASE(NXPipeline_2)
 {
+	rtsp_client_tests_data d;
     Logger::setLogLevel(boost::log::trivial::severity_level::error);
 	//v4L2-Source
-	auto v4L2props = NvV4L2CameraProps(1280, 720, 10);
+	auto v4L2props = NvV4L2CameraProps(640, 480, 10);
 	v4L2props.logHealth = true;
 	v4L2props.logHealthFrequency = 100;
 	v4L2props.fps = 30;
 	auto v4L2Source = boost::shared_ptr<Module>(new NvV4L2Camera(v4L2props));
     
+	//RTSP DATA
+	auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/04d314e2-c165-4f14-b63d-c27d11957a4d"); 
+	auto mLive = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
+	auto meta = framemetadata_sp(new H264Metadata());
+	v4L2Source->addOutputPin(meta);
+
 	//NV_Transform
 	auto nv_transform1Props = NvTransformProps(ImageMetadata::RGBA);
 	nv_transform1Props.logHealth = true;
@@ -234,7 +279,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 	nv_transform2Props.logHealthFrequency = 100;
 	nv_transform2Props.fps = 30;
 	auto nv_transform_encode = boost::shared_ptr<Module>(new NvTransform(nv_transform2Props));
-	v4L2Source->setNext(nv_transform_encode);
+	mLive->setNext(nv_transform_encode);
 
 	//v4l2Encoder
 	H264EncoderV4L2Props encoderProps;
@@ -299,7 +344,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 
     PipeLine p("test");
 	std::thread inp(key_Read_func, std::ref(mControl), std::ref(mp4Reader));
-	p.appendModule(v4L2Source);
+	p.appendModule(mLive);
 	p.appendModule(mp4Reader);
 	p.addControlModule(mControl);
 
@@ -315,7 +360,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(240));
-	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221116/0015/")))
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20221119/0019/")))
 	{
 		if (boost::filesystem::is_regular_file(folder))
 		{
@@ -374,5 +419,240 @@ BOOST_AUTO_TEST_CASE(NXPipeline_3)
 	p.term();
 	p.wait_for_all();
 }
+
+BOOST_AUTO_TEST_CASE(CheckRTSP)
+{
+	rtsp_client_tests_data d;
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	//auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/4e379049-410b-4f1f-b06d-c09e7320271e"); 
+	//auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/d6b07f1b-c20a-4d3e-b858-e097b0ad351b");
+	auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/76d37cc6-4bca-4112-9c2a-99a9ea1be23c");
+	auto rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
+	rtspProps.logHealth = true;
+	rtspProps.logHealthFrequency = 100;
+	auto mLive = boost::shared_ptr<Module>(new RTSPClientSrc(rtspProps));
+	auto meta = framemetadata_sp(new H264Metadata());
+	mLive->addOutputPin(meta);
+
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));//
+	mLive->setNext(Decoder);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	Decoder->setNext(sink);
+
+	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/rtspTest/";
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
+	mp4WriterSinkProps_1.logHealth = true;
+	mp4WriterSinkProps_1.logHealthFrequency = 100;
+	mp4WriterSinkProps_1.fps = 30;
+	auto mp4writer_1 = boost::shared_ptr<Module>(new Mp4WriterSink(Mp4WriterSinkProps(1, 10, 24, outFolderPath_1)));
+	//mLive->setNext(mp4writer_1);
+
+	PipeLine p("test");
+	p.appendModule(mLive);
+	BOOST_TEST(p.init());
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(150));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(NVR_RTSP)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	loggerProps.enableFileLog = true;
+	Logger::initLogger(loggerProps);
+	//RTSP Source
+	rtsp_client_tests_data d;
+   //Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/44e77549-442e-43da-951f-a89d4a99d859");
+	auto rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
+	//rtspProps.logHealth = true;
+	//rtspProps.logHealthFrequency = 100; 
+	rtspProps.fps = 18;
+	auto mLive = boost::shared_ptr<Module>(new RTSPClientSrc(rtspProps));
+	auto meta = framemetadata_sp(new H264Metadata());
+	mLive->addOutputPin(meta);
+
+	//H264-V4L2 Decoder
+	auto decoder_1 = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));//
+	mLive->setNext(decoder_1);
+
+	//EGL Renderer
+	auto renderer_1 = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 720, 480)));
+	decoder_1->setNext(renderer_1);
+
+	//MP4-Writer 1 [24/7]
+	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
+	auto mp4WriterSinkProps_1 = Mp4WriterSinkProps(1, 10, 24, outFolderPath_1);
+	//mp4WriterSinkProps_1.logHealth = true;
+	mp4WriterSinkProps_1.logHealthFrequency = 100;
+	mp4WriterSinkProps_1.fps = 30;
+	auto mp4writer_1 = boost::shared_ptr<Module>(new Mp4WriterSink(Mp4WriterSinkProps(1, 10, 24, outFolderPath_1)));
+	mLive->setNext(mp4writer_1);
+
+	//MultimediaQueue
+	auto multiProps = MultimediaQueueXformProps(60000, 30000, true);
+	//multiProps.logHealth = true;
+	multiProps.logHealthFrequency = 100;
+	multiProps.fps = 30;
+	auto multiQue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(multiProps));
+	mLive->setNext(multiQue);
+	
+	//MP4-Writer 2 [Export]
+	std::string outFolderPath_2 = "./data/testOutput/mp4_videos/Export_Videos/";
+	auto mp4WriterSinkProps_2 = Mp4WriterSinkProps(60, 10, 24, outFolderPath_2);
+	//mp4WriterSinkProps_2.logHealth = true;
+	mp4WriterSinkProps_2.logHealthFrequency = 100;
+	mp4WriterSinkProps_2.fps = 30;
+	auto mp4writer_2 = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps_2));
+	multiQue->setNext(mp4writer_2);
+	
+	//MP4 Reader - 1
+	std::string startingVideoPath_1 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	std::string outPath_1 = "./data/testOutput/mp4_videos/24bpp";
+	std::string changedVideoPath_1 = "./data/testOutput/mp4_videos/24bpp/20221023/0011/";                              
+	boost::filesystem::path file1("frame_??????.h264");
+	auto frameType_1 = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata_1 = framemetadata_sp(new H264Metadata(0, 0));
+	boost::filesystem::path dir1(outPath_1);
+	auto mp4ReaderProps_1 = Mp4ReaderSourceProps(startingVideoPath_1, false, false);
+	//mp4ReaderProps_1.logHealth = true;
+	mp4ReaderProps_1.logHealthFrequency = 100;
+	mp4ReaderProps_1.fps = 30;
+	auto mp4Reader_1 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_1));
+	mp4Reader_1->addOutPutPin(h264ImageMetadata_1);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader_1->addOutPutPin(mp4Metadata);
+	mp4Reader_1->setNext(mp4writer_2);
+
+
+	//Disk -> Decoder -> rendering branch
+	//MP4 Reader - 2
+	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	std::string outPath_2 = "./data/testOutput/mp4_videos/24bpp";
+	std::string changedVideoPath_2 = "./data/testOutput/mp4_videos/24bpp/20221023/0011/";                              
+	boost::filesystem::path file2("frame_??????.h264");
+	auto frameType_2 = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
+	boost::filesystem::path dir2(outPath_2);
+	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false, false);
+	//mp4ReaderProps_2.logHealth = true;
+	mp4ReaderProps_2.logHealthFrequency = 100;
+	mp4ReaderProps_2.fps = 30;
+	auto mp4Reader_2 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_2));
+	mp4Reader_2->addOutPutPin(h264ImageMetadata_2);
+	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader_2->addOutPutPin(mp4Metadata_2);
+
+	//H264-V4L2 Decoder
+	auto decoder_2 = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));//
+	mp4Reader_2->setNext(decoder_2);
+
+	//EGL Renderer
+	auto renderer_2 = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(150, 50, 480, 360)));
+	decoder_2->setNext(renderer_2);
+
+
+	//ControlModule 
+	auto controlProps = NVRControlModuleProps();
+	controlProps.logHealth = true;
+	controlProps.logHealthFrequency = 100;
+	controlProps.fps = 30;
+	auto mControl = boost::shared_ptr<NVRControlModule>(new NVRControlModule(controlProps));
+
+    PipeLine p("test");
+	std::thread inp(key_Read_func, std::ref(mControl), std::ref(mp4Reader_1));
+	p.appendModule(mLive);
+	p.appendModule(mp4Reader_1);
+	p.appendModule(mp4Reader_2);
+	p.addControlModule(mControl);
+
+	mControl->enrollModule("Reader_1", mp4Reader_1);
+	mControl->enrollModule("Reader_2", mp4Reader_2);
+	mControl->enrollModule("Renderer", renderer_1);
+	mControl->enrollModule("Writer-1", mp4writer_1);
+	mControl->enrollModule("MultimediaQueue", multiQue);
+	mControl->enrollModule("Writer-2", mp4writer_2);
+
+	BOOST_TEST(p.init());
+	mControl->init();
+	mp4Reader_1->play(false);
+	mp4Reader_2->play(false);
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(240));
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20230004/0016/")))
+	{
+		if (boost::filesystem::is_regular_file(folder))
+		{
+			boost::filesystem::path p = folder.path();
+
+			changedVideoPath_1 = p.string();
+			changedVideoPath_2 = p.string();
+			LOG_ERROR<<"|-|-|-|-START OPERATIONS-|-|-|-|";
+			break;
+		}
+	}
+	Mp4ReaderSourceProps propsChange_1(changedVideoPath_1, true);
+	Mp4ReaderSourceProps propsChange_2(changedVideoPath_2, true);
+	mp4Reader_1->setProps(propsChange_1);
+	mp4Reader_2->setProps(propsChange_2);
+	boost::this_thread::sleep_for(boost::chrono::seconds(3600));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+	LOG_ERROR << "The first thread has stopped";
+	inp.join();
+}
+
+BOOST_AUTO_TEST_CASE(h264_to_yuv420_extSink)
+{
+	Logger::setLogLevel("info");
+	//MP4 Reader - 2
+	std::string startingVideoPath_2 = "/home/developer/workspace/ApraPipes/data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false, true);
+
+	mp4ReaderProps_2.logHealth = true;
+	mp4ReaderProps_2.logHealthFrequency = 100;
+	mp4ReaderProps_2.fps = 30;
+	auto mp4Reader_2 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_2));
+	auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader_2->addOutPutPin(h264ImageMetadata_2);
+	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader_2->addOutPutPin(mp4Metadata_2);
+	// metadata is known
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	mp4Reader_2->setNext(Decoder);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	Decoder->setNext(sink);
+
+
+	mp4Reader_2->play(true);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader_2);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(7000);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();//
+
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

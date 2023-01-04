@@ -133,7 +133,7 @@ void random_seek_video(std::string skipDir, uint64_t seekStartTS, uint64_t seekE
 
     boost::filesystem::path dir(outPath);
 
-    auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, true);
+    auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, false);
     auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
     mp4Reader->addOutPutPin(inputMetadata);
     auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));

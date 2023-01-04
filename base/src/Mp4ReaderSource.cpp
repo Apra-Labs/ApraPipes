@@ -314,7 +314,7 @@ protected:
         Mp4ReaderSourceProps props;
     } mState;
     uint64_t openVideoStartingTS = 0;
-    uint64_t seekEndTS = 0;
+    uint64_t seekEndTS = 9999999999999;
     int seekedToFrame = -1;
     
     /*
@@ -412,9 +412,10 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
     }
 
     auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
-    std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
-    trimmedImgFrame->timestamp = dur.count();
+    uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
+    auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+    trimmedImgFrame->timestamp = frameTSInMsecs;
+
     frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
     if (metadataActualSize)
     {
@@ -518,11 +519,10 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
     short typeFound;
     const_buffer spsBuff, ppsBuff;
     tie(typeFound, spsBuff, ppsBuff) = ret;
-    std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
-    trimmedImgFrame->timestamp = dur.count();
+
     uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
     auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
+    trimmedImgFrame->timestamp = frameTSInMsecs;
 
     if (seekedToEndTS)
     {
@@ -636,6 +636,7 @@ bool Mp4ReaderSource::produce()
     if (!mDetail->stopReadingFiles)
     {
         mDetail->produceFrames(frames);
+        //LOG_ERROR << "The "<< Module::getId()<<" time is : "<<frames.begin()->second->timestamp;
         send(frames);
         if ((controlModule != nullptr) && (mDetail->stopReadingFiles))
         {

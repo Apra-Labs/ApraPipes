@@ -34,6 +34,7 @@ class NVRControlModule : public AbsControlModule
 	bool validateModuleRoles();
 	bool nvrRecord(bool record);
 	bool nvrExport(uint64_t startTime, uint64_t stopTime);
+	bool nvrExportView(uint64_t startTime, uint64_t stopTime);
 	bool nvrView(bool view);
 	uint64_t mp4lastWrittenTS = 0;
 	uint64_t firstMMQtimestamp = 0;

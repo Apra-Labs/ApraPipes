@@ -547,11 +547,7 @@ bool Mp4WriterSink::processEOS(string& pinId)
 	// Example EOS can be triggered if there is some resolution change in upstream module
 	// so you want to do mDetail->mInputMetadata.reset() - so that SOS gets triggered
 	auto myPinId = pinId;
-	if (myPinId == "Mp4ReaderSource_9_pin_1") 
-	{
-		return true;
-	}
-	else if (myPinId == "Mp4ReaderSource_9_pin_2")
+	if((pinId.find("Mp4ReaderSource")!= std::string::npos)&&(controlModule != nullptr))
 	{
 		return true;
 	}

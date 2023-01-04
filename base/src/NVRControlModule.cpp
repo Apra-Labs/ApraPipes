@@ -79,7 +79,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
             command.seekEndTS = givenStop;
             for (int i = 0; i < pipelineModules.size(); i++)
             {
-                if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
+                if (pipelineModules[i] == getModuleofRole("Reader_1")) // Sending command to reader
                 {
                     auto myId = pipelineModules[i]->getId();
                     pipelineModules[i]->queueCommand(command);
@@ -194,6 +194,27 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
         }
         return true;
     }
+    if (type == Command::CommandType::NVRCommandExportView)
+    {
+        NVRCommandExportView cmd;
+        getCommand(cmd, frame);
+        givenStart = cmd.startViewTS;
+        givenStop = cmd.stopViewTS;
+        Mp4SeekCommand command;
+        command.seekStartTS = givenStart;
+        command.seekEndTS = givenStop;
+        for (int i = 0; i < pipelineModules.size(); i++)
+        {
+            if (pipelineModules[i] == getModuleofRole("Reader_2")) // Sending command to reader
+            {
+                auto myId = pipelineModules[i]->getId();
+                pipelineModules[i]->queueCommand(command);
+                pipelineModules[i]->play(true);
+            }
+        }
+            return true;
+
+    }
     if (type == Command::CommandType::MP4WriterLastTS)
     {
         MP4WriterLastTS cmd;
@@ -287,6 +308,14 @@ bool NVRControlModule::nvrExport(uint64_t ts, uint64_t te)
     NVRCommandExport cmd;
     cmd.startExportTS = ts;
     cmd.stopExportTS = te;
+    return queueCommand(cmd);
+}
+
+bool NVRControlModule::nvrExportView(uint64_t ts, uint64_t te)
+{
+    NVRCommandExportView cmd;
+    cmd.startViewTS = ts;
+    cmd.stopViewTS = te;
     return queueCommand(cmd);
 }
 

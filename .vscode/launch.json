@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/_build/aprapipesut",
-            "args": ["--run_test=logger_tests"],
+            "args": ["--run_test=eglrenderer_tests/NVR_RTSP"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -96,7 +96,7 @@ bool EglRenderer::process(frame_container& frames)
 }
 
 bool EglRenderer::validateInputPins(){
-    if (getNumberOfInputPins() != 1)
+    if (getNumberOfInputPins() < 1)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
@@ -130,23 +130,30 @@ bool EglRenderer::processSOS(frame_sp& frame)
     case FrameMetadata::FrameType::RAW_IMAGE:
     {
         auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
-        width = metadata->getWidth();
-        height = metadata->getHeight();
+        renderWidth = metadata->getWidth();
+        renderHeight = metadata->getHeight();
     }
     break;
     case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
     {
         auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
-        width = metadata->getWidth(0);
-        height = metadata->getHeight(0);
+        renderWidth = metadata->getWidth(0);
+        renderHeight = metadata->getHeight(0);
     }
     break;
     default:
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
 
-    mDetail->init(height, width);
+    mDetail->init(renderHeight, renderWidth);
 	return true;
+}
+
+bool EglRenderer::processEOS(string &pinId)
+{
+    mDetail->~Detail();
+    mDetail->init(renderHeight, renderWidth);
+    return true;
 }
 
 bool EglRenderer::shouldTriggerSOS()

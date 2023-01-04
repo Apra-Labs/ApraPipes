@@ -145,7 +145,15 @@ public:
             }
         }
         if(outFrames.size()>0)
-           myModule->send(outFrames);
+        {
+            std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+            auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+            outFrames.begin()->second->timestamp = dur.count();
+            auto timeStamp = dur.count();
+            auto sizeIs = outFrames.size();
+           //LOG_ERROR << "RTSP Time is "<< outFrames.begin()->second->timestamp;
+            myModule->send(outFrames);
+        }
         return true;
     }
 
