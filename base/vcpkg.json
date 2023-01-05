@@ -49,13 +49,13 @@
     {
       "name": "gstreamer",
       "features": ["plugins-good","plugins-bad","plugins-ugly" ],
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+      "platform": "!arm64",
+      "$reason": "current vcpkg system does not build gstreamer for arm linux, we build our own"
     },
     {
       "name":"gst-rtsp-server",
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+      "platform": "!arm64",
+      "$reason": "current vcpkg system does not build gstreamer for arm linux, we build our own"
     }
   ]
 }
