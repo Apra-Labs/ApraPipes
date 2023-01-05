@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE(Encoder_to_Decoder)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(h264_to_yuv420_extSink)
+BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink)
 {
 	Logger::setLogLevel("info");
-	//MP4 Reader - 2
+
 	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false);
 	mp4ReaderProps_2.logHealth = true;
@@ -145,27 +145,32 @@ BOOST_AUTO_TEST_CASE(h264_to_yuv420_extSink)
 	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader_2->addOutPutPin(mp4Metadata_2);
 	// metadata is known
+
 	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
 	mp4Reader_2->setNext(Decoder);
+
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
 	Decoder->setNext(sink);
-	mp4Reader_2->play(true);
+
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+
 	p->appendModule(mp4Reader_2);
+
 	if (!p->init())
 	{
 		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
 	p->run_all_threaded();
-	Test_Utils::sleep_for_seconds(70);
+	Test_Utils::sleep_for_seconds(10);
 	p->stop();
 	p->term();
 	p->wait_for_all();
-	p.reset();//
+	p.reset();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

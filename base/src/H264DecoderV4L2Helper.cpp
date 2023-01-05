@@ -596,7 +596,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
     }
     ctx->cp_streamon = 1;
  
-    LOG_INFO << "Query and set capture successful" << endl;
+    LOG_DEBUG << "Query and set capture successful" << endl;
  
     return;
 }
@@ -611,7 +611,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     /* Need to wait for the first Resolution change event, so that
     ** the decoder knows the stream resolution and can allocate
     ** appropriate buffers when REQBUFS is called.
-    *///rvw
+    */
  
     do
     {
@@ -666,7 +666,6 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
  
         while (1)
         {
-            Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
             struct v4l2_buffer v4l2_buf;
             struct v4l2_plane planes[MAX_PLANES];
  
@@ -778,7 +777,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         }
    
     }
-    LOG_INFO << "Exiting decoder capture loop thread" << endl;
+    LOG_TRACE << "Exiting decoder capture loop thread" << endl;
  
     return NULL;
 }
@@ -1248,7 +1247,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
         op_v4l2_buf.memory = ctx.op_mem_type;
         op_v4l2_buf.m.planes = op_planes;
         op_v4l2_buf.length = ctx.op_num_planes;
- 
+
         ret = v4l2_ioctl(ctx.fd, VIDIOC_QUERYBUF, &op_v4l2_buf);
         if (ret)
         {
@@ -1345,7 +1344,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
         if (queue_v4l2_buf_op.m.planes[0].bytesused == 0)
         {
             ctx.eos = true;
-            LOG_INFO << "Input file read complete" << endl;
+            LOG_DEBUG << "Input file read complete" << endl;
             break;
         }
         idx++;
@@ -1467,7 +1466,7 @@ h264DecoderV4L2Helper::~h264DecoderV4L2Helper()
     }
     else
     {
-        LOG_INFO << "Decoder Run is successful" << endl;
+        LOG_DEBUG  << "Decoder Run is successful" << endl;
     }
  
     return;

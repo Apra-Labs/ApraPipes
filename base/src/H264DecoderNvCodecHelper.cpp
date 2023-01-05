@@ -720,10 +720,14 @@ void H264DecoderNvCodecHelper::ConvertToPlanar(uint8_t* pHostFrame, int nWidth, 
 		YuvConverter<uint8_t> converter8(nWidth, nHeight);
 		converter8.UVInterleavedToPlanar(pHostFrame);
 	}
-	else {
+	else if(nBitDepth == 16){
 		// p016->yuv420p16
 		YuvConverter<uint16_t> converter16(nWidth, nHeight);
 		converter16.UVInterleavedToPlanar((uint16_t*)pHostFrame);
+	}
+	else
+	{
+		LOG_ERROR << "Bit Depth is expected to be 8 or 16 bits . Actual : " << nBitDepth;
 	}
 }
 
