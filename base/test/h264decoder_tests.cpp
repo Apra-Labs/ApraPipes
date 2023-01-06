@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(30);
+	Test_Utils::sleep_for_seconds(70);
 
 	p->stop();
 	p->term();
