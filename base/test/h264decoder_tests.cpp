@@ -3,19 +3,68 @@
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "Logger.h"
-#include "CudaMemCopy.h"
 #include "H264Decoder.h"
 #include "test_utils.h"
-#include "nv_test_utils.h"
 #include "PipeLine.h"
 #include "ExternalSinkModule.h"
 #include "H264Metadata.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
+#ifdef ARM64
+#include "EglRenderer.h"
 
-BOOST_AUTO_TEST_SUITE(h264decodernvcodec_tests)
+#else
+#include "CudaMemCopy.h"
+#include "nv_test_utils.h"
+#endif
 
+BOOST_AUTO_TEST_SUITE(h264decoder_tests)
+
+#ifdef ARM64
+
+BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
+{
+	Logger::setLogLevel("info");
+
+	// metadata is known
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	Decoder->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(30);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+#else
 BOOST_AUTO_TEST_CASE(h264_to_yuv420)
 {
 	Logger::setLogLevel("info");
@@ -56,7 +105,7 @@ BOOST_AUTO_TEST_CASE(h264_to_yuv420)
 
 }
 
-BOOST_AUTO_TEST_CASE(Encoder_to_Decoder)
+BOOST_AUTO_TEST_CASE(encoder_to_decoder)
 {
 	Logger::setLogLevel("info");
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
@@ -172,5 +221,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink)
 	p->wait_for_all();
 	p.reset();
 }
+
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
