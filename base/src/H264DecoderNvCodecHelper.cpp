@@ -731,7 +731,7 @@ void H264DecoderNvCodecHelper::ConvertToPlanar(uint8_t* pHostFrame, int nWidth, 
 	}
 }
 
-bool H264DecoderNvCodecHelper::process(frame_sp& frame)
+void H264DecoderNvCodecHelper::process(frame_sp& frame)
 {
 	uint8_t* inputBuffer = NULL;
 	int inputBufferSize = 0;
@@ -754,5 +754,5 @@ bool H264DecoderNvCodecHelper::process(frame_sp& frame)
 		send(outputFrame);
 	}
 
-	return false;
+	return;
 }

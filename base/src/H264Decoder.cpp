@@ -53,9 +53,9 @@ public:
 #endif
 	}
 
-	bool compute(frame_sp& frame)
+	void compute(frame_sp& frame)
 	{
-		return helper->process(frame);
+		helper->process(frame);
 	}
 public:
 	int mWidth;

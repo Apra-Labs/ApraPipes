@@ -237,7 +237,7 @@ public:
 
     bool init(std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame);
     void ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth);
-    bool process(frame_sp& frame);
+    void process(frame_sp& frame);
     std::function<void( frame_sp&)> send;
     std::function<frame_sp()> makeFrame;
 private:
