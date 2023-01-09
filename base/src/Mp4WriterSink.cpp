@@ -26,7 +26,7 @@ public:
 
 	void setProps(Mp4WriterSinkProps& _props)
 	{
-		mProps.reset(new Mp4WriterSinkProps(_props.chunkTime, _props.syncTime, _props.fps, _props.baseFolder));
+		mProps.reset(new Mp4WriterSinkProps(_props.chunkTime, _props.syncTimeInSecs, _props.fps, _props.baseFolder));
 	}
 
 	~DetailAbs()
@@ -149,6 +149,17 @@ public:
 		return !mInputMetadata.get();
 	}
 
+	void addMetadataInVideoHeader(frame_sp inFrame)
+	{
+		if (!lastFrameTS)
+		{
+			/* \251sts -> ©sts */
+			std::string key = "\251sts";
+			std::string val = std::to_string(inFrame->timestamp);
+			mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+		}
+	}
+
 	boost::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
@@ -230,7 +241,7 @@ bool DetailJpeg::write(frame_container& frames)
 	short naluType = 0;
 	std::string _nextFrameFileName;
 	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inJpegImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTime, syncFlag ,mFrameType, naluType);
+		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag ,mFrameType, naluType);
 
 	if (_nextFrameFileName == "")
 	{
@@ -249,6 +260,9 @@ bool DetailJpeg::write(frame_container& frames)
 		mp4_mux_sync(mux);
 		syncFlag = false;
 	}
+
+	addMetadataInVideoHeader(inJpegImageFrame);
+
 	mux_sample.buffer = static_cast<uint8_t*>(inJpegImageFrame->data());
 	mux_sample.len = inJpegImageFrame->size();
 	mux_sample.sync = 0;
@@ -310,7 +324,7 @@ bool DetailH264::write(frame_container& frames)
 
 	std::string _nextFrameFileName;
 	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName,inH264ImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTime, syncFlag,mFrameType, typeFound);
+		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag,mFrameType, typeFound);
 
 	if (_nextFrameFileName == "")
 	{
@@ -338,6 +352,9 @@ bool DetailH264::write(frame_container& frames)
 	{
 		isKeyFrame = false;
 	}
+
+	addMetadataInVideoHeader(inH264ImageFrame);
+
 	mux_sample.buffer = static_cast<uint8_t*>(inH264ImageFrame->data());
 	mux_sample.len = inH264ImageFrame->size();
 	mux_sample.sync = isKeyFrame ? 1 : 0;
@@ -518,7 +535,7 @@ bool Mp4WriterSink::processEOS(string& pinId)
 
 Mp4WriterSinkProps Mp4WriterSink::getProps()
 {
-	auto tempProps = Mp4WriterSinkProps(mDetail->mProps->chunkTime, mDetail->mProps->syncTime, mDetail->mProps->fps, mDetail->mProps->baseFolder);
+	auto tempProps = Mp4WriterSinkProps(mDetail->mProps->chunkTime, mDetail->mProps->syncTimeInSecs, mDetail->mProps->fps, mDetail->mProps->baseFolder);
 	fillProps(tempProps);
 	return tempProps;
 }
