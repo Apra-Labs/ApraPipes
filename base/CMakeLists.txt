@@ -305,7 +305,6 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
-	src/H264Decoder.cpp
 )
 
 
@@ -339,7 +338,6 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
-	include/H264Decoder.h
 )
 
 
@@ -385,6 +383,7 @@ SET(CUDA_IP_FILES
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp		
+	src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -433,6 +432,7 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
+	include/H264Decoder.h
 )
 
 IF(ENABLE_ARM64)
