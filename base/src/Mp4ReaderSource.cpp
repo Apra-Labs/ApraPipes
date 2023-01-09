@@ -126,18 +126,18 @@ public:
 		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 
 		if (count > 0) {
-			LOG_INFO << "Reading User Metadata Key-Values\n";
+			LOG_DEBUG << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
 				if ((keys[i]) && (values[i]))
 				{
 					if (!strcmp(keys[i], "\251too"))
 					{
-						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+						LOG_DEBUG << "key <" << keys[i] << ",<" << values[i] << ">";
 						mState.mSerFormatVersion.assign(values[i]);
 					}
 					if (!strcmp(keys[i], "\251sts"))
 					{
-						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+						LOG_DEBUG << "key <" << keys[i] << ",<" << values[i] << ">";
 						mState.startTimeStamp = std::stoull(values[i]);
 					}
 				}
@@ -217,7 +217,7 @@ public:
 				skipMsecsInFile = skipTS - mState.startTimeStamp;
 			}
 
-			LOG_INFO << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+			LOG_DEBUG << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
 
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
 			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
