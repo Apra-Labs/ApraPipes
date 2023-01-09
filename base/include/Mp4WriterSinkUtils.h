@@ -10,6 +10,7 @@ public:
 		boost::filesystem::path &relPath, std::string &mp4FileName, bool &syncFlag, std::string baseFolder, std::string& nextFrameFileName);
 	void parseTSH264(uint64_t& tm, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath,
 		std::string& mp4FileName, bool& syncFlag,short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName);
+	bool customNamedFileDirCheck(std::string baseFolder, uint32_t chunkTimeInMinutes, boost::filesystem::path relPath, std::string& nextFrameFileName);
 	std::string format_hrs(int &hr);
 	std::string format_2(int &min);
 	std::string filePath(boost::filesystem::path relPath, std::string mp4FileName, std::string baseFolder);
