@@ -4,6 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_OSX "Use this switch to enable Mac OSX" OFF)
 OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
 
 IF(ENABLE_ARM64) #no GST build for ARM64 yet
@@ -75,8 +76,11 @@ IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 	IF(NOT ENABLE_WINDOWS)
 		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+	ENDIF(NOT ENABLE_WINDOWS)		
+	IF(ENABLE_LINUX)
 		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
-	ENDIF(NOT ENABLE_WINDOWS)
+	ENDIF(ENABLE_LINUX)
+	
 	
 ENDIF(ENABLE_GST)
 	
