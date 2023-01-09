@@ -516,9 +516,13 @@ IF(ENABLE_GST)
 		target_include_directories( aprapipes PRIVATE
 			${gstreamer-webrtc-1.0_INCLUDE_DIRS}
 			${json-glib-1.0_INCLUDE_DIRS}
-			${libsoup-2.4_INCLUDE_DIRS}
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
+	IF(ENABLE_LINUX)
+		target_include_directories( aprapipes PRIVATE
+			${libsoup-2.4_INCLUDE_DIRS}
+		)
+	ENDIF(NOT ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
@@ -641,12 +645,16 @@ IF(ENABLE_GST)
 		list(APPEND GST_LIBS
 			PkgConfig::gstreamer-webrtc-1.0
 			PkgConfig::json-glib-1.0
-			PkgConfig::libsoup-2.4
 		)
 		list(APPEND UT_FILES
 			test/gstwebrtcsink_tests.cpp
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
+	IF(ENABLE_LINUX)
+		list(APPEND GST_LIBS
+			PkgConfig::libsoup-2.4
+		)
+	ENDIF(NOT ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
