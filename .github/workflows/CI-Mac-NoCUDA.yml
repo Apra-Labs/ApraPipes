@@ -17,6 +17,7 @@ jobs:
       flav: Mac
       is-selfhosted: false
       is-build-gst: false
+      is-prep-phase: true
       cuda: 'OFF'
       nProc: 3
   mac-nocuda-publish:
