@@ -357,6 +357,17 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	p.reset();
 }
 
+BOOST_AUTO_TEST_CASE(parse_root_dir_and_find_the_video)
+{
+	std::string videoPath = "./data/Mp4_videos/jpg_video";
+	std::string outPath = "data/testOutput/outFrames";
+	boost::filesystem::path file("frame_??????.jpg");
+	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
+	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
+	bool parseFS = false;
+	read_video_extract_frames(videoPath, outPath, file, encodedImageMetadata, frameType, parseFS);
+}
+
 //Note: We still have to implement the feature to read and write video and simultaneously
 BOOST_AUTO_TEST_CASE(mp4reader_waits_when_no_video_and_reads_whenever_video_is_written)//
 {
