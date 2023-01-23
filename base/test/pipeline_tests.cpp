@@ -7,15 +7,7 @@
 #include "Module.h"
 #include "FrameContainerQueue.h"
 #include "commondefs.h"
-//#include "FrameMetadata.h"
-//#include "ArrayMetadata.h"
 #include "Frame.h"
-//#include "AIPExceptions.h"
-//#include "stdafx.h"
-//#include <boost/test/unit_test.hpp>
-//#include <boost/foreach.hpp>
-//#include <boost/chrono.hpp>
-//#include <assert.h>
 #include<iostream>
 #include<fstream>
 
@@ -43,7 +35,6 @@ struct CheckThread {
 		SourceModuleProps() : ModuleProps()
 		{};
 	};
-	// sounceModule2
 	class TransformModuleProps : public ModuleProps
 	{
 	public:
@@ -108,7 +99,6 @@ struct CheckThread {
 		
 		bool send(frame_container& frames) { return Module::send(frames); }
 	protected:
-		//bool process() {return false;}
 		bool process(frame_container& frames)
 		{
 			auto frame = getFrameByType(frames, FrameMetadata::FrameType::GENERAL);
@@ -134,10 +124,7 @@ struct CheckThread {
 		SinkModule(SinkModuleProps props) :Module(SINK, "sinkModule", props) {};
 
 		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
-
-		//bool send(frame_container& frames) { return Module::send(frames); }
 	protected:
-		//bool process() {return false;}
 		bool process(frame_container& frames)
 		{
 			return true;
@@ -236,7 +223,6 @@ BOOST_AUTO_TEST_CASE(flushallqueuesTest)
 		m1->step();
 		m1->step();
 
-		//boost::this_thread::sleep_for(boost::chrono::seconds(1));
 		BOOST_TEST(m2Que->size() == 3);
 		BOOST_TEST(m3Que->size() == 0);
 		BOOST_TEST(m4Que->size() == 0);
