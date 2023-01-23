@@ -174,15 +174,15 @@ BOOST_AUTO_TEST_CASE(checkThreadname)
 	Logger::setListener(listenerForThreadName);
 
 	auto m1 = boost::shared_ptr<CheckThread::SourceModule>(new CheckThread::SourceModule(CheckThread::SourceModuleProps()));
-	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m1->addOutputPin(metadata1);
 	auto m2 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 	m1->setNext(m2);
-	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m2->addOutputPin(metadata2);
 	auto m3 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 	m2->setNext(m3);
-	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m3->addOutputPin(metadata3);
 	auto m4 = boost::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
 	m3->setNext(m4);
@@ -224,14 +224,6 @@ BOOST_AUTO_TEST_CASE(flushallqueuesTest)
 		auto m4 = boost::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
 		m3->setNext(m4);
 
-		//BOOST_TEST(m1->init());
-		//BOOST_TEST(m2->init());
-		//BOOST_TEST(m3->init());
-		//BOOST_TEST(m4->init());
-		
-		
-
-		//auto m1Que = m1->getQue();
 		auto m2Que = m2->getQue();
 		auto m3Que = m3->getQue();
 		auto m4Que = m4->getQue();
@@ -249,7 +241,6 @@ BOOST_AUTO_TEST_CASE(flushallqueuesTest)
 		BOOST_TEST(m3Que->size() == 0);
 		BOOST_TEST(m4Que->size() == 0);
 
-		
 		m2->step();	
 		m2->step();
 		BOOST_TEST(m2Que->size() == 1);
