@@ -111,6 +111,11 @@ struct CheckThread {
 		//bool process() {return false;}
 		bool process(frame_container& frames)
 		{
+			auto frame = getFrameByType(frames, FrameMetadata::FrameType::GENERAL);
+			
+			std::string fPinId = getOutputPinIdByType(FrameMetadata::FrameType::GENERAL);
+			frames.insert(std::make_pair(fPinId, frame));
+			
 			send(frames);
 			return true;
 		}
@@ -251,17 +256,16 @@ BOOST_AUTO_TEST_CASE(flushallqueuesTest)
 		BOOST_TEST(m3Que->size() == 2);
 		BOOST_TEST(m4Que->size() == 0);
 
-		//m3->step();
-		//BOOST_TEST(m4Que->size() == 1); 
+		m3->step();
+		BOOST_TEST(m2Que->size() == 1);
+		BOOST_TEST(m3Que->size() == 1);
+		BOOST_TEST(m4Que->size() == 1); 
 
-		p.flushallqueues();
+		p.flushAllQueues();
 		BOOST_TEST(m2Que->size() == 0);
 		BOOST_TEST(m3Que->size() == 0);
 		BOOST_TEST(m4Que->size() == 0);
 
-		//p.appendModule(m1);
-		//p.init();
-		//p.run_all_threaded();
 		p.stop();
 		p.term();
 }
