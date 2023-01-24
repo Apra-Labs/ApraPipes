@@ -407,6 +407,7 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
+		src/AffineTransform.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -432,7 +433,7 @@ SET(CUDA_IP_FILES_H
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
 		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
+		include/JPEGDecoderL4TM.h	 
 		include/JPEGEncoderL4TMHelper.h
 		include/JPEGEncoderL4TM.h
 		include/AV4L2Buffer.h
@@ -454,6 +455,7 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+		include/AffineTransform.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
