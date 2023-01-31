@@ -42,6 +42,7 @@ class NVRControlModule : public AbsControlModule
 	uint64_t givenStart = 0;
 	uint64_t givenStop = 0;
 	uint64_t mp4_2_lastWrittenTS = 0;
+	bool isExporting = false;
 
 protected:
 	bool validateInputPins();

@@ -11,7 +11,8 @@
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "StatSink.h"
-
+#include "GtkGlRenderer.h"
+#include <gtk/gtk.h>
 BOOST_AUTO_TEST_SUITE(filereadermodule_tests)
 
 BOOST_AUTO_TEST_CASE(basic)
@@ -430,4 +431,26 @@ BOOST_AUTO_TEST_CASE(pipeline_readone_exit, * boost::unit_test::disabled())
 	p.wait_for_all(true);
 }
 
+BOOST_AUTO_TEST_CASE(gtkgl, * boost::unit_test::disabled())
+{
+	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
+	FileReaderModuleProps props("./data/filenamestrategydata/0.txt");
+	props.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(props));
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+	auto pinId = fileReader->addOutputPin(metadata);
+
+	auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(GtkGlRendererProps("xx", 1920, 1080)));	
+	fileReader->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
+	// gtk_main();
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
 BOOST_AUTO_TEST_SUITE_END()

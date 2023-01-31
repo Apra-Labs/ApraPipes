@@ -4,8 +4,8 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
-OPTION(ENABLE_NVR "Use this switch to enable ApraPipesNVR" ON)
+OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" OFF)
+OPTION(ENABLE_NVR "Use this switch to enable ApraPipesNVR" OFF)
 
 IF(ENABLE_ARM64) #no GST build for ARM64 yet
 	set(ENABLE_GST OFF)
@@ -59,6 +59,8 @@ message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
 list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(GLEW REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
@@ -93,7 +95,7 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
-
+# find_package(glfw3 REQUIRED)
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
   		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
@@ -118,6 +120,9 @@ IF(ENABLE_CUDA)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
+		# find_package (glfw3 REQUIRED)
+		# find_package(GLEW REQUIRED)
+		# pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 		SET(JETSON_LIBS
 			libcudart_static.a	
@@ -131,6 +136,7 @@ IF(ENABLE_CUDA)
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(${GTK3_INCLUDE_DIRS})
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -257,7 +263,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/NVRControlModule.h
 	include/NVRHelper.h
-	include/NVRPipeline.h
+	# include/NVRPipeline.h
 	include/AbsControlModule.h
 )
 
@@ -312,7 +318,7 @@ SET(IP_FILES
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
 	src/NVRControlModule.cpp
-	src/NVRPipeline.cpp
+	# src/NVRPipeline.cpp
 	src/AbsControlModule.cpp
 )
 
@@ -418,6 +424,12 @@ IF(ENABLE_ARM64)
 		src/DMAFDToHostCopy.cpp
 		src/H264Decoder.cpp
 		src/H264DecoderV4L2Helper.cpp
+		src/Matrix.cpp
+		src/Model.cpp
+		src/Program.cpp
+		src/Background.cpp
+		src/View.cpp
+		src/GtkGlRenderer.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -469,6 +481,13 @@ IF(ENABLE_ARM64)
 		include/DMAFDToHostCopy.h
 		include/H264Decoder.h
 		include/H264DecoderV4L2Helper.h
+		include/Matrix.h
+		include/GLUtils.h
+		include/Model.h
+		include/Program.h
+		include/Background.h
+		include/View.h
+		include/GtkGlRenderer.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -506,6 +525,7 @@ ${OpenCV_INCLUDE_DIRS}
 ${Boost_INCLUDE_DIRS}
 ${LIBMP4_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
+# ${GLFW_INCLUDE_DIRS}
 )
 
 IF(ENABLE_GST)
@@ -555,6 +575,7 @@ IF (ENABLE_ARM64)
 		test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
 		test/h264decoderv4l2_tests.cpp
+		test/gtkglrenderer_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -625,7 +646,7 @@ SET(UT_FILES
 	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
-	test/nvrcontrolmodule_tests.cpp
+	# test/nvrcontrolmodule_tests.cpp
 	test/abscontrolmodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
@@ -633,7 +654,7 @@ SET(UT_FILES
 
 SET(NVR_UT_FILES
     test/utmain.cpp
-	test/nvrcontrolmodule_tests.cpp
+	# test/nvrcontrolmodule_tests.cpp
 )
 
 IF(ENABLE_LINUX)
@@ -678,8 +699,8 @@ add_executable(aprapipesnvr ${NVR_UT_FILES})
 #ENDIF(APRA_NVR)
 
 IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
-	target_include_directories ( aprapipesnvr PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT}) # ${GLFW_INCLUDE_DIRS}
+	target_include_directories ( aprapipesnvr PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT}) # ${GLFW_INCLUDE_DIRS}
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
@@ -707,6 +728,10 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  GL
+#   glfw 
+  GLEW::GLEW
+  ${GTK3_LIBRARIES}
   )
 
   target_link_libraries(aprapipesnvr   
@@ -728,6 +753,11 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+#   gtkglapp
+  GL
+#   glfw 
+  GLEW::GLEW
+  ${GTK3_LIBRARIES}
   )
 
 IF(ENABLE_WINDOWS)

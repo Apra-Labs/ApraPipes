@@ -103,7 +103,7 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 			cout << "Enter end time of Export : ";
 			cin >> y;
 			cout << "Start time is " << x << " End time is " << y;*/
-			BOOST_LOG_TRIVIAL(info) << "Starting Reading from disk!!";
+			BOOST_LOG_TRIVIAL(info) << "Starting to Export Video !!";
 			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
 			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
 			uint64_t seekStartTS = now - 120000;
@@ -113,13 +113,43 @@ void key_Read_func(boost::shared_ptr<NVRControlModule>& mControl, boost::shared_
 		}
 		else if (k == 111)
 		{
+			/*uint64_t x, y;
+			cout << "Enter start time of playback : ";
+			cin >> x;
+			cout << "Enter end time of playback : ";
+			cin >> y;
+			cout << "Start time is " << x << " End time is " << y;*/
 			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
 			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
 			uint64_t seekStartTS = now - 120000;
 			uint64_t seekEndTS = now - 60000;
-			LOG_ERROR << "Starting export View!!";
+			LOG_ERROR << "Starting playback View!!";
 			mControl->nvrExportView(seekStartTS, seekEndTS);
 			mControl->step();
+		}
+		else if(k == 107)
+		{
+			BOOST_LOG_TRIVIAL(info) << "Starting to Export Video !!";
+			boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
+			auto now = (boost::posix_time::microsec_clock::universal_time() - time_epoch).total_milliseconds();
+
+			//Export start or stop command
+			if(!mControl->isExporting) //Start export
+			{
+				mControl->isExporting = true;
+				uint64_t seekStartTS = now;
+				uint64_t seekEndTS = 9999999999999;
+				mControl->nvrExport(seekStartTS, seekEndTS);
+				mControl->step();
+			}
+			else //Stop export
+			{
+				mControl->isExporting = false;
+				uint64_t seekStartTS = now - 1000;
+				uint64_t seekEndTS = now;
+				mControl->nvrExport(seekStartTS, seekEndTS);
+				mControl->step();
+			}
 		}
 		if (k == 112)
 		{
@@ -250,12 +280,6 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 	v4L2props.logHealthFrequency = 100;
 	v4L2props.fps = 30;
 	auto v4L2Source = boost::shared_ptr<Module>(new NvV4L2Camera(v4L2props));
-    
-	//RTSP DATA
-	auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/04d314e2-c165-4f14-b63d-c27d11957a4d"); 
-	auto mLive = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
-	auto meta = framemetadata_sp(new H264Metadata());
-	v4L2Source->addOutputPin(meta);
 
 	//NV_Transform
 	auto nv_transform1Props = NvTransformProps(ImageMetadata::RGBA);
@@ -279,7 +303,7 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 	nv_transform2Props.logHealthFrequency = 100;
 	nv_transform2Props.fps = 30;
 	auto nv_transform_encode = boost::shared_ptr<Module>(new NvTransform(nv_transform2Props));
-	mLive->setNext(nv_transform_encode);
+	v4L2Source->setNext(nv_transform_encode);
 
 	//v4l2Encoder
 	H264EncoderV4L2Props encoderProps;
@@ -344,7 +368,6 @@ BOOST_AUTO_TEST_CASE(NXPipeline_2)
 
     PipeLine p("test");
 	std::thread inp(key_Read_func, std::ref(mControl), std::ref(mp4Reader));
-	p.appendModule(mLive);
 	p.appendModule(mp4Reader);
 	p.addControlModule(mControl);
 
@@ -468,7 +491,7 @@ BOOST_AUTO_TEST_CASE(NVR_RTSP)
 	rtsp_client_tests_data d;
    //Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-	auto url=string("rtsp://evo-dev-apra.blub0xSecurity.com:5544/44e77549-442e-43da-951f-a89d4a99d859");
+	auto url=string("rtsp://vsi1.blub0x.com:5544/a0dce344-929b-4703-bd40-035c98572526");
 	auto rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
 	//rtspProps.logHealth = true;
 	//rtspProps.logHealthFrequency = 100; 
@@ -479,11 +502,11 @@ BOOST_AUTO_TEST_CASE(NVR_RTSP)
 
 	//H264-V4L2 Decoder
 	auto decoder_1 = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));//
-	mLive->setNext(decoder_1);
+	//mLive->setNext(decoder_1);
 
 	//EGL Renderer
 	auto renderer_1 = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 720, 480)));
-	decoder_1->setNext(renderer_1);
+	//decoder_1->setNext(renderer_1);
 
 	//MP4-Writer 1 [24/7]
 	std::string outFolderPath_1 = "./data/testOutput/mp4_videos/24bpp/";
@@ -553,7 +576,7 @@ BOOST_AUTO_TEST_CASE(NVR_RTSP)
 	mp4Reader_2->setNext(decoder_2);
 
 	//EGL Renderer
-	auto renderer_2 = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(150, 50, 480, 360)));
+	auto renderer_2 = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(300, 300, 360, 240)));
 	decoder_2->setNext(renderer_2);
 
 
@@ -585,7 +608,7 @@ BOOST_AUTO_TEST_CASE(NVR_RTSP)
 
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(240));
-	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20230004/0016/")))
+	for (const auto& folder : boost::filesystem::recursive_directory_iterator(boost::filesystem::path("./data/testOutput/mp4_videos/24bpp/20230006/0015/")))
 	{
 		if (boost::filesystem::is_regular_file(folder))
 		{

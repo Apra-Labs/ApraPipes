@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	PipeLine p("test");
 	for (auto i = 0; i < n_cams; i++)
-	{
+	{	
 		NvArgusCameraProps sourceProps(1280, 720, i);
 		sourceProps.maxConcurrentFrames = 10;
 		sourceProps.fps = 60;

@@ -99,7 +99,7 @@ bool NVRControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
             command.seekEndTS = firstMMQtimestamp;
             for (int i = 0; i < pipelineModules.size(); i++)
             {
-                if (pipelineModules[i] == getModuleofRole("Reader")) // Sending command to reader
+                if (pipelineModules[i] == getModuleofRole("Reader_1")) // Sending command to reader
                 {
                     auto myId = pipelineModules[i]->getId();
                     pipelineModules[i]->queueCommand(command);

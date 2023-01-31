@@ -151,8 +151,8 @@ bool EglRenderer::processSOS(frame_sp& frame)
 
 bool EglRenderer::processEOS(string &pinId)
 {
-    mDetail->~Detail();
-    mDetail->init(renderHeight, renderWidth);
+    //mDetail->~Detail();
+    //mDetail->init(renderHeight, renderWidth);
     return true;
 }
 

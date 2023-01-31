@@ -802,7 +802,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				if (isNextModuleQueFull())
 				{
 					pushToNextModule = false;
-					queryStartTime = it->first;
+					queryStartTime = it->first; 
 					queryStartTime--;
 					BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
 					return true;
