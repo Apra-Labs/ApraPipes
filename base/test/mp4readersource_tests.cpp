@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE(fs_parsing_h264, *boost::unit_test::disabled())
 	read_video_extract_frames(videoPath, outPath, file, h264ImageMetadata, frameType, 5, parseFS);
 }
 
-BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName)
 {
 	/* file structure parsing test */
 	std::string videoPath = "./data/Mp4_videos/h264_video/apraH264.mp4";
