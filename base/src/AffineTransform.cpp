@@ -1,10 +1,10 @@
-include "AffineTransform.h"
+#include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-#include "DMAFDWrapper.h"
+//#include "DMAFDWrapper.h"
 #include "math.h"
 #include "opencv2/core.hpp"
 #include "npp.h"
@@ -32,7 +32,7 @@ public:
 			switch (mFrameType)
 			{
 			case FrameMetadata::RAW_IMAGE:
-				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));// have to change to FrameMetadata::MemType::WIN_GDI_BITMAP
 				break;
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
@@ -51,7 +51,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w, h, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
+			RawImageMetadata outputMetadata(w, h, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true); //
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata); // new function required
 			imageType = rawMetadata->getImageType();
@@ -267,9 +267,9 @@ bool AffineTransform::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::DMABUF)
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -293,9 +293,9 @@ bool AffineTransform::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::DMABUF)
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -333,9 +333,8 @@ bool AffineTransform::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
 	cudaFree(0);
-	cudaMemset(static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr(), 0, outFrame->size());
-
-	mDetail->compute(static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr(), static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr());
+	cudaMemset((outFrame->data()), 0, outFrame->size());//static_cast<DMAFDWrapper *>
+	mDetail->compute((frame->data()), (outFrame->data()));
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
 

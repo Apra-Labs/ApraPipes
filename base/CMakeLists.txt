@@ -305,6 +305,8 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/AffineTransform.cpp
+
 )
 
 
@@ -338,6 +340,7 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
+	include/AffineTransform.h
 )
 
 
@@ -407,7 +410,6 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
-		src/AffineTransform.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -455,7 +457,6 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
-		include/AffineTransform.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -600,6 +601,7 @@ SET(UT_FILES
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
+	test/affinetransform_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	test/valveModule_tests.cpp
 	test/color_conversion_tests.cpp
