@@ -70,7 +70,7 @@ IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
 	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
 	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
-	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+#	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
 	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
@@ -502,7 +502,7 @@ IF(ENABLE_GST)
 		${gstreamer-1.0_INCLUDE_DIRS}
 		${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
 		${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-		${libpcre_INCLUDE_DIRS}
+#		${libpcre_INCLUDE_DIRS}
 		${glib-2.0_INCLUDE_DIRS}
 		${gstreamer-rtsp-1.0_INCLUDE_DIRS}
 		${gstreamer-rtp-1.0_INCLUDE_DIRS}
@@ -631,7 +631,7 @@ IF(ENABLE_GST)
 		PkgConfig::gstreamer-base-1.0
 		PkgConfig::gstreamer-1.0
 		PkgConfig::gstreamer-rtsp-server-1.0
-		PkgConfig::libpcre
+#		PkgConfig::libpcre
 		PkgConfig::glib-2.0
 		PkgConfig::gstreamer-rtsp-1.0
 		PkgConfig::gstreamer-rtp-1.0

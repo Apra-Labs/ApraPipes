@@ -10,7 +10,7 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  mac-nocuda-build-test:
+  mac-nocuda-build-prep:
     uses: ./.github/workflows/build-test-mac.yml
     with:
       runner: 'macos-latest'
@@ -18,6 +18,17 @@ jobs:
       is-selfhosted: false
       is-build-gst: false
       is-prep-phase: true
+      cuda: 'OFF'
+      nProc: 3
+  mac-nocuda-build-test:
+    needs: mac-nocuda-build-prep
+    uses: ./.github/workflows/build-test-mac.yml
+    with:
+      runner: 'macos-latest'
+      flav: Mac
+      is-selfhosted: false
+      is-build-gst: false # part of vcpkg on mac
+      is-prep-phase: false
       cuda: 'OFF'
       nProc: 3
   mac-nocuda-publish:
