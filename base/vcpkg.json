@@ -2,14 +2,16 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "725267a6265f1ce71d8ce7ffa60de4bb321e0669",
+  "$builtin-baseline-ignore": "5bafba5ffc2d61c389f3d4ec70bffc6e68b1e4d4",
   "dependencies": [
     {
       "name": "opencv4",
       "default-features": false,
       "features": ["contrib", "cuda", "cudnn", "dnn", "jpeg", "nonfree", "png", "tiff", "webp" ]
     },
-    "ffmpeg",
+    {
+      "name":"ffmpeg", "version=": "4.4.3", "port-version": 3
+    },
     "bigint",
     "boost-math",
     "boost-system",
