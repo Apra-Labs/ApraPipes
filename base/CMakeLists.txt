@@ -90,7 +90,7 @@ find_package(Boost COMPONENTS system thread filesystem serialization log chrono 
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(liblzma REQUIRED)
+#find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
@@ -522,7 +522,7 @@ IF(ENABLE_GST)
 		target_include_directories( aprapipes PRIVATE
 			${libsoup-2.4_INCLUDE_DIRS}
 		)
-	ENDIF(NOT ENABLE_LINUX)
+	ENDIF(ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
@@ -654,7 +654,7 @@ IF(ENABLE_GST)
 		list(APPEND GST_LIBS
 			PkgConfig::libsoup-2.4
 		)
-	ENDIF(NOT ENABLE_LINUX)
+	ENDIF(ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
@@ -685,7 +685,7 @@ target_link_libraries(aprapipesut
   ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
-  liblzma::liblzma
+  #liblzma::liblzma
   bigint::bigint
   sfml-audio
   )
