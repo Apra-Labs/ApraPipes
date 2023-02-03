@@ -157,6 +157,8 @@ bool DMAFDToHostCopy::processSOS(frame_sp &frame)
 	{
 	case ImageMetadata::ImageType::RGBA:
 	case ImageMetadata::ImageType::BGRA:
+	case ImageMetadata::ImageType::YUYV:
+		break;	
 	case ImageMetadata::ImageType::UYVY:
 		break;
 	case ImageMetadata::ImageType::YUV420:
