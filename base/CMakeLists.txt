@@ -4,6 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_OSX "Use this switch to enable Mac OSX" OFF)
 OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
 
 IF(ENABLE_ARM64) #no GST build for ARM64 yet
@@ -69,14 +70,17 @@ IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
 	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
 	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
-	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
+#	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
 	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
 	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
 	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
 	IF(NOT ENABLE_WINDOWS)
 		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
+	ENDIF(NOT ENABLE_WINDOWS)		
+	IF(ENABLE_LINUX)
 		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
-	ENDIF(NOT ENABLE_WINDOWS)
+	ENDIF(ENABLE_LINUX)
+	
 	
 ENDIF(ENABLE_GST)
 	
@@ -86,7 +90,7 @@ find_package(Boost COMPONENTS system thread filesystem serialization log chrono 
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(liblzma REQUIRED)
+#find_package(liblzma REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
@@ -498,7 +502,7 @@ IF(ENABLE_GST)
 		${gstreamer-1.0_INCLUDE_DIRS}
 		${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
 		${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-		${libpcre_INCLUDE_DIRS}
+#		${libpcre_INCLUDE_DIRS}
 		${glib-2.0_INCLUDE_DIRS}
 		${gstreamer-rtsp-1.0_INCLUDE_DIRS}
 		${gstreamer-rtp-1.0_INCLUDE_DIRS}
@@ -512,9 +516,13 @@ IF(ENABLE_GST)
 		target_include_directories( aprapipes PRIVATE
 			${gstreamer-webrtc-1.0_INCLUDE_DIRS}
 			${json-glib-1.0_INCLUDE_DIRS}
-			${libsoup-2.4_INCLUDE_DIRS}
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
+	IF(ENABLE_LINUX)
+		target_include_directories( aprapipes PRIVATE
+			${libsoup-2.4_INCLUDE_DIRS}
+		)
+	ENDIF(ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
@@ -623,7 +631,7 @@ IF(ENABLE_GST)
 		PkgConfig::gstreamer-base-1.0
 		PkgConfig::gstreamer-1.0
 		PkgConfig::gstreamer-rtsp-server-1.0
-		PkgConfig::libpcre
+#		PkgConfig::libpcre
 		PkgConfig::glib-2.0
 		PkgConfig::gstreamer-rtsp-1.0
 		PkgConfig::gstreamer-rtp-1.0
@@ -637,12 +645,16 @@ IF(ENABLE_GST)
 		list(APPEND GST_LIBS
 			PkgConfig::gstreamer-webrtc-1.0
 			PkgConfig::json-glib-1.0
-			PkgConfig::libsoup-2.4
 		)
 		list(APPEND UT_FILES
 			test/gstwebrtcsink_tests.cpp
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
+	IF(ENABLE_LINUX)
+		list(APPEND GST_LIBS
+			PkgConfig::libsoup-2.4
+		)
+	ENDIF(ENABLE_LINUX)
 ENDIF(ENABLE_GST)
 
 
@@ -673,7 +685,7 @@ target_link_libraries(aprapipesut
   ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
-  liblzma::liblzma
+  #liblzma::liblzma
   bigint::bigint
   sfml-audio
   )
