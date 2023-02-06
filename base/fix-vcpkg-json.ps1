@@ -17,7 +17,10 @@ if($removeOpenCV.IsPresent)
 
 if($onlyOpenCV.IsPresent)
 {
-    $v.dependencies = $v.dependencies | Where-Object { $_.name -eq 'opencv4'}
+    $opencv = $v.dependencies | Where-Object { $_.name -eq 'opencv4'}
+    $v.dependencies = @()
+    $v.dependencies += $opencv
+    
 }
 
 
