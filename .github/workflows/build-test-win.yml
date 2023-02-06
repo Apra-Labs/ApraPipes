@@ -120,6 +120,12 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
+    - name: Leave only OpenCV from vcpkg during prep phase
+      if: inputs.is-prep-phase
+      working-directory: ${{github.workspace}}/base
+      run: .\fix-vcpkg-json.ps1 -onlyOpenCV
+      shell: pwsh
+
     - name: cache init on container build
       if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
       run: |
@@ -148,12 +154,6 @@ jobs:
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty/libmp4
       run: ./build.cmd && remove-item ./build/Release -Recurse && rename-item build/RelWithDebInfo Release
-
-    - name: Remove OpenCV from vcpkg during prep phase # we can not do it before cache-all else the has value changes. 
-      if: inputs.is-prep-phase
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json.ps1 -removeOpenCV
-      shell: pwsh
 
     - name: Make build folder
       run: mkdir -p build
