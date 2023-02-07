@@ -196,6 +196,7 @@ SET(CORE_FILES
    	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
+	src/H264MotionExtractorXForm.cpp
 )
 
 SET(CORE_FILES_H
@@ -253,6 +254,7 @@ SET(CORE_FILES_H
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/H264MotionExtractorXForm.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -606,6 +608,7 @@ SET(UT_FILES
 	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
+	test/motion_extractor_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
