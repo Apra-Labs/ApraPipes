@@ -192,7 +192,7 @@ void PipeLine::step()
 		// already playing
 		return;
 	}
-
+	
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		if (i->get()->getNature() == Module::SOURCE)
@@ -265,4 +265,12 @@ const char * PipeLine::getStatus()
 	return StatusNames[myStatus];
 }
 
-
+void PipeLine::flushAllQueues() {
+	for (auto& m : modules)
+	{
+		if (m->myNature == Module::Kind::SOURCE)
+		{
+			m->flushQueRecursive();
+		}
+	}
+}
