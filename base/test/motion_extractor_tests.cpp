@@ -31,13 +31,15 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	BOOST_TEST(sink->init());
 
 	fileReader->play(true);
-	
-	for (int i = 0; i < 231; i++)
+	int i;
+	for (i = 0; i < 231; i++)
 	{
 		fileReader->step();
 		m1->step();
 		sink->step();
 	}
+	m1->step();
+	//m1->step();
 	LOG_INFO << "completed";
 }
 
