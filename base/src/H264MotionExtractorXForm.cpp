@@ -22,6 +22,7 @@ public:
 
     void openVideo()
     {
+        void* logctx;
         if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
             fprintf(stderr, "Could not open source file %s\n", src_filename);
             exit(1);
@@ -44,16 +45,16 @@ public:
         AVCodecContext* dec_ctx = NULL;
         AVCodec* dec = NULL;
         AVDictionary* opts = NULL;
-
-        ret = av_find_best_stream(fmt_ctx, type, -1, -1, &dec, 0);
-        if (ret < 0) {
+        dec = avcodec_find_decoder(AV_CODEC_ID_H264);
+        //ret = av_find_best_stream(fmt_ctx, type, -1, -1, &dec, 0);
+        /*if (ret < 0) {
             fprintf(stderr, "Could not find %s stream in input file '%s'\n",
                 av_get_media_type_string(type), src_filename);
             return ret;
-        }
-        else {
-            int stream_idx = ret;
-            st = fmt_ctx->streams[stream_idx];
+        }*/
+        //else {
+            //int stream_idx = ret;
+            //st = fmt_ctx->streams[stream_idx];
 
             dec_ctx = avcodec_alloc_context3(dec);
             if (!dec_ctx) {
@@ -61,11 +62,11 @@ public:
                 return AVERROR(EINVAL);
             }
 
-            ret = avcodec_parameters_to_context(dec_ctx, st->codecpar);
+           /* ret = avcodec_parameters_to_context(dec_ctx, st->codecpar);
             if (ret < 0) {
                 fprintf(stderr, "Failed to copy codec parameters to codec context\n");
                 return ret;
-            }
+            }*/
 
             /* Init the video decoder */
             av_dict_set(&opts, "flags2", "+export_mvs", 0);
@@ -77,12 +78,12 @@ public:
                 return ret;
             }
 
-            video_stream_idx = stream_idx;
-            video_stream = fmt_ctx->streams[video_stream_idx];
+            //video_stream_idx = stream_idx;
+            //video_stream = fmt_ctx->streams[video_stream_idx];
             video_dec_ctx = dec_ctx;
-        }
+        //}
 
-        return 0;
+        //return 0;
     }
 
     void dumpFormat()
@@ -90,7 +91,7 @@ public:
         av_dump_format(fmt_ctx, 0, src_filename, 0);
     }
 
-    void decodeAndGetMV()
+    void decodeAndGetMV(frame_sp inFrame)
     {
         int ret = 0;
         AVPacket* pkt = NULL;
@@ -110,19 +111,22 @@ public:
         fpOut << "framenum , source , blockw , blockh , srcx , srcy , dstx , dsty , flags , motion_x  ,motion_y , motion_scale\n" ;
         fpOut.close();
         /* read frames from the file */
-        while (av_read_frame(fmt_ctx, pkt) >= 0) {
-            if (pkt->stream_index == video_stream_idx)
-                ret = decode_packet(pkt);
+        //while (av_read_frame(fmt_ctx, pkt) >= 0) {
+            //if (pkt->stream_index == video_stream_idx)
+                ret = decode_packet(pkt, inFrame);
             av_packet_unref(pkt);
-            if (ret < 0)
-                break;
-        }
+            //if (ret < 0)
+                //break;
+        //}
     }
 
-    int decode_packet(const AVPacket* pkt)
+    int decode_packet(AVPacket* pkt,frame_sp inFrame)
     {
        
         fpOut.open(outFileName, std::ios::out | std::ios::binary | std::ios::app);
+
+        pkt->data = (uint8_t*)inFrame->data();
+        pkt->size = (int)inFrame->size();
 
         int ret = avcodec_send_packet(video_dec_ctx, pkt);
         if (ret < 0) {
@@ -239,14 +243,19 @@ bool MotionExtractor::shouldTriggerSOS()
 bool MotionExtractor::process(frame_container& frames)
 {
     auto frame = frames.begin()->second;
-    mDetail->decodeAndGetMV();
+    mDetail->decodeAndGetMV(frame);
 
     frames.insert(make_pair(mOutputPinId, frame));
     send(frames);
-    return false;
+    return true;
 
     /* flush cached frames */
     //decode_packet(NULL);
+}
+
+bool MotionExtractor::processSOS(frame_sp& frame)
+{
+    return true;
 }
 //end:
 //    avcodec_free_context(&video_dec_ctx);

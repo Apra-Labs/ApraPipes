@@ -13,8 +13,9 @@ BOOST_AUTO_TEST_SUITE(motion_vectors_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
-	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_230.H264");
+	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
+	fileReaderProps.readLoop = false;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
 	fileReader->addOutputPin(metadata);
@@ -25,20 +26,19 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m1->setNext(sink);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
-	BOOST_TEST(p.init());
-	p.run_all_threaded();
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(m1->init());
+	BOOST_TEST(sink->init());
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(50));
-
-	LOG_INFO << "STOPPING";
-
-	p.stop();
-	p.term();
-	LOG_INFO << "WAITING";
-	p.wait_for_all();
-	LOG_INFO << "TEST DONE";
+	fileReader->play(true);
+	
+	for (int i = 0; i < 231; i++)
+	{
+		fileReader->step();
+		m1->step();
+		sink->step();
+	}
+	LOG_INFO << "completed";
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -30,7 +30,7 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool shouldTriggerSOS();
-	//bool processSOS(frame_sp& frame);
+	bool processSOS(frame_sp &frame);
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
