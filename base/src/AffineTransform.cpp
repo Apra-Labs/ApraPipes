@@ -4,11 +4,12 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-//#include "DMAFDWrapper.h"
 #include "math.h"
 #include "opencv2/core.hpp"
-#include "npp.h"
 #include "CuCtxSynchronize.h"
+#include "ImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
+#include "npp.h"
 
 #define PI 3.14159265
 
@@ -32,7 +33,10 @@ public:
 			switch (mFrameType)
 			{
 			case FrameMetadata::RAW_IMAGE:
-				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));// have to change to FrameMetadata::MemType::WIN_GDI_BITMAP
+				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+				break;
+			case FrameMetadata::RAW_IMAGE_PLANAR:
+				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
 				break;
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
@@ -44,16 +48,29 @@ public:
 			return;
 		}
 
-		ImageMetadata::ImageType imageType = ImageMetadata::MONO;
+		ImageMetadata::ImageType imageType;
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w, h, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true); //
+			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, false);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-			rawOutMetadata->setData(outputMetadata); // new function required
+			rawOutMetadata->setData(outputMetadata);
+			imageType = rawMetadata->getImageType();
+			depth = rawMetadata->getDepth();
+		}
+
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+		{
+			auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			int x, y, w, h;
+			w = rawMetadata->getWidth(0);
+			h = rawMetadata->getHeight(0);
+			RawImagePlanarMetadata outputMetadata(w*props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE);
+	    	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
@@ -68,22 +85,15 @@ public:
 			break;
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
-			if (depth != CV_8U)
-			{
-				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
-			}
-			break;
 		case ImageMetadata::RGBA:
-			if (depth != CV_8U)
-			{
-				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
-			}
-			break;
+		case ImageMetadata::BGRA:
 		case ImageMetadata::YUV444:
 		case ImageMetadata::YUV420:
-		case ImageMetadata::BGRA:
-		default:
-			throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for ImageType<" + std::to_string(imageType) + ">");
+			if (depth != CV_8U)
+			{
+				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
+			}
+			break;
 		}
 
 		mFrameLength = mOutputMetadata->getDataSize();
@@ -92,81 +102,87 @@ public:
 
 	bool compute(void *buffer, void *outBuffer)
 	{
-
 		auto status = NPP_SUCCESS;
 
-		// assuming raw_image - planar not supported
-		if (channels == 1 && depth == CV_8UC1)
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			status = nppiRotate_8u_C1R_Ctx(const_cast<const Npp8u *>(static_cast<Npp8u *>(buffer)),
-				srcSize[0],
-				srcPitch[0],
-				srcRect[0],
-				static_cast<Npp8u *>(outBuffer),
-				dstPitch[0],
-				dstRect[0],
-				props.angle,
-				shiftX,
-				shiftY,
-				NPPI_INTER_NN,
-				nppStreamCtx);
+			const Npp8u* src[3];
+			Npp8u* dst[3];
+			double si = sin(props.angle * PI / 180);
+			double co = props.scale * cos(props.angle * PI / 180);
+			double acoeff[2][3] = { {co, -si, props.x}, {si, co, props.y} };
+
+			for (auto i = 0; i < channels; i++)
+			{
+				src[i] = static_cast<Npp8u*>(buffer) + srcNextPtrOffset[i];
+				dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
+
+				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
+					srcSize[i],
+					srcPitch[i],
+					srcRect[i],
+					dst[i],
+					dstPitch[i],
+					dstRect[i],
+					acoeff,
+					NPPI_INTER_NN,
+					nppStreamCtx);
+			}
 		}
-		else if (channels == 1 && depth == CV_16UC1)
-		{
-			status = nppiRotate_16u_C1R_Ctx(const_cast<const Npp16u *>(static_cast<Npp16u *>(buffer)),
-				srcSize[0],
-				srcPitch[0],
-				srcRect[0],
-				static_cast<Npp16u *>(outBuffer),
-				dstPitch[0],
-				dstRect[0],
-				props.angle,
-				shiftX,
-				shiftY,
-				NPPI_INTER_NN,
-				nppStreamCtx);
-		}
-		else if (channels == 3)
-		{
-			status = nppiRotate_8u_C3R_Ctx(const_cast<const Npp8u *>(static_cast<Npp8u *>(buffer)),
-				srcSize[0],
-				srcPitch[0],
-				srcRect[0],
-				static_cast<Npp8u *>(outBuffer),
-				dstPitch[0],
-				dstRect[0],
-				props.angle,
-				shiftX,
-				shiftY,
-				NPPI_INTER_NN,
-				nppStreamCtx);
-		}
-		else if (channels == 4)
+
+		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			double si, co;
-			si = props.scale * sin(props.angle * PI / 180);
+			si = sin(props.angle * PI / 180);
 			co = props.scale * cos(props.angle * PI / 180);
-			double shx, shy;
-			shx = (1 - co) * (srcSize[0].width / 2) + si * srcSize[0].height / 2;
-			shy = (-si) * (srcSize[0].width / 2) + (1 - co) * srcSize[0].height / 2;
-			double acoeff[2][3] = { {co, -si, shx + props.x}, {si, co, shy + props.y} };
-			status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u *>(static_cast<Npp8u *>(buffer)),
-				srcSize[0],
-				srcPitch[0],
-				srcRect[0],
-				static_cast<Npp8u *>(outBuffer),
-				dstPitch[0],
-				dstRect[0],
-				acoeff,
-				NPPI_INTER_NN,
-				nppStreamCtx);
+			double acoeff[2][3] = { {co , -si ,  props.x}, {si, co , props.y} };
+
+			if (channels == 1 && depth == CV_8UC1)
+			{
+				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					static_cast<Npp8u*>(outBuffer),
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					NPPI_INTER_NN,
+					nppStreamCtx);
+			}
+			else if (channels == 3)
+			{
+				status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					static_cast<Npp8u*>(outBuffer),
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					NPPI_INTER_NN,
+					nppStreamCtx);
+			}
+			else if (channels == 4)
+			{
+				status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					static_cast<Npp8u*>(outBuffer),
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					NPPI_INTER_NN,
+					nppStreamCtx);
+			}
+
 		}
 
 		if (status != NPP_SUCCESS)
 		{
 			LOG_ERROR << "resize failed<" << status << ">";
 		}
-
 		return true;
 	}
 
@@ -333,7 +349,7 @@ bool AffineTransform::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
 	cudaFree(0);
-	cudaMemset((outFrame->data()), 0, outFrame->size());//static_cast<DMAFDWrapper *>
+	cudaMemset((outFrame->data()), 0, outFrame->size());
 	mDetail->compute((frame->data()), (outFrame->data()));
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
