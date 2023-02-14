@@ -25,7 +25,7 @@ public:
 	{
 	}
 
-	void setMetadata(framemetadata_sp &metadata)
+	void setMetadata(framemetadata_sp& metadata)
 	{
 		if (mFrameType != metadata->getFrameType())
 		{
@@ -55,7 +55,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, false);
+			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -68,8 +68,8 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth(0);
 			h = rawMetadata->getHeight(0);
-			RawImagePlanarMetadata outputMetadata(w*props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE);
-	    	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE);
+			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
@@ -98,93 +98,96 @@ public:
 
 		mFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
+
+
+		double si, co;
+		si = sin(props.angle * PI / 180);
+		co = props.scale * cos(props.angle * PI / 180);
+		acoeff[0][0] = co;
+		acoeff[0][1] = -si;
+		acoeff[0][3] = props.x;
+		acoeff[1][0] = si;
+		acoeff[1][1] = co;
+		acoeff[1][2] = props.y;
+
 	}
 
-	bool compute(void *buffer, void *outBuffer)
-	{
-		auto status = NPP_SUCCESS;
-
-		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+		bool compute(void* buffer, void* outBuffer)
 		{
-			const Npp8u* src[3];
-			Npp8u* dst[3];
-			double si = sin(props.angle * PI / 180);
-			double co = props.scale * cos(props.angle * PI / 180);
-			double acoeff[2][3] = { {co, -si, props.x}, {si, co, props.y} };
+			auto status = NPP_SUCCESS;
 
-			for (auto i = 0; i < channels; i++)
+			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 			{
-				src[i] = static_cast<Npp8u*>(buffer) + srcNextPtrOffset[i];
-				dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
+				for (auto i = 0; i < channels; i++)
+				{
+					src[i] = static_cast<Npp8u*>(buffer) + srcNextPtrOffset[i];
+					dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
 
-				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
-					srcSize[i],
-					srcPitch[i],
-					srcRect[i],
-					dst[i],
-					dstPitch[i],
-					dstRect[i],
-					acoeff,
-					NPPI_INTER_NN,
-					nppStreamCtx);
+					status = nppiWarpAffine_8u_C1R_Ctx(src[i],
+						srcSize[i],
+						srcPitch[i],
+						srcRect[i],
+						dst[i],
+						dstPitch[i],
+						dstRect[i],
+						acoeff,
+						NPPI_INTER_NN,
+						nppStreamCtx);
+				}
 			}
+
+			if (mFrameType == FrameMetadata::RAW_IMAGE)
+			{
+
+				if (channels == 1 && depth == CV_8UC1)
+				{
+					status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						static_cast<Npp8u*>(outBuffer),
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						NPPI_INTER_NN,
+						nppStreamCtx);
+				}
+				else if (channels == 3)
+				{
+					status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						static_cast<Npp8u*>(outBuffer),
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						NPPI_INTER_NN,
+						nppStreamCtx);
+				}
+				else if (channels == 4)
+				{
+					status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						static_cast<Npp8u*>(outBuffer),
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						NPPI_INTER_NN,
+						nppStreamCtx);
+				}
+
+			}
+
+			if (status != NPP_SUCCESS)
+			{
+				LOG_ERROR << "resize failed<" << status << ">";
+			}
+			return true;
 		}
-
-		if (mFrameType == FrameMetadata::RAW_IMAGE)
-		{
-			double si, co;
-			si = sin(props.angle * PI / 180);
-			co = props.scale * cos(props.angle * PI / 180);
-			double acoeff[2][3] = { {co , -si ,  props.x}, {si, co , props.y} };
-
-			if (channels == 1 && depth == CV_8UC1)
-			{
-				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-					srcSize[0],
-					srcPitch[0],
-					srcRect[0],
-					static_cast<Npp8u*>(outBuffer),
-					dstPitch[0],
-					dstRect[0],
-					acoeff,
-					NPPI_INTER_NN,
-					nppStreamCtx);
-			}
-			else if (channels == 3)
-			{
-				status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-					srcSize[0],
-					srcPitch[0],
-					srcRect[0],
-					static_cast<Npp8u*>(outBuffer),
-					dstPitch[0],
-					dstRect[0],
-					acoeff,
-					NPPI_INTER_NN,
-					nppStreamCtx);
-			}
-			else if (channels == 4)
-			{
-				status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-					srcSize[0],
-					srcPitch[0],
-					srcRect[0],
-					static_cast<Npp8u*>(outBuffer),
-					dstPitch[0],
-					dstRect[0],
-					acoeff,
-					NPPI_INTER_NN,
-					nppStreamCtx);
-			}
-
-		}
-
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "resize failed<" << status << ">";
-		}
-		return true;
-	}
+	
 
 	void setProps(AffineTransformProps &mprops)
 	{
@@ -257,6 +260,10 @@ public:
 	double shiftY;
 	void *ctx;
 	NppStreamContext nppStreamCtx;
+
+	const Npp8u* src[3];
+	Npp8u* dst[3];
+	double acoeff[2][3] = { {1, -1, 1}, {1, 1, 1} };
 };
 
 AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props)
@@ -348,7 +355,6 @@ bool AffineTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
-	cudaFree(0);
 	cudaMemset((outFrame->data()), 0, outFrame->size());
 	mDetail->compute((frame->data()), (outFrame->data()));
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
