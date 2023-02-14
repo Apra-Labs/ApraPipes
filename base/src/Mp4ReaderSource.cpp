@@ -504,7 +504,6 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 		return true;
 	}
 	
-	
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
 
 	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
@@ -521,7 +520,6 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	if (metadataActualSize)
 	{
 		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-		metadataSizeFrame->timestamp = frameTSInMsecs;
 		metadataSizeFrame->timestamp = frameTSInMsecs;
 		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
 	}
@@ -788,7 +786,6 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
-		return mDetail->randomSeek(seekCmd.seekStartTS,seekCmd.seekEndTS);
 		return mDetail->randomSeek(seekCmd.seekStartTS,seekCmd.seekEndTS);
 	}
 	else
