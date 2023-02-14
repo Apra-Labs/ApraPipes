@@ -125,8 +125,6 @@ public:
 
 		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 
-		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-
 		if (count > 0) {
 			LOG_DEBUG << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
@@ -375,7 +373,6 @@ protected:
 		int videotrack = -1;
 		int metatrack = -1;
 		int ntracks = -1;
-		uint64_t startTimeStamp = 0;
 		uint64_t startTimeStamp = 0;
 		uint32_t mParsedFilesCount = 0;
 		uint32_t mVideoCounter = 0;
