@@ -7,6 +7,7 @@
 #include "Frame.h"
 #include "Command.h"
 #include "libmp4.h"
+#include "H264Utils.h"
 
 class Mp4readerDetailAbs
 {
@@ -28,6 +29,7 @@ public:
 	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
+	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType) = 0;
 
 	void setProps(Mp4ReaderSourceProps& props)
 	{
@@ -123,13 +125,23 @@ public:
 
 		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 
+		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+
 		if (count > 0) {
-			LOG_INFO << "Reading User Metadata Key-Values\n";
+			LOG_DEBUG << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
-				if ((keys[i]) && (values[i]) && !strcmp(keys[i], "\251too"))
+				if ((keys[i]) && (values[i]))
 				{
-					LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
-					mState.mSerFormatVersion.assign(values[i]);
+					if (!strcmp(keys[i], "\251too"))
+					{
+						LOG_DEBUG << "key <" << keys[i] << ",<" << values[i] << ">";
+						mState.mSerFormatVersion.assign(values[i]);
+					}
+					if (!strcmp(keys[i], "\251sts"))
+					{
+						LOG_DEBUG << "key <" << keys[i] << ",<" << values[i] << ">";
+						mState.startTimeStamp = std::stoull(values[i]);
+					}
 				}
 			}
 		}
@@ -175,16 +187,69 @@ public:
 			openVideoStartingTS = mState.startTimeStamp;
 		}
 
+		try
+		{
+			openVideoStartingTS = std::stoull(boostVideoTS);
+			mState.startTimeStamp = std::stoull(boostVideoTS);
+		}
+		catch (std::invalid_argument)
+		{
+			if (!mState.startTimeStamp)
+			{
+				throw AIPException(AIP_FATAL, "unexpected state - starting ts not found in video name or metadata");
+			}
+			openVideoStartingTS = mState.startTimeStamp;
+		}
+
 		setMetadata();
 		return true;
 	}
 
-	bool randomSeek(uint64_t& skipTS)
+	bool randomSeek(uint64_t& skipTS, uint64_t _seekEndTS)
 	{
 		/* Takes a timestamp and sets proper mVideoFile and mParsedFilesCount (in case new parse is required) and initNewVideo().
 		* Also, seeks to correct frame in the mVideoFile. If seek within in the videoFile fails, moving to next available video is attempted.
 		* If all ways to seek fails, the read state is reset.
 		*/
+		seekEndTS = _seekEndTS;
+
+		if (!mProps.parseFS)
+		{
+			int seekedToFrame = -1;
+			uint64_t skipMsecsInFile = 0;
+
+			if (!mState.startTimeStamp)
+			{
+				LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
+				return false;
+			}
+			if (skipTS < mState.startTimeStamp)
+			{
+				LOG_INFO << "seek time outside range. Seeking to start of video.";
+				skipMsecsInFile = 0;
+			}
+			else
+			{
+				skipMsecsInFile = skipTS - mState.startTimeStamp;
+			}
+
+			LOG_DEBUG << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+
+			uint64_t time_offset_usec = skipMsecsInFile * 1000;
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
+			mState.mFrameCounter = seekedToFrame;
+			if (returnCode == -ENFILE)
+			{
+				LOG_INFO << "Query time beyond the EOF. Resuming...";
+				return true;
+			}
+			if (returnCode < 0)
+			{
+				LOG_ERROR << "Seek failed. Unexpected error.";
+				return false;
+			}
+			return true;
+		}
 
 		DemuxAndParserState tempState = mState;
 		std::string skipVideoFile;
@@ -217,8 +282,7 @@ public:
 		if (skipMsecsInFile)
 		{
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
-			int seekedToFrame = -1;
-			int returnCode = mp4_demux_seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC, &seekedToFrame);
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
 			// to determine the end of video
 			mState.mFrameCounter = seekedToFrame;
 
@@ -295,6 +359,7 @@ public:
 			}
 			++mState.mFrameCounter;
 		}
+		
 		return;
 	}
 	Mp4ReaderSourceProps mProps;
@@ -311,6 +376,7 @@ protected:
 		int metatrack = -1;
 		int ntracks = -1;
 		uint64_t startTimeStamp = 0;
+		uint64_t startTimeStamp = 0;
 		uint32_t mParsedFilesCount = 0;
 		uint32_t mVideoCounter = 0;
 		uint32_t mFrameCounter = 0;
@@ -322,6 +388,8 @@ protected:
 		Mp4ReaderSourceProps props;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
+	uint64_t seekEndTS = 9999999999999;
+	int seekedToFrame = -1;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -351,6 +419,7 @@ public:
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
 	void sendEndOfStream() {}
+	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 };
 
 class Mp4readerDetailH264 : public Mp4readerDetailAbs
@@ -364,11 +433,14 @@ public:
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
 	void sendEndOfStream();
+	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
+	bool seekedToEndTS = false;
+	bool isRandomSeek = true;
 };
 
 void Mp4readerDetailJpeg::setMetadata()
@@ -389,6 +461,12 @@ void Mp4readerDetailJpeg::setMetadata()
 	return;
 }
 
+int Mp4readerDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType) 
+{
+	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
+	return ret;
+}
+
 bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, encodedImagePinId);
@@ -403,7 +481,7 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	{
 		return true;
 	}
-
+	
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
 
 	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
@@ -411,11 +489,16 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
 
+	if (seekEndTS <= frameTSInMsecs)
+	{
+		return true;
+	}
+
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{
 		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-
+		metadataSizeFrame->timestamp = frameTSInMsecs;
 		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
 	}
 	return true;
@@ -450,6 +533,12 @@ void Mp4readerDetailH264::setMetadata()
 	return;
 }
 
+int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType)
+{
+	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+	return ret;
+}
+
 void Mp4readerDetailH264::sendEndOfStream()
 {
 	sendEOS();
@@ -482,10 +571,11 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 	size_t imageActualSize = 0;
 
-	if (mState.randomSeekParseFlag)
+	if (mState.randomSeekParseFlag && isRandomSeek)
 	{
 		prependSpsPps(tmpBuffer);
 		imageActualSize = spsSize + ppsSize + 8;
+		isRandomSeek = false;
 	}
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize,mp4FramePinId);
 	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(tmpBuffer.data());
@@ -499,17 +589,42 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, h264ImagePinId);
+	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
+	auto ret = H264Utils::parseNalu(tempBuffer);
+	short typeFound;
+	const_buffer spsBuff, ppsBuff;
+	tie(typeFound, spsBuff, ppsBuff) = ret; 
 
 	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
 	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
 
+	if (seekedToEndTS)
+	{
+		return true;
+	}
+
+	if (seekEndTS <= frameTSInMsecs && !mProps.bFramesEnabled)
+	{
+		return true;
+	}
+
+	if (seekEndTS <= frameTSInMsecs && mProps.bFramesEnabled)
+	{
+		if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
+		{
+			frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
+			seekedToEndTS = true;
+			return true;
+		}
+	}
+
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataActualSize)
 	{
 		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-
+		metadataSizeFrame->timestamp = frameTSInMsecs;
 		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
 	}
 	return true;
@@ -648,7 +763,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
-		return mDetail->randomSeek(seekCmd.skipTS);
+		return mDetail->randomSeek(seekCmd.seekStartTS,seekCmd.seekEndTS);
 	}
 	else
 	{
@@ -656,8 +771,8 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 }
 
-bool Mp4ReaderSource::randomSeek(uint64_t skipTS)
+bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS, uint64_t seekEndTS)
 {
-	Mp4SeekCommand cmd(skipTS);
+	Mp4SeekCommand cmd(seekStartTS, seekEndTS);
 	return queueCommand(cmd);
 }
