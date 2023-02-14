@@ -1,3 +1,6 @@
+#include <npp.h>
+#include <opencv2/core.hpp>
+#include <CuCtxSynchronize.h>
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -5,11 +8,8 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "math.h"
-#include "opencv2/core.hpp"
-#include "CuCtxSynchronize.h"
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
-#include "npp.h"
 
 #define PI 3.14159265
 
@@ -25,7 +25,7 @@ public:
 	{
 	}
 
-	void setMetadata(framemetadata_sp& metadata)
+	void setMetadata(framemetadata_sp &metadata)
 	{
 		if (mFrameType != metadata->getFrameType())
 		{
@@ -78,7 +78,7 @@ public:
 		switch (imageType)
 		{
 		case ImageMetadata::MONO:
-			if (depth != CV_8U && depth != CV_16U)
+			if (depth != CV_8U)
 			{
 				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
 			}
@@ -98,96 +98,93 @@ public:
 
 		mFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
-
-
 		double si, co;
 		si = sin(props.angle * PI / 180);
 		co = props.scale * cos(props.angle * PI / 180);
 		acoeff[0][0] = co;
 		acoeff[0][1] = -si;
-		acoeff[0][3] = props.x;
+		acoeff[0][2] = props.x;
 		acoeff[1][0] = si;
 		acoeff[1][1] = co;
 		acoeff[1][2] = props.y;
-
 	}
 
-		bool compute(void* buffer, void* outBuffer)
+	bool compute(void *buffer, void *outBuffer)
+	{
+		auto status = NPP_SUCCESS;
+		auto bufferNPP = static_cast<Npp8u *>(buffer);
+		auto outBufferNPP = static_cast<Npp8u *>(outBuffer);
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			auto status = NPP_SUCCESS;
-
-			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+			for (auto i = 0; i < channels; i++)
 			{
-				for (auto i = 0; i < channels; i++)
-				{
-					src[i] = static_cast<Npp8u*>(buffer) + srcNextPtrOffset[i];
-					dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
+				src[i] = bufferNPP + srcNextPtrOffset[i];
+				dst[i] = outBufferNPP + dstNextPtrOffset[i];
 
-					status = nppiWarpAffine_8u_C1R_Ctx(src[i],
-						srcSize[i],
-						srcPitch[i],
-						srcRect[i],
-						dst[i],
-						dstPitch[i],
-						dstRect[i],
-						acoeff,
-						NPPI_INTER_NN,
-						nppStreamCtx);
-				}
+				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
+												   srcSize[i],
+												   srcPitch[i],
+												   srcRect[i],
+												   dst[i],
+												   dstPitch[i],
+												   dstRect[i],
+												   acoeff,
+												   NPPI_INTER_NN,
+												   nppStreamCtx);
 			}
-
-			if (mFrameType == FrameMetadata::RAW_IMAGE)
-			{
-
-				if (channels == 1 && depth == CV_8UC1)
-				{
-					status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						static_cast<Npp8u*>(outBuffer),
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						NPPI_INTER_NN,
-						nppStreamCtx);
-				}
-				else if (channels == 3)
-				{
-					status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						static_cast<Npp8u*>(outBuffer),
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						NPPI_INTER_NN,
-						nppStreamCtx);
-				}
-				else if (channels == 4)
-				{
-					status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(static_cast<Npp8u*>(buffer)),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						static_cast<Npp8u*>(outBuffer),
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						NPPI_INTER_NN,
-						nppStreamCtx);
-				}
-
-			}
-
-			if (status != NPP_SUCCESS)
-			{
-				LOG_ERROR << "resize failed<" << status << ">";
-			}
-			return true;
 		}
-	
+
+		if (mFrameType == FrameMetadata::RAW_IMAGE)
+		{
+
+			if (channels == 1 && depth == CV_8UC1)
+			{
+				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u *>(bufferNPP),
+												   srcSize[0],
+												   srcPitch[0],
+												   srcRect[0],
+												   outBufferNPP,
+												   dstPitch[0],
+												   dstRect[0],
+												   acoeff,
+												   NPPI_INTER_NN,
+												   nppStreamCtx);
+			}
+			else if (channels == 3)
+			{
+				status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u *>(bufferNPP),
+												   srcSize[0],
+												   srcPitch[0],
+												   srcRect[0],
+												   outBufferNPP,
+												   dstPitch[0],
+												   dstRect[0],
+												   acoeff,
+												   NPPI_INTER_NN,
+												   nppStreamCtx);
+			}
+			else if (channels == 4)
+			{
+				status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u *>(bufferNPP),
+												   srcSize[0],
+												   srcPitch[0],
+												   srcRect[0],
+												   outBufferNPP,
+												   dstPitch[0],
+												   dstRect[0],
+												   acoeff,
+												   NPPI_INTER_NN,
+												   nppStreamCtx);
+			}
+		}
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "resize failed<" << status << ">";
+			throw AIPException(AIP_FATAL, "Failed to tranform the image");
+		}
+		return true;
+	}
 
 	void setProps(AffineTransformProps &mprops)
 	{
@@ -212,12 +209,12 @@ public:
 			auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
 
 			channels = inputRawMetadata->getChannels();
-			srcSize[0] = { inputRawMetadata->getWidth(), inputRawMetadata->getHeight() };
-			srcRect[0] = { 0, 0, inputRawMetadata->getWidth(), inputRawMetadata->getHeight() };
+			srcSize[0] = {inputRawMetadata->getWidth(), inputRawMetadata->getHeight()};
+			srcRect[0] = {0, 0, inputRawMetadata->getWidth(), inputRawMetadata->getHeight()};
 			srcPitch[0] = static_cast<int>(inputRawMetadata->getStep());
 			srcNextPtrOffset[0] = 0;
-			dstSize[0] = { outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
-			dstRect[0] = { 0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
+			dstSize[0] = {outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
+			dstRect[0] = {0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
 			dstPitch[0] = static_cast<int>(outputRawMetadata->getStep());
 			dstNextPtrOffset[0] = 0;
 		}
@@ -230,13 +227,13 @@ public:
 
 			for (auto i = 0; i < channels; i++)
 			{
-				srcSize[i] = { inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i) };
-				srcRect[i] = { 0, 0, inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i) };
+				srcSize[i] = {inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i)};
+				srcRect[i] = {0, 0, inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i)};
 				srcPitch[i] = static_cast<int>(inputRawMetadata->getStep(i));
 				srcNextPtrOffset[i] = inputRawMetadata->getNextPtrOffset(i);
 
-				dstSize[i] = { outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
-				dstRect[i] = { 0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
+				dstSize[i] = {outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i)};
+				dstRect[i] = {0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i)};
 				dstPitch[i] = static_cast<int>(outputRawMetadata->getStep(i));
 				dstNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
 			}
@@ -261,9 +258,9 @@ public:
 	void *ctx;
 	NppStreamContext nppStreamCtx;
 
-	const Npp8u* src[3];
-	Npp8u* dst[3];
-	double acoeff[2][3] = { {1, -1, 1}, {1, 1, 1} };
+	Npp8u *src[3];
+	Npp8u *dst[3];
+	double acoeff[2][3] = {{-1, -1, -1}, {-1, -1, -1}};
 };
 
 AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props)
@@ -355,8 +352,8 @@ bool AffineTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
-	cudaMemset((outFrame->data()), 0, outFrame->size());
-	mDetail->compute((frame->data()), (outFrame->data()));
+	cudaMemset(outFrame->data(), 0, outFrame->size());
+	mDetail->compute(frame->data(), outFrame->data());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
 
