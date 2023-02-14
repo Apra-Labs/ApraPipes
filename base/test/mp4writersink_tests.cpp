@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(130);
+	Test_Utils::sleep_for_seconds(70);
 
 	p->stop();
 	p->term();
@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(130);
+	Test_Utils::sleep_for_seconds(60);
 	
 	p->stop();
 	p->term();

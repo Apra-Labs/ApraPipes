@@ -82,6 +82,7 @@ public:
 	void setProps(Mp4ReaderSourceProps& props);
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS);
+	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS);
 protected:
 	bool produce();
 	bool validateOutputPins();
