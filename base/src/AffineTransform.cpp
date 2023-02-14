@@ -55,7 +55,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE,true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
