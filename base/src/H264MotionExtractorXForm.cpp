@@ -26,7 +26,6 @@ public:
     int initDecoder()
     {
 		int ret;
-		AVCodecContext* dec_ctx = NULL;
 		AVCodec* dec = NULL;
 		AVDictionary* opts = NULL;
 		dec = avcodec_find_decoder(AV_CODEC_ID_H264);
@@ -79,8 +78,14 @@ public:
 
         pkt->data = (uint8_t*)inFrame->data();
         pkt->size = (int)inFrame->size();
-
-        int ret = avcodec_send_packet(video_dec_ctx, pkt);
+        int got_eos;
+        avcodec_decode_video2(dec_ctx, frame, &got_eos, pkt);
+        std::string imageName = "C:/Users/developer/workspace/image/yuv" + std::to_string(imageCount) + ".raw";
+        outImage.open(imageName, std::ios::out | std::ios::binary);
+        outImage.write((const char*)frame->data[0], frame->width * frame->height * 1.5);
+        outImage.close();
+            imageCount++;
+        /*int ret = avcodec_send_packet(video_dec_ctx, pkt);
         if (ret < 0) 
         {
             LOG_ERROR << stderr <<  "Error while sending a packet to the decoder: %s\n";
@@ -102,6 +107,7 @@ public:
 
             if (ret >= 0) 
             {
+                int i;*/
                 int i;
                 AVFrameSideData* sd;
 
@@ -122,8 +128,8 @@ public:
                     }
                 }
                 av_frame_unref(frame);
-            }
-        }
+            //}
+        //}
         fpOut.close();
         return 0;
     }
@@ -135,8 +141,11 @@ private:
     AVFrame* frame = NULL;
     int video_frame_count = 0;
     int count = 0;
+    int imageCount = 0;
     int fCount = 0;
     std::ofstream fpOut;
+    std::ofstream outImage;
+    AVCodecContext* dec_ctx = NULL;
 };
 
 
