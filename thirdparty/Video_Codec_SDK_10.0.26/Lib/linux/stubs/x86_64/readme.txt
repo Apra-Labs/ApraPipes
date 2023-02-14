@@ -1,5 +1,5 @@
 Note: 
-libnvidia-encode.so.1 is a copy of libnvidia-encode.so instead of a symbolic link
+libnvidia-encode.so.1 and libnvcuvid.so.1  are copies of their respective *.so files instead of symbolic links
 
 this was done to support WSL build where a checkout done on windows never created a symbolic link.
 
