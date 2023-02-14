@@ -31,7 +31,6 @@ public:
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
 	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType) = 0;
-	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType) = 0;
 
 	void setProps(Mp4ReaderSourceProps& props)
 	{
@@ -140,8 +139,6 @@ public:
 
 		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 
-		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-
 		if (count > 0) {
 			LOG_DEBUG << "Reading User Metadata Key-Values\n";
 			for (auto i = 0; i < count; i++) {
@@ -186,20 +183,6 @@ public:
 		{
 			LOG_ERROR << "No Videotrack found in the video <" << mState.mVideoPath << " Stopping.";
 			throw AIPException(AIP_FATAL, "No video track found");
-		}
-
-		try
-		{
-			openVideoStartingTS = std::stoull(boostVideoTS);
-			mState.startTimeStamp = std::stoull(boostVideoTS);
-		}
-		catch (std::invalid_argument)
-		{
-			if (!mState.startTimeStamp)
-			{
-				throw AIPException(AIP_FATAL, "unexpected state - starting ts not found in video name or metadata");
-			}
-			openVideoStartingTS = mState.startTimeStamp;
 		}
 
 		try
@@ -297,7 +280,6 @@ public:
 		if (skipMsecsInFile)
 		{
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
-			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
 			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
 			// to determine the end of video
 			mState.mFrameCounter = seekedToFrame;
@@ -414,7 +396,6 @@ protected:
 		int metatrack = -1;
 		int ntracks = -1;
 		uint64_t startTimeStamp = 0;
-		uint64_t startTimeStamp = 0;
 		uint32_t mParsedFilesCount = 0;
 		uint32_t mVideoCounter = 0;
 		uint32_t mFrameCounter = 0;
@@ -461,7 +442,6 @@ public:
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
 	void sendEndOfStream() {}
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
-	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 };
 
 class Mp4readerDetailH264 : public Mp4readerDetailAbs
@@ -476,14 +456,11 @@ public:
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
 	void sendEndOfStream();
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
-	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType);
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
-	bool seekedToEndTS = false;
-	bool isRandomSeek = true;
 	bool seekedToEndTS = false;
 	bool isRandomSeek = true;
 };
@@ -512,12 +489,6 @@ int Mp4readerDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp
 	return ret;
 }
 
-int Mp4readerDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType) 
-{
-	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
-	return ret;
-}
-
 bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, encodedImagePinId);
@@ -535,17 +506,6 @@ bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
 	
 	
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
-
-	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
-	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
-
-	trimmedImgFrame->timestamp = frameTSInMsecs;
-
-	if (seekEndTS <= frameTSInMsecs)
-	{
-		return true;
-	}
-
 
 	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
 	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
@@ -603,12 +563,6 @@ int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp
 	return ret;
 }
 
-int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType)
-{
-	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
-	return ret;
-}
-
 void Mp4readerDetailH264::sendEndOfStream()
 {
 	sendEOS();
@@ -642,11 +596,9 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	size_t imageActualSize = 0;
 
 	if (mState.randomSeekParseFlag && isRandomSeek)
-	if (mState.randomSeekParseFlag && isRandomSeek)
 	{
 		prependSpsPps(tmpBuffer);
 		imageActualSize = spsSize + ppsSize + 8;
-		isRandomSeek = false;
 		isRandomSeek = false;
 	}
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize,mp4FramePinId);
@@ -661,37 +613,6 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	}
 
 	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, h264ImagePinId);
-	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
-	auto ret = H264Utils::parseNalu(tempBuffer);
-	short typeFound;
-	const_buffer spsBuff, ppsBuff;
-	tie(typeFound, spsBuff, ppsBuff) = ret; 
-
-	uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
-	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
-
-	trimmedImgFrame->timestamp = frameTSInMsecs;
-
-	if (seekedToEndTS)
-	{
-		return true;
-	}
-
-	if (seekEndTS <= frameTSInMsecs && !mProps.bFramesEnabled)
-	{
-		return true;
-	}
-
-	if (seekEndTS <= frameTSInMsecs && mProps.bFramesEnabled)
-	{
-		if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
-		{
-			frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
-			seekedToEndTS = true;
-			return true;
-		}
-	}
-
 	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
 	auto ret = H264Utils::parseNalu(tempBuffer);
 	short typeFound;
@@ -877,9 +798,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 }
 
 bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS, uint64_t seekEndTS)
-bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS, uint64_t seekEndTS)
 {
-	Mp4SeekCommand cmd(seekStartTS, seekEndTS);
 	Mp4SeekCommand cmd(seekStartTS, seekEndTS);
 	return queueCommand(cmd);
 }
