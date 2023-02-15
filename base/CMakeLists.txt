@@ -385,6 +385,7 @@ SET(CUDA_IP_FILES
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp		
+	src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -409,6 +410,8 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
+		src/H264DecoderV4L2Helper.cpp
+		src/H264DecoderV4L2Helper.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -416,6 +419,8 @@ ELSE()
 		src/JPEGEncoderNVJPEG.cpp
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
+		src/H264DecoderNvCodecHelper.cpp
+		src/H264DecoderNvCodecHelper.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -429,6 +434,7 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
+	include/H264Decoder.h
 )
 
 IF(ENABLE_ARM64)
@@ -539,6 +545,7 @@ IF (ENABLE_ARM64)
 		test/cuda_arm_tests.cpp
 		test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
+		test/h264decoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -561,6 +568,7 @@ IF (ENABLE_CUDA)
 			test/h264Encodernvcodec_tests.cpp
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
+			test/h264decoder_tests.cpp
 		)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
@@ -605,7 +613,7 @@ SET(UT_FILES
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
 	test/multimediaqueuexform_tests.cpp
-	test/mp4readersource_tests.cpp
+  	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motion_extractor_tests.cpp
