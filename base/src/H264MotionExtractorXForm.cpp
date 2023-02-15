@@ -41,7 +41,7 @@ public:
 		}
 	}
 
-	void decodeAndGetMV(frame_sp inFrame, frame_sp& outFrame)
+	void getMotionVectors(frame_sp inFrame, frame_sp& outFrame)
 	{
 		int ret = 0;
 		AVPacket* pkt = NULL;
@@ -57,12 +57,12 @@ public:
 		{
 			LOG_ERROR << "Could not allocate AVPacket\n";
 		}
-		ret = decodePacket(pkt, inFrame, outFrame);
+		ret = getMotionVectors(pkt, inFrame, outFrame);
 		av_packet_unref(pkt);
 		av_frame_free(&avFrame);
 	}
 
-	int decodePacket(AVPacket* pkt, frame_sp inFrame, frame_sp& outFrame)
+	int getMotionVectors(AVPacket* pkt, frame_sp inFrame, frame_sp& outFrame)
 	{
 		pkt->data = (uint8_t*)inFrame->data();
 		pkt->size = (int)inFrame->size();
@@ -184,7 +184,7 @@ bool MotionExtractor::process(frame_container& frames)
 
 	auto inFrame = frames.begin()->second;
 	frame_sp outFrame;
-	mDetail->decodeAndGetMV(inFrame, outFrame);
+	mDetail->getMotionVectors(inFrame, outFrame);
 
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
