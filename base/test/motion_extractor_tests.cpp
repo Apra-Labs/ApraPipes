@@ -11,7 +11,7 @@
 
 BOOST_AUTO_TEST_SUITE(motion_vectors_tests)
 
-BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(basic)
 {
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
@@ -20,27 +20,26 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
 	fileReader->addOutputPin(metadata);
 
-	auto m1 = boost::shared_ptr<Module>(new MotionExtractor(MotionExtractorProps()));
-	fileReader->setNext(m1);
+	auto motionExtractor = boost::shared_ptr<Module>(new MotionExtractor(MotionExtractorProps()));
+	fileReader->setNext(motionExtractor);
 
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	m1->setNext(sink);
+	motionExtractor->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
-	BOOST_TEST(m1->init());
+	BOOST_TEST(motionExtractor->init());
 	BOOST_TEST(sink->init());
 
 	fileReader->play(true);
-	int i;
-	for (i = 0; i < 231; i++)
+
+	for (int i = 0; i < 231; i++)
 	{
 		fileReader->step();
-		m1->step();
-		sink->step();
+		motionExtractor->step();
+		auto frames = sink->pop();
+		auto frame = frames.begin()->second;
+		BOOST_TEST(frame->getMetadata()->getFrameType() == FrameMetadata::MOTION_VECTOR_DATA);
 	}
-	m1->step();
-	//m1->step();
-	LOG_INFO << "completed";
 }
 
 BOOST_AUTO_TEST_SUITE_END()
