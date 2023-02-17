@@ -197,6 +197,7 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
 	src/H264MotionExtractorXForm.cpp
+	src/OverlayMotionVectors.cpp
 )
 
 SET(CORE_FILES_H
@@ -255,6 +256,7 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/H264MotionExtractorXForm.h
+	include/OverlayMotionVectors.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -617,6 +619,7 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motion_extractor_tests.cpp
+	test/overlay_motion_vectors_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
