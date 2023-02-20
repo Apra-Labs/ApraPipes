@@ -196,7 +196,7 @@ SET(CORE_FILES
    	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
-	src/H264MotionExtractorXForm.cpp
+	src/MotionVectorExtractor.cpp
 	src/OverlayMotionVectors.cpp
 )
 
@@ -255,7 +255,7 @@ SET(CORE_FILES_H
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
-	include/H264MotionExtractorXForm.h
+	include/MotionVectorExtractor.h
 	include/OverlayMotionVectors.h
 )
 
@@ -618,8 +618,7 @@ SET(UT_FILES
   	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
-	test/motion_extractor_tests.cpp
-	test/overlay_motion_vectors_tests.cpp
+	test/motionvector_extractor_and_overlay_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

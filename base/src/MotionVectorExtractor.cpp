@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <boost/foreach.hpp>
 extern "C"
 {
 #include <libavutil/motion_vector.h>
@@ -7,26 +8,27 @@ extern "C"
 #include <libavutil\imgutils.h>
 #include <libswscale\swscale.h>
 }
-#include "H264MotionExtractorXForm.h"
+#include "MotionVectorExtractor.h"
 #include "H264Metadata.h"
-#include "fstream"
+#include "H264ParserUtils.h"
 
-class MotionExtractor::Detail
+class MotionVectorExtractor::Detail
 {
 public:
-	Detail(MotionExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinID)
+	Detail(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId)
 	{
-		makeFrameWithPinId = _makeFrameWithPinID;
+		makeFrameWithPinId = _makeFrameWithPinId;
 		makeFrame = _makeFrame;
+		sendDecodedFrame = props.sendDecodedFrame;
 	};
 	~Detail()
 	{
 		avcodec_free_context(&decoderContext);
 	}
 
-	void setProps(MotionExtractorProps props)
+	void setProps(MotionVectorExtractorProps props)
 	{
-		sendRgbFrame = props.sendRgbFrame;
+		sendDecodedFrame = props.sendDecodedFrame;
 	}
 
 	void initDecoder()
@@ -51,7 +53,7 @@ public:
 		}
 	}
 
-	void getMotionVectors(frame_sp inFrame, frame_sp& outFrame, frame_sp& rgbFrame)
+	void getMotionVectors(frame_sp inFrame, frame_sp& outFrame, frame_sp& decodedFrame)
 	{
 		int ret = 0;
 		AVPacket* pkt = NULL;
@@ -67,12 +69,12 @@ public:
 		{
 			LOG_ERROR << "Could not allocate AVPacket\n";
 		}
-		ret = getMotionVectors(pkt, inFrame, outFrame, rgbFrame);
-		av_packet_unref(pkt);
+		ret = decodeAndGetMotionVectors(pkt, inFrame, outFrame, decodedFrame);
+		av_packet_free(&pkt);
 		av_frame_free(&avFrame);
 	}
 
-	int getMotionVectors(AVPacket* pkt, frame_sp inFrame, frame_sp& outFrame, frame_sp& rgbFrame)
+	int decodeAndGetMotionVectors(AVPacket* pkt, frame_sp inFrame, frame_sp& outFrame, frame_sp& decodedFrame)
 	{
 		pkt->data = (uint8_t*)inFrame->data();
 		pkt->size = (int)inFrame->size();
@@ -97,7 +99,7 @@ public:
 				return ret;
 			}
 
-			if (sendRgbFrame)
+			if (sendDecodedFrame)
 			{
 				SwsContext* sws_context = sws_getContext(
 					decoderContext->width, decoderContext->height, decoderContext->pix_fmt,
@@ -106,18 +108,18 @@ public:
 				if (!sws_context) {
 					// Handle error
 				}
-				rgbFrame = makeFrameWithPinId(mWidth * mHeight * 3, rawFramePinId);
+				decodedFrame = makeFrameWithPinId(mWidth * mHeight * 3, rawFramePinId);
 
 				int dstStrides[AV_NUM_DATA_POINTERS];
-				dstStrides[0] = decoderContext->width * 3; // Assuming RGB format
+				dstStrides[0] = decoderContext->width * 3; // Assuming BGR format
 				uint8_t* dstData[AV_NUM_DATA_POINTERS];
-				dstData[0] = static_cast<uint8_t*>(rgbFrame->data());
+				dstData[0] = static_cast<uint8_t*>(decodedFrame->data());
 
 				sws_scale(sws_context, avFrame->data, avFrame->linesize, 0, decoderContext->height, dstData, dstStrides);
 			}
 			else
 			{
-				rgbFrame = makeFrameWithPinId(0, rawFramePinId);
+				decodedFrame = makeFrameWithPinId(0, rawFramePinId);
 			}
 			if (ret >= 0)
 			{
@@ -129,7 +131,6 @@ public:
 				if (sideData)
 				{
 					const AVMotionVector* motionVectors = (const AVMotionVector*)sideData->data;
-					auto mvsSize = sizeof(*motionVectors);
 					outFrame = makeFrame(sideData->size);
 					memcpy(outFrame->data(), motionVectors, sideData->size);
 				}
@@ -137,6 +138,7 @@ public:
 				{
 					outFrame = makeFrame(0);
 				}
+				av_packet_unref(pkt);
 				av_frame_unref(avFrame);
 			}
 		}
@@ -147,16 +149,15 @@ public:
 	int mHeight = 0;
 	std::string rawFramePinId;
 private:
-	AVFormatContext* fmt_ctx = NULL;
 	AVFrame* avFrame = NULL;
 	AVCodecContext* decoderContext = NULL;
 	std::function<frame_sp(size_t)> makeFrame;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
-	bool sendRgbFrame = false;
+	bool sendDecodedFrame = false;
 };
 
 
-MotionExtractor::MotionExtractor(MotionExtractorProps props) : Module(TRANSFORM, "MotionExtractor", props)
+MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props)
 {
 	mDetail.reset(new Detail(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }));
 	auto outputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::MOTION_VECTOR_DATA));
@@ -165,18 +166,18 @@ MotionExtractor::MotionExtractor(MotionExtractorProps props) : Module(TRANSFORM,
 	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
 }
 
-bool MotionExtractor::init()
+bool MotionVectorExtractor::init()
 {
 	mDetail->initDecoder();
 	return Module::init();
 }
 
-bool MotionExtractor::term()
+bool MotionVectorExtractor::term()
 {
 	return Module::term();
 }
 
-bool MotionExtractor::validateInputPins()
+bool MotionVectorExtractor::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
@@ -194,76 +195,85 @@ bool MotionExtractor::validateInputPins()
 	return true;
 }
 
-bool MotionExtractor::validateOutputPins()
+bool MotionVectorExtractor::validateOutputPins()
 {
 	auto size = getNumberOfOutputPins();
 	if (getNumberOfOutputPins() > 2)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 2. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
-	framemetadata_sp metadata = getFirstOutputMetadata();
-	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::MOTION_VECTOR_DATA)
+	pair<string, framefactory_sp> me; // map element	
+	auto framefactoryByPin = getOutputFrameFactory();
+	BOOST_FOREACH(me, framefactoryByPin)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MOTION_VECTOR_DATA. Actual<" << frameType << ">";
-		return false;
+		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
+		if (frameType != FrameMetadata::MOTION_VECTOR_DATA && frameType != FrameMetadata::RAW_IMAGE)
+		{
+			LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MOTION_VECTOR_DATA or RAW_IMAGE. Actual<" << frameType << ">";
+			return false;
+		}
 	}
 
 	return true;
 }
 
-bool MotionExtractor::shouldTriggerSOS()
+bool MotionVectorExtractor::shouldTriggerSOS()
 {
-	return true;
+	return mShouldTriggerSOS;
 }
 
-bool MotionExtractor::process(frame_container& frames)
+bool MotionVectorExtractor::process(frame_container& frames)
 {
 
 	auto inFrame = frames.begin()->second;
 	frame_sp motionVectorFrame;
-	frame_sp rgbFrame;
-	mDetail->getMotionVectors(inFrame, motionVectorFrame, rgbFrame);
+	frame_sp decodedFrame;
+	mDetail->getMotionVectors(inFrame, motionVectorFrame, decodedFrame);
 
 	frames.insert(make_pair(motionVectorPinId, motionVectorFrame));
-	frames.insert(make_pair(mDetail->rawFramePinId, rgbFrame));
+	frames.insert(make_pair(mDetail->rawFramePinId, decodedFrame));
 	send(frames);
 	return true;
 }
 
-void MotionExtractor::setMetadata(framemetadata_sp& metadata)
+void MotionVectorExtractor::setMetadata(frame_sp frame)
 {
+	auto metadata = frame->getMetadata();
 	if (!metadata->isSet())
 	{
 		return;
 	}
+	sps_pps_properties p;
+	H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+	mDetail->mWidth = p.width;
+	mDetail->mHeight = p.height;
 
-	auto rawMetadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
-	mDetail->mWidth = rawMetadata->getWidth();
-	mDetail->mHeight = rawMetadata->getHeight();
-	RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), ImageMetadata::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
+	RawImageMetadata outputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(rawOutputMetadata);
 	rawOutMetadata->setData(outputMetadata);
-}
-bool MotionExtractor::processSOS(frame_sp& frame)
-{
-	auto metadata = frame->getMetadata();
-	setMetadata(metadata);
 
+	auto h264Metadata = framemetadata_sp(new H264Metadata(mDetail->mWidth, mDetail->mHeight));
+	auto h264OutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
+	h264OutMetadata->setData(*h264OutMetadata);
+}
+bool MotionVectorExtractor::processSOS(frame_sp& frame)
+{
+	setMetadata(frame);
+	mShouldTriggerSOS = false;
 	return true;
 }
 
-bool MotionExtractor::handlePropsChange(frame_sp& frame)
+bool MotionVectorExtractor::handlePropsChange(frame_sp& frame)
 {
-	MotionExtractorProps props;
+	MotionVectorExtractorProps props;
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
 }
 
-void MotionExtractor::setProps(MotionExtractorProps& props)
+void MotionVectorExtractor::setProps(MotionVectorExtractorProps& props)
 {
 	Module::addPropsToQueue(props);
 }

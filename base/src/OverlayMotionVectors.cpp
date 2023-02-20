@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <boost\foreach.hpp>
 extern "C"
 {
 #include <libavutil/motion_vector.h>
@@ -7,7 +8,6 @@ extern "C"
 }
 #include "OverlayMotionVectors.h"
 #include "Utils.h"
-#include "fstream"
 
 class OverlayMotionVector::Detail
 {
@@ -36,24 +36,21 @@ public:
 
 		AVMotionVector* motionVectors = (AVMotionVector*)inMotionVectorFrame->data();
 		mImg.data = static_cast<uint8_t*>(inRawImageFrame->data());
-		
-		for (int i = 0; i < inMotionVectorFrame->size() / 40; i++)
+		for (int i = 0; i < inMotionVectorFrame->size() / sizeof(*motionVectors); i++)
 		{
 			AVMotionVector* MV = &motionVectors[i];
 
 			if (MV->motion_x > 2 || MV->motion_y > 2)
 			{
-				cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1);
+				cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
 			}
 		}
 		cv::imshow("frame", mImg);
 		cv::waitKey(1);
-		c++;
 	}
 
 private:
-	int c = 0;
-	cv::Mat mImg;	
+	cv::Mat mImg;
 };
 
 
@@ -74,19 +71,22 @@ bool OverlayMotionVector::term()
 
 bool OverlayMotionVector::validateInputPins()
 {
-	auto size = getNumberOfInputPins();
 	if (getNumberOfInputPins() > 2)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 2. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
-	framemetadata_sp metadata = getFirstInputMetadata();
-	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::MOTION_VECTOR_DATA && frameType != FrameMetadata::RAW_IMAGE)
+	pair<string, framemetadata_sp> me; // map element	
+	auto inputMetadataByPin = getInputMetadata();
+	BOOST_FOREACH(me, inputMetadataByPin)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
-		return false;
+		FrameMetadata::FrameType frameType = me.second->getFrameType();
+		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::MOTION_VECTOR_DATA)
+		{
+			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR MOTION_VECTOR_DATA. Actual<" << frameType << ">";
+			return false;
+		}
 	}
 	return true;
 }
@@ -98,12 +98,6 @@ bool OverlayMotionVector::shouldTriggerSOS()
 
 bool OverlayMotionVector::process(frame_container& frames)
 {
-	auto inRawImageFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
-	auto inMotionVectorFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::MOTION_VECTOR_DATA);
-	if (isFrameEmpty(inRawImageFrame) || isFrameEmpty(inMotionVectorFrame))
-	{
-		return true;
-	}
 	mDetail->overlayMotionVectors(frames);
 	return true;
 }
