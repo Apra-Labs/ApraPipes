@@ -5,8 +5,8 @@ extern "C"
 #include <libavutil/motion_vector.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavutil\imgutils.h>
-#include <libswscale\swscale.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
 }
 #include "MotionVectorExtractor.h"
 #include "H264Metadata.h"
