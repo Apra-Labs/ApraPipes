@@ -230,17 +230,19 @@ public:
 
 	}
 
-	Mp4SeekCommand(uint64_t _skipTS) : Command(CommandType::Seek)
+	Mp4SeekCommand(uint64_t _seekStartTS,uint64_t _seekEndTS) : Command(CommandType::Seek)
 	{
-		skipTS = _skipTS;
+		seekStartTS = _seekStartTS;
+		seekEndTS = _seekEndTS;
 	}
 
 	size_t getSerializeSize()
 	{
-		return 128 + sizeof(Mp4SeekCommand) + sizeof(skipTS) + Command::getSerializeSize();
+		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) + sizeof(seekEndTS) + Command::getSerializeSize();
 	}
 
-	uint64_t skipTS = 0;
+	uint64_t seekStartTS = 0;
+	uint64_t seekEndTS = 0;
 private:
 
 	friend class boost::serialization::access;
@@ -248,6 +250,7 @@ private:
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar& boost::serialization::base_object<Command>(*this);
-		ar& skipTS;
+		ar& seekStartTS;
+		ar& seekEndTS;
 	}
 };
