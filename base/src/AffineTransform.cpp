@@ -10,6 +10,7 @@
 #include "math.h"
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
+#include  "nppdefs.h" 
 
 #define PI 3.14159265
 
@@ -19,8 +20,22 @@ public:
 	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
-	}
 
+	}
+	int setInterPolation(AffineTransformProps::Interpolation eInterpolation)
+	{
+		switch (props.eInterpolation)
+		{
+		case AffineTransformProps::NN:
+			return NppiInterpolationMode::NPPI_INTER_NN;
+		case AffineTransformProps::LINEAR:
+			return NppiInterpolationMode::NPPI_INTER_LINEAR;
+		case AffineTransformProps::CUBIC:
+			return NppiInterpolationMode::NPPI_INTER_CUBIC;
+		default:
+			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for Interpolation!");
+		}
+	}
 	~Detail()
 	{
 	}
@@ -96,6 +111,7 @@ public:
 			break;
 		}
 
+
 		mFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
 		double si, co;
@@ -129,7 +145,7 @@ public:
 												   dstPitch[i],
 												   dstRect[i],
 												   acoeff,
-												   NPPI_INTER_NN,
+					                               setInterPolation(props.eInterpolation),
 												   nppStreamCtx);
 			}
 		}
@@ -147,7 +163,7 @@ public:
 												   dstPitch[0],
 												   dstRect[0],
 												   acoeff,
-												   NPPI_INTER_NN,
+					                               setInterPolation(props.eInterpolation),
 												   nppStreamCtx);
 			}
 			else if (channels == 3)
@@ -160,7 +176,7 @@ public:
 												   dstPitch[0],
 												   dstRect[0],
 												   acoeff,
-												   NPPI_INTER_NN,
+					                               setInterPolation(props.eInterpolation),
 												   nppStreamCtx);
 			}
 			else if (channels == 4)
@@ -173,7 +189,7 @@ public:
 												   dstPitch[0],
 												   dstRect[0],
 												   acoeff,
-												   NPPI_INTER_NN,
+					                               setInterPolation(props.eInterpolation),
 												   nppStreamCtx);
 			}
 		}

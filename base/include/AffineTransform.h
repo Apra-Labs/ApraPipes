@@ -6,7 +6,14 @@
 class AffineTransformProps : public ModuleProps
 {
 public:
-	AffineTransformProps(cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
+	enum Interpolation {
+
+		NN,     
+		LINEAR, 
+		CUBIC,
+	};
+	
+	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f)
 	{
 		stream = _stream;
 		angle = _angle;
@@ -15,11 +22,22 @@ public:
 		scale = _scale;
 	}
 
+	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
+	{
+		stream = _stream;
+		angle = _angle;
+		x = _x;
+		y = _y;
+		scale = _scale;
+		eInterpolation = _eInterpolation;
+	}
+
 	int x=0;
 	int y = 0;
 	float scale = 1.0f;
 	double angle;
 	cudastream_sp stream;
+	Interpolation eInterpolation = AffineTransformProps:: NN;
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) ;
