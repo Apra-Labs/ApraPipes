@@ -49,8 +49,6 @@ public:
 			}
 		}
 		outFrame = inRawImageFrame;
-		cv::imshow("frame", mImg);
-		cv::waitKey(1);
 		return true;
 	}
 public:
