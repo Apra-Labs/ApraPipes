@@ -19,19 +19,22 @@ public:
 	{
 	}
 
-	void setMatImg(RawImageMetadata* rawMetadata)
+	void setMetadata(RawImageMetadata* rawMetadata)
 	{
 		mImg = Utils::getMatHeader(rawMetadata);
+		RawImageMetadata outputMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(rawOutputMetadata);
+		rawOutMetadata->setData(outputMetadata);
 	}
 
-	void overlayMotionVectors(frame_container frames)
+	bool overlayMotionVectors(frame_container frames, frame_sp& outFrame)
 	{
 		auto inRawImageFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
 		auto inMotionVectorFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::MOTION_VECTOR_DATA);
 
-		if (inMotionVectorFrame->size() == 0 || inRawImageFrame->size() == 0)
+		if (inMotionVectorFrame->size() == 0 || !inRawImageFrame)
 		{
-			return;
+			return false;
 		}
 
 		AVMotionVector* motionVectors = (AVMotionVector*)inMotionVectorFrame->data();
@@ -45,18 +48,23 @@ public:
 				cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
 			}
 		}
+		outFrame = inRawImageFrame;
 		cv::imshow("frame", mImg);
 		cv::waitKey(1);
+		return true;
 	}
-
+public:
+	framemetadata_sp rawOutputMetadata;
 private:
 	cv::Mat mImg;
 };
 
 
-OverlayMotionVector::OverlayMotionVector(OverlayMotionVectorProps props) : Module(SINK, "OverlayMotionVectors", props)
+OverlayMotionVector::OverlayMotionVector(OverlayMotionVectorProps props) : Module(TRANSFORM, "OverlayMotionVectors", props)
 {
 	mDetail.reset(new Detail(props));
+	mDetail->rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
+	mOutputPinId = Module::addOutputPin(mDetail->rawOutputMetadata);
 }
 
 bool OverlayMotionVector::init()
@@ -91,6 +99,24 @@ bool OverlayMotionVector::validateInputPins()
 	return true;
 }
 
+bool OverlayMotionVector::validateOutputPins()
+{
+	if (getNumberOfOutputPins() != 1)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		return false;
+	}
+
+	auto outputMetadata = getFirstOutputMetadata();
+	FrameMetadata::FrameType frameType = outputMetadata->getFrameType();
+	if (frameType != FrameMetadata::RAW_IMAGE)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
+		return false;
+	}
+	return true;
+}
+
 bool OverlayMotionVector::shouldTriggerSOS()
 {
 	return true;
@@ -98,7 +124,12 @@ bool OverlayMotionVector::shouldTriggerSOS()
 
 bool OverlayMotionVector::process(frame_container& frames)
 {
-	mDetail->overlayMotionVectors(frames);
+	frame_sp outFrame;
+	if (mDetail->overlayMotionVectors(frames, outFrame))
+	{
+		frames.insert(make_pair(mOutputPinId, outFrame));
+		send(frames);
+	}
 	return true;
 }
 
@@ -107,7 +138,7 @@ bool OverlayMotionVector::processSOS(frame_sp& frame)
 	auto metadata = frame->getMetadata();
 	if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
 	{
-		mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
+		mDetail->setMetadata(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
 	}
 	return true;
 }

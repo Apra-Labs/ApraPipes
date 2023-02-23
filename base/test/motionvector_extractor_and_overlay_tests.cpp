@@ -9,6 +9,7 @@
 #include "test_utils.h"
 #include "PipeLine.h"
 #include "H264Metadata.h"
+#include "FileWriterModule.h"
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
 
@@ -62,18 +63,28 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay)
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
 	motionExtractor->setNext(overlayMotionVector);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
-	p.init();
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	overlayMotionVector->setNext(sink);
 
-	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(motionExtractor->init());
+	BOOST_TEST(overlayMotionVector->init());
+	BOOST_TEST(sink->init());
 
-	LOG_INFO << "profiling done - stopping the pipeline";
-	p.stop();
-	p.term();
-	p.wait_for_all();
+	fileReader->play(true);
+
+	for (int i = 0; i < 231; i++)
+	{
+		fileReader->step();
+		motionExtractor->step();
+		overlayMotionVector->step();
+		auto frames = sink->pop();
+		auto outFrame = frames.begin()->second;
+		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+		std::string fileName = "./data/testOutput/MotionVectorOverlayFrame" + std::to_string(outFrame->fIndex2) + ".raw";
+		Test_Utils::saveOrCompare(fileName.c_str(), const_cast<const uint8_t*>(static_cast<uint8_t*>(outFrame->data())), outFrame->size(), 0);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops) // overlay can be shown only when requested by user but motion vectors are for every frame.
@@ -90,6 +101,9 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops) // overlay can be sho
 
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
 	motionExtractor->setNext(overlayMotionVector);
+
+	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/motionVectorOverlay/frame_??.raw")));
+	overlayMotionVector->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(fileReader);
