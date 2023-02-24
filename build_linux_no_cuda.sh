@@ -1,4 +1,10 @@
-cp base/vcpkg.nocuda.json base/vcpkg.json
+chmod +x base/fix-vcpkg-json.sh
+./base/fix-vcpkg-json.sh true fasle false
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+cd ..
+
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build
