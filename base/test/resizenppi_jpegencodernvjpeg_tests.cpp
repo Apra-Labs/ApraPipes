@@ -16,7 +16,7 @@
 
 BOOST_AUTO_TEST_SUITE(resizenppi_jpegencodernvjpeg_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_h264_encoder_supported()))
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 1920;
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_h264_encoder_supporte
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_jpegencodernvjpeg_tests_mono_1920x1080_to_mono_960x540.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 640;
