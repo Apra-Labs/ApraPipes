@@ -10,11 +10,18 @@
 #include "PipeLine.h"
 #include "H264Metadata.h"
 #include "FileWriterModule.h"
+#include "ImageViewerModule.h"
+#include "Logger.h"
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
 
 BOOST_AUTO_TEST_CASE(basic_extract_motion_vector)
 {
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = false;
@@ -41,13 +48,18 @@ BOOST_AUTO_TEST_CASE(basic_extract_motion_vector)
 		auto frames = sink->pop();
 		auto outFrame = frames.begin()->second;
 		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::MOTION_VECTOR_DATA);
-		std::string fileName = "./data/testOutput/motionVector" + std::to_string(outFrame->fIndex2) + ".raw";
+		std::string fileName = "./data/testOutput/motionVetors/motionVector" + std::to_string(outFrame->fIndex2) + ".raw";
 		Test_Utils::saveOrCompare(fileName.c_str(), const_cast<const uint8_t*>(static_cast<uint8_t*>(outFrame->data())), outFrame->size(), 0);
 	}
 }
 
 BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay)
 {
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
 	bool enableOverlay = true;
 
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
@@ -74,7 +86,10 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay)
 
 	fileReader->play(true);
 
-	for (int i = 0; i < 231; i++)
+	fileReader->step();
+	motionExtractor->step();
+	overlayMotionVector->step();
+	for (int i = 0; i < 230; i++)
 	{
 		fileReader->step();
 		motionExtractor->step();
@@ -82,13 +97,18 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay)
 		auto frames = sink->pop();
 		auto outFrame = frames.begin()->second;
 		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-		std::string fileName = "./data/testOutput/MotionVectorOverlayFrame" + std::to_string(outFrame->fIndex2) + ".raw";
+		std::string fileName = "./data/testOutput/overlaid/MotionVectorOverlayFrame" + std::to_string(outFrame->fIndex2) + ".raw";
 		Test_Utils::saveOrCompare(fileName.c_str(), const_cast<const uint8_t*>(static_cast<uint8_t*>(outFrame->data())), outFrame->size(), 0);
 	}
 }
 
-BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops) // overlay can be shown only when requested by user but motion vectors are for every frame.
+BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops)
 {
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
@@ -122,6 +142,45 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops) // overlay can be sho
 	p.term();
 	p.wait_for_all();
 }
+
+BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_viewer, *boost::unit_test::disabled()) // overlay can be shown only when requested by user but motion vectors are for every frame.
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	bool overlayFrames = true;
+
+	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
+	fileReaderProps.fps = 30;
+	fileReaderProps.readLoop = true;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	fileReader->addOutputPin(h264ImageMetadata);
+
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(overlayFrames)));
+	fileReader->setNext(motionExtractor);
+
+	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
+	motionExtractor->setNext(overlayMotionVector);
+
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	overlayMotionVector->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END()
