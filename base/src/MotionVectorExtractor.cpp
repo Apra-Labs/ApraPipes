@@ -92,6 +92,7 @@ public:
 			ret = avcodec_receive_frame(decoderContext, avFrame);
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 			{
+				outFrame = makeFrame(0);
 				break;
 			}
 			else if (ret < 0)
@@ -105,7 +106,7 @@ public:
 				SwsContext* sws_context = sws_getContext(
 					decoderContext->width, decoderContext->height, decoderContext->pix_fmt,
 					decoderContext->width, decoderContext->height, AV_PIX_FMT_BGR24,
-					SWS_BICUBIC, NULL, NULL, NULL);
+					SWS_BICUBIC | SWS_FULL_CHR_H_INT, NULL, NULL, NULL);
 				if (!sws_context) {
 					// Handle error
 				}
@@ -138,6 +139,7 @@ public:
 				}
 				av_packet_unref(pkt);
 				av_frame_unref(avFrame);
+				return 0;
 			}
 		}
 		return 0;

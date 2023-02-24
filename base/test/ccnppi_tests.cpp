@@ -19,7 +19,7 @@
 BOOST_AUTO_TEST_SUITE(ccnppi_tests)
 
 
-BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
+BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080, * utf::precondition(if_compute_cap_supported()))
 {	
 	auto width = 1920;
 	auto height = 1080;
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_bgra_1920x1080,
 
 }
 
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960)
+BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960, * utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 960;
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960)
 
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360,* utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 640;
 	auto height = 360;
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080__resize_to_jpg,
 
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080, * utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 1080;
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080)
 
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960)
+BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960, * utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 960;
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960)
 
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360, * utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 640;
 	auto height = 360;

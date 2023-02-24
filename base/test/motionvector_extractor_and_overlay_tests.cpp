@@ -12,8 +12,20 @@
 #include "FileWriterModule.h"
 #include "ImageViewerModule.h"
 #include "Logger.h"
+#include "RTSPClientSrc.h"
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
+
+struct rtsp_client_tests_data {
+	rtsp_client_tests_data()
+	{
+		outFile = string("./data/testOutput/bunny.h264");
+		Test_Utils::FileCleaner fc;
+		fc.pathsOfFiles.push_back(outFile); //clear any occurance before starting the tests
+	}
+	string outFile;
+	string empty;
+};
 
 BOOST_AUTO_TEST_CASE(basic_extract_motion_vector)
 {
@@ -181,6 +193,43 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_viewer, *boost::unit_test::disa
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(rtsp_extract_vectors_and_overlay_viewer, *boost::unit_test::disabled()) // overlay can be shown only when requested by user but motion vectors are for every frame.
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
 
+	rtsp_client_tests_data d;
+
+	bool overlayFrames = true;
+	const std::string url = "";
+	std::string username = "";
+	std::string password = "";
+	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url,d.empty,d.empty)));
+	auto meta = framemetadata_sp(new H264Metadata());
+	rtspSrc->addOutputPin(meta);
+
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(overlayFrames)));
+	rtspSrc->setNext(motionExtractor);
+
+	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
+	motionExtractor->setNext(overlayMotionVector);
+
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	overlayMotionVector->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(rtspSrc);
+	p.init();
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
 
 BOOST_AUTO_TEST_SUITE_END()
