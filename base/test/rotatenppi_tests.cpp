@@ -11,6 +11,7 @@
 #include "CudaMemCopy.h"
 #include "RotateNPPI.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(rotatenppi_tests)
 
@@ -59,32 +60,32 @@ void test(std::string filename, int width, int height, ImageMetadata::ImageType 
 	BOOST_TEST(m3->term());
 }
 
-BOOST_AUTO_TEST_CASE(mono_8U_90_cc)
+BOOST_AUTO_TEST_CASE(mono_8U_90_cc, *utf::precondition(if_compute_cap_supported()))
 {
 	test("mono_1920x1080", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, 90);
 }
 
-BOOST_AUTO_TEST_CASE(mono_8U_90_c)
+BOOST_AUTO_TEST_CASE(mono_8U_90_c, *utf::precondition(if_compute_cap_supported()))
 {
 	test("mono_1920x1080", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, -90);
 }
 
-BOOST_AUTO_TEST_CASE(mono_16U_90_cc)
+BOOST_AUTO_TEST_CASE(mono_16U_90_cc, *utf::precondition(if_compute_cap_supported()))
 {
 	test("depth_1280x720", 1280, 720, ImageMetadata::ImageType::MONO, CV_16UC1, CV_16U, 90);
 }
 
-BOOST_AUTO_TEST_CASE(mono_16U_90_c)
+BOOST_AUTO_TEST_CASE(mono_16U_90_c, *utf::precondition(if_compute_cap_supported()))
 {
 	test("depth_1280x720", 1280, 720, ImageMetadata::ImageType::MONO, CV_16UC1, CV_16U, -90);
 }
 
-BOOST_AUTO_TEST_CASE(rgb_8U_90_cc)
+BOOST_AUTO_TEST_CASE(rgb_8U_90_cc, *utf::precondition(if_compute_cap_supported()))
 {
 	test("frame_1280x720_rgb", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, 90);
 }
 
-BOOST_AUTO_TEST_CASE(rgb_8U_90_c)
+BOOST_AUTO_TEST_CASE(rgb_8U_90_c, *utf::precondition(if_compute_cap_supported()))
 {
 	test("frame_1280x720_rgb", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, -90);
 }
