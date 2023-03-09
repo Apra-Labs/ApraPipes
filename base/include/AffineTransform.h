@@ -11,6 +11,13 @@ public:
 		NN,     
 		LINEAR, 
 		CUBIC,
+		UNDEFINED,
+		CUBIC2P_BSPLINE,
+		CUBIC2P_CATMULLROM,
+		CUBIC2P_B05C03,
+		SUPER,
+		LANCZOS,
+		LANCZOS3_ADVANCED,
 	};
 	
 	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f)

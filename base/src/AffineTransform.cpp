@@ -32,6 +32,20 @@ public:
 			return NppiInterpolationMode::NPPI_INTER_LINEAR;
 		case AffineTransformProps::CUBIC:
 			return NppiInterpolationMode::NPPI_INTER_CUBIC;
+		case AffineTransformProps::UNDEFINED:
+			return NppiInterpolationMode::NPPI_INTER_UNDEFINED; // not supported 
+		case AffineTransformProps::CUBIC2P_BSPLINE:
+			return NppiInterpolationMode::NPPI_INTER_CUBIC2P_BSPLINE;// not supported 
+		case AffineTransformProps::CUBIC2P_CATMULLROM:
+			return NppiInterpolationMode::NPPI_INTER_CUBIC2P_CATMULLROM;
+		case AffineTransformProps::CUBIC2P_B05C03:
+			return NppiInterpolationMode::NPPI_INTER_CUBIC2P_B05C03; // not supported 
+		case AffineTransformProps::SUPER:
+			return NppiInterpolationMode::NPPI_INTER_SUPER;  // not supported
+		case AffineTransformProps::LANCZOS:
+			return NppiInterpolationMode::NPPI_INTER_LANCZOS; // not supported 
+		case AffineTransformProps::LANCZOS3_ADVANCED:
+			return NppiInterpolationMode::NPPI_INTER_LANCZOS3_ADVANCED; // not supported
 		default:
 			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for Interpolation!");
 		}
@@ -103,7 +117,6 @@ public:
 		case ImageMetadata::RGBA:
 		case ImageMetadata::BGRA:
 		case ImageMetadata::YUV444:
-		case ImageMetadata::YUV420:
 			if (depth != CV_8U)
 			{
 				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
@@ -114,15 +127,35 @@ public:
 
 		mFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
+
+		int inWidth = srcSize[0].width;
+		int inHeight = srcSize[0].height;
+		int outWidth = dstSize[0].width;
+		int outHeight = dstSize[0].height;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
+		double ty = (outCenterY - inCenterY);
+
 		double si, co;
 		si = sin(props.angle * PI / 180);
 		co = props.scale * cos(props.angle * PI / 180);
+
+		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
+		double cy = props.y + (srcSize[0].height / 2);
+
 		acoeff[0][0] = co;
 		acoeff[0][1] = -si;
-		acoeff[0][2] = props.x;
+		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; // after rotation we translate it to center of output frame
 		acoeff[1][0] = si;
 		acoeff[1][1] = co;
-		acoeff[1][2] = props.y;
+		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+
 	}
 
 	bool compute(void *buffer, void *outBuffer)
@@ -130,7 +163,8 @@ public:
 		auto status = NPP_SUCCESS;
 		auto bufferNPP = static_cast<Npp8u *>(buffer);
 		auto outBufferNPP = static_cast<Npp8u *>(outBuffer);
-		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
 		{
 			for (auto i = 0; i < channels; i++)
 			{
@@ -196,7 +230,7 @@ public:
 
 		if (status != NPP_SUCCESS)
 		{
-			LOG_ERROR << "resize failed<" << status << ">";
+			LOG_ERROR << "Affine Transform failed<" << status << ">";
 			throw AIPException(AIP_FATAL, "Failed to tranform the image");
 		}
 		return true;
