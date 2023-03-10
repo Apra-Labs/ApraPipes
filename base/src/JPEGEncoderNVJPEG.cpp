@@ -2,7 +2,7 @@
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 #include "nvjpeg.h"

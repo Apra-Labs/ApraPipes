@@ -6,7 +6,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include <opencv2/imgcodecs.hpp>
-#include "Utils.h"
+#include "ApraUtils.h"
 
 
 class ImageResizeCV::Detail

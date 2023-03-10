@@ -6,7 +6,7 @@
 #include "Logger.h"
 #include <opencv2/imgcodecs.hpp>
 #include "opencv2/highgui.hpp"
-#include "Utils.h"
+#include "ApraUtils.h"
 
 class BrightnessContrastControl::Detail
 {

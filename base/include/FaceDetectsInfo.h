@@ -2,7 +2,7 @@
 
 #include "FrameMetadata.h"
 #include "Frame.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "Module.h"
 #include <boost/serialization/vector.hpp>
 #include "ApraFaceInfo.h"

@@ -4,7 +4,7 @@
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM, "H264EncoderV4L2", props), mProps(props)

@@ -7,7 +7,7 @@ extern "C"
 #include <libavformat/avformat.h>
 }
 #include "OverlayMotionVectors.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 
 class OverlayMotionVector::Detail
 {
@@ -45,7 +45,8 @@ public:
 
 			if (std::abs(MV->motion_x) > 2 || std::abs(MV->motion_y) > 2)
 			{
-				cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
+				//cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
+				cv::circle(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), 1, cv::Scalar(0, 255, 0), 1);
 			}
 		}
 		outFrame = inRawImageFrame;

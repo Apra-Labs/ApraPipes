@@ -12,6 +12,7 @@
 #include "libmp4.h"
 #include "PropsChangeMetadata.h"
 #include "H264Metadata.h"
+#include "d3d9_utils.h"
 
 class DetailAbs
 {
@@ -311,7 +312,7 @@ bool DetailH264::write(frame_container& frames)
 		return true;
 	}
 
-	auto mFrameBuffer = const_buffer(inH264ImageFrame->data(), inH264ImageFrame->size());
+ 	auto mFrameBuffer = const_buffer(inH264ImageFrame->data(), inH264ImageFrame->size());
 	auto ret = H264Utils::parseNalu(mFrameBuffer);
 	tie(typeFound, spsBuff, ppsBuff) = ret;
 
@@ -507,6 +508,10 @@ bool Mp4WriterSink::term()
 
 bool Mp4WriterSink::process(frame_container& frames)
 {
+	// PBitStringAux pBitString; const uint8_t* kpBuf; const int32_t kiSize = 0;
+	// WelsDec::DecInitBits(pBitString, kpBuf, kiSize);
+	void* dst[3]; FILE* fp;
+	CD3D9Utils cObj;
 	try
 	{
 		if (!mDetail->write(frames))

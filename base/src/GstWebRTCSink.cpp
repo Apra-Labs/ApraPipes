@@ -4,7 +4,7 @@
 
 #include "Frame.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 #include <gst/gst.h>

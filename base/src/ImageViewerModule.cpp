@@ -6,7 +6,7 @@
 #include <opencv2/highgui.hpp>
 #include "FrameMetadata.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 
 class ImageViewerModule::Detail
 {
@@ -25,7 +25,7 @@ public:
 	{
 		mImg.data = (uchar *)frame->data();
 		cv::imshow(mStrTitle, mImg);
-		cv::waitKey(1); //use 33 for linux Grrr
+		cv::waitKey(30); //use 33 for linux Grrr
 	}
 
 	bool shouldTriggerSOS()

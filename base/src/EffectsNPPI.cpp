@@ -4,7 +4,7 @@
 #include "RawImagePlanarMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 #include "npp.h"

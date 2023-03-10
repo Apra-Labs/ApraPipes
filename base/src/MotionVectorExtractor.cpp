@@ -12,18 +12,17 @@ extern "C"
 #include "H264Metadata.h"
 #include "H264ParserUtils.h"
 
-class MotionVectorExtractor::Detail
+class DetailAbs
 {
 public:
-	Detail(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId)
+	DetailAbs(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId)
 	{
 		makeFrameWithPinId = _makeFrameWithPinId;
 		makeFrame = _makeFrame;
 		sendDecodedFrame = props.sendDecodedFrame;
 	};
-	~Detail()
+	~DetailAbs()
 	{
-		avcodec_free_context(&decoderContext);
 	}
 
 	void setProps(MotionVectorExtractorProps props)
@@ -31,135 +30,166 @@ public:
 		sendDecodedFrame = props.sendDecodedFrame;
 	}
 
-	void initDecoder()
-	{
-		int ret;
-		AVCodec* dec = NULL;
-		AVDictionary* opts = NULL;
-		dec = avcodec_find_decoder(AV_CODEC_ID_H264);
+	virtual void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame) = 0;
+	virtual void initDecoder() = 0;
 
-		decoderContext = avcodec_alloc_context3(dec);
-		if (!decoderContext)
-		{
-			throw AIPException(AIP_FATAL, "Failed to allocate codec");
-		}
-		/* Init the decoder */
-		av_dict_set(&opts, "flags2", "+export_mvs", 0);
-		ret = avcodec_open2(decoderContext, dec, &opts);
-		av_dict_free(&opts);
-		if (ret < 0)
-		{
-			throw AIPException(AIP_FATAL, "failed open decoder");
-		}
-	}
-
-	void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
-	{
-		int ret = 0;
-		AVPacket* pkt = NULL;
-
-		avFrame = av_frame_alloc();
-		if (!avFrame)
-		{
-			LOG_ERROR << "Could not allocate frame\n";
-		}
-
-		pkt = av_packet_alloc();
-		if (!pkt)
-		{
-			LOG_ERROR << "Could not allocate AVPacket\n";
-		}
-		ret = decodeAndGetMotionVectors(pkt, frames, outFrame, decodedFrame);
-		av_packet_free(&pkt);
-		av_frame_free(&avFrame);
-	}
-
-	int decodeAndGetMotionVectors(AVPacket* pkt, frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
-	{
-		auto inFrame = frames.begin()->second;
-		pkt->data = (uint8_t*)inFrame->data();
-		pkt->size = (int)inFrame->size();
-
-		int ret = avcodec_send_packet(decoderContext, pkt);
-		if (ret < 0)
-		{
-			LOG_ERROR << stderr << "Error while sending a packet to the decoder: %s\n";
-			return ret;
-		}
-
-		while (ret >= 0)
-		{
-			ret = avcodec_receive_frame(decoderContext, avFrame);
-			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-			{
-				outFrame = makeFrame(0);
-				break;
-			}
-			else if (ret < 0)
-			{
-				LOG_ERROR << stderr << "Error while receiving a frame from the decoder: %s\n";
-				return ret;
-			}
-
-			if (sendDecodedFrame)
-			{
-				SwsContext* sws_context = sws_getContext(
-					decoderContext->width, decoderContext->height, decoderContext->pix_fmt,
-					decoderContext->width, decoderContext->height, AV_PIX_FMT_BGR24,
-					SWS_BICUBIC | SWS_FULL_CHR_H_INT, NULL, NULL, NULL);
-				if (!sws_context) {
-					// Handle error
-				}
-				decodedFrame = makeFrameWithPinId(mWidth * mHeight * 3, rawFramePinId);
-
-				int dstStrides[AV_NUM_DATA_POINTERS];
-				dstStrides[0] = decoderContext->width * 3; // Assuming BGR format
-				uint8_t* dstData[AV_NUM_DATA_POINTERS];
-				dstData[0] = static_cast<uint8_t*>(decodedFrame->data());
-
-				sws_scale(sws_context, avFrame->data, avFrame->linesize, 0, decoderContext->height, dstData, dstStrides);
-
-				frames.insert(make_pair(rawFramePinId, decodedFrame));
-			}
-			if (ret >= 0)
-			{
-				AVFrameSideData* sideData;
-
-				sideData = av_frame_get_side_data(avFrame, AV_FRAME_DATA_MOTION_VECTORS);
-
-				if (sideData)
-				{
-					const AVMotionVector* motionVectors = (const AVMotionVector*)sideData->data;
-					outFrame = makeFrame(sideData->size);
-					memcpy(outFrame->data(), motionVectors, sideData->size);
-				}
-				else
-				{
-					outFrame = makeFrame(0);
-				}
-				av_packet_unref(pkt);
-				av_frame_unref(avFrame);
-				return 0;
-			}
-		}
-		return 0;
-	}
 public:
 	int mWidth = 0;
 	int mHeight = 0;
 	std::string rawFramePinId;
-private:
-	AVFrame* avFrame = NULL;
-	AVCodecContext* decoderContext = NULL;
 	std::function<frame_sp(size_t)> makeFrame;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
 	bool sendDecodedFrame = false;
 };
 
+class DetailFfmpeg : public DetailAbs
+{
+public:
+	DetailFfmpeg(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId) : DetailAbs(props, _makeFrame, _makeFrameWithPinId) {}
+	~DetailFfmpeg()
+	{
+		avcodec_free_context(&decoderContext);
+	}
+	void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
+	void initDecoder();
+	int decodeAndGetMotionVectors(AVPacket* pkt, frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
+private:
+	AVFrame* avFrame = NULL;
+	AVCodecContext* decoderContext = NULL;
+};
+
+class DetailOpenH264 : public DetailAbs
+{
+public:
+	DetailOpenH264(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId) : DetailAbs(props, _makeFrame, _makeFrameWithPinId) {}
+	void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame) {};
+	void initDecoder() {};
+};
+
+void DetailFfmpeg::initDecoder()
+{
+	int ret;
+	AVCodec* dec = NULL;
+	AVDictionary* opts = NULL;
+	dec = avcodec_find_decoder(AV_CODEC_ID_H264);
+
+	decoderContext = avcodec_alloc_context3(dec);
+	if (!decoderContext)
+	{
+		throw AIPException(AIP_FATAL, "Failed to allocate codec");
+	}
+	/* Init the decoder */
+	av_dict_set(&opts, "flags2", "+export_mvs", 0);
+	ret = avcodec_open2(decoderContext, dec, &opts);
+	av_dict_free(&opts);
+	if (ret < 0)
+	{
+		throw AIPException(AIP_FATAL, "failed open decoder");
+	}
+}
+
+void DetailFfmpeg::getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
+{
+	int ret = 0;
+	AVPacket* pkt = NULL;
+
+	avFrame = av_frame_alloc();
+	if (!avFrame)
+	{
+		LOG_ERROR << "Could not allocate frame\n";
+	}
+
+	pkt = av_packet_alloc();
+	if (!pkt)
+	{
+		LOG_ERROR << "Could not allocate AVPacket\n";
+	}
+	ret = decodeAndGetMotionVectors(pkt, frames, outFrame, decodedFrame);
+	av_packet_free(&pkt);
+	av_frame_free(&avFrame);
+}
+
+int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
+{
+	auto inFrame = frames.begin()->second;
+	pkt->data = (uint8_t*)inFrame->data();
+	pkt->size = (int)inFrame->size();
+
+	int ret = avcodec_send_packet(decoderContext, pkt);
+	if (ret < 0)
+	{
+		LOG_ERROR << stderr << "Error while sending a packet to the decoder: %s\n";
+		return ret;
+	}
+
+	while (ret >= 0)
+	{
+		ret = avcodec_receive_frame(decoderContext, avFrame);
+		if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+		{
+			outFrame = makeFrame(0);
+			break;
+		}
+		else if (ret < 0)
+		{
+			LOG_ERROR << stderr << "Error while receiving a frame from the decoder: %s\n";
+			return ret;
+		}
+
+		if (sendDecodedFrame)
+		{
+			SwsContext* sws_context = sws_getContext(
+				decoderContext->width, decoderContext->height, decoderContext->pix_fmt,
+				decoderContext->width, decoderContext->height, AV_PIX_FMT_BGR24,
+				SWS_BICUBIC | SWS_FULL_CHR_H_INT, NULL, NULL, NULL);
+			if (!sws_context) {
+				// Handle error
+			}
+			decodedFrame = makeFrameWithPinId(mWidth * mHeight * 3, rawFramePinId);
+
+			int dstStrides[AV_NUM_DATA_POINTERS];
+			dstStrides[0] = decoderContext->width * 3; // Assuming BGR format
+			uint8_t* dstData[AV_NUM_DATA_POINTERS];
+			dstData[0] = static_cast<uint8_t*>(decodedFrame->data());
+
+			sws_scale(sws_context, avFrame->data, avFrame->linesize, 0, decoderContext->height, dstData, dstStrides);
+
+			frames.insert(make_pair(rawFramePinId, decodedFrame));
+		}
+		if (ret >= 0)
+		{
+			AVFrameSideData* sideData;
+
+			sideData = av_frame_get_side_data(avFrame, AV_FRAME_DATA_MOTION_VECTORS);
+
+			if (sideData)
+			{
+				const AVMotionVector* motionVectors = (const AVMotionVector*)sideData->data;
+				outFrame = makeFrame(sideData->size);
+				memcpy(outFrame->data(), motionVectors, sideData->size);
+			}
+			else
+			{
+				outFrame = makeFrame(0);
+			}
+			av_packet_unref(pkt);
+			av_frame_unref(avFrame);
+			return 0;
+		}
+	}
+	return 0;
+}
 
 MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props)
 {
-	mDetail.reset(new Detail(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }));
+	if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::FFMPEG)
+	{
+		mDetail.reset(new DetailFfmpeg(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }));
+	}
+	else if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::OPENH264)
+	{
+		mDetail.reset(new DetailOpenH264(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }));
+	}
 	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::MOTION_VECTOR_DATA));
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
 	motionVectorPinId = addOutputPin(motionVectorOutputMetadata);

@@ -58,6 +58,16 @@ list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
 
+set ( OPENH264_INC_DIR "../thirdparty/openh264/")
+set ( OPENH264_LIB_DIR "../thirdparty/openh264/builddir/")
+
+IF(ENABLE_WINDOWS)
+	set (OPENH264_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/openh264/builddir/${CMAKE_BUILD_TYPE}")
+ENDIF(ENABLE_WINDOWS)
+
+# list(APPEND CMAKE_PREFIX_PATH ${OPENH264_LIB_DIR})
+find_library(OPENH264_LIB NAMES openh264.lib PATHS "../thirdparty/openh264/builddir/" REQUIRED)
+
 IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
 	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
@@ -84,6 +94,7 @@ ENDIF(ENABLE_GST)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
 find_package(OpenCV CONFIG REQUIRED)
+# find_package(OpenH264 REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(liblzma REQUIRED)
@@ -185,7 +196,7 @@ SET(CORE_FILES
 	src/PipeLine.cpp
 	src/QuePushStrategy.cpp
 	src/Split.cpp
-	src/Utils.cpp
+	src/ApraUtils.cpp
 	src/FIndexStrategy.cpp
 	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
@@ -221,7 +232,7 @@ SET(CORE_FILES_H
 	include/ApraPool.h
 	include/ApraData.h
 	include/AIPExceptions.h
-	include/Utils.h
+	include/ApraUtils.h
 	include/ThreadSafeQue.h	
 	include/StatSink.h
 	include/Split.h
@@ -492,13 +503,27 @@ message(STATUS "-------------Printing Soure file list-----------------${SOURCE}"
 add_library(aprapipes STATIC ${SOURCE})
 
 message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
+
+# find_path(OPENH264_INCLUDE_DIRS "../vcpkg/insalled/x64-windows/include/wels/")
+# find_path(OPENH264_LIBRARIES "../vcpkg/insalled/x64-windows/lib/")
+
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
+# ${OPENH264_INCLUDE_DIRS}
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
 ${LIBMP4_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
+"${OPENH264_INC_DIR}/codec/decoder/core/inc"
+"${OPENH264_INC_DIR}/codec/decoder/plus/inc"
+"${OPENH264_INC_DIR}/codec/decoder/plus/inc"
+"${OPENH264_INC_DIR}/codec/common/inc"
+"${OPENH264_INC_DIR}/codec/api/wels"
+"${OPENH264_INC_DIR}/codec/console/dec/inc"
+"${OPENH264_INC_DIR}/codec/console/common/inc"
+"${OPENH264_INC_DIR}/codec/processing/interface"
+"${OPENH264_INC_DIR}/codec/processing/src/common"
 )
 
 IF(ENABLE_GST)
@@ -682,6 +707,7 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ${GST_LIBS}
+  ${OPENH264_LIB}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2

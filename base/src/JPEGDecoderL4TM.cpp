@@ -5,7 +5,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include <opencv2/opencv.hpp>
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 class JPEGDecoderL4TM::Detail

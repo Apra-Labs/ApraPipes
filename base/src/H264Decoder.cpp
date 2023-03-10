@@ -11,7 +11,7 @@
 #include "H264Metadata.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "Utils.h"
+#include "ApraUtils.h"
 
 class H264Decoder::Detail
 {

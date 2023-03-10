@@ -2,21 +2,29 @@
 #include "Module.h"
 
 using namespace std;
+class DetailAbs;
+class DetailFfmpeg;
+class DetailOpenH264;
 
 class MotionVectorExtractorProps : public ModuleProps
 {
 public:
-	MotionVectorExtractorProps(bool _sendDecodedFrame = false)
+	enum MVExtractMethod
 	{
-		sendDecodedFrame = _sendDecodedFrame;
+		FFMPEG,
+		OPENH264
+	};
+
+	MotionVectorExtractorProps(MVExtractMethod _MVExtractMethod = MVExtractMethod::FFMPEG , bool _sendDecodedFrame = false) : MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame)
+	{
 	}
-	bool sendDecodedFrame = false;
 
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame);
 	}
-
+	bool sendDecodedFrame = false;
+	MVExtractMethod MVExtract = MVExtractMethod::FFMPEG;
 private:
 	friend class boost::serialization::access;
 
@@ -46,7 +54,7 @@ protected:
 	bool handlePropsChange(frame_sp& frame);
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	boost::shared_ptr<DetailAbs> mDetail;
 	std::string motionVectorPinId;
 	framemetadata_sp rawOutputMetadata;
 	bool mShouldTriggerSOS = true;

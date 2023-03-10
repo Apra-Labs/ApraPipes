@@ -4,7 +4,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include <opencv2/opencv.hpp>
-#include "Utils.h"
+#include "ApraUtils.h"
 #include "AIPExceptions.h"
 
 #define MSDK_ALIGN16(value)                      (((value + 15) >> 4) << 4) // round up to a multiple of 16

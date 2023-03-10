@@ -177,7 +177,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		return;
 	}
 	// cannot be merged with if condition above.
-	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE && chunkTimeInMinutes != UINT32_MAX)
+	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE && chunkTimeInMinutes != UINT32_MAX && naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
