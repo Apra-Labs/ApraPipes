@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay)
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(enableOverlay)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::FFMPEG,enableOverlay)));
 	fileReader->setNext(motionExtractor);
 
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_setprops)
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
-	MotionVectorExtractorProps propsChange(true);
+	MotionVectorExtractorProps propsChange(MotionVectorExtractorProps::FFMPEG,true);
 	motionExtractor->setProps(propsChange);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_viewer, *boost::unit_test::disa
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::FFMPEG,overlayFrames)));
 	fileReader->setNext(motionExtractor);
 
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(extract_vectors_and_overlay_viewer, *boost::unit_test::disa
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(40));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(rtsp_extract_vectors_and_overlay_viewer, *boost::unit_test:
 	auto meta = framemetadata_sp(new H264Metadata());
 	rtspSrc->addOutputPin(meta);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::FFMPEG,overlayFrames)));
 	rtspSrc->setNext(motionExtractor);
 
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps()));

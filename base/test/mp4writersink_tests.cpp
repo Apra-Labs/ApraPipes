@@ -17,10 +17,10 @@ BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
 void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int chunkTime = 1)
 {
-	int width = 704;
-	int height = 576;
+	int width = 1920;
+	int height = 1080;
 
-	std::string inFolderPath = "./data/h264_data/";
+	std::string inFolderPath = "./data/testOutput/rtspframes/";
 
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -28,14 +28,14 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	Logger::initLogger(loggerProps);
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 100;
-	fileReaderProps.readLoop = readLoop;
+	fileReaderProps.fps = 24;
+	fileReaderProps.readLoop = false;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 100, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 100, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 
 BOOST_AUTO_TEST_CASE(h264_to_mp4v)
 {
-	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
+	std::string outFolderPath = "./data/testOutput/";
 	writeH264(false, 10, outFolderPath);
 }
 
