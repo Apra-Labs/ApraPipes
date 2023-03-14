@@ -11,10 +11,11 @@
 #include "CudaMemCopy.h"
 #include "JPEGDecoderNVJPEG.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(jpegdecodernvjpeg_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x960)
+BOOST_AUTO_TEST_CASE(mono_1920x960, *utf::precondition(if_h264_encoder_supported()))
 {	
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -47,7 +48,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegdecodernvjpeg_tests_mono_1920x960.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(color_yuv420_640x360)
+BOOST_AUTO_TEST_CASE(color_yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
 {	
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/color_yuv420_640x360.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));

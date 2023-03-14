@@ -15,10 +15,11 @@
 #include "JPEGEncoderNVJPEG.h"
 #include "test_utils.h"
 #include "MetadataHints.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(overlaynppi_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported()))
 {	
 	auto stream = cudastream_sp(new ApraCudaStream);
 
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	Test_Utils::saveOrCompare("./data/testOutput/overlaynppi_tests_mono_1920x1080_to_overlay_1920x1080_bgra.jpg", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080_pos)
+BOOST_AUTO_TEST_CASE(mono_1920x1080_pos, *utf::precondition(if_compute_cap_supported()))
 {
 	auto stream = cudastream_sp(new ApraCudaStream);
 
@@ -198,7 +199,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_pos)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 640;
@@ -278,7 +279,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_pos)
+BOOST_AUTO_TEST_CASE(yuv420_640x360_pos, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 640;
