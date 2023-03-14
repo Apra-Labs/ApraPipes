@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "apra-pipes-cuda",
     "version": "0.0.1",
-    "builtin-baseline": "5f73ce165e670e53d478afbdb91eb07f0dbdb629",
+    "builtin-baseline": "f42e7a01d37f5d1817cadadaea7be709a2540007",
     "dependencies": [
         {
             "name": "opencv4",
@@ -19,6 +19,7 @@
                 "webp"
             ]
         },
+        "openh264",
         "ffmpeg",
         "bigint",
         "boost-math",
