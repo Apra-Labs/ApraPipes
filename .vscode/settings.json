@@ -72,6 +72,24 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "any": "cpp",
+        "array": "cpp",
+        "bitset": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "csignal": "cpp",
+        "cstdarg": "cpp",
+        "cwctype": "cpp",
+        "resumable": "cpp",
+        "future": "cpp",
+        "queue": "cpp",
+        "string_view": "cpp",
+        "strstream": "cpp",
+        "xthread": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp",
+        "xmemory0": "cpp",
+        "*.ipp": "cpp"
     }
 }
