@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
     "name": "apra-pipes-cuda",
     "version": "0.0.1",
-    "builtin-baseline": "26c05ece684fcd10adc750bb0cc88e6efee07051",
+    "builtin-baseline": "b12f60575cdbd65c41bdc737d160bb6995b15684",
     "dependencies": [
         {
             "name": "opencv4",
