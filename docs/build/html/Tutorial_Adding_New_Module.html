@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Adding New Module &mdash; Apra Pipes v0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <title>Adding New Module &mdash; Apra Pipes v0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -26,17 +29,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Apra Pipes
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Apra Pipes
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Framework.html">Framework</a></li>
@@ -66,8 +73,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Adding New Module</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Adding New Module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/Tutorial_Adding_New_Module.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -77,204 +84,204 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="adding-new-module">
-<h1>Adding New Module<a class="headerlink" href="#adding-new-module" title="Permalink to this headline">¶</a></h1>
+  <section id="adding-new-module">
+<h1>Adding New Module<a class="headerlink" href="#adding-new-module" title="Permalink to this heading"></a></h1>
 <p>ChangeDetection Module</p>
 <ul class="simple">
-<li>Input is histogram bins</li>
-<li>Output is ChangeDetectionResult</li>
+<li><p>Input is histogram bins</p></li>
+<li><p>Output is ChangeDetectionResult</p></li>
 </ul>
-<div class="section" id="define-module-properties">
-<h2>Define Module Properties<a class="headerlink" href="#define-module-properties" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ChangeDetectionProps</span><span class="o">:</span> <span class="k">public</span> <span class="n">ModuleProps</span>
+<section id="define-module-properties">
+<h2>Define Module Properties<a class="headerlink" href="#define-module-properties" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ChangeDetectionProps</span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ModuleProps</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
-   <span class="n">ChangeDetectionProps</span><span class="p">()</span><span class="o">:</span> <span class="n">ModuleProps</span><span class="p">()</span>
-   <span class="p">{</span>
-      <span class="n">refWindowLength</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-      <span class="n">refDelayLength</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-      <span class="n">insWindowLength</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-      <span class="n">threshold</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-      <span class="n">compareMethod</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="n">ChangeDetectionProps</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="n">ModuleProps</span><span class="p">()</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">refWindowLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">      </span><span class="n">refDelayLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">      </span><span class="n">insWindowLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">      </span><span class="n">threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">      </span><span class="n">compareMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="n">ChangeDetectionProps</span><span class="p">(</span><span class="kt">int</span> <span class="n">_refWindowLength</span><span class="p">,</span> <span class="kt">int</span> <span class="n">_refDelayLength</span><span class="p">,</span> <span class="kt">int</span> <span class="n">_insWindowLength</span><span class="p">,</span> <span class="kt">double</span> <span class="n">_threshold</span><span class="p">,</span> <span class="kt">int</span> <span class="n">_compareMethod</span><span class="p">)</span><span class="o">:</span> <span class="n">ModuleProps</span><span class="p">()</span>
-   <span class="p">{</span>
-      <span class="n">refWindowLength</span> <span class="o">=</span> <span class="n">_refWindowLength</span><span class="p">;</span>
-      <span class="n">refDelayLength</span> <span class="o">=</span> <span class="n">_refDelayLength</span><span class="p">;</span>
-      <span class="n">insWindowLength</span> <span class="o">=</span> <span class="n">_insWindowLength</span><span class="p">;</span>
-      <span class="n">threshold</span> <span class="o">=</span> <span class="n">_threshold</span><span class="p">;</span>
-      <span class="n">compareMethod</span> <span class="o">=</span> <span class="n">_compareMethod</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="n">ChangeDetectionProps</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">_refWindowLength</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">_refDelayLength</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">_insWindowLength</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">_threshold</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">_compareMethod</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">ModuleProps</span><span class="p">()</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">refWindowLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_refWindowLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">refDelayLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_refDelayLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">insWindowLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_insWindowLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_threshold</span><span class="p">;</span>
+<span class="w">      </span><span class="n">compareMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_compareMethod</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="c1">// All the properties can be updated during run time using setProps</span>
-   <span class="kt">int</span> <span class="n">refWindowLength</span><span class="p">;</span>
-   <span class="kt">int</span> <span class="n">refDelayLength</span><span class="p">;</span>
-   <span class="kt">int</span> <span class="n">insWindowLength</span><span class="p">;</span>
-   <span class="kt">double</span> <span class="n">threshold</span><span class="p">;</span>
-   <span class="kt">int</span> <span class="n">compareMethod</span><span class="p">;</span>
+<span class="w">   </span><span class="c1">// All the properties can be updated during run time using setProps</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">refWindowLength</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">refDelayLength</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">insWindowLength</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">threshold</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">compareMethod</span><span class="p">;</span>
 
 <span class="k">private</span><span class="o">:</span>
-   <span class="k">friend</span> <span class="k">class</span> <span class="nc">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">access</span><span class="p">;</span>
+<span class="w">   </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">access</span><span class="p">;</span>
 
-   <span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Archive</span><span class="o">&gt;</span>
-   <span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span><span class="n">Archive</span> <span class="o">&amp;</span><span class="n">ar</span><span class="p">,</span> <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">version</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">base_object</span><span class="o">&lt;</span><span class="n">ModuleProps</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">refWindowLength</span><span class="p">;</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">refDelayLength</span><span class="p">;</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">insWindowLength</span><span class="p">;</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">threshold</span><span class="p">;</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">compareMethod</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">Archive</span><span class="o">&gt;</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">serialize</span><span class="p">(</span><span class="n">Archive</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">version</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">base_object</span><span class="o">&lt;</span><span class="n">ModuleProps</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">refWindowLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">refDelayLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">insWindowLength</span><span class="p">;</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">threshold</span><span class="p">;</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">compareMethod</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="validating-the-input-and-output">
-<h2>Validating the input and output<a class="headerlink" href="#validating-the-input-and-output" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">ChangeDetection</span><span class="o">::</span><span class="n">validateInputOutputPins</span><span class="p">()</span>
+</section>
+<section id="validating-the-input-and-output">
+<h2>Validating the input and output<a class="headerlink" href="#validating-the-input-and-output" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">ChangeDetection::validateInputOutputPins</span><span class="p">()</span>
 <span class="p">{</span>
-   <span class="c1">// one and only 1 array should exist</span>
-   <span class="k">auto</span> <span class="n">count</span> <span class="o">=</span> <span class="n">getNumberOfInputsByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">);</span>
-   <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="n">LOG_ERROR</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Input pin of type ARRAY is expected.&quot;</span><span class="p">;</span>
-      <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="c1">// one and only 1 array should exist</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNumberOfInputsByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">);</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">LOG_ERROR</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Input pin of type ARRAY is expected.&quot;</span><span class="p">;</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="c1">// output CHANGE_DETECTION pin should exist</span>
-   <span class="n">count</span> <span class="o">=</span> <span class="n">getNumberOfOutputsByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">);</span>
-   <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="n">LOG_ERROR</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Input pin of type CHANGE_DETECTION is expected.&quot;</span><span class="p">;</span>
-      <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="c1">// output CHANGE_DETECTION pin should exist</span>
+<span class="w">   </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNumberOfOutputsByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">);</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">LOG_ERROR</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Input pin of type CHANGE_DETECTION is expected.&quot;</span><span class="p">;</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="initialization">
-<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">ChangeDetection</span><span class="o">::</span><span class="n">init</span><span class="p">()</span>
+</section>
+<section id="initialization">
+<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">ChangeDetection::init</span><span class="p">()</span>
 <span class="p">{</span>
-   <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Module</span><span class="o">::</span><span class="n">init</span><span class="p">())</span>
-   <span class="p">{</span>
-      <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">Module</span><span class="o">::</span><span class="n">init</span><span class="p">())</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="c1">// any initialization here</span>
+<span class="w">   </span><span class="c1">// any initialization here</span>
 
-   <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="handling-the-first-frame-and-using-the-input-metadata">
-<h2>Handling the first frame and using the input metadata<a class="headerlink" href="#handling-the-first-frame-and-using-the-input-metadata" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">ChangeDetection</span><span class="o">::</span><span class="n">processSOS</span><span class="p">(</span><span class="n">frame_sp</span><span class="o">&amp;</span> <span class="n">frame</span><span class="p">)</span>
+</section>
+<section id="handling-the-first-frame-and-using-the-input-metadata">
+<h2>Handling the first frame and using the input metadata<a class="headerlink" href="#handling-the-first-frame-and-using-the-input-metadata" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">ChangeDetection::processSOS</span><span class="p">(</span><span class="n">frame_sp</span><span class="o">&amp;</span><span class="w"> </span><span class="n">frame</span><span class="p">)</span>
 <span class="p">{</span>
-   <span class="k">auto</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">getMetadata</span><span class="p">();</span>
-   <span class="k">if</span> <span class="p">(</span><span class="n">metadata</span><span class="o">-&gt;</span><span class="n">getFrameType</span><span class="p">()</span> <span class="o">!=</span> <span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">metadata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frame</span><span class="o">-&gt;</span><span class="n">getMetadata</span><span class="p">();</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">metadata</span><span class="o">-&gt;</span><span class="n">getFrameType</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="c1">// metadata has width, height, type depending on the frame type</span>
+<span class="w">   </span><span class="c1">// metadata has width, height, type depending on the frame type</span>
 
-   <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="output">
-<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ChangeDetectionResult</span>
+</section>
+<section id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ChangeDetectionResult</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
 
-   <span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="kt">bool</span> <span class="n">changeDetected</span><span class="p">,</span> <span class="kt">double</span> <span class="n">distance</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">index</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="n">mChangeDetected</span> <span class="o">=</span> <span class="n">changeDetected</span><span class="p">;</span>
-      <span class="n">mDistance</span> <span class="o">=</span> <span class="n">distance</span><span class="p">;</span>
-      <span class="n">fIndex</span> <span class="o">=</span> <span class="n">index</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">changeDetected</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">distance</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">index</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="n">mChangeDetected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">changeDetected</span><span class="p">;</span>
+<span class="w">      </span><span class="n">mDistance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">distance</span><span class="p">;</span>
+<span class="w">      </span><span class="n">fIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">index</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="n">ChangeDetectionResult</span><span class="p">()</span> <span class="p">{}</span>
+<span class="w">   </span><span class="n">ChangeDetectionResult</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span>
 
-   <span class="k">static</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span> <span class="n">deSerialize</span><span class="p">(</span><span class="n">frame_container</span><span class="o">&amp;</span> <span class="n">frames</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="k">auto</span> <span class="n">frameType</span> <span class="o">=</span> <span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">;</span>
+<span class="w">   </span><span class="k">static</span><span class="w"> </span><span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">deSerialize</span><span class="p">(</span><span class="n">frame_container</span><span class="o">&amp;</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">auto</span><span class="w"> </span><span class="n">frameType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">;</span>
 
-      <span class="k">auto</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">frame_sp</span><span class="p">();</span>
-      <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">frames</span><span class="p">.</span><span class="n">cbegin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">frames</span><span class="p">.</span><span class="n">cend</span><span class="p">();</span> <span class="n">it</span><span class="o">++</span><span class="p">)</span>
-      <span class="p">{</span>
-         <span class="k">auto</span> <span class="n">tempFrame</span> <span class="o">=</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
-         <span class="k">if</span> <span class="p">(</span><span class="n">tempFrame</span><span class="o">-&gt;</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getFrameType</span><span class="p">()</span> <span class="o">==</span> <span class="n">frameType</span><span class="p">)</span>
-         <span class="p">{</span>
-            <span class="n">frame</span> <span class="o">=</span> <span class="n">tempFrame</span><span class="p">;</span>
-         <span class="p">}</span>
-      <span class="p">}</span>
+<span class="w">      </span><span class="k">auto</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frame_sp</span><span class="p">();</span>
+<span class="w">      </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frames</span><span class="p">.</span><span class="n">cbegin</span><span class="p">();</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">frames</span><span class="p">.</span><span class="n">cend</span><span class="p">();</span><span class="w"> </span><span class="n">it</span><span class="o">++</span><span class="p">)</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">         </span><span class="k">auto</span><span class="w"> </span><span class="n">tempFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
+<span class="w">         </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tempFrame</span><span class="o">-&gt;</span><span class="n">getMetadata</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getFrameType</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">frameType</span><span class="p">)</span>
+<span class="w">         </span><span class="p">{</span>
+<span class="w">            </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempFrame</span><span class="p">;</span>
+<span class="w">         </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
 
-      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">frame</span><span class="p">.</span><span class="n">get</span><span class="p">())</span>
-      <span class="p">{</span>
-         <span class="k">return</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">();</span>
-      <span class="p">}</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">frame</span><span class="p">.</span><span class="n">get</span><span class="p">())</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">         </span><span class="k">return</span><span class="w"> </span><span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">      </span><span class="p">}</span>
 
-      <span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="nb">false</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
-      <span class="k">auto</span><span class="o">&amp;</span> <span class="n">obj</span> <span class="o">=</span> <span class="o">*</span><span class="n">result</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
-      <span class="n">Utils</span><span class="o">::</span><span class="n">deSerialize</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">(),</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">());</span>
+<span class="w">      </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+<span class="w">      </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="w">      </span><span class="n">Utils</span><span class="o">::</span><span class="n">deSerialize</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">frame</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">());</span>
 
-      <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="k">static</span> <span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span><span class="kt">bool</span> <span class="n">changeDetected</span><span class="p">,</span> <span class="kt">double</span> <span class="n">distance</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">index</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">)</span>
-   <span class="p">{</span>
-      <span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="n">changeDetected</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">index</span><span class="p">);</span>
-      <span class="n">Utils</span><span class="o">::</span><span class="n">serialize</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">serialize</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">changeDetected</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">distance</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">index</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">size</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ChangeDetectionResult</span><span class="p">(</span><span class="n">changeDetected</span><span class="p">,</span><span class="w"> </span><span class="n">distance</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="p">);</span>
+<span class="w">      </span><span class="n">Utils</span><span class="o">::</span><span class="n">serialize</span><span class="o">&lt;</span><span class="n">ChangeDetectionResult</span><span class="o">&gt;</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="k">static</span> <span class="kt">size_t</span> <span class="n">getSerializeSize</span><span class="p">()</span>
-   <span class="p">{</span>
-      <span class="k">return</span> <span class="mi">1024</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">mChangeDetected</span><span class="p">)</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">mDistance</span><span class="p">)</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">fIndex</span><span class="p">);</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">static</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">getSerializeSize</span><span class="p">()</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">mChangeDetected</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">mDistance</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">fIndex</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
 
-   <span class="kt">bool</span> <span class="n">mChangeDetected</span><span class="p">;</span>
-   <span class="kt">double</span> <span class="n">mDistance</span><span class="p">;</span>
-   <span class="kt">uint64_t</span> <span class="n">fIndex</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">bool</span><span class="w"> </span><span class="n">mChangeDetected</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">double</span><span class="w"> </span><span class="n">mDistance</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">fIndex</span><span class="p">;</span>
 
 <span class="k">private</span><span class="o">:</span>
-   <span class="k">friend</span> <span class="k">class</span> <span class="nc">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">access</span><span class="p">;</span>
-   <span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Archive</span><span class="o">&gt;</span>
-   <span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span><span class="n">Archive</span> <span class="o">&amp;</span> <span class="n">ar</span><span class="p">,</span> <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="cm">/* file_version */</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">ar</span> <span class="o">&amp;</span> <span class="n">mChangeDetected</span> <span class="o">&amp;</span> <span class="n">mDistance</span> <span class="o">&amp;</span> <span class="n">fIndex</span><span class="p">;</span>
-   <span class="p">}</span>
+<span class="w">   </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">boost</span><span class="o">::</span><span class="n">serialization</span><span class="o">::</span><span class="n">access</span><span class="p">;</span>
+<span class="w">   </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">Archive</span><span class="o">&gt;</span>
+<span class="w">   </span><span class="kt">void</span><span class="w"> </span><span class="n">serialize</span><span class="p">(</span><span class="n">Archive</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">ar</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="cm">/* file_version */</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">ar</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mChangeDetected</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mDistance</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">fIndex</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="consuming-the-input-and-send-output">
-<h2>Consuming the input and send output<a class="headerlink" href="#consuming-the-input-and-send-output" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">ChangeDetection</span><span class="o">::</span><span class="n">process</span><span class="p">(</span><span class="n">frame_container</span><span class="o">&amp;</span> <span class="n">frames</span><span class="p">)</span>
+</section>
+<section id="consuming-the-input-and-send-output">
+<h2>Consuming the input and send output<a class="headerlink" href="#consuming-the-input-and-send-output" title="Permalink to this heading"></a></h2>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="nf">ChangeDetection::process</span><span class="p">(</span><span class="n">frame_container</span><span class="o">&amp;</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span>
 <span class="p">{</span>
-   <span class="k">auto</span> <span class="n">inFrame</span> <span class="o">=</span> <span class="n">getFrameByType</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">);</span>
-   <span class="k">auto</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">mDetail</span><span class="o">-&gt;</span><span class="n">getOutputMetadata</span><span class="p">();</span>
-   <span class="k">auto</span> <span class="n">outFrame</span> <span class="o">=</span> <span class="n">makeFrame</span><span class="p">(</span><span class="n">ChangeDetectionResult</span><span class="o">::</span><span class="n">getSerializeSize</span><span class="p">(),</span> <span class="n">metadata</span><span class="p">);</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">inFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getFrameByType</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="w"> </span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">ARRAY</span><span class="p">);</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">metadata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mDetail</span><span class="o">-&gt;</span><span class="n">getOutputMetadata</span><span class="p">();</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">outFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeFrame</span><span class="p">(</span><span class="n">ChangeDetectionResult</span><span class="o">::</span><span class="n">getSerializeSize</span><span class="p">(),</span><span class="w"> </span><span class="n">metadata</span><span class="p">);</span>
 
-   <span class="c1">// do the computation here</span>
+<span class="w">   </span><span class="c1">// do the computation here</span>
 
-   <span class="k">auto</span> <span class="n">pinId</span> <span class="o">=</span> <span class="n">getOutputPinIdByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">);</span>
-   <span class="n">frames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="n">pinId</span><span class="p">,</span> <span class="n">outFrame</span><span class="p">));</span>
-   <span class="n">send</span><span class="p">(</span><span class="n">frames</span><span class="p">);</span>
+<span class="w">   </span><span class="k">auto</span><span class="w"> </span><span class="n">pinId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getOutputPinIdByType</span><span class="p">(</span><span class="n">FrameMetadata</span><span class="o">::</span><span class="n">CHANGE_DETECTION</span><span class="p">);</span>
+<span class="w">   </span><span class="n">frames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="n">pinId</span><span class="p">,</span><span class="w"> </span><span class="n">outFrame</span><span class="p">));</span>
+<span class="w">   </span><span class="n">send</span><span class="p">(</span><span class="n">frames</span><span class="p">);</span>
 
-   <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="w">   </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
