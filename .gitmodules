@@ -11,3 +11,6 @@
 [submodule "thirdparty/lib_re"]
 	path = thirdparty/lib_re
 	url = https://github.com/baresip/re.git
+[submodule "thirdparty/baresip"]
+	path = thirdparty/baresip
+	url = https://github.com/baresip/baresip.git
