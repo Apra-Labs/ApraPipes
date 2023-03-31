@@ -185,20 +185,6 @@ public:
 			openVideoStartingTS = mState.startTimeStamp;
 		}
 
-		try
-		{
-			openVideoStartingTS = std::stoull(boostVideoTS);
-			mState.startTimeStamp = std::stoull(boostVideoTS);
-		}
-		catch (std::invalid_argument)
-		{
-			if (!mState.startTimeStamp)
-			{
-				throw AIPException(AIP_FATAL, "unexpected state - starting ts not found in video name or metadata");
-			}
-			openVideoStartingTS = mState.startTimeStamp;
-		}
-
 		setMetadata();
 		return true;
 	}

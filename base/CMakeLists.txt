@@ -79,7 +79,7 @@ IF(ENABLE_GST)
 	ENDIF(NOT ENABLE_WINDOWS)
 	
 ENDIF(ENABLE_GST)
- 
+        
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
