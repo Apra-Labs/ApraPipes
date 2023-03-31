@@ -9,15 +9,13 @@ extern "C"
 #include "OverlayMotionVectors.h"
 #include "Utils.h"
 
-class OverlayMotionVector::Detail
+class OverlayDetailAbs
 {
 public:
-	Detail(OverlayMotionVectorProps props)
+	OverlayDetailAbs()
 	{
 	};
-	~Detail()
-	{
-	}
+	~OverlayDetailAbs(){ }
 
 	void setMetadata(RawImageMetadata* rawMetadata)
 	{
@@ -27,40 +25,93 @@ public:
 		rawOutMetadata->setData(outputMetadata);
 	}
 
-	bool overlayMotionVectors(frame_container frames, frame_sp& outFrame)
-	{
-		auto inRawImageFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
-		auto inMotionVectorFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::MOTION_VECTOR_DATA);
+	virtual bool overlayMotionVectors(frame_container frames, frame_sp& outFrame) = 0;
 
-		if (inMotionVectorFrame->size() == 0 || !inRawImageFrame)
-		{
-			return false;
-		}
-
-		AVMotionVector* motionVectors = (AVMotionVector*)inMotionVectorFrame->data();
-		mImg.data = static_cast<uint8_t*>(inRawImageFrame->data());
-		for (int i = 0; i < inMotionVectorFrame->size() / sizeof(*motionVectors); i++)
-		{
-			AVMotionVector* MV = &motionVectors[i];
-
-			if (std::abs(MV->motion_x) > 2 || std::abs(MV->motion_y) > 2)
-			{
-				cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
-			}
-		}
-		outFrame = inRawImageFrame;
-		return true;
-	}
 public:
 	framemetadata_sp rawOutputMetadata;
-private:
 	cv::Mat mImg;
 };
 
+class DetailFFmpeg : public OverlayDetailAbs
+{
+public:
+	DetailFFmpeg() {}
+	~DetailFFmpeg() {}
+
+	bool overlayMotionVectors(frame_container frames, frame_sp& outFrame);
+};
+class DetailOpenh264 : public OverlayDetailAbs
+{
+public:
+	DetailOpenh264() {}
+	~DetailOpenh264() {}
+
+	bool overlayMotionVectors(frame_container frames, frame_sp& outFrame);
+
+};
+
+bool DetailFFmpeg::overlayMotionVectors(frame_container frames, frame_sp& outFrame)
+{
+	auto inRawImageFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
+	auto inMotionVectorFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::MOTION_VECTOR_DATA);
+
+	if (inMotionVectorFrame->size() == 0 || !inRawImageFrame)
+	{
+		return false;
+	}
+
+	AVMotionVector* motionVectors = (AVMotionVector*)inMotionVectorFrame->data();
+	mImg.data = static_cast<uint8_t*>(inRawImageFrame->data());
+	for (int i = 0; i < inMotionVectorFrame->size() / sizeof(*motionVectors); i++)
+	{
+		AVMotionVector* MV = &motionVectors[i];
+
+		if (std::abs(MV->motion_x) > 2 || std::abs(MV->motion_y) > 2)
+		{
+			cv::arrowedLine(mImg, cv::Point(int(MV->src_x), int(MV->src_y)), cv::Point(int(MV->dst_x), int(MV->dst_y)), cv::Scalar(0, 255, 0), 1); // arrowedLine will help to also show the direction of motion.
+		}
+	}
+	outFrame = inRawImageFrame;
+	return true;
+}
+
+bool DetailOpenh264::overlayMotionVectors(frame_container frames, frame_sp& outFrame)
+{
+	auto inRawImageFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
+	auto inMotionVectorFrame = Module::getFrameByType(frames, FrameMetadata::FrameType::MOTION_VECTOR_DATA);
+
+	if (!inMotionVectorFrame || !inRawImageFrame)
+	{
+		return false;
+	}
+
+	auto motionVectorData = static_cast<uint16_t*>(inMotionVectorFrame->data());
+
+	mImg.data = static_cast<uint8_t*>(inRawImageFrame->data());
+
+	for (int i = 0; i < inMotionVectorFrame->size(); i++)
+	{
+		auto motionX = motionVectorData[i];
+		auto motionY = motionVectorData[i + 1];
+		auto xOffset = motionVectorData[i + 2];
+		auto yOffset = motionVectorData[i + 3];
+		if(abs(motionX) > 3 || abs(motionY) > 3)
+		cv::circle(mImg, cv::Point(int(xOffset), int(yOffset)), 1, cv::Scalar(0, 255, 0));
+	}
+	outFrame = inRawImageFrame;
+	return true;
+}
 
 OverlayMotionVector::OverlayMotionVector(OverlayMotionVectorProps props) : Module(TRANSFORM, "OverlayMotionVectors", props)
 {
-	mDetail.reset(new Detail(props));
+	if (props.MVOverlay == OverlayMotionVectorProps::MVOverlayMethod::FFMPEG)
+	{
+		mDetail.reset(new DetailFFmpeg());
+	}
+	else if (props.MVOverlay == OverlayMotionVectorProps::MVOverlayMethod::OPENH264)
+	{
+		mDetail.reset(new DetailOpenh264());
+	}
 	mDetail->rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
 	mOutputPinId = Module::addOutputPin(mDetail->rawOutputMetadata);
 }
