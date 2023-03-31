@@ -305,6 +305,7 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/FacialLandmarkCV.cpp
 )
 
 
@@ -338,6 +339,7 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
+	include/FacialLandmarkCV.h
 )
 
 
@@ -596,6 +598,7 @@ SET(UT_FILES
 	test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
+	test/faciallandmarkcv_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
