@@ -5,11 +5,9 @@
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
-#include "ColorConversionXForm.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
 #include "FacialLandmarkCV.h"
-#include "ImageDecoderCV.h"
 #include "test_utils.h"
 #include <opencv2/core/types.hpp>
 #include "Frame.h"
@@ -91,7 +89,7 @@ protected:
 				circle(iImg, p, 3, cv::Scalar(255, 200, 0), cv::LineTypes::FILLED);
 			}
 		}
-
+		
 		cv::imwrite("./data/landamrksplot.png", iImg);
 		return true;
 	}
