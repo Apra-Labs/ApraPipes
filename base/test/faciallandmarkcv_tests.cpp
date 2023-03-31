@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-
+#include <opencv2/core/types.hpp>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -9,7 +9,6 @@
 #include "AIPExceptions.h"
 #include "FacialLandmarkCV.h"
 #include "test_utils.h"
-#include <opencv2/core/types.hpp>
 #include "Frame.h"
 #include "ApraPoint2f.h"
 
@@ -77,9 +76,10 @@ protected:
 				ApraPoint2f p(facelandmarks[i][j]);
 				m_log += "Point #" + std::to_string(j) + ": (" + std::to_string(p.x) + "," + std::to_string(p.y) + ")\n";
 			}
+			assert(facelandmarks[i].size() == 68); // check if there are 68 facial landmarks
 		}
 
-		cv::Mat iImg = cv::imread("./data/tilt.jpg");
+		cv::Mat iImg = cv::imread("./data/faces.jpg");
 
 		for (int i = 0; i < facelandmarks.size(); i++)
 		{
@@ -89,9 +89,12 @@ protected:
 				circle(iImg, p, 3, cv::Scalar(255, 200, 0), cv::LineTypes::FILLED);
 			}
 		}
-		
-		cv::imwrite("./data/landamrksplot.png", iImg);
-		return true;
+		std::vector<uchar> buf;
+		cv::imencode(".png", iImg, buf);
+
+	   Test_Utils::saveOrCompare("./data/testOutput/facesResult.png", buf.data(), buf.size(), 0);
+	
+	   return true;
 	}
 
 	bool validateInputPins()
@@ -127,7 +130,6 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 	fileReader->step();
 	facemark->step();
 	sink->step();
-	std::string allLogs = sink->getLog();
 }
 
 BOOST_AUTO_TEST_CASE(tilted_face)
@@ -149,7 +151,6 @@ BOOST_AUTO_TEST_CASE(tilted_face)
 	fileReader->step();
 	facemark->step();
 	sink->step();
-	std::string allLogs = sink->getLog();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,17 +1,17 @@
+#include <boost/serialization/vector.hpp>
+#include <opencv2/face.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/types.hpp>
+
 #include "FacialLandmarkCV.h"
 #include "FrameMetadata.h"
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
-#include <opencv2/core/types.hpp>
 #include "ApraPoint2f.h"
-#include <boost/serialization/vector.hpp>
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-#include <opencv2/face.hpp>
-#include <opencv2/opencv.hpp>
-
 
 class Detail
 {
@@ -36,6 +36,7 @@ public:
 	{
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
 	}
+
 
 	void setMetadata(framemetadata_sp& metadata)
 	{
@@ -105,89 +106,93 @@ public:
 class DetailSSD : public Detail
 {
 public:
-	DetailSSD(FacialLandmarkCVProps& _props) : Detail(_props) {}
+	DetailSSD(FacialLandmarkCVProps& _props) : Detail(_props)
+	{
+		cv::String modelConfiguration = "./data/deploy.prototxt.txt";
+		cv::String modelBinary = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 
-	bool compute(frame_sp buffer);
+		facemark = cv::face::FacemarkLBF::create();
+		facemark->loadModel("./data/lbfmodel.yaml");
+
+	    faceDetector = cv::dnn::readNetFromCaffe(modelConfiguration, modelBinary);
+	}
+	
+	bool compute(frame_sp buffer)
+	{
+		//input must be 3 channel image(RGB)
+	// Create a 4-dimensional blob from the image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
+		cv::Mat inputBlob = cv::dnn::blobFromImage(iImg, 1.0, cv::Size(300, 300), cv::Scalar(104, 177, 123), false, false);
+
+		// Set the input blob as input to the face detector network
+		faceDetector.setInput(inputBlob, "data");
+
+		// Forward propagate the input through the network and obtain the output
+		cv::Mat detection = faceDetector.forward("detection_out");
+
+		cv::Mat detectionMatrix(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
+
+		vector<cv::Rect> faces;
+
+		for (int i = 0; i < detectionMatrix.rows; i++)
+		{
+			float confidence = detectionMatrix.at<float>(i, 2);
+
+			if (confidence > 0.5) // Set the confidence threshold for face detection
+			{
+				int x1 = static_cast<int>(detectionMatrix.at<float>(i, 3) * iImg.cols);
+				int y1 = static_cast<int>(detectionMatrix.at<float>(i, 4) * iImg.rows);
+				int x2 = static_cast<int>(detectionMatrix.at<float>(i, 5) * iImg.cols);
+				int y2 = static_cast<int>(detectionMatrix.at<float>(i, 6) * iImg.rows);
+
+				cv::Rect faceRect(x1, y1, x2 - x1, y2 - y1);
+
+				faces.push_back(faceRect);
+				cv::rectangle(iImg, faceRect, cv::Scalar(0, 255, 0), 2);
+			}
+		}
+
+
+		bool success = facemark->fit(iImg, faces, landmarks);
+
+		return true;
+	}
+
+private:
+	cv::dnn::Net faceDetector;
+	cv::Ptr<cv::face::Facemark> facemark;
 };
 
 class DetailHCASCADE : public Detail
 {
 public:
-	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props) {}
-
-	bool compute(frame_sp buffer);
-};
-
-bool DetailSSD::compute(frame_sp buffer)
-{
-	cv::String modelConfiguration = "./data/deploy.prototxt.txt";
-	cv::String modelBinary = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
-	cv::dnn::Net faceDetector = cv::dnn::readNetFromCaffe(modelConfiguration, modelBinary);
-
-	//input must be 3 channel image(RGB)
-	// Create a 4-dimensional blob from the image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
-	cv::Mat inputBlob = cv::dnn::blobFromImage(iImg, 1.0, cv::Size(300, 300), cv::Scalar(104, 177, 123), false, false);
-
-	// Set the input blob as input to the face detector network
-	faceDetector.setInput(inputBlob, "data");
-
-	// Forward propagate the input through the network and obtain the output
-	cv::Mat detection = faceDetector.forward("detection_out");
-
-	cv::Mat detectionMatrix(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
-
-	vector<cv::Rect> faces;
-
-	for (int i = 0; i < detectionMatrix.rows; i++)
+	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props), faceDetector("./data/haarcascade.xml")
 	{
-		float confidence = detectionMatrix.at<float>(i, 2);
+		facemark = cv::face::FacemarkLBF::create();
+		facemark->loadModel("./data/lbfmodel.yaml");
+	}
 
-		if (confidence > 0.5) // Set the confidence threshold for face detection
+	bool compute(frame_sp buffer)
+	{
+	    cv::Mat iImg = cv::imread("./data/faces.jpg");
+		vector<cv::Rect> faces;
+		faceDetector.detectMultiScale(iImg, faces);
+
+		for (int i = 0; i < faces.size(); i++)
 		{
-			int x1 = static_cast<int>(detectionMatrix.at<float>(i, 3) * iImg.cols);
-			int y1 = static_cast<int>(detectionMatrix.at<float>(i, 4) * iImg.rows);
-			int x2 = static_cast<int>(detectionMatrix.at<float>(i, 5) * iImg.cols);
-			int y2 = static_cast<int>(detectionMatrix.at<float>(i, 6) * iImg.rows);
-
-			cv::Rect faceRect(x1, y1, x2 - x1, y2 - y1);
-
-			faces.push_back(faceRect);
-			cv::rectangle(iImg, faceRect, cv::Scalar(0, 255, 0), 2);
+			rectangle(iImg, faces[i], cv::Scalar(0, 255, 0), 2);
 		}
+
+		bool success = facemark->fit(iImg, faces, landmarks);
+
+		cv::imwrite("./data/fff.png", iImg);
+		return true;
 	}
 
-	cv::Ptr<cv::face::Facemark> facemark = cv::face::FacemarkLBF::create();
-	facemark->loadModel("./data/lbfmodel.yaml");
-
-	bool success = facemark->fit(iImg, faces, landmarks);
-
-	if (success) {}
-
-	return true;
-}
-
-bool DetailHCASCADE::compute(frame_sp buffer)
-{
-	cv::CascadeClassifier faceDetector("./data/haarcascade.xml");
-
-	cv::Ptr < cv::face::Facemark > facemark = cv::face::FacemarkLBF::create();
-	facemark->loadModel("./data/lbfmodel.yaml");
-
-	vector<cv::Rect> faces;
-	faceDetector.detectMultiScale(iImg, faces);
-
-	for (int i = 0; i < faces.size(); i++)
-	{
-		rectangle(iImg, faces[i], cv::Scalar(0, 255, 0), 2);
-	}
-
-	bool success = facemark->fit(iImg, faces, landmarks);
-
-	if (success) {}
-
-	return true;
-}
-
+private:
+	cv::CascadeClassifier faceDetector;
+	cv::Ptr<cv::face::Facemark> facemark;
+};
+ 
 FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props) {}
 
 FacialLandmarkCV::~FacialLandmarkCV() {}
@@ -267,6 +272,11 @@ bool FacialLandmarkCV::init()
 		mDetail.reset(new DetailHCASCADE(mProp));
 	}
 
+	else
+	{
+		throw std::runtime_error("Invalid face detection model type");
+	}
+
 	return Module::init();
 }
 
@@ -279,8 +289,6 @@ bool FacialLandmarkCV::term()
 bool FacialLandmarkCV::process(frame_container& frames)
 {
 	auto frame = frames.cbegin()->second;
-
-	mDetail->iImg.data = static_cast<uint8_t*>(frame->data());
 
 	mDetail->compute(frame);
 
@@ -314,6 +322,7 @@ bool FacialLandmarkCV::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->initMatImages(metadata);
+	mDetail->iImg.data = static_cast<uint8_t*>(frame->data());
 	return true;
 }
 
