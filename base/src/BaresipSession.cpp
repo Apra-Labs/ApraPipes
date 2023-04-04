@@ -1,5 +1,5 @@
 
-#include <string>
+#include <string.h>
 #include <re.h>
 #include <baresip.h>
 #include "BaresipDemo.h"
