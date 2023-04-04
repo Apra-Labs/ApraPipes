@@ -16,10 +16,9 @@ extern "C"
 class MvExtractDetailAbs
 {
 public:
-	MvExtractDetailAbs(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe)
+	MvExtractDetailAbs(MotionVectorExtractorProps props, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe)
 	{
 		makeFrameWithPinId = _makeFrameWithPinId;
-		makeFrame = _makeFrame;
 		makeframe = _makeframe;
 		sendDecodedFrame = props.sendDecodedFrame;
 	};
@@ -38,7 +37,6 @@ public:
 	std::string rawFramePinId;
 	std::string motionVectorPinId;
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
-	std::function<frame_sp(size_t)> makeFrame;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
 	bool sendDecodedFrame = false;
 	cv::Mat bgrImg;
@@ -46,7 +44,7 @@ public:
 class DetailFfmpeg : public MvExtractDetailAbs
 {
 public:
-	DetailFfmpeg(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe) : MvExtractDetailAbs(props, _makeFrame, _makeFrameWithPinId, _makeframe) {}
+	DetailFfmpeg(MotionVectorExtractorProps props, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe) : MvExtractDetailAbs(props, _makeFrameWithPinId, _makeframe) {}
 	~DetailFfmpeg()
 	{
 		avcodec_free_context(&decoderContext);
@@ -61,7 +59,7 @@ private:
 class DetailOpenH264 : public MvExtractDetailAbs
 {
 public:
-	DetailOpenH264(MotionVectorExtractorProps props, std::function<frame_sp(size_t)> _makeFrame, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe) : MvExtractDetailAbs(props, _makeFrame, _makeFrameWithPinId, _makeframe) {}
+	DetailOpenH264(MotionVectorExtractorProps props, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe) : MvExtractDetailAbs(props, _makeFrameWithPinId, _makeframe) {}
 	~DetailOpenH264() {
 		if (pDecoder) {
 			pDecoder->Uninitialize();
@@ -70,11 +68,11 @@ public:
 	}
 	void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
 	void initDecoder();
-	void setProps(MotionVectorExtractorProps props);
 private:
 	ISVCDecoder* pDecoder;
 	SBufferInfo pDstInfo;
 	SDecodingParam sDecParam;
+	SParserBsInfo parseInfo;
 };
 void DetailFfmpeg::initDecoder()
 {
@@ -176,19 +174,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 	}
 	return 0;
 }
-void DetailOpenH264::setProps(MotionVectorExtractorProps props)
-{
-	sendDecodedFrame = props.sendDecodedFrame;
-	if (!sendDecodedFrame) {
-		sDecParam.bParseOnly = true;
-	}
-	else {
-		sDecParam.bParseOnly = false;
-	}
-	if (pDecoder->Initialize(&sDecParam)) {
-		LOG_ERROR << "Decoder initialization failed.\n";
-	}
-}
+
 void DetailOpenH264::initDecoder()
 {
 	sDecParam = { 0 };
@@ -226,15 +212,22 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 	outFrame = makeFrameWithPinId(mMotionVectorSize, motionVectorPinId);
 	mMotionVectorData = static_cast<int16_t*>(outFrame->data());
 
-	pDecoder->ParseBitstreamGetMotionVectorsNoDelay(pSrc, iSrcLen, ppDst, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
+	if (sDecParam.bParseOnly)
+	{
+		pDecoder->ParseBitstreamGetMotionVectors(pSrc, iSrcLen, ppDst, &parseInfo, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
+	}
+	else
+	{
+		pDecoder->DecodeFrameGetMotionVectorsNoDelay(pSrc, iSrcLen, ppDst, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
+	}
+
 	if (mMotionVectorSize != mWidth * mHeight * 8)
 	{
 		size_t mvSize = static_cast<size_t>(mMotionVectorSize);
 		outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
-		printf(",");
 	}
 
-	if ((sendDecodedFrame) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
+	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
 	{
 		decodedFrame = makeFrameWithPinId(mHeight * 3 * mWidth, rawFramePinId);
 		uint8_t* yuvImagePtr = (uint8_t*)malloc(mHeight * 1.5 * pDstInfo.UsrData.sSystemBuffer.iStride[0]);
@@ -259,11 +252,11 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 {
 	if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::FFMPEG)
 	{
-		mDetail.reset(new DetailFfmpeg(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
+		mDetail.reset(new DetailFfmpeg(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
 	}
 	else if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::OPENH264)
 	{
-		mDetail.reset(new DetailOpenH264(props, [&](size_t size) -> frame_sp {return makeFrame(size); }, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
+		mDetail.reset(new DetailOpenH264(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
 	}
 	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::MOTION_VECTOR_DATA));
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());

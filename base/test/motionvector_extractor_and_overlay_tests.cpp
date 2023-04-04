@@ -143,7 +143,7 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	MotionVectorExtractorProps propsChange(MvExtract,true);
 	motionExtractor->setProps(propsChange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(15));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -173,7 +173,7 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
 	motionExtractor->setNext(overlayMotionVector);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/motionVectorOverlay/frame_??.raw")));
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
 	overlayMotionVector->setNext(sink);
 
 	PipeLine p("test");
@@ -220,7 +220,7 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -261,11 +261,6 @@ BOOST_AUTO_TEST_CASE(basic_extract_motion_vector_openh264)
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_openh264)
 {
 	motionVectorExtractAndOverlay(MotionVectorExtractorProps::OPENH264, OverlayMotionVectorProps::OPENH264);
-}
-
-BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_setprops_openh264)
-{
-	motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::OPENH264, OverlayMotionVectorProps::OPENH264);
 }
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_render_openh264, *boost::unit_test::disabled())

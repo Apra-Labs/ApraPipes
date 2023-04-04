@@ -9,12 +9,11 @@ class DetailH264;
 class Mp4WriterSinkProps : public ModuleProps
 {
 public:
-	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true) : ModuleProps()
+	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder) : ModuleProps()
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
-		recordedTSBasedDTS = _recordedTSBasedDTS;
-		if (((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX)) || (_chunkTime == UINT32_MAX))
+		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
 		}
@@ -38,13 +37,11 @@ public:
 		chunkTime = 1; //minutes
 		syncTimeInSecs = 1;
 		fps = 30;
-		recordedTSBasedDTS = true;
 	}
 
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() +
-			sizeof(recordedTSBasedDTS) +
 			sizeof(baseFolder) +
 			sizeof(chunkTime) +
 			sizeof(syncTimeInSecs) +
@@ -55,7 +52,6 @@ public:
 	uint32_t chunkTime = 1;
 	uint32_t syncTimeInSecs = 1;
 	uint16_t fps = 30;
-	bool recordedTSBasedDTS = true;
 private:
 	friend class boost::serialization::access;
 
@@ -63,7 +59,6 @@ private:
 	void serialize(Archive &ar, const unsigned int version)
 	{
 		ar &boost::serialization::base_object<ModuleProps>(*this);
-		ar &recordedTSBasedDTS;
 		ar &baseFolder;
 		ar &chunkTime;
 		ar &syncTimeInSecs;

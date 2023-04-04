@@ -89,8 +89,8 @@ bool DetailOpenh264::overlayMotionVectors(frame_container frames, frame_sp& outF
 
 	mImg.data = static_cast<uint8_t*>(inRawImageFrame->data());
 
-	for (int i = 0; i < inMotionVectorFrame->size(); i++)
-	{
+	for (int i = 0; i < inMotionVectorFrame->size(); i += 4)
+	{ 
 		auto motionX = motionVectorData[i];
 		auto motionY = motionVectorData[i + 1];
 		auto xOffset = motionVectorData[i + 2];
