@@ -198,6 +198,7 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
 	src/OverlayMotionVectors.cpp
+	src/OverlayModule.cpp
 )
 
 SET(CORE_FILES_H
@@ -257,6 +258,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
 	include/OverlayMotionVectors.h
+	include/OverlayModule.h
 )
 
 IF(ENABLE_WINDOWS)
