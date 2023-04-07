@@ -151,3 +151,92 @@ protected:
 	}
 };
 
+class FrameContainerQueueOverlayAdapter : public FrameContainerQueue
+{
+public:
+	FrameContainerQueueOverlayAdapter() : FrameContainerQueue(0) {}
+	void adapt(boost::shared_ptr<FrameContainerQueue> adaptee) {
+		mAdaptee = adaptee;
+	}
+	void push(frame_container item) {
+		if (mAdaptee.get() != nullptr)
+		{
+			
+		}
+	}
+	frame_container pop() {
+		if (mAdaptee.get() != nullptr)
+		{
+			frame_container ret = mAdaptee->try_pop();
+			if (ret.size() == 0)
+			{
+				return on_failed_pop();
+			}
+			else {
+				return on_pop_success(ret);
+			}
+		}
+		return frame_container();
+	}
+	bool try_push(frame_container item)
+	{
+		if (mAdaptee.get() != nullptr)
+		{
+			
+		}
+		return false;
+	}
+	frame_container try_pop()
+	{
+		if (mAdaptee.get() != nullptr)
+		{
+			return mAdaptee->try_pop();
+		}
+		return frame_container();
+	}
+
+	bool isFull()
+	{
+		if (!mAdaptee.get())
+		{
+			return false;
+		}
+
+		return mAdaptee->isFull();
+	}
+
+	void clear()
+	{
+		if (mAdaptee.get())
+		{
+			mAdaptee->clear();
+		}
+	}
+
+	void accept()
+	{
+		if (mAdaptee.get())
+		{
+			mAdaptee->accept();
+		}
+	}
+
+	size_t size()
+	{
+		if (!mAdaptee.get())
+		{
+			return 0;
+		}
+
+		return mAdaptee->size();
+	}
+
+protected:
+	boost::shared_ptr<FrameContainerQueue> mAdaptee;
+	virtual frame_container on_failed_pop() {
+		return frame_container();
+	}
+	virtual frame_container  on_pop_success(frame_container item) {
+		return item;
+	}
+};
