@@ -151,7 +151,6 @@ public:
 			}
 		}
 
-
 		bool success = facemark->fit(iImg, faces, landmarks);
 
 		return true;
@@ -184,7 +183,6 @@ public:
 
 		bool success = facemark->fit(iImg, faces, landmarks);
 
-		cv::imwrite("./data/fff.png", iImg);
 		return true;
 	}
 
@@ -193,7 +191,9 @@ private:
 	cv::Ptr<cv::face::Facemark> facemark;
 };
  
-FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props) {}
+FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props)
+{
+}
 
 FacialLandmarkCV::~FacialLandmarkCV() {}
 
@@ -225,15 +225,15 @@ bool FacialLandmarkCV::validateInputPins()
 
 bool FacialLandmarkCV::validateOutputPins()
 {
-	if (getNumberOfOutputPins() != 1)
+	if (getNumberOfOutputPins() > 2)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 2. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
 	framemetadata_sp metadata = getFirstOutputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::RAW_IMAGE)
+	if (frameType != FrameMetadata::FACE_LANDMARKS_INFO && frameType != FrameMetadata::RAW_IMAGE)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
 		return false;
@@ -252,7 +252,10 @@ bool FacialLandmarkCV::validateOutputPins()
 void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	mOutputPinId = addOutputPin(metadata);
+	mOutputPinId1 = addOutputPin(metadata);
+	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
+	mOutputPinId2 = addOutputPin(landmarksOutputMetadata);
+
 }
 
 bool FacialLandmarkCV::init()
@@ -308,11 +311,15 @@ bool FacialLandmarkCV::process(frame_container& frames)
 		bufferSize += sizeof(apralandmarks[i]) + (sizeof(ApraPoint2f) + 2 * sizeof(int)) * apralandmarks[i].size();
 	}
 
-	auto outFrame = makeFrame(bufferSize);
+	//auto outFrame = makeFrame(bufferSize);
+	auto landmarksFrame = makeFrame(bufferSize);
 
-	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, outFrame->data(), bufferSize);
+	//Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, outFrame->data(), bufferSize);
+	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	//frames.insert(make_pair(mOutputPinId1, outFrame));
+	frames.insert(make_pair(mOutputPinId2, landmarksFrame));
+
 	send(frames);
 
 	return true;

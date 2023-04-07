@@ -45,5 +45,6 @@ protected:
 	bool processEOS(string &pinId);
 	boost::shared_ptr<Detail> mDetail;
 	FacialLandmarkCVProps mProp;
-	std::string mOutputPinId;
+	std::string mOutputPinId1;
+	std::string mOutputPinId2;
 };
