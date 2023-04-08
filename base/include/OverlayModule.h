@@ -26,7 +26,7 @@ public:
 	shapeType mShapeType;
 };
 
-class commandInvoker;
+class OverlayCommand;
 
 class  OverlayModule : public Module
 {
@@ -35,7 +35,7 @@ public:
 	virtual ~OverlayModule() {};
 	bool init();
 	bool term();
-	boost::shared_ptr<commandInvoker> mDetail;
+	boost::shared_ptr<OverlayCommand> mDetail;
 protected:
 	bool process(frame_container& frame);
 	void addInputPin(framemetadata_sp& metadata, string& pinId);

@@ -6,18 +6,20 @@
 #include "Utils.h"
 #include "Module.h"
 
-class RectangleClass;
+
+class RectangleOverlay;
 
 class OverlayDataInfo
 {
 public:
-	boost::shared_ptr<RectangleClass> rectangle;
+	virtual void serialize(void* buffer, size_t size) {}
+	virtual size_t getSerializeSize() {}
 };
  
-class  RectangleClass : public OverlayDataInfo
+class  RectangleOverlay : public OverlayDataInfo
 {
 public:
-	RectangleClass()
+	RectangleOverlay()
 	{
 	}
 
@@ -27,11 +29,21 @@ public:
 		Utils::serialize<OverlayDataInfo>(info, buffer, size);
 	}
 
+	static RectangleOverlay deSerialize(frame_sp& frame)
+	{
+		RectangleOverlay result;
+		
+		Utils::deSerialize<RectangleOverlay>(result, frame->data(), frame->size());
+
+		return result;
+	}
+
 	size_t getSerializeSize()
 	{
 		return sizeof(OverlayDataInfo)  + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2);
 	}
 
+	bool rectangleFound;
 	float x1, y1, x2, y2;
 
 private:

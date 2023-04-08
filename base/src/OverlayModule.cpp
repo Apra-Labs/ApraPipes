@@ -2,18 +2,33 @@
 #include <boost/foreach.hpp>
 #include "OverlayModule.h"
 #include "Utils.h"
+#include "FrameContainerQueue.h"
+#include "OverlayDataInfo.h"
 
+enum OverlayType
+{
+	LINE = 0,
+	RECTANGLE,
+	CIRCLE,
+	NOT_KNOWN
+};
 
 class OverlayComponent
 {
 public:
-	virtual void draw(frame_sp frame, frame_sp inRawFrame) = 0;
+	OverlayComponent() {}
+	class OverlayComponent(OverlayType& _shapeType, frame_sp inFrame)
+	{
+		
+	}
+	virtual void draw(frame_sp inRawFrame) = 0;
 };
 
 class Line : public OverlayComponent
 {
 public:
-	void draw(frame_sp frame, frame_sp inRawFrame)
+
+	void draw(frame_sp inRawFrame)
 	{
 		printf("draw line");
 	}
@@ -22,7 +37,7 @@ public:
 class Circle : public OverlayComponent
 {
 public:
-	void draw(frame_sp frame, frame_sp inRawFrame)
+	void draw(frame_sp inRawFrame)
 	{
 		printf("draw circle");
 	}
@@ -31,7 +46,11 @@ public:
 class rectangle : public OverlayComponent
 {
 public:
-	void draw(frame_sp frame, frame_sp inRawFrame)
+	rectangle(OverlayType& enumType, frame_sp frame)
+	{
+
+	}
+	void draw(frame_sp inRawFrame)
 	{
 		printf("draw Rectangle");
 	}
@@ -44,7 +63,7 @@ public:
 	{
 		gList.push_back(componentObj);
 	}
-	void draw(frame_sp frame, frame_sp inRawFrame)
+	void draw(frame_sp inRawFrame)
 	{
 		printf("draw compisite");
 	}
@@ -53,41 +72,26 @@ private:
 	vector<OverlayComponent*> gList;
 };
 
-class AbsCommand
+class OverlayCommand
 {
 public:
-	virtual void execute(frame_sp frame, frame_sp inRawFrame) = 0;
-};
-
-class commandInvoker
-{
-public:
-	commandInvoker() {}
+	OverlayCommand() {}
 	
-	void doOverlay(frame_container frames)
+	virtual void execute(OverlayComponent* Overlay, frame_sp inRawFrame)
 	{
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
-		{
-			auto frameType = it->second->mFrameType;
-			if (frameType == FrameMetadata::FrameType::RAW_IMAGE)
-			{
-				inRawFrame = it->second;
-			}
-			else if (frameType == FrameMetadata::FrameType::FACEDETECTS_INFO)
-			{
-				rectangle* rect = new rectangle;
-				rect->draw(it->second, inRawFrame);
-			}
-		}
+
+		Overlay->draw(inRawFrame);
 	}
-private:
-	frame_sp inRawFrame;
+public:
+	boost::shared_ptr<FrameContainerQueueOverlayAdapter> frameContainerOverlayAdapt;;
+	Line* lineObj;
 };
 
 
 OverlayModule::OverlayModule(OverlayModuleProps props) : Module(TRANSFORM, "OverlayMotionVectors", props)
 {
-	mDetail.reset(new commandInvoker());
+	mDetail.reset(new OverlayCommand());
+	mDetail->frameContainerOverlayAdapt.reset(new FrameContainerQueueOverlayAdapter([&](size_t size) -> frame_sp {return makeFrame(size); }));
 }
 
 void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
@@ -156,7 +160,9 @@ bool OverlayModule::shouldTriggerSOS()
 bool OverlayModule::process(frame_container& frames)
 {
 	frame_sp outFrame;
-	mDetail->doOverlay(frames);
+	OverlayComponent* OverlayObj;
+	if (frames.begin()->second->mFrameType == FrameMetadata::FrameType::RAW_IMAGE)
+	mDetail->execute(OverlayObj, frames.begin()->second);
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
 	return true;
