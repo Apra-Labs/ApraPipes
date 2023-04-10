@@ -1,32 +1,27 @@
-#include <boost/serialization/vector.hpp>
-#include <opencv2/core/types.hpp>
+#pragma once
 
-#include "FrameMetadata.h"
-#include "Frame.h"
+#include <boost/serialization/vector.hpp>
 #include "Utils.h"
 #include "Module.h"
 
 
-class RectangleOverlay;
-
-class OverlayDataInfo
+class OverlayInfo
 {
 public:
+	OverlayInfo() {}
 	virtual void serialize(void* buffer, size_t size) {}
-	virtual size_t getSerializeSize() {}
+	virtual size_t getSerializeSize() = 0;
 };
  
-class  RectangleOverlay : public OverlayDataInfo
+class  RectangleOverlay : public OverlayInfo
 {
 public:
-	RectangleOverlay()
-	{
-	}
+	RectangleOverlay() {}
 
 	void serialize(void* buffer, size_t size)
 	{
 		auto& info = *this;
-		Utils::serialize<OverlayDataInfo>(info, buffer, size);
+		Utils::serialize<RectangleOverlay>(info, buffer, size);
 	}
 
 	static RectangleOverlay deSerialize(frame_sp& frame)
@@ -40,17 +35,16 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return sizeof(OverlayDataInfo)  + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2);
+		return sizeof(RectangleOverlay)  + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2) + 32;
 	}
 
-	bool rectangleFound;
 	float x1, y1, x2, y2;
-
+	std::vector<RectangleOverlay> vectorRect;
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int /*file_version*/)
 	{
-		ar& x1& y1& x2& y2
+		ar& x1& y1& x2& y2;
 	}
 };

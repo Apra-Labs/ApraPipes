@@ -344,6 +344,7 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
+	include/OverlayDataInfo.h
 )
 
 
@@ -621,6 +622,7 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
+	test/overlaymodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

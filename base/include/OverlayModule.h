@@ -14,6 +14,10 @@ public:
 		COMPOSITE
 	};
 
+	OverlayModuleProps() 
+	{
+	}
+
 	OverlayModuleProps(shapeType _shapeType) : mShapeType(_shapeType)
 	{
 	}
