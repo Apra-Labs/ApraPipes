@@ -59,5 +59,50 @@ BOOST_AUTO_TEST_CASE(overlay_rectangle_test)
 
 }
 
+BOOST_AUTO_TEST_CASE(composite_overlay_test)
+{
+	RectangleOverlay recOverlay;
+	recOverlay.x1 = 100;
+	recOverlay.x2 = 150;
+	recOverlay.y1 = 125;
+	recOverlay.y2 = 175;
+
+	CircleOverlay circleOverlay;
+	circleOverlay.x1 = 50;
+	circleOverlay.y1 = 75;
+	circleOverlay.radius = 1;
+
+	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
+	auto pinId = source->addOutputPin(metadata);
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	source->setNext(sink);
+
+	BOOST_TEST(source->init());
+	BOOST_TEST(sink->init());
+
+	frame_sp frame = source->makeFrame(recOverlay.getSerializeSize(), pinId);
+
+	OverlayShapeSerializerVisitor *seriliazerVisiter = new OverlayShapeSerializerVisitor((uchar*)frame->data(), frame->size());
+	CompositeOverlay compositeOverlay;
+	compositeOverlay.add(&recOverlay);
+	compositeOverlay.add(&circleOverlay);
+	compositeOverlay.accept(seriliazerVisiter);
+
+	frame_container frames;
+	frames.insert(make_pair(pinId, frame));
+
+	source->send(frames);
+	frames = sink->try_pop();
+
+	auto seriliazedFrame = frames.begin()->second;
+	OverlayShapeDeserializerVisitor* deseriliazerVisiter = new OverlayShapeDeserializerVisitor((uchar*)seriliazedFrame->data(), frame->size());
+	CompositeOverlay compositeOverlayDes;
+	//compositeOverlay.accept(deseriliazerVisiter);
+	deseriliazerVisiter->visit(&circleOverlay);
+	deseriliazerVisiter->visit(&recOverlay);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()

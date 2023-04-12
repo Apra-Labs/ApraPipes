@@ -5,19 +5,11 @@
 #include "FrameContainerQueue.h"
 #include "OverlayDataInfo.h"
 
-enum OverlayType
-{
-	LINE = 0,
-	RECTANGLE,
-	CIRCLE,
-	NOT_KNOWN
-};
-
 class OverlayComponent
 {
 public:
 	OverlayComponent() {}
-	class OverlayComponent(OverlayType& _shapeType, frame_sp inFrame)
+	class OverlayComponent(Primitive& _shapeType, frame_sp inFrame)
 	{
 		
 	}
@@ -27,7 +19,7 @@ public:
 class Line : public OverlayComponent
 {
 public:
-	Line(OverlayType type, frame_sp frame)
+	Line(Primitive type, frame_sp frame)
 	{
 
 	}
@@ -40,7 +32,7 @@ public:
 class Circle : public OverlayComponent
 {
 public:
-	Circle(OverlayType type, frame_sp frame)
+	Circle(Primitive type, frame_sp frame)
 	{
 
 	}
@@ -170,9 +162,8 @@ bool OverlayModule::process(frame_container& frames)
 		if (frameTye == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
 			frame_sp frame = it->second;
-			RectangleOverlay rectOverlay = RectangleOverlay::deSerialize(frame);
-			rectangle(rectOverlay);
-			OverlayObj = new rectangle;
+			//RectangleOverlay rectOverlay = RectangleOverlay::deSerialize(frame);
+			
 		}
 
 		if (frameTye == FrameMetadata::FrameType::RAW_IMAGE)
