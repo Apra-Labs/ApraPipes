@@ -17,21 +17,21 @@ class OverlayShapeVisitor;
 class OverlayInfo
 {
 public:
-	OverlayInfo(Primitive p) : _PrimitiveType(p) {}
-	virtual void serialize(void* buffer, size_t size) {}
-	virtual void deSerialize(void* buffer, size_t size) { }
+	OverlayInfo(Primitive p) : primitiveType(p) {}
+	virtual void serialize(boost::archive::binary_oarchive& oa, void* buffer, size_t size) {}
+	virtual void deserialize(boost::archive::binary_iarchive& ia, void* buffer, size_t size) { }
 	virtual size_t getSerializeSize() { return 0; };
 	virtual void accept(OverlayShapeVisitor* visitor) { };
 
 protected:
-	Primitive _PrimitiveType;
+	Primitive primitiveType;
 };
 
 class OverlayShapeVisitor
 {
 public:
 	virtual ~OverlayShapeVisitor() {}
-	virtual void visit(OverlayInfo* Overlay) { };
+	virtual void visit(OverlayInfo* Overlay, void* buffer, size_t size) { };
 };
  
 class CircleOverlay : public OverlayInfo
@@ -41,24 +41,20 @@ public:
 	{
 	}
 
-	void serialize(void* buffer, size_t size) override
+	void serialize(boost::archive::binary_oarchive& oa, void* buffer, size_t size) override
 	{
-		auto& info = *this;
-		Utils::serialize<CircleOverlay>(info, buffer, size);
+		
+		oa << primitiveType << x1 << y1 << radius;
 	}
 
 	size_t getSerializeSize()
 	{
-		return sizeof(CircleOverlay) + sizeof(x1) + sizeof(y1) + sizeof(radius) + sizeof(_PrimitiveType) + 32;
+		return sizeof(CircleOverlay) + sizeof(x1) + sizeof(y1) + sizeof(radius) + sizeof(primitiveType) + 32;
 	}
 
-	void deSerialize(void* buffer, size_t size)
+	void deserialize(boost::archive::binary_iarchive& ia, void* buffer, size_t size)
 	{
-		CircleOverlay result;
-
-		Utils::deSerialize<CircleOverlay>(result, buffer, size);
-
-		//return &result;
+		ia >> primitiveType >> x1 >> y1 >> radius;
 	}
 
 	float x1, y1, radius;
@@ -68,7 +64,7 @@ private:
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int /*file_version*/)
 	{
-		ar& _PrimitiveType;
+		ar & primitiveType;
 		ar &x1 &y1 &radius;
 	}
 
@@ -80,24 +76,19 @@ class LineOverlay : public OverlayInfo
 public:
 	LineOverlay() : OverlayInfo(Primitive::LINE) 
 	{}
-	void serialize(void* buffer, size_t size) override
+	void serialize(boost::archive::binary_oarchive& oa, void* buffer, size_t size) override
 	{
-		auto& info = *this;
-		Utils::serialize<LineOverlay>(info, buffer, size);
+		oa << primitiveType << x1 << y1 << x2 << y2;
 	}
 
 	size_t getSerializeSize()
 	{
-		return sizeof(LineOverlay) + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2) + sizeof(_PrimitiveType) + 32;
+		return sizeof(LineOverlay) + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2) + sizeof(primitiveType) + 32;
 	}
 
-	void deSerialize(void* buffer, size_t size)
+	void deserialize(boost::archive::binary_iarchive& ia, void* buffer, size_t size)
 	{
-		LineOverlay result;
-
-		Utils::deSerialize<LineOverlay>(result, buffer, size);
-
-		//return &result;
+		ia >> primitiveType >> x1 >> y1 >> x2 >> y2;
 	}
 
 	float x1, y1, x2, y2;
@@ -107,7 +98,7 @@ private:
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int /*file_version*/)
 	{
-		ar& _PrimitiveType;
+		ar& primitiveType;
 		ar &x1 &y1 &x2 &y2;
 	}
 
@@ -119,24 +110,19 @@ public:
 	RectangleOverlay() : OverlayInfo(Primitive::RECTANGLE) 
 	{}
 
-	void serialize(void* buffer, size_t size) override
+	void serialize(boost::archive::binary_oarchive& oa, void* buffer, size_t size) override
 	{
-		auto& info = *this;
-		Utils::serialize<RectangleOverlay>(info, buffer, size);
+		oa << primitiveType << x1 << y1 << x2 << y2;
 	}
 
-	void deSerialize(void* buffer, size_t size)
+	void deserialize(boost::archive::binary_iarchive& ia, void* buffer, size_t size)
 	{
-		RectangleOverlay result;
-		
-		Utils::deSerialize<RectangleOverlay>(result, buffer, size);
-
-		//return &result;
+		ia >> primitiveType >> x1 >> y1 >> x2 >> y2;
 	}
 
 	size_t getSerializeSize()
 	{
-		return sizeof(RectangleOverlay)  + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2) + sizeof(_PrimitiveType) + 32;
+		return sizeof(RectangleOverlay)  + sizeof(x1) + sizeof(y1) + sizeof(x2) + sizeof(y2) + sizeof(primitiveType) + 32;
 	}
 
 
@@ -147,15 +133,40 @@ private:
 	template <class Archive>
 	void serialize(Archive& ar, const unsigned int /*file_version*/)
 	{
-		ar& _PrimitiveType;
+		ar& primitiveType;
 		ar &x1 &y1 &x2 &y2;
 	}
 
 };
 
+class OverlayShapeDeserializerVisitor : public OverlayShapeVisitor
+{
+public:
+	OverlayShapeDeserializerVisitor(boost::archive::binary_iarchive& _ia) : ia(_ia) {}
+	void visit(OverlayInfo* Overlay, void* buffer, size_t size)
+	{
+		Overlay->deserialize(ia, buffer, size);
+	}
+
+private:
+	boost::archive::binary_iarchive& ia;
+};
+
+class OverlayShapeSerializerVisitor : public OverlayShapeVisitor
+{
+public:
+	OverlayShapeSerializerVisitor(boost::archive::binary_oarchive& _oa) : oa(_oa) {}
+	void visit( OverlayInfo* Overlay, void* buffer, size_t size)
+	{
+		Overlay->serialize(oa, buffer, size);
+	}
+
+protected:
+	boost::archive::binary_oarchive& oa;
+};
+
 class CompositeOverlay : public OverlayInfo
 {
-
 public:
 	CompositeOverlay() : OverlayInfo(Primitive::COMPOSITE) {}
 	void add(OverlayInfo* componentObj)
@@ -163,44 +174,33 @@ public:
 		gList.push_back(componentObj);
 	}
 
-	void accept(OverlayShapeVisitor* visitor)
+	void serialize(frame_sp frame)
+	{
+		boost::iostreams::basic_array_sink<char> device_sink((char*)frame->data(), frame->size());
+		boost::iostreams::stream<boost::iostreams::basic_array_sink<char> > s_sink(device_sink);
+
+		boost::archive::binary_oarchive oa(s_sink);
+		OverlayShapeSerializerVisitor* seriliazerobj = new OverlayShapeSerializerVisitor(oa);
+		accept(seriliazerobj, frame->data(), frame->size());
+	}
+
+	void deserialize(frame_sp frame)
+	{
+		boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
+		boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
+		boost::archive::binary_iarchive ia(s);
+
+		OverlayShapeDeserializerVisitor* deseriliazerobj = new OverlayShapeDeserializerVisitor(ia);
+		accept(deseriliazerobj, frame->data(), frame->size());
+	}
+protected:
+	void accept(OverlayShapeVisitor* visitor, void* buffer, size_t size)
 	{
 		for (auto shape : gList)
 		{
-			visitor->visit(shape);
+			visitor->visit(shape, buffer, size);
 		}
 	}
-
-
 protected:
 	vector<OverlayInfo*> gList;
-};
-
-class OverlayShapeDeserializerVisitor : public OverlayShapeVisitor
-{
-public:
-	OverlayShapeDeserializerVisitor(uchar* _buffer, size_t _size) : buffer(_buffer), size(_size) {}
-	void visit(OverlayInfo* Overlay)
-	{
-		Overlay->deSerialize(buffer, size);
-	}
-
-private:
-	uchar* buffer;
-	size_t size;
-};
-
-class OverlayShapeSerializerVisitor : public OverlayShapeVisitor
-{
-public:
-	OverlayShapeSerializerVisitor(uchar* _buffer, size_t _size) : buffer(_buffer), size(_size) {}
-	void visit(OverlayInfo* Overlay)
-	{
-		Overlay->serialize((void*)buffer, size);
-	}
-
-	
-protected:
-	uchar* buffer;
-	size_t size;
 };
