@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	BOOST_TEST(source->init());
 	BOOST_TEST(sink->init());
 
-	frame_sp frame = source->makeFrame(recOverlay.getSerializeSize(), pinId);
+	frame_sp frame = source->makeFrame(2048, pinId);
 
 	CompositeOverlay compositeOverlay;
 	compositeOverlay.add(&recOverlay);
@@ -41,12 +41,7 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 
 	
 	CompositeOverlay compositeOverlayDes;
-	RectangleOverlay rectDeserializerObj;
-	CircleOverlay circleDeserializerOverlay;
-	compositeOverlayDes.add(&rectDeserializerObj);
-	compositeOverlayDes.add(&circleDeserializerOverlay);
 	compositeOverlayDes.deserialize(frame);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()
