@@ -69,12 +69,8 @@ void CompositeOverlay::serialize(frame_sp frame)
 	accept(visitor);
 }
 
-void CompositeOverlay::deserialize(frame_sp frame)
+void CompositeOverlay::deserialize(boost::archive::binary_iarchive& ia)
 {
-	boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
-	boost::iostreams::stream<boost::iostreams::basic_array_source<char> > sink(device);
-	boost::archive::binary_iarchive ia(sink);
-
 	size_t archive_size;
 	ia >> archive_size;
 	for (int i = 0; i < archive_size; i++)
@@ -86,10 +82,55 @@ void CompositeOverlay::deserialize(frame_sp frame)
 	}
 }
 
+void DrawingOverlay::deserialize(frame_sp frame)
+{
+	boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
+	boost::iostreams::stream<boost::iostreams::basic_array_source<char> > sink(device);
+	boost::archive::binary_iarchive ia(sink);
+
+	size_t archive_size;
+	ia >> archive_size;
+	for (int i = 0; i < archive_size; i++)
+	{
+		ia >> primitiveType;
+		DrawingOverlayBuilder* drawBuilderInfo = BuilderOverlayFactory::create(primitiveType);
+		drawBuilderInfo->deserialize(ia);
+	}
+}
+
 void CompositeOverlay::accept(OverlayShapeVisitor* visitor)
 {
 	for (auto shape : gList)
 	{
 		shape->accept(visitor);
 	}
+}
+
+DrawingOverlayBuilder* BuilderOverlayFactory::create(Primitive primitiveType)
+{
+	if (primitiveType == Primitive::RECTANGLE)
+	{
+		RectangleOverlayBuilder* rectangleOverlaybuilder = new RectangleOverlayBuilder();
+		return rectangleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::LINE)
+	{
+		LineOverlayBuilder* lineOverlaybuilder = new LineOverlayBuilder();
+		return lineOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::CIRCLE)
+	{
+		CircleOverlayBuilder* circleOverlaybuilder = new CircleOverlayBuilder();
+		return circleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::COMPOSITE)
+	{
+		CompositeOverlayBuilder* compositeOverlaybuilder = new CompositeOverlayBuilder();
+		return compositeOverlaybuilder;
+	}
+
+	else return NULL;
 }
