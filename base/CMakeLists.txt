@@ -311,6 +311,9 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/Overlay.cpp
+	src/OverlayFactory.h
+	src/OverlayFactory.cpp
 )
 
 
@@ -344,7 +347,7 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
-	include/OverlayDataInfo.h
+	include/Overlay.h
 )
 
 

@@ -3,7 +3,7 @@
 #include "OverlayModule.h"
 #include "Utils.h"
 #include "FrameContainerQueue.h"
-#include "OverlayDataInfo.h"
+#include "Overlay.h"
 
 class OverlayComponent
 {

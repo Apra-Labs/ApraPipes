@@ -3,7 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include "BoundBuffer.h"
 #include "CommonDefs.h"
-#include "OverlayDataInfo.h"
+#include "Overlay.h"
 #include "Module.h"
 #include "Frame.h"
 #include "FaceDetectsInfo.h"
