@@ -13,15 +13,80 @@
 #include "PropsChangeMetadata.h"
 #include "H264Metadata.h"
 
+class DTSCalcStrategy
+{
+public:
+	enum DTSCalcStrategyType
+	{
+		PASS_THROUGH = 0,
+		FIXED_RATE
+	};
+
+	DTSCalcStrategy(DTSCalcStrategyType _type)
+	{
+		type = _type;
+	}
+	virtual int64_t getDTS(uint64_t& frameTS, uint64_t lastFrameTS, uint16_t fps) = 0;
+	DTSCalcStrategyType type;
+};
+
+class DTSPassThroughStrategy : public DTSCalcStrategy
+{
+public:
+	DTSPassThroughStrategy() : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::PASS_THROUGH)
+	{
+	}
+
+	int64_t getDTS(uint64_t& frameTS, uint64_t lastFrameTS, uint16_t fps) override
+	{
+		int64_t diffInMsecs = frameTS - lastFrameTS;
+		// half of the ideal duration of one frame i.e. (1/fps) secs
+		int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * fps));
+		if (!diffInMsecs)
+		{
+			frameTS += halfDurationInMsecs;
+		}
+		else if (diffInMsecs < 0)
+		{
+			frameTS = lastFrameTS + halfDurationInMsecs;
+		}
+		diffInMsecs = frameTS - lastFrameTS;
+		return diffInMsecs;
+	}
+};
+
+class DTSFixedRateStrategy : public DTSCalcStrategy
+{
+public:
+	DTSFixedRateStrategy() : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::FIXED_RATE)
+	{
+	}
+	int64_t getDTS(uint64_t& frameTS, uint64_t lastFrameTS, uint16_t fps) override
+	{
+		// ideal duration of one frame i.e. (1/fps) secs
+		int64_t idealDurationInMsecs = static_cast<int64_t>(1000 / fps);
+		return idealDurationInMsecs;
+	}
+};
+
 class DetailAbs
 {
 public:
-	DetailAbs(Mp4WriterSinkProps _module)
+	DetailAbs(Mp4WriterSinkProps &_props)
 	{
-		setProps(_module);
+		setProps(_props);
 		mNextFrameFileName = "";
 		mux = nullptr;
 		mMetadataEnabled = false;
+
+		if (_props.recordedTSBasedDTS)
+		{
+			mDTSCalc.reset(new DTSPassThroughStrategy);
+		}
+		else
+		{
+			mDTSCalc.reset(new DTSFixedRateStrategy);
+		}
 	};
 
 	void setProps(Mp4WriterSinkProps& _props)
@@ -184,6 +249,7 @@ protected:
 	std::string mSerFormatVersion;
 	framemetadata_sp mInputMetadata;
 	uint64_t lastFrameTS = 0;
+	boost::shared_ptr<DTSCalcStrategy> mDTSCalc = nullptr;
 };
 
 class DetailJpeg : public DetailAbs
@@ -275,17 +341,7 @@ bool DetailJpeg::write(frame_container& frames)
 	}
 	else
 	{
-		diffInMsecs = inJpegImageFrame->timestamp - lastFrameTS;
-		int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * mProps->fps));
-		if (!diffInMsecs)
-		{
-			inJpegImageFrame->timestamp += halfDurationInMsecs;
-		}
-		else if (diffInMsecs < 0)
-		{
-			inJpegImageFrame->timestamp = lastFrameTS + halfDurationInMsecs;
-		}
-		diffInMsecs = inJpegImageFrame->timestamp - lastFrameTS;
+		diffInMsecs = mDTSCalc->getDTS(inJpegImageFrame->timestamp, lastFrameTS, mProps->fps);
 	}
 	lastFrameTS = inJpegImageFrame->timestamp;
 	mux_sample.dts = mux_sample.dts + static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
@@ -367,18 +423,7 @@ bool DetailH264::write(frame_container& frames)
 	}
 	else
 	{
-		diffInMsecs = inH264ImageFrame->timestamp - lastFrameTS;
-		int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * mProps->fps));
-		if (!diffInMsecs)
-		{
-			inH264ImageFrame->timestamp += halfDurationInMsecs;
-		}
-
-		else if (diffInMsecs < 0)
-		{
-			inH264ImageFrame->timestamp = lastFrameTS + halfDurationInMsecs;
-		}
-		diffInMsecs = inH264ImageFrame->timestamp - lastFrameTS;
+		diffInMsecs = mDTSCalc->getDTS(inH264ImageFrame->timestamp, lastFrameTS, mProps->fps);
 	}
 	lastFrameTS = inH264ImageFrame->timestamp;
 	mux_sample.dts = mux_sample.dts + static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
