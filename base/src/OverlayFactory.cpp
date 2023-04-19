@@ -19,5 +19,11 @@ OverlayInfo* OverlayFactory::create(Primitive primitiveType)
 		CircleOverlay* circleOverlay = new CircleOverlay();
 		return circleOverlay;
 	}
-	else return NULL;
+
+	else if (primitiveType == Primitive::COMPOSITE)
+	{
+		CompositeOverlay* compositeOverlay = new CompositeOverlay();
+		return compositeOverlay;
+	}
+	return nullptr;
 }

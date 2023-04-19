@@ -19,7 +19,7 @@ void CircleOverlay::deserialize(boost::archive::binary_iarchive& ia)
 
 void LineOverlay::serialize(boost::archive::binary_oarchive& oa)
 {
-	oa << x1 << y1 << x2 << y2;
+	oa << primitiveType << x1 << y1 << x2 << y2;
 }
 
 size_t LineOverlay::getSerializeSize()
@@ -67,7 +67,7 @@ void CompositeOverlay::serialize(frame_sp frame)
 	boost::iostreams::stream<boost::iostreams::basic_array_sink<char> > s_sink(device_sink);
 	boost::archive::binary_oarchive oa(s_sink);
 	oa << gList.size();
-	OverlayShapeSerializerVisitor* visitor = new OverlayShapeSerializerVisitor(oa);
+	OverlayInfoSerializerVisitor* visitor = new OverlayInfoSerializerVisitor(oa);
 
 	accept(visitor);
 }
@@ -85,7 +85,14 @@ void CompositeOverlay::deserialize(boost::archive::binary_iarchive& ia)
 	}
 }
 
-void DrawingOverlay::deserialize(frame_sp frame)
+size_t CompositeOverlay::getSerializeSize()
+{
+	OverlayInfoSerializeSizeVisitor* visitor = new OverlayInfoSerializeSizeVisitor();
+	accept(visitor);
+	return visitor->totalSize;
+}
+
+void CompositeOverlay::deserialize(frame_sp frame)
 {
 	boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
 	boost::iostreams::stream<boost::iostreams::basic_array_source<char> > sink(device);
@@ -101,7 +108,7 @@ void DrawingOverlay::deserialize(frame_sp frame)
 	}
 }
 
-void CompositeOverlay::accept(OverlayShapeVisitor* visitor)
+void DrawingOverlay::accept(OverlayInfoVisitor* visitor)
 {
 	for (auto shape : gList)
 	{
@@ -112,4 +119,53 @@ void CompositeOverlay::accept(OverlayShapeVisitor* visitor)
 void DrawingOverlay::add(OverlayInfo* componentObj)
 {
 	gList.push_back(componentObj);
+}
+
+void CompositeOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)
+{
+	compositeOverlay->deserialize(ia);
+}
+
+void LineOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)
+{
+	lineOverlay->deserialize(ia);
+}
+
+void RectangleOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)
+{
+	rectangleOverlay->deserialize(ia);
+}
+
+void CircleOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)
+{
+	circleOverlay->deserialize(ia);
+}
+
+DrawingOverlayBuilder* BuilderOverlayFactory::create(Primitive primitiveType)
+{
+	if (primitiveType == Primitive::RECTANGLE)
+	{
+		RectangleOverlayBuilder* rectangleOverlaybuilder = new RectangleOverlayBuilder();
+		return rectangleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::LINE)
+	{
+		LineOverlayBuilder* lineOverlaybuilder = new LineOverlayBuilder();
+		return lineOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::CIRCLE)
+	{
+		CircleOverlayBuilder* circleOverlaybuilder = new CircleOverlayBuilder();
+		return circleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::COMPOSITE)
+	{
+		CompositeOverlayBuilder* compositeOverlaybuilder = new CompositeOverlayBuilder();
+		return compositeOverlaybuilder;
+	}
+
+	else return NULL;
 }

@@ -14,10 +14,10 @@ enum Primitive
 
 class OverlayInfo;
 
-class OverlayShapeVisitor
+class OverlayInfoVisitor
 {
 public:
-	virtual ~OverlayShapeVisitor() {}
+	virtual ~OverlayInfoVisitor() {}
 	virtual void visit(OverlayInfo* Overlay) { };
 };
  
@@ -27,9 +27,9 @@ public:
 	OverlayInfo(Primitive p) : primitiveType(p) {}
 	OverlayInfo() {}
 	virtual void serialize(boost::archive::binary_oarchive& oa) {}
-	virtual void deserialize(boost::archive::binary_iarchive& ia) { }
-	virtual size_t getSerializeSize() { return 0; };
-	virtual void accept(OverlayShapeVisitor* visitor) { visitor->visit(this); };
+	virtual void deserialize(boost::archive::binary_iarchive& ia) {}
+	virtual size_t getSerializeSize() { return 0; }
+	virtual void accept(OverlayInfoVisitor* visitor) { visitor->visit(this); };
 
 	Primitive primitiveType;
 };
@@ -45,7 +45,6 @@ public:
 	void deserialize(boost::archive::binary_iarchive& ia);
 
 	float x1, y1, radius;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -119,12 +118,13 @@ private:
 	}
 };
 
-class OverlayShapeSerializerVisitor : public OverlayShapeVisitor
+// visitors heirarchy
+class OverlayInfoSerializerVisitor : public OverlayInfoVisitor
 {
 public:
-	OverlayShapeSerializerVisitor(boost::archive::binary_oarchive& _oa) : oa(_oa)
+	OverlayInfoSerializerVisitor(boost::archive::binary_oarchive& _oa) : oa(_oa)
 	{ }
-	virtual void visit(OverlayInfo* overlay)
+	void visit(OverlayInfo* overlay) override
 	{
 		overlay->serialize(oa);
 	}
@@ -132,14 +132,15 @@ private:
 	boost::archive::binary_oarchive& oa;
 };
 
-class OverlayShapeSerializeSizeVisitor : public OverlayShapeVisitor
+// visitor to estimate serialize size
+class OverlayInfoSerializeSizeVisitor : public OverlayInfoVisitor
 {
 public:
-	OverlayShapeSerializeSizeVisitor() : totalSize(0) {}
+	OverlayInfoSerializeSizeVisitor() : totalSize(0) {}
 
-	virtual void visit(OverlayInfo* Overlay)
+	void visit(OverlayInfo* overlay) override
 	{
-		totalSize += Overlay->getSerializeSize();
+		totalSize += overlay->getSerializeSize();
 	}
 
 	size_t totalSize;
@@ -150,22 +151,17 @@ class CompositeOverlay : public OverlayInfo
 {
 public:
 	CompositeOverlay() : OverlayInfo(Primitive::COMPOSITE) {}
-	void add(OverlayInfo* componentObj);
-	void serialize(boost::archive::binary_oarchive& oa);
+	void add(OverlayInfo* component);
+	// used by client code
 	void serialize(frame_sp frame);
-	virtual void deserialize(frame_sp frame) {}
-	void accept(OverlayShapeVisitor* visitor);
 	void deserialize(frame_sp frame);
-	vector<OverlayInfo*> gList;
-	friend class DrawingOverlay;
+	// used by builder 
 	void deserialize(boost::archive::binary_iarchive& ia);
-	size_t getSerializeSize()
-	{
-		OverlayShapeSerializeSizeVisitor* visitor = new OverlayShapeSerializeSizeVisitor();
-		accept(visitor);
-		return visitor->totalSize;
-	}
-
+	vector<OverlayInfo*> gList; // public ?
+protected:
+	// used by visitor
+	void serialize(boost::archive::binary_oarchive& oa);
+	size_t getSerializeSize();
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -183,37 +179,29 @@ private:
 	}
 };
 
-class DrawingOverlayBuilder;
-
+// interface to be used externally
+// why is it required ? - put commment here
 class DrawingOverlay : public CompositeOverlay
 {
 public:
 	DrawingOverlay() {}
-	void add(OverlayInfo* componentObj);
-
-	void deserialize(frame_sp frame) override;
-
+	void add(OverlayInfo* component);
+	void accept(OverlayInfoVisitor* visitor);
 };
 
+// Builder heirarchy
 class DrawingOverlayBuilder
 {
 public:
-	DrawingOverlayBuilder() : m_drawingOverlay(new DrawingOverlay()) {}
-
+	DrawingOverlayBuilder() {}
 	virtual void deserialize(boost::archive::binary_iarchive& ia) = 0;
-
-protected:
-	DrawingOverlay* m_drawingOverlay;
 };
 
 class CompositeOverlayBuilder : public DrawingOverlayBuilder
 {
 public:
 	CompositeOverlayBuilder() : compositeOverlay(new CompositeOverlay()) {}
-	void deserialize(boost::archive::binary_iarchive& ia) override
-	{
-		compositeOverlay->deserialize(ia);
-	}
+	void deserialize(boost::archive::binary_iarchive& ia);
 protected:
 	CompositeOverlay* compositeOverlay;
 };
@@ -222,10 +210,7 @@ class LineOverlayBuilder : public DrawingOverlayBuilder
 {
 public:
 	LineOverlayBuilder() : lineOverlay(new LineOverlay()) {}
-	void deserialize(boost::archive::binary_iarchive& ia) override
-	{
-		lineOverlay->deserialize(ia);
-	}
+	void deserialize(boost::archive::binary_iarchive& ia);
 protected:
 	LineOverlay* lineOverlay;
 };
@@ -234,10 +219,7 @@ class RectangleOverlayBuilder : public DrawingOverlayBuilder
 {
 public:
 	RectangleOverlayBuilder() : rectangleOverlay(new RectangleOverlay()) {}
-	void deserialize(boost::archive::binary_iarchive& ia) override
-	{
-		rectangleOverlay->deserialize(ia);
-	}
+	void deserialize(boost::archive::binary_iarchive& ia);
 protected:
 	RectangleOverlay* rectangleOverlay;
 };
@@ -246,10 +228,7 @@ class CircleOverlayBuilder : public DrawingOverlayBuilder
 {
 public:
 	CircleOverlayBuilder() : circleOverlay(new CircleOverlay()) {}
-	void deserialize(boost::archive::binary_iarchive& ia) override
-	{
-		circleOverlay->deserialize(ia);
-	}
+	void deserialize(boost::archive::binary_iarchive& ia);
 protected:
 	CircleOverlay* circleOverlay;
 };
@@ -258,5 +237,5 @@ class BuilderOverlayFactory
 {
 public:
 	static DrawingOverlayBuilder* create(Primitive primitiveType);
-	void accept(OverlayShapeVisitor* visitor);
+	void accept(OverlayInfoVisitor* visitor);
 };

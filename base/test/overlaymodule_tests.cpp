@@ -53,14 +53,14 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	compositeOverlay1.add(&compositeOverlay2);
 	compositeOverlay1.add(&lineOverlay);
 
-	DrawingOverlay drawOverlaySerilaizer;
-	drawOverlaySerilaizer.add(&compositeOverlay1);
-	drawOverlaySerilaizer.serialize(frame);
+	DrawingOverlay drawingSerilaizer;
+	drawingSerilaizer.add(&compositeOverlay1);
+	drawingSerilaizer.serialize(frame);
 	
-	DrawingOverlay drawOverlayDes;
-	drawOverlayDes.deserialize(frame);
+	DrawingOverlay drawingDes;
+	drawingDes.deserialize(frame);
 
-	for (auto shape : drawOverlayDes.gList)
+	for (auto shape : drawingDes.gList)
 	{
 		if (shape->primitiveType == Primitive::RECTANGLE)
 		{
