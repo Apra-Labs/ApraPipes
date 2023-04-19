@@ -669,18 +669,8 @@ IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
-IF(ENABLE_WINDOWS)
-	find_library(OPENH264_LIB NAMES openh264.lib REQUIRED)
-ENDIF(ENABLE_WINDOWS)
 
-IF(ENABLE_ARM64)
-	find_library(OPENH264_LIB NAMES libopenh264.a REQUIRED)
-ENDIF(ENABLE_ARM64)
-
-IF(ENABLE_LINUX)
-	find_library(OPENH264_LIB NAMES libopenh264.a REQUIRED)	
-ENDIF(ENABLE_LINUX)
-
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
