@@ -19,6 +19,7 @@
                 "webp"
             ]
         },
+        "libjpeg-turbo",
         "ffmpeg",
         "bigint",
         "boost-math",
