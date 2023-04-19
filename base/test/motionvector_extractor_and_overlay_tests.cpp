@@ -130,7 +130,7 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
 	motionExtractor->setNext(overlayMotionVector);
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	overlayMotionVector->setNext(sink);
 
 	PipeLine p("test");
