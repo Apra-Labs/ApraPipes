@@ -47,29 +47,23 @@ void RectangleOverlay::deserialize(boost::archive::binary_iarchive& ia)
 	ia >> x1 >> y1 >> x2 >> y2;
 }
 
-void CompositeOverlay::add(OverlayInfo* componentObj)
+void CompositeOverlay::add(OverlayInfo* component)
 {
-	gList.push_back(componentObj);
+	gList.push_back(component);
 }
 
 void CompositeOverlay::serialize(boost::archive::binary_oarchive& oa)
 {
 	oa << primitiveType << gList.size();
-	for (auto shape : gList)
-	{
-		shape->serialize(oa);
-	}
 }
 
-void CompositeOverlay::serialize(frame_sp frame)
+void CompositeOverlay::accept(OverlayInfoVisitor* visitor)
 {
-	boost::iostreams::basic_array_sink<char> device_sink((char*)frame->data(), frame->size());
-	boost::iostreams::stream<boost::iostreams::basic_array_sink<char> > s_sink(device_sink);
-	boost::archive::binary_oarchive oa(s_sink);
-	oa << gList.size();
-	OverlayInfoSerializerVisitor* visitor = new OverlayInfoSerializerVisitor(oa);
-
-	accept(visitor);
+	visitor->visit(this);
+	for (auto comp : gList)
+	{
+		comp->accept(visitor);
+	}
 }
 
 void CompositeOverlay::deserialize(boost::archive::binary_iarchive& ia)
@@ -92,12 +86,14 @@ size_t CompositeOverlay::getSerializeSize()
 	return visitor->totalSize;
 }
 
-void CompositeOverlay::deserialize(frame_sp frame)
+void DrawingOverlay::deserialize(frame_sp frame)
 {
 	boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
 	boost::iostreams::stream<boost::iostreams::basic_array_source<char> > sink(device);
 	boost::archive::binary_iarchive ia(sink);
 
+	Primitive primitiveType;
+	ia >> primitiveType;
 	size_t archive_size;
 	ia >> archive_size;
 	for (int i = 0; i < archive_size; i++)
@@ -108,17 +104,15 @@ void CompositeOverlay::deserialize(frame_sp frame)
 	}
 }
 
-void DrawingOverlay::accept(OverlayInfoVisitor* visitor)
+void DrawingOverlay::serialize(frame_sp frame)
 {
-	for (auto shape : gList)
-	{
-		shape->accept(visitor);
-	}
-}
+	boost::iostreams::basic_array_sink<char> device_sink((char*)frame->data(), frame->size());
+	boost::iostreams::stream<boost::iostreams::basic_array_sink<char> > s_sink(device_sink);
+	boost::archive::binary_oarchive oa(s_sink);
 
-void DrawingOverlay::add(OverlayInfo* componentObj)
-{
-	gList.push_back(componentObj);
+	OverlayInfoSerializerVisitor* visitor = new OverlayInfoSerializerVisitor(oa);
+
+	accept(visitor);
 }
 
 void CompositeOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)

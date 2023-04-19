@@ -9,7 +9,8 @@ enum Primitive
 	RECTANGLE,
 	CIRCLE,
 	LINE,
-	COMPOSITE
+	COMPOSITE,
+	DRAWING
 };
 
 class OverlayInfo;
@@ -30,7 +31,7 @@ public:
 	virtual void deserialize(boost::archive::binary_iarchive& ia) {}
 	virtual size_t getSerializeSize() { return 0; }
 	virtual void accept(OverlayInfoVisitor* visitor) { visitor->visit(this); };
-
+	virtual void add(OverlayInfo* component) {}
 	Primitive primitiveType;
 };
 
@@ -72,7 +73,6 @@ public:
 	void deserialize(boost::archive::binary_iarchive& ia);
 
 	float x1, y1, x2, y2;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -100,7 +100,6 @@ public:
 	void deserialize(boost::archive::binary_iarchive& ia);
 
 	float x1, y1, x2, y2;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -151,14 +150,13 @@ class CompositeOverlay : public OverlayInfo
 {
 public:
 	CompositeOverlay() : OverlayInfo(Primitive::COMPOSITE) {}
+	CompositeOverlay(Primitive primitiveType) : OverlayInfo(primitiveType) {}
 	void add(OverlayInfo* component);
-	// used by client code
-	void serialize(frame_sp frame);
-	void deserialize(frame_sp frame);
 	// used by builder 
 	void deserialize(boost::archive::binary_iarchive& ia);
-	vector<OverlayInfo*> gList; // public ?
+	void accept(OverlayInfoVisitor* visitor);
 protected:
+	vector<OverlayInfo*> gList; // used by DrawingOverlay
 	// used by visitor
 	void serialize(boost::archive::binary_oarchive& oa);
 	size_t getSerializeSize();
@@ -184,9 +182,9 @@ private:
 class DrawingOverlay : public CompositeOverlay
 {
 public:
-	DrawingOverlay() {}
-	void add(OverlayInfo* component);
-	void accept(OverlayInfoVisitor* visitor);
+	DrawingOverlay() : CompositeOverlay(Primitive::DRAWING) {}
+	void serialize(frame_sp frame);
+	void deserialize(frame_sp frame);
 };
 
 // Builder heirarchy
