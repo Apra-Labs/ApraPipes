@@ -10,7 +10,7 @@
 #include "opencv2/core/cuda_stream_accessor.hpp"
 #include <opencv2/cudawarping.hpp>
 
-BOOST_AUTO_TEST_SUITE(opencvresize_tests, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_SUITE(opencvresize_tests)
 
 // opencv tests
 void testopencvcpuresize()
