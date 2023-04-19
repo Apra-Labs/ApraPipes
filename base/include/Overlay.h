@@ -137,11 +137,27 @@ class CompositeOverlay : public OverlayInfo
 public:
 	CompositeOverlay() : OverlayInfo(Primitive::COMPOSITE) {}
 	void add(OverlayInfo* componentObj);
+	void serialize(boost::archive::binary_oarchive& oa);
 	void serialize(frame_sp frame);
 	void deserialize(frame_sp frame);
-	void accept(OverlayShapeVisitor* visitor);
 	vector<OverlayInfo*> gList;
 	friend class DrawingOverlay;
+
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void save(Archive& ar, const unsigned int version/*file_version*/)
+	{
+		ar& primitiveType;
+		ar& gList.size();
+	}
+	template <class Archive>
+	void load(Archive& ar, const unsigned int version/*file_version*/)
+	{
+		if (version > 0)
+			ar& primitiveType;
+		ar& gList.size();
+	}
 };
 
 class DrawingOverlay : public CompositeOverlay
@@ -149,4 +165,5 @@ class DrawingOverlay : public CompositeOverlay
 public:
 	DrawingOverlay() {}
 	void add(OverlayInfo* componentObj);
+	void accept(OverlayShapeVisitor* visitor);
 };

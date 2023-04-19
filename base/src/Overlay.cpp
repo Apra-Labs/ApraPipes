@@ -19,7 +19,6 @@ void CircleOverlay::deserialize(boost::archive::binary_iarchive& ia)
 
 void LineOverlay::serialize(boost::archive::binary_oarchive& oa)
 {
-	//overlayinfo::seriliaze(0a)//add a func 
 	oa << x1 << y1 << x2 << y2;
 }
 
@@ -53,9 +52,13 @@ void CompositeOverlay::add(OverlayInfo* componentObj)
 	gList.push_back(componentObj);
 }
 
-void DrawingOverlay::add(OverlayInfo* componentObj)
+void CompositeOverlay::serialize(boost::archive::binary_oarchive& oa)
 {
-	gList.push_back(componentObj);
+	oa << primitiveType << gList.size();
+	for (auto shape : gList)
+	{
+		shape->serialize(oa);
+	}
 }
 
 void CompositeOverlay::serialize(frame_sp frame)
@@ -86,10 +89,15 @@ void CompositeOverlay::deserialize(frame_sp frame)
 	}
 }
 
-void CompositeOverlay::accept(OverlayShapeVisitor* visitor)
+void DrawingOverlay::accept(OverlayShapeVisitor* visitor)
 {
 	for (auto shape : gList)
 	{
 		shape->accept(visitor);
 	}
+}
+
+void DrawingOverlay::add(OverlayInfo* componentObj)
+{
+	gList.push_back(componentObj);
 }
