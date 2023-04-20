@@ -79,7 +79,7 @@ IF(ENABLE_GST)
 	ENDIF(NOT ENABLE_WINDOWS)
 	
 ENDIF(ENABLE_GST)
-	
+        
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -670,9 +670,12 @@ IF (ENABLE_CUDA)
 ENDIF (ENABLE_CUDA)
 
 
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+
 target_link_libraries(aprapipesut   
   aprapipes  
   ${LIBMP4_LIB}
+  ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
