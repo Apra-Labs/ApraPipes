@@ -5,6 +5,7 @@
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "CudaCommon.h"
+#include "nv_test_utils.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -18,7 +19,7 @@ BOOST_AUTO_TEST_CASE(isCudaSupported)
 	BOOST_TEST(CudaUtils::isCudaSupported());
 }
 
-BOOST_AUTO_TEST_CASE(general)
+BOOST_AUTO_TEST_CASE(general, * utf::precondition(if_compute_cap_supported()))
 {
 	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -55,7 +56,7 @@ BOOST_AUTO_TEST_CASE(general)
 	BOOST_TEST(memcmp(frame->data(), frameCopy->data(), frame->size()) == 0);
 }
 
-BOOST_AUTO_TEST_CASE(rawimage)
+BOOST_AUTO_TEST_CASE(rawimage, * utf::precondition(if_compute_cap_supported()))
 {
 	int width = 1920;
 	int height = 1080;
@@ -110,7 +111,7 @@ BOOST_AUTO_TEST_CASE(rawimage)
 	BOOST_TEST(ptr->getDataSize() == step * height);
 }
 
-BOOST_AUTO_TEST_CASE(rawimageplanar)
+BOOST_AUTO_TEST_CASE(rawimageplanar, * utf::precondition(if_compute_cap_supported()))
 {
 	int width = 1920;
 	int height = 1080;

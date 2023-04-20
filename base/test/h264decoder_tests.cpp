@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 	Logger::setLogLevel("info");
 
 	// metadata is known
-	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 	Logger::setLogLevel("info");
 
 	// metadata is known
-	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 }
 
 #else
-BOOST_AUTO_TEST_CASE(h264_to_yuv420)
+BOOST_AUTO_TEST_CASE(h264_to_yuv420, *utf::precondition(if_h264_encoder_supported()))
 {
 	Logger::setLogLevel("info");
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(h264_to_yuv420)
 
 }
 
-BOOST_AUTO_TEST_CASE(encoder_to_decoder)
+BOOST_AUTO_TEST_CASE(encoder_to_decoder, *utf::precondition(if_h264_encoder_supported()))
 {
 	Logger::setLogLevel("info");
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(encoder_to_decoder)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink)
+BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink, *utf::precondition(if_h264_encoder_supported()))
 {
 	Logger::setLogLevel("info");
 
