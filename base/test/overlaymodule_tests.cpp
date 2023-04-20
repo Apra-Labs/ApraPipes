@@ -28,7 +28,6 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	lineOverlay.y1 = 350;
 	lineOverlay.y2 = 375;
 
-
 	RectangleOverlay recOverlay1;
 	recOverlay1.x1 = 200;
 	recOverlay1.x2 = 250;
@@ -46,7 +45,6 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 
 	BOOST_TEST(source->init());
 
-
 	CompositeOverlay compositeOverlay1;
 	compositeOverlay1.add(&recOverlay);
 
@@ -61,34 +59,80 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	drawingOverlay.add(&compositeOverlay1);
 	drawingOverlay.add(&circleOverlay1);
 
-	// todo : get serialize size of the drawing overlay
-	// create a frame according to that size
-	frame_sp frame = source->makeFrame(2048, pinId);
+	auto size = drawingOverlay.mGetSerializeSize();
+	frame_sp frame = source->makeFrame(size, pinId);
 
 	drawingOverlay.serialize(frame);
-	
+
 	DrawingOverlay drawingDes;
 	drawingDes.deserialize(frame);
 
-	/*for (auto shape : drawingDes.gList)
+	auto list = drawingDes.getList();
+
+	for (auto primitive1 : list)
 	{
-		if (shape->primitiveType == Primitive::RECTANGLE)
+		if (primitive1->primitiveType == Primitive::COMPOSITE)
 		{
-			RectangleOverlay* rectangleOverlayDes = static_cast<RectangleOverlay*>(shape);
-			BOOST_TEST(rectangleOverlayDes->x1 == recOverlay.x1);
-			BOOST_TEST(rectangleOverlayDes->y1 == recOverlay.y1);
-			BOOST_TEST(rectangleOverlayDes->x2 == recOverlay.x2);
-			BOOST_TEST(rectangleOverlayDes->y2 == recOverlay.y2);
+			CompositeOverlay *mCompositeOverlay1 = static_cast<CompositeOverlay *>(primitive1);
+
+			auto compositeList1 = mCompositeOverlay1->getList();
+
+			for (auto primitive2 : compositeList1)
+			{
+				if (primitive2->primitiveType == Primitive::RECTANGLE)
+				{
+					RectangleOverlay *rectangleOverlayDes = static_cast<RectangleOverlay *>(primitive2);
+					BOOST_TEST(rectangleOverlayDes->x1 == recOverlay.x1);
+					BOOST_TEST(rectangleOverlayDes->y1 == recOverlay.y1);
+					BOOST_TEST(rectangleOverlayDes->x2 == recOverlay.x2);
+					BOOST_TEST(rectangleOverlayDes->y2 == recOverlay.y2);
+				}
+
+				if (primitive2->primitiveType == Primitive::COMPOSITE)
+				{
+					CompositeOverlay *mCompositeOverlay2 = static_cast<CompositeOverlay *>(primitive2);
+					auto compositeList2 = mCompositeOverlay2->getList();
+
+					for (auto primitive3 : compositeList2)
+					{
+						if (primitive3->primitiveType == Primitive::RECTANGLE)
+						{
+							RectangleOverlay *rectangleOverlayDes1 = static_cast<RectangleOverlay *>(primitive3);
+							BOOST_TEST(rectangleOverlayDes1->x1 == recOverlay1.x1);
+							BOOST_TEST(rectangleOverlayDes1->y1 == recOverlay1.y1);
+							BOOST_TEST(rectangleOverlayDes1->x2 == recOverlay1.x2);
+							BOOST_TEST(rectangleOverlayDes1->y2 == recOverlay1.y2);
+						}
+
+						if (primitive3->primitiveType == Primitive::CIRCLE)
+						{
+							CircleOverlay *circleOverlayDes1 = static_cast<CircleOverlay *>(primitive3);
+							BOOST_TEST(circleOverlayDes1->x1 == circleOverlay.x1);
+							BOOST_TEST(circleOverlayDes1->y1 == circleOverlay.y1);
+							BOOST_TEST(circleOverlayDes1->radius == circleOverlay.radius);
+						}
+					}
+				}
+
+				if (primitive2->primitiveType == Primitive::LINE)
+				{
+					LineOverlay *lineOverlayDes = static_cast<LineOverlay *>(primitive2);
+					BOOST_TEST(lineOverlayDes->x1 == lineOverlay.x1);
+					BOOST_TEST(lineOverlayDes->y1 == lineOverlay.y1);
+					BOOST_TEST(lineOverlayDes->x2 == lineOverlay.x2);
+					BOOST_TEST(lineOverlayDes->y2 == lineOverlay.y2);
+				}
+			}
 		}
 
-		else if (shape->primitiveType == Primitive::CIRCLE)
+		else if (primitive1->primitiveType == Primitive::CIRCLE)
 		{
-			CircleOverlay* circleOverlayDes = static_cast<CircleOverlay*>(shape);
-			BOOST_TEST(circleOverlayDes->x1 == circleOverlay.x1);
-			BOOST_TEST(circleOverlayDes->y1 == circleOverlay.y1);
-			BOOST_TEST(circleOverlayDes->radius == circleOverlay.radius);
+			CircleOverlay *circleOverlayDes2 = static_cast<CircleOverlay *>(primitive1);
+			BOOST_TEST(circleOverlayDes2->x1 == circleOverlay1.x1);
+			BOOST_TEST(circleOverlayDes2->y1 == circleOverlay1.y1);
+			BOOST_TEST(circleOverlayDes2->radius == circleOverlay1.radius);
 		}
-	}*/
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()
