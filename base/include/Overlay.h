@@ -1,8 +1,11 @@
 #pragma once
 
 #include <boost/serialization/vector.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/opencv.hpp>
 #include "Utils.h"
 #include "Module.h"
+
 
 enum Primitive
 {
@@ -31,8 +34,12 @@ public:
 	virtual void deserialize(boost::archive::binary_iarchive &ia) {}
 	virtual size_t getSerializeSize() { return 0; }
 	virtual void accept(OverlayInfoVisitor *visitor) { visitor->visit(this); };
-	/*virtual void add(OverlayInfo* component) {}*/
+	virtual void draw(frame_sp frame)
+	{
+	  iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(frame->getMetadata()));
+	};
 	Primitive primitiveType;
+	cv::Mat iImg;
 };
 
 class CircleOverlay : public OverlayInfo
@@ -45,6 +52,13 @@ public:
 	void serialize(boost::archive::binary_oarchive &oa);
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
+
+	void draw(frame_sp frame) override
+	{
+		OverlayInfo::draw(frame);
+		cv::Point p(x1, y1);
+		circle(iImg, p, radius, cv::Scalar(255, 200, 0), 2);
+	};
 
 	float x1, y1, radius;
 
@@ -74,7 +88,14 @@ public:
 	void serialize(boost::archive::binary_oarchive &oa);
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
-
+	void draw(frame_sp frame) override
+	{
+		OverlayInfo::draw(frame);
+		cv::Point point1(x1, y1);
+		cv::Point point2(x2, y2);
+		line(iImg, point1, point2, cv::Scalar(255, 0, 0), 2);
+	};
+	
 	float x1, y1, x2, y2;
 
 private:
@@ -104,6 +125,13 @@ public:
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
 
+	void draw(frame_sp frame) override
+	{
+		OverlayInfo::draw(frame);
+		cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
+		cv::rectangle(iImg, rect, cv::Scalar(0, 255, 0), 2);
+	};
+	
 	float x1, y1, x2, y2;
 
 private:
@@ -153,6 +181,20 @@ public:
 	size_t totalSize;
 };
 
+class OverlayInfoDrawingVisitor : public OverlayInfoVisitor
+{
+public:
+	OverlayInfoDrawingVisitor(frame_sp frame) : mframe(frame) {}
+
+
+	void visit(OverlayInfo* overlay) override
+	{
+		overlay->draw(mframe);
+	}
+
+	frame_sp mframe;
+};
+
 class CompositeOverlay : public OverlayInfo
 {
 public:
@@ -194,6 +236,7 @@ public:
 	DrawingOverlay() : CompositeOverlay(Primitive::DRAWING) {}
 	void serialize(frame_sp frame);
 	void deserialize(frame_sp frame);
+	void mdraw(frame_sp frame) ;
 	size_t mGetSerializeSize();
 };
 
@@ -243,11 +286,4 @@ public:
 
 protected:
 	CircleOverlay *circleOverlay;
-};
-
-class BuilderOverlayFactory
-{
-public:
-	static DrawingOverlayBuilder *create(Primitive primitiveType);
-	void accept(OverlayInfoVisitor *visitor);
 };

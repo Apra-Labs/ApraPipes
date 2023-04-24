@@ -27,3 +27,32 @@ OverlayInfo* OverlayFactory::create(Primitive primitiveType)
 	}
 	return nullptr;
 }
+
+DrawingOverlayBuilder* BuilderOverlayFactory::create(Primitive primitiveType)
+{
+	if (primitiveType == Primitive::RECTANGLE)
+	{
+		RectangleOverlayBuilder* rectangleOverlaybuilder = new RectangleOverlayBuilder();
+		return rectangleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::LINE)
+	{
+		LineOverlayBuilder* lineOverlaybuilder = new LineOverlayBuilder();
+		return lineOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::CIRCLE)
+	{
+		CircleOverlayBuilder* circleOverlaybuilder = new CircleOverlayBuilder();
+		return circleOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::COMPOSITE)
+	{
+		CompositeOverlayBuilder* compositeOverlaybuilder = new CompositeOverlayBuilder();
+		return compositeOverlaybuilder;
+	}
+
+	return nullptr;
+}

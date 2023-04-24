@@ -122,6 +122,11 @@ void DrawingOverlay::serialize(frame_sp frame)
 	accept(visitor);
 }
 
+void DrawingOverlay::mdraw(frame_sp frame)
+{
+	OverlayInfoDrawingVisitor *visitor = new OverlayInfoDrawingVisitor(frame);
+	accept(visitor);
+}
 OverlayInfo *CompositeOverlayBuilder::deserialize(boost::archive::binary_iarchive &ia)
 {
 	compositeOverlay->deserialize(ia);
@@ -144,34 +149,4 @@ OverlayInfo *CircleOverlayBuilder::deserialize(boost::archive::binary_iarchive &
 {
 	circleOverlay->deserialize(ia);
 	return circleOverlay;
-}
-
-DrawingOverlayBuilder *BuilderOverlayFactory::create(Primitive primitiveType)
-{
-	if (primitiveType == Primitive::RECTANGLE)
-	{
-		RectangleOverlayBuilder *rectangleOverlaybuilder = new RectangleOverlayBuilder();
-		return rectangleOverlaybuilder;
-	}
-
-	else if (primitiveType == Primitive::LINE)
-	{
-		LineOverlayBuilder *lineOverlaybuilder = new LineOverlayBuilder();
-		return lineOverlaybuilder;
-	}
-
-	else if (primitiveType == Primitive::CIRCLE)
-	{
-		CircleOverlayBuilder *circleOverlaybuilder = new CircleOverlayBuilder();
-		return circleOverlaybuilder;
-	}
-
-	else if (primitiveType == Primitive::COMPOSITE)
-	{
-		CompositeOverlayBuilder *compositeOverlaybuilder = new CompositeOverlayBuilder();
-		return compositeOverlaybuilder;
-	}
-
-	else
-		return NULL;
 }
