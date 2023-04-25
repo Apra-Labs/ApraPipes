@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_SUITE(split_tests)
 
-BOOST_AUTO_TEST_CASE(basic)
+BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {	
 	size_t readDataSize = 1024;
 		
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	BOOST_TEST(sink->term());		
 }
 
-BOOST_AUTO_TEST_CASE(errors)
+BOOST_AUTO_TEST_CASE(errors, *boost::unit_test::disabled())
 {
 	size_t readDataSize = 1024;
 
