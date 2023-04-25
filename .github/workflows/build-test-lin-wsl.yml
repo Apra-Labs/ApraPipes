@@ -81,10 +81,11 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
     runs-on: ${{ inputs.runner }}
     steps:
-#    - name: Prepare WSL Image
-#      uses: Vampire/setup-wsl@v2.0.1
-#      with:
-#        distribution: Ubuntu-20.04
+    - name: Prepare WSL Image
+      uses: Vampire/setup-wsl@v2
+      with:
+        distribution: Ubuntu-20.04.6
+        set-as-default: 'false'
     - name: Prepare builder
       run: |
         ${{ inputs.prep-cmd }} 
