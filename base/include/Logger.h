@@ -70,6 +70,7 @@ private:
 	Logger(LoggerProps props);
 	void initBoostLogger(LoggerProps props);
 
+	static boost::mutex logger_mutex;
 	threadsafe_que<std::string> mQue;
 	boost::thread myThread;	
 	bool run();
@@ -77,7 +78,7 @@ private:
 	bool mRunning;
 	LoggerProps mProps;	
 
-	void(*mListener)(const std::string&);
+	void(*mListener)(const std::string&) = nullptr;
 
 	static boost::shared_ptr<Logger> instance;
 	boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;

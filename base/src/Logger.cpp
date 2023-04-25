@@ -1,9 +1,11 @@
 #include "Logger.h"
 
 boost::shared_ptr<Logger> Logger::instance;
+boost::mutex Logger::logger_mutex;
 
 void Logger::initLogger(LoggerProps props)
 {
+	boost::mutex::scoped_lock lock(logger_mutex);
 	if (instance.get())
 	{
 		return;

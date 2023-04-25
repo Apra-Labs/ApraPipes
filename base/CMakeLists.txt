@@ -79,7 +79,7 @@ IF(ENABLE_GST)
 	ENDIF(NOT ENABLE_WINDOWS)
 	
 ENDIF(ENABLE_GST)
-	
+        
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 
@@ -196,6 +196,8 @@ SET(CORE_FILES
    	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
+	src/MotionVectorExtractor.cpp
+	src/OverlayMotionVectors.cpp
 )
 
 SET(CORE_FILES_H
@@ -253,6 +255,8 @@ SET(CORE_FILES_H
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/MotionVectorExtractor.h
+	include/OverlayMotionVectors.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -617,6 +621,7 @@ SET(UT_FILES
   	test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
+	test/motionvector_extractor_and_overlay_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -668,9 +673,12 @@ IF (ENABLE_CUDA)
 ENDIF (ENABLE_CUDA)
 
 
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+
 target_link_libraries(aprapipesut   
   aprapipes  
   ${LIBMP4_LIB}
+  ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
