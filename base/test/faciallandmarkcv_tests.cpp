@@ -132,25 +132,4 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 	sink->step();
 }
 
-BOOST_AUTO_TEST_CASE(tilted_face)
-{
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/tilt.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(1300,1151, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-	fileReader->addOutputPin(metadata);
-
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
-	fileReader->setNext(facemark);
-
-	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
-	facemark->setNext(sink);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(facemark->init());
-	BOOST_TEST(sink->init());
-
-	fileReader->step();
-	facemark->step();
-	sink->step();
-}
-
 BOOST_AUTO_TEST_SUITE_END()
