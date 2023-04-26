@@ -13,13 +13,14 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize, bool _bFramesEnabled = false) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		biggerFrameSize = _biggerFrameSize;
 		biggerMetadataFrameSize = _biggerMetadataFrameSize;
 		videoPath = _videoPath;
 		parseFS = _parseFS;
 		bFramesEnabled = _bFramesEnabled;
+		parseFSTimeoutDuration = _parseFSTimeoutDuration;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -27,11 +28,12 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, bool _bFramesEnabled = false) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		videoPath = _videoPath;
 		parseFS = _parseFS;
 		bFramesEnabled = _bFramesEnabled;
+		parseFSTimeoutDuration = _parseFSTimeoutDuration;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -42,7 +44,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir);
+		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + + sizeof(parseFSTimeoutDuration);
 	}
 
 	std::string skipDir = "./data/mp4_videos";
@@ -51,6 +53,7 @@ public:
 	size_t biggerMetadataFrameSize = 60000;
 	bool parseFS = true;
 	bool bFramesEnabled = false;
+	int parseFSTimeoutDuration = 15;
 private:
 	friend class boost::serialization::access;
 
@@ -64,6 +67,7 @@ private:
 		ar& biggerFrameSize;
 		ar& biggerMetadataFrameSize;
 		ar& bFramesEnabled;
+		ar& parseFSTimeoutDuration;
 	}
 };
 
