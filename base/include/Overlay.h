@@ -34,34 +34,20 @@ public:
 	virtual void deserialize(boost::archive::binary_iarchive &ia) {}
 	virtual size_t getSerializeSize() { return 0; }
 	virtual void accept(OverlayInfoVisitor *visitor) { visitor->visit(this); };
-	virtual void draw(frame_sp frame)
-	{
-	  iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(frame->getMetadata()));
-	};
+	virtual void draw(cv::Mat matImg) {}
 	Primitive primitiveType;
-	cv::Mat iImg;
 };
 
 class CircleOverlay : public OverlayInfo
 {
 public:
-	CircleOverlay() : OverlayInfo(Primitive::CIRCLE)
-	{
-	}
-
+	CircleOverlay() : OverlayInfo(Primitive::CIRCLE) {}
 	void serialize(boost::archive::binary_oarchive &oa);
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
-
-	void draw(frame_sp frame) override
-	{
-		OverlayInfo::draw(frame);
-		cv::Point p(x1, y1);
-		circle(iImg, p, radius, cv::Scalar(255, 200, 0), 2);
-	};
+	void draw(cv::Mat matImg);
 
 	float x1, y1, radius;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -82,22 +68,13 @@ private:
 class LineOverlay : public OverlayInfo
 {
 public:
-	LineOverlay() : OverlayInfo(Primitive::LINE)
-	{
-	}
+	LineOverlay() : OverlayInfo(Primitive::LINE) {}
 	void serialize(boost::archive::binary_oarchive &oa);
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
-	void draw(frame_sp frame) override
-	{
-		OverlayInfo::draw(frame);
-		cv::Point point1(x1, y1);
-		cv::Point point2(x2, y2);
-		line(iImg, point1, point2, cv::Scalar(255, 0, 0), 2);
-	};
+	void draw(cv::Mat matImg);
 	
 	float x1, y1, x2, y2;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -118,22 +95,13 @@ private:
 class RectangleOverlay : public OverlayInfo
 {
 public:
-	RectangleOverlay() : OverlayInfo(Primitive::RECTANGLE)
-	{
-	}
+	RectangleOverlay() : OverlayInfo(Primitive::RECTANGLE) {}
 	void serialize(boost::archive::binary_oarchive &oa);
 	size_t getSerializeSize();
 	void deserialize(boost::archive::binary_iarchive &ia);
-
-	void draw(frame_sp frame) override
-	{
-		OverlayInfo::draw(frame);
-		cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
-		cv::rectangle(iImg, rect, cv::Scalar(0, 255, 0), 2);
-	};
+	void draw(cv::Mat matImg);
 	
 	float x1, y1, x2, y2;
-
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
@@ -151,18 +119,12 @@ private:
 	}
 };
 
-// visitors heirarchy
+// visitorsheirarchy
 class OverlayInfoSerializerVisitor : public OverlayInfoVisitor
 {
 public:
-	OverlayInfoSerializerVisitor(boost::archive::binary_oarchive &_oa) : oa(_oa)
-	{
-	}
-	void visit(OverlayInfo *overlay) override
-	{
-		overlay->serialize(oa);
-	}
-
+	OverlayInfoSerializerVisitor(boost::archive::binary_oarchive &_oa) : oa(_oa) {}
+	void visit(OverlayInfo* overlay);
 private:
 	boost::archive::binary_oarchive &oa;
 };
@@ -172,27 +134,21 @@ class OverlayInfoSerializeSizeVisitor : public OverlayInfoVisitor
 {
 public:
 	OverlayInfoSerializeSizeVisitor() : totalSize(0) {}
-
-	void visit(OverlayInfo *overlay) override
-	{
-		totalSize += overlay->getSerializeSize();
-	}
-
+	void visit(OverlayInfo* overlay);
 	size_t totalSize;
 };
 
 class OverlayInfoDrawingVisitor : public OverlayInfoVisitor
 {
 public:
-	OverlayInfoDrawingVisitor(frame_sp frame) : mframe(frame) {}
-
-
-	void visit(OverlayInfo* overlay) override
+	OverlayInfoDrawingVisitor(frame_sp frame)  
 	{
-		overlay->draw(mframe);
+		matImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(frame->getMetadata()));
+		matImg.data = static_cast<uchar*>(frame->data());
 	}
-
-	frame_sp mframe;
+	void visit(OverlayInfo* overlay);
+private:
+	cv::Mat matImg;
 };
 
 class CompositeOverlay : public OverlayInfo
@@ -236,7 +192,7 @@ public:
 	DrawingOverlay() : CompositeOverlay(Primitive::DRAWING) {}
 	void serialize(frame_sp frame);
 	void deserialize(frame_sp frame);
-	void mdraw(frame_sp frame) ;
+	void mDraw(frame_sp frame) ;
 	size_t mGetSerializeSize();
 };
 

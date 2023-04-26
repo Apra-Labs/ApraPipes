@@ -17,6 +17,12 @@ void CircleOverlay::deserialize(boost::archive::binary_iarchive &ia)
 	ia >> x1 >> y1 >> radius;
 }
 
+void CircleOverlay::draw(cv::Mat matImg)
+{
+	cv::Point p(x1, y1);
+	circle(matImg, p, radius, cv::Scalar(255, 200, 0), 2);
+};
+
 void LineOverlay::serialize(boost::archive::binary_oarchive &oa)
 {
 	oa << primitiveType << x1 << y1 << x2 << y2;
@@ -32,6 +38,13 @@ void LineOverlay::deserialize(boost::archive::binary_iarchive &ia)
 	ia >> x1 >> y1 >> x2 >> y2;
 }
 
+void LineOverlay::draw(cv::Mat matImg)
+{
+	cv::Point point1(x1, y1);
+	cv::Point point2(x2, y2);
+	line(matImg, point1, point2, cv::Scalar(255, 0, 0), 2);
+};
+
 void RectangleOverlay::serialize(boost::archive::binary_oarchive &oa)
 {
 	oa << primitiveType << x1 << y1 << x2 << y2;
@@ -46,6 +59,12 @@ void RectangleOverlay::deserialize(boost::archive::binary_iarchive &ia)
 {
 	ia >> x1 >> y1 >> x2 >> y2;
 }
+
+void RectangleOverlay::draw(cv::Mat matImg)
+{
+	cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
+	cv::rectangle(matImg, rect, cv::Scalar(0, 255, 0), 2);
+};
 
 void CompositeOverlay::add(OverlayInfo *component)
 {
@@ -122,7 +141,22 @@ void DrawingOverlay::serialize(frame_sp frame)
 	accept(visitor);
 }
 
-void DrawingOverlay::mdraw(frame_sp frame)
+void OverlayInfoSerializerVisitor::visit(OverlayInfo* overlay)
+{
+	overlay->serialize(oa);
+}
+
+void OverlayInfoSerializeSizeVisitor::visit(OverlayInfo* overlay)
+{
+	totalSize += overlay->getSerializeSize();
+}
+
+void OverlayInfoDrawingVisitor::visit(OverlayInfo* overlay)
+{
+	overlay->draw(matImg);
+}
+
+void DrawingOverlay::mDraw(frame_sp frame)
 {
 	OverlayInfoDrawingVisitor *visitor = new OverlayInfoDrawingVisitor(frame);
 	accept(visitor);

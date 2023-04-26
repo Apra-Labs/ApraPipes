@@ -7,94 +7,9 @@
 #include "ExternalSinkModule.h"
 #include "FileReaderModule.h"
 #include "FramesMuxer.h"
+#include "FileWriterModule.h"
 
 BOOST_AUTO_TEST_SUITE(overlaymodule_tests)
-
-class ExternalSourceProps : public ModuleProps
-{
-public:
-	ExternalSourceProps() : ModuleProps() {};
-
-};
-
-class ExternalSource : public Module
-{
-
-public:
-	DrawingOverlay drawingOverlay;
-	size_t msize;
-	ExternalSource(ExternalSourceProps props) : Module(SOURCE, "ExternalSource", props)
-	{
-		CircleOverlay circleOverlay;
-		circleOverlay.x1 = 1024;
-		circleOverlay.y1 = 768;
-		circleOverlay.radius = 100;
-
-		RectangleOverlay recOverlay;
-		recOverlay.x1 = 100;
-		recOverlay.x2 = 500;
-		recOverlay.y1 = 200;
-		recOverlay.y2 = 400;
-
-		LineOverlay lineOverlay;
-		lineOverlay.x1 = 100;
-		lineOverlay.x2 = 500;
-		lineOverlay.y1 = 200;
-		lineOverlay.y2 = 400;
-
-		drawingOverlay.add(&circleOverlay);
-		drawingOverlay.add(&recOverlay);
-		drawingOverlay.add(&lineOverlay);
-
-	    msize = drawingOverlay.mGetSerializeSize();  
-	}
-
-	boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
-	frame_sp makeFrame(size_t size, string& pinId) { return Module::makeFrame(size, pinId); }
-	bool send(frame_container& frames) { return Module::send(frames); }
-	
-protected:
-	bool process()
-	{
-		return false;
-	}
-
-	bool produce() override
-	{
-		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
-
-		size_t fsize = msize;
-		std::string fPinId1 = getOutputPinIdByType(FrameMetadata::FrameType::OVERLAY_INFO_IMAGE);
-		auto dataframe = makeFrame(fsize, fPinId1);
-		drawingOverlay.serialize(dataframe);
-		
-		const uint8_t* pReadData = nullptr;
-		unsigned int readDataSize = 0U;
-		BOOST_TEST(Test_Utils::readFile("./data/faces.raw", pReadData, readDataSize));
-		std::string fPinId2 = getOutputPinIdByType(FrameMetadata::FrameType::RAW_IMAGE);
-		auto imageframe = makeFrame(readDataSize, fPinId2);
-
-		frame_container frames;
-		frames.insert(std::make_pair(fPinId1, dataframe));
-		frames.insert(std::make_pair(fPinId2, imageframe));
-
-		send(frames);
-
-		return true;
-	}
-
-	bool validateOutputPins()
-	{
-		return true;
-	}
-	bool validateInputPins()
-	{
-		return true;
-	}
-
-};
-
-boost::shared_ptr<ExternalSource> source;
 
 BOOST_AUTO_TEST_CASE(composite_overlay_test)
 {
@@ -224,11 +139,6 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 
 BOOST_AUTO_TEST_CASE(drawing_test)
 {
-	CircleOverlay circleOverlay;
-	circleOverlay.x1 = 50;
-	circleOverlay.y1 = 75;
-	circleOverlay.radius = 1;
-
 	RectangleOverlay recOverlay;
 	recOverlay.x1 = 100;
 	recOverlay.x2 = 150;
@@ -241,31 +151,30 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	lineOverlay.y1 = 350;
 	lineOverlay.y2 = 375;
 
-	RectangleOverlay recOverlay1;
-	recOverlay1.x1 = 200;
-	recOverlay1.x2 = 250;
-	recOverlay1.y1 = 225;
-	recOverlay1.y2 = 275;
+	// it is a square
+	RectangleOverlay compositeRec;
+	compositeRec.x1 = 1000;
+	compositeRec.x2 = 1050;
+	compositeRec.y1 = 170;
+	compositeRec.y2 = 220;
+	BOOST_TEST((compositeRec.y2 - compositeRec.y1) == (compositeRec.x2 - compositeRec.x1));
+
+	CircleOverlay compositeCircle;
+	compositeCircle.x1 = compositeRec.x1 + (compositeRec.x2 - compositeRec.x1)/ 2;
+	compositeCircle.y1 = compositeRec.y1 + (compositeRec.y2 - compositeRec.y1) / 2;
+	compositeCircle.radius = (compositeRec.y2 - compositeRec.y1) / 2;
 
 	CircleOverlay circleOverlay1;
-	circleOverlay1.x1 = 300;
-	circleOverlay1.y1 = 350;
-	circleOverlay1.radius = 2;
-
-	const uint8_t* pReadData = nullptr;
-	unsigned int readDataSize = 0U;
-	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));
-
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
-	auto pinId = source->addOutputPin(metadata);
+	circleOverlay1.x1 = 500;
+	circleOverlay1.y1 = 600;
+	circleOverlay1.radius = 12;
 
 	CompositeOverlay compositeOverlay1;
 	compositeOverlay1.add(&recOverlay);
 
 	CompositeOverlay compositeOverlay2;
-	compositeOverlay2.add(&recOverlay1);
-	compositeOverlay2.add(&circleOverlay);
+	compositeOverlay2.add(&compositeRec);
+	compositeOverlay2.add(&compositeCircle);
 
 	compositeOverlay1.add(&compositeOverlay2);
 	compositeOverlay1.add(&lineOverlay);
@@ -274,45 +183,44 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	drawingOverlay.add(&compositeOverlay1);
 	drawingOverlay.add(&circleOverlay1);
 
+	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
+	auto pinId = source->addOutputPin(metadata);
+
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto rawMetadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	auto rawPinId = fileReader->addOutputPin(rawMetadata);
+
+	auto muxer = boost::shared_ptr<Module>(new FramesMuxer());
+	source->setNext(muxer);
+	fileReader->setNext(muxer);
+
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	muxer->setNext(overlay);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage.raw")));
+	overlay->setNext(fileWriter);
+
 	auto size = drawingOverlay.mGetSerializeSize();
 	frame_sp frame = source->makeFrame(size, pinId);
 
 	drawingOverlay.serialize(frame);
 
-	memcpy(frame->data(), pReadData, readDataSize);
 	frame_container frames;
 	frames.insert(make_pair(pinId, frame));
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
-	source->setNext(overlay);
-
 	BOOST_TEST(source->init());
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(muxer->init());
 	BOOST_TEST(overlay->init());
+	BOOST_TEST(fileWriter->init());
 
 	source->send(frames);
 	source->step();
+	fileReader->step();
+	muxer->step();
+	muxer->step();
 	overlay->step();
-
-}
-BOOST_AUTO_TEST_CASE(mdrawing_test)
-{
-	auto source = boost::shared_ptr<ExternalSource>(new ExternalSource(ExternalSourceProps()));
-
-
-	//drawingOverlay.serialize(frame);
-
-	/*auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
-	source->setNext(overlay);*/
-
-	/*auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	overlay->setNext(sink);*/
-
-	BOOST_TEST(source->init());
-	/*BOOST_TEST(overlay->init());
-	BOOST_TEST(sink->init());*/
-
-	source->step();
-    //overlay->step();
-
+	fileWriter->step();
 }
 BOOST_AUTO_TEST_SUITE_END()

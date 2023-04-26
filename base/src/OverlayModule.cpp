@@ -5,10 +5,7 @@
 #include "FrameContainerQueue.h"
 #include "Overlay.h"
 
-OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "OverlayModule", _props)
-{
-	//mDetail.reset(new OverlayModule(_props));
-}
+OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "OverlayModule", _props) {}
 
 void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
@@ -55,21 +52,25 @@ bool OverlayModule::shouldTriggerSOS()
 
 bool OverlayModule::process(frame_container& frames)
 {
+	DrawingOverlay component;
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
 	{
 		auto metadata = it->second->getMetadata();
 		auto frameType = metadata->getFrameType();
 		frame_sp frame = it->second;
 
-		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE) 
+		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
-			DrawingOverlay component;
 			component.deserialize(frame);
-			component.mdraw(frame);
 		}
 
-		frames.insert(make_pair(mOutputPinId, frame));
-		send(frames);
+		else if (frameType == FrameMetadata::RAW_IMAGE)
+		{
+			component.mDraw(frame);
+			frame_container overlayConatiner;
+			overlayConatiner.insert(make_pair(mOutputPinId, frame));
+			send(overlayConatiner);
+		}
 	}
 	return true;
 }
