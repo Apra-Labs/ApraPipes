@@ -7,7 +7,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-#include "FacialLandmarkCV.h"
+#include "FacialLandmarksCV.h"
 #include "test_utils.h"
 #include "Frame.h"
 #include "ApraPoint2f.h"
@@ -61,7 +61,7 @@ protected:
 			LOG_INFO << pair.first << "," << pair.second;
 		}
 
-		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::FACE_LANDMARKS_INFO);
+		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
 		if (frame)
 			LOG_INFO << "Timestamp <" << frame->timestamp << ">";
 

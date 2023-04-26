@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
 
-#include "FacialLandmarkCV.h"
+#include "FacialLandmarksCV.h"
 #include "FrameMetadata.h"
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
@@ -311,13 +311,10 @@ bool FacialLandmarkCV::process(frame_container& frames)
 		bufferSize += sizeof(apralandmarks[i]) + (sizeof(ApraPoint2f) + 2 * sizeof(int)) * apralandmarks[i].size();
 	}
 
-	auto outFrame = makeFrame(mDetail->mFrameLength);
 	auto landmarksFrame = makeFrame(bufferSize);
 
-	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, outFrame->data(), bufferSize);
 	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId1, outFrame));
 	frames.insert(make_pair(mOutputPinId2, landmarksFrame));
 
 	send(frames);
