@@ -307,6 +307,92 @@ int FileStructureParser::findFileWithMinute(boost::filesystem::path& hrDir, std:
 	return ParseStatus::FOUND_NEXT;
 }
 
+bool FileStructureParser::filePatternCheck(const boost::filesystem::path& path)
+{
+	if (boost::filesystem::is_regular_file(path) && boost::filesystem::extension(path) == ".mp4" &&
+		path.stem().string().find_first_not_of("0123456789") == std::string::npos)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool FileStructureParser::datePatternCheck(const boost::filesystem::path& path)
+{
+	auto pathStr = path.filename().string();
+	return (pathStr.find_first_not_of("0123456789") == std::string::npos && pathStr.size() == 8);
+	return false;
+}
+
+bool FileStructureParser::hourPatternCheck(const boost::filesystem::path& path)
+{
+	auto parentPath = path.parent_path();
+	if (!datePatternCheck(parentPath))
+	{
+		return false;
+	}
+	auto pathStr = path.filename().string();
+	return (pathStr.find_first_not_of("0123456789") == std::string::npos && pathStr.size() == 4);
+	return false;
+}
+
+bool FileStructureParser::parseDir(boost::filesystem::path rootDir, std::string& videoName)
+{
+	try
+	{
+		boost::filesystem::is_empty(rootDir);
+	}
+	catch (...)
+	{
+		return false;
+	}
+
+	boost::filesystem::recursive_directory_iterator dir(rootDir), end;
+
+	LOG_INFO << "parsing files from dir <" << *dir << ">";
+
+	for (dir; dir != end; ++dir)
+	{
+		LOG_ERROR << "Checking dir <" << dir->path() << ">";
+		auto path = dir->path();
+		if (boost::filesystem::is_directory(dir->path()))
+		{
+			auto parentPath = dir->path().parent_path();
+
+			// potential date folder
+			if (boost::filesystem::equivalent(parentPath, rootDir))
+			{
+				if (!datePatternCheck(dir->path()))
+				{
+					// skip going inside
+					dir.no_push();
+				}
+			}
+			// potential hour folder
+			else
+			{
+				if (!hourPatternCheck(dir->path()))
+				{
+					// skip going inside
+					dir.no_push();
+				}
+			}
+			// dont add folder paths to relevant files
+			continue;
+		}
+
+		// potential video file
+		if (!filePatternCheck(dir->path()))
+		{
+			continue;
+		}
+
+		videoName = dir->path().string();
+		return true;
+	}
+	return false;
+}
+
 int FileStructureParser::randomSeek(uint64_t& skipTS, std::string& skipDir, std::string& videoFile, uint64_t& skipMsecsInFile)
 {
 	skipMsecsInFile = 0;

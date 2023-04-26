@@ -78,6 +78,19 @@ public:
 		/*  parseFS() is called:
 			only if parseFS is set AND (it is the first time OR if parse file limit is reached)
 			returns false if no relevant mp4 file left on disk. */
+
+		auto videoPath = boost::filesystem::path(mState.mVideoPath);
+		if (videoPath.extension() != ".mp4")
+		{
+			if (!mFSParser->parseDir(videoPath, mState.mVideoPath))
+			{
+				LOG_DEBUG << "Mp4 file is not present" << ">";
+				isVideoFileFound = false;
+				return false;
+			}
+			isVideoFileFound = true;
+		}
+
 		if (mProps.parseFS && (mState.mParsedVideoFiles.empty() || mState.mVideoCounter == mState.mParsedFilesCount))
 		{
 			mState.end = parseFS();
@@ -299,6 +312,27 @@ public:
 	void readNextFrame(uint8_t* sampleFrame, uint8_t* sampleMetadataFrame, size_t& imageFrameSize, size_t& metadataFrameSize)
 	{
 
+		// isVideoFileFound is false when there is no video file in the given dir and now we check if the video file has been created.
+		if (!isVideoFileFound)
+		{
+			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			if (currentTS >= recheckDiskTS)
+			{
+				if (!initNewVideo())
+				{
+					sampleFrame = nullptr;
+					imageFrameSize = 0;
+					recheckDiskTS = currentTS + mProps.parseFSTimeoutDuration;
+					return;
+				}
+			}
+			else
+			{
+				sampleFrame = nullptr;
+				imageFrameSize = 0;
+				return;
+			}
+		}
 		// all frames of the open video are already read and end has not reached
 		if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
 		{
@@ -373,6 +407,9 @@ protected:
 	uint64_t openVideoStartingTS = 0;
 	uint64_t seekEndTS = 9999999999999;
 	int seekedToFrame = -1;
+	bool isVideoFileFound = true;
+	uint64_t currentTS = 0;
+	uint64_t recheckDiskTS = 0;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
