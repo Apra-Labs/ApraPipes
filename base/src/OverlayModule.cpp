@@ -10,8 +10,8 @@ OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "Ove
 void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	if(metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
-	mOutputPinId = addOutputPin(metadata);
+	if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
+		mOutputPinId = addOutputPin(metadata);
 }
 
 
@@ -27,21 +27,29 @@ bool OverlayModule::term()
 
 bool OverlayModule::validateInputPins()
 {
-	/*if (getNumberOfInputPins() != 1)
+	pair<string, framemetadata_sp> me; // map element	
+	auto inputMetadataByPin = getInputMetadata();
+	BOOST_FOREACH(me, inputMetadataByPin)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
-		return false;
-	}*/
+		FrameMetadata::FrameType frameType = me.second->getFrameType();
+		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
+		{
+			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR OVERLAY_INFO_IMAGE. Actual<" << frameType << ">";
+			return false;
+		}
+	}
 	return true;
 }
 
 bool OverlayModule::validateOutputPins()
 {
-	/*if (getNumberOfOutputPins() != 1)
+	auto outputMetadata = getFirstOutputMetadata();
+	FrameMetadata::FrameType frameType = outputMetadata->getFrameType();
+	if (frameType != FrameMetadata::RAW_IMAGE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
 		return false;
-	}*/
+	}
 	return true;
 }
 
@@ -52,7 +60,7 @@ bool OverlayModule::shouldTriggerSOS()
 
 bool OverlayModule::process(frame_container& frames)
 {
-	DrawingOverlay component;
+	DrawingOverlay drawOverlay;
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
 	{
 		auto metadata = it->second->getMetadata();
@@ -61,12 +69,12 @@ bool OverlayModule::process(frame_container& frames)
 
 		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
-			component.deserialize(frame);
+			drawOverlay.deserialize(frame);
 		}
 
 		else if (frameType == FrameMetadata::RAW_IMAGE)
 		{
-			component.mDraw(frame);
+			drawOverlay.draw(frame);
 			frame_container overlayConatiner;
 			overlayConatiner.insert(make_pair(mOutputPinId, frame));
 			send(overlayConatiner);

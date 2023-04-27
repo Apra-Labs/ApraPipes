@@ -7,15 +7,12 @@ using namespace std;
 class OverlayModuleProps : public ModuleProps
 {
 public:
-
 	OverlayModuleProps() : ModuleProps() {}
-	
 
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize();
 	}
-
 };
 
 class OverlayCommand;
@@ -33,7 +30,7 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool shouldTriggerSOS();
-	
+
 private:
 	std::string mOutputPinId;
 };
