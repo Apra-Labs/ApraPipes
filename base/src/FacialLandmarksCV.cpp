@@ -172,7 +172,6 @@ public:
 
 	bool compute(frame_sp buffer)
 	{
-	    cv::Mat iImg = cv::imread("./data/faces.jpg");
 		vector<cv::Rect> faces;
 		faceDetector.detectMultiScale(iImg, faces);
 

@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024,768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE)));
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
 	fileReader->setNext(facemark);
 
 	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
@@ -131,5 +131,4 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 	facemark->step();
 	sink->step();
 }
-
 BOOST_AUTO_TEST_SUITE_END()
