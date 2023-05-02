@@ -220,7 +220,9 @@ SET(CORE_FILES
    src/RTSPClientSrc.cpp
    src/BaresipAdapter.cpp
    src/BaresipDemo.cpp
+   src/BaresipVideoSink.cpp
    src/BaresipSession.cpp
+   src/BaresipVideoAdapter.cpp
 )
 
 SET(CORE_FILES_H
@@ -280,6 +282,8 @@ SET(CORE_FILES_H
    include/H264Metadata.h
    include/BaresipAdapter.h
    include/BaresipDemo.h
+   include/BaresipVideoSink.h
+   include/BaresipVideoAdapter.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -644,6 +648,7 @@ SET(UT_FILES
    test/rtsp_client_tests.cpp
    test/rtsp_client_tests.cpp
    test/baresip_adapter_tests.cpp
+   test/baresipvideosink_tests.cpp
    ${ARM64_UT_FILES}
    ${CUDA_UT_FILES}
 )
