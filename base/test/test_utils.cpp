@@ -227,6 +227,14 @@ void Test_Utils::sleep_for_seconds(unsigned short seconds)
 	LOG_INFO << "Done sleeping for " << seconds << " seconds";
 }
 
+void Test_Utils::sleep_for_milliseconds(unsigned short milliseconds)
+{
+	if (milliseconds <= 0) return;
+	LOG_TRACE << " Sleeping for " << milliseconds << " milliseconds";
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
+	LOG_TRACE << "Done sleeping for " << milliseconds << " milliseconds";
+}
+
 Test_Utils::FileCleaner::FileCleaner(std::vector<std::string> paths) {
 	pathsOfFiles = paths;
 };

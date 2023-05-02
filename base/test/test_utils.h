@@ -19,4 +19,5 @@ public:
 		std::vector<std::string> pathsOfFiles;
 	};
 	static void sleep_for_seconds(unsigned short seconds);
+	static void sleep_for_milliseconds(unsigned short milliseconds);
 };
