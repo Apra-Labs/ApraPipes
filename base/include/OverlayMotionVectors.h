@@ -4,16 +4,36 @@
 
 using namespace std;
 
+class OverlayDetailAbs;
+class DetailFFmpeg;
+class DetailOpenh264;
+
 class OverlayMotionVectorProps : public ModuleProps
 {
 public:
-	OverlayMotionVectorProps()
+	enum MVOverlayMethod
+	{
+		FFMPEG,
+		OPENH264
+	};
+
+	OverlayMotionVectorProps(MVOverlayMethod _MVOverlayMethod) : MVOverlay(_MVOverlayMethod)
 	{
 	}
 
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize();
+	}
+	MVOverlayMethod MVOverlay;
+private:
+	friend class boost::serialization::access;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& boost::serialization::base_object<ModuleProps>(*this);
+		ar& MVOverlay;
 	}
 };
 
@@ -31,7 +51,6 @@ protected:
 	bool processSOS(frame_sp& frame);
 	bool shouldTriggerSOS();
 private:
-	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	boost::shared_ptr<OverlayDetailAbs> mDetail;
 	std::string mOutputPinId;
 };
