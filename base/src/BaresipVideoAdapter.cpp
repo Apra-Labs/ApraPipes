@@ -91,10 +91,6 @@ struct vidsrc_st {
    void *arg;
 };
 
-struct vidsrc_st *remember;
-
-struct tmr tmr_quit;
-
 void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		       const struct vidsz *sz, uint8_t *buf)
 {
@@ -227,13 +223,7 @@ static void usage(void)
 
 static void destructor(void *arg)
 {
-	   struct vidsrc_st *st = (vidsrc_st *)arg;
-   debug("vidpipe: stopping video source..\n");
-   if (st->isRunning) {
-       st->isRunning = false;
-	   free(st->buffer);
-       startWriting = false;
-   }
+
 }
 
 
@@ -244,14 +234,39 @@ BaresipVideoAdapter::BaresipVideoAdapter(BaresipVideoAdapterProps _props)
 
 BaresipVideoAdapter::~BaresipVideoAdapter() {}
 
+struct tmr tmr_quit;
+
+void re_main_func()
+{
+
+}
+
+struct vidsrc_st *remember;
+//Read Frame
+
+static int read_frame(struct vidsrc_st *st)
+{
+	remember = st;
+    startWriting = true;
+	return 0;
+}
+
 //Read Thread
 
-static int start_reading(void *arg)
+static int read_thread(void *arg)
 {
    struct vidsrc_st *st = (vidsrc_st*)arg;
-   remember = st;
    int err;
-   startWriting = true;
+
+	remember = st;
+	 startWriting = true;
+   while (st->isRunning) {
+       err = read_frame(st);
+       if (err) {
+           info("vidpipe: reading frame: %m\n", err);
+       }
+   }
+
 
    return 0;
 }
@@ -265,8 +280,12 @@ static int pipe_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 {
 	
 	info("I am reaching pipe_alloc");
+	//return 0;
 
-   struct vidsrc_st *st;
+
+	// from vidpipe code
+
+	struct vidsrc_st *st;
    int err;
 
 
@@ -303,7 +322,7 @@ static int pipe_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 
 
    st->isRunning = true;
-   err = thread_create_name(&st->thread, "vidpipe", start_reading, st);
+   err = thread_create_name(&st->thread, "vidpipe", read_thread, st);
    if (err) {
        st->isRunning = false;
        goto out;
@@ -570,12 +589,12 @@ bool BaresipVideoAdapter::init()
     return true;
 }
 
-
-
+//alloc function
+//process
 
 void BaresipVideoAdapter::operator()()
 {
-	info("re_main is running now");
+	info("Running re_main now");
 	err = re_main(signal_handler);
 }
 
@@ -614,32 +633,46 @@ bool BaresipVideoAdapter::term()
     return true;
 }
 
-
-
 bool BaresipVideoAdapter::process(void *frame_data)
 {
 	if(startWriting)
 	{
-		// Creating buffer for contents
-   		size_t read_size = remember->vidsize.w*remember->vidsize.h*1.5;
-
-		//memcpy(Y,frame_data,read_size);
-		remember->buffer = static_cast<unsigned char*>(frame_data);
-
-		struct timeval ts;
-		uint64_t timestamp;
-		struct vidframe frame;
-		remember->pixfmt = 0;
-		vidframe_init_buf(&frame, VID_FMT_YUV420P, &remember->vidsize, remember->buffer);
-
-
-		gettimeofday(&ts,NULL);
-		timestamp = 1000000U * ts.tv_sec + ts.tv_usec;
-		timestamp = timestamp * VIDEO_TIMEBASE / 1000000U;
+			// Creating buffer for contents
+   size_t read_size = (remember->vidsize.w*remember->vidsize.h*1.5);
+   unsigned char* Y = remember->buffer;
+//    for(int height = 0; height < remember->vidsize.h; height++)
+//    {
+//        //Loop of rows
+//        uint8_t shade = (uint8_t)(height%256);
+//        memset(Y, shade, remember->vidsize.w);
+//        Y+=remember->vidsize.w;
+//    }
+	memcpy(Y,frame_data,read_size);
 
 
-		remember->frameh(&frame, timestamp, remember->arg);
+   struct timeval ts;
+   uint64_t timestamp;
+   struct vidframe frame;
+   //remember->pixfmt = 0;
+   vidframe_init_buf(&frame, VID_FMT_YUV420P, &remember->vidsize, remember->buffer);
+
+
+   gettimeofday(&ts,NULL);
+   timestamp = 1000000U * ts.tv_sec + ts.tv_usec;
+   timestamp = timestamp * VIDEO_TIMEBASE / 1000000U;
+
+
+   remember->frameh(&frame, timestamp, remember->arg);
+   return true;
 	}
+
+
+
+   // Close the file and free the buffer
+   else{
+	return true;
+   }
     return true;
 }
+
 
