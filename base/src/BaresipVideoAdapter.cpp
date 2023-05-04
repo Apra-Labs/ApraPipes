@@ -244,7 +244,7 @@ BaresipVideoAdapter::BaresipVideoAdapter(BaresipVideoAdapterProps _props)
 
 BaresipVideoAdapter::~BaresipVideoAdapter() {}
 
-static int start_reading(void *arg)
+static int read_thread(void *arg)
 {
 	struct vidsrc_st *st = (vidsrc_st *)arg;
 	st_ptr = st;
@@ -263,6 +263,10 @@ static int pipe_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 {
 
 	info("I am reaching pipe_alloc");
+	//return 0;
+
+
+	// from vidpipe code
 
 	struct vidsrc_st *st;
 	int err;
