@@ -15,6 +15,7 @@
 #include "JPEGDecoderNVJPEG.h"
 #include "CudaStreamSynchronize.h"
 #include "EffectsKernel.h"
+#include "nv_test_utils.h"
 
 #include <chrono>
 
@@ -25,7 +26,7 @@ using sys_clock = std::chrono::system_clock;
 
 BOOST_AUTO_TEST_SUITE(effectsnppi_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 1080;
@@ -207,7 +208,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 640;
 	auto height = 360;
@@ -667,7 +668,7 @@ BOOST_AUTO_TEST_CASE(kernel_test, *boost::unit_test::disabled())
 	cudaFree(V);
 }
 
-BOOST_AUTO_TEST_CASE(img_864x576)
+BOOST_AUTO_TEST_CASE(img_864x576, *utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 864;
 	auto height = 576;

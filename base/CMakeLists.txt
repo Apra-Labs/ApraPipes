@@ -101,10 +101,10 @@ IF(ENABLE_GST)
    ENDIF(NOT ENABLE_WINDOWS)
   
 ENDIF(ENABLE_GST)
-  
+        
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
-
+find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -218,6 +218,8 @@ SET(CORE_FILES
    src/Mp4ReaderSourceUtils.cpp
    src/RTSPClientSrc.cpp
    src/RTSPClientSrc.cpp
+	src/MotionVectorExtractor.cpp
+	src/OverlayMotionVectors.cpp
    src/BaresipWebRTC.cpp
    src/BaresipDemo.cpp
    src/BaresipVideoSink.cpp
@@ -280,6 +282,8 @@ SET(CORE_FILES_H
    include/Mp4ReaderSourceUtils.h
    include/RTSPClientSrc.h
    include/H264Metadata.h
+	include/MotionVectorExtractor.h
+	include/OverlayMotionVectors.h
    include/BaresipWebRTC.h
    include/BaresipDemo.h
    include/BaresipVideoSink.h
@@ -647,6 +651,7 @@ SET(UT_FILES
    test/mp4readersource_tests.cpp
    test/rtsp_client_tests.cpp
    test/rtsp_client_tests.cpp
+	test/motionvector_extractor_and_overlay_tests.cpp
    test/baresip_webrtc_tests.cpp
    test/baresipvideosink_tests.cpp
    ${ARM64_UT_FILES}
@@ -692,7 +697,7 @@ ENDIF(ENABLE_GST)
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
-   target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+   target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
@@ -700,9 +705,13 @@ IF (ENABLE_CUDA)
 ENDIF (ENABLE_CUDA)
 
 
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+
 target_link_libraries(aprapipesut  
  aprapipes 
+ ${JPEG_LIBRARIES}
  ${LIBMP4_LIB}
+ ${OPENH264_LIB}
  ${LIBRE_LIB}
  ${BARESIP_LIB}
  ${Boost_LIBRARIES}

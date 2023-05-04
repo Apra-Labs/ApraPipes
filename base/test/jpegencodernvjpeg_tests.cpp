@@ -11,10 +11,11 @@
 #include "CudaMemCopy.h"
 #include "JPEGEncoderNVJPEG.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(jpegencodernvjpeg_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_h264_encoder_supported()))
 {
 	// metadata is known
 	auto width = 1920;
@@ -54,7 +55,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_mono_1920x1080.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
 {
 	// metadata is known
 	auto width = 640;
@@ -94,7 +95,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencodernvjpeg_tests_yuv420_640x360.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(rgb_1280x720)
+BOOST_AUTO_TEST_CASE(rgb_1280x720, *utf::precondition(if_h264_encoder_supported()))
 {
 	// metadata is known
 	auto width = 1280;
