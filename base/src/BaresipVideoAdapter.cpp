@@ -244,7 +244,7 @@ BaresipVideoAdapter::BaresipVideoAdapter(BaresipVideoAdapterProps _props)
 
 BaresipVideoAdapter::~BaresipVideoAdapter() {}
 
-static int read_thread(void *arg)
+static int start_reading(void *arg)
 {
 	struct vidsrc_st *st = (vidsrc_st *)arg;
 	st_ptr = st;
