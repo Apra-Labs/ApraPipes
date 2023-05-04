@@ -218,7 +218,7 @@ SET(CORE_FILES
    src/Mp4ReaderSourceUtils.cpp
    src/RTSPClientSrc.cpp
    src/RTSPClientSrc.cpp
-   src/BaresipAdapter.cpp
+   src/BaresipWebRTC.cpp
    src/BaresipDemo.cpp
    src/BaresipVideoSink.cpp
    src/BaresipSession.cpp
@@ -280,7 +280,7 @@ SET(CORE_FILES_H
    include/Mp4ReaderSourceUtils.h
    include/RTSPClientSrc.h
    include/H264Metadata.h
-   include/BaresipAdapter.h
+   include/BaresipWebRTC.h
    include/BaresipDemo.h
    include/BaresipVideoSink.h
    include/BaresipVideoAdapter.h
@@ -647,7 +647,7 @@ SET(UT_FILES
    test/mp4readersource_tests.cpp
    test/rtsp_client_tests.cpp
    test/rtsp_client_tests.cpp
-   test/baresip_adapter_tests.cpp
+   test/baresip_webrtc_tests.cpp
    test/baresipvideosink_tests.cpp
    ${ARM64_UT_FILES}
    ${CUDA_UT_FILES}
