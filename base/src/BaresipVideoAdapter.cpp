@@ -97,7 +97,7 @@ struct vidsrc_st
 	void *arg;
 };
 
-struct vidsrc_st *remember;
+struct vidsrc_st *st_ptr;
 
 struct tmr tmr_quit;
 
@@ -244,12 +244,10 @@ BaresipVideoAdapter::BaresipVideoAdapter(BaresipVideoAdapterProps _props)
 
 BaresipVideoAdapter::~BaresipVideoAdapter() {}
 
-// Read Thread
-
 static int start_reading(void *arg)
 {
 	struct vidsrc_st *st = (vidsrc_st *)arg;
-	remember = st;
+	st_ptr = st;
 	int err;
 	startWriting = true;
 
@@ -610,7 +608,7 @@ bool BaresipVideoAdapter::term()
 	libre_close();
 
 	/* Check for memory leaks */
-	free(remember->buffer);
+	free(st_ptr->buffer);
 	mem_debug();
 
 	return true;
@@ -620,24 +618,22 @@ bool BaresipVideoAdapter::process(void *frame_data)
 {
 	if (startWriting)
 	{
-		// Creating buffer for contents
-		size_t read_size = remember->vidsize.w * remember->vidsize.h * 1.5;
-		unsigned char *Y = remember->buffer;
+		size_t read_size = st_ptr->vidsize.w * st_ptr->vidsize.h * 1.5;
+		unsigned char *Y = st_ptr->buffer;
 
-		// memcpy(Y,frame_data,read_size);
-		remember->buffer = static_cast<unsigned char *>(frame_data);
+		st_ptr->buffer = static_cast<unsigned char *>(frame_data);
 
 		struct timeval ts;
 		uint64_t timestamp;
 		struct vidframe frame;
-		remember->pixfmt = 0;
-		vidframe_init_buf(&frame, VID_FMT_YUV420P, &remember->vidsize, remember->buffer);
+		st_ptr->pixfmt = 0;
+		vidframe_init_buf(&frame, VID_FMT_YUV420P, &st_ptr->vidsize, st_ptr->buffer);
 
 		gettimeofday(&ts, NULL);
 		timestamp = 1000000U * ts.tv_sec + ts.tv_usec;
 		timestamp = timestamp * VIDEO_TIMEBASE / 1000000U;
 
-		remember->frameh(&frame, timestamp, remember->arg);
+		st_ptr->frameh(&frame, timestamp, st_ptr->arg);
 	}
 	return true;
 }
