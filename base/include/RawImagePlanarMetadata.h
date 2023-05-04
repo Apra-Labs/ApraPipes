@@ -43,12 +43,17 @@ public:
 			_step[i] = _step[i] * elemSize;
 		}
 
-		initData(_width, _height, _imageType, _step, _depth);
+		initData(_width, _height, _imageType, _step, _depth, nextPtrOffset);
 	}
 
 	RawImagePlanarMetadata(int _width, int _height, ImageMetadata::ImageType _imageType, size_t _step[4], int _depth, MemType _memType = MemType::HOST) : FrameMetadata(FrameType::RAW_IMAGE_PLANAR, _memType)
 	{
-		initData(_width, _height, _imageType, _step, _depth);
+		initData(_width, _height, _imageType, _step, _depth, nextPtrOffset);
+	}
+
+	RawImagePlanarMetadata(int _width, int _height, ImageMetadata::ImageType _imageType, int _depth, size_t _step[4], size_t _nextPtrOffset[4], MemType _memType = MemType::HOST) : FrameMetadata(FrameType::RAW_IMAGE_PLANAR, _memType)
+	{
+		initData(_width, _height, _imageType, _step, _depth, _nextPtrOffset);
 	}
 
 	void reset()
@@ -146,16 +151,26 @@ protected:
 		dataSize = 0;
 		for (auto i = 0; i < channels; i++)
 		{
-			nextPtrOffset[i] = dataSize;
-			dataSize += step[i] * height[i];
+			if (nextPtrOffset[i] == NOT_SET_NUM)
+			{
+				nextPtrOffset[i] = dataSize;
+				dataSize += step[i] * height[i];
+			}
+
+			else {}
 		}
 	}
 
-	void initData(int _width, int _height, ImageMetadata::ImageType _imageType, size_t _step[4], int _depth)
+	void initData(int _width, int _height, ImageMetadata::ImageType _imageType, size_t _step[4], int _depth, size_t _nextPtrOffset[4])
 	{
 		channels = 3;
 		depth = _depth;
 		imageType = _imageType;
+
+		for (auto i = 0; i < channels; i++)
+		{
+			nextPtrOffset[i] = _nextPtrOffset[i];
+		}
 
 		for (auto i = 0; i < channels; i++)
 		{
