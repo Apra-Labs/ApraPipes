@@ -263,10 +263,6 @@ static int pipe_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 {
 
 	info("I am reaching pipe_alloc");
-	//return 0;
-
-
-	// from vidpipe code
 
 	struct vidsrc_st *st;
 	int err;
@@ -578,7 +574,7 @@ bool BaresipVideoAdapter::init()
 
 void BaresipVideoAdapter::operator()()
 {
-	info("Running re_main now");
+	info("re_main is running now");
 	err = re_main(signal_handler);
 }
 
