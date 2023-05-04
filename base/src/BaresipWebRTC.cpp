@@ -1,5 +1,5 @@
 #include <stdafx.h>
-#include "BaresipAdapter.h"
+#include "BaresipWebRTC.h"
 #include "re.h"
 #include "baresip.h"
 #include <re_dbg.h>
@@ -80,14 +80,14 @@ static void usage(void)
 		   ice_server);
 }
 
-BaresipAdapter::BaresipAdapter(BaresipAdapterProps _props)
+BaresipWebRTC::BaresipWebRTC(BaresipWebRTCProps _props)
 {
 }
 
-BaresipAdapter::~BaresipAdapter() {}
+BaresipWebRTC::~BaresipWebRTC() {}
 
 
-bool BaresipAdapter::init(int argc, char* argv[]) 
+bool BaresipWebRTC::init(int argc, char* argv[]) 
 {
     //printf("Arguement 1 : %d\n", argc);
 
@@ -226,13 +226,13 @@ bool BaresipAdapter::init(int argc, char* argv[])
     return true;
 }
 
-bool BaresipAdapter::term()
+bool BaresipWebRTC::term()
 {
     close();
     return true;
 }
 
-bool BaresipAdapter::processSOS()
+bool BaresipWebRTC::processSOS()
 {
     pthread_t thread_id;
     pthread_create(&thread_id, NULL,(void*(*)(void *))re_main,(void *)signal_handler);
@@ -240,12 +240,12 @@ bool BaresipAdapter::processSOS()
     return true;
 }
 
-bool BaresipAdapter::process()
+bool BaresipWebRTC::process()
 {
     return true;
 }
 
-void BaresipAdapter::close()
+void BaresipWebRTC::close()
 {
     demo_close();
 
