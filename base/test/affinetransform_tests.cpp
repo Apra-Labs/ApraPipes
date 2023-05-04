@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate)
 {
 	ImageMetadata::ImageType::BGRA;
-	AffineTestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, AffineTransformProps::LINEAR, 90, 0,0, 2.5f);
+	AffineTestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, AffineTransformProps::LINEAR, 90, 100,100, 2.5f);
 
 	f.fileReader->step();
 	f.copy1->step();
