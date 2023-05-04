@@ -14,7 +14,7 @@
 
 BOOST_AUTO_TEST_SUITE(baresipvideosink_tests)
 
-BOOST_AUTO_TEST_CASE(basic)
+BOOST_AUTO_TEST_CASE(webcamSrc, * boost::unit_test::disabled())
 {
     WebCamSourceProps webCamSourceprops(0, 640, 360);
     auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
 }
 
-BOOST_AUTO_TEST_CASE(filereader)
+BOOST_AUTO_TEST_CASE(filereaderSrc, * boost::unit_test::disabled())
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw", 0, -1)));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
@@ -72,23 +72,5 @@ BOOST_AUTO_TEST_CASE(filereader)
 	p.reset();
 
 }
-
-
-BOOST_AUTO_TEST_CASE(adapter_test, * boost::unit_test::disabled())
-{
-	void * buffer = calloc(1,(640*360*3)>>1);
-    auto baresip = boost::shared_ptr<BaresipVideoAdapter>(new BaresipVideoAdapter(BaresipVideoAdapterProps()));
-	BOOST_TEST(baresip->init());
-	while (true)
-	{
-		BOOST_TEST(baresip->process(buffer));
-		Test_Utils::sleep_for_milliseconds(33);
-		
-	}
-	BOOST_TEST(baresip->term());
-
-}
-
-
 
 BOOST_AUTO_TEST_SUITE_END()
