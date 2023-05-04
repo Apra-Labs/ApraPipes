@@ -339,6 +339,7 @@ SET(CUDA_IP_FILES
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
+	src/AffineTransform.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -388,6 +389,7 @@ SET(CUDA_IP_FILES_H
 	include/OverlayKernel.h
 	include/RotateNPPI.h
 	include/H264Decoder.h
+	include/AffineTransform.h
 )
 
 IF(ENABLE_ARM64)
@@ -482,6 +484,7 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
+		test/affinetransform_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
