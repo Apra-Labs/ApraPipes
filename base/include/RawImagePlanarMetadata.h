@@ -156,8 +156,6 @@ protected:
 				nextPtrOffset[i] = dataSize;
 				dataSize += step[i] * height[i];
 			}
-
-			else {}
 		}
 	}
 
@@ -170,10 +168,6 @@ protected:
 		for (auto i = 0; i < channels; i++)
 		{
 			nextPtrOffset[i] = _nextPtrOffset[i];
-		}
-
-		for (auto i = 0; i < channels; i++)
-		{
 			step[i] = _step[i];
 		}
 
