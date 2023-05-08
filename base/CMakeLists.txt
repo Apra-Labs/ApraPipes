@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
- 
+  
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
