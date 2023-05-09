@@ -1,4 +1,5 @@
 #!/bin/bash
+sudo -v
 pwd 
 ls
 cd baresip
