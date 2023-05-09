@@ -617,7 +617,7 @@ target_link_libraries(aprapipesut
   ZXing::ZXing 
   BZip2::BZip2
   ZLIB::ZLIB
-  liblzma::liblzma 
+  liblzma::liblzma
   bigint::bigint
   sfml-audio
   )
