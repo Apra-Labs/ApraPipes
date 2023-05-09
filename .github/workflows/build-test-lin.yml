@@ -161,12 +161,12 @@ jobs:
     - name: Build lib_re when it is not cached
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty/
-      run: sudo sh ./build_lib_re.sh
+      run: sudo ./build_lib_re.sh
     
     - name: Build baresip when it is not cached
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
       working-directory: ${{github.workspace}}/thirdparty/
-      run: sudo sh ./build_baresip.sh
+      run: sudo ./build_baresip.sh
     
     - name: Make build folder
       run: mkdir -p build
