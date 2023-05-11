@@ -17,8 +17,11 @@ public:
 	~BaresipWebRTC();
 	bool init(int argc, char* argv[]);
 	bool term();
-	bool process();
+	bool process(void *frame_data);
 	bool processSOS();
 	void setProps(BaresipWebRTCProps& props);
 	void close();
+
+	int err;
+	struct vidsrc *myVidsrc;
 };
