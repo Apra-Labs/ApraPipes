@@ -220,6 +220,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
 	include/OverlayModule.h
+	include/TestSignalGenerator.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -275,6 +276,7 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
+	src/TestSignalGenerator.cpp
 )
 
 
@@ -542,6 +544,7 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
 	test/overlaymodule_tests.cpp
+	test/TestSignalGenerator_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
