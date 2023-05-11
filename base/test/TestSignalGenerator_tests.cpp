@@ -4,9 +4,9 @@
 #include <boost/test/unit_test.hpp>
 #include "FileWriterModule.h"
 #include <boost/filesystem.hpp>
-#include <PipeLine.h>
-#include <ImageViewerModule.h>
+#include "PipeLine.h"
 #include "test_utils.h"
+#include "StatSink.h"
 
 BOOST_AUTO_TEST_SUITE(TestSignalGenerator_tests)
 
@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(basic)
     auto source = boost::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps()));
     auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
     source->addOutputPin(metadata);
-    auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("Test-signal")));
+    auto sink = boost::shared_ptr<Module>(new StatSink());	
     source->setNext(sink);
     boost::shared_ptr<PipeLine> p;
     p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
@@ -28,31 +28,15 @@ BOOST_AUTO_TEST_CASE(basic)
     Test_Utils::sleep_for_seconds(2);
     p->stop();
     p->term();
-
     p->wait_for_all();
     p.reset();
 }
 
 
-BOOST_AUTO_TEST_CASE(file)
+BOOST_AUTO_TEST_CASE(fileWriterSink)
 {
-    auto source = boost::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps()));
-    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
-    source->addOutputPin(metadata);
-
-    auto sink = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/test.raw")));
-    source->setNext(sink);
-
-    BOOST_TEST(source->init());
-    BOOST_TEST(sink->init());
-    
-    source->step();
-    sink->step();
-}
-
-
-BOOST_AUTO_TEST_CASE(sink)
-{
+    std::vector<std::string> Files = {"./data/testsample1.raw"};
+    Test_Utils::FileCleaner f(Files);
     auto source = boost::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps()));
     auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
     source->addOutputPin(metadata);
@@ -71,9 +55,10 @@ BOOST_AUTO_TEST_CASE(sink)
     Test_Utils::sleep_for_seconds(1);
     p->stop();
     p->term();
-
     p->wait_for_all();
     p.reset();
 }
+
+
 
 BOOST_AUTO_TEST_SUITE_END()     

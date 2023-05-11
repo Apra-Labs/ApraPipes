@@ -10,7 +10,6 @@ public:
     ~TestSignalGeneratorProps()
     {
     }
-
 };
 
 class TestSignalGenerator : public Module
@@ -28,5 +27,4 @@ private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
     unsigned char* tempBuffer;
-    
 };
