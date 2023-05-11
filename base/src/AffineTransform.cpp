@@ -1,6 +1,7 @@
 #include <npp.h>
 #include <opencv2/core.hpp>
 #include <CuCtxSynchronize.h>
+#include <fstream>
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -10,6 +11,8 @@
 #include "math.h"
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
+#include "DMAFDWrapper.h"
+#include "DMAAllocator.h"
 #include  "nppdefs.h" 
 
 #define PI 3.14159265
@@ -20,7 +23,6 @@ public:
 	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
-
 	}
 	int setInterPolation(AffineTransformProps::Interpolation eInterpolation)
 	{

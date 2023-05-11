@@ -96,8 +96,5 @@ protected:
 	void setProps(AffineTransform);
 	bool handlePropsChange(frame_sp &frame);
 	AffineTransformProps mProp;
-
-private:
-	class Detail;
 	boost::shared_ptr<Detail> mDetail;
 };
