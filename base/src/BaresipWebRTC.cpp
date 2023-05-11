@@ -1,11 +1,21 @@
 #include <stdafx.h>
 #include "BaresipWebRTC.h"
-#include "re.h"
-#include "baresip.h"
+#include <re.h>
+#include <baresip.h>
 #include <re_dbg.h>
 #include "BaresipDemo.h"
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <rem.h>
+#include <cstdlib>
 
 #ifdef HAVE_GETOPT
 #include <getopt.h>
@@ -16,6 +26,40 @@ enum { ASYNC_WORKERS = 4 };
 static const char *modpath = "/usr/local/lib/baresip/modules";
 static const char *server_cert = "/etc/demo.pem";
 static const char *www_path = "webrtc/www";
+
+//video source vidsrc
+static struct vidsrc *vidsrc;
+
+
+
+
+//video source state
+struct vidsrc_st {
+   int filedesc;
+   thrd_t thread;
+   bool isRunning;
+   struct vidsz vidsize;
+   u_int32_t pixfmt;
+   vidsrc_frame_h *frameh;
+   unsigned char* buffer;
+   void *arg;
+};
+
+struct vidsrc_st *st_point;
+bool startWrite = false;
+
+static void destructor(void *arg)
+{
+	   struct vidsrc_st *st = (vidsrc_st *)arg;
+   debug("vidpipe: stopping video source..\n");
+   if (st->isRunning) {
+       st->isRunning = false;
+	   free(st->buffer);
+       startWrite = false;
+	   //thrd_join(st->thread, NULL);
+	   //hello;
+   }
+}
 
 
 static const char *modv[] = {
@@ -80,11 +124,207 @@ static void usage(void)
 		   ice_server);
 }
 
+void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
+		       const struct vidsz *sz, uint8_t *buf)
+{
+	unsigned w, h;
+
+	if (!vf || !sz || !buf)
+		return;
+
+	w = (sz->w + 1) >> 1;
+	h = (sz->h + 1) >> 1;
+
+	unsigned w2 = (sz->w + 1) >> 1;
+
+	memset(vf->linesize, 0, sizeof(vf->linesize));
+	memset(vf->data, 0, sizeof(vf->data));
+
+	switch (fmt) {
+
+	case VID_FMT_YUV420P:
+		vf->linesize[0] = sz->w;
+		vf->linesize[1] = w;
+		vf->linesize[2] = w;
+
+		vf->data[0] = buf;
+		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
+		vf->data[2] = vf->data[1] + vf->linesize[1] * h;
+		break;
+
+	case VID_FMT_YUYV422:
+	case VID_FMT_UYVY422:
+		vf->linesize[0] = sz->w * 2;
+		vf->data[0] = buf;
+		break;
+
+	case VID_FMT_RGB32:
+	case VID_FMT_ARGB:
+		vf->linesize[0] = sz->w * 4;
+		vf->data[0] = buf;
+		break;
+
+	case VID_FMT_RGB565:
+		vf->linesize[0] = sz->w * 2;
+		vf->data[0] = buf;
+		break;
+
+	case VID_FMT_NV12:
+	case VID_FMT_NV21:
+		vf->linesize[0] = sz->w;
+		vf->linesize[1] = w*2;
+
+		vf->data[0] = buf;
+		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
+		break;
+
+	case VID_FMT_YUV444P:
+		vf->linesize[0] = sz->w;
+		vf->linesize[1] = sz->w;
+		vf->linesize[2] = sz->w;
+
+		vf->data[0] = buf;
+		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
+		vf->data[2] = vf->data[1] + vf->linesize[1] * sz->h;
+		break;
+
+	case VID_FMT_YUV422P:
+		vf->linesize[0] = sz->w;
+		vf->linesize[1] = w2;
+		vf->linesize[2] = w2;
+
+		vf->data[0] = buf;
+		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
+		vf->data[2] = vf->data[1] + vf->linesize[1] * sz->h;
+		break;
+
+	default:
+		//(void)re_printf("vidframe: no fmt %s\n", vidfmt_name(fmt));
+		return;
+	}
+
+	vf->size = *sz;
+	vf->fmt = fmt;
+}
+
+
 BaresipWebRTC::BaresipWebRTC(BaresipWebRTCProps _props)
 {
 }
 
 BaresipWebRTC::~BaresipWebRTC() {}
+
+//reading frame
+
+
+static int read_frame(struct vidsrc_st *st)
+{
+   // Creating buffer for contents
+   size_t read_size = st->vidsize.w*st->vidsize.h*1.5;
+   unsigned char* Y = st->buffer;
+   for(int height = 0; height < st->vidsize.h; height++)
+   {
+       //Loop of rows
+       uint8_t shade = (uint8_t)(height%256);
+       memset(Y, shade, st->vidsize.w);
+       Y+=st->vidsize.w;
+   }
+
+
+   struct timeval ts;
+   uint64_t timestamp;
+   struct vidframe frame;
+   st->pixfmt = 0;
+   vidframe_init_buf(&frame, VID_FMT_YUV420P, &st->vidsize, st->buffer);
+
+
+   gettimeofday(&ts,NULL);
+   timestamp = 1000000U * ts.tv_sec + ts.tv_usec;
+   timestamp = timestamp * VIDEO_TIMEBASE / 1000000U;
+
+
+   st->frameh(&frame, timestamp, st->arg);
+
+	return 0;
+   //free(buffer);
+}
+
+
+
+static int read_thread(void *arg)
+{
+   struct vidsrc_st *st = (vidsrc_st*)arg;
+   st_point = st;
+   int err;
+   startWrite = true;
+   return 0;
+}
+
+
+static int pipe_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
+		 struct vidsrc_prm *prm,
+		 const struct vidsz *size, const char *fmt,
+		 const char *dev, vidsrc_frame_h *frameh,
+		 vidsrc_packet_h  *packeth,
+		 vidsrc_error_h *errorh, void *arg)
+{
+
+	info("I am reaching pipe_alloc");
+	struct vidsrc_st *st;
+   int err;
+
+
+   (void)prm;
+   (void)fmt;
+   (void)packeth;
+   (void)errorh;
+
+
+   if (!stp || !size || !frameh)
+       return EINVAL;
+
+
+   st = (vidsrc_st*)(mem_zalloc(sizeof(*st), destructor));
+   if (!st)
+       return ENOMEM;
+
+
+//initialize size
+
+
+   st->filedesc = -1;
+   st->vidsize = *size;
+   st->vidsize.w = 640;
+   st->vidsize.h = 360;
+   st->frameh = frameh;
+   st->arg    = arg;
+   st->pixfmt = VID_FMT_YUV420P;
+
+
+   size_t read_size = st->vidsize.w*st->vidsize.h*1.5;
+   st->buffer = (unsigned char*)malloc(read_size);
+   memset(st->buffer,0, read_size);
+
+
+   st->isRunning = true;
+   err = thread_create_name(&st->thread, "vidpipe", read_thread, st);
+   if (err) {
+       st->isRunning = false;
+       goto out;
+   }
+
+
+out:
+   if (err)
+       mem_deref(st);
+   else
+       *stp = st;
+
+
+   return err;
+
+}
+
 
 
 bool BaresipWebRTC::init(int argc, char* argv[]) 
@@ -199,11 +439,12 @@ bool BaresipWebRTC::init(int argc, char* argv[])
 	str_ncpy(config->audio.src_dev,
 		 "440",
 		 sizeof(config->audio.src_dev));
-
-	str_ncpy(config->video.src_mod, "v4l2",
+	err = vidsrc_register(&myVidsrc, baresip_vidsrcl(),
+			       "vidpipe", pipe_alloc, NULL);
+	str_ncpy(config->video.src_mod, "vidpipe",
 		 sizeof(config->video.src_mod));
-	str_ncpy(config->video.src_dev, "/dev/video0",
-		 sizeof(config->video.src_dev));
+	//str_ncpy(config->video.src_dev, "/dev/video0",
+	//	 sizeof(config->video.src_dev));
 
 	config->audio.level = true;
 
@@ -236,12 +477,35 @@ bool BaresipWebRTC::processSOS()
 {
     pthread_t thread_id;
     pthread_create(&thread_id, NULL,(void*(*)(void *))re_main,(void *)signal_handler);
-    pthread_join(thread_id,NULL);
+    pthread_detach(thread_id);
     return true;
 }
 
-bool BaresipWebRTC::process()
+bool BaresipWebRTC::process(void *frame_data)
 {
+	if(startWrite)
+	{
+		// Creating buffer for contents
+   		size_t read_size = st_point->vidsize.w*st_point->vidsize.h*1.5;
+
+		//memcpy(Y,frame_data,read_size);
+		st_point->buffer = static_cast<unsigned char*>(frame_data);
+
+		struct timeval ts;
+		uint64_t timestamp;
+		struct vidframe frame;
+		st_point->pixfmt = 0;
+		vidframe_init_buf(&frame, VID_FMT_YUV420P, &st_point->vidsize, st_point->buffer);
+
+
+		gettimeofday(&ts,NULL);
+		timestamp = 1000000U * ts.tv_sec + ts.tv_usec;
+		timestamp = timestamp * VIDEO_TIMEBASE / 1000000U;
+
+
+		st_point->frameh(&frame, timestamp, st_point->arg);
+	}
+
     return true;
 }
 
