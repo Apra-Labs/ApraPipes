@@ -225,6 +225,7 @@ SET(CORE_FILES
    src/BaresipVideoSink.cpp
    src/BaresipSession.cpp
    src/BaresipVideoAdapter.cpp
+   src/WebRTCSink.cpp
 )
 
 SET(CORE_FILES_H
@@ -288,6 +289,7 @@ SET(CORE_FILES_H
    include/BaresipDemo.h
    include/BaresipVideoSink.h
    include/BaresipVideoAdapter.h
+   include/WebRTCSink.h
 )
 
 IF(ENABLE_WINDOWS)
