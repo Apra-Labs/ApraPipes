@@ -3,6 +3,10 @@
 #include "Module.h"
 #include "CudaCommon.h"
 
+class Detail;
+class DeatilCUDA;
+class DetailDMA;
+
 class AffineTransformProps : public ModuleProps
 {
 public:
@@ -19,6 +23,12 @@ public:
 		LANCZOS,
 		LANCZOS3_ADVANCED,
 	};
+
+	enum MemoryTypes
+	{
+		CUDA_DEVICE,
+		DMABUF
+	};
 	
 	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f)
 	{
@@ -29,7 +39,7 @@ public:
 		scale = _scale;
 	}
 
-	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
+	AffineTransformProps(MemoryTypes _MemType,Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
 	{
 		stream = _stream;
 		angle = _angle;
@@ -37,6 +47,7 @@ public:
 		y = _y;
 		scale = _scale;
 		eInterpolation = _eInterpolation;
+		MemType = _MemType;
 	}
 
 	int x=0;
@@ -45,6 +56,8 @@ public:
 	double angle;
 	cudastream_sp stream;
 	Interpolation eInterpolation = AffineTransformProps:: NN;
+	MemoryTypes MemType;
+
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) ;
@@ -82,6 +95,7 @@ protected:
 	bool processEOS(string &pinId);
 	void setProps(AffineTransform);
 	bool handlePropsChange(frame_sp &frame);
+	AffineTransformProps mProp;
 
 private:
 	class Detail;
