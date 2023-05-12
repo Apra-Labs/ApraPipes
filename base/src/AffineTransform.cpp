@@ -74,14 +74,15 @@ public:
 			case FrameMetadata::RAW_IMAGE:
 				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
 				break;
+			}
 			case FrameMetadata::RAW_IMAGE_PLANAR:
 				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
 				break;
+			}
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
-
 		if (!metadata->isSet())
 		{
 			return;
