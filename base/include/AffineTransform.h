@@ -23,14 +23,8 @@ public:
 		LANCZOS,
 		LANCZOS3_ADVANCED,
 	};
-
-	enum MemoryTypes
-	{
-		CUDA_DEVICE,
-		DMABUF
-	};
 	
-	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f)
+	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f) // _xShift
 	{
 		stream = _stream;
 		angle = _angle;
@@ -39,7 +33,7 @@ public:
 		scale = _scale;
 	}
 
-	AffineTransformProps(MemoryTypes _MemType,Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
+	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)// remove Memtype from constructor
 	{
 		stream = _stream;
 		angle = _angle;
@@ -47,20 +41,18 @@ public:
 		y = _y;
 		scale = _scale;
 		eInterpolation = _eInterpolation;
-		MemType = _MemType;
 	}
 
-	int x=0;
-	int y = 0;
+	int x = 0;// shiftX
+	int y = 0; // shiftY
 	float scale = 1.0f;
 	double angle;
 	cudastream_sp stream;
 	Interpolation eInterpolation = AffineTransformProps:: NN;
-	MemoryTypes MemType;
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) ;
+		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) + sizeof(eInterpolation);
 	}
 
 private:
@@ -71,6 +63,7 @@ private:
 	{
 		ar &boost::serialization::base_object<ModuleProps>(*this);
 		ar &angle &x &y &scale ;
+		ar& eInterpolation;
 	}
 };
 
@@ -84,7 +77,7 @@ public:
 	bool term();
 	void setProps(AffineTransformProps &props);
 	AffineTransformProps getProps();
-
+	
 protected:
 	bool process(frame_container &frames);
 	bool processSOS(frame_sp &frame);
@@ -94,7 +87,7 @@ protected:
 	bool shouldTriggerSOS();
 	bool processEOS(string &pinId);
 	void setProps(AffineTransform);
-	bool handlePropsChange(frame_sp &frame);
 	AffineTransformProps mProp;
+	bool handlePropsChange(frame_sp &frame);
 	boost::shared_ptr<Detail> mDetail;
 };

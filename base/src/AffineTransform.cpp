@@ -1,7 +1,7 @@
 #include <npp.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core.hpp> 
 #include <CuCtxSynchronize.h>
-#include <fstream>
+//#include <fstream>
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -11,9 +11,15 @@
 #include "math.h"
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
+#include  "nppdefs.h" 
+
+#if defined(__arm__) || defined(__aarch64__)
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
-#include  "nppdefs.h" 
+#endif
+
+
+// keep required headers only
 
 #define PI 3.14159265
 
@@ -53,42 +59,55 @@ public:
 		}
 	}
 
-	int setMemType(AffineTransformProps::MemoryTypes MemType)
-	{
-       switch (props.MemType)
-	   {
-		case AffineTransformProps::CUDA_DEVICE:
-			return FrameMetadata::MemType::CUDA_DEVICE;
-		case AffineTransformProps::DMABUF:
-			return FrameMetadata::MemType::DMABUF;
-		default:
-			throw new AIPException(AIP_NOTEXEPCTED, "Unknown MemoryType");
-
-	   }
-
-	}
 	~Detail()
 	{
 	}
 
+	virtual bool setOutputPtr() = 0;
+
 	void setMetadata(framemetadata_sp &metadata)
 	{
-		if (mFrameType != metadata->getFrameType())
+		if (mFrameType != metadata->getFrameType()) 
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
 			{
 			case FrameMetadata::RAW_IMAGE:
-				mOutputMetadata = framemetadata_sp(new RawImageMetadata(setMemType(props.MemType)));
+			{
+				FrameMetadata::MemType memType = metadata->getMemType();
+				switch (memType)
+				{
+				case FrameMetadata::MemType::CUDA_DEVICE:
+					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+					break;
+				case FrameMetadata::MemType::DMABUF:
+					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+					break;
+				default:
+					throw AIPException(AIP_FATAL, "Unsupported memType<" + std::to_string(memType) + "> for RAW_IMAGE");
+				}
 				break;
+			}
 			case FrameMetadata::RAW_IMAGE_PLANAR:
-				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(setMemType(props.MemType)));
+			{
+				FrameMetadata::MemType memType = metadata->getMemType();
+				switch (memType)
+				{
+				case FrameMetadata::MemType::CUDA_DEVICE:
+					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+					break;
+				case FrameMetadata::MemType::DMABUF:
+					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+					break;
+				default:
+					throw AIPException(AIP_FATAL, "Unsupported memType<" + std::to_string(memType) + "> for RAW_IMAGE_PLANAR");
+				}
 				break;
+			}
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
-
 		if (!metadata->isSet())
 		{
 			return;
@@ -101,7 +120,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(),FrameMetadata::props.MemType,true);
+			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(),FrameMetadata::CUDA_DEVICE,true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -114,7 +133,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth(0);
 			h = rawMetadata->getHeight(0);
-			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(),FrameMetadata::props.MemType);
+			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(),FrameMetadata::CUDA_DEVICE);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -265,9 +284,13 @@ public:
 
 public:
 	size_t mFrameLength;
-	framemetadata_sp mOutputMetadata;
+	frame_sp InputFrame;
+	frame_sp OutputFrame;
+	void* OutputPtr;
 	std::string mOutputPinId;
+	framemetadata_sp mOutputMetadata;
 	AffineTransformProps props;
+
 	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
@@ -333,9 +356,14 @@ public:
 class DetailDMA : public Detail
 {
 public:
-	DetailDMA(AffineTransformProps& _props) : Detail(_props)
+	DetailDMA(AffineTransformProps& _props) : Detail(_props) {}
+
+	bool setOutputPtr()
 	{
-       InputPtr  = static_cast<DMAFDWrapper *>(outFrame->data());
+        #if defined(__arm__) || defined(__aarch64__)
+	    OutputPtr  = static_cast<DMAFDWrapper *>(outFrame->data());
+        #endif
+		return true;
 	}
 	
 };
@@ -343,14 +371,17 @@ public:
 class DeatilCUDA: public Detail
 {
 public:
-	DeatilCUDA(AffineTransformProps& _props) : Detail(_props)
-	{   
-		InputPtr  = outFrame->data();
+	DeatilCUDA(AffineTransformProps& _props) : Detail(_props) {}
+
+	bool setOutputPtr()
+	{
+		OutputPtr = OutputFrame->data();
+	    return true;
 	}
 
 };
 
-AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props), mProp( _props) {}
+AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props), mProp( props) {}
 
 AffineTransform::~AffineTransform() {}
 
@@ -371,9 +402,9 @@ bool AffineTransform::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE || memType != FrameMetadata::MemType::DMABUF )
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be either CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -397,9 +428,9 @@ bool AffineTransform::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE || || memType != FrameMetadata::MemType::DMABUF)
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be either CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -408,11 +439,25 @@ bool AffineTransform::validateOutputPins()
 
 void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
+
 	Module::addInputPin(metadata, pinId);
+	FrameMetadata::MemType memType = metadata->getMemType();
 
+	if (memType = FrameMetadata::MemType::CUDA_DEVICE)
+	{
+		mDetail.reset(new DeatilCUDA(mProp));
+	}
+
+	else if (memType = FrameMetadata::MemType::DMABUF)
+	{
+		mDetail.reset(new DetailDMA(mProp));
+	}
+
+	else
+	{
+		throw std::runtime_error("Memory Type not supported");
+	}
 	mDetail->setMetadata(metadata);
-
-	mDetail->mOutputMetadata->copyHint(*metadata.get());
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
@@ -422,22 +467,6 @@ bool AffineTransform::init()
 	{
 		return false;
 	}
-
-	if (mProp.type == AffineTransformProps::MemoryType::CUDA_DEVICE)
-	{
-		mDetail.reset(new DeatilCUDA(mProp));
-    }
-
-	else if (mProp.type == AffineTransformProps::MemoryType::DMABUF)
-	{
-		mDetail.reset(new DetailDMA(mProp));
-	}
-
-	else
-	{
-		throw std::runtime_error("Invalid Memory type");
-	}
-
 	return Module::init();
 }
 
@@ -449,13 +478,14 @@ bool AffineTransform::term()
 
 bool AffineTransform::process(frame_container &frames)
 {
-	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mDetail->mFrameLength);
+	mDetail->InputFrame = frames.cbegin()->second;
+	mDetail->OutputFrame = makeFrame(mDetail->mFrameLength);
 
-	cudaMemset(mDetail->InputPtr, 0, outFrame->size());
+	mDetail->setOutputPtr();
+	cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
 
-	mDetail->compute(frame->data(), outFrame->data());
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	mDetail->compute((mDetail->InputFrame)->data(), (mDetail->OutputFrame)->data());
+	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->OutputFrame));
 	send(frames);
 
 	return true;

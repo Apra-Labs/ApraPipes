@@ -14,7 +14,6 @@
 #include "PipeLine.h"
 #include "nppdefs.h"
 
-
 BOOST_AUTO_TEST_SUITE(affinetransform_tests)
 
 struct AffineTestsStruct
@@ -30,9 +29,8 @@ struct AffineTestsStruct
 	float scale;
 	framemetadata_sp metadata;
 	AffineTransformProps::Interpolation eInterpolation;
-	AffineTransformProps::MemoryTypes MemType;
 
-	AffineTestsStruct(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth,AffineTransformProps::MemoryTypes MemType, AffineTransformProps::Interpolation eInterpolation, int angle, int x, int y, float scale)
+	AffineTestsStruct(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth,AffineTransformProps::Interpolation eInterpolation, int angle, int x, int y, float scale)
 	{
 		if (imageType == ImageMetadata::ImageType::YUV420 || imageType == ImageMetadata::ImageType::YUV444) {
 			metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, imageType, size_t(0), CV_8U));
@@ -40,9 +38,9 @@ struct AffineTestsStruct
 		else {
 			metadata = framemetadata_sp(new RawImageMetadata(width, height, imageType, bit_depth, 0, CV_8U, FrameMetadata::HOST, true));
 		}
-		createPipeline(inpFilePath, width, height,  imageType, bit_depth,  angle,  x,  y,  scale, eInterpolation,MemType);
+		createPipeline(inpFilePath, width, height,  imageType, bit_depth,  angle,  x,  y,  scale, eInterpolation);
 	}
-	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, int angle, int x, int y, float scale, AffineTransformProps::Interpolation eInterpolation,AffineTransformProps::MemoryTypes MemType)
+	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, int angle, int x, int y, float scale, AffineTransformProps::Interpolation eInterpolation)
 	{
 		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));	
 		auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -51,7 +49,7 @@ struct AffineTestsStruct
 		copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 		fileReader->setNext(copy1);
 
-		AffineTransformProps affineProps(MemType,eInterpolation, stream, angle, x, y, scale);
+		AffineTransformProps affineProps(eInterpolation, stream, angle, x, y, scale);
 		affineTransform = boost::shared_ptr<Module>(new AffineTransform(affineProps));
 		copy1->setNext(affineTransform);
 		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
@@ -80,10 +78,11 @@ struct AffineTestsStruct
 		fileReader->term();
 	}
 };
+
 BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1,DMABUF, AffineTransformProps::NN, 5, 0, 0, 1.0f);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 5, 0, 0, 1.0f);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_scale_rotate)
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1,DMABUF, AffineTransformProps::NN, 45, 0, 0, 2.0f,DMABUF);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 45, 0, 0, 2.0f);
 
 	f.fileReader->step();
 	f.copy1->step();
