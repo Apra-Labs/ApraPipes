@@ -372,7 +372,7 @@ public:
 	bool setOutputPtr()
 	{
         #if defined(__arm__) || defined(__aarch64__)
-	    OutputPtr  = static_cast<DMAFDWrapper *>(outFrame->data());
+	    OutputPtr  = static_cast<DMAFDWrapper *>(OutputFrame->data());
         #endif
 		return true;
 	}
