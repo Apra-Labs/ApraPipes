@@ -82,7 +82,7 @@ ENDIF(ENABLE_GST)
         
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
-
+find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -667,7 +667,7 @@ ENDIF(ENABLE_GST)
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
@@ -679,6 +679,7 @@ find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
+  ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
   ${Boost_LIBRARIES}
