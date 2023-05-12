@@ -1,7 +1,6 @@
 #include <npp.h>
 #include <opencv2/core.hpp> 
 #include <CuCtxSynchronize.h>
-//#include <fstream>
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -17,9 +16,6 @@
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
 #endif
-
-
-// keep required headers only
 
 #define PI 3.14159265
 
@@ -94,10 +90,10 @@ public:
 				switch (memType)
 				{
 				case FrameMetadata::MemType::CUDA_DEVICE:
-					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+					mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
 					break;
 				case FrameMetadata::MemType::DMABUF:
-					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
+					mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 					break;
 				default:
 					throw AIPException(AIP_FATAL, "Unsupported memType<" + std::to_string(memType) + "> for RAW_IMAGE_PLANAR");
@@ -113,6 +109,7 @@ public:
 			return;
 		}
 
+		FrameMetadata::MemType memType = metadata->getMemType();
 		ImageMetadata::ImageType imageType;
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
@@ -120,9 +117,17 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(),FrameMetadata::CUDA_DEVICE,true);
-			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-			rawOutMetadata->setData(outputMetadata);
+			if (memType = FrameMetadata::MemType::CUDA_DEVICE) {
+				RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+				rawOutMetadata->setData(outputMetadata);
+			}
+			else 
+			{
+				RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
+				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+				rawOutMetadata->setData(outputMetadata);
+			}
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
@@ -133,9 +138,17 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth(0);
 			h = rawMetadata->getHeight(0);
-			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(),FrameMetadata::CUDA_DEVICE);
-			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-			rawOutMetadata->setData(outputMetadata);
+			if (memType = FrameMetadata::MemType::CUDA_DEVICE) {
+				RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE);
+				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+				rawOutMetadata->setData(outputMetadata);
+			}
+			else
+			{
+				RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::DMABUF);
+				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+				rawOutMetadata->setData(outputMetadata);
+			}
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
@@ -159,7 +172,6 @@ public:
 			}
 			break;
 		}
-
 
 		mFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
@@ -357,7 +369,6 @@ class DetailDMA : public Detail
 {
 public:
 	DetailDMA(AffineTransformProps& _props) : Detail(_props) {}
-
 	bool setOutputPtr()
 	{
         #if defined(__arm__) || defined(__aarch64__)
