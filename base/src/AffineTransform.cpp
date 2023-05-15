@@ -63,6 +63,8 @@ public:
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
+		FrameMetadata::MemType memType = metadata->getMemType();
+		ImageMetadata::ImageType imageType;
 		if (mFrameType != metadata->getFrameType()) 
 		{
 			mFrameType = metadata->getFrameType();
@@ -70,7 +72,6 @@ public:
 			{
 			case FrameMetadata::RAW_IMAGE:
 			{
-				FrameMetadata::MemType memType = metadata->getMemType();
 				switch (memType)
 				{
 				case FrameMetadata::MemType::CUDA_DEVICE:
@@ -86,7 +87,6 @@ public:
 			}
 			case FrameMetadata::RAW_IMAGE_PLANAR:
 			{
-				FrameMetadata::MemType memType = metadata->getMemType();
 				switch (memType)
 				{
 				case FrameMetadata::MemType::CUDA_DEVICE:
@@ -109,8 +109,6 @@ public:
 			return;
 		}
 
-		FrameMetadata::MemType memType = metadata->getMemType();
-		ImageMetadata::ImageType imageType;
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
