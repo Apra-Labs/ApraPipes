@@ -263,11 +263,10 @@ bool FacialLandmarkCV::init()
     {
 		return false;
 	}
-	
 	if (mProp.type == FacialLandmarkCVProps::FaceDetectionModelType::SSD)
 	{
 		mDetail.reset(new DetailSSD(mProp));
-    }
+	}
 
 	else if (mProp.type == FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE)
 	{
@@ -278,7 +277,6 @@ bool FacialLandmarkCV::init()
 	{
 		throw std::runtime_error("Invalid face detection model type");
 	}
-
 	return Module::init();
 }
 
@@ -325,6 +323,7 @@ bool FacialLandmarkCV::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->initMatImages(metadata);
+	mDetail->setMetadata(metadata);
 	mDetail->iImg.data = static_cast<uint8_t*>(frame->data());
 	return true;
 }
