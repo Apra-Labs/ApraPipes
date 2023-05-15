@@ -17,21 +17,21 @@ public:
     {
         mProps = _props;
     }
-    bool generate(frame_sp frame)
+    bool generate(frame_sp &frame)
     {
-        auto* frame_ptr=frame.get();
-        void* ptr = static_cast<void*>(frame_ptr);
+        auto *frame_ptr = frame->data();
         int start_shade = 0;
         int end_shade = 255;
-        int steps = 120;
+        int steps = mProps.height / 3;
         int step = (end_shade - start_shade) / steps;
         int current_shade = start_shade;
+        int *x = static_cast<int *>(frame_ptr);
 
-        for (int height = 0; height < 120; height++)
+        for (int height = 0; height < steps; height++)
         {
             // Loop of rows
-            memset(ptr, (uint8_t)current_shade, 640);
-            ptr+=640;
+            memset(x, (uint8_t)current_shade, mProps.width);
+            x += mProps.width;
             // Update the shade value
             current_shade += step;
             if (current_shade > end_shade)
@@ -43,7 +43,7 @@ public:
     }
 
 public:
-    TestSignalGeneratorProps mProps ;
+    TestSignalGeneratorProps mProps;
 };
 
 TestSignalGenerator::TestSignalGenerator(TestSignalGeneratorProps _props)
@@ -52,10 +52,25 @@ TestSignalGenerator::TestSignalGenerator(TestSignalGeneratorProps _props)
     mDetail.reset(new Detail(_props));
 }
 
-TestSignalGenerator::~TestSignalGenerator(){};
+TestSignalGenerator::~TestSignalGenerator(){
+    mDetail->~Detail();
+};
 
 bool TestSignalGenerator::validateOutputPins()
 {
+    if (getNumberOfOutputPins() != 1)
+    {
+        LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+        return false;
+    }
+    framemetadata_sp metadata = getFirstOutputMetadata();
+    auto frameType = metadata->getFrameType();
+    if (frameType != FrameMetadata::RAW_IMAGE_PLANAR)
+    {
+        LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+        return false;
+    }
+
     return true;
 }
 

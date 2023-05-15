@@ -7,10 +7,10 @@ public:
     TestSignalGeneratorProps()
     {
     }
-    TestSignalGeneratorProps(int _width,int _height)
+    TestSignalGeneratorProps(int _width, int _height)
     {
-        width=_width;
-        height=_height;
+        width = _width;
+        height = _height;
     }
     ~TestSignalGeneratorProps()
     {
@@ -35,6 +35,4 @@ protected:
 private:
     class Detail;
     boost::shared_ptr<Detail> mDetail;
-    unsigned char *tempBuffer;
-    
 };
