@@ -111,8 +111,8 @@ public:
 		cv::String modelConfiguration = "./data/deploy.prototxt.txt";
 		cv::String modelBinary = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 
-		facemark = cv::face::FacemarkLBF::create();
-		facemark->loadModel("./data/lbfmodel.yaml");
+		facemark = cv::face::FacemarkKazemi::create();
+		facemark->loadModel("./data/face_landmark_model.dat");
 
 	    faceDetector = cv::dnn::readNetFromCaffe(modelConfiguration, modelBinary);
 	}
@@ -166,8 +166,8 @@ class DetailHCASCADE : public Detail
 public:
 	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props), faceDetector("./data/haarcascade.xml")
 	{
-		facemark = cv::face::FacemarkLBF::create();
-		facemark->loadModel("./data/lbfmodel.yaml");
+		facemark = cv::face::FacemarkKazemi::create();
+		facemark->loadModel("./data/face_landmark_model.dat");
 	}
 
 	bool compute(frame_sp buffer)

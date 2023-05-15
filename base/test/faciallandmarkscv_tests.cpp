@@ -90,9 +90,9 @@ protected:
 			}
 		}
 		std::vector<uchar> buf;
-		cv::imencode(".png", iImg, buf);
+		cv::imencode(".jpg", iImg, buf);
 
-	   Test_Utils::saveOrCompare("./data/testOutput/facesResult.png", buf.data(), buf.size(), 0);
+	   Test_Utils::saveOrCompare("./data/testOutput/facesResult.jpg", buf.data(), buf.size(), 0);
 	
 	   return true;
 	}
