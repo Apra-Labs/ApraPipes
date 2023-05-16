@@ -69,7 +69,7 @@ public:
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
-			{
+		    {
 			case FrameMetadata::RAW_IMAGE:
 			{
 				switch (memType)
@@ -115,17 +115,19 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			if (memType = FrameMetadata::MemType::CUDA_DEVICE) {
-				RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
-				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-				rawOutMetadata->setData(outputMetadata);
+			RawImageMetadata outputMetadata;
+
+			if (memType = FrameMetadata::MemType::CUDA_DEVICE) 
+			{
+				 outputMetadata = RawImageMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
 			}
 			else 
 			{
-				RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
-				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-				rawOutMetadata->setData(outputMetadata);
+				outputMetadata = RawImageMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
 			}
+
+			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
