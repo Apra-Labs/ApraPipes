@@ -60,6 +60,7 @@ public:
 	}
 
 	virtual bool setOutputPtr() = 0;
+	virtual bool setInputPtr() = 0;
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
@@ -112,20 +113,10 @@ public:
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-			int x, y, w, h;
+			int w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata;
-
-			if (memType = FrameMetadata::MemType::CUDA_DEVICE) 
-			{
-				 outputMetadata = RawImageMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
-			}
-			else 
-			{
-				outputMetadata = RawImageMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
-			}
-
+			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -135,20 +126,12 @@ public:
 		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-			int x, y, w, h;
+			int w, h;
 			w = rawMetadata->getWidth(0);
 			h = rawMetadata->getHeight(0);
-			if (memType = FrameMetadata::MemType::CUDA_DEVICE) {
-				RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE);
-				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-				rawOutMetadata->setData(outputMetadata);
-			}
-			else
-			{
-				RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), FrameMetadata::DMABUF);
-				auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-				rawOutMetadata->setData(outputMetadata);
-			}
+			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), memType);
+			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
@@ -156,11 +139,6 @@ public:
 		switch (imageType)
 		{
 		case ImageMetadata::MONO:
-			if (depth != CV_8U)
-			{
-				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
-			}
-			break;
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
 		case ImageMetadata::RGBA:
@@ -299,6 +277,7 @@ public:
 	frame_sp InputFrame;
 	frame_sp OutputFrame;
 	void* OutputPtr;
+	void* InputPtr;
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	AffineTransformProps props;
@@ -369,6 +348,13 @@ class DetailDMA : public Detail
 {
 public:
 	DetailDMA(AffineTransformProps& _props) : Detail(_props) {}
+	bool setInputPtr()
+	{
+        #if defined(__arm__) || defined(__aarch64__)
+		InputPtr = static_cast<DMAFDWrapper*>(InputFrame->data());
+        #endif
+		return true;
+	}
 	bool setOutputPtr()
 	{
         #if defined(__arm__) || defined(__aarch64__)
@@ -384,6 +370,11 @@ class DeatilCUDA: public Detail
 public:
 	DeatilCUDA(AffineTransformProps& _props) : Detail(_props) {}
 
+	bool setInputPtr()
+	{
+		InputPtr = InputFrame->data();
+		return true;
+	}
 	bool setOutputPtr()
 	{
 		OutputPtr = OutputFrame->data();
@@ -491,11 +482,11 @@ bool AffineTransform::process(frame_container &frames)
 {
 	mDetail->InputFrame = frames.cbegin()->second;
 	mDetail->OutputFrame = makeFrame(mDetail->mFrameLength);
-
+	mDetail->setInputPtr();
 	mDetail->setOutputPtr();
-	cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
 
-	mDetail->compute((mDetail->InputFrame)->data(), (mDetail->OutputFrame)->data());
+	cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
+	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr);
 	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->OutputFrame));
 	send(frames);
 
