@@ -59,8 +59,7 @@ public:
 	{
 	}
 
-	virtual bool setOutputPtr() = 0;
-	virtual bool setInputPtr() = 0;
+	virtual bool setPtrs() = 0;
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
@@ -348,21 +347,14 @@ class DetailDMA : public Detail
 {
 public:
 	DetailDMA(AffineTransformProps& _props) : Detail(_props) {}
-	bool setInputPtr()
+	bool setPtrs()
 	{
         #if defined(__arm__) || defined(__aarch64__)
 		InputPtr = static_cast<DMAFDWrapper*>(InputFrame->data());
+		OutputPtr = static_cast<DMAFDWrapper*>(OutputFrame->data());
         #endif
 		return true;
 	}
-	bool setOutputPtr()
-	{
-        #if defined(__arm__) || defined(__aarch64__)
-	    OutputPtr  = static_cast<DMAFDWrapper *>(OutputFrame->data());
-        #endif
-		return true;
-	}
-	
 };
 
 class DeatilCUDA: public Detail
@@ -370,17 +362,12 @@ class DeatilCUDA: public Detail
 public:
 	DeatilCUDA(AffineTransformProps& _props) : Detail(_props) {}
 
-	bool setInputPtr()
+	bool setPtrs()
 	{
 		InputPtr = InputFrame->data();
+		OutputPtr = OutputFrame->data();
 		return true;
 	}
-	bool setOutputPtr()
-	{
-		OutputPtr = OutputFrame->data();
-	    return true;
-	}
-
 };
 
 AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props), mProp( props) {}
@@ -482,8 +469,7 @@ bool AffineTransform::process(frame_container &frames)
 {
 	mDetail->InputFrame = frames.cbegin()->second;
 	mDetail->OutputFrame = makeFrame(mDetail->mFrameLength);
-	mDetail->setInputPtr();
-	mDetail->setOutputPtr();
+	mDetail->setPtrs();
 
 	cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
 	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr);
