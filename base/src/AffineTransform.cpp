@@ -70,7 +70,7 @@ public:
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
-			{
+		    {
 			case FrameMetadata::RAW_IMAGE:
 				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
 				break;
