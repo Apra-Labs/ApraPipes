@@ -80,7 +80,7 @@ public:
 				break;
 			}
 			default:
-				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
+			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
 		if (!metadata->isSet())
