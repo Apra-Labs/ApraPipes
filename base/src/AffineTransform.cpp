@@ -63,45 +63,21 @@ public:
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
-		FrameMetadata::MemType memType = metadata->getMemType();
 		ImageMetadata::ImageType imageType;
+		FrameMetadata::MemType memType = metadata->getMemType();
 		if (mFrameType != metadata->getFrameType()) 
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
 		    {
 			case FrameMetadata::RAW_IMAGE:
-			{
-				switch (memType)
-				{
-				case FrameMetadata::MemType::CUDA_DEVICE:
-					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
-					break;
-				case FrameMetadata::MemType::DMABUF:
-					mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
-					break;
-				default:
-					throw AIPException(AIP_FATAL, "Unsupported memType<" + std::to_string(memType) + "> for RAW_IMAGE");
-				}
-				break;
-			}
-			case FrameMetadata::RAW_IMAGE_PLANAR:
-			{
-				switch (memType)
-				{
-				case FrameMetadata::MemType::CUDA_DEVICE:
-					mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
-					break;
-				case FrameMetadata::MemType::DMABUF:
-					mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
-					break;
-				default:
-					throw AIPException(AIP_FATAL, "Unsupported memType<" + std::to_string(memType) + "> for RAW_IMAGE_PLANAR");
-				}
-				break;
-			}
+			mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
+			break;
+		    case FrameMetadata::RAW_IMAGE_PLANAR:
+			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
+			break;
 			default:
-				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
+			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
 		if (!metadata->isSet())
