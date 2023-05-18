@@ -156,6 +156,39 @@ public:
 				LOG_ERROR << "nppiBGRToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
 			}
 		}
+
+		else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::RGB)
+		{
+			auto status = nppiNV12ToRGB_709HDTV_8u_P2C3R_Ctx(src,
+				srcPitch[0],
+				dst[0],
+				dstPitch[0],
+				srcSize[0],
+				nppStreamCtx
+			);
+
+			if (status != NPP_SUCCESS)
+			{
+				LOG_ERROR << "nppiNV12ToRGB_709CSC_8u_P2C3R_Ctx failed<" << status << ">";
+			}
+		}
+
+		else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::YUV420)
+		{
+			auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
+				srcPitch[0],
+				dst,
+				dstPitch,
+				srcSize[0],
+				nppStreamCtx
+			);
+
+			if (status != NPP_SUCCESS)
+			{
+				LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R_Ctx failed<" << status << ">";
+			}
+		}
+
 		else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::YUV420)
 		{
 			// CUDA MEMCPY Y
@@ -383,19 +416,19 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 		return;
 	}
 
-	if ((props.imageType != ImageMetadata::YUV444 || inputImageType != ImageMetadata::YUV411_I)
-		&& (props.imageType != ImageMetadata::BGRA || (inputImageType != ImageMetadata::MONO && inputImageType != ImageMetadata::YUV420))
-		&& (inputImageType != ImageMetadata::BGRA || props.imageType != ImageMetadata::YUV420)
-		&& (inputImageType != ImageMetadata::MONO || props.imageType != ImageMetadata::YUV420)
-		)
-	{
-		throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
-	}
+	// if ((props.imageType != ImageMetadata::YUV444 || inputImageType != ImageMetadata::YUV411_I)
+	// 	&& (props.imageType != ImageMetadata::BGRA || (inputImageType != ImageMetadata::MONO && inputImageType != ImageMetadata::YUV420))
+	// 	&& (inputImageType != ImageMetadata::BGRA || props.imageType != ImageMetadata::YUV420)
+	// 	&& (inputImageType != ImageMetadata::MONO || props.imageType != ImageMetadata::YUV420)
+	// 	)
+	// {
+	// 	throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
+	// }
 
 	if (mOutputFrameType == FrameMetadata::RAW_IMAGE)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-		RawImageMetadata outputMetadata(width, height, props.imageType, type, 512, depth, FrameMetadata::CUDA_DEVICE, true);		
+		RawImageMetadata outputMetadata(width, height, props.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);		
 		rawOutMetadata->setData(outputMetadata);
 	}
 	else if (mOutputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
