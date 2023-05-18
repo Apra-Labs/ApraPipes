@@ -560,6 +560,7 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
+		test/ccnppi_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -568,7 +569,6 @@ IF (ENABLE_CUDA)
 			test/jpegdecodernvjpeg_tests.cpp			
 			test/resizenppi_jpegencodernvjpeg_tests.cpp
 			test/nvjpeg_combo_tests.cpp			
-			test/ccnppi_tests.cpp
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
 			test/h264Encodernvcodec_tests.cpp
