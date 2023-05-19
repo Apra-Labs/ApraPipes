@@ -392,8 +392,8 @@ public:
 	//	return true;
 	//}
 
-	Imageformats minput;
-	Imageformats moutput;
+	//Imageformats minput;
+	//Imageformats moutput;
 public:
 	FrameMetadata::FrameType inputFrameType;
 	FrameMetadata::FrameType outputFrameType;
