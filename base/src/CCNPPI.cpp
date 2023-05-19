@@ -2,7 +2,7 @@
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "Frame.h"
-#include "Logger.h"
+#include "Logger.h"bra
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "CCKernel.h"
