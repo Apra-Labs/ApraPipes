@@ -86,6 +86,19 @@ public:
 			return false;
 		}
 
+		const Npp8u nValue = 255; // Alpha value
+		status = nppiSet_8u_C4CR_Ctx(nValue,
+			dst[0] + 3,
+			dstPitch[0],
+			dstSize[0],
+			nppStreamCtx
+		);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSet_8u_C4CR_Ctx failed<" << status << ">";
+			return false;
+		}
+
 		return true;
 	}
 	bool convertMONOtoBGRA() {
@@ -140,6 +153,7 @@ public:
 				LOG_ERROR << "cudaMemset2DAsync failed<" << cudaStatus << ">";
 				return false;
 			}
+			return true;
 
 	}
 
@@ -376,6 +390,7 @@ public:
 		{
 			LOG_ERROR << "nppiRGBAToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
 		}
+		return true;
 	}
 
 	bool convertBGRAtoMONO()
@@ -407,7 +422,7 @@ public:
 	}
 	bool convertBGRAtoBGR() 
 	{
-		const int dstOrder[3] = { 0, 1, 2 }; // BGR channel order
+		const int dstOrder[3] = { 2,1,0 }; // BGR channel order
 
 		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
@@ -572,7 +587,8 @@ public:
 
 	bool convertYUV411_ItoYUV444()
 	{
-		lanuchAPPYUV411ToYUV444(src[0], srcPitch[0], dst, dstPitch[0], srcSize[0], props.stream);
+	 lanuchAPPYUV411ToYUV444(src[0], srcPitch[0], dst, dstPitch[0], srcSize[0], props.stream);
+	 return true;
 	}
 
 	bool Execute(void* buffer, void* outBuffer)
@@ -729,6 +745,9 @@ public:
 				break;
 			case ImageMetadata::RGB:
 				return convertNV12toRGB();
+				break;
+			case ImageMetadata::BGR:
+				return convertNV12toBGR();
 				break;
 			case ImageMetadata::YUV420:
 				return convertNV12toYUV420();
