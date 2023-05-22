@@ -772,7 +772,7 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080,
 	*utf::precondition(if_compute_cap_supported()))
 {
 	ImageMetadata::ImageType::YUV411_I;
-	CCNPPITestsStruct f("./yuv411_I_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV411_I, CV_8UC3, ImageMetadata::ImageType::YUV444);
+	CCNPPITestsStruct f("./data/yuv411_I_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV411_I, CV_8UC3, ImageMetadata::ImageType::YUV444);
 
 	f.fileReader->step();
 	f.copy1->step();
