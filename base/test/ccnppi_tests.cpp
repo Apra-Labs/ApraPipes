@@ -18,578 +18,792 @@
 
 BOOST_AUTO_TEST_SUITE(ccnppi_tests)
 
-
-BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080, * utf::precondition(if_compute_cap_supported()))
-{	
-	auto width = 1920;
-	auto height = 1080;
-	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv411_I_1920x1080.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::YUV411_I, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV444, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-	
-
-	
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
-	BOOST_TEST((frames.find(outputPinId) != frames.end()));
-	auto outFrame = frames[outputPinId];
-	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv411_I_1920x1080_to_yuv444_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
-
-}
-
-BOOST_AUTO_TEST_CASE(mono_1920x1080_to_bgra_1920x1080,
-* utf::precondition(if_compute_cap_supported()))
+struct CCNPPITestsStruct
 {
-	auto width = 1920;
-	auto height = 1080;
+	std::string inpFilePath;
+	int width;
+	int height;
+	ImageMetadata::ImageType imageType;
+	int bit_depth;
+	framemetadata_sp metadata;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
+	CCNPPITestsStruct(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, ImageMetadata::ImageType OimageType)
+	{
+		if (imageType == ImageMetadata::ImageType::YUV420 || imageType == ImageMetadata::ImageType::NV12) {
+			metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, imageType, size_t(0), CV_8U));
+		}
+		else {
+			metadata = framemetadata_sp(new RawImageMetadata(width, height, imageType, bit_depth, 0, CV_8U, FrameMetadata::HOST, true));
+		}
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
+		createPipeline(inpFilePath, width, height, imageType, bit_depth, OimageType);
+	}
 
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
+	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, ImageMetadata::ImageType OimageType)
+	{
+		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
+		auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+		auto stream = cudastream_sp(new ApraCudaStream);
+		copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+		fileReader->setNext(copy1);
 
+		CCNPPIProps CCProps(OimageType,stream);
+		ccnppi = boost::shared_ptr<Module>(new CCNPPI(CCProps));
+		copy1->setNext(ccnppi);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
+		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+		ccnppi->setNext(copy2);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
+		m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		copy2->setNext(m3);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
+		PipeLine p("test");
+		p.appendModule(fileReader);
 
+		BOOST_TEST(fileReader->init());
+		BOOST_TEST(copy1->init());
+		BOOST_TEST(ccnppi->init());
+		BOOST_TEST(copy2->init());
+		BOOST_TEST(m3->init());
+	}
 
+	boost::shared_ptr<FileReaderModule>fileReader;
+	boost::shared_ptr<Module>copy1;
+	boost::shared_ptr<Module>ccnppi;
+	boost::shared_ptr<Module>copy2;
+	boost::shared_ptr<ExternalSinkModule>m3;
 
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+	~CCNPPITestsStruct()
+	{
+		m3->term();
+		copy2->term();
+		ccnppi->term();
+		copy1->term();
+		fileReader->term();
+	}
+};
+
+BOOST_AUTO_TEST_CASE(MONO_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::RGB);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x1080_to_bgra_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	p.stop();
-	p.term();
-
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(nv12_to_rgb,
-* utf::precondition(if_compute_cap_supported()))
+BOOST_AUTO_TEST_CASE(MONO_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
 {
-	auto width = 704;
-	auto height = 576;
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::BGR);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-image.raw")));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::RGB, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_rgb.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	p.stop();
-	p.term();
-
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(rgb_to_yuv420,
-* utf::precondition(if_compute_cap_supported()))
+BOOST_AUTO_TEST_CASE(MONO_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
 {
-	auto width = 1280;
-	auto height = 720;
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::RGBA);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
-	BOOST_TEST((frames.find(outputPinId) != frames.end()));
-	auto outFrame = frames[outputPinId];
-	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	p.stop();
-	p.term();
-
-}
-
-BOOST_AUTO_TEST_CASE(nv12_to_yuv420,
-* utf::precondition(if_compute_cap_supported()))
-{
-	auto width = 704;
-	auto height = 576;
-
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-image.raw")));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
-
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::RGB, stream)));
-	copy1->setNext(m2);
-
-	auto m3 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	m2->setNext(m3);
-
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m3->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-
-
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(sink);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-	BOOST_TEST(sink->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	m3->step();
-	copy2->step();
-	auto frames = sink->pop();
-	BOOST_TEST((frames.find(outputPinId) != frames.end()));
-	auto outFrame = frames[outputPinId];
-	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_FINAL_YUV420.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-
-	p.stop();
-	p.term();
-
-}
-
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA_to_yuv420_1920x960, * utf::precondition(if_compute_cap_supported()))
-{
-	auto width = 1920;
-	auto height = 960;
-
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
-
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
-	BOOST_TEST((frames.find(outputPinId) != frames.end()));
-	auto outFrame = frames[outputPinId];
-	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_overlay_1920x960_BGRA_to_yuv420_1920x960.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
-
-}
-
-BOOST_AUTO_TEST_CASE(yuv420_640x360_to_bgra_640x360,* utf::precondition(if_compute_cap_supported()))
-{
-	auto width = 640;
-	auto height = 360;
-
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
-
-	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
-
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv420_640x360_to_bgra_640x360.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
-
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-// BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080__resize_to_jpg,
-// * utf::precondition(if_compute_cap_supported()))
-// {
-// 	auto width = 1920;
-// 	auto height = 1080;
-
-// 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv411_I_1920x1080.raw")));
-// 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::YUV411_I, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-
-// 	auto rawImagePin = fileReader->addOutputPin(metadata);
-
-// 	auto stream = cudastream_sp(new ApraCudaStream);
-// 	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-// 	fileReader->setNext(copy);
-
-// 	auto cc = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV444, stream)));
-// 	copy->setNext(cc);
-
-// 	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width >> 1, height >> 1, stream)));
-// 	cc->setNext(resize);
-	
-// 	auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
-// 	resize->setNext(encoder);
-// 	auto outputPinId = encoder->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
-
-
-// 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-// 	encoder->setNext(sink);
-
-// 	PipeLine p("test");
-// 	p.appendModule(fileReader);
-
-// 	BOOST_TEST(fileReader->init());
-// 	BOOST_TEST(copy->init());
-// 	BOOST_TEST(cc->init());
-// 	BOOST_TEST(resize->init());
-// 	BOOST_TEST(encoder->init());
-// 	BOOST_TEST(sink->init());
-
-
-
-// 	fileReader->step();
-// 	copy->step();
-// 	cc->step();
-// 	resize->step();
-// 	encoder->step();
-// 	auto frames = sink->pop();
-// 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
-// 	auto outFrame = frames[outputPinId];
-// 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
-
-// 	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv411_I_1920x1080_to_yuv444_960x540.jpg", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-// 	p.stop();
-// 	p.term();
-
-// }
-
-BOOST_AUTO_TEST_CASE(mono_1920x1080_to_yuv420_1920x1080, * utf::precondition(if_compute_cap_supported()))
+BOOST_AUTO_TEST_CASE(MONO_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
 {
-	auto width = 1920;
-	auto height = 1080;
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::BGRA);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
+BOOST_AUTO_TEST_CASE(MONO_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::YUV420);
 
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
-
-	PipeLine p("test");
-	p.appendModule(fileReader);
-
-
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
-
-
-
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x1080_to_yuv420_1920x1080.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
-
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960_to_yuv420_1920x960, * utf::precondition(if_compute_cap_supported()))
+BOOST_AUTO_TEST_CASE(RGB_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
 {
-	auto width = 1920;
-	auto height = 960;
+	ImageMetadata::ImageType::RGB;
+	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, ImageMetadata::ImageType::MONO);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
-	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
+BOOST_AUTO_TEST_CASE(RGB_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGB;
+	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, ImageMetadata::ImageType::BGR);
 
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
+BOOST_AUTO_TEST_CASE(RGB_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGB;
+	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, ImageMetadata::ImageType::RGBA);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
+BOOST_AUTO_TEST_CASE(RGB_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGB;
+	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, ImageMetadata::ImageType::BGRA);
 
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(RGB_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGB;
+	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_mono_1920x960_to_yuv420_1920x960.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
-
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_to_yuv420_640x360, * utf::precondition(if_compute_cap_supported()))
+BOOST_AUTO_TEST_CASE(BGR_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
 {
-	auto width = 640;
-	auto height = 360;
+	ImageMetadata::ImageType::BGR;
+	CCNPPITestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, ImageMetadata::ImageType::MONO);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-	auto rawImagePin = fileReader->addOutputPin(metadata);
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	fileReader->setNext(copy1);
+BOOST_AUTO_TEST_CASE(BGR_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGR;
+	CCNPPITestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, ImageMetadata::ImageType::RGB);
 
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
-	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	m2->setNext(copy2);
-	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	copy2->setNext(m3);
+BOOST_AUTO_TEST_CASE(BGR_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGR;
+	CCNPPITestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, ImageMetadata::ImageType::RGBA);
 
-	PipeLine p("test");
-	p.appendModule(fileReader);
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(copy2->init());
-	BOOST_TEST(m3->init());
+BOOST_AUTO_TEST_CASE(BGR_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGR;
+	CCNPPITestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, ImageMetadata::ImageType::BGRA);
 
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	fileReader->step();
-	copy1->step();
-	m2->step();
-	copy2->step();
-	auto frames = m3->pop();
+BOOST_AUTO_TEST_CASE(BGR_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGR;
+	CCNPPITestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
 
-	Test_Utils::saveOrCompare("./data/testOutput/ccnppi_tests_yuv420_640x360_to_yuv420_640x360.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
-	p.stop();
-	p.term();
+BOOST_AUTO_TEST_CASE(RGBA_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGBA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::MONO);
 
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(RGBA_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGBA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::RGB);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(RGBA_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGBA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::BGR);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(RGBA_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGBA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::BGRA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(RGBA_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::RGBA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(BGRA_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGRA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::MONO);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(BGRA_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGRA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::RGB);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(BGRA_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGRA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::BGR);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(BGRA_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGRA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, ImageMetadata::ImageType::RGBA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(BGRA_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::BGRA;
+	CCNPPITestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::MONO);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::RGB);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/YUV420_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::BGR);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::RGBA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::BGRA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_MONO,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704,576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::MONO);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_RGB,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::RGB);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_BGR,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::BGR);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_RGBA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::RGBA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_BGRA,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::BGRA);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(NV12_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV411_I;
+	CCNPPITestsStruct f("./yuv411_I_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV411_I, CV_8UC3, ImageMetadata::ImageType::YUV444);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv411_to_yuv444.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(YUV420_to_YUV420,
+	*utf::precondition(if_compute_cap_supported()))
+{
+	ImageMetadata::ImageType::YUV420;
+	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::YUV420);
+
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
+
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.m3->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
