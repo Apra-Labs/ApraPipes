@@ -2,7 +2,7 @@
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "Frame.h"
-#include "Logger.h"bra
+#include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "CCKernel.h"
@@ -40,8 +40,54 @@ public:
 	{{0, 0}, {1, 1}, {2, 2}, {1, 3}, {-1, -1}, {5, 5}, {-1, -1}}
 	};
 
-	
-	bool convertMONOtoRGB() { return true; };
+	bool convertMONOtoRGB()
+	{
+		auto status = nppiDup_8u_C1C3R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiDup_8u_C1C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+    }
+	bool convertMONOtoBGR()
+	{
+		auto status = nppiDup_8u_C1C3R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiDup_8u_C1C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	 }
+	bool convertMONOtoRGBA()
+	{
+		auto status = nppiDup_8u_C1C4R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiDup_8u_C1C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
 	bool convertMONOtoBGRA() {
 		auto status = nppiDup_8u_C1C4R_Ctx(src[0],
 			srcPitch[0],
@@ -70,33 +116,83 @@ public:
 
 		return true;
 	}
-	bool convertNV12toRGB(bool intermediate)
-	{
-		auto status = nppiNV12ToRGB_709HDTV_8u_P2C3R_Ctx(src,
-						srcPitch[0],
-						dst[0],
-						dstPitch[0],// havt to think about setting intermediate pitch
-						srcSize[0],
-						nppStreamCtx
-					);
+	bool convertMONOtoYUV420()
+	{ 
+		// CUDA MEMCPY Y
+		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
+		// CUDA MEMSET U V
 
-					if (status != NPP_SUCCESS)
-					{
-						LOG_ERROR << "nppiNV12ToRGB_709CSC_8u_P2C3R_Ctx failed<" << status << ">";
-					}
-					if (intermediate)
-					{
-						src[0] = dst[0];
+		if (cudaStatus != cudaSuccess)
+		{
+			LOG_ERROR << "copy failed<" << cudaStatus << ">";
+			return false;
+		}
 
-						// Swap the src and dst pitches
-						int tempPitch = srcPitch[0];
-						srcPitch[0] = dstPitch[0];
-						dstPitch[0] = tempPitch;
-					}
+		cudaStatus = cudaMemset2DAsync(dst[1],
+			dstPitch[1],
+			128,
+			dstSize[1].width,
+			dstSize[0].height,
+			props.stream);
 
-					return true;
+			if (cudaStatus != cudaSuccess)
+			{
+				LOG_ERROR << "cudaMemset2DAsync failed<" << cudaStatus << ">";
+				return false;
+			}
+
 	}
 
+	bool convertRGBtoMONO()
+	{ 
+		auto status = nppiRGBToGray_8u_C3C1R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToGray_8u_C3C1R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBtoBGR() 
+	{
+		const int dstOrder[3] = { 2, 1, 0 }; // Channel order for RGB to BGR conversion
+
+		auto status = nppiSwapChannels_8u_C3R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			dstOrder,
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBtoBGRA() 
+	{ 
+		const Npp8u nValue = 255; // Alpha value
+		int dstOrder[4] = { 2, 1, 0, 3 }; // Channel order for RGB to BGRA conversion
+
+		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C3C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
 	bool convertRGBtoRGBA()
 	{
 		const Npp8u nValue = 255; // Alpha value
@@ -105,52 +201,551 @@ public:
 
 		if (status != NPP_SUCCESS)
 		{
-			// Handle the error case
 			LOG_ERROR << "nppiSwapChannels_8u_C3C4R_Ctx failed<" << status << ">";
 			return false;
 		}
 
 		return true;
 	}
+	bool convertRGBtoYUV420()
+	{
+		auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
+						srcPitch[0],
+						dst,
+						dstPitch,
+						srcSize[0],
+						nppStreamCtx
+					);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R_Ctx failed<" << status << ">";
+		}
+
+		return true;
+	}
+
+	bool convertBGRtoMONO()
+	{
+		auto status = nppiRGBToGray_8u_C3C1R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToGray_8u_C3C1R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRtoRGB()
+	{
+		const int dstOrder[3] = { 2, 1, 0 }; // Channel order for BGR to RGB conversion
+
+		auto status = nppiSwapChannels_8u_C3R_Ctx(src[0],
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],
+			srcSize[0],
+			dstOrder,
+			nppStreamCtx);
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRtoRGBA()
+	{
+		const Npp8u nValue = 255; // Alpha value
+		int dstOrder[4] = { 2, 1, 0, 3 }; // Channel order for BGR to RGBA conversion
+
+		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C3C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRtoBGRA()
+	{
+		const Npp8u nValue = 255; // Alpha value
+		int dstOrder[4] = { 0, 1, 2, 3 }; // Channel order for BGR to BGRA conversion
+
+		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C3C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRtoYUV420()
+	{
+		auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
+			srcPitch[0],
+			dst,
+			dstPitch,
+			srcSize[0],
+			nppStreamCtx
+		);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R_Ctx failed<" << status << ">";
+		}
+
+		return true;
+	}
+
+	bool convertRGBAtoMONO()
+	{
+		NppStatus status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToGray_8u_AC4C1R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBAtoRGB()
+	{
+		const int dstOrder[3] = { 0, 1, 2 }; // RGB channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBAtoBGR()
+	{
+		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBAtoBGRA()
+	{
+		const int dstOrder[4] = { 2, 1, 0, 3 }; // BGRA channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertRGBAtoYUV420()
+	{
+		auto status = nppiBGRToYUV420_8u_AC4P3R_Ctx(src[0],
+			srcPitch[0],
+			dst,
+			dstPitch,
+			srcSize[0],
+			nppStreamCtx
+		);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBAToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
+		}
+	}
+
+	bool convertBGRAtoMONO()
+	{
+		NppStatus status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiRGBToGray_8u_AC4C1R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRAtoRGB()
+	{
+		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	
+	}
+	bool convertBGRAtoBGR() 
+	{
+		const int dstOrder[3] = { 0, 1, 2 }; // BGR channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRAtoRGBA() 
+	{
+		const int dstOrder[4] = { 2, 1, 0, 3 }; // RGBA channel order
+
+		NppStatus status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiSwapChannels_8u_C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertBGRAtoYUV420()
+	{
+		auto status = nppiBGRToYUV420_8u_AC4P3R_Ctx(src[0],
+					srcPitch[0],
+					dst,
+					dstPitch,
+					srcSize[0],
+					nppStreamCtx
+				);
+
+	   if (status != NPP_SUCCESS)
+	   {
+		  LOG_ERROR << "nppiBGRToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
+	   }
+
+	   return true;
+	}
+
+	bool convertYUV420toMONO()
+	{   
+		// CUDA MEMCPY Y
+		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
+
+		if (cudaStatus != cudaSuccess)
+		{
+			LOG_ERROR << "copy failed<" << cudaStatus << ">";
+			return false;
+		}
+		return true;
+	}
+	bool convertYUV420toRGB()
+	{
+		NppStatus status = nppiYUV420ToRGB_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiYUV420ToRGB_8u_P3C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertYUV420toBGR() 
+	{
+		NppStatus status = nppiYUV420ToBGR_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiYUV420ToBGR_8u_P3C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	
+	}
+	bool convertYUV420toRGBA() 
+	{
+		NppStatus status = nppiYUV420ToRGB_8u_P3C4R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiYUV420ToRGB_8u_P3C4R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	
+	}
+	bool convertYUV420toBGRA() 
+	{
+		auto status = nppiYUV420ToBGR_8u_P3C4R_Ctx(src,
+					srcPitch,
+					dst[0],
+					dstPitch[0],
+					srcSize[0],
+					nppStreamCtx
+				);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiYUV420ToBGR_8u_P3C4R_Ctx failed<" << status << ">";
+		}
+		return true;
+	}
+
+	bool convertNV12toMONO() 
+	{
+		// CUDA MEMCPY Y
+		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
+
+		if (cudaStatus != cudaSuccess)
+		{
+			LOG_ERROR << "copy failed<" << cudaStatus << ">";
+			return false;
+		}
+		return true;
+	}
+	bool convertNV12toRGB()
+	{
+		auto status = nppiNV12ToRGB_709HDTV_8u_P2C3R_Ctx(src,
+			srcPitch[0],
+			dst[0],
+			dstPitch[0],// havt to think about setting intermediate pitch
+			srcSize[0],
+			nppStreamCtx
+		);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiNV12ToRGB_709CSC_8u_P2C3R_Ctx failed<" << status << ">";
+		}
+		return true;
+	}
+	bool convertNV12toBGR() 
+	{
+		NppStatus status = nppiNV12ToBGR_709HDTV_8u_P2C3R_Ctx(src, srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiNV12ToBGR_709HDTV_8u_P2C3R_Ctx failed<" << status << ">";
+			return false;
+		}
+
+		return true;
+	}
+	bool convertNV12toYUV420()
+	{
+		NppStatus status = nppiNV12ToYUV420_8u_P2P3R_Ctx(src, srcPitch[0], dst, dstPitch, srcSize[0], nppStreamCtx);
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "nppiNV12ToYUV420_8u_P2P3R_Ctx failed<" << status << ">";
+			return false;
+		}
+		return true;
+	}
+
+	bool convertYUV411_ItoYUV444()
+	{
+		lanuchAPPYUV411ToYUV444(src[0], srcPitch[0], dst, dstPitch[0], srcSize[0], props.stream);
+	}
 
 	bool Execute(void* buffer, void* outBuffer)
 	{
 		for (auto i = 0; i < inputChannels; i++)
-			{
-				src[i] = static_cast<const Npp8u*>(buffer) + srcNextPtrOffset[i];
-			}
+		{
+			src[i] = static_cast<const Npp8u*>(buffer) + srcNextPtrOffset[i];
+		}
 
-			for(auto i = 0; i < outputChannels; i++)
-			{
-				dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
-			}
+		for(auto i = 0; i < outputChannels; i++)
+		{
+			dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
+		}
 
-			switch (inputImageType)
+		switch (inputImageType)
+		{
+		case ImageMetadata::MONO:
+		{
+			switch (outputImageType)
 			{
 			case ImageMetadata::RGB:
-			{
-				switch (outputImageType)
-				{
-				case ImageMetadata::RGBA:
-					return convertRGBtoRGBA();
-					break;
-				}
+				return convertMONOtoRGB();
+				break;
+			case ImageMetadata::BGR:
+				return convertMONOtoBGR();
+				break;
+			case ImageMetadata::RGBA:
+				return convertMONOtoRGBA();
+				break;
+			case ImageMetadata::BGRA:
+				return convertMONOtoBGRA();
+				break;
+			case ImageMetadata::YUV420:
+				return convertMONOtoYUV420();
+				break;
 			}
-			case ImageMetadata::NV12:
+		}
+		case ImageMetadata::RGB:
+		{
+			switch (outputImageType)
 			{
-				if (conversionTable[6][3][0] == 1 && conversionTable[6][3][1] == 3)
-				{
-					int w = srcSize[0].width;
-					int h = srcSize[0].height;
-					 
-					//size_t buff = w * h * 3;
-					//auto frame = makeFrame(buff);
+			case ImageMetadata::MONO:
+				return convertRGBtoMONO();
+				break;
+			case ImageMetadata::BGR:
+				return convertRGBtoBGR();
+				break;
+			case ImageMetadata::RGBA:
+				return convertRGBtoRGBA();
+				break;
+			case ImageMetadata::BGRA:
+				return convertRGBtoBGRA();
+				break;
+			case ImageMetadata::YUV420:
+				return convertRGBtoYUV420();
+				break;
+			}
+		}
 
-					convertNV12toRGB(true);
-					convertRGBtoRGBA();
-				}
+		case ImageMetadata::BGR:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::MONO:
+				return convertBGRtoMONO();
+				break;
+			case ImageMetadata::RGB:
+				return convertBGRtoRGB();
+				break;
+			case ImageMetadata::RGBA:
+				return convertBGRtoRGBA();
+				break;
+			case ImageMetadata::BGRA:
+				return convertBGRtoBGRA();
+				break;
+			case ImageMetadata::YUV420:
+				return convertBGRtoYUV420();
+				break;
 			}
+		}
+
+		case ImageMetadata::RGBA:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::MONO:
+				return convertRGBAtoMONO();
+				break;
+			case ImageMetadata::BGR:
+				return convertRGBAtoBGR();
+				break;
+			case ImageMetadata::RGB:
+				return convertRGBAtoRGB();
+				break;
+			case ImageMetadata::BGRA:
+				return convertRGBAtoBGRA();
+				break;
+			case ImageMetadata::YUV420:
+				return convertRGBAtoYUV420();
+				break;
 			}
+		}
+
+		case ImageMetadata::BGRA:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::MONO:
+				return convertBGRAtoMONO();
+				break;
+			case ImageMetadata::RGB:
+				return convertBGRAtoRGB();
+				break;
+			case ImageMetadata::RGBA:
+				return convertBGRAtoRGBA();
+				break;
+			case ImageMetadata::BGR:
+				return convertBGRAtoBGR();
+				break;
+			case ImageMetadata::YUV420:
+				return convertBGRAtoYUV420();
+				break;
+			}
+		}
+
+		case ImageMetadata::YUV420:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::MONO:
+				return convertYUV420toMONO();
+				break;
+			case ImageMetadata::RGB:
+				return convertYUV420toRGB();
+				break;
+			case ImageMetadata::RGBA:
+				return convertYUV420toRGBA();
+				break;
+			case ImageMetadata::BGRA:
+				return convertYUV420toBGRA();
+				break;
+			case ImageMetadata::BGR:
+				return convertYUV420toBGR();
+				break;
+			}
+		}
+
+		case ImageMetadata::NV12:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::MONO:
+				return convertNV12toMONO();
+				break;
+			case ImageMetadata::RGB:
+				return convertNV12toRGB();
+				break;
+			case ImageMetadata::YUV420:
+				return convertNV12toYUV420();
+				break;
+			}
+		}
+
+		case ImageMetadata::YUV411_I:
+		{
+			switch (outputImageType)
+			{
+			case ImageMetadata::YUV444:
+				return convertYUV411_ItoYUV444();
+				break;
+			}
+		}
+		}
 		return true;
 	}
 
@@ -214,186 +809,6 @@ public:
 		return true;
 	}
 
-	//bool compute(void* buffer, void* outBuffer)
-	//{
-	//	for(auto i = 0; i < inputChannels; i++)
-	//	{
-	//		src[i] = static_cast<const Npp8u*>(buffer) + srcNextPtrOffset[i];
-	//	}
-
-	//	for(auto i = 0; i < outputChannels; i++)
-	//	{
-	//		dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
-	//	}
-
-	//	if (inputImageType == ImageMetadata::YUV411_I)
-	//	{
-	//		lanuchAPPYUV411ToYUV444(src[0], srcPitch[0], dst, dstPitch[0], srcSize[0], props.stream);
-	//	}
-	//	else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::RGB)
-	//	{
-	//		return convertMONOtoRGB();
-	//	}
-	//	else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::BGR) {}
-	//	else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::RGBA) {}
-	//	else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::BGRA)
-	//	{
-	//		return convertMONOtoBGRA();
-	//	}
-	//	else if (inputImageType == ImageMetadata::MONO && outputImageType == ImageMetadata::YUV420)
-	//	{
-	//		// CUDA MEMCPY Y
-	//		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
-	//		// CUDA MEMSET U V
-
-	//		if (cudaStatus != cudaSuccess)
-	//		{
-	//			LOG_ERROR << "copy failed<" << cudaStatus << ">";
-	//			return false;
-	//		}
-
-	//		cudaStatus = cudaMemset2DAsync(dst[1],
-	//			dstPitch[1],
-	//			128,
-	//			dstSize[1].width,
-	//			dstSize[0].height,
-	//			props.stream
-	//		);
-
-	//		if (cudaStatus != cudaSuccess)
-	//		{
-	//			LOG_ERROR << "cudaMemset2DAsync failed<" << cudaStatus << ">";
-	//			return false;
-	//		}
-
-	//	}
-
-	//	else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::MONO) {}
-	//	else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::BGR) {}
-	//	else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::RGBA) {}
-	//	else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::BGRA) {}
-	//	else if (inputImageType == ImageMetadata::RGB && outputImageType == ImageMetadata::YUV420)
-	//	{
-	//		auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
-	//			srcPitch[0],
-	//			dst,
-	//			dstPitch,
-	//			srcSize[0],
-	//			nppStreamCtx
-	//		);
-
-	//		if (status != NPP_SUCCESS)
-	//		{
-	//			LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R_Ctx failed<" << status << ">";
-	//		}
-	//	}
-
-	//	else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::MONO) {}
-	//	else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::RGB) {}
-	//	else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::RGBA) {}
-	//	else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::BGRA) {}
-	//	else if (inputImageType == ImageMetadata::BGR && outputImageType == ImageMetadata::YUV420){}
-
-	//	else if (inputImageType == ImageMetadata::RGBA && outputImageType == ImageMetadata::MONO) {}
-	//	else if (inputImageType == ImageMetadata::RGBA && outputImageType == ImageMetadata::RGB) {}
-	//	else if (inputImageType == ImageMetadata::RGBA && outputImageType == ImageMetadata::BGR) {}
-	//	else if (inputImageType == ImageMetadata::RGBA && outputImageType == ImageMetadata::BGRA) {}
-	//	else if (inputImageType == ImageMetadata::RGBA && outputImageType == ImageMetadata::YUV420) {}
-
-	//	else if (inputImageType == ImageMetadata::BGRA && outputImageType == ImageMetadata::MONO) {}
-	//	else if (inputImageType == ImageMetadata::BGRA && outputImageType == ImageMetadata::RGB) {}
-	//	else if (inputImageType == ImageMetadata::BGRA && outputImageType == ImageMetadata::BGR) {}
-	//	else if (inputImageType == ImageMetadata::BGRA && outputImageType == ImageMetadata::RGBA) {}
-	//	else if (inputImageType == ImageMetadata::BGRA && outputImageType == ImageMetadata::YUV420)
-	//	{
-	//	auto status = nppiBGRToYUV420_8u_AC4P3R_Ctx(src[0],
-	//		srcPitch[0],
-	//		dst,
-	//		dstPitch,
-	//		srcSize[0],
-	//		nppStreamCtx
-	//	);
-
-	//	if (status != NPP_SUCCESS)
-	//	{
-	//		LOG_ERROR << "nppiBGRToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
-	//	}
-	//	}
-	//	
-	//	else if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::MONO)
-	//	{
-	//	// CUDA MEMCPY Y
-	//	auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
-
-	//	if (cudaStatus != cudaSuccess)
-	//	{
-	//		LOG_ERROR << "copy failed<" << cudaStatus << ">";
-	//		return false;
-	//	}
-	//	}
-	//	else if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::RGB) {}
-	//	else if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::BGR) {}
-	//	else if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::RGBA) {}
-	//	else if (inputImageType == ImageMetadata::YUV420 && outputImageType == ImageMetadata::BGRA)
-	//	{
-	//	auto status = nppiYUV420ToBGR_8u_P3C4R_Ctx(src,
-	//		srcPitch,
-	//		dst[0],
-	//		dstPitch[0],
-	//		srcSize[0],
-	//		nppStreamCtx
-	//	);
-
-	//	if (status != NPP_SUCCESS)
-	//	{
-	//		LOG_ERROR << "nppiYUV420ToBGR_8u_P3C4R_Ctx failed<" << status << ">";
-	//	}
-	//	}
-
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::MONO)
-	//	{
-	//	// CUDA MEMCPY Y
-	//	auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
-
-	//	if (cudaStatus != cudaSuccess)
-	//	{
-	//		LOG_ERROR << "copy failed<" << cudaStatus << ">";
-	//		return false;
-	//	}
-	//	}
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::RGB)
-	//	{
-	//		auto status = nppiNV12ToRGB_709HDTV_8u_P2C3R_Ctx(src,
-	//			srcPitch[0],
-	//			dst[0],
-	//			dstPitch[0],
-	//			srcSize[0],
-	//			nppStreamCtx
-	//		);
-
-	//		if (status != NPP_SUCCESS)
-	//		{
-	//			LOG_ERROR << "nppiNV12ToRGB_709CSC_8u_P2C3R_Ctx failed<" << status << ">";
-	//		}
-	//	}
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::BGR){}
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::RGBA)
- //       {
-	//	  return convertNV12toRGBA();
- //       }
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::BGRA) {}
-	//	else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::YUV420) {}
-
-	//	else
-	//	{
-	//		return false;
-	//	}
-
-	//	return true;
-	//}
-
-	//Imageformats minput;
-	//Imageformats moutput;
 public:
 	FrameMetadata::FrameType inputFrameType;
 	FrameMetadata::FrameType outputFrameType;
@@ -427,7 +842,6 @@ CCNPPI::~CCNPPI() {}
 
 bool CCNPPI::validateInputOutputPins()
 {
-	//return mDetail->validatePins(mDetail->minput, mDetail->moutput);
 	return true;
 }
 
@@ -554,8 +968,6 @@ bool CCNPPI::processSOS(frame_sp &frame)
 {	
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);
-	//auto temp = mDetail->inputImageType;
-	//mDetail->validatePins(temp, );
 	return true;
 }
 
