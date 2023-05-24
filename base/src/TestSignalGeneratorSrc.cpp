@@ -6,34 +6,21 @@
 class TestSignalGenerator::Detail
 {
 public:
-    Detail(TestSignalGeneratorProps &_props) : mProps(_props)
-    {
-    }
+     Detail(TestSignalGeneratorProps &_props) : mProps(_props), start_shade(0), end_shade(255), current_shade(start_shade){}
+    
 
-    ~Detail()
-    {
-    }
-    void setProps(TestSignalGeneratorProps _props)
-    {
-        mProps = _props;
-    }
+    ~Detail(){}
+   
     bool generate(frame_sp &frame)
     {
         auto *frame_ptr = frame->data();
-        int start_shade = 0;
-        int end_shade = 255;
-        int steps = mProps.height / 3;
-        int step = (end_shade - start_shade) / steps;
-        int current_shade = start_shade;
-        int *x = static_cast<int *>(frame_ptr);
+        uint8_t *x = static_cast<uint8_t *>(frame_ptr);
 
-        for (int height = 0; height < steps; height++)
+        for (int height = 0; height < mProps.height; height++)
         {
-            // Loop of rows
-            memset(x, (uint8_t)current_shade, mProps.width);
+            memset(x, static_cast<uint8_t>(current_shade), mProps.width);
             x += mProps.width;
-            // Update the shade value
-            current_shade += step;
+            current_shade += 1;
             if (current_shade > end_shade)
             {
                 current_shade = start_shade;
@@ -42,8 +29,10 @@ public:
         return true;
     }
 
-public:
     TestSignalGeneratorProps mProps;
+    int start_shade;
+    int end_shade;
+    int current_shade;
 };
 
 TestSignalGenerator::TestSignalGenerator(TestSignalGeneratorProps _props)
@@ -85,7 +74,7 @@ bool TestSignalGenerator::init()
 
 bool TestSignalGenerator::produce()
 {
-    size_t read_size = (mDetail->mProps.width * mDetail->mProps.height * 3) >> 1;
+    size_t read_size = (getProps().width * getProps().height * 3) >> 1;
     auto mPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
     frame_container frames;
     frame_sp frame = makeFrame(read_size);
@@ -107,3 +96,15 @@ void TestSignalGenerator::setMetadata(framemetadata_sp &metadata)
         return;
     }
 }
+
+TestSignalGeneratorProps TestSignalGenerator::getProps()
+{
+    return mDetail->mProps;
+}
+
+void TestSignalGenerator::setProps(TestSignalGeneratorProps& _props)
+{
+    mDetail->mProps = _props;
+}
+
+
