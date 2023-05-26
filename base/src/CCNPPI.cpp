@@ -37,7 +37,7 @@ public:
 	{{0, 0}, {1, 1}, {2, 2}, {-1, -1}, {4, 4}, {5, 5}, {-1, -1}},
 	{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {-1, -1}, {5, 5}, {-1, -1}},
 	{{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {-1, -1}, {-1, -1}},
-	{{0, 0}, {1, 1}, {2, 2}, {1, 3}, {-1, -1}, {5, 5}, {-1, -1}}
+	{{0, 0}, {1, 1}, {2, 2}, {1, 3}, {1, 4}, {5, 5}, {-1, -1}}
 	};
 
 	bool convertMONOtoRGB()
@@ -48,6 +48,7 @@ public:
 			dstPitch[0],
 			srcSize[0],
 			nppStreamCtx);
+
 		if (status != NPP_SUCCESS)
 		{
 			LOG_ERROR << "nppiDup_8u_C1C3R_Ctx failed<" << status << ">";
@@ -192,12 +193,19 @@ public:
 
 		return true;
 	}
-	bool convertRGBtoBGRA() 
+	bool convertRGBtoBGRA(bool intermediate)
 	{ 
 		const Npp8u nValue = 255; // Alpha value
 		int dstOrder[4] = { 2, 1, 0, 3 }; // Channel order for RGB to BGRA conversion
 
-		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+		if (intermediate)
+		{
+			src[0] = intermediatedst[0];
+			srcPitch[0] = intermediatePitch[0];
+			srcSize[0] = intermediateSize[0];
+		}
+
+		auto status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -207,11 +215,19 @@ public:
 
 		return true;
 	}
-	bool convertRGBtoRGBA()
+	bool convertRGBtoRGBA(bool intermediate)
 	{
 		const Npp8u nValue = 255; // Alpha value
 		int dstOrder[4] = { 0, 1, 2, 3 };
-		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+
+		if (intermediate)
+		{
+			src[0] = intermediatedst[0];
+			srcPitch[0] = intermediatePitch[0];
+			srcSize[0] = intermediateSize[0];
+		}
+
+		auto status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -279,7 +295,7 @@ public:
 		const Npp8u nValue = 255; // Alpha value
 		int dstOrder[4] = { 2, 1, 0, 3 }; // Channel order for BGR to RGBA conversion
 
-		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -294,7 +310,7 @@ public:
 		const Npp8u nValue = 255; // Alpha value
 		int dstOrder[4] = { 0, 1, 2, 3 }; // Channel order for BGR to BGRA conversion
 
-		NppStatus status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C3C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nValue, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -324,7 +340,7 @@ public:
 
 	bool convertRGBAtoMONO()
 	{
-		NppStatus status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -338,7 +354,7 @@ public:
 	{
 		const int dstOrder[3] = { 0, 1, 2 }; // RGB channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -352,7 +368,7 @@ public:
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -366,7 +382,7 @@ public:
 	{
 		const int dstOrder[4] = { 2, 1, 0, 3 }; // BGRA channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -395,7 +411,7 @@ public:
 
 	bool convertBGRAtoMONO()
 	{
-		NppStatus status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiRGBToGray_8u_AC4C1R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -409,7 +425,7 @@ public:
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -424,7 +440,7 @@ public:
 	{
 		const int dstOrder[3] = { 2,1,0 }; // BGR channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4C3R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -438,7 +454,7 @@ public:
 	{
 		const int dstOrder[4] = { 2, 1, 0, 3 }; // RGBA channel order
 
-		NppStatus status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
+		auto status = nppiSwapChannels_8u_C4R_Ctx(src[0], srcPitch[0], dst[0], dstPitch[0], srcSize[0], dstOrder, nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -480,7 +496,7 @@ public:
 	}
 	bool convertYUV420toRGB()
 	{
-		NppStatus status = nppiYUV420ToRGB_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiYUV420ToRGB_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -492,7 +508,7 @@ public:
 	}
 	bool convertYUV420toBGR() 
 	{
-		NppStatus status = nppiYUV420ToBGR_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiYUV420ToBGR_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -505,7 +521,7 @@ public:
 	}
 	bool convertYUV420toRGBA() 
 	{
-		NppStatus status = nppiYUV420ToRGB_8u_P3C4R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiYUV420ToRGB_8u_P3C4R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -545,12 +561,14 @@ public:
 		}
 		return true;
 	}
-	bool convertNV12toRGB()
+	bool convertNV12toRGB(bool intermediate)
 	{
+		int pitch = (intermediate) ? intermediatePitch[0] : dstPitch[0];
+		Npp8u* target = (intermediate) ? intermediatedst[0] : dst[0];
 		auto status = nppiNV12ToRGB_709HDTV_8u_P2C3R_Ctx(src,
 			srcPitch[0],
-			dst[0],
-			dstPitch[0],// havt to think about setting intermediate pitch
+			target,
+			pitch,// havt to think about setting intermediate pitch
 			srcSize[0],
 			nppStreamCtx
 		);
@@ -563,7 +581,7 @@ public:
 	}
 	bool convertNV12toBGR() 
 	{
-		NppStatus status = nppiNV12ToBGR_709HDTV_8u_P2C3R_Ctx(src, srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
+		auto status = nppiNV12ToBGR_709HDTV_8u_P2C3R_Ctx(src, srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -575,7 +593,7 @@ public:
 	}
 	bool convertNV12toYUV420()
 	{
-		NppStatus status = nppiNV12ToYUV420_8u_P2P3R_Ctx(src, srcPitch[0], dst, dstPitch, srcSize[0], nppStreamCtx);
+		auto status = nppiNV12ToYUV420_8u_P2P3R_Ctx(src, srcPitch[0], dst, dstPitch, srcSize[0], nppStreamCtx);
 
 		if (status != NPP_SUCCESS)
 		{
@@ -591,7 +609,7 @@ public:
 	 return true;
 	}
 
-	bool Execute(void* buffer, void* outBuffer)
+	bool Execute(void* buffer, void* outBuffer,void*intermediatebuffer)
 	{
 		for (auto i = 0; i < inputChannels; i++)
 		{
@@ -603,6 +621,11 @@ public:
 			dst[i] = static_cast<Npp8u*>(outBuffer) + dstNextPtrOffset[i];
 		}
 
+		for (auto i = 0; i < intermediateChannels; i++)
+		{
+			intermediatedst[i] = static_cast<Npp8u*>(intermediatebuffer) + intermediateNextPtrOffset[i];
+		}
+
 		switch (inputImageType)
 		{
 		case ImageMetadata::MONO:
@@ -611,19 +634,14 @@ public:
 			{
 			case ImageMetadata::RGB:
 				return convertMONOtoRGB();
-				break;
 			case ImageMetadata::BGR:
 				return convertMONOtoBGR();
-				break;
 			case ImageMetadata::RGBA:
 				return convertMONOtoRGBA();
-				break;
 			case ImageMetadata::BGRA:
 				return convertMONOtoBGRA();
-				break;
 			case ImageMetadata::YUV420:
 				return convertMONOtoYUV420();
-				break;
 			}
 		}
 		case ImageMetadata::RGB:
@@ -632,19 +650,14 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertRGBtoMONO();
-				break;
 			case ImageMetadata::BGR:
 				return convertRGBtoBGR();
-				break;
 			case ImageMetadata::RGBA:
-				return convertRGBtoRGBA();
-				break;
+				return convertRGBtoRGBA(false);
 			case ImageMetadata::BGRA:
-				return convertRGBtoBGRA();
-				break;
+				return convertRGBtoBGRA(false);
 			case ImageMetadata::YUV420:
 				return convertRGBtoYUV420();
-				break;
 			}
 		}
 
@@ -654,19 +667,14 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertBGRtoMONO();
-				break;
 			case ImageMetadata::RGB:
 				return convertBGRtoRGB();
-				break;
 			case ImageMetadata::RGBA:
 				return convertBGRtoRGBA();
-				break;
 			case ImageMetadata::BGRA:
 				return convertBGRtoBGRA();
-				break;
 			case ImageMetadata::YUV420:
 				return convertBGRtoYUV420();
-				break;
 			}
 		}
 
@@ -676,19 +684,14 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertRGBAtoMONO();
-				break;
 			case ImageMetadata::BGR:
 				return convertRGBAtoBGR();
-				break;
 			case ImageMetadata::RGB:
 				return convertRGBAtoRGB();
-				break;
 			case ImageMetadata::BGRA:
 				return convertRGBAtoBGRA();
-				break;
 			case ImageMetadata::YUV420:
 				return convertRGBAtoYUV420();
-				break;
 			}
 		}
 
@@ -698,19 +701,14 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertBGRAtoMONO();
-				break;
 			case ImageMetadata::RGB:
 				return convertBGRAtoRGB();
-				break;
 			case ImageMetadata::RGBA:
 				return convertBGRAtoRGBA();
-				break;
 			case ImageMetadata::BGR:
 				return convertBGRAtoBGR();
-				break;
 			case ImageMetadata::YUV420:
 				return convertBGRAtoYUV420();
-				break;
 			}
 		}
 
@@ -720,19 +718,14 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertYUV420toMONO();
-				break;
 			case ImageMetadata::RGB:
 				return convertYUV420toRGB();
-				break;
 			case ImageMetadata::RGBA:
 				return convertYUV420toRGBA();
-				break;
 			case ImageMetadata::BGRA:
 				return convertYUV420toBGRA();
-				break;
 			case ImageMetadata::BGR:
 				return convertYUV420toBGR();
-				break;
 			}
 		}
 
@@ -742,16 +735,26 @@ public:
 			{
 			case ImageMetadata::MONO:
 				return convertNV12toMONO();
-				break;
 			case ImageMetadata::RGB:
-				return convertNV12toRGB();
-				break;
+				return convertNV12toRGB(false);
 			case ImageMetadata::BGR:
 				return convertNV12toBGR();
-				break;
 			case ImageMetadata::YUV420:
 				return convertNV12toYUV420();
-				break;
+			case ImageMetadata::RGBA:
+			if( conversionTable[6][3][0] == 1 && conversionTable[6][3][1] == 3)
+			{
+				convertNV12toRGB(true);
+				convertRGBtoRGBA(true);
+			}
+			break;
+			case ImageMetadata::BGRA:
+			if (conversionTable[6][4][0] == 1 && conversionTable[6][4][1] == 4)
+			{
+				convertNV12toRGB(true);
+				convertRGBtoBGRA(true);
+			}
+			break;
 			}
 		}
 
@@ -768,7 +771,7 @@ public:
 		return true;
 	}
 
-	bool setMetadata(framemetadata_sp& input, framemetadata_sp& output)
+	bool setMetadata(framemetadata_sp& input, framemetadata_sp& output, framemetadata_sp mintermediate)
 	{	
 		inputFrameType = input->getFrameType();
 		outputFrameType = output->getFrameType();
@@ -824,6 +827,39 @@ public:
 				dstNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
 			}
 		}
+
+		if (mintermediate != NULL)
+		{
+			intermediateFrameType = mintermediate->getFrameType();
+
+			if (intermediateFrameType = FrameMetadata::RAW_IMAGE)
+			{
+				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mintermediate);
+				intermediateImageType = outputRawMetadata->getImageType();
+				intermediateChannels = outputRawMetadata->getChannels();
+
+				intermediateSize[0] = { outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
+				intermediateRect[0] = { 0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
+				intermediatePitch[0] = static_cast<int>(outputRawMetadata->getStep());
+				intermediateNextPtrOffset[0] = 0;
+			}
+			else if (outputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+			{
+				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mintermediate);
+				intermediateImageType = outputRawMetadata->getImageType();
+				intermediateChannels = outputRawMetadata->getChannels();
+
+				for (auto i = 0; i < outputChannels; i++)
+				{
+					intermediateSize[i] = { outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
+					intermediateRect[i] = { 0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
+					intermediatePitch[i] = static_cast<int>(outputRawMetadata->getStep(i));
+					intermediateNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
+				}
+
+			}
+
+		}
 		
 		return true;
 	}
@@ -833,8 +869,13 @@ public:
 	FrameMetadata::FrameType outputFrameType;
 	ImageMetadata::ImageType inputImageType;
 	ImageMetadata::ImageType outputImageType;
+	FrameMetadata::FrameType intermediateFrameType;
+	ImageMetadata::ImageType intermediateImageType;
+
+
 	int inputChannels;
 	int outputChannels;
+	int intermediateChannels;
 	const Npp8u* src[4];
 	NppiSize srcSize[4];
 	NppiRect srcRect[4];
@@ -846,8 +887,13 @@ public:
 	NppiRect dstRect[4];
 	int dstPitch[4];
 	size_t dstNextPtrOffset[4];
-	// intermediate
 	
+	Npp8u* intermediatedst[4];
+	NppiSize intermediateSize[4];
+	NppiRect intermediateRect[4];
+	int intermediatePitch[4];
+	size_t intermediateNextPtrOffset[4];
+
 	CCNPPIProps props;
 	NppStreamContext nppStreamCtx;
 };
@@ -858,12 +904,6 @@ CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), props(
 }
 
 CCNPPI::~CCNPPI() {}
-
-bool CCNPPI::validateInputOutputPins()
-{
-	return true;
-}
-
 
 bool CCNPPI::validateInputPins()
 {
@@ -964,10 +1004,13 @@ bool CCNPPI::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;	
 
 	frame_sp outFrame;
+	frame_sp intermediateFrame;
+	size_t intermediateFramesize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
 	if (!mNoChange)
 	{
 		outFrame = makeFrame();
-		if (!mDetail->Execute(frame->data(), outFrame->data()))
+		intermediateFrame = makeFrame(intermediateFramesize);
+		if (!mDetail->Execute(frame->data(), outFrame->data(), intermediateFrame->data()))
 		{
 			return true;
 		}
@@ -998,7 +1041,8 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	int height = NOT_SET_NUM;
 	int type = NOT_SET_NUM;
 	int depth = NOT_SET_NUM;	
-	ImageMetadata::ImageType inputImageType = ImageMetadata::MONO;
+	ImageMetadata::ImageType inputImageType;
+	ImageMetadata::ImageType outputImageType;
 
 	if (mInputFrameType == FrameMetadata::RAW_IMAGE)
 	{
@@ -1025,30 +1069,37 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 		return;
 	}
 
-	// if ((props.imageType != ImageMetadata::YUV444 || inputImageType != ImageMetadata::YUV411_I)
-	// 	&& (props.imageType != ImageMetadata::BGRA || (inputImageType != ImageMetadata::MONO && inputImageType != ImageMetadata::YUV420))
-	// 	&& (inputImageType != ImageMetadata::BGRA || props.imageType != ImageMetadata::YUV420)
-	// 	&& (inputImageType != ImageMetadata::MONO || props.imageType != ImageMetadata::YUV420)
-	// 	)
-	// {
-	// 	throw AIPException(AIP_NOTIMPLEMENTED, "Color conversion not supported");
-	// }
-
 	if (mOutputFrameType == FrameMetadata::RAW_IMAGE)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		RawImageMetadata outputMetadata(width, height, props.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);		
 		rawOutMetadata->setData(outputMetadata);
+		outputImageType = rawOutMetadata->getImageType();
 	}
 	else if (mOutputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 		RawImagePlanarMetadata outputMetadata(width, height, props.imageType, 512, depth);		
 		rawOutMetadata->setData(outputMetadata);
+		outputImageType = rawOutMetadata->getImageType();
+	}
+
+	mIntermediateMetadata = NULL;
+
+	if (inputImageType == ImageMetadata::NV12)
+	{
+		if ((outputImageType == ImageMetadata::BGRA && mDetail->conversionTable[6][3][0] == 1 && mDetail->conversionTable[6][3][1] == 3) ||
+			(outputImageType == ImageMetadata::RGBA && mDetail->conversionTable[6][4][0] == 1 && mDetail->conversionTable[6][4][1] == 4))
+		{
+			mIntermediateMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			auto mrawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediateMetadata);
+			RawImageMetadata moutputMetadata(width, height, ImageMetadata::RGB, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
+			mrawOutMetadata->setData(moutputMetadata);
+		}
 	}
 
 	mFrameLength = mOutputMetadata->getDataSize();
-	mDetail->setMetadata(metadata, mOutputMetadata);	
+	mDetail->setMetadata(metadata, mOutputMetadata, mIntermediateMetadata);
 }
 
 bool CCNPPI::shouldTriggerSOS()
