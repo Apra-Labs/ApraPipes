@@ -247,12 +247,12 @@ public:
 		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
 		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
 
-		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
-		{
-			for (auto i = 0; i < channels; i++)
+			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
 			{
-				src[i] = bufferNPP + srcNextPtrOffset[i];
-				dst[i] = outBufferNPP + dstNextPtrOffset[i];
+				for (auto i = 0; i < channels; i++)
+				{
+					src[i] = bufferNPP + srcNextPtrOffset[i];
+					dst[i] = outBufferNPP + dstNextPtrOffset[i];
 
 				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
 					srcSize[i],
@@ -568,6 +568,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	mDetail->mSetMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
+	
 }
 
 bool AffineTransform::init()
