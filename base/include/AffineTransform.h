@@ -6,6 +6,7 @@
 class Detail;
 class DeatilCUDA;
 class DetailDMA;
+class DetailHost;
 
 class AffineTransformProps : public ModuleProps
 {
@@ -23,8 +24,16 @@ public:
 		LANCZOS,
 		LANCZOS3_ADVANCED,
 	};
-	
-	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f) // _xShift
+
+	AffineTransformProps( double _angle, double _mscale,int _x = 0, int _y = 0)
+	{
+		angle = _angle;
+		x = _x;
+		y = _y;
+		mscale = _mscale;
+	}
+
+	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, float _scale = 1.0f)
 	{
 		stream = _stream;
 		angle = _angle;
@@ -33,7 +42,7 @@ public:
 		scale = _scale;
 	}
 
-	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)// remove Memtype from constructor
+	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
 	{
 		stream = _stream;
 		angle = _angle;
@@ -45,6 +54,7 @@ public:
 
 	int x = 0;// shiftX
 	int y = 0; // shiftY
+	double mscale;
 	float scale = 1.0f;
 	double angle;
 	cudastream_sp stream;

@@ -1,16 +1,15 @@
 #include <npp.h>
 #include <opencv2/core.hpp> 
 #include <CuCtxSynchronize.h>
+#include  <nppdefs.h> 
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-#include "math.h"
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
-#include  "nppdefs.h" 
 
 #if defined(__arm__) || defined(__aarch64__)
 #include "DMAFDWrapper.h"
@@ -22,10 +21,7 @@
 class Detail
 {
 public:
-	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
-	{
-		nppStreamCtx.hStream = props.stream->getCudaStream();
-	}
+	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
 	int setInterPolation(AffineTransformProps::Interpolation eInterpolation)
 	{
 		switch (props.eInterpolation)
@@ -61,6 +57,11 @@ public:
 
 	virtual bool setPtrs() = 0;
 
+	void initMatImages(framemetadata_sp& input)
+	{
+		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
+		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
+	}
 	void setMetadata(framemetadata_sp &metadata)
 	{
 		ImageMetadata::ImageType imageType;
@@ -89,9 +90,9 @@ public:
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 			int w, h;
-			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
+			w = rawMetadata->getWidth();
+			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -126,7 +127,7 @@ public:
 			break;
 		}
 
-		mFrameLength = mOutputMetadata->getDataSize();
+		mOutputFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
 
 		int inWidth = srcSize[0].width;
@@ -159,80 +160,110 @@ public:
 
 	}
 
-	bool compute(void *buffer, void *outBuffer)
+	
+	bool compute(void* buffer, void *outBuffer, framemetadata_sp&mInput)
 	{
-		auto status = NPP_SUCCESS;
-		auto bufferNPP = static_cast<Npp8u *>(buffer);
-		auto outBufferNPP = static_cast<Npp8u *>(outBuffer);
+		FrameMetadata::MemType memType = mInput->getMemType();
 
-		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
+		if(memType == FrameMetadata::MemType::HOST)
 		{
-			for (auto i = 0; i < channels; i++)
-			{
-				src[i] = bufferNPP + srcNextPtrOffset[i];
-				dst[i] = outBufferNPP + dstNextPtrOffset[i];
+			cv::Point2f srcTri[3];
+			srcTri[0] = cv::Point2f(0.f, 0.f);
+			srcTri[1] = cv::Point2f(iImg.cols - 1.f, 0.f);
+			srcTri[2] = cv::Point2f(0.f, iImg.rows - 1.f);
 
-				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
-												   srcSize[i],
-												   srcPitch[i],
-												   srcRect[i],
-												   dst[i],
-												   dstPitch[i],
-												   dstRect[i],
-												   acoeff,
-					                               setInterPolation(props.eInterpolation),
-												   nppStreamCtx);
-			}
+			cv::Point2f dstTri[3];
+			dstTri[0] = cv::Point2f(0.f, iImg.rows * 0.33f);
+			dstTri[1] = cv::Point2f(iImg.cols * 0.85f, iImg.rows * 0.25f);
+			dstTri[2] = cv::Point2f(iImg.cols * 0.15f, iImg.rows * 0.7f);
+
+			cv::Mat warp_mat = cv::getAffineTransform(srcTri, dstTri);
+			cv::Mat warp_dst = cv::Mat::zeros(iImg.rows, iImg.cols, iImg.type());
+			cv::warpAffine(iImg, warp_dst, warp_mat, warp_dst.size());
+
+			double cx = props.x + (warp_dst.cols / 2.0);
+			double cy = props.y + (warp_dst.rows / 2.0);
+			cv::Point2f center(cx, cy); // Center of rotation
+			
+			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale);
+			cv::warpAffine(warp_dst, oImg, rot_mat, warp_dst.size());
 		}
 
-		if (mFrameType == FrameMetadata::RAW_IMAGE)
+		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
 		{
+			auto status = NPP_SUCCESS;
+			auto bufferNPP = static_cast<Npp8u*>(buffer);
+			auto outBufferNPP = static_cast<Npp8u*>(outBuffer);
 
-			if (channels == 1 && depth == CV_8UC1)
+			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
 			{
-				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u *>(bufferNPP),
-												   srcSize[0],
-												   srcPitch[0],
-												   srcRect[0],
-												   outBufferNPP,
-												   dstPitch[0],
-												   dstRect[0],
-												   acoeff,
-					                               setInterPolation(props.eInterpolation),
-												   nppStreamCtx);
-			}
-			else if (channels == 3)
-			{
-				status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u *>(bufferNPP),
-												   srcSize[0],
-												   srcPitch[0],
-												   srcRect[0],
-												   outBufferNPP,
-												   dstPitch[0],
-												   dstRect[0],
-												   acoeff,
-					                               setInterPolation(props.eInterpolation),
-												   nppStreamCtx);
-			}
-			else if (channels == 4)
-			{
-				status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u *>(bufferNPP),
-												   srcSize[0],
-												   srcPitch[0],
-												   srcRect[0],
-												   outBufferNPP,
-												   dstPitch[0],
-												   dstRect[0],
-												   acoeff,
-					                               setInterPolation(props.eInterpolation),
-												   nppStreamCtx);
-			}
-		}
+				for (auto i = 0; i < channels; i++)
+				{
+					src[i] = bufferNPP + srcNextPtrOffset[i];
+					dst[i] = outBufferNPP + dstNextPtrOffset[i];
 
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "Affine Transform failed<" << status << ">";
-			throw AIPException(AIP_FATAL, "Failed to tranform the image");
+					status = nppiWarpAffine_8u_C1R_Ctx(src[i],
+						srcSize[i],
+						srcPitch[i],
+						srcRect[i],
+						dst[i],
+						dstPitch[i],
+						dstRect[i],
+						acoeff,
+						setInterPolation(props.eInterpolation),
+						nppStreamCtx);
+				}
+			}
+
+			if (mFrameType == FrameMetadata::RAW_IMAGE)
+			{
+
+				if (channels == 1 && depth == CV_8UC1)
+				{
+					status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						outBufferNPP,
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						setInterPolation(props.eInterpolation),
+						nppStreamCtx);
+				}
+				else if (channels == 3)
+				{
+					status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						outBufferNPP,
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						setInterPolation(props.eInterpolation),
+						nppStreamCtx);
+				}
+				else if (channels == 4)
+				{
+					status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+						srcSize[0],
+						srcPitch[0],
+						srcRect[0],
+						outBufferNPP,
+						dstPitch[0],
+						dstRect[0],
+						acoeff,
+						setInterPolation(props.eInterpolation),
+						nppStreamCtx);
+				}
+			}
+
+			if (status != NPP_SUCCESS)
+			{
+				LOG_ERROR << "Affine Transform failed<" << status << ">";
+				throw AIPException(AIP_FATAL, "Failed to tranform the image");
+			}
 		}
 		return true;
 	}
@@ -248,9 +279,12 @@ public:
 	}
 
 public:
-	size_t mFrameLength;
+	size_t mOutputFrameLength;
 	frame_sp InputFrame;
 	frame_sp OutputFrame;
+	cv::Mat iImg;
+	cv::Mat oImg;
+	int rotateFlag;
 	void* OutputPtr;
 	void* InputPtr;
 	std::string mOutputPinId;
@@ -322,12 +356,16 @@ public:
 class DetailDMA : public Detail
 {
 public:
-	DetailDMA(AffineTransformProps& _props) : Detail(_props) {}
+	DetailDMA(AffineTransformProps& _props) : Detail(_props)
+	{
+		nppStreamCtx.hStream = props.stream->getCudaStream();
+	}
 	bool setPtrs()
 	{
         #if defined(__arm__) || defined(__aarch64__)
 		InputPtr = static_cast<DMAFDWrapper*>(InputFrame->data());
 		OutputPtr = static_cast<DMAFDWrapper*>(OutputFrame->data());
+		cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
         #endif
 		return true;
 	}
@@ -336,12 +374,31 @@ public:
 class DeatilCUDA: public Detail
 {
 public:
-	DeatilCUDA(AffineTransformProps& _props) : Detail(_props) {}
+	DeatilCUDA(AffineTransformProps& _props) : Detail(_props)
+	{
+		nppStreamCtx.hStream = props.stream->getCudaStream();
+	}
 
 	bool setPtrs()
 	{
 		InputPtr = InputFrame->data();
 		OutputPtr = OutputFrame->data();
+		cudaMemset(OutputPtr, 0, OutputFrame->size());
+		return true;
+	}
+};
+
+class DetailHost : public Detail
+{
+public:
+	DetailHost(AffineTransformProps& _props) : Detail(_props) {}
+
+	bool setPtrs()
+	{
+		iImg.data = static_cast<uint8_t*>(InputFrame->data());
+		oImg.data = static_cast<uint8_t*>(OutputFrame->data());
+		InputPtr = iImg.data;
+		OutputPtr = oImg.data ;
 		return true;
 	}
 };
@@ -367,7 +424,7 @@ bool AffineTransform::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF)
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
 		return false;
@@ -393,7 +450,7 @@ bool AffineTransform::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF)
+	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
 		return false;
@@ -408,22 +465,31 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType memType = metadata->getMemType();
 
-	if (memType = FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		mDetail.reset(new DeatilCUDA(mProp));
 	}
 
-	else if (memType = FrameMetadata::MemType::DMABUF)
+	else if (memType == FrameMetadata::MemType::DMABUF)
 	{
 		mDetail.reset(new DetailDMA(mProp));
 	}
 
+	else if (memType == FrameMetadata::MemType::HOST)
+	{
+		mDetail.reset(new DetailHost(mProp));
+	}
 	else
 	{
 		throw std::runtime_error("Memory Type not supported");
 	}
 	mDetail->setMetadata(metadata);
+	if(memType == FrameMetadata::MemType::HOST)
+	{
+		mDetail->initMatImages(metadata);
+	}
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
+	
 }
 
 bool AffineTransform::init()
@@ -444,11 +510,11 @@ bool AffineTransform::term()
 bool AffineTransform::process(frame_container &frames)
 {
 	mDetail->InputFrame = frames.cbegin()->second;
-	mDetail->OutputFrame = makeFrame(mDetail->mFrameLength);
+	auto metadata = (mDetail->InputFrame)->getMetadata();
+	mDetail->OutputFrame = makeFrame(mDetail->mOutputFrameLength);
 	mDetail->setPtrs();
 
-	cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
-	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr);
+	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr,metadata);
 	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->OutputFrame));
 	send(frames);
 
@@ -464,12 +530,12 @@ bool AffineTransform::processSOS(frame_sp &frame)
 
 bool AffineTransform::shouldTriggerSOS()
 {
-	return mDetail->mFrameLength == 0;
+	return mDetail->mOutputFrameLength == 0;
 }
 
 bool AffineTransform::processEOS(string &pinId)
 {
-	mDetail->mFrameLength = 0;
+	mDetail->mOutputFrameLength = 0;
 	return true;
 }
 

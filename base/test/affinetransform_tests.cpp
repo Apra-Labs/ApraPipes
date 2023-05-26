@@ -54,24 +54,24 @@ struct AffineTestsStruct
 		copy1->setNext(affineTransform);
 		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 		affineTransform->setNext(copy2);
-		m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-		copy2->setNext(m3);
+		sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		copy2->setNext(sink);
 
 		BOOST_TEST(fileReader->init());
 		BOOST_TEST(copy1->init());
 		BOOST_TEST(affineTransform->init());
 		BOOST_TEST(copy2->init());
-		BOOST_TEST(m3->init());
+		BOOST_TEST(sink->init());
 	}
 	boost::shared_ptr<FileReaderModule>fileReader;
 	boost::shared_ptr<Module>copy1;
 	boost::shared_ptr<Module>affineTransform;
 	boost::shared_ptr<Module>copy2;
-	boost::shared_ptr<ExternalSinkModule>m3;
+	boost::shared_ptr<ExternalSinkModule>sink;
 
 	~AffineTestsStruct()
 	{
-		m3->term();
+		sink->term();
 		copy2->term();
 		affineTransform->term();
 		copy1->term();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(MONO_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(MONO_shrink)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::NN, 5, 0, 0, 1.0f);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::NN, 90, 0, 0, 1.0f);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shifting,*boost::unit_test::disabled())
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shifting,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_scale_rotate)
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::LINEAR, 45,0,0, 2.0f);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::LINEAR, 30,0,0, 2.5f);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(RGB_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(YUV444_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
@@ -380,11 +380,65 @@ BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
 	f.copy2->step();
 
 	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-	auto frames = f.m3->pop();
+	auto frames = f.sink->pop();
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests_yuv444_1920x1080.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(Host_Mono)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
+
+	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(45,2.5,0,0)));
+    fileReader->setNext(affine);
+
+	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	affine->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(affine->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	affine->step();
+	auto frames = sink->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_host.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(Host_RGB)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
+
+	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(30, 2.5, 10, 0)));
+	fileReader->setNext(affine);
+
+	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	affine->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(affine->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	affine->step();
+	auto frames = sink->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_host_RGB.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
