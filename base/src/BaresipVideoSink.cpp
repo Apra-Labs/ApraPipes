@@ -39,11 +39,6 @@ bool BaresipVideoSink::validateInputPins()
     return true;
 }
 
-bool BaresipVideoSink::validateOutputPins()
-{
-    return true;
-}
-
 bool BaresipVideoSink::validateInputOutputPins()
 {
     return true;
@@ -57,8 +52,7 @@ bool BaresipVideoSink::init()
     {
         return false;
     }
-    adapter->init();
-    return true;
+    return (adapter->init());
 }
 
 bool BaresipVideoSink::term()
@@ -83,12 +77,4 @@ bool BaresipVideoSink::process(frame_container& frames)
     auto frameData = frame->data();
     adapter->process(frameData);
     return true;
-}
-
-void BaresipVideoSink::setMetadata(framemetadata_sp& metadata)
-{
-    if (!metadata->isSet())
-    {
-        return;
-    }
 }
