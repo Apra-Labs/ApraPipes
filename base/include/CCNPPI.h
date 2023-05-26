@@ -35,7 +35,6 @@ protected:
 	bool processSOS(frame_sp& frame);
 	bool validateInputPins();
 	bool validateOutputPins();
-	bool validateInputOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails		
 	bool shouldTriggerSOS();
 	bool processEOS(string& pinId);

@@ -688,6 +688,11 @@ public:
  			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer->data()) + intermediateNextPtrOffset[i];
 		}
 
+		for (auto i = 0; i < intermediateChannels; i++)
+		{
+			intermediatedst[i] = static_cast<Npp8u*>(intermediatebuffer) + intermediateNextPtrOffset[i];
+		}
+
 		switch (inputImageType)
 	{
 		case ImageMetadata::MONO:
@@ -824,6 +829,8 @@ public:
 			default:
 				throw AIPException(AIP_FATAL, "conversion not supported");
 			}
+			break;
+			}
 		}
 
 		case ImageMetadata::YUV411_I:
@@ -944,6 +951,7 @@ protected:
 
 	int inputChannels;
 	int outputChannels;
+	int intermediateChannels;
 	const Npp8u* src[4];
 	NppiRect srcRect[4];
 	int srcPitch[4];
