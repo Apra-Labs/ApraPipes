@@ -57,8 +57,14 @@ bool WebRTCSink::init()
     {
         return false;
     }
-    adapter->init(0,{});
-    adapter->processSOS();
+    if(!(adapter->init(0,{})))
+    {
+        return false;
+    }
+    if((!adapter->processSOS()))
+    {
+        return false;
+    }
     return true;
 }
 
