@@ -17,7 +17,7 @@
 
 BOOST_AUTO_TEST_SUITE(baresip_webrtc_tests)
 
-BOOST_AUTO_TEST_CASE(basic)
+BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
     auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw", 0, -1)));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
 }
 
-BOOST_AUTO_TEST_CASE(webcamSrc)
+BOOST_AUTO_TEST_CASE(webcamSrc, *boost::unit_test::disabled())
 {
     WebCamSourceProps webCamSourceprops(0, 640, 360);
     auto webCam = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));

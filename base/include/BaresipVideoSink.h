@@ -29,11 +29,9 @@ public:
 protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
-	bool validateOutputPins();
 	bool validateInputOutputPins();
 
 private:
-	void setMetadata(framemetadata_sp& metadata);
 	boost::shared_ptr<BaresipVideoAdapter> adapter = boost::shared_ptr<BaresipVideoAdapter>(new BaresipVideoAdapter(BaresipVideoAdapterProps()));
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
