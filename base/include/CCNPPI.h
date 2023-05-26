@@ -35,7 +35,6 @@ protected:
 	bool processSOS(frame_sp& frame);
 	bool validateInputPins();
 	bool validateOutputPins();
-	bool validateInputOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails		
 	bool shouldTriggerSOS();
 	bool processEOS(string& pinId);
@@ -51,6 +50,7 @@ private:
 	int mOutputFrameType;
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
+	framemetadata_sp mIntermediateMetadata;
 	std::string mOutputPinId;
 	CCNPPIProps props;		
 };
