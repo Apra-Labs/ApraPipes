@@ -56,12 +56,8 @@ public:
 	}
 
 	virtual bool setPtrs() = 0;
+	virtual bool compute(void* buffer,void* outBuffer) = 0;
 
-	void initMatImages(framemetadata_sp& input)
-	{
-		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
-		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
-	}
 	void setMetadata(framemetadata_sp &metadata)
 	{
 		ImageMetadata::ImageType imageType;
@@ -92,7 +88,7 @@ public:
 			int w, h;
 			h = rawMetadata->getHeight();
 			w = rawMetadata->getWidth();
-			RawImageMetadata outputMetadata(w*props.mscale, h*props.mscale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
+			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -129,147 +125,6 @@ public:
 
 		mOutputFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
-
-		int inWidth = srcSize[0].width;
-		int inHeight = srcSize[0].height;
-		int outWidth = dstSize[0].width;
-		int outHeight = dstSize[0].height;
-
-		double inCenterX = inWidth / 2.0;
-		double inCenterY = inHeight / 2.0;
-
-		double outCenterX = outWidth / 2.0;
-		double outCenterY = outHeight / 2.0;
-
-		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
-		double ty = (outCenterY - inCenterY);
-
-		double si, co;
-		si = props.scale * sin(props.angle * PI / 180);
-		co = props.scale * cos(props.angle * PI / 180);
-
-		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
-		double cy = props.y + (srcSize[0].height / 2);
-
-		acoeff[0][0] = co;
-		acoeff[0][1] = -si;
-		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
-		acoeff[1][0] = si;
-		acoeff[1][1] = co;
-		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
-
-	}
-
-	
-	bool compute(void* buffer, void *outBuffer, framemetadata_sp&mInput)
-	{
-		FrameMetadata::MemType memType = mInput->getMemType();
-
-		if(memType == FrameMetadata::MemType::HOST)
-		{
-			int inWidth = iImg.cols;
-			int inHeight = iImg.rows;
-			int outWidth = oImg.cols;
-			int outHeight = oImg.rows;
-
-			double inCenterX = inWidth / 2.0;
-			double inCenterY = inHeight / 2.0;
-
-			double outCenterX = outWidth / 2.0;
-			double outCenterY = outHeight / 2.0;
-
-			double tx = outCenterX - inCenterX; // translation factor in the x-axis
-			double ty = outCenterY - inCenterY; // translation factor in the y-axis
-
-			double cx = props.x + inCenterX; // x-coordinate of the center of rotation
-			double cy = props.y + inCenterY; // y-coordinate of the center of rotation
-			cv::Point2f center(cx, cy); // Center of rotation
-
-			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale); // Get the rotation matrix
-			rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
-			rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
-
-			cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
-
-		}
-
-		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
-		{
-			auto status = NPP_SUCCESS;
-			auto bufferNPP = static_cast<Npp8u*>(buffer);
-			auto outBufferNPP = static_cast<Npp8u*>(outBuffer);
-
-			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
-			{
-				for (auto i = 0; i < channels; i++)
-				{
-					src[i] = bufferNPP + srcNextPtrOffset[i];
-					dst[i] = outBufferNPP + dstNextPtrOffset[i];
-
-					status = nppiWarpAffine_8u_C1R_Ctx(src[i],
-						srcSize[i],
-						srcPitch[i],
-						srcRect[i],
-						dst[i],
-						dstPitch[i],
-						dstRect[i],
-						acoeff,
-						setInterPolation(props.eInterpolation),
-						nppStreamCtx);
-				}
-			}
-
-			if (mFrameType == FrameMetadata::RAW_IMAGE)
-			{
-
-				if (channels == 1 && depth == CV_8UC1)
-				{
-					status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(bufferNPP),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						outBufferNPP,
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						setInterPolation(props.eInterpolation),
-						nppStreamCtx);
-				}
-				else if (channels == 3)
-				{
-					status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(bufferNPP),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						outBufferNPP,
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						setInterPolation(props.eInterpolation),
-						nppStreamCtx);
-				}
-				else if (channels == 4)
-				{
-					status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(bufferNPP),
-						srcSize[0],
-						srcPitch[0],
-						srcRect[0],
-						outBufferNPP,
-						dstPitch[0],
-						dstRect[0],
-						acoeff,
-						setInterPolation(props.eInterpolation),
-						nppStreamCtx);
-				}
-			}
-
-			if (status != NPP_SUCCESS)
-			{
-				LOG_ERROR << "Affine Transform failed<" << status << ">";
-				throw AIPException(AIP_FATAL, "Failed to tranform the image");
-			}
-		}
-		return true;
 	}
 
 	void setProps(AffineTransformProps &mprops)
@@ -357,13 +212,126 @@ protected:
 	double acoeff[2][3] = {{-1, -1, -1}, {-1, -1, -1}};
 };
 
-class DetailDMA : public Detail
+class DetailGPU : public Detail 
 {
 public:
-	DetailDMA(AffineTransformProps& _props) : Detail(_props)
+	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
+	bool compute(void* buffer, void* outBuffer)
+	{
+		int inWidth = srcSize[0].width;
+		int inHeight = srcSize[0].height;
+		int outWidth = dstSize[0].width;
+		int outHeight = dstSize[0].height;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
+		double ty = (outCenterY - inCenterY);
+
+		double si, co;
+		si = props.scale * sin(props.angle * PI / 180);
+		co = props.scale * cos(props.angle * PI / 180);
+
+		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
+		double cy = props.y + (srcSize[0].height / 2);
+
+		acoeff[0][0] = co;
+		acoeff[0][1] = -si;
+		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
+		acoeff[1][0] = si;
+		acoeff[1][1] = co;
+		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+
+		auto status = NPP_SUCCESS;
+		auto bufferNPP = static_cast<Npp8u*>(buffer);
+		auto outBufferNPP = static_cast<Npp8u*>(outBuffer);
+
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
+		{
+			for (auto i = 0; i < channels; i++)
+			{
+				src[i] = bufferNPP + srcNextPtrOffset[i];
+				dst[i] = outBufferNPP + dstNextPtrOffset[i];
+
+				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
+					srcSize[i],
+					srcPitch[i],
+					srcRect[i],
+					dst[i],
+					dstPitch[i],
+					dstRect[i],
+					acoeff,
+					setInterPolation(props.eInterpolation),
+					nppStreamCtx);
+			}
+		}
+
+		else if (mFrameType == FrameMetadata::RAW_IMAGE)
+		{
+
+			if (channels == 1 && depth == CV_8UC1)
+			{
+				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					outBufferNPP,
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					setInterPolation(props.eInterpolation),
+					nppStreamCtx);
+			}
+			else if (channels == 3)
+			{
+				status = nppiWarpAffine_8u_C3R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					outBufferNPP,
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					setInterPolation(props.eInterpolation),
+					nppStreamCtx);
+			}
+			else if (channels == 4)
+			{
+				status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u*>(bufferNPP),
+					srcSize[0],
+					srcPitch[0],
+					srcRect[0],
+					outBufferNPP,
+					dstPitch[0],
+					dstRect[0],
+					acoeff,
+					setInterPolation(props.eInterpolation),
+					nppStreamCtx);
+			}
+		}
+
+		if (status != NPP_SUCCESS)
+		{
+			LOG_ERROR << "Affine Transform failed<" << status << ">";
+			throw AIPException(AIP_FATAL, "Failed to tranform the image");
+		}
+
+		return true;
+	}
+};
+
+class DetailDMA : public DetailGPU
+{
+public:
+	DetailDMA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 	}
+
 	bool setPtrs()
 	{
         #if defined(__arm__) || defined(__aarch64__)
@@ -375,10 +343,10 @@ public:
 	}
 };
 
-class DeatilCUDA: public Detail
+class DeatilCUDA: public DetailGPU
 {
 public:
-	DeatilCUDA(AffineTransformProps& _props) : Detail(_props)
+	DeatilCUDA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 	}
@@ -397,8 +365,41 @@ class DetailHost : public Detail
 public:
 	DetailHost(AffineTransformProps& _props) : Detail(_props) {}
 
+	bool compute(void* buffer, void* outBuffer)
+	{
+		int inWidth = iImg.cols;
+		int inHeight = iImg.rows;
+		int outWidth = oImg.cols;
+		int outHeight = oImg.rows;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = outCenterX - inCenterX; // translation factor in the x-axis
+		double ty = outCenterY - inCenterY; // translation factor in the y-axis
+
+		double cx = props.x + inCenterX; // x-coordinate of the center of rotation
+		double cy = props.y + inCenterY; // y-coordinate of the center of rotation
+		cv::Point2f center(cx, cy); // Center of rotation
+
+		double scale = props.scale;
+		cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle,scale); // Get the rotation matrix
+		rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
+		rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
+
+		//cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
+		cv::warpAffine(iImg, oImg, rot_mat, oImg.size(), cv::INTER_CUBIC);
+		return true;
+	}
+
 	bool setPtrs()
 	{
+		auto metadata = InputFrame->getMetadata();
+		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
+		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 		iImg.data = static_cast<uint8_t*>(InputFrame->data());
 		oImg.data = static_cast<uint8_t*>(OutputFrame->data());
 		InputPtr = iImg.data;
@@ -488,10 +489,6 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 		throw std::runtime_error("Memory Type not supported");
 	}
 	mDetail->setMetadata(metadata);
-	if(memType == FrameMetadata::MemType::HOST)
-	{
-		mDetail->initMatImages(metadata);
-	}
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 	
 }
@@ -514,11 +511,10 @@ bool AffineTransform::term()
 bool AffineTransform::process(frame_container &frames)
 {
 	mDetail->InputFrame = frames.cbegin()->second;
-	auto metadata = (mDetail->InputFrame)->getMetadata();
 	mDetail->OutputFrame = makeFrame(mDetail->mOutputFrameLength);
 	mDetail->setPtrs();
 
-	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr,metadata);
+	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr);
 	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->OutputFrame));
 	send(frames);
 
