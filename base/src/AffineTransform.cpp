@@ -283,13 +283,13 @@ public:
 	frame_sp OutputFrame;
 	cv::Mat iImg;
 	cv::Mat oImg;
-	int rotateFlag;
 	void* OutputPtr;
 	void* InputPtr;
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	AffineTransformProps props;
 
+protected:
 	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
