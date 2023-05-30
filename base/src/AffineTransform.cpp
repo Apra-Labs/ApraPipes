@@ -92,7 +92,7 @@ public:
 			int w, h;
 			h = rawMetadata->getHeight();
 			w = rawMetadata->getWidth();
-			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
+			RawImageMetadata outputMetadata(w*props.mscale, h*props.mscale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -167,25 +167,30 @@ public:
 
 		if(memType == FrameMetadata::MemType::HOST)
 		{
-			cv::Point2f srcTri[3];
-			srcTri[0] = cv::Point2f(0.f, 0.f);
-			srcTri[1] = cv::Point2f(iImg.cols - 1.f, 0.f);
-			srcTri[2] = cv::Point2f(0.f, iImg.rows - 1.f);
+			int inWidth = iImg.cols;
+			int inHeight = iImg.rows;
+			int outWidth = oImg.cols;
+			int outHeight = oImg.rows;
 
-			cv::Point2f dstTri[3];
-			dstTri[0] = cv::Point2f(0.f, iImg.rows * 0.33f);
-			dstTri[1] = cv::Point2f(iImg.cols * 0.85f, iImg.rows * 0.25f);
-			dstTri[2] = cv::Point2f(iImg.cols * 0.15f, iImg.rows * 0.7f);
+			double inCenterX = inWidth / 2.0;
+			double inCenterY = inHeight / 2.0;
 
-			cv::Mat warp_mat = cv::getAffineTransform(srcTri, dstTri);
-			cv::warpAffine(iImg,oImg, warp_mat, oImg.size());
+			double outCenterX = outWidth / 2.0;
+			double outCenterY = outHeight / 2.0;
 
-			double cx = props.x + (oImg.cols / 2.0);
-			double cy = props.y + (oImg.rows / 2.0);
+			double tx = outCenterX - inCenterX; // translation factor in the x-axis
+			double ty = outCenterY - inCenterY; // translation factor in the y-axis
+
+			double cx = props.x + inCenterX; // x-coordinate of the center of rotation
+			double cy = props.y + inCenterY; // y-coordinate of the center of rotation
 			cv::Point2f center(cx, cy); // Center of rotation
-			
-			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale);// In OpenCV a positive angle is counter-clockwise
-			cv::warpAffine(oImg, oImg, rot_mat, oImg.size());
+
+			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale); // Get the rotation matrix
+			rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
+			rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
+
+			cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
+
 		}
 
 		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
