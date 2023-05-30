@@ -178,15 +178,14 @@ public:
 			dstTri[2] = cv::Point2f(iImg.cols * 0.15f, iImg.rows * 0.7f);
 
 			cv::Mat warp_mat = cv::getAffineTransform(srcTri, dstTri);
-			cv::Mat warp_dst = cv::Mat::zeros(iImg.rows, iImg.cols, iImg.type());
-			cv::warpAffine(iImg, warp_dst, warp_mat, warp_dst.size());
+			cv::warpAffine(iImg,oImg, warp_mat, oImg.size());
 
-			double cx = props.x + (warp_dst.cols / 2.0);
-			double cy = props.y + (warp_dst.rows / 2.0);
+			double cx = props.x + (oImg.cols / 2.0);
+			double cy = props.y + (oImg.rows / 2.0);
 			cv::Point2f center(cx, cy); // Center of rotation
 			
-			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale);
-			cv::warpAffine(warp_dst, oImg, rot_mat, warp_dst.size());
+			cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle, props.mscale);// In OpenCV a positive angle is counter-clockwise
+			cv::warpAffine(oImg, oImg, rot_mat, oImg.size());
 		}
 
 		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
@@ -365,7 +364,7 @@ public:
         #if defined(__arm__) || defined(__aarch64__)
 		InputPtr = static_cast<DMAFDWrapper*>(InputFrame->data());
 		OutputPtr = static_cast<DMAFDWrapper*>(OutputFrame->data());
-		cudaMemset(mDetail->OutputPtr, 0, (mDetail->OutputFrame)->size());
+		cudaMemset(OutputPtr, 0, OutputFrame->size());
         #endif
 		return true;
 	}
