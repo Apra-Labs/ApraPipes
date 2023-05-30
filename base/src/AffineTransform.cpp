@@ -390,8 +390,7 @@ public:
 		rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
 		rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
 
-		//cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
-		cv::warpAffine(iImg, oImg, rot_mat, oImg.size(), cv::INTER_CUBIC);
+		cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
 		return true;
 	}
 
