@@ -6,11 +6,11 @@
 class TestSignalGenerator::Detail
 {
 public:
-     Detail(TestSignalGeneratorProps &_props) : mProps(_props), start_shade(0), end_shade(255), current_shade(start_shade){}
-    
+    Detail(TestSignalGeneratorProps &_props)
+        : mProps(_props), start_shade(0), end_shade(255), current_shade(start_shade) {}
 
-    ~Detail(){}
-   
+    ~Detail() {}
+
     bool generate(frame_sp &frame)
     {
         auto *frame_ptr = frame->data();
@@ -29,6 +29,15 @@ public:
         return true;
     }
 
+    void setProps(const TestSignalGeneratorProps &_props)
+    {
+        mProps = _props;
+    }
+    void reset()
+    {
+        current_shade = start_shade;
+    }
+
     TestSignalGeneratorProps mProps;
     int start_shade;
     int end_shade;
@@ -36,14 +45,17 @@ public:
 };
 
 TestSignalGenerator::TestSignalGenerator(TestSignalGeneratorProps _props)
-    : Module(SOURCE, "TestSignalGenerator", _props)
+    : Module(SOURCE, "TestSignalGenerator", _props), outputFrameSize(0)
 {
     mDetail.reset(new Detail(_props));
+    mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(_props.width, _props.height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+    mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
-TestSignalGenerator::~TestSignalGenerator(){
+TestSignalGenerator::~TestSignalGenerator()
+{
     mDetail->~Detail();
-};
+}
 
 bool TestSignalGenerator::validateOutputPins()
 {
@@ -56,7 +68,7 @@ bool TestSignalGenerator::validateOutputPins()
     auto frameType = metadata->getFrameType();
     if (frameType != FrameMetadata::RAW_IMAGE_PLANAR)
     {
-        LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+        LOG_ERROR << "<" << getId() << ">::validateOutputPins output frameType should be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
         return false;
     }
 
@@ -69,15 +81,16 @@ bool TestSignalGenerator::init()
     {
         return false;
     }
+    outputFrameSize = (getProps().width * getProps().height * 3) >> 1;
+
     return true;
 }
 
 bool TestSignalGenerator::produce()
 {
-    size_t read_size = (getProps().width * getProps().height * 3) >> 1;
     auto mPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
     frame_container frames;
-    frame_sp frame = makeFrame(read_size);
+    frame_sp frame = makeFrame(outputFrameSize);
     mDetail->generate(frame);
     frames.insert(make_pair(mPinId, frame));
     send(frames);
@@ -97,14 +110,14 @@ void TestSignalGenerator::setMetadata(framemetadata_sp &metadata)
     }
 }
 
+void TestSignalGenerator::setProps(TestSignalGeneratorProps &_props)
+{
+    mDetail->setProps(_props);
+    outputFrameSize = (_props.width * _props.height * 3) >> 1;
+    mDetail->reset();
+}
+
 TestSignalGeneratorProps TestSignalGenerator::getProps()
 {
     return mDetail->mProps;
 }
-
-void TestSignalGenerator::setProps(TestSignalGeneratorProps& _props)
-{
-    mDetail->mProps = _props;
-}
-
-

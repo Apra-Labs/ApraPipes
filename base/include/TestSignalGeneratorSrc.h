@@ -6,7 +6,7 @@ class TestSignalGeneratorProps : public ModuleProps
 public:
     TestSignalGeneratorProps() {}
     TestSignalGeneratorProps(int _width, int _height)
-        : width(_width), height(_height){}
+        : width(_width), height(_height) {}
 
     ~TestSignalGeneratorProps() {}
 
@@ -17,11 +17,11 @@ private:
     friend class boost::serialization::access;
 
     template <class Archive>
-    void serialize(Archive& ar, const unsigned int version)
+    void serialize(Archive &ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<ModuleProps>(*this);
-        ar & width;
-        ar & height;
+        ar &boost::serialization::base_object<ModuleProps>(*this);
+        ar &width;
+        ar &height;
     }
 };
 
@@ -33,15 +33,18 @@ public:
 
     bool init();
     bool term();
-    void setProps(TestSignalGeneratorProps& props);
+    void setProps(TestSignalGeneratorProps &props);
     TestSignalGeneratorProps getProps();
 
 protected:
     bool produce();
     bool validateOutputPins();
-    void setMetadata(framemetadata_sp& metadata);
+    void setMetadata(framemetadata_sp &metadata);
 
 private:
     class Detail;
     boost::shared_ptr<Detail> mDetail;
+    size_t outputFrameSize;
+    framemetadata_sp mOutputMetadata;
+    std::string mOutputPinId;
 };
