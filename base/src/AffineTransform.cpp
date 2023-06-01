@@ -58,6 +58,7 @@ public:
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
+		mInputMetadata = metadata;
 		ImageMetadata::ImageType imageType;
 		FrameMetadata::MemType memType = metadata->getMemType();
 		if (mFrameType != metadata->getFrameType())
@@ -67,9 +68,6 @@ public:
 			{
 			case FrameMetadata::RAW_IMAGE:
 				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
-				//rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-				//height = rawMetadata->getHeight();
-				//width = rawMetadata->getWidth();
 				break;
 			case FrameMetadata::RAW_IMAGE_PLANAR:
 				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
@@ -86,7 +84,7 @@ public:
 
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
-			rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 			height = rawMetadata->getHeight();
 			width = rawMetadata->getWidth();
 			RawImageMetadata outputMetadata(width * props.scale , height * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
@@ -98,7 +96,7 @@ public:
 
 		else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			rawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			auto rawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
 			width = rawPlanarMetadata->getWidth(0);
 			height = rawPlanarMetadata->getHeight(0);
 			RawImagePlanarMetadata outputMetadata(width * props.scale, height * props.scale, rawPlanarMetadata->getImageType(), rawPlanarMetadata->getStep(0), rawPlanarMetadata->getDepth(), memType);
@@ -133,9 +131,8 @@ public:
 		{
 			return;
 		}
-		rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		props = mprops;
-		setMetadata(mOutputMetadata);
+		setMetadata(mInputMetadata);
 	}
 
 public:
@@ -207,13 +204,9 @@ protected:
 	Npp8u *src[3];
 	Npp8u *dst[3];
 
+	framemetadata_sp mInputMetadata;
 	cv::Mat iImg;
 	cv::Mat oImg;
-
-	RawImageMetadata* rawMetadata;
-	RawImagePlanarMetadata* rawPlanarMetadata;
-
-
 };
 
 class DetailGPU : public Detail 
@@ -515,7 +508,6 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	mDetail->setMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
-	//mDetail->mOutputPinId = addOutputPin(metadata);
 }
 
 bool AffineTransform::init()

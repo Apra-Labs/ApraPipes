@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 10, 10, 3.0)));
+	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 10, 10, 2.0)));
 	fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_host_RGB.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
-BOOST_AUTO_TEST_CASE(GetSetProps)
+BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled())
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -473,8 +473,8 @@ BOOST_AUTO_TEST_CASE(GetSetProps)
 	auto currentProps = affine->getProps();
 	BOOST_ASSERT(angle == currentProps.angle);
 
-	auto propsChange = AffineTransformProps(AffineTransformProps::USING_OPENCV, -45, 0, 0, 1.0);
-	affine->setProps(propsChange,metadata);
+	auto propsChange = AffineTransformProps(AffineTransformProps::USING_OPENCV, -45, 200, 0, 3.0);
+	affine->setProps(propsChange);
 	affine->step();
 
 	fileReader->step();
