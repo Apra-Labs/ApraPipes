@@ -569,7 +569,6 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	mDetail->mSetMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
-	//mDetail->mOutputPinId = addOutputPin(metadata);
 }
 
 bool AffineTransform::init()
