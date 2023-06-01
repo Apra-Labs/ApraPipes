@@ -70,7 +70,7 @@ public:
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
-		    {
+			{
 			case FrameMetadata::RAW_IMAGE:
 				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
 				break;
@@ -80,9 +80,10 @@ public:
 				break;
 			}
 			default:
-			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
+				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
+		
 		if (!metadata->isSet())
 		{
 			return;
@@ -568,7 +569,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	mDetail->mSetMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
-	
+	//mDetail->mOutputPinId = addOutputPin(metadata);
 }
 
 bool AffineTransform::init()

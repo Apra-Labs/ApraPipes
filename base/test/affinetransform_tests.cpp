@@ -574,4 +574,5 @@ BOOST_AUTO_TEST_CASE(DMABUF_RGBA,*boost::unit_test::disabled())
 }
 
 
+}
 BOOST_AUTO_TEST_SUITE_END()
