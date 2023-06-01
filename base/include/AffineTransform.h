@@ -13,8 +13,7 @@ class AffineTransformProps : public ModuleProps
 {
 public:
 	enum Interpolation {
-
-		NN,     
+		NN = 0,     
 		LINEAR, 
 		CUBIC,
 		UNDEFINED,
@@ -26,31 +25,38 @@ public:
 		LANCZOS3_ADVANCED,
 	};
 
-	AffineTransformProps( double _angle,int _x = 0, int _y = 0, double _scale = 1.0)
+	enum TransformType
 	{
+		USING_OPENCV = 0,
+		USING_NPPI,
+	};
+
+	AffineTransformProps(TransformType _type, double _angle, int _x = 0, int _y = 0, double _scale = 1.0)
+	{
+		if (_type != TransformType::USING_OPENCV)
+		{
+			throw AIPException(AIP_FATAL, "This constructor only supports Opencv");
+		}
 		angle = _angle;
 		x = _x;
 		y = _y;
 		scale = _scale;
+		type = _type;
 	}
 
-	AffineTransformProps(cudastream_sp& _stream, double _angle, int _x = 0, int _y = 0, double _scale = 1.0)
+	AffineTransformProps(TransformType _type, Interpolation _interpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, double _scale = 1.0)
 	{
+		if (_type != TransformType::USING_NPPI)
+		{
+			throw AIPException(AIP_FATAL, "This constructor only supports using NPPI");
+		}
 		stream = _stream;
 		angle = _angle;
 		x = _x;
 		y = _y;
 		scale = _scale;
-	}
-
-	AffineTransformProps(Interpolation _eInterpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, double _scale = 1.0)
-	{
-		stream = _stream;
-		angle = _angle;
-		x = _x;
-		y = _y;
-		scale = _scale;
-		eInterpolation = _eInterpolation;
+		interpolation = _interpolation;
+		type = _type;
 	}
 
 	int x = 0;
@@ -58,11 +64,12 @@ public:
 	double scale = 1.0;
 	double angle;
 	cudastream_sp stream;
-	Interpolation eInterpolation = AffineTransformProps:: NN;
+	Interpolation interpolation = AffineTransformProps::NN;
+	TransformType type;
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) + sizeof(eInterpolation);
+		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) + sizeof(interpolation) + sizeof(type);
 	}
 
 private:
@@ -73,7 +80,8 @@ private:
 	{
 		ar &boost::serialization::base_object<ModuleProps>(*this);
 		ar &angle &x &y &scale ;
-		ar& eInterpolation;
+		ar& interpolation;
+		ar& type;
 	}
 };
 
@@ -96,8 +104,7 @@ protected:
 	void addInputPin(framemetadata_sp &metadata, string &pinId); // throws exception if validation fails
 	bool shouldTriggerSOS();
 	bool processEOS(string &pinId);
-	void setProps(AffineTransform);
 	AffineTransformProps mProp;
-	bool handlePropsChange(frame_sp &frame);
+	bool handlePropsChange(frame_sp& frame);
 	boost::shared_ptr<Detail> mDetail;
 };

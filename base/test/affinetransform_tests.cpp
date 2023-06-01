@@ -13,6 +13,7 @@
 #include "stdafx.h"
 #include "PipeLine.h"
 #include "nppdefs.h"
+#include "Module.h"
 
 BOOST_AUTO_TEST_SUITE(affinetransform_tests)
 
@@ -23,14 +24,15 @@ struct AffineTestsStruct
 	int height;
 	ImageMetadata::ImageType imageType;
 	int bit_depth;
-	int angle;
+	double angle;
 	int x;
 	int y;
-	float scale;
+	double scale;
 	framemetadata_sp metadata;
-	AffineTransformProps::Interpolation eInterpolation;
+	AffineTransformProps::Interpolation interpolation;
+	AffineTransformProps::TransformType type;
 
-	AffineTestsStruct(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth,AffineTransformProps::Interpolation eInterpolation, int angle, int x, int y, float scale)
+	AffineTestsStruct(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, AffineTransformProps::TransformType type, AffineTransformProps::Interpolation interpolation, double angle, int x, int y, double scale)
 	{
 		if (imageType == ImageMetadata::ImageType::YUV420 || imageType == ImageMetadata::ImageType::YUV444) {
 			metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, imageType, size_t(0), CV_8U));
@@ -38,18 +40,18 @@ struct AffineTestsStruct
 		else {
 			metadata = framemetadata_sp(new RawImageMetadata(width, height, imageType, bit_depth, 0, CV_8U, FrameMetadata::HOST, true));
 		}
-		createPipeline(inpFilePath, width, height,  imageType, bit_depth,  angle,  x,  y,  scale, eInterpolation);
+		createPipeline(inpFilePath, width, height, imageType, bit_depth, angle, x, y, scale, interpolation,type);
 	}
-	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, int angle, int x, int y, float scale, AffineTransformProps::Interpolation eInterpolation)
+	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, double angle, int x, int y, double scale, AffineTransformProps::Interpolation interpolation, AffineTransformProps::TransformType type)
 	{
-		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));	
+		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
 		auto rawImagePin = fileReader->addOutputPin(metadata);
 
-		auto stream = cudastream_sp(new ApraCudaStream);
+		auto stream = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 		copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 		fileReader->setNext(copy1);
 
-		AffineTransformProps affineProps(eInterpolation, stream, angle, x, y, scale);
+		AffineTransformProps affineProps(type,interpolation, stream, angle, x, y, scale);
 		affineTransform = boost::shared_ptr<Module>(new AffineTransform(affineProps));
 		copy1->setNext(affineTransform);
 		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
@@ -82,7 +84,7 @@ struct AffineTestsStruct
 BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 5, 0, 0, 1.0);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1,AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 5, 0, 0, 1.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -100,7 +102,7 @@ BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 45, 0, 0, 2.0);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 45, 0, 0, 2.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -118,7 +120,7 @@ BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_shrink)
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::CUBIC, 0, 0, 0, 0.2);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 0, 0, 0, 0.2);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -136,7 +138,7 @@ BOOST_AUTO_TEST_CASE(MONO_shrink)
 BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 0, 100, 0, 1.0);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 100, 0, 1.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -154,7 +156,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::NN, 0, 0, 300, 1.0);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 0, 300, 1.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -172,7 +174,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 {
 	ImageMetadata::ImageType::MONO;
-	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::CUBIC, 5, 100, 300, 2.0);
+	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 5, 100, 300, 2.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -191,7 +193,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::NN, 90, 0, 0, 1.0);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 90, 0, 0, 1.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -210,7 +212,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::NN, 0, 0, 0, 2.0);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 0, 0, 2.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -228,7 +230,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_Image_shifting,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::NN, 0, 100, 300, 1.0);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 100, 300, 1.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -246,7 +248,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shifting,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::LINEAR, 30,0,0, 2.5);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 30,0,0, 2.5);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -264,7 +266,7 @@ BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 {
 	ImageMetadata::ImageType::RGB;
-	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::LINEAR, 5, 100, 300, 2.0);
+	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 5, 100, 300, 2.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -282,7 +284,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::BGR;
-	AffineTestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, AffineTransformProps::NN, 5, 300, 100, 3.0);
+	AffineTestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 5, 300, 100, 3.0);
 	
 	f.fileReader->step();
 	f.copy1->step();
@@ -301,7 +303,7 @@ BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGBA;
-	AffineTestsStruct f("./data/rgba_400x400.raw", 400,400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::NN,90, 0, 0, 2.5);
+	AffineTestsStruct f("./data/rgba_400x400.raw", 400,400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::NN,90, 0, 0, 2.5);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -319,7 +321,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 {
 	ImageMetadata::ImageType::RGBA;
-	AffineTestsStruct f("./data/rgba_400x400.raw", 400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::NN, 40, 100, 200, 2.5);
+	AffineTestsStruct f("./data/rgba_400x400.raw", 400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 40, 100, 200, 2.5);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -337,7 +339,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::BGRA;
-	AffineTestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, AffineTransformProps::LINEAR, 90, 100,100, 2.5);
+	AffineTestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 90, 100,100, 2.5);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -355,7 +357,7 @@ BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled(
 BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::YUV444;
-	AffineTestsStruct f("./data/yuv444.raw", 400, 400, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::NN, 90, 0, 0, 2.5);
+	AffineTestsStruct f("./data/yuv444.raw", 400, 400, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 90, 0, 0, 2.5);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -372,7 +374,7 @@ BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
 {
 	ImageMetadata::ImageType::YUV444;
-	AffineTestsStruct f("./data/yuv444_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::CUBIC2P_CATMULLROM,5, 200, 300, 2.0);
+	AffineTestsStruct f("./data/yuv444_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC2P_CATMULLROM,5, 200, 300, 2.0);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -393,7 +395,7 @@ BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled())
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(-45,0,0,2.0)));
+	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_NPPI, -45,0,0,2.0)));
     fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
@@ -420,7 +422,7 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(-30, 10, 10, 2.0)));
+	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 10, 10, 3.0)));
 	fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
@@ -440,5 +442,50 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_host_RGB.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
+BOOST_AUTO_TEST_CASE(GetSetProps)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
 
+	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 100,10, 2.0)));
+	fileReader->setNext(affine);
+
+	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	affine->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(affine->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	affine->step();
+
+	auto frames = sink->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_beforechange_RGB.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+
+	auto angle = -30;
+	auto currentProps = affine->getProps();
+	BOOST_ASSERT(angle == currentProps.angle);
+
+	auto propsChange = AffineTransformProps(AffineTransformProps::USING_OPENCV, -45, 0, 0, 1.0);
+	affine->setProps(propsChange,metadata);
+	affine->step();
+
+	fileReader->step();
+	affine->step();
+
+	auto frames2 = sink->pop();
+
+	BOOST_TEST((frames2.find(outputPinId) != frames2.end()));
+	auto outFrame2 = frames2[outputPinId];
+	BOOST_TEST(outFrame2->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_getsetProps_RGB.raw", (const uint8_t*)outFrame2->data(), outFrame2->size(), 0);
+
+}
 BOOST_AUTO_TEST_SUITE_END()

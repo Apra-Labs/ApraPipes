@@ -22,9 +22,9 @@ class Detail
 {
 public:
 	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
-	int setInterPolation(AffineTransformProps::Interpolation eInterpolation)
+	int setInterPolation(AffineTransformProps::Interpolation interpolation)
 	{
-		switch (props.eInterpolation)
+		switch (props.interpolation)
 		{
 		case AffineTransformProps::NN:
 			return NppiInterpolationMode::NPPI_INTER_NN;
@@ -51,32 +51,34 @@ public:
 		}
 	}
 
-	~Detail()
-	{
-	}
+	~Detail() {}
 
 	virtual bool setPtrs() = 0;
-	virtual bool compute(void* buffer,void* outBuffer) = 0;
+	virtual bool compute() = 0;
 
 	void setMetadata(framemetadata_sp &metadata)
 	{
 		ImageMetadata::ImageType imageType;
 		FrameMetadata::MemType memType = metadata->getMemType();
-		if (mFrameType != metadata->getFrameType()) 
+		if (mFrameType != metadata->getFrameType())
 		{
 			mFrameType = metadata->getFrameType();
 			switch (mFrameType)
-		    {
+			{
 			case FrameMetadata::RAW_IMAGE:
-			mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
-			break;
-		    case FrameMetadata::RAW_IMAGE_PLANAR:
-			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
-			break;
+				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
+				//rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+				//height = rawMetadata->getHeight();
+				//width = rawMetadata->getWidth();
+				break;
+			case FrameMetadata::RAW_IMAGE_PLANAR:
+				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
+				break;
 			default:
-			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
+				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
+		
 		if (!metadata->isSet())
 		{
 			return;
@@ -84,28 +86,26 @@ public:
 
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
-			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-			int w, h;
-			h = rawMetadata->getHeight();
-			w = rawMetadata->getWidth();
-			RawImageMetadata outputMetadata(w*props.scale, h*props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
+			rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+			height = rawMetadata->getHeight();
+			width = rawMetadata->getWidth();
+			RawImageMetadata outputMetadata(width * props.scale , height * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
 
-		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+		else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-			int w, h;
-			w = rawMetadata->getWidth(0);
-			h = rawMetadata->getHeight(0);
-			RawImagePlanarMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getStep(0), rawMetadata->getDepth(), memType);
+			rawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			width = rawPlanarMetadata->getWidth(0);
+			height = rawPlanarMetadata->getHeight(0);
+			RawImagePlanarMetadata outputMetadata(width * props.scale, height * props.scale, rawPlanarMetadata->getImageType(), rawPlanarMetadata->getStep(0), rawPlanarMetadata->getDepth(), memType);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
-			imageType = rawMetadata->getImageType();
-			depth = rawMetadata->getDepth();
+			imageType = rawPlanarMetadata->getImageType();
+			depth = rawPlanarMetadata->getDepth();
 		}
 
 		switch (imageType)
@@ -133,22 +133,19 @@ public:
 		{
 			return;
 		}
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+		rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		props = mprops;
+		setMetadata(mOutputMetadata);
 	}
 
 public:
 	size_t mOutputFrameLength;
-	frame_sp InputFrame;
-	frame_sp OutputFrame;
-	cv::Mat iImg;
-	cv::Mat oImg;
-	void* OutputPtr;
-	void* InputPtr;
+	frame_sp inputFrame;
+	frame_sp outputFrame;
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	AffineTransformProps props;
-
+	
 protected:
 	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
 	{
@@ -193,6 +190,7 @@ protected:
 	FrameMetadata::FrameType mFrameType;
 	int depth;
 	int channels;
+	int width, height;
 	NppiSize srcSize[4];
 	NppiRect srcRect[4];
 	int srcPitch[4];
@@ -205,18 +203,24 @@ protected:
 	double shiftX;
 	double shiftY;
 	void *ctx;
-	NppStreamContext nppStreamCtx;
 
 	Npp8u *src[3];
 	Npp8u *dst[3];
-	double acoeff[2][3] = {{-1, -1, -1}, {-1, -1, -1}};
+
+	cv::Mat iImg;
+	cv::Mat oImg;
+
+	RawImageMetadata* rawMetadata;
+	RawImagePlanarMetadata* rawPlanarMetadata;
+
+
 };
 
 class DetailGPU : public Detail 
 {
 public:
 	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
-	bool compute(void* buffer, void* outBuffer)
+	bool compute()
 	{
 		int inWidth = srcSize[0].width;
 		int inHeight = srcSize[0].height;
@@ -247,8 +251,8 @@ public:
 		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
 
 		auto status = NPP_SUCCESS;
-		auto bufferNPP = static_cast<Npp8u*>(buffer);
-		auto outBufferNPP = static_cast<Npp8u*>(outBuffer);
+		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
+		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
 
 		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
 		{
@@ -265,7 +269,7 @@ public:
 					dstPitch[i],
 					dstRect[i],
 					acoeff,
-					setInterPolation(props.eInterpolation),
+					setInterPolation(props.interpolation),
 					nppStreamCtx);
 			}
 		}
@@ -283,7 +287,7 @@ public:
 					dstPitch[0],
 					dstRect[0],
 					acoeff,
-					setInterPolation(props.eInterpolation),
+					setInterPolation(props.interpolation),
 					nppStreamCtx);
 			}
 			else if (channels == 3)
@@ -296,7 +300,7 @@ public:
 					dstPitch[0],
 					dstRect[0],
 					acoeff,
-					setInterPolation(props.eInterpolation),
+					setInterPolation(props.interpolation),
 					nppStreamCtx);
 			}
 			else if (channels == 4)
@@ -309,7 +313,7 @@ public:
 					dstPitch[0],
 					dstRect[0],
 					acoeff,
-					setInterPolation(props.eInterpolation),
+					setInterPolation(props.interpolation),
 					nppStreamCtx);
 			}
 		}
@@ -322,6 +326,11 @@ public:
 
 		return true;
 	}
+protected:
+	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
+	NppStreamContext nppStreamCtx;
+	void* outputPtr;
+	void* inputPtr;
 };
 
 class DetailDMA : public DetailGPU
@@ -335,9 +344,9 @@ public:
 	bool setPtrs()
 	{
         #if defined(__arm__) || defined(__aarch64__)
-		InputPtr = static_cast<DMAFDWrapper*>(InputFrame->data());
-		OutputPtr = static_cast<DMAFDWrapper*>(OutputFrame->data());
-		cudaMemset(OutputPtr, 0, OutputFrame->size());
+		inputPtr = static_cast<DMAFDWrapper*>(inputFrame->data());
+		outputPtr = static_cast<DMAFDWrapper*>(outputFrame->data());
+		cudaMemset(outputPtr, 0, outputFrame->size());
         #endif
 		return true;
 	}
@@ -353,9 +362,9 @@ public:
 
 	bool setPtrs()
 	{
-		InputPtr = InputFrame->data();
-		OutputPtr = OutputFrame->data();
-		cudaMemset(OutputPtr, 0, OutputFrame->size());
+		inputPtr = inputFrame->data();
+		outputPtr = outputFrame->data();
+		cudaMemset(outputPtr, 0, outputFrame->size());
 		return true;
 	}
 };
@@ -365,7 +374,7 @@ class DetailHost : public Detail
 public:
 	DetailHost(AffineTransformProps& _props) : Detail(_props) {}
 
-	bool compute(void* buffer, void* outBuffer)
+	bool compute()
 	{
 		int inWidth = iImg.cols;
 		int inHeight = iImg.rows;
@@ -396,13 +405,11 @@ public:
 
 	bool setPtrs()
 	{
-		auto metadata = InputFrame->getMetadata();
+		auto metadata = inputFrame->getMetadata();
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
 		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
-		iImg.data = static_cast<uint8_t*>(InputFrame->data());
-		oImg.data = static_cast<uint8_t*>(OutputFrame->data());
-		InputPtr = iImg.data;
-		OutputPtr = oImg.data ;
+		iImg.data = static_cast<uint8_t*>(inputFrame->data());
+		oImg.data = static_cast<uint8_t*>(outputFrame->data());
 		return true;
 	}
 };
@@ -431,6 +438,24 @@ bool AffineTransform::validateInputPins()
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
+		return false;
+	}
+
+	if (mProp.type == AffineTransformProps::TransformType::USING_OPENCV && memType == FrameMetadata::MemType::CUDA_DEVICE)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is CUDA_DEVICE, but the transform type is USING_OPENCV";
+		return false;
+	}
+
+	else if (mProp.type == AffineTransformProps::TransformType::USING_OPENCV && memType == FrameMetadata::MemType::DMABUF)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is DMABUF, but the transform type is USING_OPENCV";
+		return false;
+	}
+
+	else if (mProp.type == AffineTransformProps::TransformType::USING_NPPI && memType == FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is HOST, but the transform type is USING_NPPI";
 		return false;
 	}
 
@@ -487,9 +512,10 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		throw std::runtime_error("Memory Type not supported");
 	}
+
 	mDetail->setMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
-	
+	//mDetail->mOutputPinId = addOutputPin(metadata);
 }
 
 bool AffineTransform::init()
@@ -509,12 +535,12 @@ bool AffineTransform::term()
 
 bool AffineTransform::process(frame_container &frames)
 {
-	mDetail->InputFrame = frames.cbegin()->second;
-	mDetail->OutputFrame = makeFrame(mDetail->mOutputFrameLength);
+	mDetail->inputFrame = frames.cbegin()->second;
+	mDetail->outputFrame = makeFrame(mDetail->mOutputFrameLength);
 	mDetail->setPtrs();
 
-	mDetail->compute(mDetail->InputPtr, mDetail->OutputPtr);
-	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->OutputFrame));
+	mDetail->compute();
+	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
 	send(frames);
 
 	return true;
@@ -551,7 +577,7 @@ AffineTransformProps AffineTransform::getProps()
 
 bool AffineTransform::handlePropsChange(frame_sp &frame)
 {
-	AffineTransformProps props(mDetail->props.stream, 0);
+	AffineTransformProps props(mDetail->props.type, 0);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
