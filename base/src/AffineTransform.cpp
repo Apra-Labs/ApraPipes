@@ -55,8 +55,9 @@ public:
 
 	virtual bool setPtrs() = 0;
 	virtual bool compute() = 0;
+	virtual void mSetMetadata(framemetadata_sp& metadata) = 0;
 
-	void setMetadata(framemetadata_sp &metadata)
+	void setMetadata(framemetadata_sp& metadata)
 	{
 		mInputMetadata = metadata;
 		ImageMetadata::ImageType imageType;
@@ -76,7 +77,7 @@ public:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
-		
+
 		if (!metadata->isSet())
 		{
 			return;
@@ -87,7 +88,7 @@ public:
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
 			height = rawMetadata->getHeight();
 			width = rawMetadata->getWidth();
-			RawImageMetadata outputMetadata(width * props.scale , height * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
+			RawImageMetadata outputMetadata(width * props.scale, height * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), rawMetadata->getStep(), rawMetadata->getDepth(), memType, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
@@ -120,71 +121,8 @@ public:
 			}
 			break;
 		}
-
 		mOutputFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
-
-		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
-		{
-			int inWidth = srcSize[0].width;
-			int inHeight = srcSize[0].height;
-			int outWidth = dstSize[0].width;
-			int outHeight = dstSize[0].height;
-
-			double inCenterX = inWidth / 2.0;
-			double inCenterY = inHeight / 2.0;
-
-			double outCenterX = outWidth / 2.0;
-			double outCenterY = outHeight / 2.0;
-
-			double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
-			double ty = (outCenterY - inCenterY);
-
-			double si, co;
-			si = props.scale * sin(props.angle * PI / 180);
-			co = props.scale * cos(props.angle * PI / 180);
-
-			double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
-			double cy = props.y + (srcSize[0].height / 2);
-
-			acoeff[0][0] = co;
-			acoeff[0][1] = -si;
-			acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
-			acoeff[1][0] = si;
-			acoeff[1][1] = co;
-			acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
-
-		}
-
-		else if (memType == FrameMetadata::MemType::HOST)
-		{
-			iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
-			oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
-
-			int inWidth = iImg.cols;
-			int inHeight = iImg.rows;
-			int outWidth = oImg.cols;
-			int outHeight = oImg.rows;
-
-			double inCenterX = inWidth / 2.0;
-			double inCenterY = inHeight / 2.0;
-
-			double outCenterX = outWidth / 2.0;
-			double outCenterY = outHeight / 2.0;
-
-			double tx = outCenterX - inCenterX; // translation factor in the x-axis
-			double ty = outCenterY - inCenterY; // translation factor in the y-axis
-
-			double cx = props.x + inCenterX; // x-coordinate of the center of rotation
-			double cy = props.y + inCenterY; // y-coordinate of the center of rotation
-			cv::Point2f center(cx, cy); // Center of rotation
-
-			double scale = props.scale;
-			rot_mat = cv::getRotationMatrix2D(center, props.angle, scale); // Get the rotation matrix
-			rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
-			rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
-
-		}
 	}
 
 	void setProps(AffineTransformProps &mprops)
@@ -194,7 +132,7 @@ public:
 			return;
 		}
 		props = mprops;
-		setMetadata(mInputMetadata);
+		mSetMetadata(mInputMetadata);
 	}
 
 public:
@@ -204,9 +142,14 @@ public:
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	AffineTransformProps props;
-	
 protected:
-	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
+	framemetadata_sp mInputMetadata;
+	FrameMetadata::FrameType mFrameType;
+	int width, height;
+	int depth;
+	double shiftX;
+	double shiftY;
+	bool setMetadataHelper(framemetadata_sp& input, framemetadata_sp& output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
@@ -214,12 +157,12 @@ protected:
 			auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
 
 			channels = inputRawMetadata->getChannels();
-			srcSize[0] = {inputRawMetadata->getWidth(), inputRawMetadata->getHeight()};
-			srcRect[0] = {0, 0, inputRawMetadata->getWidth(), inputRawMetadata->getHeight()};
+			srcSize[0] = { inputRawMetadata->getWidth(), inputRawMetadata->getHeight() };
+			srcRect[0] = { 0, 0, inputRawMetadata->getWidth(), inputRawMetadata->getHeight() };
 			srcPitch[0] = static_cast<int>(inputRawMetadata->getStep());
 			srcNextPtrOffset[0] = 0;
-			dstSize[0] = {outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
-			dstRect[0] = {0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
+			dstSize[0] = { outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
+			dstRect[0] = { 0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
 			dstPitch[0] = static_cast<int>(outputRawMetadata->getStep());
 			dstNextPtrOffset[0] = 0;
 		}
@@ -232,13 +175,13 @@ protected:
 
 			for (auto i = 0; i < channels; i++)
 			{
-				srcSize[i] = {inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i)};
-				srcRect[i] = {0, 0, inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i)};
+				srcSize[i] = { inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i) };
+				srcRect[i] = { 0, 0, inputRawMetadata->getWidth(i), inputRawMetadata->getHeight(i) };
 				srcPitch[i] = static_cast<int>(inputRawMetadata->getStep(i));
 				srcNextPtrOffset[i] = inputRawMetadata->getNextPtrOffset(i);
 
-				dstSize[i] = {outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i)};
-				dstRect[i] = {0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i)};
+				dstSize[i] = { outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
+				dstRect[i] = { 0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
 				dstPitch[i] = static_cast<int>(outputRawMetadata->getStep(i));
 				dstNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
 			}
@@ -246,10 +189,7 @@ protected:
 		return true;
 	}
 
-	FrameMetadata::FrameType mFrameType;
-	int depth;
 	int channels;
-	int width, height;
 	NppiSize srcSize[4];
 	NppiRect srcRect[4];
 	int srcPitch[4];
@@ -259,24 +199,49 @@ protected:
 	int dstPitch[4];
 	size_t dstNextPtrOffset[4];
 
-	double shiftX;
-	double shiftY;
-	void *ctx;
+	void* ctx;
 
-	Npp8u *src[3];
-	Npp8u *dst[3];
-	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
-
-	framemetadata_sp mInputMetadata;
-	cv::Mat iImg;
-	cv::Mat oImg;
-	cv::Mat rot_mat;
+	Npp8u* src[3];
+	Npp8u* dst[3];
 };
 
 class DetailGPU : public Detail 
 {
 public:
 	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
+
+	void mSetMetadata(framemetadata_sp& metadata)
+	{
+		Detail::setMetadata(metadata);
+		int inWidth = srcSize[0].width;
+		int inHeight = srcSize[0].height;
+		int outWidth = dstSize[0].width;
+		int outHeight = dstSize[0].height;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
+		double ty = (outCenterY - inCenterY);
+
+		double si, co;
+		si = props.scale * sin(props.angle * PI / 180);
+		co = props.scale * cos(props.angle * PI / 180);
+
+		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
+		double cy = props.y + (srcSize[0].height / 2);
+
+		acoeff[0][0] = co;
+		acoeff[0][1] = -si;
+		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
+		acoeff[1][0] = si;
+		acoeff[1][1] = co;
+		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+	}
+
 	bool compute()
 	{
 		auto status = NPP_SUCCESS;
@@ -305,7 +270,6 @@ public:
 
 		else if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
-
 			if (channels == 1 && depth == CV_8UC1)
 			{
 				status = nppiWarpAffine_8u_C1R_Ctx(const_cast<const Npp8u*>(bufferNPP),
@@ -359,6 +323,7 @@ protected:
 	NppStreamContext nppStreamCtx;
 	void* outputPtr;
 	void* inputPtr;
+	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
 };
 
 class DetailDMA : public DetailGPU
@@ -401,6 +366,35 @@ class DetailHost : public Detail
 {
 public:
 	DetailHost(AffineTransformProps& _props) : Detail(_props) {}
+	void mSetMetadata(framemetadata_sp& metadata)
+	{
+		Detail::setMetadata(metadata);
+		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
+		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
+
+		int inWidth = iImg.cols;
+		int inHeight = iImg.rows;
+		int outWidth = oImg.cols;
+		int outHeight = oImg.rows;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = outCenterX - inCenterX; // translation factor in the x-axis
+		double ty = outCenterY - inCenterY; // translation factor in the y-axis
+
+		double cx = props.x + inCenterX; // x-coordinate of the center of rotation
+		double cy = props.y + inCenterY; // y-coordinate of the center of rotation
+		cv::Point2f center(cx, cy); // Center of rotation
+
+		double scale = props.scale;
+		rot_mat = cv::getRotationMatrix2D(center, props.angle, scale); // Get the rotation matrix
+		rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
+		rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
+	}
 
 	bool compute()
 	{
@@ -414,6 +408,10 @@ public:
 		oImg.data = static_cast<uint8_t*>(outputFrame->data());
 		return true;
 	}
+protected:
+	cv::Mat iImg;
+	cv::Mat oImg;
+	cv::Mat rot_mat;
 };
 
 AffineTransform::AffineTransform(AffineTransformProps props) : Module(TRANSFORM, "AffineTransform", props), mProp( props) {}
@@ -515,7 +513,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 		throw std::runtime_error("Memory Type not supported");
 	}
 
-	mDetail->setMetadata(metadata);
+	mDetail->mSetMetadata(metadata);
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
@@ -550,7 +548,7 @@ bool AffineTransform::process(frame_container &frames)
 bool AffineTransform::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
-	mDetail->setMetadata(metadata);
+	mDetail->mSetMetadata(metadata);
 	return true;
 }
 
