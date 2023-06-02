@@ -123,6 +123,68 @@ public:
 
 		mOutputFrameLength = mOutputMetadata->getDataSize();
 		setMetadataHelper(metadata, mOutputMetadata);
+
+		if (memType == FrameMetadata::MemType::CUDA_DEVICE || memType == FrameMetadata::MemType::DMABUF)
+		{
+			int inWidth = srcSize[0].width;
+			int inHeight = srcSize[0].height;
+			int outWidth = dstSize[0].width;
+			int outHeight = dstSize[0].height;
+
+			double inCenterX = inWidth / 2.0;
+			double inCenterY = inHeight / 2.0;
+
+			double outCenterX = outWidth / 2.0;
+			double outCenterY = outHeight / 2.0;
+
+			double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
+			double ty = (outCenterY - inCenterY);
+
+			double si, co;
+			si = props.scale * sin(props.angle * PI / 180);
+			co = props.scale * cos(props.angle * PI / 180);
+
+			double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
+			double cy = props.y + (srcSize[0].height / 2);
+
+			acoeff[0][0] = co;
+			acoeff[0][1] = -si;
+			acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
+			acoeff[1][0] = si;
+			acoeff[1][1] = co;
+			acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+
+		}
+
+		else if (memType == FrameMetadata::MemType::HOST)
+		{
+			iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
+			oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
+
+			int inWidth = iImg.cols;
+			int inHeight = iImg.rows;
+			int outWidth = oImg.cols;
+			int outHeight = oImg.rows;
+
+			double inCenterX = inWidth / 2.0;
+			double inCenterY = inHeight / 2.0;
+
+			double outCenterX = outWidth / 2.0;
+			double outCenterY = outHeight / 2.0;
+
+			double tx = outCenterX - inCenterX; // translation factor in the x-axis
+			double ty = outCenterY - inCenterY; // translation factor in the y-axis
+
+			double cx = props.x + inCenterX; // x-coordinate of the center of rotation
+			double cy = props.y + inCenterY; // y-coordinate of the center of rotation
+			cv::Point2f center(cx, cy); // Center of rotation
+
+			double scale = props.scale;
+			rot_mat = cv::getRotationMatrix2D(center, props.angle, scale); // Get the rotation matrix
+			rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
+			rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
+
+		}
 	}
 
 	void setProps(AffineTransformProps &mprops)
@@ -203,10 +265,12 @@ protected:
 
 	Npp8u *src[3];
 	Npp8u *dst[3];
+	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
 
 	framemetadata_sp mInputMetadata;
 	cv::Mat iImg;
 	cv::Mat oImg;
+	cv::Mat rot_mat;
 };
 
 class DetailGPU : public Detail 
@@ -215,34 +279,6 @@ public:
 	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
 	bool compute()
 	{
-		int inWidth = srcSize[0].width;
-		int inHeight = srcSize[0].height;
-		int outWidth = dstSize[0].width;
-		int outHeight = dstSize[0].height;
-
-		double inCenterX = inWidth / 2.0;
-		double inCenterY = inHeight / 2.0;
-
-		double outCenterX = outWidth / 2.0;
-		double outCenterY = outHeight / 2.0;
-
-		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
-		double ty = (outCenterY - inCenterY);
-
-		double si, co;
-		si = props.scale * sin(props.angle * PI / 180);
-		co = props.scale * cos(props.angle * PI / 180);
-
-		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
-		double cy = props.y + (srcSize[0].height / 2);
-
-		acoeff[0][0] = co;
-		acoeff[0][1] = -si;
-		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
-		acoeff[1][0] = si;
-		acoeff[1][1] = co;
-		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
-
 		auto status = NPP_SUCCESS;
 		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
 		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
@@ -320,7 +356,6 @@ public:
 		return true;
 	}
 protected:
-	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
 	NppStreamContext nppStreamCtx;
 	void* outputPtr;
 	void* inputPtr;
@@ -369,38 +404,12 @@ public:
 
 	bool compute()
 	{
-		int inWidth = iImg.cols;
-		int inHeight = iImg.rows;
-		int outWidth = oImg.cols;
-		int outHeight = oImg.rows;
-
-		double inCenterX = inWidth / 2.0;
-		double inCenterY = inHeight / 2.0;
-
-		double outCenterX = outWidth / 2.0;
-		double outCenterY = outHeight / 2.0;
-
-		double tx = outCenterX - inCenterX; // translation factor in the x-axis
-		double ty = outCenterY - inCenterY; // translation factor in the y-axis
-
-		double cx = props.x + inCenterX; // x-coordinate of the center of rotation
-		double cy = props.y + inCenterY; // y-coordinate of the center of rotation
-		cv::Point2f center(cx, cy); // Center of rotation
-
-		double scale = props.scale;
-		cv::Mat rot_mat = cv::getRotationMatrix2D(center, props.angle,scale); // Get the rotation matrix
-		rot_mat.at<double>(0, 2) += tx; // Apply translation in the x-axis
-		rot_mat.at<double>(1, 2) += ty; // Apply translation in the y-axis
-
 		cv::warpAffine(iImg, oImg, rot_mat, oImg.size()); // Apply the rotation and translation to the output image
 		return true;
 	}
 
 	bool setPtrs()
 	{
-		auto metadata = inputFrame->getMetadata();
-		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
-		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 		iImg.data = static_cast<uint8_t*>(inputFrame->data());
 		oImg.data = static_cast<uint8_t*>(outputFrame->data());
 		return true;
