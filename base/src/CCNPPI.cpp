@@ -690,7 +690,7 @@ public:
 
 		for (auto i = 0; i < intermediateChannels; i++)
 		{
-			intermediatedst[i] = static_cast<Npp8u*>(intermediatebuffer) + intermediateNextPtrOffset[i];
+			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer) + intermediateNextPtrOffset[i];
 		}
 
 		switch (inputImageType)
@@ -951,7 +951,6 @@ protected:
 
 	int inputChannels;
 	int outputChannels;
-	int intermediateChannels;
 	const Npp8u* src[4];
 	NppiRect srcRect[4];
 	int srcPitch[4];
