@@ -122,7 +122,6 @@ public:
 			break;
 		}
 		mOutputFrameLength = mOutputMetadata->getDataSize();
-		setMetadataHelper(metadata, mOutputMetadata);
 	}
 
 	void setProps(AffineTransformProps &mprops)
@@ -149,6 +148,50 @@ protected:
 	int depth;
 	double shiftX;
 	double shiftY;
+};
+
+class DetailGPU : public Detail 
+{
+public:
+	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
+
+	void mSetMetadata(framemetadata_sp& metadata)
+	{
+		Detail::setMetadata(metadata);
+		if (!metadata->isSet())
+		{
+			return;
+		}
+		setMetadataHelper(metadata, mOutputMetadata);
+		int inWidth = srcSize[0].width;
+		int inHeight = srcSize[0].height;
+		int outWidth = dstSize[0].width;
+		int outHeight = dstSize[0].height;
+
+		double inCenterX = inWidth / 2.0;
+		double inCenterY = inHeight / 2.0;
+
+		double outCenterX = outWidth / 2.0;
+		double outCenterY = outHeight / 2.0;
+
+		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
+		double ty = (outCenterY - inCenterY);
+
+		double si, co;
+		si = props.scale * sin(props.angle * PI / 180);
+		co = props.scale * cos(props.angle * PI / 180);
+
+		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
+		double cy = props.y + (srcSize[0].height / 2);
+
+		acoeff[0][0] = co;
+		acoeff[0][1] = -si;
+		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
+		acoeff[1][0] = si;
+		acoeff[1][1] = co;
+		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+	}
+
 	bool setMetadataHelper(framemetadata_sp& input, framemetadata_sp& output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
@@ -187,59 +230,6 @@ protected:
 			}
 		}
 		return true;
-	}
-
-	int channels;
-	NppiSize srcSize[4];
-	NppiRect srcRect[4];
-	int srcPitch[4];
-	size_t srcNextPtrOffset[4];
-	NppiSize dstSize[4];
-	NppiRect dstRect[4];
-	int dstPitch[4];
-	size_t dstNextPtrOffset[4];
-
-	void* ctx;
-
-	Npp8u* src[3];
-	Npp8u* dst[3];
-};
-
-class DetailGPU : public Detail 
-{
-public:
-	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
-
-	void mSetMetadata(framemetadata_sp& metadata)
-	{
-		Detail::setMetadata(metadata);
-		int inWidth = srcSize[0].width;
-		int inHeight = srcSize[0].height;
-		int outWidth = dstSize[0].width;
-		int outHeight = dstSize[0].height;
-
-		double inCenterX = inWidth / 2.0;
-		double inCenterY = inHeight / 2.0;
-
-		double outCenterX = outWidth / 2.0;
-		double outCenterY = outHeight / 2.0;
-
-		double tx = (outCenterX - inCenterX); // translation factor which is used to shift image to center in output image
-		double ty = (outCenterY - inCenterY);
-
-		double si, co;
-		si = props.scale * sin(props.angle * PI / 180);
-		co = props.scale * cos(props.angle * PI / 180);
-
-		double cx = props.x + (srcSize[0].width / 2); // rotating the image through its center
-		double cy = props.y + (srcSize[0].height / 2);
-
-		acoeff[0][0] = co;
-		acoeff[0][1] = -si;
-		acoeff[0][2] = ((1 - co) * cx + si * cy) + tx; //after rotation we translate it to center of output frame
-		acoeff[1][0] = si;
-		acoeff[1][1] = co;
-		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
 	}
 
 	bool compute()
@@ -324,6 +314,21 @@ protected:
 	void* outputPtr;
 	void* inputPtr;
 	double acoeff[2][3] = { {-1, -1, -1}, {-1, -1, -1} };
+
+	int channels;
+	NppiSize srcSize[4];
+	NppiRect srcRect[4];
+	int srcPitch[4];
+	size_t srcNextPtrOffset[4];
+	NppiSize dstSize[4];
+	NppiRect dstRect[4];
+	int dstPitch[4];
+	size_t dstNextPtrOffset[4];
+
+	void* ctx;
+
+	Npp8u* src[3];
+	Npp8u* dst[3];
 };
 
 class DetailDMA : public DetailGPU
