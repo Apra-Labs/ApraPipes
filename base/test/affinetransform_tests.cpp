@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled())
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_NPPI, -45,0,0,2.0)));
+	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -45,0,0,2.0)));
     fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
