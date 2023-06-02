@@ -609,7 +609,7 @@ public:
 	 return true;
 	}
 
-	bool Execute(void* buffer, void* outBuffer,void*intermediatebuffer)
+	bool Execute(void* buffer, void* outBuffer,void*intermediateBuffer)
 	{
 		for (auto i = 0; i < inputChannels; i++)
 		{
@@ -623,7 +623,7 @@ public:
 
 		for (auto i = 0; i < intermediateChannels; i++)
 		{
-			intermediatedst[i] = static_cast<Npp8u*>(intermediatebuffer) + intermediateNextPtrOffset[i];
+			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer) + intermediateNextPtrOffset[i];
 		}
 
 		switch (inputImageType)
@@ -771,7 +771,7 @@ public:
 		return true;
 	}
 
-	bool setMetadata(framemetadata_sp& input, framemetadata_sp& output, framemetadata_sp mintermediate)
+	bool setMetadata(framemetadata_sp& input, framemetadata_sp& output, framemetadata_sp mIntermediate)
 	{	
 		inputFrameType = input->getFrameType();
 		outputFrameType = output->getFrameType();
@@ -828,13 +828,13 @@ public:
 			}
 		}
 
-		if (mintermediate != NULL)
+		if (mIntermediate != NULL)
 		{
-			intermediateFrameType = mintermediate->getFrameType();
+			intermediateFrameType = mIntermediate->getFrameType();
 
 			if (intermediateFrameType = FrameMetadata::RAW_IMAGE)
 			{
-				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mintermediate);
+				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediate);
 				intermediateImageType = outputRawMetadata->getImageType();
 				intermediateChannels = outputRawMetadata->getChannels();
 
@@ -845,7 +845,7 @@ public:
 			}
 			else if (outputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 			{
-				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mintermediate);
+				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mIntermediate);
 				intermediateImageType = outputRawMetadata->getImageType();
 				intermediateChannels = outputRawMetadata->getChannels();
 
@@ -864,7 +864,7 @@ public:
 		return true;
 	}
 
-public:
+protected:
 	FrameMetadata::FrameType inputFrameType;
 	FrameMetadata::FrameType outputFrameType;
 	ImageMetadata::ImageType inputImageType;
@@ -875,9 +875,7 @@ public:
 
 	int inputChannels;
 	int outputChannels;
-	int intermediateChannels;
 	const Npp8u* src[4];
-	NppiSize srcSize[4];
 	NppiRect srcRect[4];
 	int srcPitch[4];
 	size_t srcNextPtrOffset[4];
@@ -896,6 +894,11 @@ public:
 
 	CCNPPIProps props;
 	NppStreamContext nppStreamCtx;
+
+public:
+	int intermediateChannels;
+	NppiSize srcSize[4];
+
 };
 
 CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), props(_props), mFrameLength(0), mNoChange(false)
@@ -1005,11 +1008,11 @@ bool CCNPPI::process(frame_container &frames)
 
 	frame_sp outFrame;
 	frame_sp intermediateFrame;
-	size_t intermediateFramesize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
+	size_t intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
 	if (!mNoChange)
 	{
 		outFrame = makeFrame();
-		intermediateFrame = makeFrame(intermediateFramesize);
+		intermediateFrame = makeFrame(intermediateFrameSize);
 		if (!mDetail->Execute(frame->data(), outFrame->data(), intermediateFrame->data()))
 		{
 			return true;
