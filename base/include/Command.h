@@ -14,6 +14,7 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
+		PlayPause
 	};
 
 	Command()
@@ -236,13 +237,26 @@ public:
 		seekEndTS = _seekEndTS;
 	}
 
+
+	Mp4SeekCommand(uint64_t _seekStartTS) : Command(CommandType::Seek)
+	{
+		seekStartTS = _seekStartTS;
+	}
+
+	Mp4SeekCommand(uint64_t _skipTS, bool _forceReopen = false) : Command(CommandType::Seek)
+	{
+		seekStartTS = _skipTS;
+		forceReopen = _forceReopen;
+	}
+
 	size_t getSerializeSize()
 	{
-		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) + sizeof(seekEndTS) + Command::getSerializeSize();
+		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) + sizeof(seekEndTS) + +sizeof(forceReopen) + Command::getSerializeSize();
 	}
 
 	uint64_t seekStartTS = 0;
-	uint64_t seekEndTS = 0;
+	uint64_t seekEndTS = 9999999999999;
+	bool forceReopen = false;
 private:
 
 	friend class boost::serialization::access;
@@ -252,5 +266,45 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& seekStartTS;
 		ar& seekEndTS;
+		ar& forceReopen;
+	}
+};
+
+class PlayPauseCommand : public Command
+{
+public:
+	PlayPauseCommand() : Command(CommandType::PlayPause)
+	{
+	}
+
+	PlayPauseCommand(float _speed, bool _direction) : Command(CommandType::PlayPause)
+	{
+
+		if (_speed != 0 && _speed != 1)
+		{
+			LOG_ERROR << "Fractional speed is not yet supported.";
+			throw AIPException(AIP_FATAL, "Fractional speed is not yet supported.");
+		}
+		speed = _speed;
+		direction = _direction;
+	}
+
+	size_t getSerializeSize()
+	{
+		return sizeof(PlayPauseCommand) + sizeof(speed) + sizeof(direction) + Command::getSerializeSize();
+	}
+
+	// play speed of the module at any given fps
+	float speed = 1;
+	// fwd = 1, bwd = 0
+	bool direction = 1;
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& speed;
+		ar& direction;
 	}
 };

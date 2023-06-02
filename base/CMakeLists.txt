@@ -198,10 +198,12 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
 	src/OverlayMotionVectors.cpp
+	src/OrderedCacheOfFiles.cpp
 )
 
 SET(CORE_FILES_H
 	include/BufferMaker.h	
+	include/Mp4ErrorFrame.h
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
@@ -257,6 +259,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
 	include/OverlayMotionVectors.h
+	include/OrderedCacheOfFiles.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -619,6 +622,9 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
+	test/mp4_reverse_play_tests.cpp
+	test/ordered_cache_of_files_tests.cpp
+	test/mp4_seek_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

@@ -162,6 +162,7 @@ public:
 	virtual bool init();
 	void operator()(); //to support boost::thread
 	virtual bool run();	
+	bool play(float speed, bool direction = true);
 	bool play(bool play);
 	bool queueStep();
 	virtual bool step();
@@ -240,6 +241,7 @@ protected:
 		Utils::deSerialize(cmd, frame->data(), frame->size());
 	}
 	
+	bool queuePlayPauseCommand(PlayPauseCommand ppCmd);
 	frame_sp makeCommandFrame(size_t size, framemetadata_sp& metadata);
 	frame_sp makeFrame(size_t size, string& pinId);
 	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
@@ -252,6 +254,8 @@ protected:
 		
 	virtual bool send(frame_container& frames, bool forceBlockingPush=false);
 	virtual void sendEOS();	
+	virtual void sendEOS(frame_sp& frame);
+	virtual void sendMp4ErrorFrame(frame_sp& frame);
 	virtual void sendEoPFrame();
 	
 	boost::function<void () > onStepFail;
@@ -318,6 +322,7 @@ protected:
 
 	bool processSourceQue();
 	bool handlePausePlay(bool play);
+	virtual bool handlePausePlay(float speed = 1, bool direction = true);
 	virtual void notifyPlay(bool play) {}
 
 	//makes buffers from frameFactory
@@ -370,6 +375,8 @@ private:
 	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
 	
 	bool mPlay;
+	bool mDirection;
+	float mSpeed;
 	uint32_t mForceStepCount;
 	int mSkipIndex;
 	Kind myNature;

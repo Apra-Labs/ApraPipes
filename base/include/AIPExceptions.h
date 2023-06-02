@@ -19,9 +19,24 @@
 #define AIP_NOTIMPLEMENTED 7723
 #define AIP_NOTSET 7725
 #define AIP_NOTEXEPCTED 7726
+#define MP4_OCOF_END 7726
 
 // Fatal errors
 #define AIP_FATAL 7811
+#define MP4_NAME_PARSE_FAILED 7812
+#define MP4_FILE_CLOSE_FAILED 7813
+#define MP4_RELOAD_RESUME_FAILED 7814
+#define MP4_OPEN_FILE_FAILED 7815
+#define MP4_MISSING_VIDEOTRACK 7816
+#define MP4_MISSING_START_TS 7817
+#define MP4_TIME_RANGE_FETCH_FAILED 7818
+#define MP4_SET_POINTER_END_FAILED 7819
+#define MP4_SEEK_INSIDE_FILE_FAILED 7820
+#define MP4_OCOF_EMPTY 7721
+#define MP4_OCOF_MISSING_FILE 7822
+#define MP4_OCOF_INVALID_DUR 7823
+#define MP4_UNEXPECTED_STATE 7824
+
 
 #define AIPException_LOG_SEV(severity,type) for(std::ostringstream stream; Logger::getLogger()->push(severity, stream);) Logger::getLogger()->aipexceptionPre(stream, severity,type)
 
@@ -67,4 +82,28 @@ private:
 	std::string message;
 };
 
+class Mp4_Exception : public AIP_Exception
+{
+public:
+	explicit Mp4_Exception(int type, const std::string file, int line, const std::string logMessage) :
+		AIP_Exception(type, file, line, logMessage)
+	{
+	}
+
+	explicit Mp4_Exception(int type, const std::string file, int line, int _openFileErrorCode, const std::string logMessage) :
+		AIP_Exception(type, file, line, logMessage)
+	{
+		openFileErrorCode = _openFileErrorCode;
+	}
+
+	int getOpenFileErrorCode()
+	{
+		return openFileErrorCode;
+	}
+
+private:
+	int openFileErrorCode = 0;
+};
+
 #define AIPException(_type,_message) AIP_Exception(_type,__FILE__,__LINE__,_message)
+#define Mp4Exception(_type,_message) Mp4_Exception(_type,__FILE__,__LINE__,_message)
