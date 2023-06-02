@@ -83,7 +83,7 @@ public:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
 		}
-		
+
 		if (!metadata->isSet())
 		{
 			return;
