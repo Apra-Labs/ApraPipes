@@ -262,6 +262,7 @@ SET(IP_FILES
 	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
+	src/AffineTransform.cpp
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
@@ -292,6 +293,7 @@ SET(IP_FILES_H
 	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
+	include/AffineTransform.h
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
@@ -337,7 +339,6 @@ SET(CUDA_IP_FILES
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
-	src/AffineTransform.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -387,7 +388,6 @@ SET(CUDA_IP_FILES_H
 	include/OverlayKernel.h
 	include/RotateNPPI.h
 	include/H264Decoder.h
-	include/AffineTransform.h
 )
 
 IF(ENABLE_ARM64)
@@ -482,7 +482,6 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
-		test/affinetransform_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -527,6 +526,7 @@ SET(UT_FILES
 	test/faciallandmarkscv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp

@@ -1,7 +1,9 @@
+#ifdef APRA_CUDA_ENABLED
 #include <npp.h>
-#include <opencv2/core.hpp> 
 #include <CuCtxSynchronize.h>
 #include  <nppdefs.h> 
+#endif
+#include <opencv2/core.hpp> 
 #include "AffineTransform.h"
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -26,6 +28,7 @@ public:
 	{
 		switch (props.interpolation)
 		{
+#ifdef APRA_CUDA_ENABLED
 		case AffineTransformProps::NN:
 			return NppiInterpolationMode::NPPI_INTER_NN;
 		case AffineTransformProps::LINEAR:
@@ -48,6 +51,7 @@ public:
 			return NppiInterpolationMode::NPPI_INTER_LANCZOS3_ADVANCED; // not supported
 		default:
 			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for Interpolation!");
+#endif
 		}
 	}
 
@@ -154,7 +158,6 @@ class DetailGPU : public Detail
 {
 public:
 	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
-
 	void mSetMetadata(framemetadata_sp& metadata)
 	{
 		Detail::setMetadata(metadata);
@@ -234,6 +237,7 @@ public:
 
 	bool compute()
 	{
+#ifdef APRA_CUDA_ENABLED
 		auto status = NPP_SUCCESS;
 		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
 		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
@@ -306,9 +310,11 @@ public:
 			LOG_ERROR << "Affine Transform failed<" << status << ">";
 			throw AIPException(AIP_FATAL, "Failed to tranform the image");
 		}
+#endif
 
 		return true;
 	}
+
 protected:
 	NppStreamContext nppStreamCtx;
 	void* outputPtr;
@@ -329,7 +335,9 @@ protected:
 
 	Npp8u* src[3];
 	Npp8u* dst[3];
+
 };
+
 
 class DetailDMA : public DetailGPU
 {
@@ -360,9 +368,11 @@ public:
 
 	bool setPtrs()
 	{
+        #ifdef APRA_CUDA_ENABLED
 		inputPtr = inputFrame->data();
 		outputPtr = outputFrame->data();
 		cudaMemset(outputPtr, 0, outputFrame->size());
+        #endif
 		return true;
 	}
 };
@@ -499,6 +509,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType memType = metadata->getMemType();
 
+#ifdef APRA_CUDA_ENABLED
 	if (memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		mDetail.reset(new DeatilCUDA(mProp));
@@ -508,7 +519,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		mDetail.reset(new DetailDMA(mProp));
 	}
-
+#endif
 	else if (memType == FrameMetadata::MemType::HOST)
 	{
 		mDetail.reset(new DetailHost(mProp));
