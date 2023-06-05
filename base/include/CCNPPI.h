@@ -35,6 +35,7 @@ protected:
 	bool processSOS(frame_sp& frame);
 	bool validateInputPins();
 	bool validateOutputPins();
+	bool validateInputOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails		
 	bool shouldTriggerSOS();
 	bool processEOS(string& pinId);
@@ -46,6 +47,7 @@ private:
 	boost::shared_ptr<Detail> mDetail;
 
 	bool mNoChange;
+	bool intermediateConv = false;
 	int mInputFrameType;
 	int mOutputFrameType;
 	size_t mFrameLength;
