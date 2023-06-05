@@ -40,10 +40,13 @@ struct AffineTestsStruct
 		else {
 			metadata = framemetadata_sp(new RawImageMetadata(width, height, imageType, bit_depth, 0, CV_8U, FrameMetadata::HOST, true));
 		}
+#ifdef APRA_CUDA_ENABLED
 		createPipeline(inpFilePath, width, height, imageType, bit_depth, angle, x, y, scale, interpolation,type);
+#endif
 	}
 	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, double angle, int x, int y, double scale, AffineTransformProps::Interpolation interpolation, AffineTransformProps::TransformType type)
 	{
+#ifdef APRA_CUDA_ENABLED
 		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
 		auto rawImagePin = fileReader->addOutputPin(metadata);
 
@@ -64,6 +67,7 @@ struct AffineTestsStruct
 		BOOST_TEST(affineTransform->init());
 		BOOST_TEST(copy2->init());
 		BOOST_TEST(sink->init());
+#endif
 	}
 	boost::shared_ptr<FileReaderModule>fileReader;
 	boost::shared_ptr<Module>copy1;
