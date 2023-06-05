@@ -104,7 +104,7 @@ void CompositeOverlay::deserialize(boost::archive::binary_iarchive& ia)
 	}
 }
 
-size_t DrawingOverlay::getSerializeSize()
+size_t DrawingOverlay::mGetSerializeSize()
 {
 	OverlayInfoSerializeSizeVisitor* visitor = new OverlayInfoSerializeSizeVisitor();
 	accept(visitor);

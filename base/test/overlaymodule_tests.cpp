@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	drawingOverlay.add(&compositeOverlay1);
 	drawingOverlay.add(&circleOverlay1);
 
-	auto size = drawingOverlay.getSerializeSize();
+	auto size = drawingOverlay.mGetSerializeSize();
 	frame_sp frame = source->makeFrame(size, pinId);
 
 	drawingOverlay.serialize(frame);

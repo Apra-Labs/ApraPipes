@@ -192,7 +192,7 @@ public:
 	void serialize(frame_sp frame);
 	void deserialize(frame_sp frame);
 	void draw(frame_sp frame);
-	size_t getSerializeSize();
+	size_t mGetSerializeSize();
 };
 
 // Builder heirarchy
