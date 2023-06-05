@@ -53,6 +53,7 @@ struct AffineTestsStruct
 		}
 		
 		createPipeline(inpFilePath, width, height, imageType, bit_depth, angle, x, y, scale, interpolation,type);
+#endif
 	}
 	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, double angle, int x, int y, double scale, AffineTransformProps::Interpolation interpolation, AffineTransformProps::TransformType type)
 	{
