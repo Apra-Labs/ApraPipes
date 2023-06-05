@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage.raw")));
 	overlay->setNext(fileWriter);
 
-	auto size = drawingOverlay.getSerializeSize();
+	auto size = drawingOverlay.mGetSerializeSize();
 	frame_sp frame = source->makeFrame(size, pinId);
 
 	drawingOverlay.serialize(frame);
