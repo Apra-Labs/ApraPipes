@@ -29,6 +29,7 @@ public:
 #ifdef APRA_CUDA_ENABLED
 		switch (props.interpolation)
 		{
+#ifdef APRA_CUDA_ENABLED
 		case AffineTransformProps::NN:
 			return NppiInterpolationMode::NPPI_INTER_NN;
 		case AffineTransformProps::LINEAR:
@@ -51,6 +52,7 @@ public:
 			return NppiInterpolationMode::NPPI_INTER_LANCZOS3_ADVANCED; // not supported
 		default:
 			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for Interpolation!");
+#endif
 		}
 #endif
 	}
@@ -551,7 +553,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		mDetail.reset(new DetailDMA(mProp));
 	}
-
+#endif
 	else if (memType == FrameMetadata::MemType::HOST)
 	{
 		mDetail.reset(new DetailHost(mProp));
