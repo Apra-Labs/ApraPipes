@@ -40,6 +40,7 @@ protected:
     bool produce();
     bool validateOutputPins();
     void setMetadata(framemetadata_sp &metadata);
+    bool handlePropsChange(frame_sp &frame);
 
 private:
     class Detail;

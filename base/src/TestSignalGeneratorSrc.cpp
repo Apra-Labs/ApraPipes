@@ -32,6 +32,7 @@ public:
     void setProps(const TestSignalGeneratorProps &_props)
     {
         mProps = _props;
+        reset();
     }
     void reset()
     {
@@ -110,11 +111,18 @@ void TestSignalGenerator::setMetadata(framemetadata_sp &metadata)
     }
 }
 
-void TestSignalGenerator::setProps(TestSignalGeneratorProps &_props)
+bool TestSignalGenerator::handlePropsChange(frame_sp &frame)
 {
-    mDetail->setProps(_props);
-    outputFrameSize = (_props.width * _props.height * 3) >> 1;
-    mDetail->reset();
+    TestSignalGeneratorProps props;
+    bool ret = Module::handlePropsChange(frame, props);
+    mDetail->setProps(props);
+    outputFrameSize = (props.width * props.height * 3) >> 1;
+    return ret;
+}
+
+void TestSignalGenerator::setProps(TestSignalGeneratorProps &props)
+{
+    Module::addPropsToQueue(props);
 }
 
 TestSignalGeneratorProps TestSignalGenerator::getProps()
