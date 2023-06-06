@@ -180,6 +180,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 {
+#ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 5, 100, 300, 2.0);
 
@@ -194,7 +195,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests-mono_shift_scale_rotate_mono_1920x1080.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
-
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
@@ -272,6 +273,7 @@ BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 {
+#ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 5, 100, 300, 2.0);
 
@@ -286,6 +288,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests-RGB_Image_shift_scale_rotate_frame_1280x720_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate,*boost::unit_test::disabled())
@@ -327,6 +330,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 {
+#ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGBA;
 	AffineTestsStruct f("./data/rgba_400x400.raw", 400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 40, 100, 200, 2.5);
 
@@ -341,6 +345,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests_frame_all_400x400_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+#endif
 }
 	
 BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled())
@@ -380,6 +385,7 @@ BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled())
 }
 BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
 {
+#ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::YUV444;
 	AffineTestsStruct f("./data/yuv444_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC2P_CATMULLROM,5, 200, 300, 2.0);
 
@@ -394,6 +400,7 @@ BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests_yuv444_1920x1080.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled())
