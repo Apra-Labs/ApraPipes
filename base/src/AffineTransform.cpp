@@ -26,9 +26,9 @@ public:
 	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
 	int setInterPolation(AffineTransformProps::Interpolation interpolation)
 	{
+#ifdef APRA_CUDA_ENABLED
 		switch (props.interpolation)
 		{
-#ifdef APRA_CUDA_ENABLED
 		case AffineTransformProps::NN:
 			return NppiInterpolationMode::NPPI_INTER_NN;
 		case AffineTransformProps::LINEAR:
@@ -166,6 +166,7 @@ public:
 			return;
 		}
 		setMetadataHelper(metadata, mOutputMetadata);
+#ifdef APRA_CUDA_ENABLED
 		int inWidth = srcSize[0].width;
 		int inHeight = srcSize[0].height;
 		int outWidth = dstSize[0].width;
@@ -193,10 +194,12 @@ public:
 		acoeff[1][0] = si;
 		acoeff[1][1] = co;
 		acoeff[1][2] = (-si * cx + (1 - co) * cy) + ty;
+#endif
 	}
 
 	bool setMetadataHelper(framemetadata_sp& input, framemetadata_sp& output)
 	{
+#ifdef APRA_CUDA_ENABLED
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(input);
@@ -232,6 +235,7 @@ public:
 				dstNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
 			}
 		}
+#endif 
 		return true;
 	}
 
@@ -316,6 +320,7 @@ public:
 	}
 
 protected:
+#ifdef APRA_CUDA_ENABLED
 	NppStreamContext nppStreamCtx;
 	void* outputPtr;
 	void* inputPtr;
@@ -335,7 +340,7 @@ protected:
 
 	Npp8u* src[3];
 	Npp8u* dst[3];
-
+#endif 
 };
 
 
@@ -454,12 +459,21 @@ bool AffineTransform::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
+#ifdef APRA_CUDA_ENABLED
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
 		return false;
 	}
+#else
+	if (memType != FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		return false;
+	}
+#endif
 
+#ifdef APRA_CUDA_ENABLED
 	if (mProp.type == AffineTransformProps::TransformType::USING_OPENCV && memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is CUDA_DEVICE, but the transform type is USING_OPENCV";
@@ -477,7 +491,13 @@ bool AffineTransform::validateInputPins()
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is HOST, but the transform type is USING_NPPI";
 		return false;
 	}
-
+#else
+	if (mProp.type == AffineTransformProps::TransformType::USING_NPPI && memType == FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is HOST, but the transform type is USING_NPPI";
+		return false;
+	}
+#endif
 	return true;
 }
 
@@ -498,12 +518,19 @@ bool AffineTransform::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
+#ifdef APRA_CUDA_ENABLED
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF or HOST . Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF . Actual<" << memType << ">";
 		return false;
 	}
-
+#else
+	if (memType != FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be HOST . Actual<" << memType << ">";
+		return false;
+	}
+#endif
 	return true;
 }
 
@@ -512,7 +539,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType memType = metadata->getMemType();
-
+#ifdef APRA_CUDA_ENABLED
 	if (memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		mDetail.reset(new DeatilCUDA(mProp));
@@ -527,7 +554,12 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		mDetail.reset(new DetailHost(mProp));
 	}
-
+#else
+	if (memType == FrameMetadata::MemType::HOST)
+	{
+		mDetail.reset(new DetailHost(mProp));
+	}
+#endif
 	else
 	{
 		throw std::runtime_error("Memory Type not supported");
