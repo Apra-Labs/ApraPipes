@@ -553,7 +553,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		mDetail.reset(new DetailDMA(mProp));
 	}
-#endif
+
 	else if (memType == FrameMetadata::MemType::HOST)
 	{
 		mDetail.reset(new DetailHost(mProp));
