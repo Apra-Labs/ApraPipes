@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Module.h"
+#ifdef APRA_CUDA_ENABLED
 #include "CudaCommon.h"
+#endif
 
 class Detail;
 class DeatilCUDA;
