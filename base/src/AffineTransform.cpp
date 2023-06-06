@@ -29,7 +29,6 @@ public:
 #ifdef APRA_CUDA_ENABLED
 		switch (props.interpolation)
 		{
-#ifdef APRA_CUDA_ENABLED
 		case AffineTransformProps::NN:
 			return NppiInterpolationMode::NPPI_INTER_NN;
 		case AffineTransformProps::LINEAR:
