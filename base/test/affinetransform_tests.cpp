@@ -7,13 +7,16 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "test_utils.h"
-#include "CudaMemCopy.h"
 #include "ExternalSinkModule.h"
 #include "AIPExceptions.h"
+#include "Module.h"
 #include "stdafx.h"
 #include "PipeLine.h"
+#ifdef APRA_CUDA_ENABLED
 #include "nppdefs.h"
-#include "Module.h"
+#include "CudaMemCopy.h"
+#endif
+
 
 BOOST_AUTO_TEST_SUITE(affinetransform_tests)
 
