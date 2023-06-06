@@ -45,7 +45,7 @@ public:
 		scale = _scale;
 		type = _type;
 	}
-
+#ifdef APRA_CUDA_ENABLED
 	AffineTransformProps(TransformType _type, Interpolation _interpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, double _scale = 1.0)
 	{
 		if (_type != TransformType::USING_NPPI)
@@ -60,12 +60,15 @@ public:
 		interpolation = _interpolation;
 		type = _type;
 	}
+#endif
 
 	int x = 0;
 	int y = 0;
 	double scale = 1.0;
 	double angle;
+#ifdef APRA_CUDA_ENABLED
 	cudastream_sp stream;
+#endif
 	Interpolation interpolation = AffineTransformProps::NN;
 	TransformType type;
 
