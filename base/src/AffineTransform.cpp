@@ -51,8 +51,8 @@ public:
 			return NppiInterpolationMode::NPPI_INTER_LANCZOS3_ADVANCED; // not supported
 		default:
 			throw new AIPException(AIP_NOTEXEPCTED, "Unknown value for Interpolation!");
-#endif
 		}
+#endif
 	}
 
 	~Detail() {}
