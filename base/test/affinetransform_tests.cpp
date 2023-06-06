@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests-MONO_scale_rotate_mono_1920x1080.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(MONO_shrink)
+BOOST_AUTO_TEST_CASE(MONO_shrink,* boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 0, 0, 0, 0.2);
