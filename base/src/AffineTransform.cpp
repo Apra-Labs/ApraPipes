@@ -344,7 +344,9 @@ class DetailDMA : public DetailGPU
 public:
 	DetailDMA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
+#ifdef APRA_CUDA_ENABLED
 		nppStreamCtx.hStream = props.stream->getCudaStream();
+#endif
 	}
 
 	bool setPtrs()
@@ -363,7 +365,9 @@ class DeatilCUDA: public DetailGPU
 public:
 	DeatilCUDA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
+#ifdef APRA_CUDA_ENABLED
 		nppStreamCtx.hStream = props.stream->getCudaStream();
+#endif
 	}
 
 	bool setPtrs()
@@ -496,7 +500,7 @@ bool AffineTransform::validateOutputPins()
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF or HOST . Actual<" << memType << ">";
 		return false;
 	}
 
@@ -509,7 +513,6 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType memType = metadata->getMemType();
 
-#ifdef APRA_CUDA_ENABLED
 	if (memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		mDetail.reset(new DeatilCUDA(mProp));
@@ -519,11 +522,12 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		mDetail.reset(new DetailDMA(mProp));
 	}
-#endif
+
 	else if (memType == FrameMetadata::MemType::HOST)
 	{
 		mDetail.reset(new DetailHost(mProp));
 	}
+
 	else
 	{
 		throw std::runtime_error("Memory Type not supported");
