@@ -11,9 +11,7 @@
 #include "CudaMemCopy.h"
 #include "ResizeNPPI.h"
 #include "CCNPPI.h"
-#include "JPEGEncoderNVJPEG.h"
 #include "test_utils.h"
-#include "nv_test_utils.h"
 #include "PipeLine.h"
 
 BOOST_AUTO_TEST_SUITE(ccnppi_tests)
