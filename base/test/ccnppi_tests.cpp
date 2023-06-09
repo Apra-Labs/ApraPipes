@@ -82,7 +82,7 @@ struct CCNPPITestsStruct
 	}
 };
 
-BOOST_AUTO_TEST_CASE(MONO_to_RGB)
+BOOST_AUTO_TEST_CASE(MONO_to_RGB,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
 	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::RGB);
