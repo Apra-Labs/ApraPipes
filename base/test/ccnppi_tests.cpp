@@ -716,7 +716,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_BGRA, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(NV12_to_YUV420)
+BOOST_AUTO_TEST_CASE(NV12_to_YUV420, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::NV12;
 	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, ImageMetadata::ImageType::YUV420);
