@@ -357,8 +357,8 @@ public:
 	bool setPtrs()
 	{
         #if defined(__arm__) || defined(__aarch64__)
-		inputPtr = static_cast<DMAFDWrapper*>(inputFrame->data());
-		outputPtr = static_cast<DMAFDWrapper*>(outputFrame->data());
+		inputPtr = (static_cast<DMAFDWrapper*>(inputFrame->data()))->getCudaPtr();
+		outputPtr = (static_cast<DMAFDWrapper*>(outputFrame->data()))->getCudaPtr();
 		cudaMemset(outputPtr, 0, outputFrame->size());
         #endif
 		return true;
