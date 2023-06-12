@@ -817,12 +817,10 @@ public:
 				return convertNV12toYUV420();
 			case ImageMetadata::RGBA:
 				convertNV12toRGB(true);
-				convertRGBtoRGBA(true);
-				break;
+				return convertRGBtoRGBA(true);
 			case ImageMetadata::BGRA:
 				convertNV12toRGB(true);
-				convertRGBtoBGRA(true);
-				break;
+				return convertRGBtoBGRA(true);
 			default:
 				throw AIPException(AIP_FATAL, "conversion not supported");
 			}
@@ -834,6 +832,8 @@ public:
 			{
 			case ImageMetadata::YUV444:
 				return convertYUV411_ItoYUV444();
+			default:
+				throw AIPException(AIP_FATAL, "conversion not supported");
 			}
 		}
 	}
