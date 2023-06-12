@@ -21,22 +21,22 @@ public:
 	{
 		UNSET = 0,
 		MONO = 1,
-		BGR, 
-		BGRA, 
-		RGB, 
+		BGR,
+		BGRA,
+		RGB,
 		RGBA,
-		YUV411_I = 10, 
-		YUV444, 
+		YUV411_I = 10,
+		YUV444,
 		YUV420,
 		UYVY,
 		YUYV,
 		NV12,
-		BAYERBG10 = 20, 
+		BAYERBG10 = 20,
 		BAYERBG8,
-		BAYERGB8, 
+		BAYERGB8,
 		BAYERGR8,
 		BAYERRG8
-	} imgFormats;
+	};
 
 	const int conversionTable[37][2] =
 	{
@@ -78,12 +78,12 @@ public:
 		{15, 12},  // NV12 to YUV420
 	    {10, 11 }  // yuv411 to YUV444
 	};
-	int convmatrix[Imageformats::BAYERRG8][Imageformats::BAYERRG8][2] = { {-1} };
+	int convmatrix[25][25][2] = { {-1} };
 
 	void setConvMatrix() {
 
-		for (int i = 0; i < Imageformats::BAYERRG8; i++) {
-			for (int j = 0; j < Imageformats::BAYERRG8; j++) {
+		for (int i = 0; i < 25; i++) {
+			for (int j = 0; j < 25; j++) {
 				if (i == j) {
 					convmatrix[i][j][0] = 0;
 					convmatrix[i][j][1] = 0;
@@ -1026,11 +1026,6 @@ bool CCNPPI::validateOutputPins()
 		return false;
 	}
 
-	return true;
-}
-
-bool CCNPPI::validateInputOutputPins()
-{
 	return true;
 }
 
