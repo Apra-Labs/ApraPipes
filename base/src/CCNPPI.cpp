@@ -1109,6 +1109,7 @@ bool CCNPPI::process(frame_container& frames)
 	intermediateFrame.reset();
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
+	intermediateFrame.reset();
 
 	return true;
 }
