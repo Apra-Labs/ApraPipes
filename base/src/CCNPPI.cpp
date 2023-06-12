@@ -1036,11 +1036,6 @@ bool CCNPPI::validateOutputPins()
 	return true;
 }
 
-bool CCNPPI::validateInputOutputPins()
-{
-	return true;
-}
-
 void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
