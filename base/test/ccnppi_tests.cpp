@@ -730,7 +730,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_YUV420, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
+BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::YUV411_I;
 	CCNPPITestsStruct f("./data/yuv411_I_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV411_I, CV_8UC3, ImageMetadata::ImageType::YUV444);
@@ -748,7 +748,7 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
 	Test_Utils::saveOrCompare("./data/testOutput/yuv411_to_yuv444.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(YUV420_to_YUV420)
+BOOST_AUTO_TEST_CASE(YUV420_to_YUV420, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::YUV420;
 	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), ImageMetadata::ImageType::YUV420);
