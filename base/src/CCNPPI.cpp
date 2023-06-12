@@ -1077,7 +1077,7 @@ bool CCNPPI::process(frame_container& frames)
 
 	frame_sp outFrame;
 	frame_sp intermediateFrame;
-	size_t intermediateFrameSize = 0;
+	size_t intermediateFrameSize = NOT_SET_NUM;
 	if (intermediateConv)
 	{
 		intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
