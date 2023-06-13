@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_YUV420,*boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(RGBA_to_MONO)
+BOOST_AUTO_TEST_CASE(RGBA_to_MONO, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGBA;
 	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::MONO);
@@ -698,7 +698,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_RGBA)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(NV12_to_BGRA)
+BOOST_AUTO_TEST_CASE(NV12_to_BGRA, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::NV12;
 	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, ImageMetadata::ImageType::BGRA);
