@@ -1077,18 +1077,19 @@ bool CCNPPI::process(frame_container& frames)
 
 	frame_sp outFrame;
 	frame_sp intermediateFrame;
-	size_t intermediateFrameSize = NOT_SET_NUM;
-	if (intermediateConv)
-	{
-		intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
-	}
+	//size_t intermediateFrameSize = NOT_SET_NUM;
+	//if (intermediateConv)
+	//{
+		//intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
+	//}
 	if (!mNoChange)
 	{
 		outFrame = makeFrame();
-		if (intermediateConv)
-		{
-			intermediateFrame = makeFrame(intermediateFrameSize);
-		}
+		intermediateFrame = makeFrame();
+		//if (intermediateConv)
+		//{
+			//intermediateFrame = makeFrame(intermediateFrameSize);
+		//}
 		if (!mDetail->execute(frame, outFrame, intermediateFrame))
 		{
 			return true;
@@ -1176,7 +1177,7 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	{
 		if ((outputImageType == ImageMetadata::BGRA) || (outputImageType == ImageMetadata::RGBA))
 		{
-			intermediateConv = true;
+			//intermediateConv = true;
 			mIntermediateMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
 			auto mrawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediateMetadata);
 			RawImageMetadata moutputMetadata(width, height, ImageMetadata::RGB, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
