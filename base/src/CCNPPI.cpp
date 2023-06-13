@@ -17,7 +17,7 @@ public:
 
 	~Detail() {}
 
-	/*enum Imageformats
+	enum Imageformats
 	{
 		UNSET = 0,
 		MONO = 1,
@@ -36,71 +36,71 @@ public:
 		BAYERGB8,
 		BAYERGR8,
 		BAYERRG8
-	};*/
+	};
 
-	//const int conversionTable[37][2] =
-	//{
-	//	{1, 2},   // MONO to BGR
-	//	{1, 3},   //MONO to BGRA
-	//	{1, 4},   // MONO to RGB
-	//	{1, 5},   // MONO to RGBA
-	//	{1, 12},  // MONO to YUV420
-	//	{2, 1},   // BGR to MONO
-	//	{2, 3},   // BGR to BGRA
-	//	{2, 4},   // BGR to RGB
-	//	{2, 5},   // BGR to RGBA
-	//	{2, 12},  // BGR to YUV420
-	//	{3, 1},   // BGRA to MONO
-	//	{3, 2},   // BGRA to BGR
-	//	{3, 4},   // BGRA to RGB
-	//	{3, 5},   // BGRA to RGBA
-	//	{3, 12},  // BGRA to YUV420
-	//	{4, 1},   // RGB to MONO
-	//	{4, 2},   // RGB to BGR
-	//	{4, 5},   // RGB to RGBA
-	//	{4,3},    // RGB to BGRA
-	//	{4, 12},  // RGB to YUV420
-	//	{5, 1},   // RGBA to MONO
-	//	{5, 2},   // RGBA to BGR
-	//	{5, 3},   // RGBA to BGRA
-	//	{5, 4},   // RGBA to RGB
-	//	{5, 12},  // RGBA to YUV420
-	//	{12, 1},  // YUV420 to MONO
-	//	{12, 2},  // YUV420 to BGR
-	//	{12, 3},  // YUV420 to BGRA
-	//	{12, 4},  // YUV420 to RGB
-	//	{12, 5},  // YUV420 to RGBA
-	//	{15, 1},  // NV12 to MONO
-	//	{15, 2},  // NV12 to BGR
-	//	{15, 3}, // Nv12 to BGRA
-	//	{15, 4},  // NV12 to RGB
-	//	{15, 5}, // NV12 to RGBA
-	//	{15, 12},  // NV12 to YUV420
-	//    {10, 11 }  // yuv411 to YUV444
-	//};
-	//int convmatrix[25][25][2] = { {-1} };
+	const int conversionTable[37][2] =
+	{
+		{1, 2},   // MONO to BGR
+		{1, 3},   //MONO to BGRA
+		{1, 4},   // MONO to RGB
+		{1, 5},   // MONO to RGBA
+		{1, 12},  // MONO to YUV420
+		{2, 1},   // BGR to MONO
+		{2, 3},   // BGR to BGRA
+		{2, 4},   // BGR to RGB
+		{2, 5},   // BGR to RGBA
+		{2, 12},  // BGR to YUV420
+		{3, 1},   // BGRA to MONO
+		{3, 2},   // BGRA to BGR
+		{3, 4},   // BGRA to RGB
+		{3, 5},   // BGRA to RGBA
+		{3, 12},  // BGRA to YUV420
+		{4, 1},   // RGB to MONO
+		{4, 2},   // RGB to BGR
+		{4, 5},   // RGB to RGBA
+		{4,3},    // RGB to BGRA
+		{4, 12},  // RGB to YUV420
+		{5, 1},   // RGBA to MONO
+		{5, 2},   // RGBA to BGR
+		{5, 3},   // RGBA to BGRA
+		{5, 4},   // RGBA to RGB
+		{5, 12},  // RGBA to YUV420
+		{12, 1},  // YUV420 to MONO
+		{12, 2},  // YUV420 to BGR
+		{12, 3},  // YUV420 to BGRA
+		{12, 4},  // YUV420 to RGB
+		{12, 5},  // YUV420 to RGBA
+		{15, 1},  // NV12 to MONO
+		{15, 2},  // NV12 to BGR
+		{15, 3}, // Nv12 to BGRA
+		{15, 4},  // NV12 to RGB
+		{15, 5}, // NV12 to RGBA
+		{15, 12},  // NV12 to YUV420
+	    {10, 11 }  // yuv411 to YUV444
+	};
+	int convmatrix[25][25][2] = { {-1} };
 
-	//void setConvMatrix() {
+	void setConvMatrix() {
 
-	//	for (int i = 0; i < 25; i++) {
-	//		for (int j = 0; j < 25; j++) {
-	//			if (i == j) {
-	//				convmatrix[i][j][0] = 0;
-	//				convmatrix[i][j][1] = 0;
-	//			}
-	//			else {
-	//				convmatrix[i][j][0] = -1;
-	//				convmatrix[i][j][1] = -1;
-	//			}
-	//		}
-	//	}
-	//	for (int k = 0; k < 37; k++) {
-	//		int i = conversionTable[k][0];
-	//		int j = conversionTable[k][1];
-	//		convmatrix[i][j][0] = conversionTable[k][0];
-	//		convmatrix[i][j][1] = conversionTable[k][1];
-	//	}
-	//}
+		for (int i = 0; i < 25; i++) {
+			for (int j = 0; j < 25; j++) {
+				if (i == j) {
+					convmatrix[i][j][0] = 0;
+					convmatrix[i][j][1] = 0;
+				}
+				else {
+					convmatrix[i][j][0] = -1;
+					convmatrix[i][j][1] = -1;
+				}
+			}
+		}
+		for (int k = 0; k < 37; k++) {
+			int i = conversionTable[k][0];
+			int j = conversionTable[k][1];
+			convmatrix[i][j][0] = conversionTable[k][0];
+			convmatrix[i][j][1] = conversionTable[k][1];
+		}
+	}
 	
 	bool convertMONOtoRGB()
 	{
@@ -1171,11 +1171,11 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 		outputImageType = rawOutMetadata->getImageType();
 	}
 
-	//mDetail->setConvMatrix();
-	//if (mDetail->convmatrix[inputImageType][outputImageType][0] == -1 && mDetail->convmatrix[inputImageType][outputImageType][1] == -1)
-	//{
-		//throw AIPException(AIP_FATAL, "conversion not supported");
-	//}
+	mDetail->setConvMatrix();
+	if (mDetail->convmatrix[inputImageType][outputImageType][0] == -1 && mDetail->convmatrix[inputImageType][outputImageType][1] == -1)
+	{
+		throw AIPException(AIP_FATAL, "conversion not supported");
+	}
 
 	mIntermediateMetadata = nullptr;
 
