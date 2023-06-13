@@ -121,23 +121,20 @@ BOOST_AUTO_TEST_CASE(MONO_to_BGR,*boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
 {
-	
-		ImageMetadata::ImageType::MONO;
-		CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::RGBA);
+	ImageMetadata::ImageType::MONO;
+	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, ImageMetadata::ImageType::RGBA);
 
-		f.fileReader->step();
-		f.copy1->step();
-		f.ccnppi->step();
-		f.copy2->step();
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-		auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-		auto frames = f.sink->pop();
-		BOOST_TEST((frames.find(outputPinId) != frames.end()));
-		auto outFrame = frames[outputPinId];
-		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-
-		Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
-	
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+	auto frames = f.sink->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(MONO_to_BGRA)
@@ -721,22 +718,21 @@ BOOST_AUTO_TEST_CASE(NV12_to_BGRA)
 
 BOOST_AUTO_TEST_CASE(NV12_to_YUV420)
 {
-	
-		ImageMetadata::ImageType::NV12;
-		CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::YUV420);
+	ImageMetadata::ImageType::NV12;
+	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), ImageMetadata::ImageType::YUV420);
 
-		f.fileReader->step();
-		f.copy1->step();
-		f.ccnppi->step();
-		f.copy2->step();
+	f.fileReader->step();
+	f.copy1->step();
+	f.ccnppi->step();
+	f.copy2->step();
 
-		auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
-		auto frames = f.sink->pop();
-		BOOST_TEST((frames.find(outputPinId) != frames.end()));
-		auto outFrame = frames[outputPinId];
-		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
+	auto outputPinId = f.copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
+	auto frames = f.sink->pop();
+	BOOST_TEST((frames.find(outputPinId) != frames.end()));
+	auto outFrame = frames[outputPinId];
+	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
-		Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	
 }
 
