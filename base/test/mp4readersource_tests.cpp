@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE(parse_root_dir_and_find_the_video)
 }
 
 //Note: We still have to implement the feature to read and write video and simultaneously
-BOOST_AUTO_TEST_CASE(mp4reader_waits_when_no_video_and_reads_whenever_video_is_written)
+BOOST_AUTO_TEST_CASE(mp4reader_waits_when_no_video_and_reads_whenever_video_is_written, *boost::unit_test::disabled())
 {
 	int width = 1280;
 	int height = 720;
