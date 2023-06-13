@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_RGB,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	
 }
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_BGR,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(MONO_to_BGRA, *boost::unit_test::disabled())
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_BGRA, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(MONO_to_YUV420)
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_YUV420)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/mono_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/mono_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGB_to_MONO)
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_MONO)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgb_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGB_to_BGR)
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_BGR)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGB_to_RGBA)
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_RGBA)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgb_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGB_to_BGRA,*boost::unit_test::disabled())
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_BGRA,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGB_to_YUV420)
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_YUV420)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgb_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgb_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGR_to_MONO,*boost::unit_test::disabled())
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_MONO,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgr_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGR_to_RGB,*boost::unit_test::disabled())
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_RGB,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGR_to_RGBA,*boost::unit_test::disabled())
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_RGBA,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGR_to_BGRA,*boost::unit_test::disabled())
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_BGRA,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgr_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGR_to_YUV420,*boost::unit_test::disabled())
@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_YUV420,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgr_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgr_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGBA_to_MONO, *boost::unit_test::disabled())
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_MONO, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgba_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGBA_to_RGB)
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_RGB)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgba_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGBA_to_BGR, *boost::unit_test::disabled())
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_BGR, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGBA_to_BGRA)
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_BGRA)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(RGBA_to_YUV420)
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_YUV420)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/rgba_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGRA_to_MONO,*boost::unit_test::disabled())
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_MONO,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgra_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGRA_to_RGB,*boost::unit_test::disabled())
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_RGB,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGRA_to_BGR,*boost::unit_test::disabled())
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_BGR,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgra_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGRA_to_RGBA,*boost::unit_test::disabled())
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_RGBA,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(BGRA_to_YUV420,*boost::unit_test::disabled())
@@ -530,7 +530,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_YUV420,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/bgra_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/bgra_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(YUV420_to_MONO)
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_MONO)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(YUV420_to_RGB)
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_RGB)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/YUV420_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/YUV420_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(YUV420_to_BGR,*boost::unit_test::disabled())
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_BGR,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(YUV420_to_RGBA)
@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_RGBA)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(YUV420_to_BGRA,*boost::unit_test::disabled())
@@ -620,7 +620,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_BGRA,*boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(NV12_to_MONO, *boost::unit_test::disabled())
@@ -638,7 +638,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_MONO, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_mono.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(NV12_to_RGB)
@@ -656,7 +656,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_RGB)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgb.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(NV12_to_BGR, *boost::unit_test::disabled())
@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_BGR, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(NV12_to_RGBA)
@@ -694,7 +694,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_RGBA)
 		BOOST_TEST((frames.find(outputPinId) != frames.end()));
 		auto outFrame = frames[outputPinId];
 		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-		//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+		Test_Utils::saveOrCompare("./data/testOutput/nv12_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	}
 }
 
@@ -713,7 +713,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_BGRA, *boost::unit_test::disabled())
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_bgra.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(NV12_to_YUV420)
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_YUV420)
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
 
-	//Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/nv12_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	
 }
 
@@ -751,7 +751,7 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv411_to_yuv444.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv411_to_yuv444.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	
 }
 
@@ -770,7 +770,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_YUV420)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-	//Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/testOutput/yuv420_to_yuv420.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
