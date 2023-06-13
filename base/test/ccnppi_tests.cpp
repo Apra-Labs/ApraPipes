@@ -135,7 +135,6 @@ BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
 		auto outFrame = frames[outputPinId];
 		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 
-		std::cout << "Printing image " << i << std::endl;
 		Test_Utils::saveOrCompare("./data/testOutput/mono_to_rgba.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 	
 }
