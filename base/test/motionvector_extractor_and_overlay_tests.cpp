@@ -4,7 +4,6 @@
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
 #include "MotionVectorExtractor.h"
-#include "OverlayMotionVectors.h"
 #include "ExternalSinkModule.h"
 #include "test_utils.h"
 #include "PipeLine.h"
@@ -13,6 +12,7 @@
 #include "ImageViewerModule.h"
 #include "Logger.h"
 #include "RTSPClientSrc.h"
+#include "OverlayModule.h"
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
 
@@ -47,23 +47,25 @@ void motionVectorExtract(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	motionExtractor->setNext(sink);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(motionExtractor->init());
-	BOOST_TEST(sink->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 
-	fileReader->play(true);
+	p->appendModule(fileReader);
 
-	for (int i = 0; i < 231; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		motionExtractor->step();
-		auto frames = sink->pop();
-		auto outFrame = frames.begin()->second;
-		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::MOTION_VECTOR_DATA);
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(10);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 }
 
-void motionVectorExtractAndOverlay(MotionVectorExtractorProps::MVExtractMethod MvExtract, OverlayMotionVectorProps::MVOverlayMethod MvOverlay)
+void motionVectorExtractAndOverlay(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -74,43 +76,39 @@ void motionVectorExtractAndOverlay(MotionVectorExtractorProps::MVExtractMethod M
 
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
-	fileReaderProps.readLoop = true;
+	fileReaderProps.readLoop = false;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract,enableOverlay)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, enableOverlay)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
-	motionExtractor->setNext(overlayMotionVector);
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	motionExtractor->setNext(overlay);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	overlayMotionVector->setNext(sink);
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage_????.raw")));
+	overlay->setNext(fileWriter);
 
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(motionExtractor->init());
-	BOOST_TEST(overlayMotionVector->init());
-	BOOST_TEST(sink->init());
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-	fileReader->step();
-	motionExtractor->step();
-	overlayMotionVector->step();
-	for (int i = 0; i < 230; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		motionExtractor->step();
-		overlayMotionVector->step();
-		auto frames = sink->pop();
-		auto outFrame = frames.begin()->second;
-		BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(10);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 }
 
-void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtractMethod MvExtract, OverlayMotionVectorProps::MVOverlayMethod MvOverlay)
+void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -127,11 +125,11 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
-	motionExtractor->setNext(overlayMotionVector);
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	motionExtractor->setNext(overlay);
 
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	overlayMotionVector->setNext(sink);
+	overlay->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(fileReader);
@@ -140,7 +138,7 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
-	MotionVectorExtractorProps propsChange(MvExtract,true);
+	MotionVectorExtractorProps propsChange(MvExtract, true);
 	motionExtractor->setProps(propsChange);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
@@ -151,7 +149,7 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	p.wait_for_all();
 }
 
-void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract, OverlayMotionVectorProps::MVOverlayMethod MvOverlay) //, *boost::unit_test::disabled()) 
+void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -167,14 +165,14 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract,overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
-	motionExtractor->setNext(overlayMotionVector);
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	motionExtractor->setNext(overlay);
 
 	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
-	overlayMotionVector->setNext(sink);
+	overlay->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(fileReader);
@@ -189,7 +187,7 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	p.wait_for_all();
 }
 
-void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract, OverlayMotionVectorProps::MVOverlayMethod MvOverlay) 
+void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -202,18 +200,18 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	const std::string url = "";
 	std::string username = "";
 	std::string password = "";
-	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url,d.empty,d.empty)));
+	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	rtspSrc->addOutputPin(meta);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract,overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
 	rtspSrc->setNext(motionExtractor);
 
-	auto overlayMotionVector = boost::shared_ptr<Module>(new OverlayMotionVector(OverlayMotionVectorProps(MvOverlay)));
-	motionExtractor->setNext(overlayMotionVector);
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	motionExtractor->setNext(overlay);
 
 	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
-	overlayMotionVector->setNext(sink);
+	overlay->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(rtspSrc);
@@ -235,22 +233,22 @@ BOOST_AUTO_TEST_CASE(basic_extract_motion_vector_ffmpeg)
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_ffmpeg)
 {
-	motionVectorExtractAndOverlay(MotionVectorExtractorProps::FFMPEG, OverlayMotionVectorProps::FFMPEG);
+	motionVectorExtractAndOverlay(MotionVectorExtractorProps::FFMPEG);
 }
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_setprops_ffmpeg)
 {
-	motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::FFMPEG, OverlayMotionVectorProps::FFMPEG);
+	motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::FFMPEG);
 }
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_render_ffmpeg, *boost::unit_test::disabled())
 {
-	motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::FFMPEG, OverlayMotionVectorProps::FFMPEG);
+	motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::FFMPEG);
 }
 
 BOOST_AUTO_TEST_CASE(rtspcam_extract_motion_vectors_and_overlay_render_ffmpeg, *boost::unit_test::disabled())
 {
-	rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::FFMPEG, OverlayMotionVectorProps::FFMPEG);
+	rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::FFMPEG);
 }
 
 BOOST_AUTO_TEST_CASE(basic_extract_motion_vector_openh264)
@@ -260,17 +258,17 @@ BOOST_AUTO_TEST_CASE(basic_extract_motion_vector_openh264)
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_openh264)
 {
-	motionVectorExtractAndOverlay(MotionVectorExtractorProps::OPENH264, OverlayMotionVectorProps::OPENH264);
+	motionVectorExtractAndOverlay(MotionVectorExtractorProps::OPENH264);
 }
 
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_render_openh264, *boost::unit_test::disabled())
 {
-	motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264, OverlayMotionVectorProps::OPENH264);
+	motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264);
 }
 
 BOOST_AUTO_TEST_CASE(rtspcam_extract_motion_vectors_and_overlay_render_openh264, *boost::unit_test::disabled())
 {
-	rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264, OverlayMotionVectorProps::OPENH264);
+	rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
