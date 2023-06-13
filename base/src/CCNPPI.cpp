@@ -690,7 +690,7 @@ public:
 
 		for (auto i = 0; i < intermediateChannels; i++)
 		{
-			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer->data()) + intermediateNextPtrOffset[i];
+ 			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer->data()) + intermediateNextPtrOffset[i];
 		}
 
 		switch (inputImageType)
