@@ -52,6 +52,7 @@ public:
 	std::string getLastVideoInCache() { return videoCache.rbegin()->path; }
 	void updateCache(std::string& filePath, uint64_t& start_ts, uint64_t& end_ts); // allow updates from playback
 	std::map<std::string, std::pair<uint64_t, uint64_t>> getSnapShot(); // too costly, use for debugging only
+	bool probe(boost::filesystem::path dirPath, std::string& videoName);
 private:
 	bool lastKnownPlaybackDir = true; // sync with mp4 playback
 	boost::mutex m_mutex;

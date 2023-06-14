@@ -8,13 +8,9 @@
 #include "AIPExceptions.h"
 #include "PipeLine.h"
 
-#include "FileReaderModule.h"
-//#include "ProtoSerializer.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
-//#include "ProtoDeserializer.h"
 #include "EncodedImageMetadata.h"
-//#include "JPEGDecoderIM.h"
 #include "FrameContainerQueue.h"
 #include "H264Metadata.h"
 
@@ -22,20 +18,20 @@ BOOST_AUTO_TEST_SUITE(mp4_seek_tests)
 
 struct SetupSeekTests
 {
-	SetupSeekTests(std::string& startingVideoPath, int width, int height, int reInitInterval, bool parseFS, bool readLoop, int type = 1)
+	SetupSeekTests(std::string& startingVideoPath, int reInitInterval, bool parseFS, bool readLoop, FrameMetadata::FrameType frameType)
 	{
 		framemetadata_sp imageMetadata;
 		LoggerProps loggerProps;
 		loggerProps.logLevel = boost::log::trivial::severity_level::info;
 		Logger::initLogger(loggerProps);
 
-		auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, reInitInterval, true, readLoop);
+		auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, reInitInterval, true, readLoop, false);
 		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-		if (type == 1)
+		if (frameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 		{
 			imageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 		}
-		else
+		else if(frameType == FrameMetadata::FrameType::H264_DATA)
 		{
 			imageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 		}
@@ -134,8 +130,7 @@ struct SetupSeekTests
 BOOST_AUTO_TEST_CASE(no_seek)
 {
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	s.mp4Reader->step();
 	auto frames = s.sink->pop();
@@ -149,8 +144,7 @@ BOOST_AUTO_TEST_CASE(seek_in_current_file)
 {
 	/* video length is 3 seconds */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	s.mp4Reader->step();
 
@@ -178,8 +172,7 @@ BOOST_AUTO_TEST_CASE(seek_in_current_file)
 BOOST_AUTO_TEST_CASE(seek_in_next_file)
 {
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -205,8 +198,8 @@ BOOST_AUTO_TEST_CASE(seek_in_file_in_next_hr)
 {
 	/* seek to frame inside the file in next hr */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -230,8 +223,7 @@ BOOST_AUTO_TEST_CASE(seek_in_file_in_next_day)
 {
 	/* seek to frame inside the file in next day */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -257,8 +249,7 @@ BOOST_AUTO_TEST_CASE(seek_fails_no_reset)
 	/* the last video of the same hour as the skipTS is not long enough
 	 expectation is that seek will fail and continue to find the next available frame since its not EOF */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -283,8 +274,7 @@ BOOST_AUTO_TEST_CASE(hr_missing_next_avl_hr)
 {
 	/* no recording for the hour exists - move to next available hour */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	LOG_INFO << "current open video before seek <" << s.mp4Reader->getOpenVideoPath() << ">";
 	/* process one frame */
@@ -310,8 +300,7 @@ BOOST_AUTO_TEST_CASE(hr_missing_next_avl_day)
 {
 	/* no recording for the day exists - move to next available day */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -334,8 +323,7 @@ BOOST_AUTO_TEST_CASE(missing_past_day_seek)
 {
 	/* no recording for the past day exists - move to next available day i.e. first frame in recordings */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -360,8 +348,7 @@ BOOST_AUTO_TEST_CASE(seek_fail_eof_reset_state)
 	/* seek beyond the last frame of of the last video - expectation is that
 	seek will fail and reset the state to pre-seek state.*/
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -414,8 +401,7 @@ BOOST_AUTO_TEST_CASE(seek_to_last_frame)
 {
 	/* seek to the exact last frame - next and exact match both */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -450,8 +436,7 @@ BOOST_AUTO_TEST_CASE(reach_eof_do_eos_then_seek)
 {
 	/* seek to last frame of the recordings, after processing it, we should reach EOF */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -500,8 +485,7 @@ BOOST_AUTO_TEST_CASE(refresh_last_file_on_seek)
 	// TODO: put asserts in the test 
 	/* seek to the exact last video twice - make sure video is reopened every time we seek to last video in cache (fwd only) */
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -545,9 +529,8 @@ BOOST_AUTO_TEST_CASE(refresh_last_file_on_seek)
 BOOST_AUTO_TEST_CASE(seek_with_parseFS_disabled)
 {
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/apra.mp4";
-	int width = 22, height = 30;
 	bool parseFS = false;
-	SetupSeekTests s(startingVideoPath, width, height, 0, parseFS, false);
+	SetupSeekTests s(startingVideoPath, 0, parseFS, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -673,10 +656,9 @@ BOOST_AUTO_TEST_CASE(seek_with_parseFS_disabled)
 BOOST_AUTO_TEST_CASE(read_loop)
 {
 	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/apra.mp4";
-	int width = 22, height = 30;
 	bool parseFS = false;
 	bool readLoop = true;
-	SetupSeekTests s(startingVideoPath, width, height, 0, parseFS, readLoop);
+	SetupSeekTests s(startingVideoPath, 0, parseFS, readLoop, FrameMetadata::ENCODED_IMAGE);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -751,132 +733,13 @@ BOOST_AUTO_TEST_CASE(read_loop)
 	BOOST_TEST(imgFrame->timestamp == 1673855454254);
 }
 
-//BOOST_AUTO_TEST_CASE(force_seek)
-//{
-//	/* video length is 3 seconds */
-//	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-//	int width = 480, height = 960;
-//	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
-//
-//	s.mp4Reader->step();
-//	
-//	
-//
-//	
-//	auto frames = s.sink->pop();
-//	
-//	auto imgFrame = frames.begin()->second;
-//
-//	// seek 1 sec inside the file currently being read by mp4Reader
-//	uint64_t skipTS = 1655895163221;
-//	bool forceReopen = true;
-//	s.mp4Reader->randomSeek(skipTS, false, true);
-//	s.mp4Reader->step();
-//	
-//	
-//	frames = s.sink->pop();
-//	imgFrame = frames.begin()->second;
-//	BOOST_TEST(imgFrame->timestamp == 1655895163229);
-//	LOG_INFO << "Found next available frame " << imgFrame->timestamp - skipTS << " msecs later from skipTS";
-//
-//	auto fd = s.mp4Reader->getFileDescriptorOfOpenFile();
-//	LOG_INFO << "FD <" << fd << ">";
-//
-//	// lets check the next frame also
-//	s.mp4Reader->step();
-//	
-//	
-//	frames = s.sink->pop();
-//	imgFrame = frames.begin()->second;
-//	BOOST_TEST(imgFrame->timestamp == 1655895163245);
-//	LOG_INFO << "Next frame in sequence " << imgFrame->timestamp - 1655895163229 << " msecs later from last frame";
-//
-//	fd = s.mp4Reader->getFileDescriptorOfOpenFile();
-//	LOG_INFO << "FD <" << fd << ">";
-//}
-
-/*BOOST_AUTO_TEST_CASE(basic_error)
-{
-	// seek to last frame of the recordings, after processing it, we should reach EOF
-	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true);
-	s.mp4Reader->randomSeek(1955895162221);
-	while(1)
-	{
-		s.mp4Reader->step();
-		s.decoder->step();
-		
-		auto frame = s.sink->pop().begin()->second;
-		if (frame->isMp4ErrorFrame())
-		{
-			LOG_INFO << "Error frame found";
-			break;
-		}
-	}
-	LOG_INFO << "basic error is working";
-}
-*/
-
-//BOOST_AUTO_TEST_CASE(remote_read)
-//{
-//	std::unordered_map<uint64_t, std::string> videoMap = { 
-//		{1655895162221,"\\\\10.102.10.91\\mp4_seek_tests\\20220522\\0016\\1655895162221.mp4"},
-//		{1655895288956, "\\\\10.102.10.91\\mp4_seek_tests\\20220522\\0016\\1655895288956.mp4"} 
-//	};
-//	std::string startingVideoPath = videoMap.begin()->second; //"data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
-//	int width = 480, height = 960;
-//	SetupSeekTests s(startingVideoPath, width, height, 0, true);
-//
-//	/* process one frame in first video
-//	   seek to second video
-//	   seek back to first video
-//	   repeat 100 times with a sleep of 500 msecs
-//	*/
-//	for (auto i = 0; i < 10000; ++i)
-//	{
-//		// read one frame
-//		s.mp4Reader->step();
-//		s.decoder->step();
-//		
-//		auto frames = s.sink->pop();
-//		
-//		
-//		auto imgFrame = frames.begin()->second
-//		BOOST_TEST(imgFrame->timestamp == s.getTSFromFileName(startingVideoPath));
-//
-//		// seek to second video - read first video
-//		s.mp4Reader->randomSeek(1655895288956);
-//		s.mp4Reader->step();
-//		s.decoder->step();
-//		
-//		frames = s.sink->pop();
-//		rawImgPinId = s.decoder->getAllOutputPinsByType(FrameMetadata::FrameType::RAW_IMAGE)[0];
-//		
-//		imgFrame = frames.begin()->second
-//		BOOST_TEST(imgFrame->timestamp == s.getTSFromFileName(videoMap[1655895288956]));
-//
-//		// second frame 
-//		s.mp4Reader->step();
-//		s.decoder->step();
-//		
-//		frames = s.sink->pop();
-//		rawImgPinId = s.decoder->getAllOutputPinsByType(FrameMetadata::FrameType::RAW_IMAGE)[0];
-//		
-//		imgFrame = frames.begin()->second
-//		BOOST_TEST(imgFrame->timestamp > s.getTSFromFileName(videoMap[1655895288956]));
-//
-//		// seek back to first video
-//		s.mp4Reader->randomSeek(1655895162221);
-//	}
-//}
+// H264 seek test
 
 BOOST_AUTO_TEST_CASE(seek_in_current_file_h264)
 {
 	/* video length is 3 seconds */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0013/1685604896179.mp4";
-	int width = 640, height = 360;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	s.mp4Reader->step();
 
@@ -904,8 +767,7 @@ BOOST_AUTO_TEST_CASE(seek_in_current_file_h264)
 BOOST_AUTO_TEST_CASE(seek_in_next_file_h264)
 {
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -931,8 +793,7 @@ BOOST_AUTO_TEST_CASE(seek_in_file_in_next_hr_h264)
 {
 	/* seek to frame inside the file in next hr */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -956,8 +817,7 @@ BOOST_AUTO_TEST_CASE(seek_in_file_in_next_day_h264)
 {
 	/* seek to frame inside the file in next day */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -983,8 +843,7 @@ BOOST_AUTO_TEST_CASE(seek_fails_no_reset_h264)
 	/* the last video of the same hour as the skipTS is not long enough
 	 expectation is that seek will fail and continue to find the next available frame since its not EOF */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -1009,8 +868,7 @@ BOOST_AUTO_TEST_CASE(hr_missing_next_avl_hr_h264)
 {
 	/* no recording for the hour exists - move to next available hour */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	LOG_INFO << "current open video before seek <" << s.mp4Reader->getOpenVideoPath() << ">";
 	/* process one frame */
@@ -1036,8 +894,7 @@ BOOST_AUTO_TEST_CASE(missing_past_day_seek_h264)
 {
 	/* no recording for the past day exists - move to next available day i.e. first frame in recordings */
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -1062,8 +919,7 @@ BOOST_AUTO_TEST_CASE(seek_fail_eof_reset_state_h264)
 	/* seek beyond the last frame of of the last video - expectation is that
 	seek will fail and reset the state to pre-seek state.*/
 	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -1115,9 +971,8 @@ BOOST_AUTO_TEST_CASE(seek_fail_eof_reset_state_h264)
 BOOST_AUTO_TEST_CASE(seek_to_last_frame_h264)
 {
 	/* seek to the exact last frame - next and exact match both */
-	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -1127,33 +982,22 @@ BOOST_AUTO_TEST_CASE(seek_to_last_frame_h264)
 	auto imgFrame = frames.begin()->second;
 	BOOST_TEST(imgFrame->timestamp == s.getTSFromFileName(startingVideoPath));
 
-	// seek to the last frame in the file
-	uint64_t skipTS = 1685604325600;
+	// seek to the last frame in the file , as the last frame in the file is P frame , it opens the next posisble video
+	uint64_t skipTS = 1685604368100;
 	s.mp4Reader->randomSeek(skipTS, false);
 	s.mp4Reader->step();
 
 	frames = s.sink->pop();
 	imgFrame = frames.begin()->second;
-	BOOST_TEST(imgFrame->timestamp == 1685604325685);
-	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
-
-	// seek to the last frame in the file -- exact timestamp
-	skipTS = 1685604325685;
-	s.mp4Reader->randomSeek(skipTS, false);
-	s.mp4Reader->step();
-
-	frames = s.sink->pop();
-	imgFrame = frames.begin()->second;
-	BOOST_TEST(imgFrame->timestamp == 1685604325685);
+	BOOST_TEST(imgFrame->timestamp == 1685604896179);
 	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
 }
 
-BOOST_AUTO_TEST_CASE(seek_to_last_frame_h264_case1)
+BOOST_AUTO_TEST_CASE(reach_eof_do_eos_then_seek_h264)
 {
-	/* seek to the exact last frame - next and exact match both */
-	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
-	int width = 480, height = 960;
-	SetupSeekTests s(startingVideoPath, width, height, 0, true, false, 2);
+	/* seek to last frame of the recordings, after processing it, we should reach EOF */
+	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
 
 	/* process one frame */
 	s.mp4Reader->step();
@@ -1163,25 +1007,294 @@ BOOST_AUTO_TEST_CASE(seek_to_last_frame_h264_case1)
 	auto imgFrame = frames.begin()->second;
 	BOOST_TEST(imgFrame->timestamp == s.getTSFromFileName(startingVideoPath));
 
-	// seek to the last frame in the file
-	uint64_t skipTS = 1685604365800;
+	uint64_t skipTS = 1685604898878;
+	s.mp4Reader->randomSeek(skipTS, false);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1685604898979);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+	for(int i = 0 ; i < 7; i++)
+	{ 
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	}
+	
+	// reached eof - next step should get us EOS frame
+	auto frame = frames.begin();
+	BOOST_TEST(frame->second->isEOS());
+	auto eosFrame = dynamic_cast<EoSFrame*>(frame->second.get());
+	auto type = eosFrame->getEoSFrameType();
+	BOOST_TEST(type == EoSFrame::EoSFrameType::MP4_PLYB_EOS);
+
+	// mp4Reader should be allowed to seek though
+	// seek should work even after reaching EOF
+	skipTS = 1685604898878;
+	s.mp4Reader->randomSeek(skipTS, false);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	frame = frames.begin();
+	BOOST_TEST(frame->second->isEOS() == false);
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1685604898979);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+}
+
+BOOST_AUTO_TEST_CASE(refresh_last_file_on_seek_h264)
+{
+	/* seek to the exact last video twice - make sure video is reopened every time we seek to last video in cache (fwd only) */
+	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, false, FrameMetadata::H264_DATA);
+
+	/* process one frame */
+	s.mp4Reader->step();
+
+	auto frames = s.sink->pop();
+
+	auto imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == s.getTSFromFileName(startingVideoPath));
+
+	// seek to the last video in cache
+	uint64_t skipTS = 1685604896179;
 	s.mp4Reader->randomSeek(skipTS, false);
 	s.mp4Reader->step();
 
 	frames = s.sink->pop();
 	imgFrame = frames.begin()->second;
-	BOOST_TEST(imgFrame->timestamp == 1685604325685);
+	BOOST_TEST(imgFrame->timestamp == 1685604896179);
 	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
 
-	// seek to the last frame in the file -- exact timestamp
-	skipTS = 1685604325685;
+	// seek to the last video in cache again & make sure it refreshes
+	skipTS = 1685604896179 + 100;
 	s.mp4Reader->randomSeek(skipTS, false);
 	s.mp4Reader->step();
 
 	frames = s.sink->pop();
 	imgFrame = frames.begin()->second;
-	BOOST_TEST(imgFrame->timestamp == 1685604325685);
+	BOOST_TEST(imgFrame->timestamp == 1685604897188);
 	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	// seek to second last video and make sure file is not reopened
+	skipTS = 1685604899000;
+	s.mp4Reader->randomSeek(skipTS, false);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1685604898979);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+}
+
+BOOST_AUTO_TEST_CASE(seek_with_parseFS_disabled_h264)
+{
+	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/apraH264.mp4";
+	bool parseFS = false;
+	SetupSeekTests s(startingVideoPath, 0, parseFS, false, FrameMetadata::H264_DATA);
+
+	/* process one frame */
+	s.mp4Reader->step();
+
+	auto frames = s.sink->pop();
+	auto imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420640350);
+
+	/* before first frame - go to first frame */
+	uint64_t skipTS = 1673420640000;
+	bool ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	imgFrame = frames.begin()->second;
+	// first frame is 1673420640350
+	BOOST_TEST(imgFrame->timestamp == 1673420640350);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	/* basic case - bw start and end */
+	skipTS = 1673420640950;
+	ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420642668);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	/* beyond EOF - returns true - should resume from before seek state */
+	skipTS = 1673420640350 + 6000;
+	ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+	frames = s.sink->pop();
+	BOOST_TEST(frames.begin()->second->isEOS());
+	auto eosFrame = dynamic_cast<EoSFrame*>(frames.begin()->second.get());
+	auto type = eosFrame->getEoSFrameType();
+	BOOST_TEST(type == EoSFrame::EoSFrameType::MP4_SEEK_EOS);
+
+	//step to get next frame from resumed state
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420642684);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	skipTS = 1673420640350 + 200;
+	ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420642668);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	/* reach eof */
+	uint64_t lastTS = 0;
+	while (true)
+	{
+		s.mp4Reader->step();
+
+
+		frames = s.sink->pop();
+		if (frames.begin()->second->isEOS())
+		{
+			auto eosFrame = dynamic_cast<EoSFrame*>(frames.begin()->second.get());
+			auto type = eosFrame->getEoSFrameType();
+			BOOST_TEST(type == EoSFrame::EoSFrameType::MP4_PLYB_EOS);
+			break;
+		}
+		imgFrame = frames.begin()->second;
+		lastTS = imgFrame->timestamp;
+	}
+	BOOST_TEST((lastTS == 1673420645353));
+	LOG_INFO << "Reached EOF!";
+
+	// important: seeking inside this file should allow us to step through it again
+	LOG_INFO << "Seeking after reaching EOF!!";
+	skipTS = 1673420640550 ;
+	ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420642668);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	/* reach eof again */
+	lastTS = 0;
+	while (true)
+	{
+		s.mp4Reader->step();
+
+
+		frames = s.sink->pop();
+		if (frames.begin()->second->isEOS())
+		{
+			auto eosFrame = dynamic_cast<EoSFrame*>(frames.begin()->second.get());
+			auto type = eosFrame->getEoSFrameType();
+			BOOST_TEST(type == EoSFrame::EoSFrameType::MP4_PLYB_EOS);
+			break;
+		}
+		imgFrame = frames.begin()->second;
+		lastTS = imgFrame->timestamp;
+	}
+	BOOST_TEST((lastTS == 1673420645353));
+	LOG_INFO << "Reached EOF!";
+}
+
+BOOST_AUTO_TEST_CASE(read_loop_h264)
+{
+	std::string startingVideoPath = "data/mp4_video/mp4_seeks_tests_h264/apraH264.mp4";
+	bool parseFS = false;
+	bool readLoop = true;
+	SetupSeekTests s(startingVideoPath, 0, parseFS, readLoop, FrameMetadata::H264_DATA);
+
+	/* process one frame */
+	s.mp4Reader->step();
+
+
+	auto frames = s.sink->pop();
+
+
+	auto imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420640350);
+
+	/* before first frame - go to first frame */
+	uint64_t skipTS = 1673420640000;
+	bool ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	// first frame is 1673420640350
+	BOOST_TEST(imgFrame->timestamp == 1673420640350);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	// seek to last frame
+	skipTS = 1673420644850;
+	ret = s.mp4Reader->randomSeek(skipTS, false);
+	BOOST_TEST(ret == true);
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	BOOST_TEST(imgFrame->timestamp == 1673420644975);
+	LOG_INFO << "Found next available frame " << (int)(imgFrame->timestamp - skipTS) << " msecs later from skipTS";
+
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	// first I Frame is 1673420644990
+	BOOST_TEST(imgFrame->timestamp == 1673420644990);
+
+	// read till end again
+	while (1)
+	{
+		s.mp4Reader->step();
+
+
+		frames = s.sink->pop();
+
+		imgFrame = frames.begin()->second;
+		// last frame is 1673420645353
+		if (imgFrame->timestamp == 1673420645353)
+		{
+			break;
+		}
+	}
+
+	// read loop should not give EOS - it should give first frame again
+	s.mp4Reader->step();
+
+
+	frames = s.sink->pop();
+
+	imgFrame = frames.begin()->second;
+	// first frame is 1673420640350
+	BOOST_TEST(imgFrame->timestamp == 1673420640350);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -11,37 +11,45 @@
 #include "OrderedCacheOfFiles.h"
 #include "AIPExceptions.h"
 #include "Mp4ErrorFrame.h"
-#include <iostream>
+#include "Module.h"
 
-class Mp4readerDetailAbs
+// todo - all class names should be camel case (done)
+class Mp4ReaderDetailAbs
 {
 public:
-	Mp4readerDetailAbs(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void(frame_sp frame)> _sendEOS, std::function<void(framemetadata_sp metadata)> _setMetadata, std::function<void(frame_sp& errorFrame)> _sendMp4ErrorFrame)
+	Mp4ReaderDetailAbs(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, 
+		std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& errorFrame)> _sendMp4ErrorFrame)
 	{
 		setProps(props);
 		makeFrame = _makeFrame;
-		makeframe = _makeframe;
+		makeFrameTrim = _makeFrameTrim; // todo - call it makeFrameTrim (done)
 		sendEOS = _sendEOS;
 		mSetMetadata = _setMetadata;
 		sendMp4ErrorFrame = _sendMp4ErrorFrame;
-		mFSParser = boost::shared_ptr<FileStructureParser>(new FileStructureParser());
 		cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(mProps.skipDir));
 	}
 
-	~Mp4readerDetailAbs()
+	~Mp4ReaderDetailAbs()
 	{
 	}
-	virtual void setMetadata() = 0;
+	virtual void setMetadata() 
+	{
+		auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
+		// set proto version in mp4videometadata
+		auto serFormatVersion = getSerFormatVersion();
+		auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
+		mp4VideoMetadata->setData(serFormatVersion);
+	}
+
 	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
 	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame) = 0;
 	
-	void Init()
+	bool Init()
 	{
 		// TODO - setProps + reset the mState + Init() call can force a fresh disk parse and do a new playback.
-		// #Dec_27_Review - redundant - use makeBuffer from produce
 		sentEOSSignal = false;
 
 		if (mProps.parseFS)
@@ -61,7 +69,7 @@ public:
 			}
 			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
 		}
-		initNewVideo(true); // enable firstOpenAfterInit
+		return initNewVideo(true); // enable firstOpenAfterInit
 	}
 
 	void setProps(Mp4ReaderSourceProps& props)
@@ -80,6 +88,11 @@ public:
 	std::string getOpenVideoPath()
 	{
 		return mState.mVideoPath;
+	}
+
+	int32_t getOpenVideoFrameCount()
+	{
+		return mState.mFramesInVideo;
 	}
 
 	std::map<std::string, std::pair<uint64_t, uint64_t>> getSnapShot()
@@ -200,20 +213,21 @@ public:
 			only if parseFS is set AND (it is the first time OR if parse file limit is reached)
 			returns false if no relevant mp4 file left on disk. */
 
+		// todo - OCOF will have a probe method - which will return false till at least one mp4 file is present in the folder (done)
+		// in case race conditions happen between writer and reader (videotrack not found etc) - use code will retry
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
-			if (!mFSParser->parseDir(filePath, mState.mVideoPath))
+			if (!cof->probe(filePath, mState.mVideoPath))
 			{
 				LOG_DEBUG << "Mp4 file is not present" << ">";
 				isVideoFileFound = false;
-				return false;
+				return true;
 			}
 			isVideoFileFound = true;
 		}
 
 		auto nextFilePath = mState.mVideoPath;
-
 		if (mProps.parseFS)
 		{
 			if (!firstOpenAfterInit)
@@ -281,7 +295,8 @@ public:
 				cof->readVideoStartEnd(mState.mVideoPath, tstart_ts, tend_ts);
 				if (mProps.parseFS) // update cache
 				{
-					cof->updateCache(mState.mVideoPath, tstart_ts, tend_ts);
+					// todo - check if all cases pass without this - it might be redundant
+					//cof->updateCache(mState.mVideoPath, tstart_ts, tend_ts);
 					cof->fetchAndUpdateFromDisk(mState.mVideoPath, tstart_ts, tend_ts);
 				}
 				// verify if file is updated
@@ -317,6 +332,10 @@ public:
 		return true;
 	}
 
+    /*
+	throws MP4_OPEN_FAILED_EXCEPTION, MP4_MISSING_VIDEOTRACK, MP4_MISSING_START_TS,
+	MP4_TIME_RANGE_FETCH_FAILED, MP4_SET_POINTER_END_FAILED
+	*/
 	void openVideoSetPointer(std::string &filePath)
 	{
 		if (mState.demux)
@@ -328,6 +347,7 @@ public:
 		ret = mp4_demux_open(filePath.c_str(), &mState.demux);
 		if (ret < 0)
 		{
+			// TODO - Behaviour to be decided. Pending on Mradul.
 			// if (ret == -ENOENT) // if no such file exists
 			// {
 			// 	try
@@ -397,8 +417,10 @@ public:
 				mState.mFramesInVideo = mState.info.sample_count;
 				mWidth = mState.info.video_width;
 				mHeight = mState.info.video_height;
+				// todo - see fps calc in ecs code (done)
+				mDurationInSecs = mState.info.duration / mState.info.timescale;
+				mFPS = mState.mFramesInVideo / mDurationInSecs;
 			}
-			setMetadata();
 		}
 
 		if (mState.videotrack == -1)
@@ -409,26 +431,27 @@ public:
 		}
 
 		// starting timestamp of the video will either come from the video name or the header
-		auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-		try
+		if (mState.startTimeStampFromFile)
 		{
-			mState.resolvedStartingTS = std::stoull(boostVideoTS);
-			mState.startTimeStampFromFile = std::stoull(boostVideoTS);
+			mState.resolvedStartingTS = mState.startTimeStampFromFile;
 		}
-		catch (std::invalid_argument)
+		else
 		{
-			if (!mState.startTimeStampFromFile)
+			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			try
+			{
+				mState.resolvedStartingTS = std::stoull(boostVideoTS);
+			}
+			catch (std::invalid_argument)
 			{
 				auto msg = "unexpected: starting ts not found in video name or metadata";
 				LOG_ERROR << msg;
 				throw Mp4Exception(MP4_MISSING_START_TS, msg);
 			}
-			mState.resolvedStartingTS = mState.startTimeStampFromFile;
 		}
 
-		// update output encoded image metadata
-		/*updatedEncodedImgMetadata = framemetadata_sp(new EncodedImageMetadata(mWidth, mHeight));
-		mSetMetadata(updatedEncodedImgMetadata);*/
+		// update metadata
+		setMetadata();
 
 		// get the end_ts of the video and update the cache 
 		uint64_t dummy_start_ts, duration;
@@ -635,112 +658,10 @@ public:
 		sendMp4ErrorFrame(errorFrame);
 	}
 
-	//bool randomSeek(uint64_t& skipTS, uint64_t _seekEndTS)
-	//{
-	//	/* Takes a timestamp and sets proper mVideoFile and mParsedFilesCount (in case new parse is required) and initNewVideo().
-	//	* Also, seeks to correct frame in the mVideoFile. If seek within in the videoFile fails, moving to next available video is attempted.
-	//	* If all ways to seek fails, the read state is reset.
-	//	*/
-	//	seekEndTS = _seekEndTS;
-	//	if (!mProps.parseFS)
-	//	{
-	//		int seekedToFrame = -1;
-	//		uint64_t skipMsecsInFile = 0;
-	//		if (!mState.startTimeStamp)
-	//		{
-	//			LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
-	//			return false;
-	//		}
-	//		if (skipTS < mState.startTimeStamp)
-	//		{
-	//			LOG_INFO << "seek time outside range. Seeking to start of video.";
-	//			skipMsecsInFile = 0;
-	//		}
-	//		else
-	//		{
-	//			skipMsecsInFile = skipTS - mState.startTimeStamp;
-	//		}
-	//		LOG_DEBUG << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
-	//		uint64_t time_offset_usec = skipMsecsInFile * 1000;
-	//		int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
-	//		mState.mFrameCounter = seekedToFrame;
-	//		if (returnCode == -ENFILE)
-	//		{
-	//			LOG_INFO << "Query time beyond the EOF. Resuming...";
-	//			return true;
-	//		}
-	//		if (returnCode < 0)
-	//		{
-	//			LOG_ERROR << "Seek failed. Unexpected error.";
-	//			return false;
-	//		}
-	//		return true;
-	//	}
-	//	DemuxAndParserState tempState = mState;
-	//	std::string skipVideoFile;
-	//	uint64_t skipMsecsInFile;
-	//	int ret = mFSParser->randomSeek(skipTS, mProps.skipDir, skipVideoFile, skipMsecsInFile);
-	//	LOG_INFO << "Attempting seek <" << skipVideoFile << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
-	//	if (ret < 0)
-	//	{
-	//		LOG_ERROR << "Skip to ts <" << skipTS << "> failed. Please check skip dir <" << mProps.skipDir << ">";
-	//		return false;
-	//	}
-	//	bool found = false;
-	//	for (auto i = 0; i < mState.mParsedVideoFiles.size(); ++i)
-	//	{
-	//		if (mState.mParsedVideoFiles[i] == skipVideoFile)
-	//		{
-	//			mState.mVideoCounter = i;
-	//			found = true;
-	//			break;
-	//		}
-	//	}
-	//	if (!found)
-	//	{
-	//		// do fresh fs parse
-	//		mState.mVideoPath = skipVideoFile;
-	//		mState.mVideoCounter = mState.mParsedFilesCount;
-	//		mState.randomSeekParseFlag = true;
-	//	}
-	//	initNewVideo();
-	//	if (skipMsecsInFile)
-	//	{
-	//		uint64_t time_offset_usec = skipMsecsInFile * 1000;
-	//		int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEAREST_SYNC);
-	//		// to determine the end of video
-	//		mState.mFrameCounter = seekedToFrame;
-	//		if (returnCode < 0)
-	//		{
-	//			LOG_ERROR << "Error while skipping to ts <" << skipTS << "> failed. File <" << skipVideoFile << "> @ time <" << skipMsecsInFile << "> ms errorCode <" << returnCode << ">";
-	//			LOG_ERROR << "Trying to seek to next available file...";
-	//			auto nextFlag = mFSParser->getNextToVideoFileFlag();
-	//			if (nextFlag < 0)
-	//			{
-	//				// reset the state of mux to before seek op
-	//				LOG_ERROR << "No next file found <" << nextFlag << ">" << "Resetting the reader state to before seek op";
-	//				mState = tempState;
-	//				LOG_ERROR << "Switching back to video <" << mState.mVideoPath << ">";
-	//				// hot fix to avoid demux close attempt
-	//				mState.demux = nullptr;
-	//				mState.mVideoCounter -= 1;
-	//				initNewVideo();
-	//				return false;
-	//			}
-	//			mState.mVideoPath = mFSParser->getNextVideoFile();
-	//			mState.mVideoCounter = mState.mParsedFilesCount;
-	//			mState.randomSeekParseFlag = true;
-	//			initNewVideo();
-	//		}
-	//	}
-	//	return true;
-	//}
-
 	bool isOpenVideoFinished()
 	{
 		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
 		{
-			std::cout <<  "COMING INSIDE IS OPEN VIDEO FINISHED " << mState.mFrameCounterIdx << "&&& " << mState.mFramesInVideo << "Direction " << mState.direction << endl;
 			return true;
 		}
 		if (!mState.direction && mState.mFrameCounterIdx <= -1)
@@ -750,18 +671,39 @@ public:
 		return false;
 	}
 
-	void readNextFrame(uint8_t* sampleFrame, uint8_t* sampleMetadataFrame, size_t& imageFrameSize, size_t& metadataFrameSize, uint64_t& frameTSInMsecs)
+	void readNextFrame(frame_sp& imgFrame, frame_sp& metadetaFrame, size_t& imgSize, size_t& metadataSize, uint64_t& frameTSInMsecs, int32_t& mp4FIndex ) noexcept
 	{
+		try
+		{
+			readNextFrameInternal(imgFrame, metadetaFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
+		}
+		catch (Mp4_Exception& ex)
+		{
+			imgSize = 0;
+			// send the last frame timestamp 
+			makeAndSendMp4Error(Mp4ErrorFrame::MP4_STEP, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), mState.frameTSInMsecs);
+			return;
+		}
+		catch (...)
+		{
+			imgSize = 0;
+			std::string msg = "uknown error in readNextFrame";
+			makeAndSendMp4Error(Mp4ErrorFrame::MP4_STEP, MP4_UNEXPECTED_STATE, msg, 0, mState.frameTSInMsecs);
+			return;
+		}
+	}
 
-		// isVideoFileFound is false when there is no video file in the given dir and now we check if the video file has been created.
+	// todo - rename sampleFrame to imgFrame, sampleMetadataFrame to metadataFrame (done)
+	void readNextFrameInternal(frame_sp& imgFrame, frame_sp& metadetaFrame, size_t& imageFrameSize, size_t& metadataFrameSize, uint64_t& frameTSInMsecs, int32_t& mp4FIndex)
+	{
 		if (!isVideoFileFound)
 		{
 			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			if (currentTS >= recheckDiskTS)
 			{
-				if (!initNewVideo())
+				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath));
 				{
-					sampleFrame = nullptr;
+					imgFrame = nullptr;
 					imageFrameSize = 0;
 					recheckDiskTS = currentTS + mProps.parseFSTimeoutDuration;
 					return;
@@ -769,12 +711,11 @@ public:
 			}
 			else
 			{
-				sampleFrame = nullptr;
+				imgFrame = nullptr;
 				imageFrameSize = 0;
 				return;
 			}
 		}
-		// all frames of the open video are already read and end has not reached
 		if (waitFlag)
 		{
 			LOG_TRACE << "readNextFrame: waitFlag <" << waitFlag << ">";
@@ -838,17 +779,23 @@ public:
 
 		if (mState.has_more_video)
 		{
+			uint8_t* sampleFrame = static_cast<uint8_t*>(imgFrame->data());
+			uint8_t* sampleMetadataFrame = static_cast<uint8_t*>(metadetaFrame->data());
+
+			uint32_t imageSize = mProps.biggerFrameSize;
+			uint32_t metadataSize = mProps.biggerMetadataFrameSize;
+			// todo - see ecs code here, set buffer sizes to max buffer sizes from props (done)
 			if (mState.direction)
 			{
 				ret = mp4_demux_get_track_sample(mState.demux,
 					mState.video.id,
 					1,
 					sampleFrame,
-					imageFrameSize,
+					imageSize,
 					sampleMetadataFrame,
-					metadataFrameSize,
+					metadataSize,
 					&mState.sample);
-				++mState.mFrameCounterIdx;
+				mp4FIndex = mState.mFrameCounterIdx++;
 			}
 			else
 			{
@@ -856,17 +803,29 @@ public:
 					mState.video.id,
 					1,
 					sampleFrame,
-					imageFrameSize,
+					imageSize,
 					sampleMetadataFrame,
-					metadataFrameSize,
+					metadataSize,
 					&mState.sample);
-				--mState.mFrameCounterIdx;
+				mp4FIndex = mState.mFrameCounterIdx--;
 			}
 
 			/* To get only info about the frames
 			ret = mp4_demux_get_track_sample(
 				demux, id, 1, NULL, 0, NULL, 0, &sample);
 			*/
+
+			/* check the buffer size props */
+			if (mState.sample.size > mProps.biggerFrameSize)
+			{
+				std::string msg = "Buffer size too small. Please check maxImgFrameSize property. maxImgFrameSize <" + std::to_string(mProps.biggerFrameSize) + "> frame size <" + std::to_string(mState.sample.size) + ">";
+				throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
+			}
+			if (mState.sample.metadata_size > mProps.biggerMetadataFrameSize)
+			{
+				std::string msg = "Buffer size too small. Please check maxMetadataFrameSize property. maxMetadataFrameSize <" + std::to_string(mProps.biggerMetadataFrameSize) + "> frame size <" + std::to_string(mState.sample.metadata_size) + ">";
+				throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
+			}
 
 			if (ret != 0 || mState.sample.size == 0)
 			{
@@ -890,6 +849,7 @@ public:
 			mState.frameTSInMsecs = frameTSInMsecs;
 			LOG_TRACE << "readNextFrame frameTS <" << frameTSInMsecs << ">";
 			imageFrameSize = static_cast<size_t>(mState.sample.size);
+			metadataFrameSize = static_cast<size_t>(mState.sample.metadata_size);
 			// for metadata to be ignored - we will have metadata_buffer = nullptr and size = 0
 			return;
 		}
@@ -972,24 +932,25 @@ public:
 	int mWidth = 0;
 	int mHeight = 0;
 	int ret;
+	double mFPS = 0;
+	double mDurationInSecs = 0;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
 	std::function<void(frame_sp frame)> sendEOS;
-	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
-	boost::shared_ptr<FileStructureParser> mFSParser;
+	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim;
 	std::function<void(frame_sp& errorFrame)> sendMp4ErrorFrame;
-	std::function<void(framemetadata_sp metadata)> mSetMetadata;
+	std::function<void(std::string& pinId, framemetadata_sp& metadata)> mSetMetadata;
 	std::string h264ImagePinId;
 	std::string encodedImagePinId;
-	std::string mp4FramePinId;
+	std::string metadataFramePinId;
 };
 
-class Mp4readerDetailJpeg : public Mp4readerDetailAbs
+class Mp4ReaderDetailJpeg : public Mp4ReaderDetailAbs
 {
 public:
-	Mp4readerDetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void(frame_sp frame)> _sendEOS, std::function<void(framemetadata_sp metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4readerDetailAbs(props, _makeFrame, _makeframe, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
+	Mp4ReaderDetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
 	{}
-	~Mp4readerDetailJpeg() { mp4_demux_close(mState.demux); }
+	~Mp4ReaderDetailJpeg() { mp4_demux_close(mState.demux); }
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
@@ -997,14 +958,15 @@ public:
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame);
 };
 
-class Mp4readerDetailH264 : public Mp4readerDetailAbs
+class Mp4ReaderDetailH264 : public Mp4ReaderDetailAbs
 {
 public:
-	Mp4readerDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void(frame_sp frame)> _sendEOS, std::function<void(framemetadata_sp metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4readerDetailAbs(props, _makeFrame, _makeframe, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
+	Mp4ReaderDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
 	{}
-	~Mp4readerDetailH264() { mp4_demux_close(mState.demux); }
+	~Mp4ReaderDetailH264() { mp4_demux_close(mState.demux); }
 	void setMetadata();
+	void readSPSPPS();
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
 	void sendEndOfStream();
@@ -1018,7 +980,7 @@ private:
 	bool isRandomSeek = true;
 };
 
-void Mp4readerDetailJpeg::setMetadata()
+void Mp4ReaderDetailJpeg::setMetadata()
 {
 	auto metadata = framemetadata_sp(new EncodedImageMetadata(mWidth, mHeight));
 	if (!metadata->isSet())
@@ -1028,56 +990,92 @@ void Mp4readerDetailJpeg::setMetadata()
 	auto encodedMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
 	encodedMetadata->setData(*encodedMetadata);
 
-	auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-	//// set proto version in mp4videometadata
+	auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
+	// set proto version in mp4videometadata
 	auto serFormatVersion = getSerFormatVersion();
 	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
 	mp4VideoMetadata->setData(serFormatVersion);
-	return;
+	Mp4ReaderDetailAbs::setMetadata();
+	// set at Module level
+	mSetMetadata(encodedImagePinId, metadata);
 }
 
-int Mp4readerDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame)
+int Mp4ReaderDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame)
 {
 	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
 	return ret;
 }
 
-bool Mp4readerDetailJpeg::produceFrames(frame_container& frames)
+bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames) 
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, encodedImagePinId);
-	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, mp4FramePinId);
-	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(imgFrame->data());
-	uint8_t* sampleMetadataFrame = reinterpret_cast<uint8_t*>(metadataFrame->data());
-	size_t imageActualSize = 5 * 1024 * 1024;
-	size_t metadataActualSize = 0;
+	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, metadataFramePinId);
+	size_t imgSize = 0;
+	size_t metadataSize = 0;
+	int32_t mp4FIndex = 0;
 	uint64_t frameTSInMsecs;
-	readNextFrame(sampleFrame, sampleMetadataFrame, imageActualSize, metadataActualSize, frameTSInMsecs);
 
-	if (!sampleFrame || imageActualSize == 5 * 1024 * 1024)
+	try
+	{
+		// todo - send frames sp instead of pointers - cast just before required + also in h264  (done)
+		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
+	}
+	catch(const std::exception& e)
+	{
+		LOG_ERROR << e.what();
+		attemptFileClose();
+	}
+
+	if (!imgSize)
 	{
 		return true;
 	}
 	
-	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, encodedImagePinId);
-
+	// todo - use makeFrameTrim (done)
+	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, encodedImagePinId);
+	//todo - implement the frame index and live timestamps feature here (see ecs code) (done)
 	trimmedImgFrame->timestamp = frameTSInMsecs;
+	trimmedImgFrame->fIndex = mp4FIndex;
 
-	/*if (seekEndTS <= frameTSInMsecs)
+	// give recorded timestamps 
+	if (!mProps.giveLiveTS)
 	{
-		return true;
-	}*/
+		/* recordedTS mode */
+		trimmedImgFrame->timestamp = frameTSInMsecs;
+	}
+	else
+	{
+		/* getLiveTS mode */
+		// get local epoch timestamp in milliseconds
+		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+		auto nowTS = dur.count();
+		trimmedImgFrame->timestamp = nowTS;
+	}
 
 	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
-	if (metadataActualSize)
+	if (metadataSize)
 	{
-		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-		metadataSizeFrame->timestamp = frameTSInMsecs;
-		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
+		// todo - makeFrametrim, do live timestamp feature (done)
+		auto trimmedMetadataFrame = makeFrameTrim(metadataFrame, metadataSize, metadataFramePinId);
+		trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		trimmedMetadataFrame->fIndex = mp4FIndex;
+		if (!mProps.giveLiveTS)
+		{
+			/* recordedTS mode */
+			trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		}
+		else
+		{
+			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
+		}
+
+		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
 	}
 	return true;
 }
 
-void Mp4readerDetailH264::setMetadata()
+void Mp4ReaderDetailH264::setMetadata()
 {
 	auto metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
 	if (!metadata->isSet())
@@ -1087,12 +1085,17 @@ void Mp4readerDetailH264::setMetadata()
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
 	h264Metadata->setData(*h264Metadata);
 
-	auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-	//// set proto version in mp4videometadata
-	auto serFormatVersion = getSerFormatVersion();
-	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
-	mp4VideoMetadata->setData(serFormatVersion);
+	// todo (done)
+	readSPSPPS();
+	Mp4ReaderDetailAbs::setMetadata();
+	mSetMetadata(h264ImagePinId, metadata);
+	return;
+}
 
+// todo - 1. proper camel case - Mp4ReaderDetail -  change this (done)
+// 2. add readSPSPPS() in h264 class (done)
+void Mp4ReaderDetailH264::readSPSPPS()
+{
 	struct mp4_video_decoder_config* vdc =
 		(mp4_video_decoder_config*)malloc(
 			sizeof(mp4_video_decoder_config));
@@ -1103,22 +1106,26 @@ void Mp4readerDetailH264::setMetadata()
 	pps = vdc->avc.pps;
 	spsSize = vdc->avc.sps_size;
 	ppsSize = vdc->avc.pps_size;
-	return;
 }
 
-int Mp4readerDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame)
+int Mp4ReaderDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame)
 {
 	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+	if (ret == -2)
+	{
+		seekedToFrame = mState.mFramesInVideo;
+		ret = 0;
+	}
 	return ret;
 }
 
-void Mp4readerDetailH264::sendEndOfStream()
+void Mp4ReaderDetailH264::sendEndOfStream()
 {
 	auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, 0));
 	sendEOS(frame);
 }
 
-void Mp4readerDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
+void Mp4ReaderDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
 {
 	//1a write sps on tmpBuffer.data()
 	//1b tmpBuffer+=sizeof_sps
@@ -1139,31 +1146,40 @@ void Mp4readerDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffe
 	iFrameBuffer += ppsSize;
 }
 
-bool Mp4readerDetailH264::produceFrames(frame_container& frames)
+bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, h264ImagePinId);
 	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
-	size_t imageActualSize = 5 * 1024 * 1024;
+	size_t imgSize = 0;
+	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, metadataFramePinId);
+	size_t metadataSize = 0;
+	uint64_t frameTSInMsecs;
+	int32_t mp4FIndex = 0;
 
 	if (mState.randomSeekParseFlag && isRandomSeek)
 	{
 		prependSpsPps(tmpBuffer);
-		imageActualSize = spsSize + ppsSize + 8;
+		imgSize = spsSize + ppsSize + 8;
 		isRandomSeek = false;
 	}
-	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize,mp4FramePinId);
-	uint8_t* sampleFrame = reinterpret_cast<uint8_t*>(tmpBuffer.data());
-	uint8_t* sampleMetadataFrame = reinterpret_cast<uint8_t*>(metadataFrame->data());
-	size_t metadataActualSize = 0;
-	uint64_t frameTSInMsecs;
-	readNextFrame(sampleFrame, sampleMetadataFrame, imageActualSize, metadataActualSize, frameTSInMsecs);
 
-	if (!sampleFrame || imageActualSize == 5 * 1024 * 1024)
+	try
+	{
+		// todo - send frames sp instead of pointers - cast just before required + also in h264 (done)
+		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
+	}
+	catch (const std::exception& e)
+	{
+		LOG_ERROR << e.what();
+		attemptFileClose();
+	}
+
+	if (!imgSize )
 	{
 		return true;
 	}
 
-	auto trimmedImgFrame = makeframe(imgFrame, imageActualSize, h264ImagePinId);
+	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, h264ImagePinId);
 	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
 	auto ret = H264Utils::parseNalu(tempBuffer);
 	short typeFound;
@@ -1171,8 +1187,25 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	tie(typeFound, spsBuff, ppsBuff) = ret; 
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
+	trimmedImgFrame->fIndex = mp4FIndex;
 
-	if (seekedToEndTS)
+	// give recorded timestamps 
+	if (!mProps.giveLiveTS)
+	{
+		/* recordedTS mode */
+		trimmedImgFrame->timestamp = frameTSInMsecs;
+	}
+	else
+	{
+		/* getLiveTS mode */
+		// get local epoch timestamp in milliseconds
+		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+		auto nowTS = dur.count();
+		trimmedImgFrame->timestamp = nowTS;
+	}
+
+	/*if (seekedToEndTS)
 	{
 		return true;
 	}
@@ -1190,14 +1223,24 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 			seekedToEndTS = true;
 			return true;
 		}
-	}
+	}*/
 
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
-	if (metadataActualSize)
+	if (metadataSize)
 	{
-		auto metadataSizeFrame = makeframe(metadataFrame, metadataActualSize, mp4FramePinId);
-		metadataSizeFrame->timestamp = frameTSInMsecs;
-		frames.insert(make_pair(mp4FramePinId, metadataSizeFrame));
+		auto trimmedMetadataFrame = makeFrameTrim(metadataFrame, metadataSize, metadataFramePinId);
+		trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		trimmedMetadataFrame->fIndex = mp4FIndex;
+		if (!mProps.giveLiveTS)
+		{
+			/* recordedTS mode */
+			trimmedMetadataFrame->timestamp = frameTSInMsecs;
+		}
+		else
+		{
+			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
+		}
+		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
 	}
 	return true;
 }
@@ -1215,11 +1258,11 @@ bool Mp4ReaderSource::init()
 	{
 		return false;
 	}
-	auto inputPinIdMetadataMap = getFirstOutputMetadata();
-	auto  mFrameType = inputPinIdMetadataMap->getFrameType();
+	auto outMetadata = getFirstOutputMetadata();
+	auto  mFrameType = outMetadata->getFrameType();
 	if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 	{
-		mDetail.reset(new Mp4readerDetailJpeg(
+		mDetail.reset(new Mp4ReaderDetailJpeg(
 			props,
 			[&](size_t size, string& pinId)
 			{ return makeFrame(size, pinId); },
@@ -1227,30 +1270,34 @@ bool Mp4ReaderSource::init()
 			{ return makeFrame(frame, size, pinId); },
 			[&](frame_sp frame) 
 			{return Module::sendEOS(frame); },
-			[&](framemetadata_sp metadata)
-			{ return setMetadata(metadata); },
+			[&](std::string& pinId, framemetadata_sp& metadata)
+			{ return setImageMetadata(pinId, metadata); },
 			[&](frame_sp& frame) {return Module::sendMp4ErrorFrame(frame); }));
-		encodedImageMetadata = boost::shared_ptr<EncodedImageMetadata>(new EncodedImageMetadata());
 	}
 	else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 	{
-		mDetail.reset(new Mp4readerDetailH264(props,
+		mDetail.reset(new Mp4ReaderDetailH264(props,
 			[&](size_t size, string& pinId)
 			{ return makeFrame(size, pinId); },
 			[&](frame_sp& frame, size_t& size, string& pinId)
 			{ return makeFrame(frame, size, pinId); },
 			[&](frame_sp frame) 
 			{return Module::sendEOS(frame); },
-			[&](framemetadata_sp metadata)
-			{ return setMetadata(metadata); },
+			[&](std::string& pinId, framemetadata_sp& metadata)
+			{ return setImageMetadata(pinId, metadata); },
 			[&](frame_sp& frame) {return Module::sendMp4ErrorFrame(frame); }));
 	}
-	mDetail->Init();
 	mDetail->encodedImagePinId = encodedImagePinId;
 	mDetail->h264ImagePinId = h264ImagePinId;
-	mDetail->mp4FramePinId = mp4FramePinId;
+	mDetail->metadataFramePinId = metadataFramePinId; //todo - rename it to mp4MetadataPinId(done)
+	return mDetail->Init();
+}
 
-	return true;
+void Mp4ReaderSource::setImageMetadata(std::string& pinId, framemetadata_sp& metadata)
+{
+	Module::setMetadata(pinId, metadata);
+	mWidth = mDetail->mWidth;
+	mHeight = mDetail->mHeight;
 }
 
 std::map<std::string, std::pair<uint64_t, uint64_t>> Mp4ReaderSource::getCacheSnapShot()
@@ -1270,6 +1317,33 @@ std::string Mp4ReaderSource::getOpenVideoPath()
 		return mDetail->getOpenVideoPath();
 	}
 	return "";
+}
+
+int32_t Mp4ReaderSource::getOpenVideoFrameCount()
+{
+	if (mDetail)
+	{
+		return mDetail->getOpenVideoFrameCount();
+	}
+	return -1;
+}
+
+double Mp4ReaderSource::getOpenVideoFPS()
+{
+	if (mDetail)
+	{
+		return mDetail->mFPS;
+	}
+	return -1;
+}
+
+double Mp4ReaderSource::getOpenVideoDurationInSecs()
+{
+	if (mDetail)
+	{
+		return mDetail->mDurationInSecs;
+	}
+	return -1;
 }
 
 bool Mp4ReaderSource::getVideoRangeFromCache(std::string videoFile, uint64_t& start_ts, uint64_t& end_ts)
@@ -1300,21 +1374,9 @@ std::string Mp4ReaderSource::addOutPutPin(framemetadata_sp& metadata)
 	}
 	else
 	{
-		mp4FramePinId = Module::addOutputPin(metadata);
-		return mp4FramePinId;
+		metadataFramePinId = Module::addOutputPin(metadata);
+		return metadataFramePinId;
 	}
-}
-void Mp4ReaderSource::setMetadata(framemetadata_sp metadata)
-{
-	if (!metadata->isSet())
-	{
-		return;
-	}
-	auto newMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
-	auto outMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(encodedImageMetadata);
-	outMetadata->setData(*newMetadata);
-	mHeight = outMetadata->getHeight();
-	mWidth = outMetadata->getWidth();
 }
 
 bool Mp4ReaderSource::produce()
@@ -1359,10 +1421,10 @@ Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
-	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.biggerFrameSize, mDetail->mProps.biggerMetadataFrameSize);
+	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.reInitInterval, mDetail->mProps.direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
-	mDetail->Init();
+	//mDetail->Init();
 	return ret;
 }
 

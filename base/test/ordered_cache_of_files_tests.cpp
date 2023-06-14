@@ -582,6 +582,12 @@ BOOST_AUTO_TEST_CASE(get_start_end)
 	bool isFileInCache = cof.fetchFromCache(videoFile, start_ts, end_ts);
 	BOOST_TEST(isFileInCache == true);
 	BOOST_TEST(start_ts == 1655895288956);
+	BOOST_TEST(end_ts == 0);
+
+	// force update from disk
+	isFileInCache = cof.fetchAndUpdateFromDisk(videoFile, start_ts, end_ts);
+	BOOST_TEST(isFileInCache == true);
+	BOOST_TEST(start_ts == 1655895288956);
 	BOOST_TEST(end_ts == 1655895298961);
 
 	// not in cache + not on disk

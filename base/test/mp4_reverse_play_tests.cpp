@@ -8,12 +8,9 @@
 #include "PipeLine.h"
 
 #include "FileWriterModule.h"
-//#include "ProtoSerializer.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
-//#include "ProtoDeserializer.h"
 #include "EncodedImageMetadata.h"
-//#include "JPEGDecoderIM.h"
 #include "StatSink.h"
 
 #include "FrameContainerQueue.h"
@@ -96,7 +93,7 @@ protected:
 
 struct SetupPlaybackTests
 {
-	SetupPlaybackTests(std::string videoPath, std::string outPath, int height, int width,
+	SetupPlaybackTests(std::string videoPath, std::string outPath,
 		bool reInitInterval, bool direction, bool parseFS)
 	{
 		LoggerProps loggerProps;
@@ -105,12 +102,12 @@ struct SetupPlaybackTests
 		boost::filesystem::path dir(outPath);
 
 		bool readLoop = false;
-		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, reInitInterval, direction, readLoop);
+		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, reInitInterval, direction, readLoop, false);
 		mp4ReaderProps.logHealth = true;
 		mp4ReaderProps.logHealthFrequency = 1000;
 		mp4ReaderProps.fps = 100;
 		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
+		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 		mp4Reader->addOutPutPin(encodedImageMetadata);
 		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_2_0"));
 		mp4Reader->addOutPutPin(mp4Metadata);
@@ -147,7 +144,7 @@ BOOST_AUTO_TEST_CASE(fwd)
 {
 	std::string videoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895288956.mp4";
 	std::string outPath = "data/mp4_video/outFrames";
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, true, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, true, true);
 
 	int ct = 0, total = 601;
 	while (ct < total - 1)
@@ -177,7 +174,7 @@ BOOST_AUTO_TEST_CASE(switch_playback)
 {
 	std::string videoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895288956.mp4";
 	std::string outPath = "data/mp4_video/outFrames";
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, true, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, true, true);
 
 	f.mp4Reader->step();
 	auto sinkQ = f.sink->getQue();
@@ -261,7 +258,7 @@ BOOST_AUTO_TEST_CASE(video_coverage)
 {
 	std::string videoPath = "data/mp4_video/mp4_seek_tests/20220522/0023/1655919060000.mp4";
 	std::string outPath = "data/mp4_video/outFrames";
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, true, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, true, true);
 
 	/* forward playback verification */
 	f.mp4Reader->step();
@@ -329,7 +326,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlayback_prev_hr)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -361,7 +358,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlayback_prev_day)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -392,7 +389,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlay_prev_hr)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -416,7 +413,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlay_fail_to_seek_infile_restore)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -458,7 +455,7 @@ BOOST_AUTO_TEST_CASE(seek_dir_change_trig_fresh_parse)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = true;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame // first
@@ -523,7 +520,7 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval)
 	*/
 	std::string videoPath = "data/mp4_video/mp4_seek_tests/apra.mp4";
 	std::string outPath = "data/mp4_video/outFrames";
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 10, true, false);
+	SetupPlaybackTests f(videoPath, outPath, 10, true, false);
 
 	/* forward playback verification */
 	f.mp4Reader->step();
@@ -575,7 +572,7 @@ BOOST_AUTO_TEST_CASE(temp)
 	std::string outPath = "data/mp4_video/outFrames";
 	bool direction = true;
 
-	SetupPlaybackTests f(videoPath, outPath, 30, 22, 0, direction, true);
+	SetupPlaybackTests f(videoPath, outPath, 0, direction, true);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame // first

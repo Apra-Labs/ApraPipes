@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 
 	// metadata is known
 	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	mp4Reader->addOutPutPin(h264ImageMetadata);
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 
 	// metadata is known
 	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	mp4Reader->addOutPutPin(h264ImageMetadata);
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink, *utf::precondition(if_h264_en
 	Logger::setLogLevel("info");
 
 	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
-	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false);
+	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false, 0, true, false, false);
 	mp4ReaderProps_2.logHealth = true;
 	mp4ReaderProps_2.logHealthFrequency = 100;
 	mp4ReaderProps_2.fps = 30;

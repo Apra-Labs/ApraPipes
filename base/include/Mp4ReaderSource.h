@@ -2,9 +2,9 @@
 
 #include "Module.h"
 #include <boost/filesystem.hpp>
-class Mp4readerDetailAbs;
-class Mp4readerDetailJpeg;
-class Mp4readerDetailH264;
+class Mp4ReaderDetailAbs;
+class Mp4ReaderDetailJpeg;
+class Mp4ReaderDetailH264;
 
 class Mp4ReaderSourceProps : public ModuleProps
 {
@@ -13,36 +13,9 @@ public:
 	{
 
 	}
+	// todo - remove this constructor (done)
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
-	{
-		biggerFrameSize = _biggerFrameSize;
-		biggerMetadataFrameSize = _biggerMetadataFrameSize;
-		videoPath = _videoPath;
-		parseFS = _parseFS;
-		bFramesEnabled = _bFramesEnabled;
-		parseFSTimeoutDuration = _parseFSTimeoutDuration;
-		if (parseFS)
-		{
-			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
-		}
-
-	}
-
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
-	{
-		videoPath = _videoPath;
-		parseFS = _parseFS;
-		bFramesEnabled = _bFramesEnabled;
-		parseFSTimeoutDuration = _parseFSTimeoutDuration;
-		if (parseFS)
-		{
-			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
-		}
-
-	}
-
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		/* About props:
 			- videoPath - Path of a video from where the reading will start.
@@ -71,6 +44,7 @@ public:
 		skipDir = boost::filesystem::path(canonicalVideoPath).parent_path().parent_path().parent_path().string();
 		bFramesEnabled = _bFramesEnabled;
 		direction = _direction;
+		giveLiveTS = _giveLiveTS;
 		if (_reInitInterval < 0)
 		{
 			throw AIPException(AIP_FATAL, "reInitInterval must be 0 or more seconds");
@@ -85,9 +59,16 @@ public:
 
 	}
 
+	// todo - integrate this methdo from ecs code (done)
+	void setMaxFrameSizes(size_t _maxImgFrameSize, size_t _maxMetadataFrameSize)
+	{
+		biggerFrameSize = _maxImgFrameSize;
+		biggerMetadataFrameSize = _maxMetadataFrameSize;
+	}
+
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + + sizeof(parseFSTimeoutDuration);
+		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled);
 	}
 
 	std::string skipDir = "./data/mp4_videos";
@@ -100,6 +81,7 @@ public:
 	uint16_t reInitInterval = 0;
 	int parseFSTimeoutDuration = 15;
 	bool readLoop = false;
+	bool giveLiveTS = false;
 private:
 	friend class boost::serialization::access;
 
@@ -116,6 +98,7 @@ private:
 		ar& parseFSTimeoutDuration;
 		ar& direction;
 		ar& readLoop;
+		ar& giveLiveTS;
 	}
 };
 
@@ -128,8 +111,8 @@ public:
 	bool term();
 	Mp4ReaderSourceProps getProps();
 	void setProps(Mp4ReaderSourceProps& props);
-	void setMetadata(framemetadata_sp metadata);
 	std::string getOpenVideoPath();
+	void setImageMetadata(std::string& pinId, framemetadata_sp& metadata);
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS);
 	bool changePlayback(float speed, bool direction);
@@ -137,7 +120,16 @@ public:
 	bool randomSeek(uint64_t seekStartTS);
 	bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen);
 	bool refreshCache();
-	std::map<std::string, std::pair<uint64_t, uint64_t>> getCacheSnapShot();
+	std::map<std::string, std::pair<uint64_t, uint64_t>> getCacheSnapShot(); // to be used for debugging only
+	// todo - add these methods' definition (done)
+	double getOpenVideoFPS();
+	double getOpenVideoDurationInSecs();
+	int32_t getOpenVideoFrameCount();
+	void getResolution(uint32_t &width, uint32_t &height)
+	{
+		width = mWidth;
+		height = mHeight;
+	}
 protected:
 	bool produce();
 	bool validateOutputPins();
@@ -149,11 +141,7 @@ private:
 	std::string encodedImagePinId;
 	uint32_t mWidth = 0;
 	uint32_t mHeight = 0;
-	std::string mp4FramePinId;
-	framemetadata_sp encodedImageMetadata;
-	int outImageFrameType;
-	boost::shared_ptr<Mp4readerDetailAbs> mDetail;
+	std::string metadataFramePinId;
+	boost::shared_ptr<Mp4ReaderDetailAbs> mDetail;
 	Mp4ReaderSourceProps props;
-	std::function<frame_sp(size_t size)> _makeFrame;
-	std::function<framemetadata_sp(int type)> _getOutputMetadataByType;
 };

@@ -116,6 +116,63 @@ std::map<std::string, std::pair<uint64_t, uint64_t>> OrderedCacheOfFiles::getSna
 	return snap;
 }
 
+bool OrderedCacheOfFiles::probe(boost::filesystem::path rootDir, std::string& videoName)
+{
+	try
+	{
+		boost::filesystem::is_empty(rootDir);
+	}
+	catch (...)
+	{
+		return false;
+	}
+
+	boost::filesystem::recursive_directory_iterator dir(rootDir), end;
+
+	LOG_INFO << "parsing files from dir <" << *dir << ">";
+
+	for (dir; dir != end; ++dir)
+	{
+		LOG_ERROR << "Checking dir <" << dir->path() << ">";
+		auto path = dir->path();
+		if (boost::filesystem::is_directory(dir->path()))
+		{
+			auto parentPath = dir->path().parent_path();
+
+			// potential date folder
+			if (boost::filesystem::equivalent(parentPath, rootDir))
+			{
+				if (!datePatternCheck(dir->path()))
+				{
+					// skip going inside
+					dir.no_push();
+				}
+			}
+			// potential hour folder
+			else
+			{
+				if (!hourPatternCheck(dir->path()))
+				{
+					// skip going inside
+					dir.no_push();
+				}
+			}
+			// dont add folder paths to relevant files
+			continue;
+		}
+
+		// potential video file
+		if (!filePatternCheck(dir->path()))
+		{
+			continue;
+		}
+
+		videoName = dir->path().string();
+		return true;
+	}
+	return false;
+}
+
 /*
 Important Note:
 **UNRELIABLE METHOD - Use ONLY if you know what you are doing.**

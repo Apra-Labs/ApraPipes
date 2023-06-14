@@ -20,6 +20,7 @@ public:
 	int m_num, m_den;
 	virtual bool isEoP() { return false; }
 	virtual bool isEOS() { return false; }
+	virtual bool isMp4ErrorFrame() { return false; }
 	virtual bool isEmpty() { return false; }	
 	virtual bool isPropsChange();
 	virtual bool isPausePlay();
