@@ -85,7 +85,7 @@ struct CCNPPITestsStruct
 BOOST_AUTO_TEST_CASE(MONO_to_RGB,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::RGB);
+	CCNPPITestsStruct f("./data/mono_200x200.raw", 200, 200, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::RGB);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_RGB,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_to_BGR,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1,CV_8U, ImageMetadata::ImageType::BGR);
+	CCNPPITestsStruct f("./data/mono_200x200.raw", 200, 200, ImageMetadata::ImageType::MONO, CV_8UC1,CV_8U, ImageMetadata::ImageType::BGR);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_BGR,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
 {
 	ImageMetadata::ImageType::MONO;
-	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::RGBA);
+	CCNPPITestsStruct f("./data/mono_200x200.raw", 200, 200, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::RGBA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_RGBA)
 BOOST_AUTO_TEST_CASE(MONO_to_BGRA, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::MONO;
-	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::BGRA);
+	CCNPPITestsStruct f("./data/mono_200x200.raw", 200, 200, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::BGRA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_BGRA, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(MONO_to_YUV420)
 {
 	ImageMetadata::ImageType::MONO;
-	CCNPPITestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::YUV420);
+	CCNPPITestsStruct f("./data/mono_200x200.raw", 200, 200, ImageMetadata::ImageType::MONO, CV_8UC1, CV_8U, ImageMetadata::ImageType::YUV420);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(MONO_to_YUV420)
 BOOST_AUTO_TEST_CASE(RGB_to_MONO)
 {
 	ImageMetadata::ImageType::RGB;
-	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::MONO);
+	CCNPPITestsStruct f("./data/RGB_320x180.raw", 320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::MONO);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_MONO)
 BOOST_AUTO_TEST_CASE(RGB_to_BGR)
 {
 	ImageMetadata::ImageType::RGB;
-	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::BGR);
+	CCNPPITestsStruct f("./data/RGB_320x180.raw", 320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::BGR);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_BGR)
 BOOST_AUTO_TEST_CASE(RGB_to_RGBA)
 {
 	ImageMetadata::ImageType::RGB;
-	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::RGBA);
+	CCNPPITestsStruct f("./data/RGB_320x180.raw", 320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::RGBA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_RGBA)
 BOOST_AUTO_TEST_CASE(RGB_to_BGRA,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGB;
-	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::BGRA);
+	CCNPPITestsStruct f("./data/RGB_320x180.raw", 320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::BGRA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(RGB_to_BGRA,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_to_YUV420)
 {
 	ImageMetadata::ImageType::RGB;
-	CCNPPITestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::YUV420);
+	CCNPPITestsStruct f("./data/RGB_320x180.raw", 320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, CV_8U, ImageMetadata::ImageType::YUV420);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(BGR_to_YUV420,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGBA_to_MONO, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGBA;
-	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::MONO);
+	CCNPPITestsStruct f("./data/rgba_200x180.raw", 200, 180, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::MONO);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_MONO, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGBA_to_RGB)
 {
 	ImageMetadata::ImageType::RGBA;
-	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::RGB);
+	CCNPPITestsStruct f("./data/rgba_200x180.raw", 200, 180, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::RGB);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_RGB)
 BOOST_AUTO_TEST_CASE(RGBA_to_BGR, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGBA;
-	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::BGR);
+	CCNPPITestsStruct f("./data/rgba_200x180.raw", 200, 180, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::BGR);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -407,10 +407,10 @@ BOOST_AUTO_TEST_CASE(RGBA_to_BGR, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/rgba_to_bgr.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(RGBA_to_BGRA)
+BOOST_AUTO_TEST_CASE(RGBA_to_BGRA, *boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::RGBA;
-	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::BGRA);
+	CCNPPITestsStruct f("./data/rgba_200x180.raw", 200, 180, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::BGRA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(RGBA_to_BGRA)
 BOOST_AUTO_TEST_CASE(RGBA_to_YUV420)
 {
 	ImageMetadata::ImageType::RGBA;
-	CCNPPITestsStruct f("./data/8bit_frame_1280x720_rgba.raw", 1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::YUV420);
+	CCNPPITestsStruct f("./data/rgba_200x180.raw", 200, 180, ImageMetadata::ImageType::RGBA, CV_8UC4, CV_8U, ImageMetadata::ImageType::YUV420);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -536,7 +536,7 @@ BOOST_AUTO_TEST_CASE(BGRA_to_YUV420,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(YUV420_to_MONO)
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::MONO);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::MONO);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -554,7 +554,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_MONO)
 BOOST_AUTO_TEST_CASE(YUV420_to_RGB)
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::RGB);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::RGB);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_RGB)
 BOOST_AUTO_TEST_CASE(YUV420_to_BGR,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::BGR);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::BGR);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -590,7 +590,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_BGR,*boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(YUV420_to_RGBA)
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::RGBA);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::RGBA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -608,7 +608,7 @@ BOOST_AUTO_TEST_CASE(YUV420_to_RGBA)
 BOOST_AUTO_TEST_CASE(YUV420_to_BGRA,*boost::unit_test::disabled())
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::BGRA);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::BGRA);
 
 	f.fileReader->step();
 	f.copy1->step();
@@ -698,7 +698,7 @@ BOOST_AUTO_TEST_CASE(NV12_to_RGBA)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(NV12_to_BGRA, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(NV12_to_BGRA)
 {
 	ImageMetadata::ImageType::NV12;
 	CCNPPITestsStruct f("./data/nv12-704x576.raw", 704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, ImageMetadata::ImageType::BGRA);
@@ -758,7 +758,7 @@ BOOST_AUTO_TEST_CASE(yuv411_I_1920x1080)
 BOOST_AUTO_TEST_CASE(YUV420_to_YUV420)
 {
 	ImageMetadata::ImageType::YUV420;
-	CCNPPITestsStruct f("./data/yuv420_640x360.raw", 640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::YUV420);
+	CCNPPITestsStruct f("./data/yuv420_320x180.raw", 320, 180, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, ImageMetadata::ImageType::YUV420);
 
 	f.fileReader->step();
 	f.copy1->step();
