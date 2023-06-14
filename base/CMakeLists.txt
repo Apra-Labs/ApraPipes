@@ -88,7 +88,7 @@ IF(ENABLE_CUDA)
 			${X11LIB}	
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
-		) 
+		)
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
