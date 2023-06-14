@@ -159,6 +159,7 @@ SET(CORE_FILES
    src/Mp4ReaderSourceUtils.cpp
    src/RTSPClientSrc.cpp
    src/RTSPClientSrc.cpp
+	src/MotionVectorExtractor.cpp
    src/BaresipWebRTC.cpp
    src/BaresipDemo.cpp
    src/BaresipVideoSink.cpp
@@ -222,6 +223,7 @@ SET(CORE_FILES_H
    include/Mp4ReaderSourceUtils.h
    include/RTSPClientSrc.h
    include/H264Metadata.h
+	include/MotionVectorExtractor.h
    include/BaresipWebRTC.h
    include/BaresipDemo.h
    include/BaresipVideoSink.h
