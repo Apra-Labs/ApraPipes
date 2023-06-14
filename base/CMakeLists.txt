@@ -197,7 +197,7 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
-	src/OverlayMotionVectors.cpp
+	src/OverlayModule.cpp
 )
 
 SET(CORE_FILES_H
@@ -256,7 +256,7 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
-	include/OverlayMotionVectors.h
+	include/OverlayModule.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -309,6 +309,9 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/Overlay.cpp
+	src/OverlayFactory.h
+	src/OverlayFactory.cpp
 )
 
 
@@ -342,6 +345,7 @@ SET(IP_FILES_H
 	include/FaceDetectorXform.h
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
+	include/Overlay.h
 )
 
 
@@ -619,6 +623,7 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
+	test/overlaymodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
