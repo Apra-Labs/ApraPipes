@@ -1008,7 +1008,7 @@ public:
 	bool intermediateConv = false;
 };
 
-CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), props(_props), mFrameLength(0), mNoChange(false)
+CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), mProps(_props), mFrameLength(0), mNoChange(false)
 {
 	mDetail.reset(new Detail(_props));
 }
@@ -1073,7 +1073,7 @@ void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
 	Module::addInputPin(metadata, pinId);
 
 	mInputFrameType = metadata->getFrameType();
-	switch (props.imageType)
+	switch (mProps.imageType)
 	{
 	case ImageMetadata::MONO:
 	case ImageMetadata::BGR:
@@ -1182,7 +1182,7 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	}
 
 	mNoChange = false;
-	if (inputImageType == props.imageType)
+	if (inputImageType == mProps.imageType)
 	{
 		mNoChange = true;
 		return;
@@ -1191,14 +1191,14 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	if (mOutputFrameType == FrameMetadata::RAW_IMAGE)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-		RawImageMetadata outputMetadata(width, height, props.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
+		RawImageMetadata outputMetadata(width, height, mProps.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
 		rawOutMetadata->setData(outputMetadata);
 		outputImageType = rawOutMetadata->getImageType();
 	}
 	else if (mOutputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-		RawImagePlanarMetadata outputMetadata(width, height, props.imageType, 512, depth);
+		RawImagePlanarMetadata outputMetadata(width, height, mProps.imageType, 512, depth);
 		rawOutMetadata->setData(outputMetadata);
 		outputImageType = rawOutMetadata->getImageType();
 	}
