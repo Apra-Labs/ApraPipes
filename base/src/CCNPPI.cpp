@@ -17,6 +17,7 @@ public:
 
 	~Detail() {}
 
+	//This enum has to match ImageMetadata enums
 	enum Imageformats
 	{
 		UNSET = 0,
@@ -37,6 +38,8 @@ public:
 		BAYERGR8,
 		BAYERRG8
 	};
+
+	const int enumSize = BAYERRG8 + 1; // last enum value of Imageformats plus 1
 
 	const int conversionTable[37][2] =
 	{
@@ -78,12 +81,13 @@ public:
 		{15, 12},  // NV12 to YUV420
 	    {10, 11 }  // yuv411 to YUV444
 	};
-	int convmatrix[25][25][2] = { {-1} };
+
+	int convmatrix[BAYERRG8 + 1][BAYERRG8 + 1][2] = { {-1} };
 
 	void setConvMatrix() {
 
-		for (int i = 0; i < 25; i++) {
-			for (int j = 0; j < 25; j++) {
+		for (int i = 0; i < enumSize; i++) {
+			for (int j = 0; j < enumSize; j++) {
 				if (i == j) {
 					convmatrix[i][j][0] = 0;
 					convmatrix[i][j][1] = 0;
@@ -119,6 +123,7 @@ public:
 
 		return true;
 	}
+
 	bool convertMONOtoBGR()
 	{
 		auto status = nppiDup_8u_C1C3R_Ctx(src[0],
@@ -135,6 +140,7 @@ public:
 
 		return true;
 	}
+
 	bool convertMONOtoRGBA()
 	{
 		auto status = nppiDup_8u_C1C4R_Ctx(src[0],
@@ -164,6 +170,7 @@ public:
 
 		return true;
 	}
+
 	bool convertMONOtoBGRA() {
 		auto status = nppiDup_8u_C1C4R_Ctx(src[0],
 			srcPitch[0],
@@ -192,6 +199,7 @@ public:
 
 		return true;
 	}
+
 	bool convertMONOtoYUV420()
 	{
 		// CUDA MEMCPY Y
@@ -236,6 +244,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBtoBGR()
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // Channel order for RGB to BGR conversion
@@ -255,6 +264,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBtoBGRA(bool intermediate)
 	{
 		const Npp8u nValue = 255; // Alpha value
@@ -277,6 +287,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBtoRGBA(bool intermediate)
 	{
 		const Npp8u nValue = 255; // Alpha value
@@ -299,6 +310,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBtoYUV420()
 	{
 		auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
@@ -333,6 +345,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRtoRGB()
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // Channel order for BGR to RGB conversion
@@ -352,6 +365,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRtoRGBA()
 	{
 		const Npp8u nValue = 255; // Alpha value
@@ -367,6 +381,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRtoBGRA()
 	{
 		const Npp8u nValue = 255; // Alpha value
@@ -382,6 +397,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRtoYUV420()
 	{
 		auto status = nppiRGBToYUV420_8u_C3P3R_Ctx(src[0],
@@ -412,6 +428,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBAtoRGB()
 	{
 		const int dstOrder[3] = { 0, 1, 2 }; // RGB channel order
@@ -426,6 +443,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBAtoBGR()
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
@@ -440,6 +458,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBAtoBGRA()
 	{
 		const int dstOrder[4] = { 2, 1, 0, 3 }; // BGRA channel order
@@ -454,6 +473,7 @@ public:
 
 		return true;
 	}
+
 	bool convertRGBAtoYUV420()
 	{
 		auto status = nppiBGRToYUV420_8u_AC4P3R_Ctx(src[0],
@@ -483,6 +503,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRAtoRGB()
 	{
 		const int dstOrder[3] = { 2, 1, 0 }; // BGR channel order
@@ -498,6 +519,7 @@ public:
 		return true;
 
 	}
+
 	bool convertBGRAtoBGR()
 	{
 		const int dstOrder[3] = { 2,1,0 }; // BGR channel order
@@ -512,6 +534,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRAtoRGBA()
 	{
 		const int dstOrder[4] = { 2, 1, 0, 3 }; // RGBA channel order
@@ -526,6 +549,7 @@ public:
 
 		return true;
 	}
+
 	bool convertBGRAtoYUV420()
 	{
 		auto status = nppiBGRToYUV420_8u_AC4P3R_Ctx(src[0],
@@ -556,6 +580,7 @@ public:
 		}
 		return true;
 	}
+
 	bool convertYUV420toRGB()
 	{
 		auto status = nppiYUV420ToRGB_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
@@ -568,6 +593,7 @@ public:
 
 		return true;
 	}
+
 	bool convertYUV420toBGR()
 	{
 		auto status = nppiYUV420ToBGR_8u_P3C3R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
@@ -581,6 +607,7 @@ public:
 		return true;
 
 	}
+
 	bool convertYUV420toRGBA()
 	{
 		auto status = nppiYUV420ToRGB_8u_P3C4R_Ctx(src, srcPitch, dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
@@ -594,6 +621,7 @@ public:
 		return true;
 
 	}
+
 	bool convertYUV420toBGRA()
 	{
 		auto status = nppiYUV420ToBGR_8u_P3C4R_Ctx(src,
@@ -623,6 +651,7 @@ public:
 		}
 		return true;
 	}
+
 	bool convertNV12toRGB(bool intermediate)
 	{
 		int pitch = (intermediate) ? intermediatePitch[0] : dstPitch[0];
@@ -641,6 +670,7 @@ public:
 		}
 		return true;
 	}
+
 	bool convertNV12toBGR()
 	{
 		auto status = nppiNV12ToBGR_709HDTV_8u_P2C3R_Ctx(src, srcPitch[0], dst[0], dstPitch[0], srcSize[0], nppStreamCtx);
@@ -653,6 +683,7 @@ public:
 
 		return true;
 	}
+
 	bool convertNV12toYUV420()
 	{
 		auto status = nppiNV12ToYUV420_8u_P2P3R_Ctx(src, srcPitch[0], dst, dstPitch, srcSize[0], nppStreamCtx);
@@ -694,7 +725,7 @@ public:
 		}
 
 		switch (inputImageType)
-	{
+	    {
 		case ImageMetadata::MONO:
 		{
 			switch (outputImageType)
@@ -910,27 +941,27 @@ public:
 
 			if (intermediateFrameType = FrameMetadata::RAW_IMAGE)
 			{
-				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediate);
-				intermediateImageType = outputRawMetadata->getImageType();
-				intermediateChannels = outputRawMetadata->getChannels();
+				auto intermediateRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediate);
+				intermediateImageType = intermediateRawMetadata->getImageType();
+				intermediateChannels = intermediateRawMetadata->getChannels();
 
-				intermediateSize[0] = { outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
-				intermediateRect[0] = { 0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight() };
-				intermediatePitch[0] = static_cast<int>(outputRawMetadata->getStep());
+				intermediateSize[0] = { intermediateRawMetadata->getWidth(), intermediateRawMetadata->getHeight() };
+				intermediateRect[0] = { 0, 0, intermediateRawMetadata->getWidth(), intermediateRawMetadata->getHeight() };
+				intermediatePitch[0] = static_cast<int>(intermediateRawMetadata->getStep());
 				intermediateNextPtrOffset[0] = 0;
 			}
 			else if (outputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 			{
-				auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mIntermediate);
-				intermediateImageType = outputRawMetadata->getImageType();
-				intermediateChannels = outputRawMetadata->getChannels();
+				auto intermediateRawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mIntermediate);
+				intermediateImageType = intermediateRawPlanarMetadata->getImageType();
+				intermediateChannels = intermediateRawPlanarMetadata->getChannels();
 
-				for (auto i = 0; i < outputChannels; i++)
+				for (auto i = 0; i < intermediateChannels; i++)
 				{
-					intermediateSize[i] = { outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
-					intermediateRect[i] = { 0, 0, outputRawMetadata->getWidth(i), outputRawMetadata->getHeight(i) };
-					intermediatePitch[i] = static_cast<int>(outputRawMetadata->getStep(i));
-					intermediateNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
+					intermediateSize[i] = { intermediateRawPlanarMetadata->getWidth(i), intermediateRawPlanarMetadata->getHeight(i) };
+					intermediateRect[i] = { 0, 0, intermediateRawPlanarMetadata->getWidth(i), intermediateRawPlanarMetadata->getHeight(i) };
+					intermediatePitch[i] = static_cast<int>(intermediateRawPlanarMetadata->getStep(i));
+					intermediateNextPtrOffset[i] = intermediateRawPlanarMetadata->getNextPtrOffset(i);
 				}
 
 			}
@@ -974,6 +1005,7 @@ protected:
 public:
 	int intermediateChannels = 0;
 	NppiSize srcSize[4];
+	bool intermediateConv = false;
 };
 
 CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), props(_props), mFrameLength(0), mNoChange(false)
@@ -1085,14 +1117,14 @@ bool CCNPPI::process(frame_container& frames)
 	frame_sp outFrame;
 	frame_sp intermediateFrame;
 	size_t intermediateFrameSize = NOT_SET_NUM;
-	if (intermediateConv)
+	if (mDetail->intermediateConv)
 	{
 		intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
 	}
 	if (!mNoChange)
 	{
 		outFrame = makeFrame();
-		if (intermediateConv)
+		if (mDetail->intermediateConv)
 		{
 			intermediateFrame = makeFrame(intermediateFrameSize);
 		}
@@ -1183,7 +1215,7 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	{
 		if ((outputImageType == ImageMetadata::BGRA) || (outputImageType == ImageMetadata::RGBA))
 		{
-			intermediateConv = true;
+			mDetail->intermediateConv = true;
 			mIntermediateMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
 			auto mrawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediateMetadata);
 			RawImageMetadata moutputMetadata(width, height, ImageMetadata::RGB, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
