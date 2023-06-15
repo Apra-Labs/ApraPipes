@@ -56,9 +56,6 @@ struct CCNPPITestsStruct
 		sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 		copy2->setNext(sink);
 
-		PipeLine p("test");
-		p.appendModule(fileReader);
-
 		BOOST_TEST(fileReader->init());
 		BOOST_TEST(copy1->init());
 		BOOST_TEST(ccnppi->init());

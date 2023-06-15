@@ -46,7 +46,6 @@ private:
 	boost::shared_ptr<Detail> mDetail;
 
 	bool mNoChange;
-	bool intermediateConv = false;
 	int mInputFrameType;
 	int mOutputFrameType;
 	size_t mFrameLength;
