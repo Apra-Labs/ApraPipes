@@ -52,5 +52,5 @@ private:
 	framemetadata_sp mOutputMetadata;
 	framemetadata_sp mIntermediateMetadata;
 	std::string mOutputPinId;
-	CCNPPIProps props;		
+	CCNPPIProps mProps;		
 };
