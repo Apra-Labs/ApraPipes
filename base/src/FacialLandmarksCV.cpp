@@ -24,12 +24,6 @@ public:
 	{
 	}
 
-	void setProps(FacialLandmarkCVProps& _props)
-	{
-		mProps.reset(new FacialLandmarkCVProps(_props.type));
-	}
-
-
 	virtual bool compute(frame_sp buffer) = 0;
 
 	void initMatImages(framemetadata_sp& input)
@@ -87,18 +81,21 @@ public:
 		mFrameLength = mOutputMetadata->getDataSize();
 	}
 
-    public:
-	boost::shared_ptr<FacialLandmarkCVProps> mProps;
-	size_t mFrameLength;
-	size_t size;
-	framemetadata_sp mOutputMetadata;
-	cv::Mat iImg;
-	framemetadata_sp mInputMetadata;
-	vector<vector<cv::Point2f>>landmarks;
-	FrameMetadata::FrameType mFrameType;
-	FacialLandmarkCVProps props;
+	void setProps(FacialLandmarkCVProps& mprops)
+	{
+		setMetadata(mInputMetadata);
+	}
 
-    private:
+public:
+	size_t mFrameLength;
+	framemetadata_sp mOutputMetadata;
+	FacialLandmarkCVProps props;
+	cv::Mat iImg;
+	vector<vector<cv::Point2f>>landmarks;
+
+protected:
+	framemetadata_sp mInputMetadata;
+	FrameMetadata::FrameType mFrameType;
 	uint32_t width, height, type, depth, step;
 	
 };
@@ -108,11 +105,11 @@ class DetailSSD : public Detail
 public:
 	DetailSSD(FacialLandmarkCVProps& _props) : Detail(_props)
 	{
-		cv::String modelConfiguration = "./data/deploy.prototxt.txt";
-		cv::String modelBinary = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
+		cv::String modelConfiguration = props.modelConfiguration;
+		cv::String modelBinary = props.modelBinary;
 
 		facemark = cv::face::FacemarkKazemi::create();
-		facemark->loadModel("./data/face_landmark_model.dat");
+		facemark->loadModel(props.landmarksDetectionModel);
 
 	    faceDetector = cv::dnn::readNetFromCaffe(modelConfiguration, modelBinary);
 	}
@@ -164,10 +161,10 @@ private:
 class DetailHCASCADE : public Detail
 {
 public:
-	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props), faceDetector("./data/haarcascade.xml")
+	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props), faceDetector(props.faceDetectionModel)
 	{
 		facemark = cv::face::FacemarkKazemi::create();
-		facemark->loadModel("./data/face_landmark_model.dat");
+		facemark->loadModel(props.landmarksDetectionModel);
 	}
 
 	bool compute(frame_sp buffer)
@@ -192,6 +189,7 @@ private:
  
 FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props)
 {
+
 }
 
 FacialLandmarkCV::~FacialLandmarkCV() {}
@@ -251,10 +249,27 @@ bool FacialLandmarkCV::validateOutputPins()
 void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
-	mOutputPinId1 = addOutputPin(metadata);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
-	mOutputPinId2 = addOutputPin(landmarksOutputMetadata);
+	landmarksOutputMetadata = metadata;
+	mOutputPinId1 = addOutputPin(landmarksOutputMetadata);
+}
 
+bool FacialLandmarkCV::intializer(FacialLandmarkCVProps props)
+ {
+	if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::SSD)
+	{
+		mDetail.reset(new DetailSSD(props));
+	}
+
+	else if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE)
+	{
+		mDetail.reset(new DetailHCASCADE(props));
+	}
+
+	else
+	{
+		throw std::runtime_error("Invalid face detection model type");
+	}
 }
 
 bool FacialLandmarkCV::init()
@@ -312,7 +327,7 @@ bool FacialLandmarkCV::process(frame_container& frames)
 
 	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId2, landmarksFrame));
+	frames.insert(make_pair(mOutputPinId1, landmarksFrame));
 
 	send(frames);
 
@@ -337,4 +352,24 @@ bool FacialLandmarkCV::processEOS(string &pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;
+}
+
+void FacialLandmarkCV::setProps(FacialLandmarkCVProps& props)
+{
+	Module::addPropsToQueue(props);
+}
+
+FacialLandmarkCVProps FacialLandmarkCV::getProps()
+{
+	fillProps(mDetail->props);
+	return mDetail->props;
+}
+
+bool FacialLandmarkCV::handlePropsChange(frame_sp& frame)
+{
+	FacialLandmarkCVProps props(mDetail->props.type);
+	bool ret = Module::handlePropsChange(frame, props);
+	mDetail->setProps(props);
+	intializer(props);
+	return ret;
 }

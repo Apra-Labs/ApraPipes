@@ -131,4 +131,37 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 	facemark->step();
 	sink->step();
 }
+
+BOOST_AUTO_TEST_CASE(getSetProps)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
+
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
+	fileReader->setNext(facemark);
+
+	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	facemark->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(facemark->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	facemark->step();
+
+	auto type = FacialLandmarkCVProps::FaceDetectionModelType::SSD;
+	auto currentProps = facemark->getProps();
+	BOOST_ASSERT(type == currentProps.type);
+
+	auto propsChange = FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE);
+	facemark->setProps(propsChange);
+	facemark->step();
+
+	fileReader->step();
+	facemark->step();
+	sink->step();
+
+}
 BOOST_AUTO_TEST_SUITE_END()
