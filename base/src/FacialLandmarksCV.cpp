@@ -224,7 +224,7 @@ bool FacialLandmarkCV::validateOutputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::FACE_LANDMARKS_INFO && frameType != FrameMetadata::RAW_IMAGE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or FACE_LANDMARKS_INFO. Actual<" << frameType << ">";
 		return false;
 	}
 
