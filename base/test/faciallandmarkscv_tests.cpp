@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(HAAR_CASCADE)
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD,"./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE,"./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
 	fileReader->setNext(facemark);
 
 	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
