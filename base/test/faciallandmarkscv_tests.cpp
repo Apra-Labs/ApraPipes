@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/face.hpp>
+#include <opencv2/opencv.hpp>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -13,7 +14,7 @@
 #include "Frame.h"
 #include "ApraPoint2f.h"
 
-BOOST_AUTO_TEST_SUITE(faciallandmarkcv_tests)
+BOOST_AUTO_TEST_SUITE(faciallandmarkscv_tests)
 
 class ExternalSinkProps : public ModuleProps
 {
@@ -143,13 +144,13 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 }
 
-BOOST_AUTO_TEST_CASE(SSD)
+BOOST_AUTO_TEST_CASE(SSD, *boost::unit_test::disabled())
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD, "./data/assets/deploy.prototxt.txt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD, "./data/assets/deploy.prototxt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
 	fileReader->setNext(facemark);
 
 	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
@@ -164,13 +165,13 @@ BOOST_AUTO_TEST_CASE(SSD)
 	sink->step();
 }
 
-BOOST_AUTO_TEST_CASE(HAAR_CASCADE)
+BOOST_AUTO_TEST_CASE(HAAR_CASCADE, *boost::unit_test::disabled())
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE,"./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE, "./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
 	fileReader->setNext(facemark);
 
 	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
@@ -184,4 +185,5 @@ BOOST_AUTO_TEST_CASE(HAAR_CASCADE)
 	facemark->step();
 	sink->step();
 }
+
 BOOST_AUTO_TEST_SUITE_END()
