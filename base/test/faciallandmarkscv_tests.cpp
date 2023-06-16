@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <opencv2/core/types.hpp>
+#include <opencv2/face.hpp>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -25,18 +26,9 @@ public:
 
 class ExternalSink : public Module
 {
-
-private:
-	std::string m_log;
-
 public:
 	ExternalSink(ExternalSinkProps props) : Module(SINK, "ExternalSink", props)
 	{
-	}
-
-	std::string getLog() const
-	{
-		return m_log;
 	}
 
 	frame_container pop()
@@ -56,27 +48,14 @@ public:
 protected:
 	bool process(frame_container& frames)
 	{
-		for (const auto& pair : frames)
-		{
-			LOG_INFO << pair.first << "," << pair.second;
-		}
-
-		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE);
-		if (frame)
-			LOG_INFO << "Timestamp <" << frame->timestamp << ">";
+		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::FACE_LANDMARKS_INFO);
 
 		vector<vector<ApraPoint2f>> facelandmarks;
 		Utils::deSerialize<std::vector<std::vector<ApraPoint2f>>>(facelandmarks, frame->data(), frame->size());
 
 		for (int i = 0; i < facelandmarks.size(); i++)
 		{
-			m_log += "Facial landmarks for face #" + std::to_string(i) + ":\n";
-			for (int j = 0; j < facelandmarks[i].size(); j++)
-			{
-				ApraPoint2f p(facelandmarks[i][j]);
-				m_log += "Point #" + std::to_string(j) + ": (" + std::to_string(p.x) + "," + std::to_string(p.y) + ")\n";
-			}
-			assert(facelandmarks[i].size() == 68); // check if there are 68 facial landmarks
+		  assert(facelandmarks[i].size() == 68); // check if there are 68 facial landmarks
 		}
 
 		cv::Mat iImg = cv::imread("./data/faces.jpg");
@@ -92,9 +71,8 @@ protected:
 		std::vector<uchar> buf;
 		cv::imencode(".jpg", iImg, buf);
 
-	   Test_Utils::saveOrCompare("./data/testOutput/facesResult.jpg", buf.data(), buf.size(), 0);
-	
-	   return true;
+	    Test_Utils::saveOrCompare("./data/testOutput/facesResult.jpg", buf.data(), buf.size(), 0);
+	    return true;
 	}
 
 	bool validateInputPins()
@@ -163,5 +141,47 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	facemark->step();
 	sink->step();
 
+}
+
+BOOST_AUTO_TEST_CASE(SSD)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
+
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD, "./data/deploy.prototxt.txt", "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel", "./data/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	fileReader->setNext(facemark);
+
+	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	facemark->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(facemark->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	facemark->step();
+	sink->step();
+}
+
+BOOST_AUTO_TEST_CASE(HAAR_CASCADE)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	fileReader->addOutputPin(metadata);
+
+	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD,"./data/haarcascade.xml", "./data/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	fileReader->setNext(facemark);
+
+	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	facemark->setNext(sink);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(facemark->init());
+	BOOST_TEST(sink->init());
+
+	fileReader->step();
+	facemark->step();
+	sink->step();
 }
 BOOST_AUTO_TEST_SUITE_END()

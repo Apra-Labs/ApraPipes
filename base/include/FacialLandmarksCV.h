@@ -1,5 +1,6 @@
 #pragma once
 
+#include <opencv2/face.hpp>
 #include "Module.h"
 
 class Detail;
@@ -15,25 +16,32 @@ public:
 		HAAR_CASCADE
 	};
 
-	FacialLandmarkCVProps() {}
-
 	FacialLandmarkCVProps(FaceDetectionModelType _type) : type(_type) {}
 
-	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _modelConfiguration, const std::string _modelBinary, const std::string _landmarksDetectionModel)
-		: type(_type), modelConfiguration(_modelConfiguration), modelBinary(_modelBinary), landmarksDetectionModel(_landmarksDetectionModel)
+	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _modelConfiguration, const std::string _modelBinary, const std::string _landmarksDetectionModel, cv::Ptr<cv::face::Facemark> _facemark)
+		: type(_type), modelConfiguration(_modelConfiguration), modelBinary(_modelBinary), landmarksDetectionModel(_landmarksDetectionModel),facemark(_facemark)
 	{
+		if (_type != FaceDetectionModelType::SSD)
+		{
+			throw AIPException(AIP_FATAL, "This constructor only supports SSD");
+		}
 	}
 
-	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _faceDetectionModel,const std::string _landmarksDetectionModel)
-		: type(_type), landmarksDetectionModel(_landmarksDetectionModel), faceDetectionModel(_faceDetectionModel)
+	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _faceDetectionModel,const std::string _landmarksDetectionModel, cv::Ptr<cv::face::Facemark> _facemark)
+		: type(_type), landmarksDetectionModel(_landmarksDetectionModel), faceDetectionModel(_faceDetectionModel), facemark(_facemark)
 	{
+		if (_type != FaceDetectionModelType::HAAR_CASCADE)
+		{
+			throw AIPException(AIP_FATAL, "This constructor only supports HAAR_CASCADE ");
+		}
 	}
 
 	FaceDetectionModelType type;
-	const std::string modelConfiguration = "./data/deploy.prototxt.txt";
-	const std::string modelBinary = "./data/res10_300x300_ssd_iter_140000_fp16.caffemodel";
-	const std::string landmarksDetectionModel = "./data/face_landmark_model.dat";
-	const std::string faceDetectionModel = "./data/haarcascade.xml";
+	const std::string modelConfiguration = "./data/assets/deploy.prototxt";
+	const std::string modelBinary = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
+	const std::string landmarksDetectionModel = "./data/assets/face_landmark_model.dat";
+	const std::string faceDetectionModel = "./data/assets/haarcascade.xml";
+	cv::Ptr<cv::face::Facemark> facemark = cv::face::FacemarkKazemi::create();
 
 	size_t getSerializeSize()
 	{
@@ -58,7 +66,6 @@ class FacialLandmarkCV : public Module
 	virtual ~FacialLandmarkCV();
 	bool init();
 	bool term();
-	bool intializer(FacialLandmarkCVProps props);
 	void setProps(FacialLandmarkCVProps& props);
 	FacialLandmarkCVProps getProps();
 

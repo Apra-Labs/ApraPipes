@@ -16,13 +16,9 @@
 class Detail
 {
 public:
-	Detail(FacialLandmarkCVProps &_props) : props(_props), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
-	{
-	}
+	Detail(FacialLandmarkCVProps &_props) : props(_props), mFrameType(FrameMetadata::GENERAL), mFrameLength(0) {}
 
-	~Detail()
-	{
-	}
+	~Detail() {}
 
 	virtual bool compute(frame_sp buffer) = 0;
 
@@ -30,7 +26,6 @@ public:
 	{
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(input));
 	}
-
 
 	void setMetadata(framemetadata_sp& metadata)
 	{
@@ -108,7 +103,7 @@ public:
 		cv::String modelConfiguration = props.modelConfiguration;
 		cv::String modelBinary = props.modelBinary;
 
-		facemark = cv::face::FacemarkKazemi::create();
+		facemark = props.facemark;
 		facemark->loadModel(props.landmarksDetectionModel);
 
 	    faceDetector = cv::dnn::readNetFromCaffe(modelConfiguration, modelBinary);
@@ -117,7 +112,7 @@ public:
 	bool compute(frame_sp buffer)
 	{
 		//input must be 3 channel image(RGB)
-	// Create a 4-dimensional blob from the image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
+	    // Create a 4-dimensional blob from the image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
 		cv::Mat inputBlob = cv::dnn::blobFromImage(iImg, 1.0, cv::Size(300, 300), cv::Scalar(104, 177, 123), false, false);
 
 		// Set the input blob as input to the face detector network
@@ -163,7 +158,7 @@ class DetailHCASCADE : public Detail
 public:
 	DetailHCASCADE(FacialLandmarkCVProps& _props) : Detail(_props), faceDetector(props.faceDetectionModel)
 	{
-		facemark = cv::face::FacemarkKazemi::create();
+		facemark = props.facemark;
 		facemark->loadModel(props.landmarksDetectionModel);
 	}
 
@@ -187,10 +182,7 @@ private:
 	cv::Ptr<cv::face::Facemark> facemark;
 };
  
-FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props)
-{
-
-}
+FacialLandmarkCV::FacialLandmarkCV(FacialLandmarkCVProps _props) : Module(TRANSFORM, "FacialLandmarkCV", _props), mProp( _props) {}
 
 FacialLandmarkCV::~FacialLandmarkCV() {}
 
@@ -250,26 +242,7 @@ void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
-	landmarksOutputMetadata = metadata;
 	mOutputPinId1 = addOutputPin(landmarksOutputMetadata);
-}
-
-bool FacialLandmarkCV::intializer(FacialLandmarkCVProps props)
- {
-	if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::SSD)
-	{
-		mDetail.reset(new DetailSSD(props));
-	}
-
-	else if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE)
-	{
-		mDetail.reset(new DetailHCASCADE(props));
-	}
-
-	else
-	{
-		throw std::runtime_error("Invalid face detection model type");
-	}
 }
 
 bool FacialLandmarkCV::init()
@@ -292,6 +265,7 @@ bool FacialLandmarkCV::init()
 	{
 		throw std::runtime_error("Invalid face detection model type");
 	}
+
 	return Module::init();
 }
 
@@ -317,7 +291,7 @@ bool FacialLandmarkCV::process(frame_container& frames)
 		apralandmarks.emplace_back(std::move(apralandmark));
 	}
 
-	size_t bufferSize = sizeof(apralandmarks) + 1024;
+	size_t bufferSize = sizeof(apralandmarks);
 	for (auto i = 0; i < apralandmarks.size(); ++i)
 	{
 		bufferSize += sizeof(apralandmarks[i]) + (sizeof(ApraPoint2f) + 2 * sizeof(int)) * apralandmarks[i].size();
@@ -370,6 +344,17 @@ bool FacialLandmarkCV::handlePropsChange(frame_sp& frame)
 	FacialLandmarkCVProps props(mDetail->props.type);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
-	intializer(props);
+	if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::SSD)
+	{
+		mDetail.reset(new DetailSSD(props));
+	}
+	else if (props.type == FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE)
+	{
+		mDetail.reset(new DetailHCASCADE(props));
+	}
+	else
+	{
+		throw std::runtime_error("Invalid face detection model type");
+	}
 	return ret;
 }
