@@ -3,6 +3,7 @@
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "DMAFDWrapper.h"
+#include "DMAAllocator.h"
 
 #include <fstream>
 
@@ -184,6 +185,49 @@ BOOST_AUTO_TEST_CASE(save_rgba)
         }
         frames.push_back(frame);
     }
+}
+
+BOOST_AUTO_TEST_CASE(setMetadata_rawimage)
+{
+    uint32_t width = 1280;
+    uint32_t height = 720;
+    size_t size = width * height * 4;
+    size_t pitch[4] = {0,0,0,0};
+    auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
+    DMAAllocator::setMetadata(metadata,1280,720,ImageMetadata::ImageType::RGBA,pitch);
+    size_t mPitch[1] = { pitch[0] };
+    std::cout << "mPitch: " << mPitch[0] << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
+{
+    uint32_t width = 1280;
+    uint32_t height = 720;
+    size_t size = width * height * 4;
+    size_t pitch[4] = {0,0,0,0};
+    size_t offset[4] = {0,0,0,0};
+    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+    DMAAllocator::setMetadata(metadata,1280,720,ImageMetadata::ImageType::YUV420,pitch,offset);
+    size_t mPitch[4];
+    size_t mOffset[4];
+    for (int i = 0; i < 4; i++)
+    {
+      mOffset[i] = offset[i];
+      mPitch[i]  = pitch[i];
+    }
+    std::cout << "mPitch values: ";
+    for (int i = 0; i < 4; i++)
+    {
+      std::cout << mPitch[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "mOffset values: ";
+    for (int i = 0; i < 4; i++)
+    {
+      std::cout << mOffset[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
