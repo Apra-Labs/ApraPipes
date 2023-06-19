@@ -4,6 +4,7 @@
 #include "RawImagePlanarMetadata.h"
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
+#include "Logger.h"
 
 #include <fstream>
 
@@ -189,6 +190,10 @@ BOOST_AUTO_TEST_CASE(save_rgba)
 
 BOOST_AUTO_TEST_CASE(setMetadata_rawimage)
 {
+    LoggerProps logprops;
+	logprops.logLevel = boost::log::trivial::severity_level::info;
+	Logger::initLogger(logprops);
+
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t size = width * height * 4;
@@ -196,11 +201,15 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawimage)
     auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
     DMAAllocator::setMetadata(metadata,1280,720,ImageMetadata::ImageType::RGBA,pitch);
     size_t mPitch[1] = { pitch[0] };
-    std::cout << "mPitch: " << mPitch[0] << std::endl;
+    LOG_INFO << "mPitch: " << mPitch[0];
 }
 
 BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
 {
+    LoggerProps logprops;
+	logprops.logLevel = boost::log::trivial::severity_level::info;
+	Logger::initLogger(logprops);
+
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t size = width * height * 4;
@@ -215,19 +224,17 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
       mOffset[i] = offset[i];
       mPitch[i]  = pitch[i];
     }
-    std::cout << "mPitch values: ";
+    LOG_INFO << "mPitch values: ";
     for (int i = 0; i < 4; i++)
     {
-      std::cout << mPitch[i] << " ";
+      LOG_INFO << mPitch[i] << " ";
     }
-    std::cout << std::endl;
-
-    std::cout << "mOffset values: ";
+    
+    LOG_INFO << "mOffset values: ";
     for (int i = 0; i < 4; i++)
     {
-      std::cout << mOffset[i] << " ";
+      LOG_INFO << mOffset[i] << " ";
     }
-    std::cout << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
