@@ -44,7 +44,6 @@ public:
 
 	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
-	virtual void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) = 0;
 	virtual int mp4Seek(mp4_demux* demux,uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame) = 0;
 	
 	bool Init()
@@ -598,6 +597,8 @@ public:
 		sentEOSSignal = false;
 		// reset waitFlag
 		waitFlag = false;
+		// prependSpsPps
+		mState.shouldPrependSpsPps = true;
 		return true;
 	}
 
@@ -848,7 +849,7 @@ public:
 			frameTSInMsecs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
 			mState.frameTSInMsecs = frameTSInMsecs;
 			LOG_TRACE << "readNextFrame frameTS <" << frameTSInMsecs << ">";
-			imageFrameSize = static_cast<size_t>(mState.sample.size);
+			imageFrameSize += static_cast<size_t>(mState.sample.size);
 			metadataFrameSize = static_cast<size_t>(mState.sample.metadata_size);
 			// for metadata to be ignored - we will have metadata_buffer = nullptr and size = 0
 			return;
@@ -904,7 +905,7 @@ protected:
 		uint64_t startTimeStampFromFile;
 		std::string mVideoPath = "";
 		int32_t mFrameCounterIdx;
-		bool randomSeekParseFlag = false;
+		bool shouldPrependSpsPps = false;
 		bool end = false;
 		Mp4ReaderSourceProps props;
 		float speed;
@@ -953,7 +954,6 @@ public:
 	~Mp4ReaderDetailJpeg() { mp4_demux_close(mState.demux); }
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
-	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer) {}
 	void sendEndOfStream() {}
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame);
 };
@@ -968,7 +968,7 @@ public:
 	void setMetadata();
 	void readSPSPPS();
 	bool produceFrames(frame_container& frames);
-	void prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer);
+	void prependSpsPps(uint8_t* iFrameBuffer);
 	void sendEndOfStream();
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int &seekedToFrame);
 private:
@@ -977,7 +977,6 @@ private:
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
 	bool seekedToEndTS = false;
-	bool isRandomSeek = true;
 };
 
 void Mp4ReaderDetailJpeg::setMetadata()
@@ -1125,7 +1124,7 @@ void Mp4ReaderDetailH264::sendEndOfStream()
 	sendEOS(frame);
 }
 
-void Mp4ReaderDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffer)
+void Mp4ReaderDetailH264::prependSpsPps(uint8_t* iFrameBuffer)
 {
 	//1a write sps on tmpBuffer.data()
 	//1b tmpBuffer+=sizeof_sps
@@ -1136,36 +1135,27 @@ void Mp4ReaderDetailH264::prependSpsPps(boost::asio::mutable_buffer& iFrameBuffe
 	// Now pass tmpBuffer.data() and tmpBuffer.size() to libmp4
 	char NaluSeprator[4] = { 00 ,00, 00 ,01 };
 	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
-	memcpy(iFrameBuffer.data(), nalu, 4);
+	memcpy(iFrameBuffer, nalu, 4);
 	iFrameBuffer += 4;
-	memcpy(iFrameBuffer.data(), sps, spsSize);
+	memcpy(iFrameBuffer, sps, spsSize);
 	iFrameBuffer += spsSize;
-	memcpy(iFrameBuffer.data(), nalu, 4);
+	memcpy(iFrameBuffer, nalu, 4);
 	iFrameBuffer += 4;
-	memcpy(iFrameBuffer.data(), pps, ppsSize);
+	memcpy(iFrameBuffer, pps, ppsSize);
 	iFrameBuffer += ppsSize;
 }
 
 bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 {
 	frame_sp imgFrame = makeFrame(mProps.biggerFrameSize, h264ImagePinId);
-	boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 	size_t imgSize = 0;
 	frame_sp metadataFrame = makeFrame(mProps.biggerMetadataFrameSize, metadataFramePinId);
 	size_t metadataSize = 0;
 	uint64_t frameTSInMsecs;
 	int32_t mp4FIndex = 0;
 
-	if (mState.randomSeekParseFlag && isRandomSeek)
-	{
-		prependSpsPps(tmpBuffer);
-		imgSize = spsSize + ppsSize + 8;
-		isRandomSeek = false;
-	}
-
 	try
 	{
-		// todo - send frames sp instead of pointers - cast just before required + also in h264 (done)
 		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
 	}
 	catch (const std::exception& e)
@@ -1179,12 +1169,39 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		return true;
 	}
 
+	if (mState.shouldPrependSpsPps)
+	{
+		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
+		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
+		if (type != H264Utils::H264_NAL_TYPE_END_OF_SEQ)
+		{
+			auto tempFrame = makeFrame(imgSize + spsSize + ppsSize + 8, h264ImagePinId);
+			uint8_t* tempFrameBuffer = reinterpret_cast<uint8_t*>(tempFrame->data());
+			prependSpsPps(tempFrameBuffer);
+			tempFrameBuffer += spsSize + ppsSize + 8;
+			memcpy(tempFrameBuffer, imgFrame->data(), imgSize);
+			imgSize += spsSize + ppsSize + 8;
+			imgFrame = tempFrame;
+		}
+		mState.shouldPrependSpsPps = false;
+	}
+
 	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, h264ImagePinId);
-	auto tempBuffer = const_buffer(trimmedImgFrame->data(), trimmedImgFrame->size());
-	auto ret = H264Utils::parseNalu(tempBuffer);
-	short typeFound;
-	const_buffer spsBuff, ppsBuff;
-	tie(typeFound, spsBuff, ppsBuff) = ret; 
+
+	uint8_t* frameData = reinterpret_cast<uint8_t*>(trimmedImgFrame->data());
+	short nalType = H264Utils::getNALUType((char*)trimmedImgFrame->data());
+	if (nalType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		frameData[3] = 0x1;
+		frameData[spsSize + 7] = 0x1;
+		frameData[spsSize + ppsSize + 10] = 0x0;
+		frameData[spsSize + ppsSize + 11] = 0x1;
+	}
+	else
+	{
+		frameData[2] = 0x0;
+		frameData[3] = 0x1;
+	}
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
 	trimmedImgFrame->fIndex = mp4FIndex;
@@ -1217,7 +1234,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 
 	if (seekEndTS <= frameTSInMsecs && mProps.bFramesEnabled)
 	{
-		if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
+		if (nalType == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
 		{
 			frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 			seekedToEndTS = true;
