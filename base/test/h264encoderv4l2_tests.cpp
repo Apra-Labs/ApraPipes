@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vector_overlay,*boost::unit_test:
 	encoder->setNext(muxer);
 
 	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
-	muxer->setNext(overlay)
+	muxer->setNext(overlay);
 
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	overlay->setNext(sink);
