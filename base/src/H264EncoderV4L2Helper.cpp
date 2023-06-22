@@ -1,8 +1,9 @@
-#include "H264EncoderV4L2Helper.h"
-#include "v4l2_nv_extensions.h"
-
+#include <cmath>
+#include "Overlay.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+
+#include "H264EncoderV4L2Helper.h"
 
 inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string message, bool raiseException)
 {
@@ -23,9 +24,9 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim, SendFrameContainer sendFrameContainer)
 {
-    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, fps, sendFrame);
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, enableMotionVectors, motionVectorThreshold, fps,h264FrameOutputPinId, motionVectorFramePinId, h264Metadata, makeFrame, makeFrameTrim, sendFrameContainer);
     instance->setSelf(instance);
 
     return instance;
@@ -36,7 +37,7 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
     mSelf = self;
 }
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool _enableMotionVectors, int _motionVectorThreshold, uint32_t fps, std::string _h264FrameOutputPinId, std::string _motionVectorFramePinId,  framemetadata_sp _h264Metadata, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, SendFrameContainer sendFrameContainer) : mSendFrameContainer(sendFrameContainer), mFD(-1), mWidth(width), mHeight(height), enableMotionVectors(_enableMotionVectors), motionVectorThreshold(_motionVectorThreshold), h264FrameOutputPinId(_h264FrameOutputPinId), motionVectorFramePinId(_motionVectorFramePinId), h264Metadata(_h264Metadata), makeFrame(_makeFrame), makeFrameTrim(_makeFrameTrim)
 {
     initV4L2();
 
@@ -124,12 +125,47 @@ void H264EncoderV4L2Helper::initV4L2()
     }
 }
 
+
+int
+H264EncoderV4L2Helper::setExtControlsMV(v4l2_ext_controls &ctl)
+{
+    int ret;
+
+    ret = v4l2_ioctl(mFD, VIDIOC_S_EXT_CTRLS, &ctl);
+
+    return ret;
+}
+
+
+int
+H264EncoderV4L2Helper::enableMotionVectorReporting()
+{
+    struct v4l2_ext_control control;
+    struct v4l2_ext_controls ctrls;
+
+    memset(&control, 0, sizeof(control));
+    memset(&ctrls, 0, sizeof(ctrls));
+
+    ctrls.count = 1;
+    ctrls.controls = &control;
+    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
+
+    control.id = V4L2_CID_MPEG_VIDEOENC_ENABLE_METADATA_MV;
+    control.value = 1;
+
+    setExtControlsMV(ctrls);
+}
+
 void H264EncoderV4L2Helper::initEncoderParams(uint32_t bitrate, uint32_t fps)
 {
     setBitrate(bitrate);
     setProfile();
     setLevel();
     setFrameRate(fps, 1);
+    if(enableMotionVectors)
+    {
+        enableMotionVectorReporting();
+    }
 }
 
 void H264EncoderV4L2Helper::setBitrate(uint32_t bitrate)
@@ -200,10 +236,100 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
     return v4l2_ioctl(mFD, VIDIOC_S_EXT_CTRLS, &ctrls);
 }
 
+int
+H264EncoderV4L2Helper::getExtControls(v4l2_ext_controls &ctl)
+{
+    int ret;
+
+    ret = v4l2_ioctl(mFD, VIDIOC_G_EXT_CTRLS, &ctl);
+
+    return ret;
+}
+
+int
+H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
+        v4l2_ctrl_videoenc_outputbuf_metadata_MV &enc_mv_metadata)
+{
+    v4l2_ctrl_video_metadata metadata;
+    struct v4l2_ext_control control;
+    struct v4l2_ext_controls ctrls;
+
+    ctrls.count = 1;
+    ctrls.controls = &control;
+    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
+
+    metadata.buffer_index = buffer_index;
+    metadata.VideoEncMetadataMV = &enc_mv_metadata;
+
+    control.id = V4L2_CID_MPEG_VIDEOENC_METADATA_MV;
+    control.string = (char *)&metadata;
+
+    getExtControls(ctrls);
+}
+
+void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata, frame_container &frames)
+{
+    uint32_t numMVs = enc_mv_metadata.bufSize / sizeof(MVInfo);
+    MVInfo *pInfo = enc_mv_metadata.pMVInfo;
+
+    std::vector<CircleOverlay> circleOverlays;
+    CompositeOverlay compositeOverlay;
+
+    int totalMacroblockInRow = floor(mWidth / 16);
+    auto motionVectorFrame = makeFrame(1024 * 1024 * 3, motionVectorFramePinId);
+    uint32_t *frameBuffer = reinterpret_cast<uint32_t *>(motionVectorFrame->data());
+    size_t mCount = 0;
+    for (uint32_t i = 0; i < numMVs; i++, pInfo++)
+    {
+
+        if (abs(pInfo->mv_x) > motionVectorThreshold || abs(pInfo->mv_y) > motionVectorThreshold)
+        {
+            auto tempY = floor(i / totalMacroblockInRow);
+            auto y = tempY * 16 + 8;
+            auto tempX = floor(i % totalMacroblockInRow);
+            auto x = tempX * 16 + 8;
+            CircleOverlay circleOverlay;
+            circleOverlay.x1 = x;
+            circleOverlay.y1 = y;
+            circleOverlay.radius = 1;
+            frameBuffer[mCount] = static_cast<uint32_t>(x);
+            frameBuffer[mCount + 1] = static_cast<uint32_t>(y);
+            frameBuffer[mCount + 2] = 1;
+            circleOverlays.push_back(circleOverlay);
+        }
+    }
+
+    for (auto &circleOverlay : circleOverlays)
+    {
+        compositeOverlay.add(&circleOverlay);
+    }
+
+    if (circleOverlays.size())
+    {
+        DrawingOverlay drawingOverlay;
+        drawingOverlay.add(&compositeOverlay);
+        auto getSerializeSize = drawingOverlay.mGetSerializeSize();
+        getSerializeSize += 100;
+        auto trimmedMotionVectorFrame = makeFrameTrim(motionVectorFrame, getSerializeSize, motionVectorFramePinId);
+        drawingOverlay.serialize(trimmedMotionVectorFrame);
+        frames.insert(make_pair(motionVectorFramePinId, trimmedMotionVectorFrame));
+    }
+}
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
     auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
-    mSendFrame(frame);
+    frame->setMetadata(h264Metadata);
+    frame_container frames;
+    frames.insert(make_pair(h264FrameOutputPinId, frame));
+
+    if (enableMotionVectors)
+    {
+        v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
+        getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
+        serializeMotionVectors(enc_mv_metadata, frames);
+    }
+
+    mSendFrameContainer(frames);
     mConverter->releaseFrame();
 }
 
