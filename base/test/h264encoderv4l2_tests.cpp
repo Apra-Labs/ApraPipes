@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vector_overlay, , *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vector_overlay,*boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 640;
