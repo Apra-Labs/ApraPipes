@@ -85,6 +85,7 @@ jobs:
       uses: Vampire/setup-wsl@v1
       with:
         distribution: Ubuntu-20.04
+        use-cache: false
     - name: Prepare builder
       run: |
         ${{ inputs.prep-cmd }} 
