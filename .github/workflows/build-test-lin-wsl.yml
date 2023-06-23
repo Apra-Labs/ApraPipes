@@ -82,9 +82,11 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare WSL Image
-      uses: Vampire/setup-wsl@v1
+      uses: Vampire/setup-wsl@v2
       with:
         distribution: Ubuntu-20.04
+        set-as-default: 'false'
+        update: 'false'
     - name: Prepare builder
       run: |
         ${{ inputs.prep-cmd }} 
