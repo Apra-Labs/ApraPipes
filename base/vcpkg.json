@@ -1,9 +1,9 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-    "name": "apra-pipes-cuda",
-    "version": "0.0.1",
-    "builtin-baseline": "5d4bfca40c12b6fb1f2a1455207ed66e0efa70d0",
-    "dependencies": [
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-cuda",
+  "version": "0.0.1",
+  "builtin-baseline": "0db6a0a6e8ec59fa4bd50a3c71672e3540317ace",
+  "dependencies": [
           {
               "name": "opencv4",
               "default-features": false,
@@ -19,31 +19,31 @@
                   "webp"
               ]
           },
-        "libjpeg-turbo",
-      "openh264",
-      "ffmpeg",
-      "bigint",
-      "boost-math",
-      "boost-system",
-      "boost-thread",
-      "boost-filesystem",
-      "boost-serialization",
-      "boost-log",
-      "boost-chrono",
-      "boost-test",
-      "boost-iostreams",
-      "boost-dll",
-      "nu-book-zxing-cpp",
-      "liblzma",
-      "bzip2",
-      "zlib",
-      "sfml",
-      {
-        "name": "glib",
-        "default-features": false,
-        "features": [
-          "libmount"
-        ],
+    "libjpeg-turbo",
+    "openh264",
+    "ffmpeg",
+    "bigint",
+    "boost-math",
+    "boost-system",
+    "boost-thread",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-log",
+    "boost-chrono",
+    "boost-test",
+    "boost-iostreams",
+    "boost-dll",
+    "nu-book-zxing-cpp",
+    "liblzma",
+    "bzip2",
+    "zlib",
+    "sfml",
+    {
+      "name": "glib",
+      "default-features": false,
+      "features": [
+        "libmount"
+      ],
               "platform": "(linux \u0026 x64)",
         "$reason": "skip linux:arm64 and windows"
       },
