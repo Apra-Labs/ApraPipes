@@ -149,7 +149,6 @@ jobs:
           path: |
             ${{ inputs.cache-path }}
             ./thirdparty/gst-build/gst-build-1.16/outInstall/
-            ./thirdparty/libmp4/build
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
@@ -158,20 +157,12 @@ jobs:
       run: |
         (dos2unix ./build_gstreamer.sh) || true
         chmod a+x ./build_gstreamer.sh
-        (dos2unix libmp4/build.cmd) || true
-        chmod a+x libmp4/build.cmd
       shell: wsl-bash {0}
 
     - name: Build Gstreamer On Linux_x64 when it is not cached
       if: ${{ inputs.is-build-gst && steps.cache-all.outputs.cache-hit != 'true'}}
       working-directory: ${{github.workspace}}/thirdparty
       run: sh ./build_gstreamer.sh
-      shell: wsl-bash {0}
-    
-    - name: Build libmp4 when it is not cached
-      if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty/libmp4
-      run: ./build.cmd
       shell: wsl-bash {0}
     
     - name: Make build folder
