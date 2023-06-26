@@ -38,24 +38,13 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(APRAPIPES)
 
-
-set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
-set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
 IF(ENABLE_LINUX AND ENABLE_GST)
 	# no gst on arm64 yet, linux:x64 uses a non-vcpk build of gst
 	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
 ENDIF(ENABLE_LINUX AND ENABLE_GST)
 
-IF(ENABLE_WINDOWS)
-	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
-ENDIF(ENABLE_WINDOWS)
-
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
-message(STATUS ${LIBMP4_LIB_DIR} ">>>>>> LIBMP4_LIB_DIR")
-message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
-list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
-find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 IF(ENABLE_GST)
@@ -115,6 +104,8 @@ IF(ENABLE_CUDA)
 		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
+		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		find_package(Curses REQUIRED)
 
 		SET(JETSON_LIBS
@@ -132,6 +123,8 @@ IF(ENABLE_CUDA)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
+		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
 			libcuda.so		
@@ -502,6 +495,8 @@ ${FFMPEG_INCLUDE_DIRS}
 ${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
 ${LIBMP4_INC_DIR}
+${BARESIP_INC_DIR}
+${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
 )
 
@@ -676,6 +671,7 @@ ENDIF (ENABLE_CUDA)
 
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
