@@ -4,6 +4,21 @@
   "version": "0.0.1",
   "builtin-baseline": "516401b041a3b374c88bbb832387ba1b65246b8b",
   "dependencies": [
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+          "contrib",
+          "cuda",
+          "cudnn",
+          "dnn",
+          "jpeg",
+          "nonfree",
+          "png",
+          "tiff",
+          "webp"
+      ]
+  },
     "libjpeg-turbo",
     "openh264",
     "ffmpeg",
