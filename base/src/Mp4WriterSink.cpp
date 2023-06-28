@@ -279,7 +279,7 @@ public:
 	{
 	}
 	bool write(frame_container& frames);
-	uint8_t* prependSizeBeforeNaluSeparatorIFrame(short naluType, frame_sp frame, size_t& frameSize);
+	uint8_t* AppendSizeInNaluSeprator(short naluType, frame_sp frame, size_t& frameSize);
 
 
 	bool set_video_decoder_config()
@@ -368,7 +368,7 @@ bool DetailJpeg::write(frame_container& frames)
 	return true;
 }
 
-uint8_t* DetailH264::prependSizeBeforeNaluSeparatorIFrame(short naluType, frame_sp inH264ImageFrame, size_t& frameSize)
+uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264ImageFrame, size_t& frameSize)
 {
 	char NaluSeprator[3] = { 00 ,00, 00 };
 	char nalusepratorIframe[2] = { 00, 00 };
@@ -460,7 +460,7 @@ bool DetailH264::write(frame_container& frames)
 		initNewMp4File(mNextFrameFileName);
 		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
-			auto newBuffer = prependSizeBeforeNaluSeparatorIFrame(naluType, inH264ImageFrame, frameSize);
+			auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
 			mux_sample.buffer = newBuffer;
 			mux_sample.len = frameSize;
 		}
@@ -469,7 +469,7 @@ bool DetailH264::write(frame_container& frames)
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
 
-		auto newBuffer = prependSizeBeforeNaluSeparatorIFrame(naluType, inH264ImageFrame, frameSize);
+		auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
 		mux_sample.buffer = newBuffer;
 		mux_sample.len = frameSize;
 	}
