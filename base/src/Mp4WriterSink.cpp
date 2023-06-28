@@ -77,8 +77,7 @@ public:
 		setProps(_props);
 		mNextFrameFileName = "";
 		mux = nullptr;
-		mMetadataEnabled = false;
-
+		/* DTS should be based on recorded timestamps of frames or on the fps prop entirely */
 		if (_props.recordedTSBasedDTS)
 		{
 			mDTSCalc.reset(new DTSPassThroughStrategy);
@@ -91,7 +90,7 @@ public:
 
 	void setProps(Mp4WriterSinkProps& _props)
 	{
-		mProps.reset(new Mp4WriterSinkProps(_props.chunkTime, _props.syncTimeInSecs, _props.fps, _props.baseFolder));
+		mProps.reset(new Mp4WriterSinkProps(_props.chunkTime, _props.syncTimeInSecs, _props.fps, _props.baseFolder, _props.recordedTSBasedDTS, _props.enableMetadata));
 	}
 
 	~DetailAbs()
@@ -280,6 +279,8 @@ public:
 	{
 	}
 	bool write(frame_container& frames);
+	uint8_t* prependSizeBeforeNaluSeparatorIFrame(short naluType, frame_sp frame, size_t& frameSize);
+
 
 	bool set_video_decoder_config()
 	{
@@ -323,7 +324,8 @@ bool DetailJpeg::write(frame_container& frames)
 
 	if (syncFlag)
 	{
-		mp4_mux_sync(mux);
+		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
+		auto ret = mp4_mux_sync(mux);
 		syncFlag = false;
 	}
 
@@ -348,13 +350,68 @@ bool DetailJpeg::write(frame_container& frames)
 
 	mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
 
-	if (metatrack != -1 && mMetadataEnabled && inMp4MetaFrame.get())
-	{
-		mux_sample.buffer = static_cast<uint8_t*>(inMp4MetaFrame->data());
-		mux_sample.len = inMp4MetaFrame->size();
-		mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
-	}
+	if (metatrack != -1 && mMetadataEnabled)
+		{
+			if (inMp4MetaFrame.get() && inMp4MetaFrame->fIndex % 3 == 0)
+			{
+				mux_sample.buffer = static_cast<uint8_t *>(inMp4MetaFrame->data());
+				mux_sample.len = inMp4MetaFrame->size();
+			}
+			else
+			{
+				mux_sample.buffer = nullptr;
+				mux_sample.len = 0;
+			}
+			
+			mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+		}
 	return true;
+}
+
+uint8_t* DetailH264::prependSizeBeforeNaluSeparatorIFrame(short naluType, frame_sp inH264ImageFrame, size_t& frameSize)
+{
+	char NaluSeprator[3] = { 00 ,00, 00 };
+	char nalusepratorIframe[2] = { 00, 00 };
+	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
+	uint spsPpsSize = spsBuffer.size() + ppsBuffer.size() + 8;
+	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		frameSize = inH264ImageFrame->size();
+	}
+	else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+	{
+		frameSize = inH264ImageFrame->size() + spsPpsSize;
+	}
+	uint8_t* newBuffer = new uint8_t[frameSize];
+	memcpy(newBuffer, nalu, 3);
+	newBuffer += 3;
+	newBuffer[0] = spsBuffer.size();
+	newBuffer += 1;
+	memcpy(newBuffer, spsBuffer.data(), spsBuffer.size());
+	newBuffer += spsBuffer.size();
+	memcpy(newBuffer, nalu, 3);
+	newBuffer += 3;
+	newBuffer[0] = ppsBuffer.size();
+	newBuffer += 1;
+	memcpy(newBuffer, ppsBuffer.data(), ppsBuffer.size());
+	newBuffer += ppsBuffer.size();
+	memcpy(newBuffer, nalusepratorIframe, 2);
+	newBuffer += 2;
+	newBuffer[0] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
+	newBuffer[1] = frameSize - spsPpsSize - 4 & 0xFF;
+	newBuffer += 2;
+	uint8_t* tempBuffer = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
+	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		tempBuffer = tempBuffer + spsPpsSize + 4;
+	}
+	else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+	{
+		tempBuffer = tempBuffer + 4;
+	}
+	memcpy(newBuffer, tempBuffer, frameSize - spsPpsSize - 4);
+	newBuffer -= spsPpsSize + 4;
+	return newBuffer;
 }
 
 bool DetailH264::write(frame_container& frames)
@@ -388,15 +445,40 @@ bool DetailH264::write(frame_container& frames)
 		return false;
 	}
 
+	uint8_t* frameData = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
+	// assign size of the frame to the last two bytes of the NALU seperator for playability in default players
+	frameData[2] = (inH264ImageFrame->size() - 4 >> 8) & 0xFF;
+	frameData[3] = inH264ImageFrame->size() - 4 & 0xFF;
+
+	mux_sample.buffer = frameData;
+	mux_sample.len = inH264ImageFrame->size();
+	auto naluType = H264Utils::getNALUType((char*)mFrameBuffer.data());
+	size_t frameSize;;
 	if (mNextFrameFileName != _nextFrameFileName)
 	{
 		mNextFrameFileName = _nextFrameFileName;
 		initNewMp4File(mNextFrameFileName);
+		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+		{
+			auto newBuffer = prependSizeBeforeNaluSeparatorIFrame(naluType, inH264ImageFrame, frameSize);
+			mux_sample.buffer = newBuffer;
+			mux_sample.len = frameSize;
+		}
 	}
+	
+	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+
+		auto newBuffer = prependSizeBeforeNaluSeparatorIFrame(naluType, inH264ImageFrame, frameSize);
+		mux_sample.buffer = newBuffer;
+		mux_sample.len = frameSize;
+	}
+
 
 	if (syncFlag)
 	{
-		mp4_mux_sync(mux);
+		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
+		auto ret = mp4_mux_sync(mux);
 		syncFlag = false;
 	}
 
@@ -411,8 +493,6 @@ bool DetailH264::write(frame_container& frames)
 
 	addMetadataInVideoHeader(inH264ImageFrame);
 
-	mux_sample.buffer = static_cast<uint8_t*>(inH264ImageFrame->data());
-	mux_sample.len = inH264ImageFrame->size();
 	mux_sample.sync = isKeyFrame ? 1 : 0;
 	int64_t diffInMsecs = 0;
 
@@ -432,8 +512,16 @@ bool DetailH264::write(frame_container& frames)
 
 	if (metatrack != -1 && mMetadataEnabled && inMp4MetaFrame.get())
 	{
-		mux_sample.buffer = static_cast<uint8_t*>(inMp4MetaFrame->data());
-		mux_sample.len = inMp4MetaFrame->size();
+		if (inMp4MetaFrame.get())
+		{
+			mux_sample.buffer = static_cast<uint8_t*>(inMp4MetaFrame->data());
+			mux_sample.len = inMp4MetaFrame->size();
+		}
+		else
+		{
+			mux_sample.buffer = nullptr;
+			mux_sample.len = 0;
+		}
 		mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
 	}
 	return true;
@@ -456,7 +544,7 @@ bool Mp4WriterSink::init()
 
 	for (auto const& element : inputPinIdMetadataMap)
 	{
-		auto& metadata = element.second;
+		auto metadata = element.second;
 		auto mFrameType = metadata->getFrameType();
 		if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 		{
@@ -466,6 +554,15 @@ bool Mp4WriterSink::init()
 		else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 		{
 			mDetail.reset(new DetailH264(mProp));
+		}
+	}
+	for (auto const& element : inputPinIdMetadataMap)
+	{
+		auto metadata = element.second;
+		auto mFrameType = metadata->getFrameType();
+		if (mFrameType == FrameMetadata::FrameType::MP4_VIDEO_METADATA && mProp.enableMetadata)
+		{
+			enableMp4Metadata(metadata);
 		}
 	}
 	return Module::init();
@@ -514,6 +611,24 @@ bool Mp4WriterSink::setMetadata(framemetadata_sp& inputMetadata)
 	// #Dec_24_Review - this function seems to do nothing
 	mDetail->setImageMetadata(inputMetadata);
 	return true;
+}
+
+bool Mp4WriterSink::enableMp4Metadata(framemetadata_sp &inputMetadata)
+{
+	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(inputMetadata);
+	std::string formatVersion = mp4VideoMetadata->getVersion();
+	if (formatVersion.empty())
+	{
+		LOG_ERROR << "Serialization Format Information missing from the metadata. Metadata writing will be disabled";
+		return false;
+	}
+	mDetail->enableMetadata(formatVersion);
+	return true;
+}
+
+void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, string& pinId)
+{
+	Module::addInputPin(metadata, pinId);
 }
 
 bool Mp4WriterSink::processSOS(frame_sp& frame)
