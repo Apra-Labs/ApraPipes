@@ -29,7 +29,7 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	Logger::initLogger(loggerProps);
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 100;
+	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = readLoop;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
@@ -295,14 +295,14 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(20);
+	Test_Utils::sleep_for_seconds(10);
 
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(70);
+	Test_Utils::sleep_for_seconds(10);
 
 	p->stop();
 	p->term();
@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(60);
+	Test_Utils::sleep_for_seconds(20);
 	
 	p->stop();
 	p->term();
@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE(single_file_given_name_h264)
 	// custom name is only supported while writing to single video file (chunktime = UINT32_MAX).
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/apraH264.mp4";
 
-	writeH264(true,80,outFolderPath, UINT32_MAX);
+	writeH264(true,10,outFolderPath, UINT32_MAX);
 }
 
 BOOST_AUTO_TEST_CASE(read_mul_write_one_as_recorded)
