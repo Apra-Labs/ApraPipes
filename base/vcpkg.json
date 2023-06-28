@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "7e36701476f7a59223c7a36f3657168e05284d11",
+  "builtin-baseline": "516401b041a3b374c88bbb832387ba1b65246b8b",
   "dependencies": [
     "libjpeg-turbo",
     "openh264",
