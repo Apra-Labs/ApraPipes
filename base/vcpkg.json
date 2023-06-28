@@ -4,48 +4,63 @@
   "version": "0.0.1",
   "builtin-baseline": "516401b041a3b374c88bbb832387ba1b65246b8b",
   "dependencies": [
-    "libjpeg-turbo",
-    "openh264",
-    "ffmpeg",
-    "bigint",
-    "boost-math",
-    "boost-system",
-    "boost-thread",
-    "boost-filesystem",
-    "boost-serialization",
-    "boost-log",
-    "boost-chrono",
-    "boost-test",
-    "boost-iostreams",
-    "boost-dll",
-    "nu-book-zxing-cpp",
-    "liblzma",
-    "bzip2",
-    "zlib",
-    "sfml",
-    {
-      "name": "glib",
-      "default-features": false,
-      "features": [
-        "libmount"
-      ],
-              "platform": "(linux \u0026 x64)",
-      "$reason": "skip linux:arm64 and windows"
-    },
-    {
-      "name": "glib",
-      "default-features": true,
-      "platform": "windows"
-    },
-    {
-      "name": "hiredis",
-      "platform": "!arm64"
-    },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
-    },
-    {
+      {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+              "contrib",
+              "cuda",
+              "cudnn",
+              "dnn",
+              "jpeg",
+              "nonfree",
+              "png",
+              "tiff",
+              "webp"
+          ]
+      },
+      "libjpeg-turbo",
+      "openh264",
+      "ffmpeg",
+      "bigint",
+      "boost-math",
+      "boost-system",
+      "boost-thread",
+      "boost-filesystem",
+      "boost-serialization",
+      "boost-log",
+      "boost-chrono",
+      "boost-test",
+      "boost-iostreams",
+      "boost-dll",
+      "nu-book-zxing-cpp",
+      "liblzma",
+      "bzip2",
+      "zlib",
+      "sfml",
+      {
+          "name": "glib",
+          "default-features": false,
+          "features": [
+              "libmount"
+          ],
+          "platform": "(linux \u0026 x64)",
+          "$reason": "skip linux:arm64 and windows"
+      },
+      {
+          "name": "glib",
+          "default-features": true,
+          "platform": "windows"
+      },
+      {
+          "name": "hiredis",
+          "platform": "!arm64"
+      },
+      {
+          "name": "redis-plus-plus",
+          "platform": "!arm64"
+      },
+      {
       "name": "re",
       "platform": "!windows"
     },
@@ -57,32 +72,19 @@
       "name": "libmp4"
     },
     {
-      "name": "gstreamer",
-      "features": [
-        "plugins-good",
-        "plugins-bad",
-        "plugins-ugly"
-      ],
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
-    },
-    {
-      "name": "gst-rtsp-server",
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
-    },
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "contrib",
-        "dnn",
-        "jpeg",
-        "nonfree",
-        "png",
-        "tiff",
-        "webp"
-      ]
-    }
+          "name": "gstreamer",
+          "features": [
+              "plugins-good",
+              "plugins-bad",
+              "plugins-ugly"
+          ],
+          "platform": "!linux",
+          "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+      },
+      {
+          "name": "gst-rtsp-server",
+          "platform": "!linux",
+          "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+      }
   ]
 }
