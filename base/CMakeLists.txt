@@ -4,11 +4,6 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-OPTION(ENABLE_GST "Use this switch to integrate Gstreamer" ON)
-
-IF(ENABLE_ARM64) #no GST build for ARM64 yet
-	set(ENABLE_GST OFF)
-ENDIF(ENABLE_ARM64)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
@@ -41,10 +36,6 @@ project(APRAPIPES)
 
 set ( LIBMP4_LIB_DIR "../thirdparty/libmp4/build/")
 set ( LIBMP4_INC_DIR "../thirdparty/libmp4/include/")
-IF(ENABLE_LINUX AND ENABLE_GST)
-	# no gst on arm64 yet, linux:x64 uses a non-vcpk build of gst
-	set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/../thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu/pkgconfig/")
-ENDIF(ENABLE_LINUX AND ENABLE_GST)
 
 IF(ENABLE_WINDOWS)
 	set (LIBMP4_LIB_DIR "${CMAKE_SOURCE_DIR}/../thirdparty/libmp4/build/${CMAKE_BUILD_TYPE}")
@@ -57,28 +48,6 @@ message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
 list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
-
-IF(ENABLE_GST)
-	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
-	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
-	pkg_check_modules(glib-2.0 REQUIRED IMPORTED_TARGET GLOBAL glib-2.0)  
-	pkg_check_modules(gio-2.0 REQUIRED IMPORTED_TARGET GLOBAL gio-2.0) 
-	pkg_check_modules(gstreamer-rtp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtp-1.0)  
-	pkg_check_modules(gstreamer-rtsp-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-1.0)  
-	pkg_check_modules(gstreamer-rtsp-server-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-rtsp-server-1.0)  
-	pkg_check_modules(gstreamer-app-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-app-1.0)
-	pkg_check_modules(gstreamer-net-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-net-1.0)
-	pkg_check_modules(gstreamer-webrtc-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-webrtc-1.0)
-	pkg_check_modules(libpcre REQUIRED IMPORTED_TARGET GLOBAL libpcre)
-	pkg_check_modules(gthread-2.0 REQUIRED IMPORTED_TARGET GLOBAL gthread-2.0)
-	pkg_check_modules(gmodule-2.0 REQUIRED IMPORTED_TARGET GLOBAL gmodule-2.0)
-	pkg_check_modules(gstreamer-base-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-base-1.0)
-	IF(NOT ENABLE_WINDOWS)
-		pkg_check_modules(json-glib-1.0 REQUIRED IMPORTED_TARGET GLOBAL json-glib-1.0)
-		pkg_check_modules(libsoup-2.4 REQUIRED IMPORTED_TARGET GLOBAL libsoup-2.4)
-	ENDIF(NOT ENABLE_WINDOWS)
-	
-ENDIF(ENABLE_GST)
         
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
@@ -315,16 +284,6 @@ SET(IP_FILES
 )
 
 
-IF(ENABLE_GST)
-	IF(NOT ENABLE_WINDOWS)
-		list(APPEND IP_FILES
-			src/GstWebRTCSink.cpp
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
-	list(APPEND IP_FILES
-		src/GstOnvifRtspSink.cpp
-	)
-ENDIF(ENABLE_GST)
 
 SET(IP_FILES_H
 	include/HistogramOverlay.h
@@ -349,16 +308,6 @@ SET(IP_FILES_H
 )
 
 
-IF(ENABLE_GST)
-	IF(NOT ENABLE_WINDOWS)
-		list(APPEND IP_FILES
-			include/GstWebRTCSink.h
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
-	list(APPEND IP_FILES
-		include/GstOnvifRtspSink.h
-	)
-ENDIF(ENABLE_GST)
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -495,7 +444,6 @@ ENDIF(ENABLE_CUDA)
 message(STATUS "-------------Printing Soure file list-----------------${SOURCE}")
 add_library(aprapipes STATIC ${SOURCE})
 
-message(STATUS "-------------Printing Include folder-----------------${gstreamer-1.0_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
 ${FFMPEG_INCLUDE_DIRS} 
@@ -504,32 +452,6 @@ ${Boost_INCLUDE_DIRS}
 ${LIBMP4_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
 )
-
-IF(ENABLE_GST)
-	target_include_directories ( aprapipes PRIVATE
-		${gstreamer-app-1.0_INCLUDE_DIRS}
-		${gstreamer-base-1.0_INCLUDE_DIRS}
-		${gstreamer-1.0_INCLUDE_DIRS}
-		${gstreamer-rtsp-server-1.0_INCLUDE_DIRS}
-		${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-		${libpcre_INCLUDE_DIRS}
-		${glib-2.0_INCLUDE_DIRS}
-		${gstreamer-rtsp-1.0_INCLUDE_DIRS}
-		${gstreamer-rtp-1.0_INCLUDE_DIRS}
-		${gstreamer-net-1.0_INCLUDE_DIRS}
-		${gio-2.0_INCLUDE_DIRS}
-		${gmodule-2.0_INCLUDE_DIRS}
-		${gthread-2.0_INCLUDE_DIRS}
-		${gobject-2.0_INCLUDE_DIRS}
-	)
-	IF(NOT ENABLE_WINDOWS)
-		target_include_directories( aprapipes PRIVATE
-			${gstreamer-webrtc-1.0_INCLUDE_DIRS}
-			${json-glib-1.0_INCLUDE_DIRS}
-			${libsoup-2.4_INCLUDE_DIRS}
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
-ENDIF(ENABLE_GST)
 
 
 # aprapipes Unit Tests
@@ -635,34 +557,6 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
-IF(ENABLE_GST)
-	SET(GST_LIBS		
-		PkgConfig::gstreamer-app-1.0
-		PkgConfig::gstreamer-base-1.0
-		PkgConfig::gstreamer-1.0
-		PkgConfig::gstreamer-rtsp-server-1.0
-		PkgConfig::libpcre
-		PkgConfig::glib-2.0
-		PkgConfig::gstreamer-rtsp-1.0
-		PkgConfig::gstreamer-rtp-1.0
-		PkgConfig::gstreamer-net-1.0	
-	)
-	list(APPEND UT_FILES
-		test/gstrtsponvifsink_tests.cpp
-	)
-
-	IF(NOT ENABLE_WINDOWS)
-		list(APPEND GST_LIBS
-			PkgConfig::gstreamer-webrtc-1.0
-			PkgConfig::json-glib-1.0
-			PkgConfig::libsoup-2.4
-		)
-		list(APPEND UT_FILES
-			test/gstwebrtcsink_tests.cpp
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
-ENDIF(ENABLE_GST)
-
 
 add_executable(aprapipesut ${UT_FILES})
 
@@ -690,7 +584,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  ${GST_LIBS}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -701,7 +594,6 @@ target_link_libraries(aprapipesut
   )
 
 IF(ENABLE_WINDOWS)
-	#file(GLOB RUNTIME_DLLS ../thirdparty/gst-build/gst-build-1.16/outInstall/bin/*.dll)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
 	IF(GHA)
