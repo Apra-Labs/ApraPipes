@@ -162,7 +162,7 @@ Note:"Follow the exact instructions outlined in the document to ensure the corre
   ```
   docker run -dit --gpus all -v "<mount-local-folder-path>":"/mnt/b/" --name <give-container-name> 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
   ```
-  Your command should like this [where D:\ws\docker-pipes->local folder path , pipes->container name ]
+  ..your command should like this [where D:\ws\docker-pipes->local folder path , pipes->container name ]
   ```
   docker run -dit --gpus all -v "D:\ws\docker-pipes":"/mnt/b/" --name pipes 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
   ```
@@ -173,7 +173,6 @@ Note:"Follow the exact instructions outlined in the document to ensure the corre
 * Note:"When inside the container, build all contents within the mounted external folder"  
 
 * clone the repository with submodules and LFS as described above
-* build libmp4 and gstreamer as described [above](#build-for-linux)
 * build using build_linux_\*.sh scripts as described [above](#build-for-linux)
 
 This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with the docker image
