@@ -110,8 +110,9 @@ jobs:
         submodules: 'recursive' 
         lfs: true
         fetch-depth: 0
-    - name: Checkout submodule
+    - name: List Submodules
       run: |
+        git config --global --add safe.directory "*"
         git submodule status > submodule_ver.txt
         cat submodule_ver.txt
         git rev-list --all --count 
