@@ -141,12 +141,42 @@ build_windows_cuda.bat
 Build can take ~2 hours depending on the machine configuration.
 
 ### Build and test using docker
+
+### Prerequisites
+* Ensure virtualization is enabled in both the BIOS settings of your computer and the Windows virtualization feature -Refer [this article](https://support.microsoft.com/en-us/windows/enable-virtualization-on-windows-11-pcs-c5578302-6e43-4b4b-a449-8ced115f58e1#:~:text=Virtualization%20lets%20your%20PC%20emulate,will%20help%20you%20enable%20virtualization) to enable them
+* Install WSL 2 on your system:
+  ```
+  wsl --install
+  ```
+* Set WSL 2 as the default version using the command line:
+  ```
+  wsl --set-default-version 2
+  ```
+* Install Ubuntu-18.04 from [Microsoft store](https://apps.microsoft.com/store/detail/ubuntu-1804-on-windows/9N9TNGVNDL3Q?hl=en-in&gl=in&rtc=1) , Refer [this article](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for any issues regarding installation 
+* Install Docker Desktop on Windows -from [here](https://docs.docker.com/desktop/install/windows-install/)
+* Enable Docker integration with WSL 2 (in Docker Desktop settings -> Resources -> WSL integration -> Enable Ubuntu-18.04 -> Apply&restart)
+* Install nvida-container-toolkit using (WSL Ubuntu-18.04) for docker to access Host-system GPU -Follow [this document](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) to install nvidia-container-toolkit
+* Note:"Follow the exact instructions outlined in the document to ensure the correct and successful installation of the NVIDIA Container Toolkit"
+
+### Build for Docker
+
 * Use this [docker image](https://github.com/users/kumaakh/packages/container/package/aprapipes-build-x86-ubutu18.04-cuda) with all the software setup.
   ```
   docker pull ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
   ```
-* Run the docker container using above image
-* Mount an external volume as a build area
+* Mount an external volume as a build area, and then use the Windows command line to create a Docker container using the above image with the following command:  
+  ```
+  docker run -dit --gpus all -v "</path/to/external_volume>":"/mnt/b/" --name <give-container-name> 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
+  ```
+  ..your command should look like this [where D:\ws\docker-pipes->local_folder_path , pipes->container_name ]
+  ```
+  docker run -dit --gpus all -v "D:\ws\docker-pipes":"/mnt/b/" --name pipes 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
+  ```
+* After creating the container, execute the following command to access its command line interface
+  ```
+  docker exec -it <container-name> /bin/bash
+  ```
+* Note:"When inside the container, build all contents within the mounted external folder"
 * clone the repository with submodules and LFS as described above
 * build using build_linux_\*.sh scripts as described [above](#build-for-linux)
 
