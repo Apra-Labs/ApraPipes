@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "516401b041a3b374c88bbb832387ba1b65246b8b",
+  "builtin-baseline": "b0053dfa8bbaabd1cfc602b27d3cf7295987a073",
   "dependencies": [
     {
       "name": "opencv4",
@@ -44,7 +44,7 @@
       "features": [
         "libmount"
       ],
-              "platform": "(linux \u0026 x64)",
+        "platform": "(linux \u0026 x64)",
         "$reason": "skip linux:arm64 and windows"
       },
       {
