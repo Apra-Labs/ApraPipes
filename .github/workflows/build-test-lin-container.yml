@@ -121,11 +121,11 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
-    - name: Remove OpenCV from vcpkg during prep phase
-      if: inputs.is-prep-phase
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json.ps1 -removeOpenCV
-      shell: pwsh
+    # - name: Remove OpenCV from vcpkg during prep phase
+    #   if: inputs.is-prep-phase
+    #   working-directory: ${{github.workspace}}/base
+    #   run: .\fix-vcpkg-json.ps1 -removeOpenCV
+    #   shell: pwsh
 
     # - name: cache init on container build
     #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
