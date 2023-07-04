@@ -104,12 +104,14 @@ jobs:
         submodules: 'recursive' 
         lfs: true
         fetch-depth: 0
-    - name: Checkout submodule
+
+    - name: List Submodules
       run: |
+        git config --global --add safe.directory "*"
         git submodule status > submodule_ver.txt
         cat submodule_ver.txt
         git rev-list --all --count 
-    
+
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
 
@@ -125,12 +127,12 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
-    - name: cache init on container build
-      if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-      run: |
-        cp -R /root/.cache /github/home/ || true
-        ls ${{ inputs.cache-path }} || true
-      continue-on-error: true
+    # - name: cache init on container build
+    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
+    #   run: |
+    #     cp -R /root/.cache /github/home/ || true
+    #     ls ${{ inputs.cache-path }} || true
+    #   continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
