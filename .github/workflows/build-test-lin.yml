@@ -48,11 +48,6 @@ on:
         description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
         default: false
         required: false
-      is-build-gst:
-        type: boolean
-        description: 'should we build GStreamer? we dont build on windows and ARM_Linux.'
-        default: true
-        required: false
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
@@ -77,7 +72,6 @@ jobs:
   build:
     env:
       TEST_EXE: build/aprapipesut
-      LD_LIB_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:${{github.workspace}}/thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:${LD_LIBRARY_PATH-}'
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
     runs-on: ${{ inputs.runner }}
     steps:
@@ -132,7 +126,6 @@ jobs:
       run: |
         cp -R /root/.cache /github/home/ || true
         ls ${{ inputs.cache-path }} || true
-        ls thirdparty/gst-build/gst-build-1.16/outInstall || true
       continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
@@ -141,15 +134,9 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-            ./thirdparty/gst-build/gst-build-1.16/outInstall/
             ./thirdparty/libmp4/build
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
-
-    - name: Build Gstreamer On Linux_x64 when it is not cached
-      if: ${{ inputs.is-build-gst && steps.cache-all.outputs.cache-hit != 'true'}}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: sh ./build_gstreamer.sh
     
     - name: Build libmp4 when it is not cached
       if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
