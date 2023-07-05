@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(mp4v_to_jpg_frames_metadata)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_metadata)
 {
-	std::string videoPath = "./data/mp4_videoS/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	std::string videoPath = "./data/mp4_video/h264_video_metadata/20230514/0011/1686723796848.mp4";
 	std::string outPath = "data/mp4Reader_saveOrCompare/h264/frame_000";
 	bool parseFS = false;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));

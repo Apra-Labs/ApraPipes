@@ -914,7 +914,6 @@ protected:
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;
-	uint64_t seekEndTS = 9999999999999;
 	int seekedToFrame = -1;
 	bool isVideoFileFound = true;
 	uint64_t currentTS = 0;
@@ -1222,26 +1221,6 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		trimmedImgFrame->timestamp = nowTS;
 	}
 
-	/*if (seekedToEndTS)
-	{
-		return true;
-	}
-
-	if (seekEndTS <= frameTSInMsecs && !mProps.bFramesEnabled)
-	{
-		return true;
-	}
-
-	if (seekEndTS <= frameTSInMsecs && mProps.bFramesEnabled)
-	{
-		if (nalType == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
-		{
-			frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
-			seekedToEndTS = true;
-			return true;
-		}
-	}*/
-
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataSize)
 	{
@@ -1474,12 +1453,6 @@ bool Mp4ReaderSource::handlePausePlay(float speed, bool direction)
 {
 	mDetail->setPlayback(speed, direction);
 	return Module::handlePausePlay(speed, direction);
-}
-
-bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS, uint64_t seekEndTS)
-{
-	Mp4SeekCommand cmd(seekStartTS, seekEndTS);
-	return queueCommand(cmd);
 }
 
 bool Mp4ReaderSource::randomSeek(uint64_t seekStartTS)

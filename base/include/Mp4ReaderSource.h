@@ -114,7 +114,6 @@ public:
 	std::string getOpenVideoPath();
 	void setImageMetadata(std::string& pinId, framemetadata_sp& metadata);
 	std::string addOutPutPin(framemetadata_sp& metadata);
-	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS);
 	bool changePlayback(float speed, bool direction);
 	bool getVideoRangeFromCache(std::string videoPath, uint64_t& start_ts, uint64_t& end_ts);
 	bool randomSeek(uint64_t seekStartTS);
