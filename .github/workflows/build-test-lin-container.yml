@@ -73,7 +73,8 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+#    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda@sha256:9df69cc82b001b3f3ac491c8718000714c6e9bef05494a3ae673970525bcc85d
     defaults:
       run:
         shell: bash  
