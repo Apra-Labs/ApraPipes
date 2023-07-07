@@ -10,6 +10,18 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
+  # linux-cuda-build-prep:
+  # this is in caching, not using it for now
+  #   uses: ./.github/workflows/build-test-lin-container.yml
+  #   with:
+  #     runner: 'ubuntu-20.04'
+  #     flav: 'Linux-Cuda'
+  #     is-selfhosted: false
+  #     cuda: 'ON'
+  #     prep-cmd: 'echo skipping builder prep as I can not sudo'
+  #     is-prep-phase: true
+  #     cache-path: '/github/home/.cache/vcpkg/archives'      
+  #     nProc: 3
   linux-cuda-build-no-test:
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
