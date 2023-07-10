@@ -58,10 +58,12 @@ public:
 		helper->process(frame);
 	}
 
+#ifdef ARM64
 	void closeAllThreads(frame_sp eosFrame)
 	{
 		helper->closeAllThreads(eosFrame);
 	}
+#endif
 public:
 	int mWidth;
 	int mHeight;
