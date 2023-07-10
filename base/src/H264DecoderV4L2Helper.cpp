@@ -1385,7 +1385,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
     }
     return true;
 }
-h264DecoderV4L2Helper::~h264DecoderV4L2Helper() 
+void h264DecoderV4L2Helper::closeAllThreads() 
 {
     if (ctx.fd != -1)
     {
