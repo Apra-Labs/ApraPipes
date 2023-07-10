@@ -1385,8 +1385,9 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
     }
     return true;
 }
-void h264DecoderV4L2Helper::closeAllThreads() 
+void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
 {
+    process(eosFrame);
     if (ctx.fd != -1)
     {
         if (ctx.dec_capture_thread)
