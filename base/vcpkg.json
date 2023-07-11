@@ -45,31 +45,31 @@
         "libmount"
       ],
         "platform": "(linux \u0026 x64)",
-      "$reason": "skip linux:arm64 and windows"
-    },
-    {
-      "name": "glib",
-      "default-features": true,
-      "platform": "windows"
-    },
-    {
-      "name": "hiredis",
-      "platform": "!arm64"
-    },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
-    },
-    {
-      "name": "re",
-      "platform": "!windows"
-    },
-    {
-      "name": "baresip",
-      "platform": "!windows"
-    },
-    {
-      "name": "libmp4"
-    }
-  ]
-}
+        "$reason": "skip linux:arm64 and windows"
+      },
+      {
+        "name": "glib",
+        "default-features": true,
+        "platform": "windows"
+      },
+      {
+        "name": "hiredis",
+        "platform": "!arm64"
+      },
+      {
+        "name": "redis-plus-plus",
+        "platform": "!arm64"
+      },
+      {
+        "name": "re",
+        "platform": "!windows"
+      },
+      {
+        "name": "baresip",
+        "platform": "!windows"
+      },
+      {
+        "name": "libmp4"
+      }
+    ]
+  }
