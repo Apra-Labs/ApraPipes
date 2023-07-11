@@ -48,11 +48,6 @@ on:
         description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
         default: false
         required: false
-      is-build-gst:
-        type: boolean
-        description: 'should we build GStreamer? we dont build on windows and ARM_Linux.'
-        default: true
-        required: false
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
@@ -77,9 +72,8 @@ jobs:
   build:
     env:
       TEST_EXE: build/aprapipesut
-      LD_LIB_PATH: '${{github.workspace}}/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:${{github.workspace}}/thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64:/usr/local/cuda-10.2/compat/:/usr/local/cuda/lib64:${LD_LIBRARY_PATH-}'
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
     defaults:
       run:
         shell: bash  
@@ -110,13 +104,14 @@ jobs:
         submodules: 'recursive' 
         lfs: true
         fetch-depth: 0
+        
     - name: List Submodules
       run: |
         git config --global --add safe.directory "*"
         git submodule status > submodule_ver.txt
         cat submodule_ver.txt
         git rev-list --all --count 
-    
+
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
 
@@ -132,13 +127,12 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
-    - name: cache init on container build
-      if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-      run: |
-        cp -R /root/.cache /github/home/ || true
-        ls ${{ inputs.cache-path }} || true
-        ls thirdparty/gst-build/gst-build-1.16/outInstall || true
-      continue-on-error: true
+    # - name: cache init on container build
+    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
+    #   run: |
+    #     cp -R /root/.cache /github/home/ || true
+    #     ls ${{ inputs.cache-path }} || true
+    #   continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
@@ -146,20 +140,8 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-            ./thirdparty/gst-build/gst-build-1.16/outInstall/
-            ./thirdparty/libmp4/build
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
-
-    - name: Build Gstreamer On Linux_x64 when it is not cached
-      if: ${{ inputs.is-build-gst && steps.cache-all.outputs.cache-hit != 'true'}}
-      working-directory: ${{github.workspace}}/thirdparty
-      run: sh ./build_gstreamer.sh
-    
-    - name: Build libmp4 when it is not cached
-      if: ${{ steps.cache-all.outputs.cache-hit != 'true' }}
-      working-directory: ${{github.workspace}}/thirdparty/libmp4
-      run: ./build.cmd
     
     - name: Make build folder
       run: mkdir -p build
@@ -177,17 +159,13 @@ jobs:
 
     - name: List Test cases
       if: ${{!inputs.is-prep-phase}}
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       run: |
-        ldd ${{env.TEST_EXE}} | grep 'not found' || true
-        ${{env.TEST_EXE}} --list_content > tests.txt
+        ldd ${{env.TEST_EXE}} | tee >(grep 'not found') || true
+        ${{env.TEST_EXE}} --list_content > tests.txt || true
       timeout-minutes: 1
 
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
-      env:
-        LD_LIBRARY_PATH: ${{env.LD_LIB_PATH}}
       run: |
         ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
