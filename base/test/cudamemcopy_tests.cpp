@@ -14,7 +14,7 @@
 
 BOOST_AUTO_TEST_SUITE(cudamemcopy_tests)
 
-BOOST_AUTO_TEST_CASE(isCudaSupported)
+BOOST_AUTO_TEST_CASE(isCudaSupported, * utf::precondition(if_compute_cap_supported()))
 {
 	BOOST_TEST(CudaUtils::isCudaSupported());
 }
