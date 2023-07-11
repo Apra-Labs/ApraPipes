@@ -100,8 +100,8 @@ class DetailSSD : public Detail
 public:
 	DetailSSD(FacialLandmarkCVProps& _props) : Detail(_props)
 	{
-		cv::String modelConfiguration = props.modelConfiguration;
-		cv::String modelBinary = props.modelBinary;
+		cv::String modelConfiguration = props.Face_Detection_Configuration;
+		cv::String modelBinary = props.Face_Detection_Weights;
 
 		facemark = props.facemark;
 		facemark->loadModel(props.landmarksDetectionModel);

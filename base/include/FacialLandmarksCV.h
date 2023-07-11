@@ -18,12 +18,12 @@ public:
 
 	FacialLandmarkCVProps(FaceDetectionModelType _type) : type(_type) {}
 
-	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _modelConfiguration, const std::string _modelBinary, const std::string _landmarksDetectionModel, cv::Ptr<cv::face::Facemark> _facemark)
-		: type(_type), modelConfiguration(_modelConfiguration), modelBinary(_modelBinary), landmarksDetectionModel(_landmarksDetectionModel),facemark(_facemark)
+	FacialLandmarkCVProps(FaceDetectionModelType _type, const std::string _Face_Detection_Configuration, const std::string _Face_Detection_Weights, const std::string _landmarksDetectionModel, cv::Ptr<cv::face::Facemark> _facemark)
+		: type(_type), Face_Detection_Configuration(_Face_Detection_Configuration), Face_Detection_Weights(_Face_Detection_Weights), landmarksDetectionModel(_landmarksDetectionModel),facemark(_facemark)
 	{
 		if (_type != FaceDetectionModelType::SSD)
 		{
-			throw AIPException(AIP_FATAL, "This constructor only supports SSD");
+			 throw AIPException(AIP_FATAL, "This constructor only supports SSD");
 		}
 	}
 
@@ -37,8 +37,8 @@ public:
 	}
 
 	FaceDetectionModelType type;
-	const std::string modelConfiguration = "./data/assets/deploy.prototxt";
-	const std::string modelBinary = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
+	const std::string Face_Detection_Configuration = "./data/assets/deploy.prototxt";
+	const std::string Face_Detection_Weights = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 	const std::string landmarksDetectionModel = "./data/assets/face_landmark_model.dat";
 	const std::string faceDetectionModel = "./data/assets/haarcascade.xml";
 	cv::Ptr<cv::face::Facemark> facemark = cv::face::FacemarkKazemi::create();
