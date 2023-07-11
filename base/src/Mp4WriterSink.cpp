@@ -171,20 +171,21 @@ public:
 			if (metatrack < 0)
 			{
 				LOG_ERROR << "Failed to add metadata track";
-				// #Dec_24_Review - should we throw exception here ? This means that user sends metadata to this module but we don't write ?
 			}
 
 			// https://www.rfc-editor.org/rfc/rfc4337.txt
 			std::string content_encoding = "base64";
 			std::string mime_format = "video/mp4";
 
-			// #Dec_24_Review - use return code from the below function call 
-			mp4_mux_track_set_metadata_mime_type(
+			auto ret = mp4_mux_track_set_metadata_mime_type(
 				mux,
 				metatrack,
 				content_encoding.c_str(),
 				mime_format.c_str());
-
+			if(ret != 0)
+			{
+				LOG_ERROR << "Failed to add metadata track mime type";
+			}
 			/* Add track reference */
 			if (metatrack > 0)
 			{
@@ -193,7 +194,6 @@ public:
 				if (ret != 0)
 				{
 					LOG_ERROR << "Failed to add metadata track as reference";
-					// #Dec_24_Review - should we throw exception here ? This means that user sends metadata to this module but we don't write ?
 				}
 			}
 		}
@@ -352,7 +352,7 @@ bool DetailJpeg::write(frame_container& frames)
 
 	if (metatrack != -1 && mMetadataEnabled)
 		{
-			if (inMp4MetaFrame.get() && inMp4MetaFrame->fIndex % 3 == 0)
+			if (inMp4MetaFrame.get() && inMp4MetaFrame->fIndex == 0)
 			{
 				mux_sample.buffer = static_cast<uint8_t *>(inMp4MetaFrame->data());
 				mux_sample.len = inMp4MetaFrame->size();
@@ -378,17 +378,21 @@ uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264Ima
 	{
 		frameSize = inH264ImageFrame->size();
 	}
+	//Add the size of sps and pps to I frame - (First frame of the video)
 	else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		frameSize = inH264ImageFrame->size() + spsPpsSize;
 	}
 	uint8_t* newBuffer = new uint8_t[frameSize];
+	//add the size of sps to the 4th byte of sps's nalu seprator (00 00 00 SpsSize 67)
 	memcpy(newBuffer, nalu, 3);
 	newBuffer += 3;
 	newBuffer[0] = spsBuffer.size();
 	newBuffer += 1;
 	memcpy(newBuffer, spsBuffer.data(), spsBuffer.size());
 	newBuffer += spsBuffer.size();
+
+	//add the size of sps to the 4th byte of pps's nalu seprator (00 00 00 PpsSize 68)
 	memcpy(newBuffer, nalu, 3);
 	newBuffer += 3;
 	newBuffer[0] = ppsBuffer.size();
@@ -397,6 +401,8 @@ uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264Ima
 	newBuffer += ppsBuffer.size();
 	memcpy(newBuffer, nalusepratorIframe, 2);
 	newBuffer += 2;
+
+	//add the size of I frame to the 3rd and 4th byte of I frame's nalu seprator (00 00 frameSize frameSize 66)
 	newBuffer[0] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
 	newBuffer[1] = frameSize - spsPpsSize - 4 & 0xFF;
 	newBuffer += 2;
@@ -409,7 +415,9 @@ uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264Ima
 	{
 		tempBuffer = tempBuffer + 4;
 	}
+	//copy I frame data to the buffer
 	memcpy(newBuffer, tempBuffer, frameSize - spsPpsSize - 4);
+	//set the pointer to the starting of frame
 	newBuffer -= spsPpsSize + 4;
 	return newBuffer;
 }
@@ -460,6 +468,7 @@ bool DetailH264::write(frame_container& frames)
 		initNewMp4File(mNextFrameFileName);
 		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
+			//add sps and pps to I-frame and change the Nalu seprator according to Mp4 format
 			auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
 			mux_sample.buffer = newBuffer;
 			mux_sample.len = frameSize;
@@ -468,7 +477,7 @@ bool DetailH264::write(frame_container& frames)
 	
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
-
+		//change the Nalu seprator according to Mp4 format
 		auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
 		mux_sample.buffer = newBuffer;
 		mux_sample.len = frameSize;
@@ -608,7 +617,6 @@ bool Mp4WriterSink::validateInputPins()
 }
 bool Mp4WriterSink::setMetadata(framemetadata_sp& inputMetadata)
 {
-	// #Dec_24_Review - this function seems to do nothing
 	mDetail->setImageMetadata(inputMetadata);
 	return true;
 }
@@ -686,10 +694,6 @@ bool Mp4WriterSink::process(frame_container& frames)
 
 bool Mp4WriterSink::processEOS(string& pinId)
 {
-	// #Dec_24_Review - generally you do opposite of what you do on SOS, so that after EOS, SOS is triggered
-	// in current state after EOS, SOS is not triggered - is it by design ? 
-	// Example EOS can be triggered if there is some resolution change in upstream module
-	// so you want to do mDetail->mInputMetadata.reset() - so that SOS gets triggered
 	return true;
 }
 
