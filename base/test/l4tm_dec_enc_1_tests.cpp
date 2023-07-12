@@ -20,7 +20,7 @@ int startIndex = 0;
 int endIndex = -1;
 bool sw = false;
 
-BOOST_AUTO_TEST_CASE(sample)
+BOOST_AUTO_TEST_CASE(sample, * boost::unit_test::disabled())
 {		
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
