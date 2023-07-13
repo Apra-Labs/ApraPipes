@@ -3,7 +3,6 @@
 #include "FileReaderModule.h"
 #include "EglRenderer.h"
 #include "PipeLine.h"
-#include "ApraNvEglRenderer.h"
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
 

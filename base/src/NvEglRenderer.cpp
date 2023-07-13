@@ -124,8 +124,6 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
        } WM_HINTS = { (1L << 1), 0, 0, 0, 0 }; // this we added to remove title bar
     }
 
-    LOG_ERROR << "X_OFFSET " << x_offset << "Y_OFFSET "<< y_offset << "========================>>>>";
-
     x_window = XCreateWindow(x_display,
                              DefaultRootWindow(x_display), x_offset,
                              y_offset, width, height,
