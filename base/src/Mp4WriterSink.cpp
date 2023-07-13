@@ -282,9 +282,6 @@ public:
 	bool write(frame_container& frames);
 	uint8_t* AppendSizeInNaluSeprator(short naluType, frame_sp frame, size_t& frameSize);
 
-	uint8_t* AppendSizeInNaluSeprator(short naluType, frame_sp frame, size_t& frameSize);
-
-
 	bool set_video_decoder_config()
 	{
 		vdc.width = mWidth;
@@ -327,8 +324,6 @@ bool DetailJpeg::write(frame_container& frames)
 
 	if (syncFlag)
 	{
-		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
-		auto ret = mp4_mux_sync(mux);
 		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
 		auto ret = mp4_mux_sync(mux);
 		syncFlag = false;
@@ -493,8 +488,6 @@ bool DetailH264::write(frame_container& frames)
 	{
 		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
 		auto ret = mp4_mux_sync(mux);
-		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
-		auto ret = mp4_mux_sync(mux);
 		syncFlag = false;
 	}
 
@@ -560,7 +553,6 @@ bool Mp4WriterSink::init()
 
 	for (auto const& element : inputPinIdMetadataMap)
 	{
-		auto metadata = element.second;
 		auto metadata = element.second;
 		auto mFrameType = metadata->getFrameType();
 		if (mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE)
@@ -628,24 +620,6 @@ bool Mp4WriterSink::setMetadata(framemetadata_sp& inputMetadata)
 {
 	mDetail->setImageMetadata(inputMetadata);
 	return true;
-}
-
-bool Mp4WriterSink::enableMp4Metadata(framemetadata_sp &inputMetadata)
-{
-	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(inputMetadata);
-	std::string formatVersion = mp4VideoMetadata->getVersion();
-	if (formatVersion.empty())
-	{
-		LOG_ERROR << "Serialization Format Information missing from the metadata. Metadata writing will be disabled";
-		return false;
-	}
-	mDetail->enableMetadata(formatVersion);
-	return true;
-}
-
-void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, string& pinId)
-{
-	Module::addInputPin(metadata, pinId);
 }
 
 bool Mp4WriterSink::enableMp4Metadata(framemetadata_sp &inputMetadata)
