@@ -70,12 +70,6 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
   ```
   git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
   ```
-* Build libmp4
-  ```
-  cd thirdparty\libmp4
-  .\build.cmd
-  ```
-* __Note__ As of this revision, there is no need to build thirdparty\gstreamer for windows as we leverage vcpkg for the same.
 
 ### Build for windows
 
@@ -124,13 +118,6 @@ build_windows_cuda.bat
   ```
   git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
   ```
-* build gstreamer
-   * ``` cd thirdparty && sh ./build_gstreamer.sh && cd -```
-   * update .bashrc and append following line at the end of it. Adjust the path based on your environment.
-     ```
-     export LD_LIBRARY_PATH=~/ApraPipes/thirdparty/gst-build/gst-build-1.16/outInstall/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-     ```
-   * load symbols from .bashrc ```source ~/.bashrc```. 
   
    
 ### Build for linux
@@ -162,15 +149,15 @@ Build can take ~2 hours depending on the machine configuration.
 
 * Use this [docker image](https://github.com/users/kumaakh/packages/container/package/aprapipes-build-x86-ubutu18.04-cuda) with all the software setup.
   ```
-  docker pull ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:latest
+  docker pull ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
   ```
 * Mount an external volume as a build area, and then use the Windows command line to create a Docker container using the above image with the following command:  
   ```
-  docker run -dit --gpus all -v "</path/to/external_volume>":"/mnt/b/" --name <give-container-name> 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
+  docker run -dit --gpus all -v "</path/to/external_volume>":"/mnt/b/" --name <give-container-name> a799cc26f4b7
   ```
   ..your command should look like this [where D:\ws\docker-pipes->local_folder_path , pipes->container_name ]
   ```
-  docker run -dit --gpus all -v "D:\ws\docker-pipes":"/mnt/b/" --name pipes 02ed8b575e94802e19b8eb6424e0a0d52d260ea51173ce8dae0eac229acac725
+  docker run -dit --gpus all -v "D:\ws\docker-pipes":"/mnt/b/" --name pipes a799cc26f4b7
   ```
 * After creating the container, execute the following command to access its command line interface
   ```

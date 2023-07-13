@@ -1,64 +1,75 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-    "name": "apra-pipes-cuda",
-    "version": "0.0.1",
-    "builtin-baseline": "4e8ee452bcec49209042e7876800ec68e8477d14",
-    "dependencies": [
-        {
-            "name": "opencv4",
-            "default-features": false,
-            "features": [
-                "contrib",
-                "cuda",
-                "cudnn",
-                "dnn",
-                "jpeg",
-                "nonfree",
-                "png",
-                "tiff",
-                "webp"
-            ]
-        },
-        "libjpeg-turbo",
-        "openh264",
-        "ffmpeg",
-        "bigint",
-        "boost-math",
-        "boost-system",
-        "boost-thread",
-        "boost-filesystem",
-        "boost-serialization",
-        "boost-log",
-        "boost-chrono",
-        "boost-test",
-        "boost-iostreams",
-        "boost-dll",
-        "nu-book-zxing-cpp",
-        "liblzma",
-        "bzip2",
-        "zlib",
-        "sfml",
-        {
-            "name": "glib",
-            "default-features": false,
-            "features": [
-                "libmount"
-            ],
-            "platform": "(linux \u0026 x64)",
-            "$reason": "skip linux:arm64 and windows"
-        },
-        {
-            "name": "glib",
-            "default-features": true,
-            "platform": "windows"
-        },
-        {
-            "name": "hiredis",
-            "platform": "!arm64"
-        },
-        {
-            "name": "redis-plus-plus",
-            "platform": "!arm64"
-        }
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-cuda",
+  "version": "0.0.1",
+  "builtin-baseline": "6baca0fccea3ace7e51f44d49f69696a9ed52b31",
+  "dependencies": [
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+          "contrib",
+          "cuda",
+          "cudnn",
+          "dnn",
+          "jpeg",
+          "nonfree",
+          "png",
+          "tiff",
+          "webp"
+      ]
+  },
+    "libjpeg-turbo",
+    "openh264",
+    "ffmpeg",
+    "bigint",
+    "boost-math",
+    "boost-system",
+    "boost-thread",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-log",
+    "boost-chrono",
+    "boost-test",
+    "boost-iostreams",
+    "boost-dll",
+    "nu-book-zxing-cpp",
+    "liblzma",
+    "bzip2",
+    "zlib",
+    "sfml",
+    {
+      "name": "glib",
+      "default-features": false,
+      "features": [
+        "libmount"
+      ],
+        "platform": "(linux \u0026 x64)",
+        "$reason": "skip linux:arm64 and windows"
+      },
+      {
+        "name": "glib",
+        "default-features": true,
+        "platform": "windows"
+      },
+      {
+        "name": "hiredis",
+        "platform": "!arm64"
+      },
+      {
+        "name": "redis-plus-plus",
+        "platform": "!arm64"
+      },
+      {
+        "name": "re",
+        "platform": "!windows"
+      },
+      {
+        "name": "baresip",
+        "platform": "!windows"
+      },
+      {
+        "name": "libmp4"
+      }
     ]
-}
+  }
