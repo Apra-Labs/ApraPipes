@@ -57,6 +57,13 @@ public:
 	{
 		helper->process(frame);
 	}
+
+#ifdef ARM64
+	void closeAllThreads(frame_sp eosFrame)
+	{
+		helper->closeAllThreads(eosFrame);
+	}
+#endif
 public:
 	int mWidth;
 	int mHeight;
@@ -138,8 +145,12 @@ bool H264Decoder::init()
 
 bool H264Decoder::term()
 {
-	mDetail.reset();
+#ifdef ARM64
+	auto eosFrame = frame_sp(new EoSFrame());
+	mDetail->closeAllThreads(eosFrame);
+#endif
 
+	mDetail.reset();
 	return Module::term();
 }
 
