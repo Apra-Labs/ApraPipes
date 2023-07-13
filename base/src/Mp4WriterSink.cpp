@@ -461,7 +461,7 @@ bool DetailH264::write(frame_container& frames)
 	mux_sample.buffer = frameData;
 	mux_sample.len = inH264ImageFrame->size();
 	auto naluType = H264Utils::getNALUType((char*)mFrameBuffer.data());
-	size_t frameSize;;
+	size_t frameSize;
 	if (mNextFrameFileName != _nextFrameFileName)
 	{
 		mNextFrameFileName = _nextFrameFileName;
@@ -521,7 +521,7 @@ bool DetailH264::write(frame_container& frames)
 
 	if (metatrack != -1 && mMetadataEnabled && inMp4MetaFrame.get())
 	{
-		if (inMp4MetaFrame.get())
+		if (inMp4MetaFrame->size())
 		{
 			mux_sample.buffer = static_cast<uint8_t*>(inMp4MetaFrame->data());
 			mux_sample.len = inMp4MetaFrame->size();
@@ -565,6 +565,7 @@ bool Mp4WriterSink::init()
 			mDetail.reset(new DetailH264(mProp));
 		}
 	}
+	//two loops because - enableMp4Metadata will fail if metadata module is added first in pipeline followed by H264 or Jpeg metadata
 	for (auto const& element : inputPinIdMetadataMap)
 	{
 		auto metadata = element.second;
