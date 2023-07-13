@@ -3,6 +3,10 @@
 #include "FileReaderModule.h"
 #include "EglRenderer.h"
 #include "PipeLine.h"
+#include "ApraNvEglRenderer.h"
+#include "NvV4L2Camera.h"
+#include "NvTransform.h"
+
 
 BOOST_AUTO_TEST_SUITE(eglrenderer_tests)
 
@@ -36,6 +40,97 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	p.term();
 
 	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
+{
+	NvV4L2CameraProps nvCamProps(640,360, 10);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,1)));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all(); 
+}
+
+BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
+{
+	NvV4L2CameraProps nvCamProps(640,360, 10);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,0)));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all(); 
+}
+
+BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
+{
+	NvV4L2CameraProps nvCamProps(640,360, 10);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	sink->closeWindow();
+	sink->createWindow(200,200);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all(); 
 }
 
 BOOST_AUTO_TEST_SUITE_END()
