@@ -593,10 +593,12 @@ BOOST_AUTO_TEST_CASE(write_mp4video_h264_step)
 		fileReader->step();
 		mp4WriterSink->step();
 	}
+	fileReader->term();
 	mp4WriterSink->term();
 	boost::filesystem::path mp4fileName = "data/testOutput/mp4_videos/h264/step/stepvideo.mp4";
 	auto fileSize = boost::filesystem::file_size(mp4fileName);
-	BOOST_CHECK_CLOSE(fileSize, 4268040.0, 5000.0);
+	//checking the size of mp4 file
+	BOOST_TEST(fileSize, 4270314);
 
 	Test_Utils::deleteFolder(mp4fileName.string());
 
@@ -654,9 +656,11 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 		auto metaFrame = metadataSource->makeFrame(0, metadataPinId);
 		if (i % 6 == 0)
 		{
+			//write metadata to only every 6th frame . For every other frame the metadata size will be 0. All the 230 frames with 230 entries for metadata as well
 			metaFrame = metadataSource->makeFrame(videoMetadata.size(), metadataPinId);
 			memcpy(metaFrame->data(), videoMetadata.data(), videoMetadata.size());
 		}
+		//writing the current timestamp to the file .
 		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
 		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 		metaFrame->timestamp = dur.count();
@@ -667,10 +671,13 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 		readerMuxer->step();
 		mp4WriterSink->step();
 	}
+	fileReader->term();
+	metadataSource->term();
+	readerMuxer->term();
 	mp4WriterSink->term();
 	boost::filesystem::path mp4FileName = "data/testOutput/mp4_videos/h264_metadata/step/stepvideo.mp4";
 	auto fileSize = boost::filesystem::file_size(mp4FileName);
-	BOOST_CHECK_CLOSE(fileSize, 4268040.0, 5000.0);
+	BOOST_TEST(fileSize == 4270665);
 
 	Test_Utils::deleteFolder(mp4FileName.string());
 }

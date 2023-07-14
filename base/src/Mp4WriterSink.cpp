@@ -545,6 +545,8 @@ Mp4WriterSink::~Mp4WriterSink() {}
 
 bool Mp4WriterSink::init()
 {
+	bool enableVideoMetadata = false;
+	framemetadata_sp Mp4VideoMetadata;
 	if (!Module::init())
 	{
 		return false;
@@ -564,16 +566,16 @@ bool Mp4WriterSink::init()
 		{
 			mDetail.reset(new DetailH264(mProp));
 		}
-	}
-	//two loops because - enableMp4Metadata will fail if metadata module is added first in pipeline followed by H264 or Jpeg metadata
-	for (auto const& element : inputPinIdMetadataMap)
-	{
-		auto metadata = element.second;
-		auto mFrameType = metadata->getFrameType();
-		if (mFrameType == FrameMetadata::FrameType::MP4_VIDEO_METADATA && mProp.enableMetadata)
+
+		else if (mFrameType == FrameMetadata::FrameType::MP4_VIDEO_METADATA && mProp.enableMetadata)
 		{
-			enableMp4Metadata(metadata);
+			enableVideoMetadata = true;
+			Mp4VideoMetadata = metadata;
 		}
+	}
+	if (enableVideoMetadata)
+	{
+		enableMp4Metadata(Mp4VideoMetadata);
 	}
 	return Module::init();
 }
