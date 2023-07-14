@@ -77,7 +77,7 @@ public:
 		setProps(_props);
 		mNextFrameFileName = "";
 		mux = nullptr;
-		/* DTS should be based on recorded timestamps of frames or on the fps prop entirely */
+		mMetadataEnabled = false;
 		/* DTS should be based on recorded timestamps of frames or on the fps prop entirely */
 		if (_props.recordedTSBasedDTS)
 		{
@@ -546,7 +546,7 @@ Mp4WriterSink::~Mp4WriterSink() {}
 bool Mp4WriterSink::init()
 {
 	bool enableVideoMetadata = false;
-	framemetadata_sp Mp4VideoMetadata;
+	framemetadata_sp mp4VideoMetadata;
 	if (!Module::init())
 	{
 		return false;
@@ -570,12 +570,12 @@ bool Mp4WriterSink::init()
 		else if (mFrameType == FrameMetadata::FrameType::MP4_VIDEO_METADATA && mProp.enableMetadata)
 		{
 			enableVideoMetadata = true;
-			Mp4VideoMetadata = metadata;
+			mp4VideoMetadata = metadata;
 		}
 	}
 	if (enableVideoMetadata)
 	{
-		enableMp4Metadata(Mp4VideoMetadata);
+		enableMp4Metadata(mp4VideoMetadata);
 	}
 	return Module::init();
 }
