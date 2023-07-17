@@ -8,6 +8,7 @@
 class CCNPPIProps : public ModuleProps
 {
 public:
+
 	CCNPPIProps(ImageMetadata::ImageType _imageType, cudastream_sp& _stream)
 	{
 		stream_sp = _stream;
@@ -49,6 +50,7 @@ private:
 	int mOutputFrameType;
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
+	framemetadata_sp mIntermediateMetadata;
 	std::string mOutputPinId;
-	CCNPPIProps props;		
+	CCNPPIProps mProps;		
 };
