@@ -72,6 +72,11 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "*.ipp": "cpp",
+        "any": "cpp",
+        "filesystem": "cpp",
+        "array": "cpp",
+        "variant": "cpp"
     }
 }

@@ -74,7 +74,6 @@ public:
 	void setProps(Mp4ReaderSourceProps& props)
 	{
 		mProps = props;
-		mState.mVideoPath = mProps.videoPath;
 
 		mState.direction = mProps.direction;
 
@@ -82,6 +81,42 @@ public:
 		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 		uint64_t nowTS = dur.count();
 		reloadFileAfter = calcReloadFileAfter();
+		auto canonicalVideoPath = boost::filesystem::canonical(mProps.videoPath);
+		if (mState.mVideoPath != mProps.videoPath && mState.mVideoPath != "")
+		{
+			mState.mVideoPath = canonicalVideoPath.string();
+			sentEOSSignal = false;
+			
+			if (mProps.parseFS)
+			{
+				auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+				uint64_t start_parsing_ts = 0;
+				try
+				{
+					start_parsing_ts = std::stoull(boostVideoTS);
+				}
+				catch (std::invalid_argument)
+				{
+					auto msg = "Video File name not in proper format.Check the filename sent as props. \
+					If you want to read a file with custom name instead, please disable parseFS flag.";
+					LOG_ERROR << msg;
+					throw AIPException(AIP_FATAL, msg);
+				}
+				auto skipDir = boost::filesystem::path(mState.mVideoPath).parent_path().parent_path().parent_path().string();
+				if (mProps.skipDir != skipDir)
+				{
+					mProps.skipDir = skipDir;
+					cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(mProps.skipDir));
+					cof->clearCache();
+					cof->parseFiles(start_parsing_ts, mState.direction, true, false);
+					initNewVideo(true);
+					return;
+				}
+				cof->parseFiles(start_parsing_ts, mState.direction, true, false);
+			}
+			initNewVideo();
+		}
+		mState.mVideoPath = canonicalVideoPath.string();
 	}
 
 	std::string getOpenVideoPath()
@@ -1417,7 +1452,8 @@ Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
-	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.reInitInterval, mDetail->mProps.direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
+	bool direction = getPlayDirection();
+	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	//mDetail->Init();

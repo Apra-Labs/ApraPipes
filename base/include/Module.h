@@ -177,6 +177,7 @@ public:
 	boost::shared_ptr<PaceMaker> getPacer() { return pacer; }	
 	static frame_sp getFrameByType(frame_container& frames, int frameType); 
 	virtual void flushQue();
+	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	

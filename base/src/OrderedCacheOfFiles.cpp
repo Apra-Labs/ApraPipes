@@ -803,6 +803,15 @@ void OrderedCacheOfFiles::deleteLostEntry(std::string& filePath)
 	return;
 }
 
+void OrderedCacheOfFiles::clearCache()
+{
+	if (videoCache.size())
+	{
+		boost::mutex::scoped_lock(m_mutex);
+		videoCache.clear();
+	}
+}
+
 bool OrderedCacheOfFiles::refreshCache()
 {
 	auto direction = lastKnownPlaybackDir;

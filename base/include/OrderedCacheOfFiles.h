@@ -48,6 +48,7 @@ public:
 	bool fetchAndUpdateFromDisk(std::string videoFile, uint64_t& start_ts, uint64_t& end_ts);
 	bool fetchFromCache(std::string& videoFile, uint64_t& start_ts, uint64_t& end_ts);
 	void readVideoStartEnd(std::string& filePath, uint64_t& start_ts, uint64_t& end_ts);
+	void clearCache();
 	bool refreshCache();
 	std::string getLastVideoInCache() { return videoCache.rbegin()->path; }
 	void updateCache(std::string& filePath, uint64_t& start_ts, uint64_t& end_ts); // allow updates from playback
