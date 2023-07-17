@@ -98,7 +98,7 @@ public:
         }
     }
 
-    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType)
+    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType,size_t pitchValues[4] = nullptr, size_t offsetValues[4] = nullptr)
     {
         auto eglDisplay = ApraEGLDisplay::getEGLDisplay();
         auto colorFormat = getColorFormat(imageType);
@@ -144,6 +144,10 @@ public:
             auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
             RawImageMetadata rawMetadata(width, height, imageType, type, fdParams.pitch[0], CV_8U, FrameMetadata::MemType::DMABUF, false);
             inputRawMetadata->setData(rawMetadata);
+            if(pitchValues != nullptr)
+            {
+              pitchValues[0] = fdParams.pitch[0];
+            }
         }
         break;
         case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
@@ -153,6 +157,14 @@ public:
             for (auto i = 0; i < fdParams.num_planes; i++)
             {
                 step[i] = fdParams.pitch[i];
+                if(pitchValues != nullptr)
+                {
+                  pitchValues[i] = fdParams.pitch[i];
+                }
+                if(offsetValues != nullptr)
+                {
+                  offsetValues[i] = fdParams.offset[i];
+                }
             }
             RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
             inputRawMetadata->setData(rawMetadata);
