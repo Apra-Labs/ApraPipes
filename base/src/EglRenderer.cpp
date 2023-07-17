@@ -28,7 +28,7 @@ public:
         }else{
             x_offset += (displayWidth-_width)/2;
             y_offset += (displayHeight-_height)/2;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset, _displayOnTop);
+            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset, displayOnTop);
         }
         if (!renderer)
         {

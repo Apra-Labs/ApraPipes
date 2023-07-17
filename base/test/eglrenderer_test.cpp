@@ -121,6 +121,8 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(5));
 	sink->closeWindow();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	sink->createWindow(200,200);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(120));
