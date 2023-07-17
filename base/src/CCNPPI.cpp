@@ -11,7 +11,6 @@ class CCNPPI::Detail
 {
 public:
 	Detail(CCNPPIProps& _props) : props(_props)
-	Detail(CCNPPIProps& _props) : props(_props)
 	{
 		nppStreamCtx.hStream = props.stream;
 	}
@@ -20,31 +19,7 @@ public:
 
 	//This enum has to match ImageMetadata enums
 	enum Imageformats
-	~Detail() {}
-
-	//This enum has to match ImageMetadata enums
-	enum Imageformats
 	{
-		UNSET = 0,
-		MONO = 1,
-		BGR,
-		BGRA,
-		RGB,
-		RGBA,
-		YUV411_I = 10,
-		YUV444,
-		YUV420,
-		UYVY,
-		YUYV,
-		NV12,
-		BAYERBG10 = 20,
-		BAYERBG8,
-		BAYERGB8,
-		BAYERGR8,
-		BAYERRG8
-	};
-
-	const int enumSize = BAYERRG8 + 1; // last enum value of Imageformats plus 1
 		UNSET = 0,
 		MONO = 1,
 		BGR,
@@ -161,23 +136,7 @@ public:
 		{
 			LOG_ERROR << "nppiDup_8u_C1C3R_Ctx failed<" << status << ">";
 			return false;
-		return true;
-	}
-
-	bool convertMONOtoBGR()
-	{
-		auto status = nppiDup_8u_C1C3R_Ctx(src[0],
-			srcPitch[0],
-			dst[0],
-			dstPitch[0],
-			srcSize[0],
-			nppStreamCtx);
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "nppiDup_8u_C1C3R_Ctx failed<" << status << ">";
-			return false;
 		}
-
 
 		return true;
 	}
@@ -226,17 +185,6 @@ public:
 			return false;
 		}
 
-		status = nppiSet_8u_C4CR_Ctx(255,
-			dst[0] + 3,
-			dstPitch[0],
-			dstSize[0],
-			nppStreamCtx
-		);
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "nppiSet_8u_C4CR_Ctx failed<" << status << ">";
-			return false;
-		}
 		status = nppiSet_8u_C4CR_Ctx(255,
 			dst[0] + 3,
 			dstPitch[0],
@@ -624,18 +572,6 @@ public:
 	{
 		// CUDA MEMCPY Y
 		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "nppiBGRToYUV420_8u_AC4P3R_Ctx failed<" << status << ">";
-		}
-
-		return true;
-	}
-
-	bool convertYUV420toMONO()
-	{
-		// CUDA MEMCPY Y
-		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
 
 		if (cudaStatus != cudaSuccess)
 		{
@@ -757,15 +693,6 @@ public:
 			LOG_ERROR << "nppiNV12ToYUV420_8u_P2P3R_Ctx failed<" << status << ">";
 			return false;
 		}
-	bool convertNV12toYUV420()
-	{
-		auto status = nppiNV12ToYUV420_8u_P2P3R_Ctx(src, srcPitch[0], dst, dstPitch, srcSize[0], nppStreamCtx);
-
-		if (status != NPP_SUCCESS)
-		{
-			LOG_ERROR << "nppiNV12ToYUV420_8u_P2P3R_Ctx failed<" << status << ">";
-			return false;
-		}
 		return true;
 	}
 
@@ -785,11 +712,6 @@ public:
 		for (auto i = 0; i < outputChannels; i++)
 		{
 			dst[i] = static_cast<Npp8u*>(outBuffer->data()) + dstNextPtrOffset[i];
-		}
-
-		for (auto i = 0; i < intermediateChannels; i++)
-		{
- 			intermediatedst[i] = static_cast<Npp8u*>(intermediateBuffer->data()) + intermediateNextPtrOffset[i];
 		}
 
 		for (auto i = 0; i < intermediateChannels; i++)
@@ -933,8 +855,6 @@ public:
 			default:
 				throw AIPException(AIP_FATAL, "conversion not supported");
 			}
-			break;
-			}
 		}
 
 		case ImageMetadata::YUV411_I:
@@ -1053,10 +973,6 @@ protected:
 	ImageMetadata::ImageType intermediateImageType;
 
 
-	FrameMetadata::FrameType intermediateFrameType;
-	ImageMetadata::ImageType intermediateImageType;
-
-
 	int inputChannels;
 	int outputChannels;
 	const Npp8u* src[4];
@@ -1076,20 +992,8 @@ protected:
 	int intermediatePitch[4];
 	size_t intermediateNextPtrOffset[4];
 
-
-	Npp8u* intermediatedst[4];
-	NppiSize intermediateSize[4];
-	NppiRect intermediateRect[4];
-	int intermediatePitch[4];
-	size_t intermediateNextPtrOffset[4];
-
 	CCNPPIProps props;
 	NppStreamContext nppStreamCtx;
-
-public:
-	int intermediateChannels = 0;
-	NppiSize srcSize[4];
-	bool intermediateConv = false;
 
 public:
 	int intermediateChannels = 0;
@@ -1098,9 +1002,7 @@ public:
 };
 
 CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), mProps(_props), mFrameLength(0), mNoChange(false)
-CCNPPI::CCNPPI(CCNPPIProps _props) : Module(TRANSFORM, "CCNPPI", _props), mProps(_props), mFrameLength(0), mNoChange(false)
 {
-	mDetail.reset(new Detail(_props));
 	mDetail.reset(new Detail(_props));
 }
 
@@ -1143,7 +1045,6 @@ bool CCNPPI::validateOutputPins()
 	framemetadata_sp metadata = getFirstOutputMetadata();
 	mOutputFrameType = metadata->getFrameType();
 
-
 	if (mOutputFrameType != FrameMetadata::RAW_IMAGE && mOutputFrameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << mOutputFrameType << ">";
@@ -1156,7 +1057,6 @@ bool CCNPPI::validateOutputPins()
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
 		return false;
 	}
-	}
 
 	return true;
 }
@@ -1166,8 +1066,6 @@ void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
 	Module::addInputPin(metadata, pinId);
 
 	mInputFrameType = metadata->getFrameType();
-	switch (mProps.imageType)
-	{
 	switch (mProps.imageType)
 	{
 	case ImageMetadata::MONO:
@@ -1180,8 +1078,6 @@ void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
 		break;
 	case ImageMetadata::YUV420:
 	case ImageMetadata::YUV444:
-	case ImageMetadata::YUV420:
-	case ImageMetadata::YUV444:
 		mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
 		break;
 	default:
@@ -1189,7 +1085,6 @@ void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
 	}
 
 	mOutputMetadata->copyHint(*metadata.get());
-	mOutputPinId = addOutputPin(mOutputMetadata);
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
@@ -1209,18 +1104,10 @@ bool CCNPPI::term()
 }
 
 bool CCNPPI::process(frame_container& frames)
-bool CCNPPI::process(frame_container& frames)
 {
-	auto frame = frames.cbegin()->second;
 	auto frame = frames.cbegin()->second;
 
 	frame_sp outFrame;
-	frame_sp intermediateFrame;
-	size_t intermediateFrameSize = NOT_SET_NUM;
-	if (mDetail->intermediateConv)
-	{
-		intermediateFrameSize = (mDetail->srcSize[0].width) * (mDetail->srcSize[0].height) * (mDetail->intermediateChannels);
-	}
 	frame_sp intermediateFrame;
 	size_t intermediateFrameSize = NOT_SET_NUM;
 	if (mDetail->intermediateConv)
@@ -1235,22 +1122,14 @@ bool CCNPPI::process(frame_container& frames)
 			intermediateFrame = makeFrame(intermediateFrameSize);
 		}
 		if (!mDetail->execute(frame, outFrame, intermediateFrame))
-		if (mDetail->intermediateConv)
-		{
-			intermediateFrame = makeFrame(intermediateFrameSize);
-		}
-		if (!mDetail->execute(frame, outFrame, intermediateFrame))
 		{
 			return true;
 		}
-	}
 	}
 	else
 	{
 		outFrame = frame;
 	}
-	
-	intermediateFrame.reset();
 	
 	intermediateFrame.reset();
 	frames.insert(make_pair(mOutputPinId, outFrame));
@@ -1261,8 +1140,6 @@ bool CCNPPI::process(frame_container& frames)
 
 bool CCNPPI::processSOS(frame_sp& frame)
 {
-bool CCNPPI::processSOS(frame_sp& frame)
-{
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);
 	return true;
@@ -1270,16 +1147,11 @@ bool CCNPPI::processSOS(frame_sp& frame)
 
 void CCNPPI::setMetadata(framemetadata_sp& metadata)
 {
-{
 	mInputFrameType = metadata->getFrameType();
-
 
 	int width = NOT_SET_NUM;
 	int height = NOT_SET_NUM;
 	int type = NOT_SET_NUM;
-	int depth = NOT_SET_NUM;
-	ImageMetadata::ImageType inputImageType;
-	ImageMetadata::ImageType outputImageType;
 	int depth = NOT_SET_NUM;
 	ImageMetadata::ImageType inputImageType;
 	ImageMetadata::ImageType outputImageType;
@@ -1298,13 +1170,11 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
 		width = rawMetadata->getWidth(0);
 		height = rawMetadata->getHeight(0);
-		height = rawMetadata->getHeight(0);
 		depth = rawMetadata->getDepth();
 		inputImageType = rawMetadata->getImageType();
 	}
 
 	mNoChange = false;
-	if (inputImageType == mProps.imageType)
 	if (inputImageType == mProps.imageType)
 	{
 		mNoChange = true;
@@ -1315,38 +1185,14 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		RawImageMetadata outputMetadata(width, height, mProps.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
-		RawImageMetadata outputMetadata(width, height, mProps.imageType, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
 		rawOutMetadata->setData(outputMetadata);
-		outputImageType = rawOutMetadata->getImageType();
 		outputImageType = rawOutMetadata->getImageType();
 	}
 	else if (mOutputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 		RawImagePlanarMetadata outputMetadata(width, height, mProps.imageType, 512, depth);
-		RawImagePlanarMetadata outputMetadata(width, height, mProps.imageType, 512, depth);
 		rawOutMetadata->setData(outputMetadata);
-		outputImageType = rawOutMetadata->getImageType();
-	}
-
-	mDetail->setConvMatrix();
-	if (mDetail->convmatrix[inputImageType][outputImageType][0] == -1 && mDetail->convmatrix[inputImageType][outputImageType][1] == -1)
-	{
-		throw AIPException(AIP_FATAL, "conversion not supported");
-	}
-
-	mIntermediateMetadata = nullptr;
-
-	if (inputImageType == ImageMetadata::NV12)
-	{
-		if ((outputImageType == ImageMetadata::BGRA) || (outputImageType == ImageMetadata::RGBA))
-		{
-			mDetail->intermediateConv = true;
-			mIntermediateMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
-			auto mrawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mIntermediateMetadata);
-			RawImageMetadata moutputMetadata(width, height, ImageMetadata::RGB, CV_8UC3, 512, depth, FrameMetadata::CUDA_DEVICE, true);
-			mrawOutMetadata->setData(moutputMetadata);
-		}
 		outputImageType = rawOutMetadata->getImageType();
 	}
 
@@ -1371,7 +1217,6 @@ void CCNPPI::setMetadata(framemetadata_sp& metadata)
 	}
 
 	mFrameLength = mOutputMetadata->getDataSize();
-	mDetail->setMetadata(metadata, mOutputMetadata, mIntermediateMetadata);
 	mDetail->setMetadata(metadata, mOutputMetadata, mIntermediateMetadata);
 }
 
