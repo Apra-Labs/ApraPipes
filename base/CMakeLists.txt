@@ -260,6 +260,7 @@ SET(IP_FILES
 	src/ImageViewerModule.cpp
 	src/BMPConverter.cpp
 	src/ImageResizeCV.cpp
+	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
 	src/BrightnessContrastControlXform.cpp
@@ -290,6 +291,7 @@ SET(IP_FILES_H
 	include/ImageDecoderCV.h
 	include/BMPConverter.h
 	include/ImageResizeCV.h
+	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
 	include/BrightnessContrastControlXform.h
@@ -480,6 +482,7 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
+		test/ccnppi_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -488,7 +491,6 @@ IF (ENABLE_CUDA)
 			test/jpegdecodernvjpeg_tests.cpp			
 			test/resizenppi_jpegencodernvjpeg_tests.cpp
 			test/nvjpeg_combo_tests.cpp			
-			test/ccnppi_tests.cpp
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
 			test/h264Encodernvcodec_tests.cpp
@@ -522,6 +524,7 @@ SET(UT_FILES
 	test/findexstrategy_tests.cpp	
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
+	test/faciallandmarkscv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
 	test/brightness_contrast_tests.cpp

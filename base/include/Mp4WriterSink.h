@@ -9,11 +9,12 @@ class DetailH264;
 class Mp4WriterSinkProps : public ModuleProps
 {
 public:
-	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true) : ModuleProps()
+	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder, bool _recordedTSBasedDTS = true,  bool _enableMetadata = true) : ModuleProps()
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
 		recordedTSBasedDTS = _recordedTSBasedDTS;
+		enableMetadata = _enableMetadata;
 		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
@@ -39,6 +40,7 @@ public:
 		syncTimeInSecs = 1;
 		fps = 30;
 		recordedTSBasedDTS = true;
+		enableMetadata = true;
 	}
 
 	size_t getSerializeSize()
@@ -48,7 +50,8 @@ public:
 			sizeof(baseFolder) +
 			sizeof(chunkTime) +
 			sizeof(syncTimeInSecs) +
-			sizeof(fps);
+			sizeof(fps) +
+			sizeof(enableMetadata);;
 	}
 
 	std::string baseFolder;
@@ -56,6 +59,7 @@ public:
 	uint32_t syncTimeInSecs = 1;
 	uint16_t fps = 30;
 	bool recordedTSBasedDTS = true;
+	bool enableMetadata = true;
 private:
 	friend class boost::serialization::access;
 
@@ -68,6 +72,7 @@ private:
 		ar &chunkTime;
 		ar &syncTimeInSecs;
 		ar &fps;
+		ar &enableMetadata;
 	}
 };
 
@@ -89,6 +94,8 @@ protected:
 	bool setMetadata(framemetadata_sp &inputMetadata);
 	bool handlePropsChange(frame_sp &frame);
 	bool shouldTriggerSOS();
+	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
 	boost::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;
 

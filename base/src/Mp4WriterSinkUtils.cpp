@@ -36,9 +36,15 @@ std::string Mp4WriterSinkUtils::format_2(int &num)
 	}
 }
 
-std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::string mp4FileName, std::string baseFolder)
+std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::string mp4FileName, std::string baseFolder, uint64_t chunkTimeInMinutes)
 {
 	boost::filesystem::path finalPath;
+	std::string mp4VideoPath;
+	if (customNamedFileDirCheck(baseFolder, chunkTimeInMinutes, relPath, mp4VideoPath))
+	{
+		return mp4VideoPath;
+	}
+	
 	auto folderPath = boost::filesystem::path(baseFolder) / relPath;
 	if (boost::filesystem::is_directory(folderPath))
 	{
@@ -121,11 +127,11 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 
 	// used cached values if the difference in ts is less than chunkTime
 	uint32_t chunkTimeInSecs = 60 * chunkTimeInMinutes;
-	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder && chunkTimeInMinutes != UINT32_MAX)
+	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
-		nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
+		nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 		return;
 	}
 
@@ -144,7 +150,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 
 	lastVideoName = mp4FileName;
 	
-	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
+	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 }
 void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath, 
 	std::string& mp4FileName, bool& syncFlag, short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName)
@@ -169,15 +175,15 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	}
 	// used cached values if the difference in ts is less than chunkTime
 	uint32_t chunkTimeInSecs = 60 * chunkTimeInMinutes;
-	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder && chunkTimeInMinutes != UINT32_MAX)
+	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder)// && chunkTimeInMinutes != UINT32_MAX
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
-		nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
+		nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 		return;
 	}
 	// cannot be merged with if condition above.
-	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE && chunkTimeInMinutes != UINT32_MAX)
+	if (naluType != H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		relPath = lastVideoFolderPath;
 		mp4FileName = lastVideoName;
@@ -200,7 +206,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	lastVideoName = mp4FileName;
 	lastVideoFolderPath = relPath;
 
-	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder);
+	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 	tempNextFrameFileName = nextFrameFileName;
 }
 
