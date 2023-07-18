@@ -193,7 +193,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 					drawingOverlay.add(&compositeOverlay);
 					auto serializedSize = drawingOverlay.mGetSerializeSize();
 					outFrame = makeFrameWithPinId(serializedSize, motionVectorPinId);
-					memcpy(outFrame->data(), sideData->data, sideData->size);
+					memcpy(outFrame->data(), sideData->data, serializedSize);
 					drawingOverlay.serialize(outFrame);
 					frames.insert(make_pair(motionVectorPinId, outFrame));
 				}
