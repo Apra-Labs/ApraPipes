@@ -191,8 +191,8 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 				{
 					DrawingOverlay drawingOverlay;
 					drawingOverlay.add(&compositeOverlay);
-
-					outFrame = makeFrameWithPinId(sideData->size, motionVectorPinId);
+					auto serializedSize = drawingOverlay.mGetSerializeSize();
+					outFrame = makeFrameWithPinId(serializedSize, motionVectorPinId);
 					memcpy(outFrame->data(), sideData->data, sideData->size);
 					drawingOverlay.serialize(outFrame);
 					frames.insert(make_pair(motionVectorPinId, outFrame));
@@ -284,7 +284,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		{
 			DrawingOverlay drawingOverlay;
 			drawingOverlay.add(&compositeOverlay);
-			auto mvSize = static_cast<size_t>(mMotionVectorSize);
+			auto mvSize = drawingOverlay.mGetSerializeSize();
 			outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
 			drawingOverlay.serialize(outFrame);
 			frames.insert(make_pair(motionVectorPinId, outFrame));
