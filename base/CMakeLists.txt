@@ -259,6 +259,7 @@ SET(IP_FILES
 	src/ImageViewerModule.cpp
 	src/BMPConverter.cpp
 	src/ImageResizeCV.cpp
+	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
 	src/BrightnessContrastControlXform.cpp
@@ -288,6 +289,7 @@ SET(IP_FILES_H
 	include/ImageDecoderCV.h
 	include/BMPConverter.h
 	include/ImageResizeCV.h
+	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
 	include/BrightnessContrastControlXform.h
@@ -520,6 +522,7 @@ SET(UT_FILES
 	test/findexstrategy_tests.cpp	
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
+	test/faciallandmarkscv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
 	test/brightness_contrast_tests.cpp

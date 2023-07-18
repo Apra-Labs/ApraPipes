@@ -23,6 +23,11 @@ public:
 
 	}
 
+	ApraPoint2f(cv::Point2f &point) : cv::Point2f(point)
+	{
+
+	}
+
 private:
 	friend class boost::serialization::access;
 
