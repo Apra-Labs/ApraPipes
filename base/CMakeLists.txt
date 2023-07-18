@@ -546,6 +546,7 @@ SET(UT_FILES
    test/mp4readersource_tests.cpp
    test/rtsp_client_tests.cpp
    test/rtsp_client_tests.cpp
+	test/motionvector_extractor_and_overlay_tests.cpp
    test/baresip_webrtc_tests.cpp
    test/baresipvideosink_tests.cpp
    ${ARM64_UT_FILES}
@@ -563,11 +564,11 @@ ENDIF(ENABLE_LINUX)
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
-   target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+   target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
-   target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
 
