@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE(read_mul_write_one_as_recorded)
 {
 	// two videos (19sec, 60 sec) with 101sec time gap
 	// writes a 79 sec video
-	std::string videoPath = "data/mp4_videos/h264_videos_dts_test/20221010/0012/1668001826042.mp4";
+	std::string videoPath = "data/Mp4_videos/h264_videos_dts_test/20221010/0012/1668001826042.mp4";
 	std::string outPath = "data/testOutput/file_as_rec.mp4";
 	bool parseFS = true;
 

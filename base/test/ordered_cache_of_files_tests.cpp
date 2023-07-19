@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(fsParseExactMatch)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(fwdBasic_FileOpen_QueryHole)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(bwd_BasicFileOpen_QueryHole)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(biDirectional_BasicFileOpen_QueryMidFile)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_queryBeforeCache)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 100);
 	uint64_t skipMsecs = 0;
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(fwdEOFDetection)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(bwdEOFDetection_getNextFileAfter)
 {
 	LoggerSetup setup;
 	DiskFiles diskFiles;
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_query_mid_file)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	bool direction = true;
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_query_mid_file)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	bool direction = false;
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_queryhole)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	cof.parseFiles(102, true); // only first two files are now in cache
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC_green)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOC_green)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOC)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 3, 3);
 	cof.parseFiles(102, true);
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOF)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 3, 100, 1000);
 	cof.parseFiles(102, true);
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOF)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 100);
 	uint64_t skipMsecs = 0;
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE(dropstrategy_fwd)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(dropstrategy_bwd)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
@@ -542,7 +542,7 @@ BOOST_AUTO_TEST_CASE(skipTS_exact_match_with_fileName)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
@@ -565,7 +565,7 @@ BOOST_AUTO_TEST_CASE(get_start_end)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 8;
 	uint32_t lowerWaterMark = 10;
@@ -603,7 +603,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_prevFile)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 3;
 	uint32_t lowerWaterMark = 4;
@@ -627,7 +627,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_exactMatch)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 4;
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE(fwd_seek_trig_parse_hole_check)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 5;
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE(bwd_seek_trig_parse_hole_check)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 5;
@@ -736,7 +736,7 @@ BOOST_AUTO_TEST_CASE(randomSeek_trig_drop)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 3;
@@ -779,7 +779,7 @@ BOOST_AUTO_TEST_CASE(cache_refresh)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 
-	std::string dir = "data\\Mp4_videos\\mp4_seek_tests";
+	std::string dir = "data/Mp4_videos/mp4_seek_tests";
 	dir = boost::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;

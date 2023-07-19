@@ -69,7 +69,7 @@ public:
 		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled);
 	}
 
-	std::string skipDir = "./data/mp4_videos";
+	std::string skipDir = "./data/Mp4_videos";
 	std::string videoPath = "";
 	size_t biggerFrameSize = 600000;
 	size_t biggerMetadataFrameSize = 60000;

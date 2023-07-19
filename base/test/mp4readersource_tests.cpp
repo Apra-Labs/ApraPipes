@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_waits_when_no_video_and_reads_whenever_video_is_w
 
 BOOST_AUTO_TEST_CASE(check_exposed_params)
 {
-	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
+	std::string startingVideoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895162221.mp4";
 	bool parseFS = true;
 
 	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, 0, true, false, false);
@@ -489,7 +489,7 @@ BOOST_AUTO_TEST_CASE(check_exposed_params)
 
 BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 {
-	std::string startingVideoPath = "data/mp4_video/mp4_seek_tests/20220522/0016/1655895162221.mp4";
+	std::string startingVideoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895162221.mp4";
 	int width = 22, height = 30;
 	bool parseFS = true;
 
