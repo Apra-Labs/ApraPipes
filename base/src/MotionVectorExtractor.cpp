@@ -13,6 +13,8 @@ extern "C"
 #include "H264Metadata.h"
 #include "H264ParserUtils.h"
 #include "Utils.h"
+#include "Overlay.h"
+
 class MvExtractDetailAbs
 {
 public:
@@ -21,6 +23,7 @@ public:
 		makeFrameWithPinId = _makeFrameWithPinId;
 		makeframe = _makeframe;
 		sendDecodedFrame = props.sendDecodedFrame;
+		threshold = props.motionVectorThreshold;
 	};
 	~MvExtractDetailAbs()
 	{
@@ -39,6 +42,7 @@ public:
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
 	bool sendDecodedFrame = false;
+	int threshold;
 	cv::Mat bgrImg;
 };
 class DetailFfmpeg : public MvExtractDetailAbs
@@ -159,9 +163,40 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 			sideData = av_frame_get_side_data(avFrame, AV_FRAME_DATA_MOTION_VECTORS);
 			if (sideData)
 			{
-				const AVMotionVector* motionVectors = (const AVMotionVector*)sideData->data;
-				outFrame = makeFrameWithPinId(sideData->size, motionVectorPinId);
-				memcpy(outFrame->data(), motionVectors, sideData->size);
+				std::vector<LineOverlay> lineOverlays;
+				CompositeOverlay compositeOverlay;
+
+				const AVMotionVector* mvs = (const AVMotionVector*)sideData->data;
+				for (int i = 0; i < sideData->size / sizeof(*mvs); i++)
+				{
+					const AVMotionVector* mv = &mvs[i];
+
+					if (std::abs(mv->motion_x) > threshold || std::abs(mv->motion_y) > threshold)
+					{
+						LineOverlay lineOverlay;
+						lineOverlay.x1 = mv->src_x;
+						lineOverlay.y1 = mv->src_y;
+						lineOverlay.x2 = mv->dst_x;
+						lineOverlay.y2 = mv->dst_y;
+
+						lineOverlays.push_back(lineOverlay);
+					}
+				}
+
+				for (auto& lineOverlay : lineOverlays) {
+					compositeOverlay.add(&lineOverlay);
+				}
+
+				if (lineOverlays.size())
+				{
+					DrawingOverlay drawingOverlay;
+					drawingOverlay.add(&compositeOverlay);
+
+					outFrame = makeFrameWithPinId(sideData->size, motionVectorPinId);
+					memcpy(outFrame->data(), sideData->data, sideData->size);
+					drawingOverlay.serialize(outFrame);
+					frames.insert(make_pair(motionVectorPinId, outFrame));
+				}
 			}
 			else
 			{
@@ -223,8 +258,37 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 
 	if (mMotionVectorSize != mWidth * mHeight * 8)
 	{
-		size_t mvSize = static_cast<size_t>(mMotionVectorSize);
-		outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
+		std::vector<CircleOverlay> circleOverlays;
+		CompositeOverlay compositeOverlay;
+
+		for (int i = 0; i < mMotionVectorSize; i += 4)
+		{
+			auto motionX = mMotionVectorData[i];
+			auto motionY = mMotionVectorData[i + 1];
+			if (abs(motionX) > threshold || abs(motionY) > threshold)
+			{
+				CircleOverlay circleOverlay;
+				circleOverlay.x1 = mMotionVectorData[i + 2];
+				circleOverlay.y1 = mMotionVectorData[i + 3];
+				circleOverlay.radius = 1;
+
+				circleOverlays.push_back(circleOverlay);
+			}
+		}
+
+		for (auto& circleOverlay : circleOverlays) {
+			compositeOverlay.add(&circleOverlay);
+		}
+
+		if (circleOverlays.size())
+		{
+			DrawingOverlay drawingOverlay;
+			drawingOverlay.add(&compositeOverlay);
+			auto mvSize = static_cast<size_t>(mMotionVectorSize);
+			outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
+			drawingOverlay.serialize(outFrame);
+			frames.insert(make_pair(motionVectorPinId, outFrame));
+		}
 	}
 
 	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
@@ -258,10 +322,10 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 	{
 		mDetail.reset(new DetailOpenH264(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
 	}
-	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::MOTION_VECTOR_DATA));
+	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
-	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
 	mDetail->motionVectorPinId = addOutputPin(motionVectorOutputMetadata);
+	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
 }
 bool MotionVectorExtractor::init()
 {
@@ -301,7 +365,7 @@ bool MotionVectorExtractor::validateOutputPins()
 	BOOST_FOREACH(me, framefactoryByPin)
 	{
 		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
-		if (frameType != FrameMetadata::MOTION_VECTOR_DATA && frameType != FrameMetadata::RAW_IMAGE)
+		if (frameType != FrameMetadata::OVERLAY_INFO_IMAGE && frameType != FrameMetadata::RAW_IMAGE)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MOTION_VECTOR_DATA or RAW_IMAGE. Actual<" << frameType << ">";
 			return false;
@@ -318,7 +382,6 @@ bool MotionVectorExtractor::process(frame_container& frames)
 	frame_sp motionVectorFrame;
 	frame_sp decodedFrame;
 	mDetail->getMotionVectors(frames, motionVectorFrame, decodedFrame);
-	frames.insert(make_pair(mDetail->motionVectorPinId, motionVectorFrame));
 	send(frames);
 	return true;
 }
