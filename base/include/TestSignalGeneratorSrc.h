@@ -42,6 +42,7 @@ protected:
     void setMetadata(framemetadata_sp &metadata);
     bool handlePropsChange(frame_sp &frame);
 
+
 private:
     class Detail;
     boost::shared_ptr<Detail> mDetail;
