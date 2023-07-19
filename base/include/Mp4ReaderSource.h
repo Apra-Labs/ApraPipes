@@ -13,7 +13,6 @@ public:
 	{
 
 	}
-	// todo - remove this constructor (done)
 
 	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
 	{
@@ -59,7 +58,6 @@ public:
 
 	}
 
-	// todo - integrate this methdo from ecs code (done)
 	void setMaxFrameSizes(size_t _maxImgFrameSize, size_t _maxMetadataFrameSize)
 	{
 		biggerFrameSize = _maxImgFrameSize;
@@ -116,15 +114,13 @@ public:
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool changePlayback(float speed, bool direction);
 	bool getVideoRangeFromCache(std::string videoPath, uint64_t& start_ts, uint64_t& end_ts);
-	bool randomSeek(uint64_t seekStartTS);
 	bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen);
 	bool refreshCache();
 	std::map<std::string, std::pair<uint64_t, uint64_t>> getCacheSnapShot(); // to be used for debugging only
-	// todo - add these methods' definition (done)
 	double getOpenVideoFPS();
 	double getOpenVideoDurationInSecs();
 	int32_t getOpenVideoFrameCount();
-	void getResolution(uint32_t &width, uint32_t &height)
+	void getResolution(uint32_t& width, uint32_t& height)
 	{
 		width = mWidth;
 		height = mHeight;

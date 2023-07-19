@@ -160,6 +160,7 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
+	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 )
 
@@ -220,6 +221,7 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
+	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 )
 
