@@ -5,12 +5,15 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
+#include "H264Metadata.h"
 #include "AIPExceptions.h"
 
 H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM, "H264EncoderV4L2", props), mProps(props)
 {
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
-	mOutputPinId = addOutputPin(mOutputMetadata);
+	mOutputMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
+	h264FrameOutputPinId = addOutputPin(mOutputMetadata);
+	motionVectorFramePinId = addOutputPin(motionVectorOutputMetadata);
 }
 
 H264EncoderV4L2::~H264EncoderV4L2() 
@@ -55,15 +58,15 @@ bool H264EncoderV4L2::validateInputPins()
 
 bool H264EncoderV4L2::validateOutputPins()
 {
-	if (getNumberOfOutputPins() != 1)
-	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
-		return false;
-	}
+	// if (getNumberOfOutputPins() != 1)
+	// {
+	// 	LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+	// 	return false;
+	// }
 
 	framemetadata_sp metadata = getFirstOutputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::H264_DATA)
+	if (frameType != FrameMetadata::H264_DATA && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
 		return false;
@@ -144,12 +147,18 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		v4l2MemType = V4L2_MEMORY_DMABUF;
 	}
 
-	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, 30, [&](frame_sp &frame) -> void {
-		frame->setMetadata(mOutputMetadata);
-
-		frame_container frames;
-		frames.insert(make_pair(mOutputPinId, frame));
-		send(frames);
+	auto h264OutMetadata = framemetadata_sp(new H264Metadata(width, height));
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(h264OutMetadata);
+	h264Metadata->setData(*h264Metadata);
+	Module::setMetadata(h264FrameOutputPinId, h264OutMetadata);
+	
+	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, mProps.enableMotionVectors, mProps.motionVectorThreshold, 30,h264FrameOutputPinId, motionVectorFramePinId, h264OutMetadata,
+	[&](size_t size, string& pinId)
+	{ return makeFrame(size, pinId); },
+	[&](frame_sp& frame, size_t& size, string& pinId)
+	{ return makeFrame(frame, size, pinId); },
+	[&](frame_container &frameContainer) -> void {
+		send(frameContainer);
 	});
 
 	return true;

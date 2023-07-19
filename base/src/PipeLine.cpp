@@ -230,7 +230,9 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
+		LOG_ERROR << "Thread joining" << m.myName << endl;
 		m.myThread.join();
+		LOG_ERROR << "Thread joined" << m.myName << endl;
 	}
 }
 

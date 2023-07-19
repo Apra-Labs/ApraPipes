@@ -1,7 +1,7 @@
 #include <cstdint>
 #include "opencv2/opencv.hpp"
 #include <boost/foreach.hpp>
-#include "OverlayModule.h"
+#include "OverlayModuleDec.h"
 #include "Utils.h"
 #include "FrameContainerQueue.h"
 #include "RawImageMetadata.h"
@@ -9,9 +9,9 @@
 #include "CudaCommon.h"
 #include "DMAFDWrapper.h"
 
-OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "OverlayModule", _props) {}
+OverlayModuleDec::OverlayModuleDec(OverlayModuleDecProps _props) : Module(TRANSFORM, "OverlayModuleDec", _props) {}
 
-void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
+void OverlayModuleDec::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
@@ -26,17 +26,17 @@ void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 }
 
 
-bool OverlayModule::init()
+bool OverlayModuleDec::init()
 {
 	return Module::init();
 }
 
-bool OverlayModule::term()
+bool OverlayModuleDec::term()
 {
 	return Module::term();
 }
 
-bool OverlayModule::validateInputPins()
+bool OverlayModuleDec::validateInputPins()
 {
 	pair<string, framemetadata_sp> me; // map element	
 	auto inputMetadataByPin = getInputMetadata();
@@ -52,7 +52,7 @@ bool OverlayModule::validateInputPins()
 	return true;
 }
 
-bool OverlayModule::validateOutputPins()
+bool OverlayModuleDec::validateOutputPins()
 {
 	auto outputMetadata = getFirstOutputMetadata();
 	FrameMetadata::FrameType frameType = outputMetadata->getFrameType();
@@ -64,12 +64,12 @@ bool OverlayModule::validateOutputPins()
 	return true;
 }
 
-bool OverlayModule::shouldTriggerSOS()
+bool OverlayModuleDec::shouldTriggerSOS()
 {
 	return true;
 }
 
-bool OverlayModule::process(frame_container& frames)
+bool OverlayModuleDec::process(frame_container& frames)
 {
 	DrawingOverlay drawOverlay;
 	for (auto it = frames.cbegin(); it != frames.cend(); it++)
@@ -93,13 +93,24 @@ bool OverlayModule::process(frame_container& frames)
 		{
 			//drawOverlay.draw(frame);
 			auto outFrame = makeFrame(); // DMABUF
-
 			auto dstPtr =  static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr(); 
+			
+			auto inputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(1280, 720, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 			drawOverlay.draw(frame);
 
-			auto stream = cudastream_sp(new ApraCudaStream);
+			
+			auto input = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
+			cv::Mat matInputImg =  Utils::getMatHeader(input);
 
-			cudaMemcpyAsync(dstPtr, frame->data(), outFrame->size(), cudaMemcpyHostToDevice, stream->getCudaStream());
+			matInputImg.data = static_cast<uchar*>(frame->data());
+		
+			cv::Mat bgraImg;
+			cv::cvtColor(matInputImg, bgraImg, cv::COLOR_BGR2BGRA);
+			//size_t bgraSize = reinterpret_cast<size_t>(bgraImg.);
+			 auto stream = cudastream_sp(new ApraCudaStream);
+			// void * tempHostPtr = (void*)malloc(outFrame->size()); 
+			cudaMemcpyAsync(dstPtr, bgraImg.data, outFrame->size(), cudaMemcpyHostToDevice, stream->getCudaStream());
+			//
 			frame_container overlayConatiner;
 			overlayConatiner.insert(make_pair(mOutputPinId, outFrame));
 			send(overlayConatiner);

@@ -147,7 +147,7 @@ public:
      * Refer to [V4L2 Video Decoder](group__V4L2Dec.html) for more information on the decoder.
      */
     h264DecoderV4L2Helper() {}
-    ~h264DecoderV4L2Helper(); //
+    ~h264DecoderV4L2Helper() {}; //
     typedef struct
     {
         uint32_t decode_pixfmt;
@@ -384,6 +384,8 @@ public:
     int process(frame_sp inputFrame);
 
     bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+
+    void closeAllThreads(frame_sp eosFrame);
 
 protected:
     boost::shared_ptr<Buffer> mBuffer;

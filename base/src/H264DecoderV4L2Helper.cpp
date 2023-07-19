@@ -1385,13 +1385,17 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
     }
     return true;
 }
-h264DecoderV4L2Helper::~h264DecoderV4L2Helper() 
+
+void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
 {
+    process(eosFrame);
     if (ctx.fd != -1)
     {
         if (ctx.dec_capture_thread)
         {
+            LOG_ERROR << "joing";
             pthread_join(ctx.dec_capture_thread, NULL);
+            LOG_ERROR << "joined";
         }
  
         // All the allocated DMA buffers must be destroyed.

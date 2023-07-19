@@ -1,4 +1,3 @@
-#pragma once
 #include "Overlay.h"
 #include "OverlayFactory.h"
 
@@ -20,7 +19,7 @@ void CircleOverlay::deserialize(boost::archive::binary_iarchive& ia)
 void CircleOverlay::draw(cv::Mat matImg)
 {
 	cv::Point p(x1, y1);
-	circle(matImg, p, radius, cv::Scalar(255, 200, 0), 2);
+	circle(matImg, p, radius, cv::Scalar(0, 0, 255), 2);
 };
 
 void LineOverlay::serialize(boost::archive::binary_oarchive& oa)

@@ -7,12 +7,15 @@ class H264EncoderV4L2Helper;
 class H264EncoderV4L2Props : public ModuleProps
 {
 public:
-	H264EncoderV4L2Props(): targetKbps(1024)
+	H264EncoderV4L2Props(bool _enableMotionVectors = false, int _motionVectorThreshold = 5): targetKbps(1024)
 	{
-		
+		enableMotionVectors = _enableMotionVectors;
+		motionVectorThreshold = _motionVectorThreshold;
 	}
 
 	uint32_t targetKbps;
+	bool enableMotionVectors = false;
+	int motionVectorThreshold = 5;
 };
 
 class H264EncoderV4L2 : public Module
@@ -31,11 +34,11 @@ protected:
 	bool validateOutputPins();
 	bool shouldTriggerSOS();
 	bool processEOS(string& pinId);
-
 private:
 	std::shared_ptr<H264EncoderV4L2Helper> mHelper;
 
 	H264EncoderV4L2Props mProps;
 	framemetadata_sp mOutputMetadata;
-	std::string mOutputPinId;
+	std::string motionVectorFramePinId;
+	std::string h264FrameOutputPinId;
 };

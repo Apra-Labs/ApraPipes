@@ -13,6 +13,9 @@
 #include "Logger.h"
 #include "RTSPClientSrc.h"
 #include "OverlayModule.h"
+#include "OverlayModuleDec.h"
+#include "EglRenderer.h"
+#include "DMAFDToHostCopy.h"
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
 
@@ -189,6 +192,9 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 
 void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
+	auto argValue = Test_Utils::getArgValue("n", "2");
+	auto thresholdpipe = atoi(argValue.c_str());
+
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
@@ -196,29 +202,24 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 
 	rtsp_client_tests_data d;
 
-	bool overlayFrames = false;
-	const std::string url = "";
+	bool overlayFrames = true;
+	const std::string url = "rtsp://evo-dev-apra.blub0xSecurity.com:5544/330db66b-18d9-434e-94f6-cb2d65e8837e";
 	std::string username = "";
 	std::string password = "";
 	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	rtspSrc->addOutputPin(meta);
-
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames, thresholdpipe)));
 	rtspSrc->setNext(motionExtractor);
-
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = boost::shared_ptr<OverlayModuleDec>(new OverlayModuleDec(OverlayModuleDecProps()));
 	motionExtractor->setNext(overlay);
-
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
-	overlay->setNext(sink);
-
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	overlay->setNext(sink);	
 	PipeLine p("test");
 	p.appendModule(rtspSrc);
 	p.init();
-
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -270,5 +271,4 @@ BOOST_AUTO_TEST_CASE(rtspcam_extract_motion_vectors_and_overlay_render_openh264,
 {
 	rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264);
 }
-
 BOOST_AUTO_TEST_SUITE_END()

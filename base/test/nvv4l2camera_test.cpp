@@ -7,7 +7,12 @@
 #include "FileWriterModule.h"
 #include "DMAFDToHostCopy.h"
 #include "StatSink.h"
+#include "H264EncoderV4L2.h"
+#include "OverlayModule.h"
+#include "FramesMuxer.h"
 #include "EglRenderer.h"
+#include "Mp4WriterSink.h"
+#include "test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(nvv4l2camera_tests)
 
@@ -112,4 +117,59 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(meetup, *boost::unit_test::disabled())
+{
+
+	auto argValue = Test_Utils::getArgValue("n", "25");
+	auto thresholdpipe = atoi(argValue.c_str());
+
+	LOG_ERROR << "Using Threshold as " << thresholdpipe; 
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(1280, 720, 2)));
+
+	auto transform1 = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	source->setNext(transform1);
+
+	auto transform2 = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::BGRA)));
+	source->setNext(transform2);
+
+	H264EncoderV4L2Props encoderProps;
+	encoderProps.targetKbps = 1024;
+	encoderProps.enableMotionVectors = true;
+	encoderProps.motionVectorThreshold = thresholdpipe;
+	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	transform1->setNext(encoder);
+
+	std::vector<std::string> encodedImagePin;
+	encodedImagePin = encoder->getAllOutputPinsByType(FrameMetadata::H264_DATA);
+
+	auto copySource2 = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	transform2->setNext(copySource2);
+
+	auto muxer = boost::shared_ptr<Module>(new FramesMuxer());
+	encoder->setNext(muxer);
+	copySource2->setNext(muxer);
+
+	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	muxer->setNext(overlay);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	overlay->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5000000));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+
+}
 BOOST_AUTO_TEST_SUITE_END()

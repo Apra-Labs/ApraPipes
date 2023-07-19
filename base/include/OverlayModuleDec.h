@@ -4,10 +4,10 @@
 
 using namespace std;
 
-class OverlayModuleProps : public ModuleProps
+class OverlayModuleDecProps : public ModuleProps
 {
 public:
-	OverlayModuleProps() : ModuleProps() {}
+	OverlayModuleDecProps() : ModuleProps() {}
 
 	size_t getSerializeSize()
 	{
@@ -17,11 +17,11 @@ public:
 
 class OverlayCommand;
 
-class  OverlayModule : public Module
+class  OverlayModuleDec : public Module
 {
 public:
-	OverlayModule(OverlayModuleProps _props);
-	virtual ~OverlayModule() {};
+	OverlayModuleDec(OverlayModuleDecProps _props);
+	virtual ~OverlayModuleDec() {};
 	bool init();
 	bool term();
 protected:

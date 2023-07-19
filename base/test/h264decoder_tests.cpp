@@ -9,6 +9,7 @@
 #include "ExternalSinkModule.h"
 #include "H264Metadata.h"
 #include "Mp4ReaderSource.h"
+#include "RTSPClientSrc.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
 #ifdef ARM64
@@ -21,6 +22,17 @@
 
 BOOST_AUTO_TEST_SUITE(h264decoder_tests)
 
+struct rtsp_client_tests_data {
+	rtsp_client_tests_data()
+	{
+		outFile = string("./data/testOutput/bunny.h264");
+		Test_Utils::FileCleaner fc;
+		fc.pathsOfFiles.push_back(outFile); //clear any occurance before starting the tests
+	}
+	string outFile;
+	string empty;
+};
+
 #ifdef ARM64
 
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled())
@@ -29,7 +41,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 
 	// metadata is known
 	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, true);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	mp4Reader->addOutPutPin(h264ImageMetadata);
@@ -56,7 +68,13 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(15);
+	Test_Utils::sleep_for_seconds(20);
+
+	std::string changedVideoPath =  "./data/Mp4_videos/h264_video_metadata/20221009/0019/1668001826042.mp4";
+	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
+	mp4Reader->setProps(propsChange);
+
+	Test_Utils::sleep_for_seconds(20);
 
 	p->stop();
 	p->term();
@@ -97,7 +115,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(15);
+	Test_Utils::sleep_for_seconds(1);
 
 	p->stop();
 	p->term();

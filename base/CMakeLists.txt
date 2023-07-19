@@ -57,7 +57,7 @@ message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
 list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
-
+find_library(JPEG_8LIB NAMES libjpeg.so.8 PATHS /usr/lib/aarch64-linux-gnu/ REQUIRED)
 IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
 	pkg_check_modules(gobject-2.0 REQUIRED IMPORTED_TARGET GLOBAL gobject-2.0)  
@@ -107,7 +107,7 @@ IF(ENABLE_CUDA)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		find_library(NV	LIB_L4T nvjpeg REQUIRED)
 		find_library(V4L2LIB nvv4l2 REQUIRED)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
@@ -198,6 +198,7 @@ SET(CORE_FILES
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
+	src/OverlayModuleDec.cpp
 )
 
 SET(CORE_FILES_H
@@ -257,6 +258,7 @@ SET(CORE_FILES_H
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
 	include/OverlayModule.h
+	include/OverlayModuleDec.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -679,13 +681,12 @@ find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-  ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
   ${JETSON_LIBS}
+  ${OpenCV_LIBRARIES}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
@@ -698,6 +699,7 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  ${JPEG_LIBRARIES}
   )
 
 IF(ENABLE_WINDOWS)
