@@ -156,7 +156,6 @@ SET(CORE_FILES
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
-   	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
@@ -217,7 +216,6 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/Mp4ReaderSource.h
-    include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h

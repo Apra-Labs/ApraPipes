@@ -1,7 +1,6 @@
 #include "Mp4ReaderSource.h"
 #include "FrameMetadata.h"
 #include "Mp4VideoMetadata.h"
-#include "Mp4ReaderSourceUtils.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
 #include "Frame.h"
@@ -697,13 +696,10 @@ public:
 		return true;
 	}
 
-	void makeAndSendMp4Error(int errorType, int errorCode, std::string& errorMsg, int openErrorCode, uint64_t _errorMp4TS)
+	void makeAndSendMp4Error(int errorType, int errorCode, std::string errorMsg, int openErrorCode, uint64_t _errorMp4TS)
 	{
 		LOG_ERROR << "makeAndSendMp4Error <" << errorType << "," << errorCode << "," << errorMsg << "," << openErrorCode << "," << _errorMp4TS << ">";
 		frame_sp errorFrame = boost::shared_ptr<Mp4ErrorFrame>(new Mp4ErrorFrame(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS));
-		/*auto serSize = errorFrame.getSerializeSize(errorFrame);
-		frame_sp frame = makeFrame(serSize);*/
-		//Mp4ErrorFrame::serialize(frame->data(), frame->size(), errorFrame);
 		sendMp4ErrorFrame(errorFrame);
 	}
 
