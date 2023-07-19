@@ -2,12 +2,13 @@
 #include "EglRenderer.h"
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
+#include "Command.h"
 
 class EglRenderer::Detail
 {
 
 public:
-	Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height): x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height) {}
+	Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height , bool _displayOnTop): x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height), displayOnTop(_displayOnTop) {}
 
 	~Detail() 
     {
@@ -17,17 +18,17 @@ public:
         }
     }
 
-    bool init(uint32_t _height, uint32_t _width){
+    bool init(uint32_t _height, uint32_t _width , bool _displayOnTop){
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth,displayHeight);
         if(height!=0 && width!=0){
             x_offset += (displayWidth-width)/2;
             y_offset += (displayHeight-height)/2;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset);
+            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset,displayOnTop);
         }else{
             x_offset += (displayWidth-_width)/2;
             y_offset += (displayHeight-_height)/2;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset);
+            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset, displayOnTop);
         }
         if (!renderer)
         {
@@ -38,6 +39,14 @@ public:
         return true;
     }
 
+    bool destroyWindow()
+    {
+        if(renderer)
+        {
+            delete renderer;
+        }
+    }
+
 	bool shouldTriggerSOS()
 	{
 		return !renderer;
@@ -45,11 +54,12 @@ public:
 
 	NvEglRenderer *renderer = nullptr;
     uint32_t x_offset,y_offset,width,height;
+    bool displayOnTop;
 };
 
 EglRenderer::EglRenderer(EglRendererProps props) : Module(SINK, "EglRenderer", props)
 {
-    mDetail.reset(new Detail(props.x_offset,props.y_offset, props.width, props.height));
+    mDetail.reset(new Detail(props.x_offset,props.y_offset, props.width, props.height,props.displayOnTop));
 }
 
 EglRenderer::~EglRenderer() {}
@@ -103,7 +113,7 @@ bool EglRenderer::processSOS(frame_sp& frame)
     auto frameType = inputMetadata->getFrameType();
     int width = 0;
     int height =0;
-
+    
     switch (frameType)
     {
     case FrameMetadata::FrameType::RAW_IMAGE:
@@ -124,7 +134,7 @@ bool EglRenderer::processSOS(frame_sp& frame)
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
 
-    mDetail->init(height, width);
+    mDetail->init(height,width,mDetail->displayOnTop);
 	return true;
 }
 
@@ -132,3 +142,37 @@ bool EglRenderer::shouldTriggerSOS()
 {
 	return mDetail->shouldTriggerSOS();
 }
+
+bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
+{
+    if (type == Command::CommandType::DeleteWindow)
+    {
+        EglRendererCloseWindow cmd;
+        getCommand(cmd, frame);
+        mDetail->destroyWindow();
+        return true;
+    }
+    else if (type == Command::CommandType::CreateWindow)
+    {
+        EglRendererCreateWindow cmd;
+        getCommand(cmd, frame);
+        mDetail->init(cmd.width, cmd.height,mDetail->displayOnTop);
+        return true;
+    }
+    return Module::handleCommand(type, frame);
+}
+
+bool EglRenderer::closeWindow()
+{
+    EglRendererCloseWindow cmd;
+    return queueCommand(cmd);
+}
+
+bool EglRenderer::createWindow(int width, int height)
+{
+    EglRendererCreateWindow cmd;
+    cmd.width = width;
+    cmd.height = height;
+    return queueCommand(cmd);
+}
+
