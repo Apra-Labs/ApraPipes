@@ -95,7 +95,7 @@ public:
      */
     static NvEglRenderer *createEglRenderer(const char *name, uint32_t width,
                                           uint32_t height, uint32_t x_offset,
-                                          uint32_t y_offset);
+                                          uint32_t y_offset , bool displayOnTop);
      ~NvEglRenderer();
 
     /**
@@ -213,7 +213,7 @@ private:
      * Constructor called by the wrapper createEglRenderer.
      */
     NvEglRenderer(const char *name, uint32_t width, uint32_t height,
-                  uint32_t x_offset, uint32_t y_offset);
+                  uint32_t x_offset, uint32_t y_offset , bool displayOnTop);
     /**
      * Gets the pointers to the required EGL methods.
      */
