@@ -74,11 +74,9 @@ public:
 			case FrameMetadata::RAW_IMAGE:
 				mOutputMetadata = framemetadata_sp(new RawImageMetadata(memType));
 				break;
-			}
 			case FrameMetadata::RAW_IMAGE_PLANAR:
 				mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(memType));
 				break;
-			}
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
@@ -248,12 +246,12 @@ public:
 		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
 		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
 
-			if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
+		if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR) // currently only YUV444 is supported
+		{
+			for (auto i = 0; i < channels; i++)
 			{
-				for (auto i = 0; i < channels; i++)
-				{
-					src[i] = bufferNPP + srcNextPtrOffset[i];
-					dst[i] = outBufferNPP + dstNextPtrOffset[i];
+				src[i] = bufferNPP + srcNextPtrOffset[i];
+				dst[i] = outBufferNPP + dstNextPtrOffset[i];
 
 				status = nppiWarpAffine_8u_C1R_Ctx(src[i],
 					srcSize[i],
