@@ -20,10 +20,10 @@
 
 #define PI 3.14159265
 
-class Detail
+class DetailMemoryAbstract
 {
 public:
-	Detail(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
+	DetailMemoryAbstract(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
 	int setInterPolation(AffineTransformProps::Interpolation interpolation)
 	{
 #ifdef APRA_CUDA_ENABLED
@@ -55,7 +55,7 @@ public:
 #endif
 	}
 
-	~Detail() {}
+	~DetailMemoryAbstract() {}
 
 	virtual bool setPtrs() = 0;
 	virtual bool compute() = 0;
@@ -154,13 +154,13 @@ protected:
 	double shiftY;
 };
 
-class DetailGPU : public Detail 
+class DetailGPU : public DetailMemoryAbstract
 {
 public:
-	DetailGPU(AffineTransformProps& _props) : Detail(_props) {}
+	DetailGPU(AffineTransformProps& _props) : DetailMemoryAbstract(_props) {}
 	void mSetMetadata(framemetadata_sp& metadata)
 	{
-		Detail::setMetadata(metadata);
+	    setMetadata(metadata);
 		if (!metadata->isSet())
 		{
 			return;
@@ -386,13 +386,13 @@ public:
 	}
 };
 
-class DetailHost : public Detail
+class DetailHost : public DetailMemoryAbstract
 {
 public:
-	DetailHost(AffineTransformProps& _props) : Detail(_props) {}
+	DetailHost(AffineTransformProps& _props) : DetailMemoryAbstract(_props) {}
 	void mSetMetadata(framemetadata_sp& metadata)
 	{
-		Detail::setMetadata(metadata);
+		setMetadata(metadata);
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
 		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 

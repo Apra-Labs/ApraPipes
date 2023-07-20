@@ -5,7 +5,7 @@
 #include "CudaCommon.h"
 #endif
 
-class Detail;
+class DetailMemoryAbstract;
 class DeatilCUDA;
 class DetailDMA;
 class DetailHost;
@@ -24,13 +24,13 @@ public:
 		CUBIC2P_B05C03,
 		SUPER,
 		LANCZOS,
-		LANCZOS3_ADVANCED,
+		LANCZOS3_ADVANCED
 	};
 
 	enum TransformType
 	{
 		USING_OPENCV = 0,
-		USING_NPPI,
+		USING_NPPI
 	};
 
 	AffineTransformProps(TransformType _type, double _angle, int _x = 0, int _y = 0, double _scale = 1.0)
@@ -111,5 +111,5 @@ protected:
 	bool processEOS(string &pinId);
 	AffineTransformProps mProp;
 	bool handlePropsChange(frame_sp& frame);
-	boost::shared_ptr<Detail> mDetail;
+	boost::shared_ptr<DetailMemoryAbstract> mDetail;
 };
