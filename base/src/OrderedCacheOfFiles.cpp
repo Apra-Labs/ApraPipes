@@ -126,48 +126,79 @@ bool OrderedCacheOfFiles::probe(boost::filesystem::path rootDir, std::string& vi
 	{
 		return false;
 	}
+	std::vector<boost::filesystem::path> dateDir;
+	std::vector<boost::filesystem::path> hourDir;
+	std::vector<boost::filesystem::path> mp4Files;
+	// Note- direction: synced with playback direction
+	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
+	LOG_ERROR << "parsing files from dir <" << *dateDirIter << ">";
 
-	boost::filesystem::recursive_directory_iterator dir(rootDir), end;
-
-	LOG_INFO << "parsing files from dir <" << *dir << ">";
-
-	for (dir; dir != end; ++dir)
+	for (dateDirIter; dateDirIter != dateDirEndIter; ++dateDirIter)
 	{
-		LOG_ERROR << "Checking dir <" << dir->path() << ">";
-		auto path = dir->path();
-		if (boost::filesystem::is_directory(dir->path()))
+		if (fs::is_directory(dateDirIter->path()))
 		{
-			auto parentPath = dir->path().parent_path();
+			auto parentPath = dateDirIter->path().parent_path();
 
 			// potential date folder
-			if (boost::filesystem::equivalent(parentPath, rootDir))
+			if (fs::equivalent(parentPath, rootDir))
 			{
-				if (!datePatternCheck(dir->path()))
+				if (datePatternCheck(dateDirIter->path()))
 				{
-					// skip going inside
-					dir.no_push();
+					dateDir.push_back(dateDirIter->path());
 				}
 			}
-			// potential hour folder
-			else
-			{
-				if (!hourPatternCheck(dir->path()))
-				{
-					// skip going inside
-					dir.no_push();
-				}
-			}
-			// dont add folder paths to relevant files
-			continue;
 		}
 
-		// potential video file
-		if (!filePatternCheck(dir->path()))
+	}
+
+	if (dateDir.size())
+	{
+		std::sort(dateDir.begin(), dateDir.end());
+	}
+
+	for (auto& dateDirPath : dateDir)
+	{
+		fs::directory_iterator hourDirIter(dateDirPath), hourDirEndIter;
+
+		for (hourDirIter; hourDirIter != hourDirEndIter; ++hourDirIter)
 		{
-			continue;
+			if (fs::is_directory(hourDirIter->path()))
+			{
+				// potential hour folder
+				if (hourPatternCheck(hourDirIter->path()))
+				{
+					hourDir.push_back(hourDirIter->path());
+				}
+			}
 		}
+	}
 
-		videoName = dir->path().string();
+	if (hourDir.size())
+	{
+		std::sort(hourDir.begin(), hourDir.end());
+	}
+
+	for (auto& hourDirPath : hourDir)
+	{
+		fs::directory_iterator mp4FileIter(hourDirPath), mp4FileEndIter;
+		// potential video file
+		for (mp4FileIter; mp4FileIter != mp4FileEndIter; ++mp4FileIter)
+		{
+			if (filePatternCheck(mp4FileIter->path()))
+			{
+				mp4Files.push_back(mp4FileIter->path());
+			}
+		}
+	}
+
+	if (mp4Files.size())
+	{
+		std::sort(mp4Files.begin(), mp4Files.end());
+	}
+
+	for(auto& mp4File : mp4Files)
+	{
+		videoName = mp4File.string();
 		return true;
 	}
 	return false;
@@ -579,116 +610,152 @@ void OrderedCacheOfFiles::insertInVideoCache(Video vid)
 	*/
 bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool includeFloorFile, bool disableBatchSizeCheck, uint64_t skipTS)
 {
+	std::vector<boost::filesystem::path> dateDir;
+	std::vector<boost::filesystem::path> hourDir;
+	std::vector<boost::filesystem::path> mp4Files;
 	// Note- direction: synced with playback direction
+	int parsedFilesCount = 0;
 	lastKnownPlaybackDir = direction;
 	bool exactMatchFound = false;
 	uint64_t startTSofRelevantFile = 0;
 	uint64_t startTSofPrevFileOnDisk = 0;
 	boost::filesystem::path previousFileOnDisk = "";
 	boost::filesystem::path exactMatchFile = "";
-	fs::recursive_directory_iterator dir(rootDir), end;
-	LOG_INFO << "parsing files from dir <" << *dir << ">";
+	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
+	LOG_ERROR << "parsing files from dir <" << *dateDirIter << ">";
 
-	uint32_t parsedFilesCount = 0;
-	for (dir; dir != end; ++dir)
+	for (dateDirIter; dateDirIter != dateDirEndIter; ++dateDirIter)
 	{
-		LOG_DEBUG << "Checking dir <" << dir->path() << ">";
-		auto path = dir->path();
-		if (fs::is_directory(dir->path()))
+		if (fs::is_directory(dateDirIter->path()))
 		{
-			auto parentPath = dir->path().parent_path();
+			auto parentPath = dateDirIter->path().parent_path();
 
 			// potential date folder
 			if (fs::equivalent(parentPath, rootDir))
 			{
-				if (!datePatternCheck(dir->path()))
+				if (datePatternCheck(dateDirIter->path()))
 				{
-					// skip going inside
-					dir.no_push();
+					dateDir.push_back(dateDirIter->path());
 				}
 			}
-			// potential hour folder
-			else
+		}
+
+	}
+
+	if (dateDir.size())
+	{
+		std::sort(dateDir.begin(), dateDir.end());
+	}
+
+	for (auto& dateDirPath : dateDir)
+	{
+		if (hourDir.size())
+		{
+			hourDir.clear();
+		}
+		fs::directory_iterator hourDirIter(dateDirPath), hourDirEndIter;
+		for (hourDirIter; hourDirIter != hourDirEndIter; ++hourDirIter)
+		{
+			if (fs::is_directory(hourDirIter->path()))
 			{
-				if (!hourPatternCheck(dir->path()))
+				// potential hour folder
+				if (hourPatternCheck(hourDirIter->path()))
 				{
-					// skip going inside
-					dir.no_push();
+					hourDir.push_back(hourDirIter->path());
 				}
-				else
+			}
+		}
+
+		if (hourDir.size())
+		{
+			std::sort(hourDir.begin(), hourDir.end());
+		}
+		for (auto& hourDirPath : hourDir)
+		{
+			if (!disableBatchSizeCheck && parsedFilesCount >= batchSize)
+			{
+				break; // stop parsing
+			}
+
+			if (mp4Files.size())
+			{
+				mp4Files.clear();
+			}
+
+			fs::directory_iterator mp4FileIter(hourDirPath), mp4FileEndIter;
+			// potential video file
+			for (mp4FileIter; mp4FileIter != mp4FileEndIter; ++mp4FileIter)
+			{
+				if (filePatternCheck(mp4FileIter->path()))
 				{
-					// force batchSize check at hour folder level
-					if (!disableBatchSizeCheck && parsedFilesCount >= batchSize)
+					mp4Files.push_back(mp4FileIter->path());
+				}
+			}
+			if (mp4Files.size())
+			{
+				std::sort(mp4Files.begin(), mp4Files.end());
+			}
+
+			for (auto& mp4File : mp4Files)
+			{
+				// time based filtering
+				// force batchSize check at hour folder level
+
+				uint64_t fileTS = 0;
+				try
+				{
+					fileTS = std::stoull(mp4File.stem().string());
+				}
+				catch (...)
+				{
+					LOG_TRACE << "OrderedCacheOfFiles: Ignoring File <" << mp4File.string() << "> due to timestamp parsing failure.";
+					continue;
+				}
+				if (direction && fileTS < start_ts)
+				{
+					// keep track of prev mp4 file on disk
+					previousFileOnDisk = mp4File.string();
+					startTSofPrevFileOnDisk = fileTS;
+					continue;
+				}
+				else if (!direction && fileTS > start_ts)
+				{
+					continue;
+				}
+				else if (!includeFloorFile && fileTS == start_ts)
+				{
+					exactMatchFound = true;
+					exactMatchFile = mp4File.string();
+					continue;
+				}
+
+				// cache insertion
+				LOG_ERROR << "cache insert: " << mp4File << "\n";
+				Video vid(mp4File.string(), fileTS);
+
+				/* ----- first relevant file found ----- */
+				if (!startTSofRelevantFile)
+				{
+					startTSofRelevantFile = vid.start_ts;
+
+					if (includeFloorFile && !exactMatchFound)
 					{
-						break; // stop parsing
+						// add prev file to cache - handles start_ts lies in middle of prevFileOnDisk in fwd parse.
+						if (!previousFileOnDisk.empty())
+						{
+							startTSofRelevantFile = startTSofPrevFileOnDisk;
+							Video prevVid(previousFileOnDisk.string(), startTSofPrevFileOnDisk);
+							insertInVideoCache(prevVid);
+							++parsedFilesCount;
+						}
 					}
-					// possible bug/TODO: with too many files and disabled batch size check - parsing might take too long/get stuck
 				}
-			}
-			// dont add folder paths to relevant files
-			continue;
-		}
+				/* ----- first relevant file found end ----- */
 
-		// potential video file
-		if (!filePatternCheck(dir->path()))
-		{
-			continue;
-		}
-
-		// time based filtering
-		uint64_t fileTS = 0;
-		try
-		{
-			fileTS = std::stoull(dir->path().stem().string());
-		}
-		catch (...)
-		{
-			LOG_TRACE << "OrderedCacheOfFiles: Ignoring File <" << dir->path() << "> due to timestamp parsing failure.";
-			continue;
-		}
-		if (direction && fileTS < start_ts)
-		{
-			// keep track of prev mp4 file on disk
-			previousFileOnDisk = dir->path();
-			startTSofPrevFileOnDisk = fileTS;
-			continue;
-		}
-		else if (!direction && fileTS > start_ts)
-		{
-			continue;
-		}
-		else if (!includeFloorFile && fileTS == start_ts)
-		{
-			exactMatchFound = true;
-			exactMatchFile = dir->path();
-			continue;
-		}
-
-		// cache insertion
-		LOG_TRACE << "cache insert: " << *dir << "\n";
-		Video vid(dir->path().string(), fileTS);
-
-		/* ----- first relevant file found ----- */
-		if (!startTSofRelevantFile)
-		{
-			startTSofRelevantFile = vid.start_ts;
-
-			if (includeFloorFile && !exactMatchFound)
-			{
-				// add prev file to cache - handles start_ts lies in middle of prevFileOnDisk in fwd parse.
-				if (!previousFileOnDisk.empty())
-				{
-					startTSofRelevantFile = startTSofPrevFileOnDisk;
-					Video prevVid(previousFileOnDisk.string(), startTSofPrevFileOnDisk);
-					insertInVideoCache(prevVid);
-					++parsedFilesCount;
-				}
+				insertInVideoCache(vid);
+				++parsedFilesCount;
 			}
 		}
-		/* ----- first relevant file found end ----- */
-
-		insertInVideoCache(vid);
-		++parsedFilesCount;
 	}
 	/* corner case: first relevant file was never found --- */
 	if (!startTSofRelevantFile) // no file with ts > start_ts was found
@@ -708,6 +775,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 			++parsedFilesCount;
 		}
 	}
+	LOG_ERROR << "video cache size = " << videoCache.size();
 	/* trigger the drop strategy
 	if seek triggered parse - drop from farthest side of seekTS */
 	auto startDropFromTS = skipTS ? skipTS : startTSofRelevantFile;
@@ -715,6 +783,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 
 	bool foundRelevantFilesOnDisk = parsedFilesCount > 0;
 	return foundRelevantFilesOnDisk;
+	
 }
 
 void OrderedCacheOfFiles::retireOldFiles(uint64_t ts)

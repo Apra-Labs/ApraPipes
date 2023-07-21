@@ -27,14 +27,14 @@ struct LoggerSetup
 	}
 };
 
-struct DiskFiles
+struct DiskFiles	
 {
 	std::map<uint64_t, std::string> files =
 	{
-		{1655895162221, "data/Mp4_videos//mp4_seek_tests/20220522/0016/1655895162221.mp4"},
-		{1655895288956, "data/Mp4_videos//mp4_seek_tests/20220522/0016/1655895288956.mp4"},
-		{1655919060000, "data/Mp4_videos//mp4_seek_tests/20220522/0023/1655919060000.mp4"},
-		{1655926320000, "data/Mp4_videos//mp4_seek_tests/20220523/0001/1655926320000.mp4"}
+		{1655895162221, "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895162221.mp4"},
+		{1655895288956, "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895288956.mp4"},
+		{1655919060000, "data/Mp4_videos/mp4_seek_tests/20220522/0023/1655919060000.mp4"},
+		{1655926320000, "data/Mp4_videos/mp4_seek_tests/20220523/0001/1655926320000.mp4"}
 
 	};
 
@@ -575,7 +575,7 @@ BOOST_AUTO_TEST_CASE(get_start_end)
 	OrderedCacheOfFiles cof(dir, cacheSize, lowerWaterMark, upperWaterMark);
 	cof.parseFiles(0, true);
 
-	std::string videoFile = dir + "\\20220522\\0016\\1655895288956.mp4";
+	std::string videoFile = dir + "/20220522/0016/1655895288956.mp4";
 	uint64_t start_ts, end_ts;
 	bool isFileInCache = cof.fetchFromCache(videoFile, start_ts, end_ts);
 	BOOST_TEST(isFileInCache == true);
