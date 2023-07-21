@@ -14,6 +14,8 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
+		DeleteWindow,
+		CreateWindow
 	};
 
 	Command()
@@ -193,6 +195,53 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& numOfFrames;
 
+	}
+};
+
+class EglRendererCloseWindow : public Command
+{
+public:
+	EglRendererCloseWindow() : Command(Command::CommandType::DeleteWindow)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
+class EglRendererCreateWindow : public Command
+{
+public:
+	EglRendererCreateWindow() : Command(Command::CommandType::CreateWindow)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(width) + sizeof(height) ;
+	}
+	int width;
+	int height;
+
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int /* file_version */)
+	{
+		ar &boost::serialization::base_object<Command>(*this);
+		ar &width;
+		ar &height;
 	}
 };
 
