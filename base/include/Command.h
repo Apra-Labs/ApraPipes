@@ -15,7 +15,7 @@ public:
 		MultimediaQueueXform,
 		Seek,
 		DeleteWindow,
-		CreateWindow
+		CreateWindow,
 		PlayPause
 	};
 
