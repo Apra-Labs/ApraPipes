@@ -180,7 +180,7 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS,0,true,true,false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS,0,true,false,false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 300;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
@@ -205,7 +205,7 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 	}
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(45));
+	boost::this_thread::sleep_for(boost::chrono::seconds(8));
 
 	p->stop();
 	p->term();
