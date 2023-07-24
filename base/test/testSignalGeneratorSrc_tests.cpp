@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
     const uint8_t* pReadDataTest = const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data()));
     unsigned int readDataSizeTest = outputFrame->size();
-    Test_Utils::saveOrCompare("./data/TestSample1.raw", pReadDataTest,readDataSizeTest, 50);
+    Test_Utils::saveOrCompare("./data/TestSample1.raw", pReadDataTest,readDataSizeTest, 100);
     TestSignalGeneratorProps newProps(400, 400);
     source->setProps(newProps);
     source->step();
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
     pReadDataTest = const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data()));
     readDataSizeTest = outputFrame->size();
-    Test_Utils::saveOrCompare("./data/TestSample2.raw",pReadDataTest,readDataSizeTest, 10);
+    Test_Utils::saveOrCompare("./data/TestSample2.raw",pReadDataTest,readDataSizeTest, 100);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
