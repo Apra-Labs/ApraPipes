@@ -7,6 +7,7 @@
 #include "test_utils.h"
 #include "ExternalSinkModule.h"
 #include "FrameContainerQueue.h"
+#include"FileWriterModule.h"
 
 BOOST_AUTO_TEST_SUITE(TestSignalGenerator_tests)
 
@@ -46,7 +47,7 @@ BOOST_AUTO_TEST_CASE(Basic)
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
     const uint8_t* pReadDataTest = const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data()));
     unsigned int readDataSizeTest = outputFrame->size();
-    Test_Utils::saveOrCompare("./data/TestSample.raw", pReadDataTest, readDataSizeTest, 50);
+    Test_Utils::saveOrCompare("./data/testOutput/TestSample.raw", pReadDataTest, readDataSizeTest,0);
 }
 
 BOOST_AUTO_TEST_CASE(getSetProps)
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
     pReadDataTest = const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data()));
     readDataSizeTest = outputFrame->size();
-    Test_Utils::saveOrCompare("./data/TestSample2.raw",pReadDataTest,readDataSizeTest, 100);
+    Test_Utils::saveOrCompare("./data/TestSample2.raw",pReadDataTest,readDataSizeTest, 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

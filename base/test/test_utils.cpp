@@ -76,9 +76,11 @@ bool CompareData(const uint8_t* data01, const uint8_t* data02, unsigned int data
 		else
 		{
 			mismatch += 1;
+			LOG_ERROR<<"The mismatch occured at data element"<<i;
 
 			if (mismatch > tolerance)
 			{
+				LOG_ERROR<<"Mismatch has crossed tolerance. Mismatch "<<mismatch<<" > tolerance "<<tolerance;
 				break;
 			}
 		}
@@ -110,12 +112,28 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 
 	if (boost::filesystem::is_regular_file(fileName))
 	{
+		const std::string strFullFileName = fileName;
+		std::string strFileBaseName = strFullFileName;
+		std::string strExtension;
+
+		const size_t fileBaseIndex = strFullFileName.find_last_of(".");
+		if (std::string::npos != fileBaseIndex)
+		{
+			strFileBaseName = strFullFileName.substr(0U, fileBaseIndex);
+			strExtension = strFullFileName.substr(fileBaseIndex);
+		}
+
 		const uint8_t* dataRead = nullptr;
 		unsigned int dataSize = 0U;
 		BOOST_TEST(readFile(fileName, dataRead, dataSize));
 		BOOST_TEST(dataSize == sizeToSC);
-
 		compareRes = CompareData(dataToSC, dataRead, dataSize, tolerance);
+		if(!compareRes)
+		{
+			boost::filesystem::create_directory("./data/SaveOrCompareFail");
+			std::string saveFile = "./data/SaveOrCompareFail/TestSOCFile" +  strExtension;
+			writeFile(saveFile.c_str(), dataToSC, sizeToSC);
+		}
 		BOOST_TEST(compareRes);
 
 		SAFE_DELETE_ARRAY(dataRead);
