@@ -548,6 +548,9 @@ SET(UT_FILES
 	test/mp4_reverse_play_tests.cpp
 	test/ordered_cache_of_files_tests.cpp
 	test/mp4_seek_tests.cpp
+	test/mp4_simul_read_write_tests.cpp
+	test/mp4_getlivevideots_tests.cpp
+	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}

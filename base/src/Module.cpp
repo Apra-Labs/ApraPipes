@@ -121,7 +121,7 @@ private:
 	double mPipelineFps;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
+Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mDirection(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
 {
 	static int moduleCounter = 0;
 	moduleCounter += 1;

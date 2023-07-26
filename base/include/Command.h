@@ -280,18 +280,6 @@ public:
 
 	}
 
-	Mp4SeekCommand(uint64_t _seekStartTS,uint64_t _seekEndTS) : Command(CommandType::Seek)
-	{
-		seekStartTS = _seekStartTS;
-		seekEndTS = _seekEndTS;
-	}
-
-
-	Mp4SeekCommand(uint64_t _seekStartTS) : Command(CommandType::Seek)
-	{
-		seekStartTS = _seekStartTS;
-	}
-
 	Mp4SeekCommand(uint64_t _skipTS, bool _forceReopen = false) : Command(CommandType::Seek)
 	{
 		seekStartTS = _skipTS;
@@ -300,11 +288,10 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) + sizeof(seekEndTS) + +sizeof(forceReopen) + Command::getSerializeSize();
+		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) +sizeof(forceReopen) + Command::getSerializeSize();
 	}
 
 	uint64_t seekStartTS = 0;
-	uint64_t seekEndTS = 9999999999999;
 	bool forceReopen = false;
 private:
 
@@ -314,7 +301,6 @@ private:
 	{
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& seekStartTS;
-		ar& seekEndTS;
 		ar& forceReopen;
 	}
 };

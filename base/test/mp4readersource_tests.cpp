@@ -214,44 +214,6 @@ BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName)
 	BOOST_TEST(frame->timestamp == 1673420640350);
 }
 
-BOOST_AUTO_TEST_CASE(getSetProps_change_video_path)
-{
-	std::string videoPath = "./data/Mp4_videos/mp4_seek_tests/20220522/0023/1655919060000.mp4";
-	bool parseFS = true;
-	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
-	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-
-	SetupMp4ReaderTest s(videoPath, encodedImageMetadata, frameType, parseFS, false);
-
-	frame_container frames;
-	// go till the second last frame
-	for (int i = 0; i < 1268; i++)
-	{
-		s.mp4Reader->step();
-		frames = s.sink->pop();
-	}
-
-	auto propsChange = s.mp4Reader->getProps();
-	propsChange.readLoop = true;
-	s.mp4Reader->setProps(propsChange);
-
-	// read the second last frame of the open video
-	s.mp4Reader->step();
-	frames = s.sink->pop();
-	auto secondLastFrame = frames.begin()->second;
-	BOOST_TEST(secondLastFrame->size() == 289);
-	BOOST_TEST(secondLastFrame->timestamp == 1655919081120);
-
-	//change the video file path , Now read first frame new video instead of last frame of open video
-	propsChange = s.mp4Reader->getProps();
-	propsChange.videoPath = "./data/Mp4_videos/mp4_seek_tests/20220523/0001/1655926320000.mp4";
-	s.mp4Reader->setProps(propsChange);
-	s.mp4Reader->step();
-	frames = s.sink->pop();
-	auto frame = frames.begin()->second;
-	BOOST_TEST(frame->timestamp == 1655926320000);
-}
-
 BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder)
 {
 	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
@@ -270,10 +232,6 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder)
 		frames = s.sink->pop();
 	}
 
-	auto propsChange = s.mp4Reader->getProps();
-	propsChange.readLoop = true;
-	s.mp4Reader->setProps(propsChange);
-
 	// read the  last frame of the open video
 	s.mp4Reader->step();
 	frames = s.sink->pop();
@@ -281,7 +239,7 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder)
 	BOOST_TEST(lastFrame->timestamp == 1686723806278);
 
 	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
-	propsChange = s.mp4Reader->getProps();
+	auto propsChange = s.mp4Reader->getProps();
 	propsChange.videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
 	s.mp4Reader->setProps(propsChange);
 	s.mp4Reader->step();
@@ -307,10 +265,6 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_with_custom_file_name)
 		frames = s.sink->pop();
 	}
 
-	auto propsChange = s.mp4Reader->getProps();
-	propsChange.readLoop = true;
-	s.mp4Reader->setProps(propsChange);
-
 	// read the  last frame of the open video
 	s.mp4Reader->step();
 	frames = s.sink->pop();
@@ -318,7 +272,7 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_with_custom_file_name)
 	BOOST_TEST(lastFrame->timestamp == 1686723806278);
 
 	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
-	propsChange = s.mp4Reader->getProps();
+	auto propsChange = s.mp4Reader->getProps();
 	// To read custom file name parseFS needs to be disabled
 	propsChange.parseFS = false;
 	propsChange.videoPath = "./data/Mp4_videos/h264_video/apraH264.mp4";
@@ -327,6 +281,41 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_with_custom_file_name)
 	frames = s.sink->pop();
 	auto frame = frames.begin()->second;
 	BOOST_TEST(frame->timestamp == 1673420640350);
+}
+
+BOOST_AUTO_TEST_CASE(NotParseFs_to_parseFS)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/apraH264.mp4";
+	std::string outPath = "./data/testOutput/outFrames/";
+	bool parseFS = false;
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+	frame_container frames;
+
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	auto frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	// go till the second last frame
+	for (int i = 0; i < 50; i++)
+	{
+		s.mp4Reader->step();
+		frames = s.sink->pop();
+	}
+
+	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
+	auto propsChange = s.mp4Reader->getProps();
+	// To read custom file name parseFS needs to be disabled
+	propsChange.parseFS = true;
+	propsChange.videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604318680.mp4";
+	s.mp4Reader->setProps(propsChange);
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1685604318680);
 }
 
 BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
@@ -346,10 +335,6 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
 		frames = s.sink->pop();
 	}
 
-	auto propsChange = s.mp4Reader->getProps();
-	propsChange.readLoop = true;
-	s.mp4Reader->setProps(propsChange);
-
 	// read the  secoond last frame of the open video
 	s.mp4Reader->step();
 	frames = s.sink->pop();
@@ -357,7 +342,7 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
 	BOOST_TEST(lastFrame->timestamp == 1686723806237);
 
 	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
-	propsChange = s.mp4Reader->getProps();
+	auto propsChange = s.mp4Reader->getProps();
 	propsChange.parseFS = false;
 	//this path dosen't exist on disk - so cannoical path call will fail it, hence continue reading the open video
 	propsChange.videoPath = "./data/Mp4_videos/videos/apraH264.mp4";
@@ -381,76 +366,6 @@ BOOST_AUTO_TEST_CASE(parse_root_dir_and_find_the_video)
 	BOOST_TEST(s.mp4Reader->step());
 	auto frames = s.sink->pop();
 }
-
-//Note: We still have to implement the feature to read and write video and simultaneously
-BOOST_AUTO_TEST_CASE(mp4reader_waits_when_no_video_and_reads_whenever_video_is_written, *boost::unit_test::disabled())
-{
-
-	LoggerProps loggerProps;
-	loggerProps.logLevel = boost::log::trivial::severity_level::info;
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	Logger::initLogger(loggerProps);
-
-	auto fileReaderProps = FileReaderModuleProps("./data/re3_filtered", 0, -1);
-	fileReaderProps.fps = 24;
-	fileReaderProps.readLoop = false;
-
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
-	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	fileReader->addOutputPin(encodedImageMetadata);
-
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, "./data/testOutput/mp4_videos/");
-	mp4WriterSinkProps.logHealth = true;
-	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
-	fileReader->setNext(mp4WriterSink);
-
-	boost::filesystem::path dir("./data/testOutput/outFrames/" );
-
-	auto mp4ReaderProps = Mp4ReaderSourceProps("./data/testOutput/mp4_videos/", false, 0, true, false, false, 10);
-	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-	auto imageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	mp4Reader->addOutPutPin(imageMetadata);
-	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-	mp4Reader->addOutPutPin(mp4Metadata);
-
-	auto sink = boost::shared_ptr<Module>(new ExternalSinkModule());
-	std::vector<std::string> encodedImagePin;
-	encodedImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE);
-	mp4Reader->setNext(sink, encodedImagePin);
-
-	StatSinkProps statSinkProps;
-	statSinkProps.logHealth = true;
-	statSinkProps.logHealthFrequency = 10;
-	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
-	mp4Reader->setNext(statSink);
-
-	auto metaSinkProps = MetadataSinkProps(0);
-	metaSinkProps.logHealth = true;
-	metaSinkProps.logHealthFrequency = 10;
-	auto metaSink = boost::shared_ptr<Module>(new MetadataSink(metaSinkProps));
-	mp4Reader->setNext(metaSink);
-
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
-	p->appendModule(mp4Reader);
-
-	if (!p->init())
-	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
-	}
-	p->run_all_threaded();
-
-	boost::this_thread::sleep_for(boost::chrono::seconds(15));
-
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
-
-}
-
 
 BOOST_AUTO_TEST_CASE(check_exposed_params)
 {
@@ -541,14 +456,6 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	mp4Reader->step();
 	frames = sink->pop();
 	BOOST_TEST((frames.find(pinId) != frames.end()));
-
-	/* TODO
-		- extend this test to verify ts of next frame as well
-		- currently, that will fail because setProps() makes it go to next video instead
-
-	imgFrame = frames[rawImgPinId];
-	BOOST_TEST(imgFrame->timestamp == NEXT_TS);
-	*/
 }
 
 BOOST_AUTO_TEST_SUITE_END()

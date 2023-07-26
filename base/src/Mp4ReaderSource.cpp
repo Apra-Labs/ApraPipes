@@ -89,29 +89,34 @@ public:
 		}
 		catch (...)
 		{
-			LOG_ERROR << "Incorrect video path ";
+			auto msg = "Video File name not in proper format.Check the filename sent as props. \
+					If you want to read a file with custom name instead, please disable parseFS flag.";
+			LOG_ERROR << msg;
 			return;
 		}
-		// clear the cache if parseFS is changed
-		if (props.parseFS != mProps.parseFS && cof)
+		
+		// If the video path is a custom file - don't parse just open the video, cof check says that not to open video if setProps if called from module init(). 
+		if (!props.parseFS && cof)
 		{
 			cof->clearCache();
+			updateMstate(props, tempVideoPath);
+			initNewVideo();
+			return;
 		}
 
-		// check if the video file path has changed & its dynamic change of props
-		if (mState.mVideoPath != props.videoPath && mState.mVideoPath != "")
+		auto tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
+		if (props.parseFS && mProps.skipDir == tempSkipDir && mState.mVideoPath != "")
+		{
+			if (mProps.videoPath == props.videoPath)
+				mProps = props;
+			LOG_ERROR << "The root dir is same and only file path has changed, Please use SEEK functionality instead for this use case!, cannot change props";
+			return;
+		}
+		
+		if (props.parseFS && mProps.skipDir != tempSkipDir && mState.mVideoPath != "")
 		{
 			sentEOSSignal = false;
 
-			if (!props.parseFS)
-			{
-				// If the video path is a custom file - don't parse just open the video
-				updateMstate(props, tempVideoPath);
-				initNewVideo();
-				return;
-			}
-
-			// parseFS enabled
 			auto boostVideoTS = boost::filesystem::path(tempVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
@@ -125,25 +130,16 @@ public:
 				LOG_ERROR << msg;
 				throw AIPException(AIP_FATAL, msg);
 			}
-			auto tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
+			
 			//check if root has changed
-			if (mProps.skipDir != tempSkipDir)
-			{
-				cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(tempSkipDir));
-				cof->clearCache();
-				cof->parseFiles(start_parsing_ts, props.direction, true, false);
-				//parse successful - update mState and skipDir with current root dir
-				updateMstate(props, tempVideoPath);
-				mProps.skipDir = tempSkipDir;
-				initNewVideo(true);
-				return;
-			}
-
-			// The root dir is same only file path has changed
-			LOG_ERROR << "Please use SEEK functionality instead for this use case!";
+			cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(tempSkipDir));
+			cof->clearCache();
+			cof->parseFiles(start_parsing_ts, props.direction, true, false);
+			//parse successful - update mState and skipDir with current root dir
 			updateMstate(props, tempVideoPath);
-			mState.end = cof->parseFiles(start_parsing_ts, mState.direction, true, false);
-			initNewVideo();
+			mProps.skipDir = tempSkipDir;
+			initNewVideo(true);
+
 			return;
 		}
 
@@ -246,6 +242,7 @@ public:
 			if (mState.demux)
 			{
 				mp4_demux_close(mState.demux);
+				mState.demux = nullptr;
 			}
 		}
 		catch (...)
@@ -664,6 +661,7 @@ public:
 		try
 		{
 			mp4_demux_close(mState.demux);
+			mState.demux = nullptr;
 		}
 		catch (...)
 		{
@@ -992,7 +990,7 @@ public:
 	Mp4ReaderDetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
 	{}
-	~Mp4ReaderDetailJpeg() { mp4_demux_close(mState.demux); }
+	~Mp4ReaderDetailJpeg() {}
 	void setMetadata();
 	bool produceFrames(frame_container& frames);
 	void sendEndOfStream() {}
@@ -1005,7 +1003,7 @@ public:
 	Mp4ReaderDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame)
 	{}
-	~Mp4ReaderDetailH264() { mp4_demux_close(mState.demux); }
+	~Mp4ReaderDetailH264() {}
 	void setMetadata();
 	void readSPSPPS();
 	bool produceFrames(frame_container& frames);
@@ -1385,7 +1383,7 @@ bool Mp4ReaderSource::getVideoRangeFromCache(std::string videoFile, uint64_t& st
 bool Mp4ReaderSource::term()
 {
 	auto moduleRet = Module::term();
-
+	mDetail->attemptFileClose();
 	return moduleRet;
 }
 
@@ -1453,7 +1451,7 @@ Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
 	bool direction = getPlayDirection();
-	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
+	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;

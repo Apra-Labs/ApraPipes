@@ -114,7 +114,7 @@ public:
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool changePlayback(float speed, bool direction);
 	bool getVideoRangeFromCache(std::string videoPath, uint64_t& start_ts, uint64_t& end_ts);
-	bool randomSeek(uint64_t skipTS, bool forceReopen);
+	bool randomSeek(uint64_t skipTS, bool forceReopen = false);
 	bool refreshCache();
 	std::map<std::string, std::pair<uint64_t, uint64_t>> getCacheSnapShot(); // to be used for debugging only
 	double getOpenVideoFPS();
