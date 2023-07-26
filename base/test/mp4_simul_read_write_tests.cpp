@@ -259,6 +259,10 @@ BOOST_AUTO_TEST_CASE(basic)
 	bool parseFS = true;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -360,6 +364,10 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	bool parseFS = false;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -460,6 +468,10 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 	bool parseFS = true;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -585,6 +597,10 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	bool parseFS = true;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -752,6 +768,10 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 	bool parseFS = true;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -853,6 +873,10 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 	bool parseFS = false;
 
 	// read the first and only file in the directory
+	if (!boost::filesystem::is_directory(writeFolderPath))
+	{
+		boost::filesystem::create_directories(writeFolderPath);
+	}
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
@@ -963,6 +987,10 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 	while (readPath.empty())
 	{
 		// read the first and only file in the directory
+		if (!boost::filesystem::is_directory(writeFolderPath))
+		{
+			boost::filesystem::create_directories(writeFolderPath);
+		}
 		for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 		{
 			auto dirPath = itr.path();
@@ -1058,6 +1086,10 @@ BOOST_AUTO_TEST_CASE(ultimate)
 	while (readPath.empty())
 	{
 		// read the first and only file in the directory
+		if (!boost::filesystem::is_directory(writeFolderPath))
+		{
+			boost::filesystem::create_directories(writeFolderPath);
+		}
 		auto cannonicalWriteFolderPath = boost::filesystem::canonical(writeFolderPath);
 		for (auto &&itr : boost::filesystem::recursive_directory_iterator(cannonicalWriteFolderPath))
 		{
