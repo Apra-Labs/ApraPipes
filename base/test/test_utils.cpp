@@ -115,12 +115,18 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		const std::string strFullFileName = fileName;
 		std::string strFileBaseName = strFullFileName;
 		std::string strExtension;
+		std::string nameOfFile;
 
 		const size_t fileBaseIndex = strFullFileName.find_last_of(".");
+		const size_t fileBaseLocation = strFullFileName.find_last_of("/");
 		if (std::string::npos != fileBaseIndex)
 		{
 			strFileBaseName = strFullFileName.substr(0U, fileBaseIndex);
 			strExtension = strFullFileName.substr(fileBaseIndex);
+		}
+		if (std::string::npos != fileBaseLocation)
+		{
+			 nameOfFile = strFullFileName.substr(fileBaseLocation + 1, fileBaseIndex - fileBaseLocation -1);
 		}
 
 		const uint8_t* dataRead = nullptr;
@@ -131,7 +137,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		if(!compareRes)
 		{
 			boost::filesystem::create_directory("./data/SaveOrCompareFail");
-			std::string saveFile = "./data/SaveOrCompareFail/TestSOCFile" +  strExtension;
+			std::string saveFile = "./data/SaveOrCompareFail/" + nameOfFile + strExtension;
 			writeFile(saveFile.c_str(), dataToSC, sizeToSC);
 		}
 		BOOST_TEST(compareRes);
