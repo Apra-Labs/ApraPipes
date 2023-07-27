@@ -38,9 +38,9 @@ public:
 	std::string getFileAt(uint64_t timestamp, bool direction);
 	bool isTimeStampInFile(std::string& filename, uint64_t timestamp);
 	std::string getNextFileAfter(std::string& currentFile, bool direction);
-	std::vector<boost::filesystem::path> parseAndSortDateDir(std::string rootDir);
-	std::vector<boost::filesystem::path> parseAndSortHourDir(std::string rootDir);
-	std::vector<boost::filesystem::path> parseAndSortMp4Files(std::string rootDir);
+	std::vector<boost::filesystem::path> parseAndSortDateDir(std::string& rootDir);
+	std::vector<boost::filesystem::path> parseAndSortHourDir(std::string& rootDir);
+	std::vector<boost::filesystem::path> parseAndSortMp4Files(std::string& rootDir);
 	bool parseFiles(uint64_t start_ts, bool direction, bool includeFloorFile = false, bool disableBatchSizeCheck = false, uint64_t skipTS = 0);
 	bool getRandomSeekFile(uint64_t ts, bool direction, uint64_t& skipMsecs, std::string& fileName);
 	bool getFileFromCache(uint64_t timestamp, bool direction, std::string& fileName);
