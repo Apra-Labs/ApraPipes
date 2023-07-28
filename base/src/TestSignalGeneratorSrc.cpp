@@ -13,12 +13,12 @@ public:
 
     bool generate(frame_sp &frame)
     {
-        auto *frame_ptr = frame->data();
-        uint8_t *x = static_cast<uint8_t *>(frame_ptr);
+        auto frame_ptr = frame->data();
+        uint8_t* x = static_cast<uint8_t*>(frame_ptr);
 
         for (int height = 0; height < mProps.height; height++)
         {
-            memset(x, static_cast<uint8_t>(current_shade), mProps.width);
+            memset(x, current_shade, mProps.width);
             x += mProps.width;
             current_shade += 1;
             if (current_shade > end_shade)
@@ -40,9 +40,9 @@ public:
     }
 
     TestSignalGeneratorProps mProps;
-    int start_shade;
-    int end_shade;
-    int current_shade;
+    uint8_t start_shade = 0;
+    uint8_t end_shade = 255;
+    uint8_t current_shade = 0;
 };
 
 TestSignalGenerator::TestSignalGenerator(TestSignalGeneratorProps _props)

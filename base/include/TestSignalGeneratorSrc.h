@@ -10,8 +10,8 @@ public:
 
     ~TestSignalGeneratorProps() {}
 
-    int width;
-    int height;
+    int width = 0;
+    int height = 0;
 
 private:
     friend class boost::serialization::access;
