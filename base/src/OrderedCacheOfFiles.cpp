@@ -557,7 +557,7 @@ void OrderedCacheOfFiles::insertInVideoCache(Video vid)
 	7. If the higher watermark is breached in the videoCache, trigger a cleanup in seperate thread ?
 	*/
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(std::string& rootDir)
+std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(const std::string& rootDir)
 {
 	std::vector<boost::filesystem::path> dateDir;
 	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
@@ -588,7 +588,7 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(st
 	return dateDir;
 }
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(std::string& dateDirPath)
+std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(const std::string& dateDirPath)
 {
 	std::vector<boost::filesystem::path> hourDir;
 
@@ -612,7 +612,7 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(st
 	return hourDir;
 }
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortMp4Files(std::string& hourDirPath)
+std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortMp4Files(const std::string& hourDirPath)
 {
 	std::vector<boost::filesystem::path> mp4Files;
 	fs::directory_iterator mp4FileIter(hourDirPath), mp4FileEndIter;
