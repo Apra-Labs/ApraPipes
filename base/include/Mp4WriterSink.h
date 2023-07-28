@@ -35,7 +35,7 @@ public:
 
 	Mp4WriterSinkProps() : ModuleProps()
 	{
-		baseFolder = "./data/mp4_videos/";
+		baseFolder = "./data/Mp4_videos/";
 		chunkTime = 1; //minutes
 		syncTimeInSecs = 1;
 		fps = 30;
