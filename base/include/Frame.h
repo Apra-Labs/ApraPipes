@@ -20,6 +20,7 @@ public:
 	int m_num, m_den;
 	virtual bool isEoP() { return false; }
 	virtual bool isEOS() { return false; }
+	virtual bool isMp4ErrorFrame() { return false; }
 	virtual bool isEmpty() { return false; }	
 	virtual bool isPropsChange();
 	virtual bool isPausePlay();
@@ -51,9 +52,20 @@ public:
 
 class EoSFrame : public Frame {
 public:
+	enum EoSFrameType
+	{
+		GENERAL = 0,
+		MP4_PLYB_EOS,
+		MP4_SEEK_EOS,
+	};
 	EoSFrame();
 	virtual ~EoSFrame() {}
 	virtual bool isEOS();
+	EoSFrameType getEoSFrameType();
+	EoSFrame(EoSFrameType eosType, uint64_t mp4TS);
+private:
+	EoSFrameType type;
+	uint64_t mp4TS;
 };
 
 class EmptyFrame :public Frame {

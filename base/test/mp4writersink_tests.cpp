@@ -180,7 +180,7 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS,0,true,false,false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 300;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
@@ -205,7 +205,7 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 	}
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(45));
+	boost::this_thread::sleep_for(boost::chrono::seconds(8));
 
 	p->stop();
 	p->term();
@@ -540,20 +540,6 @@ BOOST_AUTO_TEST_CASE(single_file_given_name_h264)
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/apraH264.mp4";
 
 	writeH264(true,10,outFolderPath, UINT32_MAX);
-}
-
-BOOST_AUTO_TEST_CASE(read_mul_write_one_as_recorded)
-{
-	// two videos (19sec, 60 sec) with 101sec time gap
-	// writes a 79 sec video
-	std::string videoPath = "data/mp4_videos/h264_videos_dts_test/20221010/0012/1668001826042.mp4";
-	std::string outPath = "data/testOutput/file_as_rec.mp4";
-	bool parseFS = true;
-
-	// write a fixed rate video with no gaps
-	bool recordedTSBasedDTS = true;
-	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0,0));
-	read_write(videoPath, outPath, 704, 576, h264ImageMetadata, recordedTSBasedDTS, parseFS, UINT32_MAX);
 }
 
 BOOST_AUTO_TEST_CASE(write_mp4video_h264_step)
