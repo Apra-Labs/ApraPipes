@@ -16,7 +16,7 @@ public:
         auto frame_ptr = frame->data();
         uint8_t* x = static_cast<uint8_t*>(frame_ptr);
 
-        for (int height = 0; height < mProps.height; height++)
+        for (int height = 0; height < mProps.height * 1.5; height++)
         {
             memset(x, current_shade, mProps.width);
             x += mProps.width;

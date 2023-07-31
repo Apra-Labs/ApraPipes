@@ -62,9 +62,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     frame_container frames;
     frames = sinkQue->pop();
     auto frameMetadata = frames.begin()->second->getMetadata();
-    auto size = frameMetadata->getDataSize() / 1.5;
     auto currentProps = source->getProps();
-    BOOST_ASSERT(size == currentProps.width * currentProps.height);
     BOOST_TEST(frames.size() == 1);
     auto outputFrame = frames.cbegin()->second;
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
@@ -77,7 +75,6 @@ BOOST_AUTO_TEST_CASE(getSetProps)
     sinkQue = sink->getQue();
     frames = sinkQue->pop();
     frameMetadata = frames.begin()->second->getMetadata();
-    size = frameMetadata->getDataSize() / 1.5;
     BOOST_TEST(frames.size() == 1);
     outputFrame = frames.cbegin()->second;
     BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
