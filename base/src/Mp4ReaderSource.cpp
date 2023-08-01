@@ -105,7 +105,7 @@ public:
 		}
 
 		auto tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
-		if (props.parseFS && mProps.skipDir == tempSkipDir && mState.mVideoPath != "")
+		if (props.parseFS && mProps.skipDir == tempSkipDir && mState.mVideoPath != "" && props.videoPath == ".mp4")
 		{
 			if (mProps.videoPath == props.videoPath)
 				mProps = props;
@@ -113,7 +113,7 @@ public:
 			return;
 		}
 		
-		if (props.parseFS && mProps.skipDir != tempSkipDir && mState.mVideoPath != "")
+		if (props.parseFS && mProps.skipDir != tempSkipDir && mState.mVideoPath != "" && props.videoPath == ".mp4")
 		{
 			sentEOSSignal = false;
 
@@ -140,6 +140,37 @@ public:
 			mProps.skipDir = tempSkipDir;
 			initNewVideo(true);
 
+			return;
+		}
+
+		if (props.videoPath != ".mp4" && mState.mVideoPath != "")
+		{
+			auto tempSkipDir = props.videoPath;
+			if(cof->probe(props.videoPath));
+			{
+				auto canonicalVideoPath = boost::filesystem::canonical(props.videoPath);
+				auto boostVideoTS = boost::filesystem::path(canonicalVideoPath).stem().string();
+				uint64_t start_parsing_ts = 0;
+				try
+				{
+					start_parsing_ts = std::stoull(boostVideoTS);
+				}
+				catch (std::invalid_argument)
+				{
+					auto msg = "Video File name not in proper format.Check the filename sent as props. \
+				If you want to read a file with custom name instead, please disable parseFS flag.";
+					LOG_ERROR << msg;
+					throw AIPException(AIP_FATAL, msg);
+				}
+				mProps.skipDir = boost::filesystem::canonical(tempSkipDir).string();
+				cof->parseFiles(start_parsing_ts, props.direction, true, false);
+				updateMstate(props, canonicalVideoPath.string());
+				initNewVideo();
+				return;
+			}
+			mProps.skipDir = mState.mVideoPath;
+			updateMstate(props, tempVideoPath);
+			isVideoFileFound = false;	
 			return;
 		}
 
@@ -280,7 +311,7 @@ public:
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
-			if (!cof->probe(filePath, mState.mVideoPath))
+			if (!cof->probe(mState.mVideoPath))
 			{
 				LOG_DEBUG << "Mp4 file is not present" << ">";
 				isVideoFileFound = false;
@@ -743,7 +774,7 @@ public:
 			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			if (currentTS >= recheckDiskTS)
 			{
-				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath));
+				if (!cof->probe(mState.mVideoPath));
 				{
 					imgFrame = nullptr;
 					imageFrameSize = 0;
