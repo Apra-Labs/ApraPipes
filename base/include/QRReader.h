@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Module.h"
-#include "ReadBarcode.h"
+#include "ZXing/ReadBarcode.h"
+#include "ZXing/TextUtfEncoding.h"
 
 class QRReaderProps : public ModuleProps
 {

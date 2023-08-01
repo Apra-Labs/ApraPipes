@@ -1,5 +1,6 @@
 
 #include "GaussianBlur.h"
+#include "RawImageMetadata.h"
 #include <opencv2/cudafilters.hpp>
 #include "opencv2/core/cuda_stream_accessor.hpp"
 

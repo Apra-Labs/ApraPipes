@@ -42,7 +42,7 @@
 #     * https://github.com/hunter-packages/gate/
 #     * https://github.com/ruslo/hunter
 
-option(HUNTER_ENABLED "Enable Hunter package manager support" ON)
+option(HUNTER_ENABLED "Enable Hunter package manager support" OFF)
 
 if(HUNTER_ENABLED)
   if(CMAKE_VERSION VERSION_LESS "3.2")

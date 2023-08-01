@@ -15,10 +15,11 @@
 #include "ResizeNPPI.h"
 #include "FileWriterModule.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(nvjpeg_combo_tests)
 
-BOOST_AUTO_TEST_CASE(decode_encode_mono_1920x960)
+BOOST_AUTO_TEST_CASE(decode_encode_mono_1920x960, *utf::precondition(if_h264_encoder_supported()))
 {	
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -51,7 +52,7 @@ BOOST_AUTO_TEST_CASE(decode_encode_mono_1920x960)
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_encode_mono_1920x960.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
+BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960, *utf::precondition(if_h264_encoder_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -89,9 +90,9 @@ BOOST_AUTO_TEST_CASE(decode_resize_encode_mono_1920x960)
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_resize_encode_mono_1920x960_to_960x480.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960)
+BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960, *utf::precondition(if_h264_encoder_supported()))
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/testOutput/effects/hue_img_864x576")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
@@ -134,7 +135,7 @@ BOOST_AUTO_TEST_CASE(decode_resize_cc_raw_1920x960)
 
 }
 
-BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360)
+BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/color_yuv420_640x360.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -167,7 +168,7 @@ BOOST_AUTO_TEST_CASE(decode_encode_color_yuv420_640x360)
 	Test_Utils::saveOrCompare("./data/testOutput/nvjpeg_combo_tests_decode_encode_color_yuv420_640x360.jpg", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360)
+BOOST_AUTO_TEST_CASE(decode_resize_encode_color_yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/color_yuv420_640x360.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));

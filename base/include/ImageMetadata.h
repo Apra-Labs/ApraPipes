@@ -15,11 +15,18 @@ public:
 		BGRA, // Interleaved
 		RGB, // Interleaved
 		RGBA, // Interleaved
-		YUV411_I, // Interleaved
+		YUV411_I = 10, // Interleaved
         YUV444, // Planar
 		YUV420, // Planar
-		UYVY,	// Interleaved		
-		NV12
+		UYVY,	// Interleaved	
+		YUYV, 	
+		NV12,
+		BAYERBG10 = 20, // BGGR
+		BAYERBG8, // BGGR
+		BAYERGB8, // GBRG
+		BAYERGR8, // GRBG
+		BAYERRG8  // RGGB
+		
 	};
 
 	static size_t getElemSize(int depth)

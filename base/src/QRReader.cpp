@@ -3,8 +3,7 @@
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "ReadBarcode.h"
-#include "TextUtfEncoding.h"
+#include "RawImageMetadata.h"
 
 class QRReader::Detail
 {

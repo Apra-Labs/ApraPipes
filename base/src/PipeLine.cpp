@@ -1,37 +1,34 @@
 #include "stdafx.h"
 #include "PipeLine.h"
 #include "Module.h"
-
-
-
-
+#include "Utils.h"
+#include <string>
 
 PipeLine::~PipeLine()
-{ 
+{
 	//LOG_INFO << "Dest'r ~PipeLine" << mName << endl;
 }
 
-
 bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
-{	
+{
 	// assumes that appendModule is called after all the connections
 
 	//remember all the modules
 	auto pos = std::find(modules.begin(), modules.end(), pModule);
 	if (pos != modules.end())
-	{		
+	{
 		// already added
 		return true;
 	}
 
-	modules.push_back(pModule);	
+	modules.push_back(pModule);
 	auto nextModules = pModule->getConnectedModules(); // get next modules
 	for (auto i = nextModules.begin(); i != nextModules.end(); i++)
 	{
 		// recursive call
 		appendModule(*i);
-	}	
-	
+	}
+
 	return true;
 }
 
@@ -111,13 +108,13 @@ bool PipeLine::init()
 		}
 		catch (const std::exception& ex)
 		{
-			LOG_ERROR << "Failed init " << i->get()->getId() << "Exception" << ex.what(); 
-			
+			LOG_ERROR << "Failed init " << i->get()->getId() << "Exception" << ex.what();
+
 		}
 		catch (...)
 		{
 			LOG_ERROR << "Failed init " << i->get()->getId() << "Unknown Exception";
-			
+
 		}
 		if (!bRCInit)
 		{
@@ -149,9 +146,9 @@ void PipeLine::run_all_threaded()
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread=boost::thread(ref(m));
+		m.myThread = boost::thread(ref(m));
+		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
-
 	mPlay = true;
 }
 
@@ -195,7 +192,7 @@ void PipeLine::step()
 		// already playing
 		return;
 	}
-
+	
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		if (i->get()->getNature() == Module::SOURCE)
@@ -264,8 +261,16 @@ const char * PipeLine::getStatus()
 {
 	const char* const StatusNames[] = {
 		Status_ENUM(MAKE_STRINGS,X)
-	};
+		};
 	return StatusNames[myStatus];
 }
 
-
+void PipeLine::flushAllQueues() {
+	for (auto& m : modules)
+	{
+		if (m->myNature == Module::Kind::SOURCE)
+		{
+			m->flushQueRecursive();
+		}
+	}
+}

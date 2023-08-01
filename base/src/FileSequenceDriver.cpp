@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cassert>
 #include "Logger.h"
+#include "BufferMaker.h"
 
 FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 	int startIndex,
@@ -15,7 +16,7 @@ FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 {
     //maxIndex should be greater than StartIndex
     assert(maxIndex < 0 || startIndex < maxIndex);
-	mStrategy = FilenameStrategy::getStrategy(strPath, startIndex, maxIndex, readLoop, files);
+	mStrategy = FilenameStrategy::getStrategy(strPath, startIndex, maxIndex, readLoop, files, mAppend);
 }
 
 FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
@@ -24,7 +25,7 @@ FileSequenceDriver::FileSequenceDriver(const std::string& strPath,
 {
 	// use this to append to 1 single file - FileWriterModule
 	auto files = std::vector<std::string>();
-	mStrategy = FilenameStrategy::getStrategy(strPath, 0, -1, false, files);
+	mStrategy = FilenameStrategy::getStrategy(strPath, 0, -1, false, files, mAppend);
 }
 
 FileSequenceDriver::~FileSequenceDriver()
@@ -44,6 +45,10 @@ bool FileSequenceDriver::Connect()
 		LOG_TRACE << "FileSequenceDriver::Writing Empty File " << fileNameToUse;
 
 		auto mode = std::ios::out | std::ios::binary;
+		if (mAppend)
+		{
+			mode = mode | std::ios::app;
+		}
 		std::ofstream file(fileNameToUse.c_str(), mode);
 		if (file.is_open())
 		{
@@ -74,8 +79,7 @@ void FileSequenceDriver::jump(uint64_t index)
 	mStrategy->jump(index);
 }
 
-//reads on the supplied buffer throws error if it is too small
-bool FileSequenceDriver::ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& index)
+bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index)
 {
     bool readRes = false;
 
@@ -93,25 +97,17 @@ bool FileSequenceDriver::ReadP(uint8_t* dataToRead, size_t& dataSize, uint64_t& 
 			size_t req_size = static_cast<size_t>(file.tellg());
 			if (req_size > 0U)
 			{
-				if(dataSize >= req_size)
-				{
-					dataSize = req_size; //let them know how much did I read
-					file.seekg(0, std::ios::beg);
-					file.read((char*)dataToRead, dataSize);
+				auto dataToRead = buffMaker.make(req_size);
+				file.seekg(0, std::ios::beg);
+				file.read((char*)dataToRead, req_size);
 
-					LOG_TRACE << "FileSequenceDriver::Read " << dataSize << " Bytes ";
+				LOG_TRACE << "FileSequenceDriver::Read " << req_size << " Bytes ";
 
-					readRes = true;
-				}
-				else {
-					LOG_WARNING << "FileSequenceDriver::Read requires " << req_size << " Bytes supplied " << dataSize;
-					//let them know how much do I need
-					dataSize = req_size;
-				}
+				readRes = true;
+
 			}
 			else {
 				LOG_ERROR << "FileSequenceDriver::Read can not read file " << fileNameToUse;
-				dataSize = 0;
 			}
             
             file.close();
@@ -162,7 +158,9 @@ bool FileSequenceDriver::Write(const uint8_t* dataToWrite, size_t dataSize)
 	const std::string fileNameToUse = mStrategy->GetFileNameToUse(false, index);
 
 	LOG_TRACE << "FileSequenceDriver::Writing File " << fileNameToUse;
-	return writeHelper(fileNameToUse, dataToWrite, dataSize, mAppend);
+  
+	writeHelper(fileNameToUse, dataToWrite, dataSize, mAppend);
+	return true;
 }
 
 bool FileSequenceDriver::writeHelper(const std::string &fileName, const uint8_t *dataToWrite, size_t dataSize, bool append)

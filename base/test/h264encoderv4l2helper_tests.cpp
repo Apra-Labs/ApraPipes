@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(yuv420_black_dmabuf)
     auto inputFrame = frameFactory->create(imageSize, frameFactory);
 
     auto helper = H264EncoderV4L2Helper::create(V4L2_MEMORY_DMABUF, V4L2_PIX_FMT_YUV420M, width, height, width, 4*1024*1024, 30, [](frame_sp& frame) -> void {
-        LOG_ERROR << frame->size();
+        LOG_DEBUG << frame->size();
     } );
 
     for (auto i = 0; i < 100; i++)
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(memory_cache_free_test)
         delete[] data;
     }
 
-    LOG_ERROR << cacheFrame->data() << "<>" << cacheFrame->size();
+    LOG_DEBUG << cacheFrame->data() << "<>" << cacheFrame->size();
     cacheFrame.reset();
 }
 

@@ -13,6 +13,20 @@
 #include "FrameMetadata.h"
 
 #include "PaceMaker.h"
+#include "BufferMaker.h"
+#include "PausePlayMetadata.h"
+
+// makes frames from this module's frame factory
+Module::FFBufferMaker::FFBufferMaker(Module& module):myModule(module){}
+void * Module::FFBufferMaker::make(size_t dataSize)
+{
+	if(frameIMade.get()!=nullptr) 
+	{	throw AIPException(AIP_NOTEXEPCTED,"The frame was already made"); }
+
+	frameIMade=myModule.makeFrame(dataSize);
+	return frameIMade->data();
+}
+
 
 class Module::Profiler
 {
@@ -107,7 +121,7 @@ private:
 	double mPipelineFps;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
+Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mDirection(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
 {
 	static int moduleCounter = 0;
 	moduleCounter += 1;
@@ -214,7 +228,16 @@ void Module::addOutputPin(framemetadata_sp &metadata, string &pinId)
 	}
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open, bool isFeedback)
+void Module::setSieveDisabledFlag(bool sieve)
+{
+	// mIsSieveDisabledForAny is true when atleast one downstream connection of this module has sieve disabled
+	if (!sieve)
+	{
+		mIsSieveDisabledForAny = !sieve;
+	}
+}
+
+bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open, bool isFeedback, bool sieve)
 {
 	if (next->getNature() < this->getNature())
 	{
@@ -237,38 +260,107 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	mModules[nextModuleId] = next;
 	mConnections.insert(make_pair(nextModuleId, boost::container::deque<string>()));
 
-	for (auto &pinId : pinIdArr)
+	if (sieve)
 	{
-		if (mOutputPinIdFrameFactoryMap.find(pinId) == mOutputPinIdFrameFactoryMap.end())
+		for (auto &pinId : pinIdArr)
 		{
-			auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			throw AIPException(AIP_PIN_NOTFOUND, msg);
-		}
-		
-		framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
-		// Set input meta here
-		try
-		{
-			next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
-		}
-		catch (AIP_Exception &exception)
-		{
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			throw exception;
-		}
-		catch (...)
-		{
-			mModules.erase(nextModuleId);
-			mConnections.erase(nextModuleId);
-			LOG_FATAL << "";
-			throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
-		}
+			if (mOutputPinIdFrameFactoryMap.find(pinId) == mOutputPinIdFrameFactoryMap.end())
+			{
+				auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw AIPException(AIP_PIN_NOTFOUND, msg);
+			}
 
-		// add next module here
-		mConnections[nextModuleId].push_back(pinId);
+			framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
+			// Set input meta here
+			try
+			{
+				next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+			}
+			catch (AIP_Exception& exception)
+			{
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw exception;
+			}
+			catch (...)
+			{
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				LOG_FATAL << "";
+				throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+			}
+
+			// add next module here
+			mConnections[nextModuleId].push_back(pinId);
+		}
+	}
+	else
+	{
+		// important - flag used to send enough number of EOP frames
+		setSieveDisabledFlag(sieve);
+		for (auto& pinId : pinIdArr)
+		{
+			bool pinFound = false;
+			if (mOutputPinIdFrameFactoryMap.find(pinId) != mOutputPinIdFrameFactoryMap.end())
+			{
+				pinFound = true;
+				framemetadata_sp metadata = mOutputPinIdFrameFactoryMap[pinId]->getFrameMetadata();
+				// Set input meta here
+				try
+				{
+					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+				}
+				catch (AIP_Exception& exception)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					throw exception;
+				}
+				catch (...)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					LOG_FATAL << "";
+					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+				}
+			}
+			if (mInputPinIdMetadataMap.find(pinId) != mInputPinIdMetadataMap.end())
+			{
+				pinFound = true;
+				framemetadata_sp metadata = mInputPinIdMetadataMap[pinId];
+
+				// Set input meta here
+				try
+				{
+					next->addInputPin(metadata, pinId, isFeedback); // addInputPin throws exception from validateInputPins
+				}
+				catch (AIP_Exception& exception)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					throw exception;
+				}
+				catch (...)
+				{
+					mModules.erase(nextModuleId);
+					mConnections.erase(nextModuleId);
+					LOG_FATAL << "";
+					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
+				}
+			}
+
+			if (!pinFound)
+			{
+				auto msg = "pinId<" + pinId + "> doesn't exist in <" + this->getId() + ">";
+				mModules.erase(nextModuleId);
+				mConnections.erase(nextModuleId);
+				throw AIPException(AIP_PIN_NOTFOUND, msg);
+			}
+			// add next module here
+			mConnections[nextModuleId].push_back(pinId);
+		}
 	}
 
 	mRelay[nextModuleId] = open;
@@ -276,12 +368,13 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 	return true;
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, bool open)
+// default - open, sieve is enabled - feedback false
+bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
 {
-	return setNext(next, open, false);
+	return setNext(next, open, false, sieve);
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback)
+bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve)
 {
 	pair<string, framefactory_sp> me; // map element
 	vector<string> pinIdArr;
@@ -290,23 +383,32 @@ bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback)
 		pinIdArr.push_back(me.first);
 	}
 
+	if (!sieve)
+	{
+		pair<string, framemetadata_sp> me; // map element
+		BOOST_FOREACH(me, mInputPinIdMetadataMap)
+		{
+			pinIdArr.push_back(me.first);
+		}
+	}
+
 	// sending all the outputpins
-	return setNext(next, pinIdArr, open, isFeedback);
+	return setNext(next, pinIdArr, open, isFeedback, sieve);
 }
 
 bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
 {
-	return setNext(next, pinIdArr, open, false);
+	return setNext(next, pinIdArr, open, false, true);
 }
 
 bool Module::addFeedback(boost::shared_ptr<Module> next, vector<string> &pinIdArr, bool open)
 {
-	return setNext(next, pinIdArr, open, true);
+	return setNext(next, pinIdArr, open, true, true);
 }
 
 bool Module::addFeedback(boost::shared_ptr<Module> next, bool open)
 {
-	return setNext(next, open, true);
+	return setNext(next, open, true, true);
 }
 
 void Module::addInputPin(framemetadata_sp &metadata, string &pinId, bool isFeedback)
@@ -482,6 +584,21 @@ bool Module::isFull()
 	for (auto it = mModules.cbegin(); it != mModules.end(); it++)
 	{
 		if (it->second->isFull())
+		{
+			ret = true;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+bool Module::isNextModuleQueFull()
+{
+	bool ret = false;
+	for (auto it = mModules.cbegin(); it != mModules.end(); it++)
+	{
+		if (it->second->mQue->isFull())
 		{
 			ret = true;
 			break;
@@ -747,6 +864,16 @@ framemetadata_sp Module::getOutputMetadataByType(int type)
 {
 	return getMetadataByType(type, mOutputPinIdFrameFactoryMap);
 }
+framemetadata_sp Module::getOutputMetadata(string outPinID)
+{
+	auto it = mOutputPinIdFrameFactoryMap.find(outPinID);
+	
+	if (it == mOutputPinIdFrameFactoryMap.end())
+	{
+		throw AIPException(AIP_FATAL, string("No metadata defined for output pin ")+ outPinID);
+	}
+	return it->second->getFrameMetadata();
+}
 
 int Module::getNumberOfInputsByType(int type)
 {
@@ -834,7 +961,10 @@ frame_sp Module::getEmptyFrame()
 
 void Module::operator()()
 {
-	run();
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PUSH)
+	{
+		run();
+	}
 }
 bool Module::run()
 {
@@ -898,20 +1028,11 @@ bool Module::shouldTriggerSOS()
 	return false;
 }
 
-bool Module::play(bool play)
+bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
 {
-	if (!mRunning)
-	{
-		// comes here if module is not running in a thread
-		// comes here when pipeline is started with run_all_threaded_withpause
-		return handlePausePlay(play);
-	}
-
 	auto metadata = framemetadata_sp(new PausePlayMetadata());
-	auto frame = makeCommandFrame(metadata->getDataSize(), metadata);
-
-	auto buffer = (unsigned char *)frame->data();
-	memset(frame->data(), play, 1);
+	auto frame = makeCommandFrame(ppCmd.getSerializeSize(), metadata);
+	Utils::serialize(ppCmd, frame->data(), ppCmd.getSerializeSize());
 
 	// add to que
 	frame_container frames;
@@ -919,9 +1040,31 @@ bool Module::play(bool play)
 	if (!Module::try_push(frames))
 	{
 		LOG_ERROR << "failed to push play command to the que";
+		return false;
+	}
+	return true;
+}
+
+bool Module::play(bool _play)
+{
+	if (_play)
+	{
+		return play(1, mDirection);
 	}
 
-	return true;
+	return play(0, mDirection);
+}
+
+bool Module::play(float speed, bool direction)
+{
+	if (!mRunning)
+	{
+		// comes here if module is not running in a thread
+		// comes here when pipeline is started with run_all_threaded_withpause
+		return handlePausePlay(speed, direction);
+	}
+	PlayPauseCommand ppCmd(speed, direction);
+	return queuePlayPauseCommand(ppCmd);
 }
 
 bool Module::queueStep()
@@ -943,6 +1086,23 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	return queueCommand(cmd);
 }
 
+void Module::flushQueRecursive()
+{
+	flushQue();
+
+	// recursively call the flushQue for children modules
+	for (auto it = mModules.begin(); it != mModules.end(); ++it)
+	{
+		it->second->flushQueRecursive();
+	}
+}
+
+void Module::flushQue()
+{
+	LOG_INFO << "mQue flushed for <" << myId << ">";
+	mQue->flush();
+}
+
 bool Module::processSourceQue()
 {
 	frame_container frames;
@@ -957,9 +1117,9 @@ bool Module::processSourceQue()
 
 			if (frame->isPausePlay())
 			{
-				auto buffer = (unsigned char *)frame->data();
-				auto play = buffer[0] ? true : false;
-				handlePausePlay(play);
+				PlayPauseCommand ppCmd;
+				getCommand(ppCmd, frame);
+				handlePausePlay(ppCmd.speed, ppCmd.direction);
 			}
 			else if (frame->isPropsChange())
 			{
@@ -985,11 +1145,17 @@ bool Module::processSourceQue()
 	return true;
 }
 
+bool Module::handlePausePlay(float speed, bool direction)
+{
+	mDirection = direction;
+	return handlePausePlay(speed > 0);
+}
+
 bool Module::handlePausePlay(bool play)
 {
 	mPlay = play;
 	notifyPlay(mPlay);
-
+	mSpeed = mPlay ? 1 : 0;
 	return true;
 }
 
@@ -1052,6 +1218,38 @@ void Module::sendEOS()
 	pair<string, framefactory_sp> me; // map element
 	BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
 	{
+		frames.insert(make_pair(me.first, frame));
+	}
+
+	send(frames, true);
+}
+
+void Module::sendEOS(frame_sp& frame)
+{
+	if (myNature == SINK)
+	{
+		return;
+	}
+	frame_container frames;
+	pair<string, framefactory_sp> me; // map element
+	BOOST_FOREACH(me, mOutputPinIdFrameFactoryMap)
+	{
+		frames.insert(make_pair(me.first, frame));
+	}
+
+	send(frames, true);
+}
+
+void Module::sendMp4ErrorFrame(frame_sp& frame)
+{
+	if (myNature == SINK)
+	{
+		return;
+	}
+
+	frame_container frames;
+	pair<string, framefactory_sp> me; // map element	
+	BOOST_FOREACH(me, mOutputPinIdFrameFactoryMap) {
 		frames.insert(make_pair(me.first, frame));
 	}
 
@@ -1179,6 +1377,18 @@ bool Module::addEoPFrame(frame_container &frames)
 		frame->setMetadata(metadata);
 		frames.insert(make_pair(me.first, frame));
 	}
+
+	// if sieve is disabled for atleast one connection - send additional EOP frames - extra EOP frames downstream shouldn't matter
+	if (mIsSieveDisabledForAny)
+	{
+		pair<string, framemetadata_sp> me; // map element
+		BOOST_FOREACH(me, mInputPinIdMetadataMap)
+		{
+			auto frame = frame_sp(new EoPFrame());
+			frame->setMetadata(me.second);
+			frames.insert(make_pair(me.first, frame));
+		}
+	}
 	return true;
 }
 
@@ -1194,15 +1404,16 @@ bool Module::handleStop()
 	{
 		return true;
 	}
-	if (myNature == SINK)
+	if (myNature != SINK)
 	{
-		mRunning = false;
-		return true;
+		sendEoPFrame();
 	}
-
-	sendEoPFrame();
-
 	mRunning = false;
+	// if pull and not source - call term
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PULL && myNature != SOURCE)
+	{
+		term();
+	}
 
 	return true;
 }

@@ -14,7 +14,8 @@ boost::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::str
 	int startIndex,
 	int maxIndex,
 	bool readLoop,
-	const std::vector<std::string>& files
+	const std::vector<std::string>& files,
+	bool appendFlag
 )
 {
 	bool isDirectory = boost::filesystem::is_directory(strPath);	
@@ -29,14 +30,15 @@ boost::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::str
 	}
 	else
 	{
-		return boost::shared_ptr<FilenameStrategy>(new FilenameStrategy(strPath, startIndex, maxIndex, readLoop));		
+		return boost::shared_ptr<FilenameStrategy>(new FilenameStrategy(strPath, startIndex, maxIndex, readLoop, appendFlag));		
 	}
 }
 
 FilenameStrategy::FilenameStrategy(const std::string& strPath,
 	int startIndex,
 	int maxIndex,
-	bool readLoop)
+	bool readLoop,
+	bool appendFlag = false)
 	: mIsConnected(false),
 	mCurrentIndex(-1),
 	mStartIndex(startIndex),
@@ -44,6 +46,7 @@ FilenameStrategy::FilenameStrategy(const std::string& strPath,
 	mWildCardLen(0),
 	mDirName(strPath),
 	mReadLoop(readLoop),
+	mAppend(appendFlag),
 	mPlay(false)
 {
 
@@ -101,7 +104,8 @@ bool FilenameStrategy::Connect()
 	{
 		mCurrentIndex = mStartIndex;
 		mWildCardLen = (short)std::count(mFileBaseName.begin(), mFileBaseName.end(), CH_WILD_CARD);
-
+		boost::filesystem::path originalPath(origPath);
+		boost::filesystem::path parentPath = originalPath.parent_path();
 		if (mWildCardLen > 0)
 		{
 			const std::string strFileNameWithPattern = mFileBaseName;
@@ -110,7 +114,7 @@ bool FilenameStrategy::Connect()
 			mFileBaseName = strFileNameWithPattern.substr(0, basePos);
 			mFileTailName = strFileNameWithPattern.substr(basePos + mWildCardLen);
 		}
-		else if (!boost::filesystem::exists(boost::filesystem::path(origPath)))
+		else if (!boost::filesystem::exists(boost::filesystem::path(parentPath)))
 		{
 			// if not a directory or pattern .. then it is a single file .. so checking if path exist
 			LOG_ERROR << "DirName " << origPath << " is Invalid";
@@ -198,6 +202,10 @@ std::string FilenameStrategy::GetFileNameToUse(bool checkForExistence, uint64_t&
 
 	}	
 
+	if (mAppend)
+	{
+		mCurrentIndex = 0;
+	}
 	return fileNameToUse;
 }
 

@@ -4,12 +4,11 @@
 #include "BoundBuffer.h"
 #include "CommonDefs.h"
 
-using namespace std;
-
 class FrameContainerQueue :public bounded_buffer<frame_container> {
 public:
 	FrameContainerQueue(size_t capacity);
 	virtual void push(frame_container item);
+	virtual void push_drop_oldest(frame_container item);
 	virtual frame_container pop();
 
 	virtual bool try_push(frame_container item);
@@ -17,6 +16,7 @@ public:
 
 	virtual bool isFull();
 	virtual void clear();
+	virtual void flush();
 	virtual void accept();
 	virtual size_t size();
 
@@ -150,4 +150,3 @@ protected:
 		return item;
 	}
 };
-

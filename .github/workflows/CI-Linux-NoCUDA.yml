@@ -1,0 +1,30 @@
+name: CI-Linux-NoCUDA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
+  
+jobs:
+  linux-nocuda-build-test:
+    uses: ./.github/workflows/build-test-lin.yml
+    with:
+      runner: 'ubuntu-20.04'
+      flav: Linux
+      is-selfhosted: false
+      cuda: 'OFF'
+      nProc: 3
+  linux-nocuda-publish:
+    needs: linux-nocuda-build-test
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: Linux
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      

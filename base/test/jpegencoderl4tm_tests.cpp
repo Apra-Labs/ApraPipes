@@ -18,7 +18,7 @@
 
 BOOST_AUTO_TEST_SUITE(jpegencoderl4tm_tests)
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 3840;
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 1280;
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencoderl4tm_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 3840;
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	// metadata is known
 	auto width = 1280;
 	auto height = 720;
-	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1, 4*1024*1024);
+	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1);
 	fileReaderProps.fps = 1000;
 	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));

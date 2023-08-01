@@ -1,0 +1,197 @@
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        description: 'runner where this job will run'
+        required: true
+      flav: 
+        type: string
+        description: 'flavour of the build: Windows/linux_x64/linux_arm64'
+        required: true
+      buildConf:
+        type: string
+        description: 'build configuration e.g. Release/Debug etc.'
+        default: 'Release'
+        required: false
+      is-selfhosted: 
+        type: boolean
+        description: 'self hosted runners do not need to use cache'
+        required: true
+      skip-test: 
+        type: boolean
+        description: 'should test steps be skipped'
+        default: false
+        required: false
+      cuda: 
+        type: string
+        description: 'ON/OFF based on this runner support cuda'
+        required: true
+      prep-cmd:
+        type: string
+        description: 'commands required to be run on a builder to prep it for build'
+        default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite'
+        required: false
+      prep-check-cmd:
+        type: string
+        description: 'command to check if the builder is ready'
+        default: 'cmake --version ; ninja --version ; git --version; pwsh --version'
+        #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
+        required: false
+      bootstrap-cmd:
+        type: string
+        description: 'commands required to boot strap builder after code checkout'
+        default: './vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install'
+        required: false
+      is-prep-phase:
+        type: boolean
+        description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
+        default: false
+        required: false
+      cache-path:
+        type: string
+        description: 'the folder which needs to be cached e.g. .cache/vcpkg'
+        default: ${{ 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
+        required: false
+      cmake-conf-cmd:
+        type: string
+        description: 'command needed for installing and configuring cmake'
+        default: 'cmake -B . -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 ../base'
+        required: false
+      nProc:
+        type: number
+        description: 'number of threads to be used by cmake/make'
+        default: 6
+        required: false
+      nTestTimeoutMins:
+        type: number
+        description: 'number of mins of timeout for tests run'
+        default: 20
+        required: false        
+jobs:
+  build:
+    env:
+      TEST_EXE: build/${{inputs.buildConf}}/aprapipesut
+      CMAKE_TC_FILE: '${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - name: Prepare builder
+      run: |
+        ${{ inputs.prep-cmd }} 
+        ${{ inputs.prep-check-cmd }} 
+    
+    - name: Check builder for CUDA
+      if: ${{ contains(inputs.cuda,'ON')}} 
+      run: |
+        (nvcc --version) || echo 'please install cuda'
+        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
+        Get-Item Env:CUDA_HOME
+        Get-Item Env:CUDA_PATH
+        echo "CUDA_HOME=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7" >> $GITHUB_ENV
+        echo "CUDA_PATH=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\bin" >> $GITHUB_ENV
+    
+    - name: Cleanup workspace on self hosted runners
+      if: inputs.is-selfhosted
+      run: 'Remove-Item -Recurse -Force *'
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with: 
+        submodules: 'recursive' 
+        lfs: true
+        fetch-depth: 0
+
+    - name: List Submodules
+      run: |
+        git config --global --add safe.directory "*"
+        git submodule status > submodule_ver.txt
+        cat submodule_ver.txt
+        git rev-list --all --count 
+
+    - name: Run VCPKG bootstrap
+      run: ${{ inputs.bootstrap-cmd }}
+
+    - name: Remove CUDA from vcpkg if we are in nocuda
+      if: ${{ contains(inputs.cuda,'OFF')}} 
+      working-directory: ${{github.workspace}}/base
+      run: .\fix-vcpkg-json.ps1 -removeCUDA
+      shell: pwsh
+
+    - name: Leave only OpenCV from vcpkg during prep phase
+      if: inputs.is-prep-phase
+      working-directory: ${{github.workspace}}/base
+      run: .\fix-vcpkg-json.ps1 -onlyOpenCV
+      shell: pwsh
+
+    # - name: cache init on container build
+    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
+    #   run: |
+    #     cp -R /root/.cache /github/home/ || true
+    #     ls ${{ inputs.cache-path }} || true
+    #   continue-on-error: true
+
+    - name: Cache dependencies for fast cloud build
+      id: cache-all
+      uses: actions/cache@v3
+      with:
+          path: |
+            ${{ inputs.cache-path }}
+          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ inputs.flav }}-
+    
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+
+    - name: Configure CMake Common
+      working-directory: ${{github.workspace}}/build
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+
+    - name: Remove files not needed for the build
+      if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only
+      working-directory: ${{github.workspace}}
+      run: remove-item vcpkg/downloads -Recurse -Force && remove-item * -Recurse -Force -Include *.pdb,*.ilk
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Build
+      if: ${{!inputs.is-prep-phase}}
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
+
+    - name: List Test cases
+      if: ${{!inputs.is-prep-phase}}
+      run: |
+        ${{env.TEST_EXE}} --list_content > tests.txt
+      timeout-minutes: 1
+
+    - name: Run Tests
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      run: |
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: ${{ inputs.nTestTimeoutMins}}
+    
+    - name: Upload Test Results
+      if: ${{ always() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v3
+      with:
+        name: TestResults_${{ inputs.flav }}
+        path: |
+          CI_test_result_${{inputs.flav}}.xml
+      
+
+    - name: Upload build logs 
+      if:  ${{ failure() }} # only upload logs when we have a failure above
+      uses: actions/upload-artifact@v3
+      with:
+        name: BuildLogs_${{ inputs.flav }}
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+
+
+

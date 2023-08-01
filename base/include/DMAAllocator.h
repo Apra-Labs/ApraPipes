@@ -2,6 +2,9 @@
 #include "Allocators.h"
 #include "DMAFDWrapper.h"
 #include "nvbuf_utils.h"
+#include "ImageMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "ApraEGLDisplay.h"
 #include "Logger.h"
@@ -26,6 +29,9 @@ private:
         case ImageMetadata::UYVY:
             colorFormat = NvBufferColorFormat_UYVY;
             break;
+        case ImageMetadata::YUYV:
+            colorFormat = NvBufferColorFormat_YUYV;
+            break;      
         case ImageMetadata::RGBA:
             colorFormat = NvBufferColorFormat_ABGR32;
             break;
@@ -92,7 +98,7 @@ public:
         }
     }
 
-    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType)
+    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType,size_t pitchValues[4] = nullptr, size_t offsetValues[4] = nullptr)
     {
         auto eglDisplay = ApraEGLDisplay::getEGLDisplay();
         auto colorFormat = getColorFormat(imageType);
@@ -129,14 +135,19 @@ public:
                 type = CV_8UC4;
                 break;
             case ImageMetadata::ImageType::UYVY:
+            case ImageMetadata::ImageType::YUYV:
                 type = CV_8UC3;
-                break;
+                break;    
             default:
                 throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
             }
             auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
             RawImageMetadata rawMetadata(width, height, imageType, type, fdParams.pitch[0], CV_8U, FrameMetadata::MemType::DMABUF, false);
             inputRawMetadata->setData(rawMetadata);
+            if(pitchValues != nullptr)
+            {
+              pitchValues[0] = fdParams.pitch[0];
+            }
         }
         break;
         case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
@@ -146,6 +157,14 @@ public:
             for (auto i = 0; i < fdParams.num_planes; i++)
             {
                 step[i] = fdParams.pitch[i];
+                if(pitchValues != nullptr)
+                {
+                  pitchValues[i] = fdParams.pitch[i];
+                }
+                if(offsetValues != nullptr)
+                {
+                  offsetValues[i] = fdParams.offset[i];
+                }
             }
             RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
             inputRawMetadata->setData(rawMetadata);

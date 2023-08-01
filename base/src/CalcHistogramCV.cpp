@@ -4,6 +4,8 @@
 #include "CalcHistogramCV.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
+#include "ArrayMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Utils.h"
 #include "Logger.h"

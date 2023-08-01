@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(sample)
 
 	loggerProps.fileLogPath = "hello_" + tsstr + ".log";
 	Logger::initLogger(loggerProps);
-	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex, 200 * 1024);
+	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex);
 	fileReaderModuleProps.fps = 2000;
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
 	auto srcMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(sample2)
 
 BOOST_AUTO_TEST_CASE(sample3)
 {
-	LOG_ERROR << "HOLA SAMPLE3";
+	LOG_DEBUG << "HOLA SAMPLE3";
 	boost::this_thread::sleep_for(boost::chrono::seconds(2));
 }
 

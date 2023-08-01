@@ -12,7 +12,12 @@ BOOST_AUTO_TEST_SUITE(rtsppusher_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
-	std::string dataPath = Test_Utils::getArgValue("data", "./data/ArgusCamera");
+	std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/frame.bin"); //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/9bfe"); //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/84e9");  //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-1");  //works
+	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-rec");  //works
+	
 	std::string rtspServer = Test_Utils::getArgValue("rtspserver", "rtsp://10.102.10.81:5544");
 	
 	auto encoderTargetKbpsStr = Test_Utils::getArgValue("bitrate", "4096");
@@ -20,7 +25,6 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps(dataPath);
 	fileReaderProps.fps = 30;
-	fileReaderProps.maxFileSize = 200*1024;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
 	fileReader->addOutputPin(metadata);
@@ -37,13 +41,13 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(500000000000000));
 
-	LOG_ERROR << "STOPPING";
+	LOG_INFO << "STOPPING";
 
 	p.stop();
 	p.term();
-	LOG_ERROR << "WAITING";
+	LOG_INFO << "WAITING";
 	p.wait_for_all();
-	LOG_ERROR << "TEST DONE";
+	LOG_INFO << "TEST DONE";
 }
 
 BOOST_AUTO_TEST_SUITE_END()

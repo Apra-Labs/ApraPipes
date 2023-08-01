@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 
 BOOST_AUTO_TEST_SUITE(imagemetadata_tests)
@@ -188,6 +189,32 @@ BOOST_AUTO_TEST_CASE(rawimageplanar_yuv444)
 		BOOST_TEST(ptr->getChannels() == channels);
 		BOOST_TEST(ptr->getDataSize() == step[0] * height * channels);
 	}
+}
+
+BOOST_AUTO_TEST_CASE(rawplanar_offset)
+{
+	int width = 1920;
+	int height = 1080;
+	size_t step[4] = { 2048, 2048, 2048 };
+	size_t mnextPtrOffset[4] = { 0, 2000,350, 0 };
+	int channels = 3;
+	int depth = CV_8U;
+
+	{
+		auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::YUV444,depth,step, mnextPtrOffset, FrameMetadata::HOST));
+
+		auto ptr = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+		for (auto i = 0; i < channels; i++)
+		{
+			BOOST_TEST(ptr->getWidth(i) == width);
+			BOOST_TEST(ptr->getHeight(i) == height);
+			BOOST_TEST(ptr->getStep(i) == step[i]);
+			BOOST_TEST(ptr->getNextPtrOffset(i) == mnextPtrOffset[i]);
+		}
+		BOOST_TEST(ptr->getChannels() == channels);
+		BOOST_TEST(ptr->getDataSize() == 0);
+	}
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

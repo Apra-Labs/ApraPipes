@@ -49,8 +49,9 @@ public:
 			_step = _width;
 			break;
 		case ImageMetadata::UYVY:
+		case ImageMetadata::YUYV:
 			_step = _width * 2;
-			break;
+			break;	
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
 			_step = _width * 3;
@@ -61,6 +62,15 @@ public:
 		case ImageMetadata::RGBA:
 		case ImageMetadata::BGRA:
 			_step = _width * 4;
+			break;
+		case ImageMetadata::BAYERBG10:
+			_step = _width * 2;
+			break;
+		case ImageMetadata::BAYERBG8:
+		case ImageMetadata::BAYERGB8:
+		case ImageMetadata::BAYERGR8:
+		case ImageMetadata::BAYERRG8:
+			_step = _width * 1;
 			break;
 		default:
 			auto msg = "Unknown image type<" + std::to_string(imageType) + ">";
@@ -130,6 +140,7 @@ public:
 		case ImageMetadata::MONO:
 			multiple = 1;
 			break;
+		case ImageMetadata::YUYV:
 		case ImageMetadata::UYVY:
 			multiple = 2;
 			break;
@@ -197,6 +208,7 @@ protected:
 		case ImageMetadata::MONO:
 			channels = 1;
 			break;
+		case ImageMetadata::YUYV:	
 		case ImageMetadata::UYVY:
 		case ImageMetadata::BGR:
 		case ImageMetadata::RGB:
@@ -206,6 +218,13 @@ protected:
 		case ImageMetadata::RGBA:
 		case ImageMetadata::BGRA:
 			channels = 4;
+			break;
+		case ImageMetadata::BAYERBG10:
+		case ImageMetadata::BAYERBG8:
+		case ImageMetadata::BAYERGB8:
+		case ImageMetadata::BAYERGR8:
+		case ImageMetadata::BAYERRG8:
+			channels = 1;
 			break;
 		default:
 			auto msg = "Unknown image type<" + std::to_string(imageType) + ">";

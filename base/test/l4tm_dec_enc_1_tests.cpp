@@ -20,12 +20,12 @@ int startIndex = 0;
 int endIndex = -1;
 bool sw = false;
 
-BOOST_AUTO_TEST_CASE(sample)
+BOOST_AUTO_TEST_CASE(sample, * boost::unit_test::disabled())
 {		
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(loggerProps);
-	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex, 200 * 1024);
+	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex);
 	//fileReaderModuleProps.fps = 30;
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));

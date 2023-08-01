@@ -11,10 +11,11 @@
 #include "CudaMemCopy.h"
 #include "ResizeNPPI.h"
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(resizenppi_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported()))
 {	
 	auto width = 1920;
 	auto height = 1080;
@@ -58,7 +59,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080)
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_mono_1920x1080_to_960x540.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
+BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 960;
@@ -102,7 +103,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA)
 	Test_Utils::saveOrCompare("./data/testOutput/resizenppi_tests_overlay_1920x960_BGRA_to_960x480_C4.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 640;

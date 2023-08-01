@@ -4,7 +4,8 @@
 #include <boost/thread/condition.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/call_traits.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
 
 template <class T>
 class bounded_buffer
@@ -36,6 +37,26 @@ public:
 			lock.unlock();
 		}
 	}
+
+	void push_drop_oldest(typename boost::call_traits<value_type>::param_type item)
+	{ 
+		boost::mutex::scoped_lock lock(m_mutex);
+		if(!m_accept) return; // we are not accepting yet so drop what came in
+
+		if(is_not_full()) 
+		{
+			++m_unread;
+		}
+		else // we are full 
+		{
+			//note: m_unread does not change in this case.
+			m_container.pop_back();//to drop the oldest
+		}
+		m_container.push_front(item);
+		lock.unlock();
+		m_not_empty.notify_one(); //let them know we have a new sample
+	}
+
 
 	bool try_push(typename boost::call_traits<value_type>::param_type item)
 	{
@@ -96,6 +117,13 @@ public:
 		m_not_full.notify_one();
 
 		lock.unlock();
+	}
+
+	void flush() {
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_container.clear();
+		m_unread = 0;
+		m_not_full.notify_one();
 	}
 
 	void accept() {

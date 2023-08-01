@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -11,10 +12,13 @@
 #include "FrameFactory.h"
 #include "CommonDefs.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "QuePushStrategy.h"
 #include "FIndexStrategy.h"
 #include "Command.h"
+#include "BufferMaker.h"
 
 using namespace std;
 
@@ -25,6 +29,10 @@ class PaceMaker;
 class ModuleProps
 {
 public:	
+	enum FrameFetchStrategy {
+		PUSH,
+		PULL
+	};
 	ModuleProps()
 	{
 		fps = 60;
@@ -34,9 +42,10 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
-	ModuleProps(int _fps)
+	ModuleProps(float _fps)
 	{
 		fps = _fps;
 		qlen = 20;
@@ -45,9 +54,10 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
 	}
 
-	ModuleProps(int _fps, size_t _qlen, bool _logHealth)
+	ModuleProps(float _fps, size_t _qlen, bool _logHealth)
 	{
 		fps = _fps;
 		qlen = _qlen;
@@ -56,6 +66,19 @@ public:
 		quePushStrategyType = QuePushStrategy::BLOCKING;
 		maxConcurrentFrames = 0;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = FrameFetchStrategy::PUSH;
+	}
+
+	ModuleProps(FrameFetchStrategy _frameFetchStrategy)
+	{
+		fps = 60;
+		qlen = 20;
+		logHealth = false;		
+		logHealthFrequency = 1000;
+		quePushStrategyType = QuePushStrategy::BLOCKING;
+		maxConcurrentFrames = 0;
+		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
+		frameFetchStrategy = _frameFetchStrategy;
 	}
 
 	size_t getQLen()
@@ -69,7 +92,7 @@ public:
 		return 1024 + sizeof(fps) + sizeof(qlen) + sizeof(logHealth) + sizeof(logHealthFrequency) + sizeof(maxConcurrentFrames) + sizeof(skipN) + sizeof(skipD) + sizeof(quePushStrategyType) + sizeof(fIndexStrategyType);
 	}
 
-	int fps; // can be updated during runtime with setProps
+	float fps; // can be updated during runtime with setProps
 	size_t qlen; // run time changing doesn't effect this
 	bool logHealth; // can be updated during runtime with setProps
 	int logHealthFrequency; // 1000 by default - logs the health stats frequency
@@ -88,7 +111,8 @@ public:
 	// skipD >= skipN
 	int skipN = 0; 
 	int skipD = 1; 
-
+	//have one more enum and then in module.cpp dont call run if the enum is pull type.
+	FrameFetchStrategy frameFetchStrategy;
 	QuePushStrategy::QuePushStrategyType quePushStrategyType;
 	FIndexStrategy::FIndexStrategyType fIndexStrategyType;
 		
@@ -98,7 +122,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD & quePushStrategyType & fIndexStrategyType;
+		ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames & skipN & skipD & quePushStrategyType & fIndexStrategyType & frameFetchStrategy;
 	}
 };
 
@@ -128,7 +152,7 @@ public:
 	vector<string> getAllOutputPinsByType(int type);
 	void addOutputPin(framemetadata_sp& metadata, string& pinId);
 	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
-	bool setNext(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
+	virtual bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = true); // take all the output pins			
 	bool addFeedback(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open = true); 
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
@@ -138,18 +162,23 @@ public:
 	virtual bool init();
 	void operator()(); //to support boost::thread
 	virtual bool run();	
+	bool play(float speed, bool direction = true);
 	bool play(bool play);
 	bool queueStep();
 	virtual bool step();
 	virtual bool stop();
 	virtual bool term();
 	virtual bool isFull();
+	bool isNextModuleQueFull();
 
 	void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
 	
 	void register_consumer(boost::function<void(Module*, unsigned short)>, bool bFatal=false);
 	boost::shared_ptr<PaceMaker> getPacer() { return pacer; }	
-	static frame_sp getFrameByType(frame_container& frames, int frameType);	
+	static frame_sp getFrameByType(frame_container& frames, int frameType); 
+	virtual void flushQue();
+	bool getPlayDirection() { return mDirection; }
+	virtual void flushQueRecursive();
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
@@ -213,6 +242,7 @@ protected:
 		Utils::deSerialize(cmd, frame->data(), frame->size());
 	}
 	
+	bool queuePlayPauseCommand(PlayPauseCommand ppCmd);
 	frame_sp makeCommandFrame(size_t size, framemetadata_sp& metadata);
 	frame_sp makeFrame(size_t size, string& pinId);
 	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
@@ -225,6 +255,8 @@ protected:
 		
 	virtual bool send(frame_container& frames, bool forceBlockingPush=false);
 	virtual void sendEOS();	
+	virtual void sendEOS(frame_sp& frame);
+	virtual void sendMp4ErrorFrame(frame_sp& frame);
 	virtual void sendEoPFrame();
 	
 	boost::function<void () > onStepFail;
@@ -249,10 +281,20 @@ protected:
 	virtual bool validateOutputPins(); // invoked with addOutputPin
 	virtual bool validateInputOutputPins() { return validateInputPins() && validateOutputPins(); } // invoked during Module::init before anything else
 				
-	size_t getNumberOfOutputPins() { return mOutputPinIdFrameFactoryMap.size(); }
+	size_t getNumberOfOutputPins(bool implicit = true) 
+	{ 
+		auto pinCount = mOutputPinIdFrameFactoryMap.size(); 
+		// override the implicit behaviour 
+		if (!implicit) 
+		{ 
+			pinCount += mInputPinIdMetadataMap.size(); 
+		} 
+		return pinCount;
+	}
 	size_t getNumberOfInputPins() { return mInputPinIdMetadataMap.size(); }
 	framemetadata_sp getFirstInputMetadata();
 	framemetadata_sp getFirstOutputMetadata();
+	framemetadata_sp getOutputMetadata(string outPinID);
 	metadata_by_pin& getInputMetadata() { return mInputPinIdMetadataMap; }
 	framefactory_by_pin& getOutputFrameFactory() { return mOutputPinIdFrameFactoryMap; }
 	framemetadata_sp getInputMetadataByType(int type);
@@ -264,8 +306,8 @@ protected:
 	string getInputPinIdByType(int type);
 	string getOutputPinIdByType(int type);		
 	
-	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback); // take all the output pins			
-	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback); 
+	bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback, bool sieve); // take all the output pins			
+	bool setNext(boost::shared_ptr<Module> next, vector<string>& pinIdArr, bool open, bool isFeedback, bool sieve); 
 	void addInputPin(framemetadata_sp& metadata, string& pinId, bool isFeedback); 
 	virtual void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails	
 	boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
@@ -281,8 +323,26 @@ protected:
 
 	bool processSourceQue();
 	bool handlePausePlay(bool play);
+	virtual bool handlePausePlay(float speed = 1, bool direction = true);
 	virtual void notifyPlay(bool play) {}
+
+	//makes buffers from frameFactory
+	class FFBufferMaker : public BufferMaker {
+	public:
+		FFBufferMaker(Module& module);
+		virtual void* make(size_t dataSize);
+		frame_sp getFrame() {
+			return frameIMade;
+		}
+	private:
+		Module& myModule;
+		frame_sp frameIMade;
+	};
+
+	FFBufferMaker createFFBufferMaker();
+
 private:	
+	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
@@ -316,6 +376,8 @@ private:
 	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
 	
 	bool mPlay;
+	bool mDirection;
+	float mSpeed;
 	uint32_t mForceStepCount;
 	int mSkipIndex;
 	Kind myNature;
@@ -326,6 +388,7 @@ private:
 	bool mRunning;
 	uint32_t mStopCount;
 	uint32_t mForwardPins;
+	bool mIsSieveDisabledForAny = false;
 	boost::shared_ptr<FrameFactory> mpFrameFactory;
 	boost::shared_ptr<FrameFactory> mpCommandFactory;
 	boost::shared_ptr<PaceMaker> pacer;
