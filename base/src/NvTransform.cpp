@@ -21,7 +21,30 @@ public:
 		src_rect.height = _props.height;
 
 		memset(&transParams, 0, sizeof(transParams));
-		transParams.transform_filter = NvBufferTransform_Filter_Smart;
+		switch(_props.filterType)
+		{
+		case NvTransformProps::NvTransformFilter::NEAREST:
+			transParams.transform_filter = NvBufferTransform_Filter_Nearest;
+			break;
+		case NvTransformProps::NvTransformFilter::BILINEAR:
+			transParams.transform_filter = NvBufferTransform_Filter_Bilinear;
+			break;
+		case NvTransformProps::NvTransformFilter::TAP_5:
+			transParams.transform_filter = NvBufferTransform_Filter_5_Tap;
+			break;
+		case NvTransformProps::NvTransformFilter::TAP_10:
+			transParams.transform_filter = NvBufferTransform_Filter_10_Tap;
+			break;
+		case NvTransformProps::NvTransformFilter::SMART:
+			transParams.transform_filter = NvBufferTransform_Filter_Smart;
+			break;
+		case NvTransformProps::NvTransformFilter::NICEST:
+			transParams.transform_filter = NvBufferTransform_Filter_Nicest;		
+			break;
+		default:
+			throw AIPException(AIP_FATAL, "Filter Not Supported");
+		}
+		
 		if (src_rect.width != 0)
 		{
 			transParams.src_rect = src_rect;
@@ -216,6 +239,12 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 		width = mDetail->props.width;
 		height = mDetail->props.height;
 	}
+	if(mDetail->props.scaleHeight != 0 && mDetail->props.scaleWidth != 0)
+	{
+		width = width * mDetail->props.scaleWidth;
+		height = height * mDetail->props.scaleHeight;
+	}
+
 
 	DMAAllocator::setMetadata(mDetail->outputMetadata, width, height, mDetail->props.imageType);
 }

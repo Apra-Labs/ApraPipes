@@ -12,6 +12,9 @@
 #include "H264Metadata.h"
 #include "H264Utils.h"
 #include "ExternalSinkModule.h"
+#include "Mp4ReaderSource.h"
+#include "ExternalSourceModule.h"
+#include <boost/filesystem.hpp>
 
 BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
@@ -28,7 +31,7 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	Logger::initLogger(loggerProps);
 
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
-	fileReaderProps.fps = 100;
+	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = readLoop;
 
 	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
@@ -61,6 +64,8 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
 }
 void write(std::string inFolderPath, std::string outFolderPath, int width, int height, int chunkTime = 1)
 {
@@ -103,6 +108,8 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
 }
 
 void write_metadata(std::string inFolderPath, std::string outFolderPath, std::string metadataPath, int width, int height, int fps)
@@ -159,6 +166,53 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
+}
+
+void read_write(std::string videoPath, std::string outPath, int width, int height,framemetadata_sp metadata,
+	bool recordedTSBasedDTS, bool parseFS = true, int chunkTime = 1)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	boost::filesystem::path dir(outPath);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS,0,true,false,false);
+	mp4ReaderProps.logHealth = true;
+	mp4ReaderProps.logHealthFrequency = 300;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+	mp4Reader->addOutPutPin(metadata);
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 30, outPath, recordedTSBasedDTS);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 300;
+	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	mp4Reader->setNext(mp4WriterSink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(8));
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+
+	Test_Utils::deleteFolder(outPath);
 }
 
 BOOST_AUTO_TEST_CASE(jpg_rgb_24_to_mp4v)
@@ -249,19 +303,22 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	LOG_ERROR << "processing folder <" << inFolderPath << ">";
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(20);
+	Test_Utils::sleep_for_seconds(10);
 
 	Mp4WriterSinkProps propschange = mp4WriterSink->getProps();
 	propschange.chunkTime = 2;
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(70);
+	Test_Utils::sleep_for_seconds(10);
 
 	p->stop();
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
+	Test_Utils::deleteFolder(changedOutFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(h264_to_mp4v)
@@ -337,6 +394,8 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(parsenalu)
@@ -452,12 +511,15 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	propschange.baseFolder = changedOutFolderPath;
 	mp4WriterSink->setProps(propschange);
 
-	Test_Utils::sleep_for_seconds(60);
+	Test_Utils::sleep_for_seconds(20);
 	
 	p->stop();
 	p->term();
 	p->wait_for_all();
 	p.reset();
+
+	Test_Utils::deleteFolder(outFolderPath);
+	Test_Utils::deleteFolder(changedOutFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(single_file_given_name_jpeg)
@@ -477,7 +539,132 @@ BOOST_AUTO_TEST_CASE(single_file_given_name_h264)
 	// custom name is only supported while writing to single video file (chunktime = UINT32_MAX).
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/apraH264.mp4";
 
-	writeH264(true,80,outFolderPath, UINT32_MAX);
+	writeH264(true,10,outFolderPath, UINT32_MAX);
 }
 
+BOOST_AUTO_TEST_CASE(write_mp4video_h264_step)
+{
+	std::string inFolderPath = "./data/h264_data";
+	std::string metadataPath = "./data/Metadata/";
+	std::string outPath = "data/testOutput/mp4_videos/h264/step/stepvideo.mp4";
+	int width = 704;
+	int height = 576;
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
+	fileReaderProps.fps = 24;
+	fileReaderProps.readLoop = false;
+
+	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
+	fileReader->addOutputPin(h264ImageMetadata);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, 100, outPath);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 100;
+	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	fileReader->setNext(mp4WriterSink);
+
+	fileReader->play(true);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(mp4WriterSink->init());
+
+	for (int i = 0; i < 230; i++)
+	{
+		fileReader->step();
+		mp4WriterSink->step();
+	}
+	fileReader->term();
+	mp4WriterSink->term();
+	boost::filesystem::path mp4fileName = "data/testOutput/mp4_videos/h264/step/stepvideo.mp4";
+	auto fileSize = boost::filesystem::file_size(mp4fileName);
+	//checking the size of mp4 file
+	BOOST_TEST(fileSize, 4270314);
+
+	Test_Utils::deleteFolder(mp4fileName.string());
+
+}
+
+BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
+{
+	std::string videoMetadata =  "aprapipes";
+	std::string inFolderPath = "./data/h264_data";
+	std::string outPath = "data/testOutput/mp4_videos/h264_metadata/step/stepvideo.mp4";
+	int width = 704;
+	int height = 576;
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
+	fileReaderProps.fps = 24;
+	fileReaderProps.readLoop = true;
+
+	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto encodedImageMetadata = framemetadata_sp(new H264Metadata(width, height));
+	fileReader->addOutputPin(encodedImageMetadata);
+
+
+	auto metadataSource = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
+	auto metadataPinId = metadataSource->addOutputPin(mp4Metadata);
+
+	FramesMuxerProps muxerProps;
+	muxerProps.strategy = FramesMuxerProps::MAX_DELAY_ANY;
+	muxerProps.maxDelay = 0;
+	auto readerMuxer = boost::shared_ptr<Module>(new FramesMuxer(muxerProps));
+	fileReader->setNext(readerMuxer);
+	metadataSource->setNext(readerMuxer);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, fileReaderProps.fps, outPath);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 100;
+	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	readerMuxer->setNext(mp4WriterSink);
+
+	fileReader->play(true);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(metadataSource->init());
+	BOOST_TEST(readerMuxer->init());
+	BOOST_TEST(mp4WriterSink->init());
+	for (int i = 0; i < 230; i++)
+	{
+		fileReader->step();
+		auto metaFrame = metadataSource->makeFrame(0, metadataPinId);
+		if (i % 6 == 0)
+		{
+			//write metadata to only every 6th frame . For every other frame the metadata size will be 0. All the 230 frames with 230 entries for metadata as well
+			metaFrame = metadataSource->makeFrame(videoMetadata.size(), metadataPinId);
+			memcpy(metaFrame->data(), videoMetadata.data(), videoMetadata.size());
+		}
+		//writing the current timestamp to the file .
+		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+		metaFrame->timestamp = dur.count();
+		frame_container frames;
+		frames.insert(make_pair(metadataPinId, metaFrame));
+		metadataSource->send(frames);
+		readerMuxer->step();
+		readerMuxer->step();
+		mp4WriterSink->step();
+	}
+	fileReader->term();
+	metadataSource->term();
+	readerMuxer->term();
+	mp4WriterSink->term();
+	boost::filesystem::path mp4FileName = "data/testOutput/mp4_videos/h264_metadata/step/stepvideo.mp4";
+	auto fileSize = boost::filesystem::file_size(mp4FileName);
+	BOOST_TEST(fileSize == 4270665);
+
+	Test_Utils::deleteFolder(mp4FileName.string());
+}
 BOOST_AUTO_TEST_SUITE_END()

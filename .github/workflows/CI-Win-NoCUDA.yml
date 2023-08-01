@@ -17,7 +17,6 @@ jobs:
       flav: 'Win-nocuda'
       cuda: 'OFF'
       is-selfhosted: false
-      is-build-gst: false # part of vcpkg on windows
       is-prep-phase: true
       nProc: 3
   win-nocuda-build-test:
@@ -28,7 +27,6 @@ jobs:
       flav: 'Win-nocuda'
       is-selfhosted: false
       cuda: 'OFF'
-      is-build-gst: false # part of vcpkg on windows
       is-prep-phase: false
       nProc: 3
   win-nocuda-publish:

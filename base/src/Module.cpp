@@ -121,7 +121,7 @@ private:
 	double mPipelineFps;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
+Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), mPlay(true), mDirection(true), mForceStepCount(0), mStopCount(0), mForwardPins(0), myNature(nature), myName(name), mSkipIndex(0)
 {
 	static int moduleCounter = 0;
 	moduleCounter += 1;
@@ -1028,20 +1028,11 @@ bool Module::shouldTriggerSOS()
 	return false;
 }
 
-bool Module::play(bool play)
+bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
 {
-	if (!mRunning)
-	{
-		// comes here if module is not running in a thread
-		// comes here when pipeline is started with run_all_threaded_withpause
-		return handlePausePlay(play);
-	}
-
 	auto metadata = framemetadata_sp(new PausePlayMetadata());
-	auto frame = makeCommandFrame(metadata->getDataSize(), metadata);
-
-	auto buffer = (unsigned char *)frame->data();
-	memset(frame->data(), play, 1);
+	auto frame = makeCommandFrame(ppCmd.getSerializeSize(), metadata);
+	Utils::serialize(ppCmd, frame->data(), ppCmd.getSerializeSize());
 
 	// add to que
 	frame_container frames;
@@ -1049,9 +1040,31 @@ bool Module::play(bool play)
 	if (!Module::try_push(frames))
 	{
 		LOG_ERROR << "failed to push play command to the que";
+		return false;
+	}
+	return true;
+}
+
+bool Module::play(bool _play)
+{
+	if (_play)
+	{
+		return play(1, mDirection);
 	}
 
-	return true;
+	return play(0, mDirection);
+}
+
+bool Module::play(float speed, bool direction)
+{
+	if (!mRunning)
+	{
+		// comes here if module is not running in a thread
+		// comes here when pipeline is started with run_all_threaded_withpause
+		return handlePausePlay(speed, direction);
+	}
+	PlayPauseCommand ppCmd(speed, direction);
+	return queuePlayPauseCommand(ppCmd);
 }
 
 bool Module::queueStep()
@@ -1104,9 +1117,9 @@ bool Module::processSourceQue()
 
 			if (frame->isPausePlay())
 			{
-				auto buffer = (unsigned char *)frame->data();
-				auto play = buffer[0] ? true : false;
-				handlePausePlay(play);
+				PlayPauseCommand ppCmd;
+				getCommand(ppCmd, frame);
+				handlePausePlay(ppCmd.speed, ppCmd.direction);
 			}
 			else if (frame->isPropsChange())
 			{
@@ -1132,11 +1145,17 @@ bool Module::processSourceQue()
 	return true;
 }
 
+bool Module::handlePausePlay(float speed, bool direction)
+{
+	mDirection = direction;
+	return handlePausePlay(speed > 0);
+}
+
 bool Module::handlePausePlay(bool play)
 {
 	mPlay = play;
 	notifyPlay(mPlay);
-
+	mSpeed = mPlay ? 1 : 0;
 	return true;
 }
 
@@ -1199,6 +1218,38 @@ void Module::sendEOS()
 	pair<string, framefactory_sp> me; // map element
 	BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
 	{
+		frames.insert(make_pair(me.first, frame));
+	}
+
+	send(frames, true);
+}
+
+void Module::sendEOS(frame_sp& frame)
+{
+	if (myNature == SINK)
+	{
+		return;
+	}
+	frame_container frames;
+	pair<string, framefactory_sp> me; // map element
+	BOOST_FOREACH(me, mOutputPinIdFrameFactoryMap)
+	{
+		frames.insert(make_pair(me.first, frame));
+	}
+
+	send(frames, true);
+}
+
+void Module::sendMp4ErrorFrame(frame_sp& frame)
+{
+	if (myNature == SINK)
+	{
+		return;
+	}
+
+	frame_container frames;
+	pair<string, framefactory_sp> me; // map element	
+	BOOST_FOREACH(me, mOutputPinIdFrameFactoryMap) {
 		frames.insert(make_pair(me.first, frame));
 	}
 

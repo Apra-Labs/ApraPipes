@@ -1,77 +1,75 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-    "name": "apra-pipes-cuda",
-    "version": "0.0.1",
-    "builtin-baseline": "4a77ae1e4c31a103a25499f2a56791340da73318",
-    "dependencies": [
-        {
-            "name": "opencv4",
-            "default-features": false,
-            "features": [
-                "contrib",
-                "cuda",
-                "cudnn",
-                "dnn",
-                "jpeg",
-                "nonfree",
-                "png",
-                "tiff",
-                "webp"
-            ]
-        },
-        "ffmpeg",
-        "bigint",
-        "boost-math",
-        "boost-system",
-        "boost-thread",
-        "boost-filesystem",
-        "boost-serialization",
-        "boost-log",
-        "boost-chrono",
-        "boost-test",
-        "boost-iostreams",
-        "boost-dll",
-        "nu-book-zxing-cpp",
-        "liblzma",
-        "bzip2",
-        "zlib",
-        "sfml",
-        {
-            "name": "glib",
-            "default-features": false,
-            "features": [
-                "libmount"
-            ],
-            "platform": "(linux \u0026 x64)",
-            "$reason": "skip linux:arm64 and windows"
-        },
-        {
-            "name": "glib",
-            "default-features": true,
-            "platform": "windows"
-        },
-        {
-            "name": "hiredis",
-            "platform": "!arm64"
-        },
-        {
-            "name": "redis-plus-plus",
-            "platform": "!arm64"
-        },
-        {
-            "name": "gstreamer",
-            "features": [
-                "plugins-good",
-                "plugins-bad",
-                "plugins-ugly"
-            ],
-            "platform": "!linux",
-            "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
-        },
-        {
-            "name": "gst-rtsp-server",
-            "platform": "!linux",
-            "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
-        }
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-cuda",
+  "version": "0.0.1",
+  "builtin-baseline": "dfc14cc037906d7f11da10a8e3cdc6ad9023be38",
+  "dependencies": [
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+          "contrib",
+          "cuda",
+          "cudnn",
+          "dnn",
+          "jpeg",
+          "nonfree",
+          "png",
+          "tiff",
+          "webp"
+      ]
+  },
+    "libjpeg-turbo",
+    "openh264",
+    "ffmpeg",
+    "bigint",
+    "boost-math",
+    "boost-system",
+    "boost-thread",
+    "boost-filesystem",
+    "boost-serialization",
+    "boost-log",
+    "boost-chrono",
+    "boost-test",
+    "boost-iostreams",
+    "boost-dll",
+    "nu-book-zxing-cpp",
+    "liblzma",
+    "bzip2",
+    "zlib",
+    "sfml",
+    {
+      "name": "glib",
+      "default-features": false,
+      "features": [
+        "libmount"
+      ],
+        "platform": "(linux \u0026 x64)",
+        "$reason": "skip linux:arm64 and windows"
+      },
+      {
+        "name": "glib",
+        "default-features": true,
+        "platform": "windows"
+      },
+      {
+        "name": "hiredis",
+        "platform": "!arm64"
+      },
+      {
+        "name": "redis-plus-plus",
+        "platform": "!arm64"
+      },
+      {
+        "name": "re",
+        "platform": "!windows"
+      },
+      {
+        "name": "baresip",
+        "platform": "!windows"
+      },
+      {
+        "name": "libmp4"
+      }
     ]
-}
+  }

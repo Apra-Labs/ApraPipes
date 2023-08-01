@@ -30,6 +30,7 @@
 #include "NvLogging.h"
 #include "nvbuf_utils.h"
 #include "NvElement.h"
+#include "Logger.h"
 #include <cstring>
 #include <sys/time.h>
 
@@ -52,7 +53,7 @@ PFNGLEGLIMAGETARGETTEXTURE2DOESPROC     NvEglRenderer::glEGLImageTargetTexture2D
 
 using namespace std;
 
-NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset)
+NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset , bool displayOnTop)
 {
     int depth;
     int screen_num;
@@ -109,7 +110,19 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     window_attributes.background_pixel =
         BlackPixel(x_display, DefaultScreen(x_display));
 
-    window_attributes.override_redirect = 1;
+    window_attributes.override_redirect = displayOnTop;
+    Atom WM_HINTS; 
+    if(window_attributes.override_redirect == 0)
+    { 
+       struct
+       {
+          unsigned long flags;
+          unsigned long functions;
+          unsigned long decorations;
+          long inputMode;
+          unsigned long status;
+       } WM_HINTS = { (1L << 1), 0, 0, 0, 0 }; // this we added to remove title bar
+    }
 
     x_window = XCreateWindow(x_display,
                              DefaultRootWindow(x_display), x_offset,
@@ -119,6 +132,25 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
                              CopyFromParent,
                              (CWBackPixel | CWOverrideRedirect),
                              &window_attributes);
+
+    
+    if(window_attributes.override_redirect == 0)
+    {
+       XStoreName(x_display, x_window, "ApraEglRenderer");
+       XFlush(x_display);
+    
+       XSizeHints hints;
+       hints.x = x_offset;
+       hints.y = y_offset;
+       hints.width = width;
+       hints.height = height;
+       hints.flags = PPosition | PSize;
+       XSetWMNormalHints(x_display, x_window, &hints);
+
+       WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
+       XChangeProperty(x_display, x_window, WM_HINTS, WM_HINTS, 32,
+                PropModeReplace, (unsigned char *)&WM_HINTS, 5);
+    }
 
     XSelectInput(x_display, (int32_t) x_window, ExposureMask);
     XMapWindow(x_display, (int32_t) x_window);
@@ -445,10 +477,10 @@ NvEglRenderer::setFPS(float fps)
 NvEglRenderer *
 NvEglRenderer::createEglRenderer(const char *name, uint32_t width,
                                uint32_t height, uint32_t x_offset,
-                               uint32_t y_offset)
+                               uint32_t y_offset , bool displayOnTop)
 {
     NvEglRenderer* renderer = new NvEglRenderer(name, width, height,
-                                    x_offset, y_offset);
+                                    x_offset, y_offset , displayOnTop);
     return renderer;
 }
 
