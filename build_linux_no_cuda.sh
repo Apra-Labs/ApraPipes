@@ -1,5 +1,5 @@
 chmod +x base/fix-vcpkg-json.sh
-./base/fix-vcpkg-json.sh true fasle false
+./base/fix-vcpkg-json.sh true false false
 cd vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg integrate install

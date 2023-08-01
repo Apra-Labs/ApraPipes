@@ -8,6 +8,7 @@ if($removeCUDA.IsPresent)
     $opencv = $v.dependencies | Where-Object { $_.name -eq 'opencv4'}
     $opencv.features= $opencv.features | Where-Object { $_ -ne 'cuda' }
     $opencv.features= $opencv.features | Where-Object { $_ -ne 'cudnn' }
+    $opencv.features= $opencv.features | Where-Object { $_ -ne 'gtk' }
 }
 
 if($removeOpenCV.IsPresent)

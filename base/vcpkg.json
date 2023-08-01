@@ -16,7 +16,8 @@
           "nonfree",
           "png",
           "tiff",
-          "webp"
+          "webp",
+          "gtk"
       ]
   },
     "libjpeg-turbo",
