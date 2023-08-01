@@ -223,7 +223,7 @@ public:
 		m_initializeParams.encodeConfig = &m_encodeConfig;
 	}
 
-	bool init(uint32_t width, uint32_t height, uint32_t pitch, ImageMetadata::ImageType imageType, std::function<frame_sp(size_t)> _makeFrame, std::function<void(frame_sp&, frame_sp&)> _send)
+	bool init(uint32_t width, uint32_t height, uint32_t pitch, ImageMetadata::ImageType imageType, void* inputFrameBuffer, std::function<frame_sp(size_t)> _makeFrame, std::function<void(frame_sp&, frame_sp&)> _send)
 	{
 		m_nWidth = width;
 		m_nHeight = height;
@@ -265,28 +265,34 @@ public:
 
 		m_thread = std::thread(&Detail::processOutput, this);
 
-		return true;
+		NV_ENC_REGISTERED_PTR nvEncregisteredPtr =  nullptr;
+		auto ret = RegisterResource(inputFrameBuffer, NV_ENC_INPUT_RESOURCE_TYPE_CUDADEVICEPTR, m_nWidth, m_nHeight, m_nPitch, m_eBufferFormat, NV_ENC_INPUT_IMAGE, nvEncregisteredPtr);
+		if(ret)
+		m_nvcodecResources->registeredResources[inputFrameBuffer] = nvEncregisteredPtr;
+
+		return ret;
 	}
 
 	bool encode(frame_sp &frame)
 	{
 		auto buffer = frame->data();
 		NV_ENC_REGISTERED_PTR registeredPtr = nullptr;
-		if (m_nvcodecResources->registeredResources.find(buffer) == m_nvcodecResources->registeredResources.end())
-		{
-			registeredPtr = RegisterResource(buffer, NV_ENC_INPUT_RESOURCE_TYPE_CUDADEVICEPTR, m_nWidth, m_nHeight, m_nPitch, m_eBufferFormat, NV_ENC_INPUT_IMAGE);
-			m_nvcodecResources->registeredResources[buffer] = registeredPtr;
-		}
-		else
-		{
-			registeredPtr = m_nvcodecResources->registeredResources[buffer];
-		}
+
+		registeredPtr = m_nvcodecResources->registeredResources.begin()->second;
 
 		NV_ENC_MAP_INPUT_RESOURCE mapInputResource = { NV_ENC_MAP_INPUT_RESOURCE_VER };
 
 		mapInputResource.registeredResource = registeredPtr;
-		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncMapInputResource(m_nvcodecResources->m_hEncoder, &mapInputResource));
-
+		NVENCSTATUS nvMapStatus = NVENCSTATUS::NV_ENC_SUCCESS;
+		try
+		{
+			nvMapStatus = m_nvcodecResources->m_nvenc.nvEncMapInputResource(m_nvcodecResources->m_hEncoder, &mapInputResource);
+		}
+		catch (...)
+		{
+			LOG_ERROR << "nvEncMapInputResource failed to unmap resource , returned error = " << nvMapStatus;
+			return false;
+		}
 		NV_ENC_OUTPUT_PTR outputBitstream;
 		NV_ENC_PIC_PARAMS picParams = {};
 		void* event=nullptr;
@@ -329,8 +335,6 @@ public:
 
 	void endEncode()
 	{
-		return;
-#if 0 //AK found dead code
 		auto event = m_nvcodecResources->m_qpCompletionEvent.front();
 		m_nvcodecResources->m_qpCompletionEventBusy.push_back(event);
 		m_nvcodecResources->m_qpCompletionEvent.pop_front();
@@ -339,7 +343,6 @@ public:
 		picParams.encodePicFlags = NV_ENC_PIC_FLAG_EOS;
 		picParams.completionEvent = event;
 		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncEncodePicture(m_nvcodecResources->m_hEncoder, &picParams));
-#endif
 	}
 
 	bool getSPSPPS(void*& buffer, size_t& size, int& width, int& height)
@@ -491,8 +494,8 @@ private:
 		 }
 	}
 
-	NV_ENC_REGISTERED_PTR RegisterResource(void *pBuffer, NV_ENC_INPUT_RESOURCE_TYPE eResourceType,
-		int width, int height, int pitch, NV_ENC_BUFFER_FORMAT bufferFormat, NV_ENC_BUFFER_USAGE bufferUsage)
+	bool RegisterResource(void *pBuffer, NV_ENC_INPUT_RESOURCE_TYPE eResourceType,
+		int width, int height, int pitch, NV_ENC_BUFFER_FORMAT bufferFormat, NV_ENC_BUFFER_USAGE bufferUsage,  NV_ENC_REGISTERED_PTR& registeredPtr)
 	{
 		 NV_ENC_REGISTER_RESOURCE registerResource = { NV_ENC_REGISTER_RESOURCE_VER };
 		 registerResource.resourceType = eResourceType;
@@ -502,10 +505,19 @@ private:
 		 registerResource.pitch = pitch;
 		 registerResource.bufferFormat = bufferFormat;
 		 registerResource.bufferUsage = bufferUsage;
-		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterResource(m_nvcodecResources->m_hEncoder, &registerResource));
+		 try
+		 {
+			 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncRegisterResource(m_nvcodecResources->m_hEncoder, &registerResource));
+		 }
+		 catch (...)
+		 {
+			 LOG_ERROR << "nvEncRegisterResource failed to register resource";
+			 return false;
+		 }
 
-		 return registerResource.registeredResource;
-		return nullptr;
+
+		 registeredPtr = registerResource.registeredResource;
+		return true;;
 	}
 
 private:
@@ -629,9 +641,9 @@ H264EncoderNVCodecHelper::~H264EncoderNVCodecHelper()
 	mDetail.reset();
 }
 
-bool H264EncoderNVCodecHelper::init(uint32_t width, uint32_t height, uint32_t pitch, ImageMetadata::ImageType imageType, std::function<frame_sp(size_t)> makeFrame, std::function<void(frame_sp&, frame_sp&)> send)
+bool H264EncoderNVCodecHelper::init(uint32_t width, uint32_t height, uint32_t pitch, ImageMetadata::ImageType imageType, void* inputFrameBuffer, std::function<frame_sp(size_t)> makeFrame, std::function<void(frame_sp&, frame_sp&)> send)
 {
-	return mDetail->init(width, height, pitch, imageType, makeFrame, send);
+	return mDetail->init(width, height, pitch, imageType, inputFrameBuffer, makeFrame, send);
 }
 
 bool H264EncoderNVCodecHelper::process(frame_sp &frame)

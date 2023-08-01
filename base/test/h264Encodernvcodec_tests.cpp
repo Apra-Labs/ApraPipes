@@ -69,6 +69,10 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360,
 		encoder->step();
 		fileWriter->step();
 	}	
+	fileReader->term();
+	copy->term();
+	encoder->term();
+	fileWriter->term();
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
@@ -126,6 +130,12 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
 		encoder->step();
 		fileWriter->step();
 	}
+	fileReader->term();
+	copy->term();
+	resize->term();
+	sync->term();
+	encoder->term();
+	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
@@ -181,6 +191,11 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
 		encoder->step();
 		fileWriter->step();
 	}
+	fileReader->term();
+	copy->term();
+	sync->term();
+	encoder->term();
+	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 	
@@ -235,6 +250,10 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA,
 		encoder->step();
 		fileWriter->step();
 	}
+	fileReader->term();
+	copy->term();
+	encoder->term();
+	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 	
@@ -297,6 +316,12 @@ BOOST_AUTO_TEST_CASE(mono_1920x960,
 		encoder->step();
 		fileWriter->step();
 	}
+	fileReader->term();
+	copy->term();
+	cc->term();
+	sync->term();
+	encoder->term();
+	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
