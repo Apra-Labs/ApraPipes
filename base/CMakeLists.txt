@@ -264,6 +264,7 @@ SET(IP_FILES
 	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
+	src/AffineTransform.cpp
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
@@ -295,6 +296,7 @@ SET(IP_FILES_H
 	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
+	include/AffineTransform.h
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
@@ -528,6 +530,7 @@ SET(UT_FILES
 	test/faciallandmarkscv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
