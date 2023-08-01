@@ -2,6 +2,7 @@
 #include "test_utils.h"
 #include "Logger.h"
 #include <boost/test/unit_test.hpp>
+#include <boost/test/framework.hpp>
 #include "iostream"
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -116,7 +117,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		std::string strFileBaseName = strFullFileName;
 		std::string strExtension;
 		std::string nameOfFile;
-
+		auto test_name = std::string(boost::unit_test::framework::current_test_case().p_name);
 		const size_t fileBaseIndex = strFullFileName.find_last_of(".");
 		const size_t fileBaseLocation = strFullFileName.find_last_of("/");
 		if (std::string::npos != fileBaseIndex)
@@ -137,7 +138,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		if(!compareRes)
 		{
 			boost::filesystem::create_directory("./data/SaveOrCompareFail");
-			std::string saveFile = "./data/SaveOrCompareFail/" + nameOfFile + strExtension;
+			std::string saveFile = "./data/SaveOrCompareFail/" + test_name + nameOfFile + strExtension;
 			writeFile(saveFile.c_str(), dataToSC, sizeToSC);
 		}
 		BOOST_TEST(compareRes);
