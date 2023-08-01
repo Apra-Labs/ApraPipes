@@ -221,6 +221,7 @@ SET(CORE_FILES_H
 	include/MotionVectorExtractor.h
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
+	include/TestSignalGeneratorSrc.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -278,6 +279,7 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
+	src/TestSignalGeneratorSrc.cpp
 )
 
 
@@ -555,6 +557,7 @@ SET(UT_FILES
 	test/mp4_getlivevideots_tests.cpp
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
+	test/testSignalGeneratorSrc_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
