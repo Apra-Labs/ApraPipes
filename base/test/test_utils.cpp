@@ -99,7 +99,7 @@ void Test_Utils::createDirIfNotExist(std::string path)
 	boost::filesystem::path p(path);
 	boost::filesystem::path dirPath = p.parent_path();
 
-	if (!boost::filesystem::exists(dirPath))
+	if ((!boost::filesystem::exists(dirPath))&&(dirPath.string() != ""))
 	{
 		boost::filesystem::create_directories(dirPath);
 	}
@@ -117,6 +117,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		std::string strFileBaseName = strFullFileName;
 		std::string strExtension;
 		std::string nameOfFile;
+		//Logic to add the failed saveorcompare files in a separate folder and upload with buildlogs on github
 		auto test_name = std::string(boost::unit_test::framework::current_test_case().p_name);
 		const size_t fileBaseIndex = strFullFileName.find_last_of(".");
 		const size_t fileBaseLocation = strFullFileName.find_last_of("/");
@@ -125,8 +126,9 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 			strFileBaseName = strFullFileName.substr(0U, fileBaseIndex);
 			strExtension = strFullFileName.substr(fileBaseIndex);
 		}
-		if (std::string::npos != fileBaseLocation)
+		if (std::string::npos != fileBaseLocation) //fileBaseLocation i.e dir in which file is present 
 		{
+			//nameOfFile is file name without path or extension
 			 nameOfFile = strFullFileName.substr(fileBaseLocation + 1, fileBaseIndex - fileBaseLocation -1);
 		}
 
@@ -135,6 +137,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		BOOST_TEST(readFile(fileName, dataRead, dataSize));
 		BOOST_TEST(dataSize == sizeToSC);
 		compareRes = CompareData(dataToSC, dataRead, dataSize, tolerance);
+		//The failed files are being uploaded to SaveOrCompare folder in data
 		if(!compareRes)
 		{
 			boost::filesystem::create_directory("./data/SaveOrCompareFail");
