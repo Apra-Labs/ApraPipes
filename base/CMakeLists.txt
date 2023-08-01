@@ -309,6 +309,7 @@ SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
 	src/apra_cudamallochost_allocator.cu
 	src/CudaMemCopy.cpp
+	src/MemTypeConversion.cpp
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
@@ -318,6 +319,7 @@ SET(CUDA_CORE_FILES
 SET(CUDA_CORE_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
+	include/MemTypeConversion.h
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
@@ -481,6 +483,7 @@ IF (ENABLE_CUDA)
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
 		test/ccnppi_tests.cpp
+		test/memtypeconversion_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
