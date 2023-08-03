@@ -1,19 +1,16 @@
 #pragma once
 
 #include "Module.h"
-#include "CudaCommon.h"
 #include <memory>
+#include "CudaCommon.h"
 
 class DetailMemory;
 class DetailDEVICEtoHOST;
 class DetailHOSTtoDEVICE;
-
-#if defined(__arm__) || defined(__aarch64__)
 class DetailDMAtoHOST;
 class DetailHOSTtoDMA;
 class DetailDEVICEtoDMA;
 class DetailDMAtoDEVICE;
-#endif
 
 class MemTypeConversionProps : public ModuleProps
 {

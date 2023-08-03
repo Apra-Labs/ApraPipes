@@ -1,8 +1,8 @@
 #include "MemTypeConversion.h"
 #include "Logger.h"
-#include "CudaCommon.h"
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
+#include "CudaCommon.h"
 
 #if defined(__arm__) || defined(__aarch64__)
 #include "DMAFrameUtils.h"
@@ -28,12 +28,12 @@ public:
 	{
 		auto inputMetadata = frame->getMetadata();
 		FrameMetadata::MemType inputMemType = inputMetadata->getMemType();
-
-	#if defined(__arm__) || defined(__aarch64__)
 		if(inputMemType == FrameMetadata::MemType::DMABUF && props.outputMemType == FrameMetadata::MemType::HOST)
 	    {
+		   #if defined(__arm__) || defined(__aarch64__)
            mGetImagePlanes = DMAFrameUtils::getImagePlanesFunction(inputMetadata,mImagePlanes);
 	       mNumPlanes = static_cast<int>(mImagePlanes.size());
+		   #endif
 	    }
 		else
 		{
@@ -41,7 +41,8 @@ public:
 		{
 			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(input);
 			auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
-
+			imageType = inputRawMetadata->getImageType();
+            size_t pitch[4] = {0,0,0,0};
 			imageChannels = 1;
 			srcPitch[0] = inputRawMetadata->getStep();
 		    dstPitch[0] = outputRawMetadata->getStep();
@@ -49,6 +50,38 @@ public:
 		    dstNextPtrOffset[0] = 0;
 		    rowSize[0] = inputRawMetadata->getRowSize();
 		    height[0] =  inputRawMetadata->getHeight();
+			width[0]  =  inputRawMetadata->getWidth();
+
+		if( inputMemType == FrameMetadata::MemType::DMABUF || props.outputMemType == FrameMetadata::MemType::DMABUF )
+		{
+			#if defined(__arm__) || defined(__aarch64__)
+			int type = CV_8UC4;
+            switch (imageType)
+            {
+            case ImageMetadata::ImageType::RGBA:
+            case ImageMetadata::ImageType::BGRA:
+                type = CV_8UC4;
+                break;
+            case ImageMetadata::ImageType::UYVY:
+            case ImageMetadata::ImageType::YUYV:
+                type = CV_8UC3;
+                break;    
+            default:
+                throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
+			}
+			auto metadata = framemetadata_sp(new RawImageMetadata(width[0],height[0], imageType,type, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
+		    DMAAllocator::setMetadata(metadata,width[0],height[0],imageType,pitch);
+			if( inputMemType == FrameMetadata::MemType::DMABUF)
+			{
+                  srcPitch[0]  = pitch[0];
+			}
+
+			else if(props.outputMemType == FrameMetadata::MemType::DMABUF)
+			{
+                  dstPitch[0]  = pitch[0];
+			}
+			#endif
+		}
 		}
 		else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
@@ -72,6 +105,7 @@ public:
         
 		if( inputMemType == FrameMetadata::MemType::DMABUF || props.outputMemType == FrameMetadata::MemType::DMABUF )
 		{
+			#if defined(__arm__) || defined(__aarch64__)
             auto metadata = framemetadata_sp(new RawImagePlanarMetadata(rowSize[0],height[0], imageType, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
 		    DMAAllocator::setMetadata(metadata,rowSize[0],height[0],imageType,pitch,offset);
 			if( inputMemType == FrameMetadata::MemType::DMABUF)
@@ -91,42 +125,10 @@ public:
                   dstPitch[i]  = pitch[i];
                }
 			}
+			#endif
 		}
 		}
 		}
-	#else
-	    if (mFrameType == FrameMetadata::RAW_IMAGE)
-		{
-			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(input);
-			auto outputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(output);
-
-			imageChannels = 1;
-			srcPitch[0] = inputRawMetadata->getStep();
-		    dstPitch[0] = outputRawMetadata->getStep();
-		    srcNextPtrOffset[0] = 0;
-		    dstNextPtrOffset[0] = 0;
-		    rowSize[0] = inputRawMetadata->getRowSize();
-		    height[0] =  inputRawMetadata->getHeight();
-		}
-		else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
-		{
-			auto inputRawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(input);
-			auto outputRawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(output);
-
-			imageChannels = inputRawPlanarMetadata->getChannels();
-            for (auto i = 0; i < imageChannels; i++)
-		    {
-			   srcPitch[i] = inputRawPlanarMetadata->getStep(i);
-			   srcNextPtrOffset[i] = inputRawPlanarMetadata->getNextPtrOffset(i);
-			   rowSize[i] = inputRawPlanarMetadata->getRowSize(i);
-			   height[i] = inputRawPlanarMetadata->getHeight(i);
-
-			   dstPitch[i] = outputRawPlanarMetadata->getStep(i);
-		       dstNextPtrOffset[i] = outputRawPlanarMetadata->getNextPtrOffset(i);
-		    }
-		}
-	
-	#endif
 		return true;
 	}
 
@@ -146,11 +148,6 @@ protected:
 	int mNumPlanes;
     void *srcPtr;
     void *dstPtr;
-
-#if defined(__arm__) || defined(__aarch64__)
-	ImagePlanes mImagePlanes;
-	DMAFrameUtils::GetImagePlanes mGetImagePlanes;
-#endif
 	bool sync = true;
 	int imageChannels = 0;
 	size_t srcPitch[4];
@@ -159,9 +156,15 @@ protected:
 	size_t dstNextPtrOffset[4];
 	size_t rowSize[4];
 	size_t height[4];
-};
+	size_t width[4];
 
 #if defined(__arm__) || defined(__aarch64__)
+	ImagePlanes mImagePlanes;
+	DMAFrameUtils::GetImagePlanes mGetImagePlanes;
+#endif
+};
+
+
 class DetailDMAtoHOST : public DetailMemory
 {
 public:
@@ -169,6 +172,7 @@ public:
     
     bool compute()
     {
+	  #if defined(__arm__) || defined(__aarch64__)
 	  mGetImagePlanes(inputFrame, mImagePlanes);
 	  dstPtr = static_cast<uint8_t *>(outputFrame->data());
 
@@ -177,6 +181,7 @@ public:
 		mImagePlanes[i]->mCopyToData(mImagePlanes[i].get(), dstPtr);
 		dstPtr += mImagePlanes[i]->imageSize;
 	  }
+	  #endif
       return true;
     }
 };
@@ -188,12 +193,14 @@ public:
    
     bool compute()
     {
-	   srcPtr = static_cast<uint8_t *>(inputFrame->data());
-	   dstPtr = (static_cast<DMAFDWrapper*>(outputFrame->data()))->getHostPtr();
-       memcpy(dstPtr,srcPtr,mSize);
-	   return true;
+		#if defined(__arm__) || defined(__aarch64__)
+		srcPtr = static_cast<uint8_t *>(inputFrame->data());
+	    dstPtr = (static_cast<DMAFDWrapper*>(outputFrame->data()))->getHostPtr();
+		memcpy(dstPtr,srcPtr,mSize);
+		#endif
+	    return true;
     }
-};
+}; 
 
 class DetailDEVICEtoDMA : public DetailMemory
 {
@@ -202,8 +209,8 @@ public:
     
     bool compute()
     {
+		#if defined(__arm__) || defined(__aarch64__)
 	    auto cudaStatus = cudaSuccess;
-
 	    if (mCopy)
 	    {		
 		   for (auto i = 0; i < imageChannels; i++)
@@ -220,6 +227,7 @@ public:
 			   }
 		   }
 	    }
+		#endif
        return true;
     }
 };
@@ -231,8 +239,8 @@ public:
 
     bool compute()
     {
+		#if defined(__arm__) || defined(__aarch64__)
 	    auto cudaStatus = cudaSuccess;
-
 	    if (mCopy)
 	    {		
 		   for (auto i = 0; i < imageChannels; i++)
@@ -249,10 +257,10 @@ public:
 			   }
 		   }
 	    }
+		#endif
         return true;
     }
 };
-#endif
 
 class DetailDEVICEtoHOST : public DetailMemory
 {
@@ -288,7 +296,6 @@ public:
 			  LOG_ERROR << "cudaStreamSynchronize failed <" << cudaStatus << ">";
 		   }
 	    }
-
         return true;
     }
 };
@@ -322,6 +329,7 @@ public:
     }
 };
 
+
 MemTypeConversion::MemTypeConversion(MemTypeConversionProps _props) : Module(TRANSFORM, "MemTypeConversion", _props) , mProps(_props) {}
 
 MemTypeConversion::~MemTypeConversion() {}
@@ -352,12 +360,11 @@ void MemTypeConversion::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
     FrameMetadata::MemType inputMemType = metadata->getMemType();
-#if defined(__arm__) || defined(__aarch64__)
 	if (inputMemType != FrameMetadata::MemType::CUDA_DEVICE && inputMemType != FrameMetadata::MemType::DMABUF && inputMemType != FrameMetadata::MemType::HOST)
 	{
 		throw AIPException(AIP_FATAL, "Input memType is expected to be CUDA_DEVICE or DMABUF or HOST. Actual<" + std::to_string(metadata->getMemType()) + ">");
 	}
-    
+
     if (inputMemType == FrameMetadata::MemType::HOST && mProps.outputMemType == FrameMetadata::MemType::DMABUF)
 	{
 		mDetail.reset(new DetailHOSTtoDMA(mProps));
@@ -390,28 +397,6 @@ void MemTypeConversion::addInputPin(framemetadata_sp &metadata, string &pinId)
 	 		mDetail->mAlignLength += FrameMetadata::getPaddingLength(mDetail->mAlignLength, 512);
 	 	}
 	}
-	else if (inputMemType == FrameMetadata::MemType::CUDA_DEVICE && mProps.outputMemType == FrameMetadata::MemType::HOST)
-	{
-		mDetail.reset(new DetailDEVICEtoHOST(mProps));
-	}
-
-    else
-	{
-		throw std::runtime_error("conversion not supported");
-	}
-#else
-    if (inputMemType == FrameMetadata::MemType::HOST && mProps.outputMemType == FrameMetadata::MemType::CUDA_DEVICE)
-	{
-		mDetail.reset(new DetailHOSTtoDEVICE(mProps));
-		if (mDetail->mAlignLength == 0)
-	 	{
-	 		mDetail->mAlignLength = 512;
-	 	}
-	 	else if ((mDetail->mAlignLength) % 512 != 0)
-	 	{
-	 		mDetail->mAlignLength += FrameMetadata::getPaddingLength(mDetail->mAlignLength, 512);
-	 	}
-	}
 
 	else if (inputMemType == FrameMetadata::MemType::CUDA_DEVICE && mProps.outputMemType == FrameMetadata::MemType::HOST)
 	{
@@ -422,7 +407,7 @@ void MemTypeConversion::addInputPin(framemetadata_sp &metadata, string &pinId)
 	{
 		throw std::runtime_error("conversion not supported");
 	}
-#endif
+
 	mDetail->mFrameType = metadata->getFrameType();
 	switch (mDetail->mFrameType)
 	{
@@ -505,7 +490,6 @@ bool MemTypeConversion::processSOS(frame_sp &frame)
 		break;
 	}
 
-#if defined(__arm__) || defined(__aarch64__)
 	if(mInputMemType == FrameMetadata::MemType::DMABUF || mProps.outputMemType == FrameMetadata::MemType::DMABUF)
 	{
 	switch (mDetail->imageType)
@@ -523,7 +507,6 @@ bool MemTypeConversion::processSOS(frame_sp &frame)
 		throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12> Actual<" + std::to_string(mDetail->imageType) + ">");
 	}
 	}
-#endif
 
 	mDetail->mSize = mDetail->mOutputMetadata->getDataSize();
 	mDetail->setMetadataHelper(inputMetadata,mDetail->mOutputMetadata,frame);

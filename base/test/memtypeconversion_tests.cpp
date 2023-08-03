@@ -143,11 +143,45 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma,*boost::unit_test::disabled())
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Device_to_Dma)
+BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA)
 {   
 	#if defined(__arm__) || defined(__aarch64__)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
     auto metadata = framemetadata_sp(new RawImageMetadata(400,400, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
+    fileReader->addOutputPin(metadata);
+
+	auto stream = cudastream_sp(new ApraCudaStream);
+	auto copy1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE,stream)));
+	fileReader->setNext(copy1);
+
+    auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF,stream)));
+	copy1->setNext(memconversion);
+
+    auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));
+	memconversion->setNext(sink);
+
+    PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+	#endif 
+}
+
+BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA)
+{   
+	#if defined(__arm__) || defined(__aarch64__)
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+    auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
@@ -341,7 +375,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
 
 	p.stop();
 	p.term();
-	p.wait_for_all(); 
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
