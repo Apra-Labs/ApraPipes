@@ -478,6 +478,10 @@ bool MemTypeConversion::processSOS(frame_sp &frame)
 	break;
 	case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
 	{
+		if(mInputMemType == FrameMetadata::MemType::HOST && mProps.outputMemType == FrameMetadata::MemType::DMABUF)
+		{
+			throw AIPException(AIP_FATAL, "Not yet Implemented for Planar Images");
+		}
 		auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
 		auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mDetail->mOutputMetadata);
 
