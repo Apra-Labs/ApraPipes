@@ -236,4 +236,5 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
       LOG_INFO << mOffset[i] << " ";
     }
 }
+
 BOOST_AUTO_TEST_SUITE_END()
