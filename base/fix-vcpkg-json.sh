@@ -13,35 +13,47 @@ echo "$v"
 
 # Process command line arguments
 if $removeCUDA; then
-    echo "Removing CUDA..."   
-    opencv=$(echo "$v" | jq '.dependencies[] | select(type == "string" or .name == "opencv4")')
-    opencv=$(echo "$opencv" | jq '.features |= map(select(. != "cuda" and . != "cudnn"))')
-    v=$(echo "$v" | jq '.dependencies[] |= select(type == "string" or .name != "opencv4")')
-    v=$(echo "$v" | jq '.dependencies[] |= select(type != "null")')
-    v=$(echo "$v" | jq ".dependencies += [$opencv]")
+    echo "Removing CUDA..."
+    # Loop through each "opencv4" instance
+    for index in $(echo "$v" | jq -r '.dependencies | keys | .[]'); do
+        name=$(echo "$v" | jq -r ".dependencies[$index].name")
+        if [ "$name" == "opencv4" ]; then
+            # Remove "cuda" and "cudnn" features for this "opencv4" instance
+            v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\" and . != \"cudnn\"))")
+        fi
+    done
 fi
 
 if $removeOpenCV; then
     echo "Removing OpenCV..."
-     v=$(echo "$v" | jq '.dependencies[] |= select(type == "string" or .name != "opencv4")')
-     v=$(echo "$v" | jq '.dependencies[] |= select(type != "null")')
+    count=$(echo "$v" | jq '.dependencies | length')
+    for ((index=count-1; index >= 0; index--)); do
+        name=$(echo "$v" | jq -r ".dependencies[$index].name")
+        if [ "$name" == "opencv4" ]; then
+            # Remove the entire "opencv4" instance
+            v=$(echo "$v" | jq "del(.dependencies[$index])")
+        fi
+    done
 fi
 
 if $onlyOpenCV; then
-     echo "Keeping only OpenCV..."
-     opencv=$(echo "$v" | jq '.dependencies[] | select(.name == "opencv4")')
-     opencv=$(echo "$opencv" | jq '.features |= map(select(. != "cuda" and . != "cudnn"))')
-     v=$(echo "$v" | jq '.dependencies = []')
-     v=$(echo "$v" | jq ".dependencies += [$opencv]")
-    
+    echo "Keeping only OpenCV..."
+    # Loop through each dependency and remove other dependencies except "opencv4"
+    count=$(echo "$v" | jq '.dependencies | length')
+    for ((index = count - 1; index >= 0; index--)); do
+        name=$(echo "$v" | jq -r ".dependencies[$index].name")
+        if [ "$name" != "opencv4" ]; then
+            # Remove the entire dependency
+            v=$(echo "$v" | jq "del(.dependencies[$index])")
+        fi
+    done
 fi
 
- #Save the modified object back to the JSON file
- echo "Modified JSON file contents:"
- echo "$v" | jq .
- echo "$v" | jq . > "$fileName"
+# Save the modified object back to the JSON file
+echo "Modified JSON file contents:"
+echo "$v" | jq .
+echo "$v" | jq . > "$fileName"
 
 # Print all command line arguments
 echo "Command line arguments:"
 echo "$@"
-

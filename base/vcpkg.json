@@ -20,6 +20,15 @@
           "gtk"
       ]
   },
+  {
+    "name":  "opencv4",
+    "default-features":  false,
+    "features":  [
+                     "gtk"
+                 ],
+    "platform":  "(linux \u0026 x64)",
+    "$reason":  "skip linux:arm64 and windows"
+  },
     "libjpeg-turbo",
     "openh264",
     "ffmpeg",
