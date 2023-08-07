@@ -6,6 +6,7 @@
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "FileWriterModule.h"
+#include "ResizeNPPI.h"
 
 #if defined(__arm__) || defined(__aarch64__)
 #include "NvV4L2Camera.h"
@@ -45,19 +46,25 @@ BOOST_AUTO_TEST_CASE(Host_to_Dma)
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Host_to_Dma_Planar)
+BOOST_AUTO_TEST_CASE(Dma_to_Host_YUV420_400x400)
 {
 	#if defined(__arm__) || defined(__aarch64__)
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
-    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(640, 360, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
+    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400,400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
     fileReader->addOutputPin(metadata);
 
     auto stream = cudastream_sp(new ApraCudaStream);
-    auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF,stream)));
-	fileReader->setNext(memconversion);
+    auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE,stream)));
+	fileReader->setNext(memconversion1);
 
-    auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));
-	memconversion->setNext(sink);
+    auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF,stream)));
+	memconversion1->setNext(memconversion2);
+
+    auto memconversion3 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST,stream)));
+	memconversion2->setNext(memconversion3);
+
+    auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/frame_????.raw")));
+	memconversion3->setNext(sink);
 
     PipeLine p("test");
 	p.appendModule(fileReader);
@@ -82,8 +89,8 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host,*boost::unit_test::disabled())
     NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::YUV420));
-	source->setNext(transform); 
+	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
+	source->setNext(transform);
 
     auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
 	transform->setNext(memconversion);
@@ -143,7 +150,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma,*boost::unit_test::disabled())
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA)
+BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA_400x400)
 {   
 	#if defined(__arm__) || defined(__aarch64__)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
@@ -324,8 +331,11 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
     auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE,stream)));
 	fileReader->setNext(memconversion1);
 
+	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(400,400, stream)));
+	memconversion1->setNext(resize);
+
 	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST,stream)));
-	memconversion1->setNext(memconversion2);
+	resize->setNext(memconversion2);
 
     auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/frame_????.raw")));
 	memconversion2->setNext(sink);
