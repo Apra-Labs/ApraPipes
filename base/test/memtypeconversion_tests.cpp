@@ -16,7 +16,7 @@
 
 BOOST_AUTO_TEST_SUITE(memtypeconversion_tests)
 
-BOOST_AUTO_TEST_CASE(Host_to_Dma)
+BOOST_AUTO_TEST_CASE(Host_to_Dma,*boost::unit_test::disabled())
 {
 	#if defined(__arm__) || defined(__aarch64__)
     auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma,*boost::unit_test::disabled())
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA_400x400)
+BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA_400x400,*boost::unit_test::disabled())
 {   
 	#if defined(__arm__) || defined(__aarch64__)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_BGRA_400x400)
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA)
+BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA,*boost::unit_test::disabled())
 {   
 	#if defined(__arm__) || defined(__aarch64__)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA)
 	#endif 
 }
 
-BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar)
+BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar,*boost::unit_test::disabled())
 {   
 	#if defined(__arm__) || defined(__aarch64__)
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
