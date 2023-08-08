@@ -248,15 +248,9 @@ BOOST_AUTO_TEST_CASE(memcopy_read_write)
     auto frame = frameFactory->create(size, frameFactory);
     void *iptr = (static_cast<DMAFDWrapper *>(frame->data()))->getHostPtr();
     memset(iptr,200,size);
-    void *temptr = malloc(size);
-    memset(temptr,500,size);
-    memcpy(temptr,iptr,size);
-    std::ofstream file("data/testOutput/hola.raw", std::ios::out | std::ios::binary);
-    if (file.is_open())
-    {
-        LOG_ERROR << "Save File";
-        file.write((char*)temptr, size);
-        file.close();
+    unsigned char *bytePtr = static_cast<unsigned char *>(iptr);
+    for (size_t i = 0; i < size; ++i) {
+        BOOST_TEST(bytePtr[i] == 200);
     }
 }
 
