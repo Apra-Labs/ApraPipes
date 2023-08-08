@@ -32,4 +32,16 @@ private:
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	H264DecoderProps mProps;
+	void sendDecodedFrame();
+	void bufferDecodedFrame(frame_sp& frame);
+	bool checkFrameDirection(frame_sp& frames);
+	std::deque<std::deque<frame_sp>> gop;
+	std::deque<frame_sp> tempGop ;
+	std::deque<std::deque<frame_sp>> decodedFrames;
+	std::deque<frame_sp> tempDecodedFrames;
+	std::queue<uint> framesInGopCount;
+	uint gopSize = 0;
+	uint frameCount = 0;
+	bool direction;
+	bool foundReverseGopIFrame = false;
 };

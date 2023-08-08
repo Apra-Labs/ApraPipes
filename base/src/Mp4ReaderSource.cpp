@@ -461,6 +461,7 @@ public:
 				mState.mFramesInVideo = mState.info.sample_count;
 				mWidth = mState.info.video_width;
 				mHeight = mState.info.video_height;
+				mDirection = mState.direction;
 				mDurationInSecs = mState.info.duration / mState.info.timescale;
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 			}
@@ -946,6 +947,7 @@ protected:
 		std::string mVideoPath = "";
 		int32_t mFrameCounterIdx;
 		bool shouldPrependSpsPps = false;
+		bool foundFirstReverseIFrame = false;
 		bool end = false;
 		Mp4ReaderSourceProps props;
 		float speed;
@@ -971,6 +973,7 @@ protected:
 public:
 	int mWidth = 0;
 	int mHeight = 0;
+	bool mDirection;
 	int ret;
 	double mFPS = 0;
 	double mDurationInSecs = 0;
@@ -1028,11 +1031,6 @@ void Mp4ReaderDetailJpeg::setMetadata()
 	auto encodedMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
 	encodedMetadata->setData(*encodedMetadata);
 
-	auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
-	// set proto version in mp4videometadata
-	auto serFormatVersion = getSerFormatVersion();
-	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
-	mp4VideoMetadata->setData(serFormatVersion);
 	Mp4ReaderDetailAbs::setMetadata();
 	// set at Module level
 	mSetMetadata(encodedImagePinId, metadata);
@@ -1112,14 +1110,17 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 void Mp4ReaderDetailH264::setMetadata()
 {
 	auto metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+
 	if (!metadata->isSet())
 	{
 		return;
 	}
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+	h264Metadata->direction = mDirection;
 	h264Metadata->setData(*h264Metadata);
 
 	readSPSPPS();
+
 	Mp4ReaderDetailAbs::setMetadata();
 	mSetMetadata(h264ImagePinId, metadata);
 	return;
@@ -1201,11 +1202,11 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		return true;
 	}
 
-	if (mState.shouldPrependSpsPps)
+	if (mState.shouldPrependSpsPps || (!mState.direction && !mState.foundFirstReverseIFrame))
 	{
 		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
-		if (type != H264Utils::H264_NAL_TYPE_END_OF_SEQ)
+		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
 			auto tempFrame = makeFrame(imgSize + spsSize + ppsSize + 8, h264ImagePinId);
 			uint8_t* tempFrameBuffer = reinterpret_cast<uint8_t*>(tempFrame->data());
@@ -1214,6 +1215,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			memcpy(tempFrameBuffer, imgFrame->data(), imgSize);
 			imgSize += spsSize + ppsSize + 8;
 			imgFrame = tempFrame;
+			mState.foundFirstReverseIFrame = true;
 		}
 		mState.shouldPrependSpsPps = false;
 	}

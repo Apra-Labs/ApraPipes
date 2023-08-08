@@ -27,26 +27,6 @@ bool ColorConversion::validateInputPins()
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be Raw_Image or Raw_Image_Planar. Actual<" << frameType << ">";
 		return false;
 	}
-	if (frameType == FrameMetadata::RAW_IMAGE)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::RGB && imageType != ImageMetadata::BGR && imageType != ImageMetadata::BAYERBG10 && imageType != ImageMetadata::BAYERBG8 && imageType != ImageMetadata::BAYERGB8 && imageType != ImageMetadata::BAYERGR8 && imageType != ImageMetadata::BAYERRG8)
-		{
-			LOG_ERROR << "<" << getId() << ">Input Image type is not supported. Actual<" << imageType << ">";
-			return false;
-		}
-	}
-	else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::YUV420)
-		{
-			LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -65,26 +45,6 @@ bool ColorConversion::validateOutputPins()
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or Raw_Image_Planar. Actual<" << frameType << ">";
 		return false;
 	}
-	if (frameType == FrameMetadata::RAW_IMAGE)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::MONO && imageType != ImageMetadata::RGB && imageType != ImageMetadata::BGR && imageType != ImageMetadata::BAYERBG8)
-		{
-			LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
-			return false;
-		}
-	}
-	else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::YUV420)
-		{
-			LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -97,46 +57,15 @@ void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	mInputMetadata = metadata;
 	Module::addInputPin(metadata, pinId);
-	auto inputFrameType = metadata->getFrameType();
-	uint16_t mWidth;
-	uint16_t mHeight;
 
-	if (inputFrameType == FrameMetadata::RAW_IMAGE)
+	auto frameType = metadata->getFrameType();
+	if (mProps.type == ColorConversionProps::RGB_TO_YUV420PLANAR)
 	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		mWidth = rawMetadata->getWidth();
-		mHeight = rawMetadata->getHeight();
+		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::HOST));
 	}
-	else if (inputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	else
 	{
-		auto rawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		mWidth = rawPlanarMetadata->getWidth(0);
-		mHeight = rawPlanarMetadata->getHeight(0);
-	}
-
-	switch (mProps.type)
-	{
-	case ColorConversionProps::ConversionType::RGB_TO_MONO:
-	case ColorConversionProps::ConversionType::BGR_TO_MONO:
-	case ColorConversionProps::ConversionType::BAYERBG8_TO_MONO:
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
-		break;
-	case ColorConversionProps::ConversionType::BGR_TO_RGB:
-	case ColorConversionProps::ConversionType::BAYERBG8_TO_RGB:
-	case ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB:
-	case ColorConversionProps::ConversionType::BAYERGB8_TO_RGB:
-	case ColorConversionProps::ConversionType::BAYERGR8_TO_RGB:
-	case ColorConversionProps::ConversionType::BAYERRG8_TO_RGB:
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-		break;
-	case ColorConversionProps::ConversionType::RGB_TO_BGR:
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mWidth, mHeight, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
-		break;
-	case ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR:
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(mWidth, mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST));
-		break;
-	default:
-		throw AIPException(AIP_FATAL, "conversion not supported");
+		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(FrameMetadata::HOST));
 	}
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
@@ -148,7 +77,7 @@ std::string ColorConversion::addOutputPin(framemetadata_sp& metadata)
 
 bool ColorConversion::init()
 {
-	setConversionStrategy(mInputMetadata, mOutputMetadata);
+	
 	return Module::init();
 }
 
@@ -166,7 +95,75 @@ bool ColorConversion::process(frame_container& frames)
 	return true;
 }
 
+bool ColorConversion::setMetadata(framemetadata_sp& metadata)
+{
+	int mWidth;
+	int mHeight;
+	auto inputFrameType = metadata->getFrameType();
+	RawImageMetadata rawMetadata;
+	RawImagePlanarMetadata rawPlanarMetadata(FrameMetadata::HOST);
+	if (inputFrameType == FrameMetadata::RAW_IMAGE)
+	{
+		auto tempRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+		mWidth = tempRawMetadata->getWidth();
+		mHeight = tempRawMetadata->getHeight();
+	}
+	else if (inputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	{
+		auto tempRawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+		mWidth = tempRawPlanarMetadata->getWidth(0);
+		mHeight = tempRawPlanarMetadata->getHeight(0);
+	}
+	switch (mProps.type)
+	{
+	case ColorConversionProps::ConversionType::RGB_TO_MONO:
+	case ColorConversionProps::ConversionType::BGR_TO_MONO:
+	case ColorConversionProps::ConversionType::BAYERBG8_TO_MONO:
+		rawMetadata = RawImageMetadata(mWidth, mHeight, ImageMetadata::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true);
+		break;
+	case ColorConversionProps::ConversionType::BGR_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERBG8_TO_RGB:
+	case ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERGB8_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERGR8_TO_RGB:
+	case ColorConversionProps::ConversionType::BAYERRG8_TO_RGB:
+		rawMetadata = RawImageMetadata(mWidth, mHeight, ImageMetadata::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
+		break;
+	case ColorConversionProps::ConversionType::RGB_TO_BGR:
+		rawMetadata = RawImageMetadata(mWidth, mHeight, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
+		break;
+	case ColorConversionProps::ConversionType::RGB_TO_YUV420PLANAR:
+		rawPlanarMetadata = RawImagePlanarMetadata(mWidth, mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
+		break;
+	default:
+		throw AIPException(AIP_FATAL, "conversion not supported");
+	}
+
+	if(mProps.type == ColorConversionProps::RGB_TO_YUV420PLANAR)
+	{
+		auto rawPlanarOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+		rawPlanarOutMetadata->setData(rawPlanarMetadata);
+	}
+	else 
+	{
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+		rawOutMetadata->setData(rawMetadata);
+	}
+
+	return true;
+}
+
 bool ColorConversion::processSOS(frame_sp& frame)
 {
+	auto mInputMetadata = frame->getMetadata();
+	setMetadata(mInputMetadata);
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
+	setConversionStrategy(mInputMetadata, mOutputMetadata);
+	mShouldTriggerSos = false;
 	return true;
+}
+
+bool ColorConversion::shouldTriggerSOS()
+{
+	return mShouldTriggerSos;
 }

@@ -711,7 +711,7 @@ bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send, std::f
 {
 	makeFrame = _makeFrame;
 	send = _send;
-	return false;
+	return true;
 }
 
 void H264DecoderNvCodecHelper::ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth) {
@@ -735,8 +735,8 @@ void H264DecoderNvCodecHelper::process(frame_sp& frame)
 {
 	uint8_t* inputBuffer = NULL;
 	int inputBufferSize = 0;
-	frame_sp outputFrame = makeFrame();
-	uint8_t** outBuffer = reinterpret_cast<uint8_t**>(outputFrame->data());
+	frame_sp outputFrame;
+	uint8_t** outBuffer;
 	
 	inputBuffer = static_cast<uint8_t*>(frame->data());
 	inputBufferSize = frame->size();
@@ -749,7 +749,7 @@ void H264DecoderNvCodecHelper::process(frame_sp& frame)
 	for (int i = 0; i < nFrameReturned; i++)
 	{
 		ConvertToPlanar(outBuffer[i], helper->GetWidth(), helper->GetHeight(), helper->GetBitDepth());
-
+		outputFrame = makeFrame();
 		memcpy(outputFrame->data(), outBuffer[i], outputFrame->size());
 		send(outputFrame);
 	}

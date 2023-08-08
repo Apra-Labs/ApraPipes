@@ -40,9 +40,10 @@ public:
 
 		width = metadata.width;
 		height = metadata.height;
+		direction = metadata.direction;
 		//setDataSize();
 	}
-
+	bool direction = true;
 protected:
 	void initData(int _width, int _height, MemType _memType = MemType::HOST)
 	{
