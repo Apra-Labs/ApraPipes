@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage,*boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 {
+	#if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640,360, 10);
     auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -104,7 +105,8 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 	p.stop();
 	p.term();
 
-	p.wait_for_all(); 
+	p.wait_for_all();
+	#endif 
 }
 
 BOOST_AUTO_TEST_CASE(viewer_test,*boost::unit_test::disabled())
