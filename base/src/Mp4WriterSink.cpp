@@ -519,9 +519,11 @@ bool DetailH264::write(frame_container& frames)
 
 	mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
 
-	if (metatrack != -1 && mMetadataEnabled && inMp4MetaFrame.get())
+	if (metatrack != -1 && mMetadataEnabled)
 	{
-		if (inMp4MetaFrame->size())
+		// null check must happen here to ensure 0 sized entries in mp4 metadata track's stsz table
+		// this will ensure equal entries in metadata and video tracks 
+		if (inMp4MetaFrame.get() && inMp4MetaFrame->size())
 		{
 			mux_sample.buffer = static_cast<uint8_t*>(inMp4MetaFrame->data());
 			mux_sample.len = inMp4MetaFrame->size();
