@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_reverseplay)
 {
-	std::string videoPath = "data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	std::string videoPath = "data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1691571842939.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -482,8 +482,8 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_reverseplay)
 	Logger::initLogger(loggerProps);
 
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, false, false, false);
-	mp4ReaderProps.fps = 15;
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.fps = 24;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	mp4Reader->addOutPutPin(h264ImageMetadata);
@@ -507,22 +507,6 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_reverseplay)
 	//sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 
 	colorchange->setNext(sink);
-
-	/*BOOST_TEST(mp4Reader->init());
-	BOOST_TEST(Decoder->init());
-	BOOST_TEST(colorchange->init());
-	BOOST_TEST(sink->init());
-
-	for (int i = 0; i < 1000; i++)
-	{
-		mp4Reader->step();
-		Decoder->step();
-		if (i > 240)
-		{
-			colorchange->step();
-			sink->step();
-		}
-	}*/
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(mp4Reader);
@@ -533,7 +517,77 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_reverseplay)
 	}
 
 	p->run_all_threaded();
-	Test_Utils::sleep_for_seconds(1500);
+	Test_Utils::sleep_for_seconds(15);
+
+	mp4Reader->changePlayback(1, false);
+
+	Test_Utils::sleep_for_seconds(10);
+
+	mp4Reader->changePlayback(1, true);
+
+	Test_Utils::sleep_for_seconds(12);
+
+	mp4Reader->changePlayback(1, false);
+
+	Test_Utils::sleep_for_seconds(15);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_reverseplay_fwd)
+{
+	std::string videoPath = "data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1691571842939.mp4";
+	std::string outPath = "data/testOutput/outFrames";
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	bool parseFS = false;
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.fps = 24;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(frameType);
+
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::YUV420PLANAR_TO_RGB)));
+	Decoder->setNext(colorchange);
+
+
+	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	//colorchange->setNext(fileWriter);
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	//sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+
+	colorchange->setNext(sink);
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(50);
+
 	p->stop();
 	p->term();
 	p->wait_for_all();

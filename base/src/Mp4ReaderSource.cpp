@@ -226,6 +226,8 @@ public:
 			}
 			LOG_TRACE << "changed direction frameIdx <" << mState.mFrameCounterIdx << "> totalFrames <" << mState.mFramesInVideo << ">";
 			mp4_demux_toggle_playback(mState.demux, mState.video.id);
+			mDirection = _direction;
+			setMetadata();
 		}
 	}
 
@@ -952,7 +954,6 @@ protected:
 		Mp4ReaderSourceProps props;
 		float speed;
 		bool direction;
-		//bool end;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;
@@ -965,6 +966,7 @@ protected:
 	uint64_t recheckDiskTS = 0;
 	boost::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
+	framemetadata_sp mH264Metadata;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -1109,20 +1111,20 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 
 void Mp4ReaderDetailH264::setMetadata()
 {
-	auto metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+	mH264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
 
-	if (!metadata->isSet())
+	if (!mH264Metadata->isSet())
 	{
 		return;
 	}
-	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(mH264Metadata);
 	h264Metadata->direction = mDirection;
 	h264Metadata->setData(*h264Metadata);
 
 	readSPSPPS();
 
 	Mp4ReaderDetailAbs::setMetadata();
-	mSetMetadata(h264ImagePinId, metadata);
+	mSetMetadata(h264ImagePinId, mH264Metadata);
 	return;
 }
 
@@ -1228,6 +1230,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		frameData[3] = 0x1;
 		frameData[spsSize + 7] = 0x1;
+		frameData[spsSize + ppsSize + 9] = 0x0;
 		frameData[spsSize + ppsSize + 10] = 0x0;
 		frameData[spsSize + ppsSize + 11] = 0x1;
 	}
