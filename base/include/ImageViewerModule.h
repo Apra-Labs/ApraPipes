@@ -41,7 +41,7 @@ public:
 
 class ImageViewerModule : public Module {
 public:
-	ImageViewerModule(ImageViewerModuleProps _props=ImageViewerModuleProps(""));
+	ImageViewerModule(ImageViewerModuleProps _props);
 	virtual ~ImageViewerModule();
 	bool init();
 	bool term();

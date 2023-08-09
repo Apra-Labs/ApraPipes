@@ -32,7 +32,7 @@ public:
 
 	virtual bool compute() = 0;
 
-	bool eglInitializer(uint32_t _height, uint32_t _width , bool _displayOnTop)
+	bool eglInitializer(uint32_t _height, uint32_t _width)
 	{
 	#if defined(__arm__) || defined(__aarch64__)
         uint32_t displayHeight, displayWidth;
@@ -40,11 +40,11 @@ public:
         if(height!=0 && width!=0){
             x_offset += (displayWidth-width)/2;
             y_offset += (displayHeight-height)/2;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset,displayOnTop);
+            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset,props.displayOnTop);
         }else{
             x_offset += (displayWidth-_width)/2;
             y_offset += (displayHeight-_height)/2;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset, displayOnTop);
+            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset,props.displayOnTop);
         }
         if (!renderer)
         {
@@ -85,18 +85,16 @@ public:
 	{
 		mImg.data = (uchar *)frame->data();
 		cv::imshow(mStrTitle, mImg);
-		cv::waitKey(1); //use 33 for linux Grrr
+		cv::waitKey(1);
 	}
 
 public:
-	cv::Mat mImg;	
-	std::string mStrTitle;
-    uint32_t x_offset,y_offset,width,height;
-    bool displayOnTop;
 	frame_sp inputFrame;
-	frame_sp outputFrame;
 	ImageViewerModuleProps props;
-
+protected:
+	cv::Mat mImg;
+	std::string mStrTitle;
+	uint32_t x_offset, y_offset, width, height;
 #if defined(__arm__) || defined(__aarch64__)
 	NvEglRenderer *renderer = nullptr;
 #endif
@@ -226,7 +224,7 @@ bool ImageViewerModule::processSOS(frame_sp& frame)
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
         }
 
-		mDetail->eglInitializer(height,width,mDetail->displayOnTop);
+		mDetail->eglInitializer(height,width);
 	#else
 		mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata));
 	#endif
@@ -252,7 +250,7 @@ bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame
     {
         EglRendererCreateWindow cmd;
         getCommand(cmd, frame);
-        mDetail->eglInitializer(cmd.width, cmd.height,mDetail->displayOnTop);
+        mDetail->eglInitializer(cmd.width, cmd.height);
         return true;
     }
     return Module::handleCommand(type, frame);
