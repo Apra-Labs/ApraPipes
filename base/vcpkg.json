@@ -25,8 +25,8 @@
     "features":  [
                      "gtk"
                  ],
-    "platform":  "(linux \u0026 x64)",
-    "$reason":  "skip linux:arm64 and windows"
+    "platform":  "!arm64",
+    "$reason":  "skip linux:arm64"
   },
     "libjpeg-turbo",
     "openh264",
