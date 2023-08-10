@@ -53,18 +53,18 @@ find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
 IF(ENABLE_CUDA)
    if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
-       set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
+      set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
    endif()
 
    message ("CUDA ARCHS: ${CMAKE_CUDA_ARCHITECTURES}")
    enable_language(CUDA)
    SET(NVCODEC_INCLUDE_DIR ../thirdparty/Video_Codec_SDK_10.0.26/Interface)
    IF(ENABLE_ARM64)
-       SET(NVCODEC_LIB)
-       SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")                
+      SET(NVCODEC_LIB)
+      SET(JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include")               
       
-       list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
-       list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
+      list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
+      list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
       find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
       find_library(V4L2LIB nvv4l2 REQUIRED)
@@ -156,21 +156,16 @@ SET(CORE_FILES
    src/Mp4WriterSinkUtils.cpp
    src/MultimediaQueueXform.cpp
    src/Mp4ReaderSource.cpp
-   src/Mp4ReaderSourceUtils.cpp
    src/RTSPClientSrc.cpp
    src/RTSPClientSrc.cpp
    src/MotionVectorExtractor.cpp
    src/OverlayModule.cpp
-   src/BaresipWebRTC.cpp
-   src/BaresipDemo.cpp
-   src/BaresipVideoSink.cpp
-   src/BaresipSession.cpp
-   src/BaresipVideoAdapter.cpp
-   src/WebRTCSink.cpp
+   src/OrderedCacheOfFiles.cpp
 )
 
 SET(CORE_FILES_H
-   include/BufferMaker.h  
+   include/BufferMaker.h   
+   include/Mp4ErrorFrame.h
    include/FramesMuxer.h
    include/FrameMetadata.h
    include/FrameMetadataFactory.h
@@ -191,7 +186,7 @@ SET(CORE_FILES_H
    include/ApraData.h
    include/AIPExceptions.h
    include/Utils.h
-   include/ThreadSafeQue.h
+   include/ThreadSafeQue.h 
    include/StatSink.h
    include/Split.h
    include/ROIMetadata.h
@@ -221,22 +216,18 @@ SET(CORE_FILES_H
    include/RTSPClientSrc.h
    include/H264Metadata.h
    include/Mp4ReaderSource.h
-   include/Mp4ReaderSourceUtils.h
    include/RTSPClientSrc.h
    include/H264Metadata.h
    include/MotionVectorExtractor.h
    include/OverlayModule.h
-   include/BaresipWebRTC.h
-   include/BaresipDemo.h
-   include/BaresipVideoSink.h
-   include/BaresipVideoAdapter.h
-   include/WebRTCSink.h
+   include/OrderedCacheOfFiles.h
+   include/TestSignalGeneratorSrc.h
 )
 
 IF(ENABLE_WINDOWS)
    SET(CORE_FILES_H ${CORE_FILES_H}
-       include/targetver.h
-       include/stdafx.h
+      include/targetver.h
+      include/stdafx.h
    )
 ENDIF(ENABLE_WINDOWS)
 
@@ -262,6 +253,28 @@ IF(ENABLE_LINUX)
    list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
 ENDIF(ENABLE_LINUX)
 
+IF((ENABLE_LINUX) OR (ENABLE_ARM64))
+   list(APPEND CORE_FILES 
+   src/BaresipWebRTC.cpp
+   src/BaresipDemo.cpp
+   src/BaresipVideoSink.cpp
+   src/BaresipSession.cpp
+   src/BaresipVideoAdapter.cpp
+   src/WebRTCSink.cpp
+   )
+   list(APPEND CORE_FILES_H 
+   include/BaresipWebRTC.h
+   include/BaresipDemo.h
+   include/BaresipVideoSink.h
+   include/BaresipVideoAdapter.h
+   include/WebRTCSink.h
+   )
+   list(APPEND UT_FILES
+   test/baresip_webrtc_tests.cpp
+   test/baresipvideosink_tests.cpp
+   )
+ENDIF((ENABLE_LINUX) OR (ENABLE_ARM64))
+
 SET(IP_FILES
    src/ApraLines.cpp
    src/CalcHistogramCV.cpp
@@ -270,8 +283,10 @@ SET(IP_FILES
    src/ImageViewerModule.cpp
    src/BMPConverter.cpp
    src/ImageResizeCV.cpp
+   src/FacialLandmarksCV.cpp
    src/ImageEncoderCV.cpp
    src/RotateCV.cpp
+   src/AffineTransform.cpp
    src/BrightnessContrastControlXform.cpp
    src/VirtualPTZ.cpp
    src/WebCamSource.cpp
@@ -286,6 +301,7 @@ SET(IP_FILES
    src/Overlay.cpp
    src/OverlayFactory.h
    src/OverlayFactory.cpp
+   src/TestSignalGeneratorSrc.cpp
 )
 
 
@@ -299,8 +315,10 @@ SET(IP_FILES_H
    include/ImageDecoderCV.h
    include/BMPConverter.h
    include/ImageResizeCV.h
+   include/FacialLandmarksCV.h
    include/ImageEncoderCV.h
    include/RotateCV.h
+   include/AffineTransform.h
    include/BrightnessContrastControlXform.h
    include/VirtualPTZ.h
    include/WebCamSource.h
@@ -344,43 +362,43 @@ SET(CUDA_IP_FILES
    src/OverlayKernel.cu
    src/OverlayNPPI.cpp
    src/ResizeNPPI.cpp
-   src/RotateNPPI.cpp     
+   src/RotateNPPI.cpp      
    src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
    SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-       src/JPEGDecoderL4TM.cpp
-       src/JPEGDecoderL4TMHelper.cpp
-       src/JPEGEncoderL4TM.cpp
-       src/JPEGEncoderL4TMHelper.cpp
-       src/AV4L2Buffer.cpp
-       src/AV4L2ElementPlane.cpp
-       src/H264EncoderV4L2Helper.cpp
-       src/V4L2CUYUV420Converter.cpp
-       src/H264EncoderV4L2.cpp
-       src/DMAFDWrapper.cpp
-       src/NvArgusCameraHelper.cpp
-       src/NvArgusCamera.cpp
-       src/NvV4L2Camera.cpp
-       src/NvV4L2CameraHelper.cpp
-       src/EglRenderer.cpp
-       src/NvEglRenderer.cpp
-       src/DMAUtils.cpp
-       src/NvTransform.cpp
-       src/ApraEGLDisplay.cpp
-       src/DMAFDToHostCopy.cpp
-       src/H264DecoderV4L2Helper.cpp
-       src/H264DecoderV4L2Helper.h
+      src/JPEGDecoderL4TM.cpp
+      src/JPEGDecoderL4TMHelper.cpp
+      src/JPEGEncoderL4TM.cpp
+      src/JPEGEncoderL4TMHelper.cpp
+      src/AV4L2Buffer.cpp
+      src/AV4L2ElementPlane.cpp
+      src/H264EncoderV4L2Helper.cpp
+      src/V4L2CUYUV420Converter.cpp
+      src/H264EncoderV4L2.cpp
+      src/DMAFDWrapper.cpp
+      src/NvArgusCameraHelper.cpp
+      src/NvArgusCamera.cpp
+      src/NvV4L2Camera.cpp
+      src/NvV4L2CameraHelper.cpp
+      src/EglRenderer.cpp
+      src/NvEglRenderer.cpp
+      src/DMAUtils.cpp
+      src/NvTransform.cpp
+      src/ApraEGLDisplay.cpp
+      src/DMAFDToHostCopy.cpp
+      src/H264DecoderV4L2Helper.cpp
+      src/H264DecoderV4L2Helper.h
    )
 ELSE()
    SET(CUDA_IP_FILES ${CUDA_IP_FILES}     # following modules and related files do not work on ARM64
-       src/JPEGDecoderNVJPEG.cpp  
-       src/JPEGEncoderNVJPEG.cpp
-       src/H264EncoderNVCodecHelper.cpp
-       src/H264EncoderNVCodec.cpp
-       src/H264DecoderNvCodecHelper.cpp
-       src/H264DecoderNvCodecHelper.h
+      src/JPEGDecoderNVJPEG.cpp  
+      src/JPEGEncoderNVJPEG.cpp
+      src/H264EncoderNVCodecHelper.cpp
+      src/H264EncoderNVCodec.cpp
+      src/H264DecoderNvCodecHelper.cpp
+      src/H264DecoderNvCodecHelper.h
    )
 ENDIF(ENABLE_ARM64)
 
@@ -389,7 +407,7 @@ SET(CUDA_IP_FILES_H
    include/EffectsNPPI.h
    include/EffectsKernel.h
    include/CCNPPI.h
-   include/CCKernel.h 
+   include/CCKernel.h   
    include/ResizeNPPI.h
    include/OverlayNPPI.h
    include/OverlayKernel.h
@@ -399,36 +417,36 @@ SET(CUDA_IP_FILES_H
 
 IF(ENABLE_ARM64)
    SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
-       include/JPEGDecoderL4TMHelper.h
-       include/JPEGDecoderL4TM.h  
-       include/JPEGEncoderL4TMHelper.h
-       include/JPEGEncoderL4TM.h
-       include/AV4L2Buffer.h
-       include/AV4L2ElementPlane.h
-       include/H264EncoderV4L2Helper.h
-       include/V4L2CUYUV420Converter.h
-       include/H264EncoderV4L2.h
-       include/DMAAllocator.h
-       include/DMAFDWrapper.h
-       include/Allocators.h
-       include/NvArgusCameraHelper.h
-       include/NvArgusCamera.h
-       include/NvV4L2Camera.h
-       include/NvV4L2CameraHelper.h
-       include/EglRenderer.h
-       include/ApraNvEglRenderer.h
-       include/DMAUtils.h
-       include/NvTransform.h
-       include/ApraEGLDisplay.h
-       include/DMAFrameUtils.h
-       include/DMAFDToHostCopy.h
+      include/JPEGDecoderL4TMHelper.h
+      include/JPEGDecoderL4TM.h  
+      include/JPEGEncoderL4TMHelper.h
+      include/JPEGEncoderL4TM.h
+      include/AV4L2Buffer.h
+      include/AV4L2ElementPlane.h
+      include/H264EncoderV4L2Helper.h
+      include/V4L2CUYUV420Converter.h
+      include/H264EncoderV4L2.h
+      include/DMAAllocator.h
+      include/DMAFDWrapper.h
+      include/Allocators.h
+      include/NvArgusCameraHelper.h
+      include/NvArgusCamera.h
+      include/NvV4L2Camera.h
+      include/NvV4L2CameraHelper.h
+      include/EglRenderer.h
+      include/ApraNvEglRenderer.h
+      include/DMAUtils.h
+      include/NvTransform.h
+      include/ApraEGLDisplay.h
+      include/DMAFrameUtils.h
+      include/DMAFDToHostCopy.h
    )
 ELSE()
    SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}    # following modules and related files do not work on ARM64
-       include/JPEGEncoderNVJPEG.h
-       include/JPEGDecoderNVJPEG.h
-       include/H264EncoderNVCodecHelper.h
-       include/H264EncoderNVCodec.h
+      include/JPEGEncoderNVJPEG.h   
+      include/JPEGDecoderNVJPEG.h
+      include/H264EncoderNVCodecHelper.h
+      include/H264EncoderNVCodec.h
    )
 ENDIF(ENABLE_ARM64)
 
@@ -441,8 +459,8 @@ set(SOURCE
 
 IF(ENABLE_CUDA)
    set(SOURCE ${SOURCE}
-       ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
-       ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+      ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+      ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
    )
 ENDIF(ENABLE_CUDA)
 
@@ -459,8 +477,8 @@ endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "L
 
 target_include_directories ( aprapipes PRIVATE 
 ${JETSON_MULTIMEDIA_LIB_INCLUDE}
-${FFMPEG_INCLUDE_DIRS}
-${OpenCV_INCLUDE_DIRS}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS}
 ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
@@ -473,22 +491,22 @@ ${NVCODEC_INCLUDE_DIR}
 
 IF (ENABLE_ARM64)
    SET(ARM64_UT_FILES
-       test/jpegencoderl4tm_tests.cpp
-       test/jpegdecoderl4tm_tests.cpp
+      test/jpegencoderl4tm_tests.cpp
+      test/jpegdecoderl4tm_tests.cpp
 #     test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-       test/opencvresize_tests.cpp
-       test/h264encoderv4l2helper_tests.cpp
-       test/h264encoderv4l2_tests.cpp
-       test/nvarguscamerahelper_tests.cpp
-       test/nvarguscamera_tests.cpp
-       test/nvv4l2camera_test.cpp
-       test/nvv4l2camerahelper_test.cpp
-       test/nvtransform_tests.cpp
-       test/eglrenderer_test.cpp
-       test/cuda_arm_tests.cpp
-       test/apraegldisplay_tests.cpp
-       test/frame_factory_test_dma.cpp
-       test/h264decoder_tests.cpp
+      test/opencvresize_tests.cpp
+      test/h264encoderv4l2helper_tests.cpp
+      test/h264encoderv4l2_tests.cpp
+      test/nvarguscamerahelper_tests.cpp
+      test/nvarguscamera_tests.cpp
+      test/nvv4l2camera_test.cpp
+      test/nvv4l2camerahelper_test.cpp
+      test/nvtransform_tests.cpp
+      test/eglrenderer_test.cpp
+      test/cuda_arm_tests.cpp
+      test/apraegldisplay_tests.cpp
+      test/frame_factory_test_dma.cpp
+      test/h264decoder_tests.cpp
    )
 ENDIF(ENABLE_ARM64)
 
@@ -501,19 +519,18 @@ IF (ENABLE_CUDA)
    )
    IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
-       SET(CUDA_UT_FILES ${CUDA_UT_FILES} 
-           test/jpegencodernvjpeg_tests.cpp
-           test/jpegdecodernvjpeg_tests.cpp           
-           test/resizenppi_jpegencodernvjpeg_tests.cpp
-           test/nvjpeg_combo_tests.cpp        
-           test/ccnppi_tests.cpp
-           test/overlaynppi_tests.cpp
-           test/effectsnppi_tests.cpp
-           test/h264Encodernvcodec_tests.cpp
-           test/nv_mp4_file_tests.cpp
-           test/nv_test_utils.h
-           test/h264decoder_tests.cpp
-       )
+      SET(CUDA_UT_FILES ${CUDA_UT_FILES}  
+         test/jpegencodernvjpeg_tests.cpp
+         test/jpegdecodernvjpeg_tests.cpp       
+         test/resizenppi_jpegencodernvjpeg_tests.cpp
+         test/nvjpeg_combo_tests.cpp         
+         test/overlaynppi_tests.cpp
+         test/effectsnppi_tests.cpp
+         test/h264Encodernvcodec_tests.cpp
+         test/nv_mp4_file_tests.cpp
+         test/nv_test_utils.h
+         test/h264decoder_tests.cpp
+      )
    ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
 
@@ -525,11 +542,11 @@ SET(UT_FILES
    test/calchistogramcv_tests.cpp
    test/filenamestrategy_tests.cpp
    test/test_utils.cpp
-   test/test_utils.h  
+   test/test_utils.h 
    test/filewritermodule_tests.cpp
    test/logger_tests.cpp
 #  test/logger_stress_tests.cpp  #todo this test needs to be improved and added
-   test/quepushstrategy_tests.cpp 
+   test/quepushstrategy_tests.cpp   
    test/framesmuxer_tests.cpp
    test/filereadermodule_tests.cpp
    test/merge_tests.cpp
@@ -537,11 +554,13 @@ SET(UT_FILES
    test/imagemetadata_tests.cpp
    test/bmpconverter_tests.cpp
    test/rtsppusher_tests.cpp
-   test/findexstrategy_tests.cpp  
+   test/findexstrategy_tests.cpp 
    test/jpegdecodercv_tests.cpp
    test/Imageresizecv_tests.cpp
+   test/faciallandmarkscv_tests.cpp
    test/ImageEncodeCV_tests.cpp
    test/rotatecv_tests.cpp
+   test/affinetransform_tests.cpp
    test/brightness_contrast_tests.cpp
    test/virtualptz_tests.cpp
    test/webcam_source_tests.cpp
@@ -561,9 +580,14 @@ SET(UT_FILES
    test/rtsp_client_tests.cpp
    test/rtsp_client_tests.cpp
    test/motionvector_extractor_and_overlay_tests.cpp
-   test/baresip_webrtc_tests.cpp
-   test/baresipvideosink_tests.cpp
+   test/mp4_reverse_play_tests.cpp
+   test/ordered_cache_of_files_tests.cpp
+   test/mp4_seek_tests.cpp
+   test/mp4_simul_read_write_tests.cpp
+   test/mp4_getlivevideots_tests.cpp
+   test/mp4_dts_strategy_tests.cpp
    test/overlaymodule_tests.cpp
+   test/testSignalGeneratorSrc_tests.cpp
    ${ARM64_UT_FILES}
    ${CUDA_UT_FILES}
 )
@@ -614,7 +638,7 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ZXing::Core
-  ZXing::ZXing 
+  ZXing::ZXing
   BZip2::BZip2
   ZLIB::ZLIB
   liblzma::liblzma
