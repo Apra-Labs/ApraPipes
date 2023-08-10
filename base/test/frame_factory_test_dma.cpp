@@ -237,4 +237,19 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
     }
 }
 
+BOOST_AUTO_TEST_CASE(memcopy_read_write)
+{
+    uint32_t width = 1280;
+    uint32_t height = 720;
+    size_t size = width * height * 4;
+
+    auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
+    auto frameFactory = framefactory_sp(new FrameFactory(metadata, 10));
+    auto frame = frameFactory->create(size, frameFactory);
+    void *iptr = (static_cast<DMAFDWrapper *>(frame->data()))->getHostPtr();
+    memset(iptr,200,size);
+    unsigned char *bytePtr = static_cast<unsigned char *>(iptr);
+    BOOST_TEST(bytePtr[0] == 200);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
