@@ -20,8 +20,6 @@
 
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
-
-
 BOOST_AUTO_TEST_CASE(yuv420_640x360,
 * utf::precondition(if_h264_encoder_supported()))
 {
@@ -55,20 +53,23 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360,
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
 	encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(fileWriter->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-	for (auto i = 0; i < 43; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		copy->step();
-		encoder->step();
-		fileWriter->step();
-	}	
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
@@ -107,25 +108,23 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(resize->init());
-	BOOST_TEST(sync->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(fileWriter->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-
-	for (auto i = 0; i < 42; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		copy->step();
-		resize->step();
-		sync->step();
-		encoder->step();
-		fileWriter->step();
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
@@ -164,23 +163,23 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(sync->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(fileWriter->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-
-	for (auto i = 0; i < 42; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		copy->step();
-		sync->step();
-		encoder->step();
-		fileWriter->step();
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 	
@@ -220,21 +219,23 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA,
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(fileWriter->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-
-	for (auto i = 0; i < 42; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		copy->step();
-		encoder->step();
-		fileWriter->step();
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 	
@@ -278,25 +279,23 @@ BOOST_AUTO_TEST_CASE(mono_1920x960,
 	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
 	encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(cc->init());
-	BOOST_TEST(sync->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(fileWriter->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-
-	for (auto i = 0; i < 42; i++)
+	if (!p->init())
 	{
-		fileReader->step(); 
-		copy->step();
-		cc->step();
-		sync->step();
-		encoder->step();
-		fileWriter->step();
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
@@ -335,28 +334,23 @@ void mono_1920x960_ext_sink_()
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(cc->init());
-	BOOST_TEST(sync->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(sink->init());
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
 
-	fileReader->play(true);
-
-	frame_sp frame;
-
-	for (auto i = 0; i < 5; i++)
+	if (!p->init())
 	{
-		fileReader->step();
-		copy->step();
-		cc->step();
-		sync->step();
-		encoder->step();
-		auto frames = sink->pop();
-		BOOST_TEST(frames.size() == 1);
-		frame = frames.cbegin()->second;
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 
 	
 }
@@ -397,7 +391,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 	p.stop();
 	p.term();
@@ -445,7 +439,8 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
