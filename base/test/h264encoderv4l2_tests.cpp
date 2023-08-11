@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 		encoder->step();
 		auto frames = sink->pop();
 		auto outputFrame = frames.begin()->second;
-		std::string fileName = "/data/testOutput/h264EncoderV4l2/Raw_YUV420_640x360_" + to_string(i) + ".h264";
+		std::string fileName = "./data/testOutput/h264EncoderV4l2/Raw_YUV420_640x360_" + to_string(i) + ".h264";
 		Test_Utils::saveOrCompare(fileName.c_str(),  const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
 	}
 }
