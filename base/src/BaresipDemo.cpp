@@ -22,7 +22,7 @@ static struct demo {
 
 
 static struct rtc_configuration pc_config = {
-	.offerer = true
+	//.offerer = true
 };
 
 
@@ -287,6 +287,7 @@ int demo_init(const char *server_cert, const char *www_path,
 
 	pc_config.stun_user = stun_user;
 	pc_config.credential = credential;
+	pc_config.offerer = true;
 
 	demo.mnat = mnat_find(baresip_mnatl(), "ice");
 	if (!demo.mnat) {
