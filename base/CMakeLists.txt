@@ -253,7 +253,8 @@ IF(ENABLE_LINUX)
    list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
 ENDIF(ENABLE_LINUX)
 
-IF((ENABLE_LINUX) OR (ENABLE_ARM64))
+message("ENABLE LINUX OR ARM64")
+IF(ENABLE_LINUX OR ENABLE_ARM64)
    list(APPEND CORE_FILES 
    src/BaresipWebRTC.cpp
    src/BaresipDemo.cpp
@@ -273,7 +274,7 @@ IF((ENABLE_LINUX) OR (ENABLE_ARM64))
    test/baresip_webrtc_tests.cpp
    test/baresipvideosink_tests.cpp
    )
-ENDIF((ENABLE_LINUX) OR (ENABLE_ARM64))
+ENDIF(ENABLE_LINUX OR ENABLE_ARM64)
 
 SET(IP_FILES
    src/ApraLines.cpp
@@ -599,6 +600,12 @@ IF(ENABLE_LINUX)
    )
 ENDIF(ENABLE_LINUX)
 
+IF(ENABLE_LINUX OR ENABLE_ARM64)
+   list(APPEND UT_FILES
+   test/baresip_webrtc_tests.cpp
+   test/baresipvideosink_tests.cpp  
+   )
+ENDIF(ENABLE_LINUX OR ENABLE_ARM64)
 
 add_executable(aprapipesut ${UT_FILES})
 
