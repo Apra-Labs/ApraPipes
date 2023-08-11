@@ -14,19 +14,19 @@
 
 BOOST_AUTO_TEST_SUITE(imageviewermodule_tests)
 
-BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage,*boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 {
-	#if defined(__arm__) || defined(__aarch64__)
+#if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
 	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
 	source->setNext(transform);
 
-    auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0,0,0)));
+	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
 	transform->setNext(sink);
 
-    PipeLine p("test");
+	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
@@ -40,22 +40,22 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage,*boost::unit_test::disabled())
 	p.stop();
 	p.term();
 	p.wait_for_all();
-	#endif 
+#endif
 }
 
-BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage,*boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 {
-	#if defined(__arm__) || defined(__aarch64__)
+#if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
 	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
 	source->setNext(transform);
 
-    auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0,0,1)));
+	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 1)));
 	transform->setNext(sink);
 
-    PipeLine p("test");
+	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
@@ -69,20 +69,20 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage,*boost::unit_test::disabled())
 	p.stop();
 	p.term();
 	p.wait_for_all();
-	#endif 
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 {
-	#if defined(__arm__) || defined(__aarch64__)
-	NvV4L2CameraProps nvCamProps(640,360, 10);
-    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+#if defined(__arm__) || defined(__aarch64__)
+	NvV4L2CameraProps nvCamProps(640, 360, 10);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-    NvTransformProps nvprops(ImageMetadata::RGBA);
-    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
-    source->setNext(transform);
+	NvTransformProps nvprops(ImageMetadata::RGBA);
+	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	source->setNext(transform);
 
-	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0,0,0)));
+	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 	sink->closeWindow();
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
-	sink->createWindow(200,200);
+	sink->createWindow(200, 200);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
@@ -106,11 +106,11 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 	p.term();
 
 	p.wait_for_all();
-	#endif 
+#endif
 }
 
-BOOST_AUTO_TEST_CASE(viewer_test,*boost::unit_test::disabled())
-{   
+BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
+{
 	WebCamSourceProps webCamSourceprops(-1, 640, 480);
 	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
@@ -128,8 +128,6 @@ BOOST_AUTO_TEST_CASE(viewer_test,*boost::unit_test::disabled())
 	p.stop();
 	p.term();
 	p.wait_for_all();
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
