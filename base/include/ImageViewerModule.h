@@ -9,11 +9,7 @@ class DetailImageviewer;
 class ImageViewerModuleProps : public ModuleProps
 {
 public:
-	ImageViewerModuleProps(const string &_strTitle) : ModuleProps()
-	{
-		strTitle = _strTitle;
-	}
-
+#if defined(__arm__) || defined(__aarch64__)
 	ImageViewerModuleProps(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height, bool _displayOnTop = true) : ModuleProps()
 	{
 		x_offset = _x_offset;
@@ -30,9 +26,19 @@ public:
 		width = 0;
 		displayOnTop = _displayOnTop ? 1 : 0;
 	}
+	ImageViewerModuleProps(const string &_strTitle) : ModuleProps()
+	{
+		strTitle = _strTitle;
+	}
+#else
+	ImageViewerModuleProps(const string &_strTitle) : ModuleProps()
+	{
+		strTitle = _strTitle;
+	}
+#endif
 
-	uint32_t x_offset;
-	uint32_t y_offset;
+	uint32_t x_offset = 0;
+	uint32_t y_offset = 0;
 	uint32_t height;
 	uint32_t width;
 	bool displayOnTop;
