@@ -110,7 +110,6 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 {
-	#if defined(!__arm__) || defined(!__aarch64__)
 	WebCamSourceProps webCamSourceprops(-1, 640, 480);
 	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
@@ -128,7 +127,6 @@ BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 	p.stop();
 	p.term();
 	p.wait_for_all();
-	#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()
