@@ -1,4 +1,3 @@
-cp base/vcpkg.cuda.json base/vcpkg.json
 cd vcpkg
 ./bootstrap-vcpkg.sh
 vcpkg integrate install
