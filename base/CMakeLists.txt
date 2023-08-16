@@ -156,15 +156,16 @@ SET(CORE_FILES
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
-   	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
+	src/OrderedCacheOfFiles.cpp
 )
 
 SET(CORE_FILES_H
 	include/BufferMaker.h	
+	include/Mp4ErrorFrame.h
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
@@ -215,11 +216,12 @@ SET(CORE_FILES_H
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/Mp4ReaderSource.h
-    include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/MotionVectorExtractor.h
 	include/OverlayModule.h
+	include/OrderedCacheOfFiles.h
+	include/TestSignalGeneratorSrc.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -262,6 +264,7 @@ SET(IP_FILES
 	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
+	src/AffineTransform.cpp
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
@@ -276,6 +279,7 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
+	src/TestSignalGeneratorSrc.cpp
 )
 
 
@@ -292,6 +296,7 @@ SET(IP_FILES_H
 	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
+	include/AffineTransform.h
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
@@ -528,6 +533,7 @@ SET(UT_FILES
 	test/faciallandmarkscv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
 	test/webcam_source_tests.cpp
@@ -547,7 +553,14 @@ SET(UT_FILES
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
+	test/mp4_reverse_play_tests.cpp
+	test/ordered_cache_of_files_tests.cpp
+	test/mp4_seek_tests.cpp
+	test/mp4_simul_read_write_tests.cpp
+	test/mp4_getlivevideots_tests.cpp
+	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
+	test/testSignalGeneratorSrc_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

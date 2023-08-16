@@ -66,6 +66,19 @@ bool EoSFrame::isEOS() { return true; }
 EmptyFrame::EmptyFrame() : Frame() {}
 bool EmptyFrame::isEmpty() { return true; }
 
+EoSFrame::EoSFrameType EoSFrame::getEoSFrameType()
+{
+	return type;
+}
+
+EoSFrame::EoSFrame(EoSFrame::EoSFrameType _type, uint64_t _mp4TS) : Frame()
+{
+	type = _type;
+	mp4TS = _mp4TS;
+	timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+
 ExternalFrame::ExternalFrame(ApraData* data) : Frame()
 {
 	data->locked.fetch_add(1, memory_order_seq_cst);
