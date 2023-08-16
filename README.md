@@ -133,7 +133,7 @@ build_windows_cuda.bat
 ### Build for linux
 
 * ```chmod +x build_linux_*.sh```
-* ```./build_linux_x64.sh``` or ```./build_linux_no_cuda.sh``` depending on previous step. 
+* ```./build_linux_cuda.sh``` or ```./build_linux_no_cuda.sh``` depending on previous step. 
 If Nvidia GPU is present on system and CUDA is built then use - build_linux_cuda.sh
 If there is no Nvidia GPU present on your host use - build_linux_no_cuda.sh. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules. Use this if 
 
