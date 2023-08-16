@@ -21,7 +21,8 @@ Automatically built and tested on Ubuntu 18.04, Jetson Boards and Windows 11 x64
 ### Prerequisites for CUDA 
 * Make account on developer.nvidia.com, else the next steps will show HTTP 404/403 errors
 * Download and install CUDA tool kit based on your OS: __Note: we test both with CUDA v10.2 and v11.7 so either is fine__
-   * Ubuntu 18.04 : [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork) or [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=18.04&target_type=deb_network)
+   * Ubuntu 18.04/20.04: 18.04 - [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork), 
+   20.04 - [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
    * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal) or [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64)
 * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract where cuda is installed. Note: this is a painful process. Here are the steps:
    * Download the correct tar/zip file matching your cuda version. _Do not download the exe/installer/deb package._
@@ -114,6 +115,15 @@ build_windows_cuda.bat
   ```  
 * Note: start a new terminal as pip3 settings do not get effective on the same shell
 * CMake minimum version 3.24 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+* Add CUDA to path  by appending following line to ~/.bashrc
+  ```
+  export PATH=/usr/local/cuda/bin:$PATH
+  ```
+* reload ~/.bashrc:
+  ```
+  source ~/.bashrc:
+  ```
+* Verify by checking output of nvcc --version, it must show 10.2 or 11.7 according to installed cuda. Then check output of nvidia-smi and verify the same. You can check nvidia path by giving echo $PATH in any terminal. If path is added and nvcc --version is not giving output reboot and try again. 
 * Clone with submodules and LFS. 
   ```
   git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
@@ -123,7 +133,9 @@ build_windows_cuda.bat
 ### Build for linux
 
 * ```chmod +x build_linux_*.sh```
-* ```./build_linux_x64.sh``` or ```./build_linux_no_cuda.sh``` depending on previous step. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules. Use this if there is no nvidia GPU present on your host
+* ```./build_linux_x64.sh``` or ```./build_linux_no_cuda.sh``` depending on previous step. 
+If Nvidia GPU is present on system and CUDA is built then use - build_linux_cuda.sh
+If there is no Nvidia GPU present on your host use - build_linux_no_cuda.sh. No Cuda as the name suggests will not build the Nvidia Cuda GPU Modules. Use this if 
 
 Build can take ~2 hours depending on the machine configuration.
 
