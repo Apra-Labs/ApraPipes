@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./data/ApraPipes.png" alt="Header Image">
+  <img src="./data/ReadMe Images/ApraPipes.png" alt="Header Image">
 </p>
 
 # ApraPipes
@@ -35,7 +35,8 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
 
-<h2 id="windows">Windows (Version ≥ 10)</h2>
+<h2 id="windows">Windows (Version ≥ 10)</h2>  
+<img src="./data/ReadMe Images/windows.png" alt="Windows Logo" align="right" height = "100" width="100">
 <details>
   <summary>Requirements</summary>
 
@@ -124,7 +125,8 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 
 </details>
 
-<h2 id="linux">Linux (Ubuntu ≥ 18.04)</h2>
+<h2 id="linux">Linux (Ubuntu ≥ 18.04)</h2>  
+<img src="./data/ReadMe Images/Linux.png" alt="Linux Logo" align="right" height = "100" width="100">
 <details>
   <summary>Requirements</summary>
   
@@ -198,7 +200,8 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     * Look at the unit_tests/params_test to check for sample usage of parameters in test code.
 </details>
 
-<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX (Jetpack ≥ 4.4)</h2>
+<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX (Jetpack ≥ 4.4)</h2>  
+<img src="./data/ReadMe Images/nvidia.png" alt="Nvidia Logo" align="right" height = "100" width="100">
 <details>
   <summary >Requirements</summary>
   
@@ -270,7 +273,8 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   * Look at the unit_tests/params_test to check for sample usage of parameters in test code
 </details>
 
-<h2 id="docker">Docker</h2>
+<h2 id="docker">Docker</h2>  
+<img src="./data/ReadMe Images/Docker.png" alt="Nvidia Logo" align="right" height = "100" width="100">
 <details>
   <summary>Requirements</summary>
 
