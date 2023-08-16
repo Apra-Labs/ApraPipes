@@ -61,7 +61,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
-
 	if (!p->init())
 	{
 		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
@@ -250,7 +249,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960,
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
-
+	
 	if (!p->init())
 	{
 		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
@@ -310,7 +309,6 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 	p.run_all_threaded();
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(20));
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 	p.stop();
 	p.term();
 
@@ -358,8 +356,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled())
 	p.run_all_threaded();
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(20));
-
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
 	p.term();
