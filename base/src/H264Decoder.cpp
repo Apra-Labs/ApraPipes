@@ -147,7 +147,8 @@ bool H264Decoder::init()
 	{
 		return false;
 	}
-
+	sendThread = std::thread(&H264Decoder::sendFramesToDecoder, this);
+	sendFramesToNextModule = std::thread(&H264Decoder::sendDecodedFrame, this);
 	return true;
 }
 
@@ -157,167 +158,154 @@ bool H264Decoder::term()
 	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
-
+	sendThread.join();
+	sendFramesToNextModule.join();
 	mDetail.reset();
 	return Module::term();
 }
 
-bool H264Decoder::checkFrameDirection(frame_sp& frame)
+void H264Decoder::bufferEncodedFrames(frame_sp& frame)
 {
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
-	direction = h264Metadata->direction;
 	if (!h264Metadata->direction)
 	{
 		if (hasDirectionChangedToBackward)
 		{
 			if (!tempGop.empty())
 			{
-				framesInGopCount.push(std::make_pair(frameCount, true));
-				gop.push_back(std::make_pair(tempGop, true));
+				/*framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
+				gop.push_back(std::make_pair(tempGop, true));*/
 				tempGop.clear();
-				frameCount = 0;
+				framesCounterOfCurrentGop = 0;
 			}
 			hasDirectionChangedToBackward = false;
 		}
 		tempGop.push_back(frame);
-		frameCount++;
+		framesCounterOfCurrentGop++;
 		short naluType = H264Utils::getNALUType((char*)frame->data());
 		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
 			foundGopIFrame = true;
-			framesInGopCount.push(std::make_pair(frameCount, false));
+			framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, false));
 			gop.push_back(std::make_pair(tempGop,false));
 			tempGop.clear();
-			frameCount = 0;
+			framesCounterOfCurrentGop = 0;
 		}
 		hasDirectionChangedToForward = true;
-		return false;
+		return;
 	}
-	else
+
+	if (hasDirectionChangedToForward)
 	{
-		if (hasDirectionChangedToForward)
+		if (!tempGop.empty())
 		{
-			if (!tempGop.empty())
-			{
-				tempGop.clear();
-				frameCount = 0;
-			}
-			short naluType = H264Utils::getNALUType((char*)frame->data());
-			if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
-			{
-				return false;
-			}
-			hasDirectionChangedToForward = false;
+			tempGop.clear();
+			framesCounterOfCurrentGop = 0;
 		}
 		short naluType = H264Utils::getNALUType((char*)frame->data());
-		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM && frameCount)
+		if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
-			foundGopIFrame = true;
-			framesInGopCount.push(std::make_pair(frameCount, true));
-			gop.push_back(std::make_pair(tempGop, true));
-			tempGop.clear();
-			frameCount = 0;
+			return;
 		}
-		hasDirectionChangedToBackward = true;
-		tempGop.push_back(frame);
-		frameCount++;
-		return false;
+		hasDirectionChangedToForward = false;
 	}
-	return true;
+	short naluType = H264Utils::getNALUType((char*)frame->data());
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM && framesCounterOfCurrentGop)
+	{
+		foundGopIFrame = true;
+		framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
+		gop.push_back(std::make_pair(tempGop, true));
+		tempGop.clear();
+		framesCounterOfCurrentGop = 0;
+	}
+	hasDirectionChangedToBackward = true;
+	tempGop.push_back(frame);
+	framesCounterOfCurrentGop++;
+	return;
+}
+
+void H264Decoder::sendFramesToDecoder()
+{
+	if (!gop.empty() && !gop.front().first.empty())
+	{
+		if (!gop.front().second)
+		{
+			for (auto itr = gop.front().first.rbegin(); itr != gop.front().first.rend();)
+			{
+				short naluType = H264Utils::getNALUType((char*)itr->get()->data());
+				if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
+				{
+					mDetail->compute(*itr);
+					itr = decltype(itr){gop.front().first.erase(std::next(itr).base())};
+				}
+			}
+			return;
+		}
+		for (auto itr = gop.front().first.begin(); itr != gop.front().first.end();)
+		{
+			short naluType = H264Utils::getNALUType((char*)itr->get()->data());
+			if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
+			{
+				mDetail->compute(*itr);
+
+				itr = gop.front().first.erase(itr);
+			}
+		}
+	}
 }
 
 bool H264Decoder::process(frame_container& frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto ret = checkFrameDirection(frame);
-	
-	if (ret)
-	{
-		mDetail->compute(frame);
-	}
-	else if(foundGopIFrame)
-	{
-		if (!gop.front().first.empty())
-		{
-			if (!gop.front().second)
-			{
-				for (auto itr = gop.front().first.rbegin(); itr != gop.front().first.rend();)
-				{
-					short naluType = H264Utils::getNALUType((char*)itr->get()->data());
-					if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopCount.front().first == 1))
-					{
-						mDetail->compute(*itr);
-						itr = decltype(itr){gop.front().first.erase(std::next(itr).base())};
-					}
-					else
-					{
-						foundGopIFrame = false;
-						break;
-					}
-				}
-			}
-			else
-			{
-				for (auto itr = gop.front().first.begin(); itr != gop.front().first.end();)
-				{
-					short naluType = H264Utils::getNALUType((char*)itr->get()->data());
-					if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopCount.front().first == 1))
-					{
-						mDetail->compute(*itr);
-						
-						itr = gop.front().first.erase(itr);
-					}
-					else
-					{
-						foundGopIFrame = false;
-						break;
-					}
-				}
-			}
-		}
+	bufferEncodedFrames(frame);
 
+	if(foundGopIFrame)
+	{
+		sendFramesToDecoder();
 		if (gop.front().first.empty())
 		{
 			gop.pop_front();
-			foundGopIFrame = false;
+			if (gop.empty())
+			{
+				foundGopIFrame = false;
+			}
 		}
 	}
 	sendDecodedFrame();
-
 	return true;
 }
 
 void H264Decoder::sendDecodedFrame()
 {
-	if (decodedFrames.size())
+	if (bufferedDecodedFrames.size())
 	{
-		auto outFrame = decodedFrames.front().begin();
+		auto outFrame = bufferedDecodedFrames.front().begin();
 		frame_container frames;
 		frames.insert(make_pair(mOutputPinId, *outFrame));
 		send(frames);
-		decodedFrames.front().pop_front();
+		bufferedDecodedFrames.front().pop_front();
 	}
 
-	if (!decodedFrames.empty())
+	if (!bufferedDecodedFrames.empty())
 	{
-		if (decodedFrames.front().empty())
+		if (bufferedDecodedFrames.front().empty())
 		{
-			decodedFrames.pop_front();
+			bufferedDecodedFrames.pop_front();
 		}
 	}
 }
 
-void H264Decoder::bufferDecodedFrame(frame_sp& frame)
+void H264Decoder::bufferDecodedFrames(frame_sp& frame)
 {
-	if (framesInGopCount.empty())
+	if (framesInGopAndDirectionTracker.empty())
 	{
 		tempDecodedFrames.push_back(frame);
-		decodedFrames.push_back(tempDecodedFrames);
+		bufferedDecodedFrames.push_back(tempDecodedFrames);
 		tempDecodedFrames.clear();
 		return;
 	}
-	if (!framesInGopCount.front().second)
+	if (!framesInGopAndDirectionTracker.front().second)
 	{
 		tempDecodedFrames.push_front(frame);
 	}
@@ -325,10 +313,10 @@ void H264Decoder::bufferDecodedFrame(frame_sp& frame)
 	{
 		tempDecodedFrames.push_back(frame);
 	}
-	if (tempDecodedFrames.size() >= framesInGopCount.front().first)
+	if (tempDecodedFrames.size() >= framesInGopAndDirectionTracker.front().first)
 	{
-		decodedFrames.push_back(tempDecodedFrames);
-		framesInGopCount.pop();
+		bufferedDecodedFrames.push_back(tempDecodedFrames);
+		framesInGopAndDirectionTracker.pop();
 		tempDecodedFrames.clear();
 	}
 }
@@ -338,7 +326,7 @@ bool H264Decoder::processSOS(frame_sp& frame)
 	auto metadata = frame->getMetadata();
 	auto ret = mDetail->setMetadata(metadata, frame,
 		[&](frame_sp& outputFrame) {
-			bufferDecodedFrame(outputFrame);
+			bufferDecodedFrames(outputFrame);
 		}, [&]() -> frame_sp {return makeFrame(); }
 		);
 	if (ret)

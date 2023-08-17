@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE(seek_in_next_file_h264)
 
 	auto imgFrame = frames.begin()->second;
 
-	/* ts of first frame of next file is 1655895288956 - video length 5secs.
+	/* ts of first frame of next file is 1685604361723 - video length 5secs.
 	   Seek 3 sec inside the file which is next to the currently open file. */
 	uint64_t skipTS = 1685604364723;
 	s.mp4Reader->randomSeek(skipTS, false);

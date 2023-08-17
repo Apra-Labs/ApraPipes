@@ -46,7 +46,17 @@ public:
 	bool Init()
 	{
 		sentEOSSignal = false;
-
+		auto filePath = boost::filesystem::path(mState.mVideoPath);
+		if (filePath.extension() != ".mp4")
+		{
+			if (!cof->probe(filePath, mState.mVideoPath))
+			{
+				LOG_DEBUG << "Mp4 file is not present" << ">";
+				isVideoFileFound = false;
+				return true;
+			}
+			isVideoFileFound = true;
+		}
 		if (mProps.parseFS)
 		{
 			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
