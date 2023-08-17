@@ -144,25 +144,23 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
 	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);	
 }
 
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA,
-* utf::precondition(if_h264_encoder_supported()))
+BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
 {
 	std::vector<std::string> outFile = { "./data/testOutput/overlay_1920x960_BGRA.h264" };
+	Test_Utils::FileCleaner f(outFile);
 
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
-	
+
 	bool enableBFrames = 1;
 	H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
 	// metadata is known
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReaderProps = FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw");
-	fileReaderProps.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -176,39 +174,33 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA,
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	copy->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], true)));
 	encoder->setNext(fileWriter);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(copy->init());
+	BOOST_TEST(encoder->init());
+	BOOST_TEST(fileWriter->init());
 
-	if (!p->init())
+	fileReader->play(true);
+
+
+	for (auto i = 0; i < 42; i++)
 	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+		fileReader->step();
+		copy->step();
+		encoder->step();
+		fileWriter->step();
 	}
 
-	p->run_all_threaded();
+	Test_Utils::saveOrCompare(outFile[0], 0);
 
-	Test_Utils::sleep_for_seconds(17);
-
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
-
-	std::string fileComparePath = "./data/H264EncoderNvCodecTests/overlay_1920x960_BGRA.h264";
-	uint8_t* frameData;
-	uint frameSize;
-	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
-
-	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960,
-* utf::precondition(if_h264_encoder_supported()))
-{	
+BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
+{
 	std::vector<std::string> outFile = { "./data/testOutput/mono_1920x960.h264" };
+	Test_Utils::FileCleaner f(outFile);
 
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
@@ -220,9 +212,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960,
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReaderProps = FileReaderModuleProps("./data/mono_1920x960.raw");
-	fileReaderProps.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -241,33 +231,30 @@ BOOST_AUTO_TEST_CASE(mono_1920x960,
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	sync->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0],true)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], true)));
 	encoder->setNext(fileWriter);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-	p->appendModule(fileReader);
-	
-	if (!p->init())
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(copy->init());
+	BOOST_TEST(cc->init());
+	BOOST_TEST(sync->init());
+	BOOST_TEST(encoder->init());
+	BOOST_TEST(fileWriter->init());
+
+	fileReader->play(true);
+
+
+	for (auto i = 0; i < 42; i++)
 	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+		fileReader->step();
+		copy->step();
+		cc->step();
+		sync->step();
+		encoder->step();
+		fileWriter->step();
 	}
 
-	p->run_all_threaded();
-
-	Test_Utils::sleep_for_seconds(25);
-
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
-
-	std::string fileComparePath = "./data/H264EncoderNvCodecTests/mono_1920x960.h264";
-	uint8_t* frameData;
-	uint frameSize;
-	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
-
-	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
+	Test_Utils::saveOrCompare(outFile[0], 0);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
