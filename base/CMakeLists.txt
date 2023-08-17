@@ -528,6 +528,7 @@ SET(UT_FILES
 	test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/faciallandmarkscv_tests.cpp
+	test/imageviewermodule_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
 	test/affinetransform_tests.cpp
