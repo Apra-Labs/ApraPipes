@@ -114,7 +114,15 @@ public:
 			return;
 		}
 
-		auto tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
+		std::string tempSkipDir;
+		if (boost::filesystem::path(tempVideoPath).extension() == ".mp4")
+		{
+			tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
+		}
+		else
+		{
+			tempSkipDir = boost::filesystem::path(tempVideoPath).string();
+		}
 		if (props.parseFS && mProps.skipDir == tempSkipDir && mState.mVideoPath != "")
 		{
 			if (mProps.videoPath == props.videoPath)
@@ -123,9 +131,21 @@ public:
 			return;
 		}
 		
-		if (props.parseFS && mProps.skipDir != tempSkipDir && mState.mVideoPath != "")
+		if (props.parseFS && mProps.skipDir != tempSkipDir && mState.mVideoPath != "" )
 		{
 			sentEOSSignal = false;
+
+			if (boost::filesystem::path(tempVideoPath).extension() != ".mp4")
+			{
+				if (!cof->probe(tempVideoPath, mState.mVideoPath))
+				{
+					LOG_DEBUG << "Mp4 file is not present" << ">";
+					isVideoFileFound = false;
+					return;
+				}
+				isVideoFileFound = true;
+				tempVideoPath = mState.mVideoPath;
+			}
 
 			auto boostVideoTS = boost::filesystem::path(tempVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;

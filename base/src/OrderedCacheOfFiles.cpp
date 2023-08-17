@@ -116,18 +116,18 @@ std::map<std::string, std::pair<uint64_t, uint64_t>> OrderedCacheOfFiles::getSna
 	return snap;
 }
 
-bool OrderedCacheOfFiles::probe(boost::filesystem::path potentialMp4File, std::string& videoName)
+bool OrderedCacheOfFiles::probe(boost::filesystem::path potentialRootDir, std::string& videoName)
 {
 	try
 	{
-		boost::filesystem::is_empty(potentialMp4File);
+		boost::filesystem::is_empty(potentialRootDir);
 	}
 	catch (...)
 	{
 		return false;
 	}
 
-	auto dateDir = parseAndSortDateDir(potentialMp4File.string());
+	auto dateDir = parseAndSortDateDir(potentialRootDir.string());
 
 	for (auto& dateDirPath : dateDir)
 	{

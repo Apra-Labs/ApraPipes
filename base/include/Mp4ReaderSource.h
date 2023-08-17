@@ -40,7 +40,7 @@ public:
 		auto canonicalVideoPath = boost::filesystem::canonical(_videoPath);
 		videoPath = canonicalVideoPath.string();
 		parseFS = _parseFS;
-		//skipDir = boost::filesystem::path(canonicalVideoPath).parent_path().parent_path().parent_path().string();
+		skipDir = boost::filesystem::path(canonicalVideoPath).string();
 		bFramesEnabled = _bFramesEnabled;
 		direction = _direction;
 		giveLiveTS = _giveLiveTS;
