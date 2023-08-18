@@ -38,7 +38,7 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 100, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
