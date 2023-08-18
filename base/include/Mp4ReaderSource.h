@@ -40,7 +40,7 @@ public:
 		auto canonicalVideoPath = boost::filesystem::canonical(_videoPath);
 		videoPath = canonicalVideoPath.string();
 		parseFS = _parseFS;
-		skipDir = boost::filesystem::path(canonicalVideoPath).parent_path().parent_path().parent_path().string();
+		skipDir = boost::filesystem::path(canonicalVideoPath).string();
 		bFramesEnabled = _bFramesEnabled;
 		direction = _direction;
 		giveLiveTS = _giveLiveTS;
@@ -51,11 +51,10 @@ public:
 		parseFSTimeoutDuration = _parseFSTimeoutDuration;
 		readLoop = _readLoop;
 		reInitInterval = _reInitInterval;
-		if (parseFS)
+		if (parseFS && boost::filesystem::path(videoPath).extension() == ".mp4")
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
 		}
-
 	}
 
 	void setMaxFrameSizes(size_t _maxImgFrameSize, size_t _maxMetadataFrameSize)

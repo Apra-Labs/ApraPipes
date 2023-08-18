@@ -202,7 +202,6 @@ BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName)
 {
 	/* file structure parsing test */
 	std::string videoPath = "./data/Mp4_videos/h264_video/apraH264.mp4";
-	std::string outPath = "data/testOutput/outFrames";
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	bool parseFS = false;
@@ -217,7 +216,6 @@ BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName)
 BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder)
 {
 	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
-	std::string outPath = "./data/testOutput/outFrames/";
 	bool parseFS = true;
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -248,10 +246,9 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder)
 	BOOST_TEST(frame->timestamp == 1673420640350);
 }
 
-BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_with_custom_file_name)
+BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_to_custom_file_name)
 {
 	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
-	std::string outPath = "./data/testOutput/outFrames/";
 	bool parseFS = true;
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -283,10 +280,9 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_with_custom_file_name)
 	BOOST_TEST(frame->timestamp == 1673420640350);
 }
 
-BOOST_AUTO_TEST_CASE(NotParseFs_to_parseFS)
+BOOST_AUTO_TEST_CASE(getSetProps_NotParseFs_to_parseFS)
 {
 	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/apraH264.mp4";
-	std::string outPath = "./data/testOutput/outFrames/";
 	bool parseFS = false;
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -318,10 +314,129 @@ BOOST_AUTO_TEST_CASE(NotParseFs_to_parseFS)
 	BOOST_TEST(frame->timestamp == 1685604318680);
 }
 
-BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
+BOOST_AUTO_TEST_CASE(getSetProps_custom_file_name_to_root_dir)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/apraH264.mp4";
+	bool parseFS = false;
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+	frame_container frames;
+
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	auto frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	for (int i = 0; i < 50; i++)
+	{
+		s.mp4Reader->step();
+		frames = s.sink->pop();
+	}
+
+	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
+	auto propsChange = s.mp4Reader->getProps();
+	// To read custom file name parseFS needs to be disabled
+	propsChange.parseFS = true;
+	propsChange.videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/";
+	s.mp4Reader->setProps(propsChange);
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+}
+
+BOOST_AUTO_TEST_CASE(getSetProps_root_dir_to_custom_file_name)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/";
+	bool parseFS = true;
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+	frame_container frames;
+
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	auto frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	for (int i = 0; i < 50; i++)
+	{
+		s.mp4Reader->step();
+		frames = s.sink->pop();
+	}
+
+	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
+	auto propsChange = s.mp4Reader->getProps();
+	// To read custom file name parseFS needs to be disabled
+	propsChange.parseFS = false;
+	propsChange.videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/apraH264.mp4";
+	s.mp4Reader->setProps(propsChange);
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+}
+
+BOOST_AUTO_TEST_CASE(getSetProps_filename_to_root_dir)
 {
 	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
-	std::string outPath = "./data/testOutput/outFrames/";
+	bool parseFS = true;
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+	frame_container frames;
+
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	auto frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1686723796848);
+
+	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
+	auto propsChange = s.mp4Reader->getProps();
+	// To read custom file name parseFS needs to be disabled
+	propsChange.parseFS = true;
+	propsChange.videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/";
+	s.mp4Reader->setProps(propsChange);
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+}
+
+BOOST_AUTO_TEST_CASE(getSetProps_root_dir_to_filename)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/";
+	bool parseFS = true;
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+
+	SetupMp4ReaderTest s(videoPath, h264ImageMetadata, frameType, parseFS, false);
+	frame_container frames;
+
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	auto frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	//change the video file path , Now read first frame new video of changed root dir instead of last frame of open video 
+	auto propsChange = s.mp4Reader->getProps();
+	// To read custom file name parseFS needs to be disabled
+	propsChange.parseFS = true;
+	propsChange.videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
+	s.mp4Reader->setProps(propsChange);
+	s.mp4Reader->step();
+	frames = s.sink->pop();
+	frame = frames.begin()->second;
+	BOOST_TEST(frame->timestamp == 1686723796848);
+}
+
+BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";	
 	bool parseFS = true;
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
