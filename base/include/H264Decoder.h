@@ -45,6 +45,4 @@ private:
 	bool hasDirectionChangedToBackward = false;
 	bool foundGopIFrame = false;
 	void sendFramesToDecoder();
-	std::thread sendThread;
-	std::thread sendFramesToNextModule;
 };

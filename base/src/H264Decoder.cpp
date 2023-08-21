@@ -147,8 +147,6 @@ bool H264Decoder::init()
 	{
 		return false;
 	}
-	sendThread = std::thread(&H264Decoder::sendFramesToDecoder, this);
-	sendFramesToNextModule = std::thread(&H264Decoder::sendDecodedFrame, this);
 	return true;
 }
 
@@ -158,8 +156,6 @@ bool H264Decoder::term()
 	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
-	sendThread.join();
-	sendFramesToNextModule.join();
 	mDetail.reset();
 	return Module::term();
 }
@@ -174,8 +170,8 @@ void H264Decoder::bufferEncodedFrames(frame_sp& frame)
 		{
 			if (!tempGop.empty())
 			{
-				/*framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
-				gop.push_back(std::make_pair(tempGop, true));*/
+				framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
+				gop.push_back(std::make_pair(tempGop, true));
 				tempGop.clear();
 				framesCounterOfCurrentGop = 0;
 			}
