@@ -221,7 +221,7 @@ public:
 	{
 #if defined(__arm__) || defined(__aarch64__)
 		auto cudaStatus = cudaSuccess;
-		
+
 		for (auto i = 0; i < imageChannels; i++)
 		{
 			srcPtr = static_cast<uint8_t *>(inputFrame->data()) + srcNextPtrOffset[i];
@@ -231,7 +231,7 @@ public:
 			if (cudaStatus != cudaSuccess)
 			{
 				LOG_ERROR << "cudaMemcpy2DAsync failed <" << cudaStatus << "> Kind :" << props.outputMemType
-							<< " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
+						  << " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
 				return true;
 			}
 		}
@@ -249,7 +249,7 @@ public:
 	{
 #if defined(__arm__) || defined(__aarch64__)
 		auto cudaStatus = cudaSuccess;
-		
+
 		for (auto i = 0; i < imageChannels; i++)
 		{
 			srcPtr = (static_cast<DMAFDWrapper *>(inputFrame->data())->getCudaPtr()) + srcNextPtrOffset[i];
@@ -259,7 +259,7 @@ public:
 			if (cudaStatus != cudaSuccess)
 			{
 				LOG_ERROR << "cudaMemcpy2DAsync failed <" << cudaStatus << "> Kind :" << props.outputMemType
-							<< " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
+						  << " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
 				return true;
 			}
 		}
@@ -286,11 +286,11 @@ public:
 			if (cudaStatus != cudaSuccess)
 			{
 				LOG_ERROR << "cudaMemcpy2DAsync failed <" << cudaStatus << "> Kind :" << props.outputMemType
-							<< " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
+						  << " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
 				return true;
 			}
 		}
-		
+
 		if (sync)
 		{
 			cudaStatus = cudaStreamSynchronize(props.stream);
@@ -321,11 +321,11 @@ public:
 			if (cudaStatus != cudaSuccess)
 			{
 				LOG_ERROR << "cudaMemcpy2DAsync failed <" << cudaStatus << "> Kind :" << props.outputMemType
-							 << " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
+						  << " from " << (uint64_t)srcPtr << " to " << (uint64_t)dstPtr << " for " << dstPitch[i] << "," << srcPitch[i] << "," << rowSize[i] << " x " << height[i];
 				return true;
 			}
 		}
-		
+
 		return true;
 	}
 };

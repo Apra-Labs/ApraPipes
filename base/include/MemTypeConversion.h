@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Module.h"
-#include <memory>
 #include "CudaCommon.h"
 
 class DetailMemory;
@@ -15,22 +14,21 @@ class DetailDMAtoDEVICE;
 class MemTypeConversionProps : public ModuleProps
 {
 public:
-
 	MemTypeConversionProps(FrameMetadata::MemType _outputMemType) : ModuleProps()
 	{
-        outputMemType = _outputMemType;
+		outputMemType = _outputMemType;
 	}
 
-	MemTypeConversionProps(FrameMetadata::MemType _outputMemType, cudastream_sp& _stream) : ModuleProps()
+	MemTypeConversionProps(FrameMetadata::MemType _outputMemType, cudastream_sp &_stream) : ModuleProps()
 	{
-        outputMemType = _outputMemType;
+		outputMemType = _outputMemType;
 		stream_sp = _stream;
 		stream = _stream->getCudaStream();
 	}
 
-    cudastream_sp stream_sp;
+	cudastream_sp stream_sp;
 	cudaStream_t stream;
-    FrameMetadata::MemType outputMemType;
+	FrameMetadata::MemType outputMemType;
 };
 
 class MemTypeConversion : public Module
@@ -40,6 +38,7 @@ public:
 	virtual ~MemTypeConversion();
 	bool init();
 	bool term();
+
 protected:
 	bool process(frame_container &frames);
 	bool processSOS(frame_sp &frame);
