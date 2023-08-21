@@ -12,6 +12,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
+#include "H264Utils.h"
 
 class H264Decoder::Detail
 {
@@ -27,30 +28,37 @@ public:
 
 	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
 	{
-		if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
+		auto type = H264Utils::getNALUType((char*)frame->data());
+		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE_SEQ_PARAM )
 		{
-			sps_pps_properties p;
-			H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
-			mWidth = p.width;
-			mHeight = p.height;
+			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
+			{
+				sps_pps_properties p;
+				H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+				mWidth = p.width;
+				mHeight = p.height;
 
-			auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
-			auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
-			rawOutMetadata->setData(*rawOutMetadata);
+				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
+				rawOutMetadata->setData(*rawOutMetadata);
+				#ifdef ARM64
+					helper.reset(new h264DecoderV4L2Helper());
+				return helper->init(send, makeFrame);
+				#else
+					helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+				return helper->init(send, makeFrame);
+				#endif
+			}
+
+			else
+			{
+				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
+			}
 		}
-
 		else
 		{
-			throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
+			return false;
 		}
-		
-#ifdef ARM64
-		helper.reset(new h264DecoderV4L2Helper());
-		return helper->init(send, makeFrame);
-#else
-		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-		return helper->init(send, makeFrame);//
-#endif
 	}
 
 	void compute(frame_sp& frame)
@@ -154,33 +162,185 @@ bool H264Decoder::term()
 	return Module::term();
 }
 
+void H264Decoder::bufferEncodedFrames(frame_sp& frame)
+{
+	auto frameMetadata = frame->getMetadata();
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
+	if (!h264Metadata->direction)
+	{
+		if (hasDirectionChangedToBackward)
+		{
+			if (!tempGop.empty())
+			{
+				framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
+				gop.push_back(std::make_pair(tempGop, true));
+				tempGop.clear();
+				framesCounterOfCurrentGop = 0;
+			}
+			hasDirectionChangedToBackward = false;
+		}
+		tempGop.push_back(frame);
+		framesCounterOfCurrentGop++;
+		short naluType = H264Utils::getNALUType((char*)frame->data());
+		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		{
+			foundGopIFrame = true;
+			framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, false));
+			gop.push_back(std::make_pair(tempGop,false));
+			tempGop.clear();
+			framesCounterOfCurrentGop = 0;
+		}
+		hasDirectionChangedToForward = true;
+		return;
+	}
+
+	if (hasDirectionChangedToForward)
+	{
+		if (!tempGop.empty())
+		{
+			tempGop.clear();
+			framesCounterOfCurrentGop = 0;
+		}
+		short naluType = H264Utils::getNALUType((char*)frame->data());
+		if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		{
+			return;
+		}
+		hasDirectionChangedToForward = false;
+	}
+	short naluType = H264Utils::getNALUType((char*)frame->data());
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM && framesCounterOfCurrentGop)
+	{
+		foundGopIFrame = true;
+		framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
+		gop.push_back(std::make_pair(tempGop, true));
+		tempGop.clear();
+		framesCounterOfCurrentGop = 0;
+	}
+	hasDirectionChangedToBackward = true;
+	tempGop.push_back(frame);
+	framesCounterOfCurrentGop++;
+	return;
+}
+
+void H264Decoder::sendFramesToDecoder()
+{
+	if (!gop.empty() && !gop.front().first.empty())
+	{
+		if (!gop.front().second)
+		{
+			for (auto itr = gop.front().first.rbegin(); itr != gop.front().first.rend();)
+			{
+				short naluType = H264Utils::getNALUType((char*)itr->get()->data());
+				if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
+				{
+					mDetail->compute(*itr);
+					itr = decltype(itr){gop.front().first.erase(std::next(itr).base())};
+				}
+			}
+			return;
+		}
+		for (auto itr = gop.front().first.begin(); itr != gop.front().first.end();)
+		{
+			short naluType = H264Utils::getNALUType((char*)itr->get()->data());
+			if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
+			{
+				mDetail->compute(*itr);
+
+				itr = gop.front().first.erase(itr);
+			}
+		}
+	}
+}
+
 bool H264Decoder::process(frame_container& frames)
 {
 	auto frame = frames.cbegin()->second;
-	mDetail->compute(frame);
+	bufferEncodedFrames(frame);
+
+	if(foundGopIFrame)
+	{
+		sendFramesToDecoder();
+		if (gop.front().first.empty())
+		{
+			gop.pop_front();
+			if (gop.empty())
+			{
+				foundGopIFrame = false;
+			}
+		}
+	}
+	sendDecodedFrame();
 	return true;
+}
+
+void H264Decoder::sendDecodedFrame()
+{
+	if (bufferedDecodedFrames.size())
+	{
+		auto outFrame = bufferedDecodedFrames.front().begin();
+		frame_container frames;
+		frames.insert(make_pair(mOutputPinId, *outFrame));
+		send(frames);
+		bufferedDecodedFrames.front().pop_front();
+	}
+
+	if (!bufferedDecodedFrames.empty())
+	{
+		if (bufferedDecodedFrames.front().empty())
+		{
+			bufferedDecodedFrames.pop_front();
+		}
+	}
+}
+
+void H264Decoder::bufferDecodedFrames(frame_sp& frame)
+{
+	if (framesInGopAndDirectionTracker.empty())
+	{
+		tempDecodedFrames.push_back(frame);
+		bufferedDecodedFrames.push_back(tempDecodedFrames);
+		tempDecodedFrames.clear();
+		return;
+	}
+	if (!framesInGopAndDirectionTracker.front().second)
+	{
+		tempDecodedFrames.push_front(frame);
+	}
+	else
+	{
+		tempDecodedFrames.push_back(frame);
+	}
+	if (tempDecodedFrames.size() >= framesInGopAndDirectionTracker.front().first)
+	{
+		bufferedDecodedFrames.push_back(tempDecodedFrames);
+		framesInGopAndDirectionTracker.pop();
+		tempDecodedFrames.clear();
+	}
 }
 
 bool H264Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
-	mDetail->setMetadata(metadata, frame,
+	auto ret = mDetail->setMetadata(metadata, frame,
 		[&](frame_sp& outputFrame) {
-			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, outputFrame));
-			send(frames);
+			bufferDecodedFrames(outputFrame);
 		}, [&]() -> frame_sp {return makeFrame(); }
 		);
-	mShouldTriggerSOS = false;
-	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+	if (ret)
+	{
+		mShouldTriggerSOS = false;
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
 #ifdef ARM64
-	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 #else
-	RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 #endif
 
-	rawOutMetadata->setData(OutputMetadata);
+		rawOutMetadata->setData(OutputMetadata);
+	}
+	
 	return true;
 }
 
