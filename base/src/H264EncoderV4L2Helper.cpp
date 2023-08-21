@@ -275,26 +275,23 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
     std::vector<CircleOverlay> circleOverlays;
     CompositeOverlay compositeOverlay;
 
-    int totalMacroblockInRow = floor(mWidth / 16);
+    int totalMacroblockInRow = floor(mWidth / 16); // Tells about the total number of macro blocks in each row.
     auto motionVectorFrame = makeFrame(1024 * 1024 * 3, motionVectorFramePinId);
     uint32_t *frameBuffer = reinterpret_cast<uint32_t *>(motionVectorFrame->data());
     size_t mCount = 0;
-    for (uint32_t i = 0; i < numMVs; i++, pInfo++)
+    for (uint32_t i = 0; i < numMVs; i++, pInfo++) // numMVs is the total macroblock in the frame.
     {
 
         if (abs(pInfo->mv_x) > motionVectorThreshold || abs(pInfo->mv_y) > motionVectorThreshold)
         {
-            auto tempY = floor(i / totalMacroblockInRow);
-            auto y = tempY * 16 + 8;
+            auto tempY = floor(i / totalMacroblockInRow); // i represents current macroblock , To get the y offset of macroblock the current macroblock is divided by macroblock across width.
+            auto y = tempY * 16 + 8; // Here every macroblock is of 16x16 , So multiply it by 16. To get to the centre of the macroblock add it by 8.
             auto tempX = floor(i % totalMacroblockInRow);
             auto x = tempX * 16 + 8;
             CircleOverlay circleOverlay;
             circleOverlay.x1 = x;
             circleOverlay.y1 = y;
             circleOverlay.radius = 1;
-            frameBuffer[mCount] = static_cast<uint32_t>(x);
-            frameBuffer[mCount + 1] = static_cast<uint32_t>(y);
-            frameBuffer[mCount + 2] = 1;
             circleOverlays.push_back(circleOverlay);
         }
     }

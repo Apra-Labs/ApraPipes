@@ -4,7 +4,7 @@
 #include "ExtFrame.h"
 #include "AV4L2ElementPlane.h"
 #include "V4L2CUYUV420Converter.h"
-#include "v4l2_nv_extensions.h"
+#include <v4l2_nv_extensions.h>
 
 class H264EncoderV4L2Helper
 {

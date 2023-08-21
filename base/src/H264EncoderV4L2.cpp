@@ -10,7 +10,7 @@
 
 H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM, "H264EncoderV4L2", props), mProps(props)
 {
-	mOutputMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	auto mOutputMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	h264FrameOutputPinId = addOutputPin(mOutputMetadata);
 	motionVectorFramePinId = addOutputPin(motionVectorOutputMetadata);
@@ -143,8 +143,6 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 	}
 
 	auto h264OutMetadata = framemetadata_sp(new H264Metadata(width, height));
-	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(h264OutMetadata);
-	h264Metadata->setData(*h264Metadata);
 	Module::setMetadata(h264FrameOutputPinId, h264OutMetadata);
 	
 	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, mProps.enableMotionVectors, mProps.motionVectorThreshold, 30,h264FrameOutputPinId, motionVectorFramePinId, h264OutMetadata,
