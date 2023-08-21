@@ -11,6 +11,7 @@
 #include "Mp4VideoMetadata.h"
 #include "EncodedImageMetadata.h"
 #include "StatSink.h"
+#include "H264Metadata.h"
 
 #include "FrameContainerQueue.h"
 
@@ -91,7 +92,7 @@ protected:
 struct SetupPlaybackTests
 {
 	SetupPlaybackTests(std::string videoPath,
-		bool reInitInterval, bool direction, bool parseFS)
+		bool reInitInterval, bool direction, bool parseFS, FrameMetadata::FrameType frameType)
 	{
 		LoggerProps loggerProps;
 		loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -103,12 +104,20 @@ struct SetupPlaybackTests
 		mp4ReaderProps.logHealthFrequency = 1000;
 		mp4ReaderProps.fps = 100;
 		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-		mp4Reader->addOutPutPin(encodedImageMetadata);
+		if (frameType == FrameMetadata::FrameType::ENCODED_IMAGE)
+		{
+			auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
+			mp4Reader->addOutPutPin(encodedImageMetadata);
+		}
+		else if (frameType == FrameMetadata::FrameType::H264_DATA)
+		{
+			auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+			mp4Reader->addOutPutPin(h264ImageMetadata);
+		}
 		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_2_0"));
 		mp4Reader->addOutPutPin(mp4Metadata);
 
-		TestModuleProps sinkProps;// (30, 100, true);
+		TestModuleProps sinkProps;
 		//sinkProps.logHealth = false;
 		sinkProps.logHealthFrequency = 1;
 		sink = boost::shared_ptr<TestModule1>(new TestModule1(sinkProps));
@@ -125,7 +134,7 @@ struct SetupPlaybackTests
 BOOST_AUTO_TEST_CASE(fwd)
 {
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895288956.mp4";
-	SetupPlaybackTests f(videoPath, 0, true, true);
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::ENCODED_IMAGE);
 
 	int ct = 0, total = 601;
 	while (ct < total - 1)
@@ -154,7 +163,7 @@ BOOST_AUTO_TEST_CASE(fwd)
 BOOST_AUTO_TEST_CASE(switch_playback)
 {
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895288956.mp4";
-	SetupPlaybackTests f(videoPath, 0, true, true);
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::ENCODED_IMAGE);
 
 	f.mp4Reader->step();
 	auto sinkQ = f.sink->getQue();
@@ -237,7 +246,7 @@ BOOST_AUTO_TEST_CASE(switch_playback)
 BOOST_AUTO_TEST_CASE(video_coverage)
 {
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0023/1655919060000.mp4";
-	SetupPlaybackTests f(videoPath, 0, true, true);
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::ENCODED_IMAGE);
 
 	/* forward playback verification */
 	f.mp4Reader->step();
@@ -304,7 +313,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlayback_prev_hr)
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0023/1655919060000.mp4";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, 0, direction, true);
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::ENCODED_IMAGE);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -335,7 +344,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlayback_prev_day)
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220523/0001/1655926320000.mp4";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, 0, direction, true);
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::ENCODED_IMAGE);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -365,7 +374,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlay_prev_hr)
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0016/1655895162221.mp4";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, 0, direction, true);
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::ENCODED_IMAGE);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -388,7 +397,7 @@ BOOST_AUTO_TEST_CASE(seek_in_revPlay_fail_to_seek_infile_restore)
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220522/0023/1655919060000.mp4";
 	bool direction = false;
 
-	SetupPlaybackTests f(videoPath, 0, direction, true);
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::ENCODED_IMAGE);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame
@@ -429,7 +438,7 @@ BOOST_AUTO_TEST_CASE(seek_dir_change_trig_fresh_parse)
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/20220523/0001/1655926320000.mp4";
 	bool direction = true;
 
-	SetupPlaybackTests f(videoPath, 0, direction, true);
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::ENCODED_IMAGE);
 	auto sinkQ = f.sink->getQue();
 
 	// last frame // first
@@ -493,7 +502,7 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval)
 		with reinitInterval
 	*/
 	std::string videoPath = "data/Mp4_videos/mp4_seek_tests/apra.mp4";
-	SetupPlaybackTests f(videoPath, 10, true, false);
+	SetupPlaybackTests f(videoPath, 10, true, false, FrameMetadata::ENCODED_IMAGE);
 
 	/* forward playback verification */
 	f.mp4Reader->step();
@@ -538,6 +547,362 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval)
 	}
 	LOG_INFO << "Reached EOF !";
 	BOOST_TEST(lastFrameTS == 1673855454254);
+}
+
+BOOST_AUTO_TEST_CASE(fwd_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::H264_DATA);
+
+	int ct = 0, total = 500;
+	while (ct < total - 1)
+	{
+		f.mp4Reader->step();
+		auto sinkQ = f.sink->getQue();
+		auto frames = sinkQ->try_pop();
+		auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+		LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
+		ct++;
+	}
+	f.mp4Reader->step();
+	auto sinkQ = f.sink->getQue();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1673420645353);
+	LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
+
+	// new video open
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604318680);
+}
+
+BOOST_AUTO_TEST_CASE(switch_playback_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::H264_DATA);
+
+	f.mp4Reader->step();
+	auto sinkQ = f.sink->getQue();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+
+	LOG_INFO << "changing playback <fwd->bwd>";
+	f.mp4Reader->changePlayback(1, false);
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+
+	// new video open + new file parse happens 
+	LOG_INFO << "new video opens";
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325685);
+
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325655);
+
+	LOG_INFO << "chaning playback <bwd->fwd>";
+	f.mp4Reader->changePlayback(1, true);
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325655);
+
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325685);
+
+	// new video open
+	LOG_INFO << "new video opens<><>";
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+	LOG_INFO << "1 frame->timestamp <" << frame->timestamp << ">";
+
+	int nFramesInOpenVideo = 151, count = 1;
+	while (count < nFramesInOpenVideo - 1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+		LOG_TRACE << "frameIdx/total <" << count << "/" << nFramesInOpenVideo << ">";
+		LOG_TRACE << "frame->timestamp <" << frame->timestamp << ">";
+		++count;
+	}
+	// last frame of open video
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604366727);
+
+	// new video open
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604896179);
+}
+
+BOOST_AUTO_TEST_CASE(video_coverage_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	SetupPlaybackTests f(videoPath, 0, true, true, FrameMetadata::H264_DATA);
+
+	/* forward playback verification */
+	f.mp4Reader->step();
+	auto sinkQ = f.sink->getQue();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+
+	int nFramesInOpenVideo = 151, count = 1;
+	while (count < nFramesInOpenVideo - 1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+		LOG_TRACE << "frameIdx/total <" << count << "/" << nFramesInOpenVideo << ">";
+		LOG_TRACE << "frame->timestamp <" << frame->timestamp << ">";
+		++count;
+	}
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == (1685604361723 + 5004));
+
+	/* backward playback verification */
+	LOG_INFO << "changing playback <fwd->bwd>";
+	f.mp4Reader->changePlayback(1, false);
+	f.mp4Reader->step();
+	sinkQ = f.sink->getQue();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == (1685604361723 + 5004));
+
+	nFramesInOpenVideo = 151, count = 1;
+	while (count < nFramesInOpenVideo - 1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+		LOG_TRACE << "frameIdx/total <" << count << "/" << nFramesInOpenVideo << ">";
+		LOG_TRACE << "frame->timestamp <" << frame->timestamp << ">";
+		++count;
+	}
+	// first frame
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+
+	// new (prev) video open
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325685);
+}
+
+BOOST_AUTO_TEST_CASE(seek_in_revPlayback_prev_hr_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	bool direction = false;
+
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::H264_DATA);
+	auto sinkQ = f.sink->getQue();
+
+	// last frame
+	f.mp4Reader->step();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723 + 5004);
+
+	// 2nd I frame is at 1685604362731
+	f.mp4Reader->randomSeek(1685604361723 + 1010, false);
+	f.mp4Reader->step();
+
+	// first frame
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604362731);
+
+	int nFramesInOpenVideo = 30, count = 0;
+	while (count < nFramesInOpenVideo - 1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+		LOG_TRACE << "frameIdx/total <" << count << "/" << nFramesInOpenVideo << ">";
+		LOG_TRACE << "frame->timestamp <" << frame->timestamp << ">";
+		++count;
+	}
+
+	//first frame 
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723);
+
+	// new (prev) video open
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604325685);
+}
+
+BOOST_AUTO_TEST_CASE(seek_in_revPlay_fail_to_seek_infile_restore_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0012/1685604361723.mp4";
+	bool direction = false;
+
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::H264_DATA);
+	auto sinkQ = f.sink->getQue();
+
+	// last frame
+	f.mp4Reader->step();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1685604361723 + 5004);
+
+	// nothing further on disk
+	f.mp4Reader->randomSeek(1673420640300, false);
+	f.mp4Reader->step();
+	frames = sinkQ->pop();
+	BOOST_TEST(frames.begin()->second->isEOS());
+	auto eosFrame = dynamic_cast<EoSFrame*>(frames.begin()->second.get());
+	auto type = eosFrame->getEoSFrameType();
+	BOOST_TEST(type == EoSFrame::EoSFrameType::MP4_SEEK_EOS);
+
+	// last frame of the new (prev) video open 
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1685604361723 + 4974);
+}
+
+BOOST_AUTO_TEST_CASE(seek_dir_change_trig_fresh_parse_h264)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230501/0013/1685604896179.mp4";
+	bool direction = true;
+
+	SetupPlaybackTests f(videoPath, 0, direction, true, FrameMetadata::H264_DATA);
+	auto sinkQ = f.sink->getQue();
+
+	// first frame
+	f.mp4Reader->step();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1685604896179);
+
+
+	f.mp4Reader->randomSeek(1685604896179 + 10, false);
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1685604896179);
+
+	auto snap = f.mp4Reader->getCacheSnapShot();
+	printCache(snap);
+
+	// bwd seek -- first
+	f.mp4Reader->play(1, false);
+	f.mp4Reader->randomSeek(1673420640350 + 2, false);
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	snap = f.mp4Reader->getCacheSnapShot();
+	printCache(snap);
+
+	// change direction - fwd - seek into --second
+	f.mp4Reader->play(1, true);
+	f.mp4Reader->randomSeek(1685604318680, false); // use play
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1685604318680);
+
+	snap = f.mp4Reader->getCacheSnapShot();
+	printCache(snap);
+
+	// change direction - bwd - seek into --second
+	f.mp4Reader->play(1, false);
+	f.mp4Reader->randomSeek(1685604318680 + 10, false); // use play
+	f.mp4Reader->step();
+	frames = sinkQ->try_pop();
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame != nullptr);
+	BOOST_TEST(frame->timestamp == 1685604318680);
+}
+
+BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264)
+{
+	/*
+		video coverage test i.e. [st -> end (eof) | direction change | end -> st (eof)]
+		parse disabled
+		using only step
+		with reinitInterval
+	*/
+	std::string videoPath = "data/Mp4_videos/mp4_seeks_tests_h264/apraH264.mp4";
+	SetupPlaybackTests f(videoPath, 10, true, false, FrameMetadata::H264_DATA);
+
+	/* forward playback verification */
+	f.mp4Reader->step();
+	auto sinkQ = f.sink->getQue();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::H264_DATA);
+	BOOST_TEST(frame->timestamp == 1673420640350);
+
+	while (1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = frames.begin()->second;
+		if (frame->isEOS())
+		{
+			auto eosFrame = dynamic_cast<EoSFrame*>(frame.get());
+			BOOST_TEST(eosFrame->getEoSFrameType() == EoSFrame::EoSFrameType::MP4_PLYB_EOS);
+			break;
+		}
+	}
+	LOG_INFO << "Reached EOF !";
+
+	/* backward playback verification */
+	LOG_INFO << "changing playback <fwd->bwd>";
+	uint64_t lastFrameTS = 0;
+	f.mp4Reader->changePlayback(1, false);
+	while (1)
+	{
+		f.mp4Reader->step();
+		frames = sinkQ->try_pop();
+		frame = frames.begin()->second;
+		if (frame->isEOS())
+		{
+			auto eosFrame = dynamic_cast<EoSFrame*>(frame.get());
+			BOOST_TEST(eosFrame->getEoSFrameType() == EoSFrame::EoSFrameType::MP4_PLYB_EOS);
+			break;
+		}
+		else
+		{
+			lastFrameTS = frame->timestamp;
+		}
+	}
+	LOG_INFO << "Reached EOF !";
+	BOOST_TEST(lastFrameTS == 1673420640350);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
