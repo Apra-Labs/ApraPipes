@@ -181,51 +181,23 @@ BOOST_AUTO_TEST_CASE(encoder_to_decoder, *utf::precondition(if_h264_encoder_supp
 
 	fileReader->play(true);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(copy->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(Decoder->init());
-	BOOST_TEST(m2->init());
-
-	int index = 0;
-	for (auto i = 0; i <= 43; i++)
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
+	
+	if (!p->init())
 	{
-
-		fileReader->step();
-		copy->step();
-		auto ret = encoder->step();
-		if (ret)
-		{
-			Decoder->step();
-
-			if (i >= 3)
-			{
-				auto frames = m2->pop();
-				BOOST_TEST(frames.size() == 1);
-				auto outputFrame = frames.cbegin()->second;
-				BOOST_TEST(outputFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR);
-
-				std::string fileName;
-
-				if (index <= 9)
-				{
-					fileName = "/data/Raw_YUV420_640x360/Image00" + std::to_string(index) + "_YUV420.raw";
-				}
-				else
-				{
-					fileName = "/data/Raw_YUV420_640x360/Image0" + std::to_string(index) + "_YUV420.raw";
-				}
-
-				Test_Utils::saveOrCompare(fileName.c_str(), const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-				index++;
-			}
-		}
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
 	}
-	fileReader->init();
-	copy->init();
-	encoder->init();
-	Decoder->init();
-	m2->init();
+
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(8);
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
 }
 
 BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink, *utf::precondition(if_h264_encoder_supported()))
