@@ -6,7 +6,6 @@
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #include "FileWriterModule.h"
-#include "ResizeNPPI.h"
 #include "test_utils.h"
 #include "ExternalSinkModule.h"
 
@@ -357,24 +356,19 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(memconversion1);
 
-	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(400, 400, stream)));
-	memconversion1->setNext(resize);
-
 	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
-	resize->setNext(memconversion2);
+	memconversion1->setNext(memconversion2);
 
 	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion2->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
-	BOOST_TEST(resize->init());
 	BOOST_TEST(memconversion1->init());
 	BOOST_TEST(memconversion2->init());
 	BOOST_TEST(sink->init());
 
 	fileReader->step();
 	memconversion1->step();
-	resize->step();
 	memconversion2->step();
 
 	auto outputPinId = memconversion2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
@@ -382,7 +376,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 	BOOST_TEST((frames.find(outputPinId) != frames.end()));
 	auto outFrame = frames[outputPinId];
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
-	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Host_RGB.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
+	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Host_RGB_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
