@@ -151,6 +151,16 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
         sudo cp -P include/* /usr/local/cuda/include/
         sudo cp -P lib/* /usr/local/cuda/lib64/
         ```
+  * To add Cuda to path append following lines to ~/.bashrc. 
+    ```
+    export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+    ```
+  * Reload ~/.bashrc:
+    ```
+    source ~/.bashrc:
+    ```
+  * Verify by checking nvcc --version and nvidia-smi both must point to correct versions of cuda and nvidia driver in the system.
   ### Prerequisites
   * Run the following to get latest build tools
     ```
@@ -162,6 +172,7 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
+
 </details>
 
 <details>
