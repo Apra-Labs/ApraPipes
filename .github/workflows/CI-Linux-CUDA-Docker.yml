@@ -22,7 +22,7 @@ jobs:
   #     is-prep-phase: true
   #     cache-path: '/github/home/.cache/vcpkg/archives'      
   #     nProc: 3
-  linux-cuda-build-no-test:
+  linux-cuda-docker-build-no-test:
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
       runner: 'ubuntu-20.04'
