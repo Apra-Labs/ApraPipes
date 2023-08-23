@@ -40,7 +40,6 @@ public:
 		auto canonicalVideoPath = boost::filesystem::canonical(_videoPath);
 		videoPath = canonicalVideoPath.string();
 		parseFS = _parseFS;
-		skipDir = boost::filesystem::path(canonicalVideoPath).parent_path().parent_path().parent_path().string();
 		bFramesEnabled = _bFramesEnabled;
 		direction = _direction;
 		giveLiveTS = _giveLiveTS;
@@ -51,11 +50,16 @@ public:
 		parseFSTimeoutDuration = _parseFSTimeoutDuration;
 		readLoop = _readLoop;
 		reInitInterval = _reInitInterval;
-		if (parseFS)
+
+		//If the input file path is the full video path then its root dir will be skipDir else if the input path is only root dir path then it is directly assigned to skipDir.
+		if (parseFS && boost::filesystem::path(videoPath).extension() == ".mp4")
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
 		}
-
+		else
+		{
+			skipDir = boost::filesystem::path(canonicalVideoPath).string();
+		}
 	}
 
 	void setMaxFrameSizes(size_t _maxImgFrameSize, size_t _maxMetadataFrameSize)
