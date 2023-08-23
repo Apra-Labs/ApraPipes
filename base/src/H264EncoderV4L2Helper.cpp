@@ -24,9 +24,9 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim, SendFrameContainer sendFrameContainer)
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, SendFrameContainer sendFrameContainer)
 {
-    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, enableMotionVectors, motionVectorThreshold, fps,h264FrameOutputPinId, motionVectorFramePinId, h264Metadata, makeFrame, makeFrameTrim, sendFrameContainer);
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, enableMotionVectors, motionVectorThreshold, fps,h264FrameOutputPinId, motionVectorFramePinId, h264Metadata, makeFrame, sendFrameContainer);
     instance->setSelf(instance);
 
     return instance;
@@ -37,7 +37,7 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
     mSelf = self;
 }
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool _enableMotionVectors, int _motionVectorThreshold, uint32_t fps, std::string _h264FrameOutputPinId, std::string _motionVectorFramePinId,  framemetadata_sp _h264Metadata, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, SendFrameContainer sendFrameContainer) : mSendFrameContainer(sendFrameContainer), mFD(-1), mWidth(width), mHeight(height), enableMotionVectors(_enableMotionVectors), motionVectorThreshold(_motionVectorThreshold), h264FrameOutputPinId(_h264FrameOutputPinId), motionVectorFramePinId(_motionVectorFramePinId), h264Metadata(_h264Metadata), makeFrame(_makeFrame), makeFrameTrim(_makeFrameTrim)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool _enableMotionVectors, int _motionVectorThreshold, uint32_t fps, std::string _h264FrameOutputPinId, std::string _motionVectorFramePinId,  framemetadata_sp _h264Metadata, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, SendFrameContainer sendFrameContainer) : mSendFrameContainer(sendFrameContainer), mFD(-1), mWidth(width), mHeight(height), enableMotionVectors(_enableMotionVectors), motionVectorThreshold(_motionVectorThreshold), h264FrameOutputPinId(_h264FrameOutputPinId), motionVectorFramePinId(_motionVectorFramePinId), h264Metadata(_h264Metadata), makeFrame(_makeFrame)
 {
     initV4L2();
 
@@ -276,9 +276,6 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
     CompositeOverlay compositeOverlay;
 
     int totalMacroblockInRow = floor(mWidth / 16); // Tells about the total number of macro blocks in each row.
-    auto motionVectorFrame = makeFrame(1024 * 1024 * 3, motionVectorFramePinId);
-    uint32_t *frameBuffer = reinterpret_cast<uint32_t *>(motionVectorFrame->data());
-    size_t mCount = 0;
     for (uint32_t i = 0; i < numMVs; i++, pInfo++) // numMVs is the total macroblock in the frame.
     {
 
@@ -305,11 +302,11 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
     {
         DrawingOverlay drawingOverlay;
         drawingOverlay.add(&compositeOverlay);
-        auto getSerializeSize = drawingOverlay.mGetSerializeSize();
-        getSerializeSize += 100;
-        auto trimmedMotionVectorFrame = makeFrameTrim(motionVectorFrame, getSerializeSize, motionVectorFramePinId);
-        drawingOverlay.serialize(trimmedMotionVectorFrame);
-        frames.insert(make_pair(motionVectorFramePinId, trimmedMotionVectorFrame));
+        auto serializeSize = drawingOverlay.mGetSerializeSize();
+        serializeSize += 100;
+        auto motionVectorFrame = makeFrame(serializeSize, motionVectorFramePinId);
+        drawingOverlay.serialize(motionVectorFrame);
+        frames.insert(make_pair(motionVectorFramePinId, motionVectorFrame));
     }
 }
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)

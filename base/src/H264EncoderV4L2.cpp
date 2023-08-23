@@ -148,8 +148,6 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 	mHelper = H264EncoderV4L2Helper::create(v4l2MemType, pixelFormat, width, height, step, 1024 * mProps.targetKbps, mProps.enableMotionVectors, mProps.motionVectorThreshold, 30,h264FrameOutputPinId, motionVectorFramePinId, h264OutMetadata,
 	[&](size_t size, string& pinId)
 	{ return makeFrame(size, pinId); },
-	[&](frame_sp& frame, size_t& size, string& pinId)
-	{ return makeFrame(frame, size, pinId); },
 	[&](frame_container &frameContainer) -> void {
 		send(frameContainer);
 	});

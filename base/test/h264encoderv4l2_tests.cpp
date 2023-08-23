@@ -243,6 +243,7 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors)
 
 	fileReader->play(true);
 
+	int motionVectorFramesCount  = 0;
 	for (auto i = 0; i < 40; i++)
 	{
 		fileReader->step();
@@ -263,7 +264,7 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors)
 				DrawingOverlay drawOverlay;
 				drawOverlay.deserialize(outputFrame);
 				auto list = drawOverlay.getList();
-
+				motionVectorFramesCount++;
 				for (auto primitive1 : list)
 				{
 					if (primitive1->primitiveType == Primitive::COMPOSITE)
@@ -281,5 +282,6 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors)
 			}
 		}
 	}
+	BOOST_TEST(motionVectorFramesCount == 32);
 }
 BOOST_AUTO_TEST_SUITE_END()

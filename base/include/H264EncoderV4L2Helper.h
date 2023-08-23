@@ -10,9 +10,9 @@ class H264EncoderV4L2Helper
 {
 public:
     typedef std::function<void(frame_container& errorFrame)> SendFrameContainer;    
-    static std::shared_ptr<H264EncoderV4L2Helper> create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim, SendFrameContainer sendFrameContainer);
+    static std::shared_ptr<H264EncoderV4L2Helper> create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, SendFrameContainer sendFrameContainer);
 
-    H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps,std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim, SendFrameContainer sendFrameContainer);
+    H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps,std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, SendFrameContainer sendFrameContainer);
     ~H264EncoderV4L2Helper();
 
     void stop();
@@ -59,6 +59,5 @@ private:
     std::string motionVectorFramePinId;
     framemetadata_sp h264Metadata;
     std::function<frame_sp(size_t size, string& pinId)> makeFrame;
-    std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim;
     std::unique_ptr<V4L2CUYUV420Converter> mConverter;
 };
