@@ -7,7 +7,7 @@ A pipeline framework for developing video and image processing applications. Sup
 Learn more about ApraPipes here https://apra-labs.github.io/ApraPipes.
 
 ## Build status
-Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2017 Community (without CUDA)
+Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2017 Community (with and without CUDA)
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
 |Windows|2019|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)|[![CI-Win-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml)|
