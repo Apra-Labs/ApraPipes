@@ -37,6 +37,16 @@ public:
 				H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
 				mWidth = p.width;
 				mHeight = p.height;
+	{
+		auto type = H264Utils::getNALUType((char*)frame->data());
+		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE_SEQ_PARAM )
+		{
+			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
+			{
+				sps_pps_properties p;
+				H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
+				mWidth = p.width;
+				mHeight = p.height;
 
 				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
 				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
@@ -49,7 +59,27 @@ public:
 				return helper->init(send, makeFrame);
 				#endif
 			}
+				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
+				rawOutMetadata->setData(*rawOutMetadata);
+				#ifdef ARM64
+					helper.reset(new h264DecoderV4L2Helper());
+				return helper->init(send, makeFrame);
+				#else
+					helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+				return helper->init(send, makeFrame);
+				#endif
+			}
 
+			else
+			{
+				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
+			}
+		}
+		else
+		{
+			return false;
+		}
 			else
 			{
 				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
@@ -255,7 +285,63 @@ bool H264Decoder::process(frame_container& frames)
 		}
 	}
 	sendDecodedFrame();
+	bufferEncodedFrames(frame);
+
+	if(foundGopIFrame)
+	{
+		sendFramesToDecoder();
+		if (gop.front().first.empty())
+		{
+			gop.pop_front();
+			if (gop.empty())
+			{
+				foundGopIFrame = false;
+			}
+		}
+	}
+	sendDecodedFrame();
 	return true;
+}
+
+void H264Decoder::sendDecodedFrame()
+{
+	if (!bufferedDecodedFrames.empty())
+	{
+		auto& firstBufferedFrames = bufferedDecodedFrames.front();
+		if (!firstBufferedFrames.empty()) {
+			auto outFrame = firstBufferedFrames.front();
+			firstBufferedFrames.pop_front();
+			frame_container frames;
+			frames.insert(make_pair(mOutputPinId, outFrame));
+			send(frames);
+		}
+		if (firstBufferedFrames.empty()) {
+			bufferedDecodedFrames.pop_front();
+		}
+	}
+}
+
+void H264Decoder::bufferDecodedFrames(frame_sp& frame)
+{
+	if (framesInGopAndDirectionTracker.empty())
+	{
+		tempDecodedFrames.emplace_back(frame);
+		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
+		return;
+	}
+	if (!framesInGopAndDirectionTracker.front().second)
+	{
+		tempDecodedFrames.push_front(frame);
+	}
+	else
+	{
+		tempDecodedFrames.emplace_back(frame);
+	}
+	if (tempDecodedFrames.size() >= framesInGopAndDirectionTracker.front().first)
+	{
+		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
+		framesInGopAndDirectionTracker.pop();
+	}
 }
 
 void H264Decoder::sendDecodedFrame()
@@ -303,7 +389,9 @@ bool H264Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
 	auto ret = mDetail->setMetadata(metadata, frame,
+	auto ret = mDetail->setMetadata(metadata, frame,
 		[&](frame_sp& outputFrame) {
+			bufferDecodedFrames(outputFrame);
 			bufferDecodedFrames(outputFrame);
 		}, [&]() -> frame_sp {return makeFrame(); }
 		);
@@ -311,13 +399,22 @@ bool H264Decoder::processSOS(frame_sp& frame)
 	{
 		mShouldTriggerSOS = false;
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+	if (ret)
+	{
+		mShouldTriggerSOS = false;
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
 #ifdef ARM64
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 #else
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 #endif
 
+		rawOutMetadata->setData(OutputMetadata);
+	}
+	
 		rawOutMetadata->setData(OutputMetadata);
 	}
 	
