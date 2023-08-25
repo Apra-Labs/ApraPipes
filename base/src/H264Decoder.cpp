@@ -226,26 +226,14 @@ void H264Decoder::sendFramesToDecoder()
 	{
 		if (!gop.front().second)
 		{
-			for (auto itr = gop.front().first.rbegin(); itr != gop.front().first.rend();)
-			{
-				short naluType = H264Utils::getNALUType((char*)itr->get()->data());
-				if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
-				{
-					mDetail->compute(*itr);
-					itr = decltype(itr){gop.front().first.erase(std::next(itr).base())};
-				}
-			}
+			auto itr = gop.front().first.rbegin(); 
+			mDetail->compute(*itr);
+			gop.front().first.pop_back();
 			return;
 		}
-		for (auto itr = gop.front().first.begin(); itr != gop.front().first.end();)
-		{
-			short naluType = H264Utils::getNALUType((char*)itr->get()->data());
-			if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM || ((naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) && framesInGopAndDirectionTracker.front().first == 1))
-			{
-				mDetail->compute(*itr);
-				itr = gop.front().first.erase(itr);
-			}
-		}
+		auto itr = gop.front().first.front();
+		mDetail->compute(itr);
+		gop.front().first.pop_front();
 	}
 }
 
