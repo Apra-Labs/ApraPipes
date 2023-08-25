@@ -7,7 +7,7 @@ A pipeline framework for developing video and image processing applications. Sup
 Learn more about ApraPipes here https://apra-labs.github.io/ApraPipes.
 
 ## Build status
-Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2017 Community (without CUDA)
+Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2017 Community.
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
 |Windows|2019|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)|[![CI-Win-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml)|
@@ -151,6 +151,28 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
         sudo cp -P include/* /usr/local/cuda/include/
         sudo cp -P lib/* /usr/local/cuda/lib64/
         ```
+  * To add Cuda to path append following lines to ~/.bashrc. 
+    ```
+    export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+    ```
+  * Reload ~/.bashrc:
+    ```
+    source ~/.bashrc:
+    ```
+  * Verify by checking nvcc --version and nvidia-smi both must point to correct versions of cuda and nvidia driver in the system.
+  ### Prerequisites
+  * Run the following to get latest build tools
+    ```
+    sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core  git-lfs libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libssl-dev libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
+    ```  
+  * Note: start a new terminal as pip3 settings do not get effective on the same shell
+  * CMake minimum version 3.24 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+  * Clone with submodules and LFS. 
+    ```
+    git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+    ```
+
 </details>
 
 <details>
