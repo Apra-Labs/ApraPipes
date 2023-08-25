@@ -371,7 +371,6 @@ bool DetailJpeg::write(frame_container& frames)
 uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264ImageFrame, size_t& frameSize)
 {
 	char NaluSeprator[3] = { 00 ,00, 00 };
-	char nalusepratorIframe[2] = { 00, 00 };
 	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
 	uint spsPpsSize = spsBuffer.size() + ppsBuffer.size() + 8;
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
@@ -399,13 +398,14 @@ uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264Ima
 	newBuffer += 1;
 	memcpy(newBuffer, ppsBuffer.data(), ppsBuffer.size());
 	newBuffer += ppsBuffer.size();
-	memcpy(newBuffer, nalusepratorIframe, 2);
-	newBuffer += 2;
 
-	//add the size of I frame to the 3rd and 4th byte of I frame's nalu seprator (00 00 frameSize frameSize 66)
-	newBuffer[0] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
-	newBuffer[1] = frameSize - spsPpsSize - 4 & 0xFF;
-	newBuffer += 2;
+	//add the size of I frame to the I frame's nalu seprator
+	newBuffer[0] = (frameSize - spsPpsSize - 4 >> 24) & 0xFF;
+	newBuffer[1] = (frameSize - spsPpsSize - 4 >> 16) & 0xFF;
+	newBuffer[2] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
+	newBuffer[3] = frameSize - spsPpsSize - 4 & 0xFF;
+	newBuffer += 4;
+
 	uint8_t* tempBuffer = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
@@ -454,7 +454,9 @@ bool DetailH264::write(frame_container& frames)
 	}
 
 	uint8_t* frameData = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
-	// assign size of the frame to the last two bytes of the NALU seperator for playability in default players
+	// assign size of the frame to the NALU seperator for playability in default players
+	frameData[0] = (inH264ImageFrame->size() - 4 >> 24) & 0xFF;
+	frameData[1] = (inH264ImageFrame->size() - 4 >> 16) & 0xFF;
 	frameData[2] = (inH264ImageFrame->size() - 4 >> 8) & 0xFF;
 	frameData[3] = inH264ImageFrame->size() - 4 & 0xFF;
 
