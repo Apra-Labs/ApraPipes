@@ -41,6 +41,7 @@ public:
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
+	bool shouldTriggerSOS();
 	bool validateInputPins();
 	bool validateOutputPins();
 	void setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata);
@@ -53,5 +54,7 @@ private:
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	framemetadata_sp mInputMetadata;
+	bool mShouldTriggerSos = true;
+	bool setMetadata(framemetadata_sp& metadata);
 };
 
