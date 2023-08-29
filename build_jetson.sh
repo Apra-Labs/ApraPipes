@@ -1,3 +1,11 @@
+chmod +x base/build_dependencies_linux_cuda.sh
+./base/build_dependencies_jetson_cuda.sh
+
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+cd ..
+
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build
