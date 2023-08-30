@@ -1,7 +1,6 @@
 chmod +x base/build_dependencies_linux_cuda.sh
 ./base/build_dependencies_linux_cuda.sh
 
-cp base/vcpkg.cuda.json base/vcpkg.json
 cd vcpkg
 ./bootstrap-vcpkg.sh
 vcpkg integrate install
