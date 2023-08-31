@@ -1,6 +1,6 @@
 @echo off
 set batdir=%~dp0
-cd %batdir%/base
+cd %batdir%/build_scripts
 powershell -nologo -executionpolicy bypass -File build_dependencies_windows_cuda.ps1
 cd ..
 

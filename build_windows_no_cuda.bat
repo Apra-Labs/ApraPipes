@@ -1,7 +1,12 @@
 @echo off
 set batdir=%~dp0
-cd %batdir%/base
+cd %batdir%/build_scripts
 powershell -nologo -executionpolicy bypass -File build_dependencies_windows_no_cuda.ps1
+cd ..
+
+@echo off
+set batdir=%~dp0
+cd %batdir%/base
 powershell -nologo -executionpolicy bypass -File fix-vcpkg-json.ps1 -removeCUDA
 cd ..
 
