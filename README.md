@@ -46,34 +46,16 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 
   ### Cudnn
   * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract files where cuda is installed. Note: Please be aware that this process requires some effort. Here are the necessary steps:
-   * Download the correct tar/zip file matching your cuda version. _Do not download the exe/installer/deb package._
+   * Download the correct zip file matching your cuda version. _Do not download the exe/installer/deb package._
    * Windows: 
-     * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip). 
-     * Extract the downloaded file and copy files to ```C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2``` using an __administrative command prompt__ as follows
-       ```
-       cd .\extracted_folder
-       cd include
-       copy *.h "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\include\"
-       cd ..\lib
-       copy *.lib "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\lib\x64\"
-       cd ..\bin
-       copy *.dll "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\bin\"
-       ```
+     * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip).
+
   ###  Prerequisites 
   * Install Visual Studio 2019 Community 
     * Install Desktop development C++
     * .NET Desktop development
     * Universal Windows Development Platform
-  * Install choco:
-    Open Windows PowerShell as Administrator and run:
-    ```
-    Set-ExecutionPolicy AllSigned
-    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    ``` 
-  * Install build dependencies using choco: 
-    ```
-    choco feature enable -n allowEmptyChecksums && choco install 7zip git python3 cmake pkgconfiglite -y && pip3 install ninja && pip3 install meson
-    ```
+  
   * Clone with submodules and LFS. 
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
@@ -85,6 +67,8 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   <summary>Build</summary>
 
   ### Build Without Cuda
+  Open PowerShell as an administrator and execute the following commands
+
   If your windows system does not have an NVIDIA GPU use this script
   ```
   build_windows_no_cuda.bat
@@ -137,39 +121,11 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     20.04 - [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
 
   ### Cudnn  
-  * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract files where cuda is installed. Note: Please be aware that this process requires some effort. Here are the necessary steps:
+  * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102)
   * Linux:
       * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar.xz)
-      * extract the files
-        ``` 
-        xz -d cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar.xz
-        tar xvf cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar
-        ```
-      * copy files retaining the links
-        ```
-        cd ./cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive
-        sudo cp -P include/* /usr/local/cuda/include/
-        sudo cp -P lib/* /usr/local/cuda/lib64/
-        ```
-  * To add Cuda to path append following lines to ~/.bashrc. 
-    ```
-    export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
-    export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-    ```
-  * Reload ~/.bashrc:
-    ```
-    source ~/.bashrc:
-    ```
-  * Verify by checking nvcc --version and nvidia-smi both must point to correct versions of cuda and nvidia driver in the system.
+
   ### Prerequisites
-  * Run the following to get latest build tools
-    ```
-    sudo apt-get update && sudo apt-get -y install   autoconf   automake  autopoint  build-essential  git-core  git-lfs libass-dev   libfreetype6-dev  libgnutls28-dev   libmp3lame-dev libsdl2-dev  libssl-dev libtool libsoup-gnome2.4-dev libncurses5-dev libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcursor-dev   libxinerama-dev   libx11-dev   libgles2-mesa-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf bison curl zip unzip tar python3-pip flex && pip3 install meson
-    ```  
-  * Note: start a new terminal as pip3 settings do not get effective on the same shell
-  * CMake minimum version 3.24 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
-  * Clone with submodules and LFS. 
-    ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
 
@@ -185,11 +141,11 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   ### Build Without Cuda
   If your windows system does not have an NVIDIA GPU use this script
   ```
-  ./build_linux_no_cuda.sh
+  sudo ./build_linux_no_cuda.sh
   ```
   ### Build With Cuda
   ```
-  ./build_linux_cuda.sh
+  sudo ./build_linux_cuda.sh
   ```
 
   Build can take ~2 hours depending on the machine configuration.
@@ -229,26 +185,11 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   
   ###  Prerequisites
   * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html) or higher as supported.
-  * Run the following commands to build required libraries. 
-    ```
-    sudo apt-get update && sudo apt-get -y install git-lfs libncurses5-dev ninja-build nasm curl libudev-dev libssl-dev && sudo snap install cmake --classic
-    ```
-  * Append following lines to ~/.bashrc. 
-    ```
-    export VCPKG_FORCE_SYSTEM_BINARIES=1
-    export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
-    export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-    ```
-  * Reload ~/.bashrc:
-    ```
-    source ~/.bashrc:
-    ```
+  
   * Clone with submodules and LFS. 
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
-  * Run `./bootstrap-vcpkg.sh` in vcpkg/ directory
-  * Run `./vcpkg integrate install`
 </details>
 
 <details>
@@ -261,7 +202,7 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   ```
   * ApraPipes builds CUDA version on Jerson Boads.
   ```
-  ./build_jetson.sh
+  sudo ./build_jetson.sh
   ```
 
   Build can take ~12 hours on Jetson Nano. 
