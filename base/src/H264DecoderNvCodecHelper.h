@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include "CommonDefs.h"
 #include "CudaCommon.h"
+#include <queue>
 
 /**
 * @brief Exception class for error reporting from the decode API.
@@ -242,4 +243,5 @@ public:
     std::function<frame_sp()> makeFrame;
 private:
     boost::shared_ptr<NvDecoder> helper;
+    std::queue<uint64_t> framesTimestampEntry;
 };

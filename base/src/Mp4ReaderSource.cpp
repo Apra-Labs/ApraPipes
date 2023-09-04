@@ -615,6 +615,8 @@ public:
 			// reset flags
 			waitFlag = false;
 			sentEOSSignal = false;
+			isMp4SeekFrame = true;
+			setMetadata();
 			return true;
 		}
 
@@ -676,6 +678,8 @@ public:
 		waitFlag = false;
 		// prependSpsPps
 		mState.shouldPrependSpsPps = true;
+		isMp4SeekFrame = true;
+		setMetadata();
 		return true;
 	}
 
@@ -1006,6 +1010,7 @@ public:
 	int mWidth = 0;
 	int mHeight = 0;
 	bool mDirection;
+	bool isMp4SeekFrame = false;
 	int ret;
 	double mFPS = 0;
 	double mDurationInSecs = 0;
@@ -1149,6 +1154,7 @@ void Mp4ReaderDetailH264::setMetadata()
 	}
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(mH264Metadata);
 	h264Metadata->direction = mDirection;
+	h264Metadata->mp4Seek = isMp4SeekFrame;
 	h264Metadata->setData(*h264Metadata);
 
 	readSPSPPS();
@@ -1305,6 +1311,11 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
 		}
 		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
+	}
+	if (isMp4SeekFrame)
+	{
+		isMp4SeekFrame = false;
+		setMetadata();
 	}
 	return true;
 }
