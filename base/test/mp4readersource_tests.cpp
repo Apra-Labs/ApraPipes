@@ -890,7 +890,7 @@ BOOST_AUTO_TEST_CASE(reverseplay_seek)
 	Logger::initLogger(loggerProps);
 
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, false, false, false);
 	mp4ReaderProps.fps = 24;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
@@ -921,14 +921,17 @@ BOOST_AUTO_TEST_CASE(reverseplay_seek)
 	}
 
 	p->run_all_threaded();
-	Test_Utils::sleep_for_seconds(7);
+	Test_Utils::sleep_for_seconds(15);
+
+	mp4Reader->changePlayback(1, true);
+	Test_Utils::sleep_for_seconds(15);
 
 	uint64_t skipTS = 1691758409687;
 	mp4Reader->changePlayback(1, false);
 	mp4Reader->randomSeek(skipTS, false);
 	
 
-	Test_Utils::sleep_for_seconds(15);
+	Test_Utils::sleep_for_seconds(150);
 
 	skipTS = 1691758415687;
 	mp4Reader->changePlayback(1, true);
