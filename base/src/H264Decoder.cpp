@@ -175,15 +175,15 @@ void H264Decoder::prependSpsPps(uint8_t* iFrameBuffer)
 	iFrameBuffer += ppsBuffer.size();;
 }
 
-void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ()
+void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop)
 {
-	while (!latestBackwardGop.empty())
+	while (!latestGop.empty())
 	{
-		auto deleteItr = std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), latestBackwardGop.front()->timestamp);
+		auto deleteItr = std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), latestGop.front()->timestamp);
 		if (deleteItr != incomingFramesTSQ.end())
 		{
 			incomingFramesTSQ.erase(deleteItr);
-			latestBackwardGop.pop_front();
+			latestGop.pop_front();
 		}
 	}
 }
@@ -216,21 +216,20 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 		//Corner case :Whenever the direction changes to forward we just send all the backward buffered GOP's to decoded in a single shot . The motive is to send the current forward frame to decoder in the same step.
 		if (!backwardGopBuffer.empty())
 		{
-			short naluTypeOfBackwardGopFirstFrame = H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data());
-			if (naluTypeOfBackwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM || naluTypeOfBackwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || foundIFrameOfReverseGop)
+			while (!backwardGopBuffer.empty())
 			{
-				for (auto itr = backwardGopBuffer.front().rbegin(); itr != backwardGopBuffer.front().rend();)
+				while (!backwardGopBuffer.front().empty())
 				{
-					mDetail->compute(*itr);
-					itr = decltype(itr){backwardGopBuffer.front().erase(std::next(itr).base())};
+					decodeFrameFromBwdGOP();
 				}
+				backwardGopBuffer.pop_front();
 			}
+			foundIFrameOfReverseGop = false;
 		}
-		//Corner case : Whenever direction changes to forward , And the latestBackwardGop is incomplete , the delete the latest backward GOP and remove the frames from incomingFramesTSQ entry as well
+		//Corner case : Whenever direction changes to forward , And the latestBackwardGop is incomplete , then delete the latest backward GOP and remove the frames from incomingFramesTSQ entry as well
 		if (!latestBackwardGop.empty())
 		{
-			clearIncompleteBwdGopTsFromIncomingTSQ();
-			latestBackwardGop.clear();
+			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
 		}
 
 		if (!latestForwardGop.empty())
@@ -292,16 +291,8 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 	//We also remove the entries of P frames from the incomingFramesTSQ.
 	if (latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
-		while (!latestForwardGop.empty())
-		{
-			auto deleteItr = std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), latestForwardGop.front()->timestamp);
-			if (deleteItr != incomingFramesTSQ.end())
-			{
-				incomingFramesTSQ.erase(deleteItr);
-				latestForwardGop.pop_front();
-				return;
-			}
-		}
+		clearIncompleteBwdGopTsFromIncomingTSQ(latestForwardGop);
+		return;
 	}
 
 	mDetail->compute(frame);//dont send sps frame when direction changes - todo
@@ -400,8 +391,7 @@ bool H264Decoder::process(frame_container& frames)
 		{
 			// flush the incomplete GOP
 			flushDecoderFlag = true;
-			latestBackwardGop.clear();
-			clearIncompleteBwdGopTsFromIncomingTSQ();
+			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
 		}
 
 		// GOPs processed, reset flag
@@ -434,10 +424,10 @@ bool H264Decoder::process(frame_container& frames)
 		{
 			flushDecoderFlag = false;
 			latestForwardGop.push_back(frame);
-			hasDirectionChangedToForward = true; // Corner case: Its a small hack - Only starting frames of GOP are in the cache , in order to decode the later P frames i set this flag to true , where in first the latestForwardGop is decoded and later the current P frame
+			hasDirectionChangedToForward = true; // Corner case: Its a small hack - Only starting frames of GOP are in the cache , in order to decode the later P frames we set this flag to true , where in first the latestForwardGop is decoded and later the current P frame
 		}
 
-		//Corner case : forward:- While in forward play, if cache has resumed in the middle and then to get the previous few forward frames send to decoder we need to flush the decoder.
+		//Corner case : forward:- While in forward play, if cache has resumed in the middle of the GOP then to get the previous few frames we need to flush the decoder.
 		if (h264Metadata->direction && !cacheResumedInForward)
 		{
 			auto eosFrame = frame_sp(new EmptyFrame());

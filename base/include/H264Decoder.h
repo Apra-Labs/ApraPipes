@@ -64,7 +64,7 @@ private:
 	bool cacheResumedInForward = false;
 	void decodeFrameFromBwdGOP();
 	std::deque<uint64_t> incomingFramesTSQ;
-	void clearIncompleteBwdGopTsFromIncomingTSQ();
+	void clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop);
 	void saveSpsPps(frame_sp frame);
 	void prependSpsPps(uint8_t* iFrameBuffer);
 	void dropFarthestFromCurrentTs(uint64_t ts);
