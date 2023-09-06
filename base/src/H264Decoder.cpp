@@ -357,7 +357,7 @@ bool H264Decoder::process(frame_container& frames)
 
 	mDirection = h264Metadata->direction;
 	short naluType = H264Utils::getNALUType((char*)frame->data());
-	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		saveSpsPps(frame);
 	}
@@ -438,6 +438,10 @@ bool H264Decoder::process(frame_container& frames)
 		return true;
 	}
 
+	if (h264Metadata->direction && cacheResumedInForward)
+	{
+		hasDirectionChangedToForward = true;
+	}
 	/* If frame is not in output cache, it needs to be buffered & decoded */
 	if (mDirection)
 	{
@@ -467,14 +471,13 @@ bool H264Decoder::process(frame_container& frames)
 void H264Decoder::sendDecodedFrame()
 {
 	// not in output cache && flushdecoder flag is set
-	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) == decodedFramesCache.end() && flushDecoderFlag)
+	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) == decodedFramesCache.end() && flushDecoderFlag && backwardGopBuffer.empty())
 	{
 		// We send empty frame to the decoder , in order to flush out all the frames from decoder.
 		// This is to handle some cases whenever the direction change happens and to get out the latest few frames sent to decoder.
 		auto eosFrame = frame_sp(new EmptyFrame());
 		mDetail->compute(eosFrame);
 		flushDecoderFlag = false;
-		latestBackwardGop.clear();
 	}
 
 	// timestamp in output cache
