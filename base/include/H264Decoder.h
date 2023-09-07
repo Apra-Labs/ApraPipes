@@ -56,12 +56,12 @@ private:
 	std::map<uint64, frame_sp> decodedFramesCache;
 	void sendDecodedFrame();
 	bool mDirection;
-	bool dirChangedToFwdOrDecodeLatestFwdGop = false;
+	bool dirChangedToFwd = false;
 	bool dirChangedToBwd = false;
 	bool foundIFrameOfReverseGop = false;
 	bool flushDecoderFlag = false;
 	bool decodePreviousFramesOfTheForwardGop = false;
-	bool cacheResumedInForward = false;
+	bool prevFrameInCache = false;
 	void decodeFrameFromBwdGOP();
 	std::deque<uint64_t> incomingFramesTSQ;
 	void clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop);

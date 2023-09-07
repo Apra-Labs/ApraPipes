@@ -207,7 +207,7 @@ void H264Decoder::bufferBackwardEncodedFrames(frame_sp& frame, short naluType)
 
 void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short naluType)
 {
-	if (dirChangedToFwdOrDecodeLatestFwdGop) // todo: check this (prevFrameInCache || directionChangeToFwd)
+	if (dirChangedToFwd)
 	{
 		// Whenever the direction changes to forward we just send all the backward buffered GOP's to decoded in a single shot . The motive is to send the current forward frame to decoder in the same step.
 		while (!backwardGopBuffer.empty())
@@ -220,8 +220,10 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 		{
 			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
 		}
-
-		// todo: check if this can be put in another if condition
+		dirChangedToFwd = false;
+	}
+	if(prevFrameInCache)
+	{
 		// previous Frame was In Cache & current is not
 		if (!latestForwardGop.empty())
 		{
@@ -266,9 +268,8 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 				}
 			}
 		}
-		dirChangedToFwdOrDecodeLatestFwdGop = false; //todo: reset flags.
 	}
-	cacheResumedInForward = false;
+	prevFrameInCache = false;
 
 	/* buffer fwd GOP and send the current frame */
 	// new GOP starts
@@ -339,12 +340,12 @@ bool H264Decoder::process(frame_container& frames)
 	}
 	else if (!mDirection && h264Metadata->direction)
 	{
-		dirChangedToFwdOrDecodeLatestFwdGop = true; //rename to directionChangedToFwd
+		dirChangedToFwd = true; //rename to directionChangedToFwd
 	}
 	else
 	{
 		dirChangedToBwd = false;
-		dirChangedToFwdOrDecodeLatestFwdGop = false;
+		dirChangedToFwd = false;
 	}
 
 	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
@@ -400,7 +401,7 @@ bool H264Decoder::process(frame_container& frames)
 			return true;
 		}
 
-		if (!latestForwardGop.empty() && h264Metadata->direction && ((naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
+		if (h264Metadata->direction && ((naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
 		{
 			latestForwardGop.clear();
 			latestForwardGop.push_back(frame);
@@ -414,22 +415,15 @@ bool H264Decoder::process(frame_container& frames)
 		}
 
 		// While in forward play, if cache has resumed in the middle of the GOP then to get the previous few frames we need to flush the decoder.
-		if (h264Metadata->direction && !cacheResumedInForward) // todo: rename to prevFrameInCache
+		if (h264Metadata->direction && !prevFrameInCache)
 		{
 			auto eosFrame = frame_sp(new EmptyFrame());
 			mDetail->compute(eosFrame);
-			cacheResumedInForward = true;
+			prevFrameInCache = true;
 		}
 		sendDecodedFrame();
 		return true;
 	}
-
-	// todo: remove this if condition
-	if (mDirection && cacheResumedInForward)
-	{
-		dirChangedToFwdOrDecodeLatestFwdGop = true; // Cache ended in forward, First decode if any frames in latest forward Gop and then decode the current frame.
-	}
-
 	/* If frame is not in output cache, it needs to be buffered & decoded */
 	if (mDirection)
 	{
