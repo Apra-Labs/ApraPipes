@@ -15,6 +15,10 @@
 #include <vtk-9.0/vtkRenderWindow.h>
 #include <vtk-9.0/vtkRenderWindowInteractor.h>
 #include <vtk-9.0/vtkRenderer.h>
+#include <vtk-9.0/vtkTriangleStrip.h>
+#include <vtk-9.0/vtkProperty.h>
+
+#include <vtk-9.0/vtkSTLReader.h>
 
 class STLRendererSinkProps : public ModuleProps
 {
