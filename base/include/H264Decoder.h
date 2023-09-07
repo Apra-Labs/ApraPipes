@@ -56,8 +56,8 @@ private:
 	std::map<uint64, frame_sp> decodedFramesCache;
 	void sendDecodedFrame();
 	bool mDirection;
-	bool hasDirectionChangedToForward = false;
-	bool hasDirectionChangedToBackward = false;
+	bool dirChangedToFwdOrDecodeLatestFwdGop = false;
+	bool dirChangedToBwd = false;
 	bool foundIFrameOfReverseGop = false;
 	bool flushDecoderFlag = false;
 	bool decodePreviousFramesOfTheForwardGop = false;
