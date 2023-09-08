@@ -66,7 +66,7 @@ private:
 	std::deque<uint64_t> incomingFramesTSQ;
 	void clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop);
 	void saveSpsPps(frame_sp frame);
-	void prependSpsPps(uint8_t* iFrameBuffer);
+	frame_sp prependSpsPps(frame_sp& iFrame);
 	void dropFarthestFromCurrentTs(uint64_t ts);
 	frame_sp mHeaderFrame;
 	boost::asio::const_buffer spsBuffer;
