@@ -31,11 +31,12 @@ public:
 
 	virtual bool view() = 0;
 
-	bool eglInitializer(uint32_t _height, uint32_t _width)
+	bool eglInitializer(uint32_t _imageHeight,uint32_t _imageWidth)
 	{
 #if defined(__arm__) || defined(__aarch64__)
-		uint32_t displayHeight, displayWidth;
 		NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
+		x_offset = props.x_offset;
+		y_offset = props.y_offset;
 		if (props.height != 0 && props.width != 0)
 		{
 			props.x_offset += (displayWidth - props.width) / 2;
@@ -44,10 +45,9 @@ public:
 		}
 		else
 		{
-
-			props.x_offset += (displayWidth - _width) / 2;
-			props.y_offset += (displayHeight - _height) / 2;
-			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, props.x_offset, props.y_offset, props.displayOnTop);
+			props.x_offset += (displayWidth - _imageWidth) / 2;
+			props.y_offset += (displayHeight - _imageHeight) / 2;
+			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _imageWidth, _imageHeight, props.x_offset, props.y_offset, props.displayOnTop);
 		}
 		if (!renderer)
 		{
@@ -91,12 +91,125 @@ public:
 		cv::waitKey(1);
 	}
 
+	bool eventHandler()
+	{
+#if defined(__arm__) || defined(__aarch64__)
+		XEvent event;
+		if (XCheckMaskEvent(renderer->x_display,
+							ButtonPressMask |
+								NoEventMask |
+								KeyPressMask |
+								KeyReleaseMask |
+								ButtonReleaseMask |
+								EnterWindowMask |
+								LeaveWindowMask |
+								PointerMotionMask |
+								PointerMotionHintMask |
+								Button1MotionMask |
+								Button2MotionMask |
+								Button3MotionMask |
+								Button4MotionMask |
+								Button5MotionMask |
+								ButtonMotionMask |
+								KeymapStateMask |
+								ExposureMask |
+								VisibilityChangeMask |
+								StructureNotifyMask |
+								ResizeRedirectMask |
+								SubstructureNotifyMask |
+								SubstructureRedirectMask |
+								FocusChangeMask |
+								PropertyChangeMask |
+								ColormapChangeMask |
+								OwnerGrabButtonMask,
+							&event))
+		{
+
+			if (event.type == ButtonPress)
+			{
+				if (event.xbutton.button == Button1)
+				{
+					int current_time = event.xbutton.time;
+					int time_difference = current_time - last_click_time;
+					if (time_difference <= doubleClickInterval)
+					{
+						// Double click detected
+						printf("Double click\n");
+						num_clicks = 0;
+						if (sync)
+						{
+							props.x_offset = x_offset;
+							props.y_offset = y_offset;
+							if (props.height != 0 && props.width != 0)
+							{
+								props.width = displayWidth;
+								props.height = displayHeight;
+							}
+							else
+							{
+								imageHeight = displayHeight;
+								imageWidth = displayWidth;
+							}
+							destroyWindow();
+							eglInitializer(imageHeight, imageWidth);
+							sync = false;
+						}
+						else
+						{
+							props.x_offset = x_offset;
+							props.y_offset = y_offset;
+							if (props.height != 0 && props.width != 0)
+							{
+								props.width = originalWidth;
+								props.height = originalHeight;
+							}
+							else
+							{
+								imageHeight = originalHeight;
+								imageWidth = originalWidth;
+							}
+							destroyWindow();
+							eglInitializer(imageHeight, imageWidth);
+							sync = true;
+						}
+					}
+					else
+					{
+						// Single click detected
+						printf("Single click\n");
+						num_clicks++;
+
+						if (num_clicks >= 2)
+						{
+							// Calculate the adaptive double-click threshold
+							doubleClickInterval = time_difference / num_clicks;
+						}
+					}
+					last_click_time = current_time;
+				}
+			}
+		}
+#endif
+		return true;
+	}
+
 public:
 	frame_sp inputFrame;
 	ImageViewerModuleProps props;
+	uint32_t imageHeight = 0;
+	uint32_t imageWidth = 0;
+	uint32_t originalWidth = 0;
+	uint32_t originalHeight = 0;
 
 protected:
-	cv::Mat mImg;
+    cv::Mat mImg;
+	uint32_t x_offset = 0;
+	uint32_t y_offset = 0;
+	bool sync = true;
+	uint32_t displayHeight, displayWidth;
+	int last_click_time = 0;
+	int doubleClickInterval = 0;
+	int num_clicks = 0;
 #if defined(__arm__) || defined(__aarch64__)
 	NvEglRenderer *renderer = nullptr;
 #endif
@@ -109,15 +222,21 @@ ImageViewerModule::~ImageViewerModule() {}
 class DetailEgl : public DetailRenderer
 {
 public:
-	DetailEgl(ImageViewerModuleProps &_props) : DetailRenderer(_props) {}
+	DetailEgl(ImageViewerModuleProps &_props) : DetailRenderer(_props)
+	{
+		
+	}
 
 	bool view()
 	{
 #if defined(__arm__) || defined(__aarch64__)
 		renderer->render((static_cast<DMAFDWrapper *>(inputFrame->data()))->getFd());
+		eventHandler();
 #endif
 		return true;
 	}
+
+	
 };
 
 class DetailImageviewer : public DetailRenderer
@@ -130,6 +249,7 @@ public:
 		showImage(inputFrame);
 		return true;
 	}
+
 };
 
 bool ImageViewerModule::validateInputPins()
@@ -203,29 +323,37 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 	auto frameType = inputMetadata->getFrameType();
 	FrameMetadata::MemType mInputMemType = inputMetadata->getMemType();
 #if defined(__arm__) || defined(__aarch64__)
-	int width = 0;
-	int height = 0;
 	switch (frameType)
 	{
 	case FrameMetadata::FrameType::RAW_IMAGE:
 	{
 		auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
-		width = metadata->getWidth();
-		height = metadata->getHeight();
+		mDetail->imageWidth = metadata->getWidth();
+		mDetail->imageHeight = metadata->getHeight();
 	}
 	break;
 	case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
 	{
 		auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
-		width = metadata->getWidth(0);
-		height = metadata->getHeight(0);
+		mDetail->imageWidth = metadata->getWidth(0);
+		mDetail->imageHeight = metadata->getHeight(0);
 	}
 	break;
 	default:
 		throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
 	}
 
-	mDetail->eglInitializer(height, width);
+	if (mProps.height != 0 && mProps.width != 0)
+	{
+		mDetail->originalHeight = mProps.height;
+		mDetail->originalWidth = mProps.width;
+	}
+	else
+	{
+		mDetail->originalHeight = mDetail->imageHeight;
+		mDetail->originalWidth = mDetail->imageWidth;
+	}
+	mDetail->eglInitializer(mDetail->imageHeight, mDetail->imageWidth);
 #else
 	mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata));
 #endif

@@ -151,8 +151,34 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
        XChangeProperty(x_display, x_window, WM_HINTS, WM_HINTS, 32,
                 PropModeReplace, (unsigned char *)&WM_HINTS, 5);
     }
+    
+    XSelectInput(x_display, (int32_t) x_window, ButtonPressMask |
+								                NoEventMask |
+								                KeyPressMask |
+								                KeyReleaseMask |
+								                ButtonReleaseMask |
+								                EnterWindowMask |
+								                LeaveWindowMask |
+								                PointerMotionMask |
+								                PointerMotionHintMask |
+								                Button1MotionMask |
+								                Button2MotionMask |
+								                Button3MotionMask |
+								                Button4MotionMask |
+								                Button5MotionMask |
+								                ButtonMotionMask |
+								                KeymapStateMask |
+								                ExposureMask |
+								                VisibilityChangeMask |
+								                StructureNotifyMask |
+								                ResizeRedirectMask |
+								                SubstructureNotifyMask |
+								                SubstructureRedirectMask |
+								                FocusChangeMask |
+								                PropertyChangeMask |
+								                ColormapChangeMask |
+								                OwnerGrabButtonMask);
 
-    XSelectInput(x_display, (int32_t) x_window, ExposureMask);
     XMapWindow(x_display, (int32_t) x_window);
     gc = XCreateGC(x_display, x_window, 0, NULL);
 

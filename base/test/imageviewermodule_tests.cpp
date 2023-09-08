@@ -129,4 +129,33 @@ BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(custom_width_height, *boost::unit_test::disabled())
+{
+#if defined(__arm__) || defined(__aarch64__)
+	NvV4L2CameraProps nvCamProps(640, 360, 10);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
+	source->setNext(transform);
+
+	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 1280, 720)));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	p.run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(40));
+	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+#endif
+}
+
 BOOST_AUTO_TEST_SUITE_END()

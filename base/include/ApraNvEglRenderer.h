@@ -150,9 +150,10 @@ public:
      */
     int setOverlayText(char *str, uint32_t x, uint32_t y);
 
-private:
+public:
     Display * x_display;    /**< Connection to the X server created using
                                   XOpenDisplay(). */
+private:
     Window x_window;        /**< Holds the window to be used for rendering created using
                                   XCreateWindow(). */
 
