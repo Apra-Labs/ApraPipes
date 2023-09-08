@@ -16,7 +16,14 @@ public:
 		Seek,
 		DeleteWindow,
 		CreateWindow,
-		PlayPause
+		PlayPause,
+		NVRCommandRecord,
+		NVRCommandExport,
+		NVRCommandExportMMQ,
+		NVRCommandView,
+		NVRCommandExportView,
+		MP4WriterLastTS,
+		MMQtimestamps
 	};
 
 	Command()
@@ -37,7 +44,7 @@ public:
 	CommandType getType()
 	{
 		return type;
-	}	
+	} 
 
 private:
 	friend class boost::serialization::access;
@@ -147,7 +154,7 @@ private:
 		ar & nextModuleId & open;
 	}
 
-	
+ 
 };
 
 class StepCommand : public Command
@@ -157,7 +164,7 @@ public:
 	{
 
 	}
-		
+  
 	size_t getSerializeSize()
 	{
 		return Command::getSerializeSize();
@@ -168,7 +175,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & boost::serialization::base_object<Command>(*this);		
+		ar & boost::serialization::base_object<Command>(*this);  
 	}
 
 
@@ -272,6 +279,7 @@ private:
 	}
 };
 
+
 class Mp4SeekCommand : public Command
 {
 public:
@@ -302,6 +310,191 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& seekStartTS;
 		ar& forceReopen;
+	}
+};
+
+//NVRCommands
+
+class NVRCommandRecord : public Command
+{
+public:
+	NVRCommandRecord() : Command(Command::CommandType::NVRCommandRecord)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(doRecording);
+	}
+
+	bool doRecording = false;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& doRecording;
+	}
+};
+
+class NVRCommandExport : public Command
+{
+public:
+	NVRCommandExport() : Command(Command::CommandType::NVRCommandExport)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startExportTS) + sizeof(stopExportTS);
+	}
+
+	uint64_t startExportTS = 0;
+	uint64_t stopExportTS = 0;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startExportTS;
+		ar& stopExportTS;
+	}
+};
+
+class NVRCommandExportMMQ : public Command
+{
+public:
+	NVRCommandExportMMQ() : Command(Command::CommandType::NVRCommandExportMMQ)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startExportMMQ);
+	}
+
+	bool startExportMMQ = true;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startExportMMQ;
+	}
+};
+
+
+class NVRCommandView : public Command
+{
+public:
+	NVRCommandView() : Command(Command::CommandType::NVRCommandView)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(doView);
+	}
+
+	bool doView = false;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& doView;
+	}
+};
+
+class NVRCommandExportView : public Command
+{
+public:
+	NVRCommandExportView() : Command(Command::CommandType::NVRCommandExportView)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(startViewTS) + sizeof(stopViewTS);
+	}
+
+	uint64_t startViewTS = 0;
+	uint64_t stopViewTS = 0;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& startViewTS;
+		ar& stopViewTS;
+	}
+};
+
+class MP4WriterLastTS : public Command
+{
+public:
+	MP4WriterLastTS() : Command(Command::CommandType::MP4WriterLastTS)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(lastWrittenTimeStamp) + sizeof(moduleId);
+	}
+
+	uint64_t lastWrittenTimeStamp = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& lastWrittenTimeStamp;
+		ar& moduleId;
+	}
+};
+
+class MMQtimestamps : public Command
+{
+public:
+	MMQtimestamps() : Command(Command::CommandType::MMQtimestamps)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(firstTimeStamp) + sizeof(lastTimeStamp) + sizeof(nvrExportStart) + sizeof(nvrExportStop) +sizeof(moduleId);
+	}
+
+	uint64_t firstTimeStamp = 0;
+	uint64_t lastTimeStamp = 0;
+	uint64_t nvrExportStart = 0;
+	uint64_t nvrExportStop = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& firstTimeStamp;
+		ar& lastTimeStamp;
+		ar& nvrExportStart;
+		ar& nvrExportStop;
+		ar& moduleId;
 	}
 };
 
