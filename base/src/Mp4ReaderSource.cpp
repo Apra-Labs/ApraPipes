@@ -1259,6 +1259,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		else if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
 			mState.shouldPrependSpsPps = false;
+			mState.foundFirstReverseIFrame = true;
 		}
 	}
 
