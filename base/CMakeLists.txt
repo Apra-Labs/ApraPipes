@@ -4,9 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-OPTION(ENABLE_NVR "Use this switch to enable ApraPipesNVR" OFF)
 
-SET(APRA_NVR ON)
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -224,7 +222,6 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	include/NVRControlModule.h
 	include/AbsControlModule.h
 )
 
@@ -284,8 +281,6 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/NVRControlModule.cpp
-	#src/NVRPipeline.cpp
 	src/AbsControlModule.cpp
 )
 
@@ -568,14 +563,9 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
-	test/nvrcontrolmodule_tests.cpp
 	test/abscontrolmodule_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
-)
-SET(NVR_UT_FILES
-    test/utmain.cpp
-	# test/nvrcontrolmodule_tests.cpp
 )
 
 IF(ENABLE_LINUX)
@@ -587,17 +577,13 @@ ENDIF(ENABLE_LINUX)
 
 
 add_executable(aprapipesut ${UT_FILES})
-#IF(APRA_NVR)
-add_executable(aprapipesnvr ${NVR_UT_FILES})
-#ENDIF(APRA_NVR)
+
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
-	target_include_directories ( aprapipesnvr PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
-	target_include_directories ( aprapipesnvr PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
 
@@ -605,28 +591,6 @@ find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
-  aprapipes  
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  )
-
-  target_link_libraries(aprapipesnvr   
   aprapipes  
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
