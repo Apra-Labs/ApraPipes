@@ -32,6 +32,16 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
+bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+{
+	for (int i = 0; i < modules.size(); i++)
+	{
+		modules[i]->controlModule = cModule;
+		cModule->pipelineModules.push_back(modules[i]);
+	}
+	return true;
+}
+
 bool PipeLine::checkCyclicDependency()
 {
 	std::map< std::string, std::vector<std::string> > dependencyMap;
@@ -149,6 +159,11 @@ void PipeLine::run_all_threaded()
 		m.myThread = boost::thread(ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread = boost::thread(ref(m));
+	}
 	mPlay = true;
 }
 
@@ -192,7 +207,7 @@ void PipeLine::step()
 		// already playing
 		return;
 	}
-	
+
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		if (i->get()->getNature() == Module::SOURCE)
