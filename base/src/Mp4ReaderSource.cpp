@@ -1254,8 +1254,12 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			imgSize += spsSize + ppsSize + 8;
 			imgFrame = tempFrame;
 			mState.foundFirstReverseIFrame = true;
+			mState.shouldPrependSpsPps = false;
 		}
-		mState.shouldPrependSpsPps = false;
+		else if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		{
+			mState.shouldPrependSpsPps = false;
+		}
 	}
 
 	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, h264ImagePinId);

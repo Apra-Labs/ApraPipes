@@ -425,9 +425,8 @@ bool H264Decoder::process(frame_container& frames)
 			latestForwardGop.clear();
 			latestForwardGop.push_back(frame);
 		}
-
 		// dont buffer fwd GOP if I frame has not been recieved (possible in intra GOP direction change cases)
-		if (mDirection && !latestForwardGop.empty() && (H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_SEQ_PARAM || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
+		else if (mDirection && !latestForwardGop.empty() && (H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_SEQ_PARAM || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
 		{
 			flushDecoderFlag = false;
 			latestForwardGop.push_back(frame);
