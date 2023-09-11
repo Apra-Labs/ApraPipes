@@ -924,14 +924,15 @@ BOOST_AUTO_TEST_CASE(reverseplay_seek)
 	Test_Utils::sleep_for_seconds(15);
 
 	mp4Reader->changePlayback(1, true);
-	Test_Utils::sleep_for_seconds(15);
+	Test_Utils::sleep_for_seconds(14);
 
 	uint64_t skipTS = 1691758409687;
-	mp4Reader->changePlayback(1, false);
+	
 	mp4Reader->randomSeek(skipTS, false);
+	mp4Reader->changePlayback(1, false);
 	
 
-	Test_Utils::sleep_for_seconds(150);
+	Test_Utils::sleep_for_seconds(15);
 
 	skipTS = 1691758415687;
 	mp4Reader->changePlayback(1, true);
@@ -940,8 +941,8 @@ BOOST_AUTO_TEST_CASE(reverseplay_seek)
 	Test_Utils::sleep_for_seconds(10);
 
 	skipTS = 1691758391768;
-	mp4Reader->changePlayback(1, false);
 	mp4Reader->randomSeek(skipTS, false);
+	mp4Reader->changePlayback(1, false);
 	Test_Utils::sleep_for_seconds(20);
 
 	p->stop();
@@ -1102,6 +1103,86 @@ BOOST_AUTO_TEST_CASE(ultimate)
 
 	mp4Reader->changePlayback(1, false);
 	Test_Utils::sleep_for_seconds(10);
+
+	/*skipTS = 1691758415687;
+	mp4Reader->changePlayback(1, true);
+	mp4Reader->randomSeek(skipTS, false);*/
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(cars)
+{
+	std::string videoPath = "data/Mp4_videos/reverseplay_h264/20220910/0012/1691502958947.mp4";
+	std::string outPath = "data/testOutput/outFrames";
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	bool parseFS = true;
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.fps = 24;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(frameType);
+
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::YUV420PLANAR_TO_RGB)));
+	Decoder->setNext(colorchange);
+
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+
+	colorchange->setNext(sink);
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(5);
+
+	uint64_t skipTS = 1691502964947;
+	mp4Reader->changePlayback(1, false);
+	mp4Reader->randomSeek(skipTS, false);
+
+
+	Test_Utils::sleep_for_seconds(4);
+
+	mp4Reader->changePlayback(1, true);
+
+	Test_Utils::sleep_for_seconds(7);
+
+	mp4Reader->changePlayback(1, false);
+
+	Test_Utils::sleep_for_seconds(7);
+
+	skipTS = 1691502980947;
+	mp4Reader->changePlayback(1, true);
+	mp4Reader->randomSeek(skipTS, false);
+	Test_Utils::sleep_for_seconds(5);
+
+	mp4Reader->changePlayback(1, false);
+	Test_Utils::sleep_for_seconds(20);
 
 	/*skipTS = 1691758415687;
 	mp4Reader->changePlayback(1, true);
