@@ -29,17 +29,7 @@ public:
 	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
 	{
 		auto type = H264Utils::getNALUType((char*)frame->data());
-		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE_SEQ_PARAM )
-		{
-			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
-			{
-				sps_pps_properties p;
-				H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
-				mWidth = p.width;
-				mHeight = p.height;
-	{
-		auto type = H264Utils::getNALUType((char*)frame->data());
-		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE_SEQ_PARAM )
+		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
 			if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
 			{
@@ -51,35 +41,15 @@ public:
 				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
 				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
 				rawOutMetadata->setData(*rawOutMetadata);
-				#ifdef ARM64
-					helper.reset(new h264DecoderV4L2Helper());
+#ifdef ARM64
+				helper.reset(new h264DecoderV4L2Helper());
 				return helper->init(send, makeFrame);
-				#else
-					helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
+#else
+				helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
 				return helper->init(send, makeFrame);
-				#endif
-			}
-				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
-				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
-				rawOutMetadata->setData(*rawOutMetadata);
-				#ifdef ARM64
-					helper.reset(new h264DecoderV4L2Helper());
-				return helper->init(send, makeFrame);
-				#else
-					helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
-				return helper->init(send, makeFrame);
-				#endif
+#endif
 			}
 
-			else
-			{
-				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
-			}
-		}
-		else
-		{
-			return false;
-		}
 			else
 			{
 				throw AIPException(AIP_NOTIMPLEMENTED, "Unknown frame type");
@@ -177,7 +147,6 @@ bool H264Decoder::init()
 	{
 		return false;
 	}
-
 	return true;
 }
 
@@ -187,211 +156,413 @@ bool H264Decoder::term()
 	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
-
 	mDetail.reset();
 	return Module::term();
 }
 
-void H264Decoder::bufferEncodedFrames(frame_sp& frame)
+frame_sp H264Decoder::prependSpsPps(frame_sp& iFrame)
 {
-	auto frameMetadata = frame->getMetadata();
-	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
-	if (!h264Metadata->direction)
+	auto spsPpsFrame = makeFrame(iFrame->size() + spsBuffer.size() + ppsBuffer.size() + 8);
+	uint8_t* spsPpsFrameBuffer = reinterpret_cast<uint8_t*>(spsPpsFrame->data());
+	char NaluSeprator[4] = { 00 ,00, 00 ,01 };
+	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
+	memcpy(spsPpsFrameBuffer, nalu, 4);
+	spsPpsFrameBuffer += 4;
+	memcpy(spsPpsFrameBuffer, spsBuffer.data(), spsBuffer.size());
+	spsPpsFrameBuffer += spsBuffer.size();
+	memcpy(spsPpsFrameBuffer, nalu, 4);
+	spsPpsFrameBuffer += 4;
+	memcpy(spsPpsFrameBuffer, ppsBuffer.data(), ppsBuffer.size());
+	spsPpsFrameBuffer += ppsBuffer.size();
+	memcpy(spsPpsFrameBuffer, iFrame->data(), iFrame->size());
+	spsPpsFrame->timestamp = iFrame->timestamp;
+	return spsPpsFrame;
+}
+
+void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop)
+{
+	while (!latestGop.empty())
 	{
-		if (hasDirectionChangedToBackward)
+		auto deleteItr = std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), latestGop.front()->timestamp);
+		if (deleteItr != incomingFramesTSQ.end())
 		{
-			if (!tempGop.empty())
+			incomingFramesTSQ.erase(deleteItr);
+			latestGop.pop_front();
+		}
+	}
+}
+
+void H264Decoder::bufferBackwardEncodedFrames(frame_sp& frame, short naluType)
+{
+	if (dirChangedToBwd)
+	{
+		latestBackwardGop.clear();
+		dirChangedToBwd = false;
+	}
+	// insert frames into the latest gop until I frame comes.
+	latestBackwardGop.emplace_back(frame);
+	// The latest GOP is complete when I Frame comes up, move the GOP to backwardGopBuffer where all the backward GOP's are buffered
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		foundIFrameOfReverseGop = true;
+		backwardGopBuffer.push_back(std::move(latestBackwardGop));
+	}
+}
+
+void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short naluType)
+{
+	if (dirChangedToFwd)
+	{
+		// Whenever the direction changes to forward we just send all the backward buffered GOP's to decoded in a single step . The motive is to send the current forward frame to decoder in the same step.
+		while (!backwardGopBuffer.empty())
+		{
+			decodeFrameFromBwdGOP();
+		}
+
+		// Whenever direction changes to forward , And the latestBackwardGop is incomplete , then delete the latest backward GOP and remove the frames from incomingFramesTSQ entry as well
+		if (!latestBackwardGop.empty())
+		{
+			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
+		}
+		dirChangedToFwd = false;
+	}
+	if(prevFrameInCache)
+	{
+		// previous Frame was In Cache & current is not
+		if (!latestForwardGop.empty())
+		{
+			short naluTypeOfForwardGopFirstFrame = H264Utils::getNALUType((char*)latestForwardGop.front()->data());
+			if (naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 			{
-				framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
-				gop.push_back(std::make_pair(std::move(tempGop), true));
-				framesCounterOfCurrentGop = 0;
+				// Corner case: Forward :- current frame is not part of latestForwardGOP 
+				if (latestForwardGop.front()->timestamp > frame->timestamp)
+				{
+					latestForwardGop.clear();
+				}
 			}
-			hasDirectionChangedToBackward = false;
+
+			// Corner case: Forward:- When end of cache hits while in the middle of gop, before decoding the next P frame we need decode the previous frames of that GOP. 
+			// There might be a case where we might have cleared the decoder, in order to start the decoder again we must prepend sps and pps to I frame if not present
+			if (!latestForwardGop.empty() && naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+			{
+				auto iFrame = latestForwardGop.front();
+				auto spsPpsFrame = prependSpsPps(iFrame);
+				mDetail->compute(spsPpsFrame);
+				latestForwardGop.pop_front();
+				for (auto itr = latestForwardGop.begin(); itr != latestForwardGop.end(); itr++)
+				{
+					if (itr->get()->timestamp < frame->timestamp)
+					{
+						mDetail->compute(*itr);
+					}
+				}
+			}
+			else if (!latestForwardGop.empty() && naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			{
+				for (auto itr = latestForwardGop.begin(); itr != latestForwardGop.end(); itr++)
+				{
+					if (itr->get()->timestamp < frame->timestamp)
+					{
+						mDetail->compute(*itr);
+					}
+				}
+			}
 		}
-		tempGop.emplace_back(frame);
-		framesCounterOfCurrentGop++;
-		short naluType = H264Utils::getNALUType((char*)frame->data());
-		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
-		{
-			foundGopIFrame = true;
-			framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, false));
-			gop.push_back(std::make_pair(std::move(tempGop),false));
-			framesCounterOfCurrentGop = 0;
-		}
-		hasDirectionChangedToForward = true;
+	}
+	prevFrameInCache = false;
+
+	/* buffer fwd GOP and send the current frame */
+	// new GOP starts
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		latestForwardGop.clear();
+	}
+	latestForwardGop.emplace_back(frame);
+	
+	// If direction changed to forward in the middle of GOP (Even the latest gop of backward was half and not decoded) , Then we drop the P frames until next I frame.
+	// We also remove the entries of P frames from the incomingFramesTSQ.
+	short latestForwardGopFirstFrameNaluType = H264Utils::getNALUType((char*)latestForwardGop.begin()->get()->data());
+	if (latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		clearIncompleteBwdGopTsFromIncomingTSQ(latestForwardGop);
 		return;
 	}
 
-	if (hasDirectionChangedToForward)
-	{
-		if (!tempGop.empty())
-		{
-			tempGop.clear();
-			framesCounterOfCurrentGop = 0;
-		}
-		short naluType = H264Utils::getNALUType((char*)frame->data());
-		if (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
-		{
-			return;
-		}
-		hasDirectionChangedToForward = false;
-	}
-	short naluType = H264Utils::getNALUType((char*)frame->data());
-	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM && framesCounterOfCurrentGop)
-	{
-		foundGopIFrame = true;
-		framesInGopAndDirectionTracker.push(std::make_pair(framesCounterOfCurrentGop, true));
-		gop.emplace_back(std::make_pair(std::move(tempGop), true));
-		framesCounterOfCurrentGop = 0;
-	}
-	hasDirectionChangedToBackward = true;
-	tempGop.push_back(frame);
-	framesCounterOfCurrentGop++;
+	mDetail->compute(frame);
 	return;
 }
 
-void H264Decoder::sendFramesToDecoder()
+void H264Decoder::decodeFrameFromBwdGOP()
 {
-	if (!gop.empty() && !gop.front().first.empty())
+	if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE && prevFrameInCache)
 	{
-		if (!gop.front().second)
-		{
-			auto itr = gop.front().first.rbegin(); 
-			mDetail->compute(*itr);
-			gop.front().first.pop_back();
-			return;
-		}
-		auto itr = gop.front().first.front();
-		mDetail->compute(itr);
-		gop.front().first.pop_front();
+		auto iFrame = backwardGopBuffer.front().back();
+		auto spsPpsFrame = prependSpsPps(iFrame);
+		mDetail->compute(spsPpsFrame);
+		backwardGopBuffer.front().pop_back();
+		prevFrameInCache = false;
+	}
+	if (!backwardGopBuffer.empty() && !backwardGopBuffer.front().empty())
+	{
+		// For reverse play we sent the frames to the decoder in reverse, As the last frame added in the deque should be sent first (Example : P,P,P,P,P,P,I)
+		auto itr = backwardGopBuffer.front().rbegin();
+		mDetail->compute(*itr);
+		backwardGopBuffer.front().pop_back();
+	}
+	if (backwardGopBuffer.size() >= 1 && backwardGopBuffer.front().empty())
+	{
+		backwardGopBuffer.pop_front();
+	}
+	if (backwardGopBuffer.empty())
+	{
+		foundIFrameOfReverseGop = false;
+	}
+}
+
+void H264Decoder::saveSpsPps(frame_sp frame)
+{
+	auto mFrameBuffer = const_buffer(frame->data(), frame->size());
+	auto ret = H264Utils::parseNalu(mFrameBuffer);
+	const_buffer tempSpsBuffer;
+	const_buffer tempPpsBuffer;
+	short typeFound;
+	tie(typeFound, tempSpsBuffer, tempPpsBuffer) = ret;
+
+	if ((tempSpsBuffer.size() != 0) || (tempPpsBuffer.size() != 0))
+	{
+		mHeaderFrame = frame;
+		spsBuffer = tempSpsBuffer;
+		ppsBuffer = tempPpsBuffer;
 	}
 }
 
 bool H264Decoder::process(frame_container& frames)
 {
-	auto frame = frames.cbegin()->second;
-	bufferEncodedFrames(frame);
+	auto frame = frames.begin()->second;
+	auto frameMetadata = frame->getMetadata();
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
 
-	if(foundGopIFrame)
+	if (mDirection && !h264Metadata->direction)
 	{
-		sendFramesToDecoder();
-		if (gop.front().first.empty())
+		dirChangedToBwd = true;
+	}
+	else if (!mDirection && h264Metadata->direction)
+	{
+		dirChangedToFwd = true; //rename to directionChangedToFwd
+	}
+	else
+	{
+		dirChangedToBwd = false;
+		dirChangedToFwd = false;
+	}
+
+	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
+	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
+	if (h264Metadata->mp4Seek)
+	{
+		latestForwardGop.clear();
+	}
+
+	mDirection = h264Metadata->direction;
+	short naluType = H264Utils::getNALUType((char*)frame->data());
+	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		saveSpsPps(frame);
+	}
+	// we get a repeated frame whenever direction changes i.e. the timestamp Q latest frame is repeated
+	if (!incomingFramesTSQ.empty() && incomingFramesTSQ.back() == frame->timestamp)
+	{
+		flushDecoderFlag = true;
+	}
+
+	//Insert the frames time stamp in TS queue. We send the frames to next modules in the same order.
+	incomingFramesTSQ.push_back(frame->timestamp);
+
+	//If the frame is already present in the decoded output cache then skip the frame decoding.
+	if (decodedFramesCache.find(frame->timestamp) != decodedFramesCache.end())
+	{
+		//prepend sps and pps if 1st frame is I frame
+		if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
-			gop.pop_front();
-			if (gop.empty())
-			{
-				foundGopIFrame = false;
-			}
+			auto iFrame = backwardGopBuffer.front().back();
+			auto spsPpsFrame = prependSpsPps(iFrame);
+			mDetail->compute(spsPpsFrame);
+			backwardGopBuffer.front().pop_back();
 		}
+		// the buffered GOPs in bwdGOPBuffer needs to need to be processed first
+		while (!backwardGopBuffer.empty())
+		{
+			decodeFrameFromBwdGOP();
+		}
+
+		// if we seeked
+		if (h264Metadata->mp4Seek)
+		{
+			// flush the incomplete GOP
+			flushDecoderFlag = true;
+			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
+		}
+
+		// corner case: partial GOP already present in cache 
+		if (!mDirection && latestBackwardGop.empty() && backwardGopBuffer.empty())
+		{
+			auto eosFrame = frame_sp(new EmptyFrame());
+			mDetail->compute(eosFrame);
+			flushDecoderFlag = false;
+		}
+
+		if (!latestBackwardGop.empty())
+		{
+			// Corner case: backward :- (I,P,P,P) Here if first two frames are in the cache and last two frames are not in the cache , to decode the last two frames we buffer the full gop and later decode it.
+			bufferBackwardEncodedFrames(frame, naluType);
+			sendDecodedFrame();
+			return true;
+		}
+
+		if (mDirection && ((naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
+		{
+			latestForwardGop.clear();
+			latestForwardGop.push_back(frame);
+		}
+		// dont buffer fwd GOP if I frame has not been recieved (possible in intra GOP direction change cases)
+		else if (mDirection && !latestForwardGop.empty() && (H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_SEQ_PARAM || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
+		{
+			flushDecoderFlag = false;
+			latestForwardGop.push_back(frame);
+		}
+
+		// While in forward play, if cache has resumed in the middle of the GOP then to get the previous few frames we need to flush the decoder.
+		if (mDirection && !prevFrameInCache)
+		{
+			auto eosFrame = frame_sp(new EmptyFrame());
+			mDetail->compute(eosFrame);
+			flushDecoderFlag = false;
+		}
+		prevFrameInCache = true;
+		sendDecodedFrame();
+		return true;
+	}
+	/* If frame is not in output cache, it needs to be buffered & decoded */
+	if (mDirection)
+	{
+		//Buffers the latest GOP and send the current frame to decoder.
+		bufferAndDecodeForwardEncodedFrames(frame, naluType);
+	}
+	else
+	{
+		//Only buffering of backward GOP happens 
+		bufferBackwardEncodedFrames(frame, naluType);
+	}
+	if (foundIFrameOfReverseGop)
+	{
+		// The I frame of backward GOP was found , now we send the frames to the decoder one by one in every step
+		decodeFrameFromBwdGOP();
 	}
 	sendDecodedFrame();
-	bufferEncodedFrames(frame);
-
-	if(foundGopIFrame)
-	{
-		sendFramesToDecoder();
-		if (gop.front().first.empty())
-		{
-			gop.pop_front();
-			if (gop.empty())
-			{
-				foundGopIFrame = false;
-			}
-		}
-	}
-	sendDecodedFrame();
+	dropFarthestFromCurrentTs(frame->timestamp);
 	return true;
 }
 
 void H264Decoder::sendDecodedFrame()
 {
-	if (!bufferedDecodedFrames.empty())
+	// not in output cache && flushdecoder flag is set
+	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) == decodedFramesCache.end() && flushDecoderFlag && backwardGopBuffer.empty())
 	{
-		auto& firstBufferedFrames = bufferedDecodedFrames.front();
-		if (!firstBufferedFrames.empty()) {
-			auto outFrame = firstBufferedFrames.front();
-			firstBufferedFrames.pop_front();
-			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, outFrame));
-			send(frames);
-		}
-		if (firstBufferedFrames.empty()) {
-			bufferedDecodedFrames.pop_front();
-		}
+		// We send empty frame to the decoder , in order to flush out all the frames from decoder.
+		// This is to handle some cases whenever the direction change happens and to get out the latest few frames sent to decoder.
+		auto eosFrame = frame_sp(new EmptyFrame());
+		mDetail->compute(eosFrame);
+		flushDecoderFlag = false;
+	}
+
+	// timestamp in output cache
+	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) != decodedFramesCache.end())
+	{
+		auto outFrame = decodedFramesCache[incomingFramesTSQ.front()];
+		incomingFramesTSQ.pop_front();
+		frame_container frames;
+		frames.insert(make_pair(mOutputPinId, outFrame));
+		send(frames);
 	}
 }
 
 void H264Decoder::bufferDecodedFrames(frame_sp& frame)
 {
-	if (framesInGopAndDirectionTracker.empty())
-	{
-		tempDecodedFrames.emplace_back(frame);
-		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
-		return;
-	}
-	if (!framesInGopAndDirectionTracker.front().second)
-	{
-		tempDecodedFrames.push_front(frame);
-	}
-	else
-	{
-		tempDecodedFrames.emplace_back(frame);
-	}
-	if (tempDecodedFrames.size() >= framesInGopAndDirectionTracker.front().first)
-	{
-		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
-		framesInGopAndDirectionTracker.pop();
-	}
+	decodedFramesCache.insert({ frame->timestamp, frame });
 }
 
-void H264Decoder::sendDecodedFrame()
+void H264Decoder::dropFarthestFromCurrentTs(uint64_t ts)
 {
-	if (!bufferedDecodedFrames.empty())
+	if (decodedFramesCache.empty())
 	{
-		auto& firstBufferedFrames = bufferedDecodedFrames.front();
-		if (!firstBufferedFrames.empty()) {
-			auto outFrame = firstBufferedFrames.front();
-			firstBufferedFrames.pop_front();
-			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, outFrame));
-			send(frames);
-		}
-		if (firstBufferedFrames.empty()) {
-			bufferedDecodedFrames.pop_front();
-		}
-	}
-}
-
-void H264Decoder::bufferDecodedFrames(frame_sp& frame)
-{
-	if (framesInGopAndDirectionTracker.empty())
-	{
-		tempDecodedFrames.emplace_back(frame);
-		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
 		return;
 	}
-	if (!framesInGopAndDirectionTracker.front().second)
+
+	/* dropping algo */
+	int64_t begDistTS = ts - decodedFramesCache.begin()->first;
+	auto absBeginDistance = abs(begDistTS);
+	int64_t endDistTS = ts - decodedFramesCache.rbegin()->first;
+	auto absEndDistance = abs(endDistTS);
+	if (decodedFramesCache.size() >= mProps.upperWaterMark)
 	{
-		tempDecodedFrames.push_front(frame);
-	}
-	else
-	{
-		tempDecodedFrames.emplace_back(frame);
-	}
-	if (tempDecodedFrames.size() >= framesInGopAndDirectionTracker.front().first)
-	{
-		bufferedDecodedFrames.push_back(std::move(tempDecodedFrames));
-		framesInGopAndDirectionTracker.pop();
+		if (absEndDistance <= absBeginDistance)
+		{
+			auto itr = decodedFramesCache.begin();
+			while (itr != decodedFramesCache.end())
+			{
+				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
+				{
+					boost::mutex::scoped_lock(m_mutex);
+					// Note - erase returns the iterator of next element after deletion.
+					// Dont drop the frames from cache which are present in the incomingFramesTSQ
+					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
+					{
+						itr++;
+						continue;
+					}
+					itr = decodedFramesCache.erase(itr);
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+		else
+		{
+			// delete from end using the fwd iterator.
+			auto itr = decodedFramesCache.end();
+			--itr;
+			while (itr != decodedFramesCache.begin())
+			{
+				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
+				{
+					boost::mutex::scoped_lock(m_mutex);
+					// Note - erase returns the iterator of next element after deletion.
+					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
+					{
+						--itr;
+						continue;
+					}
+					itr = decodedFramesCache.erase(itr);
+					--itr;
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
 	}
 }
 
 bool H264Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
-	auto ret = mDetail->setMetadata(metadata, frame,
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+	mDirection = h264Metadata->direction;
 	auto ret = mDetail->setMetadata(metadata, frame,
 		[&](frame_sp& outputFrame) {
-			bufferDecodedFrames(outputFrame);
 			bufferDecodedFrames(outputFrame);
 		}, [&]() -> frame_sp {return makeFrame(); }
 		);
@@ -399,25 +570,16 @@ bool H264Decoder::processSOS(frame_sp& frame)
 	{
 		mShouldTriggerSOS = false;
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-	if (ret)
-	{
-		mShouldTriggerSOS = false;
-		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
 #ifdef ARM64
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
-		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 #else
-		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 #endif
 
 		rawOutMetadata->setData(OutputMetadata);
 	}
-	
-		rawOutMetadata->setData(OutputMetadata);
-	}
-	
+
 	return true;
 }
 

@@ -12,6 +12,7 @@
 #include "EncodedImageMetadata.h"
 #include "StatSink.h"
 #include "H264Metadata.h"
+#include "H264Decoder.h"
 
 #include "FrameContainerQueue.h"
 
@@ -128,6 +129,50 @@ struct SetupPlaybackTests
 	}
 
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
+	boost::shared_ptr<TestModule1> sink = nullptr;
+};
+
+struct SetupPlaybackDecoderTests
+{
+	SetupPlaybackDecoderTests(std::string videoPath,
+		bool reInitInterval, bool direction, bool parseFS)
+	{
+		LoggerProps loggerProps;
+		loggerProps.logLevel = boost::log::trivial::severity_level::info;
+		Logger::initLogger(loggerProps);
+
+		bool readLoop = false;
+		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, reInitInterval, direction, readLoop, false);
+		mp4ReaderProps.logHealth = true;
+		mp4ReaderProps.logHealthFrequency = 1000;
+		mp4ReaderProps.fps = 100;
+		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+		auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+		mp4Reader->addOutPutPin(h264ImageMetadata);
+
+		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_2_0"));
+		mp4Reader->addOutPutPin(mp4Metadata);
+
+		std::vector<std::string> mImagePin;
+		mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
+
+		decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+		mp4Reader->setNext(decoder, mImagePin);
+
+		TestModuleProps sinkProps;
+		//sinkProps.logHealth = false;
+		sinkProps.logHealthFrequency = 1;
+		sink = boost::shared_ptr<TestModule1>(new TestModule1(sinkProps));
+		decoder->setNext(sink);
+
+		BOOST_TEST(mp4Reader->init());
+		BOOST_TEST(decoder->init());
+		BOOST_TEST(sink->init());
+	}
+
+	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
+	boost::shared_ptr<H264Decoder> decoder;
 	boost::shared_ptr<TestModule1> sink = nullptr;
 };
 
@@ -903,6 +948,197 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264
 	}
 	LOG_INFO << "Reached EOF !";
 	BOOST_TEST(lastFrameTS == 1673420640350);
+}
+
+
+BOOST_AUTO_TEST_CASE(fwd_h264_decoder)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
+	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
+
+	int ct = 0, total = 500;
+	while (ct < total - 1)
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		auto frames = sinkQ->try_pop();
+		if (!frames.empty())
+		{
+			auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
+			LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
+			ct++;
+		}
+	}
+	f.mp4Reader->step();
+	f.decoder->step();
+	auto sinkQ = f.sink->getQue();
+	auto frames = sinkQ->try_pop();
+	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
+	BOOST_TEST(frame->timestamp == 1673420645353);
+	LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
+
+	// new video open
+	f.mp4Reader->step();
+	f.decoder->step();//Since hardware decoder has some delay we dont get the decoded frame instantly
+	frames = sinkQ->try_pop();
+	while (frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		frames = sinkQ->try_pop();
+	}
+	
+	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
+	BOOST_TEST(frame->timestamp == 1685604318680);
+}
+
+BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
+{
+	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
+	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
+	frame_container frames;
+	uint64_t frameTs;
+	for (int i = 0; i < 25; i++)
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (!frames.empty())
+		{
+			frameTs = frames.begin()->second->timestamp;
+		}
+	}
+
+	f.mp4Reader->changePlayback(1, false);
+	//since there is a delay in deocoder the first reverse frame will be sent once all the forward frames are processed.
+	while(!frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (frameTs == frames.begin()->second->timestamp)
+			break;
+		frameTs = frames.begin()->second->timestamp;
+	}
+
+	BOOST_TEST(frameTs == 1673420640595);//First reverse frame
+}
+
+BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
+	frame_container frames;
+	uint64_t frameTs;
+	for (int i = 0; i < 25; i++)
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (!frames.empty())
+		{
+			frameTs = frames.begin()->second->timestamp;
+		}
+	}
+
+	f.mp4Reader->changePlayback(1, false);
+	//since there is a delay in deocoder the first reverse frame will be sent once all the forward frames are processed.
+	while (!frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (frameTs == frames.begin()->second->timestamp)//since a repeated whenever direction changes
+			break;
+		frameTs = frames.begin()->second->timestamp;
+	}
+
+	BOOST_TEST(frameTs == 1691502959957);//First reverse frame
+
+	for (int i = 0; i < 5; i++)
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	f.mp4Reader->changePlayback(1, true);
+
+	while (!frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (frameTs == frames.begin()->second->timestamp)
+			break;
+		frameTs = frames.begin()->second->timestamp;
+	}
+
+	BOOST_TEST(frameTs == 1691502959657);//First reverse frame
+}
+
+BOOST_AUTO_TEST_CASE(reverse_play)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
+	frame_container frames;
+	uint64_t frameTs;
+	while (frames.empty())// In reverse play, the whole buffered and then decoded.
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+	if (frameTs == 1691503018158);//last frame of the video.
+}
+
+BOOST_AUTO_TEST_CASE(reverse_play_to_fwd_play)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	while (frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+
+	if (frameTs == 1691503018158);//last frame of the video.
+
+	for (int i = 0; i < 10; i++)
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	f.mp4Reader->changePlayback(1, true);//IntraGop direction to fwd , then till next I frame all the p frames are skipped
+
+	while (!frames.empty())
+	{
+		f.mp4Reader->step();
+		f.decoder->step();
+		auto sinkQ = f.sink->getQue();
+		frames = sinkQ->try_pop();
+		if (frameTs == 1691503017167)//First forward frame and also I frame
+			break;
+		frameTs = frames.begin()->second->timestamp;
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()

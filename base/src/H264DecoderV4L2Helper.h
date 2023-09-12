@@ -228,7 +228,7 @@ public:
      *
      * @param[in] ctx Pointer to the decoder context struct created.
      */
-    void query_set_capture(context_t *ctx, int &fd);
+    void query_set_capture(context_t *ctx);
 
     /**
      * @brief Callback function on capture thread.
