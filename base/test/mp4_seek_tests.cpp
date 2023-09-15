@@ -14,6 +14,11 @@
 #include "FrameContainerQueue.h"
 #include "H264Metadata.h"
 
+#ifdef APRA_CUDA_ENABLED 
+#include "CudaCommon.h"
+#include "H264Decoder.h"
+#endif
+
 BOOST_AUTO_TEST_SUITE(mp4_seek_tests)
 
 struct SetupSeekTests
@@ -51,6 +56,48 @@ struct SetupSeekTests
 		BOOST_TEST(mp4Reader->init());
 		BOOST_TEST(sink->init());
 	}
+
+#ifdef APRA_CUDA_ENABLED 
+	SetupSeekTests(std::string videoPath,
+		bool reInitInterval, bool direction, bool parseFS)
+	{
+		LoggerProps loggerProps;
+		loggerProps.logLevel = boost::log::trivial::severity_level::info;
+		Logger::initLogger(loggerProps);
+
+		bool readLoop = false;
+		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, reInitInterval, direction, readLoop, false);
+		mp4ReaderProps.logHealth = true;
+		mp4ReaderProps.logHealthFrequency = 1000;
+		mp4ReaderProps.fps = 100;
+		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+		auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+		mp4Reader->addOutPutPin(h264ImageMetadata);
+
+		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_2_0"));
+		mp4Reader->addOutPutPin(mp4Metadata);
+
+		std::vector<std::string> mImagePin;
+		mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
+
+		decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+		mp4Reader->setNext(decoder, mImagePin);
+
+		auto sinkProps = ExternalSinkProps();
+		sinkProps.logHealth = true;
+		sinkProps.logHealthFrequency = 1000;
+		sink = boost::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
+		decoder->setNext(sink);
+
+		auto p = boost::shared_ptr<PipeLine>(new PipeLine("mp4reader"));
+		p->appendModule(mp4Reader);
+
+		BOOST_TEST(mp4Reader->init());
+		BOOST_TEST(decoder->init());
+		BOOST_TEST(sink->init());
+	}
+#endif
 
 	~SetupSeekTests()
 	{
@@ -125,6 +172,9 @@ struct SetupSeekTests
 	boost::shared_ptr<PipeLine> p = nullptr;
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
 	boost::shared_ptr<ExternalSink> sink;
+#ifdef APRA_CUDA_ENABLED 
+	boost::shared_ptr<H264Decoder> decoder;
+#endif
 };
 
 BOOST_AUTO_TEST_CASE(no_seek)
@@ -775,7 +825,7 @@ BOOST_AUTO_TEST_CASE(seek_in_next_file_h264)
 
 	auto imgFrame = frames.begin()->second;
 
-	/* ts of first frame of next file is 1655895288956 - video length 5secs.
+	/* ts of first frame of next file is 1685604361723 - video length 5secs.
 	   Seek 3 sec inside the file which is next to the currently open file. */
 	uint64_t skipTS = 1685604364723;
 	s.mp4Reader->randomSeek(skipTS, false);
@@ -1295,5 +1345,327 @@ BOOST_AUTO_TEST_CASE(read_loop_h264)
 	// first frame is 1673420640350
 	BOOST_TEST(imgFrame->timestamp == 1673420640350);
 }
+
+#ifdef APRA_CUDA_ENABLED 
+BOOST_AUTO_TEST_CASE(seek_inside_cache_fwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	/* video length is 3 seconds */
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	while (frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+
+	BOOST_TEST(frameTs == 1691502958947);//First frame
+
+	for (int i = 0; i < 90; i++)
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	uint64_t skipTS = 1691502961947;
+	s.mp4Reader->randomSeek(skipTS, false);
+
+	while(!frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502962087)
+			break;
+	}
+	
+	BOOST_TEST(frameTs == 1691502962087);//seek frame
+
+	s.decoder->term();
+}
+
+BOOST_AUTO_TEST_CASE(seek_outside_cache_fwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	while (frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+
+	BOOST_TEST(frameTs == 1691502958947);//First frame
+
+	uint64_t skipTS = 1691502963937;
+	s.mp4Reader->randomSeek(skipTS, false);
+
+	while (!frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502964160)
+			break;
+	}
+
+	BOOST_TEST(frameTs == 1691502964160);
+	
+	s.decoder->term();
+}
+
+BOOST_AUTO_TEST_CASE(seek_inside_cache_bwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, false, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	for (int i = 0; i < 60; i++)
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	uint64_t skipTS = 1691503016167;
+	s.mp4Reader->randomSeek(skipTS, false);
+
+	while (!frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691503017167)
+			break;
+	}
+	BOOST_TEST(frameTs == 1691503017167);//seeked frame
+	s.decoder->term();
+}
+
+BOOST_AUTO_TEST_CASE(seek_outside_cache_bwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, false, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	for (int i = 0; i < 60; i++)
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	uint64_t skipTS = 1691503002167;
+	s.mp4Reader->randomSeek(skipTS, false);
+
+	while(!frames.empty())//Process all the buffered backward frames to get the seeked I frame.
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691503001585)
+			break;
+	}
+	BOOST_TEST(frameTs == 1691503001585);//seeked Frame
+
+	s.decoder->term();
+}
+
+BOOST_AUTO_TEST_CASE(seek_inside_cache_and_dir_change_to_bwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, true, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	while (frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+
+	BOOST_TEST(frameTs == 1691502958947);//First frame
+
+	for (int i = 0; i < 90; i++)
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+
+	uint64_t skipTS = 1691502961947;
+	s.mp4Reader->randomSeek(skipTS, false);
+	s.mp4Reader->changePlayback(1, false);
+
+	while (!frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502962042)
+			break;
+	}
+	BOOST_TEST(frameTs == 1691502962042);
+
+	s.decoder->term();
+}
+
+BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_fwd)
+{
+#ifdef __x86_64__
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
+#endif
+	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
+	SetupSeekTests s(startingVideoPath, 0, false, true);
+	frame_container frames;
+	uint64_t frameTs;
+
+	while (frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+	}
+	frameTs = frames.begin()->second->timestamp;
+
+	BOOST_TEST(frameTs == 1691503018158);//First frame
+
+	uint64_t skipTS = 1691502963937;
+	s.mp4Reader->changePlayback(1, true);
+	s.mp4Reader->randomSeek(skipTS, false);
+	
+	
+	while (!frames.empty())
+	{
+		s.mp4Reader->step();
+		s.decoder->step();
+		auto sinkQ = s.sink->getQue();
+		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502964160)
+			break;
+	}
+	BOOST_TEST(frameTs == 1691502964160);//seeked_i_Frame
+	s.decoder->term();
+}
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

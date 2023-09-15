@@ -40,9 +40,12 @@ public:
 
 		width = metadata.width;
 		height = metadata.height;
+		direction = metadata.direction;
+		mp4Seek = metadata.mp4Seek;
 		//setDataSize();
 	}
-
+	bool direction = true;
+	bool mp4Seek = false;
 protected:
 	void initData(int _width, int _height, MemType _memType = MemType::HOST)
 	{

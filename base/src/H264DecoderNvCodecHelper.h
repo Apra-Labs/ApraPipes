@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include "CommonDefs.h"
 #include "CudaCommon.h"
+#include <queue>
 
 /**
 * @brief Exception class for error reporting from the decode API.
@@ -237,9 +238,10 @@ public:
 
     bool init(std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame);
     void ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth);
-    void process(frame_sp& frame);
+    void process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS);
     std::function<void( frame_sp&)> send;
     std::function<frame_sp()> makeFrame;
 private:
     boost::shared_ptr<NvDecoder> helper;
+    std::queue<uint64_t> framesTimestampEntry;
 };
