@@ -14,10 +14,10 @@
 #include "H264Decoder.h"
 #include "FrameContainerQueue.h"
 
-#ifdef __linux__
-#include "nv_test_utils.h"
+#ifdef __x86_64__
+#include "CudaCommon.h"
 #elif _WIN64
-#include "nv_test_utils.h"
+#include "CudaCommon.h"
 #endif
 	
 BOOST_AUTO_TEST_SUITE(mp4_reverse_play)
@@ -957,10 +957,19 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 {
 #ifdef __x86_64__
-	if (!*utf::precondition(if_compute_cap_supported()))
-	{
-		return;
-	}
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
 #endif
 	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
@@ -994,10 +1003,19 @@ BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
 {
 #ifdef __x86_64__
-	if (!*utf::precondition(if_compute_cap_supported()))
-	{
-		return;
-	}
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
 #endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
@@ -1047,10 +1065,19 @@ BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
 BOOST_AUTO_TEST_CASE(reverse_play_deocoder)
 {
 #ifdef __x86_64__
-	if (!*utf::precondition(if_compute_cap_supported()))
-	{
-		return;
-	}
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
 #endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
@@ -1070,10 +1097,19 @@ BOOST_AUTO_TEST_CASE(reverse_play_deocoder)
 BOOST_AUTO_TEST_CASE(reverse_play_to_fwd_play_decoder)
 {
 #ifdef __x86_64__
-	if (!*utf::precondition(if_compute_cap_supported()))
-	{
-		return;
-	}
+	auto cuContext = apracucontext_sp(new ApraCUcontext());
+		int major=0,minor=0;
+		if(!cuContext->getComputeCapability(major,minor))
+            return;
+		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
+		if(major<=5) 
+		{
+			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
+			{
+				LOG_ERROR << "Compute Cap should be 5.2 or above";
+				return;
+			}
+		}
 #endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
