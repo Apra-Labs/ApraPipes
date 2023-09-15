@@ -92,7 +92,6 @@ protected:
 	bool validateInputPins() { return true; }
 };
 
-#ifdef APRA_CUDA_ENABLED 
 struct SetupPlaybackTests
 {
 	SetupPlaybackTests(std::string videoPath,
@@ -134,8 +133,8 @@ struct SetupPlaybackTests
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
 	boost::shared_ptr<TestModule1> sink = nullptr;
 };
-#endif
 
+#ifdef APRA_CUDA_ENABLED 
 struct SetupPlaybackDecoderTests
 {
 	SetupPlaybackDecoderTests(std::string videoPath,
@@ -179,6 +178,7 @@ struct SetupPlaybackDecoderTests
 	boost::shared_ptr<H264Decoder> decoder;
 	boost::shared_ptr<TestModule1> sink = nullptr;
 };
+#endif
 
 BOOST_AUTO_TEST_CASE(fwd)
 {
