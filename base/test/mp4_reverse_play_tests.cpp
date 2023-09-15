@@ -13,7 +13,7 @@
 #include "H264Metadata.h"
 #include "FrameContainerQueue.h"
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 #include "CudaCommon.h"
 #include "H264Decoder.h"
 #endif
@@ -92,7 +92,7 @@ protected:
 	bool validateInputPins() { return true; }
 };
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 struct SetupPlaybackTests
 {
 	SetupPlaybackTests(std::string videoPath,
@@ -954,7 +954,7 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264
 	BOOST_TEST(lastFrameTS == 1673420640350);
 }
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 {

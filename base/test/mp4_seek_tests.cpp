@@ -14,7 +14,7 @@
 #include "FrameContainerQueue.h"
 #include "H264Metadata.h"
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 #include "CudaCommon.h"
 #include "H264Decoder.h"
 #endif
@@ -57,7 +57,7 @@ struct SetupSeekTests
 		BOOST_TEST(sink->init());
 	}
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 	SetupSeekTests(std::string videoPath,
 		bool reInitInterval, bool direction, bool parseFS)
 	{
@@ -172,7 +172,7 @@ struct SetupSeekTests
 	boost::shared_ptr<PipeLine> p = nullptr;
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
 	boost::shared_ptr<ExternalSink> sink;
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 	boost::shared_ptr<H264Decoder> decoder;
 #endif
 };
@@ -1346,7 +1346,7 @@ BOOST_AUTO_TEST_CASE(read_loop_h264)
 	BOOST_TEST(imgFrame->timestamp == 1673420640350);
 }
 
-#ifdef ifdef APRA_CUDA_ENABLED 
+#ifdef APRA_CUDA_ENABLED 
 BOOST_AUTO_TEST_CASE(seek_inside_cache_fwd)
 {
 #ifdef __x86_64__
