@@ -40,6 +40,7 @@
 #include "Frame.h"
 #include <fstream>
 #include <linux/videodev2.h>
+#include <queue>
 
 /**
  * @brief Class representing a buffer.
@@ -192,7 +193,7 @@ public:
      * @param[in] stream Input stream
      * @param[in] buffer Buffer class pointer
      */
-    void read_input_chunk_frame_sp(frame_sp inpFrame, Buffer *buffer);
+    void read_input_chunk_frame_sp(void* inputFrameBuffer, size_t inputFrameSize, Buffer *buffer);
 
     /**
      * @brief Writes a plane data of the buffer to a file.
@@ -257,7 +258,7 @@ public:
      *         EOS is detected by the decoder and all the buffers are dequeued;
      *         else the decode process continues running.
      */
-    bool decode_process(context_t &ctx, frame_sp frame);
+    bool decode_process(context_t &ctx, void* inputFrameBuffer, size_t inputFrameSize);
 
     /**
      * @brief Dequeues an event.
@@ -381,9 +382,11 @@ public:
      */
     int subscribe_event(int fd, uint32_t type, uint32_t id, uint32_t flags);
 
-    int process(frame_sp inputFrame);
+    int process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS);
 
     bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+
+    bool initializeDecoder();
 
     void closeAllThreads(frame_sp eosFrame);
 protected:
@@ -392,4 +395,5 @@ protected:
     std::function<frame_sp()> makeFrame;
     std::function<void(frame_sp &)> send;
     int ret = 0;
+    std::queue<uint64_t> framesTimestampEntry;
 };

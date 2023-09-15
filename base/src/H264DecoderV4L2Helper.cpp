@@ -282,10 +282,10 @@ Buffer::fill_buffer_plane_format(uint32_t *num_planes,
     return 0;
 }
  
-void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer * buffer)
+void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, size_t inputFrameSize, Buffer * buffer)
 {
-    memcpy(buffer->planes[0].data,inpFrame->data(),inpFrame->size());
-    buffer->planes[0].bytesused = static_cast<uint32_t>(inpFrame->size());
+    memcpy(buffer->planes[0].data,inputFrameBuffer,inputFrameSize);
+    buffer->planes[0].bytesused = static_cast<uint32_t>(inputFrameSize);
 }
 
 /**
@@ -315,6 +315,8 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
     {
         return -1;
     }
+    outputFrame->timestamp = framesTimestampEntry.front();
+    framesTimestampEntry.pop();
 
     send(outputFrame);
 
@@ -782,7 +784,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     return NULL;
 }
  
- bool h264DecoderV4L2Helper::decode_process(context_t& ctx, frame_sp frame)
+ bool h264DecoderV4L2Helper::decode_process(context_t& ctx, void* inputFrameBuffer, size_t inputFrameSize)
 {
     bool allow_DQ = true;
     int ret_val;
@@ -822,7 +824,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
  
         if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
         {
-            read_input_chunk_frame_sp(frame, buffer);
+            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
         }
         else
         {
@@ -1131,6 +1133,10 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     makeFrame = _makeFrame;
     mBuffer.reset(new Buffer());
     send =  _send;
+    return initializeDecoder();
+}
+bool h264DecoderV4L2Helper::initializeDecoder()
+{
     int flags = 0;
     struct v4l2_capability caps;
     struct v4l2_buffer op_v4l2_buf;
@@ -1305,9 +1311,19 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
 
     return true;
 }
-int h264DecoderV4L2Helper::process(frame_sp inputFrame)
+int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
 {
     uint32_t idx = 0;
+    if(inputFrameSize)
+	framesTimestampEntry.push(inputFrameTS);
+
+    if(inputFrameSize && ctx.eos && ctx.got_eos)
+    {
+        ctx.eos = false;
+        ctx.got_eos = false;
+        initializeDecoder();
+    }
+
     while (!ctx.eos && !ctx.in_error && idx < ctx.op_num_buffers)
     {
         struct v4l2_buffer queue_v4l2_buf_op;
@@ -1320,7 +1336,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
         buffer = ctx.op_buffers[idx];
         if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
         {
-            read_input_chunk_frame_sp(inputFrame, buffer);
+            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
         }
         else
         {
@@ -1353,7 +1369,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
     }
  
     // Dequeue and queue loop on output plane.
-    ctx.eos = decode_process(ctx,inputFrame);
+    ctx.eos = decode_process(ctx,inputFrameBuffer, inputFrameSize);
    
     /* For blocking mode, after getting EOS on output plane,
     ** dequeue all the queued buffers on output plane.
@@ -1389,7 +1405,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
 }
 void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
 {
-    process(eosFrame);
+    process(eosFrame->data(), eosFrame->size(), 0);
     if (ctx.fd != -1)
     {
         if (ctx.dec_capture_thread)

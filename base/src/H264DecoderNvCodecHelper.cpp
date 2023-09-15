@@ -731,17 +731,17 @@ void H264DecoderNvCodecHelper::ConvertToPlanar(uint8_t* pHostFrame, int nWidth, 
 	}
 }
 
-void H264DecoderNvCodecHelper::process(frame_sp& frame)
+void H264DecoderNvCodecHelper::process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
 {
-	if(!frame->isEmpty())
-	framesTimestampEntry.push(frame->timestamp);
+	if(inputFrameSize)
+	framesTimestampEntry.push(inputFrameTS);
 	uint8_t* inputBuffer = NULL;
 	int inputBufferSize = 0;
 	frame_sp outputFrame;
 	uint8_t** outBuffer;
 	
-	inputBuffer = static_cast<uint8_t*>(frame->data());
-	inputBufferSize = frame->size();
+	inputBuffer = static_cast<uint8_t*>(inputFrameBuffer);
+	inputBufferSize = inputFrameSize;
 	
 	int nFrameReturned = 0, nFrame = 0;
 	bool bOutPlanar = true;

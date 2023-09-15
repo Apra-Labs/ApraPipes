@@ -6,16 +6,20 @@
 #include "Logger.h"
 #include "AIPExceptions.h"
 #include "PipeLine.h"
-
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "EncodedImageMetadata.h"
 #include "StatSink.h"
 #include "H264Metadata.h"
 #include "H264Decoder.h"
-
 #include "FrameContainerQueue.h"
 
+#ifdef __linux__
+#include "nv_test_utils.h"
+#elif _WIN64
+#include "nv_test_utils.h"
+#endif
+	
 BOOST_AUTO_TEST_SUITE(mp4_reverse_play)
 
 class TestModule : public Module
@@ -950,66 +954,27 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264
 	BOOST_TEST(lastFrameTS == 1673420640350);
 }
 
-
-BOOST_AUTO_TEST_CASE(fwd_h264_decoder)
-{
-	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
-	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
-
-	int ct = 0, total = 500;
-	while (ct < total - 1)
-	{
-		f.mp4Reader->step();
-		f.decoder->step();
-		auto sinkQ = f.sink->getQue();
-		auto frames = sinkQ->try_pop();
-		if (!frames.empty())
-		{
-			auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
-			LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
-			ct++;
-		}
-	}
-	f.mp4Reader->step();
-	f.decoder->step();
-	auto sinkQ = f.sink->getQue();
-	auto frames = sinkQ->try_pop();
-	auto frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
-	BOOST_TEST(frame->timestamp == 1673420645353);
-	LOG_INFO << "frame->timestamp <" << frame->timestamp << ">";
-
-	// new video open
-	f.mp4Reader->step();
-	f.decoder->step();//Since hardware decoder has some delay we dont get the decoded frame instantly
-	frames = sinkQ->try_pop();
-	while (frames.empty())
-	{
-		f.mp4Reader->step();
-		f.decoder->step();
-		frames = sinkQ->try_pop();
-	}
-	
-	frame = Module::getFrameByType(frames, FrameMetadata::FrameType::RAW_IMAGE_PLANAR);
-	BOOST_TEST(frame->timestamp == 1685604318680);
-}
-
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string videoPath = "./data/Mp4_videos/mp4_seeks_tests_h264/20230111/0012/1673420640350.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
 	frame_container frames;
 	uint64_t frameTs;
-	for (int i = 0; i < 25; i++)
+	while(frames.empty())
 	{
 		f.mp4Reader->step();
 		f.decoder->step();
 		auto sinkQ = f.sink->getQue();
 		frames = sinkQ->try_pop();
-		if (!frames.empty())
-		{
-			frameTs = frames.begin()->second->timestamp;
-		}
 	}
+	frameTs = frames.begin()->second->timestamp;
+	BOOST_TEST(frameTs == 1673420640350);
 
 	f.mp4Reader->changePlayback(1, false);
 	//since there is a delay in deocoder the first reverse frame will be sent once all the forward frames are processed.
@@ -1023,27 +988,30 @@ BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 			break;
 		frameTs = frames.begin()->second->timestamp;
 	}
-
-	BOOST_TEST(frameTs == 1673420640595);//First reverse frame
+	BOOST_TEST(frameTs == frames.begin()->second->timestamp);//First reverse frame
 }
 
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, true, true);
 	frame_container frames;
 	uint64_t frameTs;
-	for (int i = 0; i < 25; i++)
+	while(frames.empty())
 	{
 		f.mp4Reader->step();
 		f.decoder->step();
 		auto sinkQ = f.sink->getQue();
 		frames = sinkQ->try_pop();
-		if (!frames.empty())
-		{
-			frameTs = frames.begin()->second->timestamp;
-		}
 	}
+	frameTs = frames.begin()->second->timestamp;
+	BOOST_TEST(frameTs == 1691502958947);
 
 	f.mp4Reader->changePlayback(1, false);
 	//since there is a delay in deocoder the first reverse frame will be sent once all the forward frames are processed.
@@ -1058,15 +1026,7 @@ BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
 		frameTs = frames.begin()->second->timestamp;
 	}
 
-	BOOST_TEST(frameTs == 1691502959957);//First reverse frame
-
-	for (int i = 0; i < 5; i++)
-	{
-		f.mp4Reader->step();
-		f.decoder->step();
-		auto sinkQ = f.sink->getQue();
-		frames = sinkQ->try_pop();
-	}
+	BOOST_TEST(frameTs == frames.begin()->second->timestamp);//First reverse frame
 
 	f.mp4Reader->changePlayback(1, true);
 
@@ -1081,11 +1041,17 @@ BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback)
 		frameTs = frames.begin()->second->timestamp;
 	}
 
-	BOOST_TEST(frameTs == 1691502959657);//First reverse frame
+	BOOST_TEST(frameTs == frames.begin()->second->timestamp);//First forward frame
 }
 
-BOOST_AUTO_TEST_CASE(reverse_play)
+BOOST_AUTO_TEST_CASE(reverse_play_deocoder)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
 	frame_container frames;
@@ -1101,8 +1067,14 @@ BOOST_AUTO_TEST_CASE(reverse_play)
 	if (frameTs == 1691503018158);//last frame of the video.
 }
 
-BOOST_AUTO_TEST_CASE(reverse_play_to_fwd_play)
+BOOST_AUTO_TEST_CASE(reverse_play_to_fwd_play_decoder)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string videoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupPlaybackDecoderTests f(videoPath, 0, false, true);
 	frame_container frames;

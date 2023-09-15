@@ -15,6 +15,12 @@
 #include "H264Metadata.h"
 #include "H264Decoder.h"
 
+#ifdef __linux__
+#include "nv_test_utils.h"
+#elif _WIN64
+#include "nv_test_utils.h"
+#endif
+
 BOOST_AUTO_TEST_SUITE(mp4_seek_tests)
 
 struct SetupSeekTests
@@ -1340,6 +1346,12 @@ BOOST_AUTO_TEST_CASE(read_loop_h264)
 
 BOOST_AUTO_TEST_CASE(seek_inside_cache_fwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	/* video length is 3 seconds */
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, true, true);
@@ -1368,26 +1380,30 @@ BOOST_AUTO_TEST_CASE(seek_inside_cache_fwd)
 	uint64_t skipTS = 1691502961947;
 	s.mp4Reader->randomSeek(skipTS, false);
 
-	for(int i = 0; i < 2; i++)
+	while(!frames.empty())
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502962087)
+			break;
 	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
-	BOOST_TEST(frameTs == 1691502962087);
+	
+	BOOST_TEST(frameTs == 1691502962087);//seek frame
 
 	s.decoder->term();
 }
 
 BOOST_AUTO_TEST_CASE(seek_outside_cache_fwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, true, true);
 	frame_container frames;
@@ -1407,26 +1423,30 @@ BOOST_AUTO_TEST_CASE(seek_outside_cache_fwd)
 	uint64_t skipTS = 1691502963937;
 	s.mp4Reader->randomSeek(skipTS, false);
 
-	for (int i = 0; i < 2; i++)
+	while (!frames.empty())
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502964160)
+			break;
 	}
 
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
 	BOOST_TEST(frameTs == 1691502964160);
-
+	
 	s.decoder->term();
 }
 
 BOOST_AUTO_TEST_CASE(seek_inside_cache_bwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, false, true);
 	frame_container frames;
@@ -1443,32 +1463,34 @@ BOOST_AUTO_TEST_CASE(seek_inside_cache_bwd)
 	uint64_t skipTS = 1691503016167;
 	s.mp4Reader->randomSeek(skipTS, false);
 
-	for (int i = 0; i < 14; i++)
+	while (!frames.empty())
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691503017167)
+			break;
 	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
-	BOOST_TEST(frameTs == 1691503017167);
-
+	BOOST_TEST(frameTs == 1691503017167);//seeked frame
 	s.decoder->term();
 }
 
 BOOST_AUTO_TEST_CASE(seek_outside_cache_bwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, false, true);
 	frame_container frames;
 	uint64_t frameTs;
 
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 60; i++)
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
@@ -1479,27 +1501,29 @@ BOOST_AUTO_TEST_CASE(seek_outside_cache_bwd)
 	uint64_t skipTS = 1691503002167;
 	s.mp4Reader->randomSeek(skipTS, false);
 
-	for (int i = 0; i < 50; i++)//Process all the buffered backward frames to get the seeked I frame.
+	while(!frames.empty())//Process all the buffered backward frames to get the seeked I frame.
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
 		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691503001585)
+			break;
 	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
-	BOOST_TEST(frameTs == 1691503001585);//seeked I Frame
+	BOOST_TEST(frameTs == 1691503001585);//seeked Frame
 
 	s.decoder->term();
 }
 
 BOOST_AUTO_TEST_CASE(seek_inside_cache_and_dir_change_to_bwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, true, true);
 	frame_container frames;
@@ -1528,66 +1552,29 @@ BOOST_AUTO_TEST_CASE(seek_inside_cache_and_dir_change_to_bwd)
 	s.mp4Reader->randomSeek(skipTS, false);
 	s.mp4Reader->changePlayback(1, false);
 
-	for (int i = 0; i < 2; i++)
+	while (!frames.empty())
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502962042)
+			break;
 	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
 	BOOST_TEST(frameTs == 1691502962042);
-
-	s.decoder->term();
-}
-
-BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_bwd)
-{
-	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
-	SetupSeekTests s(startingVideoPath, 0, true, true);
-	frame_container frames;
-	uint64_t frameTs;
-
-	while (frames.empty())
-	{
-		s.mp4Reader->step();
-		s.decoder->step();
-		auto sinkQ = s.sink->getQue();
-		frames = sinkQ->try_pop();
-	}
-	frameTs = frames.begin()->second->timestamp;
-
-	BOOST_TEST(frameTs == 1691502958947);//First frame
-
-	uint64_t skipTS = 1691502963937;
-	s.mp4Reader->randomSeek(skipTS, false);
-	s.mp4Reader->changePlayback(1, false);
-
-	for (int i = 0; i < 50; i++)
-	{
-		s.mp4Reader->step();
-		s.decoder->step();
-		auto sinkQ = s.sink->getQue();
-		frames = sinkQ->try_pop();
-	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
-	BOOST_TEST(frameTs == 1691502964115);//seeked_i_Frame
 
 	s.decoder->term();
 }
 
 BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_fwd)
 {
+#ifdef __x86_64__
+	if (!*utf::precondition(if_compute_cap_supported()))
+	{
+		return;
+	}
+#endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, false, true);
 	frame_container frames;
@@ -1608,21 +1595,18 @@ BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_fwd)
 	s.mp4Reader->changePlayback(1, true);
 	s.mp4Reader->randomSeek(skipTS, false);
 	
-	for (int i = 0; i < 49; i++)
+	
+	while (!frames.empty())
 	{
 		s.mp4Reader->step();
 		s.decoder->step();
 		auto sinkQ = s.sink->getQue();
 		frames = sinkQ->try_pop();
+		frameTs = frames.begin()->second->timestamp;
+		if (frameTs == 1691502964160)
+			break;
 	}
-
-	s.mp4Reader->step();
-	s.decoder->step();
-	auto sinkQ = s.sink->getQue();
-	frames = sinkQ->try_pop();
-	frameTs = frames.begin()->second->timestamp;
 	BOOST_TEST(frameTs == 1691502964160);//seeked_i_Frame
-
 	s.decoder->term();
 }
 

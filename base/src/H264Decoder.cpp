@@ -61,9 +61,9 @@ public:
 		}
 	}
 
-	void compute(frame_sp& frame)
+	void compute(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
 	{
-		helper->process(frame);
+		helper->process(inputFrameBuffer, inputFrameSize, inputFrameTS);
 	}
 
 #ifdef ARM64
@@ -160,10 +160,10 @@ bool H264Decoder::term()
 	return Module::term();
 }
 
-frame_sp H264Decoder::prependSpsPps(frame_sp& iFrame)
+void* H264Decoder::prependSpsPps(frame_sp& iFrame, size_t& spsPpsFrameSize)
 {
-	auto spsPpsFrame = makeFrame(iFrame->size() + spsBuffer.size() + ppsBuffer.size() + 8);
-	uint8_t* spsPpsFrameBuffer = reinterpret_cast<uint8_t*>(spsPpsFrame->data());
+	spsPpsFrameSize = iFrame->size() + spsBuffer.size() + ppsBuffer.size() + 8;
+	uint8_t* spsPpsFrameBuffer = new uint8_t[spsPpsFrameSize];
 	char NaluSeprator[4] = { 00 ,00, 00 ,01 };
 	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
 	memcpy(spsPpsFrameBuffer, nalu, 4);
@@ -175,8 +175,8 @@ frame_sp H264Decoder::prependSpsPps(frame_sp& iFrame)
 	memcpy(spsPpsFrameBuffer, ppsBuffer.data(), ppsBuffer.size());
 	spsPpsFrameBuffer += ppsBuffer.size();
 	memcpy(spsPpsFrameBuffer, iFrame->data(), iFrame->size());
-	spsPpsFrame->timestamp = iFrame->timestamp;
-	return spsPpsFrame;
+	spsPpsFrameBuffer = spsPpsFrameBuffer - spsBuffer.size() - ppsBuffer.size() - 8;
+	return spsPpsFrameBuffer;
 }
 
 void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop)
@@ -246,14 +246,15 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 			if (!latestForwardGop.empty() && naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 			{
 				auto iFrame = latestForwardGop.front();
-				auto spsPpsFrame = prependSpsPps(iFrame);
-				mDetail->compute(spsPpsFrame);
+				size_t spsPpsFrameSize;
+				auto spsPpsFrameBuffer = prependSpsPps(iFrame, spsPpsFrameSize);
+				mDetail->compute(spsPpsFrameBuffer, spsPpsFrameSize, iFrame->timestamp);
 				latestForwardGop.pop_front();
 				for (auto itr = latestForwardGop.begin(); itr != latestForwardGop.end(); itr++)
 				{
 					if (itr->get()->timestamp < frame->timestamp)
 					{
-						mDetail->compute(*itr);
+						mDetail->compute(itr->get()->data(), itr->get()->size(), itr->get()->timestamp);
 					}
 				}
 			}
@@ -263,7 +264,7 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 				{
 					if (itr->get()->timestamp < frame->timestamp)
 					{
-						mDetail->compute(*itr);
+						mDetail->compute(itr->get()->data(), itr->get()->size(), itr->get()->timestamp);
 					}
 				}
 			}
@@ -278,7 +279,7 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 		latestForwardGop.clear();
 	}
 	latestForwardGop.emplace_back(frame);
-	
+
 	// If direction changed to forward in the middle of GOP (Even the latest gop of backward was half and not decoded) , Then we drop the P frames until next I frame.
 	// We also remove the entries of P frames from the incomingFramesTSQ.
 	short latestForwardGopFirstFrameNaluType = H264Utils::getNALUType((char*)latestForwardGop.begin()->get()->data());
@@ -288,7 +289,7 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 		return;
 	}
 
-	mDetail->compute(frame);
+	mDetail->compute(frame->data(), frame->size(), frame->timestamp);
 	return;
 }
 
@@ -297,8 +298,9 @@ void H264Decoder::decodeFrameFromBwdGOP()
 	if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE && prevFrameInCache)
 	{
 		auto iFrame = backwardGopBuffer.front().back();
-		auto spsPpsFrame = prependSpsPps(iFrame);
-		mDetail->compute(spsPpsFrame);
+		size_t spsPpsFrameSize;
+		auto spsPpsFrameBuffer = prependSpsPps(iFrame, spsPpsFrameSize);
+		mDetail->compute(spsPpsFrameBuffer, spsPpsFrameSize, iFrame->timestamp);
 		backwardGopBuffer.front().pop_back();
 		prevFrameInCache = false;
 	}
@@ -306,7 +308,7 @@ void H264Decoder::decodeFrameFromBwdGOP()
 	{
 		// For reverse play we sent the frames to the decoder in reverse, As the last frame added in the deque should be sent first (Example : P,P,P,P,P,P,I)
 		auto itr = backwardGopBuffer.front().rbegin();
-		mDetail->compute(*itr);
+		mDetail->compute(itr->get()->data(), itr->get()->size(), itr->get()->timestamp);
 		backwardGopBuffer.front().pop_back();
 	}
 	if (backwardGopBuffer.size() >= 1 && backwardGopBuffer.front().empty())
@@ -385,8 +387,9 @@ bool H264Decoder::process(frame_container& frames)
 		if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
 			auto iFrame = backwardGopBuffer.front().back();
-			auto spsPpsFrame = prependSpsPps(iFrame);
-			mDetail->compute(spsPpsFrame);
+			size_t spsPpsFrameSize;
+			auto spsPpsFrameBuffer = prependSpsPps(iFrame, spsPpsFrameSize);
+			mDetail->compute(spsPpsFrameBuffer, spsPpsFrameSize, iFrame->timestamp);
 			backwardGopBuffer.front().pop_back();
 		}
 		// the buffered GOPs in bwdGOPBuffer needs to need to be processed first
@@ -407,7 +410,7 @@ bool H264Decoder::process(frame_container& frames)
 		if (!mDirection && latestBackwardGop.empty() && backwardGopBuffer.empty())
 		{
 			auto eosFrame = frame_sp(new EmptyFrame());
-			mDetail->compute(eosFrame);
+			mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
 			flushDecoderFlag = false;
 		}
 
@@ -435,7 +438,7 @@ bool H264Decoder::process(frame_container& frames)
 		if (mDirection && !prevFrameInCache)
 		{
 			auto eosFrame = frame_sp(new EmptyFrame());
-			mDetail->compute(eosFrame);
+			mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
 			flushDecoderFlag = false;
 		}
 		prevFrameInCache = true;
@@ -471,7 +474,7 @@ void H264Decoder::sendDecodedFrame()
 		// We send empty frame to the decoder , in order to flush out all the frames from decoder.
 		// This is to handle some cases whenever the direction change happens and to get out the latest few frames sent to decoder.
 		auto eosFrame = frame_sp(new EmptyFrame());
-		mDetail->compute(eosFrame);
+		mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
 		flushDecoderFlag = false;
 	}
 
@@ -591,7 +594,7 @@ bool H264Decoder::shouldTriggerSOS()
 bool H264Decoder::processEOS(string& pinId)
 {
 	auto frame = frame_sp(new EmptyFrame());
-	mDetail->compute(frame);
+	mDetail->compute(frame->data(), frame->size(), frame->timestamp);
 	mShouldTriggerSOS = true;
 	return true;
 }
