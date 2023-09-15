@@ -11,13 +11,11 @@
 #include "EncodedImageMetadata.h"
 #include "StatSink.h"
 #include "H264Metadata.h"
-#include "H264Decoder.h"
 #include "FrameContainerQueue.h"
 
-#ifdef __x86_64__
+#ifdef ifdef APRA_CUDA_ENABLED 
 #include "CudaCommon.h"
-#elif _WIN64
-#include "CudaCommon.h"
+#include "H264Decoder.h"
 #endif
 	
 BOOST_AUTO_TEST_SUITE(mp4_reverse_play)
@@ -94,6 +92,7 @@ protected:
 	bool validateInputPins() { return true; }
 };
 
+#ifdef ifdef APRA_CUDA_ENABLED 
 struct SetupPlaybackTests
 {
 	SetupPlaybackTests(std::string videoPath,
@@ -135,6 +134,7 @@ struct SetupPlaybackTests
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
 	boost::shared_ptr<TestModule1> sink = nullptr;
 };
+#endif
 
 struct SetupPlaybackDecoderTests
 {
@@ -954,6 +954,8 @@ BOOST_AUTO_TEST_CASE(step_only_parse_disabled_video_cov_with_reinitInterval_h264
 	BOOST_TEST(lastFrameTS == 1673420640350);
 }
 
+#ifdef ifdef APRA_CUDA_ENABLED 
+
 BOOST_AUTO_TEST_CASE(fwd_h264_decoder_change_playback_bwd)
 {
 #ifdef __x86_64__
@@ -1148,5 +1150,6 @@ BOOST_AUTO_TEST_CASE(reverse_play_to_fwd_play_decoder)
 		frameTs = frames.begin()->second->timestamp;
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

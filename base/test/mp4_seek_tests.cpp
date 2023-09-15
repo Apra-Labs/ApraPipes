@@ -13,12 +13,10 @@
 #include "EncodedImageMetadata.h"
 #include "FrameContainerQueue.h"
 #include "H264Metadata.h"
-#include "H264Decoder.h"
 
-#ifdef __x86_64__
+#ifdef ifdef APRA_CUDA_ENABLED 
 #include "CudaCommon.h"
-#elif _WIN64
-#include "CudaCommon.h"
+#include "H264Decoder.h"
 #endif
 
 BOOST_AUTO_TEST_SUITE(mp4_seek_tests)
@@ -59,6 +57,7 @@ struct SetupSeekTests
 		BOOST_TEST(sink->init());
 	}
 
+#ifdef ifdef APRA_CUDA_ENABLED 
 	SetupSeekTests(std::string videoPath,
 		bool reInitInterval, bool direction, bool parseFS)
 	{
@@ -98,6 +97,7 @@ struct SetupSeekTests
 		BOOST_TEST(decoder->init());
 		BOOST_TEST(sink->init());
 	}
+#endif
 
 	~SetupSeekTests()
 	{
@@ -172,7 +172,9 @@ struct SetupSeekTests
 	boost::shared_ptr<PipeLine> p = nullptr;
 	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
 	boost::shared_ptr<ExternalSink> sink;
+#ifdef ifdef APRA_CUDA_ENABLED 
 	boost::shared_ptr<H264Decoder> decoder;
+#endif
 };
 
 BOOST_AUTO_TEST_CASE(no_seek)
@@ -1344,6 +1346,7 @@ BOOST_AUTO_TEST_CASE(read_loop_h264)
 	BOOST_TEST(imgFrame->timestamp == 1673420640350);
 }
 
+#ifdef ifdef APRA_CUDA_ENABLED 
 BOOST_AUTO_TEST_CASE(seek_inside_cache_fwd)
 {
 #ifdef __x86_64__
@@ -1628,7 +1631,6 @@ BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_fwd)
 				return;
 			}
 		}
-		}
 #endif
 	std::string startingVideoPath = "./data/Mp4_videos/h264_reverse_play/20230708/0019/1691502958947.mp4";
 	SetupSeekTests s(startingVideoPath, 0, false, true);
@@ -1664,5 +1666,6 @@ BOOST_AUTO_TEST_CASE(seek_outside_cache_and_dir_change_to_fwd)
 	BOOST_TEST(frameTs == 1691502964160);//seeked_i_Frame
 	s.decoder->term();
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
