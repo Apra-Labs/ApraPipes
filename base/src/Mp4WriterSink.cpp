@@ -238,6 +238,7 @@ protected:
 	struct mp4_mux_track_params params, metatrack_params;
 	struct mp4_video_decoder_config vdc;
 	struct mp4_mux_sample mux_sample;
+	struct mp4_mux_prepend_buffer prepend_buffer;
 	struct mp4_track_sample sample;
 
 	int mHeight;
@@ -274,13 +275,12 @@ public:
 	const_buffer ppsBuffer;
 	const_buffer spsBuff;
 	const_buffer ppsBuff;
-	short typeFound;
 
 	DetailH264(Mp4WriterSinkProps& _props) : DetailAbs(_props)
 	{
 	}
 	bool write(frame_container& frames);
-	uint8_t* AppendSizeInNaluSeprator(short naluType, frame_sp frame, size_t& frameSize);
+	void modifyFrameOnNewSPSPPS(short naluType, frame_sp frame, uint8_t*& spsPpsdata, size_t& spsPpsSize, uint8_t*& frameData, size_t& frameSize);
 
 	bool set_video_decoder_config()
 	{
@@ -368,11 +368,11 @@ bool DetailJpeg::write(frame_container& frames)
 	return true;
 }
 
-uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264ImageFrame, size_t& frameSize)
+void DetailH264::modifyFrameOnNewSPSPPS(short naluType, frame_sp inH264ImageFrame, uint8_t*& spsPpsBuffer, size_t& spsPpsSize, uint8_t*& frameData, size_t& frameSize)
 {
 	char NaluSeprator[3] = { 00 ,00, 00 };
 	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
-	uint spsPpsSize = spsBuffer.size() + ppsBuffer.size() + 8;
+	spsPpsSize = spsBuffer.size() + ppsBuffer.size() + 8;
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		frameSize = inH264ImageFrame->size();
@@ -382,44 +382,42 @@ uint8_t* DetailH264::AppendSizeInNaluSeprator(short naluType, frame_sp inH264Ima
 	{
 		frameSize = inH264ImageFrame->size() + spsPpsSize;
 	}
-	uint8_t* newBuffer = new uint8_t[frameSize];
+	spsPpsBuffer = new uint8_t[spsPpsSize + 4];
 	//add the size of sps to the 4th byte of sps's nalu seprator (00 00 00 SpsSize 67)
-	memcpy(newBuffer, nalu, 3);
-	newBuffer += 3;
-	newBuffer[0] = spsBuffer.size();
-	newBuffer += 1;
-	memcpy(newBuffer, spsBuffer.data(), spsBuffer.size());
-	newBuffer += spsBuffer.size();
+	memcpy(spsPpsBuffer, nalu, 3);
+	spsPpsBuffer += 3;
+	spsPpsBuffer[0] = spsBuffer.size();
+	spsPpsBuffer += 1;
+	memcpy(spsPpsBuffer, spsBuffer.data(), spsBuffer.size());
+	spsPpsBuffer += spsBuffer.size();
 
 	//add the size of sps to the 4th byte of pps's nalu seprator (00 00 00 PpsSize 68)
-	memcpy(newBuffer, nalu, 3);
-	newBuffer += 3;
-	newBuffer[0] = ppsBuffer.size();
-	newBuffer += 1;
-	memcpy(newBuffer, ppsBuffer.data(), ppsBuffer.size());
-	newBuffer += ppsBuffer.size();
+	memcpy(spsPpsBuffer, nalu, 3);
+	spsPpsBuffer += 3;
+	spsPpsBuffer[0] = ppsBuffer.size();
+	spsPpsBuffer += 1;
+	memcpy(spsPpsBuffer, ppsBuffer.data(), ppsBuffer.size());
+	spsPpsBuffer += ppsBuffer.size();
 
 	//add the size of I frame to the I frame's nalu seprator
-	newBuffer[0] = (frameSize - spsPpsSize - 4 >> 24) & 0xFF;
-	newBuffer[1] = (frameSize - spsPpsSize - 4 >> 16) & 0xFF;
-	newBuffer[2] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
-	newBuffer[3] = frameSize - spsPpsSize - 4 & 0xFF;
-	newBuffer += 4;
+	spsPpsBuffer[0] = (frameSize - spsPpsSize - 4 >> 24) & 0xFF;
+	spsPpsBuffer[1] = (frameSize - spsPpsSize - 4 >> 16) & 0xFF;
+	spsPpsBuffer[2] = (frameSize - spsPpsSize - 4 >> 8) & 0xFF;
+	spsPpsBuffer[3] = frameSize - spsPpsSize - 4 & 0xFF;
 
-	uint8_t* tempBuffer = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
+	frameData = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
-		tempBuffer = tempBuffer + spsPpsSize + 4;
+		frameData = frameData + spsPpsSize + 4;
+		frameSize = frameSize - spsPpsSize - 4;
 	}
 	else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
-		tempBuffer = tempBuffer + 4;
+		frameData = frameData + 4;
+		frameSize -= 4;
 	}
-	//copy I frame data to the buffer
-	memcpy(newBuffer, tempBuffer, frameSize - spsPpsSize - 4);
-	//set the pointer to the starting of frame
-	newBuffer -= spsPpsSize + 4;
-	return newBuffer;
+	spsPpsBuffer = spsPpsBuffer - spsPpsSize;
+	spsPpsSize += 4;
 }
 
 bool DetailH264::write(frame_container& frames)
@@ -434,6 +432,7 @@ bool DetailH264::write(frame_container& frames)
 
 	auto mFrameBuffer = const_buffer(inH264ImageFrame->data(), inH264ImageFrame->size());
 	auto ret = H264Utils::parseNalu(mFrameBuffer);
+	short typeFound;
 	tie(typeFound, spsBuff, ppsBuff) = ret;
 
 	if ((spsBuff.size() !=0 ) || (ppsBuff.size() != 0))
@@ -442,10 +441,10 @@ bool DetailH264::write(frame_container& frames)
 		spsBuffer = spsBuff;
 		ppsBuffer = ppsBuff;
 	}
-
+	auto naluType = H264Utils::getNALUType((char*)mFrameBuffer.data());
 	std::string _nextFrameFileName;
 	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName,inH264ImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag,mFrameType, typeFound);
+		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag,mFrameType, naluType);
 
 	if (_nextFrameFileName == "")
 	{
@@ -453,38 +452,49 @@ bool DetailH264::write(frame_container& frames)
 		return false;
 	}
 
-	uint8_t* frameData = reinterpret_cast<uint8_t*>(inH264ImageFrame->data());
-	// assign size of the frame to the NALU seperator for playability in default players
-	frameData[0] = (inH264ImageFrame->size() - 4 >> 24) & 0xFF;
-	frameData[1] = (inH264ImageFrame->size() - 4 >> 16) & 0xFF;
-	frameData[2] = (inH264ImageFrame->size() - 4 >> 8) & 0xFF;
-	frameData[3] = inH264ImageFrame->size() - 4 & 0xFF;
-
-	mux_sample.buffer = frameData;
-	mux_sample.len = inH264ImageFrame->size();
-	auto naluType = H264Utils::getNALUType((char*)mFrameBuffer.data());
+	uint8_t* spsPpsBuffer = nullptr;
+	size_t spsPpsSize;
+	uint8_t* frameData = nullptr;
 	size_t frameSize;
 	if (mNextFrameFileName != _nextFrameFileName)
 	{
 		mNextFrameFileName = _nextFrameFileName;
 		initNewMp4File(mNextFrameFileName);
-		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+		if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
-			//add sps and pps to I-frame and change the Nalu seprator according to Mp4 format
-			auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
-			mux_sample.buffer = newBuffer;
+			// new video 
+			modifyFrameOnNewSPSPPS(naluType, inH264ImageFrame, spsPpsBuffer, spsPpsSize, frameData, frameSize);
+			prepend_buffer.buffer = spsPpsBuffer;
+			prepend_buffer.len = spsPpsSize;
+			mux_sample.buffer = frameData;
 			mux_sample.len = frameSize;
 		}
 	}
-	
-	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	else if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
-		//change the Nalu seprator according to Mp4 format
-		auto newBuffer = AppendSizeInNaluSeprator(naluType, inH264ImageFrame, frameSize);
-		mux_sample.buffer = newBuffer;
+		// new sps pps
+		modifyFrameOnNewSPSPPS(naluType, inH264ImageFrame, spsPpsBuffer, spsPpsSize, frameData, frameSize);
+		prepend_buffer.buffer = spsPpsBuffer;
+		prepend_buffer.len = spsPpsSize;
+		mux_sample.buffer = frameData;
 		mux_sample.len = frameSize;
 	}
+	else
+	{
+		uint8_t* naluData = new uint8_t[4];
+		// assign size of the frame to the NALU seperator for playability in default players
+		naluData[0] = (inH264ImageFrame->size() - 4 >> 24) & 0xFF;
+		naluData[1] = (inH264ImageFrame->size() - 4 >> 16) & 0xFF;
+		naluData[2] = (inH264ImageFrame->size() - 4 >> 8) & 0xFF;
+		naluData[3] = inH264ImageFrame->size() - 4 & 0xFF;
 
+		prepend_buffer.buffer = naluData;
+		prepend_buffer.len = 4;
+
+		uint8_t* frameData = static_cast<uint8_t*>(inH264ImageFrame->data());
+		mux_sample.buffer = frameData + 4;
+		mux_sample.len = inH264ImageFrame->size() - 4;
+	}
 
 	if (syncFlag)
 	{
@@ -493,13 +503,11 @@ bool DetailH264::write(frame_container& frames)
 		syncFlag = false;
 	}
 
-	if (typeFound == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE)
+	isKeyFrame = false;
+
+	if (naluType == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		isKeyFrame = true;
-	}
-	else
-	{
-		isKeyFrame = false;
 	}
 
 	addMetadataInVideoHeader(inH264ImageFrame);
@@ -519,7 +527,7 @@ bool DetailH264::write(frame_container& frames)
 	lastFrameTS = inH264ImageFrame->timestamp;
 	mux_sample.dts = mux_sample.dts + static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
 
-	mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
+	mp4_mux_track_add_sample_with_prepend_buffer(mux, videotrack, &prepend_buffer, &mux_sample);
 
 	if (metatrack != -1 && mMetadataEnabled)
 	{
