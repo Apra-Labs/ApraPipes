@@ -4382,25 +4382,7 @@ struct Raw3DData
 {0.0013935305, -0.011261113, 0.1330998} };
 };
 
-BOOST_AUTO_TEST_CASE(basic)
-{
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));
-	auto rawImagePinId = m1->addOutputPin(metadata);
-	auto stlMod = boost::shared_ptr<STLRendererSink>(new STLRendererSink(STLRendererSinkProps()));
-	m1->setNext(stlMod);
-
-	BOOST_TEST(m1->init());
-	BOOST_TEST(stlMod->init());
-	
-	auto frame = m1->makeFrame(10, rawImagePinId);
-	ApraData* data = new ApraData(frame->data(), 10, 0);
-	m1->produceExternalFrame(data);
-	stlMod->step();
-	boost::this_thread::sleep_for(boost::chrono::seconds(30));
-}
-
-BOOST_AUTO_TEST_CASE(stl_data)
+BOOST_AUTO_TEST_CASE(stl_data_mem)
 {
 	Raw3DData raw3DData;
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
@@ -4424,8 +4406,31 @@ BOOST_AUTO_TEST_CASE(stl_data)
 	ApraData* data = new ApraData(frame->data(), dataSize, 0);
 	m1->produceExternalFrame(data);
 	stlMod->step();
-
+	delete data;
 	LOG_INFO << "Rendering finished";
+}
+
+
+BOOST_AUTO_TEST_CASE(stl_file)
+{
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));
+	auto rawImagePinId = m1->addOutputPin(metadata);
+	auto stlMod = boost::shared_ptr<STLRendererSink>(new STLRendererSink(STLRendererSinkProps()));
+	m1->setNext(stlMod);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(stlMod->init());
+
+	auto frame = m1->makeFrame(10, rawImagePinId);
+	ApraData* data = new ApraData(frame->data(), 10, 0);
+	m1->produceExternalFrame(data);
+	stlMod->step();
+	delete data;
+	if (frame->data())
+	{
+		LOG_INFO << "Rendering done";
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()
