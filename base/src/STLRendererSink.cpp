@@ -37,7 +37,6 @@ public:
 		LOG_INFO << "nPoints <" << points->GetNumberOfPoints() << ">";
 		LOG_INFO << "nTriangles <" << triangles->GetNumberOfCells() << ">";
 
-		// we will render this polyData
 		vtkNew<vtkPolyData> polyData;
 		polyData->SetPoints(points);
 		polyData->SetPolys(triangles);
@@ -46,35 +45,40 @@ public:
 		vtkNew<vtkPolyDataMapper> meshMapper;
 		meshMapper->SetInputData(polyData);
 		meshMapper->Update();
-		//meshMapper->SetScalarRange(polyData->GetScalarRange());
+		
 		vtkNew<vtkActor> meshActor;
 		meshActor->SetMapper(meshMapper);
-		// meshActor->GetProperty()->SetColor(1.0, 1.0, 1.0); // side effects of setting diffuse and specular color
 
 		vtkNew<vtkNamedColors> colors;
 		meshActor->GetProperty()->SetDiffuse(0.8);
 		//auto col = colors->GetColor3d("LightSteelBlue").GetData();
-		meshActor->GetProperty()->SetDiffuseColor(vtkColor3d(0.69, 0.76, 0.87).GetData()); 
-		meshActor->GetProperty()->SetSpecular(0.3);
-		meshActor->GetProperty()->SetSpecularPower(60.0);
+		double meshDiffuseColor[3] = { mProps.meshDiffuseColor[0] / 255.0, 
+			mProps.meshDiffuseColor[1] / 255.0, 
+			mProps.meshDiffuseColor[2] / 255.0 };
+		meshActor->GetProperty()->SetDiffuseColor(vtkColor3d(meshDiffuseColor[0], meshDiffuseColor[1], meshDiffuseColor[2]).GetData()); 
+		meshActor->GetProperty()->SetSpecular(mProps.meshSpecularCoefficient);
+		meshActor->GetProperty()->SetSpecularPower(mProps.meshSpecularPower);
 
 		// rendering
 		vtkNew<vtkCamera> camera;
-		camera->SetPosition(10, 10, 10); // todo: prop
-		camera->SetFocalPoint(100, 100, 100);
+		camera->SetPosition(mProps.cameraPosition[0], mProps.cameraPosition[1], mProps.cameraPosition[2]);
+		camera->SetFocalPoint(mProps.cameraFocalPoint[0], mProps.cameraFocalPoint[1], mProps.cameraPosition[2]);
 
 		vtkNew<vtkRenderer> renderer;
 		vtkNew<vtkRenderWindow> renWin;
 		renWin->AddRenderer(renderer);
-		renWin->SetWindowName("mesh"); // todo: prop
+		renWin->SetWindowName(mProps.winName.c_str());
 
 		vtkNew<vtkRenderWindowInteractor> iren;
 		iren->SetRenderWindow(renWin);
 
 		renderer->AddActor(meshActor);
-		renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData()); // todo: prop
+		double bkgColor[3] = { mProps.bkgColor[0] / 255.0,
+			mProps.bkgColor[1] / 255.0,
+			mProps.bkgColor[2] / 255.0 };
+		renderer->SetBackground(vtkColor3d(bkgColor[0], bkgColor[1], bkgColor[2]).GetData());
 
-		renWin->SetSize(800, 600); // todo: prop
+		renWin->SetSize(mProps.winWidth, mProps.winHeight);
 
 		// interact with data
 		renWin->Render();
@@ -153,7 +157,6 @@ bool STLRendererSink::process(frame_container &frames)
 	std::vector<ApraPoint3f> points;
 	Utils::deSerialize<std::vector<ApraPoint3f>>(points, frame->data(), frame->size());
 	mDetail->renderMesh(points);
-	//mDetail->readAndRenderMesh();
 	return true;
 }
 
