@@ -295,6 +295,7 @@ SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
+	include/ApraPoint3f.h
 	include/ApraLines.h
 	include/ImageViewerModule.h
 	include/ImageDecoderCV.h
