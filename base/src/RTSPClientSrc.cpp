@@ -154,6 +154,7 @@ public:
             //LOG_ERROR << "RTSP Time is "<< outFrames.begin()->second->timestamp;
             myModule->send(outFrames);
         return true;
+        }
     }
 
     bool isConncected() const { return bConnected; }
