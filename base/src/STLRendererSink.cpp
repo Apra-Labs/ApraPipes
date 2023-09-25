@@ -12,9 +12,12 @@ public:
 		mProps = _props;
 	}
 
-	~Detail(){}
+	~Detail()
+	{
+		LOG_ERROR << "Ending the STLRenderer::DEtail destructor";
+	}
 
-	void Detail::renderMesh(vector<ApraPoint3f> &points3D)
+	void renderMesh(vector<ApraPoint3f> &points3D)
 	{
 		// https://www.kitware.com/a-tour-of-vtk-pointer-classes/
 
@@ -83,9 +86,11 @@ public:
 		// interact with data
 		renWin->Render();
 		iren->Start();
+		iren->GetRenderWindow()->Finalize();
+		iren->TerminateApp();
 	}
 
-	void Detail::readAndRenderMesh()
+	void readAndRenderMesh()
 	{
 		std::string stlfile = "data/RandomMeshTestScene1.stl";
 
@@ -134,7 +139,6 @@ STLRendererSink::STLRendererSink(STLRendererSinkProps props) :
 
 STLRendererSink::~STLRendererSink()
 {
-	
 }
 
 bool STLRendererSink::init()
