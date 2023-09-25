@@ -315,7 +315,8 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
     {
         return -1;
     }
-
+    outputFrame->timestamp = incomingTimeStamp.front();
+    incomingTimeStamp.pop();
     send(outputFrame);
 
     return 0;
@@ -1306,6 +1307,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
 int h264DecoderV4L2Helper::process(frame_sp inputFrame)
 {
     uint32_t idx = 0;
+    incomingTimeStamp.push(inputFrame->timestamp);
     while (!ctx.eos && !ctx.in_error && idx < ctx.op_num_buffers)
     {
         struct v4l2_buffer queue_v4l2_buf_op;

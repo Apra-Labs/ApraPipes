@@ -54,6 +54,7 @@ public:
 	bool term();
 	bool closeWindow();
 	bool createWindow(int width, int height);
+	bool showRender = true;
 
 protected:
 	bool process(frame_container &frames);
@@ -64,4 +65,5 @@ protected:
 	bool handleCommand(Command::CommandType type, frame_sp &frame);
 	boost::shared_ptr<DetailRenderer> mDetail;
 	ImageViewerModuleProps mProps;
+	uint64_t lastRenderTimestamp = 0;
 };

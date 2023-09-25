@@ -125,7 +125,7 @@ public:
 			auto ret = H264Utils::parseNalu(mFrameBuffer);
 			tie(typeFound, spsBuff, ppsBuff) = ret;
 
-			BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
+			//BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
 
 			if (spsBuff.size() != 0)
 			{
@@ -757,6 +757,26 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		queryStartTime = 0;
 		queryEndTime = 0;
 		setState(queryStartTime, queryEndTime);
+	}
+	//This part is done only when Control module is connected 
+	if (controlModule != nullptr)
+	{
+		//Send commmand to NVRControl module 
+		if (mState->queueObject->mQueue.size() != 0)
+		{
+			MMQtimestamps cmd;
+			auto front = mState->queueObject->mQueue.begin();
+			if (front != mState->queueObject->mQueue.end())
+			{
+				uint64_t firstTimeStamp = front->first;
+				cmd.firstTimeStamp = firstTimeStamp;
+			}
+			auto back = mState->queueObject->mQueue.crbegin();
+			uint64_t lastTimeStamp = back->first;
+			cmd.lastTimeStamp = lastTimeStamp;
+			controlModule->queueCommand(cmd);
+		}
+		return true;
 	}
 	return true;
 }

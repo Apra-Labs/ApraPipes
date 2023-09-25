@@ -31,16 +31,16 @@ public:
 
 	virtual bool view() = 0;
 
-	bool eglInitializer(uint32_t _height, uint32_t _width)
+	bool eglInitializer(uint32_t _height, uint32_t _width , uint32_t _x_offset , uint32_t _y_offset)
 	{
 #if defined(__arm__) || defined(__aarch64__)
 		uint32_t displayHeight, displayWidth;
 		NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
 		if (props.height != 0 && props.width != 0)
 		{
-			props.x_offset += (displayWidth - props.width) / 2;
-			props.y_offset += (displayHeight - props.height) / 2;
-			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, props.width, props.height, props.x_offset, props.y_offset, props.displayOnTop);
+			_x_offset += (displayWidth - props.width) / 2;
+			_y_offset += (displayHeight - props.height) / 2;
+			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, props.width, props.height, _x_offset, _y_offset, props.displayOnTop);
 		}
 		else
 		{
@@ -94,6 +94,8 @@ public:
 public:
 	frame_sp inputFrame;
 	ImageViewerModuleProps props;
+	uint32_t x_offset = 0;
+	uint32_t y_offset = 0;
 
 protected:
 	cv::Mat mImg;
@@ -134,11 +136,11 @@ public:
 
 bool ImageViewerModule::validateInputPins()
 {
-	if (getNumberOfInputPins() != 1)
-	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
-		return false;
-	}
+	// if (getNumberOfInputPins() != 1)
+	// {
+	// 	LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+	// 	return false;
+	// }
 	framemetadata_sp metadata = getFirstInputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	FrameMetadata::MemType inputMemType = metadata->getMemType();
@@ -189,11 +191,28 @@ bool ImageViewerModule::term() { return Module::term(); }
 bool ImageViewerModule::process(frame_container &frames)
 {
 	mDetail->inputFrame = frames.cbegin()->second;
+	auto TimeStamp = mDetail->inputFrame->timestamp;
+	
 	if (isFrameEmpty(mDetail->inputFrame))
 	{
 		return true;
 	}
-	mDetail->view();
+	auto newTime  = mDetail->inputFrame->timestamp;
+	if((showRender) && (newTime > lastRenderTimestamp))
+	{
+		mDetail->view();
+		lastRenderTimestamp = mDetail->inputFrame->timestamp;
+	}
+	auto myId = Module::getId();
+	if ((controlModule != nullptr) && (myId == "ImageViewerModule_3"))
+	{
+		Rendertimestamp cmd;
+		auto myTime = frames.cbegin()->second->timestamp;
+		cmd.currentTimeStamp = myTime;
++		controlModule->queueCommand(cmd);
+		return true;
+	}
+
 	return true;
 }
 
@@ -225,7 +244,7 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 		throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
 	}
 
-	mDetail->eglInitializer(height, width);
+	mDetail->eglInitializer(height, width , mProps.x_offset , mProps.y_offset);
 #else
 	mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata));
 #endif
@@ -240,6 +259,13 @@ bool ImageViewerModule::shouldTriggerSOS()
 bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame)
 {
 #if defined(__arm__) || defined(__aarch64__)
+	if (type == Command::CommandType::NVRGoLive)
+    {
+        NVRGoLive cmd;
+        getCommand(cmd, frame);
+		mDetail->destroyWindow();
+        return true;
+    }
 	if (type == Command::CommandType::DeleteWindow)
 	{
 		mDetail->destroyWindow();
@@ -249,9 +275,26 @@ bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame
 	{
 		EglRendererCreateWindow cmd;
 		getCommand(cmd, frame);
-		mDetail->eglInitializer(cmd.width, cmd.height);
+		mDetail->eglInitializer(cmd.height, cmd.width , mProps.x_offset , mProps.y_offset);
 		return true;
 	}
+
+	else if (type == Command::CommandType::NVRCommandView)
+    {
+        NVRCommandView cmd;
+        getCommand(cmd, frame);
+        if(cmd.doView)
+        {
+            showRender = true;
+            return true;
+        }
+        else
+        {
+            showRender = false;
+            return true;
+        }
+        return true;
+    }
 	return Module::handleCommand(type, frame);
 #else
 	return true;
@@ -272,8 +315,8 @@ bool ImageViewerModule::createWindow(int width, int height)
 {
 #if defined(__arm__) || defined(__aarch64__)
 	EglRendererCreateWindow cmd;
-	cmd.width = width;
-	cmd.height = height;
+	cmd.width = 720;
+	cmd.height = 480;
 	return queueCommand(cmd);
 #else
 	return true;

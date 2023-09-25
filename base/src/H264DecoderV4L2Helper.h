@@ -392,4 +392,5 @@ protected:
     std::function<frame_sp()> makeFrame;
     std::function<void(frame_sp &)> send;
     int ret = 0;
+    std::queue <uint64_t> incomingTimeStamp;
 };

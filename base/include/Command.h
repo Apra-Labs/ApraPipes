@@ -21,9 +21,11 @@ public:
 		NVRCommandExport,
 		NVRCommandExportMMQ,
 		NVRCommandView,
+		NVRGoLive,
 		NVRCommandExportView,
 		MP4WriterLastTS,
-		MMQtimestamps
+		MMQtimestamps,
+		Rendertimestamp
 	};
 
 	Command()
@@ -414,6 +416,27 @@ private:
 	}
 };
 
+class NVRGoLive : public Command
+{
+public:
+	NVRGoLive() : Command(Command::CommandType::NVRGoLive)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
 class NVRCommandExportView : public Command
 {
 public:
@@ -497,6 +520,34 @@ private:
 		ar& moduleId;
 	}
 };
+
+class Rendertimestamp : public Command
+{
+public:
+	Rendertimestamp() : Command(Command::CommandType::Rendertimestamp)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(currentTimeStamp) +sizeof(moduleId);
+	}
+
+	uint64_t currentTimeStamp = 0;
+	std::string moduleId;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& currentTimeStamp;
+		ar& moduleId;
+	}
+};
+
+
 
 class PlayPauseCommand : public Command
 {
