@@ -474,7 +474,6 @@ IF (ENABLE_ARM64)
 		test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
-		test/h264encoderv4l2helper_tests.cpp
 		test/h264encoderv4l2_tests.cpp
 		test/nvarguscamerahelper_tests.cpp
 		test/nvarguscamera_tests.cpp

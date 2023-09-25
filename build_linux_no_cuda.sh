@@ -1,5 +1,9 @@
+chmod +x build_scripts/build_dependencies_linux_no_cuda.sh
+./build_scripts/build_dependencies_linux_no_cuda.sh
+
 chmod +x base/fix-vcpkg-json.sh
-./base/fix-vcpkg-json.sh true fasle false
+./base/fix-vcpkg-json.sh true false false
+
 cd vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg integrate install
