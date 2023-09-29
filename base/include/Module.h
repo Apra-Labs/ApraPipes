@@ -180,7 +180,7 @@ public:
 	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
 	template<class T>
-	bool queueCommand(T& cmd)
+	bool queueCommand(T& cmd, bool priority = false)
 	{
 		auto size = cmd.getSerializeSize();
 		auto frame = makeCommandFrame(size, mCommandMetadata);
@@ -190,8 +190,14 @@ public:
 		// add to que
 		frame_container frames;
 		frames.insert(make_pair("command", frame));
-		Module::push(frames);
-
+		if(priority)
+		{
+			Module::push_back(frames);
+		}
+		else
+		{
+			Module::push(frames);
+		}
 		return true;
 	}
 protected:
@@ -344,6 +350,7 @@ private:
 	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
+	bool push_back(frame_container frameContainer);
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
 	
 	bool addEoPFrame(frame_container& frames);

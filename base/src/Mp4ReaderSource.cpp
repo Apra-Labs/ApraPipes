@@ -1235,7 +1235,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
-		if (type != H264Utils::H264_NAL_TYPE_END_OF_SEQ)
+		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
 			auto tempFrame = makeFrame(imgSize + spsSize + ppsSize + 8, h264ImagePinId);
 			uint8_t* tempFrameBuffer = reinterpret_cast<uint8_t*>(tempFrame->data());
@@ -1244,8 +1244,12 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			memcpy(tempFrameBuffer, imgFrame->data(), imgSize);
 			imgSize += spsSize + ppsSize + 8;
 			imgFrame = tempFrame;
+			mState.shouldPrependSpsPps = false;
 		}
-		mState.shouldPrependSpsPps = false;
+		else if(type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		{
+			mState.shouldPrependSpsPps = false;
+		}
 	}
 
 	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, h264ImagePinId);
@@ -1256,6 +1260,8 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		frameData[3] = 0x1;
 		frameData[spsSize + 7] = 0x1;
+		frameData[spsSize + ppsSize + 8] = 0x0;
+		frameData[spsSize + ppsSize + 9] = 0x0;
 		frameData[spsSize + ppsSize + 10] = 0x0;
 		frameData[spsSize + ppsSize + 11] = 0x1;
 	}

@@ -561,6 +561,12 @@ bool Module::push(frame_container frameContainer)
 	return true;
 }
 
+bool Module::push_back(frame_container frameContainer)
+{
+	mQue->push_back(frameContainer);
+	return true;
+}
+
 bool Module::try_push(frame_container frameContainer)
 {
 	auto rc = mQue->try_push(frameContainer);
@@ -600,6 +606,7 @@ bool Module::isNextModuleQueFull()
 	{
 		if (it->second->mQue->isFull())
 		{
+			auto modID = it->second->myId;
 			ret = true;
 			break;
 		}
@@ -720,10 +727,12 @@ bool Module::send(frame_container &frames, bool forceBlockingPush)
 		// next module push
 		if (!forceBlockingPush)
 		{
+			//LOG_ERROR << "forceBlocking Push myID" << myId << "sending to <" << nextModuleId;
 			mQuePushStrategy->push(nextModuleId, requiredPins);
 		}
 		else
 		{
+			//LOG_ERROR << "normal push myID" << myId << "sending to <" << nextModuleId;
 			mModules[nextModuleId]->push(requiredPins);
 		}
 	}
@@ -1083,7 +1092,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	}
 
 	auto cmd = RelayCommand(nextModuleId, open);
-	return queueCommand(cmd);
+	return queueCommand(cmd, true);
 }
 
 void Module::flushQueRecursive()
@@ -1189,6 +1198,8 @@ bool Module::step()
 	else
 	{
 		mProfiler->startPipelineLap();
+		
+		//LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " << Module::getPipelineFps() << mProps->fps;
 		auto frames = mQue->pop();
 		preProcessNonSource(frames);
 

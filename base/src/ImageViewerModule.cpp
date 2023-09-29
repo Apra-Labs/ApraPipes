@@ -190,6 +190,11 @@ bool ImageViewerModule::term() { return Module::term(); }
 
 bool ImageViewerModule::process(frame_container &frames)
 {
+	auto myId = Module::getId();
+	if(myId == "ImageViewerModule_3")
+	{
+	//	LOG_ERROR<<"Check Me";
+	}
 	mDetail->inputFrame = frames.cbegin()->second;
 	auto TimeStamp = mDetail->inputFrame->timestamp;
 	
@@ -198,12 +203,12 @@ bool ImageViewerModule::process(frame_container &frames)
 		return true;
 	}
 	auto newTime  = mDetail->inputFrame->timestamp;
-	if((showRender) && (newTime > lastRenderTimestamp))
+	if((showRender))// && (newTime > lastRenderTimestamp))
 	{
 		mDetail->view();
-		lastRenderTimestamp = mDetail->inputFrame->timestamp;
+		//lastRenderTimestamp = mDetail->inputFrame->timestamp;
 	}
-	auto myId = Module::getId();
+	
 	if ((controlModule != nullptr) && (myId == "ImageViewerModule_3"))
 	{
 		Rendertimestamp cmd;

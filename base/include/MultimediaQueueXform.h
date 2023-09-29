@@ -44,7 +44,8 @@ public:
 	bool handlePropsChange(frame_sp& frame);
 	boost::shared_ptr<State> mState;
 	MultimediaQueueXformProps mProps;
-
+	boost::shared_ptr<FrameContainerQueue> getQue();
+	void extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& FrameQueue);
 protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
@@ -61,4 +62,10 @@ private:
 	uint64_t queryStartTime = 0;
 	uint64_t queryEndTime = 0;
 	FrameMetadata::FrameType mFrameType;
+	using sys_clock = std::chrono::system_clock;
+	sys_clock::time_point frame_begin;
+	std::chrono::nanoseconds myTargetFrameLen;
+	std::chrono::nanoseconds myNextWait;
+	uint64_t latestFrameExportedFromHandleCmd = 0;
+	bool initDone = false;
 };

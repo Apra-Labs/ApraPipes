@@ -8,7 +8,7 @@
 #include "H264Utils.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
-
+#include "FrameContainerQueue.h"
 class FramesQueue
 {
 public:
@@ -46,7 +46,7 @@ public:
 				largestTimeStamp = it->second->timestamp;
 			}
 		}
-
+		//BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
 			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushToNextModule))
@@ -540,7 +540,7 @@ void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, string& pinId
 {
 	Module::addInputPin(metadata, pinId);
 	mOutputPinId = pinId;
-	addOutputPin(metadata, pinId);
+	//addOutputPin(metadata, pinId);
 }
 
 bool MultimediaQueueXform::init()
@@ -555,8 +555,7 @@ bool MultimediaQueueXform::init()
 	{
 		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
-
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState->queueObject.reset(new IndependentFramesQueue(mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime));
 		}
@@ -567,7 +566,7 @@ bool MultimediaQueueXform::init()
 		}
 	}
 	mState.reset(new Idle(mState->queueObject));
-
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
 	return true;
 }
 
@@ -606,7 +605,7 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 
 	else
 	{
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState.reset(new ExportJpeg(mState->queueObject,
 				[&](frame_container& frames, bool forceBlockingPush = false)
@@ -627,8 +626,44 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 
 }
 
+void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
+{
+	//loop over frame container
+	auto frames = frameQueue->pop();
+	for (auto itr = frames.begin(); itr != frames.end(); itr++)
+	{
+		if (itr->second->isCommand())
+		{
+			auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
+			if(cmdType == Command::CommandType::Relay || cmdType == Command::CommandType::MultimediaQueueXform)
+			{
+				handleCommand(cmdType, itr->second);
+			}
+			else
+			{
+				frame_container commandFrame;
+				commandFrame.insert(make_pair(itr->first, itr->second));
+				frameQueue->push_back(commandFrame);
+			}
+		}
+		else
+		{
+			frame_container framesContainer;
+			framesContainer.insert(make_pair(itr->first, itr->second));
+			mState->queueObject->enqueue(framesContainer, pushToNextModule);
+		}
+	}
+}
+
+boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
+{
+	return Module::getQue();
+}
+
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
+	initDone = false;
 	if (type == Command::CommandType::MultimediaQueueXform)
 	{
 		MultimediaQueueXformCommand cmd;
@@ -654,21 +689,45 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						pushToNextModule = false;
 						queryStartTime = it->first;
 						queryStartTime--;
-						BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for queue to be free";
+						//BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for queue to be free";
 						return true;
 					}
 					else
 					{
-						mState->exportSend(it->second);
+						auto moduleQueue = getQue();
+						if(moduleQueue->size())
+					    {
+							extractFramesAndEnqueue(moduleQueue);
+					    }
+						if (!initDone)
+						{
+							myNextWait = myTargetFrameLen;
+							frame_begin = sys_clock::now();
+							initDone = true;
+						}
+						
+						//LOG_ERROR << "multimediaQueueSize = " << queueSize;
+						frame_container outFrames;
+						auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+						outFrames.insert(make_pair(outputId, it->second.begin()->second));
+						//LOG_ERROR<<"sENDING FROM HANDLE COMMAND AT TIME "<< it->first;
+						mState->exportSend(outFrames);
+						latestFrameExportedFromHandleCmd = it->first;
+						std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+						if (myNextWait > frame_len)
+						{
+							std::this_thread::sleep_for(myNextWait - frame_len);
+						}
+						myNextWait += myTargetFrameLen;
 					}
 				}
 			}
 		}
-
 		if (mState->Type == mState->EXPORT)
 		{
 			uint64_t tOld = 0, tNew = 0;
-			getQueueBoundaryTS(tOld, tNew);
+			//getQueueBoundaryTS(tOld, tNew);
+			tNew = latestFrameExportedFromHandleCmd;
 
 			if (endTimeSaved > tNew)
 			{
@@ -686,6 +745,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		}
 		return true;
 	}
+	LOG_ERROR <<"RELAY COMMAND WAS HERE";
 	return Module::handleCommand(type, frame);
 }
 
@@ -704,6 +764,7 @@ bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
 bool MultimediaQueueXform::process(frame_container& frames)
 {
 	mState->queueObject->enqueue(frames, pushToNextModule);
+	//LOG_ERROR << frames.begin()->second->timestamp;
 	if (mState->Type == State::EXPORT)
 	{
 		uint64_t tOld, tNew = 0;
@@ -729,12 +790,36 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					pushToNextModule = false;
 					queryStartTime = it->first;
 					queryStartTime--;
-					BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
+					//BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
 					return true;
 				}
 				else
 				{
-					mState->exportSend(it->second);
+					auto moduleQueue = getQue();
+					if(moduleQueue->size())
+					{
+						extractFramesAndEnqueue(moduleQueue);
+					}
+					if (!initDone)
+					{
+						myNextWait = myTargetFrameLen;
+						frame_begin = sys_clock::now();
+						initDone = true;
+					}
+					
+					//LOG_ERROR << "multimediaQueueSize = " << queueSize;	
+					frame_container outFrames;
+					auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+					outFrames.insert(make_pair(outputId, it->second.begin()->second));
+					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
+					mState->exportSend(outFrames);
+					std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+					if (myNextWait > frame_len)
+					{
+						//LOG_ERROR << "is it sleeping in process";
+						std::this_thread::sleep_for(myNextWait - frame_len);
+					}
+					myNextWait += myTargetFrameLen;
 				}
 			}
 
