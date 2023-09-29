@@ -50,9 +50,12 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool validateInputOutputPins();
-
+	boost::shared_ptr<FrameContainerQueue> getQue();
+	void enqueueFramesAndProcessCommandFrame();
 private:
 	void getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew);
+	void pacerStart();
+	void pacerEnd();
 	std::string mOutputPinId;
 	bool pushToNextModule = true;
 	bool reset = false;
@@ -61,4 +64,10 @@ private:
 	uint64_t queryStartTime = 0;
 	uint64_t queryEndTime = 0;
 	FrameMetadata::FrameType mFrameType;
+	using sys_clock = std::chrono::system_clock;
+	sys_clock::time_point frame_begin;
+	std::chrono::nanoseconds myTargetFrameLen;
+	std::chrono::nanoseconds myNextWait;
+	uint64_t latestFrameExportedFromHandleCmd = 0;
+	bool initDone = false;
 };

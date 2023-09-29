@@ -8,6 +8,7 @@
 #include "H264Utils.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
+#include "FrameContainerQueue.h"
 
 class FramesQueue
 {
@@ -556,7 +557,7 @@ bool MultimediaQueueXform::init()
 		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
 
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState->queueObject.reset(new IndependentFramesQueue(mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime));
 		}
@@ -606,29 +607,57 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 
 	else
 	{
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState.reset(new ExportJpeg(mState->queueObject,
 				[&](frame_container& frames, bool forceBlockingPush = false)
-			{return send(frames, forceBlockingPush); }));
+				{return send(frames, forceBlockingPush); }));
 		}
 
 		else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 		{
 			mState.reset(new ExportH264(mState->queueObject,
 				[&](frame_container& frames, bool forceBlockingPush = false)
-			{return send(frames, forceBlockingPush); },
+				{return send(frames, forceBlockingPush); },
 				[&](size_t size, string pinID)
-			{ return makeFrame(size, pinID); },
+				{ return makeFrame(size, pinID); },
 				[&](int type)
-			{return getInputPinIdByType(type); }, mOutputPinId));
+				{return getInputPinIdByType(type); }, mOutputPinId));
 		}
 	}
 
 }
 
+void MultimediaQueueXform::enqueueFramesAndProcessCommandFrame()
+{
+	//loop over frame container
+	auto moduleQueue = getQue();
+	auto frames = moduleQueue->pop();
+	frame_container framesContainer;
+	for (auto itr = frames.begin(); itr != frames.end(); itr++)
+	{
+		if (itr->second->isCommand())
+		{
+			auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
+			handleCommand(cmdType, itr->second);
+		}
+		else
+		{
+			framesContainer.insert(make_pair(itr->first, itr->second));
+		}
+	}
+	mState->queueObject->enqueue(framesContainer, pushToNextModule);
+}
+
+boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
+{
+	return Module::getQue();
+}
+
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
+	initDone = false;
 	if (type == Command::CommandType::MultimediaQueueXform)
 	{
 		MultimediaQueueXformCommand cmd;
@@ -659,7 +688,11 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					}
 					else
 					{
+						pacerStart();
 						mState->exportSend(it->second);
+						pacerEnd();
+						latestFrameExportedFromHandleCmd = it->first;
+						enqueueFramesAndProcessCommandFrame();
 					}
 				}
 			}
@@ -668,8 +701,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		if (mState->Type == mState->EXPORT)
 		{
 			uint64_t tOld = 0, tNew = 0;
-			getQueueBoundaryTS(tOld, tNew);
-
+			tNew = latestFrameExportedFromHandleCmd;
 			if (endTimeSaved > tNew)
 			{
 				reset = false;
@@ -734,7 +766,11 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				}
 				else
 				{
+					pacerStart();
 					mState->exportSend(it->second);
+					pacerEnd();
+					latestFrameExportedFromHandleCmd = it->first;
+					enqueueFramesAndProcessCommandFrame();
 				}
 			}
 
@@ -795,4 +831,24 @@ void  MultimediaQueueXform::setProps(MultimediaQueueXformProps _props)
 	{
 		BOOST_LOG_TRIVIAL(info) << "Currently in export state, wait until export is completed";
 	}
+}
+
+void MultimediaQueueXform::pacerStart()
+{
+	if (!initDone)
+	{
+		myNextWait = myTargetFrameLen;
+		frame_begin = sys_clock::now();
+		initDone = true;
+	}
+}
+
+void MultimediaQueueXform::pacerEnd()
+{
+	std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+	if (myNextWait > frame_len)
+	{
+		std::this_thread::sleep_for(myNextWait - frame_len);
+	}
+	myNextWait += myTargetFrameLen;
 }
