@@ -561,12 +561,6 @@ bool Module::push(frame_container frameContainer)
 	return true;
 }
 
-bool Module::push_back(frame_container frameContainer)
-{
-	mQue->push_back(frameContainer);
-	return true;
-}
-
 bool Module::try_push(frame_container frameContainer)
 {
 	auto rc = mQue->try_push(frameContainer);
@@ -1089,7 +1083,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	}
 
 	auto cmd = RelayCommand(nextModuleId, open);
-	return queueCommand(cmd, true);
+	return queueCommand(cmd);
 }
 
 void Module::flushQueRecursive()
