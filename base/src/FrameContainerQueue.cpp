@@ -9,6 +9,11 @@ void FrameContainerQueue::push(frame_container item)
 	bounded_buffer<frame_container>::push(item);
 }
 
+void FrameContainerQueue::push_back(frame_container item)
+{
+	bounded_buffer<frame_container>::push_back(item);
+}
+
 void FrameContainerQueue::push_drop_oldest(frame_container item)
 {
 	bounded_buffer<frame_container>::push_drop_oldest(item);
