@@ -632,21 +632,24 @@ void MultimediaQueueXform::enqueueFramesAndProcessCommandFrame()
 {
 	//loop over frame container
 	auto moduleQueue = getQue();
-	auto frames = moduleQueue->pop();
-	frame_container framesContainer;
-	for (auto itr = frames.begin(); itr != frames.end(); itr++)
+	if (moduleQueue->size())
 	{
-		if (itr->second->isCommand())
+		auto frames = moduleQueue->pop();
+		frame_container framesContainer;
+		for (auto itr = frames.begin(); itr != frames.end(); itr++)
 		{
-			auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
-			handleCommand(cmdType, itr->second);
+			if (itr->second->isCommand())
+			{
+				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
+				handleCommand(cmdType, itr->second);
+			}
+			else
+			{
+				framesContainer.insert(make_pair(itr->first, itr->second));
+			}
 		}
-		else
-		{
-			framesContainer.insert(make_pair(itr->first, itr->second));
-		}
+		mState->queueObject->enqueue(framesContainer, pushToNextModule);
 	}
-	mState->queueObject->enqueue(framesContainer, pushToNextModule);
 }
 
 boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
