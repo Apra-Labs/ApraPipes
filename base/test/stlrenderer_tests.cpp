@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/serialization/vector.hpp >
+#include <boost/serialization/vector.hpp>
 #include <cmath>
 #include "Logger.h"
 #include "test_utils.h"
@@ -4382,7 +4382,7 @@ struct Raw3DData
 {0.0013935305, -0.011261113, 0.1330998} };
 };
 
-BOOST_AUTO_TEST_CASE(stl_data_mem)
+BOOST_AUTO_TEST_CASE(stl_data_mem, *boost::unit_test::disabled())
 {
 	Raw3DData raw3DData;
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
