@@ -303,7 +303,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
  * memory-mapped virtual address of the plane with the access
  * pointed by the flag into the void data-pointer.
  * Before the mapped memory is accessed, a call to NvBufferMemSyncForCpu()
- * with the virtual address returned must be present before any access is made
+* with the virtual address returned must be present before any access is made
  * by the CPU to the buffer.
  *
  * After reading the data, the memory-mapped virtual address of the
@@ -371,7 +371,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
     return ret_val;
 }
  
- void h264DecoderV4L2Helper::query_set_capture(context_t * ctx ,int &f_d)
+ void h264DecoderV4L2Helper::query_set_capture(context_t * ctx)
 {
     struct v4l2_format format;
     struct v4l2_crop crop;
@@ -638,13 +638,11 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     ** Format and buffers are now set on capture.
     */
 
-    auto outputFrame = m_nThread->makeFrame();
-    auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
-    int f_d = dmaOutFrame->getFd();
+
 
     if (!ctx->in_error)
     {
-       m_nThread->query_set_capture(ctx, f_d);
+       m_nThread->query_set_capture(ctx);
     }
  
     /* Check for resolution event to again
@@ -659,7 +657,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             switch (event.type)
             {
                 case V4L2_EVENT_RESOLUTION_CHANGE:
-                    m_nThread->query_set_capture(ctx, f_d);
+                    m_nThread->query_set_capture(ctx);
                     continue; 
             }
         }
@@ -729,7 +727,9 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 /* Blocklinear to Pitch transformation is required
                 ** to dump the raw decoded buffer data.
                 */
-                
+                auto outputFrame = m_nThread->makeFrame();
+                auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
+                int f_d = dmaOutFrame->getFd();
                 ret_val = NvBufferTransform(decoded_buffer->planes[0].fd,f_d, &transform_params);
                 if (ret_val == -1)
                 {

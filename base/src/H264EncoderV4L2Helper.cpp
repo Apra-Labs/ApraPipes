@@ -314,6 +314,8 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
     auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
     frame->setMetadata(h264Metadata);
     frame_container frames;
+    frame->timestamp = incomingTimeStamp.front();
+    incomingTimeStamp.pop();
     frames.insert(make_pair(h264FrameOutputPinId, frame));
 
     if (enableMotionVectors)
@@ -336,6 +338,7 @@ void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index,
 
 bool H264EncoderV4L2Helper::process(frame_sp& frame)
 {
+    incomingTimeStamp.push(frame->timestamp);
     auto buffer = mOutputPlane->getFreeBuffer();
     if (!buffer)
     {

@@ -221,5 +221,12 @@ bool RTSPClientSrc::validateOutputPins() {
     return this->getNumberOfOutputPins() > 0;
 }
 void RTSPClientSrc::notifyPlay(bool play) {}
-bool RTSPClientSrc::handleCommand(Command::CommandType type, frame_sp& frame) { return true; }
+bool RTSPClientSrc::handleCommand(Command::CommandType type, frame_sp& frame) 
+{
+    if (type == Command::CommandType::Relay)
+	{
+        return Module::handleCommand(type, frame);
+    }
+    return true; 
+}
 bool RTSPClientSrc::handlePropsChange(frame_sp& frame) { return true; }

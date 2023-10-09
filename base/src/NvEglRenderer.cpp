@@ -104,6 +104,7 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
         y_offset = 0;
     }
 
+    window_attributes.override_redirect = 0;
 
     depth = DefaultDepth(x_display, DefaultScreen(x_display));
 
@@ -136,7 +137,7 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     
     if(window_attributes.override_redirect == 0)
     {
-       XStoreName(x_display, x_window, "ApraEglRenderer");
+       XStoreName(x_display, x_window, "LIVE WINDOW");
        XFlush(x_display);
     
        XSizeHints hints;
@@ -147,9 +148,24 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
        hints.flags = PPosition | PSize;
        XSetWMNormalHints(x_display, x_window, &hints);
 
-       WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
-       XChangeProperty(x_display, x_window, WM_HINTS, WM_HINTS, 32,
-                PropModeReplace, (unsigned char *)&WM_HINTS, 5);
+        // Set Motif hints for window manager
+        Atom _MOTIF_WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
+        if (_MOTIF_WM_HINTS != None)
+        {
+            struct
+            {
+                unsigned long flags;
+                unsigned long functions;
+                unsigned long decorations;
+                long inputMode;
+                unsigned long status;
+            } WM_HINTS = { (1L << 1), 0, 1, 0, 0 }; // Setting decorations to 1 adds title bar
+            XChangeProperty(x_display, x_window, _MOTIF_WM_HINTS, _MOTIF_WM_HINTS, 32,
+                    PropModeReplace, (unsigned char *)&WM_HINTS, 5);
+        }
+
+        Atom WM_DELETE_WINDOW = XInternAtom(x_display, "WM_DELETE_WINDOW", False);
+        XSetWMProtocols(x_display, x_window, &WM_DELETE_WINDOW, 1);
     }
 
     XSelectInput(x_display, (int32_t) x_window, ExposureMask);
