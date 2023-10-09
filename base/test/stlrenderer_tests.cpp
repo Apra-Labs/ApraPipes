@@ -4400,7 +4400,7 @@ BOOST_AUTO_TEST_CASE(stl_data_mem, *boost::unit_test::disabled())
 		auto pt = ApraPoint3f(raw3DData.data[i].x, raw3DData.data[i].y, raw3DData.data[i].z);
 		data3D.push_back(pt);
 	}
-	unsigned int dataSize = 3*sizeof(float)*data3D.size() * 2; // taking 2x margin here.
+	unsigned int dataSize = 3 * sizeof(float) * data3D.size() * 2; // taking 2x margin here.
 	auto frame = m1->makeFrame(dataSize, point3DpinId);
 	Utils::serialize<std::vector<ApraPoint3f>>(data3D, frame->data(), dataSize);
 	ApraData* data = new ApraData(frame->data(), dataSize, 0);

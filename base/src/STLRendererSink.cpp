@@ -7,17 +7,17 @@ class Detail
 private:
 	STLRendererSinkProps mProps;
 public:
-	Detail(STLRendererSinkProps &_props)
+	Detail(STLRendererSinkProps& _props)
 	{
 		mProps = _props;
 	}
 
 	~Detail()
 	{
-		LOG_ERROR << "Ending the STLRenderer::DEtail destructor";
+		LOG_TRACE << "STLRenderer::Detail destructor";
 	}
 
-	void renderMesh(vector<ApraPoint3f> &points3D)
+	void renderMesh(vector<ApraPoint3f>& points3D)
 	{
 		// https://www.kitware.com/a-tour-of-vtk-pointer-classes/
 
@@ -28,37 +28,37 @@ public:
 			auto& pts = points3D[i];
 			points->InsertNextPoint(pts.x, pts.y, pts.z);
 		}
-		
+
 		// define topography using point IDs (indices)
 		vtkNew<vtkCellArray> triangles;
-		for (vtkIdType i = 0; i < nPoints; i += 3) 
+		for (vtkIdType i = 0; i < nPoints; i += 3)
 		{
 			vtkIdType ids[3] = { i, i + 1, i + 2 };
 			triangles->InsertNextCell(3, ids);
 		}
-		
+
 		LOG_INFO << "nPoints <" << points->GetNumberOfPoints() << ">";
 		LOG_INFO << "nTriangles <" << triangles->GetNumberOfCells() << ">";
 
 		vtkNew<vtkPolyData> polyData;
 		polyData->SetPoints(points);
 		polyData->SetPolys(triangles);
-		
+
 		// vtk pipeline
 		vtkNew<vtkPolyDataMapper> meshMapper;
 		meshMapper->SetInputData(polyData);
 		meshMapper->Update();
-		
+
 		vtkNew<vtkActor> meshActor;
 		meshActor->SetMapper(meshMapper);
 
 		vtkNew<vtkNamedColors> colors;
 		meshActor->GetProperty()->SetDiffuse(0.8);
 		//auto col = colors->GetColor3d("LightSteelBlue").GetData();
-		double meshDiffuseColor[3] = { mProps.meshDiffuseColor[0] / 255.0, 
-			mProps.meshDiffuseColor[1] / 255.0, 
+		double meshDiffuseColor[3] = { mProps.meshDiffuseColor[0] / 255.0,
+			mProps.meshDiffuseColor[1] / 255.0,
 			mProps.meshDiffuseColor[2] / 255.0 };
-		meshActor->GetProperty()->SetDiffuseColor(vtkColor3d(meshDiffuseColor[0], meshDiffuseColor[1], meshDiffuseColor[2]).GetData()); 
+		meshActor->GetProperty()->SetDiffuseColor(vtkColor3d(meshDiffuseColor[0], meshDiffuseColor[1], meshDiffuseColor[2]).GetData());
 		meshActor->GetProperty()->SetSpecular(mProps.meshSpecularCoefficient);
 		meshActor->GetProperty()->SetSpecularPower(mProps.meshSpecularPower);
 
@@ -90,45 +90,6 @@ public:
 		iren->TerminateApp();
 	}
 
-	void readAndRenderMesh()
-	{
-		std::string stlfile = "data/RandomMeshTestScene1.stl";
-
-		vtkNew<vtkSTLReader> reader;
-		reader->SetFileName(stlfile.c_str());
-		reader->Update();
-
-		auto outData = reader->GetOutputDataObject(0);
-		auto info = outData->GetInformation();
-
-		// Visualize
-		vtkNew<vtkPolyDataMapper> mapper;
-		mapper->SetInputConnection(reader->GetOutputPort());
-
-		vtkNew<vtkNamedColors> colors;
-		vtkNew<vtkActor> actor;
-		actor->SetMapper(mapper);
-		actor->GetProperty()->SetDiffuse(0.8);
-		actor->GetProperty()->SetDiffuseColor(
-			colors->GetColor3d("LightSteelBlue").GetData());
-		actor->GetProperty()->SetSpecular(0.3);
-		actor->GetProperty()->SetSpecularPower(60.0);
-
-		vtkNew<vtkRenderer> renderer;
-		vtkNew<vtkRenderWindow> renderWindow;
-		renderWindow->AddRenderer(renderer);
-		renderWindow->SetWindowName("ReadSTL");
-
-		vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
-		renderWindowInteractor->SetRenderWindow(renderWindow);
-
-		renderer->AddActor(actor);
-		renderer->SetBackground(colors->GetColor3d("DarkOliveGreen").GetData());
-
-		renderWindow->Render();
-		renderWindowInteractor->Start();
-
-	}
 };
 
 STLRendererSink::STLRendererSink(STLRendererSinkProps props) :
@@ -155,7 +116,7 @@ bool STLRendererSink::term()
 	return true;
 }
 
-bool STLRendererSink::process(frame_container &frames)
+bool STLRendererSink::process(frame_container& frames)
 {
 	auto frame = getFrameByType(frames, FrameMetadata::FrameType::POINTS_3D);
 	std::vector<ApraPoint3f> points;
@@ -194,7 +155,7 @@ bool STLRendererSink::validateInputPins()
 	return true;
 }
 
-bool STLRendererSink::setMetadata(framemetadata_sp &inputMetadata)
+bool STLRendererSink::setMetadata(framemetadata_sp& inputMetadata)
 {
 	return true;
 }
