@@ -50,6 +50,11 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(VTK REQUIRED)
+
+if (NOT VTK_FOUND)
+  message(FATAL_ERROR: "ApraPipes <Unable to find the VTK build folder>")
+endif()
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -161,6 +166,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	src/STLRendererSink.cpp
 )
 
 SET(CORE_FILES_H
@@ -222,6 +228,7 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
+	include/STLRendererSink.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -288,6 +295,7 @@ SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
+	include/ApraPoint3f.h
 	include/ApraLines.h
 	include/ImageViewerModule.h
 	include/ImageDecoderCV.h
@@ -458,7 +466,6 @@ ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
 )
 
-
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -561,6 +568,7 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
+	test/stlrenderer_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -587,6 +595,15 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+message("VTK Libraries <", ${VTK_LIBRARIES}, ">")
+
+# vtk_module_autoinit is needed from vtk-9.0 onwards
+vtk_module_autoinit(
+  TARGETS aprapipes
+  MODULES ${VTK_LIBRARIES}
+)
+message("VTK autoinit done")
+
 target_link_libraries(aprapipesut   
   aprapipes  
   ${JPEG_LIBRARIES}
@@ -600,6 +617,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${VTK_LIBRARIES}
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
