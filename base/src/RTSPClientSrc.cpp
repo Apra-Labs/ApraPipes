@@ -2,6 +2,7 @@
 #include "FrameMetadataFactory.h"
 #include "FrameMetadata.h"
 #include "H264Metadata.h"
+#include "H264Utils.h"
 
 using namespace std;
 
