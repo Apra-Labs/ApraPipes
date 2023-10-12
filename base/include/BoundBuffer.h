@@ -43,7 +43,8 @@ public:
 
 		boost::mutex::scoped_lock lock(m_mutex);
 		m_not_full.wait(lock, boost::bind(&bounded_buffer<value_type>::is_ready_to_accept, this));
-		if (is_not_full() && m_accept)
+		bool isNotFull =  m_unread < m_capacity * 2; // We only buffer commad frames twice the size of queue. 
+		if (isNotFull && m_accept)
 		{
 			m_container.push_back(item);
 			++m_unread;
