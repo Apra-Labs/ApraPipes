@@ -1037,7 +1037,7 @@ bool Module::shouldTriggerSOS()
 	return false;
 }
 
-bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
+bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority)
 {
 	auto metadata = framemetadata_sp(new PausePlayMetadata());
 	auto frame = makeCommandFrame(ppCmd.getSerializeSize(), metadata);
@@ -1046,10 +1046,17 @@ bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
 	// add to que
 	frame_container frames;
 	frames.insert(make_pair("pause_play", frame));
-	if (!Module::try_push(frames))
+	if (!priority)
 	{
-		LOG_ERROR << "failed to push play command to the que";
-		return false;
+		if (!Module::try_push(frames))
+		{
+			LOG_ERROR << "failed to push play command to the que";
+			return false;
+		}
+	}
+	else
+	{
+		Module::push_back(frames);
 	}
 	return true;
 }

@@ -61,11 +61,13 @@ private:
 	uint64_t endTimeSaved = 0;
 	uint64_t queryStartTime = 0;
 	uint64_t queryEndTime = 0;
+	bool direction = true;
 	FrameMetadata::FrameType mFrameType;
 	using sys_clock = std::chrono::system_clock;
 	sys_clock::time_point frame_begin;
 	std::chrono::nanoseconds myTargetFrameLen;
 	std::chrono::nanoseconds myNextWait;
 	uint64_t latestFrameExportedFromHandleCmd = 0;
+	uint64_t latestFrameExportedFromProcess = 0;
 	bool initDone = false;
 };

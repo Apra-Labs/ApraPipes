@@ -82,6 +82,7 @@ public:
 		mState.direction = props.direction;
 		mState.mVideoPath = videoPath;
 		mProps = props;
+		mState.end = false;
 	}
 
 	void setProps(Mp4ReaderSourceProps& props)
@@ -256,6 +257,8 @@ public:
 			}
 			LOG_TRACE << "changed direction frameIdx <" << mState.mFrameCounterIdx << "> totalFrames <" << mState.mFramesInVideo << ">";
 			mp4_demux_toggle_playback(mState.demux, mState.video.id);
+			mDirection = _direction;
+			setMetadata();
 		}
 	}
 
@@ -371,6 +374,7 @@ public:
 		}
 
 		// no files left to read OR no new files even after fresh parse OR empty folder
+
 		if (mState.end)
 		{
 			LOG_INFO << "Reached EOF end state in playback.";
@@ -380,6 +384,7 @@ public:
 				mState.end = false;
 				return true;
 			}
+
 			// reload the current file
 			if (waitFlag)
 			{
@@ -491,6 +496,7 @@ public:
 				mState.mFramesInVideo = mState.info.sample_count;
 				mWidth = mState.info.video_width;
 				mHeight = mState.info.video_height;
+				mDirection = mState.direction;
 				mDurationInSecs = mState.info.duration / mState.info.timescale;
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 			}
@@ -612,6 +618,8 @@ public:
 			// reset flags
 			waitFlag = false;
 			sentEOSSignal = false;
+			isMp4SeekFrame = true;
+			setMetadata();
 			return true;
 		}
 
@@ -623,6 +631,31 @@ public:
 		*/
 		std::string skipVideoFile;
 		uint64_t skipMsecsInFile;
+		if (!isVideoFileFound)
+		{
+			if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+			{
+				return false;
+			}
+			isVideoFileFound = true;
+		}
+		if (mProps.parseFS)
+		{
+			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			uint64_t start_parsing_ts = 0;
+			try
+			{
+				start_parsing_ts = std::stoull(boostVideoTS);
+			}
+			catch (std::invalid_argument)
+			{
+				auto msg = "Video File name not in proper format.Check the filename sent as props. \
+					If you want to read a file with custom name instead, please disable parseFS flag.";
+				LOG_ERROR << msg;
+				throw AIPException(AIP_FATAL, msg);
+			}
+			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
+		}
 		bool ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
 		if (!ret)
 		{
@@ -673,6 +706,9 @@ public:
 		waitFlag = false;
 		// prependSpsPps
 		mState.shouldPrependSpsPps = true;
+		isMp4SeekFrame = true;
+		setMetadata();
+		LOG_ERROR << "seek successfull";
 		return true;
 	}
 
@@ -773,7 +809,7 @@ public:
 			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			if (currentTS >= recheckDiskTS)
 			{
-				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath));
+				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
 				{
 					imgFrame = nullptr;
 					imageFrameSize = 0;
@@ -976,11 +1012,11 @@ protected:
 		std::string mVideoPath = "";
 		int32_t mFrameCounterIdx;
 		bool shouldPrependSpsPps = false;
+		bool foundFirstReverseIFrame = false;
 		bool end = false;
 		Mp4ReaderSourceProps props;
 		float speed;
 		bool direction;
-		//bool end;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;
@@ -993,6 +1029,7 @@ protected:
 	uint64_t recheckDiskTS = 0;
 	boost::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
+	framemetadata_sp mH264Metadata;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -1001,6 +1038,8 @@ protected:
 public:
 	int mWidth = 0;
 	int mHeight = 0;
+	bool mDirection;
+	bool isMp4SeekFrame = false;
 	int ret;
 	double mFPS = 0;
 	double mDurationInSecs = 0;
@@ -1057,12 +1096,6 @@ void Mp4ReaderDetailJpeg::setMetadata()
 	}
 	auto encodedMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(metadata);
 	encodedMetadata->setData(*encodedMetadata);
-
-	auto mp4FrameMetadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
-	// set proto version in mp4videometadata
-	auto serFormatVersion = getSerFormatVersion();
-	auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(mp4FrameMetadata);
-	mp4VideoMetadata->setData(serFormatVersion);
 	Mp4ReaderDetailAbs::setMetadata();
 	// set at Module level
 	mSetMetadata(encodedImagePinId, metadata);
@@ -1141,17 +1174,21 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 
 void Mp4ReaderDetailH264::setMetadata()
 {
-	auto metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
-	if (!metadata->isSet())
+	mH264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
+
+	if (!mH264Metadata->isSet())
 	{
 		return;
 	}
-	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(metadata);
+	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(mH264Metadata);
+	h264Metadata->direction = mDirection;
+	h264Metadata->mp4Seek = isMp4SeekFrame;
 	h264Metadata->setData(*h264Metadata);
 
 	readSPSPPS();
+
 	Mp4ReaderDetailAbs::setMetadata();
-	mSetMetadata(h264ImagePinId, metadata);
+	mSetMetadata(h264ImagePinId, mH264Metadata);
 	return;
 }
 
@@ -1231,7 +1268,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		return true;
 	}
 
-	if (mState.shouldPrependSpsPps)
+	if (mState.shouldPrependSpsPps || (!mState.direction && !mState.foundFirstReverseIFrame))
 	{
 		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
 		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
@@ -1244,11 +1281,13 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			memcpy(tempFrameBuffer, imgFrame->data(), imgSize);
 			imgSize += spsSize + ppsSize + 8;
 			imgFrame = tempFrame;
+			mState.foundFirstReverseIFrame = true;
 			mState.shouldPrependSpsPps = false;
 		}
-		else if(type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		else if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 		{
 			mState.shouldPrependSpsPps = false;
+			mState.foundFirstReverseIFrame = true;
 		}
 	}
 
@@ -1260,7 +1299,6 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		frameData[3] = 0x1;
 		frameData[spsSize + 7] = 0x1;
-		frameData[spsSize + ppsSize + 8] = 0x0;
 		frameData[spsSize + ppsSize + 9] = 0x0;
 		frameData[spsSize + ppsSize + 10] = 0x0;
 		frameData[spsSize + ppsSize + 11] = 0x1;
@@ -1307,6 +1345,11 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		}
 		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
 	}
+	if (isMp4SeekFrame)
+	{
+		isMp4SeekFrame = false;
+		setMetadata();
+	}
 	return true;
 }
 
@@ -1319,6 +1362,7 @@ Mp4ReaderSource::~Mp4ReaderSource() {}
 
 bool Mp4ReaderSource::init()
 {
+	LOG_ERROR<<"MP4READER INIT!!!!!!";
 	if (!Module::init())
 	{
 		return false;
@@ -1355,6 +1399,7 @@ bool Mp4ReaderSource::init()
 	mDetail->encodedImagePinId = encodedImagePinId;
 	mDetail->h264ImagePinId = h264ImagePinId;
 	mDetail->metadataFramePinId = metadataFramePinId;
+	LOG_ERROR<<"MP4READER INIT  ENNND!!!!!!";
 	return mDetail->Init();
 }
 
@@ -1510,7 +1555,9 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
+		LOG_ERROR<<"seek play 1 ";
 		return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.forceReopen);
+		LOG_ERROR<<"seek play 2 ";
 	}
 	else
 	{
@@ -1520,8 +1567,10 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 
 bool Mp4ReaderSource::handlePausePlay(float speed, bool direction)
 {
+	LOG_ERROR<<"hanlde play 1 ";
 	mDetail->setPlayback(speed, direction);
 	return Module::handlePausePlay(speed, direction);
+	LOG_ERROR<<"hanlde play 2 ";
 }
 
 bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)

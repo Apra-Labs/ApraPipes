@@ -561,8 +561,6 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(co
 {
 	std::vector<boost::filesystem::path> dateDir;
 	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
-	LOG_INFO << "parsing files from dir <" << *dateDirIter << ">";
-
 	for (dateDirIter; dateDirIter != dateDirEndIter; ++dateDirIter)
 	{
 		if (fs::is_directory(dateDirIter->path()))

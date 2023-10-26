@@ -269,6 +269,7 @@ public:
 
 	int64_t startTime = 0;
 	int64_t endTime = 0;
+	bool direction = true;
 
 private:
 	friend class boost::serialization::access;
@@ -278,6 +279,7 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& startTime;
 		ar& endTime;
+		ar& direction;
 	}
 };
 
@@ -451,6 +453,9 @@ public:
 
 	uint64_t startViewTS = 0;
 	uint64_t stopViewTS = 0;
+	bool direction = true;
+	bool mp4ReaderExport = false;
+	bool onlyDirectionChange = false;
 
 private:
 	friend class boost::serialization::access;
@@ -460,6 +465,9 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& startViewTS;
 		ar& stopViewTS;
+		ar& direction;
+		ar& mp4ReaderExport;
+		ar& onlyDirectionChange;
 	}
 };
 

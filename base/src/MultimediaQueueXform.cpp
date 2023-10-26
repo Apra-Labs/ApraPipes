@@ -629,27 +629,24 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
 {
 	//loop over frame container
-	auto frames = frameQueue->pop();
-	for (auto itr = frames.begin(); itr != frames.end(); itr++)
+	if (frameQueue->size())
 	{
-		if (itr->second->isCommand())
+		frame_container framesContainer;
+		auto frames = frameQueue->pop();
+		for (auto itr = frames.begin(); itr != frames.end(); itr++)
 		{
-			auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
-			if(cmdType == Command::CommandType::Relay || cmdType == Command::CommandType::MultimediaQueueXform)
+			if (itr->second->isCommand())
 			{
+				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
 				handleCommand(cmdType, itr->second);
 			}
 			else
 			{
-				frame_container commandFrame;
-				commandFrame.insert(make_pair(itr->first, itr->second));
-				frameQueue->push_back(commandFrame);
+				framesContainer.insert(make_pair(itr->first, itr->second));
 			}
 		}
-		else
+		if (!framesContainer.empty())
 		{
-			frame_container framesContainer;
-			framesContainer.insert(make_pair(itr->first, itr->second));
 			mState->queueObject->enqueue(framesContainer, pushToNextModule);
 		}
 	}
@@ -664,6 +661,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 {
 	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
 	initDone = false;
+	LOG_ERROR << "command received";
 	if (type == Command::CommandType::MultimediaQueueXform)
 	{
 		MultimediaQueueXformCommand cmd;
@@ -673,14 +671,29 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		startTimeSaved = cmd.startTime;
 		queryEndTime = cmd.endTime;
 		endTimeSaved = cmd.endTime;
-
+		direction = cmd.direction;
+		LOG_ERROR << "start time = " << cmd.startTime;
+		LOG_ERROR << "end time = " <<  cmd.endTime;
+		LOG_ERROR << "direction = " << cmd.direction;
+		LOG_ERROR << "state = " << mState->Type;
+		LOG_ERROR << "mmq begin ts = " << mState->queueObject->mQueue.begin()->first;
 		bool reset = false;
 		pushToNextModule = true;
 
 		if (mState->Type == State::EXPORT)
 		{
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
-			for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
+			State::mQueueMap::iterator it;
+			if (direction)
+			{
+				it = mState->queueObject->mQueue.begin();
+			}
+			else
+			{
+				it = mState->queueObject->mQueue.end();
+				it--;
+			}
+			while (!mState->queueObject->mQueue.empty() )//&& it != mState->queueObject->mQueue.end()
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
 				{
@@ -694,23 +707,15 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					}
 					else
 					{
-						auto moduleQueue = getQue();
-						if(moduleQueue->size())
-					    {
-							extractFramesAndEnqueue(moduleQueue);
-					    }
 						if (!initDone)
 						{
 							myNextWait = myTargetFrameLen;
 							frame_begin = sys_clock::now();
 							initDone = true;
 						}
-						
-						//LOG_ERROR << "multimediaQueueSize = " << queueSize;
 						frame_container outFrames;
-						auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+						auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 						outFrames.insert(make_pair(outputId, it->second.begin()->second));
-						//LOG_ERROR<<"sENDING FROM HANDLE COMMAND AT TIME "<< it->first;
 						mState->exportSend(outFrames);
 						latestFrameExportedFromHandleCmd = it->first;
 						std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
@@ -719,6 +724,44 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							std::this_thread::sleep_for(myNextWait - frame_len);
 						}
 						myNextWait += myTargetFrameLen;
+					}
+					if (!((!direction && it == mState->queueObject->mQueue.begin()) || (direction && it == mState->queueObject->mQueue.end())))
+					{
+						//LOG_ERROR << "enque frames";
+						auto moduleQueue = getQue();
+						extractFramesAndEnqueue(moduleQueue);
+					}
+				}
+				if (direction)
+				{
+					it++;
+					if (it == mState->queueObject->mQueue.end())
+					{
+						break;
+					}
+				}
+				else
+				{
+					if (it != mState->queueObject->mQueue.end())
+					{
+						it--;
+					}
+					if (it == mState->queueObject->mQueue.end())
+					{
+						if (mState->Type != State::IDLE)
+						{
+							NVRCommandExportView cmd;
+							cmd.startViewTS = latestFrameExportedFromHandleCmd;
+							cmd.stopViewTS = 0;
+							cmd.direction = direction;
+							cmd.mp4ReaderExport = true;
+							controlModule->queueCommand(cmd, true);
+							LOG_ERROR << "crashing here?" ;
+							LOG_ERROR << "state = " << mState->Type;
+						}
+						mState->Type = State::IDLE;
+						LOG_ERROR << "first frame of handle command = " << latestFrameExportedFromHandleCmd;
+						break;
 					}
 				}
 			}
@@ -744,6 +787,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 			setState(queryStartTime, queryEndTime);
 		}
 		return true;
+		LOG_ERROR << "export frames done";
 	}
 	LOG_ERROR <<"RELAY COMMAND WAS HERE";
 	return Module::handleCommand(type, frame);
@@ -781,7 +825,17 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		mState->isProcessCall = true;
 		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
-		for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
+		State::mQueueMap::iterator it;
+		if (direction)
+		{
+			it = mState->queueObject->mQueue.begin();
+		}
+		else
+		{
+			it = mState->queueObject->mQueue.end();
+			it--;
+		}
+		while (!mState->queueObject->mQueue.empty())//&& it != mState->queueObject->mQueue.end()
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
 			{
@@ -795,11 +849,6 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				}
 				else
 				{
-					auto moduleQueue = getQue();
-					if(moduleQueue->size())
-					{
-						extractFramesAndEnqueue(moduleQueue);
-					}
 					if (!initDone)
 					{
 						myNextWait = myTargetFrameLen;
@@ -813,6 +862,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					outFrames.insert(make_pair(outputId, it->second.begin()->second));
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
 					mState->exportSend(outFrames);
+					latestFrameExportedFromProcess = it->first;
 					std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
 					if (myNextWait > frame_len)
 					{
@@ -821,8 +871,42 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					}
 					myNextWait += myTargetFrameLen;
 				}
+				if (!(!direction && it == mState->queueObject->mQueue.begin()))
+				{
+						auto moduleQueue = getQue();
+						extractFramesAndEnqueue(moduleQueue);
+				}
 			}
-
+			if (direction)
+			{
+				it++;
+				if (it == mState->queueObject->mQueue.end())
+				{
+					break;
+				}
+			}
+			else
+			{
+				if (it != mState->queueObject->mQueue.end())
+				{
+					it--;
+				}
+				if (it == mState->queueObject->mQueue.end())
+				{
+					if (mState->Type != State::IDLE)
+					{
+						NVRCommandExportView cmd;
+						cmd.startViewTS = latestFrameExportedFromProcess;
+						cmd.stopViewTS = 0;
+						cmd.direction = direction;
+						cmd.mp4ReaderExport = true;
+						controlModule->queueCommand(cmd, true);
+					}
+					mState->Type = State::IDLE;
+					LOG_ERROR << "first frame of process = " << latestFrameExportedFromProcess;
+					break;
+				}
+			}
 		}
 	}
 
