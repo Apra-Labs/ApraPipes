@@ -282,6 +282,7 @@ SET(IP_FILES
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
 	src/AbsControlModule.cpp
+	src/ThumbnailListGenerator.cpp
 )
 
 
@@ -308,6 +309,7 @@ SET(IP_FILES_H
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
 	include/Overlay.h
+	include/ThumbnailListGenerator.h
 )
 
 
@@ -564,6 +566,7 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/abscontrolmodule_tests.cpp
+	test/thumbnailgenerator_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
