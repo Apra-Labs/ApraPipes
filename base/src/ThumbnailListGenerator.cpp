@@ -17,8 +17,10 @@
 #include <unistd.h>
 #include <cstdio>
 
+#if defined(__arm__) || defined(__aarch64__)
 #include "DMAFDWrapper.h"
 #include "DMAFrameUtils.h"
+#endif
 
 class ThumbnailListGenerator::Detail
 {
@@ -98,6 +100,7 @@ bool ThumbnailListGenerator::term()
 
 bool ThumbnailListGenerator::process(frame_container &frames)
 {
+#if defined(__arm__) || defined(__aarch64__)
     auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE_PLANAR);
     if (isFrameEmpty(frame))
     {
@@ -206,6 +209,7 @@ bool ThumbnailListGenerator::process(frame_container &frames)
     jpeg_destroy_compress(&cinfo);
     fclose(outfile);
     LOG_ERROR << "wrote thumbail";
+#endif
     return true;
 }
 
