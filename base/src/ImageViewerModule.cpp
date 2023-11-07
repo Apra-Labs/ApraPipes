@@ -284,11 +284,11 @@ bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame
 		return true;
 	}
 
-	else if (type == Command::CommandType::NVRCommandView)
+	else if (type == Command::CommandType::RenderPlayPause)
     {
-        NVRCommandView cmd;
+        RenderPlayPause cmd;
         getCommand(cmd, frame);
-        if(cmd.doView)
+        if(cmd.pauseRenderer)
         {
             showRender = true;
             return true;

@@ -108,49 +108,34 @@ bool ThumbnailListGenerator::process(frame_container &frames)
         return true;
     }
 
-    // ImagePlanes mImagePlanes;
-    // DMAFrameUtils::GetImagePlanes mGetImagePlanes;
-    // int mNumPlanes = 0;
+    ImagePlanes mImagePlanes;
+    DMAFrameUtils::GetImagePlanes mGetImagePlanes;
+    int mNumPlanes = 0;
+    size_t mSize;
 
-     framemetadata_sp frameMeta = frame->getMetadata();
-
-    // mGetImagePlanes = DMAFrameUtils::getImagePlanesFunction(frameMeta, mImagePlanes);
-	// mNumPlanes = static_cast<int>(mImagePlanes.size());
-
-    // mGetImagePlanes(frame, mImagePlanes);
-
-    // uint8_t* dstPtr = (uint8_t*) malloc(frameMeta->getDataSize());
-    // for (auto i = 0; i < mNumPlanes; i++)
-	// {
-	// 	mImagePlanes[i]->mCopyToData(mImagePlanes[i].get(), dstPtr);
-	// 	dstPtr += mImagePlanes[i]->imageSize;
-	// }
-
-    // FrameMetadata::FrameType fType = frameMeta->getFrameType();
-
-    // uint8_t* dstPtr = (uint8_t*) malloc(frame->size());
-    // auto frameSize = frame->size();
-
-    // dstPtr = (uint8_t*)(static_cast<DMAFDWrapper *>(frame->data()))->getHostPtrY();
-    // dstPtr += frameSize / 2;
-    // dstPtr = (uint8_t*)(static_cast<DMAFDWrapper *>(frame->data()))->getHostPtrU();
-    // dstPtr += frameSize / 4;
-    // dstPtr = (uint8_t*)(static_cast<DMAFDWrapper *>(frame->data()))->getHostPtrV();
-    // dstPtr += frameSize / 4;
-    // dstPtr -= frameSize;
-
-    auto dstPtr = (uint8_t*)(static_cast<DMAFDWrapper *>(frame->data()))->getHostPtr();
-
+    framemetadata_sp frameMeta = frame->getMetadata();
     auto rawPlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(frameMeta);
     auto height = rawPlanarMetadata->getHeight(0);
     auto width = rawPlanarMetadata->getWidth(0);
-    LOG_ERROR << "width = "<< width;
-     LOG_ERROR << "height = "<< height;
+
+    mGetImagePlanes = DMAFrameUtils::getImagePlanesFunction(frameMeta, mImagePlanes);
+	mNumPlanes = static_cast<int>(mImagePlanes.size());
+    mSize = width * height * 1.5;
+    mGetImagePlanes(frame, mImagePlanes);
+
+   uint8_t data = 0;
+    cv::Mat yuvImage(height * 1.5, width, CV_8UC1, data);
+
+    uint8_t* dstPtr = yuvImage.data;
+    for (auto i = 0; i < mNumPlanes; i++)
+	{
+		const auto& plane = mImagePlanes[i];
+        std::memcpy(dstPtr, plane->data, plane->imageSize);
+        dstPtr += plane->imageSize;
+	}
+
     auto st = rawPlanarMetadata->getStep(0);
-    uint8_t data = 0;
     cv::Mat bgrImage;
-    auto yuvImage = cv::Mat(height * 1.5, width, CV_8UC1, static_cast<void*>(&data));
-    yuvImage.data = static_cast<uint8_t*>(dstPtr);
     cv::cvtColor(yuvImage, bgrImage, cv::COLOR_YUV2BGRA_NV12);
 
     cv::Mat bgrImageResized;
@@ -208,7 +193,6 @@ bool ThumbnailListGenerator::process(frame_container &frames)
     // Clean up the JPEG compression object and close the output file
     jpeg_destroy_compress(&cinfo);
     fclose(outfile);
-    LOG_ERROR << "wrote thumbail";
 #endif
     return true;
 }

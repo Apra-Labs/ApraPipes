@@ -1216,9 +1216,16 @@ bool Module::step()
 			return true;
 		}
 
-		mProfiler->startProcessingLap();
-		ret = stepNonSource(frames);
-		mProfiler->endLap(mQue->size());
+		if(mPlay)
+        {
+            mProfiler->startProcessingLap();
+            ret = stepNonSource(frames);
+            mProfiler->endLap(mQue->size());
+        }
+        else
+        {
+            ret = true;
+        }
 	}
 
 	return ret;

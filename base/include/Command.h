@@ -25,7 +25,8 @@ public:
 		NVRCommandExportView,
 		MP4WriterLastTS,
 		MMQtimestamps,
-		Rendertimestamp
+		Rendertimestamp,
+		RenderPlayPause
 	};
 
 	Command()
@@ -593,5 +594,29 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& speed;
 		ar& direction;
+	}
+};
+
+class RenderPlayPause : public Command
+{
+public:
+	RenderPlayPause() : Command(Command::CommandType::RenderPlayPause)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(pauseRenderer);
+	}
+
+	bool pauseRenderer;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& pauseRenderer;
 	}
 };

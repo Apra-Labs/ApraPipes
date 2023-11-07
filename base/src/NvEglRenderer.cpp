@@ -60,6 +60,16 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     XSetWindowAttributes window_attributes;
     x_window = 0;
     x_display = NULL;
+    XColor color, dummy;
+    XGCValues gr_values;
+
+    this->mWidth = width;
+    this->mHeight = height;
+    this->drawBorder = false;
+
+    this->_x_offset = x_offset;
+    this->_y_offset = y_offset;
+
 
     texture_id = 0;
     gc = NULL;
@@ -104,14 +114,14 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
         y_offset = 0;
     }
 
-    window_attributes.override_redirect = 0;
 
     depth = DefaultDepth(x_display, DefaultScreen(x_display));
 
+    //window_attributes.override_redirect = 1;
     window_attributes.background_pixel =
         BlackPixel(x_display, DefaultScreen(x_display));
 
-    window_attributes.override_redirect = displayOnTop;
+    window_attributes.override_redirect = (displayOnTop ? 1 : 0);
     Atom WM_HINTS; 
     if(window_attributes.override_redirect == 0)
     { 
@@ -134,10 +144,9 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
                              (CWBackPixel | CWOverrideRedirect),
                              &window_attributes);
 
-    
     if(window_attributes.override_redirect == 0)
     {
-       XStoreName(x_display, x_window, "LIVE WINDOW");
+       XStoreName(x_display, x_window, "ApraEglRenderer");
        XFlush(x_display);
     
        XSizeHints hints;
@@ -148,41 +157,166 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
        hints.flags = PPosition | PSize;
        XSetWMNormalHints(x_display, x_window, &hints);
 
-        // Set Motif hints for window manager
-        Atom _MOTIF_WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
-        if (_MOTIF_WM_HINTS != None)
-        {
-            struct
-            {
-                unsigned long flags;
-                unsigned long functions;
-                unsigned long decorations;
-                long inputMode;
-                unsigned long status;
-            } WM_HINTS = { (1L << 1), 0, 1, 0, 0 }; // Setting decorations to 1 adds title bar
-            XChangeProperty(x_display, x_window, _MOTIF_WM_HINTS, _MOTIF_WM_HINTS, 32,
-                    PropModeReplace, (unsigned char *)&WM_HINTS, 5);
-        }
-
-        Atom WM_DELETE_WINDOW = XInternAtom(x_display, "WM_DELETE_WINDOW", False);
-        XSetWMProtocols(x_display, x_window, &WM_DELETE_WINDOW, 1);
+       WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
+       XChangeProperty(x_display, x_window, WM_HINTS, WM_HINTS, 32,
+                PropModeReplace, (unsigned char *)&WM_HINTS, 5);
     }
 
-    XSelectInput(x_display, (int32_t) x_window, ExposureMask);
-    XMapWindow(x_display, (int32_t) x_window);
-    gc = XCreateGC(x_display, x_window, 0, NULL);
+    XSelectInput(x_display, (int32_t) x_window, ButtonPressMask |
+								                NoEventMask |
+								                KeyPressMask |
+								                KeyReleaseMask |
+								                ButtonReleaseMask |
+								                EnterWindowMask |
+								                LeaveWindowMask |
+								                PointerMotionMask |
+								                PointerMotionHintMask |
+								                Button1MotionMask |
+								                Button2MotionMask |
+								                Button3MotionMask |
+								                Button4MotionMask |
+								                Button5MotionMask |
+								                ButtonMotionMask |
+								                KeymapStateMask |
+								                ExposureMask |
+								                VisibilityChangeMask |
+								                StructureNotifyMask |
+								                ResizeRedirectMask |
+								                SubstructureNotifyMask |
+								                SubstructureRedirectMask |
+								                FocusChangeMask |
+								                PropertyChangeMask |
+								                ColormapChangeMask |
+								                OwnerGrabButtonMask);
 
-    XSetForeground(x_display, gc,
-                WhitePixel(x_display, DefaultScreen(x_display)) );
-    fontinfo = XLoadQueryFont(x_display, "9x15bold");
+        fontinfo = XLoadQueryFont(x_display, "9x15bold");
 
-    pthread_mutex_lock(&render_lock);
-    pthread_create(&render_thread, NULL, renderThread, this);
-    pthread_setname_np(render_thread, "EglRenderer");
-    pthread_cond_wait(&render_cond, &render_lock);
-    pthread_mutex_unlock(&render_lock);
+        // XAllocNamedColor(x_display, DefaultColormap(x_display, screen_num), "green", &color, &dummy);
+        // XSetWindowBorder(x_display, x_window, color.pixel);
 
-    return;
+        // gr_values.font = fontinfo->fid;
+        // gr_values.foreground = color.pixel;
+        // gr_values.line_width = 5;
+
+        // gc = XCreateGC(x_display, x_window, GCFont | GCForeground | GCLineWidth, &gr_values);
+
+        // XFlush(x_display);
+        // XMapWindow(x_display, (int32_t)x_window);
+        // XFlush(x_display);
+
+        XMapWindow(x_display, (int32_t)x_window);
+        gc = XCreateGC(x_display, x_window, 0, NULL);
+
+        XSetForeground(x_display, gc,
+                       WhitePixel(x_display, DefaultScreen(x_display)));
+        fontinfo = XLoadQueryFont(x_display, "9x15bold");
+        pthread_mutex_lock(&render_lock);
+        pthread_create(&render_thread, NULL, renderThread, this);
+        pthread_setname_np(render_thread, "EglRenderer");
+        pthread_cond_wait(&render_cond, &render_lock);
+        pthread_mutex_unlock(&render_lock);
+
+        return;
+}
+
+bool NvEglRenderer::renderAndDrawLoop()
+{
+    if (drawBorder)
+    {
+        XDrawRectangle(x_display, x_window, gc, 0, 0, (mWidth)-1, (mHeight)-1);
+        XFlush(x_display);
+    }
+    return true;
+}
+
+bool NvEglRenderer::windowDrag()
+{
+    if (XCheckMaskEvent(x_display,
+                        ButtonPressMask |
+                            NoEventMask |
+                            KeyPressMask |
+                            KeyReleaseMask |
+                            ButtonReleaseMask |
+                            EnterWindowMask |
+                            LeaveWindowMask |
+                            PointerMotionMask |
+                            PointerMotionHintMask |
+                            Button1MotionMask |
+                            Button2MotionMask |
+                            Button3MotionMask |
+                            Button4MotionMask |
+                            Button5MotionMask |
+                            ButtonMotionMask |
+                            KeymapStateMask |
+                            ExposureMask |
+                            VisibilityChangeMask |
+                            StructureNotifyMask |
+                            ResizeRedirectMask |
+                            SubstructureNotifyMask |
+                            SubstructureRedirectMask |
+                            FocusChangeMask |
+                            PropertyChangeMask |
+                            ColormapChangeMask |
+                            OwnerGrabButtonMask,
+                        &event))
+    {
+        if (event.type == ButtonPress)
+        {
+            if (event.xbutton.button == Button1)
+            {
+                drag_start_x = event.xbutton.x_root - _x_offset;
+                drag_start_y = event.xbutton.y_root - _y_offset;
+                is_dragging = true;
+            }
+        }
+        else if (event.type == MotionNotify)
+        {
+            if (is_dragging)
+            {
+                int screen = DefaultScreen(x_display);
+                _x_offset = event.xbutton.x_root - drag_start_x;
+                _y_offset = event.xbutton.y_root - drag_start_y;
+                int centerX = _x_offset + mWidth / 2;
+                int centerY = _y_offset + mHeight / 2;
+                int screenWidth = XDisplayWidth(x_display, screen);
+                int screenHeight = XDisplayHeight(x_display, screen);
+
+                // Determine the closest corner
+                int closestX, closestY;
+
+                if (centerX <= screenWidth / 2)
+                {
+                    closestX = 0;
+                }
+                else
+                {
+                    closestX = screenWidth - mWidth;
+                }
+
+                if (centerY <= screenHeight / 2)
+                {
+                    closestY = 0;
+                }
+                else
+                {
+                    closestY = screenHeight - mHeight;
+                }
+
+                // Move the window to the closest corner
+                // XMoveWindow(x_display, x_window, _x_offset, _y_offset);
+                XMoveWindow(x_display, x_window, closestX, closestY);
+                XFlush(x_display);
+            }
+        }
+        else if (event.type == ButtonRelease)
+        {
+            if (event.xbutton.button == Button1)
+            {
+                is_dragging = false;
+            }
+        }
+    }
+    return true;
 }
 
 int
@@ -284,8 +418,9 @@ NvEglRenderer::renderThread(void *arg)
             break;
         }
 
+        renderer->windowDrag();
         renderer->renderInternal();
-
+        renderer->renderAndDrawLoop();
         pthread_mutex_lock(&renderer->render_lock);
         pthread_cond_broadcast(&renderer->render_cond);
     }
@@ -330,6 +465,7 @@ finish:
     pthread_mutex_lock(&renderer->render_lock);
     pthread_cond_broadcast(&renderer->render_cond);
     pthread_mutex_unlock(&renderer->render_lock);
+
     return NULL;
 
 error:

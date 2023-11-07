@@ -83,6 +83,10 @@ public:
 		mState.mVideoPath = videoPath;
 		mProps = props;
 		mState.end = false;
+		if(boost::filesystem::path(videoPath).extension() == ".mp4")
+		{
+			isVideoFileFound = true;
+		}
 	}
 
 	void setProps(Mp4ReaderSourceProps& props)

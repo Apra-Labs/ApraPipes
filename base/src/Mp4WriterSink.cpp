@@ -205,6 +205,7 @@ public:
 		if (mux)
 		{
 			mp4_mux_close(mux);
+			mux = nullptr;
 		}
 		return true;
 	}
