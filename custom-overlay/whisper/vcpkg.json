@@ -1,0 +1,17 @@
+{
+  "name": "whisper",
+  "version": "1.5.2",
+  "homepage": "https://github.com/Apra-Labs/whisper.cpp",
+  "description": "Fork of whisper.cpp a High-performance inference of OpenAI's Whisper automatic speech recognition (ASR) model in cpp.",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
