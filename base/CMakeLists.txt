@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
-OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
+OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
 
-set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
+#set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
+set(VCPKG_OVERLAY_PORTS "C:/Users/Kashyap/bkp/source/repos/ApraPipes/custom-overlay")
+
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
@@ -39,7 +41,7 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
         
-
+find_package(whisper CONFIG REQUIRED)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
@@ -161,6 +163,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	src/WhisperStreamTransform.cpp
 )
 
 SET(CORE_FILES_H
@@ -222,6 +225,7 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
+	include/WhisperStreamTransform.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -600,6 +604,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  whisper::whisper
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
