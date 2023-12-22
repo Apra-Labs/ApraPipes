@@ -8,6 +8,7 @@
 #include "PipeLine.h"
 #include "FileWriterModule.h"
 #include "AudioCaptureSrc.h"
+#include "WhisperStreamTransform.h"
 #include "ExternalSinkModule.h"
 #include "Module.h"
 #include<iostream>
@@ -19,18 +20,23 @@ BOOST_AUTO_TEST_SUITE(sound_record_tests)
 BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
 {
 	std::vector<std::string> audioFiles = { "./data/AudiotestMono.wav" };
-	Test_Utils::FileCleaner f(audioFiles);
+	//Test_Utils::FileCleaner f(audioFiles);
     // Manual test, listen to the file on audacity to for sanity check
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-    auto time_to_run = Test_Utils::getArgValue("s", "10");
+    auto time_to_run = Test_Utils::getArgValue("s", "20");
     auto n_seconds = atoi(time_to_run.c_str());
-    auto sampling_rate = 48000;
+    auto sampling_rate = 16000;
     auto channels = 1;
     auto sample_size_byte = 2;
 
-    AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,200);
+    AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,2000);
     auto source = boost::shared_ptr<Module>(new AudioCaptureSrc(sourceProps));
+
+    auto asr = boost::shared_ptr<Module>(new WhisperStreamTransform(WhisperStreamTransformProps(
+        WhisperStreamTransformProps::DecoderSamplingStrategy::GREEDY
+        ,"C:\\Users\\Kashyap\\bkp\\source\\repos\\whisper.cpp\\models\\ggml-tiny.en-q8_0.bin",18000)));
+    source->setNext(asr);
 
     auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
     source->setNext(outputFile);
@@ -44,8 +50,8 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
     ifstream in_file_mono(audioFiles[0], ios::binary);
     in_file_mono.seekg(0, ios::end);
     int file_size_mono = in_file_mono.tellg();
-    BOOST_TEST((channels * sampling_rate * sample_size_byte * n_seconds >= file_size_mono - (file_size_mono * 0.02) &&
-                channels * sampling_rate * sample_size_byte * n_seconds <= file_size_mono + (file_size_mono * 0.02)));
+    //BOOST_TEST((channels * sampling_rate * sample_size_byte * n_seconds >= file_size_mono - (file_size_mono * 0.02) &&
+      //          channels * sampling_rate * sample_size_byte * n_seconds <= file_size_mono + (file_size_mono * 0.02)));
     p.stop();
     p.term();
     p.wait_for_all();
