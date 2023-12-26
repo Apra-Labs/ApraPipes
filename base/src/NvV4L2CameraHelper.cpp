@@ -11,6 +11,7 @@ NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_s
     mCamDevname = "/dev/video0";
     mCamFD = -1;
     mCamPixFmt = V4L2_PIX_FMT_UYVY;
+    // mCamPixFmt = V4L2_PIX_FMT_YUYV;
 
     mRunning = false;
     mSendFrame = sendFrame;
@@ -36,15 +37,15 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
         return false;
     }
 
-    struct v4l2_control inp;
-    memset(&inp, 0, sizeof(inp));
-    inp.id = V4L2_CID_HFLIP;
-    inp.value = !isMirror;
+    // struct v4l2_control inp;
+    // memset(&inp, 0, sizeof(inp));
+    // inp.id = V4L2_CID_HFLIP;
+    // inp.value = !isMirror;
 
-    if(ioctl(mCamFD, VIDIOC_S_CTRL, &inp) < 0){
-        LOG_ERROR << "Flip failed";
-        return false;
-    }
+    // if(ioctl(mCamFD, VIDIOC_S_CTRL, &inp) < 0){
+    //     LOG_ERROR << "Flip failed";
+    //     return false;
+    // }
 
     /* Set camera output format */
     memset(&fmt, 0, sizeof(fmt));
@@ -53,6 +54,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
     fmt.fmt.pix.height = mCamHeight;
     fmt.fmt.pix.pixelformat = mCamPixFmt;
     fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
+    fmt.fmt.pix.bytesperline = 1024;
     if (ioctl(mCamFD, VIDIOC_S_FMT, &fmt) < 0)
     {
         LOG_ERROR << "Failed to set camera ouput format to UYVY";

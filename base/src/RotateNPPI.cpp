@@ -1,14 +1,15 @@
 #include "RotateNPPI.h"
 #include "FrameMetadata.h"
-#include "RawImageMetadata.h"
-#include "RawImagePlanarMetadata.h"
-
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-
+#include "DMAFDWrapper.h"
+#include "math.h"
+#include "opencv2/core.hpp"
 #include "npp.h"
+
+#define PI 3.14159265
 
 class RotateNPPI::Detail
 {
@@ -16,11 +17,6 @@ public:
 	Detail(RotateNPPIProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mFrameLength(0)
 	{
 		nppStreamCtx.hStream = props.stream->getCudaStream();
-
-		if (abs(props.angle) != 90)
-		{
-			throw AIPException(AIP_NOTIMPLEMENTED, "Only 90 degree rotation supported currently.");
-		}
 	}
 
 	~Detail()
@@ -35,12 +31,8 @@ public:
 			switch (mFrameType)
 			{
 			case FrameMetadata::RAW_IMAGE:
-				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+				mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 				break;
-			case FrameMetadata::RAW_IMAGE_PLANAR:
-				// everything works - just add the NPP functions in compute and uncomment the below lines
-				// mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
-				// break;
 			default:
 				throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
 			}
@@ -55,18 +47,12 @@ public:
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-			RawImageMetadata outputMetadata(rawMetadata->getHeight(), rawMetadata->getWidth(), rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+			int x, y, w, h;
+			w = rawMetadata->getWidth();
+			h = rawMetadata->getHeight();
+			RawImageMetadata outputMetadata(w, h, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata); // new function required
-			imageType = rawMetadata->getImageType();
-			depth = rawMetadata->getDepth();
-		}
-		else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
-		{
-			auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-			RawImagePlanarMetadata outputMetadata(rawMetadata->getHeight(0), rawMetadata->getWidth(0), rawMetadata->getImageType(), 512, rawMetadata->getDepth());
-			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
-			rawOutMetadata->setData(outputMetadata);
 			imageType = rawMetadata->getImageType();
 			depth = rawMetadata->getDepth();
 		}
@@ -86,10 +72,15 @@ public:
 				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
 			}
 			break;
+		case ImageMetadata::RGBA:
+			if (depth != CV_8U)
+			{
+				throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for bit depth<" + std::to_string(depth) + ">");
+			}
+			break;
 		case ImageMetadata::YUV444:
 		case ImageMetadata::YUV420:
 		case ImageMetadata::BGRA:
-		case ImageMetadata::RGBA:
 		default:
 			throw AIPException(AIP_NOTIMPLEMENTED, "Rotate not supported for ImageType<" + std::to_string(imageType) + ">");
 		}
@@ -149,6 +140,26 @@ public:
 										   NPPI_INTER_NN,
 										   nppStreamCtx);
 		}
+		else if (channels == 4)
+		{
+			double si, co;
+			si = props.scale * sin(props.angle * PI / 180);
+			co = props.scale * cos(props.angle * PI / 180);
+			double shx, shy;
+			shx = (1 - co) * (srcSize[0].width / 2) + si * srcSize[0].height / 2;
+			shy = (-si) * (srcSize[0].width / 2) + (1 - co) * srcSize[0].height / 2;
+			double acoeff[2][3] = {{co, -si, shx + props.x}, {si, co, shy + props.y}};
+			status = nppiWarpAffine_8u_C4R_Ctx(const_cast<const Npp8u *>(static_cast<Npp8u *>(buffer)),
+											   srcSize[0],
+											   srcPitch[0],
+											   srcRect[0],
+											   static_cast<Npp8u *>(outBuffer),
+											   dstPitch[0],
+											   dstRect[0],
+											   acoeff,
+											    NPPI_INTER_NN,
+											   nppStreamCtx);
+		}
 
 		if (status != NPP_SUCCESS)
 		{
@@ -158,13 +169,21 @@ public:
 		return true;
 	}
 
+	void setProps(RotateNPPIProps &mprops)
+	{
+		if (!mOutputMetadata.get())
+		{
+			return;
+		}
+		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
+		props = mprops;
+	}
+
 public:
 	size_t mFrameLength;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	RotateNPPIProps props;
-
-private:
 	bool setMetadataHelper(framemetadata_sp &input, framemetadata_sp &output)
 	{
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
@@ -177,7 +196,6 @@ private:
 			srcRect[0] = {0, 0, inputRawMetadata->getWidth(), inputRawMetadata->getHeight()};
 			srcPitch[0] = static_cast<int>(inputRawMetadata->getStep());
 			srcNextPtrOffset[0] = 0;
-
 			dstSize[0] = {outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
 			dstRect[0] = {0, 0, outputRawMetadata->getWidth(), outputRawMetadata->getHeight()};
 			dstPitch[0] = static_cast<int>(outputRawMetadata->getStep());
@@ -203,22 +221,6 @@ private:
 				dstNextPtrOffset[i] = outputRawMetadata->getNextPtrOffset(i);
 			}
 		}
-
-		if (props.angle == 90)
-		{
-			shiftX = 0;
-			shiftY = dstSize[0].height - 1;
-		}
-		else if (props.angle == -90)
-		{
-			shiftX = dstSize[0].width - 1;
-			shiftY = 0;
-		}
-		else
-		{
-			throw AIPException(AIP_NOTIMPLEMENTED, "currently rotation only 90 or -90 is supported");
-		}
-
 		return true;
 	}
 
@@ -236,7 +238,7 @@ private:
 
 	double shiftX;
 	double shiftY;
-
+	void *ctx;
 	NppStreamContext nppStreamCtx;
 };
 
@@ -264,9 +266,9 @@ bool RotateNPPI::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -290,9 +292,9 @@ bool RotateNPPI::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -329,9 +331,10 @@ bool RotateNPPI::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mDetail->mFrameLength);
+	cudaFree(0);
+	cudaMemset(static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr(), 0, outFrame->size());
 
-	mDetail->compute(frame->data(), outFrame->data());
-
+	mDetail->compute(static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr(), static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
 
@@ -354,4 +357,25 @@ bool RotateNPPI::processEOS(string &pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;
+}
+
+void RotateNPPI::setProps(RotateNPPIProps &props)
+{
+	Module::addPropsToQueue(props);
+}
+
+RotateNPPIProps RotateNPPI::getProps()
+{
+	fillProps(mDetail->props);
+	return mDetail->props;
+}
+
+bool RotateNPPI::handlePropsChange(frame_sp &frame)
+{
+
+	RotateNPPIProps props(mDetail->props.stream, 0);
+	bool ret = Module::handlePropsChange(frame, props);
+	LOG_ERROR << "Coming Inside HandleProps Change , Also Will rotate by " << props.angle; 
+	mDetail->setProps(props);
+	return ret;
 }

@@ -32,6 +32,7 @@ public:
 	virtual ~NvV4L2Camera();
 	bool init();
 	bool term();
+	bool isFrameBufferReady();
 
 protected:
 	bool produce();
@@ -41,4 +42,5 @@ private:
 	NvV4L2CameraProps props;
 	std::string mOutputPinId;
 	std::shared_ptr<NvV4L2CameraHelper> mHelper;
+	bool m_receivedFirstFrame;
 };

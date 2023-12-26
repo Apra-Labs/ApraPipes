@@ -128,35 +128,65 @@ model_init (void)
 	//   }
 	// } ;
 	struct cube cube;
-	cube.face[0].corner[0]={{ 0, 1, 0 },{0,0,0}};
-	cube.face[0].corner[1]={{ 1, 0, 0 },{0,0,0}};
-	cube.face[0].corner[2]={{ 0, 0, 0 },{0,0,0}};
+	// cube.face[0].corner[0]={{ 0, 1, 0 },{0,0,0}};
+	// cube.face[0].corner[1]={{ 1, 0, 0 },{0,0,0}};
+	// cube.face[0].corner[2]={{ 0, 0, 0 },{0,0,0}};
+	// cube.face[0].corner[3]={{ 1, 1, 0 },{0,0,0}};
+
+	// cube.face[1].corner[0]={{ 0, 0, 0 },{0,0,0}};
+	// cube.face[1].corner[1]={{ 1, 0, 1 },{0,0,0}};
+	// cube.face[1].corner[2]={{ 0, 0, 1 },{0,0,0}};
+	// cube.face[1].corner[3]={{ 1, 0, 0 },{0,0,0}};
+
+	// cube.face[2].corner[0]={{ 1, 0, 0 },{0,0,0}};
+	// cube.face[2].corner[1]={{ 1, 1, 1 },{0,0,0}};
+	// cube.face[2].corner[2]={{ 1, 0, 1 },{0,0,0}};
+	// cube.face[2].corner[3]={{ 1, 1, 0 },{0,0,0}};
+
+	// cube.face[3].corner[0]={{ 1, 1, 0 },{0,0,0}};
+	// cube.face[3].corner[1]={{ 0, 1, 1 },{0,0,0}};
+	// cube.face[3].corner[2]={{ 1, 1, 1 },{0,0,0}};
+	// cube.face[3].corner[3]={{ 0, 1, 0 },{0,0,0}};
+
+	// cube.face[4].corner[0]={{ 0, 1, 0 },{0,0,0}};
+	// cube.face[4].corner[1]={{ 0, 0, 1 },{0,0,0}};
+	// cube.face[4].corner[2]={{ 0, 1, 1 },{0,0,0}};
+	// cube.face[4].corner[3]={{ 0, 0, 0 },{0,0,0}};
+
+	// cube.face[5].corner[0]={{ 0, 1, 1 },{0,0,0}};
+	// cube.face[5].corner[1]={{ 1, 0, 1 },{0,0,0}};
+	// cube.face[5].corner[2]={{ 1, 1, 1 },{0,0,0}};
+	// cube.face[5].corner[3]={{ 0, 0, 1 },{0,0,0}};
+
+	cube.face[0].corner[0]={{ -1, 1, -1 },{0,0,0}};
+	cube.face[0].corner[1]={{ 1, -1, -1 },{0,0,0}};
+	cube.face[0].corner[2]={{ -1, -1, -1 },{0,0,0}};
 	cube.face[0].corner[3]={{ 1, 1, 0 },{0,0,0}};
 
-	cube.face[1].corner[0]={{ 0, 0, 0 },{0,0,0}};
-	cube.face[1].corner[1]={{ 1, 0, 1 },{0,0,0}};
-	cube.face[1].corner[2]={{ 0, 0, 1 },{0,0,0}};
-	cube.face[1].corner[3]={{ 1, 0, 0 },{0,0,0}};
+	cube.face[1].corner[0]={{ -1, -1, -1 },{0,0,0}};
+	cube.face[1].corner[1]={{ 1, -1, 1 },{0,0,0}};
+	cube.face[1].corner[2]={{ -1, -1, 1 },{0,0,0}};
+	cube.face[1].corner[3]={{ 1, -1, -1 },{0,0,0}};
 
-	cube.face[2].corner[0]={{ 1, 0, 0 },{0,0,0}};
+	cube.face[2].corner[0]={{ 1, -1, -1 },{0,0,0}};
 	cube.face[2].corner[1]={{ 1, 1, 1 },{0,0,0}};
-	cube.face[2].corner[2]={{ 1, 0, 1 },{0,0,0}};
+	cube.face[2].corner[2]={{ 1, -1, 1 },{0,0,0}};
 	cube.face[2].corner[3]={{ 1, 1, 0 },{0,0,0}};
 
-	cube.face[3].corner[0]={{ 1, 1, 0 },{0,0,0}};
-	cube.face[3].corner[1]={{ 0, 1, 1 },{0,0,0}};
+	cube.face[3].corner[0]={{ 1, 1, -1 },{0,0,0}};
+	cube.face[3].corner[1]={{ -1, 1, 1 },{0,0,0}};
 	cube.face[3].corner[2]={{ 1, 1, 1 },{0,0,0}};
-	cube.face[3].corner[3]={{ 0, 1, 0 },{0,0,0}};
+	cube.face[3].corner[3]={{ -1, 1, -1 },{0,0,0}};
 
-	cube.face[4].corner[0]={{ 0, 1, 0 },{0,0,0}};
-	cube.face[4].corner[1]={{ 0, 0, 1 },{0,0,0}};
-	cube.face[4].corner[2]={{ 0, 1, 1 },{0,0,0}};
-	cube.face[4].corner[3]={{ 0, 0, 0 },{0,0,0}};
+	cube.face[4].corner[0]={{ -1, 1, -1 },{0,0,0}};
+	cube.face[4].corner[1]={{ -1, -1, 1 },{0,0,0}};
+	cube.face[4].corner[2]={{ -1, 1, 1 },{0,0,0}};
+	cube.face[4].corner[3]={{ -1, -1, -1 },{0,0,0}};
 
-	cube.face[5].corner[0]={{ 0, 1, 1 },{0,0,0}};
-	cube.face[5].corner[1]={{ 1, 0, 1 },{0,0,0}};
+	cube.face[5].corner[0]={{ -1, 1, 1 },{0,0,0}};
+	cube.face[5].corner[1]={{ 1, -1, 1 },{0,0,0}};
 	cube.face[5].corner[2]={{ 1, 1, 1 },{0,0,0}};
-	cube.face[5].corner[3]={{ 0, 0, 1 },{0,0,0}};
+	cube.face[5].corner[3]={{ -1, -1, 1 },{0,0,0}};
 
 	// Generate colors for each corner based on its position:
 	FOREACH (cube.face, face) {
@@ -168,21 +198,21 @@ model_init (void)
 	}
 
 	// Center cube on the origin by translating corner points:
-	FOREACH (cube.face, face) {
-		FOREACH (face->corner, corner) {
-			corner->pos.x -= 0.0f;
-			corner->pos.y -= 0.0f;
-			corner->pos.z -= 0.0f;
-		}
-	}
-	// Yash Change
 	// FOREACH (cube.face, face) {
 	// 	FOREACH (face->corner, corner) {
-	// 		corner->pos.x -= 0.5f;
-	// 		corner->pos.y -= 0.5f;
-	// 		corner->pos.z -= 0.5f;
+	// 		corner->pos.x -= 0.0f;
+	// 		corner->pos.y -= 0.0f;
+	// 		corner->pos.z -= 0.0f;
 	// 	}
 	// }
+	// Yash Change
+	FOREACH (cube.face, face) {
+		FOREACH (face->corner, corner) {
+			corner->pos.x -= 0.5f;
+			corner->pos.y -= 0.5f;
+			corner->pos.z -= 0.5f;
+		}
+	}
 
 	// Face normals are cross product of two ribs:
 	FOREACH (cube.face, face) {
@@ -310,19 +340,21 @@ static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magF
     {
         inputColourFormat = GL_LUMINANCE;
     }
-
+	GLint max_texture_size;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+	std::cout << "Maximum texture size: " << max_texture_size << std::endl;
     // Create the texture
-    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-                 0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                 GL_RGBA,            // CHanged from rgb to rgba Internal colour format to convert to
-                 width,          // Image width  i.e. 640 for Kinect in standard mode
-                 height,          // Image height i.e. 480 for Kinect in standard mode
-                 0,                 // Border width in pixels (can either be 1 or 0)
-                 inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-                 GL_UNSIGNED_BYTE,  // Image data type
-                 buffer);        // The actual image data itself
+	glTexImage2D(GL_TEXTURE_2D,		// Type of texture
+				 0,					// Pyramid level (for mip-mapping) - 0 is the top level
+				 GL_RGBA,			// CHanged from rgb to rgba Internal colour format to convert to
+				 width,				// Image width  i.e. 640 for Kinect in standard mode
+				 height,			// Image height i.e. 480 for Kinect in standard mode
+				 0,					// Border width in pixels (can either be 1 or 0)
+				 inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+				 GL_UNSIGNED_BYTE,	// Image data type
+				 buffer);			// The actual image data itself
 
-    // If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
+	// If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
     if (minFilter == GL_LINEAR_MIPMAP_LINEAR  ||
             minFilter == GL_LINEAR_MIPMAP_NEAREST ||
             minFilter == GL_NEAREST_MIPMAP_LINEAR ||
@@ -450,7 +482,8 @@ void drawCameraFrame(void* frameData, int width, int height){
 
 	mat_rotate(matrix, rot.x, rot.y, rot.z, angle);
 	
-	GLuint image_tex = matToTexture((unsigned char*)frameData, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP, width, height);
+	// GLuint image_tex = matToTexture((unsigned char*)frameData, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP, width, height);
+	GLuint image_tex = matToTexture((unsigned char*)frameData, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, width, height);
 	
 	// Don't clip against background:
 	glClear(GL_DEPTH_BUFFER_BIT);

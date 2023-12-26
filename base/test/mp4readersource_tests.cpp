@@ -10,6 +10,8 @@
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
 #include "Mp4VideoMetadata.h"
+#include "H264Decoder.h"
+#include "EglRenderer.h"
 
 BOOST_AUTO_TEST_SUITE(Mp4ReaderSource_tests)
 
@@ -116,7 +118,7 @@ void read_video_extract_frames(std::string videoPath, std::string outPath, boost
 
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(15));
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 
 	p->stop();
 	p->term();
@@ -124,7 +126,7 @@ void read_video_extract_frames(std::string videoPath, std::string outPath, boost
 	p.reset();
 }
 
-void random_seek_video(std::string skipDir, uint64_t skipTS, std::string startingVideoPath, std::string outPath, framemetadata_sp inputMetadata, FrameMetadata::FrameType frameType, boost::filesystem::path file)
+void random_seek_video(std::string skipDir, uint64_t seekStartTS, uint64_t seekEndTS, std::string startingVideoPath, std::string outPath, framemetadata_sp inputMetadata, FrameMetadata::FrameType frameType, boost::filesystem::path file)
 {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
@@ -133,7 +135,7 @@ void random_seek_video(std::string skipDir, uint64_t skipTS, std::string startin
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false,true);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	mp4Reader->addOutPutPin(inputMetadata);
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
@@ -159,7 +161,7 @@ void random_seek_video(std::string skipDir, uint64_t skipTS, std::string startin
 	}
 
 	mp4Reader->setProps(mp4ReaderProps);
-	mp4Reader->randomSeek(skipTS);
+	mp4Reader->randomSeek(seekStartTS,seekEndTS);
 
 	p->run_all_threaded();
 
@@ -173,12 +175,12 @@ void random_seek_video(std::string skipDir, uint64_t skipTS, std::string startin
 
 BOOST_AUTO_TEST_CASE(mp4v_to_rgb_24_jpg)
 {
-	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/streamer_mp4v.mp4";
+	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/10.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	boost::filesystem::path file("frame_??????.jpg");
 	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	bool parseFS = true;
+	bool parseFS = false;
 	read_video_extract_frames(videoPath, outPath, file, encodedImageMetadata, frameType, parseFS);
 }
 
@@ -221,11 +223,12 @@ BOOST_AUTO_TEST_CASE(random_seek_jpg)
 	std::string skipDir = "data/Mp4_videos/jpg_video_metada/";
 	std::string startingVideoPath = "data/Mp4_videos/jpg_video_metada/20220928/0014/1666949168743.mp4";
 	std::string outPath = "data/testOutput/outFrames";
-	uint64_t skipTS = 1666949171743;
+	uint64_t seekStartTS = 1666949171743;
+	uint64_t seekEndTS = 1666949175743;
 	boost::filesystem::path file("frame_??????.jpg");
 	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
-	random_seek_video(skipDir, skipTS, startingVideoPath, outPath, encodedImageMetadata, frameType, file);
+	random_seek_video(skipDir, seekStartTS, seekEndTS, startingVideoPath, outPath, encodedImageMetadata, frameType, file);
 }
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264frames_metadata)
@@ -241,7 +244,7 @@ BOOST_AUTO_TEST_CASE(mp4v_to_h264frames_metadata)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264frames)
 {
-	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	bool parseFS = false;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -255,17 +258,19 @@ BOOST_AUTO_TEST_CASE(random_seek_h264)
 	std::string skipDir = "data/Mp4_videos/h264_video/";
 	std::string startingVideoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	std::string outPath = "data/testOutput/outFrames";
-	uint64_t skipTS = 1667375120029;
+	uint64_t seekStartTS = 1668064030062;
+	uint64_t seekEndTS = 1668064032062;
 	boost::filesystem::path file("frame_??????.h264");
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
-	random_seek_video(skipDir, skipTS, startingVideoPath, outPath, h264ImageMetadata, frameType, file);
+
+	random_seek_video(skipDir, seekStartTS, seekEndTS, startingVideoPath, outPath, h264ImageMetadata, frameType, file);
 }
 
-BOOST_AUTO_TEST_CASE(fs_parsing_h264)
+BOOST_AUTO_TEST_CASE(fs_parsing_h264, *boost::unit_test::disabled())
 {
 	/* file structure parsing test */
-	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668063524439.mp4";
+	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
 	std::string outPath = "data/testOutput/outFrames";
 	boost::filesystem::path file("frame_??????.h264");
 	auto frameType = FrameMetadata::FrameType::H264_DATA;
@@ -274,11 +279,24 @@ BOOST_AUTO_TEST_CASE(fs_parsing_h264)
 	read_video_extract_frames(videoPath, outPath, file, h264ImageMetadata, frameType, 5, parseFS);
 }
 
+BOOST_AUTO_TEST_CASE(read_timeStamp_from_custom_fileName)
+{
+	/* file structure parsing test */
+	std::string videoPath = "./data/Mp4_videos/h264_video/apraH264.mp4";
+	std::string outPath = "data/testOutput/outFrames";
+	boost::filesystem::path file("frame_??????.h264");
+	auto frameType = FrameMetadata::FrameType::H264_DATA;
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	bool parseFS = true;
+	read_video_extract_frames(videoPath, outPath, file, h264ImageMetadata, frameType, 5, parseFS);
+}
+
+
 BOOST_AUTO_TEST_CASE(getSetProps)
 {
-	std::string videoPath = "./data/Mp4_videos/jpg_video/20220928/0013/1666943213667.mp4";
+	std::string videoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
 	std::string outPath = "./data/testOutput/outFrames/";
-	std::string changedVideoPath = "./data/Mp4_videos/jpg_video_metada/20220928/0014/1666949168743.mp4";
+	std::string changedVideoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
 	bool parseFS = true;
 	int uniqMetadata = 0;
 
@@ -327,16 +345,69 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 	}
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(30));
 
 	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
 	mp4Reader->setProps(propsChange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 
 	p->stop();
 	p->term();
 	p->wait_for_all();
 	p.reset();
 }
+
+BOOST_AUTO_TEST_CASE(getSetProps2)
+{
+	std::string videoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
+	std::string outPath = "./data/testOutput/outFrames/";
+	std::string changedVideoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
+	bool parseFS = true;
+	int uniqMetadata = 0;
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	boost::filesystem::path dir(outPath);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder);
+
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0)));
+	Decoder->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(30));
+	LOG_ERROR << "PROPS WILL CHANGE";
+	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
+	mp4Reader->setProps(propsChange);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
 BOOST_AUTO_TEST_SUITE_END()

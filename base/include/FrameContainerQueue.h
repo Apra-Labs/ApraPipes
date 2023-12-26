@@ -12,6 +12,7 @@ public:
 	virtual frame_container pop();
 
 	virtual bool try_push(frame_container item);
+	virtual bool push_back(frame_container item); // ws_yash
 	virtual frame_container try_pop();
 
 	virtual bool isFull();

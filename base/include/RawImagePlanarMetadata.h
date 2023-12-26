@@ -11,7 +11,7 @@ public:
 
 	RawImagePlanarMetadata(int _width, int _height, ImageMetadata::ImageType _imageType, size_t alignLength, int _depth, MemType _memType = MemType::HOST) : FrameMetadata(FrameType::RAW_IMAGE_PLANAR, _memType)
 	{
-		size_t _step[4] = {0, 0, 0, 0};
+		size_t _step[4] = {0, 0, 0 , 0};
 
 		switch (_imageType)
 		{

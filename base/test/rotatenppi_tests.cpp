@@ -11,9 +11,42 @@
 #include "CudaMemCopy.h"
 #include "RotateNPPI.h"
 #include "test_utils.h"
+#include "NvTransform.h"
+#include "EglRenderer.h"
+#include "NvV4L2Camera.h"
+#include "PipeLine.h"
 
 BOOST_AUTO_TEST_SUITE(rotatenppi_tests)
 
+BOOST_AUTO_TEST_CASE(rotate_mask)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(400, 400, 2))); /// DMA
+
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA))); // DMA
+	source->setNext(nv_transform);
+
+	auto stream = cudastream_sp(new ApraCudaStream);
+	
+	auto m2 = boost::shared_ptr<Module>(new RotateNPPI(RotateNPPIProps(stream, 0)));
+	nv_transform->setNext(m2);
+	
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	m2->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
 void test(std::string filename, int width, int height, ImageMetadata::ImageType imageType, int type, int depth, double angle)
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/" + filename + ".raw")));

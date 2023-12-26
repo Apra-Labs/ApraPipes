@@ -5,6 +5,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/bind/bind.hpp>
+#include "Logger.h" 
 using namespace boost::placeholders;
 
 template <class T>
@@ -35,6 +36,29 @@ public:
 		{
 			// check and remove if explicit unlock is required
 			lock.unlock();
+		}
+	}
+
+	bool push_back(typename boost::call_traits<value_type>::param_type item)
+	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
+
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_not_full.wait(lock, boost::bind(&bounded_buffer<value_type>::is_ready_to_accept, this));
+		if (is_not_full_command() && m_accept)// 
+		{
+			m_container.push_back(item);
+			LOG_TRACE "<=======Gota a lock ========================== Called PushBack Frame ==========================>>>>";
+			++m_unread;
+			lock.unlock();
+			m_not_empty.notify_one();
+			return true;
+		}
+		else
+		{
+			LOG_TRACE<<"<======= Will Unlock ========================== Called PushBack Frame ==========================>>>>";
+			// check and remove if explicit unlock is required
+			lock.unlock();
+			return false;
 		}
 	}
 
@@ -145,6 +169,7 @@ private:
 
 	bool is_not_empty() const { return m_unread > 0; }
 	bool is_not_full() const { return m_unread < m_capacity; }
+	bool is_not_full_command() const { return m_unread < 2* m_capacity; }
 	bool is_ready_to_accept() const
 	{
 		return ((m_unread < m_capacity) || !m_accept);

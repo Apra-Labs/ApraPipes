@@ -78,7 +78,7 @@ bool FileReaderModule::produce()
 	auto frame = buffMaker.getFrame();
 	frame->fIndex2 = fIndex2;
 	
-	std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+	std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
 	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 	frame->timestamp = dur.count();
 

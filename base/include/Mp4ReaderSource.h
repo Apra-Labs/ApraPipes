@@ -5,6 +5,7 @@ class Mp4readerDetailAbs;
 class Mp4readerDetailJpeg;
 class Mp4readerDetailH264;
 
+using CallbackFunction = std::function<void()>;
 class Mp4ReaderSourceProps : public ModuleProps
 {
 public:
@@ -13,12 +14,13 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, size_t _biggerFrameSize, size_t _biggerMetadataFrameSize, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		biggerFrameSize = _biggerFrameSize;
 		biggerMetadataFrameSize = _biggerMetadataFrameSize;
 		videoPath = _videoPath;
 		parseFS = _parseFS;
+		bFramesEnabled = _bFramesEnabled;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -26,10 +28,11 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, bool _bFramesEnabled = false) : ModuleProps()
 	{
 		videoPath = _videoPath;
 		parseFS = _parseFS;
+		bFramesEnabled = _bFramesEnabled;
 		if (parseFS)
 		{
 			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
@@ -48,6 +51,7 @@ public:
 	size_t biggerFrameSize = 600000;
 	size_t biggerMetadataFrameSize = 60000;
 	bool parseFS = true;
+	bool bFramesEnabled = false;
 private:
 	friend class boost::serialization::access;
 
@@ -60,6 +64,7 @@ private:
 		ar& skipDir;
 		ar& biggerFrameSize;
 		ar& biggerMetadataFrameSize;
+		ar& bFramesEnabled;
 	}
 };
 
@@ -68,12 +73,17 @@ class Mp4ReaderSource : public Module
 public:
 	Mp4ReaderSource(Mp4ReaderSourceProps _props);
 	virtual ~Mp4ReaderSource();
+	void registerCallback(const CallbackFunction &callback)
+	{
+		callbackFunction = callback;
+	}
 	bool init();
 	bool term();
 	Mp4ReaderSourceProps getProps();
 	void setProps(Mp4ReaderSourceProps& props);
 	std::string addOutPutPin(framemetadata_sp& metadata);
-	bool randomSeek(uint64_t skipTS);
+	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS=99999999999999);
+	bool closeOpenFile();
 protected:
 	bool produce();
 	bool validateOutputPins();
@@ -88,4 +98,5 @@ private:
 	Mp4ReaderSourceProps props;
 	std::function<frame_sp(size_t size)> _makeFrame;
 	std::function<framemetadata_sp(int type)> _getOutputMetadataByType;
+	CallbackFunction callbackFunction = NULL;
 };

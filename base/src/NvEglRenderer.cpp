@@ -32,6 +32,7 @@
 #include "NvElement.h"
 #include <cstring>
 #include <sys/time.h>
+#include "Logger.h"
 
 #define CAT_NAME "EglRenderer"
 
@@ -52,7 +53,7 @@ PFNGLEGLIMAGETARGETTEXTURE2DOESPROC     NvEglRenderer::glEGLImageTargetTexture2D
 
 using namespace std;
 
-NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset)
+NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset) // alwaysOnTOp
 {
     int depth;
     int screen_num;
@@ -109,8 +110,20 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     window_attributes.background_pixel =
         BlackPixel(x_display, DefaultScreen(x_display));
 
-    window_attributes.override_redirect = 1;
+     window_attributes.override_redirect = 1;
+    // window_attributes.override_redirect = 0; // this we added to make renderer controlled by window manager
+    
+    // Atom WM_HINTS; 
+    // struct
+    // {
+    //     unsigned long flags;
+    //     unsigned long functions;
+    //     unsigned long decorations;
+    //     long inputMode;
+    //     unsigned long status;
+    // } wmHints = { (1L << 1), 0, 0, 0, 0 }; // this we added to remove title bar
 
+    // LOG_ERROR << "X_OFFSET " << x_offset << "Y_OFFSET "<< y_offset << "========================>>>>";
     x_window = XCreateWindow(x_display,
                              DefaultRootWindow(x_display), x_offset,
                              y_offset, width, height,
@@ -119,6 +132,21 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
                              CopyFromParent,
                              (CWBackPixel | CWOverrideRedirect),
                              &window_attributes);
+    
+    // XStoreName(x_display, x_window, "ApraEglRenderer");
+    // XFlush(x_display);
+    
+    // XSizeHints hints;
+    // hints.x = x_offset;
+    // hints.y = y_offset;
+    // hints.width = width;
+    // hints.height = height;
+    // hints.flags = PPosition | PSize;
+    // XSetWMNormalHints(x_display, x_window, &hints);
+
+    // WM_HINTS = XInternAtom(x_display, "_MOTIF_WM_HINTS", True);
+    // XChangeProperty(x_display, x_window, WM_HINTS, WM_HINTS, 32,
+    //             PropModeReplace, (unsigned char *)&wmHints, 5);
 
     XSelectInput(x_display, (int32_t) x_window, ExposureMask);
     XMapWindow(x_display, (int32_t) x_window);
@@ -270,6 +298,7 @@ finish:
                 renderer->egl_context);
         if (egl_status == EGL_FALSE)
         {
+            LOG_DEBUG << "GETTING EGL FALSE ";
         }
     }
 
@@ -426,6 +455,7 @@ NvEglRenderer::setOverlayText(char *str, uint32_t x, uint32_t y)
 int
 NvEglRenderer::setFPS(float fps)
 {
+    LOG_ERROR << "Setting FPS to =======>>>" << fps;
     uint64_t render_time_usec;
 
     if (fps == 0)

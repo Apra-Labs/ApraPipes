@@ -254,7 +254,7 @@ std::ostringstream & Logger::pre(std::ostringstream& stream, boost::log::trivial
 	if (lvl >= mProps.logLevel)
 	{
 		//add TS and Sev into the log
-		stream << boost::posix_time::microsec_clock::local_time() << " [" << to_string(lvl) << "] ";
+		// stream << boost::posix_time::microsec_clock::local_time() << " [" << to_string(lvl) << "] ";
 	}
 	return stream;
 }
@@ -264,7 +264,7 @@ std::ostringstream & Logger::aipexceptionPre(std::ostringstream& stream, boost::
 	if (lvl >= mProps.logLevel)
 	{
 		//add TS and Sev into the log
-		stream << boost::posix_time::microsec_clock::local_time() <<" [AIPException<" << type << ">] ";
+		// stream << boost::posix_time::microsec_clock::local_time() <<" [AIPException<" << type << ">] ";
 	}
 	return stream;
 }

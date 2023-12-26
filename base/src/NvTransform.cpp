@@ -40,8 +40,11 @@ public:
 	bool compute(frame_sp &frame, int outFD)
 	{
 		auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
-		NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
-
+		auto ret_val = NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
+		if (ret_val == -1)
+		{
+			LOG_ERROR << "Transform failed============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
+		}
 		return true;
 	}
 
@@ -125,6 +128,7 @@ void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 		break;
 	case ImageMetadata::NV12:
 	case ImageMetadata::YUV420:
+	case ImageMetadata::YUV444:
 		mDetail->outputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 		break;
 	default:
@@ -153,6 +157,15 @@ bool NvTransform::term()
 bool NvTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
+	if(isFrameEmpty(frame))
+	{
+		LOG_ERROR << "Found Empty Frame ";
+		return true;
+	}
+	if(!mDetail->outputMetadata->getDataSize())
+	{
+		return true;
+	}
 	auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
 	if (!outFrame.get())
 	{
@@ -222,6 +235,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 
 bool NvTransform::processEOS(string &pinId)
 {
-	mDetail->outputMetadata.reset();
+	LOG_DEBUG<< "Resetting Output Metadata";
+	// mDetail->outputMetadata.reset();
 	return true;
 }

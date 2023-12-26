@@ -42,7 +42,8 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     }
 
     if (colorFormat == NvBufferColorFormat_NV12 ||
-        colorFormat == NvBufferColorFormat_YUV420)
+        colorFormat == NvBufferColorFormat_YUV420 ||
+        colorFormat == NvBufferColorFormat_YUV444)
     {
         res = NvBufferMemMap(buffer->m_fd, 1, NvBufferMem_Read, &(buffer->hostPtrU));
         if (res)
@@ -53,7 +54,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         }
     }
 
-    if (colorFormat == NvBufferColorFormat_YUV420)
+    if (colorFormat == NvBufferColorFormat_YUV420 || colorFormat == NvBufferColorFormat_YUV444)
     {
         res = NvBufferMemMap(buffer->m_fd, 2, NvBufferMem_Read, &(buffer->hostPtrV));
         if (res)
@@ -63,6 +64,17 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
             return nullptr;
         }
     }
+
+    // if(colorFormat == NvBufferColorFormat_YUV444 )
+    // {
+    //     res = NvBufferMemMap(buffer->m_fd, 3, NvBufferMem_Read, &(buffer->hostPtrV));
+    //     if (res)
+    //     {
+    //         LOG_ERROR << "NvBufferMemMap Error<>" << res;
+    //         delete buffer;
+    //         return nullptr;
+    //     }
+    // }
 
     if (colorFormat != NvBufferColorFormat_UYVY)
     {

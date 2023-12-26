@@ -7,7 +7,8 @@ class EglRenderer::Detail
 {
 
 public:
-	Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height): x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height) {}
+	Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height): x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height) {
+    }
 
 	~Detail() 
     {
@@ -21,12 +22,14 @@ public:
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth,displayHeight);
         if(height!=0 && width!=0){
-            x_offset += (displayWidth-width)/2;
-            y_offset += (displayHeight-height)/2;
+            // x_offset += (displayWidth-width)/2;
+            // y_offset += (displayHeight-height)/2;
+            LOG_DEBUG << "X_OFFSET" << x_offset << "y_offset" << y_offset;
             renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset);
         }else{
             x_offset += (displayWidth-_width)/2;
             y_offset += (displayHeight-_height)/2;
+            LOG_DEBUG << "X_OFFSET" << x_offset << "y_offset" << y_offset;
             renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset);
         }
         if (!renderer)
@@ -37,6 +40,15 @@ public:
 
         return true;
     }
+    
+    bool destroyWindow()
+    {
+        if(renderer)
+        {
+            delete renderer;
+        }
+    }
+
 
 	bool shouldTriggerSOS()
 	{
@@ -45,6 +57,7 @@ public:
 
 	NvEglRenderer *renderer = nullptr;
     uint32_t x_offset,y_offset,width,height;
+    std::chrono::milliseconds m_frameDelay{30};
 };
 
 EglRenderer::EglRenderer(EglRendererProps props) : Module(SINK, "EglRenderer", props)
@@ -69,8 +82,15 @@ bool EglRenderer::process(frame_container& frames)
 	{
 		return true;
 	}
-
-    mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
+    if(mDetail->renderer)
+    {
+        mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
+        // waitForNextFrame();
+    }
+    else
+    {
+        LOG_ERROR << "renderer not found for rendering frames =============================>>>>>>>>>";
+    }
     return true;
 }
 
@@ -131,4 +151,52 @@ bool EglRenderer::processSOS(frame_sp& frame)
 bool EglRenderer::shouldTriggerSOS()
 {
 	return mDetail->shouldTriggerSOS();
+}
+
+bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
+{
+    if (type == Command::CommandType::DeleteWindow)
+    {
+        EglRendererCloseWindow cmd;
+        getCommand(cmd, frame);
+        mDetail->destroyWindow();
+        return true;
+    }
+    else if (type == Command::CommandType::CreateWindow)
+    {
+        EglRendererCreateWindow cmd;
+        getCommand(cmd, frame);
+        mDetail->init(cmd.width, cmd.height);
+        return true;
+    }
+    return Module::handleCommand(type, frame);
+}
+
+bool EglRenderer::closeWindow()
+{
+    EglRendererCloseWindow cmd;
+    return queueCommand(cmd, true);
+}
+
+bool EglRenderer::createWindow(int width, int height)
+{
+    EglRendererCreateWindow cmd;
+    cmd.width = width;
+    cmd.height = height;
+    return queueCommand(cmd, true);
+}
+
+bool EglRenderer::processEOS(string& pinId)
+{
+    if(m_callbackFunction)
+    {
+        LOG_DEBUG << "WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONSWILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS";
+        m_callbackFunction();
+    }
+    return true;
+}
+
+void EglRenderer::waitForNextFrame() 
+{
+    std::this_thread::sleep_for(mDetail->m_frameDelay);
 }

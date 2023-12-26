@@ -8,6 +8,8 @@
 #include "CCKernel.h"
 #include "MaskKernel.h"
 #include "npp.h"
+#include "DMAFDWrapper.h"
+#include "CudaStreamSynchronize.h"
 
 class MaskNPPI::Detail
 {
@@ -88,48 +90,78 @@ public:
 
 		return true;
 	}
+	vector<std::pair<float*, float*>> calculateTriangleVertex()
+	{
+		vector<std::pair<float*, float*>> response;
+		float *triangle1X = new float[3];
+		triangle1X[0] = 0;
+		triangle1X[1] = 0;
+		triangle1X[2] = 100;
 
+		float *triangle1Y = new float[3];
+		triangle1Y[0] = 0;
+		triangle1Y[1] = 100;
+		triangle1Y[2] = 0;
+
+		float *triangle2X = new float[3];
+		triangle2X[0] = 400;
+		triangle2X[1] = 350;
+		triangle2X[2] = 400;
+
+		float *triangle2Y = new float[3];
+		triangle2Y[0] = 0;
+		triangle2Y[1] = 0;
+		triangle2Y[2] = 50;
+
+		float *triangle3X = new float[3];
+		triangle3X[0] = 0;
+		triangle3X[1] = 0;
+		triangle3X[2] = 50;
+
+		float *triangle3Y = new float[3];
+		triangle3Y[0] = 400;
+		triangle3Y[1] = 350;
+		triangle3Y[2] = 400;
+
+		float *triangle4X = new float[3];
+		triangle4X[0] = 400;
+		triangle4X[1] = 400;
+		triangle4X[2] = 350;
+
+		float *triangle4Y = new float[3];
+		triangle4Y[0] = 400;
+		triangle4Y[1] = 350;
+		triangle4Y[2] = 400;
+
+		response.push_back(std::pair<float*, float*>{triangle1X, triangle1Y});
+		response.push_back(std::pair<float*, float*>{triangle2X, triangle2Y});
+		response.push_back(std::pair<float*, float*>{triangle3X, triangle3Y});
+		response.push_back(std::pair<float*, float*>{triangle4X, triangle4Y});
+		return response;
+	}
 	bool compute(void *buffer, void *outBuffer)
 	{
 		for (auto i = 0; i < inputChannels; i++)
 		{
 			src[i] = static_cast<const Npp8u *>(buffer) + srcNextPtrOffset[i];
-		}
-
-		for (auto i = 0; i < outputChannels; i++)
-		{
 			dst[i] = static_cast<Npp8u *>(outBuffer) + dstNextPtrOffset[i];
 		}
-		LOG_ERROR << "COPYING BUFFFER";
-		auto cudaStatus = cudaMemcpy2DAsync(dst[0], dstPitch[0], src[0], srcPitch[0], srcRowSize[0], srcSize[0].height, cudaMemcpyDeviceToDevice, props.stream);
-		LOG_ERROR << "Destination WIDTH " << dstSize[0].width << "Destination Height " << dstSize[0].height;
-		LOG_ERROR << "Source WIDTH " << srcSize[0].width << "Source Height " << srcSize[0].height;
 
-		if (inputImageType == ImageMetadata::ImageType::YUYV || inputImageType == ImageMetadata::ImageType::UYVY)
-		{
-			applyCircularMask((uint8_t *)buffer, (uint8_t *)outBuffer, dstSize[0].width, dstSize[0].height, 200, 200, 50, props.stream);
-		}
-
-		else if (inputImageType == ImageMetadata::ImageType::RGBA || inputImageType == ImageMetadata::ImageType::BGRA)
-		{
-			LOG_ERROR << "HAVING RGBA OR BGRA IMAGE TYPE ";
-			applyCircularMaskRGBA((uint8_t *)buffer, (uint8_t *)outBuffer, dstSize[0].width, dstSize[0].height, 200, 200, 50, props.stream);
-		}
-		// else if (inputImageType == ImageMetadata::ImageType::YUV444 && true && true) // indicator on yuv444 square frame
+		// for (auto i = 0; i < outputChannels; i++)
 		// {
-		// 	LOG_ERROR << "Will Use Square Mask with Indicator";
-		// 	addKernelIndicatorSquareMask((unsigned char *)buffer, (unsigned char *)outBuffer, dstSize[0].width, dstSize[0].height, dstPitch[0], props.stream);
+		// 	dst[i] = static_cast<Npp8u *>(outBuffer) + dstNextPtrOffset[i];
 		// }
-		// else if (inputImageType == ImageMetadata::ImageType::YUV444 && true)
-		// {
-		// 	LOG_ERROR << "Will Use Diamond YUV444 Kernel";
-		// 	LOG_ERROR << "width is " << dstSize[0].width << "Height is " << dstSize[0].height << "Stride is " << dstPitch[0];
-		// 	applyDiamondMaskYUV444((unsigned char *)buffer, (unsigned char *)outBuffer, dstSize[0].width, dstSize[0].height, dstPitch[0], 200, 200, 50, props.stream);
-		// }
-		else if (inputImageType == ImageMetadata::ImageType::YUV444)
+		if ((inputImageType == ImageMetadata::ImageType::RGBA || inputImageType == ImageMetadata::ImageType::BGRA) && props.maskSelected == MaskNPPIProps::AVAILABLE_MASKS::CIRCLE)
 		{
-			LOG_ERROR << "Will Use YUV444 Kernel";
-			applyCircularMaskYUV444((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, 200, 200, 50, props.stream);
+			applyCircularMaskForRGBANew((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, props.centerX, props.centerY, props.radius, props.stream);
+		}
+		else if (inputImageType == ImageMetadata::ImageType::RGBA && props.maskSelected == MaskNPPIProps::AVAILABLE_MASKS::OCTAGONAL) // working
+		{
+			generateRGBAOctagonalKernel((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, props.centerX, props.centerY, props.radius, props.stream);
+		}
+		else if (inputImageType == ImageMetadata::ImageType::YUV444 && props.maskSelected == MaskNPPIProps::AVAILABLE_MASKS::CIRCLE) // working
+		{
+			applyCircularMaskYUV444((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, props.centerX, props.centerY, props.radius, props.stream);
 		}
 		return true;
 	}
@@ -181,9 +213,9 @@ bool MaskNPPI::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMA Memory. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -207,9 +239,9 @@ bool MaskNPPI::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -223,11 +255,11 @@ void MaskNPPI::addInputPin(framemetadata_sp &metadata, string &pinId)
 	mInputFrameType = metadata->getFrameType();
 	if (mInputFrameType == FrameMetadata::RAW_IMAGE)
 	{
-		mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+		mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 	}
 	else if (mInputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+		mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 	}
 	else
 	{
@@ -257,9 +289,13 @@ bool MaskNPPI::process(frame_container &frames)
 {
 	cudaFree(0);
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame();
-	mDetail->compute((uint8_t *)frame->data(), (uint8_t *)outFrame->data());
-
+	if(mDetail->getProps().maskSelected != MaskNPPIProps::AVAILABLE_MASKS::NONE)
+	{
+		auto outFrame = makeFrame();
+		auto srcCudaPtr = static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr();
+		auto dstCudaPtr = static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr();
+		mDetail->compute(srcCudaPtr, dstCudaPtr);
+	}
 	frames.insert(make_pair(mOutputPinId, frame));
 	send(frames);
 
@@ -316,7 +352,7 @@ void MaskNPPI::setMetadata(framemetadata_sp &metadata)
 	if (mOutputFrameType == FrameMetadata::RAW_IMAGE)
 	{
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
-		RawImageMetadata outputMetadata(width, height, inputImageType, type, 512, depth, FrameMetadata::CUDA_DEVICE, true);
+		RawImageMetadata outputMetadata(width, height, inputImageType, type, 512, depth, FrameMetadata::DMABUF, true);
 		rawOutMetadata->setData(outputMetadata);
 	}
 	else if (mOutputFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
@@ -357,9 +393,8 @@ void MaskNPPI::setProps(MaskNPPIProps &props)
 bool MaskNPPI::handlePropsChange(frame_sp &frame)
 {
 	auto stream = mDetail->getProps().stream_sp;
-	MaskNPPIProps props(stream);
+	MaskNPPIProps props(0, 0, 2, MaskNPPIProps::AVAILABLE_MASKS::NONE, stream);
 	bool ret = Module::handlePropsChange(frame, props);
-
 	mDetail->setProps(props);
 
 	return ret;

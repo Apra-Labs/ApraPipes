@@ -1,9 +1,9 @@
 #pragma once
 #include <chrono>
 #include <thread>
-
+#include "Logger.h"
 class PaceMaker {
-	using sys_clock = std::chrono::system_clock;
+	using sys_clock = std::chrono::steady_clock;
 	sys_clock::time_point frame_begin;
 	std::chrono::nanoseconds myNextWait;
 	std::chrono::nanoseconds myTargetFrameLen;
@@ -19,6 +19,7 @@ public:
 
 	void setFps(int _fps)
 	{
+		LOG_ERROR << "SETTING FPS TO " << _fps;
 		if(_fps <= 0)
 		{
 			myTargetFrameLen = std::chrono::nanoseconds(1);
@@ -28,6 +29,7 @@ public:
 			myTargetFrameLen = std::chrono::nanoseconds(1000000000 / _fps);
 		}
 		fps = _fps;
+		initDone = false;
 	}
 
 	void start() {

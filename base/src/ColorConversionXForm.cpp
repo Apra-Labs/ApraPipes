@@ -37,16 +37,16 @@ bool ColorConversion::validateInputPins()
 			return false;
 		}
 	}
-	else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::YUV420)
-		{
-			LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
-			return false;
-		}
-	}
+	// else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	// {
+	// 	auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+	// 	auto imageType = rawMetadata->getImageType();
+	// 	if (imageType != ImageMetadata::YUV420)
+	// 	{
+	// 		LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
+	// 		return false;
+	// 	}
+	// }
 	return true;
 }
 
@@ -75,16 +75,16 @@ bool ColorConversion::validateOutputPins()
 			return false;
 		}
 	}
-	else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
-	{
-		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		auto imageType = rawMetadata->getImageType();
-		if (imageType != ImageMetadata::YUV420)
-		{
-			LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
-			return false;
-		}
-	}
+	// else if (frameType == FrameMetadata::RAW_IMAGE_PLANAR)
+	// {
+	// 	auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+	// 	auto imageType = rawMetadata->getImageType();
+	// 	if (imageType != ImageMetadata::YUV420)
+	// 	{
+	// 		LOG_ERROR << "<" << getId() << ">Output Image type is not supported . Actual<" << imageType << ">";
+	// 		return false;
+	// 	}
+	// }
 	return true;
 }
 
@@ -148,7 +148,6 @@ std::string ColorConversion::addOutputPin(framemetadata_sp& metadata)
 
 bool ColorConversion::init()
 {
-	setConversionStrategy(mInputMetadata, mOutputMetadata);
 	return Module::init();
 }
 
@@ -168,5 +167,7 @@ bool ColorConversion::process(frame_container& frames)
 
 bool ColorConversion::processSOS(frame_sp& frame)
 {
+
+	setConversionStrategy(frame->getMetadata(), mOutputMetadata);
 	return true;
 }

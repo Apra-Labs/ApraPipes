@@ -9,21 +9,21 @@ class DetailH264;
 class Mp4WriterSinkProps : public ModuleProps
 {
 public:
-	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTime, uint16_t _fps, std::string _baseFolder) : ModuleProps()
+	Mp4WriterSinkProps(uint32_t _chunkTime, uint32_t _syncTimeInSecs, uint16_t _fps, std::string _baseFolder) : ModuleProps()
 	{
 		baseFolder = _baseFolder;
 		fps = _fps;
-		if (_chunkTime >= 1 && _chunkTime <= 60)
+		if ((_chunkTime >= 1 && _chunkTime <= 60) || (_chunkTime == UINT32_MAX))
 		{
 			chunkTime = _chunkTime;
 		}
 		else
 		{
-			throw AIPException(AIP_FATAL, "ChuntTime should be within [1,60] minutes limit");
+			throw AIPException(AIP_FATAL, "ChuntTime should be within [1,60] minutes limit or UINT32_MAX");
 		}
-		if (_syncTime >= 1 && _syncTime <= 60)
+		if (_syncTimeInSecs >= 1 && _syncTimeInSecs <= 60)
 		{
-			syncTime = _syncTime;
+			syncTimeInSecs = _syncTimeInSecs;
 		}
 		else
 		{
@@ -35,7 +35,7 @@ public:
 	{
 		baseFolder = "./data/mp4_videos/";
 		chunkTime = 1; //minutes
-		syncTime = 1;
+		syncTimeInSecs = 1;
 		fps = 30;
 	}
 
@@ -44,13 +44,13 @@ public:
 		return ModuleProps::getSerializeSize() +
 			sizeof(baseFolder) +
 			sizeof(chunkTime) +
-			sizeof(syncTime) +
+			sizeof(syncTimeInSecs) +
 			sizeof(fps);
 	}
 
 	std::string baseFolder;
 	uint32_t chunkTime = 1;
-	uint32_t syncTime = 1;
+	uint32_t syncTimeInSecs = 1;
 	uint16_t fps = 30;
 private:
 	friend class boost::serialization::access;
@@ -61,7 +61,7 @@ private:
 		ar &boost::serialization::base_object<ModuleProps>(*this);
 		ar &baseFolder;
 		ar &chunkTime;
-		ar &syncTime;
+		ar &syncTimeInSecs;
 		ar &fps;
 	}
 };
@@ -75,6 +75,7 @@ public:
 	bool term();
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
+	bool closeFile();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -83,6 +84,7 @@ protected:
 	bool validateInputOutputPins();
 	bool setMetadata(framemetadata_sp &inputMetadata);
 	bool handlePropsChange(frame_sp &frame);
+	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool shouldTriggerSOS();
 	boost::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;

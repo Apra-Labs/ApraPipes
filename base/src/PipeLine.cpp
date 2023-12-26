@@ -32,6 +32,16 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
+bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+{
+	for (int i = 0; i < modules.size(); i++)
+	{
+		modules[i]->controlModule = cModule;  /// Saying Each Module know about control module 
+		cModule->pipelineModules.push_back(modules[i]); // In an array of controller modules we are pushing each modules
+	}
+	return true;
+}
+
 bool PipeLine::checkCyclicDependency()
 {
 	std::map< std::string, std::vector<std::string> > dependencyMap;
@@ -103,6 +113,7 @@ bool PipeLine::init()
 	{
 		bool bRCInit = false;
 		try {
+			auto s = i->get()->getId();
 			bRCInit = i->get()->init();
 			LOG_TRACE << " Initialized pipeline" << i->get()->getId();
 		}
@@ -118,6 +129,7 @@ bool PipeLine::init()
 		}
 		if (!bRCInit)
 		{
+			auto s = i->get()->getId();
 			LOG_ERROR << " Failed init " << i->get()->getId();
 			myStatus = PL_INITFAILED;
 			return false;
@@ -149,6 +161,11 @@ void PipeLine::run_all_threaded()
 		m.myThread = boost::thread(ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
+	if ((modules[0]->controlModule) != nullptr) ///  just to check if control module is included or not, If yes then we will launch thread for same
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread = boost::thread(ref(m));
+	}
 	mPlay = true;
 }
 
@@ -174,15 +191,18 @@ void PipeLine::pause()
 
 void PipeLine::play()
 {
-	for (auto i = modules.begin(); i != modules.end(); i++)
+	if (mPlay == false)
 	{
-		if (i->get()->getNature() == Module::SOURCE)
+		for (auto i = modules.begin(); i != modules.end(); i++)
 		{
-			i->get()->play(true);
+			if (i->get()->getNature() == Module::SOURCE)
+			{
+				i->get()->play(true);
+			}
 		}
-	}
 
-	mPlay = true;
+		mPlay = true;
+	}
 }
 
 void PipeLine::step()
@@ -230,7 +250,9 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
+		LOG_INFO << "Joinin Thread ====>>>>" <<  m.myName;
 		m.myThread.join();
+		LOG_INFO << "Joined Thread ====>>>>" <<  m.myName;
 	}
 }
 

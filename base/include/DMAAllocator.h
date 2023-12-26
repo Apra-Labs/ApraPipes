@@ -29,6 +29,9 @@ private:
         case ImageMetadata::UYVY:
             colorFormat = NvBufferColorFormat_UYVY;
             break;
+        case ImageMetadata::YUYV:
+            colorFormat = NvBufferColorFormat_YUYV;
+            break;
         case ImageMetadata::RGBA:
             colorFormat = NvBufferColorFormat_ABGR32;
             break;
@@ -41,8 +44,11 @@ private:
         case ImageMetadata::NV12:
             colorFormat = NvBufferColorFormat_NV12;
             break;
+        case ImageMetadata::YUV444:
+            colorFormat = NvBufferColorFormat_YUV444;
+            break;
         default:
-            throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12> Actual<" + std::to_string(imageType) + ">");
+            throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12/YUV444> Actual<" + std::to_string(imageType) + ">");
         }
 
         return colorFormat;
@@ -131,6 +137,7 @@ public:
             case ImageMetadata::ImageType::BGRA:
                 type = CV_8UC4;
                 break;
+            case ImageMetadata::ImageType::YUYV:
             case ImageMetadata::ImageType::UYVY:
                 type = CV_8UC3;
                 break;
@@ -142,7 +149,7 @@ public:
             inputRawMetadata->setData(rawMetadata);
         }
         break;
-        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR: // need to check for yuv444
         {
             auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
             size_t step[4] = {0, 0, 0, 0};

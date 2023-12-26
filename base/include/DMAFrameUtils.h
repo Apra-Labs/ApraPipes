@@ -48,6 +48,7 @@ public:
             switch (imageType)
             {
             case ImageMetadata::ImageType::YUV420:
+            case ImageMetadata::ImageType::YUV444:
                 return getDMAFDYUV420HostImagePlanes;
             case ImageMetadata::ImageType::NV12:
                 return getDMAFDNV12HostImagePlanes;

@@ -6,7 +6,7 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
-
+#include "DMAFDWrapper.h"
 #include "npp.h"
 
 class ResizeNPPI::Detail
@@ -185,9 +185,9 @@ bool ResizeNPPI::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -211,9 +211,9 @@ bool ResizeNPPI::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-	if (memType != FrameMetadata::MemType::CUDA_DEVICE)
+	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}	
 
@@ -250,7 +250,7 @@ bool ResizeNPPI::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame(mFrameLength);	
 
-	mDetail->compute(frame->data(), outFrame->data());	
+	mDetail->compute(static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr(), static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr());	
 
 	frames.insert(make_pair(mOutputPinId, outFrame));
 	send(frames);
@@ -273,10 +273,10 @@ void ResizeNPPI::setMetadata(framemetadata_sp& metadata)
 		switch (mFrameType)
 		{
 		case FrameMetadata::RAW_IMAGE:
-			mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 			break;
 		case FrameMetadata::RAW_IMAGE_PLANAR:
-			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 			break;
 		default:
 			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
@@ -292,7 +292,7 @@ void ResizeNPPI::setMetadata(framemetadata_sp& metadata)
 	if (mFrameType == FrameMetadata::RAW_IMAGE)
 	{
 		auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		RawImageMetadata outputMetadata(props.width, props.height, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::CUDA_DEVICE, true);
+		RawImageMetadata outputMetadata(props.width, props.height, rawMetadata->getImageType(), rawMetadata->getType(), 512, rawMetadata->getDepth(), FrameMetadata::DMABUF, true);
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 		rawOutMetadata->setData(outputMetadata); // new function required
 		imageType = rawMetadata->getImageType();
@@ -300,7 +300,7 @@ void ResizeNPPI::setMetadata(framemetadata_sp& metadata)
 	else if (mFrameType == FrameMetadata::RAW_IMAGE_PLANAR)
 	{
 		auto rawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-		RawImagePlanarMetadata outputMetadata(props.width, props.height, rawMetadata->getImageType(), 512, rawMetadata->getDepth());
+		RawImagePlanarMetadata outputMetadata(props.width, props.height, rawMetadata->getImageType(), 512, rawMetadata->getDepth(), FrameMetadata::DMABUF);
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 		rawOutMetadata->setData(outputMetadata);
 		imageType = rawMetadata->getImageType();

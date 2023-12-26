@@ -53,7 +53,7 @@ void NonBlockingAnyPushStrategy::push(std::string dstModuleId, frame_container& 
 		mDropCount++;
 		if (mDropCount%mPrintFrequency == 1)
 		{
-			// LOG_ERROR << mId << "<" << dstModuleId << "> dropping from que. DropCount<" << mDropCount << ">";
+			LOG_ERROR << mId << "<" << dstModuleId << "> dropping from que. DropCount<" << mDropCount << ">";
 		}		
 	}
 }

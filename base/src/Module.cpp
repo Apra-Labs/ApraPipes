@@ -30,7 +30,7 @@ void * Module::FFBufferMaker::make(size_t dataSize)
 
 class Module::Profiler
 {
-	using sys_clock = std::chrono::system_clock;
+	using sys_clock = std::chrono::steady_clock;
 
 public:
 	Profiler(string &id, bool _shouldLog, int _printFrequency, std::function<string()> _getPoolHealthRecord) : moduleId(id), shouldLog(_shouldLog), mPipelineFps(0), printFrequency(_printFrequency)
@@ -567,6 +567,15 @@ bool Module::try_push(frame_container frameContainer)
 	return rc;
 }
 
+bool Module::push_back(frame_container frameContainer)
+{
+	LOG_DEBUG << "PUSH_BACK FRAME==================================>>>>>>";
+	// LOG_TRACE << "Printing Queue Size Before putting command frame "<< mQue->size() ;
+	auto rc = mQue->push_back(frameContainer);
+	// LOG_TRACE << "Printing Queue Size After putting command frame "<< mQue->size() ;
+	return rc;
+}
+
 frame_container Module::try_pop()
 {
 	return mQue->try_pop();
@@ -1028,7 +1037,7 @@ bool Module::shouldTriggerSOS()
 	return false;
 }
 
-bool Module::play(bool play)
+bool Module::play(bool play, bool priority)
 {
 	if (!mRunning)
 	{
@@ -1046,9 +1055,19 @@ bool Module::play(bool play)
 	// add to que
 	frame_container frames;
 	frames.insert(make_pair("pause_play", frame));
-	if (!Module::try_push(frames))
+	if (!priority)
 	{
-		LOG_ERROR << "failed to push play command to the que";
+		if (!Module::try_push(frames))
+		{
+			LOG_ERROR << "failed to push play command to the que";
+		}
+	}
+	else
+	{
+		if (!Module::push_back(frames))
+		{
+			LOG_ERROR << "failed to push play command At the back of the to the que";
+		}
 	}
 
 	return true;
@@ -1178,10 +1197,16 @@ bool Module::step()
 			// it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
 			return true;
 		}
-
-		mProfiler->startProcessingLap();
-		ret = stepNonSource(frames);
-		mProfiler->endLap(mQue->size());
+		if(mPlay)
+		{
+			mProfiler->startProcessingLap();
+			ret = stepNonSource(frames);
+			mProfiler->endLap(mQue->size());
+		}
+		else
+		{
+			ret = true;
+		}
 	}
 
 	return ret;
@@ -1255,6 +1280,14 @@ bool Module::preProcessNonSource(frame_container &frames)
 			handleCommand(cmdType, frame);
 			frames.erase(pinId);
 			continue;
+		}
+
+		if (frame->isPausePlay())// ws_yash
+		{
+			LOG_DEBUG << "Got is Play Pause Command =============================>>>>";
+			auto buffer = (unsigned char *)frame->data();
+			auto play = buffer[0] ? true : false;
+			handlePausePlay(play);
 		}
 
 		if (!bTriggerSOS)

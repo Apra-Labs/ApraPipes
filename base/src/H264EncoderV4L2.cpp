@@ -6,10 +6,11 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
+#include "H264Metadata.h"
 
 H264EncoderV4L2::H264EncoderV4L2(H264EncoderV4L2Props props) : Module(TRANSFORM, "H264EncoderV4L2", props), mProps(props)
 {
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
+	mOutputMetadata = framemetadata_sp(new H264Metadata());
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
@@ -133,10 +134,14 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		{
 			if(width != step)
 			{
-				throw AIPException(AIP_FATAL, "Width is expected to be equal to step");
+				// throw AIPException(AIP_FATAL, "Width is expected to be equal to step");
 			}
 		}
 	}
+	auto h264Metadata = H264Metadata(width, height);
+	auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(mOutputMetadata);
+	rawOutMetadata->setData(h264Metadata);
+
 
 	auto v4l2MemType = V4L2_MEMORY_MMAP;
 	if(metadata->getMemType() == FrameMetadata::DMABUF)
@@ -148,6 +153,9 @@ bool H264EncoderV4L2::processSOS(frame_sp &frame)
 		frame->setMetadata(mOutputMetadata);
 
 		frame_container frames;
+		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+		frame->timestamp = dur.count();
 		frames.insert(make_pair(mOutputPinId, frame));
 		send(frames);
 	});

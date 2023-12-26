@@ -103,7 +103,8 @@ public:
         archiveSize = estimateDirectorySize(mProps.pathToWatch);
         if (archiveSize > mProps.upperWaterMark)
         {
-            manageDirectory();
+            // manageDirectory();
+            // Now Instead of Deleting we will send command frame to 
         }
         uint32_t tempSize = archiveSize;
         archiveSize = 0;

@@ -162,7 +162,7 @@ public:
 	virtual bool init();
 	void operator()(); //to support boost::thread
 	virtual bool run();	
-	bool play(bool play);
+	bool play(bool play, bool priority = false);
 	bool queueStep();
 	virtual bool step();
 	virtual bool stop();
@@ -177,6 +177,28 @@ public:
 	static frame_sp getFrameByType(frame_container& frames, int frameType); 
 	virtual void flushQue();
 	virtual void flushQueRecursive();
+	template<class T>
+	bool queueCommand(T& cmd, bool priority = false)
+	{
+		auto size = cmd.getSerializeSize();
+		auto frame = makeCommandFrame(size, mCommandMetadata);
+
+		Utils::serialize(cmd, frame->data(), size);
+
+		// add to que
+		frame_container frames;
+		frames.insert(make_pair("command", frame));
+		if(!priority)
+		{
+			Module::push(frames);
+		}
+		else
+		{
+			Module::push_back(frames);
+		}
+
+		return true;
+	}
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
@@ -214,22 +236,6 @@ protected:
 
 		// set props		
 		Module::setProps(props);
-
-		return true;
-	}
-
-	template<class T>
-	bool queueCommand(T& cmd)
-	{
-		auto size = cmd.getSerializeSize();
-		auto frame = makeCommandFrame(size, mCommandMetadata);
-
-		Utils::serialize(cmd, frame->data(), size);
-
-		// add to que
-		frame_container frames;
-		frames.insert(make_pair("command", frame));
-		Module::push(frames);
 
 		return true;
 	}
@@ -334,13 +340,13 @@ protected:
 	};
 
 	FFBufferMaker createFFBufferMaker();
-
+	boost::shared_ptr<Module> controlModule = nullptr;
 private:	
 	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
-	
+	bool push_back(frame_container frameContainer);
 	bool addEoPFrame(frame_container& frames);
 	bool handleStop();
 

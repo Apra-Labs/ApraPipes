@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(opencvresize_tests, * boost::unit_test::disabled())
 void testopencvcpuresize()
 {
     {
-        auto img = cv::imread("./data/mono_1920x960.jpg", 0);
+        auto img = cv::imread("./data/mono.jpg", 0); // fread, check no of bytes
         if(!img.data)
         {
             std::cout << "image read failed" << std::endl;
@@ -68,7 +68,7 @@ void testopencvgpuresize()
 
     dst_gpu.download(dst);
 
-    cv::imwrite("/home/al/Downloads/testopencvgpuresize.jpg", dst);
+    cv::imwrite("/home//Downloads/testopencvgpuresize.jpg", dst);
 }
 
 BOOST_AUTO_TEST_CASE(cpu)

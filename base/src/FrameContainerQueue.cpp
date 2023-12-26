@@ -24,6 +24,12 @@ bool FrameContainerQueue::try_push(frame_container item)
 	return bounded_buffer<frame_container>::try_push(item);
 }
 
+bool FrameContainerQueue::push_back(frame_container item) // ws_yash
+{
+	LOG_DEBUG << "Frame Container Queue PUSH_BACK========================================>>>>>" ;
+	return bounded_buffer<frame_container>::push_back(item);
+}
+
 frame_container FrameContainerQueue::try_pop()
 {
 	return bounded_buffer<frame_container>::try_pop();

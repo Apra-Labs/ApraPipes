@@ -11,6 +11,12 @@
 #include "CudaMemCopy.h"
 #include "ResizeNPPI.h"
 #include "test_utils.h"
+#include "NvV4L2Camera.h"
+#include "NvTransform.h"
+#include "EglRenderer.h"
+#include "PipeLine.h"
+#include "CudaStreamSynchronize.h"
+#include "CudaMemCopy.h"
 
 BOOST_AUTO_TEST_SUITE(resizenppi_tests)
 
@@ -191,6 +197,36 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 		copy2->step();
 		m3->pop();
 	}
+}
+
+BOOST_AUTO_TEST_CASE(resize_nppi)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 2))); /// DMA
+
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA))); // DMA
+	source->setNext(nv_transform);
+
+	auto stream = cudastream_sp(new ApraCudaStream);
+	
+	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(320, 240, stream)));
+	nv_transform->setNext(resize);
+
+	auto sync = boost::shared_ptr<Module>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	resize->setNext(sync);
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	sync->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	p.stop();
+	p.term();
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

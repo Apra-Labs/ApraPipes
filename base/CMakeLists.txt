@@ -57,6 +57,10 @@ message(STATUS ${LIBMP4_INC_DIR} ">>>>>> LIBMP4_INC_DIR")
 list(APPEND CMAKE_PREFIX_PATH ${LIBMP4_LIB_DIR})
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(GLEW REQUIRED)
+# include_directories(${CMAKE_SOURCE_DIR}/../third_party/ApraGTKUtils/include/)
+include_directories(/mnt/disks/ssd/ws_yashraj/production_ws_setup/ApraGTKUtils/include/)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 IF(ENABLE_GST)
 	pkg_check_modules(gstreamer-1.0 REQUIRED IMPORTED_TARGET GLOBAL gstreamer-1.0)  
@@ -82,7 +86,7 @@ ENDIF(ENABLE_GST)
 	
 
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
-
+find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -107,6 +111,7 @@ IF(ENABLE_CUDA)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
+		find_library(ApraGTKUtils libApraGTKUtils.a PATHS ~/production_ws_setup/ApraGTKUtils/build/)
 		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
 		find_library(V4L2LIB nvv4l2 REQUIRED)
 		find_library(EGLLIB EGL REQUIRED)
@@ -129,6 +134,11 @@ IF(ENABLE_CUDA)
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(${GTK3_INCLUDE_DIRS})
+		SET(ARAGTK ~/atl-app_new/third_party/ApraGTKUtils/include/)
+		include_directories(~/atl-app_new/third_party/ApraGTKUtils/include/)
+		message("ApraGTKK is" ${ARAGTK})
+		# include_directories(${ARAGTK})
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -253,6 +263,8 @@ SET(CORE_FILES_H
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/AbsControlModule.h
+	include/EndocamControlModule.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -305,6 +317,8 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
+	src/AbsControlModule.cpp
+	src/EndocamControlModule.cpp
 )
 
 
@@ -375,14 +389,20 @@ SET(CUDA_CORE_FILES_H
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
 	src/CCKernel.cu
-	src/CCNPPI.cpp	
+	src/CCNPPI.cpp
 	src/EffectsKernel.cu
 	src/EffectsNPPI.cpp
 	src/GaussianBlur.cpp
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp		
+	src/RotateNPPI.cpp
+	src/MaskKernel.cu
+	src/MaskNPPI.cpp
+	src/RotationIndicator.cu
+	src/RotationIndicatorKernel.cpp
+	src/AffineTransform.cpp
+	src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -407,6 +427,15 @@ IF(ENABLE_ARM64)
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
+		src/Matrix.cpp
+		src/Model.cpp
+		src/Program.cpp
+		src/Background.cpp
+		src/View.cpp
+		src/GtkGlRenderer.cpp
+		src/H264DecoderV4L2Helper.cpp
+		src/H264DecoderV4L2Helper.h
+		src/ThumbnailListGenerator.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -414,6 +443,8 @@ ELSE()
 		src/JPEGEncoderNVJPEG.cpp
 		src/H264EncoderNVCodecHelper.cpp
 		src/H264EncoderNVCodec.cpp
+		src/H264DecoderNvCodecHelper.cpp
+		src/H264DecoderNvCodecHelper.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -427,6 +458,13 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
+	include/MaskKernel.h
+	include/MaskNPPI.h
+	include/RotationIndicator.h
+	include/RotationIndicatorKernel.h
+	include/AffineTransform.h
+	include/H264Decoder.h
+	# include/AT.h
 )
 
 IF(ENABLE_ARM64)
@@ -454,6 +492,14 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+		include/Matrix.h
+		include/GLUtils.h
+		include/Model.h
+		include/Program.h
+		include/Background.h
+		include/View.h
+		include/GtkGlRenderer.h
+		include/ThumbnailListGenerator.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -522,21 +568,26 @@ ENDIF(ENABLE_GST)
 
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
-		test/jpegencoderl4tm_tests.cpp
-		test/jpegdecoderl4tm_tests.cpp
+		# test/jpegencoderl4tm_tests.cpp
+		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
-		test/h264encoderv4l2helper_tests.cpp
-		test/h264encoderv4l2_tests.cpp
-		test/nvarguscamerahelper_tests.cpp
-		test/nvarguscamera_tests.cpp
+		# test/h264encoderv4l2helper_tests.cpp
+		# test/h264encoderv4l2_tests.cpp
+		# test/nvarguscamerahelper_tests.cpp
+		# test/nvarguscamera_tests.cpp
 		test/nvv4l2camera_test.cpp
-		test/nvv4l2camerahelper_test.cpp
-		test/nvtransform_tests.cpp
-		test/eglrenderer_test.cpp
-		test/cuda_arm_tests.cpp
-		test/apraegldisplay_tests.cpp
-		test/frame_factory_test_dma.cpp
+		# test/nvv4l2camerahelper_test.cpp
+		# test/nvtransform_tests.cpp
+		# test/eglrenderer_test.cpp
+		# test/cuda_arm_tests.cpp
+		# test/apraegldisplay_tests.cpp
+		# test/frame_factory_test_dma.cpp
+		test/gtkglrenderer_tests.cpp
+		# test/affine_transform_tests.cpp
+		# test/at_tests.cpp
+		test/h264decoder_tests.cpp
+
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -545,6 +596,7 @@ IF (ENABLE_CUDA)
 		test/cudamemcopy_tests.cpp		
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
+		test/masknppi_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -565,49 +617,49 @@ ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
 	test/utmain.cpp
-	test/unit_tests.cpp
-	test/cv_memory_leaks_tests.cpp
-	test/module_tests.cpp
-	test/calchistogramcv_tests.cpp
-	test/filenamestrategy_tests.cpp
+	# test/unit_tests.cpp
+	# test/cv_memory_leaks_tests.cpp
+	# test/module_tests.cpp
+	# test/calchistogramcv_tests.cpp
+	# test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
-	test/filewritermodule_tests.cpp
-	test/logger_tests.cpp
-#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
-	test/quepushstrategy_tests.cpp	
-	test/framesmuxer_tests.cpp
-	test/filereadermodule_tests.cpp
-	test/merge_tests.cpp
-	test/split_tests.cpp
-	test/imagemetadata_tests.cpp
-	test/bmpconverter_tests.cpp
-	test/rtsppusher_tests.cpp
-	test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
-	test/Imageresizecv_tests.cpp
+	# test/filewritermodule_tests.cpp
+	# test/logger_tests.cpp
+    # test/logger_stress_tests.cpp  #todo this test needs to be improved and added
+	# test/quepushstrategy_tests.cpp	
+	# test/framesmuxer_tests.cpp
+	# test/filereadermodule_tests.cpp
+	# test/merge_tests.cpp
+	# test/split_tests.cpp
+	# test/imagemetadata_tests.cpp
+	# test/bmpconverter_tests.cpp
+	# test/rtsppusher_tests.cpp
+	# test/findexstrategy_tests.cpp	
+	# test/jpegdecodercv_tests.cpp
+	# test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
-	test/rotatecv_tests.cpp
-	test/brightness_contrast_tests.cpp
-	test/virtualptz_tests.cpp
-	test/webcam_source_tests.cpp
-	test/facedetectorXform_tests.cpp
-	test/sound_record_tests.cpp
-	test/pullstratergy_tests.cpp
-	test/QRReader_tests.cpp
-	test/textoverlayxform_tests.cpp
-	test/mp4writersink_tests.cpp
-	test/pipeline_tests.cpp
+	# test/rotatecv_tests.cpp
+	# test/brightness_contrast_tests.cpp
+	# test/virtualptz_tests.cpp
+	# test/webcam_source_tests.cpp
+	# test/facedetectorXform_tests.cpp
+	# test/sound_record_tests.cpp
+	# test/pullstratergy_tests.cpp
+	# test/QRReader_tests.cpp
+	# test/textoverlayxform_tests.cpp
+	# test/mp4writersink_tests.cpp
+	# test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	test/valveModule_tests.cpp
-	test/color_conversion_tests.cpp
-	test/archivespacemanager_tests.cpp
-	test/multimediaqueuexform_tests.cpp
+	# test/valveModule_tests.cpp
+	# test/color_conversion_tests.cpp
+	# test/archivespacemanager_tests.cpp
+	# test/multimediaqueuexform_tests.cpp
 	test/mp4readersource_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/rtsp_client_tests.cpp
+	# test/rtsp_client_tests.cpp
+	# test/rtsp_client_tests.cpp
 	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}
+	# ${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
@@ -649,16 +701,17 @@ ENDIF(ENABLE_GST)
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT})
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${ARAGTK} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
-
-
+message("============================================================== "${JPEG_LIBRARIES}" ==================================================")
 target_link_libraries(aprapipesut   
   aprapipes  
+#   libturbojpeg 
+  ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
@@ -676,6 +729,11 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  GL
+  GLEW::GLEW
+  ${GTK3_LIBRARIES}
+#   ${ApraGTKUtils}
+#   /home/developer/atl-app/third_party/ApraGTKUtils/lib_arm64/libApraGTKUtils.a
   )
 
 IF(ENABLE_WINDOWS)

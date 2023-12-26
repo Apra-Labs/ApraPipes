@@ -14,6 +14,11 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
+		Mp4FileClose,
+		DeleteWindow,
+		CreateWindow,
+		DecoderEOS,
+		Mp4ReadCloseFile
 	};
 
 	Command()
@@ -34,7 +39,7 @@ public:
 	CommandType getType()
 	{
 		return type;
-	}	
+	} 
 
 private:
 	friend class boost::serialization::access;
@@ -144,7 +149,7 @@ private:
 		ar & nextModuleId & open;
 	}
 
-	
+ 
 };
 
 class StepCommand : public Command
@@ -154,7 +159,7 @@ public:
 	{
 
 	}
-		
+  
 	size_t getSerializeSize()
 	{
 		return Command::getSerializeSize();
@@ -165,7 +170,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int /* file_version */) {
-		ar & boost::serialization::base_object<Command>(*this);		
+		ar & boost::serialization::base_object<Command>(*this);  
 	}
 
 
@@ -193,6 +198,75 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& numOfFrames;
 
+	}
+};
+
+class Mp4WriterSinkCloseFile : public Command
+{
+public:
+	Mp4WriterSinkCloseFile() : Command(Command::CommandType::Mp4FileClose)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
+class EglRendererCloseWindow : public Command
+{
+public:
+	EglRendererCloseWindow() : Command(Command::CommandType::DeleteWindow)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
+class EglRendererCreateWindow : public Command
+{
+public:
+	EglRendererCreateWindow() : Command(Command::CommandType::CreateWindow)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(width) + sizeof(height);
+	}
+	int width;
+	int height;
+
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int /* file_version */)
+	{
+		ar &boost::serialization::base_object<Command>(*this);
+		ar &width;
+		ar &height;
 	}
 };
 
@@ -230,17 +304,19 @@ public:
 
 	}
 
-	Mp4SeekCommand(uint64_t _skipTS) : Command(CommandType::Seek)
+	Mp4SeekCommand(uint64_t _seekStartTS,uint64_t _seekEndTS) : Command(CommandType::Seek)
 	{
-		skipTS = _skipTS;
+		seekStartTS = _seekStartTS;
+		seekEndTS = _seekEndTS;
 	}
 
 	size_t getSerializeSize()
 	{
-		return 128 + sizeof(Mp4SeekCommand) + sizeof(skipTS) + Command::getSerializeSize();
+		return 128 + sizeof(Mp4SeekCommand) + sizeof(seekStartTS) + sizeof(seekEndTS) + Command::getSerializeSize();
 	}
 
-	uint64_t skipTS = 0;
+	uint64_t seekStartTS = 0;
+	uint64_t seekEndTS = 99999999999999;
 private:
 
 	friend class boost::serialization::access;
@@ -248,6 +324,51 @@ private:
 	void serialize(Archive& ar, const unsigned int)
 	{
 		ar& boost::serialization::base_object<Command>(*this);
-		ar& skipTS;
+		ar& seekStartTS;
+		ar& seekEndTS;
+	}
+};
+
+class DecoderEOS : public Command
+{
+public:
+	DecoderEOS() : Command(CommandType::DecoderEOS)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+private:
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
+class Mp4ReaderCloseFile : public Command
+{	
+public:
+	Mp4ReaderCloseFile() : Command(CommandType::Mp4ReadCloseFile)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+private:
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
 	}
 };

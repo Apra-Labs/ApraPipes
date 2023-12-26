@@ -6,20 +6,36 @@
 class MaskNPPIProps : public ModuleProps
 {
 public:
-	MaskNPPIProps(cudastream_sp& _stream)
+	enum AVAILABLE_MASKS
+	{
+		NONE,
+		CIRCLE,
+		OCTAGONAL
+	};
+
+	MaskNPPIProps(int _centerX, int _centerY, int _radius, cudastream_sp &_stream) : centerX(_centerX), centerY(_centerY), radius(_radius)
 	{
 		stream_sp = _stream;
 		stream = _stream->getCudaStream();
 	}
-	
 
+	MaskNPPIProps(int _centerX, int _centerY, int _radius, AVAILABLE_MASKS _availableMask, cudastream_sp &_stream) : centerX(_centerX), centerY(_centerY), radius(_radius)
+	{
+		maskSelected = _availableMask;
+		stream_sp = _stream;
+		stream = _stream->getCudaStream();
+	}
+
+	AVAILABLE_MASKS maskSelected = MaskNPPIProps::NONE;
 	cudaStream_t stream;
 	cudastream_sp stream_sp;
-
+	int centerX;
+	int centerY;
+	int radius;
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(stream);
+		return ModuleProps::getSerializeSize() + sizeof(stream) + sizeof(maskSelected) + 2 * sizeof(centerX);
 	}
 
 private:
@@ -29,6 +45,10 @@ private:
 	void serialize(Archive &ar, const unsigned int version)
 	{
 		ar & boost::serialization::base_object<ModuleProps>(*this);
+		ar & maskSelected;
+		ar & centerX;
+		ar & centerY;
+		ar & radius;
 	}
 };
 

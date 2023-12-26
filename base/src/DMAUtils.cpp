@@ -25,7 +25,7 @@ uint8_t* DMAUtils::getCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResourc
         LOG_ERROR << "cuGraphicsSubResourceGetMappedArray failed status<" << status << ">";
         return NULL;
     }
-
+    // stread sync
     status = cuCtxSynchronize();
     if (status != CUDA_SUCCESS)
     {

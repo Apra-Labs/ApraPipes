@@ -15,7 +15,10 @@ public:
 	bool init() { return Module::init(); }
 	bool term() { return Module::term(); }
 protected:
-	bool process(frame_container& frames) { return true; }	
+	bool process(frame_container& frames)
+	{
+		return true;
+	}	
 	bool validateInputPins() { return true; }
 private:	
 };

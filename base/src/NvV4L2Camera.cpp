@@ -3,23 +3,28 @@
 #include "FrameMetadata.h"
 
 NvV4L2Camera::NvV4L2Camera(NvV4L2CameraProps _props)
-	: Module(SOURCE, "NvV4L2Camera", _props), props(_props)
+	: Module(SOURCE, "NvV4L2Camera", _props), props(_props), m_receivedFirstFrame(false)
 {
 	auto outputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
-	DMAAllocator::setMetadata(outputMetadata, props.width, props.height, ImageMetadata::ImageType::UYVY);
+	// DMAAllocator::setMetadata(outputMetadata, props.width, props.height, ImageMetadata::ImageType::YUYV);
+	DMAAllocator::setMetadata(outputMetadata, props.width, props.height, ImageMetadata::ImageType::YUYV);
 	mOutputPinId = addOutputPin(outputMetadata);
 
 	mHelper = std::make_shared<NvV4L2CameraHelper>([&](frame_sp &frame) -> void {
 			frame_container frames;
+			std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
+			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+			frame->timestamp = dur.count();
+			m_receivedFirstFrame = true;
 			frames.insert(make_pair(mOutputPinId, frame));
-			send(frames); 
+			send(frames);
 		}, [&]() -> frame_sp {
 			return makeFrame(); 
 		}
 	);
 }
 
-NvV4L2Camera::~NvV4L2Camera() {}
+NvV4L2Camera::~NvV4L2Camera() {}	
 
 bool NvV4L2Camera::validateOutputPins()
 {
@@ -53,4 +58,9 @@ bool NvV4L2Camera::term()
 bool NvV4L2Camera::produce()
 {
 	return mHelper->queueBufferToCamera();
+}
+
+bool NvV4L2Camera::isFrameBufferReady()
+{
+	return m_receivedFirstFrame;
 }

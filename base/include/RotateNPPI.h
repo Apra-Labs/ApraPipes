@@ -6,14 +6,34 @@
 class RotateNPPIProps : public ModuleProps
 {
 public:
-	RotateNPPIProps(cudastream_sp &_stream, double _angle)
+	RotateNPPIProps(cudastream_sp &_stream, double _angle, int _x=0, int _y=0, float _scale=1.0f)
 	{
 		stream = _stream;
 		angle = _angle;
+		x = _x;
+		y = _y;
+		scale = _scale;
 	}
 
+	int x=0;
+	int y = 0;
+	float scale = 1.0f;
 	double angle;
 	cudastream_sp stream;
+	size_t getSerializeSize()
+	{
+		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) + sizeof(float) ;
+	}
+
+private:
+	friend class boost::serialization::access;
+
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar &boost::serialization::base_object<ModuleProps>(*this);
+		ar &angle &x &y &scale ;
+	}
 };
 
 class RotateNPPI : public Module
@@ -24,6 +44,8 @@ public:
 	virtual ~RotateNPPI();
 	bool init();
 	bool term();
+	void setProps(RotateNPPIProps &props);
+	RotateNPPIProps getProps();
 
 protected:
 	bool process(frame_container &frames);
@@ -33,8 +55,10 @@ protected:
 	void addInputPin(framemetadata_sp &metadata, string &pinId); // throws exception if validation fails
 	bool shouldTriggerSOS();
 	bool processEOS(string &pinId);
+	void setProps(RotateNPPI);
+	bool handlePropsChange(frame_sp &frame);
 
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
-};
+};	

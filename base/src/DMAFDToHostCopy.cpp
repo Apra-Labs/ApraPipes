@@ -157,10 +157,12 @@ bool DMAFDToHostCopy::processSOS(frame_sp &frame)
 	{
 	case ImageMetadata::ImageType::RGBA:
 	case ImageMetadata::ImageType::BGRA:
+	case ImageMetadata::ImageType::YUYV:
 	case ImageMetadata::ImageType::UYVY:
 		break;
 	case ImageMetadata::ImageType::YUV420:
 	case ImageMetadata::ImageType::NV12:
+	case ImageMetadata::ImageType::YUV444:
 		break;
 	default:
 		throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12> Actual<" + std::to_string(imageType) + ">");

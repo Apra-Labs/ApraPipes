@@ -45,7 +45,6 @@ public:
     {
         // Clear canvas:
         GtkGlRenderer::Detail *detailInstance = (GtkGlRenderer::Detail *)data;
-        LOG_DEBUG << "Coming Inside Renderer";
         if (detailInstance->isMetadataSet == false)
         {
             LOG_INFO << "Metadata is Not Set ";
@@ -54,12 +53,12 @@ public:
 
         if (!detailInstance->cachedFrame.get())
         {
-            LOG_ERROR << "Got Empty Frame";
+            LOG_INFO << "Got Empty Frame";
             return TRUE;
         }
         detailInstance->renderFrame = detailInstance->cachedFrame;
         void *frameToRender;
-        if (detailInstance->isDmaMem) // 
+        if (detailInstance->isDmaMem) //
         {
             // frameToRender = static_cast<DMAFDWrapper *>(detailInstance->renderFrame->data())->getCudaPtr();
             frameToRender = static_cast<DMAFDWrapper *>(detailInstance->renderFrame->data())->getHostPtr();
@@ -75,8 +74,10 @@ public:
         // Draw model:
         // model_draw();
         // draw_frames();
+        LOG_INFO << "FRAME WIDTH " << detailInstance->frameWidth << "<-- FRAME HEIGHT -->" << detailInstance->frameHeight << "FRAME SIZE " << detailInstance->renderFrame->size();
         // drawCameraFrame(frameToRender, detailInstance->frameWidth, detailInstance->frameHeight);
-        drawCameraFrame(frameToRender, 448, 400);
+        drawCameraFrame(frameToRender, detailInstance->frameWidth, detailInstance->frameHeight);
+        // drawCameraFrame(frameToRender, 1200, 800); /// for Oh0131 Cam we need to add
 
         // Don't propagate signal:
         return TRUE;
@@ -97,10 +98,11 @@ public:
         const GLubyte *renderer = glGetString(GL_RENDERER);
         const GLubyte *version = glGetString(GL_VERSION);
 
-        LOG_ERROR << "OpenGL version supported " << version;
+        LOG_INFO << "OpenGL version supported " << version;
 
         // Enable depth buffer:
-        gtk_gl_area_set_has_depth_buffer(glarea, TRUE);
+        // gtk_gl_area_set_has_depth_buffer(glarea, TRUE);
+        gtk_gl_area_set_has_depth_buffer(glarea, FALSE);
 
         // Init programs:
         programs_init();
@@ -215,9 +217,8 @@ bool GtkGlRenderer::init()
 }
 
 bool GtkGlRenderer::process(frame_container &frames)
-
 {
-    // LOG_ERROR << "GOT "
+
     auto frame = frames.cbegin()->second;
     mDetail->cachedFrame = frame;
     return true;
@@ -252,10 +253,10 @@ bool GtkGlRenderer::term()
 
 bool GtkGlRenderer::shouldTriggerSOS()
 {
-    if(!mDetail->isMetadataSet)
+    if (!mDetail->isMetadataSet)
     {
-        LOG_ERROR << "WIll Trigger SOS";
-        return true;   
+        LOG_INFO << "WIll Trigger SOS";
+        return true;
     }
     return false;
 }
@@ -270,38 +271,39 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     switch (frameType)
     {
     case FrameMetadata::FrameType::RAW_IMAGE:
-    {
+{
         auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
-        if (metadata->getImageType() != ImageMetadata::RGBA )
+        if (metadata->getImageType() != ImageMetadata::RGBA)
         {
             throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only RGB , BGR , BGRA and RGBA is supported<" + std::to_string(frameType) + ">");
         }
         mDetail->frameWidth = metadata->getWidth();
         mDetail->frameHeight = metadata->getHeight();
+        LOG_ERROR << "Step is =======================================>" << metadata->getStep();
         mDetail->isDmaMem = metadata->getMemType() == FrameMetadata::MemType::DMABUF;
-        LOG_ERROR << "Width is " << metadata->getWidth() << "Height is " << metadata->getHeight();
+        LOG_INFO << "Width is " << metadata->getWidth() << "Height is " << metadata->getHeight();
         FrameMetadata::MemType memType = metadata->getMemType();
         if (memType != FrameMetadata::MemType::DMABUF)
         {
-            LOG_ERROR << "Memory Type Is Not DMA but it's a interleaved Image";
+            LOG_INFO << "Memory Type Is Not DMA but it's a interleaved Image";
         }
     }
     break;
     case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
     {
         auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
-        if (metadata->getImageType() != ImageMetadata::RGBA )
+        if (metadata->getImageType() != ImageMetadata::RGBA)
         {
             throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only RGB, BGR, BGRA and RGBA is supported<" + std::to_string(frameType) + ">");
         }
         mDetail->frameWidth = metadata->getWidth(0);
         mDetail->frameHeight = metadata->getHeight(0);
         mDetail->isDmaMem = metadata->getMemType() == FrameMetadata::MemType::DMABUF;
-        LOG_ERROR << "Width is " << metadata->getWidth(0) << "Height is " << metadata->getHeight(0);
+        LOG_INFO << "Width is " << metadata->getWidth(0) << "Height is " << metadata->getHeight(0);
         FrameMetadata::MemType memType = metadata->getMemType();
         if (memType != FrameMetadata::MemType::DMABUF)
         {
-            LOG_ERROR << "Memory Type Is Not DMA but it's a planar Image";
+            LOG_INFO << "Memory Type Is Not DMA but it's a planar Image";
         }
     }
     break;
@@ -309,7 +311,6 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
     mDetail->isMetadataSet = true;
-    LOG_ERROR << "Done Setting Metadata=========================>";
     // mDetail->init(renderHeight, renderWidth);
     return true;
 }
