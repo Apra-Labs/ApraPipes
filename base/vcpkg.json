@@ -1,89 +1,90 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "name": "apra-pipes-cuda",
-  "version": "0.0.1",
-  "builtin-baseline": "86811c9b87c81b533c4de069a6a30c59a7daf6cc",
-  "overrides": [
-    {
-      "name": "whisper",
-      "version": "1.5.2"
-    }
-  ],
-  "dependencies": [
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "contrib",
-        "dnn",
-        "jpeg",
-        "nonfree",
-        "png",
-        "tiff",
-        "webp"
-      ]
-    },
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "gtk"
-      ],
-      "platform": "(linux \u0026 x64)",
-      "$reason": "skip linux:arm64 and windows"
-    },
-    "whisper",
-    "libjpeg-turbo",
-    "openh264",
-    "ffmpeg",
-    "bigint",
-    "boost-math",
-    "boost-system",
-    "boost-thread",
-    "boost-filesystem",
-    "boost-serialization",
-    "boost-log",
-    "boost-chrono",
-    "boost-test",
-    "boost-iostreams",
-    "boost-dll",
-    "nu-book-zxing-cpp",
-    "liblzma",
-    "bzip2",
-    "zlib",
-    "sfml",
-    {
-      "name": "glib",
-      "default-features": false,
-      "features": [
-        "libmount"
-      ],
-      "platform": "(linux \u0026 x64)",
-      "$reason": "skip linux:arm64 and windows"
-    },
-    {
-      "name": "glib",
-      "default-features": true,
-      "platform": "windows"
-    },
-    {
-      "name": "hiredis",
-      "platform": "!arm64"
-    },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
-    },
-    {
-      "name": "re",
-      "platform": "!windows"
-    },
-    {
-      "name": "baresip",
-      "platform": "!windows"
-    },
-    {
-      "name": "libmp4"
-    }
-  ]
-}
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "apra-pipes-cuda",
+    "version": "0.0.1",
+    "builtin-baseline": "86811c9b87c81b533c4de069a6a30c59a7daf6cc",
+    "overrides": [
+      {
+        "name": "whisper",
+        "version": "1.5.2"
+      }
+    ],
+    "dependencies": [
+      {
+        "name": "opencv4",
+        "default-features": false,
+        "features": [
+          "contrib",
+          "dnn",
+          "jpeg",
+          "nonfree",
+          "png",
+          "tiff",
+          "webp"
+        ]
+      },
+      {
+        "name": "opencv4",
+        "default-features": false,
+        "features": [
+          "gtk"
+        ],
+        "platform": "(linux \u0026 x64)",
+        "$reason": "skip linux:arm64 and windows"
+      },
+      "whisper",
+      "libjpeg-turbo",
+      "openh264",
+      "ffmpeg",
+      "bigint",
+      "boost-math",
+      "boost-system",
+      "boost-thread",
+      "boost-filesystem",
+      "boost-serialization",
+      "boost-log",
+      "boost-chrono",
+      "boost-test",
+      "boost-iostreams",
+      "boost-dll",
+      "nu-book-zxing-cpp",
+      "liblzma",
+      "bzip2",
+      "zlib",
+      "sfml",
+      {
+        "name": "glib",
+        "default-features": false,
+        "features": [
+          "libmount"
+        ],
+        "platform": "(linux \u0026 x64)",
+        "$reason": "skip linux:arm64 and windows"
+      },
+      {
+        "name": "glib",
+        "default-features": true,
+        "platform": "windows"
+      },
+      {
+        "name": "hiredis",
+        "platform": "!arm64"
+      },
+      {
+        "name": "redis-plus-plus",
+        "platform": "!arm64"
+      },
+      {
+        "name": "re",
+        "platform": "!windows"
+      },
+      {
+        "name": "baresip",
+        "platform": "!windows"
+      },
+      {
+        "name": "libmp4"
+      }
+    ]
+  }
+  
