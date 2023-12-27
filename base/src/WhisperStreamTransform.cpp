@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "whisper.h"
+#include "SFML/Config.hpp"
 
 class WhisperStreamTransform::Detail
 {
@@ -22,8 +23,7 @@ public:
 public:
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
-	float* inputAudioBuffer;
-	int inputAudioBufferSize = 0;
+	std::vector<float> inputAudioBuffer;
 	WhisperStreamTransformProps mProps;
 	int mFrameType;
 	whisper_context *mWhisperContext = NULL;
@@ -117,18 +117,31 @@ bool WhisperStreamTransform::term()
 bool WhisperStreamTransform::process(frame_container& frames)
 {
 	auto frame = frames.begin()->second;
-	auto outFrame = makeFrame();
-	float* constFloatPointer = (float*)frame->data();
-	
+	sf::Int16* constFloatPointer = static_cast<sf::Int16*>(frame->data());
+	int numberOfSamples = frame->size() / 2;
+	for (int index = 0; index < numberOfSamples; index++) {
+		mDetail->inputAudioBuffer.push_back((float)constFloatPointer[index]/ 32768.0f);
+	}
+	if (mDetail->inputAudioBuffer.size() < mDetail->mProps.bufferSize) {
+		return true;
+	}
 	whisper_full(
 		mDetail->mWhisperContext,
 		mDetail->mWhisperFullParams,
-		(float*)frame->data(),
-		frame->size()
+		mDetail->inputAudioBuffer.data(),
+		mDetail->inputAudioBuffer.size()
 	);
-	auto result = whisper_full_get_segment_text(mDetail->mWhisperContext,0);
-	LOG_ERROR<<"Whisper out ***** "<<result;
-	//send(frames);
+	std::string output = "";
+	const int n_segments = whisper_full_n_segments(mDetail->mWhisperContext);
+	for (int i = 0; i < n_segments; ++i) {
+		const char* text = whisper_full_get_segment_text(mDetail->mWhisperContext, i);
+		output += text;
+	}
+	mDetail->inputAudioBuffer.clear();
+	auto outFrame = makeFrame(output.length());
+	memcpy(outFrame->data(), output.c_str(), output.length());
+	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	send(frames);
 	return true;
 }
 
