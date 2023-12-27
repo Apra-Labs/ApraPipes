@@ -4,9 +4,10 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
+OPTION(ENABLE_WHISPER "Use Whisper ASR" ON)
 
-#set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
-set(VCPKG_OVERLAY_PORTS "C:/Users/Kashyap/bkp/source/repos/ApraPipes/custom-overlay")
+set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
+set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -40,8 +41,11 @@ project(APRAPIPES)
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
-        
-find_package(whisper CONFIG REQUIRED)
+
+IF(ENABLE_WHISPER)        
+	find_package(whisper CONFIG REQUIRED)
+ENDIF(ENABLE_WHISPER)
+
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
@@ -163,7 +167,6 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
-	src/WhisperStreamTransform.cpp
 )
 
 SET(CORE_FILES_H
@@ -225,7 +228,6 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	include/WhisperStreamTransform.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -285,9 +287,7 @@ SET(IP_FILES
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
 )
-
-
-
+	
 SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
@@ -312,6 +312,10 @@ SET(IP_FILES_H
 	include/Overlay.h
 )
 
+IF(ENABLE_WHISPER)
+	set(IP_FILES ${IP_FILES} src/WhisperStreamTransform.cpp )
+	set(IP_FILES_H ${IP_FILES_H} include/WhisperStreamTransform.h )
+ENDIF(ENABLE_WHISPER)
 
 
 SET(CUDA_CORE_FILES
@@ -465,6 +469,10 @@ ${NVCODEC_INCLUDE_DIR}
 
 # aprapipes Unit Tests
 
+IF(ENABLE_WHISPER)
+	SET(WHISPER_UT_FILES test/whisper_asr_tests.cpp)
+ENDIF(ENABLE_WHISPER)
+
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
 		test/jpegencoderl4tm_tests.cpp
@@ -567,6 +575,7 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
+	${WHISPER_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
@@ -604,7 +613,6 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  whisper::whisper
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -613,6 +621,10 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   )
+
+IF(ENABLE_WHISPER)
+    target_link_libraries(aprapipesut whisper::whisper)
+ENDIF(ENABLE_WHISPER)
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
