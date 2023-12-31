@@ -98,7 +98,7 @@ bool AudioToTextXForm::init()
 			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_BEAM_SEARCH;
 			break;
 		default:
-			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
+			throw AIPException(AIP_FATAL, "Unknown Sampling Strategy");
 	}
 	mDetail->mWhisperFullParams = whisper_full_default_params(samplingStrategy);
 	mDetail->mWhisperContextParams = whisper_context_default_params();
