@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
