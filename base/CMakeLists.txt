@@ -560,7 +560,7 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
-	test/whisper_asr_tests.cpp
+	test/audioToTextXform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
