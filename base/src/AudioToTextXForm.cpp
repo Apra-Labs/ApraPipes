@@ -1,4 +1,4 @@
-#include "WhisperStreamTransform.h"
+#include "AudioToTextXForm.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -7,15 +7,15 @@
 #include "whisper.h"
 #include "SFML/Config.hpp"
 
-class WhisperStreamTransform::Detail
+class AudioToTextXForm::Detail
 {
 public:
-	Detail(WhisperStreamTransformProps& _props) : mProps(_props)
+	Detail(AudioToTextXFormProps& _props) : mProps(_props)
 	{
 	}
 	~Detail() {}
 
-	void setProps(WhisperStreamTransformProps& props)
+	void setProps(AudioToTextXFormProps& props)
 	{
 		mProps = props;
 	}
@@ -24,21 +24,21 @@ public:
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	std::vector<float> inputAudioBuffer;
-	WhisperStreamTransformProps mProps;
+	AudioToTextXFormProps mProps;
 	int mFrameType;
 	whisper_context *mWhisperContext = NULL;
 	whisper_full_params mWhisperFullParams;
 	whisper_context_params mWhisperContextParams;
 };
 
-WhisperStreamTransform::WhisperStreamTransform(WhisperStreamTransformProps _props) : Module(TRANSFORM, "WhisperStreamTransform", _props)
+AudioToTextXForm::AudioToTextXForm(AudioToTextXFormProps _props) : Module(TRANSFORM, "AudioToTextXForm", _props)
 {
 	mDetail.reset(new Detail(_props));
 }
 
-WhisperStreamTransform::~WhisperStreamTransform() {}
+AudioToTextXForm::~AudioToTextXForm() {}
 
-bool WhisperStreamTransform::validateInputPins()
+bool AudioToTextXForm::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
@@ -58,7 +58,7 @@ bool WhisperStreamTransform::validateInputPins()
 	return true;
 }
 
-bool WhisperStreamTransform::validateOutputPins()
+bool AudioToTextXForm::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
@@ -77,7 +77,7 @@ bool WhisperStreamTransform::validateOutputPins()
 	return true;
 }
 
-void WhisperStreamTransform::addInputPin(framemetadata_sp& metadata, string& pinId)
+void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::TEXT));
@@ -85,16 +85,16 @@ void WhisperStreamTransform::addInputPin(framemetadata_sp& metadata, string& pin
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
-bool WhisperStreamTransform::init()
+bool AudioToTextXForm::init()
 {
 	//intialize model
 	auto samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
 	switch (mDetail->mProps.samplingStrategy)
 	{
-		case WhisperStreamTransformProps::DecoderSamplingStrategy::GREEDY:
+		case AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY:
 			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
 			break;
-		case WhisperStreamTransformProps::DecoderSamplingStrategy::BEAM_SEARCH:
+		case AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH:
 			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_BEAM_SEARCH;
 			break;
 		default:
@@ -106,7 +106,7 @@ bool WhisperStreamTransform::init()
 	return Module::init();
 }
 
-bool WhisperStreamTransform::term()
+bool AudioToTextXForm::term()
 {
 	whisper_free_context_params(&mDetail->mWhisperContextParams);
 	whisper_free_params(&mDetail->mWhisperFullParams);
@@ -114,7 +114,7 @@ bool WhisperStreamTransform::term()
 	return Module::term();
 }
 
-bool WhisperStreamTransform::process(frame_container& frames)
+bool AudioToTextXForm::process(frame_container& frames)
 {
 	auto frame = frames.begin()->second;
 	sf::Int16* constFloatPointer = static_cast<sf::Int16*>(frame->data());
@@ -145,7 +145,7 @@ bool WhisperStreamTransform::process(frame_container& frames)
 	return true;
 }
 
-void WhisperStreamTransform::setMetadata(framemetadata_sp& metadata)
+void AudioToTextXForm::setMetadata(framemetadata_sp& metadata)
 {
 	if (!metadata->isSet())
 	{
@@ -153,28 +153,28 @@ void WhisperStreamTransform::setMetadata(framemetadata_sp& metadata)
 	}
 }
 
-bool WhisperStreamTransform::processSOS(frame_sp& frame)
+bool AudioToTextXForm::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
 	setMetadata(metadata);
 	return true;
 }
 
-WhisperStreamTransformProps WhisperStreamTransform::getProps()
+AudioToTextXFormProps AudioToTextXForm::getProps()
 {
 	fillProps(mDetail->mProps);
 	return mDetail->mProps;
 }
 
-bool WhisperStreamTransform::handlePropsChange(frame_sp& frame)
+bool AudioToTextXForm::handlePropsChange(frame_sp& frame)
 {
-	WhisperStreamTransformProps props(mDetail->mProps.samplingStrategy, mDetail->mProps.modelPath,32000);
+	AudioToTextXFormProps props(mDetail->mProps.samplingStrategy, mDetail->mProps.modelPath,32000);
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
 }
 
-void WhisperStreamTransform::setProps(WhisperStreamTransformProps& props)
+void AudioToTextXForm::setProps(AudioToTextXFormProps& props)
 {
 	Module::addPropsToQueue(props);
 }

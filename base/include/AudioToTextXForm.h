@@ -5,14 +5,14 @@
 // size of audio to process should be a parameter. 
 // Cache variable to collect frames for processing
 
-class WhisperStreamTransformProps : public ModuleProps
+class AudioToTextXFormProps : public ModuleProps
 {
 public:
 	enum DecoderSamplingStrategy {
 		GREEDY,      //WHISPER_SAMPLING_GREEDY
 		BEAM_SEARCH //WHISPER_SAMPLING_BEAM_SEARCH
 	};
-	WhisperStreamTransformProps(
+	AudioToTextXFormProps(
 		DecoderSamplingStrategy _samplingStrategy,
 		std::string _modelPath,
 		int _bufferSize) : samplingStrategy(_samplingStrategy),
@@ -24,16 +24,16 @@ public:
 	int bufferSize;
 };
 
-class WhisperStreamTransform  : public Module
+class AudioToTextXForm  : public Module
 {
 
 public:
-	WhisperStreamTransform(WhisperStreamTransformProps _props);
-	virtual ~WhisperStreamTransform();
+	AudioToTextXForm(AudioToTextXFormProps _props);
+	virtual ~AudioToTextXForm();
 	bool init();
 	bool term();
-	void setProps(WhisperStreamTransformProps& props);
-	WhisperStreamTransformProps getProps();
+	void setProps(AudioToTextXFormProps& props);
+	AudioToTextXFormProps getProps();
 
 protected:
 	bool process(frame_container& frames);

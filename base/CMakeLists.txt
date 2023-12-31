@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
-OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
+OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
-OPTION(ENABLE_WHISPER "Use Whisper ASR" ON)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
@@ -41,11 +40,6 @@ project(APRAPIPES)
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
-
-IF(ENABLE_WHISPER)        
-	find_package(whisper CONFIG REQUIRED)
-ENDIF(ENABLE_WHISPER)
-
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
@@ -56,6 +50,7 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(whisper CONFIG REQUIRED)
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -286,6 +281,7 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
+	src/AudioToTextXForm.cpp 
 )
 	
 SET(IP_FILES_H
@@ -310,13 +306,8 @@ SET(IP_FILES_H
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
 	include/Overlay.h
+	include/AudioToTextXForm.h
 )
-
-IF(ENABLE_WHISPER)
-	set(IP_FILES ${IP_FILES} src/WhisperStreamTransform.cpp )
-	set(IP_FILES_H ${IP_FILES_H} include/WhisperStreamTransform.h )
-ENDIF(ENABLE_WHISPER)
-
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -469,10 +460,6 @@ ${NVCODEC_INCLUDE_DIR}
 
 # aprapipes Unit Tests
 
-IF(ENABLE_WHISPER)
-	SET(WHISPER_UT_FILES test/whisper_asr_tests.cpp)
-ENDIF(ENABLE_WHISPER)
-
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
 		test/jpegencoderl4tm_tests.cpp
@@ -573,9 +560,9 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
+	test/whisper_asr_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
-	${WHISPER_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
@@ -620,11 +607,8 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  whisper::whisper
   )
-
-IF(ENABLE_WHISPER)
-    target_link_libraries(aprapipesut whisper::whisper)
-ENDIF(ENABLE_WHISPER)
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
