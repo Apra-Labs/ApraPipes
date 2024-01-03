@@ -130,35 +130,35 @@ model_init (void)
 
 
 struct cube cube;
-    cube.face[0].corner[0]={{ 0, 1, 0 },{0,0,0}}; // Bottom Face
-    cube.face[0].corner[1]={{ 1, 0, 0 },{0,0,0}};
+    cube.face[0].corner[0]={{ 0, 0, 0 },{0,0,0}}; // Bottom Face
+    cube.face[0].corner[1]={{ 0, 0, 0 },{0,0,0}};
     cube.face[0].corner[2]={{ 0, 0, 0 },{0,0,0}};
-    cube.face[0].corner[3]={{ 1, 1, 0 },{0,0,0}};
+    cube.face[0].corner[3]={{ 0, 0, 0 },{0,0,0}};
 
     cube.face[1].corner[0]={{ 0, 0, 0 },{0,0,0}}; // right face
-    cube.face[1].corner[1]={{ 1, 0, 1 },{0,0,0}};
-    cube.face[1].corner[2]={{ 0, 0, 1 },{0,0,0}};
-    cube.face[1].corner[3]={{ 1, 0, 0 },{0,0,0}};
+    cube.face[1].corner[1]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[1].corner[2]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[1].corner[3]={{ 0, 0, 0 },{0,0,0}};
 
-    cube.face[2].corner[0]={{ 1, 0, 0 },{0,0,0}};
-    cube.face[2].corner[1]={{ 1, 1, 1 },{0,0,0}};
-    cube.face[2].corner[2]={{ 1, 0, 1 },{0,0,0}};
-    cube.face[2].corner[3]={{ 1, 1, 0 },{0,0,0}}; // top face
+    cube.face[2].corner[0]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[2].corner[1]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[2].corner[2]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[2].corner[3]={{ 0, 0, 0 },{0,0,0}}; // top face
 
-    cube.face[3].corner[0]={{ 1, 1, 0 },{0,0,0}};
-    cube.face[3].corner[1]={{ 0, 1, 1 },{0,0,0}}; // left face
-    cube.face[3].corner[2]={{ 1, 1, 1 },{0,0,0}};
-    cube.face[3].corner[3]={{ 0, 1, 0 },{0,0,0}};
+    cube.face[3].corner[0]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[3].corner[1]={{ 0, 0, 0 },{0,0,0}}; // left face
+    cube.face[3].corner[2]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[3].corner[3]={{ 0, 0, 0 },{0,0,0}};
 
-    cube.face[4].corner[0]={{ 0, 1, 0 },{0,0,0}};
-    cube.face[4].corner[1]={{ 0, 0, 1 },{0,0,0}};
-    cube.face[4].corner[2]={{ 0, 1, 1 },{0,0,0}}; // outside 
+    cube.face[4].corner[0]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[4].corner[1]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[4].corner[2]={{ 0, 0, 0 },{0,0,0}}; // outside 
     cube.face[4].corner[3]={{ 0, 0, 0 },{0,0,0}};
     
-	cube.face[5].corner[0]={{ 0, 1, 1 },{0,0,0}};
-    cube.face[5].corner[1]={{ 1, 0, 1 },{0,0,0}};
-    cube.face[5].corner[2]={{ 1, 1, 1 },{0,0,0}}; //inside
-    cube.face[5].corner[3]={{ 0, 0, 1 },{0,0,0}};
+	cube.face[5].corner[0]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[5].corner[1]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[5].corner[2]={{ 0, 0, 0 },{0,0,0}}; //inside
+    cube.face[5].corner[3]={{ 0, 0, 0 },{0,0,0}};
 
 	// Generate colors for each corner based on its position:
 	FOREACH (cube.face, face) {
