@@ -217,7 +217,7 @@ public:
         //connect_signals(glarea, signals, NELEM(signals));
         g_signal_connect(glarea, "realize", G_CALLBACK(on_realize), this);
         g_signal_connect(glarea, "render", G_CALLBACK(on_render), this);
-        // g_signal_connect(glarea, "resize", G_CALLBACK(on_resize), this);
+        g_signal_connect(glarea, "resize", G_CALLBACK(on_resize), this);
     }
 
     bool init()
