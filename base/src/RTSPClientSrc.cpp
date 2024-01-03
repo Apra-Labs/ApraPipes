@@ -12,6 +12,7 @@ using namespace std;
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include "H264Utils.h"
 
 extern "C"
 {
@@ -110,6 +111,21 @@ public:
         bConnected = true;
         return bConnected;
     }
+
+    frame_sp prependSpsPpsToFrame(std::string id)
+    {
+        auto spsPpsData = pFormatCtx->streams[0]->codec->extradata;
+        auto spsPpsSize = pFormatCtx->streams[0]->codec->extradata_size;
+        size_t totalFrameSize = packet.size + spsPpsSize;
+
+        auto frm = myModule->makeFrame(totalFrameSize, id);
+        uint8_t* frameData = static_cast<uint8_t*>(frm->data());
+        memcpy(frameData, spsPpsData, spsPpsSize);
+        frameData += spsPpsSize;
+        memcpy(frameData, packet.data, packet.size);
+        return frm;
+    }
+
     bool readBuffer()
     {
         frame_container outFrames;
@@ -131,11 +147,31 @@ public:
                 }
                 auto it = streamsMap.find(packet.stream_index);
                 if (it != streamsMap.end()) { // so we have an interest in sending this
-                    auto frm=myModule->makeFrame(packet.size, it->second);
+                    frame_sp frm;
+                    auto naluType = H264Utils::getNALUType((const char*)packet.data);
+                    if (naluType == H264Utils::H264_NAL_TYPE_SEI)
+                    {
+                        size_t offset = 0;
+                        packet.data += 4;
+                        packet.size -= 4;
+                        H264Utils::getNALUnit((const char*)packet.data, packet.size, offset);
+                        packet.data += offset - 4;
+                        packet.size -= offset - 4;
+                        frm = prependSpsPpsToFrame(it->second);
+                    }
+                    else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+                    {
+                        frm = prependSpsPpsToFrame(it->second);
+                    }
+                    else
+                    {
+                        frm = myModule->makeFrame(packet.size, it->second);
+                        memcpy(frm->data(), packet.data, packet.size);
+                    }
 
-                    //dreaded memory copy should be avoided
-                    memcpy(frm->data(), packet.data, packet.size);
-                    frm->timestamp = packet.pts;
+                    std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+                	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+                    frm->timestamp = dur.count();
                     if (!outFrames.insert(make_pair(it->second, frm)).second)
                     {
                         LOG_WARNING << "oops! there is already another packet for pin " << it->second;
