@@ -64,7 +64,7 @@ const GLchar  *BKGD_VERTEX_SOURCE =
 "out vec2 ftex;\n"
 "void main (void)\n"
 "{\n"
-"	ftex = vec2(texture.x, 1.0 - texture.y);\n"
+"	ftex = vec2(texture.x, 1.0-texture.y);\n"
 "	gl_Position = vec4(vertex, 0.0, 1.0);\n"
 "}\n";
 

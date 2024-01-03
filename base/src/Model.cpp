@@ -129,68 +129,36 @@ model_init (void)
 	// } ;
 
 
-// struct cube cube;
-//     cube.face[0].corner[0]={{ -1, -1, -1 },{0,0,0}}; // Bottom Face
-//     cube.face[0].corner[1]={{ 1, -1, 1 },{0,0,0}};
-//     cube.face[0].corner[2]={{ -1, -1, 1 },{0,0,0}};
-//     cube.face[0].corner[3]={{ 1, -1, -1 },{0,0,0}};
-
-//     cube.face[1].corner[0]={{ 1, -1, -1 },{0,0,0}}; // right face
-//     cube.face[1].corner[1]={{ 1, -1, 1 },{0,0,0}};
-//     cube.face[1].corner[2]={{ 1, 1, 1 },{0,0,0}};
-//     cube.face[1].corner[3]={{ 1, 1, -1 },{0,0,0}};
-
-//     cube.face[2].corner[0]={{ 1, 1, -1 },{0,0,0}};
-//     cube.face[2].corner[1]={{ -1, 1, -1 },{0,0,0}};
-//     cube.face[2].corner[2]={{ 1, 1, 1 },{0,0,0}};
-//     cube.face[2].corner[3]={{ -1, 1, 1 },{0,0,0}}; // top face
-
-//     cube.face[3].corner[0]={{ -1, 1, -1 },{0,0,0}};
-//     cube.face[3].corner[1]={{ -1, 1, 1 },{0,0,0}}; // left face
-//     cube.face[3].corner[2]={{ -1, -1, 1 },{0,0,0}};
-//     cube.face[3].corner[3]={{ -1, -1, -1 },{0,0,0}};
-
-//     cube.face[4].corner[0]={{ -1, 1, 1 },{0,0,0}};
-//     cube.face[4].corner[1]={{ 1, 1, 1 },{0,0,0}};
-//     cube.face[4].corner[2]={{ 1, -1, 1 },{0,0,0}}; // outside 
-//     cube.face[4].corner[3]={{ -1, -1, 1 },{0,0,0}};
-    
-// 	cube.face[5].corner[0]={{ 1, -1, -1 },{0,0,0}};
-//     cube.face[5].corner[1]={{ -1, -1, -1 },{0,0,0}};
-//     cube.face[5].corner[2]={{ -1, 1, -1 },{0,0,0}}; //inside
-//     cube.face[5].corner[3]={{ 1, 1, -1 },{0,0,0}};
-
-
 struct cube cube;
-    cube.face[0].corner[0]={{ -1, -1, 0 },{0,0,0}}; // Bottom Face
-    cube.face[0].corner[1]={{ 1, -1, 0 },{0,0,0}};
-    cube.face[0].corner[2]={{ -1, -1, 0 },{0,0,0}};
-    cube.face[0].corner[3]={{ 1, -1, 0 },{0,0,0}};
+    cube.face[0].corner[0]={{ 0, 1, 0 },{0,0,0}}; // Bottom Face
+    cube.face[0].corner[1]={{ 1, 0, 0 },{0,0,0}};
+    cube.face[0].corner[2]={{ 0, 0, 0 },{0,0,0}};
+    cube.face[0].corner[3]={{ 1, 1, 0 },{0,0,0}};
 
-    cube.face[1].corner[0]={{ 1, -1, 0 },{0,0,0}}; // right face
-    cube.face[1].corner[1]={{ 1, -1, 0 },{0,0,0}};
-    cube.face[1].corner[2]={{ 1, 1, 0 },{0,0,0}};
-    cube.face[1].corner[3]={{ 1, 1, 0 },{0,0,0}};
+    cube.face[1].corner[0]={{ 0, 0, 0 },{0,0,0}}; // right face
+    cube.face[1].corner[1]={{ 1, 0, 1 },{0,0,0}};
+    cube.face[1].corner[2]={{ 0, 0, 1 },{0,0,0}};
+    cube.face[1].corner[3]={{ 1, 0, 0 },{0,0,0}};
 
-    cube.face[2].corner[0]={{ 1, 1, 0 },{0,0,0}};
-    cube.face[2].corner[1]={{ -1, 1, 0 },{0,0,0}};
-    cube.face[2].corner[2]={{ 1, 1, 0 },{0,0,0}};
-    cube.face[2].corner[3]={{ -1, 1, 0 },{0,0,0}}; // top face
+    cube.face[2].corner[0]={{ 1, 0, 0 },{0,0,0}};
+    cube.face[2].corner[1]={{ 1, 1, 1 },{0,0,0}};
+    cube.face[2].corner[2]={{ 1, 0, 1 },{0,0,0}};
+    cube.face[2].corner[3]={{ 1, 1, 0 },{0,0,0}}; // top face
 
-    cube.face[3].corner[0]={{ -1, 1, 0 },{0,0,0}};
-    cube.face[3].corner[1]={{ -1, 1, 0 },{0,0,0}}; // left face
-    cube.face[3].corner[2]={{ -1, -1, 0 },{0,0,0}};
-    cube.face[3].corner[3]={{ -1, -1, 0 },{0,0,0}};
+    cube.face[3].corner[0]={{ 1, 1, 0 },{0,0,0}};
+    cube.face[3].corner[1]={{ 0, 1, 1 },{0,0,0}}; // left face
+    cube.face[3].corner[2]={{ 1, 1, 1 },{0,0,0}};
+    cube.face[3].corner[3]={{ 0, 1, 0 },{0,0,0}};
 
-    cube.face[4].corner[0]={{ -1, 1, 0 },{0,0,0}};
-    cube.face[4].corner[1]={{ 1, 1, 0 },{0,0,0}};
-    cube.face[4].corner[2]={{ 1, -1, 0 },{0,0,0}}; // outside 
-    cube.face[4].corner[3]={{ -1, -1, 0 },{0,0,0}};
+    cube.face[4].corner[0]={{ 0, 1, 0 },{0,0,0}};
+    cube.face[4].corner[1]={{ 0, 0, 1 },{0,0,0}};
+    cube.face[4].corner[2]={{ 0, 1, 1 },{0,0,0}}; // outside 
+    cube.face[4].corner[3]={{ 0, 0, 0 },{0,0,0}};
     
-	cube.face[5].corner[0]={{ 1, -1, 0 },{0,0,0}};
-    cube.face[5].corner[1]={{ -1, -1, 0 },{0,0,0}};
-    cube.face[5].corner[2]={{ -1, 1, 0 },{0,0,0}}; //inside
-    cube.face[5].corner[3]={{ 1, 1, 0 },{0,0,0}};
+	cube.face[5].corner[0]={{ 0, 1, 1 },{0,0,0}};
+    cube.face[5].corner[1]={{ 1, 0, 1 },{0,0,0}};
+    cube.face[5].corner[2]={{ 1, 1, 1 },{0,0,0}}; //inside
+    cube.face[5].corner[3]={{ 0, 0, 1 },{0,0,0}};
 
 	// Generate colors for each corner based on its position:
 	FOREACH (cube.face, face) {
@@ -204,9 +172,9 @@ struct cube cube;
 	// Center cube on the origin by translating corner points:
 	FOREACH (cube.face, face) {
 		FOREACH (face->corner, corner) {
-			corner->pos.x -= 0.0f;
-			corner->pos.y -= 0.0f;
-			corner->pos.z -= 0.0f;
+			corner->pos.x -= 1.0f;
+			corner->pos.y -= 1.0f;
+			corner->pos.z -= 1.0f;
 		}
 	}
 	// Yash Change
@@ -306,15 +274,15 @@ struct cube cube;
 
 	// Upload vertex data:
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
-}
-
-static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GLenum wrapFilter, int width, int height) {
-    // Generate a number for our textureID's unique handle
+	    // Generate a number for our textureID's unique handle
     GLuint textureID;
     glGenTextures(1, &textureID);
 
     // Bind to our texture handle
     glBindTexture(GL_TEXTURE_2D, textureID);
+}
+
+void matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GLenum wrapFilter, int width, int height) {
 
     // Catch silly-mistake texture interpolation method for magnification
     if (magFilter == GL_LINEAR_MIPMAP_LINEAR  ||
@@ -333,7 +301,7 @@ static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magF
 
     // Set texture clamping method
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
 
     // Set incoming texture format to:
     // GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
@@ -346,7 +314,7 @@ static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magF
     }
 
     // Create the texture
-    glTexImage2D(GL_TEXTURE_RECTANGLE,     // Type of texture
+    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
                  0,                 // Pyramid level (for mip-mapping) - 0 is the top level
                  GL_RGBA,            // CHanged from rgb to rgba Internal colour format to convert to
                  width,          // Image width  i.e. 640 for Kinect in standard mode
@@ -366,8 +334,6 @@ static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magF
         // std::cout << "Will Generate minmap" << std::endl;
         glGenerateMipmap(GL_TEXTURE_2D);
     }
-
-    return textureID;
 }
 
 
@@ -459,7 +425,7 @@ draw_frames(void)
 	int window_height = 480;
 	int window_width = 640;
 
-	static float angle = 180.0f;
+	static float angle = 0.0f;
 
 	// Rotate slightly:
 	angle += 0.00f;
@@ -480,11 +446,11 @@ draw_frames(void)
 
 void drawCameraFrame(void* frameData, int width, int height){
 
-	static float angle = 180.0f;
+	static float angle = 0.0f;
 
 	mat_rotate(matrix, rot.x, rot.y, rot.z, angle);
 	
-	GLuint image_tex = matToTexture((unsigned char*)frameData, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP, width, height);
+	matToTexture((unsigned char*)frameData, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, width, height);
 	
 	// Don't clip against background:
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -492,10 +458,6 @@ void drawCameraFrame(void* frameData, int width, int height){
 	// Draw all the triangles in the buffer:
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-
-	glDeleteTextures(1, &image_tex);
-    glDisable(GL_TEXTURE_2D);
-
 }
 
 void

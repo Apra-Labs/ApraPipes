@@ -23,9 +23,6 @@ struct vertex {
 void
 background_set_window (int width, int height)
 {
-	float wd = (float)width / 16;
-	float ht = (float)height / 16;
-
 	// The background quad is made of four vertices:
 	//
 	//   3--2
@@ -34,9 +31,9 @@ background_set_window (int width, int height)
 	//
 	struct vertex vertex[4] = {
 		{ -1, -1,  0,  0 },	// Bottom left
-		{  1, -1, wd,  0 },	// Bottom right
-		{  1,  1, wd, ht },	// Top right
-		{ -1,  1,  0, ht },	// Top left
+		{  1, -1, 1,  0 },	// Bottom right
+		{  1,  1, 1, 1 },	// Top right
+		{ -1,  1,  0, 1 },	// Top left
 	};
 
 	GLint loc_vertex  = program_bkgd_loc(LOC_BKGD_VERTEX);
