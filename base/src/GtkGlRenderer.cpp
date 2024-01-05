@@ -299,7 +299,6 @@ bool GtkGlRenderer::term()
 
 bool GtkGlRenderer::changeProps(GtkWidget* glArea, int windowWidth, int windowHeight)
 {
-    LOG_INFO << "changing props ============";
     //mDetail->on_unrealize();
     mDetail->glarea = glArea;
     mDetail->windowWidth = windowWidth;

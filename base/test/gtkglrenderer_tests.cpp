@@ -34,12 +34,15 @@ GtkWidget *glarea;
 GtkWidget *glarea2;
 GtkWidget *glarea3;
 GtkWidget *glarea4;
+GtkWidget *glAreaSwitch;
 BOOST_AUTO_TEST_SUITE(gtkglrenderer_tests)
 
 struct rtsp_client_tests_data {
 	string outFile;
 	string empty;
 };
+
+boost::shared_ptr<GtkGlRenderer>GtkGl;
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
@@ -124,18 +127,18 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline()
 	transform->setNext(memconversion1);
 
 	//RESIZE-NPPI
-	auto resizenppi = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(1280, 720, stream)));
+	auto resizenppi = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream)));
 	memconversion1->setNext(resizenppi);
 
 	//MEMCONVERT TO DMA
 	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	resizenppi->setNext(memconversion2);
 
-	GtkGlRendererProps gtkglsinkProps(glarea, 1280, 720);
-	auto sink = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
-	memconversion2->setNext(sink);
+	GtkGlRendererProps gtkglsinkProps(glarea, 640, 360);
+	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	memconversion2->setNext(GtkGl);
 
-	auto eglsink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));																																																															
+	//auto eglsink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));																																																															
 	// memconversion2->setNext(eglsink);
 	
 	// GtkGlRendererProps gtkglsinkProps2(glarea2, 1024, 1024);
@@ -158,7 +161,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline()
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 
-	return sink;																																																															
+	return GtkGl;																																																															
 ;
 
 }
@@ -166,7 +169,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline()
 void launchPipelineRTSP()
 {
 	rtsp_client_tests_data d;
-	string url = "rtsp://10.102.10.77/axis-media/media.amp";
+	string url = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
 	RTSPClientSrcProps rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
 	auto source = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps));
 	auto meta = framemetadata_sp(new H264Metadata());
@@ -242,6 +245,25 @@ void my_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data) {
     printf("width = %d, height = %d\n", allocation->width, allocation->height);
 }
 
+static gboolean hide_gl_area(gpointer data) {
+    gtk_widget_hide(glarea);
+	gtk_widget_hide(glAreaSwitch);
+    return G_SOURCE_REMOVE;  // Remove the timeout source after execution
+}
+
+static gboolean change_gl_area(gpointer data) {
+	GtkGl->changeProps(glAreaSwitch, 640, 360);
+	GtkGl->step();
+    return G_SOURCE_REMOVE;  // Change the glarea before showing
+}
+
+static gboolean show_gl_area(gpointer data) {
+	//gtk_widget_show(glarea);
+    gtk_widget_show(glAreaSwitch);
+    return G_SOURCE_REMOVE;  // Remove the timeout source after execution
+}
+
+
 BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 {
 	if (!gtk_init_check(NULL, NULL)) // yash argc argv
@@ -258,7 +280,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 
 	GtkWidget *window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 	g_object_ref(window);
-	gtk_window_set_default_size(GTK_WINDOW(window), 2048, 2048);
+	gtk_window_set_default_size(GTK_WINDOW(window), 1280, 400);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	gtk_widget_set_app_paintable(window, TRUE);
 
@@ -270,13 +292,18 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "mainWidget"));
 	gtk_container_add(GTK_CONTAINER(window), mainFixed);
 	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
+
+	glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw2"));
 	// glarea2 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw2"));
 	// glarea3 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw3"));
 	// glarea4 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw4"));
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
-	g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
+	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
 	launchPipeline();
 	gtk_widget_show_all(window);
+	g_timeout_add(5000, hide_gl_area, NULL);
+	g_timeout_add(7000, change_gl_area, NULL);
+	g_timeout_add(9000, show_gl_area, NULL);
 	gtk_main();
 
 	p.stop();
