@@ -51,6 +51,9 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
   		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
@@ -90,6 +93,20 @@ IF(ENABLE_CUDA)
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(AFTER SYSTEM /usr/include/gtk-3.0/)
+		include_directories(AFTER SYSTEM /usr/include/glib-2.0/)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(AFTER SYSTEM /usr/include/gtk-3.0/)
+		include_directories(AFTER SYSTEM /usr/include/glib-2.0/)
+		include_directories(AFTER SYSTEM /usr/lib/aarch64-linux-gnu/glib-2.0/include/)
+		include_directories(AFTER SYSTEM /usr/include/pango-1.0/)
+		include_directories(AFTER SYSTEM /usr/include/harfbuzz/)
+		include_directories(AFTER SYSTEM /usr/include/cairo/)
+		include_directories(AFTER SYSTEM  /usr/include/atk-1.0/)
+		include_directories(AFTER SYSTEM  /usr/include/gdk-pixbuf-2.0/) 
+		include_directories(AFTER SYSTEM  /usr/local/cuda/samples/common/inc/)
+		include_directories(AFTER SYSTEM  /usr/include/)
+	    include_directories(AFTER SYSTEM  /mnt/disks/ssd/NVR/apranvr/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
@@ -374,6 +391,12 @@ IF(ENABLE_ARM64)
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
 		src/H264DecoderV4L2Helper.h
+		src/Background.cpp
+		src/GtkGlRenderer.cpp
+		src/Matrix.cpp
+		src/Model.cpp
+		src/Program.cpp
+		src/View.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -424,6 +447,13 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
+		include/Background.h
+		include/GLUtils.h
+		include/GtkGlRenderer.h
+		include/Matrix.h
+		include/Model.h
+		include/Program.h
+		include/View.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -482,6 +512,7 @@ IF (ENABLE_ARM64)
 		test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
+		test/gtkglrenderer_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -595,6 +626,15 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
+  /usr/lib/aarch64-linux-gnu/libgtk-3-0
+  /usr/lib/aarch64-linux-gnu/libGLEW.so
+  /usr/lib/aarch64-linux-gnu/libgdk-3.so
+  /usr/lib/aarch64-linux-gnu/libGL.so.1
+  /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}

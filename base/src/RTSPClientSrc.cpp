@@ -111,6 +111,21 @@ public:
         bConnected = true;
         return bConnected;
     }
+
+    frame_sp prependSpsPpsToFrame(std::string id)
+    {
+        auto spsPpsData = pFormatCtx->streams[0]->codec->extradata;
+        auto spsPpsSize = pFormatCtx->streams[0]->codec->extradata_size;
+        size_t totalFrameSize = packet.size + spsPpsSize;
+
+        auto frm = myModule->makeFrame(totalFrameSize, id);
+        uint8_t* frameData = static_cast<uint8_t*>(frm->data());
+        memcpy(frameData, spsPpsData, spsPpsSize);
+        frameData += spsPpsSize;
+        memcpy(frameData, packet.data, packet.size);
+        return frm;
+    }
+
     bool readBuffer()
     {
         frame_container outFrames;
@@ -142,15 +157,11 @@ public:
                         H264Utils::getNALUnit((const char*)packet.data, packet.size, offset);
                         packet.data += offset - 4;
                         packet.size -= offset - 4;
-                        auto spsPpsData = pFormatCtx->streams[0]->codec->extradata;
-                        auto spsPpsSize = pFormatCtx->streams[0]->codec->extradata_size;;
-                        size_t totalFrameSize = packet.size + spsPpsSize;
-                       
-                        frm = myModule->makeFrame(totalFrameSize, it->second);
-                        uint8_t* frameData = static_cast<uint8_t*>(frm->data());
-                        memcpy(frameData, spsPpsData, spsPpsSize);
-                        frameData += spsPpsSize;
-                        memcpy(frameData, packet.data, packet.size);
+                        frm = prependSpsPpsToFrame(it->second);
+                    }
+                    else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
+                    {
+                        frm = prependSpsPpsToFrame(it->second);
                     }
                     else
                     {
