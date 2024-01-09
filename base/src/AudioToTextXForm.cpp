@@ -7,6 +7,14 @@
 #include "whisper.h"
 #include "SFML/Config.hpp"
 
+AudioToTextXFormProps::AudioToTextXFormProps(
+	DecoderSamplingStrategy _samplingStrategy,
+	std::string _modelPath,
+	int _bufferSize) : samplingStrategy(_samplingStrategy),
+	modelPath(_modelPath),
+	bufferSize(_bufferSize)
+{}
+
 class AudioToTextXForm::Detail
 {
 public:
@@ -40,6 +48,8 @@ AudioToTextXForm::~AudioToTextXForm() {}
 
 bool AudioToTextXForm::validateInputPins()
 {
+	//TODO: Reject any audio pin that has a samplingRate!=16KHz 
+	//https://github.com/Apra-Labs/ApraPipes/issues/325
 	if (getNumberOfInputPins() != 1)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
@@ -49,6 +59,7 @@ bool AudioToTextXForm::validateInputPins()
 	framemetadata_sp metadata = getFirstInputMetadata();
 
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
+
 	if (frameType != FrameMetadata::AUDIO)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be Audio. Actual<" << frameType << ">";
@@ -87,6 +98,8 @@ void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool AudioToTextXForm::init()
 {
+	mDetail->inputAudioBuffer.reserve(mDetail->mProps.bufferSize + 16000); //16000 is 1 second worth of samples since data is captured at 16KHz
+
 	//intialize model
 	auto samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
 	switch (mDetail->mProps.samplingStrategy)
@@ -119,6 +132,7 @@ bool AudioToTextXForm::process(frame_container& frames)
 	auto frame = frames.begin()->second;
 	sf::Int16* constFloatPointer = static_cast<sf::Int16*>(frame->data());
 	int numberOfSamples = frame->size() / 2;
+	//TODO: Modify to use NPP/ IPP
 	for (int index = 0; index < numberOfSamples; index++) {
 		mDetail->inputAudioBuffer.push_back((float)constFloatPointer[index]/ 32768.0f);
 	}

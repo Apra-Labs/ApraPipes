@@ -9,18 +9,15 @@ class AudioToTextXFormProps : public ModuleProps
 {
 public:
 	enum DecoderSamplingStrategy {
-		GREEDY,      //WHISPER_SAMPLING_GREEDY
-		BEAM_SEARCH //WHISPER_SAMPLING_BEAM_SEARCH
+		GREEDY,  
+		BEAM_SEARCH
 	};
 	AudioToTextXFormProps(
 		DecoderSamplingStrategy _samplingStrategy,
 		std::string _modelPath,
-		int _bufferSize) : samplingStrategy(_samplingStrategy),
-		modelPath(_modelPath),
-		bufferSize(_bufferSize)
-	{}
-    DecoderSamplingStrategy samplingStrategy;
-    std::string modelPath;
+		int _bufferSize);
+	DecoderSamplingStrategy samplingStrategy;
+	std::string modelPath;
 	int bufferSize;
 };
 
