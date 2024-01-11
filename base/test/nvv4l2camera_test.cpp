@@ -15,6 +15,7 @@
 #include "MaskNPPI.h"
 #include "CudaStreamSynchronize.h"
 #include "Mp4ReaderSource.h"
+#include "SquareMaskNPPI.h"
 
 BOOST_AUTO_TEST_SUITE(nvv4l2camera_tests)
 
@@ -599,10 +600,16 @@ BOOST_AUTO_TEST_CASE(atlcamwithmask, *boost::unit_test::disabled())
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 
-	MaskNPPIProps maskProps(200, 200, 100, MaskNPPIProps::AVAILABLE_MASKS::CIRCLE, stream);
+	// MaskNPPIProps maskProps(200, 200, 100, MaskNPPIProps::AVAILABLE_MASKS::CIRCLE, stream);
+	// maskProps.qlen = 1;
+	// maskProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	// auto m_mask = boost::shared_ptr<MaskNPPI>(new MaskNPPI(maskProps));
+	// transform->setNext(m_mask);
+
+	SquareMaskNPPIProps maskProps(300 , stream);
 	maskProps.qlen = 1;
 	maskProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
-	auto m_mask = boost::shared_ptr<MaskNPPI>(new MaskNPPI(maskProps));
+	auto m_mask = boost::shared_ptr<SquareMaskNPPI>(new SquareMaskNPPI(maskProps));
 	transform->setNext(m_mask);
 
 	CudaStreamSynchronizeProps cuxtxProps(stream);
