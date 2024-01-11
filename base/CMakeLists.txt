@@ -403,6 +403,8 @@ SET(CUDA_IP_FILES
 	src/RotationIndicatorKernel.cpp
 	src/AffineTransform.cpp
 	src/H264Decoder.cpp
+	src/SquareMaskNPPI.cpp
+	src/SquareMask.cu
 )
 
 IF(ENABLE_ARM64)
@@ -464,6 +466,8 @@ SET(CUDA_IP_FILES_H
 	include/RotationIndicatorKernel.h
 	include/AffineTransform.h
 	include/H264Decoder.h
+	include/SquareMaskNPPI.h
+	include/SquareMask.h
 	# include/AT.h
 )
 
