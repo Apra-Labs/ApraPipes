@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Apra-Labs/whisper.cpp
-    REF 74ad92406e58eee4c0618d8749df48aae91194cc #v1.5.2
-    SHA512 897479792902f4cb2f36ef199c699b1cc1472c3b88898027230528b8ad1f27a0de1548fdf8eca44981e558c84cd37c8091375647d208195b1b7443a18a6cfa7e  # This is a temporary value. We will modify this value in the next section.
+    REF c3bff0d121e2af823344939643d64a27e4a76ea2 #v1.5.4
+    SHA512 d51a32c91340d2b9f18bf5221e134e57a0259bc3a1c803ef427adc6e3de5f54c556232cd4ef070b9c07f93968efd942a61cfe311c2cbca013a928f0eb8055e6f  # This is a temporary value. We will modify this value in the next section.
     HEAD_REF kj/add-Config-for-vcpkg
 )
 

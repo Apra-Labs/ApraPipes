@@ -1,6 +1,6 @@
 {
   "name": "whisper",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "homepage": "https://github.com/Apra-Labs/whisper.cpp",
   "description": "Fork of whisper.cpp a High-performance inference of OpenAI's Whisper automatic speech recognition (ASR) model in cpp.",
   "license": "MIT",
