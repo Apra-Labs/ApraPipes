@@ -38,6 +38,22 @@ public:
 	}
 	~Detail() {}
 
+	whisper_full_params fetchDefaultParams() {
+		auto samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
+		switch (mProps.samplingStrategy)
+		{
+		case AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY:
+			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
+			break;
+		case AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH:
+			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_BEAM_SEARCH;
+			break;
+		default:
+			throw AIPException(AIP_FATAL, "Unknown Sampling Strategy");
+		}
+		return whisper_full_default_params(samplingStrategy);
+	}
+
 	void setProps(AudioToTextXFormProps& props)
 	{
 		mProps = props;
@@ -114,21 +130,7 @@ void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, string& pinId)
 bool AudioToTextXForm::init()
 {
 	mDetail->inputAudioBuffer.reserve(mDetail->mProps.bufferSize + 16000); //16000 is 1 second worth of samples since data is captured at 16KHz
-
-	//intialize model
-	auto samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
-	switch (mDetail->mProps.samplingStrategy)
-	{
-		case AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY:
-			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY;
-			break;
-		case AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH:
-			samplingStrategy = whisper_sampling_strategy::WHISPER_SAMPLING_BEAM_SEARCH;
-			break;
-		default:
-			throw AIPException(AIP_FATAL, "Unknown Sampling Strategy");
-	}
-	mDetail->mWhisperFullParams = whisper_full_default_params(samplingStrategy);
+	mDetail->mWhisperFullParams = mDetail->fetchDefaultParams();
 	mDetail->mWhisperContextParams = whisper_context_default_params();
 	mDetail->mWhisperContext = whisper_init_from_file_with_params(mDetail->mProps.modelPath.c_str(), mDetail->mWhisperContextParams);
 	return Module::init();
@@ -170,7 +172,6 @@ bool AudioToTextXForm::process(frame_container& frames)
 	auto outFrame = makeFrame(output.length());
 	memcpy(outFrame->data(), output.c_str(), output.length());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
-	LOG_ERROR << output;
 	send(frames);
 	return true;
 }
@@ -199,9 +200,9 @@ AudioToTextXFormProps AudioToTextXForm::getProps()
 bool AudioToTextXForm::handlePropsChange(frame_sp& frame)
 {
 	AudioToTextXFormProps props(mDetail->mProps.samplingStrategy, mDetail->mProps.modelPath, mDetail->mProps.bufferSize);
-	LOG_ERROR << mDetail->mProps.bufferSize;
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
+	mDetail->mWhisperFullParams = mDetail->fetchDefaultParams();
 	return ret;
 }
 

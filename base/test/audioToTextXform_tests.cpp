@@ -1,6 +1,5 @@
 #include <boost/test/unit_test.hpp>
 #include "stdafx.h"
-#include<sstream>
 #include<fstream>
 #include<vector>
 
@@ -37,36 +36,36 @@ BOOST_AUTO_TEST_CASE(test_asr)
         ,"./data/whisper/models/ggml-tiny.en-q8_0.bin",18000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
-    PipeLine p("test");
-    p.appendModule(fileReader);
-    p.init();
-    p.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(10000));  // giving time to call step 
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(asr->init());
+    BOOST_TEST(outputFile->init());
+
+    fileReader->step();
+    asr->step();
+    outputFile->step();
+
     std::ifstream in_file_text(asrOutText[0]);
-    std::ostringstream buffer;
+    std::ostringstream  buffer;
     buffer << in_file_text.rdbuf();
-    p.stop();
-    p.term();
-    p.wait_for_all();
+    std:string output = " The Matic speech recognition also known as ASR is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
     BOOST_TEST(
-        (buffer.str() == " The Matic speech recognition also known as ASR is the use of machine learning"
-            "or artificial intelligence technology to process human speech into readable text."));
+        (buffer.str() == output));
     in_file_text.close();
 }
 
 BOOST_AUTO_TEST_CASE(changeprop_asr)
 {
-    std::vector<std::string> asrOutText = { "./data/asr_out.txt" };
+    std::vector<std::string> asrOutText = { "./data/asr_change_props_out.txt" };
     Test_Utils::FileCleaner f(asrOutText);
 
     Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
-    fileReaderProps.readLoop = false;
+    fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
@@ -76,30 +75,39 @@ BOOST_AUTO_TEST_CASE(changeprop_asr)
         , "./data/whisper/models/ggml-tiny.en-q8_0.bin", 18000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
-    PipeLine p("test");
-    p.appendModule(fileReader);
-    p.init();
-    p.run_all_threaded();
-    Test_Utils::sleep_for_seconds(5);
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(asr->init());
+    BOOST_TEST(outputFile->init());
 
     AudioToTextXFormProps propschange = asr->getProps();
-    propschange.bufferSize = 2000;
-    asr->setProps(propschange);
+    propschange.bufferSize = 20000;
+    propschange.samplingStrategy = AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH;
+    fileReader->step();
+    asr->step();
+    outputFile->step();
 
-    Test_Utils::sleep_for_seconds(5);
+    asr->setProps(propschange);
+    for (int i = 0; i < 2; i++) {
+        fileReader->step();
+        asr->step();
+    }
+    outputFile->step();
+    propschange = asr->getProps();
     std::ifstream in_file_text(asrOutText[0]);
-    std::ostringstream buffer;
+    std::ostringstream  buffer;
     buffer << in_file_text.rdbuf();
-    p.stop();
-    p.term();
-    p.wait_for_all();
+    std:string output = " Metex speech recognition, also known as ASR, is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
     BOOST_TEST(
-        (buffer.str() == " The Matic speech recognition also known as ASR is the use of machine learning"
-            "or artificial intelligence technology to process human speech into readable text."));
+        (buffer.str() == output));
     in_file_text.close();
+    
+    BOOST_TEST(
+        (propschange.bufferSize == 20000));
+    BOOST_TEST(
+        (propschange.samplingStrategy == AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
