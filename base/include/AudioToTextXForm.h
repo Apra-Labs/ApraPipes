@@ -12,13 +12,23 @@ public:
 		GREEDY,  
 		BEAM_SEARCH
 	};
+	
+	DecoderSamplingStrategy samplingStrategy;
+	std::string modelPath;
+	int bufferSize;
+
 	AudioToTextXFormProps(
 		DecoderSamplingStrategy _samplingStrategy,
 		std::string _modelPath,
 		int _bufferSize);
-	DecoderSamplingStrategy samplingStrategy;
-	std::string modelPath;
-	int bufferSize;
+	size_t getSerializeSize();
+
+
+private:
+	friend class boost::serialization::access;
+	
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int version);
 };
 
 class AudioToTextXForm  : public Module

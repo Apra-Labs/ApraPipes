@@ -15,6 +15,21 @@ AudioToTextXFormProps::AudioToTextXFormProps(
 	bufferSize(_bufferSize)
 {}
 
+size_t AudioToTextXFormProps::getSerializeSize() {
+	return ModuleProps::getSerializeSize() +
+		sizeof(samplingStrategy) +
+		sizeof(modelPath) +
+		sizeof(bufferSize);
+}
+
+template <class Archive>
+void AudioToTextXFormProps::serialize(Archive& ar, const unsigned int version) {
+	ar& boost::serialization::base_object<ModuleProps>(*this);
+	ar& samplingStrategy;
+	ar& modelPath;
+	ar& bufferSize;
+}
+
 class AudioToTextXForm::Detail
 {
 public:
@@ -155,6 +170,7 @@ bool AudioToTextXForm::process(frame_container& frames)
 	auto outFrame = makeFrame(output.length());
 	memcpy(outFrame->data(), output.c_str(), output.length());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	LOG_ERROR << output;
 	send(frames);
 	return true;
 }
@@ -182,7 +198,8 @@ AudioToTextXFormProps AudioToTextXForm::getProps()
 
 bool AudioToTextXForm::handlePropsChange(frame_sp& frame)
 {
-	AudioToTextXFormProps props(mDetail->mProps.samplingStrategy, mDetail->mProps.modelPath,32000);
+	AudioToTextXFormProps props(mDetail->mProps.samplingStrategy, mDetail->mProps.modelPath, mDetail->mProps.bufferSize);
+	LOG_ERROR << mDetail->mProps.bufferSize;
 	auto ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
 	return ret;
