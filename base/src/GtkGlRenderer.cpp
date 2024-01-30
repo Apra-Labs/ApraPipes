@@ -36,6 +36,7 @@ public:
     static void
     on_resize(GtkGLArea *area, gint width, gint height, gpointer data)
     {
+        LOG_ERROR << "this pointer in resize is  " << data;
         printf("In resize width = %d, height = %d\n", width, height);
         view_set_window(width, height);
         background_set_window(width, height);
@@ -47,15 +48,50 @@ public:
     static gboolean
     on_render(GtkGLArea *glarea, GdkGLContext *context, gpointer data)
     {
-        // Clear canvas:
+        //LOG_ERROR<<"DATA IN RENDER "<<data;
         GtkGlRenderer::Detail *detailInstance = (GtkGlRenderer::Detail *)data;
-        LOG_DEBUG << "Coming Inside Renderer";
+        //LOG_ERROR<<"GLAREA IN RENDER IS " << glarea << "for width "<<detailInstance->mProps.windowWidth<<" "<<context;
+        
+        
+        // if(detailInstance->mProps.windowWidth == 2)
+        // {
+        //     size_t bufferSize = static_cast<size_t>(640) * 360 * 3;
+        //     memset(glarea, 0, bufferSize);
+        //     for (size_t i = 1; i < bufferSize; i += 3) {
+        //     glarea[i] = 150; 
+        //     }
+        // }
+
+        // Clear canvas:
+
+        
+        //LOG_ERROR << "Window width in on_render is " <<detailInstance->mProps.windowWidth;
+        // LOG_DEBUG << "Coming Inside Renderer";
+        //LOG_ERROR << "GTKGL POINTER  IS===========================>>>>"<< detailInstance->mProps.windowWidth<<" "<< glarea;
         if (detailInstance->isMetadataSet == false)
         {
-            LOG_INFO << "Metadata is Not Set ";
+            LOG_TRACE << "Metadata is Not Set ";
             return TRUE;
         }
+        gint x, y;
 
+    // Check if the child widget is realized (has an associated window)
+        if (gtk_widget_get_realized(GTK_WIDGET(glarea))) {
+        // Get the immediate parent of the child
+            GtkWidget *parent = gtk_widget_get_parent(GTK_WIDGET(glarea));
+
+        // Check if the parent is realized
+            if (parent && gtk_widget_get_realized(parent)) {
+            // Get the position of the child relative to its parent
+                gtk_widget_translate_coordinates(GTK_WIDGET(glarea), parent, 0, 0, &x, &y);
+                // g_print("Child position relative to parent: x=%d, y=%d\n", x, y);
+                //LOG_ERROR << "Child position relative to parent "<< x << "====="  << y << "==============" << detailInstance->mProps.windowWidth ;
+        } else {
+            // g_print("Error: Child's parent is not realized.\n");
+        }
+    } else {
+        // g_print("Error: Child widget is not realized.\n");
+    }
         if (!detailInstance->cachedFrame.get())
         {
             LOG_ERROR << "Got Empty Frame";
@@ -90,7 +126,19 @@ public:
     static gboolean
     on_realize(GtkGLArea *glarea, GdkGLContext *context, gpointer data) // Process SOS
     {
+        //getting current time
+        std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+        auto timeStamp = dur.count();
+        auto diff = timeStamp - 1705559852000;
+        LOG_ERROR<<"On realize is called ";
+        LOG_ERROR<<"Time difference is "<<diff;
         // Make current:
+        LOG_ERROR << "this pointer in realize is  " << data;
+        LOG_ERROR<<"GLAREA IN REALIZE " << glarea << "sleeping for "<<diff/10 <<"with context "<<context;
+        // GtkGlRenderer::Detail *detailInstance = (GtkGlRenderer::Detail *)data;
+        // LOG_ERROR << "GDKGL CONTEXT " <<context<<" diff "<<diff;
+        //boost::this_thread::sleep_for(boost::chrono::milliseconds(diff/10));
         gtk_gl_area_make_current(glarea);
 
         if (gtk_gl_area_get_error(glarea) != NULL)
@@ -126,6 +174,7 @@ public:
 
         // Start updating:
         gdk_frame_clock_begin_updating(frame_clock);
+        //LOG_ERROR << "Window width in on_realize is  2" <<detailInstance->mProps.windowWidth;
         return TRUE;
     }
 
@@ -150,24 +199,25 @@ public:
     // }
 
 
-    // void on_unrealize()
-    // {
-    //     GdkGLContext *glcontext = gtk_gl_area_get_context(GTK_GL_AREA(glarea));
-    //     GdkWindow *glwindow = gdk_gl_context_get_window(glcontext);
-    //     GdkFrameClock *frame_clock = gdk_window_get_frame_clock(glwindow);
+    static void on_unrealize(GtkGLArea *glarea, gint width, gint height, gpointer data)
+    {
+        LOG_ERROR << "UNREALIZE SIGNAL==================================>>>>>>>>>>>>>>>>>";
+        // GdkGLContext *glcontext = gtk_gl_area_get_context(GTK_GL_AREA(glarea));
+        // GdkWindow *glwindow = gdk_gl_context_get_window(glcontext);
+        // GdkFrameClock *frame_clock = gdk_window_get_frame_clock(glwindow);
 
-    //     // Disconnect the update signal from frame_clock
-    //     //g_signal_handlers_disconnect_by_func(frame_clock, G_CALLBACK(gtk_gl_area_queue_render), G_OBJECT(glarea));
+        // // Disconnect the update signal from frame_clock
+        // g_signal_handlers_disconnect_by_func(frame_clock, gtk_gl_area_queue_render, G_OBJECT(glarea));
 
-    //     // Get the parent container
-    //     GtkWidget *parent_container = gtk_widget_get_parent(glarea);
+        // // // Get the parent container
+        // GtkWidget *parent_container = gtk_widget_get_parent(glarea);
 
-    //     // Remove the GtkGLArea from its parent container
-    //     gtk_container_remove(GTK_CONTAINER(parent_container), glarea);
+        // // Remove the GtkGLArea from its parent container
+        // gtk_container_remove(GTK_CONTAINER(parent_container), glarea);
 
-    //     // Destroy the GtkGLArea widget
-    //     gtk_widget_destroy(glarea);
-    // }
+        // // Destroy the GtkGLArea widget
+        // gtk_widget_destroy(glarea);
+    }
 
     static gboolean
     on_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer data)
@@ -215,13 +265,43 @@ public:
             // {"resize", G_CALLBACK(on_resize), (GdkEventMask)0},
             // {"scroll-event", G_CALLBACK(on_scroll), GDK_SCROLL_MASK},
         //connect_signals(glarea, signals, NELEM(signals));
-        g_signal_connect(glarea, "realize", G_CALLBACK(on_realize), this);
-        g_signal_connect(glarea, "render", G_CALLBACK(on_render), this);
-        g_signal_connect(glarea, "resize", G_CALLBACK(on_resize), this);
+        
+        
+        std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+        auto timeStamp = dur.count();
+        renderId = g_signal_connect(glarea, "render", G_CALLBACK(on_render), this);
+        realizeId =  g_signal_connect(glarea, "realize", G_CALLBACK(on_realize), this);
+        resizeId = g_signal_connect(glarea, "resize", G_CALLBACK(on_resize), this);
+        LOG_ERROR<<"Connect to renderId "<<renderId<<"Connect to realizeId "<<realizeId<<"Connect to resizeId "<<resizeId;
+        // g_signal_connect(glarea, "unrealize", G_CALLBACK(on_unrealize), this);
+    }
+
+    // void disconnect_glarea_signals(GtkWidget *glarea) 
+    // {
+    //     // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_realize), this);
+    //     // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_render), this);
+    //     // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_resize), this);
+    //     // LOG_ERROR << "disconnect_glarea_signals===================================>>>>>>>";
+    //     // g_signal_handler_disconnect(glarea, realizeId);
+    //     // g_signal_handler_disconnect(glarea, renderId);
+    //     // g_signal_handler_disconnect(glarea, resizeId);
+    // }
+
+        void disconnect_glarea_signals(GtkWidget *glarea) 
+    {
+        // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_realize), this);
+        // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_render), this);
+        // g_signal_handlers_disconnect_by_func(glarea, G_CALLBACK(on_resize), this);
+        LOG_ERROR << "disconnect_glarea_signals===================================>>>>>>>";
+        g_signal_handler_disconnect(glarea, realizeId);
+        g_signal_handler_disconnect(glarea, renderId);
+        g_signal_handler_disconnect(glarea, resizeId);
     }
 
     bool init()
     {
+        LOG_ERROR << "MDETAIL GLAREA -> "<< glarea;
         connect_glarea_signals(glarea);
         // initialize_gl(GTK_GL_AREA(glarea));
         return true;
@@ -235,6 +315,9 @@ public:
     bool isDmaMem;
     bool isMetadataSet;
     GtkGlRendererProps mProps;
+    guint realizeId;
+    guint renderId;
+    guint resizeId;
 };
 
 GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props) : Module(SINK, "GtkGlRenderer", props)
@@ -243,6 +326,7 @@ GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props) : Module(SINK, "GtkGlRend
     mDetail->glarea = props.glArea;
     mDetail->windowWidth = props.windowWidth;
     mDetail->windowHeight = props.windowHeight;
+    //LOG_ERROR<<"i am creating gtkgl renderer width and height is "<<mDetail->mProps.windowWidth;
 }
 
 GtkGlRenderer::~GtkGlRenderer() {}
@@ -264,9 +348,23 @@ bool GtkGlRenderer::init()
 bool GtkGlRenderer::process(frame_container &frames)
 
 {
+    auto myId = Module::getId();
     // LOG_ERROR << "GOT "
     auto frame = frames.cbegin()->second;
     mDetail->cachedFrame = frame;
+    size_t underscorePos = myId.find('_');
+    std::string numericPart = myId.substr(underscorePos + 1);
+    int myNumber = std::stoi(numericPart);
+
+    if ((controlModule != nullptr) && (myNumber % 2 == 1))
+	{
+		Rendertimestamp cmd;
+		auto myTime = frames.cbegin()->second->timestamp;
+		cmd.currentTimeStamp = myTime;
+		controlModule->queueCommand(cmd);
+        //LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
+		return true;
+	}
     return true;
 }
 
@@ -299,13 +397,13 @@ bool GtkGlRenderer::term()
 
 bool GtkGlRenderer::changeProps(GtkWidget* glArea, int windowWidth, int windowHeight)
 {
-    LOG_ERROR << "Before changing props ============"<<mDetail->glarea;
     //mDetail->on_unrealize();
+    mDetail->disconnect_glarea_signals(mDetail->glarea);
     mDetail->glarea = glArea;
     mDetail->windowWidth = windowWidth;
     mDetail->windowHeight = windowHeight;
     mDetail->init();
-    LOG_ERROR << "After changing props ============"<<mDetail->glarea;
+    gtk_widget_show(glArea);
 }
 
 bool GtkGlRenderer::shouldTriggerSOS()
@@ -319,11 +417,11 @@ bool GtkGlRenderer::shouldTriggerSOS()
 }
 
 bool GtkGlRenderer::processSOS(frame_sp &frame)
-{
-    LOG_INFO<<"I AM IN PROCESS-SOS !!!";
+{   
+    //mDetail->connect_glarea_signals(mDetail->glarea);
     auto inputMetadata = frame->getMetadata();
     auto frameType = inputMetadata->getFrameType();
-    LOG_INFO<<"GOT METADATA "<<inputMetadata->getFrameType();
+    LOG_TRACE<<"GOT METADATA "<<inputMetadata->getFrameType();
     int width = 0;
     int height = 0;
 
@@ -376,4 +474,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     return true;
 }
 
-
+bool GtkGlRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
+{
+	return Module::handleCommand(type, frame);
+}

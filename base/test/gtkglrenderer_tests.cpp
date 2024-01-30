@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
-
+#include <boost/thread.hpp>
+#include <iostream>
 #include "PipeLine.h"
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
@@ -30,11 +31,26 @@
 // #define CONFIG_PATH "config/"
 
 PipeLine p("test");
+PipeLine p2("test2");
+PipeLine p3("test3");
+PipeLine p4("test4");
+PipeLine p5("test5");
+PipeLine p6("test6");
 GtkWidget *glarea;
 GtkWidget *glarea2;
 GtkWidget *glarea3;
 GtkWidget *glarea4;
+GtkWidget *glarea5;
+GtkWidget *glarea6;
+GtkWidget *window;
 GtkWidget *glAreaSwitch;
+GtkWidget *parentCont;
+GtkWidget *parentCont4;
+GtkWidget *parentCont3;
+GtkWidget *parentCont5;
+GtkWidget *parentCont6;
+static int pipelineNumber = 0;
+
 BOOST_AUTO_TEST_SUITE(gtkglrenderer_tests)
 
 struct rtsp_client_tests_data {
@@ -67,40 +83,14 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	// p.term();
 	// p.wait_for_all();
 }
-void lauchAtlPipeline()
+
+void secondPipeline()
 {
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 360, 10)));	
-	
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
-	source->setNext(transform);
-
-	// GtkGlRendererProps gtkglsinkProps(glarea, 1280, 720);
-	// auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
-	// transform->setNext(sink);
-	
-	// GtkGlRendererProps gtkglsinkProps2(glarea2, 1280, 720);
-	// auto sink2 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps2));
-	// transform->setNext(sink2);
-
-	// GtkGlRendererProps gtkglsinkProps3(glarea3, 1280, 720);
-	// auto sink3 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps3));
-	// transform->setNext(sink3);
-
-	// GtkGlRendererProps gtkglsinkProps4(glarea4, 1280, 720);
-	// auto sink4 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps4));
-	// transform->setNext(sink4);
-
-	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0)));																																																															
-	transform->setNext(sink);
-
-	p.appendModule(source);
 	p.init();
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 }
-boost::shared_ptr<GtkGlRenderer> launchPipeline()
+
+boost::shared_ptr<GtkGlRenderer> launchPipeline1()
 {
 	rtsp_client_tests_data d;
 	string url = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
@@ -121,7 +111,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline()
 	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
 	decoder_1->setNext(transform);
 
-	//MEMCONVERT TO DEVICE
+	// //MEMCONVERT TO DEVICE
 	auto stream = cudastream_sp(new ApraCudaStream);
 	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	transform->setNext(memconversion1);
@@ -134,93 +124,246 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline()
 	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	resizenppi->setNext(memconversion2);
 
-	GtkGlRendererProps gtkglsinkProps(glarea, 640, 360);
-	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
+	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
 	memconversion2->setNext(GtkGl);
 
-	//auto eglsink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));																																																															
-	// memconversion2->setNext(eglsink);
-	
-	// GtkGlRendererProps gtkglsinkProps2(glarea2, 1024, 1024);
-	// auto sink2 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps2));
-	// memconversion2->setNext(sink2);
-
-	// GtkGlRendererProps gtkglsinkProps3(glarea3, 1024, 1024);
-	// auto sink3 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps3));
-	// memconversion2->setNext(sink3);
-
-	// GtkGlRendererProps gtkglsinkProps4(glarea4, 1024, 1024);
-	// auto sink4 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps4));
-	// memconversion2->setNext(sink4);
-
-	// auto eglsink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));																																																															
-	// decoder_1->setNext(eglsink);
-
 	p.appendModule(source);
 	p.init();
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
-
-	return GtkGl;																																																															
-;
-
+	return GtkGl;
 }
 
-void launchPipelineRTSP()
+boost::shared_ptr<GtkGlRenderer> launchPipeline2()
 {
-	rtsp_client_tests_data d;
-	string url = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
-	RTSPClientSrcProps rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
-	auto source = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps));
-	auto meta = framemetadata_sp(new H264Metadata());
-	source->addOutputPin(meta);
+	rtsp_client_tests_data d2;
+	string url2 = "rtsp://10.102.10.75/axis-media/media.amp";
+
+	//RTSP
+	RTSPClientSrcProps rtspProps2 = RTSPClientSrcProps(url2, d2.empty, d2.empty);
+	auto source2 = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps2));
+	auto meta2 = framemetadata_sp(new H264Metadata());
+	source2->addOutputPin(meta2);
+
+	//H264DECODER
+	H264DecoderProps decoder_1_Props2 = H264DecoderProps();
+	auto decoder_12 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_1_Props2));
+	source2->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	source2->setNext(decoder_12);
+
+	//NV-TRANSFORM
+	auto transform2 = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	decoder_12->setNext(transform2);
+
+	//MEMCONVERT TO DEVICE
+	auto stream = cudastream_sp(new ApraCudaStream);
+	auto memconversion12 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	transform2->setNext(memconversion12);
+
+	//RESIZE-NPPI
+	auto resizenppi2 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream)));
+	memconversion12->setNext(resizenppi2);
+
+	//MEMCONVERT TO DMA
+	auto memconversion22 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	resizenppi2->setNext(memconversion22);
+
+	GtkGlRendererProps gtkglsinkProps2(glAreaSwitch, 2, 2);
+	auto GtkGl2 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps2));
+
 	
-	H264DecoderProps decoder_1_Props = H264DecoderProps();
-	auto decoder_1 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_1_Props));
-	source->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
-	source->setNext(decoder_1);
-
-
-
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
-	decoder_1->setNext(transform);
-
-	// auto stream = cudastream_sp(new ApraCudaStream);
-	// auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
-	// transform->setNext(copy1);
-
-	// auto m2 = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream)));
-	// copy1->setNext(m2);
-	// auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
-	// m2->setNext(copy2);
-	// auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
-
-
-	GtkGlRendererProps gtkglsinkProps(glarea, 1280, 720);
-	auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
-	transform->setNext(sink);
-	
-	GtkGlRendererProps gtkglsinkProps2(glarea2, 1280, 720);
-	auto sink2 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps2));
-	transform->setNext(sink2);
-
-	GtkGlRendererProps gtkglsinkProps3(glarea3, 1280, 720);
-	auto sink3 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps3));
-	transform->setNext(sink3);
-
-	GtkGlRendererProps gtkglsinkProps4(glarea4, 1280, 720);
-	auto sink4 = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps4));
-	transform->setNext(sink4);
-
-	// auto eglsink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));																																																															
-	// decoder_1->setNext(eglsink);
-
-	p.appendModule(source);
-	p.init();
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	p.run_all_threaded();
-
+	memconversion22->setNext(GtkGl2);
+    
+	p2.appendModule(source2);
+	p2.init();
+	p2.run_all_threaded();
+	return GtkGl2;
 }
+
+boost::shared_ptr<GtkGlRenderer> launchPipeline3()
+{
+	rtsp_client_tests_data d3;
+	string url3 = "rtsp://10.102.10.42/axis-media/media.amp";
+
+	//RTSP
+	RTSPClientSrcProps rtspProps3 = RTSPClientSrcProps(url3, d3.empty, d3.empty);
+	auto source3 = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps3));
+	auto meta3 = framemetadata_sp(new H264Metadata());
+	source3->addOutputPin(meta3);
+
+	//H264DECODER
+	H264DecoderProps decoder_3_Props2 = H264DecoderProps();
+	auto decoder_13 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_3_Props2));
+	source3->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	source3->setNext(decoder_13);
+
+	//NV-TRANSFORM
+	auto transform3 = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	decoder_13->setNext(transform3);
+
+	//MEMCONVERT TO DEVICE
+	auto stream3 = cudastream_sp(new ApraCudaStream);
+	auto memconversion13 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream3)));
+	transform3->setNext(memconversion13);
+
+	//RESIZE-NPPI
+	auto resizenppi3 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream3)));
+	memconversion13->setNext(resizenppi3);
+
+	//MEMCONVERT TO DMA
+	auto memconversion33 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream3)));
+	resizenppi3->setNext(memconversion33);
+
+	GtkGlRendererProps gtkglsinkProps3(glarea3, 2, 2);
+	auto GtkGl3 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps3));
+
+	
+	memconversion33->setNext(GtkGl3);
+    
+	p3.appendModule(source3);
+	p3.init();
+	p3.run_all_threaded();
+	return GtkGl3;
+}
+
+boost::shared_ptr<GtkGlRenderer> launchPipeline4()
+{
+	rtsp_client_tests_data d4;
+	string url4 = "rtsp://10.102.10.42/axis-media/media.amp";
+
+	//RTSP
+	RTSPClientSrcProps rtspProps4 = RTSPClientSrcProps(url4, d4.empty, d4.empty);
+	auto source4 = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps4));
+	auto meta4 = framemetadata_sp(new H264Metadata());
+	source4->addOutputPin(meta4);
+
+	//H264DECODER
+	H264DecoderProps decoder_4_Props2 = H264DecoderProps();
+	auto decoder_14 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_4_Props2));
+	source4->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	source4->setNext(decoder_14);
+
+	//NV-TRANSFORM
+	auto transform4 = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	decoder_14->setNext(transform4);
+
+	//MEMCONVERT TO DEVICE
+	auto stream4 = cudastream_sp(new ApraCudaStream);
+	auto memconversion14 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream4)));
+	transform4->setNext(memconversion14);
+
+	//RESIZE-NPPI
+	auto resizenppi4 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream4)));
+	memconversion14->setNext(resizenppi4);
+
+	//MEMCONVERT TO DMA
+	auto memconversion44 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream4)));
+	resizenppi4->setNext(memconversion44);
+
+	GtkGlRendererProps gtkglsinkProps4(glarea4, 2, 2);
+	auto GtkGl4 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps4));
+
+	
+	memconversion44->setNext(GtkGl4);
+    
+	p4.appendModule(source4);
+	p4.init();
+	p4.run_all_threaded();
+	return GtkGl4;
+}
+
+boost::shared_ptr<GtkGlRenderer> launchPipeline5()
+{
+	rtsp_client_tests_data d5;
+	string url5 = "rtsp://10.102.10.75/axis-media/media.amp";
+
+	//RTSP
+	RTSPClientSrcProps rtspProps5 = RTSPClientSrcProps(url5, d5.empty, d5.empty);
+	auto source5 = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps5));
+	auto meta5 = framemetadata_sp(new H264Metadata());
+	source5->addOutputPin(meta5);
+
+	//H264DECODER
+	H264DecoderProps decoder_5_Props2 = H264DecoderProps();
+	auto decoder_15 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_5_Props2));
+	source5->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	source5->setNext(decoder_15);
+
+	//NV-TRANSFORM
+	auto transform5 = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	decoder_15->setNext(transform5);
+
+	//MEMCONVERT TO DEVICE
+	auto stream5 = cudastream_sp(new ApraCudaStream);
+	auto memconversion15 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream5)));
+	transform5->setNext(memconversion15);
+
+	//RESIZE-NPPI
+	auto resizenppi5 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream5)));
+	memconversion15->setNext(resizenppi5);
+
+	//MEMCONVERT TO DMA
+	auto memconversion55 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream5)));
+	resizenppi5->setNext(memconversion55);
+
+	GtkGlRendererProps gtkglsinkProps5(glarea5, 2, 2);
+	auto GtkGl5 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps5));
+
+	
+	memconversion55->setNext(GtkGl5);
+    
+	p5.appendModule(source5);
+	p5.init();
+	p5.run_all_threaded();
+	return GtkGl5;
+}
+
+boost::shared_ptr<GtkGlRenderer> launchPipeline6()
+{
+	rtsp_client_tests_data d6;
+	string url6 = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
+
+	//RTSP
+	RTSPClientSrcProps rtspProps6 = RTSPClientSrcProps(url6, d6.empty, d6.empty);
+	auto source6 = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(rtspProps6));
+	auto meta6 = framemetadata_sp(new H264Metadata());
+	source6->addOutputPin(meta6);
+
+	//H264DECODER
+	H264DecoderProps decoder_6_Props2 = H264DecoderProps();
+	auto decoder_16 = boost::shared_ptr<H264Decoder>(new H264Decoder(decoder_6_Props2));
+	source6->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	source6->setNext(decoder_16);
+
+	//NV-TRANSFORM
+	auto transform6 = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	decoder_16->setNext(transform6);
+
+	//MEMCONVERT TO DEVICE
+	auto stream6 = cudastream_sp(new ApraCudaStream);
+	auto memconversion16 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream6)));
+	transform6->setNext(memconversion16);
+
+	//RESIZE-NPPI
+	auto resizenppi6 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream6)));
+	memconversion16->setNext(resizenppi6);
+
+	//MEMCONVERT TO DMA
+	auto memconversion66 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream6)));
+	resizenppi6->setNext(memconversion66);
+
+	GtkGlRendererProps gtkglsinkProps6(glarea6, 2, 2);
+	auto GtkGl6 = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps6));
+
+	
+	memconversion66->setNext(GtkGl6);
+    
+	p6.appendModule(source6);
+	p6.init();
+	p6.run_all_threaded();
+	return GtkGl6;
+}
+
 
 
 void screenChanged(GtkWidget *widget, GdkScreen *old_screen,
@@ -246,23 +389,94 @@ void my_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data) {
 }
 
 static gboolean hide_gl_area(gpointer data) {
+    // gtk_widget_hide(glarea);
+
+	GtkWidget* parentContainer = gtk_widget_get_parent(GTK_WIDGET(glarea));
+	gtk_widget_unrealize(glarea);
+	// gtk_container_remove(GTK_CONTAINER(parentContainer), glarea);
+    // //     // Remove the GtkGLArea from its parent container
+	// gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
+
+    return G_SOURCE_REMOVE;  // Remove the timeout source after execution
+}
+
+static gboolean hideWidget(gpointer data) {
     gtk_widget_hide(glarea);
-	gtk_widget_hide(glAreaSwitch);
     return G_SOURCE_REMOVE;  // Remove the timeout source after execution
 }
 
 static gboolean change_gl_area(gpointer data) {
 	GtkGl->changeProps(glAreaSwitch, 640, 360);
 	GtkGl->step();
+	gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
+	gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
+	gtk_widget_queue_draw(GTK_WIDGET(glAreaSwitch));
+	
     return G_SOURCE_REMOVE;  // Change the glarea before showing
 }
 
 static gboolean show_gl_area(gpointer data) {
-	//gtk_widget_show(glarea);
+	// gtk_widget_show(glarea);
     gtk_widget_show(glAreaSwitch);
     return G_SOURCE_REMOVE;  // Remove the timeout source after execution
 }
 
+void startPipeline6()
+{
+	LOG_ERROR<<"CALLING PIPELINE 6!!!!!!";
+	launchPipeline6();
+	gtk_container_add(GTK_CONTAINER(parentCont6),GTK_WIDGET(glarea6));
+	gtk_widget_show(GTK_WIDGET(glarea6));
+}
+
+void startPipeline5()
+{
+	LOG_ERROR<<"CALLING PIPELINE 5!!!!!!";
+	launchPipeline5();
+	gtk_container_add(GTK_CONTAINER(parentCont5),GTK_WIDGET(glarea5));
+	gtk_widget_show(GTK_WIDGET(glarea5));
+}
+
+void startPipeline4()
+{
+	LOG_ERROR<<"CALLING PIPELINE 4!!!!!!";
+	launchPipeline4();
+	gtk_container_add(GTK_CONTAINER(parentCont4),GTK_WIDGET(glarea4));
+	gtk_widget_show(GTK_WIDGET(glarea4));
+}
+
+void startPipeline3()
+{
+	LOG_ERROR<<"CALLING PIPELINE 3!!!!!!";
+	launchPipeline3();
+	gtk_container_add(GTK_CONTAINER(parentCont3),GTK_WIDGET(glarea3));
+	gtk_widget_show(GTK_WIDGET(glarea3));
+	//startPipeline4();
+}
+
+void on_button_clicked()
+{
+	LOG_ERROR<<"CALLING BUTTON CLICKED!!!!!!";
+	// gtk_widget_hide(GTK_WIDGET(glarea));
+	if(pipelineNumber == 0){
+		launchPipeline2();
+		gtk_container_add(GTK_CONTAINER(parentCont),GTK_WIDGET(glAreaSwitch));
+		gtk_widget_show(GTK_WIDGET(glAreaSwitch));	
+	} else if(pipelineNumber == 1){
+		startPipeline3();
+	}else if(pipelineNumber == 2){
+		startPipeline4();
+	}
+	else if(pipelineNumber == 3){
+		startPipeline5();
+	}
+	else if(pipelineNumber == 4){
+		startPipeline6();
+	}
+	pipelineNumber+=1;
+	
+
+}
 
 BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 {
@@ -278,9 +492,10 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	gtk_builder_add_from_file(m_builder, "/mnt/disks/ssd/vinayak/backup/GtkRendererModule/ApraPipes/assets/appui.glade", NULL);
 	std::cout << "ui glade found" << std::endl;
 
-	GtkWidget *window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+	window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 	g_object_ref(window);
-	gtk_window_set_default_size(GTK_WINDOW(window), 1280, 400);
+	gtk_window_set_default_size(GTK_WINDOW(window), 3840, 2160);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	gtk_widget_set_app_paintable(window, TRUE);
 
@@ -291,19 +506,38 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 
 	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "mainWidget"));
 	gtk_container_add(GTK_CONTAINER(window), mainFixed);
-	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
+	GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(m_builder, "button"));
+    g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
 
+	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
+	glarea3 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw3"));
+	glarea4 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw4"));
+	glarea5 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw5"));
+	glarea6 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw6"));
 	glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw2"));
-	// glarea2 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw2"));
-	// glarea3 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw3"));
-	// glarea4 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw4"));
+	parentCont = gtk_widget_get_parent(GTK_WIDGET(glAreaSwitch));
+	parentCont3 = gtk_widget_get_parent(GTK_WIDGET(glarea3));
+	parentCont4 = gtk_widget_get_parent(GTK_WIDGET(glarea4));
+	parentCont5 = gtk_widget_get_parent(GTK_WIDGET(glarea5));
+	parentCont6 = gtk_widget_get_parent(GTK_WIDGET(glarea6));
+	gtk_container_remove(GTK_CONTAINER(parentCont), glAreaSwitch);
+	gtk_container_remove(GTK_CONTAINER(parentCont3), glarea3);
+	gtk_container_remove(GTK_CONTAINER(parentCont4), glarea4);
+	gtk_container_remove(GTK_CONTAINER(parentCont5), glarea5);
+	gtk_container_remove(GTK_CONTAINER(parentCont6), glarea6);
+    //     // Remove the GtkGLArea from its parent container
+	std::cout << "Printing Pointer of Old & New GL AREA" << glarea << "======== " << glAreaSwitch  << std::endl; 
+
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
 	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
-	launchPipeline();
+	launchPipeline1();
+	//launchPipeline2();
 	gtk_widget_show_all(window);
-	g_timeout_add(5000, hide_gl_area, NULL);
-	g_timeout_add(7000, change_gl_area, NULL);
-	g_timeout_add(9000, show_gl_area, NULL);
+	
+	// g_timeout_add(2000, hideWidget, NULL);
+	// g_timeout_add(5000, hide_gl_area, NULL);
+	// g_timeout_add(7000, change_gl_area, NULL);
+	// g_timeout_add(9000, show_gl_area, NULL);
 	gtk_main();
 
 	p.stop();

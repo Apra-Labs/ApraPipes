@@ -14,7 +14,8 @@ public:
 		windowHeight = _windowHeight;
 	}
 	GtkWidget* glArea;
-	int windowWidth, windowHeight;
+	int windowWidth = 0;
+	int windowHeight = 0;
 };
 
 class GtkGlRenderer : public Module
@@ -33,6 +34,7 @@ protected:
 	bool processSOS(frame_sp &frame);
 	bool validateInputPins();
 	bool shouldTriggerSOS();
+	bool handleCommand(Command::CommandType type, frame_sp &frame);
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;

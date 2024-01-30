@@ -74,24 +74,14 @@ background_draw (void)
     0, 2, 3
 	};
 
-	static GLubyte triangle2[] = {
-		4, 5, 6,
-		4, 6, 7
-	};
-
 
 	program_bkgd_use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	// glActiveTexture(GL_TEXTURE0);
+	// glBindTexture(GL_TEXTURE_2D, texture);
 	glBindVertexArray(vao);
-	//yash change
-	// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, index);
+	// //yash change
+	// // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, index);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triangle1);
-
-	// Draw the second triangle
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triangle2);
-	//yash change end
-	glBindVertexArray(0);
 }
 
 void

@@ -689,7 +689,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 				}
 
 				// cache insertion
-				LOG_INFO << "cache insert: " << mp4File << "\n";
+				// LOG_INFO << "cache insert: " << mp4File << "\n";
 				Video vid(mp4File.string(), fileTS);
 
 				/* ----- first relevant file found ----- */

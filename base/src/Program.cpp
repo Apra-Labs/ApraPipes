@@ -18,45 +18,6 @@
 #include "Program.h"
 #include "GLUtils.h"
 
-
-const GLchar  *CUBE_VERTEX_SOURCE =
-"#version 330\n"
-"uniform mat4 view_matrix;\n"
-"uniform mat4 model_matrix;\n"
-"in vec3 vertex;\n"
-"in vec3 vcolor;\n"
-"in vec3 normal;\n"
-"out vec3 fcolor;\n"
-"out vec3 fpos;\n"
-"out float fdot;\n"
-"void main (void)\n"
-"{\n"
-"	vec4 modelspace = model_matrix * vec4(vertex, 1.0);\n"
-"	gl_Position = view_matrix * modelspace;\n"
-"	fcolor = vcolor;\n"
-"	vec4 sight = vec4(0, 0, -1.0, 0.0);\n"
-"	vec4 wnormal = model_matrix * vec4(normal, 0.0);\n"
-"	fdot = dot(sight, wnormal);\n"
-"	fpos = modelspace.xyz;\n"
-"}\n";
-
-
-const GLchar  *CUBE_FRAGMENT_SOURCE =
-"#version 330\n"
-"in vec3 fcolor;\n"
-"in vec3 fpos;\n"
-"in float fdot;\n"
-"out vec4 fragcolor;\n"
-"void main (void)\n"
-"{\n"
-"	if (!gl_FrontFacing)\n"
-"		return;\n"
-"	vec3 linear = pow(fcolor, vec3(1.0 / 2.2));\n"
-"	float dst = distance(vec3(0, 0, 2), fpos) * 0.4;\n"
-"	vec3 scaled = linear * vec3(fdot * dst);\n"
-"	fragcolor = vec4(pow(scaled, vec3(2.2)), 0.0);\n"
-"}\n";
-
 const GLchar  *BKGD_VERTEX_SOURCE =
 "#version 150\n"
 "in vec2 vertex;\n"
@@ -67,20 +28,6 @@ const GLchar  *BKGD_VERTEX_SOURCE =
 "	ftex = vec2(texture.x, 1.0 - texture.y);\n"
 "	gl_Position = vec4(vertex, 0.5, 1.0);\n"
 "}\n";
-// "	ftex = texture;\n"
-// const GLchar *BKGD_VERTEX_SOURCE =
-//     "#version 150\n"
-//     "in vec2 vertex;\n"
-//     "in vec2 texture;\n"
-//     "out vec2 ftex;\n"
-//     "uniform mat4 view_matrix;\n"  // Include any necessary matrices
-//     "uniform mat4 model_matrix;\n"
-//     "void main (void)\n"
-//     "{\n"
-//     "    ftex = (model_matrix * vec4(texture, 0.0, 1.0)).xy;\n"
-//     "    gl_Position = view_matrix * vec4(vertex, 0.5, 1.0);\n"
-//     "}\n";
-
 
 const GLchar  *BKGD_FRAGMENT_SOURCE =
 "#version 150\n"
@@ -118,19 +65,11 @@ static struct loc loc_bkgd[] = {
 	[LOC_BKGD_TEXTURE] = { "texture",	ATTRIBUTE },
 };
 
-static struct loc loc_cube[] = {
-	[LOC_CUBE_VIEW]   = { "view_matrix",	UNIFORM   },
-	[LOC_CUBE_MODEL]  = { "model_matrix",	UNIFORM   },
-	[LOC_CUBE_VERTEX] = { "vertex",		ATTRIBUTE },
-	[LOC_CUBE_VCOLOR] = { "vcolor",		ATTRIBUTE },
-	[LOC_CUBE_NORMAL] = { "normal",		ATTRIBUTE },
-};
 
 // Programs:
 enum {
-	BKGD,
-	CUBE,
-};
+	BKGD
+	};
 
 struct program {
     struct {
@@ -142,7 +81,7 @@ struct program {
     GLuint id;
 };
 
-static program programs[2] = {
+static program programs[1] = {
     {
         {
 			{
@@ -157,21 +96,6 @@ static program programs[2] = {
         loc_bkgd,
         NELEM(loc_bkgd),
         0
-    },
-    {
-		{
-        	{
-				(const uint8_t *)CUBE_VERTEX_SOURCE,
-				(const uint8_t *)CUBE_VERTEX_SOURCE + strlen(CUBE_VERTEX_SOURCE)
-			},
-			{
-				(const uint8_t *)CUBE_FRAGMENT_SOURCE,
-				(const uint8_t *)CUBE_FRAGMENT_SOURCE + strlen(CUBE_FRAGMENT_SOURCE)
-			}
-		},
-        loc_cube,
-        NELEM(loc_cube),
-        1
     }
 };
 
@@ -286,19 +210,9 @@ programs_init (void)
 }
 
 void
-program_cube_use (void)
-{
-	glUseProgram(programs[CUBE].id);
-
-	glUniformMatrix4fv(loc_cube[LOC_CUBE_VIEW ].id, 1, GL_FALSE, view_matrix());
-	glUniformMatrix4fv(loc_cube[LOC_CUBE_MODEL].id, 1, GL_FALSE, model_matrix());
-}
-
-void
 program_bkgd_use (void)
 {
 	glUseProgram(programs[BKGD].id);
-
 	glUniform1i(glGetUniformLocation(programs[BKGD].id, "tex"), 0);
 }
 
@@ -306,10 +220,4 @@ GLint
 program_bkgd_loc (const enum LocBkgd index)
 {
 	return loc_bkgd[index].id;
-}
-
-GLint
-program_cube_loc (const enum LocCube index)
-{
-	return loc_cube[index].id;
 }
