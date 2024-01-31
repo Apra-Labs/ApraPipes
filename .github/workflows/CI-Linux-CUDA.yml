@@ -13,7 +13,7 @@ jobs:
   linux-cuda-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      runner: 'Linux CUDA'
+      runner: 'linux-cuda'
       flav: Linux-CudaT
       is-selfhosted: true
       cuda: 'ON'
