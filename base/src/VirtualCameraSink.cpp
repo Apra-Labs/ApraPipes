@@ -272,3 +272,8 @@ void VirtualCameraSink::getImageSize(int &width, int &height)
 {
 	mDetail->getImageSize(width, height);
 }
+
+void VirtualCameraSink::resetImageSize()
+{
+	mDetail->imageSize = 0;
+}
