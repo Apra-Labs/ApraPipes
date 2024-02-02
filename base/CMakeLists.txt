@@ -123,7 +123,7 @@ IF(ENABLE_CUDA)
 			cublasLt.lib
 			
 		)
-		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
+		include_directories(AFTER SYSTEM "$ENV{CUDA_PATH}/include")
 	ENDIF(ENABLE_ARM64)
 
 ENDIF(ENABLE_CUDA)
