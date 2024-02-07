@@ -110,8 +110,8 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count 
 
-    - name: Run VCPKG bootstrap
-      run: ${{ inputs.bootstrap-cmd }}
+    - name: Run VCPKG bootstrap with debug mode
+      run: ${{ inputs.bootstrap-cmd }} DEBUG
 
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}} 
