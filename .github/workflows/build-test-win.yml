@@ -41,7 +41,7 @@ on:
       bootstrap-cmd:
         type: string
         description: 'commands required to boot strap builder after code checkout'
-        default: './vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install'
+        default: './vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install --debug'
         required: false
       is-prep-phase:
         type: boolean
@@ -110,8 +110,8 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count 
 
-    - name: Run VCPKG bootstrap with debug mode
-      run: ${{ inputs.bootstrap-cmd }} DEBUG
+    - name: Run VCPKG bootstrap
+      run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}} 
