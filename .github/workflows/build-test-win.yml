@@ -41,7 +41,7 @@ on:
       bootstrap-cmd:
         type: string
         description: 'commands required to boot strap builder after code checkout'
-        default: './vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install --debug'
+        default: './vcpkg/bootstrap-vcpkg.bat && ./vcpkg/vcpkg.exe integrate install'
         required: false
       is-prep-phase:
         type: boolean
