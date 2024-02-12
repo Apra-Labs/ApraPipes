@@ -136,6 +136,23 @@ public:
 private:
 	void init()
 	{
+		if (dev_fd)
+		{
+			struct v4l2_buffer buf;
+			memset(&buf, 0, sizeof(struct v4l2_buffer));
+
+			// Set the type of buffer you want to dequeue (e.g., V4L2_BUF_TYPE_VIDEO_CAPTURE)
+			buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+			if (ioctl(dev_fd, VIDIOC_DQBUF, &buf) == -1)
+			{
+				throw AIPException(AIP_FATAL, "cannot dqbuf video device<" + props.device);
+			}
+			if (close(dev_fd) == -1)
+			{
+				throw AIPException(AIP_FATAL, "cannot close video device<" + props.device);
+			}
+			dev_fd = 0;
+		}
 		dev_fd = open(props.device.c_str(), O_WRONLY);
 		if (dev_fd == -1)
 		{
@@ -180,6 +197,16 @@ private:
 			throw AIPException(AIP_FATAL, "cannot setup video device 2<" + props.device + ">");
 		}
 
+		struct v4l2_buffer buf;
+		memset(&buf, 0, sizeof(struct v4l2_buffer));
+		buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+
+		// Query buffer state
+		if (ioctl(dev_fd, VIDIOC_QUERYBUF, &buf) == -1)
+		{
+			throw AIPException(AIP_FATAL, "cannot setup video device<" + props.device + ">");
+		}
+
 		memset(&v, 0, sizeof(struct v4l2_format));
 		v.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
 		if (ioctl(dev_fd, VIDIOC_G_FMT, &v) == -1)
@@ -190,7 +217,7 @@ private:
 		LOG_INFO << v.fmt.pix.bytesperline << "<>" << v.fmt.pix.colorspace << "<>" << v.fmt.pix.pixelformat << "<>" << v.fmt.pix.sizeimage << "<>" << v.fmt.pix.width << "<>" << v.fmt.pix.height;
 	}
 
-	int dev_fd;
+	int dev_fd = 0;
 	int width;
 	int height;
 	ImageMetadata::ImageType imageType;
@@ -251,6 +278,10 @@ bool VirtualCameraSink::process(frame_container &frames)
 
 bool VirtualCameraSink::processSOS(frame_sp &frame)
 {
+	if(!frame->size())
+	{
+		return false;
+	}
 	auto metadata = frame->getMetadata();
 	mDetail->setMetadata(metadata);
 
