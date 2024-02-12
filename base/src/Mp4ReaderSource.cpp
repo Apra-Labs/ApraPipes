@@ -1256,11 +1256,15 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		frameData[3] = 0x1;
 		frameData[spsSize + 7] = 0x1;
+		frameData[spsSize + ppsSize + 8] = 0x0;
+		frameData[spsSize + ppsSize + 9] = 0x0;
 		frameData[spsSize + ppsSize + 10] = 0x0;
 		frameData[spsSize + ppsSize + 11] = 0x1;
 	}
 	else
 	{
+		frameData[0] = 0x0;
+		frameData[1] = 0x0;
 		frameData[2] = 0x0;
 		frameData[3] = 0x1;
 	}
