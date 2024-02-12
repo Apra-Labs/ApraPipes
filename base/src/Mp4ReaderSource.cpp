@@ -510,7 +510,10 @@ public:
 		{
 			auto msg = "No Videotrack found in the video <" + mState.mVideoPath + ">";
 			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_MISSING_VIDEOTRACK, msg);
+			std::string previousFile;
+			std::string nextFile;
+			cof->getPreviosAndNextFile(mState.mVideoPath, previousFile, nextFile);
+			throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
 		}
 
 		// starting timestamp of the video will either come from the video name or the header
@@ -752,6 +755,17 @@ public:
 		}
 		catch (Mp4_Exception& ex)
 		{
+			if(ex.getCode() == MP4_MISSING_VIDEOTRACK)
+			{
+				if ((controlModule != nullptr))
+				{
+					Mp4ErrorHandle cmd;
+					cmd.previousFile = ex.getPreviousFile();
+					cmd.nextFile = ex.getNextFile();
+					controlModule->queueCommand(cmd, true);
+					return false;
+				}
+			}
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), skipTS);
 			return false;
 		}
@@ -792,6 +806,17 @@ public:
 		}
 		catch (Mp4_Exception& ex)
 		{
+			if(ex.getCode() == MP4_MISSING_VIDEOTRACK)
+			{
+				if ((controlModule != nullptr))
+				{
+					Mp4ErrorHandle cmd;
+					cmd.previousFile = ex.getPreviousFile();
+					cmd.nextFile = ex.getNextFile();
+					controlModule->queueCommand(cmd, true);
+					return;
+				}
+			}
 			imgSize = 0;
 			// send the last frame timestamp 
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_STEP, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), mState.frameTSInMsecs);
@@ -1055,6 +1080,7 @@ public:
 	std::string h264ImagePinId;
 	std::string encodedImagePinId;
 	std::string metadataFramePinId;
+	boost::shared_ptr<Module> controlModule = nullptr;
 };
 
 class Mp4ReaderDetailJpeg : public Mp4ReaderDetailAbs
@@ -1303,12 +1329,15 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		frameData[3] = 0x1;
 		frameData[spsSize + 7] = 0x1;
+		frameData[spsSize + ppsSize + 8] = 0x0;
 		frameData[spsSize + ppsSize + 9] = 0x0;
 		frameData[spsSize + ppsSize + 10] = 0x0;
 		frameData[spsSize + ppsSize + 11] = 0x1;
 	}
 	else
 	{
+		frameData[0] = 0x0;
+		frameData[1] = 0x0;
 		frameData[2] = 0x0;
 		frameData[3] = 0x1;
 	}
@@ -1366,7 +1395,6 @@ Mp4ReaderSource::~Mp4ReaderSource() {}
 
 bool Mp4ReaderSource::init()
 {
-	LOG_ERROR<<"MP4READER INIT!!!!!!";
 	if (!Module::init())
 	{
 		return false;
@@ -1403,7 +1431,7 @@ bool Mp4ReaderSource::init()
 	mDetail->encodedImagePinId = encodedImagePinId;
 	mDetail->h264ImagePinId = h264ImagePinId;
 	mDetail->metadataFramePinId = metadataFramePinId;
-	LOG_ERROR<<"MP4READER INIT  ENNND!!!!!!";
+	mDetail->controlModule = controlModule;
 	return mDetail->Init();
 }
 
@@ -1559,9 +1587,9 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
-		LOG_ERROR<<"seek play 1 ";
+		//LOG_ERROR<<"seek play 1 ";
 		return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.forceReopen);
-		LOG_ERROR<<"seek play 2 ";
+		//LOG_ERROR<<"seek play 2 ";
 	}
 	else
 	{
@@ -1571,10 +1599,10 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 
 bool Mp4ReaderSource::handlePausePlay(float speed, bool direction)
 {
-	LOG_ERROR<<"hanlde play 1 ";
+	//LOG_ERROR<<"hanlde play 1 ";
 	mDetail->setPlayback(speed, direction);
 	return Module::handlePausePlay(speed, direction);
-	LOG_ERROR<<"hanlde play 2 ";
+	//LOG_ERROR<<"hanlde play 2 ";
 }
 
 bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)

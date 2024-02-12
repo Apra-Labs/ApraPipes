@@ -45,66 +45,78 @@
 
 class AIP_Exception : public std::runtime_error
 {
-public:	
-	/** Constructor (C++ STL strings).
-	 *  @param message The error message.
-	 */	
-	explicit AIP_Exception(int type,const std::string file,int line,const std::string logMessage) :
-		runtime_error(std::to_string(type))
-	{
-		if (type > AIP_FATAL)
-		{
-			AIPException_LOG_SEV(boost::log::trivial::severity_level::fatal,type) << file << ":" << line << ":" << logMessage.c_str();
-		} 
-		else
-		{
-			AIPException_LOG_SEV(boost::log::trivial::severity_level::error,type) << file << ":" << line << ":" << logMessage.c_str();
-		}
-
-		message = logMessage;
-	}
-
-	/** Destructor.
-	 * Virtual to allow for subclassing.
-	 */
-	virtual ~AIP_Exception() throw () {}
-
-	int getCode()
-	{		
-		return atoi(what());
-	}
-
-	std::string getError()
-	{
-		return message;
-	}
-
+public:                                                                                                                                                                                                                                                              
+    /** Constructor (C++ STL strings).
+     *  @param message The error message.
+     */
+    explicit AIP_Exception(int type,const std::string file,int line,const std::string logMessage) :
+        runtime_error(std::to_string(type))
+    {
+        if (type > AIP_FATAL)
+        {
+            AIPException_LOG_SEV(boost::log::trivial::severity_level::fatal,type) << file << ":" << line << ":" << logMessage.c_str();
+        }
+        else
+        {
+            AIPException_LOG_SEV(boost::log::trivial::severity_level::error,type) << file << ":" << line << ":" << logMessage.c_str();
+        }
+        message = logMessage;
+    }
+    explicit AIP_Exception(int type,const std::string file,int line,const std::string logMessage, std::string _previosFile, std::string _nextFile) :
+        runtime_error(std::to_string(type))
+    {
+        previousFile =  _previosFile;
+        nextFile = _nextFile;
+        AIPException_LOG_SEV(boost::log::trivial::severity_level::error,type) << file << ":" << line << ":" << previousFile.c_str() << ":" << nextFile.c_str() << ":" << logMessage.c_str();
+    }
+    /** Destructor.
+     * Virtual to allow for subclassing.
+     */
+    virtual ~AIP_Exception() throw () {}
+    int getCode()
+    {
+        return atoi(what());
+    }
+    std::string getError()
+    {
+        return message;
+    }
+    std::string getPreviousFile()
+    {
+        return previousFile;
+    }
+     std::string getNextFile()
+    {
+        return nextFile;
+    }
 private:
-	std::string message;
+    std::string message;
+    std::string previousFile;
+    std::string nextFile;
 };
-
 class Mp4_Exception : public AIP_Exception
 {
 public:
-	explicit Mp4_Exception(int type, const std::string file, int line, const std::string logMessage) :
-		AIP_Exception(type, file, line, logMessage)
-	{
-	}
-
-	explicit Mp4_Exception(int type, const std::string file, int line, int _openFileErrorCode, const std::string logMessage) :
-		AIP_Exception(type, file, line, logMessage)
-	{
-		openFileErrorCode = _openFileErrorCode;
-	}
-
-	int getOpenFileErrorCode()
-	{
-		return openFileErrorCode;
-	}
-
+    explicit Mp4_Exception(int type, const std::string file, int line, const std::string logMessage) :
+        AIP_Exception(type, file, line, logMessage)
+    {
+    }
+    explicit Mp4_Exception(int type, const std::string file, int line, int _openFileErrorCode, const std::string logMessage) :
+        AIP_Exception(type, file, line, logMessage)
+    {
+        openFileErrorCode = _openFileErrorCode;
+    }
+    explicit Mp4_Exception(int type, const std::string file, int line, const std::string logMessage, std::string previosFile, std::string nextFile) :
+        AIP_Exception(type, file, line, logMessage, previosFile, nextFile)
+    {
+    }
+    int getOpenFileErrorCode()
+    {
+        return openFileErrorCode;
+    }
 private:
-	int openFileErrorCode = 0;
+    int openFileErrorCode = 0;
 };
-
 #define AIPException(_type,_message) AIP_Exception(_type,__FILE__,__LINE__,_message)
 #define Mp4Exception(_type,_message) Mp4_Exception(_type,__FILE__,__LINE__,_message)
+#define Mp4ExceptionNoVideoTrack(_type,_message, _previosFile, _nextFile) Mp4_Exception(_type,__FILE__,__LINE__,_message,_previosFile,_nextFile)

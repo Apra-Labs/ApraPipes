@@ -52,40 +52,6 @@ model_init (void)
     glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
-void saveTextureToTextFile(const char* filename, int width, int height) {
-    GLubyte* pixels = new GLubyte[width * height * 4]; // Assuming RGBA format
-
-    // Read pixel data from the framebuffer (assuming the texture is bound to the framebuffer)
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-    // Open the file for writing
-    std::ofstream outFile(filename, std::ios::out);
-    if (!outFile.is_open()) {
-        std::cerr << "Failed to open the file: " << filename << std::endl;
-        delete[] pixels;
-        return;
-    }
-
-    // Write width and height to the file
-    outFile << width << " " << height << std::endl;
-
-    // Write pixel values to the file
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            int index = (y * width + x) * 4; // Assuming RGBA format
-            outFile << static_cast<int>(pixels[index]) << " ";
-            outFile << static_cast<int>(pixels[index + 1]) << " ";
-            outFile << static_cast<int>(pixels[index + 2]) << " ";
-            outFile << static_cast<int>(pixels[index + 3]) << " ";  // Alpha channel
-        }
-        outFile << std::endl;
-    }
-
-    outFile.close();
-    delete[] pixels;
-}
-
-
 void matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GLenum wrapFilter, int width, int height) {
 
     // Catch silly-mistake texture interpolation method for magnification
@@ -138,7 +104,6 @@ void matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GL
         // std::cout << "Will Generate minmap" << std::endl;
         glGenerateMipmap(GL_TEXTURE_2D);
     }
-	// saveTextureToTextFile("newvindows.png", 1280, 720);
 }
 
 void drawCameraFrame(void* frameData, int width, int height){
@@ -154,7 +119,7 @@ void drawCameraFrame(void* frameData, int width, int height){
 	// Draw all the triangles in the buffer:
 	glBindVertexArray(vao);
     glDrawArrays(GL_QUADS, 0, 4);
-	}
+}
 
 
 const float *

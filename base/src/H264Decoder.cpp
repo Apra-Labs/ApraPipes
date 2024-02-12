@@ -204,8 +204,13 @@ void H264Decoder::bufferBackwardEncodedFrames(frame_sp& frame, short naluType)
 	}
 	// insert frames into the latest gop until I frame comes.
 	latestBackwardGop.emplace_back(frame);
+	H264Utils::H264_NAL_TYPE nalTypeAfterSpsPps;
+	if(naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		nalTypeAfterSpsPps = H264Utils::getNalTypeAfterSpsPps(frame->data(), frame->size());
+	}
 	// The latest GOP is complete when I Frame comes up, move the GOP to backwardGopBuffer where all the backward GOP's are buffered
-	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || nalTypeAfterSpsPps == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		foundIFrameOfReverseGop = true;
 		backwardGopBuffer.push_back(std::move(latestBackwardGop));
@@ -235,7 +240,12 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 		if (!latestForwardGop.empty())
 		{
 			short naluTypeOfForwardGopFirstFrame = H264Utils::getNALUType((char*)latestForwardGop.front()->data());
-			if (naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			H264Utils::H264_NAL_TYPE nalTypeAfterSpsPpsOfForwardGopFirstFrame;
+			if(naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			{
+				nalTypeAfterSpsPpsOfForwardGopFirstFrame = H264Utils::getNalTypeAfterSpsPps(latestForwardGop.front()->data(), latestForwardGop.front()->size());
+			}
+			if (naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || nalTypeAfterSpsPpsOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 			{
 				// Corner case: Forward :- current frame is not part of latestForwardGOP 
 				if (latestForwardGop.front()->timestamp > frame->timestamp)
@@ -261,7 +271,7 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 					}
 				}
 			}
-			else if (!latestForwardGop.empty() && naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			else if (!latestForwardGop.empty() && nalTypeAfterSpsPpsOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 			{
 				for (auto itr = latestForwardGop.begin(); itr != latestForwardGop.end(); itr++)
 				{
@@ -277,7 +287,12 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 
 	/* buffer fwd GOP and send the current frame */
 	// new GOP starts
-	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	H264Utils::H264_NAL_TYPE nalTypeAfterSpsPpsOfCurrentFrame;
+	if(naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		nalTypeAfterSpsPpsOfCurrentFrame = H264Utils::getNalTypeAfterSpsPps(frame->data(), frame->size());
+	}
+	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || nalTypeAfterSpsPpsOfCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		latestForwardGop.clear();
 	}
@@ -286,7 +301,12 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 	// If direction changed to forward in the middle of GOP (Even the latest gop of backward was half and not decoded) , Then we drop the P frames until next I frame.
 	// We also remove the entries of P frames from the incomingFramesTSQ.
 	short latestForwardGopFirstFrameNaluType = H264Utils::getNALUType((char*)latestForwardGop.begin()->get()->data());
-	if (latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	H264Utils::H264_NAL_TYPE naluTypeAfterSpsPpsOfLatestForwardGopFirstFrame;
+	if(latestForwardGopFirstFrameNaluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	{
+			naluTypeAfterSpsPpsOfLatestForwardGopFirstFrame = H264Utils::getNalTypeAfterSpsPps(latestForwardGop.front()->data(), latestForwardGop.front()->size());
+	}
+	if (latestForwardGopFirstFrameNaluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluTypeAfterSpsPpsOfLatestForwardGopFirstFrame != H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		clearIncompleteBwdGopTsFromIncomingTSQ(latestForwardGop);
 		return;
@@ -342,8 +362,13 @@ void H264Decoder::saveSpsPps(frame_sp frame)
 }
 
 bool H264Decoder::process(frame_container& frames)
-{
+{ 
 	auto frame = frames.begin()->second;
+	auto myId = Module::getId();
+	// if (myId == "H264Decoder_42")
+	// {
+	// 	LOG_INFO << "Timestamp is = " << frame->timestamp;
+	// }
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
 
@@ -425,13 +450,18 @@ bool H264Decoder::process(frame_container& frames)
 			return true;
 		}
 
-		if (mDirection && ((naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
+		H264Utils::H264_NAL_TYPE nalTypeAfterSpsPpsCurrentFrame;
+		if(naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+		{
+			nalTypeAfterSpsPpsCurrentFrame = H264Utils::getNalTypeAfterSpsPps(frame->data(), frame->size());
+		}
+		if (mDirection && ((nalTypeAfterSpsPpsCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
 		{
 			latestForwardGop.clear();
 			latestForwardGop.push_back(frame);
 		}
 		// dont buffer fwd GOP if I frame has not been recieved (possible in intra GOP direction change cases)
-		else if (mDirection && !latestForwardGop.empty() && (H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_SEQ_PARAM || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
+		else if (mDirection && !latestForwardGop.empty() && (nalTypeAfterSpsPpsCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
 		{
 			flushDecoderFlag = false;
 			latestForwardGop.push_back(frame);

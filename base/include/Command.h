@@ -26,7 +26,8 @@ public:
 		MP4WriterLastTS,
 		MMQtimestamps,
 		Rendertimestamp,
-		RenderPlayPause
+		RenderPlayPause,
+		Mp4ErrorHandle
 	};
 
 	Command()
@@ -618,5 +619,31 @@ private:
 	{
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& pauseRenderer;
+	}
+};
+
+class Mp4ErrorHandle : public Command
+{
+public:
+	Mp4ErrorHandle() : Command(Command::CommandType::Mp4ErrorHandle)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(previousFile) + sizeof(nextFile);
+	}
+
+	std::string previousFile;
+	std::string nextFile;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& previousFile;
+		ar& nextFile;
 	}
 };
