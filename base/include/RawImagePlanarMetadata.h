@@ -151,11 +151,8 @@ protected:
 		dataSize = 0;
 		for (auto i = 0; i < channels; i++)
 		{
-			if (nextPtrOffset[i] == NOT_SET_NUM)
-			{
-				nextPtrOffset[i] = dataSize;
-				dataSize += step[i] * height[i];
-			}
+			nextPtrOffset[i] = dataSize;
+			dataSize += step[i] * height[i];
 		}
 	}
 
