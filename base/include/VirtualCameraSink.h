@@ -22,6 +22,7 @@ public:
 	bool term();
 
 	void getImageSize(int &width, int &height);
+	void resetImageSize();
 
 protected:
 	bool process(frame_container &frames);
