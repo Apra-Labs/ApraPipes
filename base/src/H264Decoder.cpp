@@ -363,6 +363,10 @@ void H264Decoder::saveSpsPps(frame_sp frame)
 
 bool H264Decoder::process(frame_container& frames)
 { 
+	if(incomingFramesTSQ.size() >= 300)
+	{
+		flushQue();
+	}
 	auto frame = frames.begin()->second;
 	auto myId = Module::getId();
 	// if (myId == "H264Decoder_42")

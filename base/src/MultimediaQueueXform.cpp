@@ -734,6 +734,10 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 				}
 				if (direction)
 				{
+					if(it == mState->queueObject->mQueue.end())
+					{
+						break;
+					}
 					it++;
 					if (it == mState->queueObject->mQueue.end())
 					{

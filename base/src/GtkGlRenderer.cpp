@@ -270,17 +270,25 @@ bool GtkGlRenderer::init()
 }
 
 bool GtkGlRenderer::process(frame_container &frames)
+
 {
-    for (const auto &pair : frames)
-    {
-        auto frame = pair.second;
-        if (!isFrameEmpty(frame))
-        {
-            pushFrame(frame);
-        }
-    }
-    processQueue();
-    
+    auto myId = Module::getId();
+    // LOG_ERROR << "GOT "
+    auto frame = frames.cbegin()->second;
+    mDetail->cachedFrame = frame;
+    size_t underscorePos = myId.find('_');
+    std::string numericPart = myId.substr(underscorePos + 1);
+    int myNumber = std::stoi(numericPart);
+
+    if ((controlModule != nullptr) && (myNumber % 2 == 1))
+	{
+		Rendertimestamp cmd;
+		auto myTime = frames.cbegin()->second->timestamp;
+		cmd.currentTimeStamp = myTime;
+		controlModule->queueCommand(cmd);
+        //LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
+		return true;
+	}
     return true;
 }
 
