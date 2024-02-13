@@ -363,7 +363,7 @@ void H264Decoder::saveSpsPps(frame_sp frame)
 
 bool H264Decoder::process(frame_container& frames)
 { 
-	if(incomingFramesTSQ.size() >= 300)
+	if(incomingFramesTSQ.size() >= 1000)
 	{
 		flushQue();
 	}
