@@ -175,7 +175,7 @@ public:
         pthread_cond_t queue_cond;
         pthread_t dec_capture_thread;
 
-        bool in_error;
+        bool in_error = false;
         bool eos;
         bool got_eos;
         bool op_streamon;

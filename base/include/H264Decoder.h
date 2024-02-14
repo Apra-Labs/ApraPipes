@@ -73,4 +73,5 @@ private:
 	frame_sp mHeaderFrame;
 	boost::asio::const_buffer spsBuffer;
 	boost::asio::const_buffer ppsBuffer;
+	std::mutex m;
 };

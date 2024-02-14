@@ -647,7 +647,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     /* Check for resolution event to again
     ** set format and buffers on capture plane.
     */
-    while (!(ctx->in_error || ctx->got_eos))
+    while (!(ctx->in_error || ctx->got_eos) || ctx->in_error)
     {
         Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
          ret_val = m_nThread->dq_event(ctx, event, 0);

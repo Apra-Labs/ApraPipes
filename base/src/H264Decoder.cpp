@@ -184,6 +184,7 @@ void* H264Decoder::prependSpsPps(frame_sp& iFrame, size_t& spsPpsFrameSize)
 
 void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& latestGop)
 {
+	m.lock();
 	while (!latestGop.empty() && !incomingFramesTSQ.empty())
 	{
 		auto deleteItr = std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), latestGop.front()->timestamp);
@@ -193,6 +194,7 @@ void H264Decoder::clearIncompleteBwdGopTsFromIncomingTSQ(std::deque<frame_sp>& l
 			latestGop.pop_front();
 		}
 	}
+	m.unlock();
 }
 
 void H264Decoder::bufferBackwardEncodedFrames(frame_sp& frame, short naluType)
@@ -213,7 +215,9 @@ void H264Decoder::bufferBackwardEncodedFrames(frame_sp& frame, short naluType)
 	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || nalTypeAfterSpsPps == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		foundIFrameOfReverseGop = true;
+		m.lock();
 		backwardGopBuffer.push_back(std::move(latestBackwardGop));
+		m.unlock();
 	}
 }
 
@@ -250,12 +254,15 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 				// Corner case: Forward :- current frame is not part of latestForwardGOP 
 				if (latestForwardGop.front()->timestamp > frame->timestamp)
 				{
+					m.lock();
 					latestForwardGop.clear();
+					m.unlock();
 				}
 			}
 
 			// Corner case: Forward:- When end of cache hits while in the middle of gop, before decoding the next P frame we need decode the previous frames of that GOP. 
 			// There might be a case where we might have cleared the decoder, in order to start the decoder again we must prepend sps and pps to I frame if not present
+			m.lock();
 			if (!latestForwardGop.empty() && naluTypeOfForwardGopFirstFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 			{
 				auto iFrame = latestForwardGop.front();
@@ -281,6 +288,7 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 					}
 				}
 			}
+			m.unlock();
 		}
 	}
 	prevFrameInCache = false;
@@ -294,9 +302,13 @@ void H264Decoder::bufferAndDecodeForwardEncodedFrames(frame_sp& frame, short nal
 	}
 	if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE || nalTypeAfterSpsPpsOfCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
+		m.lock();
 		latestForwardGop.clear();
+		m.unlock();
 	}
+	m.lock();
 	latestForwardGop.emplace_back(frame);
+	m.unlock();
 
 	// If direction changed to forward in the middle of GOP (Even the latest gop of backward was half and not decoded) , Then we drop the P frames until next I frame.
 	// We also remove the entries of P frames from the incomingFramesTSQ.
@@ -320,13 +332,18 @@ void H264Decoder::decodeFrameFromBwdGOP()
 {
 	if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE && prevFrameInCache)
 	{
+		m.lock();
 		auto iFrame = backwardGopBuffer.front().back();
+		m.unlock();
 		size_t spsPpsFrameSize;
 		auto spsPpsFrameBuffer = prependSpsPps(iFrame, spsPpsFrameSize);
 		mDetail->compute(spsPpsFrameBuffer, spsPpsFrameSize, iFrame->timestamp);
+		m.lock();
 		backwardGopBuffer.front().pop_back();
+		m.unlock();
 		prevFrameInCache = false;
 	}
+	m.lock();
 	if (!backwardGopBuffer.empty() && !backwardGopBuffer.front().empty())
 	{
 		// For reverse play we sent the frames to the decoder in reverse, As the last frame added in the deque should be sent first (Example : P,P,P,P,P,P,I)
@@ -338,6 +355,7 @@ void H264Decoder::decodeFrameFromBwdGOP()
 	{
 		backwardGopBuffer.pop_front();
 	}
+	m.unlock();
 	if (backwardGopBuffer.empty())
 	{
 		foundIFrameOfReverseGop = false;
@@ -394,7 +412,9 @@ bool H264Decoder::process(frame_container& frames)
 	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
 	if (h264Metadata->mp4Seek)
 	{
+		m.lock();
 		latestForwardGop.clear();
+		m.unlock();
 	}
 
 	mDirection = h264Metadata->direction;
@@ -418,11 +438,15 @@ bool H264Decoder::process(frame_container& frames)
 		//prepend sps and pps if 1st frame is I frame
 		if (!backwardGopBuffer.empty() && H264Utils::getNALUType((char*)backwardGopBuffer.front().back()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
+			m.lock();
 			auto iFrame = backwardGopBuffer.front().back();
+			m.unlock();
 			size_t spsPpsFrameSize;
 			auto spsPpsFrameBuffer = prependSpsPps(iFrame, spsPpsFrameSize);
 			mDetail->compute(spsPpsFrameBuffer, spsPpsFrameSize, iFrame->timestamp);
+			m.lock();
 			backwardGopBuffer.front().pop_back();
+			m.unlock();
 		}
 		// the buffered GOPs in bwdGOPBuffer needs to need to be processed first
 		while (!backwardGopBuffer.empty())
@@ -461,14 +485,18 @@ bool H264Decoder::process(frame_container& frames)
 		}
 		if (mDirection && ((nalTypeAfterSpsPpsCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE) || (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)))
 		{
+			m.lock();
 			latestForwardGop.clear();
 			latestForwardGop.push_back(frame);
+			m.unlock();
 		}
 		// dont buffer fwd GOP if I frame has not been recieved (possible in intra GOP direction change cases)
 		else if (mDirection && !latestForwardGop.empty() && (nalTypeAfterSpsPpsCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
 		{
+			m.lock();
 			flushDecoderFlag = false;
 			latestForwardGop.push_back(frame);
+			m.unlock();
 		}
 
 		// While in forward play, if cache has resumed in the middle of the GOP then to get the previous few frames we need to flush the decoder.
@@ -641,11 +669,13 @@ void H264Decoder::flushQue()
 {
 	if (!incomingFramesTSQ.empty())
 	{
+		m.lock();
 		LOG_ERROR << "clearing decoder cache and clear ts  = " << incomingFramesTSQ.size();
 		incomingFramesTSQ.clear();
 		latestBackwardGop.clear();
 		latestForwardGop.clear();
 		backwardGopBuffer.clear();
+		m.unlock();
 		auto frame = frame_sp(new EmptyFrame());
 		LOG_ERROR << "does it compute";
 		mDetail->compute(frame->data(), frame->size(), frame->timestamp);
