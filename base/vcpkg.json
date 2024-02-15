@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "86811c9b87c81b533c4de069a6a30c59a7daf6cc",
+  "builtin-baseline": "46cf263b3d4bfab6d322b47ab40222db167c28b1",
   "overrides": [
     {
       "name": "whisper",
