@@ -110,4 +110,40 @@ BOOST_AUTO_TEST_CASE(changeprop_asr)
         (propschange.samplingStrategy == AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH));
 }
 
+BOOST_AUTO_TEST_CASE(change_unsupported_prop_asr)
+{
+    std::vector<std::string> asrOutText = { "./data/asr_change_props_out.txt" };
+    Test_Utils::FileCleaner f(asrOutText);
+
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    // This is a PCM file without WAV header
+    auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
+    fileReaderProps.readLoop = true;
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
+    auto pinId = fileReader->addOutputPin(metadata);
+
+    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+        AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
+        , "./data/whisper/models/ggml-tiny.en-q8_0.bin", 18000)));
+    fileReader->setNext(asr);
+
+    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    asr->setNext(outputFile);
+
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(asr->init());
+    BOOST_TEST(outputFile->init());
+
+    AudioToTextXFormProps propschange = asr->getProps();
+    propschange.modelPath = "./newpath.bin";
+    fileReader->step();
+    asr->step();
+    outputFile->step();
+
+    BOOST_CHECK_THROW(asr->setProps(propschange), std::runtime_error);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

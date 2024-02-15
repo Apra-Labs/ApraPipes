@@ -97,6 +97,12 @@ bool AudioToTextXForm::validateInputPins()
 		return false;
 	}
 
+	FrameMetadata::MemType memType = metadata->getMemType();
+	if (memType != FrameMetadata::MemType::HOST)
+	{
+		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		return false;
+	}
 	return true;
 }
 
@@ -208,5 +214,8 @@ bool AudioToTextXForm::handlePropsChange(frame_sp& frame)
 
 void AudioToTextXForm::setProps(AudioToTextXFormProps& props)
 {
+	if (props.modelPath != mDetail->mProps.modelPath) {
+		throw AIPException(AIP_FATAL, "Model Path dynamic change not handled");
+	}
 	Module::addPropsToQueue(props);
 }
