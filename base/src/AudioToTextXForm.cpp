@@ -62,12 +62,13 @@ public:
 public:
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
-	std::vector<float> inputAudioBuffer;
+	std::vector<float> mInputAudioBuffer;
 	AudioToTextXFormProps mProps;
 	int mFrameType;
 	whisper_context *mWhisperContext = NULL;
 	whisper_full_params mWhisperFullParams;
 	whisper_context_params mWhisperContextParams;
+	int toleranceBufferSize = 16000; //16000 is 1 second worth of samples since data is captured at 16KHz
 };
 
 AudioToTextXForm::AudioToTextXForm(AudioToTextXFormProps _props) : Module(TRANSFORM, "AudioToTextXForm", _props)
@@ -135,7 +136,7 @@ void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool AudioToTextXForm::init()
 {
-	mDetail->inputAudioBuffer.reserve(mDetail->mProps.bufferSize + 16000); //16000 is 1 second worth of samples since data is captured at 16KHz
+	mDetail->mInputAudioBuffer.reserve(mDetail->mProps.bufferSize + mDetail->toleranceBufferSize);
 	mDetail->mWhisperFullParams = mDetail->fetchDefaultParams();
 	mDetail->mWhisperContextParams = whisper_context_default_params();
 	mDetail->mWhisperContext = whisper_init_from_file_with_params(mDetail->mProps.modelPath.c_str(), mDetail->mWhisperContextParams);
@@ -157,16 +158,16 @@ bool AudioToTextXForm::process(frame_container& frames)
 	int numberOfSamples = frame->size() / 2;
 	//TODO: Modify to use NPP/ IPP
 	for (int index = 0; index < numberOfSamples; index++) {
-		mDetail->inputAudioBuffer.push_back((float)constFloatPointer[index]/ 32768.0f);
+		mDetail->mInputAudioBuffer.push_back((float)constFloatPointer[index]/ 32768.0f);
 	}
-	if (mDetail->inputAudioBuffer.size() < mDetail->mProps.bufferSize) {
+	if (mDetail->mInputAudioBuffer.size() < mDetail->mProps.bufferSize) {
 		return true;
 	}
 	whisper_full(
 		mDetail->mWhisperContext,
 		mDetail->mWhisperFullParams,
-		mDetail->inputAudioBuffer.data(),
-		mDetail->inputAudioBuffer.size()
+		mDetail->mInputAudioBuffer.data(),
+		mDetail->mInputAudioBuffer.size()
 	);
 	std::string output = "";
 	const int n_segments = whisper_full_n_segments(mDetail->mWhisperContext);
@@ -174,7 +175,7 @@ bool AudioToTextXForm::process(frame_container& frames)
 		const char* text = whisper_full_get_segment_text(mDetail->mWhisperContext, i);
 		output += text;
 	}
-	mDetail->inputAudioBuffer.clear();
+	mDetail->mInputAudioBuffer.clear();
 	auto outFrame = makeFrame(output.length());
 	memcpy(outFrame->data(), output.c_str(), output.length());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
