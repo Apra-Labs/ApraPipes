@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Module.h"
+#include <chrono>
 
 using namespace std;
 
@@ -44,6 +45,7 @@ public:
 	bool init();
 	bool term();
 	void setProps(RTSPClientSrcProps& props);
+	int getCurrentFps();
 	RTSPClientSrcProps getProps();
 
 protected:

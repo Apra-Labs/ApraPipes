@@ -128,6 +128,12 @@ public:
 
     bool readBuffer()
     {
+        if(!initDone)
+        {
+            std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+            beginTs = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+            initDone = true;
+        }
         frame_container outFrames;
         bool got_something = false;
         while(!got_something)
@@ -176,17 +182,27 @@ public:
                     {
                         LOG_WARNING << "oops! there is already another packet for pin " << it->second;
                     }
+                    auto diff = dur - beginTs;
+                    if(diff.count() > 1000)
+                    {
+                        currentCameraFps = frameCount;
+                        frameCount = 0;
+                        beginTs = dur;
+                    }
+                    frameCount++;
                 }
                 av_packet_unref(&packet);
             }
         }
+
         if(outFrames.size()>0)
            myModule->send(outFrames);
         return true;
     }
 
     bool isConncected() const { return bConnected; }
-
+    int frameCount = 0;
+    int currentCameraFps = 0;
 private:
     AVPacket packet;
     AVFormatContext* pFormatCtx = nullptr;
@@ -196,6 +212,8 @@ private:
     bool bUseTCP;
     std::map<unsigned int, std::string> streamsMap;
     RTSPClientSrc* myModule;
+	std::chrono::milliseconds beginTs;
+	bool initDone = false;
 };
 
 RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPClientSrc", _props), mProps(_props)
@@ -240,4 +258,10 @@ bool RTSPClientSrc::handleCommand(Command::CommandType type, frame_sp& frame)
     }
     return true; 
 }
+
+int RTSPClientSrc::getCurrentFps()
+{
+    return mDetail->currentCameraFps;
+}
+
 bool RTSPClientSrc::handlePropsChange(frame_sp& frame) { return true; }

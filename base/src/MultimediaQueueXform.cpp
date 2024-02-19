@@ -566,7 +566,7 @@ bool MultimediaQueueXform::init()
 		}
 	}
 	mState.reset(new Idle(mState->queueObject));
-	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / mProps.mmqFps);
 	return true;
 }
 
@@ -659,7 +659,7 @@ boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
 
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / 22);
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / mProps.mmqFps);
 	initDone = false;
 	LOG_ERROR << "command received";
 	if (type == Command::CommandType::MultimediaQueueXform)
@@ -952,6 +952,11 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		return true;
 	}
 	return true;
+}
+
+void MultimediaQueueXform::setMmqFps(int fps)
+{
+	mProps.mmqFps = fps;
 }
 
 bool MultimediaQueueXform::handlePropsChange(frame_sp& frame)
