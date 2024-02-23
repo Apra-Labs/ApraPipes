@@ -25,6 +25,7 @@ IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
 	set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
+	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -53,7 +54,6 @@ find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 
 IF(ENABLE_CUDA)
-	SET(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
   		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
 	endif()
