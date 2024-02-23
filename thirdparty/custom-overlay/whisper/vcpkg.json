@@ -13,5 +13,16 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ]
+  ],
+  "default-features": [
+    "default-features"
+  ],
+  "features": {
+    "cuda": {
+      "description": "Build Whisper with CUDA support",
+      "dependencies": [
+        "cuda"
+      ]
+    }
+  }
 }

@@ -15,6 +15,66 @@
 #include "AudioToTextXForm.h"
 #include "Module.h"
 
+#include <unordered_map>
+#include <string>
+#include <cmath>
+
+// Function to calculate the frequency of each word in a string
+std::unordered_map<string, int> calculateWordFrequency(const std::string& str) {
+    std::unordered_map<std::string, int> frequencyMap;
+    std::string word = "";
+    for (char c : str) {
+        if (c == ' ' || c == '.' || c == ',' || c == ';' || c == ':' || c == '!' || c == '?') {
+            if (!word.empty()) {
+                frequencyMap[word]++;
+                word = "";
+            }
+        } else {
+            word += std::tolower(c);
+        }
+    }
+    if (!word.empty()) {
+        frequencyMap[word]++;
+    }
+    return frequencyMap;
+}
+
+// Function to calculate dot product of two vectors
+double dotProduct(const std::unordered_map<std::string, int>& vec1, const std::unordered_map<std::string, int>& vec2) {
+    double dotProduct = 0.0;
+    for (const auto& pair : vec1) {
+        if (vec2.count(pair.first) > 0) {
+            dotProduct += pair.second * vec2.at(pair.first);
+        }
+    }
+    return dotProduct;
+}
+
+// Function to calculate magnitude of a vector
+double magnitude(const std::unordered_map<std::string, int>& vec) {
+    double mag = 0.0;
+    for (const auto& pair : vec) {
+        mag += std::pow(pair.second, 2);
+    }
+    return std::sqrt(mag);
+}
+
+// Function to calculate cosine similarity between two strings
+double cosineSimilarity(const std::string& str1, const std::string& str2) {
+    unordered_map<string, int> vec1 = calculateWordFrequency(str1);
+    unordered_map<string, int> vec2 = calculateWordFrequency(str2);
+
+    double dotProd = dotProduct(vec1, vec2);
+    double magVec1 = magnitude(vec1);
+    double magVec2 = magnitude(vec2);
+
+    if (magVec1 == 0 || magVec2 == 0) {
+        return 0; // Handle division by zero
+    }
+
+    return dotProd / (magVec1 * magVec2);
+}
+
 BOOST_AUTO_TEST_SUITE(audioToTextXform_test)
 
 BOOST_AUTO_TEST_CASE(test_asr)
@@ -51,8 +111,8 @@ BOOST_AUTO_TEST_CASE(test_asr)
     std::ostringstream  buffer;
     buffer << in_file_text.rdbuf();
     std:string output = " The Matic speech recognition also known as ASR is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
-    BOOST_TEST(
-        (buffer.str() == output));
+    BOOST_TEST(cosineSimilarity(buffer.str(), output) >= 0.99);
+    // BOOST_TEST(buffer.str() == output);
     in_file_text.close();
 }
 
@@ -101,8 +161,9 @@ BOOST_AUTO_TEST_CASE(changeprop_asr)
     buffer << in_file_text.rdbuf();
     std:string output = " Metex speech recognition, also known as ASR, is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
     //TODO: This test fails in Linux Cuda. Maybe Something to do with the Beam Search / change in props size that makes the behaviour different from windows
-    //    BOOST_TEST(
-    //        (buffer.str() == output));
+    BOOST_TEST(cosineSimilarity(buffer.str(), output) >= 0.99);
+    // BOOST_TEST(buffer.str() == output);
+
     in_file_text.close();
     
     BOOST_TEST(

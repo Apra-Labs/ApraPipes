@@ -6,7 +6,18 @@ vcpkg_from_github(
     REF c3bff0d121e2af823344939643d64a27e4a76ea2 #v1.5.4
     SHA512 d51a32c91340d2b9f18bf5221e134e57a0259bc3a1c803ef427adc6e3de5f54c556232cd4ef070b9c07f93968efd942a61cfe311c2cbca013a928f0eb8055e6f  # This is a temporary value. We will modify this value in the next section.
     HEAD_REF kj/add-Config-for-vcpkg
+    PATCHES "fix-for-arm64.patch"
 )
+
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+ FEATURES
+ "cuda" WHISPER_CUBLAS
+)
+
+set(WHISPER_CUBLAS OFF)
+if("cuda" IN_LIST FEATURES)
+  set(WHISPER_CUBLAS ON)
+endif()
 
 
 vcpkg_cmake_configure(
