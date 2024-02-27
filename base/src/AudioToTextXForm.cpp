@@ -160,7 +160,9 @@ bool AudioToTextXForm::process(frame_container& frames)
 	for (int index = 0; index < numberOfSamples; index++) {
 		mDetail->mInputAudioBuffer.push_back((float)constFloatPointer[index]/ 32768.0f);
 	}
+
 	if (mDetail->mInputAudioBuffer.size() < mDetail->mProps.bufferSize) {
+		sendEOS();
 		return true;
 	}
 	whisper_full(
