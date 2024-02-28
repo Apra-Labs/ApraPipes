@@ -1,3 +1,13 @@
+apt-get install clang-format
+clang-format -style=llvm -dump-config > .clang-format
+if ! command -v pip &> /dev/null; then
+    # If pip is not available, download and install pip
+    curl -O https://bootstrap.pypa.io/get-pip.py
+    python3 get-pip.py
+fi
+pip install pre-commit
+pre-commit install
+
 chmod +x build_scripts/build_dependencies_jetson_cuda.sh
 ./build_scripts/build_dependencies_jetson_cuda.sh
 
