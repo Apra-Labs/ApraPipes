@@ -5,7 +5,29 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 # Enable feature and install dependencies
 choco feature enable -n allowEmptyChecksums
-choco install 7zip git python3 cmake pkgconfiglite -y
+choco install 7zip git python3 cmake pkgconfiglite doxygen.install -y
+
+# Specify the new path to be added to the PATH environment variable
+$doxygenPath = "C:\Program Files\doxygen\bin"
+
+# Get the current user's environment variables
+$envPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+# Check if the new path already exists in the environment variable
+if ($envPath -split ";" -notcontains $doxygenPath) {
+    # Append the new path to the existing PATH environment variable
+    $newEnvPath = $envPath + ";" + $doxygenPath
+    # Update the environment variable
+    [System.Environment]::SetEnvironmentVariable("Path", $newEnvPath, "User")
+    Write-Host "Path updated successfully."
+} else {
+    Write-Host "Path already exists in the environment variable."
+}
+
+Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+refreshenv
+
+doxygen --version
 
 # Install required Python packages
 pip3 install ninja
@@ -15,3 +37,8 @@ pip3 install meson
 pip3 install cmake --upgrade
 
 Write-Host "Dependencies verified and installed successfully."
+
+# Build Documentation
+cd ..
+sh .\build_documentation.sh
+cd build_scripts
