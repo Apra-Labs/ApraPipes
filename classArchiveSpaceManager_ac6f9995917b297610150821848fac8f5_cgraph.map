@@ -1,0 +1,8 @@
+<map id="ArchiveSpaceManager::addInputPin" name="ArchiveSpaceManager::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,158,88"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="211,29,349,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,55,195,50,196,56,158,60"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="206,79,354,104"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="158,74,190,78,190,83,158,79"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="247,30,240,21,244,11,258,5,280,3,304,5,317,12,314,17,303,10,280,8,259,10,248,15,245,20,251,27"/>
+</map>

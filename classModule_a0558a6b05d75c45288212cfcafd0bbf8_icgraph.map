@@ -1,0 +1,21 @@
+<map id="Module::getOutputFrameFactory" name="Module::getOutputFrameFactory">
+<area shape="rect" id="Node000001" title=" " alt="" coords="484,185,690,211"/>
+<area shape="rect" id="Node000002" href="$classTestModule.html#ae40d85def7a565e4938cc4807b721074" title=" " alt="" coords="247,22,436,63"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="561,176,506,126,471,100,435,76,412,65,414,61,437,72,474,95,509,122,564,172"/>
+<area shape="rect" id="Node000005" href="$classFileReaderModule.html#aab1432b2aff904bfd6e1b894c32a9345" title=" " alt="" coords="267,87,416,112"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="548,180,496,152,435,126,402,115,403,110,437,121,498,148,551,175"/>
+<area shape="rect" id="Node000006" href="$classTestTransform1.html#aa269333aeaacc09212a1e483ad1b174e" title=" " alt="" coords="259,136,424,162"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="504,184,409,165,410,160,505,179"/>
+<area shape="rect" id="Node000007" href="$classTestTransform2.html#af1e45f90861cad606a0a8a684c6cfa11" title=" " alt="" coords="259,185,424,211"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="469,201,424,201,424,196,469,196"/>
+<area shape="rect" id="Node000008" href="$classFileReaderModule.html#ade31a17a0fad3db23374d08f6134b1f1" title=" " alt="" coords="253,235,430,260"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="505,217,410,237,409,231,504,212"/>
+<area shape="rect" id="Node000009" href="$classCalcHistogramCV.html#ac35bca92b14e7932b4fa5256e048c64c" title=" " alt="" coords="253,285,430,325"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="549,221,437,275,408,286,406,281,435,270,547,216"/>
+<area shape="rect" id="Node000010" href="$classMotionVectorExtractor.html#a928c6f006e4f8ff7266a4e4354798e15" title=" " alt="" coords="267,350,416,391"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="567,225,512,281,476,312,437,339,413,352,410,347,435,335,473,308,508,277,563,221"/>
+<area shape="rect" id="Node000003" href="$module__tests_8cpp.html#ad4d9f68b8ba0369b05349b51d10b87f3" title=" " alt="" coords="5,5,199,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="231,34,199,31,199,25,231,28"/>
+<area shape="rect" id="Node000004" href="$module__tests_8cpp.html#a02ff13d903f7a71072a7595666efaa9f" title=" " alt="" coords="5,55,199,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="231,56,199,60,199,55,231,51"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="TestModule::getNumberOfOutputsByType" name="TestModule::getNumberOfOutputsByType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,225,46"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a0e793dd407f3c36bdbce969b719b73f3" title=" " alt="" coords="273,5,466,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="225,23,257,23,257,28,225,28"/>
+<area shape="rect" id="Node000003" href="$Module_8cpp.html#aa4131454f7e42e9e9a7035f84fa61d99" title=" " alt="" coords="514,13,682,39"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="467,23,498,23,498,28,467,28"/>
+</map>

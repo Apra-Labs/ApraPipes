@@ -1,0 +1,22 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,56,199,82"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="507,55,614,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,66,491,65,491,70,199,71"/>
+<area shape="rect" id="Node000003" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="275,5,400,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,53,259,32,261,37,166,58"/>
+<area shape="rect" id="Node000006" href="$classTest__Utils.html#a2d971a9477a601f4841b74dadef09fb3" title=" " alt="" coords="247,129,428,155"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="147,80,280,122,278,127,145,85"/>
+<area shape="rect" id="Node000004" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="507,5,614,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="400,16,491,16,491,21,400,21"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="692,5,851,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="614,16,677,16,677,21,614,21"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="372,126,475,89,495,83,497,88,477,94,374,131"/>
+<area shape="rect" id="Node000007" href="$test__utils_8cpp.html#a3bce269680d16c99cbb38eef4ffeefe1" title=" " alt="" coords="510,203,610,228"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="375,153,477,189,497,195,495,200,475,194,373,158"/>
+<area shape="rect" id="Node000008" href="$classTest__Utils.html#a1fe56ac5c0336fc32c5ad4d3b69cb2e6" title=" " alt="" coords="476,253,644,293"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="356,153,408,194,477,239,487,243,484,248,475,243,405,198,353,158"/>
+<area shape="rect" id="Node000009" href="$classTest__Utils.html#a788c74e1706e9e249f9c095770dde995" title=" " alt="" coords="494,104,627,130"/>
+<area shape="poly" id="edge9_Node000006_Node000009" title=" " alt="" coords="428,129,478,124,478,129,429,135"/>
+<area shape="rect" id="Node000010" href="$test__utils_8cpp.html#abeb50dde00c69ccc930cd0eda8357a02" title=" " alt="" coords="525,153,595,179"/>
+<area shape="poly" id="edge10_Node000006_Node000010" title=" " alt="" coords="429,149,510,158,509,163,428,155"/>
+</map>

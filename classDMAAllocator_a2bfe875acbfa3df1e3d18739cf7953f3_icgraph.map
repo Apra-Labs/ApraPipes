@@ -1,0 +1,22 @@
+<map id="DMAAllocator::setMetadata" name="DMAAllocator::setMetadata">
+<area shape="rect" id="Node000001" title=" " alt="" coords="540,169,719,195"/>
+<area shape="rect" id="Node000002" href="$frame__factory__test__dma_8cpp.html#abc2473dbd248049fce2cbf7e80d5d796" title=" " alt="" coords="286,5,479,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="609,158,560,100,527,70,491,44,467,34,469,29,493,40,531,66,564,96,613,155"/>
+<area shape="rect" id="Node000003" href="$frame__factory__test__dma_8cpp.html#a61e11d949a0f7c28f95c8f705056ee36" title=" " alt="" coords="286,55,479,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="599,162,550,127,491,95,456,83,458,78,493,90,553,123,602,157"/>
+<area shape="rect" id="Node000004" href="$classDMAFrameUtils.html#a2f80aeecd42050c3a1e19f28eff8a8a0" title=" " alt="" coords="275,105,490,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="556,168,473,148,474,143,557,163"/>
+<area shape="rect" id="Node000006" href="$classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66" title=" " alt="" coords="26,162,204,203"/>
+<area shape="poly" id="edge10_Node000001_Node000006" title=" " alt="" coords="524,185,205,185,205,180,524,180"/>
+<area shape="rect" id="Node000007" href="$classNvArgusCamera.html#a759b0f065b71d62045b85c709e2f16b0" title=" " alt="" coords="273,220,492,246"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="549,201,449,222,448,217,548,196"/>
+<area shape="rect" id="Node000008" href="$classNvV4L2Camera.html#ad1d29dbfbca69a70af362b1321b5af32" title=" " alt="" coords="276,269,489,295"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="597,206,549,234,493,261,459,271,457,266,491,256,547,230,595,201"/>
+<area shape="rect" id="Node000009" href="$classNvTransform.html#a7827d1d425a1279d0b2be2b3d0d83be4" title=" " alt="" coords="295,319,470,344"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="610,209,561,261,529,287,493,310,467,320,465,316,491,305,526,283,557,257,607,205"/>
+<area shape="rect" id="Node000005" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,112,225,138"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="260,128,225,128,225,122,260,122"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="270,152,205,166,204,160,269,146"/>
+<area shape="rect" id="Node000010" href="$classNvTransform.html#a976d8cb55f069ed75e8469977c990286" title=" " alt="" coords="26,319,204,344"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="279,334,204,334,204,329,279,329"/>
+</map>

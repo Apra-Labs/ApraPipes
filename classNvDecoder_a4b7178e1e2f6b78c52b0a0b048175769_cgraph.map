@@ -1,0 +1,5 @@
+<map id="NvDecoder::ReconfigureDecoder" name="NvDecoder::ReconfigureDecoder">
+<area shape="rect" id="Node000001" title="This function reconfigure decoder if there is a change in sequence params." alt="" coords="5,5,214,31"/>
+<area shape="rect" id="Node000002" href="$H264DecoderNvCodecHelper_8cpp.html#a433004ae8885a783e5fabef2b0251d4f" title=" " alt="" coords="262,5,428,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="214,16,246,16,246,21,214,21"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,199,80"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="281,5,388,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,51,265,30,266,35,167,57"/>
+<area shape="rect" id="Node000003" href="$structWritePipeline.html#af963a3f771b304341a8a78b574478052" title=" " alt="" coords="247,55,422,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,65,231,65,231,70,199,70"/>
+<area shape="rect" id="Node000004" href="$structReadPipeline.html#a950a4c289918a49c1e2d1a4d1f2080fb" title=" " alt="" coords="247,104,422,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,78,256,98,255,103,166,84"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="testQRResult" name="testQRResult">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,105,56"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="169,5,276,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,33,153,26,154,31,106,39"/>
+<area shape="rect" id="Node000003" href="$classLogger.html#a8cc48636631d0f3a603959afc9c70546" title=" " alt="" coords="153,55,292,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,48,138,53,137,58,105,53"/>
+<area shape="rect" id="Node000004" href="$classLogger.html#aa6f6d11f892277aacaf0fe1db82e6829" title=" " alt="" coords="340,55,465,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="292,65,325,65,325,70,292,70"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="513,55,638,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="466,65,498,65,498,70,466,70"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="686,55,793,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="638,65,670,65,670,70,638,70"/>
+<area shape="rect" id="Node000007" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="841,55,999,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="794,65,825,65,825,70,794,70"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="H264Utils::getNALUType" name="H264Utils::getNALUType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="514,195,682,220"/>
+<area shape="rect" id="Node000002" href="$classH264Utils.html#a6d71567a1747963b0feb1b0c981ca3f9" title=" " alt="" coords="272,69,441,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="571,186,524,146,495,125,465,109,437,98,439,93,467,104,498,121,527,141,575,182"/>
+<area shape="rect" id="Node000003" href="$classH264Utils.html#a694e0fd6508f0a29c0430478bd94fb37" title=" " alt="" coords="284,119,429,144"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="543,192,465,166,404,148,405,142,467,161,544,187"/>
+<area shape="rect" id="Node000007" href="$classDetailH264.html#af82f7f1e2e53b8c02c53cccb82274ecd" title=" " alt="" coords="42,169,162,195"/>
+<area shape="poly" id="edge11_Node000001_Node000007" title=" " alt="" coords="498,205,162,188,162,183,499,200"/>
+<area shape="rect" id="Node000008" href="$classH264FrameDemuxer.html#a5d697aa0b5031aa302a1fddc0bd39120" title=" " alt="" coords="249,220,464,246"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="499,221,465,224,464,219,498,215"/>
+<area shape="rect" id="Node000010" href="$classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15" title=" " alt="" coords="281,270,432,311"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="551,229,467,261,432,272,431,267,465,256,549,224"/>
+<area shape="rect" id="Node000011" href="$classH264FrameDemuxer.html#a623cd483a1f6e2eee57d1dec27f39f28" title=" " alt="" coords="247,335,466,360"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="578,234,530,280,500,304,467,325,437,337,435,332,465,320,497,300,527,276,574,230"/>
+<area shape="rect" id="Node000004" href="$mp4writersink__tests_8cpp.html#a4aba6c048caf5d8961ff62eb32afdaaa" title=" " alt="" coords="5,5,199,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="268,121,245,110,229,94,220,77,212,61,197,46,174,34,176,29,200,41,217,58,225,75,233,91,248,105,271,116"/>
+<area shape="rect" id="Node000005" href="$classGroupedFramesQueue.html#a5e796b5a5f75c7562aca8db97b90ba0f" title=" " alt="" coords="26,55,178,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="279,117,246,110,178,95,179,90,247,105,280,112"/>
+<area shape="rect" id="Node000006" href="$classExportH264.html#af4420d5082d1e14bf86caf850f123e9c" title=" " alt="" coords="18,120,186,146"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="268,135,187,135,187,130,268,129"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="274,151,163,173,162,168,273,145"/>
+<area shape="rect" id="Node000009" href="$classH264FrameDemuxer.html#af0727a167beeb0e27e97494d50981412" title=" " alt="" coords="22,219,182,260"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="233,239,183,240,183,235,233,233"/>
+</map>

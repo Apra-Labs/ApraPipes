@@ -1,0 +1,27 @@
+<map id="test_simp_seg_store::malloc" name="test_simp_seg_store::malloc">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,82,148,123"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="429,5,536,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,79,145,53,195,32,251,19,309,12,413,11,413,16,310,17,252,24,196,37,148,58,107,84"/>
+<area shape="rect" id="Node000003" href="$classtest__simp__seg__store.html#a079dd165f862f38d4867c07d8823d3b8" title=" " alt="" coords="204,46,347,87"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="148,87,188,79,189,84,149,92"/>
+<area shape="rect" id="Node000004" href="$classtest__simp__seg__store.html#ac3bca4df8da7f61608a5e1f1e2e94a88" title=" " alt="" coords="204,110,347,166"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="149,112,189,120,188,125,148,118"/>
+<area shape="rect" id="Node000005" href="$classApraSegregatedStorage.html#a8220cb980c98c569b7a8145e2e3672fb" title=" " alt="" coords="196,190,355,231"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="108,121,197,176,207,181,204,185,194,180,106,125"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="346,47,414,31,415,36,348,52"/>
+<area shape="rect" id="Node000006" href="$classApraSegregatedStorage.html#ab07aeb2b37340ad6f69748a19fe45e4b" title=" " alt="" coords="403,123,562,164"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="340,187,402,167,403,172,342,192"/>
+<area shape="rect" id="Node000007" href="$classApraChunk.html#a3081aa2743a444a5f127661220de3a92" title=" " alt="" coords="610,103,747,128"/>
+<area shape="poly" id="edge11_Node000005_Node000007" title=" " alt="" coords="336,187,353,176,368,159,375,141,384,124,402,109,428,98,455,91,512,85,567,88,616,96,615,101,567,93,512,90,456,96,430,103,404,114,388,127,380,144,372,162,357,180,339,192"/>
+<area shape="rect" id="Node000008" href="$classApraChunk.html#a38bb5704f8088b27fcd25811009ff38d" title=" " alt="" coords="624,219,733,244"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="355,212,609,225,608,230,355,217"/>
+<area shape="rect" id="Node000009" href="$classApraChunk.html#a9299c12a8ac3d237260392946175edaf" title=" " alt="" coords="610,272,747,298"/>
+<area shape="poly" id="edge9_Node000005_Node000009" title=" " alt="" coords="302,229,347,261,375,276,404,288,452,297,502,301,595,296,595,302,502,307,451,303,402,293,372,281,344,266,299,233"/>
+<area shape="rect" id="Node000010" href="$classApraChunk.html#a0470843a24693f2a751d12d51415a352" title=" " alt="" coords="428,353,537,379"/>
+<area shape="poly" id="edge10_Node000005_Node000010" title=" " alt="" coords="295,229,342,280,372,307,404,332,428,345,425,349,402,336,369,312,338,284,292,233"/>
+<area shape="rect" id="Node000011" href="$classApraSegregatedStorage.html#a56dff53f5c457fe34998f96cb0f2de4a" title=" " alt="" coords="403,238,562,279"/>
+<area shape="poly" id="edge12_Node000005_Node000011" title=" " alt="" coords="356,226,389,234,387,239,355,231"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="562,129,594,125,595,130,563,135"/>
+<area shape="poly" id="edge13_Node000011_Node000008" title=" " alt="" coords="562,245,608,238,609,244,563,250"/>
+<area shape="poly" id="edge14_Node000011_Node000009" title=" " alt="" coords="563,266,595,271,595,276,562,272"/>
+</map>

@@ -1,0 +1,37 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,205,199,231"/>
+<area shape="rect" id="Node000002" href="$motionvector__extractor__and__overlay__tests_8cpp.html#a23d8bd779a85413e99f9195e0b2cf4a5" title=" " alt="" coords="247,198,452,239"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,216,231,216,231,221,199,221"/>
+<area shape="rect" id="Node000003" href="$classPipeLine.html#ab833d6e953e91e791e24397a1895d702" title=" " alt="" coords="506,29,668,55"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="363,196,418,131,456,95,499,64,508,59,510,64,501,68,459,99,422,135,367,199"/>
+<area shape="rect" id="Node000004" href="$classPipeLine.html#aba436d135966fea33f218d1be7688650" title=" " alt="" coords="539,79,634,104"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="378,195,433,159,499,121,529,108,531,113,501,126,436,163,381,200"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="989,180,1113,206"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="398,195,447,178,500,165,623,148,720,144,817,151,941,165,988,173,987,178,940,170,817,156,720,150,623,154,500,170,448,183,400,200"/>
+<area shape="rect" id="Node000009" href="$classPipeLine.html#ae2e66bba5f73bb8c671c4eea5ea16d5f" title=" " alt="" coords="500,180,673,206"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="452,205,484,201,485,206,453,210"/>
+<area shape="rect" id="Node000011" href="$classLogger.html#a8cc48636631d0f3a603959afc9c70546" title=" " alt="" coords="517,229,656,255"/>
+<area shape="poly" id="edge11_Node000002_Node000011" title=" " alt="" coords="453,226,502,231,501,236,452,231"/>
+<area shape="rect" id="Node000013" href="$classPipeLine.html#a4972f44a0c6a993c5a4cc0c5acc39b0a" title=" " alt="" coords="535,279,638,304"/>
+<area shape="poly" id="edge14_Node000002_Node000013" title=" " alt="" coords="413,237,501,265,522,271,521,276,499,270,411,242"/>
+<area shape="rect" id="Node000015" href="$classPipeLine.html#ab75b3c441d9da7a943e4d7fd7ba21a91" title=" " alt="" coords="535,328,639,354"/>
+<area shape="poly" id="edge16_Node000002_Node000015" title=" " alt="" coords="378,237,433,276,501,314,520,322,518,327,499,319,430,281,375,241"/>
+<area shape="rect" id="Node000016" href="$classPipeLine.html#a518f980d63cf4578320f3f0dcf53aea8" title=" " alt="" coords="515,377,659,403"/>
+<area shape="poly" id="edge18_Node000002_Node000016" title=" " alt="" coords="368,237,422,300,460,334,501,364,510,369,508,373,499,368,456,339,418,304,364,240"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="547,31,540,21,544,11,560,5,587,3,616,6,631,13,628,17,615,11,587,8,561,10,548,15,545,20,552,27"/>
+<area shape="rect" id="Node000005" href="$classPipeLine.html#a99bb0bfbe818a8600ae2830a4336afa8" title=" " alt="" coords="721,79,941,104"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="635,89,706,89,706,94,635,94"/>
+<area shape="rect" id="Node000007" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="1161,180,1268,206"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="1114,190,1145,190,1145,196,1114,196"/>
+<area shape="rect" id="Node000008" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="1316,180,1475,206"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="1269,190,1301,190,1301,196,1269,196"/>
+<area shape="rect" id="Node000010" href="$classUtils.html#ace09f36cc087a1a8d77f961fbc7687d8" title=" " alt="" coords="736,180,926,206"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="674,190,721,190,721,196,674,196"/>
+<area shape="rect" id="Node000012" href="$classLogger.html#aa6f6d11f892277aacaf0fe1db82e6829" title=" " alt="" coords="768,229,894,255"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="657,240,753,240,753,245,657,245"/>
+<area shape="poly" id="edge13_Node000012_Node000006" title=" " alt="" coords="893,226,940,216,977,207,978,212,941,221,894,231"/>
+<area shape="rect" id="Node000014" href="$classPipeLine.html#a1b20193bf3631f0ad525ef4f9019a463" title=" " alt="" coords="764,328,898,354"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="639,299,750,322,749,327,638,304"/>
+<area shape="poly" id="edge17_Node000015_Node000014" title=" " alt="" coords="639,338,748,338,748,344,639,344"/>
+<area shape="poly" id="edge19_Node000016_Node000014" title=" " alt="" coords="654,374,748,355,749,360,655,379"/>
+</map>

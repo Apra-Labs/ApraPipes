@@ -1,0 +1,13 @@
+<map id="WebCamSource::setProps" name="WebCamSource::setProps">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,70,179,96"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a2b1fd42084b55743ad93000d78bef757" title=" " alt="" coords="227,70,404,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,80,211,80,211,86,179,86"/>
+<area shape="rect" id="Node000003" href="$classFileReaderModuleProps.html#a3459a7be347d78d184eac765bb2ce979" title=" " alt="" coords="471,5,630,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="371,67,455,46,456,51,372,72"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="452,70,649,96"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="405,80,436,80,436,86,405,86"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="502,120,599,145"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="381,94,487,116,486,122,380,99"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html#abf0671a8cbb73c83a9694db0a059e5ab" title=" " alt="" coords="697,13,893,39"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="631,23,682,23,682,28,631,28"/>
+</map>

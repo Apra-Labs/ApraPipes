@@ -1,0 +1,16 @@
+<map id="base/include/ColorConversionXForm.h" name="base/include/ColorConversionXForm.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="272,5,465,46"/>
+<area shape="rect" id="Node000002" href="$AbsColorConversionFactory_8h.html" title=" " alt="" coords="5,94,199,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="294,54,163,96,162,91,293,49"/>
+<area shape="rect" id="Node000004" href="$ColorConversionXForm_8cpp.html" title=" " alt="" coords="222,183,393,223"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="395,58,411,95,413,116,407,136,384,164,355,184,352,180,380,160,402,133,407,116,406,97,390,60"/>
+<area shape="rect" id="Node000005" href="$ColorConversionStrategy_8h.html" title=" " alt="" coords="222,94,393,135"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="348,60,323,95,319,92,344,57"/>
+<area shape="rect" id="Node000006" href="$color__conversion__tests_8cpp.html" title=" " alt="" coords="468,94,645,135"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="426,50,515,91,513,96,424,55"/>
+<area shape="rect" id="Node000003" href="$AbsColorConversionFactory_8cpp.html" title=" " alt="" coords="5,183,199,223"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="105,150,105,182,99,182,99,150"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="164,139,262,180,260,185,161,143"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="248,143,150,185,148,180,246,139"/>
+<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="310,150,310,182,305,182,305,150"/>
+</map>

@@ -1,0 +1,16 @@
+<map id="CalcHistogramCV::validateInputOutputPins" name="CalcHistogramCV::validateInputOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,49,182,89"/>
+<area shape="rect" id="Node000002" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="285,5,383,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,48,269,29,270,34,183,53"/>
+<area shape="rect" id="Node000003" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="713,81,926,107"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="182,69,698,87,698,93,182,75"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a57fac4fd8d1b0f4f76a09fa538588e69" title=" " alt="" coords="230,107,438,132"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="183,85,255,100,254,105,182,90"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a718073e1f98015ee85e8d93907c610c4" title=" " alt="" coords="491,156,660,182"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="401,130,495,150,494,155,400,136"/>
+<area shape="rect" id="Node000007" href="$classModule.html#ac059f5b4e08f748a5bb27936ba038fcf" title=" " alt="" coords="486,107,665,132"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="438,117,470,117,470,122,438,122"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="718,156,921,182"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="661,166,703,166,703,172,661,172"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="665,108,697,104,698,109,666,113"/>
+</map>

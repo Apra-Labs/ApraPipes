@@ -1,0 +1,17 @@
+<map id="base/test/boostpool/test_bug_2696.cpp" name="base/test/boostpool/test_bug_2696.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="264,5,400,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,102,163,127"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="277,49,134,98,132,93,275,44"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="186,94,337,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="318,48,289,84,285,80,314,45"/>
+<area shape="rect" id="Node000004" href="$ApraPool_8h.html" title=" " alt="" coords="361,102,445,127"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="350,45,385,88,381,91,346,48"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="470,94,624,135"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="382,44,485,85,483,90,380,49"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="273,183,340,208"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="390,130,335,175,332,170,386,126"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="364,183,441,208"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="405,128,405,167,400,167,400,128"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="466,183,641,208"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="427,125,518,173,516,178,424,130"/>
+</map>

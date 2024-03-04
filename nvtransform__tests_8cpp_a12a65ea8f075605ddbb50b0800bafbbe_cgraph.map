@@ -1,0 +1,22 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,199,179"/>
+<area shape="rect" id="Node000002" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="260,5,418,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,151,166,97,204,66,245,40,257,34,259,39,248,45,207,71,170,101,117,155"/>
+<area shape="rect" id="Node000005" href="$effectsnppi__tests_8cpp.html#a34851d1dd04761ed350f6f1d98d324be" title=" " alt="" coords="259,55,419,80"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="124,151,178,120,246,89,264,83,265,88,248,94,180,125,126,155"/>
+<area shape="rect" id="Node000006" href="$effectsnppi__tests_8cpp.html#a56ba9aa84932b23a83e643dc0a75a282" title=" " alt="" coords="291,104,387,130"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="167,150,275,127,276,132,168,155"/>
+<area shape="rect" id="Node000007" href="$classDMAUtils.html#abf8ba81c2f03bb2e2bf658198e0b57bb" title=" " alt="" coords="263,153,415,179"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="199,164,247,164,247,169,199,169"/>
+<area shape="rect" id="Node000008" href="$classDMAUtils.html#affaa207c8fbf72e19045b53bd09177b6" title=" " alt="" coords="247,203,431,228"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="168,177,259,196,258,202,167,182"/>
+<area shape="rect" id="Node000009" href="$classDMAFDWrapper.html#ac8ab7896d9c90f312ce7d45854663410" title=" " alt="" coords="262,252,416,278"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="126,177,180,207,248,238,265,245,264,250,246,243,178,212,124,182"/>
+<area shape="rect" id="Node000010" href="$classDMAFDWrapper.html#a1c67a9080e04d2f99a458e6b552fa325" title=" " alt="" coords="247,301,431,327"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="117,178,170,231,207,262,248,288,259,293,257,298,245,293,204,266,166,235,113,181"/>
+<area shape="rect" id="Node000003" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="479,5,694,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="418,16,463,16,463,21,418,21"/>
+<area shape="rect" id="Node000004" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="513,128,661,154"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="403,29,432,40,501,77,558,116,555,121,499,82,430,45,401,34"/>
+<area shape="poly" id="edge8_Node000008_Node000004" title=" " alt="" coords="392,199,430,189,532,156,533,162,432,194,394,205"/>
+</map>

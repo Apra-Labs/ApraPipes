@@ -1,0 +1,18 @@
+<map id="ApraSegregatedStorage::add_ordered_block" name="ApraSegregatedStorage::add_ordered_block">
+<area shape="rect" id="Node000001" title=" " alt="" coords="644,63,804,103"/>
+<area shape="rect" id="Node000002" href="$classtest__simp__seg__store.html#a6ae5c771a441a924474715b2b4ff5548" title=" " alt="" coords="247,5,389,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="633,61,596,54,488,39,389,32,390,26,488,34,597,48,634,56"/>
+<area shape="rect" id="Node000004" href="$classtest__simp__seg__store.html#a8b918a53ddcb95dd20af9b7ab92e5423" title=" " alt="" coords="446,63,588,103"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="629,86,588,86,588,80,629,80"/>
+<area shape="rect" id="Node000005" href="$classApraSegregatedStorage.html#af83d3db01bb3d5df9a1fb1e8a5cbf286" title=" " alt="" coords="437,128,596,169"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="644,111,585,130,583,125,642,106"/>
+<area shape="rect" id="Node000003" href="$test__simple__seg__storage_8cpp.html#a263b518dbc329a21953787a77f264114" title=" " alt="" coords="5,100,199,125"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="252,55,137,102,135,97,250,50"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="430,92,199,108,199,103,430,86"/>
+<area shape="rect" id="Node000006" href="$classtest__simp__seg__store.html#aa5464178470c21aecd9d7a9794d1163f" title=" " alt="" coords="247,120,389,161"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="421,147,389,146,390,141,422,142"/>
+<area shape="rect" id="Node000007" href="$classtest__simp__seg__store.html#a82b7ead3fd2fdb92ba7658bbfa017a2b" title=" " alt="" coords="247,185,389,226"/>
+<area shape="poly" id="edge8_Node000005_Node000007" title=" " alt="" coords="430,176,390,188,389,183,429,171"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="231,132,199,128,199,122,231,126"/>
+<area shape="poly" id="edge9_Node000007_Node000003" title=" " alt="" coords="254,181,133,128,135,123,256,176"/>
+</map>

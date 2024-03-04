@@ -1,0 +1,16 @@
+<map id="DetailFfmpeg::decodeAndGetMotionVectors" name="DetailFfmpeg::decodeAndGetMotionVectors">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,196,113"/>
+<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#aff8daac5fe50c28aff1fb867a0ecffdd" title=" " alt="" coords="279,5,433,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,69,243,40,270,32,272,38,244,45,156,74"/>
+<area shape="rect" id="Node000003" href="$jpegdecoderl4tm__tests_8cpp.html#aa4a1ef8208e6e3c9cf3806e4303d4818" title=" " alt="" coords="321,55,391,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="196,81,305,70,305,75,197,86"/>
+<area shape="rect" id="Node000004" href="$classDrawingOverlay.html#a678be617fba6034fc3e4f6e638ce39e4" title=" " alt="" coords="244,104,468,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="197,99,228,102,228,107,196,104"/>
+<area shape="rect" id="Node000007" href="$classDrawingOverlay.html#a0e753df48a0846e5df4a40e83bac9dfe" title=" " alt="" coords="273,153,439,179"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="158,111,244,140,272,147,271,152,243,145,156,116"/>
+<area shape="rect" id="Node000005" href="$classCompositeOverlay.html#ab54108ab8c0b9fc5a73cbcd60f5b2366" title=" " alt="" coords="516,129,688,155"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="469,126,501,129,500,134,468,131"/>
+<area shape="rect" id="Node000006" href="$classOverlayInfoVisitor.html#ae17f14756d425b542175972288c8c38d" title=" " alt="" coords="736,122,861,163"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="688,140,721,140,721,145,688,145"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="439,155,500,149,501,155,439,161"/>
+</map>

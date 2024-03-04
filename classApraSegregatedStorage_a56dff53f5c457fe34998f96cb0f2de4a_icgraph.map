@@ -1,0 +1,15 @@
+<map id="ApraSegregatedStorage::try_malloc_n" name="ApraSegregatedStorage::try_malloc_n">
+<area shape="rect" id="Node000001" title=" " alt="" coords="835,44,994,85"/>
+<area shape="rect" id="Node000002" href="$classApraSegregatedStorage.html#a8220cb980c98c569b7a8145e2e3672fb" title=" " alt="" coords="627,44,787,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="819,67,787,67,787,62,819,62"/>
+<area shape="rect" id="Node000003" href="$classtest__simp__seg__store.html#a3e3f0ea4f9f0f2c466f93f1121ffd18c" title=" " alt="" coords="437,15,579,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="612,53,580,49,580,43,612,48"/>
+<area shape="rect" id="Node000006" href="$classtest__simp__seg__store.html#a6a313aa2916b66d540a03aea451b7ec1" title=" " alt="" coords="247,72,389,113"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="612,74,389,90,389,85,612,69"/>
+<area shape="rect" id="Node000004" href="$test__simple__seg__storage_8cpp.html#a263b518dbc329a21953787a77f264114" title=" " alt="" coords="5,23,199,48"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="422,18,389,13,318,8,247,13,166,25,165,19,246,7,318,3,389,7,422,12"/>
+<area shape="rect" id="Node000005" href="$test__simple__seg__storage_8cpp.html#ab7bbb61b935d12e2d1e2f1f531225287" title=" " alt="" coords="270,23,366,48"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="421,38,367,38,367,33,421,33"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="254,38,199,38,199,33,254,33"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="231,72,153,51,154,46,232,67"/>
+</map>

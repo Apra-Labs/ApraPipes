@@ -1,0 +1,25 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,199,106"/>
+<area shape="rect" id="Node000002" href="$classbounded__buffer.html#af0f2fe161dad20f4cc24c65fdb4ec8bf" title=" " alt="" coords="247,5,401,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,77,246,40,264,34,266,39,248,45,141,82"/>
+<area shape="rect" id="Node000003" href="$classbounded__buffer.html#aa7051438a9d031b52397d572284e4110" title=" " alt="" coords="252,55,396,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,79,236,75,237,80,199,84"/>
+<area shape="rect" id="Node000004" href="$unit__tests_8cpp.html#aabfbd2cf86502b73516223100064917c" title=" " alt="" coords="268,153,380,179"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="142,104,248,140,266,146,264,151,246,145,141,109"/>
+<area shape="rect" id="Node000010" href="$unit__tests_8cpp.html#a5e2556c1a9410d1f826cd11dec928d6d" title=" " alt="" coords="265,104,383,130"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="199,101,250,106,249,111,199,106"/>
+<area shape="rect" id="Node000005" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="478,55,585,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="378,150,400,140,414,128,423,115,432,102,448,89,462,82,464,87,450,94,436,106,427,118,418,131,402,144,380,155"/>
+<area shape="rect" id="Node000006" href="$classbounded__buffer.html#addd0ec3a641c1b7887a6677d6b70e823" title=" " alt="" coords="460,203,603,228"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="381,177,460,196,459,201,379,182"/>
+<area shape="rect" id="Node000008" href="$classbounded__buffer.html#abb3f12fe109cd96e94b8d627b05ef91d" title=" " alt="" coords="462,104,600,130"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="379,150,459,131,460,136,381,156"/>
+<area shape="rect" id="Node000009" href="$classbounded__buffer.html#ab2b84ae35bdbeff3c86f3f1e7ba39414" title=" " alt="" coords="449,153,613,179"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="380,164,433,164,433,169,380,169"/>
+<area shape="rect" id="Node000007" href="$classbounded__buffer.html#a9b39f13d25759eb10c5d10671abcbbb2" title=" " alt="" coords="661,171,787,212"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="603,204,646,199,646,204,604,209"/>
+<area shape="poly" id="edge9_Node000009_Node000007" title=" " alt="" coords="614,174,646,179,645,184,613,180"/>
+<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="380,101,462,81,463,86,382,106"/>
+<area shape="poly" id="edge12_Node000010_Node000008" title=" " alt="" coords="383,114,446,114,446,120,383,120"/>
+<area shape="poly" id="edge13_Node000010_Node000009" title=" " alt="" coords="382,128,460,147,459,152,380,133"/>
+</map>

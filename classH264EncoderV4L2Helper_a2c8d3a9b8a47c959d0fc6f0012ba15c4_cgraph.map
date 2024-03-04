@@ -1,0 +1,19 @@
+<map id="H264EncoderV4L2Helper::initEncoderParams" name="H264EncoderV4L2Helper::initEncoderParams">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,136,174,177"/>
+<area shape="rect" id="Node000002" href="$classH264EncoderV4L2Helper.html#ace717bfc6cc72e26b080cb6c13532c0a" title=" " alt="" coords="222,5,419,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,134,160,95,220,57,234,50,236,55,223,61,163,99,116,138"/>
+<area shape="rect" id="Node000004" href="$classH264EncoderV4L2Helper.html#a5e919e8a84ed3cfc8354d986d2514f76" title=" " alt="" coords="236,71,405,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,133,231,114,232,119,164,138"/>
+<area shape="rect" id="Node000006" href="$classH264EncoderV4L2Helper.html#ad84dfa75c50f60e3e11f34f44c226672" title=" " alt="" coords="236,136,405,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="174,154,220,154,220,159,174,159"/>
+<area shape="rect" id="Node000007" href="$classH264EncoderV4L2Helper.html#aa9dd801e390e8d50ebf16ee09356167d" title=" " alt="" coords="236,201,405,242"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="164,175,232,194,231,199,163,180"/>
+<area shape="rect" id="Node000008" href="$classH264EncoderV4L2Helper.html#af53dd326eb8628f31f101f240b824247" title=" " alt="" coords="236,267,405,307"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="116,175,163,213,223,251,236,258,234,263,220,256,160,218,112,179"/>
+<area shape="rect" id="Node000003" href="$classH264EncoderV4L2Helper.html#a7cd6d6ccca3a59e7c4067aad4cc1e1bf" title=" " alt="" coords="467,5,635,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="419,23,451,23,451,28,419,28"/>
+<area shape="rect" id="Node000005" href="$classH264EncoderV4L2Helper.html#aeddbee6e2ec7133ee7b31b109cd0a36e" title=" " alt="" coords="467,201,635,242"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="392,109,420,122,472,155,517,189,514,193,469,159,418,127,390,114"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="405,219,451,219,451,224,405,224"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="394,264,461,244,463,249,395,269"/>
+</map>

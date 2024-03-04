@@ -1,0 +1,17 @@
+<map id="base/test/findexstrategy_tests.cpp" name="base/test/findexstrategy_tests.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="115,5,273,46"/>
+<area shape="rect" id="Node000002" href="$stdafx_8h.html" title=" " alt="" coords="25,94,91,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,49,93,88,90,84,159,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="115,94,273,120"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="197,46,197,78,191,78,191,46"/>
+<area shape="rect" id="Node000006" href="$FIndexStrategy_8h.html" title=" " alt="" coords="296,94,415,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="235,44,318,84,316,89,233,49"/>
+<area shape="rect" id="Node000003" href="$targetver_8h.html" title=" " alt="" coords="17,168,99,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="61,120,61,152,55,152,55,120"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,241,111,267"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="61,194,61,226,55,226,55,194"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="281,168,342,193"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="350,121,329,156,325,153,346,118"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="366,168,433,193"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="365,118,386,153,382,156,360,121"/>
+</map>

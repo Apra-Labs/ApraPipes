@@ -1,0 +1,14 @@
+<map id="bounded_buffer::size" name="bounded_buffer::size">
+<area shape="rect" id="Node000001" title=" " alt="" coords="488,92,626,118"/>
+<area shape="rect" id="Node000002" href="$unit__tests_8cpp.html#aac65ccc6d21215535e3400fff969cf72" title=" " alt="" coords="247,5,440,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="520,86,482,65,439,46,403,34,405,29,441,41,484,61,523,82"/>
+<area shape="rect" id="Node000003" href="$classFrameContainerQueue.html#a807546dba51569b7a3e0749ae1a073b2" title=" " alt="" coords="268,55,419,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="472,96,419,89,420,83,473,91"/>
+<area shape="rect" id="Node000004" href="$unit__tests_8cpp.html#aabfbd2cf86502b73516223100064917c" title=" " alt="" coords="288,120,399,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="473,118,400,128,399,123,472,113"/>
+<area shape="rect" id="Node000006" href="$unit__tests_8cpp.html#a5e2556c1a9410d1f826cd11dec928d6d" title=" " alt="" coords="284,169,403,195"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="518,128,441,161,404,172,402,167,439,156,516,123"/>
+<area shape="rect" id="Node000005" href="$unit__tests_8cpp.html#a805d7d89768227f947eabe2cf2daab21" title=" " alt="" coords="5,145,199,171"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="273,143,199,151,199,145,272,138"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="269,177,199,170,200,165,269,172"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="Module::produce" name="Module::produce">
+<area shape="rect" id="Node000001" title=" " alt="" coords="677,60,793,86"/>
+<area shape="rect" id="Node000002" href="$module__tests_8cpp.html#a02ff13d903f7a71072a7595666efaa9f" title=" " alt="" coords="436,35,629,60"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="662,66,629,62,630,57,662,61"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="486,84,580,110"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="662,84,580,94,580,89,661,79"/>
+<area shape="rect" id="Node000004" href="$classH264EncoderV4L2.html#a7539f857a9084786fc24cbd2d9debf0f" title=" " alt="" coords="178,5,388,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="470,87,435,75,411,60,387,45,356,34,358,29,389,40,413,55,437,70,472,82"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a7938c5a5b0891563bd57144f78330dd6" title=" " alt="" coords="239,55,327,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="469,92,327,75,327,70,470,87"/>
+<area shape="rect" id="Node000007" href="$classVirtualCameraSink_1_1Detail.html#ac695871d7abc864a74f6d8dc6b48ba41" title=" " alt="" coords="215,105,351,145"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="470,106,351,120,351,115,470,101"/>
+<area shape="rect" id="Node000008" href="$classPullAnalogy.html#abe06d1adc7831c69af7ca4d9ab168f52" title=" " alt="" coords="223,169,343,195"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="490,119,389,159,344,172,343,167,387,154,489,114"/>
+<area shape="rect" id="Node000006" href="$classModule.html#ae142fa64aba77f793b2697d42d4d23cc" title=" " alt="" coords="5,55,130,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="224,70,130,70,130,65,224,65"/>
+</map>

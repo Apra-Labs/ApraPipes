@@ -1,0 +1,20 @@
+<map id="base/include/Overlay.h" name="base/include/Overlay.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="525,5,678,31"/>
+<area shape="rect" id="Node000002" href="$H264EncoderV4L2Helper_8cpp.html" title=" " alt="" coords="5,79,190,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="510,35,202,82,190,84,189,78,201,76,509,30"/>
+<area shape="rect" id="Node000003" href="$MotionVectorExtractor_8cpp.html" title=" " alt="" coords="213,87,441,112"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="545,38,370,88,368,83,544,33"/>
+<area shape="rect" id="Node000004" href="$Overlay_8cpp.html" title=" " alt="" coords="406,168,549,193"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="556,41,528,58,505,81,493,102,486,126,480,168,475,167,480,125,488,100,501,77,525,54,553,36"/>
+<area shape="rect" id="Node000005" href="$OverlayFactory_8h.html" title=" " alt="" coords="515,87,688,112"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="604,47,604,86,599,86,599,47"/>
+<area shape="rect" id="Node000007" href="$OverlayModule_8cpp.html" title=" " alt="" coords="712,87,897,112"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="648,34,774,83,772,88,646,39"/>
+<area shape="rect" id="Node000008" href="$h264encoderv4l2__tests_8cpp.html" title=" " alt="" coords="921,79,1098,120"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="680,32,921,78,920,83,679,37"/>
+<area shape="rect" id="Node000009" href="$overlaymodule__tests_8cpp.html" title=" " alt="" coords="1122,79,1284,120"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="694,25,886,46,1111,76,1122,78,1121,83,1110,82,886,51,693,30"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="571,123,498,169,495,165,569,118"/>
+<area shape="rect" id="Node000006" href="$OverlayFactory_8cpp.html" title=" " alt="" coords="574,168,760,193"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="623,123,659,165,655,169,619,126"/>
+</map>

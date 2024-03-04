@@ -1,0 +1,11 @@
+<map id="DrawingOverlayBuilder" name="DrawingOverlayBuilder">
+<area shape="rect" id="Node000001" title=" " alt="" coords="275,5,438,91"/>
+<area shape="rect" id="Node000002" href="$classCircleOverlayBuilder.html" title=" " alt="" coords="5,139,153,224"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="263,95,166,141,154,146,152,142,164,136,261,91"/>
+<area shape="rect" id="Node000003" href="$classCompositeOverlayBuilder.html" title=" " alt="" coords="177,139,355,224"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="322,104,297,140,292,137,318,101"/>
+<area shape="rect" id="Node000004" href="$classLineOverlayBuilder.html" title=" " alt="" coords="379,139,519,224"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="396,101,422,137,417,140,392,104"/>
+<area shape="rect" id="Node000005" href="$classRectangleOverlayBuilder.html" title=" " alt="" coords="543,139,717,224"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="453,92,545,136,543,141,450,97"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,199,80"/>
+<area shape="rect" id="Node000002" href="$unit__tests_8cpp.html#ad1541aa020d0e124f157e24484279eb2" title=" " alt="" coords="247,55,381,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,65,231,65,231,70,199,70"/>
+<area shape="rect" id="Node000003" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="447,5,554,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="365,51,434,33,435,38,366,57"/>
+<area shape="rect" id="Node000004" href="$classbounded__buffer.html#ad56f368cf6ade4a8096913c9f130f87e" title=" " alt="" coords="433,55,569,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="382,65,417,65,417,70,382,70"/>
+<area shape="rect" id="Node000005" href="$classbounded__buffer.html#addd0ec3a641c1b7887a6677d6b70e823" title=" " alt="" coords="429,104,572,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="366,78,435,97,434,102,365,84"/>
+<area shape="rect" id="Node000006" href="$classbounded__buffer.html#a9b39f13d25759eb10c5d10671abcbbb2" title=" " alt="" coords="620,97,746,137"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="572,114,605,114,605,120,572,120"/>
+</map>

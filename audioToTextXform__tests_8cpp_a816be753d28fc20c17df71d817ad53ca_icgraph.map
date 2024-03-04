@@ -1,0 +1,12 @@
+<map id="dotProduct" name="dotProduct">
+<area shape="rect" id="Node000001" title=" " alt="" coords="407,55,491,80"/>
+<area shape="poly" id="edge5_Node000001_Node000001" title=" " alt="" coords="474,42,465,36,449,33,434,35,426,40,424,46,429,53,424,56,419,46,422,37,432,30,449,28,467,31,477,37"/>
+<area shape="rect" id="Node000002" href="$audioToTextXform__tests_8cpp.html#afd73bfd03071827a9e39d077db0efe24" title=" " alt="" coords="247,55,359,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="392,70,359,70,359,65,392,65"/>
+<area shape="rect" id="Node000003" href="$audioToTextXform__tests_8cpp.html#acf6411586d3e4f7c7e5283a8be00280e" title=" " alt="" coords="5,5,199,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="232,53,157,34,158,29,233,48"/>
+<area shape="rect" id="Node000004" href="$audioToTextXform__tests_8cpp.html#a5b850a458275415b67971d4da1365724" title=" " alt="" coords="5,55,199,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="231,70,199,70,199,65,231,65"/>
+<area shape="rect" id="Node000005" href="$audioToTextXform__tests_8cpp.html#a175912492c8fce4aa28148963696b2da" title=" " alt="" coords="5,104,199,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="233,87,158,106,157,101,232,82"/>
+</map>

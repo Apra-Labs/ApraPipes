@@ -1,0 +1,6 @@
+<map id="VirtualPTZ::addInputPin" name="VirtualPTZ::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,29,164,55"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="212,29,350,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,40,197,40,197,45,164,45"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="248,30,241,21,245,11,259,5,281,3,305,5,317,12,315,17,303,10,281,8,260,10,249,15,247,20,252,27"/>
+</map>

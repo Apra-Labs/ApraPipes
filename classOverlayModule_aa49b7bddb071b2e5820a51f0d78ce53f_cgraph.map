@@ -1,0 +1,21 @@
+<map id="OverlayModule::process" name="OverlayModule::process">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,136,165,161"/>
+<area shape="rect" id="Node000002" href="$classDrawingOverlay.html#afa2956263c0f5ac59eb8b48afc003d1b" title=" " alt="" coords="213,78,392,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,132,235,106,237,111,137,137"/>
+<area shape="rect" id="Node000005" href="$classDrawingOverlay.html#a52e73ea4a1d2016b6b59f478069fbfe7" title=" " alt="" coords="229,136,376,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="165,146,214,146,214,151,165,151"/>
+<area shape="rect" id="Node000008" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="254,185,351,211"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="146,159,239,181,238,186,144,164"/>
+<area shape="rect" id="Node000003" href="$classBuilderOverlayFactory.html#a1b222df6526421c1749a1b5b7235e077" title=" " alt="" coords="467,5,615,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="351,75,451,47,452,53,353,80"/>
+<area shape="rect" id="Node000004" href="$classDrawingOverlayBuilder.html#aba86a39e17893c3790dd8c32ac93dd0b" title=" " alt="" coords="465,71,617,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="393,88,449,88,449,94,393,94"/>
+<area shape="rect" id="Node000006" href="$classCompositeOverlay.html#ab54108ab8c0b9fc5a73cbcd60f5b2366" title=" " alt="" coords="455,136,627,161"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="376,146,439,146,439,151,376,151"/>
+<area shape="rect" id="Node000007" href="$classOverlayInfoVisitor.html#ae17f14756d425b542175972288c8c38d" title=" " alt="" coords="690,128,815,169"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="628,146,675,146,675,151,628,151"/>
+<area shape="rect" id="Node000009" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="456,185,626,211"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="351,195,441,195,441,200,351,200"/>
+<area shape="rect" id="Node000010" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="440,234,642,260"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="352,205,461,228,460,233,351,210"/>
+</map>

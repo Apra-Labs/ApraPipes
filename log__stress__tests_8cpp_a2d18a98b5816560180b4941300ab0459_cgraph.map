@@ -1,0 +1,30 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,177,199,203"/>
+<area shape="rect" id="Node000002" href="$classPipeLine.html#ab833d6e953e91e791e24397a1895d702" title=" " alt="" coords="252,29,415,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,175,167,121,204,90,245,64,256,59,258,63,248,68,207,95,170,125,117,179"/>
+<area shape="rect" id="Node000003" href="$classPipeLine.html#aba436d135966fea33f218d1be7688650" title=" " alt="" coords="286,79,381,104"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="124,174,178,144,246,113,270,105,272,110,248,118,181,149,127,179"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="271,128,396,154"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="165,174,255,155,256,160,166,179"/>
+<area shape="rect" id="Node000008" href="$classPipeLine.html#ae2e66bba5f73bb8c671c4eea5ea16d5f" title=" " alt="" coords="247,177,420,203"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="199,188,231,188,231,193,199,193"/>
+<area shape="rect" id="Node000010" href="$classPipeLine.html#a4972f44a0c6a993c5a4cc0c5acc39b0a" title=" " alt="" coords="282,227,385,252"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="166,201,267,223,266,228,165,206"/>
+<area shape="rect" id="Node000012" href="$classPipeLine.html#ab75b3c441d9da7a943e4d7fd7ba21a91" title=" " alt="" coords="281,276,386,302"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="127,201,181,231,248,262,267,269,265,274,246,267,178,236,124,206"/>
+<area shape="rect" id="Node000013" href="$classPipeLine.html#a518f980d63cf4578320f3f0dcf53aea8" title=" " alt="" coords="261,325,406,351"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="117,202,170,255,207,286,248,312,258,317,256,322,245,316,204,290,167,259,113,205"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="295,31,287,21,292,11,308,5,333,3,362,5,376,12,374,17,360,10,333,8,309,10,296,15,293,20,299,27"/>
+<area shape="rect" id="Node000004" href="$classPipeLine.html#a99bb0bfbe818a8600ae2830a4336afa8" title=" " alt="" coords="468,79,687,104"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="381,89,453,89,453,94,381,94"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="524,128,631,154"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="396,138,508,138,508,144,396,144"/>
+<area shape="rect" id="Node000007" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="735,128,894,154"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="632,138,720,138,720,144,632,144"/>
+<area shape="rect" id="Node000009" href="$classUtils.html#ace09f36cc087a1a8d77f961fbc7687d8" title=" " alt="" coords="483,177,672,203"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="421,188,468,188,468,193,421,193"/>
+<area shape="rect" id="Node000011" href="$classPipeLine.html#a1b20193bf3631f0ad525ef4f9019a463" title=" " alt="" coords="511,276,645,302"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="386,247,496,270,495,275,385,252"/>
+<area shape="poly" id="edge13_Node000012_Node000011" title=" " alt="" coords="386,286,495,286,495,292,386,292"/>
+<area shape="poly" id="edge15_Node000013_Node000011" title=" " alt="" coords="400,322,495,303,496,308,401,327"/>
+</map>

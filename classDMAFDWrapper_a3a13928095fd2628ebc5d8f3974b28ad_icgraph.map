@@ -1,0 +1,14 @@
+<map id="DMAFDWrapper::getHostPtrY" name="DMAFDWrapper::getHostPtrY">
+<area shape="rect" id="Node000001" title=" " alt="" coords="816,46,1010,72"/>
+<area shape="rect" id="Node000002" href="$classDMAFrameUtils.html#a0032bf827b76d39a55f5ca023834e8af" title=" " alt="" coords="543,5,760,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="800,47,761,42,761,37,801,42"/>
+<area shape="rect" id="Node000006" href="$classDMAFrameUtils.html#ab2832b65c2e6068238f76738f8630a88" title=" " alt="" coords="535,71,768,111"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="801,75,769,79,769,74,800,70"/>
+<area shape="rect" id="Node000003" href="$classDMAFrameUtils.html#a2f80aeecd42050c3a1e19f28eff8a8a0" title=" " alt="" coords="273,39,487,79"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="528,44,488,48,487,43,527,38"/>
+<area shape="rect" id="Node000004" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,17,225,43"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="257,48,225,45,226,39,258,43"/>
+<area shape="rect" id="Node000005" href="$classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66" title=" " alt="" coords="26,67,204,107"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="258,75,205,80,204,75,257,69"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="519,78,487,74,488,69,520,73"/>
+</map>

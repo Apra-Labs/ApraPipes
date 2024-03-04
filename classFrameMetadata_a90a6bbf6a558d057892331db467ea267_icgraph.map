@@ -1,0 +1,17 @@
+<map id="FrameMetadata::getPaddingLength" name="FrameMetadata::getPaddingLength">
+<area shape="rect" id="Node000001" title=" " alt="" coords="770,92,954,133"/>
+<area shape="rect" id="Node000002" href="$classMemTypeConversion.html#afd1d57c628453881363c90f1e14b67df" title=" " alt="" coords="545,5,694,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="795,88,721,60,689,49,690,44,723,55,797,83"/>
+<area shape="rect" id="Node000003" href="$classCudaMemCopy.html#a2f94e3a4df06cb0a144c0de8a4d396c5" title=" " alt="" coords="520,70,720,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="754,102,720,98,721,93,755,97"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#a5397a2b6f8edab96c39854a975af50f9" title=" " alt="" coords="517,120,722,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="755,127,723,131,722,126,754,122"/>
+<area shape="rect" id="Node000008" href="$classRawImagePlanarMetadata.html#a494f56efdce01ff429844e770c29a1f7" title=" " alt="" coords="530,185,710,226"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="803,142,723,175,688,187,686,182,721,170,801,137"/>
+<area shape="rect" id="Node000004" href="$classCudaMemCopy.html#a4376e48b35aa2b500d09c85cd0085f43" title=" " alt="" coords="264,46,448,72"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="504,75,448,70,449,65,504,70"/>
+<area shape="rect" id="Node000005" href="$classCudaMemCopy.html#a753216ee0e5968924eac5a0d55fb6f6c" title=" " alt="" coords="243,96,469,121"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="504,97,470,100,469,95,504,91"/>
+<area shape="rect" id="Node000006" href="$classCudaMemCopy.html#ac65f5eafd0f48bd19f0a70e49ecf951e" title=" " alt="" coords="5,96,195,121"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="227,111,195,111,195,106,227,106"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,129,199,155"/>
+<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#aff8daac5fe50c28aff1fb867a0ecffdd" title=" " alt="" coords="282,5,436,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,127,171,84,207,60,246,40,266,32,268,37,248,45,210,64,174,88,120,131"/>
+<area shape="rect" id="Node000003" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="305,55,413,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,126,246,89,289,78,291,83,247,94,138,131"/>
+<area shape="rect" id="Node000004" href="$classDrawingOverlay.html#afa2956263c0f5ac59eb8b48afc003d1b" title=" " alt="" coords="269,104,449,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="199,130,253,125,254,130,199,135"/>
+<area shape="rect" id="Node000007" href="$classCompositeOverlay.html#a5418926cc2b8caab73a7cf813830fee6" title=" " alt="" coords="272,153,446,179"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="199,149,257,154,257,159,199,154"/>
+<area shape="rect" id="Node000008" href="$classDrawingOverlay.html#a678be617fba6034fc3e4f6e638ce39e4" title=" " alt="" coords="247,203,471,228"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="139,153,247,189,275,196,274,201,246,194,137,158"/>
+<area shape="rect" id="Node000011" href="$classDrawingOverlay.html#a0e753df48a0846e5df4a40e83bac9dfe" title=" " alt="" coords="276,252,442,278"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="120,154,174,196,210,219,248,238,264,245,262,250,246,243,207,223,171,200,117,158"/>
+<area shape="rect" id="Node000005" href="$classBuilderOverlayFactory.html#a1b222df6526421c1749a1b5b7235e077" title=" " alt="" coords="531,79,679,120"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="449,108,515,103,516,108,449,113"/>
+<area shape="rect" id="Node000006" href="$classDrawingOverlayBuilder.html#aba86a39e17893c3790dd8c32ac93dd0b" title=" " alt="" coords="529,145,681,185"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="429,128,514,144,513,150,428,133"/>
+<area shape="rect" id="Node000009" href="$classCompositeOverlay.html#ab54108ab8c0b9fc5a73cbcd60f5b2366" title=" " alt="" coords="519,221,691,247"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="472,221,504,224,503,229,471,227"/>
+<area shape="rect" id="Node000010" href="$classOverlayInfoVisitor.html#ae17f14756d425b542175972288c8c38d" title=" " alt="" coords="739,214,864,255"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="691,232,724,232,724,237,691,237"/>
+<area shape="poly" id="edge11_Node000011_Node000009" title=" " alt="" coords="442,252,503,244,504,249,442,257"/>
+</map>

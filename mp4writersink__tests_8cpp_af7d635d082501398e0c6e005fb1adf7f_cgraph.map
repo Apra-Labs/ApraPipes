@@ -1,0 +1,20 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,105,199,131"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="272,5,380,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,102,179,72,246,40,261,34,262,39,248,45,181,77,127,107"/>
+<area shape="rect" id="Node000003" href="$classTest__Utils.html#aa51f36b7da870b862c21910a03cfc8bc" title=" " alt="" coords="247,55,405,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="161,102,251,82,252,87,163,107"/>
+<area shape="rect" id="Node000004" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="626,155,751,180"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="199,124,405,141,611,158,611,164,405,146,199,129"/>
+<area shape="rect" id="Node000007" href="$jpegdecoderl4tm__tests_8cpp.html#aa4a1ef8208e6e3c9cf3806e4303d4818" title=" " alt="" coords="291,156,361,182"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="163,129,276,155,275,160,161,134"/>
+<area shape="rect" id="Node000008" href="$classLogger.html#a8cc48636631d0f3a603959afc9c70546" title=" " alt="" coords="256,205,396,231"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="127,129,181,160,248,192,262,197,261,202,246,197,179,164,124,134"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="799,155,906,180"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="751,165,783,165,783,170,751,170"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="954,155,1112,180"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="907,165,938,165,938,170,907,170"/>
+<area shape="rect" id="Node000009" href="$classLogger.html#aa6f6d11f892277aacaf0fe1db82e6829" title=" " alt="" coords="453,180,578,206"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="395,206,437,201,438,206,396,212"/>
+<area shape="poly" id="edge9_Node000009_Node000004" title=" " alt="" coords="579,181,611,176,612,181,579,186"/>
+</map>

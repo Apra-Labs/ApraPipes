@@ -1,0 +1,9 @@
+<map id="BMPConverter::validateOutputPins" name="BMPConverter::validateOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,228,80"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a80a136bb7514d2978497525e5d31bd42" title=" " alt="" coords="279,5,485,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,51,294,32,295,37,190,57"/>
+<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="333,55,431,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,65,317,65,317,70,228,70"/>
+<area shape="rect" id="Node000004" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="276,104,488,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="190,78,295,98,294,103,189,84"/>
+</map>

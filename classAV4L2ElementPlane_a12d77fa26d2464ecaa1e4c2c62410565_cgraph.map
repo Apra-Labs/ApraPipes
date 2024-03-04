@@ -1,0 +1,7 @@
+<map id="AV4L2ElementPlane::getFreeBuffer" name="AV4L2ElementPlane::getFreeBuffer">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,153,46"/>
+<area shape="rect" id="Node000002" href="$classAV4L2ElementPlane.html#a910f6dc1414ad6b9358d58839814cad1" title=" " alt="" coords="201,5,348,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,23,185,23,185,28,153,28"/>
+<area shape="rect" id="Node000003" href="$classAV4L2Buffer.html#aa530f61968c05ce8f3f48977304735a4" title=" " alt="" coords="396,13,583,39"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="348,23,380,23,380,28,348,28"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="Mp4ReaderDetailH264" name="Mp4ReaderDetailH264">
+<area shape="rect" id="Node000001" title=" " alt="" coords="19,1966,187,2251"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html" title=" " alt="" coords="5,1191,201,1917"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,1932,106,1966,101,1966,101,1932"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderSourceProps.html" title=" " alt="" coords="16,420,191,765"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="99,765,98,828,98,1175,92,1175,93,828,94,765"/>
+<area shape="rect" id="Node000005" href="$structMp4ReaderDetailAbs_1_1DemuxAndParserState.html" title=" " alt="" coords="163,828,327,1128"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="169,764,187,812,182,814,164,766"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="26,5,181,371"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="106,386,106,420,101,420,101,386"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="211,1129,199,1176,194,1175,205,1127"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="Module::process" name="Module::process">
+<area shape="rect" id="Node000001" title=" " alt="" coords="820,55,935,80"/>
+<area shape="rect" id="Node000002" href="$module__tests_8cpp.html#aecd5ce4b68faa7770ee7b8d29fd8c7d2" title=" " alt="" coords="578,5,772,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="806,53,730,34,731,29,807,48"/>
+<area shape="rect" id="Node000003" href="$module__tests_8cpp.html#a02ff13d903f7a71072a7595666efaa9f" title=" " alt="" coords="578,55,772,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="804,70,772,70,772,65,804,65"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a43f2c2866b6c260acc5b0772cdfbf4fe" title=" " alt="" coords="595,104,755,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="807,87,731,106,730,101,806,82"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="436,104,530,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="580,120,531,120,531,114,580,114"/>
+<area shape="rect" id="Node000006" href="$classH264EncoderV4L2.html#a7539f857a9084786fc24cbd2d9debf0f" title=" " alt="" coords="178,25,388,51"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="449,98,387,65,355,54,356,49,389,60,452,93"/>
+<area shape="rect" id="Node000007" href="$classModule.html#a7938c5a5b0891563bd57144f78330dd6" title=" " alt="" coords="239,75,327,100"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="420,110,326,96,327,91,421,105"/>
+<area shape="rect" id="Node000009" href="$classVirtualCameraSink_1_1Detail.html#ac695871d7abc864a74f6d8dc6b48ba41" title=" " alt="" coords="215,125,351,165"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="421,128,351,138,350,133,420,123"/>
+<area shape="rect" id="Node000010" href="$classPullAnalogy.html#abe06d1adc7831c69af7ca4d9ab168f52" title=" " alt="" coords="223,189,343,215"/>
+<area shape="poly" id="edge9_Node000005_Node000010" title=" " alt="" coords="454,141,423,161,389,179,344,194,343,189,387,174,421,157,451,137"/>
+<area shape="rect" id="Node000008" href="$classModule.html#ae142fa64aba77f793b2697d42d4d23cc" title=" " alt="" coords="5,75,130,100"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="224,90,130,90,130,85,224,85"/>
+</map>

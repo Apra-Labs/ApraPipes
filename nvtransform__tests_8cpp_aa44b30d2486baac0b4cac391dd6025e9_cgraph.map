@@ -1,0 +1,11 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,199,80"/>
+<area shape="rect" id="Node000002" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="260,29,418,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,54,244,50,245,55,200,60"/>
+<area shape="rect" id="Node000005" href="$classDMAFDWrapper.html#a1c67a9080e04d2f99a458e6b552fa325" title=" " alt="" coords="247,79,431,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="200,75,232,78,231,83,199,80"/>
+<area shape="rect" id="Node000003" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="479,5,694,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="418,32,463,27,464,33,418,37"/>
+<area shape="rect" id="Node000004" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="513,55,661,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="418,48,498,56,497,61,418,53"/>
+</map>

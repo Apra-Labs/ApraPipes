@@ -1,0 +1,11 @@
+<map id="SetupPlaybackTests::SetupPlaybackTests" name="SetupPlaybackTests::SetupPlaybackTests">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,153,64"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="209,5,317,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,31,194,25,195,30,153,36"/>
+<area shape="rect" id="Node000003" href="$classLogger.html#a200fe7c5eb11f2f8f5cebd5f05582798" title=" " alt="" coords="201,55,325,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,50,186,55,185,60,153,56"/>
+<area shape="rect" id="Node000004" href="$classLogger.html#a40915ec193a788adba503695bbfb00b8" title=" " alt="" coords="373,55,480,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="326,65,357,65,357,70,326,70"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#aba564d4a69dbfa7ca19c771c1cd21e25" title=" " alt="" coords="528,55,687,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="481,65,513,65,513,70,481,70"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="MultimediaQueueXform::validateInputOutputPins" name="MultimediaQueueXform::validateInputOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,172,64"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a57fac4fd8d1b0f4f76a09fa538588e69" title=" " alt="" coords="220,31,428,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,41,204,41,204,46,172,46"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a718073e1f98015ee85e8d93907c610c4" title=" " alt="" coords="481,5,650,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="428,30,465,26,466,31,429,35"/>
+<area shape="rect" id="Node000005" href="$classModule.html#ac059f5b4e08f748a5bb27936ba038fcf" title=" " alt="" coords="476,55,655,80"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="429,51,461,54,460,60,428,57"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="708,5,911,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="651,16,693,16,693,21,651,21"/>
+<area shape="rect" id="Node000006" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="703,55,916,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="656,65,688,65,688,70,656,70"/>
+</map>

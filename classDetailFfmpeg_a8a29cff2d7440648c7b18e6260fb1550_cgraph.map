@@ -1,0 +1,18 @@
+<map id="DetailFfmpeg::getMotionVectors" name="DetailFfmpeg::getMotionVectors">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,212,106"/>
+<area shape="rect" id="Node000002" href="$classDetailFfmpeg.html#a70e9caff3bbb7dc6b05c08d827695505" title=" " alt="" coords="260,73,450,113"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="212,90,244,90,244,96,212,96"/>
+<area shape="rect" id="Node000003" href="$classCompositeOverlay.html#aff8daac5fe50c28aff1fb867a0ecffdd" title=" " alt="" coords="533,5,687,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="409,69,497,40,525,32,526,38,499,45,410,74"/>
+<area shape="rect" id="Node000004" href="$jpegdecoderl4tm__tests_8cpp.html#aa4a1ef8208e6e3c9cf3806e4303d4818" title=" " alt="" coords="575,55,645,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="450,81,559,70,560,75,451,86"/>
+<area shape="rect" id="Node000005" href="$classDrawingOverlay.html#a678be617fba6034fc3e4f6e638ce39e4" title=" " alt="" coords="498,104,722,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="451,99,483,102,482,107,450,104"/>
+<area shape="rect" id="Node000008" href="$classDrawingOverlay.html#a0e753df48a0846e5df4a40e83bac9dfe" title=" " alt="" coords="528,153,693,179"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="412,111,499,140,526,147,525,152,497,145,410,116"/>
+<area shape="rect" id="Node000006" href="$classCompositeOverlay.html#ab54108ab8c0b9fc5a73cbcd60f5b2366" title=" " alt="" coords="770,129,943,155"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="723,126,755,129,755,134,723,131"/>
+<area shape="rect" id="Node000007" href="$classOverlayInfoVisitor.html#ae17f14756d425b542175972288c8c38d" title=" " alt="" coords="991,122,1115,163"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="943,140,975,140,975,145,943,145"/>
+<area shape="poly" id="edge8_Node000008_Node000006" title=" " alt="" coords="693,155,755,149,755,155,694,161"/>
+</map>

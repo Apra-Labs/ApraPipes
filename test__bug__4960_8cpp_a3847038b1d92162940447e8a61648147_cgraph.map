@@ -1,0 +1,13 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,199,56"/>
+<area shape="rect" id="Node000002" href="$classApraPool.html#a3f4470ae228addc75f7e63d96d1d56a9" title=" " alt="" coords="255,5,407,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,30,239,26,239,31,200,35"/>
+<area shape="rect" id="Node000003" href="$classApraPool.html#ae4fbbae92593775e770aa075ff0404fb" title=" " alt="" coords="247,55,415,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,51,232,54,231,60,199,56"/>
+<area shape="rect" id="Node000004" href="$classApraNode.html#ad9faf117ecba96bd1531514f68d38160" title=" " alt="" coords="470,5,586,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="385,51,458,33,460,38,386,57"/>
+<area shape="rect" id="Node000005" href="$classApraNode.html#a9212952b48016f95675c3ab609762645" title=" " alt="" coords="463,55,593,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="415,65,448,65,448,70,415,70"/>
+<area shape="rect" id="Node000006" href="$classApraNode.html#af8fd4e0d077321ce8a94f4b053b9354b" title=" " alt="" coords="463,104,593,130"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="386,78,460,97,458,102,385,84"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="getNumberOfPinsByType" name="getNumberOfPinsByType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="514,112,682,137"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a4f4ad5a4cabf96a96481fbd1044027c3" title=" " alt="" coords="278,71,461,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="499,113,461,107,462,102,499,107"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a0e793dd407f3c36bdbce969b719b73f3" title=" " alt="" coords="273,136,466,177"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="499,141,467,145,466,140,499,136"/>
+<area shape="rect" id="Node000003" href="$classTestModule.html#aa438501819dec5689c516b0a5ea30490" title=" " alt="" coords="10,5,220,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="272,69,196,49,198,44,273,64"/>
+<area shape="rect" id="Node000004" href="$classMp4WriterSink.html#a504afc6a55fa3465848c38de60cb53c6" title=" " alt="" coords="22,71,208,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="262,94,209,94,209,88,262,88"/>
+<area shape="rect" id="Node000006" href="$classTestModule.html#a3510743379e01378545f3788eae29083" title=" " alt="" coords="5,136,225,177"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="257,159,225,159,225,154,257,154"/>
+</map>

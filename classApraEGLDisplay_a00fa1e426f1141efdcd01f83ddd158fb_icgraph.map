@@ -1,0 +1,30 @@
+<map id="ApraEGLDisplay::getEGLDisplay" name="ApraEGLDisplay::getEGLDisplay">
+<area shape="rect" id="Node000001" title=" " alt="" coords="813,145,1022,171"/>
+<area shape="rect" id="Node000002" href="$apraegldisplay__tests_8cpp.html#ab52998de6e0ef9ec030a542b4b8f806c" title=" " alt="" coords="556,71,749,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="865,142,765,110,721,99,723,94,766,105,866,137"/>
+<area shape="rect" id="Node000003" href="$classDMAAllocator.html#a947f2a8d570ff381271878be58710153" title=" " alt="" coords="559,120,746,146"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="798,149,747,144,747,139,798,144"/>
+<area shape="rect" id="Node000004" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="563,169,742,195"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="798,172,743,177,742,171,798,166"/>
+<area shape="rect" id="Node000014" href="$classV4L2CURGBToYUV420Converter.html#a1ed106a0c9b357e1a4a59fefa6c6c2fa" title=" " alt="" coords="540,219,765,260"/>
+<area shape="poly" id="edge14_Node000001_Node000014" title=" " alt="" coords="863,179,766,210,729,221,728,216,765,205,861,174"/>
+<area shape="rect" id="Node000005" href="$frame__factory__test__dma_8cpp.html#abc2473dbd248049fce2cbf7e80d5d796" title=" " alt="" coords="286,5,479,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="547,167,538,160,525,146,518,131,513,101,509,71,502,57,490,44,474,34,477,29,494,40,507,54,514,70,519,100,523,129,530,143,542,156,551,162"/>
+<area shape="rect" id="Node000006" href="$frame__factory__test__dma_8cpp.html#a61e11d949a0f7c28f95c8f705056ee36" title=" " alt="" coords="286,55,479,80"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="547,166,538,160,522,144,514,127,506,110,490,95,467,83,469,78,494,91,510,107,518,124,526,141,542,156,550,161"/>
+<area shape="rect" id="Node000007" href="$classDMAFrameUtils.html#a2f80aeecd42050c3a1e19f28eff8a8a0" title=" " alt="" coords="275,105,490,145"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="573,168,481,148,482,143,574,163"/>
+<area shape="rect" id="Node000009" href="$classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66" title=" " alt="" coords="26,162,204,203"/>
+<area shape="poly" id="edge13_Node000004_Node000009" title=" " alt="" coords="547,185,205,185,205,180,547,180"/>
+<area shape="rect" id="Node000010" href="$classNvArgusCamera.html#a759b0f065b71d62045b85c709e2f16b0" title=" " alt="" coords="273,220,492,246"/>
+<area shape="poly" id="edge9_Node000004_Node000010" title=" " alt="" coords="566,201,455,222,454,217,565,196"/>
+<area shape="rect" id="Node000011" href="$classNvV4L2Camera.html#ad1d29dbfbca69a70af362b1321b5af32" title=" " alt="" coords="276,269,489,295"/>
+<area shape="poly" id="edge10_Node000004_Node000011" title=" " alt="" coords="554,203,541,210,527,222,518,234,509,248,493,260,469,271,467,266,491,256,505,244,514,231,523,218,539,205,552,199"/>
+<area shape="rect" id="Node000012" href="$classNvTransform.html#a7827d1d425a1279d0b2be2b3d0d83be4" title=" " alt="" coords="295,319,470,344"/>
+<area shape="poly" id="edge11_Node000004_Node000012" title=" " alt="" coords="551,203,542,210,531,221,524,233,519,258,513,284,506,297,494,310,472,322,469,318,490,305,501,294,508,282,513,257,519,231,526,218,538,205,548,199"/>
+<area shape="rect" id="Node000008" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,112,225,138"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="260,128,225,128,225,122,260,122"/>
+<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="270,152,205,166,204,160,269,146"/>
+<area shape="rect" id="Node000013" href="$classNvTransform.html#a976d8cb55f069ed75e8469977c990286" title=" " alt="" coords="26,319,204,344"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="279,334,204,334,204,329,279,329"/>
+</map>

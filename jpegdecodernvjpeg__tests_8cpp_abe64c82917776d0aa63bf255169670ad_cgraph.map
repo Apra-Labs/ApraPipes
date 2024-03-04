@@ -1,0 +1,16 @@
+<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,59,199,84"/>
+<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="507,5,614,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,58,491,23,492,29,199,63"/>
+<area shape="rect" id="Node000003" href="$classTest__Utils.html#a2d971a9477a601f4841b74dadef09fb3" title=" " alt="" coords="247,84,428,110"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,79,232,83,231,88,199,85"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="369,81,475,40,494,33,496,38,477,45,371,86"/>
+<area shape="rect" id="Node000004" href="$test__utils_8cpp.html#a3bce269680d16c99cbb38eef4ffeefe1" title=" " alt="" coords="510,55,610,80"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="428,82,495,73,495,79,429,88"/>
+<area shape="rect" id="Node000005" href="$classTest__Utils.html#a1fe56ac5c0336fc32c5ad4d3b69cb2e6" title=" " alt="" coords="476,105,644,145"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="429,106,461,110,460,115,428,111"/>
+<area shape="rect" id="Node000006" href="$classTest__Utils.html#a788c74e1706e9e249f9c095770dde995" title=" " alt="" coords="494,169,627,195"/>
+<area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="368,108,477,154,498,162,496,167,475,159,366,113"/>
+<area shape="rect" id="Node000007" href="$test__utils_8cpp.html#abeb50dde00c69ccc930cd0eda8357a02" title=" " alt="" coords="525,219,595,244"/>
+<area shape="poly" id="edge7_Node000003_Node000007" title=" " alt="" coords="353,108,405,155,440,182,477,205,511,218,509,223,475,210,437,186,401,159,350,112"/>
+</map>
