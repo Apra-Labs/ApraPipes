@@ -2,9 +2,9 @@ name: Doxygen Action
 
 on:
   push:
-    branches: [ dOxy ]
+    branches: [ main ]
   pull_request:
-    branches: [ dOxy ]
+    branches: [ main ]
  
 jobs:
   build:
@@ -18,11 +18,4 @@ jobs:
       with:
         doxyfile-path: "./Doxyfile" 
         working-directory: "." 
-    
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./documentation/html
-        publish_branch: dOxy
-        force_orphan: true
+
