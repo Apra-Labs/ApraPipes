@@ -18,9 +18,11 @@ jobs:
       with:
         doxyfile-path: "./Doxyfile" 
         working-directory: "." 
-        
+    
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./documentation
+        publish_dir: ./documentation/html
+        publish_branch: dOxy
+        force_orphan: true
