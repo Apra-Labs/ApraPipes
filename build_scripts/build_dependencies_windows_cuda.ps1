@@ -5,7 +5,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 # Enable feature and install dependencies
 choco feature enable -n allowEmptyChecksums
-choco install 7zip git python3 cmake pkgconfiglite doxygen.install -y
+choco install 7zip git python3 cmake pkgconfiglite doxygen.install graphviz -y
 
 # Specify the new path to be added to the PATH environment variable
 $doxygenPath = "C:\Program Files\doxygen\bin"
