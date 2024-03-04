@@ -18,15 +18,9 @@ jobs:
       with:
         doxyfile-path: "./Doxyfile" 
         working-directory: "." 
-    
-    - name: Upload documentation artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: html-documentation
-        path: ./documentation/html
-    
+        
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./documentation/html
+        publish_dir: ./documentation
