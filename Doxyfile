@@ -35,8 +35,11 @@ HTML_FILE_EXTENSION    = .html
 HTML_COLORSTYLE_HUE    = 220
 HTML_TIMESTAMP         = YES
 
+HTML_FOOTER = footer.html
+
+
 # Configuration options for LaTeX output
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # Configuration options for Man pages (UNIX specific)
 GENERATE_MAN           = NO
