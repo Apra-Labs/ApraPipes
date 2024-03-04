@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CUDA Kernel Programming Guide &mdash; Apra Pipes v0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <title>CUDA Kernel Programming Guide &mdash; Apra Pipes v0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/rtd.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -25,17 +28,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Apra Pipes
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Apra Pipes
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Framework.html">Framework</a></li>
@@ -65,8 +72,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>CUDA Kernel Programming Guide</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">CUDA Kernel Programming Guide</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/CUDAKernelProgrammingGuide.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -76,49 +83,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="cuda-kernel-programming-guide">
-<h1>CUDA Kernel Programming Guide<a class="headerlink" href="#cuda-kernel-programming-guide" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="performance-guide">
-<h2>Performance Guide<a class="headerlink" href="#performance-guide" title="Permalink to this headline">¶</a></h2>
+  <section id="cuda-kernel-programming-guide">
+<h1>CUDA Kernel Programming Guide<a class="headerlink" href="#cuda-kernel-programming-guide" title="Permalink to this heading"></a></h1>
+<section id="performance-guide">
+<h2>Performance Guide<a class="headerlink" href="#performance-guide" title="Permalink to this heading"></a></h2>
 <p>Very important and useful. Follow the <a class="reference external" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html">CUDA Documentation</a> instead of other sources.</p>
-<div class="section" id="coalesced-access-to-global-memory">
-<h3>Coalesced Access to Global Memory<a class="headerlink" href="#coalesced-access-to-global-memory" title="Permalink to this headline">¶</a></h3>
+<section id="coalesced-access-to-global-memory">
+<h3>Coalesced Access to Global Memory<a class="headerlink" href="#coalesced-access-to-global-memory" title="Permalink to this heading"></a></h3>
 <p><a class="reference external" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory">Coalesced Access to Global Memory</a></p>
 <ul>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line">Refer OverlayKernel.cu and EffectsKernel.cu</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line">uchar4 (4 bytes) - 32x32 threads per block - 4x32x32 - 4K bytes</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line">A big difference - like 2x in Performance</div>
 </div>
 </li>
 </ul>
-</div>
-<div class="section" id="math-library">
-<h3>Math Library<a class="headerlink" href="#math-library" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="math-library">
+<h3>Math Library<a class="headerlink" href="#math-library" title="Permalink to this heading"></a></h3>
 <p><a class="reference external" href="https://docs.nvidia.com/cuda/cuda-math-api/index.html">NVIDIA CUDA Math API</a></p>
 <ul>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line">multiplication use from here</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line">big difference</div>
 </div>
 </li>
 </ul>
-</div>
-<div class="section" id="device-functions">
-<h3>__device__ functions<a class="headerlink" href="#device-functions" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="device-functions">
+<h3>__device__ functions<a class="headerlink" href="#device-functions" title="Permalink to this heading"></a></h3>
 <p>For writing clean/reusable code, I was using __device__ function - but the Performance dropped by half. So, I started using macros. I didn’t investigate more on why?</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
