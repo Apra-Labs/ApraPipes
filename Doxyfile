@@ -25,9 +25,14 @@ USE_MDFILE_AS_MAINPAGE = index.md
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
-HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE        = LIGHT
+HTML_COLORSTYLE_HUE    = 77
+HTML_COLORSTYLE_SAT    = 147
+HTML_COLORSTYLE_GAMMA  = 115
 HTML_TIMESTAMP         = YES
 HTML_FOOTER            = data/gh-pages-assets/pages/footer.html
+HTML_HEADER            = data/gh-pages-assets/pages/logo.html 
+
 # Configuration options for LaTeX output
 GENERATE_LATEX         = NO
 # Configuration options for Man pages (UNIX specific)
@@ -47,3 +52,7 @@ IMAGE_PATH             = data\gh-pages-assets\_images
 HTML_EXTRA_STYLESHEET  = data/gh-pages-assets/pages/custom.css
 SHOW_NAMESPACES        = NO
 SHOW_FILES             = NO
+GENERATE_TREEVIEW = YES
+DISABLE_INDEX = NO
+HTML_EXTRA_FILES = data/gh-pages-assets/_images/apralogo.png
+#$darkmode           = YES
