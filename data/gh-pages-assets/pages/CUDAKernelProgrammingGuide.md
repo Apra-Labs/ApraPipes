@@ -19,5 +19,5 @@ For writing clean/reusable code, I was using _ _device_ _ function - but the Per
 
 ---
 
-© Copyright 2020-2024, Apra Labs.
+© Copyright 2020-2024, Apra Labs Inc.
 

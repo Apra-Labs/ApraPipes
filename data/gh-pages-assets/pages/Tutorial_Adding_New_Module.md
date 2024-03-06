@@ -188,5 +188,5 @@ return true;
 
 ---
 
-© Copyright 2020-2024, Apra Labs.
+© Copyright 2020-2024, Apra Labs Inc.
 
