@@ -29,7 +29,6 @@ HTML_COLORSTYLE        = LIGHT
 HTML_COLORSTYLE_HUE    = 77
 HTML_COLORSTYLE_SAT    = 147
 HTML_COLORSTYLE_GAMMA  = 115
-HTML_TIMESTAMP         = YES
 HTML_FOOTER            = data/gh-pages-assets/pages/footer.html
 HTML_HEADER            = data/gh-pages-assets/pages/logo.html 
 
@@ -48,11 +47,11 @@ UML_LOOK               = YES
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 
-IMAGE_PATH             = data\gh-pages-assets\_images
+IMAGE_PATH             = data/gh-pages-assets/_images
 HTML_EXTRA_STYLESHEET  = data/gh-pages-assets/pages/custom.css
 SHOW_NAMESPACES        = NO
 SHOW_FILES             = NO
 GENERATE_TREEVIEW = YES
 DISABLE_INDEX = NO
 HTML_EXTRA_FILES = data/gh-pages-assets/_images/apralogo.png
-#$darkmode           = YES
+
