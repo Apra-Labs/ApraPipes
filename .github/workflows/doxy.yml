@@ -2,9 +2,9 @@ name: Doxygen Action
 
 on:
   push:
-    branches: [ aa/doxyfix ]
+    branches: [ main ]
   pull_request:
-    branches: [ aa/doxyfix ]
+    branches: [ main ]
 
 jobs:
   build:
