@@ -108,44 +108,44 @@ Define Module Properties</h1>
 <div class="fragment"><div class="line"><span class="keyword">class </span>ChangeDetectionProps: <span class="keyword">public</span> <a class="code hl_class" href="classModuleProps.html">ModuleProps</a></div>
 <div class="line">{</div>
 <div class="line"><span class="keyword">public</span>:</div>
-<div class="line">ChangeDetectionProps(): <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
-<div class="line">{</div>
-<div class="line">refWindowLength \= 1;</div>
-<div class="line">refDelayLength \= \-1;</div>
-<div class="line">insWindowLength \= 1;</div>
-<div class="line">threshold \= 1;</div>
-<div class="line">compareMethod \= 1;</div>
-<div class="line">}</div>
+<div class="line">   ChangeDetectionProps(): <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
+<div class="line">   {</div>
+<div class="line">      refWindowLength = 1;</div>
+<div class="line">      refDelayLength = -1;</div>
+<div class="line">      insWindowLength = 1;</div>
+<div class="line">      threshold = 1;</div>
+<div class="line">      compareMethod = 1;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line">ChangeDetectionProps(<span class="keywordtype">int</span> \_refWindowLength, <span class="keywordtype">int</span> \_refDelayLength, <span class="keywordtype">int</span> \_insWindowLength, <span class="keywordtype">double</span> \_threshold, <span class="keywordtype">int</span> \_compareMethod): <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
-<div class="line">{</div>
-<div class="line">refWindowLength \= \_refWindowLength;</div>
-<div class="line">refDelayLength \= \_refDelayLength;</div>
-<div class="line">insWindowLength \= \_insWindowLength;</div>
-<div class="line">threshold \= \_threshold;</div>
-<div class="line">compareMethod \= \_compareMethod;</div>
-<div class="line">}</div>
+<div class="line">   ChangeDetectionProps(<span class="keywordtype">int</span> _refWindowLength, <span class="keywordtype">int</span> _refDelayLength, <span class="keywordtype">int</span> _insWindowLength, <span class="keywordtype">double</span> _threshold, <span class="keywordtype">int</span> _compareMethod): <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
+<div class="line">   {</div>
+<div class="line">      refWindowLength = _refWindowLength;</div>
+<div class="line">      refDelayLength = _refDelayLength;</div>
+<div class="line">      insWindowLength = _insWindowLength;</div>
+<div class="line">      threshold = _threshold;</div>
+<div class="line">      compareMethod = _compareMethod;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// All the properties can be updated during run time using setProps</span></div>
-<div class="line"><span class="keywordtype">int</span> refWindowLength;</div>
-<div class="line"><span class="keywordtype">int</span> refDelayLength;</div>
-<div class="line"><span class="keywordtype">int</span> insWindowLength;</div>
-<div class="line"><span class="keywordtype">double</span> threshold;</div>
-<div class="line"><span class="keywordtype">int</span> compareMethod;</div>
+<div class="line">   <span class="comment">// All the properties can be updated during run time using setProps</span></div>
+<div class="line">   <span class="keywordtype">int</span> refWindowLength;</div>
+<div class="line">   <span class="keywordtype">int</span> refDelayLength;</div>
+<div class="line">   <span class="keywordtype">int</span> insWindowLength;</div>
+<div class="line">   <span class="keywordtype">double</span> threshold;</div>
+<div class="line">   <span class="keywordtype">int</span> compareMethod;</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">private</span>:</div>
-<div class="line"><span class="keyword">friend</span> <span class="keyword">class </span>boost::serialization::access;</div>
+<div class="line">   <span class="keyword">friend</span> <span class="keyword">class </span>boost::serialization::access;</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive\&gt;</div>
-<div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classModuleProps.html#ae09ad6769fea6b7cd0226422797829a0">serialize</a>(Archive &amp;ar, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> version)</div>
-<div class="line">{</div>
-<div class="line">ar &amp; boost::serialization::base_object&lt;ModuleProps&gt;(\*<span class="keyword">this</span>);</div>
-<div class="line">ar &amp; refWindowLength;</div>
-<div class="line">ar &amp; refDelayLength;</div>
-<div class="line">ar &amp; insWindowLength;</div>
-<div class="line">ar &amp; threshold;</div>
-<div class="line">ar &amp; compareMethod;</div>
-<div class="line">}</div>
+<div class="line">   <span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive&gt;</div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code hl_function" href="classModuleProps.html#ae09ad6769fea6b7cd0226422797829a0">serialize</a>(Archive &amp;ar, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> version)</div>
+<div class="line">   {</div>
+<div class="line">      ar &amp; boost::serialization::base_object&lt;ModuleProps&gt;(*<span class="keyword">this</span>);</div>
+<div class="line">      ar &amp; refWindowLength;</div>
+<div class="line">      ar &amp; refDelayLength;</div>
+<div class="line">      ar &amp; insWindowLength;</div>
+<div class="line">      ar &amp; threshold;</div>
+<div class="line">      ar &amp; compareMethod;</div>
+<div class="line">   }</div>
 <div class="line">};</div>
 <div class="ttc" id="aclassModuleProps_html"><div class="ttname"><a href="classModuleProps.html">ModuleProps</a></div><div class="ttdef"><b>Definition</b> Module.h:30</div></div>
 <div class="ttc" id="aclassModuleProps_html_ae09ad6769fea6b7cd0226422797829a0"><div class="ttname"><a href="classModuleProps.html#ae09ad6769fea6b7cd0226422797829a0">ModuleProps::serialize</a></div><div class="ttdeci">void serialize(Archive &amp;ar, const unsigned int)</div><div class="ttdef"><b>Definition</b> Module.h:124</div></div>
@@ -153,23 +153,23 @@ Define Module Properties</h1>
 Validating the input and output</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ChangeDetection::validateInputOutputPins()</div>
 <div class="line">{</div>
-<div class="line"><span class="comment">// one and only 1 array should exist</span></div>
-<div class="line"><span class="keyword">auto</span> count \= getNumberOfInputsByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>);</div>
-<div class="line"><span class="keywordflow">if</span> (count != 1)</div>
-<div class="line">{</div>
-<div class="line">LOG_ERROR &lt;&lt; <span class="stringliteral">&quot;Input pin of type ARRAY is expected.&quot;</span>;</div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line">}</div>
+<div class="line">   <span class="comment">// one and only 1 array should exist</span></div>
+<div class="line">   <span class="keyword">auto</span> count = getNumberOfInputsByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>);</div>
+<div class="line">   <span class="keywordflow">if</span> (count != 1)</div>
+<div class="line">   {</div>
+<div class="line">      LOG_ERROR &lt;&lt; <span class="stringliteral">&quot;Input pin of type ARRAY is expected.&quot;</span>;</div>
+<div class="line">      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// output CHANGE_DETECTION pin should exist</span></div>
-<div class="line">count \= getNumberOfOutputsByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>);</div>
-<div class="line"><span class="keywordflow">if</span> (count != 1)</div>
-<div class="line">{</div>
-<div class="line">LOG_ERROR &lt;&lt; <span class="stringliteral">&quot;Input pin of type CHANGE_DETECTION is expected.&quot;</span>;</div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line">}</div>
+<div class="line">   <span class="comment">// output CHANGE_DETECTION pin should exist</span></div>
+<div class="line">   count = getNumberOfOutputsByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>);</div>
+<div class="line">   <span class="keywordflow">if</span> (count != 1)</div>
+<div class="line">   {</div>
+<div class="line">      LOG_ERROR &lt;&lt; <span class="stringliteral">&quot;Input pin of type CHANGE_DETECTION is expected.&quot;</span>;</div>
+<div class="line">      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">   <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassFrameMetadata_html_af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce"><div class="ttname"><a href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a></div><div class="ttdeci">@ ARRAY</div><div class="ttdef"><b>Definition</b> FrameMetadata.h:35</div></div>
 <div class="ttc" id="aclassFrameMetadata_html_af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3"><div class="ttname"><a href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a></div><div class="ttdeci">@ CHANGE_DETECTION</div><div class="ttdef"><b>Definition</b> FrameMetadata.h:36</div></div>
@@ -177,29 +177,29 @@ Validating the input and output</h1>
 Initialization</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ChangeDetection::init()</div>
 <div class="line">{</div>
-<div class="line"><span class="keywordflow">if</span> (!<a class="code hl_function" href="classModule.html#a308be9775f2261fc787b8bcb3cce1004">Module::init</a>())</div>
-<div class="line">{</div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line">}</div>
+<div class="line">   <span class="keywordflow">if</span> (!<a class="code hl_function" href="classModule.html#a308be9775f2261fc787b8bcb3cce1004">Module::init</a>())</div>
+<div class="line">   {</div>
+<div class="line">      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// any initialization here</span></div>
+<div class="line">   <span class="comment">// any initialization here</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">   <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassModule_html_a308be9775f2261fc787b8bcb3cce1004"><div class="ttname"><a href="classModule.html#a308be9775f2261fc787b8bcb3cce1004">Module::init</a></div><div class="ttdeci">virtual bool init()</div><div class="ttdef"><b>Definition</b> Module.cpp:505</div></div>
 </div><!-- fragment --> <h1><a class="anchor" id="autotoc_md34"></a>
 Handling the first frame and using the input metadata</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ChangeDetection::processSOS(frame_sp&amp; frame)</div>
 <div class="line">{</div>
-<div class="line"><span class="keyword">auto</span> metadata \= frame\-&gt;getMetadata();</div>
-<div class="line"><span class="keywordflow">if</span> (metadata\-&gt;getFrameType() != <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>)</div>
-<div class="line">{</div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line">}</div>
+<div class="line">   <span class="keyword">auto</span> metadata = frame-&gt;getMetadata();</div>
+<div class="line">   <span class="keywordflow">if</span> (metadata-&gt;getFrameType() != <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>)</div>
+<div class="line">   {</div>
+<div class="line">      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// metadata has width, height, type depending on the frame type</span></div>
+<div class="line">   <span class="comment">// metadata has width, height, type depending on the frame type</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">   <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 </div><!-- fragment --> <h1><a class="anchor" id="autotoc_md35"></a>
 Output</h1>
@@ -207,79 +207,78 @@ Output</h1>
 <div class="line">{</div>
 <div class="line"><span class="keyword">public</span>:</div>
 <div class="line"> </div>
-<div class="line">ChangeDetectionResult(<span class="keywordtype">bool</span> changeDetected, <span class="keywordtype">double</span> distance, uint64_t index)</div>
-<div class="line">{</div>
-<div class="line">mChangeDetected \= changeDetected;</div>
-<div class="line">mDistance \= distance;</div>
-<div class="line">fIndex \= index;</div>
-<div class="line">}</div>
+<div class="line">   ChangeDetectionResult(<span class="keywordtype">bool</span> changeDetected, <span class="keywordtype">double</span> distance, uint64_t index)</div>
+<div class="line">   {</div>
+<div class="line">      mChangeDetected = changeDetected;</div>
+<div class="line">      mDistance = distance;</div>
+<div class="line">      fIndex = index;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line">ChangeDetectionResult() {}</div>
+<div class="line">   ChangeDetectionResult() {}</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> boost::shared_ptr&lt;ChangeDetectionResult&gt; deSerialize(frame_container&amp; frames)</div>
-<div class="line">{</div>
-<div class="line"><span class="keyword">auto</span> frameType \= <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>;</div>
+<div class="line">   <span class="keyword">static</span> boost::shared_ptr&lt;ChangeDetectionResult&gt; deSerialize(frame_container&amp; frames)</div>
+<div class="line">   {</div>
+<div class="line">      <span class="keyword">auto</span> frameType = <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>;</div>
 <div class="line"> </div>
-<div class="line">      <span class="keyword">auto</span> frame \= frame\_sp();</div>
-<div class="line">      <span class="keywordflow">for</span> (<span class="keyword">auto</span> it \= frames.cbegin(); it != frames.cend(); it++)</div>
+<div class="line">      <span class="keyword">auto</span> frame = frame_sp();</div>
+<div class="line">      <span class="keywordflow">for</span> (<span class="keyword">auto</span> it = frames.cbegin(); it != frames.cend(); it++)</div>
 <div class="line">      {</div>
-<div class="line">         <span class="keyword">auto</span> tempFrame \= it\-&gt;second;</div>
-<div class="line">         <span class="keywordflow">if</span> (tempFrame\-&gt;getMetadata()\-&gt;getFrameType() \== frameType)</div>
+<div class="line">         <span class="keyword">auto</span> tempFrame = it-&gt;second;</div>
+<div class="line">         <span class="keywordflow">if</span> (tempFrame-&gt;getMetadata()-&gt;getFrameType() == frameType)</div>
 <div class="line">         {</div>
-<div class="line">            frame \= tempFrame;</div>
+<div class="line">            frame = tempFrame;</div>
 <div class="line">         }</div>
 <div class="line">      }</div>
 <div class="line"> </div>
 <div class="line">      <span class="keywordflow">if</span> (!frame.get())</div>
 <div class="line">      {</div>
-<div class="line">         <span class="keywordflow">return</span> boost::shared\_ptr&lt;ChangeDetectionResult&gt;();</div>
+<div class="line">         <span class="keywordflow">return</span> boost::shared_ptr&lt;ChangeDetectionResult&gt;();</div>
 <div class="line">      }</div>
 <div class="line"> </div>
-<div class="line">      <span class="keyword">auto</span> result \= boost::shared\_ptr&lt;ChangeDetectionResult&gt;(<span class="keyword">new</span> ChangeDetectionResult(<span class="keyword">false</span>, 0, 0));</div>
-<div class="line">      <span class="keyword">auto</span>&amp; obj \= \*result.get();</div>
-<div class="line">      Utils::deSerialize&lt;ChangeDetectionResult&gt;(obj, frame\-&gt;data(), frame\-&gt;size());</div>
+<div class="line">      <span class="keyword">auto</span> result = boost::shared_ptr&lt;ChangeDetectionResult&gt;(<span class="keyword">new</span> ChangeDetectionResult(<span class="keyword">false</span>, 0, 0));</div>
+<div class="line">      <span class="keyword">auto</span>&amp; obj = *result.get();</div>
+<div class="line">      Utils::deSerialize&lt;ChangeDetectionResult&gt;(obj, frame-&gt;data(), frame-&gt;size());</div>
 <div class="line"> </div>
 <div class="line">      <span class="keywordflow">return</span> result;</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line">}</div>
+<div class="line">   <span class="keyword">static</span> <span class="keywordtype">void</span> serialize(<span class="keywordtype">bool</span> changeDetected, <span class="keywordtype">double</span> distance, uint64_t index, <span class="keywordtype">void</span>* buffer, <span class="keywordtype">size_t</span> size)</div>
+<div class="line">   {</div>
+<div class="line">      <span class="keyword">auto</span> result = ChangeDetectionResult(changeDetected, distance, index);</div>
+<div class="line">      Utils::serialize&lt;ChangeDetectionResult&gt;(result, buffer, size);</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> serialize(<span class="keywordtype">bool</span> changeDetected, <span class="keywordtype">double</span> distance, uint64_t index, <span class="keywordtype">void</span>\* buffer, <span class="keywordtype">size_t</span> size)</div>
-<div class="line">{</div>
-<div class="line"><span class="keyword">auto</span> result \= ChangeDetectionResult(changeDetected, distance, index);</div>
-<div class="line">Utils::serialize&lt;ChangeDetectionResult&gt;(result, buffer, size);</div>
-<div class="line">}</div>
+<div class="line">   <span class="keyword">static</span> <span class="keywordtype">size_t</span> getSerializeSize()</div>
+<div class="line">   {</div>
+<div class="line">      <span class="keywordflow">return</span> 1024 + <span class="keyword">sizeof</span>(mChangeDetected) + <span class="keyword">sizeof</span>(mDistance) + <span class="keyword">sizeof</span>(fIndex);</div>
+<div class="line">   }</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <span class="keywordtype">size_t</span> getSerializeSize()</div>
-<div class="line">{</div>
-<div class="line"><span class="keywordflow">return</span> 1024 + <span class="keyword">sizeof</span>(mChangeDetected) + <span class="keyword">sizeof</span>(mDistance) + <span class="keyword">sizeof</span>(fIndex);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><span class="keywordtype">bool</span> mChangeDetected;</div>
-<div class="line"><span class="keywordtype">double</span> mDistance;</div>
-<div class="line">uint64_t fIndex;</div>
+<div class="line">   <span class="keywordtype">bool</span> mChangeDetected;</div>
+<div class="line">   <span class="keywordtype">double</span> mDistance;</div>
+<div class="line">   uint64_t fIndex;</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">private</span>:</div>
-<div class="line"><span class="keyword">friend</span> <span class="keyword">class </span>boost::serialization::access;</div>
-<div class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive\&gt;</div>
-<div class="line"><span class="keywordtype">void</span> serialize(Archive &amp; ar, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> /\* file_version \*/) {</div>
-<div class="line">ar &amp; mChangeDetected &amp; mDistance &amp; fIndex;</div>
-<div class="line">}</div>
+<div class="line">   <span class="keyword">friend</span> <span class="keyword">class </span>boost::serialization::access;</div>
+<div class="line">   <span class="keyword">template</span>&lt;<span class="keyword">class</span> Archive&gt;</div>
+<div class="line">   <span class="keywordtype">void</span> serialize(Archive &amp; ar, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <span class="comment">/* file_version */</span>) {</div>
+<div class="line">      ar &amp; mChangeDetected &amp; mDistance &amp; fIndex;</div>
+<div class="line">   }</div>
 <div class="line">};</div>
 </div><!-- fragment --> <h1><a class="anchor" id="autotoc_md36"></a>
 Consuming the input and send output</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ChangeDetection::process(frame_container&amp; frames)</div>
 <div class="line">{</div>
-<div class="line"><span class="keyword">auto</span> inFrame \= getFrameByType(frames, <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>);</div>
-<div class="line"><span class="keyword">auto</span> metadata \= mDetail\-&gt;getOutputMetadata();</div>
-<div class="line"><span class="keyword">auto</span> outFrame \= makeFrame(ChangeDetectionResult::getSerializeSize(), metadata);</div>
+<div class="line">   <span class="keyword">auto</span> inFrame = getFrameByType(frames, <a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95aba468af61b385620fd8d40643fecdf73ce">FrameMetadata::ARRAY</a>);</div>
+<div class="line">   <span class="keyword">auto</span> metadata = mDetail-&gt;getOutputMetadata();</div>
+<div class="line">   <span class="keyword">auto</span> outFrame = makeFrame(ChangeDetectionResult::getSerializeSize(), metadata);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// do the computation here</span></div>
+<div class="line">   <span class="comment">// do the computation here</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">auto</span> pinId \= getOutputPinIdByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>);</div>
-<div class="line">frames.insert(make_pair(pinId, outFrame));</div>
-<div class="line">send(frames);</div>
+<div class="line">   <span class="keyword">auto</span> pinId = getOutputPinIdByType(<a class="code hl_enumvalue" href="classFrameMetadata.html#af324c09818d5965791464a2b687c95abaa8252d5ba780eb6ed83ece482dbc7ad3">FrameMetadata::CHANGE_DETECTION</a>);</div>
+<div class="line">   frames.insert(make_pair(pinId, outFrame));</div>
+<div class="line">   send(frames);</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">   <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
 </div><!-- fragment --><hr  />
 <p>© Copyright 2020-2024, Apra Labs Inc. </p>
@@ -288,7 +287,7 @@ Consuming the input and send output</h1>
 </div><!-- doc-content -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: a33cfd5</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 07f3f70</a></li>
     </ul>
   </div>
   </body>
