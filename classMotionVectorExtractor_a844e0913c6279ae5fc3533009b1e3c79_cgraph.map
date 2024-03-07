@@ -1,0 +1,31 @@
+<map id="MotionVectorExtractor::processSOS" name="MotionVectorExtractor::processSOS">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,146,155,187"/>
+<area shape="rect" id="Node000002" href="$classMotionVectorExtractor.html#a5e395a07b3fa6961fc6dbf23c50a9bdb" title=" " alt="" coords="203,146,352,187"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,164,187,164,187,169,155,169"/>
+<area shape="rect" id="Node000003" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="424,104,560,130"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="351,146,418,131,419,136,353,152"/>
+<area shape="rect" id="Node000008" href="$classH264ParserUtils.html#ac155cc6c91b90c8a9ae2c3e50728d892" title=" " alt="" coords="400,177,583,203"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="352,172,385,176,384,181,352,177"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="631,5,831,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="512,101,565,71,630,40,649,33,651,38,632,45,567,75,515,106"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="637,55,825,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="557,101,650,81,651,87,558,106"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="636,104,826,130"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="560,114,621,114,621,120,560,120"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="634,153,828,179"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="558,128,651,147,650,152,557,133"/>
+<area shape="rect" id="Node000009" href="$classSpsPpsParsser.html#a29f166b0934565ab91d79ceceb785863" title=" " alt="" coords="643,203,819,228"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="584,197,628,202,628,207,584,203"/>
+<area shape="rect" id="Node000010" href="$classSpsPpsParsser.html#a83b4a79a99426e7e972cf5772328f5be" title=" " alt="" coords="1574,179,1738,204"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="799,199,878,188,1060,166,1202,153,1344,151,1526,164,1584,172,1583,178,1525,169,1344,156,1202,158,1060,172,879,193,800,205"/>
+<area shape="rect" id="Node000011" href="$classSpsPpsParsser.html#a1122164d58acec30aca0d154fb9ce061" title=" " alt="" coords="1354,179,1526,204"/>
+<area shape="poly" id="edge10_Node000009_Node000011" title=" " alt="" coords="819,210,1339,192,1339,198,819,215"/>
+<area shape="rect" id="Node000012" href="$classSpsPpsParsser.html#abb41e3cc993f713e1dbbcc501db22af9" title=" " alt="" coords="1092,227,1306,268"/>
+<area shape="poly" id="edge12_Node000009_Node000012" title=" " alt="" coords="819,219,1077,237,1076,242,819,224"/>
+<area shape="rect" id="Node000013" href="$classSpsPpsParsser.html#a56d5bdc443833ef1cbb4f4fd04ee7efa" title=" " alt="" coords="879,279,1044,304"/>
+<area shape="poly" id="edge15_Node000009_Node000013" title=" " alt="" coords="773,226,906,271,905,276,772,231"/>
+<area shape="poly" id="edge11_Node000011_Node000010" title=" " alt="" coords="1526,189,1558,189,1558,194,1526,194"/>
+<area shape="poly" id="edge13_Node000012_Node000010" title=" " alt="" coords="1307,238,1413,228,1525,214,1578,205,1579,210,1526,219,1413,233,1307,243"/>
+<area shape="poly" id="edge14_Node000012_Node000011" title=" " alt="" coords="1289,224,1366,206,1367,211,1290,229"/>
+<area shape="poly" id="edge16_Node000013_Node000012" title=" " alt="" coords="1034,275,1076,268,1077,273,1035,281"/>
+</map>

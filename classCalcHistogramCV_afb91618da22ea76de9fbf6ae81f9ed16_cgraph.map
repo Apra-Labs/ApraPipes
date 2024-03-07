@@ -1,0 +1,9 @@
+<map id="CalcHistogramCV::addInputPin" name="CalcHistogramCV::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,206,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="259,29,397,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,63,243,54,244,59,187,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="254,103,402,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="189,90,239,98,238,104,188,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="291,31,284,21,288,11,303,5,328,3,355,5,369,12,367,17,354,10,328,8,304,10,292,15,289,20,295,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="291,104,284,94,288,84,303,78,328,76,355,79,369,86,367,90,354,84,328,81,304,83,292,88,289,93,295,101"/>
+</map>

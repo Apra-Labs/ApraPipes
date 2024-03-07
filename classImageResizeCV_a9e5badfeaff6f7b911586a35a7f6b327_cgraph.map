@@ -1,0 +1,11 @@
+<map id="ImageResizeCV::addInputPin" name="ImageResizeCV::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,195,80"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="273,29,412,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,55,257,48,258,54,195,60"/>
+<area shape="rect" id="Node000003" href="$classImageResizeCV.html#a7c1bda98171b609ed281cd68325b0e0c" title=" " alt="" coords="243,79,442,104"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="195,74,227,77,227,83,195,80"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="306,31,298,21,303,11,318,5,342,3,369,5,383,12,381,17,368,10,342,8,319,10,306,15,304,20,310,27"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="490,79,638,104"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="442,89,474,89,474,94,442,94"/>
+<area shape="poly" id="edge5_Node000004_Node000004" title=" " alt="" coords="527,80,520,70,524,60,539,54,564,52,591,55,605,62,603,66,590,60,564,57,541,59,528,64,525,69,532,77"/>
+</map>

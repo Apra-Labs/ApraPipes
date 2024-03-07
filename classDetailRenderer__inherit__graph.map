@@ -1,0 +1,7 @@
+<map id="DetailRenderer" name="DetailRenderer">
+<area shape="rect" id="Node000001" title=" " alt="" coords="45,5,182,251"/>
+<area shape="rect" id="Node000002" href="$classDetailEgl.html" title=" " alt="" coords="5,299,88,384"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,266,62,300,57,298,68,264"/>
+<area shape="rect" id="Node000003" href="$classDetailImageviewer.html" title=" " alt="" coords="112,299,251,384"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,264,171,298,166,300,155,266"/>
+</map>

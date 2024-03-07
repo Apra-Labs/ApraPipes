@@ -1,0 +1,22 @@
+<map id="ApraChunk::getNext" name="ApraChunk::getNext">
+<area shape="rect" id="Node000001" title=" " alt="" coords="851,131,987,157"/>
+<area shape="rect" id="Node000002" href="$classApraSegregatedStorage.html#a9a2f61e694216485870650ff17e831f6" title=" " alt="" coords="213,37,372,78"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="893,121,853,85,828,68,802,54,747,33,700,19,657,12,616,9,529,14,420,28,364,39,363,34,420,23,529,9,616,3,657,6,701,14,749,28,804,49,831,64,856,81,897,117"/>
+<area shape="rect" id="Node000004" href="$classApraSegregatedStorage.html#a7ff393f6a521dd94fbc40ee47e584168" title=" " alt="" coords="420,37,579,78"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="884,125,846,103,802,85,745,72,686,63,579,58,580,52,687,58,746,66,803,80,848,98,887,120"/>
+<area shape="rect" id="Node000005" href="$classApraSegregatedStorage.html#acd4f5238bd4dda0f0d991cc71c7af79e" title=" " alt="" coords="635,94,795,135"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="835,135,795,129,796,123,836,129"/>
+<area shape="rect" id="Node000007" href="$classApraSegregatedStorage.html#a8220cb980c98c569b7a8145e2e3672fb" title=" " alt="" coords="420,213,579,254"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="836,159,736,177,628,200,570,215,569,210,627,195,735,172,835,154"/>
+<area shape="rect" id="Node000008" href="$classApraPool.html#ad68e98f4823372e7c658013573faf7a2" title=" " alt="" coords="627,210,803,235"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="873,165,804,193,754,212,752,207,802,188,871,160"/>
+<area shape="rect" id="Node000009" href="$classApraSegregatedStorage.html#a56dff53f5c457fe34998f96cb0f2de4a" title=" " alt="" coords="635,260,795,300"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="898,170,857,210,804,250,782,261,780,257,801,246,853,206,894,166"/>
+<area shape="rect" id="Node000003" href="$classApraSegregatedStorage.html#af83d3db01bb3d5df9a1fb1e8a5cbf286" title=" " alt="" coords="5,37,165,78"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="197,60,165,60,165,55,197,55"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="405,60,372,60,372,55,405,55"/>
+<area shape="rect" id="Node000006" href="$classApraSegregatedStorage.html#a9279df1fca9ee20d8aca1c84697dab82" title=" " alt="" coords="420,102,579,143"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="620,121,580,122,580,117,620,115"/>
+<area shape="poly" id="edge7_Node000006_Node000002" title=" " alt="" coords="418,100,359,81,360,76,420,95"/>
+<area shape="poly" id="edge11_Node000009_Node000007" title=" " alt="" coords="620,262,579,253,581,248,621,257"/>
+</map>

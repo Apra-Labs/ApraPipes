@@ -1,0 +1,9 @@
+<map id="Mp4WriterSink::validateInputOutputPins" name="Mp4WriterSink::validateInputOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,192,88"/>
+<area shape="rect" id="Node000002" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="292,5,390,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,46,276,29,277,34,193,51"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="240,55,442,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,65,224,65,224,70,192,70"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a4f4ad5a4cabf96a96481fbd1044027c3" title=" " alt="" coords="249,105,433,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="188,86,238,98,237,103,187,91"/>
+</map>

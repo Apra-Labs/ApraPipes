@@ -1,0 +1,9 @@
+<map id="OverlayInfoVisitor" name="OverlayInfoVisitor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="223,5,364,91"/>
+<area shape="rect" id="Node000002" href="$classOverlayInfoDrawingVisitor.html" title=" " alt="" coords="5,153,187,239"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="227,102,153,156,150,151,223,97"/>
+<area shape="rect" id="Node000003" href="$classOverlayInfoSerializeSizeVisitor.html" title=" " alt="" coords="211,139,375,253"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="296,106,296,139,291,139,291,106"/>
+<area shape="rect" id="Node000004" href="$classOverlayInfoSerializerVisitor.html" title=" " alt="" coords="399,153,587,239"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="364,97,438,151,435,156,361,102"/>
+</map>

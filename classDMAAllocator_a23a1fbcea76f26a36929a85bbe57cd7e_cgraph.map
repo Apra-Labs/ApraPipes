@@ -1,0 +1,9 @@
+<map id="DMAAllocator::allocateChunks" name="DMAAllocator::allocateChunks">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,202,56"/>
+<area shape="rect" id="Node000002" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="250,31,407,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,41,234,41,234,46,202,46"/>
+<area shape="rect" id="Node000003" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="455,5,670,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="407,32,439,29,440,34,408,38"/>
+<area shape="rect" id="Node000004" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="489,55,637,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="408,49,474,56,473,61,407,54"/>
+</map>

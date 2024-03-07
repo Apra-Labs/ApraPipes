@@ -1,0 +1,11 @@
+<map id="Module::getOutputFrameFactory" name="Module::getOutputFrameFactory">
+<area shape="rect" id="Node000001" title=" " alt="" coords="231,84,437,110"/>
+<area shape="rect" id="Node000002" href="$classFileReaderModule.html#aab1432b2aff904bfd6e1b894c32a9345" title=" " alt="" coords="20,5,168,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="283,81,182,45,146,34,148,29,183,40,285,76"/>
+<area shape="rect" id="Node000003" href="$classFileReaderModule.html#ade31a17a0fad3db23374d08f6134b1f1" title=" " alt="" coords="5,55,183,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="215,85,183,81,183,76,215,80"/>
+<area shape="rect" id="Node000004" href="$classCalcHistogramCV.html#ac35bca92b14e7932b4fa5256e048c64c" title=" " alt="" coords="6,105,182,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="216,113,183,117,182,112,215,108"/>
+<area shape="rect" id="Node000005" href="$classMotionVectorExtractor.html#a928c6f006e4f8ff7266a4e4354798e15" title=" " alt="" coords="19,170,169,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="287,118,184,159,151,172,149,167,182,154,285,113"/>
+</map>

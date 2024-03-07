@@ -1,0 +1,9 @@
+<map id="OverlayModule::addInputPin" name="OverlayModule::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,188,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="241,29,379,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,63,225,54,226,59,174,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="236,103,384,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="177,90,221,98,220,103,176,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="274,31,267,21,272,11,286,5,310,3,336,5,349,12,347,17,334,10,310,8,287,10,275,15,273,20,279,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="274,104,267,94,272,84,286,78,310,76,336,79,349,86,347,90,334,84,310,81,287,83,275,88,273,93,279,101"/>
+</map>

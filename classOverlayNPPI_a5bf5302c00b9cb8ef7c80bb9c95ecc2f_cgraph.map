@@ -1,0 +1,9 @@
+<map id="OverlayNPPI::addInputPin" name="OverlayNPPI::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,178,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="231,29,369,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,63,215,55,216,60,168,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="226,103,374,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="170,90,211,97,210,103,169,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="265,31,258,21,262,11,277,5,300,3,325,5,338,12,336,17,324,10,300,8,278,10,266,15,264,20,269,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="265,104,258,94,262,84,277,78,300,76,325,79,338,86,336,90,324,84,300,81,278,83,266,88,264,93,269,101"/>
+</map>

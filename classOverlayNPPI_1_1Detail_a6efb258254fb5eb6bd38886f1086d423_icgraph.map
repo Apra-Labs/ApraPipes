@@ -1,0 +1,9 @@
+<map id="OverlayNPPI::Detail::preMulGlobalAlpha" name="OverlayNPPI::Detail::preMulGlobalAlpha">
+<area shape="rect" id="Node000001" title=" " alt="" coords="374,39,510,79"/>
+<area shape="rect" id="Node000002" href="$classOverlayNPPI_1_1Detail.html#a975f8c013e4d9cd463bc3de61df305e6" title=" " alt="" coords="190,5,326,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="358,47,326,41,327,35,359,41"/>
+<area shape="rect" id="Node000003" href="$classOverlayNPPI_1_1Detail.html#adf596e9ab6ea40f98cd08ab3a3177c05" title=" " alt="" coords="190,71,326,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="359,76,327,82,326,76,358,71"/>
+<area shape="rect" id="Node000004" href="$classOverlayNPPI_1_1Detail.html#a865ede3535929abdfee522f6bb90647c" title=" " alt="" coords="5,71,142,111"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="174,94,142,94,142,88,174,88"/>
+</map>

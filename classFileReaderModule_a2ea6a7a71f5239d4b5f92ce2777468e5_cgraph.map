@@ -1,0 +1,12 @@
+<map id="FileReaderModule::handleCommand" name="FileReaderModule::handleCommand">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,25,175,65"/>
+<area shape="rect" id="Node000002" href="$classModule.html#aeeba96aff18c5157f7c1d097fdf4f79f" title=" " alt="" coords="455,32,601,58"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,21,222,10,315,3,407,10,473,25,472,30,407,16,315,8,223,16,165,27"/>
+<area shape="rect" id="Node000004" href="$classFileReaderModuleCommand.html#a9af6499521380c79052954de96bc0c61" title=" " alt="" coords="223,25,407,65"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,42,207,42,207,48,175,48"/>
+<area shape="rect" id="Node000005" href="$classModule.html#af02b89c25fd5676e84e64f79ced2ab07" title=" " alt="" coords="232,90,398,115"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="173,63,248,83,246,88,172,69"/>
+<area shape="rect" id="Node000003" href="$classUtils.html#a5baaee29c6a1902bfb7e34d1d2c1e0d6" title=" " alt="" coords="649,32,767,58"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="602,42,634,42,634,48,602,48"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="365,86,462,60,463,65,366,92"/>
+</map>

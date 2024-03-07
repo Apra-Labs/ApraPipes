@@ -1,0 +1,21 @@
+<map id="ColorConversion::processSOS" name="ColorConversion::processSOS">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,137,202,163"/>
+<area shape="rect" id="Node000002" href="$classColorConversion.html#acc9a50aa3286afe70b733b6c868bf58f" title=" " alt="" coords="250,73,455,113"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,134,245,115,247,120,163,139"/>
+<area shape="rect" id="Node000009" href="$classColorConversion.html#aab8b824fff20cafe965fd49d46848955" title=" " alt="" coords="255,137,450,163"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="202,148,240,148,240,153,202,153"/>
+<area shape="rect" id="Node000010" href="$classModule.html#a4dd6881278e65d321313b024f0573fa1" title=" " alt="" coords="282,187,423,212"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="173,161,270,180,269,186,172,166"/>
+<area shape="rect" id="Node000003" href="$classAbsColorConversionFactory.html#a58f4349613034682956a98d0f7fdc394" title=" " alt="" coords="503,73,685,113"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="455,90,487,90,487,96,455,96"/>
+<area shape="rect" id="Node000004" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="733,80,870,106"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="686,90,718,90,718,96,686,96"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="918,5,1117,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="829,77,917,40,938,33,940,38,919,45,831,82"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="923,55,1112,80"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="870,82,907,78,908,83,871,87"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="923,104,1112,130"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="871,98,907,102,907,107,870,103"/>
+<area shape="rect" id="Node000008" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="920,153,1115,179"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="832,104,919,140,941,146,939,151,917,145,830,109"/>
+</map>

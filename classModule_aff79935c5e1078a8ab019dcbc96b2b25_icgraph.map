@@ -1,0 +1,13 @@
+<map id="Module::getOutputMetadataByType" name="Module::getOutputMetadataByType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="494,88,674,129"/>
+<area shape="rect" id="Node000002" href="$classCalcHistogramCV.html#aef0b8a89436e6e67f85db91de6eda8a0" title=" " alt="" coords="236,5,439,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="514,85,445,60,410,49,412,44,447,55,516,80"/>
+<area shape="rect" id="Node000003" href="$classCalcHistogramCV.html#a1f8f6048a52bf2587092ebc61baa4094" title=" " alt="" coords="263,70,412,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="479,100,412,93,412,88,479,95"/>
+<area shape="rect" id="Node000004" href="$classJPEGEncoderL4TM.html#aa4dd18a93153b7f6375c07c94a6952ab" title=" " alt="" coords="258,120,417,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="479,121,418,127,417,122,479,116"/>
+<area shape="rect" id="Node000006" href="$classJPEGDecoderL4TM.html#af7fde454fca0a2fa08148250da7a9c61" title=" " alt="" coords="229,169,446,195"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="517,137,447,160,406,171,404,166,445,155,515,132"/>
+<area shape="rect" id="Node000005" href="$classJPEGEncoderL4TM_1_1Detail.html#a10ea92f5dbb39098e9daa70486b960ae" title=" " alt="" coords="5,112,181,153"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="242,135,181,135,181,130,242,130"/>
+</map>

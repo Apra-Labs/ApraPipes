@@ -1,0 +1,7 @@
+<map id="DetailDMA" name="DetailDMA">
+<area shape="rect" id="Node000001" title=" " alt="" coords="42,672,135,757"/>
+<area shape="rect" id="Node000002" href="$classDetailGPU.html" title=" " alt="" coords="18,499,159,624"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,639,91,672,86,672,86,639"/>
+<area shape="rect" id="Node000003" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="5,5,172,451"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="91,466,91,499,86,499,86,466"/>
+</map>

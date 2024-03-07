@@ -1,0 +1,13 @@
+<map id="ResizeNPPI::addInputPin" name="ResizeNPPI::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,103,173,128"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="237,29,375,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,100,220,64,240,57,241,62,222,69,124,105"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="232,103,380,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="173,113,216,113,216,118,173,118"/>
+<area shape="rect" id="Node000004" href="$classResizeNPPI.html#a101000cf06584f10ddd809e4e83f4e23" title=" " alt="" coords="221,152,391,178"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="149,126,232,145,231,151,148,132"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="272,31,265,21,269,11,283,5,306,3,331,5,344,12,341,17,329,10,306,8,284,10,273,15,270,20,276,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="272,104,265,94,269,84,283,78,306,76,331,79,344,86,341,90,329,84,306,81,284,83,273,88,270,93,276,101"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a4dd6881278e65d321313b024f0573fa1" title=" " alt="" coords="439,152,580,178"/>
+<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="391,162,423,162,423,168,391,168"/>
+</map>

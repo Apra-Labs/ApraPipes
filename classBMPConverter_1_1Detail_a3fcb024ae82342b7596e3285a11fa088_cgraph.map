@@ -1,0 +1,13 @@
+<map id="BMPConverter::Detail::setMetadata" name="BMPConverter::Detail::setMetadata">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,151,113"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="199,80,335,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,90,184,90,184,96,151,96"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="383,5,582,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="294,77,382,40,403,33,405,38,384,45,296,82"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="389,55,577,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="335,82,373,78,373,83,336,87"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="388,104,577,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="336,98,373,102,372,107,335,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="386,153,580,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="297,104,384,140,406,146,404,151,382,145,295,109"/>
+</map>

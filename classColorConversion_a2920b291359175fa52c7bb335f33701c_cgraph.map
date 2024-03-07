@@ -1,0 +1,11 @@
+<map id="ColorConversion::addInputPin" name="ColorConversion::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,197,80"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="276,29,415,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,55,260,48,261,54,197,60"/>
+<area shape="rect" id="Node000003" href="$classColorConversion.html#a168ed02ef2521192e15bc98c8321fe6a" title=" " alt="" coords="245,79,446,104"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="197,74,229,77,229,83,197,80"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="308,31,301,21,305,11,321,5,345,3,373,5,386,12,384,17,371,10,345,8,322,10,309,15,306,20,313,27"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="494,79,642,104"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="446,89,479,89,479,94,446,94"/>
+<area shape="poly" id="edge5_Node000004_Node000004" title=" " alt="" coords="531,80,524,70,528,60,543,54,568,52,595,55,609,62,607,66,594,60,568,57,545,59,532,64,529,69,535,77"/>
+</map>

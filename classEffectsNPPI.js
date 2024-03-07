@@ -1,0 +1,25 @@
+var classEffectsNPPI =
+[
+    [ "Detail", "classEffectsNPPI_1_1Detail.html", "classEffectsNPPI_1_1Detail" ],
+    [ "EffectsNPPI", "classEffectsNPPI.html#affdf6f9f3657753868599caf3ab7cd68", null ],
+    [ "~EffectsNPPI", "classEffectsNPPI.html#af6a08be6892c3f8fe0558fdabdf5f1c5", null ],
+    [ "addInputPin", "classEffectsNPPI.html#a69131ab1e41f7ab35517d839311dd1fd", null ],
+    [ "getProps", "classEffectsNPPI.html#a3c5933b57b119fad4844fbefdb8064d1", null ],
+    [ "handlePropsChange", "classEffectsNPPI.html#af79692b1af492301051d74a262d6efe5", null ],
+    [ "init", "classEffectsNPPI.html#a5c9175e7fe4c955f692cf07beefa22a2", null ],
+    [ "process", "classEffectsNPPI.html#a7fffd6a1d2031770c5e1cf6156365c9c", null ],
+    [ "processEOS", "classEffectsNPPI.html#a87afc7fb34faa2ee769aded103c7d63f", null ],
+    [ "processSOS", "classEffectsNPPI.html#a46980e5014e5397c7027b3ab823c36cd", null ],
+    [ "setMetadata", "classEffectsNPPI.html#a8e4e2272ac19c0be97b49c3550aaf09c", null ],
+    [ "setProps", "classEffectsNPPI.html#a8c690dfbcd4879b77b907d5f2bfd9d50", null ],
+    [ "shouldTriggerSOS", "classEffectsNPPI.html#a7ede4a75525787daae0675ff051c1c6d", null ],
+    [ "term", "classEffectsNPPI.html#a5f501c3c3790e6a70225e19f6151dc3d", null ],
+    [ "validateInputPins", "classEffectsNPPI.html#a4b493e900f0eddf460a1279e42866b5f", null ],
+    [ "validateOutputPins", "classEffectsNPPI.html#a2b0417207553e89010dccc80fc9befb2", null ],
+    [ "mDetail", "classEffectsNPPI.html#a682753ce544975f52ccdfd8a714116f9", null ],
+    [ "mFrameLength", "classEffectsNPPI.html#a684876a31b3a65a8827ca658f208e0c3", null ],
+    [ "mFrameType", "classEffectsNPPI.html#af87a0fd8d594004bf756946aa21ba4f6", null ],
+    [ "mOutputMetadata", "classEffectsNPPI.html#a8ef377cb5efac14d2fbb4a1ce0b195d8", null ],
+    [ "mOutputPinId", "classEffectsNPPI.html#a8e1a2f5e2d28008e97e6af562a2cb4db", null ],
+    [ "props", "classEffectsNPPI.html#ad08845b082308f6240cb370533addda6", null ]
+];

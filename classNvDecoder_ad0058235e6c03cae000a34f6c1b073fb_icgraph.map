@@ -1,0 +1,5 @@
+<map id="NvDecoder::HandlePictureDisplayProc" name="NvDecoder::HandlePictureDisplayProc">
+<area shape="rect" id="Node000001" title="Callback function to be registered for getting a callback when a decoded frame is available for displ..." alt="" coords="211,5,385,46"/>
+<area shape="rect" id="Node000002" href="$classNvDecoder.html#aac00241633003ac4455be54b41997c93" title="This function is used to initialize the decoder session. Application must call this function to initi..." alt="" coords="5,13,163,39"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,28,163,28,163,23,195,23"/>
+</map>

@@ -1,0 +1,60 @@
+<map id="Module::handlePropsChange" name="Module::handlePropsChange">
+<area shape="rect" id="Node000001" title=" " alt="" coords="833,732,1018,757"/>
+<area shape="rect" id="Node000002" href="$classAffineTransform.html#ab81adef195525ebd21d0cd7cade070d3" title=" " alt="" coords="586,5,777,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="919,716,907,579,881,382,862,281,840,188,813,112,799,83,783,61,768,48,772,44,787,57,803,80,818,110,845,187,868,280,886,381,912,578,925,716"/>
+<area shape="rect" id="Node000003" href="$classArchiveSpaceManager.html#a93244d329e0320b5b2f5a872364b35ee" title=" " alt="" coords="605,71,758,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="919,716,904,590,877,413,858,323,836,240,811,172,797,146,783,126,757,108,760,103,787,122,802,143,816,170,841,238,863,321,882,412,909,590,924,716"/>
+<area shape="rect" id="Node000004" href="$classAudioCaptureSrc.html#a04d229ff8ebfd2be6c5766ee727beb42" title=" " alt="" coords="583,136,780,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="918,716,901,602,873,445,854,365,833,292,809,232,783,191,768,179,771,175,787,188,813,230,838,290,859,363,878,443,907,601,923,715"/>
+<area shape="rect" id="Node000005" href="$classAudioToTextXForm.html#add47d0711e9d46c92a9f8f32081c15b2" title=" " alt="" coords="593,201,770,242"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="922,716,918,628,912,569,900,505,883,438,858,373,825,311,783,257,767,245,771,240,787,253,830,308,863,371,888,437,905,504,917,568,923,627,927,716"/>
+<area shape="rect" id="Node000006" href="$classBrightnessContrastControl.html#ab9f8a12be22634e24425ef479ef5a45e" title=" " alt="" coords="595,267,768,307"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="920,716,913,639,892,533,875,476,851,421,821,368,783,322,767,310,770,306,787,318,825,365,856,418,880,475,898,532,918,638,926,716"/>
+<area shape="rect" id="Node000007" href="$classCalcHistogramCV.html#aef0b8a89436e6e67f85db91de6eda8a0" title=" " alt="" coords="580,332,783,373"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="919,716,908,650,884,561,866,514,844,468,816,425,783,388,766,375,769,371,786,384,820,422,849,466,871,512,889,560,913,649,924,716"/>
+<area shape="rect" id="Node000008" href="$classEffectsNPPI.html#af79692b1af492301051d74a262d6efe5" title=" " alt="" coords="596,397,767,438"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="916,717,901,661,875,590,837,517,812,483,783,453,765,441,768,436,786,449,816,479,841,514,880,588,906,660,921,715"/>
+<area shape="rect" id="Node000009" href="$classFaceDetectorXform.html#ac4592a19702615652aae67b0d709b571" title=" " alt="" coords="611,463,752,503"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="912,718,894,675,867,621,829,566,807,541,783,519,751,501,753,496,786,514,811,537,834,562,871,618,899,672,917,716"/>
+<area shape="rect" id="Node000010" href="$classFacialLandmarkCV.html#ab1d85123881f7196451595e0127c38e0" title=" " alt="" coords="593,528,770,569"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="906,720,857,652,822,616,783,584,760,572,763,567,786,579,826,612,861,649,911,717"/>
+<area shape="rect" id="Node000011" href="$classFileReaderModule.html#a4dfe46f3a540cfcbdfe39acb35287b1e" title=" " alt="" coords="597,593,766,634"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="895,723,844,686,783,649,755,637,757,632,786,645,847,682,898,719"/>
+<area shape="rect" id="Node000012" href="$classGaussianBlur.html#a9e45e7aad32571026d4b0c3f80e82489" title=" " alt="" coords="593,659,770,699"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="859,730,759,703,761,697,861,724"/>
+<area shape="rect" id="Node000013" href="$classMotionVectorExtractor.html#a772d6994494862d6c7b1146b14f81856" title=" " alt="" coords="607,724,756,765"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="817,747,756,747,756,742,817,742"/>
+<area shape="rect" id="Node000014" href="$classMp4ReaderSource.html#a54c99324477a6dd8630dcdec27364f61" title=" " alt="" coords="578,789,785,830"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="861,764,761,791,759,786,859,759"/>
+<area shape="rect" id="Node000015" href="$classMp4WriterSink.html#aa6a772815ec7173fb57d215c2f342839" title=" " alt="" coords="589,855,774,895"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="898,769,847,807,786,844,757,857,755,852,783,839,844,803,895,765"/>
+<area shape="rect" id="Node000016" href="$classMultimediaQueueXform.html#aedfb9b978681abc88d0ac7155c2e833f" title=" " alt="" coords="603,920,760,961"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="911,772,861,840,826,877,786,909,762,922,759,918,783,905,822,873,857,836,906,768"/>
+<area shape="rect" id="Node000017" href="$classOverlayNPPI.html#ae4f6914ac4e67f39ddd6870bae399c2f" title=" " alt="" coords="594,985,769,1026"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="917,772,899,816,871,871,834,926,811,952,786,974,766,987,763,983,783,970,807,948,829,923,867,868,894,814,912,770"/>
+<area shape="rect" id="Node000018" href="$classTestSignalGenerator.html#afc9c5a4e5fb97c40d9be92817abdcac3" title=" " alt="" coords="610,1051,753,1091"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="921,773,906,829,880,901,841,975,816,1009,786,1040,755,1058,752,1054,783,1036,812,1006,837,972,875,898,901,827,916,772"/>
+<area shape="rect" id="Node000019" href="$classTextOverlayXForm.html#ae22e635822c2f8d14fef2c68c46e3c4a" title=" " alt="" coords="595,1116,768,1157"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="924,773,913,840,889,929,871,976,849,1023,820,1066,786,1105,769,1118,766,1113,783,1101,816,1063,844,1020,866,974,884,927,908,839,919,772"/>
+<area shape="rect" id="Node000020" href="$classValveModule.html#a04349e4d0f991a97e929f4a3070fb4cc" title=" " alt="" coords="594,1181,769,1222"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="926,773,918,851,898,957,880,1014,856,1070,825,1123,787,1170,770,1183,767,1179,783,1166,821,1120,851,1068,875,1012,892,956,913,850,920,772"/>
+<area shape="rect" id="Node000021" href="$classVirtualPTZ.html#a6e80f3f7303459b16a3cc12a54deda1f" title=" " alt="" coords="579,1246,784,1272"/>
+<area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="928,773,925,862,919,922,908,987,891,1054,866,1120,831,1182,786,1236,769,1248,766,1243,783,1232,827,1179,861,1118,886,1052,903,986,914,921,920,862,922,773"/>
+<area shape="rect" id="Node000022" href="$classWebCamSource.html#ae8bea2bb22e017d1722035edc678ac97" title=" " alt="" coords="585,1296,778,1337"/>
+<area shape="poly" id="edge21_Node000001_Node000022" title=" " alt="" coords="923,773,906,884,877,1038,859,1116,837,1187,813,1246,787,1286,773,1298,769,1294,783,1283,808,1243,832,1185,853,1114,872,1036,901,883,918,772"/>
+<area shape="rect" id="Node000023" href="$classModule.html#a198ab991595cbfc0124d7a1f9421995c" title=" " alt="" coords="581,1361,782,1387"/>
+<area shape="poly" id="edge22_Node000001_Node000023" title=" " alt="" coords="924,772,910,896,883,1069,864,1158,842,1239,816,1305,802,1331,787,1350,770,1362,767,1358,783,1346,798,1328,811,1303,837,1237,859,1157,878,1068,905,895,919,772"/>
+<area shape="rect" id="Node000029" href="$classModule.html#a262d6c32ea8823149ab36ec165b73bcf" title=" " alt="" coords="591,1410,772,1436"/>
+<area shape="poly" id="edge28_Node000001_Node000029" title=" " alt="" coords="925,773,912,906,886,1094,868,1191,845,1279,818,1352,803,1380,787,1401,773,1412,769,1407,783,1397,799,1377,814,1349,840,1278,863,1190,881,1094,907,905,919,772"/>
+<area shape="rect" id="Node000024" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="436,1386,530,1412"/>
+<area shape="poly" id="edge23_Node000023_Node000024" title=" " alt="" coords="566,1391,531,1396,530,1390,566,1386"/>
+<area shape="rect" id="Node000025" href="$classH264EncoderV4L2.html#a7539f857a9084786fc24cbd2d9debf0f" title=" " alt="" coords="178,1337,388,1363"/>
+<area shape="poly" id="edge24_Node000024_Node000025" title=" " alt="" coords="420,1385,387,1376,343,1366,345,1361,389,1371,422,1380"/>
+<area shape="rect" id="Node000026" href="$classModule.html#a7938c5a5b0891563bd57144f78330dd6" title=" " alt="" coords="239,1386,327,1412"/>
+<area shape="poly" id="edge25_Node000024_Node000026" title=" " alt="" coords="420,1402,327,1402,327,1396,420,1396"/>
+<area shape="rect" id="Node000028" href="$classVirtualCameraSink_1_1Detail.html#ac695871d7abc864a74f6d8dc6b48ba41" title=" " alt="" coords="215,1436,351,1477"/>
+<area shape="poly" id="edge27_Node000024_Node000028" title=" " alt="" coords="422,1419,352,1440,350,1434,421,1414"/>
+<area shape="rect" id="Node000027" href="$classModule.html#ae142fa64aba77f793b2697d42d4d23cc" title=" " alt="" coords="5,1386,130,1412"/>
+<area shape="poly" id="edge26_Node000026_Node000027" title=" " alt="" coords="224,1402,130,1402,130,1396,224,1396"/>
+<area shape="poly" id="edge29_Node000029_Node000024" title=" " alt="" coords="575,1413,531,1407,531,1402,576,1408"/>
+</map>

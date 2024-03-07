@@ -1,0 +1,9 @@
+<map id="RotateNPPI::addInputPin" name="RotateNPPI::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,172,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="225,29,363,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,63,209,55,210,60,163,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="220,103,368,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="166,90,205,97,204,102,165,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="260,31,253,21,257,11,271,5,294,3,319,5,332,12,329,17,317,10,294,8,272,10,261,15,258,20,264,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="260,104,253,94,257,84,271,78,294,76,319,79,332,86,329,90,317,84,294,81,272,83,261,88,258,93,264,101"/>
+</map>

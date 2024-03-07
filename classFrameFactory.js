@@ -1,0 +1,25 @@
+var classFrameFactory =
+[
+    [ "FrameFactory", "classFrameFactory.html#ab0bde039ae15f9d4b17fc8187ad81c90", null ],
+    [ "~FrameFactory", "classFrameFactory.html#af179dc71e7c77b9336f07802bcf8be13", null ],
+    [ "create", "classFrameFactory.html#a0064d9463d1beb4d76b103aa0917d3d6", null ],
+    [ "create", "classFrameFactory.html#ab1edbb992f665c203323f509c657f73d", null ],
+    [ "create", "classFrameFactory.html#ac9623ba9ff697c4b5b0f412adff2c679", null ],
+    [ "create", "classFrameFactory.html#aab7c88c02d09b715dff2baa1a5001b00", null ],
+    [ "destroy", "classFrameFactory.html#a2c75257be7323d0133cbff4cf55104ea", null ],
+    [ "getEmptyFrame", "classFrameFactory.html#a77dc5dc634e8f96f092ec5ce02675236", null ],
+    [ "getEOSFrame", "classFrameFactory.html#af202f92f1cfd2bafbae3470027d95484", null ],
+    [ "getFrameMetadata", "classFrameFactory.html#a9be447f57a9410486b168306ef9ec8dd", null ],
+    [ "getNumberOfChunks", "classFrameFactory.html#a550146a720668994fbd1621273bd513e", null ],
+    [ "getPoolHealthRecord", "classFrameFactory.html#a3b1a9c43fe41dcc2224c92622b9d4adf", null ],
+    [ "setMetadata", "classFrameFactory.html#ab8714f7f316ad95df1a878b15c0bead8", null ],
+    [ "counter", "classFrameFactory.html#aa9ab8b31e3a03162cc1c8ceaa02df588", null ],
+    [ "emptyFrame", "classFrameFactory.html#aaaf20e3463bd9461c02d0c0c68b0a5bf", null ],
+    [ "eosFrame", "classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f", null ],
+    [ "frame_allocator", "classFrameFactory.html#a3fe823682b3943fc3d31f0d7f5cc231e", null ],
+    [ "m_mutex", "classFrameFactory.html#ab1e6e8d0a35d4fd302cfcf213bea683d", null ],
+    [ "maxConcurrentFrames", "classFrameFactory.html#a474c29033db673578f63c56b9fd2a89d", null ],
+    [ "memory_allocator", "classFrameFactory.html#acaa0fc16ee54986788ac554239bc0566", null ],
+    [ "mMetadata", "classFrameFactory.html#a8b709e80191858d051a5a0c60f93c7dc", null ],
+    [ "numberOfChunks", "classFrameFactory.html#a06690fe3cbaa70565cbddef91d71b9a5", null ]
+];

@@ -1,0 +1,9 @@
+<map id="AffineTransform" name="AffineTransform">
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,1488,223,1814"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,1440,139,1488,133,1489,129,1440"/>
+<area shape="rect" id="Node000003" href="$classAffineTransformProps.html" title=" " alt="" coords="201,820,357,1025"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="264,1026,193,1426,184,1472,179,1471,187,1425,259,1025"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="202,5,357,371"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="282,385,282,820,277,820,277,385"/>
+</map>

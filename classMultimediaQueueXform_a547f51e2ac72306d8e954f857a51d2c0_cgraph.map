@@ -1,0 +1,9 @@
+<map id="MultimediaQueueXform::addInputPin" name="MultimediaQueueXform::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,59,163,100"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="216,29,354,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,62,200,55,201,60,164,67"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="211,103,359,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="164,91,196,97,195,102,163,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="251,31,245,21,249,11,262,5,285,3,310,5,322,12,320,17,308,10,285,8,264,10,252,15,250,20,256,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="251,104,245,94,249,84,262,78,285,76,310,79,322,86,320,90,308,84,285,81,264,83,252,88,250,93,256,101"/>
+</map>

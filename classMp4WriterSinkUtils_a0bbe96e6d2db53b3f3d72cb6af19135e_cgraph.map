@@ -1,0 +1,20 @@
+<map id="Mp4WriterSinkUtils::getFilenameForNextFrame" name="Mp4WriterSinkUtils::getFilenameForNextFrame">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,99,187,140"/>
+<area shape="rect" id="Node000002" href="$classMp4WriterSinkUtils.html#ae9bcdea6e59a675f63d2f6cc98905e68" title=" " alt="" coords="235,131,368,172"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,131,220,136,219,141,186,136"/>
+<area shape="rect" id="Node000007" href="$classMp4WriterSinkUtils.html#ab3e733acba4b4c556ab7ec531e26ce0f" title=" " alt="" coords="235,66,368,107"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="186,102,219,97,220,102,187,108"/>
+<area shape="rect" id="Node000003" href="$classMp4WriterSinkUtils.html#ab2935ec5b909f36e17a6cae91ce70220" title=" " alt="" coords="597,163,784,204"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="332,170,371,194,417,213,466,221,516,221,565,215,609,206,610,211,565,220,516,226,465,226,415,218,368,199,329,175"/>
+<area shape="rect" id="Node000004" href="$classMp4WriterSinkUtils.html#a00cbd5b93cd588501ff0222a6eac28d4" title=" " alt="" coords="416,163,549,204"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="369,161,401,167,401,172,368,166"/>
+<area shape="rect" id="Node000005" href="$classMp4WriterSinkUtils.html#a18216c06bf70c38d0bf2048fd0705c96" title=" " alt="" coords="416,33,549,73"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="344,128,367,116,415,84,424,79,426,83,417,89,369,121,347,133"/>
+<area shape="rect" id="Node000006" href="$classMp4WriterSinkUtils.html#aff75d42cae83ea1988b9e64ea95bd885" title=" " alt="" coords="416,98,549,139"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="368,137,401,131,402,136,369,142"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="549,181,582,181,582,186,549,186"/>
+<area shape="poly" id="edge8_Node000007_Node000003" title=" " alt="" coords="328,63,368,38,415,18,453,8,484,3,514,6,551,19,591,44,626,78,653,115,674,148,669,151,649,118,622,82,588,49,548,23,513,11,484,9,454,14,417,23,370,43,331,68"/>
+<area shape="poly" id="edge9_Node000007_Node000004" title=" " alt="" coords="346,105,369,117,417,148,427,153,424,158,415,153,367,122,344,110"/>
+<area shape="poly" id="edge10_Node000007_Node000005" title=" " alt="" coords="368,71,401,65,402,71,369,77"/>
+<area shape="poly" id="edge11_Node000007_Node000006" title=" " alt="" coords="369,95,401,101,401,107,368,101"/>
+</map>

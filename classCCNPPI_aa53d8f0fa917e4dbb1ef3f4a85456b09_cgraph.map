@@ -1,0 +1,9 @@
+<map id="CCNPPI::addInputPin" name="CCNPPI::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,152,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="205,29,343,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,63,189,56,190,61,150,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="200,103,348,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="152,90,186,97,185,102,151,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="241,30,235,21,239,11,252,5,274,3,298,5,310,12,308,17,296,10,274,8,253,10,242,15,240,20,245,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="241,104,235,94,239,84,252,78,274,76,298,79,310,86,308,90,296,84,274,81,253,83,242,88,240,93,245,101"/>
+</map>

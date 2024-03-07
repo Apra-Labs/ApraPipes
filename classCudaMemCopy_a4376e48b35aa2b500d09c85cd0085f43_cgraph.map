@@ -1,0 +1,13 @@
+<map id="CudaMemCopy::addInputPin" name="CudaMemCopy::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,103,190,128"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="269,29,407,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,100,237,64,261,57,263,62,238,69,134,105"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="264,103,412,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="190,113,248,113,248,118,190,118"/>
+<area shape="rect" id="Node000004" href="$classCudaMemCopy.html#a2f94e3a4df06cb0a144c0de8a4d396c5" title=" " alt="" coords="238,152,438,178"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="164,126,257,146,256,151,163,132"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="298,31,290,21,295,11,311,5,338,3,368,5,382,13,380,17,366,11,338,8,312,10,299,15,296,20,302,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="298,104,290,94,295,84,311,78,338,76,368,79,382,86,380,91,366,84,338,81,312,83,299,88,296,93,302,101"/>
+<area shape="rect" id="Node000005" href="$classFrameMetadata.html#a90a6bbf6a558d057892331db467ea267" title=" " alt="" coords="486,145,669,185"/>
+<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="438,162,470,162,470,168,438,168"/>
+</map>

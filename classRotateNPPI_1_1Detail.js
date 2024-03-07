@@ -1,0 +1,26 @@
+var classRotateNPPI_1_1Detail =
+[
+    [ "Detail", "classRotateNPPI_1_1Detail.html#a62e49fa92f7deddc6a7d3956eb483f9a", null ],
+    [ "~Detail", "classRotateNPPI_1_1Detail.html#adefbe398f33a460ad27ef6c8a1e1597a", null ],
+    [ "compute", "classRotateNPPI_1_1Detail.html#a61a84fe4d20527d15b58ba8e327908d0", null ],
+    [ "setMetadata", "classRotateNPPI_1_1Detail.html#af7ce6428a9c83f1dae2bfef386f1e4ea", null ],
+    [ "setMetadataHelper", "classRotateNPPI_1_1Detail.html#ac675ea7cc3f3735bcb4894c5a315bf67", null ],
+    [ "channels", "classRotateNPPI_1_1Detail.html#a44a587a5cab34152d41714cbf6035076", null ],
+    [ "depth", "classRotateNPPI_1_1Detail.html#aabd7994ee4243523db701a5aaa5a433c", null ],
+    [ "dstNextPtrOffset", "classRotateNPPI_1_1Detail.html#a6cf7fbcd03d387ba488c244adba3ea92", null ],
+    [ "dstPitch", "classRotateNPPI_1_1Detail.html#a50f5b4b5a5833a53aee9018eb93d1157", null ],
+    [ "dstRect", "classRotateNPPI_1_1Detail.html#abb61adc4dceb03c42e3f1114434da8d9", null ],
+    [ "dstSize", "classRotateNPPI_1_1Detail.html#a46df3f633c8f7dc17ea57bc3320a7932", null ],
+    [ "mFrameLength", "classRotateNPPI_1_1Detail.html#adec942258f2923238ef8abfdbd97c692", null ],
+    [ "mFrameType", "classRotateNPPI_1_1Detail.html#ade8ef3582451b2c1b8a19a17a85212a1", null ],
+    [ "mOutputMetadata", "classRotateNPPI_1_1Detail.html#ad3c88ef4b126967ad161b33177df0cae", null ],
+    [ "mOutputPinId", "classRotateNPPI_1_1Detail.html#a43b8b5a9ac559feb6f7c3773d7fb837c", null ],
+    [ "nppStreamCtx", "classRotateNPPI_1_1Detail.html#ac6941bd73ed4b0f908f8f4c1361c9e63", null ],
+    [ "props", "classRotateNPPI_1_1Detail.html#aebf71a598a6e4bd3cfafab15675129de", null ],
+    [ "shiftX", "classRotateNPPI_1_1Detail.html#a0b140197f6d2af2618a9250b8c774119", null ],
+    [ "shiftY", "classRotateNPPI_1_1Detail.html#abed403911771aee20181844decdcc849", null ],
+    [ "srcNextPtrOffset", "classRotateNPPI_1_1Detail.html#a5ec742100d6f58b2037ec306437c1c8c", null ],
+    [ "srcPitch", "classRotateNPPI_1_1Detail.html#a27b740d797fee930aa76800d35a05fb9", null ],
+    [ "srcRect", "classRotateNPPI_1_1Detail.html#aa69cb876e60cec311298d3e0c74ed5f9", null ],
+    [ "srcSize", "classRotateNPPI_1_1Detail.html#a904dd4d860aed6cb667c3e209a5a9dc7", null ]
+];

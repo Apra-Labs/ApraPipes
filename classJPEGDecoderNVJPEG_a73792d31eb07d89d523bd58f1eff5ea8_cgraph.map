@@ -1,0 +1,27 @@
+<map id="JPEGDecoderNVJPEG::init" name="JPEGDecoderNVJPEG::init">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,155,185,180"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a308be9775f2261fc787b8bcb3cce1004" title=" " alt="" coords="233,155,319,180"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,165,217,165,217,170,185,170"/>
+<area shape="rect" id="Node000003" href="$classFIndexStrategy.html#ac23fd89b2e5f03210f46a2ecd41e9d7b" title=" " alt="" coords="396,5,546,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="280,153,311,98,335,66,365,40,380,32,383,36,369,44,339,70,315,101,285,155"/>
+<area shape="rect" id="Node000004" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="373,55,569,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="287,152,320,120,366,89,379,83,381,88,368,94,324,124,291,156"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a80a136bb7514d2978497525e5d31bd42" title=" " alt="" coords="368,104,574,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="319,154,403,132,405,137,320,159"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="860,180,1062,206"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="319,166,845,186,844,191,319,172"/>
+<area shape="rect" id="Node000007" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="855,287,1067,312"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="283,180,293,210,310,248,335,287,369,319,426,353,478,375,527,387,576,390,625,387,679,379,806,354,865,338,918,317,920,322,867,343,807,359,680,384,626,392,576,396,526,392,476,380,424,358,365,323,331,290,305,251,288,212,278,182"/>
+<area shape="rect" id="Node000008" href="$classQuePushStrategy.html#ad4e97b086ff374b71c13b5635812a393" title=" " alt="" coords="374,283,569,308"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="293,179,326,209,368,241,426,273,424,278,366,246,323,213,289,183"/>
+<area shape="rect" id="Node000010" href="$classModule.html#a57fac4fd8d1b0f4f76a09fa538588e69" title=" " alt="" coords="367,205,575,231"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="320,176,405,198,403,203,319,181"/>
+<area shape="rect" id="Node000009" href="$classQuePushStrategy.html#a1dadaf1ef4729796aa5f1a1324574138" title=" " alt="" coords="623,305,807,345"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="570,305,608,309,608,315,569,310"/>
+<area shape="rect" id="Node000011" href="$classModule.html#a718073e1f98015ee85e8d93907c610c4" title=" " alt="" coords="630,205,800,231"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="576,216,614,216,614,221,576,221"/>
+<area shape="rect" id="Node000012" href="$classModule.html#ac059f5b4e08f748a5bb27936ba038fcf" title=" " alt="" coords="625,255,805,280"/>
+<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="539,229,634,248,633,254,538,234"/>
+<area shape="poly" id="edge11_Node000011_Node000006" title=" " alt="" coords="800,207,844,202,845,207,800,212"/>
+<area shape="poly" id="edge13_Node000012_Node000007" title=" " alt="" coords="806,277,843,281,842,287,805,282"/>
+</map>

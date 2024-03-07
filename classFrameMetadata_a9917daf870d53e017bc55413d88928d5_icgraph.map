@@ -1,0 +1,11 @@
+<map id="FrameMetadata::setData" name="FrameMetadata::setData">
+<area shape="rect" id="Node000001" title=" " alt="" coords="242,96,405,121"/>
+<area shape="rect" id="Node000002" href="$classEncodedImageMetadata.html#aca1b53622a9403bc86e2600018b5ea62" title=" " alt="" coords="19,5,180,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="275,92,193,60,162,49,164,44,195,55,277,87"/>
+<area shape="rect" id="Node000003" href="$classH264Metadata.html#aaaf18469b412dafc91ea99d1f49cc11a" title=" " alt="" coords="21,70,178,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,100,178,95,179,89,227,95"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a12d5070d69f1b57f81a96e6c6d716f63" title=" " alt="" coords="5,120,194,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="227,121,194,125,194,120,226,116"/>
+<area shape="rect" id="Node000005" href="$classRawImagePlanarMetadata.html#a22416bafb536f92a45d4613fb6f75565" title=" " alt="" coords="12,169,187,210"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="275,130,195,160,163,171,161,166,193,155,273,125"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="DetailRenderer::setMatImg" name="DetailRenderer::setMatImg">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,180,106"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="228,80,364,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,90,212,90,212,96,180,96"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="412,5,611,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="323,77,411,40,432,33,434,38,413,45,325,82"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="418,55,606,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="364,82,402,78,402,83,365,87"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="417,104,606,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="365,98,402,102,401,107,364,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="415,153,609,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="326,104,413,140,435,146,433,151,411,145,324,109"/>
+</map>

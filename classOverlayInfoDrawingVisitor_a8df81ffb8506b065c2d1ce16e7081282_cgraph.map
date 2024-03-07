@@ -1,0 +1,13 @@
+<map id="OverlayInfoDrawingVisitor::OverlayInfoDrawingVisitor" name="OverlayInfoDrawingVisitor::OverlayInfoDrawingVisitor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,183,113"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="231,80,367,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,90,216,90,216,96,183,96"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="415,5,614,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="326,77,414,40,435,33,437,38,416,45,328,82"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="421,55,609,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="367,82,405,78,405,83,368,87"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="420,104,609,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="368,98,405,102,404,107,367,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="418,153,612,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="329,104,416,140,438,146,436,151,414,145,327,109"/>
+</map>

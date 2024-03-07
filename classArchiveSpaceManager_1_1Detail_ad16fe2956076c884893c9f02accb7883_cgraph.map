@@ -1,0 +1,10 @@
+<map id="ArchiveSpaceManager::Detail::diskOperation" name="ArchiveSpaceManager::Detail::diskOperation">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,158,75"/>
+<area shape="rect" id="Node000002" href="$classArchiveSpaceManager_1_1Detail.html#a1749bdbbd980979ae1020abd40d62638" title=" " alt="" coords="417,5,609,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,47,401,31,402,36,158,53"/>
+<area shape="rect" id="Node000003" href="$classArchiveSpaceManager_1_1Detail.html#a1ecc6af4062ba1767141ad65393f4831" title=" " alt="" coords="206,63,369,103"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,63,190,67,190,72,158,68"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="369,60,415,48,416,53,370,65"/>
+<area shape="rect" id="Node000004" href="$classArchiveSpaceManager_1_1Detail.html#a5fe9b4dbcbeae474a14068eaa06e10ba" title=" " alt="" coords="427,71,600,111"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="369,83,411,85,411,90,369,89"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="FramesMuxer::addInputPin" name="FramesMuxer::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,181,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="234,29,372,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,63,218,55,219,60,170,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="229,103,377,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="172,90,214,98,213,103,171,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="268,31,261,21,265,11,279,5,303,3,329,5,342,12,339,17,327,10,303,8,281,10,269,15,266,20,272,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="268,104,261,94,265,84,279,78,303,76,329,79,342,86,339,90,327,84,303,81,281,83,269,88,266,93,272,101"/>
+</map>

@@ -1,0 +1,26 @@
+var classOverlayNPPI =
+[
+    [ "Detail", "classOverlayNPPI_1_1Detail.html", "classOverlayNPPI_1_1Detail" ],
+    [ "OverlayNPPI", "classOverlayNPPI.html#ae2230757e74b0674b959b8d93a1fd229", null ],
+    [ "~OverlayNPPI", "classOverlayNPPI.html#acba11b6be4ab655867eaaf582191391c", null ],
+    [ "addInputPin", "classOverlayNPPI.html#a5bf5302c00b9cb8ef7c80bb9c95ecc2f", null ],
+    [ "getProps", "classOverlayNPPI.html#a43e6e7e56b9b88633cb71fd7525d4b78", null ],
+    [ "handlePropsChange", "classOverlayNPPI.html#ae4f6914ac4e67f39ddd6870bae399c2f", null ],
+    [ "init", "classOverlayNPPI.html#aeb3a58ac882046cf13b1986c11af8b31", null ],
+    [ "process", "classOverlayNPPI.html#a81cf88e5992bf18e8366f9fcb79fe73f", null ],
+    [ "processEOS", "classOverlayNPPI.html#af861f81a27b7990bfd14c4a00c212ca4", null ],
+    [ "processSOS", "classOverlayNPPI.html#ad0e53bf802b424bfc4cc007cb6314562", null ],
+    [ "setMetadata", "classOverlayNPPI.html#a070ced0c3825f0ab4a3c9881b297c405", null ],
+    [ "setProps", "classOverlayNPPI.html#ac749771f1d46cb64d6cc735557c2eedf", null ],
+    [ "shouldTriggerSOS", "classOverlayNPPI.html#afc9f9065b239b6f5bf6a909b88d4c490", null ],
+    [ "term", "classOverlayNPPI.html#aa93a065dee8e830d9a648ea0a5f3b5d3", null ],
+    [ "validateInputOutputPins", "classOverlayNPPI.html#a8d2dcae07274f435b33ba4a8a46abc68", null ],
+    [ "validateInputPins", "classOverlayNPPI.html#a90a1959fbff1bcc039aaf3578cfff6f0", null ],
+    [ "validateOutputPins", "classOverlayNPPI.html#a6d83c2b264267abefd336baad9468c5d", null ],
+    [ "mDetail", "classOverlayNPPI.html#aec1575e1b6dfcff09847bc88db472d7d", null ],
+    [ "mFrameLength", "classOverlayNPPI.html#aa296b9c51c43e76108ad9f15f191a0c6", null ],
+    [ "mFrameType", "classOverlayNPPI.html#ae9f8c6e4b83665cdc76faffdd9270618", null ],
+    [ "mOutputMetadata", "classOverlayNPPI.html#a3fdde8b62b22ad30535442ecc1b69639", null ],
+    [ "mOutputPinId", "classOverlayNPPI.html#a459ebc121364eef7ab3ff68e3264e612", null ],
+    [ "props", "classOverlayNPPI.html#a34ca9d85b840e1a92fa842c11929be43", null ]
+];

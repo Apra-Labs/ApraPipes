@@ -1,0 +1,15 @@
+<map id="DetailHost::mSetMetadata" name="DetailHost::mSetMetadata">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,109,179,135"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="233,80,370,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,107,218,102,219,107,180,113"/>
+<area shape="rect" id="Node000007" href="$classDetailMemoryAbstract.html#a14b1c7dd216c49e6c8dc93e779c4f54a" title=" " alt="" coords="227,130,376,171"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="180,131,212,136,211,141,179,136"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="424,5,623,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="330,77,423,40,446,33,447,38,425,45,332,82"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="430,55,618,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="369,82,414,77,414,83,370,88"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="429,104,618,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="370,98,414,102,413,108,369,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="427,153,621,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="345,104,377,116,401,128,425,140,444,146,443,151,423,145,399,133,375,121,344,109"/>
+</map>

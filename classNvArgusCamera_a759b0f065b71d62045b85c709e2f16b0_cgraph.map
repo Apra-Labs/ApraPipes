@@ -1,0 +1,20 @@
+<map id="NvArgusCamera::NvArgusCamera" name="NvArgusCamera::NvArgusCamera">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,225,80"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="288,29,437,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="225,54,272,49,273,54,225,59"/>
+<area shape="rect" id="Node000003" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="273,79,452,104"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="225,76,257,79,257,84,225,81"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="322,31,314,21,319,11,335,5,362,3,392,5,407,13,405,17,391,11,362,8,337,10,323,15,320,20,326,27"/>
+<area shape="rect" id="Node000004" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="526,29,683,55"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="428,75,522,56,523,61,430,81"/>
+<area shape="rect" id="Node000007" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="506,79,702,104"/>
+<area shape="poly" id="edge7_Node000003_Node000007" title=" " alt="" coords="452,89,490,89,490,94,452,94"/>
+<area shape="rect" id="Node000008" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="500,128,708,154"/>
+<area shape="poly" id="edge8_Node000003_Node000008" title=" " alt="" coords="430,102,523,122,522,127,428,108"/>
+<area shape="rect" id="Node000005" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="757,5,973,31"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="683,32,742,27,742,32,684,38"/>
+<area shape="rect" id="Node000006" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="791,55,939,80"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="684,47,775,56,775,61,683,52"/>
+<area shape="rect" id="Node000009" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="756,128,974,154"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="709,138,741,138,741,144,709,144"/>
+</map>

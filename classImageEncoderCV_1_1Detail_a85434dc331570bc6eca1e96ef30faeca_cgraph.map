@@ -1,0 +1,13 @@
+<map id="ImageEncoderCV::Detail::setMetadata" name="ImageEncoderCV::Detail::setMetadata">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,167,113"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="215,80,351,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,90,199,90,199,96,167,96"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="399,5,598,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="310,77,398,40,419,33,421,38,400,45,312,82"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="405,55,593,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="351,82,389,78,389,83,352,87"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="404,104,593,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="352,98,389,102,388,107,351,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="402,153,596,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="313,104,400,140,422,146,420,151,398,145,311,109"/>
+</map>

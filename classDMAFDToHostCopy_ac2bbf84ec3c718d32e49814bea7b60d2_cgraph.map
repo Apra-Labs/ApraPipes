@@ -1,0 +1,9 @@
+<map id="DMAFDToHostCopy::addInputPin" name="DMAFDToHostCopy::addInputPin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,67,220,92"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="273,29,411,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,63,257,53,258,59,196,69"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="268,103,416,128"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="199,90,253,99,252,104,198,96"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="304,31,296,21,301,11,316,5,342,3,370,5,384,12,382,17,368,10,342,8,318,10,304,15,302,20,308,27"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="304,104,296,94,301,84,316,78,342,76,370,79,384,86,382,90,368,84,342,81,318,83,304,88,302,93,308,101"/>
+</map>

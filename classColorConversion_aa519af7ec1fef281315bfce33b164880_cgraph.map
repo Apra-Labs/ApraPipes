@@ -1,0 +1,9 @@
+<map id="ColorConversion::validateOutputPins" name="ColorConversion::validateOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,173,88"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a80a136bb7514d2978497525e5d31bd42" title=" " alt="" coords="224,5,430,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,47,246,32,247,37,174,53"/>
+<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="278,55,376,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="173,65,262,65,262,70,173,70"/>
+<area shape="rect" id="Node000004" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="221,104,433,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,82,247,98,246,103,173,88"/>
+</map>

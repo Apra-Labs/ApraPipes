@@ -1,0 +1,21 @@
+<map id="Module::getOutputPinIdByType" name="Module::getOutputPinIdByType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="454,210,653,236"/>
+<area shape="rect" id="Node000002" href="$classRTSPClientSrc_1_1Detail.html#a8a8917c2d6426d4bb263f85aa336ca93" title=" " alt="" coords="243,5,392,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="533,199,480,131,444,94,404,61,383,49,385,44,408,57,448,90,484,127,537,195"/>
+<area shape="rect" id="Node000003" href="$classExternalSourceModule.html#ab893ca7c792779298b8dc1b832dffd86" title=" " alt="" coords="242,71,393,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="522,202,469,164,405,125,380,114,383,109,407,121,472,160,525,198"/>
+<area shape="rect" id="Node000004" href="$classJPEGDecoderL4TM.html#a0d5e441575954353083090282d1a82ff" title=" " alt="" coords="237,136,398,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="501,207,405,175,369,164,370,159,407,170,502,202"/>
+<area shape="rect" id="Node000005" href="$classJPEGEncoderL4TM.html#aa4dd18a93153b7f6375c07c94a6952ab" title=" " alt="" coords="238,185,397,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="438,213,397,209,398,204,439,208"/>
+<area shape="rect" id="Node000007" href="$classCalcHistogramCV.html#a361e4af2d339a9bb96ffa07925fe00cf" title=" " alt="" coords="229,234,406,260"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="439,237,407,241,406,235,438,232"/>
+<area shape="rect" id="Node000008" href="$classHistogramOverlay.html#a2b44d631ec967279d1dab84359acf8df" title=" " alt="" coords="229,284,406,309"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="501,244,407,275,370,285,369,280,405,270,500,239"/>
+<area shape="rect" id="Node000009" href="$classImageDecoderCV.html#ae142723cb7b129adc1568f7430244a15" title=" " alt="" coords="230,333,405,359"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="526,248,473,287,407,324,379,335,377,330,405,319,470,282,523,244"/>
+<area shape="rect" id="Node000010" href="$classTestSignalGenerator.html#a0c5d69aa334d28a83e3d9c8c04203036" title=" " alt="" coords="247,383,388,423"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="535,250,482,311,446,344,407,373,387,384,384,380,405,369,443,340,478,307,531,247"/>
+<area shape="rect" id="Node000006" href="$classJPEGEncoderL4TM_1_1Detail.html#a10ea92f5dbb39098e9daa70486b960ae" title=" " alt="" coords="5,177,181,218"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="222,200,181,200,181,195,222,195"/>
+</map>

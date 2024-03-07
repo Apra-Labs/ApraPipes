@@ -1,0 +1,9 @@
+<map id="TestSignalGenerator::setProps" name="TestSignalGenerator::setProps">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,146,64"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a2b1fd42084b55743ad93000d78bef757" title=" " alt="" coords="194,31,371,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,41,178,41,178,46,146,46"/>
+<area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="419,5,616,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="371,31,403,28,404,33,372,37"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="469,55,566,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="372,50,454,58,453,64,371,55"/>
+</map>

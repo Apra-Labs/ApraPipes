@@ -1,0 +1,28 @@
+var classDetailMemory =
+[
+    [ "DetailMemory", "classDetailMemory.html#ad104da3d23fbeefcdc831e398f038453", null ],
+    [ "~DetailMemory", "classDetailMemory.html#a6cfa454bbc673690664eecf438d2fb78", null ],
+    [ "compute", "classDetailMemory.html#a548128824a19bc9551c86a5cebe5ffe1", null ],
+    [ "setMetadataHelper", "classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66", null ],
+    [ "dstNextPtrOffset", "classDetailMemory.html#a1a716a6af452fee31c3fc646069ff044", null ],
+    [ "dstPitch", "classDetailMemory.html#aa3c2cb7194dba2d553117565ca7aead0", null ],
+    [ "dstPtr", "classDetailMemory.html#ad05fe0b35270abe52e3b5401d7b63cbd", null ],
+    [ "height", "classDetailMemory.html#af03577f141f6506361af98f78a726852", null ],
+    [ "imageChannels", "classDetailMemory.html#a016a58a083163b66799543e16b7e9993", null ],
+    [ "imageType", "classDetailMemory.html#af3a7872e4ccc5dc895492fc063fb851a", null ],
+    [ "inputFrame", "classDetailMemory.html#a189ff8aab242cb3a5432a90f80ceb535", null ],
+    [ "mAlignLength", "classDetailMemory.html#ace9283308f92f346f3ca5b3a140da972", null ],
+    [ "mFrameType", "classDetailMemory.html#a9af3524ed15e65bf65196a2193de2857", null ],
+    [ "mNumPlanes", "classDetailMemory.html#a1d9922690f2069f3d157a8c7500aa987", null ],
+    [ "mOutputMetadata", "classDetailMemory.html#a784478e800839460bad6223a011e83a4", null ],
+    [ "mOutputPinId", "classDetailMemory.html#aba474b7c0fa54bb5fce869c29c13f12f", null ],
+    [ "mSize", "classDetailMemory.html#afbd52ee47c85549d91d24ef5c637f7fc", null ],
+    [ "outputFrame", "classDetailMemory.html#adf3407f992b026926f65ad65c226571e", null ],
+    [ "props", "classDetailMemory.html#a3fc954b967ff87ab330060f1b55cd4a9", null ],
+    [ "rowSize", "classDetailMemory.html#a459ceea1cc6102cab75e4b4e90fdfa46", null ],
+    [ "srcNextPtrOffset", "classDetailMemory.html#a4603e399d349ef3cbfe49c9788824428", null ],
+    [ "srcPitch", "classDetailMemory.html#a6efb890e40e3918c1d2628de37a95a84", null ],
+    [ "srcPtr", "classDetailMemory.html#aeb1d6a098f87d6a4249aa677587d0151", null ],
+    [ "sync", "classDetailMemory.html#afd3d3a639c27f8e5a8ccc2dfbd81ce76", null ],
+    [ "width", "classDetailMemory.html#ae7919ac0b494864e85b4f5b50a4c1796", null ]
+];
