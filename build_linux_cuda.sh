@@ -1,6 +1,9 @@
 chmod +x build_scripts/build_dependencies_linux_cuda.sh
 ./build_scripts/build_dependencies_linux_cuda.sh
 
+chmod +x build_documentation.sh
+./build_documentation.sh
+
 cd vcpkg
 ./bootstrap-vcpkg.sh
 vcpkg integrate install
