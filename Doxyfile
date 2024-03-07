@@ -3,7 +3,7 @@
 PROJECT_NAME           = "ApraPipes"
 PROJECT_NUMBER         = 1.0
 # The directory where the documentation will be created
-OUTPUT_DIRECTORY       = ./documents
+OUTPUT_DIRECTORY       = ./documentation
 # The root directory of the source code
 INPUT                  = ./base/include ./base/src ./data/gh-pages-assets/pages/index.md ./data/gh-pages-assets/pages/introduction.md ./data/gh-pages-assets/pages/Tutorial_Adding_New_Module.md ./data/gh-pages-assets/pages/CUDAKernelProgrammingGuide.md
 # File patterns to include in the documentation
