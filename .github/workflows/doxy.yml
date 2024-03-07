@@ -3,6 +3,8 @@ name: Doxygen Action
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -10,10 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Update Footer with Commit Hash
-      run: |
-        COMMIT_HASH=$(git rev-parse --short HEAD)
-        sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" data/gh-pages-assets/pages/footer.html
+    # - name: Update Footer with Commit Hash
+    #   run: |
+    #     COMMIT_HASH=$(git rev-parse --short HEAD)
+    #     sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" data/gh-pages-assets/pages/footer.html
         
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@v1.1.0
