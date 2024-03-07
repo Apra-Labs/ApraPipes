@@ -1,9 +1,0 @@
-<map id="createDiskFiles" name="createDiskFiles">
-<area shape="rect" id="Node000001" title=" " alt="" coords="247,55,358,80"/>
-<area shape="rect" id="Node000002" href="$archivespacemanager__tests_8cpp.html#ab52998de6e0ef9ec030a542b4b8f806c" title=" " alt="" coords="5,5,199,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="231,53,157,34,158,29,233,48"/>
-<area shape="rect" id="Node000003" href="$archivespacemanager__tests_8cpp.html#af598d1dc1c95727d80e22516fd8d3877" title=" " alt="" coords="5,55,199,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,70,199,70,199,65,231,65"/>
-<area shape="rect" id="Node000004" href="$archivespacemanager__tests_8cpp.html#a4297938af795933933e03915ba29d1e3" title=" " alt="" coords="5,104,199,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="233,87,158,106,157,101,231,82"/>
-</map>

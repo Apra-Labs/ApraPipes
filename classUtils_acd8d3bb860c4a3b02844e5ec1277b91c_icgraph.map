@@ -1,9 +1,0 @@
-<map id="Utils::check_roi_bounds" name="Utils::check_roi_bounds">
-<area shape="rect" id="Node000001" title=" " alt="" coords="378,46,537,72"/>
-<area shape="rect" id="Node000002" href="$classGaussianBlur_1_1Detail.html#a2842a7712134db6c0ef3128f09ddb8e3" title=" " alt="" coords="192,5,330,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="363,46,330,40,331,35,363,40"/>
-<area shape="rect" id="Node000004" href="$classVirtualPTZ_1_1Detail.html#a954ef564b354a368b1eb39129464e633" title=" " alt="" coords="200,71,322,111"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="363,77,323,84,322,78,362,72"/>
-<area shape="rect" id="Node000003" href="$classGaussianBlur_1_1Detail.html#a455f4050953a56a15b24d05f82a684a1" title=" " alt="" coords="5,5,144,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="176,28,144,28,144,23,176,23"/>
-</map>

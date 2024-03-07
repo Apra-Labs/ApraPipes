@@ -1,9 +1,0 @@
-<map id="base/include/JPEGDecoderL4TMHelper.h" name="base/include/JPEGDecoderL4TMHelper.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="32,5,213,46"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,94,69,120"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,48,63,85,59,81,99,44"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="93,94,152,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="125,46,125,78,120,78,120,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="176,94,303,120"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="153,44,210,83,208,87,150,49"/>
-</map>

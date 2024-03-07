@@ -1,8 +1,0 @@
-<map id="MemTypeConversion::addInputPin" name="MemTypeConversion::addInputPin">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,51,155,92"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="225,29,364,55"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,59,209,51,210,56,155,64"/>
-<area shape="rect" id="Node000003" href="$classFrameMetadata.html#a90a6bbf6a558d057892331db467ea267" title=" " alt="" coords="203,79,386,120"/>
-<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="155,79,188,83,187,88,154,84"/>
-<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="259,31,252,21,256,11,270,5,294,3,321,5,334,12,332,17,319,10,294,8,272,10,260,15,257,20,263,27"/>
-</map>

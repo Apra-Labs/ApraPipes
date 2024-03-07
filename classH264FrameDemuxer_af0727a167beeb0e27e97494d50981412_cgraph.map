@@ -1,9 +1,0 @@
-<map id="H264FrameDemuxer::on_pop_success" name="H264FrameDemuxer::on_pop_success">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,166,64"/>
-<area shape="rect" id="Node000002" href="$classH264FrameDemuxer.html#a5d697aa0b5031aa302a1fddc0bd39120" title=" " alt="" coords="214,31,429,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,41,198,41,198,46,166,46"/>
-<area shape="rect" id="Node000003" href="$classH264Utils.html#a33e08e70ab70829c4af194ea85c1b307" title=" " alt="" coords="484,5,638,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="429,29,468,25,468,31,430,35"/>
-<area shape="rect" id="Node000004" href="$classH264Utils.html#af84ba16af685998a23d7ae3b2824d1f3" title=" " alt="" coords="477,55,645,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="430,52,461,55,461,60,429,57"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="OverlayModule::validateInputPins" name="OverlayModule::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,219,56"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="303,5,401,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="219,30,287,22,288,28,219,35"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="267,55,437,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="219,52,252,55,251,60,219,57"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="H264EncoderV4L2::validateInputPins" name="H264EncoderV4L2::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,187,88"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="238,5,434,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,46,255,32,256,37,188,51"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="287,55,385,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="187,65,272,65,272,70,187,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="235,104,437,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="188,84,256,98,255,103,186,89"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="HistogramOverlay::validateOutputPins" name="HistogramOverlay::validateOutputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,182,88"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a80a136bb7514d2978497525e5d31bd42" title=" " alt="" coords="233,5,439,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,47,254,32,255,37,183,52"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="287,55,385,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="182,65,271,65,271,70,182,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="230,104,442,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="183,83,255,98,254,103,181,88"/>
-</map>

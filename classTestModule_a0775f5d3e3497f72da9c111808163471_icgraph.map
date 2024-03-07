@@ -1,9 +1,0 @@
-<map id="TestModule::send" name="TestModule::send">
-<area shape="rect" id="Node000001" title=" " alt="" coords="247,55,370,80"/>
-<area shape="rect" id="Node000002" href="$module__tests_8cpp.html#aecd5ce4b68faa7770ee7b8d29fd8c7d2" title=" " alt="" coords="5,5,199,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="236,53,158,34,160,29,237,48"/>
-<area shape="rect" id="Node000003" href="$module__tests_8cpp.html#a02ff13d903f7a71072a7595666efaa9f" title=" " alt="" coords="5,55,199,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,70,199,70,199,65,231,65"/>
-<area shape="rect" id="Node000004" href="$classFlushQTests_1_1TestModule2.html#a15b97e73970b8dcb692e0076b3a1af88" title=" " alt="" coords="13,105,191,145"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="246,87,179,106,177,101,244,82"/>
-</map>

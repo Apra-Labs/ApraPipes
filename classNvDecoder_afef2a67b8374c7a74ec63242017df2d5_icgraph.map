@@ -1,5 +1,0 @@
-<map id="NvDecoder::Decode" name="NvDecoder::Decode">
-<area shape="rect" id="Node000001" title="This function decodes a frame and returns frames that are available for display. The frames should be..." alt="" coords="256,5,392,31"/>
-<area shape="rect" id="Node000002" href="$classNvDecoder.html#a7607c389f932dcaa35ebe947fb0fcfaa" title="This function decodes a frame and returns the locked frame buffers This makes the buffers available f..." alt="" coords="5,5,208,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="240,21,208,21,208,16,240,16"/>
-</map>

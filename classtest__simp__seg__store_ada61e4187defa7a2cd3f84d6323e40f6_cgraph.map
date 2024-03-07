@@ -1,7 +1,0 @@
-<map id="test_simp_seg_store::get_nextof" name="test_simp_seg_store::get_nextof">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,148,64"/>
-<area shape="rect" id="Node000002" href="$classApraChunk.html#a38bb5704f8088b27fcd25811009ff38d" title=" " alt="" coords="209,5,319,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,31,194,25,194,30,149,36"/>
-<area shape="rect" id="Node000003" href="$classApraChunk.html#a9299c12a8ac3d237260392946175edaf" title=" " alt="" coords="196,55,332,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,50,181,54,180,59,148,55"/>
-</map>

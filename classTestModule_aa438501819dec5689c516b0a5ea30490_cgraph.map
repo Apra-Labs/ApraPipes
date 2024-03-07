@@ -1,7 +1,0 @@
-<map id="TestModule::getNumberOfInputsByType" name="TestModule::getNumberOfInputsByType">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,215,46"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a4f4ad5a4cabf96a96481fbd1044027c3" title=" " alt="" coords="263,5,446,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,23,247,23,247,28,215,28"/>
-<area shape="rect" id="Node000003" href="$Module_8cpp.html#aa4131454f7e42e9e9a7035f84fa61d99" title=" " alt="" coords="494,13,662,39"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="446,23,478,23,478,28,446,28"/>
-</map>

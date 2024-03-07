@@ -1,7 +1,0 @@
-<map id="NvDecoder" name="NvDecoder">
-<area shape="rect" id="Node000001" title="Base class for decoder interface." alt="" coords="5,209,196,894"/>
-<area shape="rect" id="Node000002" href="$structRect.html" title=" " alt="" coords="21,5,61,131"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="43,130,45,184,46,192,40,192,40,185,37,131"/>
-<area shape="rect" id="Node000003" href="$structDim.html" title=" " alt="" coords="143,25,179,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,111,148,192,143,192,153,110"/>
-</map>

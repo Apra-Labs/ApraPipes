@@ -1,7 +1,0 @@
-<map id="base/include/VirtualPTZ.h" name="base/include/VirtualPTZ.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="86,5,257,31"/>
-<area shape="rect" id="Node000002" href="$VirtualPTZ_8cpp.html" title=" " alt="" coords="5,87,167,112"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,43,101,88,97,84,146,40"/>
-<area shape="rect" id="Node000003" href="$virtualptz__tests_8cpp.html" title=" " alt="" coords="191,79,322,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="197,40,237,77,234,81,194,44"/>
-</map>

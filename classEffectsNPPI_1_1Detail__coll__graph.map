@@ -1,7 +1,0 @@
-<map id="EffectsNPPI::Detail" name="EffectsNPPI::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,688,145,1054"/>
-<area shape="rect" id="Node000002" href="$classEffectsNPPIProps.html" title=" " alt="" coords="14,420,151,625"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,625,85,671,80,671,80,625"/>
-<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,160,371"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="85,385,85,420,80,420,80,385"/>
-</map>

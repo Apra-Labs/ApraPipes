@@ -1,7 +1,0 @@
-<map id="H264FrameDemuxer::parseNALU" name="H264FrameDemuxer::parseNALU">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,221,56"/>
-<area shape="rect" id="Node000002" href="$classH264Utils.html#a33e08e70ab70829c4af194ea85c1b307" title=" " alt="" coords="276,5,430,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="221,29,260,25,260,31,221,35"/>
-<area shape="rect" id="Node000003" href="$classH264Utils.html#af84ba16af685998a23d7ae3b2824d1f3" title=" " alt="" coords="269,55,437,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="221,52,253,55,253,60,221,57"/>
-</map>

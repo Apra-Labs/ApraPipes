@@ -1,9 +1,0 @@
-<map id="base/include/MetadataHints.h" name="base/include/MetadataHints.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="180,5,374,31"/>
-<area shape="rect" id="Node000002" href="$OverlayNPPI_8cpp.html" title=" " alt="" coords="5,87,181,112"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="236,40,122,88,120,84,234,35"/>
-<area shape="rect" id="Node000003" href="$overlaynppi__tests_8cpp.html" title=" " alt="" coords="205,79,349,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="280,46,280,79,274,79,274,46"/>
-<area shape="rect" id="Node000004" href="$textoverlayxform__tests_8cpp.html" title=" " alt="" coords="373,79,546,120"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="320,35,415,76,413,81,318,40"/>
-</map>

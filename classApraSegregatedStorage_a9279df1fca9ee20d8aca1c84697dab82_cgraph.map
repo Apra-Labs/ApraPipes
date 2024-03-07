@@ -1,9 +1,0 @@
-<map id="ApraSegregatedStorage::segregate" name="ApraSegregatedStorage::segregate">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,165,64"/>
-<area shape="rect" id="Node000002" href="$classApraSegregatedStorage.html#acd4f5238bd4dda0f0d991cc71c7af79e" title=" " alt="" coords="213,23,372,64"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,41,197,41,197,46,165,46"/>
-<area shape="rect" id="Node000003" href="$classApraChunk.html#a9299c12a8ac3d237260392946175edaf" title=" " alt="" coords="420,5,556,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="372,31,404,26,405,32,373,36"/>
-<area shape="rect" id="Node000004" href="$classApraChunk.html#a0470843a24693f2a751d12d51415a352" title=" " alt="" coords="434,55,543,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="373,51,418,56,418,62,372,56"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="QuePushStrategy" name="QuePushStrategy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="146,5,286,191"/>
-<area shape="rect" id="Node000002" href="$classNonBlockingAllOrNonePushStrategy.html" title=" " alt="" coords="5,239,200,408"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,205,147,240,143,238,160,203"/>
-<area shape="rect" id="Node000003" href="$classNonBlockingAnyPushStrategy.html" title=" " alt="" coords="225,261,437,386"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="272,203,302,260,297,262,268,205"/>
-</map>

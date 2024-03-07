@@ -1,9 +1,0 @@
-<map id="ApraPool::ordered_malloc" name="ApraPool::ordered_malloc">
-<area shape="rect" id="Node000001" title=" " alt="" coords="247,55,415,80"/>
-<area shape="rect" id="Node000002" href="$test__bug__1252_8cpp.html#aeab23325db9190e8658c0c23bea4b014" title=" " alt="" coords="5,5,199,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="253,53,164,34,166,29,254,48"/>
-<area shape="rect" id="Node000003" href="$test__bug__2696_8cpp.html#a26e8e71251bd5cab5f35abb4daff4786" title=" " alt="" coords="5,55,199,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="232,70,199,70,199,65,232,65"/>
-<area shape="rect" id="Node000004" href="$test__bug__4960_8cpp.html#a3847038b1d92162940447e8a61648147" title=" " alt="" coords="5,104,199,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="254,87,166,106,164,101,253,82"/>
-</map>

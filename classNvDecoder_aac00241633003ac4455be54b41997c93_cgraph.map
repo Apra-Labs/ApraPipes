@@ -1,9 +1,0 @@
-<map id="NvDecoder::NvDecoder" name="NvDecoder::NvDecoder">
-<area shape="rect" id="Node000001" title="This function is used to initialize the decoder session. Application must call this function to initi..." alt="" coords="5,78,163,104"/>
-<area shape="rect" id="Node000002" href="$classNvDecoder.html#ad68948005dd67eeeeb665cf4400510a7" title="Callback function to be registered for getting a callback when a decoded frame is ready to be decoded..." alt="" coords="249,5,424,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,75,239,48,241,53,137,80"/>
-<area shape="rect" id="Node000003" href="$classNvDecoder.html#ad0058235e6c03cae000a34f6c1b073fb" title="Callback function to be registered for getting a callback when a decoded frame is available for displ..." alt="" coords="249,71,424,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="163,88,233,88,233,94,163,94"/>
-<area shape="rect" id="Node000004" href="$classNvDecoder.html#a9d18feaa4b3ecddb2caba65234dc3eee" title="Callback function to be registered for getting a callback when decoding of sequence starts." alt="" coords="211,136,462,161"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="136,102,211,120,251,129,250,134,210,126,135,107"/>
-</map>

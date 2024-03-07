@@ -1,7 +1,0 @@
-<map id="base/include/GaussianBlur.h" name="base/include/GaussianBlur.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="96,5,282,31"/>
-<area shape="rect" id="Node000002" href="$GaussianBlur_8cpp.html" title=" " alt="" coords="5,87,183,112"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,43,110,88,107,84,161,39"/>
-<area shape="rect" id="Node000003" href="$gaussianblur__tests_8cpp.html" title=" " alt="" coords="207,79,360,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="216,39,262,77,258,81,213,43"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="V4L2CUYUV420Converter" name="V4L2CUYUV420Converter">
-<area shape="rect" id="Node000001" title=" " alt="" coords="162,5,355,251"/>
-<area shape="rect" id="Node000002" href="$classV4L2CUDMABufYUV420Converter.html" title=" " alt="" coords="5,359,248,504"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,265,160,360,155,358,197,263"/>
-<area shape="rect" id="Node000003" href="$classV4L2CURGBToYUV420Converter.html" title=" " alt="" coords="273,299,509,564"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="320,263,336,298,331,300,315,265"/>
-</map>

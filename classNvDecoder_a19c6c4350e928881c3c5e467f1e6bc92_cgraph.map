@@ -1,9 +1,0 @@
-<map id="NvDecoder::HandleVideoSequence" name="NvDecoder::HandleVideoSequence">
-<area shape="rect" id="Node000001" title="This function gets called when a sequence is ready to be decoded. The function also gets called when ..." alt="" coords="5,55,230,80"/>
-<area shape="rect" id="Node000002" href="$H264DecoderNvCodecHelper_8cpp.html#a433004ae8885a783e5fabef2b0251d4f" title=" " alt="" coords="292,5,459,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,51,289,32,290,37,189,57"/>
-<area shape="rect" id="Node000003" href="$H264DecoderNvCodecHelper_8cpp.html#a4a90b600857d33c33127c2ef74b814d4" title=" " alt="" coords="278,55,473,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="230,65,262,65,262,70,230,70"/>
-<area shape="rect" id="Node000004" href="$H264DecoderNvCodecHelper_8cpp.html#a2bab96e761a3eef4bf4dd940079dafc1" title=" " alt="" coords="302,104,449,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="189,78,290,98,289,103,188,84"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="DetailGPU::mSetMetadata" name="DetailGPU::mSetMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,42,180,68"/>
-<area shape="rect" id="Node000002" href="$classDetailMemoryAbstract.html#a14b1c7dd216c49e6c8dc93e779c4f54a" title=" " alt="" coords="253,5,402,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,41,237,34,238,40,181,47"/>
-<area shape="rect" id="Node000003" href="$classDetailGPU.html#a13083c9889c92428bf692aa57176fa10" title=" " alt="" coords="228,70,427,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="181,63,213,67,212,72,180,68"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="CudaMemCopy::cloneMetadata" name="CudaMemCopy::cloneMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="517,31,717,56"/>
-<area shape="rect" id="Node000002" href="$classCudaMemCopy.html#a4376e48b35aa2b500d09c85cd0085f43" title=" " alt="" coords="264,5,448,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="501,35,448,30,449,24,502,30"/>
-<area shape="rect" id="Node000003" href="$classCudaMemCopy.html#a753216ee0e5968924eac5a0d55fb6f6c" title=" " alt="" coords="243,55,469,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="502,57,470,60,469,54,501,51"/>
-<area shape="rect" id="Node000004" href="$classCudaMemCopy.html#ac65f5eafd0f48bd19f0a70e49ecf951e" title=" " alt="" coords="5,55,195,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="227,70,195,70,195,65,227,65"/>
-</map>

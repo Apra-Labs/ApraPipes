@@ -1,9 +1,0 @@
-<map id="VirtualPTZ::validateInputPins" name="VirtualPTZ::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,195,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="246,5,442,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,51,261,32,262,37,168,57"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="295,55,393,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,65,279,65,279,70,195,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="243,104,445,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="168,78,262,98,261,103,167,84"/>
-</map>

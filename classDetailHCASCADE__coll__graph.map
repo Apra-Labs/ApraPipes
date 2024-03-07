@@ -1,9 +1,0 @@
-<map id="DetailHCASCADE" name="DetailHCASCADE">
-<area shape="rect" id="Node000001" title=" " alt="" coords="35,1143,171,1248"/>
-<area shape="rect" id="Node000002" href="$classDetail.html" title=" " alt="" coords="39,728,167,1094"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,1108,106,1143,101,1143,101,1108"/>
-<area shape="rect" id="Node000003" href="$classFacialLandmarkCVProps.html" title=" " alt="" coords="5,420,201,665"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,665,106,712,101,712,101,665"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="26,5,181,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="106,385,106,420,101,420,101,385"/>
-</map>

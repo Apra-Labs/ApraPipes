@@ -1,6 +1,0 @@
-<map id="CudaStreamSynchronize::addInputPin" name="CudaStreamSynchronize::addInputPin">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,22,169,63"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a69c25c01cf3cb02680fee4be4c0d9d8c" title=" " alt="" coords="217,29,355,55"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,40,201,40,201,45,169,45"/>
-<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="253,30,246,21,250,11,264,5,286,3,310,5,323,12,320,17,309,10,286,8,265,10,254,15,251,20,257,27"/>
-</map>

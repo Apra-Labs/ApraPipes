@@ -1,7 +1,0 @@
-<map id="GetNumDecodeSurfaces" name="GetNumDecodeSurfaces">
-<area shape="rect" id="Node000001" title=" " alt="" coords="278,31,444,56"/>
-<area shape="rect" id="Node000002" href="$classNvDecoder.html#a19c6c4350e928881c3c5e467f1e6bc92" title="This function gets called when a sequence is ready to be decoded. The function also gets called when ..." alt="" coords="5,5,230,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="262,36,230,33,230,27,262,31"/>
-<area shape="rect" id="Node000003" href="$classNvDecoder.html#a4b7178e1e2f6b78c52b0a0b048175769" title="This function reconfigure decoder if there is a change in sequence params." alt="" coords="13,55,222,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,56,222,60,222,55,262,51"/>
-</map>

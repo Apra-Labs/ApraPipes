@@ -1,9 +1,0 @@
-<map id="FileReaderModule" name="FileReaderModule">
-<area shape="rect" id="Node000001" title=" " alt="" coords="39,1488,187,1834"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1440,110,1489,105,1489,104,1440"/>
-<area shape="rect" id="Node000003" href="$classFileReaderModuleProps.html" title=" " alt="" coords="202,820,386,1025"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="279,1026,243,1213,193,1426,179,1473,174,1472,187,1425,238,1211,274,1025"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="217,5,371,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="297,385,297,820,291,820,291,385"/>
-</map>

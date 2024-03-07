@@ -1,9 +1,0 @@
-<map id="Module::addOutputPin" name="Module::addOutputPin">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,154,56"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="242,5,341,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,32,227,23,228,28,154,37"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ac059f5b4e08f748a5bb27936ba038fcf" title=" " alt="" coords="202,55,381,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="154,49,186,53,186,58,154,55"/>
-<area shape="rect" id="Node000004" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="429,55,641,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="381,65,413,65,413,70,381,70"/>
-</map>

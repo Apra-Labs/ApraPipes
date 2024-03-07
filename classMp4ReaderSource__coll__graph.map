@@ -1,9 +1,0 @@
-<map id="Mp4ReaderSource" name="Mp4ReaderSource">
-<area shape="rect" id="Node000001" title=" " alt="" coords="77,1488,225,1954"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,1440,137,1489,131,1489,128,1441"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderSourceProps.html" title=" " alt="" coords="201,750,376,1095"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,1096,197,1472,192,1471,256,1095"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="211,5,366,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="291,385,291,750,286,750,286,385"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="FileWriterModule::validateInputPins" name="FileWriterModule::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,175,88"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="226,5,422,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,47,244,32,246,37,175,52"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="275,55,373,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="175,65,259,65,259,70,175,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="223,104,425,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,83,246,98,244,103,174,88"/>
-</map>

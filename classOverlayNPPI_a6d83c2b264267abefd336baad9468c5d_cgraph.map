@@ -1,9 +1,0 @@
-<map id="OverlayNPPI::validateOutputPins" name="OverlayNPPI::validateOutputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,219,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a80a136bb7514d2978497525e5d31bd42" title=" " alt="" coords="270,5,476,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,51,286,32,287,37,184,57"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="324,55,422,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="219,65,308,65,308,70,219,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#aaa9d06e163a36d87704e0798e25b8578" title=" " alt="" coords="267,104,479,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="184,78,287,98,286,103,183,84"/>
-</map>

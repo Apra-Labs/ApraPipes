@@ -1,9 +1,0 @@
-<map id="CudaStreamSynchronize::process" name="CudaStreamSynchronize::process">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,169,64"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="217,31,314,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,41,201,41,201,46,169,46"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="378,5,548,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="314,35,363,28,363,34,315,40"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="362,55,564,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="315,47,347,51,346,56,314,52"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="Module::getPlayState" name="Module::getPlayState">
-<area shape="rect" id="Node000001" title=" " alt="" coords="223,35,366,60"/>
-<area shape="rect" id="Node000002" href="$classTestModule.html#acf64076e3e21381def036396f20cdfd2" title=" " alt="" coords="5,5,175,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,38,175,33,175,28,208,32"/>
-<area shape="rect" id="Node000003" href="$classFileReaderModule.html#a4dfe46f3a540cfcbdfe39acb35287b1e" title=" " alt="" coords="5,55,175,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="208,62,175,67,175,61,207,57"/>
-</map>

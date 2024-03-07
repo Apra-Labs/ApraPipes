@@ -1,6 +1,0 @@
-<map id="TestModule::makeFrame" name="TestModule::makeFrame">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,29,170,55"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a264d18f5907844d6d413c5d529804c4d" title=" " alt="" coords="218,29,356,55"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,40,202,40,202,45,170,45"/>
-<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="253,30,247,21,251,11,265,5,287,3,311,5,324,12,321,17,310,10,287,8,266,10,255,15,252,20,258,27"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classbounded__buffer.html" title=" " alt="" coords="5,5,159,46"/>
-<area shape="rect" id="Node000001" href="$classFrameContainerQueue.html" title=" " alt="" coords="207,13,358,39"/>
-<area shape="poly" id="edge10_Node000000_Node000001" title=" " alt="" coords="174,23,206,23,206,28,174,28"/>
-<area shape="rect" id="Node000002" href="$classFrameContainerQueueAdapter.html" title=" " alt="" coords="406,13,602,39"/>
-<area shape="poly" id="edge11_Node000001_Node000002" title=" " alt="" coords="374,23,405,23,405,28,374,28"/>
-<area shape="rect" id="Node000003" href="$classH264FrameDemuxer.html" title=" " alt="" coords="650,13,791,39"/>
-<area shape="poly" id="edge12_Node000002_Node000003" title=" " alt="" coords="618,23,650,23,650,28,618,28"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="PlayPauseCommand::getSerializeSize" name="PlayPauseCommand::getSerializeSize">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,246,60"/>
-<area shape="rect" id="Node000002" href="$classCommand.html#abcb04002665b1ebb3a60c65cff0d14c0" title=" " alt="" coords="310,5,488,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="246,32,294,27,295,32,246,37"/>
-<area shape="rect" id="Node000003" href="$classPlayPauseCommand.html#ace319f714899a9ed58a2753beb8f2489" title=" " alt="" coords="294,55,504,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="246,57,278,61,278,66,246,62"/>
-</map>

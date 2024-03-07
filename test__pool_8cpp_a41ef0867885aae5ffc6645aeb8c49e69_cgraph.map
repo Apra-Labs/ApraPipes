@@ -1,7 +1,0 @@
-<map id="test_mem_usage" name="test_mem_usage">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,127,56"/>
-<area shape="rect" id="Node000002" href="$mp4__simul__read__write__tests_8cpp.html#a3cf0a2856be9ad9c91358fabd80609d0" title=" " alt="" coords="175,5,282,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,31,159,26,159,32,128,37"/>
-<area shape="rect" id="Node000003" href="$structTrackAlloc.html#a35c376db1fce8342279e6b128311a4c8" title=" " alt="" coords="177,55,280,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="128,50,162,55,161,60,127,55"/>
-</map>

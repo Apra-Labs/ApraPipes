@@ -1,7 +1,0 @@
-<map id="FramesQueue" name="FramesQueue">
-<area shape="rect" id="Node000001" title=" " alt="" coords="127,5,258,171"/>
-<area shape="rect" id="Node000002" href="$classGroupedFramesQueue.html" title=" " alt="" coords="5,219,175,384"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,185,132,220,127,218,144,183"/>
-<area shape="rect" id="Node000003" href="$classIndependentFramesQueue.html" title=" " alt="" coords="199,249,391,354"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="241,183,273,248,268,250,236,185"/>
-</map>

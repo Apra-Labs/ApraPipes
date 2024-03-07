@@ -1,9 +1,0 @@
-<map id="DMAAllocator::DMAAllocator" name="DMAAllocator::DMAAllocator">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,193,56"/>
-<area shape="rect" id="Node000002" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="247,5,443,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,31,231,27,231,33,194,36"/>
-<area shape="rect" id="Node000003" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="241,55,449,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,50,225,53,225,58,193,55"/>
-<area shape="rect" id="Node000004" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="497,55,714,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="449,65,482,65,482,70,449,70"/>
-</map>

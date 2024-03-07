@@ -1,9 +1,0 @@
-<map id="MetadataSink" name="MetadataSink">
-<area shape="rect" id="Node000001" title=" " alt="" coords="62,1488,233,1634"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,1440,144,1488,138,1489,134,1440"/>
-<area shape="rect" id="Node000003" href="$classMetadataSinkProps.html" title=" " alt="" coords="201,890,347,955"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="273,955,245,1154,222,1289,193,1426,180,1473,175,1471,187,1425,216,1288,240,1153,268,954"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="197,5,351,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="277,385,277,890,271,890,271,385"/>
-</map>

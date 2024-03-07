@@ -1,9 +1,0 @@
-<map id="Frame::size" name="Frame::size">
-<area shape="rect" id="Node000001" title=" " alt="" coords="394,31,481,56"/>
-<area shape="rect" id="Node000002" href="$classFrameFactory.html#a2c75257be7323d0133cbff4cf55104ea" title=" " alt="" coords="197,31,346,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="378,46,346,46,346,41,378,41"/>
-<area shape="rect" id="Node000003" href="$classFrameFactory.html#ab1edbb992f665c203323f509c657f73d" title=" " alt="" coords="5,5,149,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="181,34,149,30,149,25,182,29"/>
-<area shape="rect" id="Node000004" href="$classFrameFactory.html#aab7c88c02d09b715dff2baa1a5001b00" title=" " alt="" coords="5,55,149,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="182,57,149,61,149,56,181,52"/>
-</map>

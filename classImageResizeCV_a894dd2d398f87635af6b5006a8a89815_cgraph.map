@@ -1,9 +1,0 @@
-<map id="ImageResizeCV::validateInputPins" name="ImageResizeCV::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,226,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="277,5,473,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,51,288,32,289,37,187,57"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="326,55,424,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,65,310,65,310,70,226,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="274,104,476,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,78,289,98,288,103,186,84"/>
-</map>

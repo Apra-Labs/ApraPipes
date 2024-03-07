@@ -1,9 +1,0 @@
-<map id="FrameFactory::destroy" name="FrameFactory::destroy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,70,155,96"/>
-<area shape="rect" id="Node000002" href="$classFrameFactory.html#a550146a720668994fbd1621273bd513e" title=" " alt="" coords="203,5,388,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,67,201,48,202,53,132,72"/>
-<area shape="rect" id="Node000003" href="$classFrame.html#a3e78f0df6a009372f4836ada8e92fd06" title=" " alt="" coords="252,70,339,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,80,236,80,236,86,155,86"/>
-<area shape="rect" id="Node000004" href="$classFrame.html#abec8c7bccdfc88cb4da137caae9f73d6" title=" " alt="" coords="241,120,350,145"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="140,94,227,114,226,119,139,99"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="MaxDelayAnyStrategy::addInputPin" name="MaxDelayAnyStrategy::addInputPin">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,153,46"/>
-<area shape="rect" id="Node000002" href="$classFramesMuxerStrategy.html#a90a0e198811721d9fa82da121fd5d6a8" title=" " alt="" coords="201,5,349,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,23,185,23,185,28,153,28"/>
-<area shape="rect" id="Node000003" href="$classFramesMuxerStrategy.html#a56ece39b0bdc8c36b055d555a5dc9fa6" title=" " alt="" coords="397,5,545,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="349,23,381,23,381,28,349,28"/>
-</map>

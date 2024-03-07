@@ -1,9 +1,0 @@
-<map id="AudioToTextXForm::validateInputPins" name="AudioToTextXForm::validateInputPins">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,190,88"/>
-<area shape="rect" id="Node000002" href="$classModule.html#ad31f4ef985e81fdcf982aff08783c88d" title=" " alt="" coords="241,5,437,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="190,46,257,32,258,37,191,51"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="290,55,388,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="190,65,274,65,274,70,190,70"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="238,104,440,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="191,84,258,98,257,103,190,89"/>
-</map>

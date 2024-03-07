@@ -1,7 +1,0 @@
-<map id="BOOST_AUTO_TEST_CASE" name="BOOST_AUTO_TEST_CASE">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,199,31"/>
-<area shape="rect" id="Node000002" href="$test__pool__alloc_8cpp.html#ae1a3968e7947464bee7714f6d43b7002" title=" " alt="" coords="247,5,290,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,16,231,16,231,21,199,21"/>
-<area shape="rect" id="Node000003" href="$random__shuffle_8hpp.html#a2c7edb55d68dad4fdaa83e514fce96da" title=" " alt="" coords="338,5,506,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="290,16,322,16,322,21,290,21"/>
-</map>

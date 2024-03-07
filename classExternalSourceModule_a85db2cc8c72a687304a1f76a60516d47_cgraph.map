@@ -1,9 +1,0 @@
-<map id="ExternalSourceModule::send" name="ExternalSourceModule::send">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,156,64"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="204,31,301,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,41,188,41,188,46,156,46"/>
-<area shape="rect" id="Node000003" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="365,5,535,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="301,35,350,28,350,34,302,40"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="349,55,551,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="302,47,334,51,333,56,301,52"/>
-</map>

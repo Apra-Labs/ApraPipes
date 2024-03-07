@@ -1,7 +1,0 @@
-<map id="Logger::setListener" name="Logger::setListener">
-<area shape="rect" id="Node000001" title=" " alt="" coords="247,31,379,56"/>
-<area shape="rect" id="Node000002" href="$pipeline__tests_8cpp.html#aa0d3f1635ead2d4bd59bc9ad609e6357" title=" " alt="" coords="5,5,199,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="231,36,199,32,200,27,232,31"/>
-<area shape="rect" id="Node000003" href="$logger__tests_8cpp.html#afedf2431a128a7363a91916f3ec6dd86" title=" " alt="" coords="5,55,199,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,55,200,59,199,54,231,50"/>
-</map>
