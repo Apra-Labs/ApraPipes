@@ -3,7 +3,7 @@
 PROJECT_NAME           = "ApraPipes"
 PROJECT_NUMBER         = 1.0
 # The directory where the documentation will be created
-OUTPUT_DIRECTORY       = ./documents
+OUTPUT_DIRECTORY       = ./documentation
 # The root directory of the source code
 INPUT                  = ./base/include ./base/src ./data/gh-pages-assets/pages/index.md ./data/gh-pages-assets/pages/introduction.md ./data/gh-pages-assets/pages/Tutorial_Adding_New_Module.md ./data/gh-pages-assets/pages/CUDAKernelProgrammingGuide.md
 # File patterns to include in the documentation
@@ -29,7 +29,6 @@ HTML_COLORSTYLE        = LIGHT
 HTML_COLORSTYLE_HUE    = 77
 HTML_COLORSTYLE_SAT    = 147
 HTML_COLORSTYLE_GAMMA  = 115
-HTML_TIMESTAMP         = YES
 HTML_FOOTER            = data/gh-pages-assets/pages/footer.html
 HTML_HEADER            = data/gh-pages-assets/pages/logo.html 
 
@@ -48,11 +47,11 @@ UML_LOOK               = YES
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 
-IMAGE_PATH             = data\gh-pages-assets\_images
+IMAGE_PATH             = data/gh-pages-assets/_images
 HTML_EXTRA_STYLESHEET  = data/gh-pages-assets/pages/custom.css
 SHOW_NAMESPACES        = NO
 SHOW_FILES             = NO
 GENERATE_TREEVIEW = YES
 DISABLE_INDEX = NO
 HTML_EXTRA_FILES = data/gh-pages-assets/_images/apralogo.png
-#$darkmode           = YES
+
