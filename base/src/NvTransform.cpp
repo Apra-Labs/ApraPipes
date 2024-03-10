@@ -15,12 +15,65 @@ class NvTransform::Detail
 public:
 	Detail(NvTransformProps &_props) : props(_props)
 	{
-		src_rect.top = _props.top;
-		src_rect.left = _props.left;
-		src_rect.width = _props.width;
-		src_rect.height = _props.height;
-
 		memset(&transParams, 0, sizeof(transParams));
+		setSourceRect(_props, transParams);
+		setDestinationRect(_props, transParams);
+		setFilterType(_props, transParams);
+		setRotateType(_props, transParams);
+	}
+
+	~Detail()
+	{
+	}
+
+	bool compute(frame_sp &frame, int outFD)
+	{
+		auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
+		NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
+		return true;
+	}
+
+	void setProps(NvTransformProps &mprops)
+	{
+		props = mprops;
+		updateTransparams(props);
+	}
+
+	void updateTransparams(NvTransformProps &_props){
+		memset(&transParams, 0, sizeof(transParams));
+		setSourceRect(_props, transParams);
+		setDestinationRect(_props, transParams);
+		setFilterType(_props, transParams);
+		setRotateType(_props, transParams);
+	}
+
+	void setSourceRect(NvTransformProps& _props, NvBufferTransformParams& transParams) {
+		src_rect.top = _props.src_rect.top;
+		src_rect.left = _props.src_rect.left;
+		src_rect.width = _props.src_rect.width;
+		src_rect.height = _props.src_rect.height;
+
+		if (src_rect.width != 0)
+		{
+			transParams.src_rect = src_rect;
+			transParams.transform_flag |= NVBUFFER_TRANSFORM_CROP_SRC;
+		}
+	}
+
+	void setDestinationRect(NvTransformProps& _props, NvBufferTransformParams& transParams) {
+		dst_rect.top = _props.dst_rect.top;
+		dst_rect.left = _props.dst_rect.left;
+		dst_rect.width = _props.dst_rect.width;
+		dst_rect.height = _props.dst_rect.height;
+
+		if (dst_rect.width != 0)
+		{
+			transParams.dst_rect = dst_rect;
+			transParams.transform_flag |= NVBUFFER_TRANSFORM_CROP_DST;
+		}
+	}
+
+	void setFilterType(NvTransformProps& _props, NvBufferTransformParams& transParams) {
 		switch(_props.filterType)
 		{
 		case NvTransformProps::NvTransformFilter::NEAREST:
@@ -44,32 +97,43 @@ public:
 		default:
 			throw AIPException(AIP_FATAL, "Filter Not Supported");
 		}
-		
-		if (src_rect.width != 0)
-		{
-			transParams.src_rect = src_rect;
-			transParams.transform_flag = NVBUFFER_TRANSFORM_FILTER | NVBUFFER_TRANSFORM_CROP_SRC;
-		}
-		else
-		{
-			transParams.transform_flag = NVBUFFER_TRANSFORM_FILTER;
-		}
+
+		transParams.transform_flag |= NVBUFFER_TRANSFORM_FILTER;
 	}
 
-	~Detail()
-	{
-	}
+	void setRotateType(NvTransformProps& _props, NvBufferTransformParams& transParams) {
+		switch(_props.rotateType)
+		{
+		case NvTransformProps::NvTransformRotate::ROTATE_0:
+			transParams.transform_flip = NvBufferTransform_None;
+			break;
+		case NvTransformProps::NvTransformRotate::ANTICLOCKWISE_ROTATE_90:
+			transParams.transform_flip = NvBufferTransform_Rotate90;
+			break;
+		case NvTransformProps::NvTransformRotate::ANTICLOCKWISE_ROTATE_180:
+			transParams.transform_flip = NvBufferTransform_Rotate180;
+			break;
+		case NvTransformProps::NvTransformRotate::ANTICLOCKWISE_ROTATE_270:
+			transParams.transform_flip = NvBufferTransform_Rotate270;
+			break;
+		case NvTransformProps::NvTransformRotate::CLOCKWISE_ROTATE_90:
+			transParams.transform_flip = NvBufferTransform_Rotate270;
+			break;
+		case NvTransformProps::NvTransformRotate::CLOCKWISE_ROTATE_180:
+			transParams.transform_flip = NvBufferTransform_Rotate180;
+			break;
+		case NvTransformProps::NvTransformRotate::CLOCKWISE_ROTATE_270:
+			transParams.transform_flip = NvBufferTransform_Rotate90;
+			break;
+		default:
+			throw AIPException(AIP_FATAL, "Rotate type Not Supported, please select from 0, 90, 180 or 270");
+		}
 
-	bool compute(frame_sp &frame, int outFD)
-	{
-		auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
-		NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
-
-		return true;
+		transParams.transform_flag |= NVBUFFER_TRANSFORM_FLIP;
 	}
 
 public:
-	NvBufferRect src_rect;
+	NvBufferRect src_rect, dst_rect;
 	framemetadata_sp outputMetadata;
 	std::string outputPinId;
 	NvTransformProps props;
@@ -234,10 +298,10 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 		throw AIPException(AIP_NOTIMPLEMENTED, "Unsupported FrameType<" + std::to_string(frameType) + ">");
 	}
 
-	if (mDetail->props.width != 0)
+	if (mDetail->props.output_width != 0)
 	{
-		width = mDetail->props.width;
-		height = mDetail->props.height;
+		width = mDetail->props.output_width;
+		height = mDetail->props.output_height;
 	}
 	if(mDetail->props.scaleHeight != 0 && mDetail->props.scaleWidth != 0)
 	{
@@ -253,4 +317,24 @@ bool NvTransform::processEOS(string &pinId)
 {
 	mDetail->outputMetadata.reset();
 	return true;
+}
+
+void NvTransform::setProps(NvTransformProps &props)
+{
+	Module::addPropsToQueue(props);
+}
+
+NvTransformProps NvTransform::getProps()
+{
+	fillProps(mDetail->props);
+	return mDetail->props;
+}
+
+bool NvTransform::handlePropsChange(frame_sp &frame)
+{
+	NvTransformProps props(mDetail->props.imageType);
+	bool ret = Module::handlePropsChange(frame, props);
+	mDetail->setProps(props);
+	// std::cerr << "ret: " << ret << std::endl;
+	return ret;
 }
