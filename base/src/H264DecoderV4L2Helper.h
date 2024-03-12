@@ -389,6 +389,8 @@ public:
     bool initializeDecoder();
 
     void closeAllThreads(frame_sp eosFrame);
+
+    void deQueAllBuffers();
 protected:
     boost::shared_ptr<Buffer> mBuffer;
     context_t ctx;
@@ -396,4 +398,5 @@ protected:
     std::function<void(frame_sp &)> send;
     int ret = 0;
     std::queue<uint64_t> framesTimestampEntry;
+    std::mutex m;
 };
