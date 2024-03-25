@@ -27,7 +27,8 @@ public:
 		MMQtimestamps,
 		Rendertimestamp,
 		RenderPlayPause,
-		Mp4ErrorHandle
+		Mp4ErrorHandle,
+		DecoderPlaybackSpeed,
 	};
 
 	Command()
@@ -645,5 +646,31 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& previousFile;
 		ar& nextFile;
+	}
+};
+
+class DecoderPlaybackSpeed : public Command
+{
+public:
+	DecoderPlaybackSpeed() : Command(Command::CommandType::DecoderPlaybackSpeed)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(playbackFps) + sizeof(playbackSpeed);
+	}
+
+	int playbackFps;
+	float playbackSpeed;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& playbackFps;
+		ar& playbackSpeed;
 	}
 };

@@ -387,10 +387,7 @@ bool H264Decoder::process(frame_container& frames)
 	}
 	auto frame = frames.begin()->second;
 	auto myId = Module::getId();
-	// if (myId == "H264Decoder_42")
-	// {
-	// 	LOG_INFO << "Timestamp is = " << frame->timestamp;
-	// }
+	
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
 
@@ -419,6 +416,12 @@ bool H264Decoder::process(frame_container& frames)
 
 	mDirection = h264Metadata->direction;
 	short naluType = H264Utils::getNALUType((char*)frame->data());
+
+	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32) && (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM))
+	{
+		return true;
+	}
+
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
 	{
 		saveSpsPps(frame);
@@ -548,9 +551,20 @@ void H264Decoder::sendDecodedFrame()
 	{
 		auto outFrame = decodedFramesCache[incomingFramesTSQ.front()];
 		incomingFramesTSQ.pop_front();
-		frame_container frames;
-		frames.insert(make_pair(mOutputPinId, outFrame));
-		send(frames);
+		if(!framesToSkip)
+		{
+			frame_container frames;
+			frames.insert(make_pair(mOutputPinId, outFrame));
+			send(frames);
+		}
+		if(playbackSpeed == 2 || playbackSpeed == 4)
+		{
+			if(!framesToSkip)
+			{
+				framesToSkip = (currentFps * playbackSpeed) / currentFps ;
+			}
+			framesToSkip--;
+		}
 	}
 }
 
@@ -648,6 +662,46 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		rawOutMetadata->setData(OutputMetadata);
 	}
 
+	return true;
+}
+
+bool H264Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
+{
+	if (type == Command::CommandType::DecoderPlaybackSpeed)
+	{
+		DecoderPlaybackSpeed cmd;
+		getCommand(cmd, frame);
+		currentFps = cmd.playbackFps;
+		playbackSpeed = cmd.playbackSpeed;
+		
+		if(playbackSpeed == 2 || playbackSpeed == 4)
+		{
+			if(previousFps >= currentFps * 8)
+			{
+				flushQue();
+			}
+			framesToSkip = (currentFps *playbackSpeed) / currentFps - 1;
+		}
+		else if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+		{
+			flushQue();
+			framesToSkip = 0;
+		}
+		else
+		{
+			if(previousFps >= 24 * 8)
+			{
+				flushQue();
+			}
+			framesToSkip = 0;
+		}
+		LOG_INFO << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
+		previousFps = currentFps;
+	}
+	else
+	{
+		Module::handleCommand(type, frame);
+	}
 	return true;
 }
 

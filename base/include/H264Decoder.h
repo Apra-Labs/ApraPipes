@@ -32,6 +32,7 @@ protected:
 	bool validateOutputPins();
 	bool shouldTriggerSOS();
 	void flushQue();
+	bool handleCommand(Command::CommandType type, frame_sp& frame);
 
 private:
 	void bufferDecodedFrames(frame_sp& frame);
@@ -74,4 +75,8 @@ private:
 	boost::asio::const_buffer spsBuffer;
 	boost::asio::const_buffer ppsBuffer;
 	std::mutex m;
+	int framesToSkip = 0;
+	int currentFps = 24;
+	int previousFps = 24;
+	float playbackSpeed = 1;
 };

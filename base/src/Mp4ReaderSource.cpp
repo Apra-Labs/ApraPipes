@@ -507,10 +507,13 @@ public:
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 				if ((controlModule != nullptr))
 				{
-					mProps.fps = mFPS;
-					LOG_INFO << "fps of new video is = " << mFPS;
+					mProps.fps = mFPS * playbackSpeed;
+					LOG_INFO << "fps of new video is = " << mProps.fps;
 					setMp4ReaderProps(mProps);
 					LOG_INFO << "did set Mp4reader props";	
+					DecoderPlaybackSpeed cmd;
+					cmd.playbackSpeed = playbackSpeed;
+					cmd.playbackFps = mFPS;
 				}
 			}
 		}
@@ -1080,6 +1083,7 @@ public:
 	bool isMp4SeekFrame = false;
 	int ret;
 	double mFPS = 0;
+	float playbackSpeed = 1;
 	double mDurationInSecs = 0;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
 	std::function<void(frame_sp frame)> sendEOS;
@@ -1624,4 +1628,9 @@ bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)
 {
 	Mp4SeekCommand cmd(skipTS, forceReopen);
 	return queueCommand(cmd);
+}
+
+void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
+{
+	mDetail->playbackSpeed = _playbackSpeed;
 }
