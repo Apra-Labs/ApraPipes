@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 #include<stdio.h>
-#include "libjpeg-8b/jpeglib.h"
+// #include "libjpeg-8b/jpeglib.h"
 
+#include <jpeglib.h>
 class JPEGDecoderL4TMHelper
 {
 public:

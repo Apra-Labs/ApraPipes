@@ -13,8 +13,8 @@ class JPEGDecoderL4TM::Detail
 
 public:
 	Detail() : mDataSize(0),
-			   mWidth2(0),
-			   mHeight2(0),
+			   mWidth2(1000),
+			   mHeight2(1000),
 			   mActualFrameSize(0)
 	{
 		decHelper.reset(new JPEGDecoderL4TMHelper());
@@ -37,8 +37,8 @@ public:
 		// width and height are aligned by 32 bits - setting stride
 		// passing frame->data() to cheat opencv to no allocate any buffer inside
 		cv::Mat img(mHeight2, mWidth2, CV_8UC1, frame->data(), mWidth2);
-		mDataSize = (mWidth2 * mHeight2 * 3) >> 1;
-		mActualFrameSize = mWidth2 * mHeight2;
+		mDataSize = (mWidth2 * mHeight2 * 3);
+		mActualFrameSize = mWidth2 * mHeight2 *3;
 
 		FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 		mMetadata = metadata;
