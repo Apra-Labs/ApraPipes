@@ -462,7 +462,8 @@ bool AffineTransform::process(frame_container &frames)
 	// cudaFree(0); // yash 2704
 	auto frame = frames.cbegin()->second;
 	auto outFrame = makeFrame();
-	// cudaMemset(outFrame->data(), 0, outFrame->size()); //
+	outFrame->timestamp = frame->timestamp;
+	cudaMemset(static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr(), 0x33, outFrame->size()); //
 	mDetail->compute(static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr(), static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
@@ -490,7 +491,7 @@ bool AffineTransform::processEOS(string &pinId)
 
 void AffineTransform::setProps(AffineTransformProps &props)
 {
-	Module::addPropsToQueue(props);
+	Module::addPropsToQueue(props, true);
 }
 
 AffineTransformProps AffineTransform::getProps()
