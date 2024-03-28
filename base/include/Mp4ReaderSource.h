@@ -84,6 +84,7 @@ public:
 	std::string addOutPutPin(framemetadata_sp& metadata);
 	bool randomSeek(uint64_t seekStartTS, uint64_t seekEndTS=99999999999999);
 	bool closeOpenFile();
+	bool isFileRunning(bool &currentStatus);
 protected:
 	bool produce();
 	bool validateOutputPins();

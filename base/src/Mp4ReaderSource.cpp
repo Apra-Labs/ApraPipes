@@ -1,4 +1,4 @@
-	#include "Mp4ReaderSource.h"
+#include "Mp4ReaderSource.h"
 #include "FrameMetadata.h"
 #include "Mp4VideoMetadata.h"
 #include "Mp4ReaderSourceUtils.h"
@@ -21,6 +21,7 @@ public:
 		sendEOS = _sendEOS;
 		mFSParser = boost::shared_ptr<FileStructureParser>(new FileStructureParser());
 		mDetailCallbackFunction = callback;
+		mIsFrameStillAvailable = false;
 	}
 
 	~Mp4readerDetailAbs()
@@ -115,7 +116,9 @@ public:
 
 		if (mState.mFrameCounter == mState.mFramesInVideo)
 		{
-			LOG_DEBUG << "NO FILES TO PRODUCE :)";
+			LOG_ERROR << "NO FILES TO PRODUCE :)";
+			mIsFrameStillAvailable = false;
+			LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false"; 
 			// if (mDetailCallbackFunction)
 			// {
 			// 	LOG_DEBUG << "<<<<<<<<<<<<<<<<<<<<<Will Call Callback FUnctiion>>>>>>>>>>>>>>>>>>>>>>>>";
@@ -139,8 +142,9 @@ public:
 			++mState.mVideoCounter;
 		}
 
-		LOG_DEBUG << "InitNewVideo <" << mState.mVideoPath << ">";
-
+		LOG_ERROR << "InitNewVideo <" << mState.mVideoPath << ">";
+		mIsFrameStillAvailable = true;
+		LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to true";
 		/* libmp4 stuff */
 		// open the mp4 file here
 		if (mState.demux)
@@ -269,7 +273,8 @@ public:
 		* If all ways to seek fails, the read state is reset.
 		*/
 		seekEndTS = _seekEndTS;
-
+		LOG_ERROR << "Execute Seek Command";
+		mIsFrameStillAvailable = true;
 		if (!mProps.parseFS)
 		{
 			int seekedToFrame = 0;//zaki changes
@@ -373,6 +378,8 @@ public:
 				initNewVideo();
 			}
 		}
+		LOG_ERROR << "SEEK COMMAND GOT EXECUTED =================================>>>>>>>>>>>>>>";
+		mIsFrameStillAvailable = true; 
 		return true;
 	}
 
@@ -493,6 +500,7 @@ public:
 	std::string mp4FramePinId;
 	bool mediaBroke = false;
 	uint64_t videoStartTime;
+	bool mIsFrameStillAvailable;
 };
 
 class Mp4readerDetailJpeg : public Mp4readerDetailAbs
@@ -717,6 +725,7 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	auto frameTSInMsecs = openVideoStartingTS + (sample_ts_usec / 1000);
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
+	// LOG_ERROR << "TImeStamp IS ==============>>>>>>>" << trimmedImgFrame->timestamp;
 
 	if (seekedToEndTS)
 	{
@@ -830,6 +839,7 @@ bool Mp4ReaderSource::produce()
 		return true;
 	}
 	frame_container frames;
+	// LOG_ERROR << "Producing Frames ";
 	mDetail->produceFrames(frames);
 	// LOG_DEBUG << "PRODUCE_TRIGGERED :)" ;
 // 	auto currentTime = std::chrono::system_clock::now();
@@ -923,4 +933,11 @@ bool Mp4ReaderSource::closeOpenFile()
 {
 	Mp4ReaderCloseFile cmd;
 	return queueCommand(cmd);
+}
+
+bool Mp4ReaderSource::isFileRunning(bool &currentStatus)
+{
+	// LOG_ERROR << "isFileRunning =================================>>>>>>>>>>>>>>" << mDetail->mIsFrameStillAvailable;
+	currentStatus = mDetail->mIsFrameStillAvailable;
+	return mDetail->mIsFrameStillAvailable;
 }
