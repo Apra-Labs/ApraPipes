@@ -5,7 +5,8 @@
 class H264DecoderProps : public ModuleProps
 {
 public:
-	H264DecoderProps() {}
+	H264DecoderProps() : ModuleProps()
+	{}
 };
 
 class H264Decoder : public Module

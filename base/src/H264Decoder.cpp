@@ -154,7 +154,9 @@ bool H264Decoder::term()
 bool H264Decoder::process(frame_container& frames)
 {
 	auto frame = frames.cbegin()->second;
+
 	mDetail->compute(frame);
+	
 	return true;
 }
 

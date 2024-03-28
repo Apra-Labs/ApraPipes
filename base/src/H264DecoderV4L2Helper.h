@@ -40,6 +40,7 @@
 #include "Frame.h"
 #include <fstream>
 #include <linux/videodev2.h>
+#include <queue>
 
 /**
  * @brief Class representing a buffer.
@@ -394,4 +395,5 @@ protected:
     std::function<void(frame_sp &)> send;
     int ret = 0;
     bool runCaptureThread = true;
+    std::queue<uint64_t> framesTimestampEntry;
 };
