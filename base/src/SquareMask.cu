@@ -29,7 +29,7 @@ void applySquareMaskForRGBA(unsigned char *src, unsigned char *dst, int width, i
 {
     dim3 dim_block(32, 32);
     dim3 dim_grid((1000 + dim_block.x - 1) / dim_block.x, (height + dim_block.y - 1) / dim_block.y);
-    int maskX = 20;
-    int maskY = (20);
+    int maskX = 50;
+    int maskY = 50;
     rgbaSquareMaskKernel<<<dim_grid, dim_block, 0, stream>>>(src, width, height, maskX, maskY, maskSize);
 }
