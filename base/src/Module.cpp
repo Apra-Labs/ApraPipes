@@ -1041,6 +1041,7 @@ bool Module::play(bool play, bool priority)
 {
 	if (!mRunning)
 	{
+		LOG_ERROR << "Returning from PLAY===================================?>>>";
 		// comes here if module is not running in a thread
 		// comes here when pipeline is started with run_all_threaded_withpause
 		return handlePausePlay(play);
@@ -1067,6 +1068,10 @@ bool Module::play(bool play, bool priority)
 		if (!Module::push_back(frames))
 		{
 			LOG_ERROR << "failed to push play command At the back of the to the que";
+		}
+		else
+		{
+			LOG_ERROR << "Succesfully Pushed the Frame =========>>>>>>>>";
 		}
 	}
 
@@ -1288,6 +1293,8 @@ bool Module::preProcessNonSource(frame_container &frames)
 			auto buffer = (unsigned char *)frame->data();
 			auto play = buffer[0] ? true : false;
 			handlePausePlay(play);
+			frames.erase(pinId);
+			continue;
 		}
 
 		if (!bTriggerSOS)

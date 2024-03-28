@@ -214,7 +214,7 @@ protected:
 	void setProps(ModuleProps& props);
 	void fillProps(ModuleProps& props);
 	template<class T>
-	void addPropsToQueue(T& props)
+	void addPropsToQueue(T& props, bool priority = false)
 	{
 		auto size = props.getSerializeSize();
 		auto frame = makeCommandFrame(size, mPropsChangeMetadata);
@@ -224,7 +224,14 @@ protected:
 		// add to que
 		frame_container frames;
 		frames.insert(make_pair("props_change", frame));
-		Module::push(frames);
+		if(!priority)
+		{
+			Module::push(frames);
+		}
+		else
+		{
+			Module::push_back(frames);
+		}
 	}
 	virtual bool handlePropsChange(frame_sp& frame);
 	virtual bool handleCommand(Command::CommandType type, frame_sp& frame);
