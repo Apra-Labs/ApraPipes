@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	// {
 	// 	gtk_main_iteration();
 	// } while (gtk_events_pending());
-	launchPipeline();
+	// launchPipeline();
 	// launchRendererPipelineUSB();
 	// lauchAtlPipeline();
 	// std::thread pipelineThread();

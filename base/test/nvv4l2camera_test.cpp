@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <unistd.h> // Include the <unistd.h> header for usleep
 
 #include "PipeLine.h"
 #include "NvV4L2Camera.h"
@@ -42,22 +43,29 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(render, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(render_2, *boost::unit_test::disabled())
 {
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 10)));
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(400, 400, 2)));
 
 
-	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
-	source->setNext(sink);
+	NvTransformProps nvProps(ImageMetadata::RGBA);
+	nvProps.qlen = 1;
+	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(nvProps));
+	source->setNext(nv_transform);
+
+	EglRendererProps eglProps(0,0);
+	eglProps.qlen = 1;
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
+	nv_transform->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -71,11 +79,8 @@ BOOST_AUTO_TEST_CASE(save, *boost::unit_test::disabled())
 	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
 	source->setNext(nv_transform);
 
-	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
-	nv_transform->setNext(copySource);
-
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/frame_????.raw")));
-	copySource->setNext(fileWriter);
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	nv_transform->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(source);
@@ -85,7 +90,7 @@ BOOST_AUTO_TEST_CASE(save, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(4));
+	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -246,6 +251,108 @@ BOOST_AUTO_TEST_CASE(atlcam, *boost::unit_test::disabled()) // Getting latency o
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(test_new_atl, *boost::unit_test::disabled()) // Getting latency of 130ms, previously we have got around range og 60 to 130
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	NvV4L2CameraProps nvCamProps(720, 720, 3);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+	NvTransformProps nvprops(ImageMetadata::RGBA);
+	nvprops.qlen = 1;
+	nvprops.logHealth = true;
+	nvprops.logHealthFrequency = 100;
+	nvprops.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	source->setNext(transform);
+
+	EglRendererProps eglProps(0, 0);
+	eglProps.qlen = 1;
+	eglProps.fps = 60;
+
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(camLatency420, *boost::unit_test::disabled())
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	// 1. Source 400x400
+	NvV4L2CameraProps sourceProps(400, 400, 2);
+	sourceProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
+
+	// 2. Take Input from Source (400 x 400) and apply Nv Transform to scale to 1000 x 1000
+	NvTransformProps nvProps(ImageMetadata::RGBA, 1000, 1000);
+	nvProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	nvProps.qlen =1;
+	auto nv_transform = boost::shared_ptr<NvTransform>(new NvTransform(nvProps));
+	source->setNext(nv_transform);
+
+	// 3. EGL Renderer to display real time stream
+	EglRendererProps eglProps(0, 0);
+	eglProps.qlen=1;
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
+	nv_transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(camLatency720, *boost::unit_test::disabled())
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	// 1. Source 720x720
+	NvV4L2CameraProps sourceProps(720, 720, 2);
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
+
+	// 2. Take Input from Source (720 x 720) and apply Nv Transform to scale to 1000 x 1000
+	NvTransformProps nvProps(ImageMetadata::RGBA, 1000, 1000);
+	nvProps.qlen = 1;
+	auto nv_transform = boost::shared_ptr<NvTransform>(new NvTransform(nvProps));
+	source->setNext(nv_transform);
+
+	// 3. EGL Renderer to display real time stream
+	EglRendererProps eglProps(0, 0);
+	eglProps.qlen = 1;
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
+	nv_transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	p.stop();
+	p.term();
+	p.wait_for_all();
+}
 // BOOST_AUTO_TEST_CASE(atlcamwithaffine, *boost::unit_test::disabled())
 // {
 // 	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
@@ -320,23 +427,23 @@ BOOST_AUTO_TEST_CASE(atlcamwithaffine, *boost::unit_test::disabled())
 	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
 	source->setNext(transform);
 
-	auto stream = cudastream_sp(new ApraCudaStream);
+	// auto stream = cudastream_sp(new ApraCudaStream);
 
-	AffineTransformProps affineProps(AffineTransformProps::CUBIC, stream, 0,1792, 0, 0, 1);
-	affineProps.qlen = 1;
-	affineProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
-	auto m_affineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
-	transform->setNext(m_affineTransform);
+	// AffineTransformProps affineProps(AffineTransformProps::CUBIC, stream, 0,1792, 0, 0, 1);
+	// affineProps.qlen = 1;
+	// affineProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	// auto m_affineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	// transform->setNext(m_affineTransform);
 
-	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
-	m_affineTransform->setNext(sync);
+	// auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	// m_affineTransform->setNext(sync);
 
-	auto copySource = boost::shared_ptr<DMAFDToHostCopy>(new DMAFDToHostCopy);
-	sync->setNext(copySource);
+	// auto copySource = boost::shared_ptr<DMAFDToHostCopy>(new DMAFDToHostCopy);
+	// sync->setNext(copySource);
 
 
-	auto fileWriter1 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/affine/Frame_????.raw")));
-	// sync->setNext(fileWriter1);
+	// auto fileWriter1 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/affine/Frame_????.raw")));
+	// // sync->setNext(fileWriter1);
 
 	EglRendererProps eglProps(0, 0);
 	eglProps.qlen = 1;
@@ -346,7 +453,7 @@ BOOST_AUTO_TEST_CASE(atlcamwithaffine, *boost::unit_test::disabled())
 	eglProps.logHealthFrequency = 100;
 
 	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
-	sync->setNext(sink);
+	transform->setNext(sink);
 
 	PipeLine p("test");
 	p.appendModule(source);
@@ -355,20 +462,20 @@ BOOST_AUTO_TEST_CASE(atlcamwithaffine, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
-	double angle = 0;
-	while(true)
-	{
-		angle+=90;
-		if(angle>=359)
-		{
-			angle = 0;
-		}
-		auto affineCurrProps = m_affineTransform->getProps();
-		affineCurrProps.angle = angle;
-		m_affineTransform->setProps(affineCurrProps);
-		boost::this_thread::sleep_for(boost::chrono::seconds(1));
-	}
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000000));
+	// double angle = 0;
+	// while(true)
+	// {
+	// 	angle+=90;
+	// 	if(angle>=359)
+	// 	{
+	// 		angle = 0;
+	// 	}
+	// 	auto affineCurrProps = m_affineTransform->getProps();
+	// 	affineCurrProps.angle = angle;
+	// 	m_affineTransform->setProps(affineCurrProps);
+	// 	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	// }
 	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
 	p.stop();
 	p.term();
@@ -763,6 +870,56 @@ BOOST_AUTO_TEST_CASE(atl_affine_mask, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(camScale720To1000, *boost::unit_test::disabled())
+{
+	// Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	auto stream = cudastream_sp(new ApraCudaStream);
+	NvV4L2CameraProps nvCamProps(720, 720, 2);
+	nvCamProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+	NvTransformProps nvprops(ImageMetadata::RGBA);
+	nvprops.qlen = 1;
+	nvprops.logHealth = true;
+	nvprops.logHealthFrequency = 100;
+	nvprops.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	source->setNext(transform);
+
+	AffineTransformProps affineProps(AffineTransformProps::CUBIC, stream, 0, 4096, 0, 0, 1.4);
+	affineProps.qlen = 1;
+	affineProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto m_affineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	transform->setNext(m_affineTransform);
+
+	CudaStreamSynchronizeProps cuxtxProps(stream);
+	cuxtxProps.qlen = 1;
+	cuxtxProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(cuxtxProps));
+	m_affineTransform->setNext(sync);
+
+	EglRendererProps eglProps(400, 50, 1000, 1000);
+	eglProps.qlen = 1;
+	eglProps.fps = 60;
+	eglProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	eglProps.logHealth = true;
+	eglProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<Module>(new EglRenderer(eglProps));
+	sync->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	// Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
+
 BOOST_AUTO_TEST_CASE(atlcamwithaffinewithmask, *boost::unit_test::disabled())
 {
 	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
@@ -930,4 +1087,46 @@ BOOST_AUTO_TEST_CASE(atlcam1, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
+BOOST_AUTO_TEST_CASE(windowCreateDestroy, *boost::unit_test::disabled())
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+	NvV4L2CameraProps nvCamProps(640, 480, 3);
+	nvCamProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+
+	NvTransformProps nvprops(ImageMetadata::RGBA);
+	nvprops.qlen = 1;
+	nvprops.logHealth = true;
+	nvprops.logHealthFrequency = 100;
+	nvprops.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	source->setNext(transform);
+
+	EglRendererProps eglProps(0, 0);
+	eglProps.qlen = 1;
+	eglProps.fps = 60;
+	eglProps.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	eglProps.logHealth = true;
+	eglProps.logHealthFrequency = 100;
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(eglProps));
+	transform->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(source);
+	BOOST_TEST(p.init());
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	while(true)
+	{
+		sink->closeWindow();
+		usleep(500000);
+		sink->createWindow(640,480);
+	}
+	Logger::setLogLevel(boost::log::trivial::severity_level::debug);
+
+	p.stop();
+	p.term();
+
+	p.wait_for_all();
+}
 BOOST_AUTO_TEST_SUITE_END()

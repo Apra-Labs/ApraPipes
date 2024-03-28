@@ -12,6 +12,9 @@
 #include "Mp4VideoMetadata.h"
 #include "H264Decoder.h"
 #include "EglRenderer.h"
+#include "NvTransform.h"
+#include "AffineTransform.h"
+#include "CudaStreamSynchronize.h"
 
 BOOST_AUTO_TEST_SUITE(Mp4ReaderSource_tests)
 
@@ -360,12 +363,12 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 BOOST_AUTO_TEST_CASE(getSetProps2)
 {
-	std::string videoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
+	std::string videoPath = "/home/developer/2024-02-25_20-13-02-264.mp4";
 	std::string outPath = "./data/testOutput/outFrames/";
-	std::string changedVideoPath = "/home/developer/workspace/ApraPipes/1684245623.mp4";
+	std::string changedVideoPath = "/mnt/disks/ssd/ws_yashraj/ApraPipes/data/2024-02-01_19-18-26-747.mp4";
 	bool parseFS = true;
 	int uniqMetadata = 0;
-
+	auto stream = cudastream_sp(new ApraCudaStream);
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
@@ -373,7 +376,8 @@ BOOST_AUTO_TEST_CASE(getSetProps2)
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	mp4ReaderProps.fps = 33;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	mp4Reader->addOutPutPin(h264ImageMetadata);
@@ -381,11 +385,30 @@ BOOST_AUTO_TEST_CASE(getSetProps2)
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
 	mp4Reader->addOutPutPin(mp4Metadata);
 
+	H264DecoderProps decprops();
+	// decprops.fps = 33;
 	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
 	mp4Reader->setNext(Decoder);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0)));
-	Decoder->setNext(sink);
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	// nvTransformProps.qlen = 2;
+	nvTransformProps.fps =33; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformProps affineProps(AffineTransformProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 33;
+	// affineProps.qlen = 20;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererProps eglProps(0,0);
+	eglProps.fps = 60;
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(eglProps));
+	sync->setNext(sink);
 
 	boost::shared_ptr<PipeLine> p;
 	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
@@ -397,13 +420,28 @@ BOOST_AUTO_TEST_CASE(getSetProps2)
 	}
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(30));
+	boost::this_thread::sleep_for(boost::chrono::seconds(3));
 	LOG_ERROR << "PROPS WILL CHANGE";
-	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
-	mp4Reader->setProps(propsChange);
+	
+	// p->pause();
+	sink->play(false, true);
+	sync->play(false, true);
+	m_reviewAffineTransform->play(false, true);
+	m_nv12_to_yuv444Transform->play(false, true);
+	Decoder->play(false, true);
+	mp4Reader->play(false, true);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(30));
+	// mp4Reader->play(true, true);
+	// p->play();
+	sink->play(true, true);
+	sync->play(true, true);
+	m_reviewAffineTransform->play(true, true);
+	m_nv12_to_yuv444Transform->play(true, true);
+	Decoder->play(true, true);
+	mp4Reader->play(true, true);
 
+	boost::this_thread::sleep_for(boost::chrono::seconds(300));
 	p->stop();
 	p->term();
 	p->wait_for_all();
