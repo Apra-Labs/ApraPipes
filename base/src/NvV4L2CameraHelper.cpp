@@ -16,6 +16,8 @@ NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_s
     mRunning = false;
     mSendFrame = sendFrame;
     mMakeFrame = _makeFrame;
+    mCameraConnected = false;
+    mFrameCount = 0;
 }
 
 NvV4L2CameraHelper::~NvV4L2CameraHelper()
@@ -25,7 +27,7 @@ NvV4L2CameraHelper::~NvV4L2CameraHelper()
     }
 }
 
-bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
+bool NvV4L2CameraHelper::cameraInitialize(bool isMirror, uint8_t sensorType)
 {
     struct v4l2_format fmt;
 
@@ -54,7 +56,14 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
     fmt.fmt.pix.height = mCamHeight;
     fmt.fmt.pix.pixelformat = mCamPixFmt;
     fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
-    fmt.fmt.pix.bytesperline = 1024;
+    if (sensorType == 0)
+    {
+        fmt.fmt.pix.bytesperline = 1024;
+    }
+    else if (sensorType == 1)
+    {
+        fmt.fmt.pix.bytesperline = 1536;
+    }
     if (ioctl(mCamFD, VIDIOC_S_FMT, &fmt) < 0)
     {
         LOG_ERROR << "Failed to set camera ouput format to UYVY";
@@ -124,10 +133,37 @@ void NvV4L2CameraHelper::operator()()
     mRunning = true;
 
     /* Wait for camera event with timeout = 5000 ms */
-    while (select(fds + 1, &rset, NULL, NULL, NULL) > 0 && mRunning)
+    while (mRunning)
     {
-        if (FD_ISSET(fds, &rset))
+        FD_ZERO(&rset);
+        FD_SET(fds, &rset);
+
+        struct timeval timeout;
+        timeout.tv_sec = 0;  // Timeout set to 5 seconds // 500 ms
+        timeout.tv_usec = 100000;
+
+        /* Wait for camera event with timeout = 5000 ms */
+        int result = select(fds + 1, &rset, NULL, NULL, &timeout);
+
+        if (result == -1)
         {
+            LOG_ERROR << "select error";
+            // break;
+        }
+        else if (result == 0)
+        {
+            // m_lockCameraStatus.lock();
+            mCameraConnected = false;
+            // m_lockCameraStatus.unlock();
+            // LOG_ERROR << "Not Getting Frames========>>>>" << mCameraConnected;
+            mFrameCount = 0;
+            LOG_TRACE << "select timeout";
+        }
+        else if (FD_ISSET(fds, &rset))
+        {
+            // m_lockCameraStatus.lock();
+            mCameraConnected = true;
+            // m_lockCameraStatus.unlock();
             struct v4l2_buffer v4l2_buf;
 
             /* Dequeue a camera buff */
@@ -142,16 +178,29 @@ void NvV4L2CameraHelper::operator()()
 
             // lock
             std::lock_guard<std::mutex> lock(mBufferFDMutex);
-            auto frameItr = mBufferFD.find(v4l2_buf.m.fd);  
-            if(frameItr == mBufferFD.end())          
+            auto frameItr = mBufferFD.find(v4l2_buf.m.fd);
+            if (frameItr == mBufferFD.end())
             {
                 LOG_FATAL << " mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
             }
+            // LOG_ERROR << "SEND FRAMES FROM OPERATOR ";
             mSendFrame(frameItr->second);
             mBufferFD.erase(frameItr);
+            // mFrameCount++;
+            // if(mFrameCount >= 5)
+            // {
+                // mFrameCount = 0;
+            // }
         }
+        // else
+        // {
+        //     mCameraConnected = false;
+        //     LOG_ERROR << "Not Getting Frames========>>>>" << mCameraConnected;
+        //     mFrameCount = 0;
+        // }
     }
 }
+
 
 bool NvV4L2CameraHelper::queueBufferToCamera()
 {
@@ -219,13 +268,13 @@ bool NvV4L2CameraHelper::requestCameraBuff()
     return true;
 }
 
-bool NvV4L2CameraHelper::start(uint32_t width, uint32_t height, uint32_t _maxConcurrentFrames, bool isMirror)
+bool NvV4L2CameraHelper::start(uint32_t width, uint32_t height, uint32_t _maxConcurrentFrames, bool isMirror, uint8_t sensorType)
 {
     mCamHeight = height;
     mCamWidth = width;
     mMaxConcurrentFrames = _maxConcurrentFrames;
     bool status = false;
-    status = cameraInitialize(isMirror);
+    status = cameraInitialize(isMirror, sensorType);
     if (status == false)
     {
         LOG_ERROR << "Camera Initialization Failed";
@@ -265,4 +314,14 @@ bool NvV4L2CameraHelper::stop()
     LOG_INFO << "Coming out of stop helper";
 
     return true;
+}
+
+bool NvV4L2CameraHelper::isCameraConnected()
+{
+    // LOG_ERROR << "Camera Connected " <<mCameraConnected;
+    bool camStatus = false;
+    // m_lockCameraStatus.lock();
+    camStatus = mCameraConnected;
+    // m_lockCameraStatus.unlock();
+    return camStatus;
 }

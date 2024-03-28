@@ -43,7 +43,7 @@ bool NvV4L2Camera::init()
 		return false;
 	}
 
-	return mHelper->start(props.width, props.height, props.maxConcurrentFrames, props.isMirror);
+	return mHelper->start(props.width, props.height, props.maxConcurrentFrames, props.isMirror, props.sensorType);
 }
 
 bool NvV4L2Camera::term()
@@ -63,4 +63,9 @@ bool NvV4L2Camera::produce()
 bool NvV4L2Camera::isFrameBufferReady()
 {
 	return m_receivedFirstFrame;
+}
+
+bool NvV4L2Camera::isCameraConnected()
+{
+	return mHelper->isCameraConnected();
 }

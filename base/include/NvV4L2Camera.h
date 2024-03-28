@@ -8,21 +8,25 @@
 class NvV4L2CameraProps : public ModuleProps
 {
 public:
-	NvV4L2CameraProps(uint32_t _width, uint32_t _height, uint32_t _maxConcurrentFrames) : ModuleProps(), width(_width), height(_height)
+	NvV4L2CameraProps(uint32_t _width, uint32_t _height, uint32_t _maxConcurrentFrames, uint8_t _sensorType) : ModuleProps(), width(_width), height(_height)
 	{
 		maxConcurrentFrames = _maxConcurrentFrames;
 		isMirror = false;
+		sensorType = _sensorType; 
 	}
 
 	NvV4L2CameraProps(uint32_t _width, uint32_t _height, uint32_t _maxConcurrentFrames, bool _isMirror) : ModuleProps(), width(_width), height(_height)
 	{
 		maxConcurrentFrames = _maxConcurrentFrames;
 		isMirror = _isMirror;
+		sensorType = 0;
 	}
-
+	// ifSensorType is 0 means 400
+	// ifSensorType is 1 means 720
 	uint32_t width;
 	uint32_t height;
 	bool isMirror;
+	uint8_t sensorType;
 };
 
 class NvV4L2Camera : public Module
@@ -33,6 +37,7 @@ public:
 	bool init();
 	bool term();
 	bool isFrameBufferReady();
+	bool isCameraConnected();
 
 protected:
 	bool produce();
