@@ -810,8 +810,24 @@ public:
 		// video is finished
 		if (isOpenVideoFinished())
 		{
-			mState.end = !mProps.parseFS;
-			initNewVideo(); // new video is init or mState.end is reached.
+			if(mProps.readLoop)
+			{
+				if(mState.direction)
+				{
+					mp4_set_reader_pos_firstframe(mState.demux, mState.videotrack, mState.direction);
+					mState.mFrameCounterIdx = 0;
+				}
+				else
+				{
+					mp4_set_reader_pos_lastframe(mState.demux, mState.videotrack, mState.direction);
+					mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
+				}
+			}
+			else
+			{
+				mState.end = !mProps.parseFS;
+				initNewVideo(); // new video is init or mState.end is reached.
+			}
 		}
 		else
 		{
