@@ -3,17 +3,17 @@
 #include "Module.h"
 
 using CallbackFunction = std::function<void()>;
-class EglRendererProps : public ModuleProps
+class EglRendererReviewProps : public ModuleProps
 {
 public:
-	EglRendererProps(uint32_t _x_offset,uint32_t _y_offset, uint32_t _width, uint32_t _height) : ModuleProps()
+	EglRendererReviewProps(uint32_t _x_offset,uint32_t _y_offset, uint32_t _width, uint32_t _height) : ModuleProps()
 	{
         x_offset = _x_offset;
         y_offset = _y_offset;
 		height = _height;
 		width = _width;
 	}
-	EglRendererProps(uint32_t _x_offset,uint32_t _y_offset) : ModuleProps()
+	EglRendererReviewProps(uint32_t _x_offset,uint32_t _y_offset) : ModuleProps()
 	{
         x_offset = _x_offset;
         y_offset = _y_offset;
@@ -27,11 +27,11 @@ public:
 	// One more bool value which will be alwaysOnTop 
 };
 
-class EglRenderer : public Module
+class EglRendererReview : public Module
 {
 public:
-    EglRenderer(EglRendererProps props);
-    ~EglRenderer();
+    EglRendererReview(EglRendererReviewProps props);
+    ~EglRendererReview();
 	void registerCallback(const CallbackFunction &_callback)
 	{
 		m_callbackFunction = _callback;
@@ -42,6 +42,7 @@ public:
 	bool createWindow(int width, int height);
 	void waitForNextFrame();
 	bool statusOfEglWindow();
+	bool getCurrentStausOfMedia();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);

@@ -1,23 +1,50 @@
 #include "Logger.h"
-#include "EglRenderer.h"
+#include "ApraEglRenderer.h"
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
+#include <queue>
+#include <chrono>
+#include <mutex>
 
-class EglRenderer::Detail
+class ApraEglRenderer::Detail
 {
-
 public:
-    Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height) : x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height)
-    {
-        m_isEglWindowCreated = false;
-    }
+    Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height)
+        : x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height) ,m_isEglWindowCreated(false) {}
 
     ~Detail()
     {
-        if (renderer)
+        destroyWindow();
+    }
+
+    void pushFrame(frame_sp frame)
+    {
+        // std::lock_guard<std::mutex> lock(queueMutex);
+        frameQueue.push(frame);
+    }
+
+    void processQueue()
+    {
+        // std::lock_guard<std::mutex> lock(queueMutex);
+        if (!frameQueue.empty())
         {
-            delete renderer;
-            renderer = nullptr;
+            auto currentFrame = frameQueue.front();
+            frameQueue.pop();
+            auto currentTime = std::chrono::steady_clock::now();
+            auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime).count();
+
+            if (timeDiff >= 30)
+            {
+                if (renderer)
+                {
+                    renderer->render((static_cast<DMAFDWrapper *>(currentFrame->data()))->getFd());
+                    lastFrameTime = currentTime;
+                }
+                else
+                {
+                    LOG_ERROR << "Renderer not found for rendering frames";
+                }
+            }
         }
     }
 
@@ -28,8 +55,6 @@ public:
         NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
         if (height != 0 && width != 0)
         {
-            // x_offset += (displayWidth-width)/2;
-            // y_offset += (displayHeight-height)/2;
             LOG_DEBUG << "X_OFFSET" << x_offset << "y_offset" << y_offset;
             renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset);
         }
@@ -51,13 +76,12 @@ public:
 
     bool destroyWindow()
     {
-        LOG_ERROR << "GOING TO DESTROY WINDOW";
         if (renderer)
         {
-            LOG_ERROR << "Window Exist";
             m_isEglWindowCreated = false;
             delete renderer;
         }
+        return true;
     }
 
     bool shouldTriggerSOS()
@@ -67,18 +91,21 @@ public:
 
     NvEglRenderer *renderer = nullptr;
     uint32_t x_offset, y_offset, width, height;
-    std::chrono::milliseconds m_frameDelay{27};
+    std::chrono::milliseconds m_frameDelay{30};
+    std::queue<frame_sp> frameQueue;
+    std::mutex queueMutex;
     bool m_isEglWindowCreated;
+    std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
 };
 
-EglRenderer::EglRenderer(EglRendererProps props) : Module(SINK, "EglRenderer", props)
+ApraEglRenderer::ApraEglRenderer(ApraEglRendererProps props) : Module(SINK, "ApraEglRenderer", props)
 {
     mDetail.reset(new Detail(props.x_offset, props.y_offset, props.width, props.height));
 }
 
-EglRenderer::~EglRenderer() {}
+ApraEglRenderer::~ApraEglRenderer() {}
 
-bool EglRenderer::init()
+bool ApraEglRenderer::init()
 {
     if (!Module::init())
     {
@@ -87,27 +114,21 @@ bool EglRenderer::init()
     return true;
 }
 
-bool EglRenderer::process(frame_container &frames)
+bool ApraEglRenderer::process(frame_container &frames)
 {
-    auto frame = frames.cbegin()->second;
-    // LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp; 
-    if (isFrameEmpty(frame))
+    for (const auto &pair : frames)
     {
-        return true;
+        auto frame = pair.second;
+        if (!isFrameEmpty(frame))
+        {
+            mDetail->pushFrame(frame);
+        }
     }
-    if (mDetail->renderer)
-    {
-        mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
-        // waitForNextFrame();
-    }
-    else
-    {
-        LOG_ERROR << "renderer not found for rendering frames =============================>>>>>>>>>";
-    }
+    mDetail->processQueue();
     return true;
 }
 
-bool EglRenderer::validateInputPins()
+bool ApraEglRenderer::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
@@ -126,13 +147,13 @@ bool EglRenderer::validateInputPins()
     return true;
 }
 
-bool EglRenderer::term()
+bool ApraEglRenderer::term()
 {
     bool res = Module::term();
     return res;
 }
 
-bool EglRenderer::processSOS(frame_sp &frame)
+bool ApraEglRenderer::processSOS(frame_sp &frame)
 {
     auto inputMetadata = frame->getMetadata();
     auto frameType = inputMetadata->getFrameType();
@@ -146,15 +167,15 @@ bool EglRenderer::processSOS(frame_sp &frame)
         auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
         width = metadata->getWidth();
         height = metadata->getHeight();
+        break;
     }
-    break;
     case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
     {
         auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
         width = metadata->getWidth(0);
         height = metadata->getHeight(0);
+        break;
     }
-    break;
     default:
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
@@ -163,73 +184,60 @@ bool EglRenderer::processSOS(frame_sp &frame)
     return true;
 }
 
-bool EglRenderer::shouldTriggerSOS()
+bool ApraEglRenderer::shouldTriggerSOS()
 {
     return mDetail->shouldTriggerSOS();
 }
 
-bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
+bool ApraEglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
 {
     if (type == Command::CommandType::DeleteWindow)
     {
-        LOG_ERROR << "Got Command TO Destroy Window";
         EglRendererCloseWindow cmd;
         getCommand(cmd, frame);
         if (mDetail->m_isEglWindowCreated)
         {
             mDetail->destroyWindow();
+            return true;
         }
-        return true;
     }
     else if (type == Command::CommandType::CreateWindow)
     {
-        LOG_ERROR << "GOT CREATE WINDOW COMMAND";
         EglRendererCreateWindow cmd;
         getCommand(cmd, frame);
-        if(!mDetail->m_isEglWindowCreated)
+        if (!mDetail->m_isEglWindowCreated)
         {
             mDetail->init(cmd.width, cmd.height);
+            return true;
         }
-        return true;
     }
-    else
-    {
-        LOG_ERROR << " In Else :- Type Of Command is " << type;
-        return Module::handleCommand(type, frame);
-    }
+    return Module::handleCommand(type, frame);
 }
 
-bool EglRenderer::closeWindow()
+bool ApraEglRenderer::closeWindow()
 {
     EglRendererCloseWindow cmd;
-    return queueCommand(cmd, false);
+    return queueCommand(cmd, true);
 }
 
-bool EglRenderer::createWindow(int width, int height)
+bool ApraEglRenderer::createWindow(int width, int height)
 {
-    LOG_ERROR << "GOT REQUEST TO CREATE WINDOW";
     EglRendererCreateWindow cmd;
     cmd.width = width;
     cmd.height = height;
-    return queueCommand(cmd, false);
+    return queueCommand(cmd, true);
 }
 
-bool EglRenderer::processEOS(string &pinId)
+bool ApraEglRenderer::processEOS(string &pinId)
 {
     if (m_callbackFunction)
     {
-        LOG_DEBUG << "WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONSWILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS";
         m_callbackFunction();
     }
     return true;
 }
 
-void EglRenderer::waitForNextFrame()
-{
-    std::this_thread::sleep_for(mDetail->m_frameDelay);
-}
-
-bool EglRenderer::statusOfEglWindow()
+bool ApraEglRenderer::statusOfEglWindow()
 {
     return mDetail->m_isEglWindowCreated;
 }

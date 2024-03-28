@@ -82,7 +82,7 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     pthread_mutex_init(&render_lock, NULL);
     pthread_cond_init(&render_cond, NULL);
 
-    setFPS(30);
+    setFPS(60);
 
     if (initEgl() < 0)
     {
@@ -345,6 +345,7 @@ NvEglRenderer::~NvEglRenderer()
         XUnmapWindow(x_display, (int32_t) x_window);
         XFlush(x_display);
         XDestroyWindow(x_display, (int32_t) x_window);
+        x_window = 0;
     }
     if (x_display)
     {

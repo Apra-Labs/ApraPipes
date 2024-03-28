@@ -1,15 +1,16 @@
 #include "Logger.h"
-#include "EglRenderer.h"
+#include "EglRendererReview.h"
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
 
-class EglRenderer::Detail
+class EglRendererReview::Detail
 {
 
 public:
     Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height) : x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height)
     {
         m_isEglWindowCreated = false;
+        m_mediaRunning = false;
     }
 
     ~Detail()
@@ -69,16 +70,17 @@ public:
     uint32_t x_offset, y_offset, width, height;
     std::chrono::milliseconds m_frameDelay{27};
     bool m_isEglWindowCreated;
+    bool m_mediaRunning;
 };
 
-EglRenderer::EglRenderer(EglRendererProps props) : Module(SINK, "EglRenderer", props)
+EglRendererReview::EglRendererReview(EglRendererReviewProps props) : Module(SINK, "EglRendererReview", props)
 {
     mDetail.reset(new Detail(props.x_offset, props.y_offset, props.width, props.height));
 }
 
-EglRenderer::~EglRenderer() {}
+EglRendererReview::~EglRendererReview() {}
 
-bool EglRenderer::init()
+bool EglRendererReview::init()
 {
     if (!Module::init())
     {
@@ -87,18 +89,19 @@ bool EglRenderer::init()
     return true;
 }
 
-bool EglRenderer::process(frame_container &frames)
+bool EglRendererReview::process(frame_container &frames)
 {
     auto frame = frames.cbegin()->second;
-    // LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp; 
+    mDetail->m_mediaRunning = true;
     if (isFrameEmpty(frame))
     {
         return true;
     }
     if (mDetail->renderer)
     {
+        // LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp; 
         mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
-        // waitForNextFrame();
+        waitForNextFrame();
     }
     else
     {
@@ -107,7 +110,7 @@ bool EglRenderer::process(frame_container &frames)
     return true;
 }
 
-bool EglRenderer::validateInputPins()
+bool EglRendererReview::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
@@ -126,13 +129,13 @@ bool EglRenderer::validateInputPins()
     return true;
 }
 
-bool EglRenderer::term()
+bool EglRendererReview::term()
 {
     bool res = Module::term();
     return res;
 }
 
-bool EglRenderer::processSOS(frame_sp &frame)
+bool EglRendererReview::processSOS(frame_sp &frame)
 {
     auto inputMetadata = frame->getMetadata();
     auto frameType = inputMetadata->getFrameType();
@@ -163,12 +166,12 @@ bool EglRenderer::processSOS(frame_sp &frame)
     return true;
 }
 
-bool EglRenderer::shouldTriggerSOS()
+bool EglRendererReview::shouldTriggerSOS()
 {
     return mDetail->shouldTriggerSOS();
 }
 
-bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
+bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame)
 {
     if (type == Command::CommandType::DeleteWindow)
     {
@@ -199,13 +202,13 @@ bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
     }
 }
 
-bool EglRenderer::closeWindow()
+bool EglRendererReview::closeWindow()
 {
     EglRendererCloseWindow cmd;
     return queueCommand(cmd, false);
 }
 
-bool EglRenderer::createWindow(int width, int height)
+bool EglRendererReview::createWindow(int width, int height)
 {
     LOG_ERROR << "GOT REQUEST TO CREATE WINDOW";
     EglRendererCreateWindow cmd;
@@ -214,22 +217,29 @@ bool EglRenderer::createWindow(int width, int height)
     return queueCommand(cmd, false);
 }
 
-bool EglRenderer::processEOS(string &pinId)
+bool EglRendererReview::processEOS(string &pinId)
 {
+    mDetail->m_mediaRunning = false;
     if (m_callbackFunction)
     {
-        LOG_DEBUG << "WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONSWILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS";
         m_callbackFunction();
     }
+    LOG_ERROR << "WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONSWILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS";
     return true;
 }
 
-void EglRenderer::waitForNextFrame()
+void EglRendererReview::waitForNextFrame()
 {
     std::this_thread::sleep_for(mDetail->m_frameDelay);
 }
 
-bool EglRenderer::statusOfEglWindow()
+bool EglRendererReview::statusOfEglWindow()
 {
     return mDetail->m_isEglWindowCreated;
+}
+
+bool EglRendererReview::getCurrentStausOfMedia()
+{
+    LOG_ERROR << "CUrrent State of Media is " << mDetail->m_mediaRunning;
+    return mDetail->m_mediaRunning;
 }
