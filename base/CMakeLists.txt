@@ -52,6 +52,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(llama CONFIG REQUIRED) 
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
