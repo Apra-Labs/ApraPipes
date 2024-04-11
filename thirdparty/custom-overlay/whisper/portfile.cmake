@@ -22,6 +22,9 @@ endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        ${FEATURE_OPTIONS}
+        -DWHISPER_CUBLAS=${WHISPER_CUBLAS}
     DISABLE_PARALLEL_CONFIGURE
 )
 
