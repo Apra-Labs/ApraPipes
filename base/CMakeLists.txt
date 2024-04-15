@@ -550,13 +550,13 @@ ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
 	test/utmain.cpp
-	# test/unit_tests.cpp
-	# test/cv_memory_leaks_tests.cpp
-	# test/module_tests.cpp
-	# test/calchistogramcv_tests.cpp
-	# test/filenamestrategy_tests.cpp
-	# test/test_utils.cpp
-	# test/test_utils.h	
+	test/unit_tests.cpp
+	test/cv_memory_leaks_tests.cpp
+	test/module_tests.cpp
+	test/calchistogramcv_tests.cpp
+	test/filenamestrategy_tests.cpp
+	test/test_utils.cpp
+	test/test_utils.h	
 	# test/filewritermodule_tests.cpp
 	# test/logger_tests.cpp
 #	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
@@ -606,7 +606,7 @@ SET(UT_FILES
 	# test/abscontrolmodule_tests.cpp
 	# test/thumbnailgenerator_tests.cpp
 	# ${ARM64_UT_FILES}
-	# ${CUDA_UT_FILES}
+	${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
