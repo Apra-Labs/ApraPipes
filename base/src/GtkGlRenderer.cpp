@@ -5,7 +5,9 @@
 
 #include "Logger.h"
 #include "GtkGlRenderer.h"
+#if defined(__arm__) || defined(__aarch64__)
 #include "DMAFDWrapper.h"
+#endif
 #include "Background.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -83,8 +85,9 @@ public:
         void *frameToRender;
         if (detailInstance->isDmaMem)
         {
-            // frameToRender = static_cast<DMAFDWrapper *>(detailInstance->renderFrame->data())->getCudaPtr();
+#if defined(__arm__) || defined(__aarch64__)
             frameToRender = static_cast<DMAFDWrapper *>(detailInstance->renderFrame->data())->getHostPtr();
+#endif
         }
         else
         {
@@ -279,6 +282,7 @@ bool GtkGlRenderer::process(frame_container &frames)
     size_t underscorePos = myId.find('_');
     std::string numericPart = myId.substr(underscorePos + 1);
     int myNumber = std::stoi(numericPart);
+#if defined(__arm__) || defined(__aarch64__)
 
     if ((controlModule != nullptr) && (myNumber % 2 == 1))
 	{
@@ -289,6 +293,7 @@ bool GtkGlRenderer::process(frame_container &frames)
         //LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
 		return true;
 	}
+#endif
     return true;
 }
 
@@ -302,7 +307,7 @@ void GtkGlRenderer::processQueue()
 {
     auto currentTime = std::chrono::steady_clock::now();
     auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime).count();
-
+#if defined(__arm__) || defined(__aarch64__)
     std::lock_guard<std::mutex> lock(queueMutex);
     if (!frameQueue.empty())
     {
@@ -333,6 +338,7 @@ void GtkGlRenderer::processQueue()
             lastFrameTime = currentTime;
         }
     }
+#endif
 }
 
 // Need to check on Mem Type Supported

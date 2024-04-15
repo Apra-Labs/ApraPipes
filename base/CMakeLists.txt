@@ -148,7 +148,8 @@ ENDIF(ENABLE_CUDA)
 
 find_library(LIBBROTLIDEC brotlidec-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
 find_library(LIBBROTLICOMMON brotlicommon-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
-
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
 include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
@@ -395,12 +396,6 @@ IF(ENABLE_ARM64)
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
 		src/H264DecoderV4L2Helper.h
-		src/Background.cpp
-		src/GtkGlRenderer.cpp
-		src/Matrix.cpp
-		src/Model.cpp
-		src/Program.cpp
-		src/View.cpp
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -410,7 +405,13 @@ ELSE()
 		src/H264EncoderNVCodec.cpp
 		src/H264DecoderNvCodecHelper.cpp
 		src/H264DecoderNvCodecHelper.h
-	)
+		src/Background.cpp
+		src/GtkGlRenderer.cpp
+		src/Matrix.cpp
+		src/Model.cpp
+		src/Program.cpp
+		src/View.cpp
+		)
 ENDIF(ENABLE_ARM64)
 
 SET(CUDA_IP_FILES_H
@@ -451,13 +452,6 @@ IF(ENABLE_ARM64)
 		include/ApraEGLDisplay.h
 		include/DMAFrameUtils.h
 		include/DMAFDToHostCopy.h
-		include/Background.h
-		include/GLUtils.h
-		include/GtkGlRenderer.h
-		include/Matrix.h
-		include/Model.h
-		include/Program.h
-		include/View.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
@@ -465,6 +459,13 @@ ELSE()
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
+		include/Background.h
+		include/GLUtils.h
+		include/GtkGlRenderer.h
+		include/Matrix.h
+		include/Model.h
+		include/Program.h
+		include/View.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -518,7 +519,6 @@ IF (ENABLE_ARM64)
 		test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
-		test/gtkglrenderer_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -529,6 +529,7 @@ IF (ENABLE_CUDA)
 		test/rotatenppi_tests.cpp
 		test/ccnppi_tests.cpp
 		test/memtypeconversion_tests.cpp
+		test/gtkglrenderer_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -634,13 +635,6 @@ target_link_libraries(aprapipesut
   aprapipes  
 #   ${LIBBROTLIDEC} 
 #   ${LIBBROTLICOMMON}
-  /usr/lib/x86_64-linux-gnu/libgtk-3-0
-  /usr/lib/x86_64-linux-gnu/libGLEW.so
-  /usr/lib/x86_64-linux-gnu/libgdk-3.so
-  /usr/lib/x86_64-linux-gnu/libGL.so.1
-  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
   ${GTK3_LIBRARIES}
   ${GDK3_LIBRARIES} 
   ${JPEG_LIBRARIES}

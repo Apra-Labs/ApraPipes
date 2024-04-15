@@ -2,11 +2,17 @@
 #include <boost/thread.hpp>
 #include <iostream>
 #include "PipeLine.h"
+
+#if defined(__arm__) || defined(__aarch64__)
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
+#include "DMAFDToHostCopy.h"
+#include "NvArgusCamera.h"
+#include "EglRenderer.h"
+#endif
+#include "FileReaderModule.h"
 #include "VirtualCameraSink.h"
 #include "FileWriterModule.h"
-#include "DMAFDToHostCopy.h"
 #include "StatSink.h"
 #include "ResizeNPPI.h"
 #include "AffineTransform.h"
@@ -14,21 +20,10 @@
 #include "CudaMemCopy.h"
 #include "H264Metadata.h"
 #include "RTSPClientSrc.h"
-#include "EglRenderer.h"
 #include "GtkGlRenderer.h"
 #include "FileWriterModule.h"
-#include "NvArgusCamera.h"
 #include "MemTypeConversion.h"
 #include <gtk/gtk.h>
-// // #include <constants/GlobalProperties.h>
-// #include <utils/GTK_UI.h>
-// #define PRIMARY_WINDOW_WIDTH 	1920
-// #define PRIMARY_WINDOW_HEIGHT 	1080
-
-// #define ASSETS_PATH "assets_ui/"
-// #define GLADE_PATH ASSETS_PATH "ui/"
-// #define STYLE_PATH ASSETS_PATH "css/"
-// #define CONFIG_PATH "config/"
 
 PipeLine p("test");
 PipeLine p2("test2");
@@ -36,6 +31,7 @@ PipeLine p3("test3");
 PipeLine p4("test4");
 PipeLine p5("test5");
 PipeLine p6("test6");
+
 GtkWidget *glarea;
 GtkWidget *glarea2;
 GtkWidget *glarea3;
@@ -43,12 +39,14 @@ GtkWidget *glarea4;
 GtkWidget *glarea5;
 GtkWidget *glarea6;
 GtkWidget *window;
+
 GtkWidget *glAreaSwitch;
 GtkWidget *parentCont;
 GtkWidget *parentCont4;
 GtkWidget *parentCont3;
 GtkWidget *parentCont5;
 GtkWidget *parentCont6;
+
 static int pipelineNumber = 0;
 
 BOOST_AUTO_TEST_SUITE(gtkglrenderer_tests)
@@ -60,38 +58,36 @@ struct rtsp_client_tests_data {
 
 boost::shared_ptr<GtkGlRenderer>GtkGl;
 
-BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
-{
 
-	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-	// auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 2)));
-
-	// GtkGlRendererProps gtkglsinkProps("atlui.glade", 1920, 1080);
-
-	// auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
-	// source->setNext(sink);
-
-	// PipeLine p("test");
-	// p.appendModule(source);
-	// BOOST_TEST(p.init());
-
-	// p.run_all_threaded();
-	// boost::this_thread::sleep_for(boost::chrono::seconds(10000000000));
-	// gtk_main();
-	// p.stop();
-	// p.term();
-	// p.wait_for_all();
-}
 
 void secondPipeline()
 {
 	p.init();
 	p.run_all_threaded();
 }
+boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
+{
+    auto fileReaderProps = FileReaderModuleProps("./data/rgba_400x400.raw", 0, -1);
+    fileReaderProps.readLoop = true;
+    fileReaderProps.fps = 300;
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
+    auto rawImagePin = fileReader->addOutputPin(metadata);
+
+
+    GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
+	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	fileReader->setNext(GtkGl);
+
+	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+	return GtkGl;
+}
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline1()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d;
 	string url = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
 
@@ -132,10 +128,13 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline1()
 	p.init();
 	p.run_all_threaded();
 	return GtkGl;
+#endif
+    return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline2()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d2;
 	string url2 = "rtsp://10.102.10.75/axis-media/media.amp";
 
@@ -178,10 +177,13 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline2()
 	p2.init();
 	p2.run_all_threaded();
 	return GtkGl2;
+#endif
+    return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline3()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d3;
 	string url3 = "rtsp://10.102.10.42/axis-media/media.amp";
 
@@ -224,10 +226,13 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline3()
 	p3.init();
 	p3.run_all_threaded();
 	return GtkGl3;
+#endif
+    return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline4()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d4;
 	string url4 = "rtsp://10.102.10.42/axis-media/media.amp";
 
@@ -270,10 +275,13 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline4()
 	p4.init();
 	p4.run_all_threaded();
 	return GtkGl4;
+#endif
+    return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline5()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d5;
 	string url5 = "rtsp://10.102.10.75/axis-media/media.amp";
 
@@ -316,10 +324,13 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline5()
 	p5.init();
 	p5.run_all_threaded();
 	return GtkGl5;
+#endif
+    return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline6()
 {
+#if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d6;
 	string url6 = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
 
@@ -362,6 +373,8 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline6()
 	p6.init();
 	p6.run_all_threaded();
 	return GtkGl6;
+#endif
+    return NULL;
 }
 
 
@@ -489,7 +502,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	{
 		LOG_ERROR << "Builder not found";
 	}
-	gtk_builder_add_from_file(m_builder, "/mnt/disks/ssd/vinayak/backup/GtkRendererModule/ApraPipes/assets/appui.glade", NULL);
+	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/ApraPipes/data/app_ui.glade", NULL);
 	std::cout << "ui glade found" << std::endl;
 
 	window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -504,35 +517,21 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 		gtk_main_iteration();
 	} while (gtk_events_pending());
 
-	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "mainWidget"));
+	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "A_liveScreen"));
 	gtk_container_add(GTK_CONTAINER(window), mainFixed);
-	GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(m_builder, "button"));
-    g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
+	// GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(m_builder, "button"));
+    // g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
 
 	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
-	glarea3 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw3"));
-	glarea4 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw4"));
-	glarea5 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw5"));
-	glarea6 = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw6"));
-	glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw2"));
-	parentCont = gtk_widget_get_parent(GTK_WIDGET(glAreaSwitch));
-	parentCont3 = gtk_widget_get_parent(GTK_WIDGET(glarea3));
-	parentCont4 = gtk_widget_get_parent(GTK_WIDGET(glarea4));
-	parentCont5 = gtk_widget_get_parent(GTK_WIDGET(glarea5));
-	parentCont6 = gtk_widget_get_parent(GTK_WIDGET(glarea6));
-	gtk_container_remove(GTK_CONTAINER(parentCont), glAreaSwitch);
-	gtk_container_remove(GTK_CONTAINER(parentCont3), glarea3);
-	gtk_container_remove(GTK_CONTAINER(parentCont4), glarea4);
-	gtk_container_remove(GTK_CONTAINER(parentCont5), glarea5);
-	gtk_container_remove(GTK_CONTAINER(parentCont6), glarea6);
-    //     // Remove the GtkGLArea from its parent container
+    
 	std::cout << "Printing Pointer of Old & New GL AREA" << glarea << "======== " << glAreaSwitch  << std::endl; 
 
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
 	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
-	launchPipeline1();
+	// launchPipeline1();
 	//launchPipeline2();
-	gtk_widget_show_all(window);
+	laucX86Pipeline();
+    gtk_widget_show_all(window);
 	
 	// g_timeout_add(2000, hideWidget, NULL);
 	// g_timeout_add(5000, hide_gl_area, NULL);
