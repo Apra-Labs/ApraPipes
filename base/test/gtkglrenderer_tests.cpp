@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 		gtk_main_iteration();
 	} while (gtk_events_pending());
 
-	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "B_galleryScreen"));
+	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "A_liveScreen"));
 	gtk_container_add(GTK_CONTAINER(window), mainFixed);
 	// GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(m_builder, "button"));
     // g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
@@ -530,7 +530,8 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
 	// launchPipeline1();
 	//launchPipeline2();
-	gtk_widget_show_all(window);
+	laucX86Pipeline();
+    gtk_widget_show_all(window);
 	
 	// g_timeout_add(2000, hideWidget, NULL);
 	// g_timeout_add(5000, hide_gl_area, NULL);
