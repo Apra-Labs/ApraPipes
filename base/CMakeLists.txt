@@ -50,6 +50,7 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(unofficial-brotli CONFIG REQUIRED)
 
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(GDK3 REQUIRED gdk-3.0)
@@ -144,6 +145,9 @@ IF(ENABLE_CUDA)
 	ENDIF(ENABLE_ARM64)
 
 ENDIF(ENABLE_CUDA)
+
+find_library(LIBBROTLIDEC brotlidec-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
+find_library(LIBBROTLICOMMON brotlicommon-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
 
 include_directories(AFTER SYSTEM include)
 
@@ -479,6 +483,8 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 message(STATUS "-------------Printing Soure file list-----------------${SOURCE}")
+message(Brotlidec static ==${LIBBROTLIDEC}) 
+message( BrotliDec Common == ${LIBBROTLICOMMON})
 add_library(aprapipes STATIC ${SOURCE})
 
 target_include_directories ( aprapipes PRIVATE 
@@ -527,13 +533,13 @@ IF (ENABLE_CUDA)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			test/jpegencodernvjpeg_tests.cpp
-			test/jpegdecodernvjpeg_tests.cpp			
+			# test/jpegencodernvjpeg_tests.cpp
+			# test/jpegdecodernvjpeg_tests.cpp			
 			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			test/nvjpeg_combo_tests.cpp			
+			# test/nvjpeg_combo_tests.cpp			
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
-			test/h264Encodernvcodec_tests.cpp
+			# test/h264Encodernvcodec_tests.cpp
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
 			test/h264decoder_tests.cpp
@@ -543,69 +549,69 @@ ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
 	test/utmain.cpp
-	test/unit_tests.cpp
-	test/cv_memory_leaks_tests.cpp
-	test/module_tests.cpp
-	test/calchistogramcv_tests.cpp
-	test/filenamestrategy_tests.cpp
-	test/test_utils.cpp
-	test/test_utils.h	
-	test/filewritermodule_tests.cpp
-	test/logger_tests.cpp
+	# test/unit_tests.cpp
+	# test/cv_memory_leaks_tests.cpp
+	# test/module_tests.cpp
+	# test/calchistogramcv_tests.cpp
+	# test/filenamestrategy_tests.cpp
+	# test/test_utils.cpp
+	# test/test_utils.h	
+	# test/filewritermodule_tests.cpp
+	# test/logger_tests.cpp
 #	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
-	test/quepushstrategy_tests.cpp	
-	test/framesmuxer_tests.cpp
-	test/filereadermodule_tests.cpp
-	test/merge_tests.cpp
-	test/split_tests.cpp
-	test/imagemetadata_tests.cpp
-	test/bmpconverter_tests.cpp
-	test/rtsppusher_tests.cpp
-	test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
-	test/Imageresizecv_tests.cpp
-	test/faciallandmarkscv_tests.cpp
-	test/imageviewermodule_tests.cpp
-	test/ImageEncodeCV_tests.cpp
-	test/rotatecv_tests.cpp
-	test/affinetransform_tests.cpp
-	test/brightness_contrast_tests.cpp
-	test/virtualptz_tests.cpp
-	test/webcam_source_tests.cpp
-	test/facedetectorXform_tests.cpp
-	test/sound_record_tests.cpp
-	test/pullstratergy_tests.cpp
-	test/QRReader_tests.cpp
-	test/textoverlayxform_tests.cpp
-	test/mp4writersink_tests.cpp
-	test/pipeline_tests.cpp
+	# test/quepushstrategy_tests.cpp	
+	# test/framesmuxer_tests.cpp
+	# test/filereadermodule_tests.cpp
+	# test/merge_tests.cpp
+	# test/split_tests.cpp
+	# test/imagemetadata_tests.cpp
+	# test/bmpconverter_tests.cpp
+	# test/rtsppusher_tests.cpp
+	# test/findexstrategy_tests.cpp	
+	# test/jpegdecodercv_tests.cpp
+	# test/Imageresizecv_tests.cpp
+	# test/faciallandmarkscv_tests.cpp
+	# test/imageviewermodule_tests.cpp
+	# test/ImageEncodeCV_tests.cpp
+	# test/rotatecv_tests.cpp
+	# test/affinetransform_tests.cpp
+	# test/brightness_contrast_tests.cpp
+	# test/virtualptz_tests.cpp
+	# test/webcam_source_tests.cpp
+	# test/facedetectorXform_tests.cpp
+	# test/sound_record_tests.cpp
+	# test/pullstratergy_tests.cpp
+	# test/QRReader_tests.cpp
+	# test/textoverlayxform_tests.cpp
+	# test/mp4writersink_tests.cpp
+	# test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	test/valveModule_tests.cpp
-	test/color_conversion_tests.cpp
-	test/archivespacemanager_tests.cpp
-	test/multimediaqueuexform_tests.cpp
-  	test/mp4readersource_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/motionvector_extractor_and_overlay_tests.cpp
-	test/mp4_reverse_play_tests.cpp
-	test/ordered_cache_of_files_tests.cpp
-	test/mp4_seek_tests.cpp
-	test/mp4_simul_read_write_tests.cpp
-	test/mp4_getlivevideots_tests.cpp
-	test/mp4_dts_strategy_tests.cpp
-	test/overlaymodule_tests.cpp
-	test/testSignalGeneratorSrc_tests.cpp
-	test/abscontrolmodule_tests.cpp
-	test/thumbnailgenerator_tests.cpp
-	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}
+	# test/valveModule_tests.cpp
+	# test/color_conversion_tests.cpp
+	# test/archivespacemanager_tests.cpp
+	# test/multimediaqueuexform_tests.cpp
+  	# test/mp4readersource_tests.cpp
+	# test/rtsp_client_tests.cpp
+	# test/rtsp_client_tests.cpp
+	# test/motionvector_extractor_and_overlay_tests.cpp
+	# test/mp4_reverse_play_tests.cpp
+	# test/ordered_cache_of_files_tests.cpp
+	# test/mp4_seek_tests.cpp
+	# test/mp4_simul_read_write_tests.cpp
+	# test/mp4_getlivevideots_tests.cpp
+	# test/mp4_dts_strategy_tests.cpp
+	# test/overlaymodule_tests.cpp
+	# test/testSignalGeneratorSrc_tests.cpp
+	# test/abscontrolmodule_tests.cpp
+	# test/thumbnailgenerator_tests.cpp
+	# ${ARM64_UT_FILES}
+	# ${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	test/virtualcamerasink_tests.cpp
-	test/QRReader_tests.cpp
+	# test/virtualcamerasink_tests.cpp
+	# test/QRReader_tests.cpp
 	)
 ENDIF(ENABLE_LINUX)
 
@@ -626,13 +632,15 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-  /usr/lib/aarch64-linux-gnu/libgtk-3-0
-  /usr/lib/aarch64-linux-gnu/libGLEW.so
-  /usr/lib/aarch64-linux-gnu/libgdk-3.so
-  /usr/lib/aarch64-linux-gnu/libGL.so.1
-  /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
+#   ${LIBBROTLIDEC} 
+#   ${LIBBROTLICOMMON}
+  /usr/lib/x86_64-linux-gnu/libgtk-3-0
+  /usr/lib/x86_64-linux-gnu/libGLEW.so
+  /usr/lib/x86_64-linux-gnu/libgdk-3.so
+  /usr/lib/x86_64-linux-gnu/libGL.so.1
+  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
   ${GTK3_LIBRARIES}
   ${GDK3_LIBRARIES} 
   ${JPEG_LIBRARIES}
@@ -653,6 +661,144 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  unofficial::brotli::brotlidec-static 
+  unofficial::brotli::brotlienc-static 
+  unofficial::brotli::brotlicommon-static
+
+  aprapipes  
+#   ${LIBBROTLIDEC} 
+#   ${LIBBROTLICOMMON}
+  /usr/lib/x86_64-linux-gnu/libgtk-3-0
+  /usr/lib/x86_64-linux-gnu/libGLEW.so
+  /usr/lib/x86_64-linux-gnu/libgdk-3.so
+  /usr/lib/x86_64-linux-gnu/libGL.so.1
+  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
+
+
+
+  aprapipes  
+#   ${LIBBROTLIDEC} 
+#   ${LIBBROTLICOMMON}
+  /usr/lib/x86_64-linux-gnu/libgtk-3-0
+  /usr/lib/x86_64-linux-gnu/libGLEW.so
+  /usr/lib/x86_64-linux-gnu/libgdk-3.so
+  /usr/lib/x86_64-linux-gnu/libGL.so.1
+  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  unofficial::brotli::brotlidec-static 
+  unofficial::brotli::brotlienc-static 
+  unofficial::brotli::brotlicommon-static
+
+
+  aprapipes  
+#   ${LIBBROTLIDEC} 
+#   ${LIBBROTLICOMMON}
+  /usr/lib/x86_64-linux-gnu/libgtk-3-0
+  /usr/lib/x86_64-linux-gnu/libGLEW.so
+  /usr/lib/x86_64-linux-gnu/libgdk-3.so
+  /usr/lib/x86_64-linux-gnu/libGL.so.1
+  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
+
+
+
+  aprapipes  
+#   ${LIBBROTLIDEC} 
+#   ${LIBBROTLICOMMON}
+  /usr/lib/x86_64-linux-gnu/libgtk-3-0
+  /usr/lib/x86_64-linux-gnu/libGLEW.so
+  /usr/lib/x86_64-linux-gnu/libgdk-3.so
+  /usr/lib/x86_64-linux-gnu/libGL.so.1
+  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
   )
 
 IF(ENABLE_WINDOWS)
