@@ -54,6 +54,7 @@ find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+find_package(GLEW REQUIRED)
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -582,6 +583,7 @@ SET(UT_FILES
 	# test/thumbnailgenerator_tests.cpp
 	# ${ARM64_UT_FILES}
 	# ${CUDA_UT_FILES}
+	test/gtkglrenderer_tests.cpp
 )
 
 IF(ENABLE_LINUX)
@@ -610,6 +612,7 @@ target_link_libraries(aprapipesut
   aprapipes  
   ${GTK3_LIBRARIES}
   ${GDK3_LIBRARIES} 
+  ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
@@ -621,6 +624,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  /lib/x86_64-linux-gnu/libGL.so.1
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
