@@ -18,31 +18,11 @@ public:
 };
 
 AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
-    :Module(TRANSFORM, "NVRControlModule", _props)
+    :Module(TRANSFORM, "AbsControlModule", _props)
 {
     mDetail.reset(new Detail(_props));
 }
 AbsControlModule::~AbsControlModule() {}
-
-bool AbsControlModule::validateInputPins()
-{
-    return true;
-}
-
-bool AbsControlModule::validateOutputPins()
-{
-    return true;
-}
-
-bool AbsControlModule::validateInputOutputPins()
-{
-    return true;
-}
-
-void AbsControlModule::addInputPin(framemetadata_sp& metadata, string& pinId)
-{
-    Module::addInputPin(metadata, pinId);
-}
 
 bool AbsControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
@@ -66,17 +46,6 @@ bool AbsControlModule::init()
 bool AbsControlModule::term()
 {
     return Module::term();
-}
-
-AbsControlModuleProps AbsControlModule::getProps()
-{
-    fillProps(mDetail->mProps);
-    return mDetail->mProps;
-}
-
-void AbsControlModule::setProps(AbsControlModuleProps& props)
-{
-    Module::addPropsToQueue(props);
 }
 
 bool AbsControlModule::process(frame_container& frames)
