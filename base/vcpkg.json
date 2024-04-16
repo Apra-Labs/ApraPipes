@@ -2,8 +2,15 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "46cf263b3d4bfab6d322b47ab40222db167c28b1",
+  "builtin-baseline": "eac79fc7bda260819c646d10c97dec825305aecd",
   "dependencies": [
+    {
+      "name": "whisper",
+      "default-features": false,
+      "features": [
+          "cuda"
+      ]
+    },
     {
       "name": "opencv4",
       "default-features": false,
