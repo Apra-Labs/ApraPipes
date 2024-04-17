@@ -17,11 +17,6 @@ public:
 		DeleteWindow,
 		CreateWindow,
 		PlayPause,
-		NVRCommandRecord,
-		NVRCommandExport,
-		NVRCommandExportMMQ,
-		NVRCommandView,
-		NVRGoLive,
 		NVRCommandExportView,
 		MP4WriterLastTS,
 		MMQtimestamps,
@@ -320,126 +315,6 @@ private:
 };
 
 //NVRCommands
-
-class NVRCommandRecord : public Command
-{
-public:
-	NVRCommandRecord() : Command(Command::CommandType::NVRCommandRecord)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(doRecording);
-	}
-
-	bool doRecording = false;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& doRecording;
-	}
-};
-
-class NVRCommandExport : public Command
-{
-public:
-	NVRCommandExport() : Command(Command::CommandType::NVRCommandExport)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(startExportTS) + sizeof(stopExportTS);
-	}
-
-	uint64_t startExportTS = 0;
-	uint64_t stopExportTS = 0;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& startExportTS;
-		ar& stopExportTS;
-	}
-};
-
-class NVRCommandExportMMQ : public Command
-{
-public:
-	NVRCommandExportMMQ() : Command(Command::CommandType::NVRCommandExportMMQ)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(startExportMMQ);
-	}
-
-	bool startExportMMQ = true;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& startExportMMQ;
-	}
-};
-
-
-class NVRCommandView : public Command
-{
-public:
-	NVRCommandView() : Command(Command::CommandType::NVRCommandView)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(doView);
-	}
-
-	bool doView = false;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& doView;
-	}
-};
-
-class NVRGoLive : public Command
-{
-public:
-	NVRGoLive() : Command(Command::CommandType::NVRGoLive)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize();
-	}
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-	}
-};
 
 class NVRCommandExportView : public Command
 {
