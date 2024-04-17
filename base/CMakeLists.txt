@@ -109,8 +109,8 @@ IF(ENABLE_CUDA)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
-		find_library(LIBNVCUVID libnvcuvid.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
-		find_library(LIBNVENCODE libnvidia-encode.so PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64 NO_DEFAULT_PATH)
+		find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
+		find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
@@ -567,7 +567,7 @@ SET(UT_FILES
 	# test/split_tests.cpp
 	# test/imagemetadata_tests.cpp
 	# test/bmpconverter_tests.cpp
-	# test/rtsppusher_tests.cpp
+	test/rtsppusher_tests.cpp
 	# test/findexstrategy_tests.cpp	
 	# test/jpegdecodercv_tests.cpp
 	# test/Imageresizecv_tests.cpp
@@ -593,7 +593,7 @@ SET(UT_FILES
 	# test/multimediaqueuexform_tests.cpp
   	# test/mp4readersource_tests.cpp
 	# test/rtsp_client_tests.cpp
-	# test/rtsp_client_tests.cpp
+	test/rtsp_client_tests.cpp
 	# test/motionvector_extractor_and_overlay_tests.cpp
 	# test/mp4_reverse_play_tests.cpp
 	# test/ordered_cache_of_files_tests.cpp
