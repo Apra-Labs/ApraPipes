@@ -5,6 +5,9 @@ powershell -nologo -executionpolicy bypass -File build_dependencies_windows_cuda
 cd ..
 
 @echo off
+sh .\build_documentation.sh
+
+@echo off
 set batdir=%~dp0
 cd %batdir%/vcpkg
 

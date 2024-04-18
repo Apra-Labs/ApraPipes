@@ -1,0 +1,1 @@
+ggml-tiny.en-q8_0.bin filter=lfs diff=lfs merge=lfs -text

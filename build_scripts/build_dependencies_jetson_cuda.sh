@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of required dependencies
-dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev")
+dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev" "doxygen" "graphviz")
 
 missing_dependencies=()
 
