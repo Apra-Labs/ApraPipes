@@ -76,7 +76,9 @@ private:
 	boost::asio::const_buffer ppsBuffer;
 	std::mutex m;
 	int framesToSkip = 0;
+	int iFramesToSkip = 0;
 	int currentFps = 24;
 	int previousFps = 24;
 	float playbackSpeed = 1;
+	int gop;
 };

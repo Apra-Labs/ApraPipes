@@ -658,11 +658,12 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(playbackFps) + sizeof(playbackSpeed);
+		return Command::getSerializeSize() + sizeof(playbackFps) + sizeof(playbackSpeed) + sizeof(gop);
 	}
 
 	int playbackFps;
 	float playbackSpeed;
+	int gop;
 
 private:
 	friend class boost::serialization::access;

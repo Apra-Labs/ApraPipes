@@ -417,9 +417,20 @@ bool H264Decoder::process(frame_container& frames)
 	mDirection = h264Metadata->direction;
 	short naluType = H264Utils::getNALUType((char*)frame->data());
 
-	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32) && (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM))
+	if ((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32) && (naluType != H264Utils::H264_NAL_TYPE_IDR_SLICE && naluType != H264Utils::H264_NAL_TYPE_SEQ_PARAM))
 	{
-		return true;
+		if ((currentFps * playbackSpeed) / gop > currentFps)
+		{
+			if (iFramesToSkip)
+			{
+				iFramesToSkip--;
+				return true;
+			}
+			if (!iFramesToSkip)
+			{
+				iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
+			}
+		}
 	}
 
 	if (naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
@@ -673,6 +684,7 @@ bool H264Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
 		getCommand(cmd, frame);
 		currentFps = cmd.playbackFps;
 		playbackSpeed = cmd.playbackSpeed;
+		gop = cmd.gop;
 		
 		if(playbackSpeed == 2 || playbackSpeed == 4)
 		{
@@ -686,10 +698,14 @@ bool H264Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
 		{
 			flushQue();
 			framesToSkip = 0;
+			if((currentFps * playbackSpeed) / gop > currentFps)
+			{
+				iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
+			}
 		}
 		else
 		{
-			if(previousFps >= 24 * 8)
+			if(previousFps >= currentFps * 8)
 			{
 				flushQue();
 			}
