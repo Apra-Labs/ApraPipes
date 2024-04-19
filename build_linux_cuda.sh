@@ -1,5 +1,5 @@
 chmod +x build_scripts/build_dependencies_linux_cuda.sh
-./build_scripts/build_dependencies_linux_cuda.sh
+sudo ./build_scripts/build_dependencies_linux_cuda.sh
 
 cd vcpkg
 ./bootstrap-vcpkg.sh

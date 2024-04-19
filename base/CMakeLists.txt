@@ -4,7 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-
+set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -27,13 +27,13 @@ ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
 
-add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
+# add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 project(APRAPIPES)
 
-
+add_compile_options(-fpermissive)
 
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
@@ -51,9 +51,15 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(unofficial-brotli CONFIG REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+pkg_check_modules(GIO REQUIRED gio-2.0)
+pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
+pkg_check_modules(GLFW REQUIRED glfw3)
+
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -93,19 +99,8 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-		include_directories(AFTER SYSTEM /usr/local/cuda/include)
-		include_directories(AFTER SYSTEM /usr/include/gtk-3.0/)
-		include_directories(AFTER SYSTEM /usr/include/glib-2.0/)
-		include_directories(AFTER SYSTEM /usr/local/cuda/include)
-		include_directories(AFTER SYSTEM /usr/include/gtk-3.0/)
-		include_directories(AFTER SYSTEM /usr/include/glib-2.0/)
-		include_directories(AFTER SYSTEM /usr/lib/aarch64-linux-gnu/glib-2.0/include/)
-		include_directories(AFTER SYSTEM /usr/include/pango-1.0/)
-		include_directories(AFTER SYSTEM /usr/include/harfbuzz/)
-		include_directories(AFTER SYSTEM /usr/include/cairo/)
-		include_directories(AFTER SYSTEM  /usr/include/atk-1.0/)
-		include_directories(AFTER SYSTEM  /usr/include/gdk-pixbuf-2.0/) 
-		include_directories(AFTER SYSTEM  /usr/local/cuda/samples/common/inc/)
+		include_directories(AFTER SYSTEM /usr/local/cuda-11/include)
+		include_directories(AFTER SYSTEM  /usr/local/cuda-11/samples/common/inc/)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
@@ -124,7 +119,7 @@ IF(ENABLE_CUDA)
 			libnppial_static.a					
 			libculibos.a	
 		) 
-		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda-11/include)
 	ELSE()
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
@@ -146,10 +141,9 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-find_library(LIBBROTLIDEC brotlidec-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
-find_library(LIBBROTLICOMMON brotlicommon-static PATHS "/home/developer/workspace/aprapipesnvr/ApraPipes/_build/vcpkg_installed/x64-linux/lib")
 include_directories(${GTK3_INCLUDE_DIRS})
 link_directories(${GTK3_LIBRARY_DIRS})
+
 include_directories(AFTER SYSTEM include)
 
 # ApraPipes library
@@ -483,9 +477,6 @@ IF(ENABLE_CUDA)
 	)
 ENDIF(ENABLE_CUDA)
 
-message(STATUS "-------------Printing Soure file list-----------------${SOURCE}")
-message(Brotlidec static ==${LIBBROTLIDEC}) 
-message( BrotliDec Common == ${LIBBROTLICOMMON})
 add_library(aprapipes STATIC ${SOURCE})
 
 target_include_directories ( aprapipes PRIVATE 
@@ -633,10 +624,8 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-#   ${LIBBROTLIDEC} 
-#   ${LIBBROTLICOMMON}
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
+  GLEW::GLEW
+  glfw
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
@@ -655,144 +644,105 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
-  unofficial::brotli::brotlidec-static 
-  unofficial::brotli::brotlienc-static 
-  unofficial::brotli::brotlicommon-static
+  unofficial::brotli::brotlidec 
+  unofficial::brotli::brotlienc 
 
-  aprapipes  
-#   ${LIBBROTLIDEC} 
-#   ${LIBBROTLICOMMON}
-  /usr/lib/x86_64-linux-gnu/libgtk-3-0
-  /usr/lib/x86_64-linux-gnu/libGLEW.so
-  /usr/lib/x86_64-linux-gnu/libgdk-3.so
-  /usr/lib/x86_64-linux-gnu/libGL.so.1
-  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
+#   aprapipes  
+#   GLEW::GLEW
+#   glfw
+#   ${JPEG_LIBRARIES}
+#   ${LIBMP4_LIB}
+#   ${OPENH264_LIB}
+#   ${Boost_LIBRARIES}
+#   ${FFMPEG_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   ${JETSON_LIBS}
+#   ${NVCUDAToolkit_LIBS}
+#   ${NVCODEC_LIB}
+#   ${NVJPEGLIB_L4T}
+#   ${CURSES_LIBRARIES}
+#   ZXing::Core
+#   ZXing::ZXing	
+#   BZip2::BZip2
+#   ZLIB::ZLIB
+#   liblzma::liblzma
+#   bigint::bigint
+#   sfml-audio
+#   unofficial::brotli::brotlidec 
+#   unofficial::brotli::brotlienc 
 
+#   aprapipes  
+#   GLEW::GLEW
+#   glfw 
+#   ${JPEG_LIBRARIES}
+#   ${LIBMP4_LIB}
+#   ${OPENH264_LIB}
+#   ${Boost_LIBRARIES}
+#   ${FFMPEG_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   ${JETSON_LIBS}
+#   ${NVCUDAToolkit_LIBS}
+#   ${NVCODEC_LIB}
+#   ${NVJPEGLIB_L4T}
+#   ${CURSES_LIBRARIES}
+#   ZXing::Core
+#   ZXing::ZXing	
+#   BZip2::BZip2
+#   ZLIB::ZLIB
+#   liblzma::liblzma
+#   bigint::bigint
+#   sfml-audio
+#   unofficial::brotli::brotlidec 
+#   unofficial::brotli::brotlienc 
 
+#   aprapipes  
+#   GLEW::GLEW
+#   glfw
+#   ${JPEG_LIBRARIES}
+#   ${LIBMP4_LIB}
+#   ${OPENH264_LIB}
+#   ${Boost_LIBRARIES}
+#   ${FFMPEG_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   ${JETSON_LIBS}
+#   ${NVCUDAToolkit_LIBS}
+#   ${NVCODEC_LIB}
+#   ${NVJPEGLIB_L4T}
+#   ${CURSES_LIBRARIES}
+#   ZXing::Core
+#   ZXing::ZXing	
+#   BZip2::BZip2
+#   ZLIB::ZLIB
+#   liblzma::liblzma
+#   bigint::bigint
+#   sfml-audio
+#   unofficial::brotli::brotlidec 
+#   unofficial::brotli::brotlienc 
 
-  aprapipes  
-#   ${LIBBROTLIDEC} 
-#   ${LIBBROTLICOMMON}
-  /usr/lib/x86_64-linux-gnu/libgtk-3-0
-  /usr/lib/x86_64-linux-gnu/libGLEW.so
-  /usr/lib/x86_64-linux-gnu/libgdk-3.so
-  /usr/lib/x86_64-linux-gnu/libGL.so.1
-  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  unofficial::brotli::brotlidec-static 
-  unofficial::brotli::brotlienc-static 
-  unofficial::brotli::brotlicommon-static
-
-
-  aprapipes  
-#   ${LIBBROTLIDEC} 
-#   ${LIBBROTLICOMMON}
-  /usr/lib/x86_64-linux-gnu/libgtk-3-0
-  /usr/lib/x86_64-linux-gnu/libGLEW.so
-  /usr/lib/x86_64-linux-gnu/libgdk-3.so
-  /usr/lib/x86_64-linux-gnu/libGL.so.1
-  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
-
-
-
-  aprapipes  
-#   ${LIBBROTLIDEC} 
-#   ${LIBBROTLICOMMON}
-  /usr/lib/x86_64-linux-gnu/libgtk-3-0
-  /usr/lib/x86_64-linux-gnu/libGLEW.so
-  /usr/lib/x86_64-linux-gnu/libgdk-3.so
-  /usr/lib/x86_64-linux-gnu/libGL.so.1
-  /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  unofficial::brotli::brotlidec-static unofficial::brotli::brotlienc-static unofficial::brotli::brotlicommon-static
+#   aprapipes  
+#   GLEW::GLEW
+#   glfw
+#   ${GTK3_LIBRARIES}
+#   ${JPEG_LIBRARIES}
+#   ${LIBMP4_LIB}
+#   ${OPENH264_LIB}
+#   ${Boost_LIBRARIES}
+#   ${FFMPEG_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   ${JETSON_LIBS}
+#   ${NVCUDAToolkit_LIBS}
+#   ${NVCODEC_LIB}
+#   ${NVJPEGLIB_L4T}
+#   ${CURSES_LIBRARIES}
+#   ZXing::Core
+#   ZXing::ZXing	
+#   BZip2::BZip2
+#   ZLIB::ZLIB
+#   liblzma::liblzma
+#   bigint::bigint
+#   sfml-audio
+#   unofficial::brotli::brotlidec 
+#   unofficial::brotli::brotlienc 
   )
 
 IF(ENABLE_WINDOWS)
