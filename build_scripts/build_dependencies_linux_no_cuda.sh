@@ -38,7 +38,7 @@ fi
 # Install jq if not present
 if ! jq --version &>/dev/null; then
   echo "jq is not installed. Installing jq..."
-  apt install jq
+  apt -y install jq
 fi
 
 echo "Dependencies verified and installed successfully."
