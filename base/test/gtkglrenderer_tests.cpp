@@ -23,6 +23,10 @@
 #include "GtkGlRenderer.h"
 #include "FileWriterModule.h"
 #include "MemTypeConversion.h"
+#include "H264Decoder.h"
+#include "ColorConversionXForm.h"
+#include "RTSPClientSrc.h"
+
 #include <gtk/gtk.h>
 
 PipeLine p("test");
@@ -67,11 +71,13 @@ void secondPipeline()
 }
 boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 {
-    auto fileReaderProps = FileReaderModuleProps("./data/rgba_400x400.raw", 0, -1);
+    // auto fileReaderProps = FileReaderModuleProps("./data/rgba_400x400.raw", 0, -1);
+	auto fileReaderProps = FileReaderModuleProps("./data/frame_1280x720_rgb.raw", 0, -1);
     fileReaderProps.readLoop = true;
     fileReaderProps.fps = 300;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
-    auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
+
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto rawImagePin = fileReader->addOutputPin(metadata);
 
 
@@ -80,6 +86,37 @@ boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 	fileReader->setNext(GtkGl);
 
 	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+	return GtkGl;
+}
+
+boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline()
+{
+	Logger::setLogLevel("info");
+
+	rtsp_client_tests_data d;
+	d.outFile = "./data/testOutput/xyz_???.raw";
+
+	auto url=string("rtsp://10.102.10.158:5545/vod/outdoor1_9546a7e62.mp4"); 
+	RTSPClientSrcProps rtspProps(url, d.empty, d.empty);
+	rtspProps.logHealth = true;
+	rtspProps.logHealthFrequency = 100;
+	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(rtspProps));
+	auto meta = framemetadata_sp(new H264Metadata());
+	rtspSrc->addOutputPin(meta);
+
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	rtspSrc->setNext(Decoder);
+
+	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
+	Decoder->setNext(colorchange);
+
+    GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
+	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	colorchange->setNext(GtkGl);
+
+	p.appendModule(rtspSrc);
 	p.init();
 	p.run_all_threaded();
 	return GtkGl;
@@ -502,7 +539,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	{
 		LOG_ERROR << "Builder not found";
 	}
-	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/ApraPipes/data/app_ui.glade", NULL);
+	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/aprapipesnvr/ApraPipes/data/app_ui.glade", NULL);
 	std::cout << "ui glade found" << std::endl;
 
 	window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -530,7 +567,8 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
 	// launchPipeline1();
 	//launchPipeline2();
-	laucX86Pipeline();
+	// laucX86Pipeline();
+	laucX86RTSPPipeline();
     gtk_widget_show_all(window);
 	
 	// g_timeout_add(2000, hideWidget, NULL);

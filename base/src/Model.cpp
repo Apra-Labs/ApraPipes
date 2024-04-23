@@ -77,7 +77,7 @@ void matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GL
     // GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
     // GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
     // Work out other mappings as required ( there's a list in comments in main() )
-    GLenum inputColourFormat = GL_RGBA;// GL_BGR
+    GLenum inputColourFormat = GL_RGB;// GL_BGR
     if (3 == 1)
     {
         inputColourFormat = GL_LUMINANCE;
@@ -86,7 +86,7 @@ void matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magFilter, GL
     // Create the texture
     glTexImage2D(GL_TEXTURE_2D,     // Type of texture
                  0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                 GL_RGBA,            // CHanged from rgb to rgba Internal colour format to convert to
+                 GL_RGB,            // CHanged from rgb to rgba Internal colour format to convert to
                  width,          // Image width  i.e. 640 for Kinect in standard mode
                  height,          // Image height i.e. 480 for Kinect in standard mode
                  0,                 // Border width in pixels (can either be 1 or 0)
