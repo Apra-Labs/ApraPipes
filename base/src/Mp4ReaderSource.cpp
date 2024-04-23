@@ -507,10 +507,17 @@ public:
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 				if ((controlModule != nullptr))
 				{
-					mProps.fps = mFPS;
-					LOG_INFO << "fps of new video is = " << mFPS;
+					auto gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+					mProps.fps = mFPS * playbackSpeed;
+					if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+					{
+						mProps.fps = mProps.fps/gop;
+					}
 					setMp4ReaderProps(mProps);
-					LOG_INFO << "did set Mp4reader props";	
+					DecoderPlaybackSpeed cmd;
+					cmd.playbackSpeed = playbackSpeed;
+					cmd.playbackFps = mFPS;
+					cmd.gop = gop;
 				}
 			}
 		}
@@ -724,7 +731,7 @@ public:
 		mState.shouldPrependSpsPps = true;
 		isMp4SeekFrame = true;
 		setMetadata();
-		LOG_ERROR << "seek successfull";
+		LOG_INFO << "seek successfull";
 		return true;
 	}
 
@@ -1080,6 +1087,8 @@ public:
 	bool isMp4SeekFrame = false;
 	int ret;
 	double mFPS = 0;
+	float playbackSpeed = 1;
+	float framesToSkip = 0;
 	double mDurationInSecs = 0;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
 	std::function<void(frame_sp frame)> sendEOS;
@@ -1393,6 +1402,22 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		isMp4SeekFrame = false;
 		setMetadata();
 	}
+	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
+	{
+		if(mDirection)
+		{
+			uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.next_dts, mState.video.timescale);
+			uint64_t nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			nextFrameTs++;
+			randomSeek(nextFrameTs);
+		}
+		else
+		{
+			frameTSInMsecs--;
+			randomSeek(frameTSInMsecs);
+		}
+		
+	}
 	return true;
 }
 
@@ -1624,4 +1649,9 @@ bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)
 {
 	Mp4SeekCommand cmd(skipTS, forceReopen);
 	return queueCommand(cmd);
+}
+
+void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
+{
+	mDetail->playbackSpeed = _playbackSpeed;
 }

@@ -567,6 +567,7 @@ bool MultimediaQueueXform::init()
 	}
 	mState.reset(new Idle(mState->queueObject));
 	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / mProps.mmqFps);
+	initialFps = mProps.mmqFps;
 	return true;
 }
 
@@ -640,6 +641,10 @@ void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContai
 				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
 				handleCommand(cmdType, itr->second);
 			}
+			else if(itr->second->isPropsChange())
+			{
+				handlePropsChange(itr->second);
+			}
 			else
 			{
 				framesContainer.insert(make_pair(itr->first, itr->second));
@@ -659,9 +664,10 @@ boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
 
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / mProps.mmqFps);
+	int fps = mProps.mmqFps * speed;
+	LOG_ERROR << "mmq fps is = " << fps;
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
 	initDone = false;
-	LOG_ERROR << "command received";
 	if (type == Command::CommandType::MultimediaQueueXform)
 	{
 		MultimediaQueueXformCommand cmd;
@@ -716,7 +722,18 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						frame_container outFrames;
 						auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 						outFrames.insert(make_pair(outputId, it->second.begin()->second));
-						mState->exportSend(outFrames);
+						if (!framesToSkip)
+						{
+							mState->exportSend(outFrames);
+						}
+						if (speed != 1 && speed != 0.5)
+						{
+							if (!framesToSkip)
+							{
+								framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps;
+							}
+							framesToSkip--;
+						}
 						latestFrameExportedFromHandleCmd = it->first;
 						std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
 						if (myNextWait > frame_len)
@@ -760,7 +777,6 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							cmd.direction = direction;
 							cmd.mp4ReaderExport = true;
 							controlModule->queueCommand(cmd, true);
-							LOG_ERROR << "crashing here?" ;
 							LOG_ERROR << "state = " << mState->Type;
 						}
 						mState->Type = State::IDLE;
@@ -865,7 +881,18 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 					outFrames.insert(make_pair(outputId, it->second.begin()->second));
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
-					mState->exportSend(outFrames);
+					if (!framesToSkip)
+					{
+						mState->exportSend(outFrames);
+					}
+					if (speed != 1 && speed != 0.5)
+					{
+						if (!framesToSkip)
+						{
+							framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps;
+						}
+						framesToSkip--;
+					}
 					latestFrameExportedFromProcess = it->first;
 					std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
 					if (myNextWait > frame_len)
@@ -959,8 +986,33 @@ void MultimediaQueueXform::setMmqFps(int fps)
 	mProps.mmqFps = fps;
 }
 
+void MultimediaQueueXform::setPlaybackSpeed(float playbackSpeed)
+{
+	framesToSkip = 0;
+	if(speed != playbackSpeed)
+	{
+		speed = playbackSpeed;
+		int fps = mProps.mmqFps * speed;
+		myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
+		initDone = false;
+		
+		if(speed != 1 && speed != 0.5)
+		{
+			framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps - 1;
+		}
+		else
+		{
+			framesToSkip = 0;
+		}
+	}
+	LOG_INFO << "frames to skip = " << framesToSkip << "speed is  = " << speed;
+}
+
 bool MultimediaQueueXform::handlePropsChange(frame_sp& frame)
 {
+	MultimediaQueueXformProps props(10, 5,2, false);
+	auto ret = Module::handlePropsChange(frame, props);
+
 	if (mState->Type != State::EXPORT)
 	{
 		MultimediaQueueXformProps props(10, 5, false);
@@ -983,14 +1035,15 @@ MultimediaQueueXformProps MultimediaQueueXform::getProps()
 
 void  MultimediaQueueXform::setProps(MultimediaQueueXformProps _props)
 {
-	if (mState->Type != State::EXPORT)
-	{
+	//if (mState->Type != State::EXPORT)
+	//{
 		mProps = _props;
-		Module::addPropsToQueue(mProps);
-	}
+		Module::addPropsToQueue(mProps, true);
+	//}
 
-	else
-	{
+	//else
+	//{
 		BOOST_LOG_TRIVIAL(info) << "Currently in export state, wait until export is completed";
-	}
+	//}
 }
+

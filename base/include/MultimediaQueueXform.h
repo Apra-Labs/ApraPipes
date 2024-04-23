@@ -25,6 +25,29 @@ public:
 	uint32_t upperWaterMark; //Length of the multimedia queue when the next module queue is full
 	bool isMapDelayInTime;
 	int mmqFps;
+
+	size_t getSerializeSize()
+	{
+		return ModuleProps::getSerializeSize() + sizeof(lowerWaterMark) + sizeof(upperWaterMark) + sizeof(isMapDelayInTime) + sizeof(mmqFps);
+	}
+
+	int startIndex;
+	int maxIndex;
+	string strFullFileNameWithPattern;
+	bool readLoop;
+
+private:
+	friend class boost::serialization::access;
+
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & boost::serialization::base_object<ModuleProps>(*this);
+		ar & lowerWaterMark;
+		ar & upperWaterMark;
+		ar & isMapDelayInTime;
+		ar & mmqFps;
+	}
 };
 
 class State;
@@ -49,6 +72,7 @@ public:
 	boost::shared_ptr<FrameContainerQueue> getQue();
 	void extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& FrameQueue);
 	void setMmqFps(int fps);
+	void setPlaybackSpeed(float playbackSpeed);
 protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
@@ -73,4 +97,7 @@ private:
 	uint64_t latestFrameExportedFromHandleCmd = 0;
 	uint64_t latestFrameExportedFromProcess = 0;
 	bool initDone = false;
+	int framesToSkip = 0;
+	int initialFps = 0;
+	float speed = 1;
 };
