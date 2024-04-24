@@ -82,7 +82,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 
 
     GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
-	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
 	fileReader->setNext(GtkGl);
 
 	p.appendModule(fileReader);
@@ -98,7 +98,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline()
 	rtsp_client_tests_data d;
 	d.outFile = "./data/testOutput/xyz_???.raw";
 
-	auto url=string("rtsp://10.102.10.158:5545/vod/outdoor1_9546a7e62.mp4"); 
+	auto url=string("rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp"); 
 	RTSPClientSrcProps rtspProps(url, d.empty, d.empty);
 	rtspProps.logHealth = true;
 	rtspProps.logHealthFrequency = 100;
@@ -113,7 +113,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline()
 	Decoder->setNext(colorchange);
 
     GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
-	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
 	colorchange->setNext(GtkGl);
 
 	p.appendModule(rtspSrc);
@@ -456,11 +456,11 @@ static gboolean hideWidget(gpointer data) {
 }
 
 static gboolean change_gl_area(gpointer data) {
-	GtkGl->changeProps(glAreaSwitch, 640, 360);
+	GtkGl->changeProps(glAreaSwitch, 1280, 720);
 	GtkGl->step();
-	gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
-	gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
-	gtk_widget_queue_draw(GTK_WIDGET(glAreaSwitch));
+	// gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
+	// gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
+	// gtk_widget_queue_draw(GTK_WIDGET(glAreaSwitch));
 	
     return G_SOURCE_REMOVE;  // Change the glarea before showing
 }
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
     // g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
 
 	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
-    
+    glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw1"));
 	std::cout << "Printing Pointer of Old & New GL AREA" << glarea << "======== " << glAreaSwitch  << std::endl; 
 
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	
 	// g_timeout_add(2000, hideWidget, NULL);
 	// g_timeout_add(5000, hide_gl_area, NULL);
-	// g_timeout_add(7000, change_gl_area, NULL);
+	g_timeout_add(7000, change_gl_area, NULL);
 	// g_timeout_add(9000, show_gl_area, NULL);
 	gtk_main();
 

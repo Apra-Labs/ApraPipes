@@ -366,13 +366,13 @@ bool GtkGlRenderer::term()
 
 bool GtkGlRenderer::changeProps(GtkWidget* glArea, int windowWidth, int windowHeight)
 {
-    //mDetail->on_unrealize();
     mDetail->disconnect_glarea_signals(GTK_WIDGET(mDetail->glarea));
     mDetail->glarea = glArea;
     mDetail->windowWidth = windowWidth;
     mDetail->windowHeight = windowHeight;
     mDetail->init();
     gtk_widget_show(GTK_WIDGET(glArea));
+    return true;
 }
 
 bool GtkGlRenderer::shouldTriggerSOS()
