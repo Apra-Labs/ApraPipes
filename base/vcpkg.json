@@ -7,6 +7,10 @@
     {
       "name":"ffmpeg",
       "version":"4.4.3"
+    },
+    {
+      "name":"libarchive",
+      "version":"3.5.2"
     }
   ],
   "dependencies": [

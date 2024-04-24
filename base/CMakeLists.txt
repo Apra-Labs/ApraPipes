@@ -99,8 +99,8 @@ IF(ENABLE_CUDA)
 			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
-		include_directories(AFTER SYSTEM /usr/local/cuda-11/include)
-		include_directories(AFTER SYSTEM  /usr/local/cuda-11/samples/common/inc/)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
+		include_directories(AFTER SYSTEM  /usr/local/cuda/samples/common/inc/)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
@@ -119,7 +119,7 @@ IF(ENABLE_CUDA)
 			libnppial_static.a					
 			libculibos.a	
 		) 
-		include_directories(AFTER SYSTEM /usr/local/cuda-11/include)
+		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
 		find_library(LIBNVCUVID nvcuvid.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
 		find_library(LIBNVENCODE nvencodeapi.lib PATHS ../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH) #change for windows
