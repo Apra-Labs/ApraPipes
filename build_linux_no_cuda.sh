@@ -1,4 +1,4 @@
-apt-get install clang-format
+sudo apt-get install clang-format
 clang-format -style=llvm -dump-config > .clang-format
 if ! command -v pip &> /dev/null; then
     # If pip is not available, download and install pip

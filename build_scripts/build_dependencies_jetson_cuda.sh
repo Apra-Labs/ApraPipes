@@ -7,7 +7,7 @@ missing_dependencies=()
 
 # Check and collect missing dependencies
 for dependency in "${dependencies[@]}"; do
-  if ! dpkg -s "$dependency" 2>&1; then
+  if ! sudo dpkg -s "$dependency" 2>&1; then
     missing_dependencies+=("$dependency")
   fi
 done
@@ -15,14 +15,14 @@ done
 # If there are missing dependencies, install them
 if [ "${#missing_dependencies[@]}" -gt 0 ]; then
   echo "Installing missing dependencies..."
-  apt-get update -qq
-  apt-get -y install "${missing_dependencies[@]}"
+  sudo apt-get update -qq
+  sudo apt-get -y install "${missing_dependencies[@]}"
 fi
 
 # Install Cmake if not present
-if ! cmake --version; then
+if ! sudo cmake --version; then
   echo "CMake is not installed. Installing CMake..."
-  snap install cmake --classic
+  sudo snap install cmake --classic
 fi
 
 if [ ! -d "/usr/local/cuda/include" ] || [ ! -d "/usr/local/cuda/lib64" ]; then
@@ -30,12 +30,33 @@ if [ ! -d "/usr/local/cuda/include" ] || [ ! -d "/usr/local/cuda/lib64" ]; then
   exit 1
 fi
 
-if  nvcc --version; then
-  TARGET_USER="$SUDO_USER"
+if sudo nvcc --version; then
+  userName=$(whoami)
+  TARGET_USER="$userName"
   TARGET_HOME=$(eval echo ~$TARGET_USER)
-  echo 'export VCPKG_FORCE_SYSTEM_BINARIES=1' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
-  echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
-  echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
+
+  # Append lines to the target user's ~/.bashrc
+  if ! grep -qxF 'export VCPKG_FORCE_SYSTEM_BINARIES=1' $TARGET_HOME/.bashrc; then
+    echo 'export VCPKG_FORCE_SYSTEM_BINARIES=1' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
+    echo "VCPKG_FORCE_SYSTEM_BINARIES flag added in .bashrc"
+  else
+    echo "VCPKG_FORCE_SYSTEM_BINARIES flag already exists in .bashrc"
+  fi
+
+  if ! grep -qxF 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' $TARGET_HOME/.bashrc; then
+    echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
+    echo "CUDA Binary Path added to .bashrc"
+  else
+    echo "CUDA Binary Path already exists in .bashrc"
+  fi
+
+  if ! grep -qxF 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' $TARGET_HOME/.bashrc; then
+    echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
+    echo "CUDA Library Path added to .bashrc"
+  else
+    echo "CUDA Library Path already exists in .bashrc"
+  fi
+  
   echo "Appended paths to ~/.bashrc and saved changes."
   source ~/.bashrc
   echo "Reloaded ~/.bashrc"
