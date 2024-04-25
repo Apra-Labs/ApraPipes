@@ -282,7 +282,6 @@ bool GtkGlRenderer::process(frame_container &frames)
     size_t underscorePos = myId.find('_');
     std::string numericPart = myId.substr(underscorePos + 1);
     int myNumber = std::stoi(numericPart);
-#if defined(__arm__) || defined(__aarch64__)
 
     if ((controlModule != nullptr) && (myNumber % 2 == 1))
 	{
@@ -293,7 +292,6 @@ bool GtkGlRenderer::process(frame_container &frames)
         //LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
 		return true;
 	}
-#endif
     return true;
 }
 
@@ -307,7 +305,6 @@ void GtkGlRenderer::processQueue()
 {
     auto currentTime = std::chrono::steady_clock::now();
     auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime).count();
-#if defined(__arm__) || defined(__aarch64__)
     std::lock_guard<std::mutex> lock(queueMutex);
     if (!frameQueue.empty())
     {
@@ -338,7 +335,6 @@ void GtkGlRenderer::processQueue()
             lastFrameTime = currentTime;
         }
     }
-#endif
 }
 
 // Need to check on Mem Type Supported
@@ -370,13 +366,13 @@ bool GtkGlRenderer::term()
 
 bool GtkGlRenderer::changeProps(GtkWidget* glArea, int windowWidth, int windowHeight)
 {
-    //mDetail->on_unrealize();
     mDetail->disconnect_glarea_signals(GTK_WIDGET(mDetail->glarea));
     mDetail->glarea = glArea;
     mDetail->windowWidth = windowWidth;
     mDetail->windowHeight = windowHeight;
     mDetail->init();
     gtk_widget_show(GTK_WIDGET(glArea));
+    return true;
 }
 
 bool GtkGlRenderer::shouldTriggerSOS()
@@ -403,7 +399,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     case FrameMetadata::FrameType::RAW_IMAGE:
     {
         auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
-        if (metadata->getImageType() != ImageMetadata::RGBA )
+        if (metadata->getImageType() != ImageMetadata::RGBA && metadata->getImageType() != ImageMetadata::RGB )
         {
             throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only RGB , BGR , BGRA and RGBA is supported<" + std::to_string(frameType) + ">");
         }

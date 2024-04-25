@@ -23,6 +23,8 @@
 #include "GtkGlRenderer.h"
 #include "FileWriterModule.h"
 #include "MemTypeConversion.h"
+#include "ColorConversionXForm.h"
+
 #include <gtk/gtk.h>
 
 PipeLine p("test");
@@ -67,19 +69,50 @@ void secondPipeline()
 }
 boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 {
-    auto fileReaderProps = FileReaderModuleProps("./data/rgba_400x400.raw", 0, -1);
+	auto fileReaderProps = FileReaderModuleProps("./data/frame_1280x720_rgb.raw", 0, -1);
     fileReaderProps.readLoop = true;
     fileReaderProps.fps = 300;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
-    auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto rawImagePin = fileReader->addOutputPin(metadata);
 
 
     GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
-	auto GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
 	fileReader->setNext(GtkGl);
 
 	p.appendModule(fileReader);
+	p.init();
+	p.run_all_threaded();
+	return GtkGl;
+}
+
+boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline()
+{
+	Logger::setLogLevel("info");
+
+	rtsp_client_tests_data d;
+	d.outFile = "./data/testOutput/xyz_???.raw";
+
+	auto url=string("rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp"); 
+	RTSPClientSrcProps rtspProps(url, d.empty, d.empty);
+	rtspProps.logHealth = true;
+	rtspProps.logHealthFrequency = 100;
+	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(rtspProps));
+	auto meta = framemetadata_sp(new H264Metadata());
+	rtspSrc->addOutputPin(meta);
+
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	rtspSrc->setNext(Decoder);
+
+	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB)));
+	Decoder->setNext(colorchange);
+
+    GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
+	GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+	colorchange->setNext(GtkGl);
+
+	p.appendModule(rtspSrc);
 	p.init();
 	p.run_all_threaded();
 	return GtkGl;
@@ -419,7 +452,7 @@ static gboolean hideWidget(gpointer data) {
 }
 
 static gboolean change_gl_area(gpointer data) {
-	GtkGl->changeProps(glAreaSwitch, 640, 360);
+	GtkGl->changeProps(glAreaSwitch, 1280, 720);
 	GtkGl->step();
 	gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
 	gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
@@ -523,14 +556,15 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
     // g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
 
 	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
-    
+    glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw1"));
 	std::cout << "Printing Pointer of Old & New GL AREA" << glarea << "======== " << glAreaSwitch  << std::endl; 
 
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
 	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
 	// launchPipeline1();
 	//launchPipeline2();
-	laucX86Pipeline();
+	// laucX86Pipeline();
+	laucX86RTSPPipeline();
     gtk_widget_show_all(window);
 	
 	// g_timeout_add(2000, hideWidget, NULL);
