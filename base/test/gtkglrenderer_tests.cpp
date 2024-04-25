@@ -23,9 +23,7 @@
 #include "GtkGlRenderer.h"
 #include "FileWriterModule.h"
 #include "MemTypeConversion.h"
-#include "H264Decoder.h"
 #include "ColorConversionXForm.h"
-#include "RTSPClientSrc.h"
 
 #include <gtk/gtk.h>
 
@@ -71,11 +69,9 @@ void secondPipeline()
 }
 boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 {
-    // auto fileReaderProps = FileReaderModuleProps("./data/rgba_400x400.raw", 0, -1);
 	auto fileReaderProps = FileReaderModuleProps("./data/frame_1280x720_rgb.raw", 0, -1);
     fileReaderProps.readLoop = true;
     fileReaderProps.fps = 300;
-
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -458,9 +454,9 @@ static gboolean hideWidget(gpointer data) {
 static gboolean change_gl_area(gpointer data) {
 	GtkGl->changeProps(glAreaSwitch, 1280, 720);
 	GtkGl->step();
-	// gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
-	// gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
-	// gtk_widget_queue_draw(GTK_WIDGET(glAreaSwitch));
+	gtk_container_add(GTK_CONTAINER(parentCont), glAreaSwitch);
+	gtk_gl_area_queue_render(GTK_GL_AREA(glAreaSwitch));
+	gtk_widget_queue_draw(GTK_WIDGET(glAreaSwitch));
 	
     return G_SOURCE_REMOVE;  // Change the glarea before showing
 }
@@ -539,7 +535,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	{
 		LOG_ERROR << "Builder not found";
 	}
-	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/aprapipesnvr/ApraPipes/data/app_ui.glade", NULL);
+	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/ApraPipes/data/app_ui.glade", NULL);
 	std::cout << "ui glade found" << std::endl;
 
 	window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -573,7 +569,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	
 	// g_timeout_add(2000, hideWidget, NULL);
 	// g_timeout_add(5000, hide_gl_area, NULL);
-	g_timeout_add(7000, change_gl_area, NULL);
+	// g_timeout_add(7000, change_gl_area, NULL);
 	// g_timeout_add(9000, show_gl_area, NULL);
 	gtk_main();
 

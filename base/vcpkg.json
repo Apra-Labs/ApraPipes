@@ -2,35 +2,47 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "356814e3b10f457f01d9dfdc45e1b2cac0ff6b60",
+  "builtin-baseline": "a1c6d4f053281b8e961c24a0035903f5f9d66329",
+  "overrides":[
+    {
+      "name":"ffmpeg",
+      "version":"4.4.3"
+    },
+    {
+      "name":"libarchive",
+      "version":"3.5.2"
+    }
+  ],
   "dependencies": [
     {
       "name": "opencv4",
       "default-features": false,
       "features": [
-          "contrib",
-          "cuda",
-          "cudnn",
-          "dnn",
-          "jpeg",
-          "nonfree",
-          "png",
-          "tiff",
-          "webp"
+        "contrib",
+        "cuda",
+        "cudnn",
+        "dnn",
+        "jpeg",
+        "nonfree",
+        "png",
+        "tiff",
+        "webp"
       ]
-  },
-  {
-    "name":  "opencv4",
-    "default-features":  false,
-    "features":  [
-                     "gtk"
-                 ],
-    "platform": "(linux \u0026 x64)",
-    "$reason": "skip linux:arm64 and windows"
-  },
-    "libjpeg-turbo",
-    "openh264",
+    },
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+        "gtk"
+      ],
+      "platform": "(linux & x64)",
+      "$reason": "skip linux:arm64 and windows"
+    },
     "ffmpeg",
+    "openh264-apra",
+    "glfw3",
+    "glew",
+    "libjpeg-turbo",
     "bigint",
     "boost-math",
     "boost-system",
@@ -47,38 +59,40 @@
     "bzip2",
     "zlib",
     "sfml",
+    "gtk3",
+    "brotli",
     {
       "name": "glib",
       "default-features": false,
       "features": [
         "libmount"
       ],
-        "platform": "(linux \u0026 x64)",
-        "$reason": "skip linux:arm64 and windows"
-      },
-      {
-        "name": "glib",
-        "default-features": true,
-        "platform": "windows"
-      },
-      {
-        "name": "hiredis",
-        "platform": "!arm64"
-      },
-      {
-        "name": "redis-plus-plus",
-        "platform": "!arm64"
-      },
-      {
-        "name": "re",
-        "platform": "!windows"
-      },
-      {
-        "name": "baresip",
-        "platform": "!windows"
-      },
-      {
-        "name": "libmp4"
-      }
-    ]
-  }
+      "platform": "(linux & x64)",
+      "$reason": "skip linux:arm64 and windows"
+    },
+    {
+      "name": "glib",
+      "default-features": true,
+      "platform": "windows"
+    },
+    {
+      "name": "hiredis",
+      "platform": "!arm64"
+    },
+    {
+      "name": "redis-plus-plus",
+      "platform": "!arm64"
+    },
+    {
+      "name": "re",
+      "platform": "!windows"
+    },
+    {
+      "name": "baresip",
+      "platform": "!windows"
+    },
+    {
+      "name": "libmp4"
+    }
+  ]
+}

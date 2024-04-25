@@ -2,6 +2,7 @@
 #include <boost/foreach.hpp>
 #include <stdafx.h>
 #include <map>
+#include <thread>
 #include "Frame.h"
 #include "MultimediaQueueXform.h"
 #include "Logger.h"
@@ -9,6 +10,7 @@
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
 #include "FrameContainerQueue.h"
+
 class FramesQueue
 {
 public:
