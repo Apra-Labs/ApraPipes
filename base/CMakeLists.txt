@@ -50,7 +50,6 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
-find_package(unofficial-brotli CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 
@@ -644,105 +643,6 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
-  unofficial::brotli::brotlidec 
-  unofficial::brotli::brotlienc 
-
-#   aprapipes  
-#   GLEW::GLEW
-#   glfw
-#   ${JPEG_LIBRARIES}
-#   ${LIBMP4_LIB}
-#   ${OPENH264_LIB}
-#   ${Boost_LIBRARIES}
-#   ${FFMPEG_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${JETSON_LIBS}
-#   ${NVCUDAToolkit_LIBS}
-#   ${NVCODEC_LIB}
-#   ${NVJPEGLIB_L4T}
-#   ${CURSES_LIBRARIES}
-#   ZXing::Core
-#   ZXing::ZXing	
-#   BZip2::BZip2
-#   ZLIB::ZLIB
-#   liblzma::liblzma
-#   bigint::bigint
-#   sfml-audio
-#   unofficial::brotli::brotlidec 
-#   unofficial::brotli::brotlienc 
-
-#   aprapipes  
-#   GLEW::GLEW
-#   glfw 
-#   ${JPEG_LIBRARIES}
-#   ${LIBMP4_LIB}
-#   ${OPENH264_LIB}
-#   ${Boost_LIBRARIES}
-#   ${FFMPEG_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${JETSON_LIBS}
-#   ${NVCUDAToolkit_LIBS}
-#   ${NVCODEC_LIB}
-#   ${NVJPEGLIB_L4T}
-#   ${CURSES_LIBRARIES}
-#   ZXing::Core
-#   ZXing::ZXing	
-#   BZip2::BZip2
-#   ZLIB::ZLIB
-#   liblzma::liblzma
-#   bigint::bigint
-#   sfml-audio
-#   unofficial::brotli::brotlidec 
-#   unofficial::brotli::brotlienc 
-
-#   aprapipes  
-#   GLEW::GLEW
-#   glfw
-#   ${JPEG_LIBRARIES}
-#   ${LIBMP4_LIB}
-#   ${OPENH264_LIB}
-#   ${Boost_LIBRARIES}
-#   ${FFMPEG_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${JETSON_LIBS}
-#   ${NVCUDAToolkit_LIBS}
-#   ${NVCODEC_LIB}
-#   ${NVJPEGLIB_L4T}
-#   ${CURSES_LIBRARIES}
-#   ZXing::Core
-#   ZXing::ZXing	
-#   BZip2::BZip2
-#   ZLIB::ZLIB
-#   liblzma::liblzma
-#   bigint::bigint
-#   sfml-audio
-#   unofficial::brotli::brotlidec 
-#   unofficial::brotli::brotlienc 
-
-#   aprapipes  
-#   GLEW::GLEW
-#   glfw
-#   ${GTK3_LIBRARIES}
-#   ${JPEG_LIBRARIES}
-#   ${LIBMP4_LIB}
-#   ${OPENH264_LIB}
-#   ${Boost_LIBRARIES}
-#   ${FFMPEG_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${JETSON_LIBS}
-#   ${NVCUDAToolkit_LIBS}
-#   ${NVCODEC_LIB}
-#   ${NVJPEGLIB_L4T}
-#   ${CURSES_LIBRARIES}
-#   ZXing::Core
-#   ZXing::ZXing	
-#   BZip2::BZip2
-#   ZLIB::ZLIB
-#   liblzma::liblzma
-#   bigint::bigint
-#   sfml-audio
-#   unofficial::brotli::brotlidec 
-#   unofficial::brotli::brotlienc 
   )
 
 IF(ENABLE_WINDOWS)

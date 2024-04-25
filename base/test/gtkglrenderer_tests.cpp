@@ -535,7 +535,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	{
 		LOG_ERROR << "Builder not found";
 	}
-	gtk_builder_add_from_file(m_builder, "/home/developer/workspace/ApraPipes/data/app_ui.glade", NULL);
+	gtk_builder_add_from_file(m_builder, "./data/app_ui.glade", NULL);
 	std::cout << "ui glade found" << std::endl;
 
 	window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
