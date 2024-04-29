@@ -58,7 +58,7 @@ if nvcc --version; then
   fi
   
   echo "Appended paths to ~/.bashrc and saved changes."
-  source $TARGET_USER/.bashrc
+  source ~/.bashrc
   echo "Reloaded ~/.bashrc"
 fi
 

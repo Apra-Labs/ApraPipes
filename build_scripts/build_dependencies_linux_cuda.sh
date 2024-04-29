@@ -85,7 +85,7 @@ if ! sudo nvcc --version &>/dev/null; then
   fi
 
   # Reload .bashrc
-  source $TARGET_HOME/.bashrc
+  source ~/.bashrc
 
   echo "Appended line to ~/.bashrc and saved changes."
   echo "Reloaded ~/.bashrc"
