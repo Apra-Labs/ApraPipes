@@ -19,15 +19,17 @@
 #include "DMAFDWrapper.h"
 #include "DMAUtils.h"
 #include "NvArgusCamera.h"
-
+#include "test_utils.h"
+#include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "DMAFDToHostCopy.h"
+#include "MemTypeConversion.h"
 
 #include <chrono>
 
 using sys_clock = std::chrono::system_clock;
 
-BOOST_AUTO_TEST_SUITE(nv_transform_tests, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_SUITE(nv_transform_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
@@ -50,7 +52,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(test)
+BOOST_AUTO_TEST_CASE(test, *boost::unit_test::disabled())
 {
 	EGLDisplay eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if(eglDisplay == EGL_NO_DISPLAY)
@@ -73,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test)
 	cout <<endl;
 }
 
-BOOST_AUTO_TEST_CASE(fdtest)
+BOOST_AUTO_TEST_CASE(fdtest, *boost::unit_test::disabled())
 {
 	size_t size = 1024*1024*4;
 	void *host = malloc(size);
@@ -128,50 +130,6 @@ BOOST_AUTO_TEST_CASE(fdtest)
 
 
 	DMAUtils::freeCudaPtr(eglInImage,&pInResource, eglDisplay);
-}
-
-BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())
-{
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-	NvArgusCameraProps sourceProps(1280, 720, 0);
-	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
-
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400)));
-	source->setNext(nv_transform);
-
-	PipeLine p("test");
-	p.appendModule(source);
-	BOOST_TEST(p.init());
-
-	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
-	p.stop();
-	p.term();
-	p.wait_for_all();
-}
-
-BOOST_AUTO_TEST_CASE(cropAndScale, *boost::unit_test::disabled())
-{
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
-	NvV4L2CameraProps sourceProps(1920, 1080, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
-
-	float scaleHeight = 1;
-	float scaleWidth = 0.5;
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400, scaleWidth, scaleHeight, NvTransformProps::NvTransformFilter::BILINEAR)));
-	source->setNext(nv_transform);
-
-	PipeLine p("test");
-	p.appendModule(source);
-	BOOST_TEST(p.init());
-
-	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
-	p.stop();
-	p.term();
-	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_CASE(scaleTest, *boost::unit_test::disabled())
@@ -382,6 +340,245 @@ BOOST_AUTO_TEST_CASE(allRotateTest, *boost::unit_test::disabled())
 	p.stop();
 	p.term();
 	p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(scaleTestWithFile)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	std::vector<std::string> outFile = { "./data/testOutput/scale_8bit_frame_1280x720_rgba_to_640x360.raw" };
+	Test_Utils::FileCleaner f(outFile);
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReaderProps = FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw");
+	fileReaderProps.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::MemType::HOST, true));
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	auto hostToDMABUF = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	fileReader->setNext(hostToDMABUF);
+
+	auto outputWidth = 640;
+	auto outputHeight = 360;
+	auto nvTransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::ImageType::RGBA, outputWidth, outputHeight, NvTransformProps::NvTransformFilter::NICEST, NvTransformProps::NvTransformRotate::ROTATE_0)));
+	hostToDMABUF->setNext(nvTransform);
+
+	auto DMABUFToHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	nvTransform->setNext(DMABUFToHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], false)));
+	DMABUFToHost->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+
+	std::string fileComparePath = "./data/NvTransformTests/scale_8bit_frame_1280x720_rgba_to_640x360_GT.raw";
+	uint8_t* frameData;
+	uint frameSize;
+	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
+
+	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
+}
+
+BOOST_AUTO_TEST_CASE(cropTestWithFile)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	std::vector<std::string> outFile = { "./data/testOutput/crop_8bit_frame_1280x720_rgba_to_720x720.raw" };
+	Test_Utils::FileCleaner f(outFile);
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReaderProps = FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw");
+	fileReaderProps.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::MemType::HOST, true));
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	auto hostToDMABUF = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	fileReader->setNext(hostToDMABUF);
+
+	auto outputWidth = 720;
+	auto outputHeight = 720;
+	auto nvTransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::ImageType::RGBA, outputWidth, outputHeight, {0, 280, 720, 720}, NvTransformProps::NvTransformFilter::NICEST, NvTransformProps::NvTransformRotate::ROTATE_0)));
+	hostToDMABUF->setNext(nvTransform);
+
+	auto DMABUFToHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	nvTransform->setNext(DMABUFToHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], false)));
+	DMABUFToHost->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+
+	std::string fileComparePath = "./data/NvTransformTests/crop_8bit_frame_1280x720_rgba_to_720x720_GT.raw";
+	uint8_t* frameData;
+	uint frameSize;
+	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
+
+	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
+}
+
+BOOST_AUTO_TEST_CASE(cropAndScaleTestWithFile)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	std::vector<std::string> outFile = { "./data/testOutput/crop_8bit_frame_1280x720_rgba_to_720x720_scale_to_1280x720.raw" };
+	Test_Utils::FileCleaner f(outFile);
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReaderProps = FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw");
+	fileReaderProps.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::MemType::HOST, true));
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	auto hostToDMABUF = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	fileReader->setNext(hostToDMABUF);
+
+	auto outputWidth = width;
+	auto outputHeight = height;
+	auto nvTransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::ImageType::RGBA, outputWidth, outputHeight, {0, 280, 720, 720}, NvTransformProps::NvTransformFilter::NICEST, NvTransformProps::NvTransformRotate::ROTATE_0)));
+	hostToDMABUF->setNext(nvTransform);
+
+	auto DMABUFToHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	nvTransform->setNext(DMABUFToHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], false)));
+	DMABUFToHost->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+
+	std::string fileComparePath = "./data/NvTransformTests/crop_8bit_frame_1280x720_rgba_to_720x720_scale_to_1280x720_GT.raw";
+	uint8_t* frameData;
+	uint frameSize;
+	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
+
+	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
+}
+
+BOOST_AUTO_TEST_CASE(rotateTestWithFile)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	std::vector<std::string> outFile = { "./data/testOutput/rotate_8bit_frame_1280x720_rgba_to_90_degrees_clockwise.raw" };
+	Test_Utils::FileCleaner f(outFile);
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReaderProps = FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw");
+	fileReaderProps.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::MemType::HOST, true));
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	auto hostToDMABUF = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	fileReader->setNext(hostToDMABUF);
+
+	auto nvTransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::ImageType::RGBA, NvTransformProps::NvTransformFilter::NICEST, NvTransformProps::NvTransformRotate::CLOCKWISE_ROTATE_90)));
+	hostToDMABUF->setNext(nvTransform);
+
+	auto DMABUFToHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	nvTransform->setNext(DMABUFToHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], false)));
+	DMABUFToHost->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+
+	std::string fileComparePath = "./data/NvTransformTests/rotate_8bit_frame_1280x720_rgba_to_90_degrees_clockwise_GT.raw";
+	uint8_t* frameData;
+	uint frameSize;
+	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
+
+	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
+}
+
+BOOST_AUTO_TEST_CASE(getSetPropsTestWithFile)
+{
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+	std::vector<std::string> outFile = { "./data/testOutput/rotate_8bit_frame_1280x720_rgba_to_90_degrees_clockwise_using_get_set_props.raw" };
+	Test_Utils::FileCleaner f(outFile);
+	auto width = 1280;
+	auto height = 720;
+
+	auto fileReaderProps = FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw");
+	fileReaderProps.readLoop = false;
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(fileReaderProps)));
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::MemType::HOST, true));
+	auto rawImagePin = fileReader->addOutputPin(metadata);
+
+	auto hostToDMABUF = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	fileReader->setNext(hostToDMABUF);
+
+	auto nvTransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::ImageType::RGBA, NvTransformProps::NvTransformFilter::NICEST, NvTransformProps::NvTransformRotate::ROTATE_0)));
+	hostToDMABUF->setNext(nvTransform);
+
+	auto DMABUFToHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	nvTransform->setNext(DMABUFToHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(outFile[0], false)));
+	DMABUFToHost->setNext(fileWriter);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	BOOST_TEST(p.init());
+
+	p.run_all_threaded();
+	auto propsChange = nvTransform->getProps();
+	propsChange.rotateType = NvTransformProps::NvTransformRotate::CLOCKWISE_ROTATE_90;
+	nvTransform->setProps(propsChange);
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	p.stop();
+	p.term();
+	p.wait_for_all();
+
+	std::string fileComparePath = "./data/NvTransformTests/rotate_8bit_frame_1280x720_rgba_to_90_degrees_clockwise_using_get_set_props_GT.raw";
+	uint8_t* frameData;
+	uint frameSize;
+	Test_Utils::readFile(outFile[0], (const uint8_t*&)frameData, frameSize);
+
+	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

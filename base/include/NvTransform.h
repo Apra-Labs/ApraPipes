@@ -107,6 +107,23 @@ public:
   }
 
   /**
+   * @brief Constructs an NvTransformProps object with a specified rotation
+   * type.
+   * @param _imageType The type of the input image.
+   * @param _filterType The transformation filter type.
+   * @param _rotateType The rotation type.
+   */
+  NvTransformProps(ImageMetadata::ImageType _imageType, NvTransformFilter _filterType, NvTransformRotate _rotateType)
+      : outputWidth(0), outputHeight(0), srcRect({0, 0, 0, 0}),
+        dstRect({0, 0, 0, 0}) {
+    imageType = _imageType;
+    scaleHeight = 1;
+    scaleWidth = 1;
+    filterType = _filterType;
+    rotateType = _rotateType;
+  }
+
+  /**
    * @brief Constructs an NvTransformProps object with a specified width,
    * height, and rotation type.
    * @param _imageType The type of the input image.

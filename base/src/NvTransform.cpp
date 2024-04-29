@@ -328,7 +328,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata) {
 
   switch (frameType) {
   case FrameMetadata::FrameType::RAW_IMAGE: {
-    RawImageMetadata rawMetadata =
+    auto rawMetadata =
         FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
     width = rawMetadata->getWidth();
     height = rawMetadata->getHeight();
@@ -336,7 +336,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata) {
     inputImageType = rawMetadata->getImageType();
   } break;
   case FrameMetadata::FrameType::RAW_IMAGE_PLANAR: {
-    RawImagePlanarMetadata rawMetadata =
+    auto rawMetadata =
         FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
     width = rawMetadata->getWidth(0);
     height = rawMetadata->getHeight(0);
