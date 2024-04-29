@@ -30,9 +30,9 @@ if [ ! -d "/usr/local/cuda/include" ] || [ ! -d "/usr/local/cuda/lib64" ]; then
   exit 1
 fi
 
-if sudo nvcc --version; then
-  userName=$(whoami)
-  TARGET_USER="$userName"
+if nvcc --version; then
+  USER_NAME=$(whoami)
+  TARGET_USER="$USER_NAME"
   TARGET_HOME=$(eval echo ~$TARGET_USER)
 
   # Append lines to the target user's ~/.bashrc
@@ -58,7 +58,7 @@ if sudo nvcc --version; then
   fi
   
   echo "Appended paths to ~/.bashrc and saved changes."
-  source ~/.bashrc
+  source $TARGET_USER/.bashrc
   echo "Reloaded ~/.bashrc"
 fi
 
