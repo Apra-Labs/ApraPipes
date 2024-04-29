@@ -14,8 +14,10 @@ chmod +x build_scripts/build_dependencies_linux_no_cuda.sh
 chmod +x base/fix-vcpkg-json.sh
 ./base/fix-vcpkg-json.sh true false false
 
-chmod +x build_documentation.sh
-./build_documentation.sh
+if [[ $1 == "--build-doc" ]]; then
+    chmod +x build_documentation.sh
+    ./build_documentation.sh
+fi
 
 cd vcpkg
 ./bootstrap-vcpkg.sh
