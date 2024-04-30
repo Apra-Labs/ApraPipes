@@ -1410,6 +1410,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 			if(!mState.sample.next_dts && mState.mFrameCounterIdx == mState.mFramesInVideo)//To handle the case when I frame is last frame of the video
 			{
 				uint64_t nextDts = mState.sample.dts - mState.sample.prev_sync_dts;
+				nextDts += mState.sample.dts;
 				uint64_t sample_ts_usec = mp4_sample_time_to_usec(nextDts, mState.video.timescale);
 				nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
 			}
