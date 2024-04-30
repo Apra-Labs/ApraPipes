@@ -10,8 +10,10 @@ cd %batdir%/base
 powershell -nologo -executionpolicy bypass -File fix-vcpkg-json.ps1 -removeCUDA
 cd ..
 
-@echo off
-sh .\build_documentation.sh
+IF "%1"=="--build-doc" (
+    @echo off
+    sh .\build_documentation.sh
+)
 
 cd vcpkg
 call bootstrap-vcpkg.bat
