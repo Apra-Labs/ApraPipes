@@ -1406,8 +1406,18 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		if(mDirection)
 		{
-			uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.next_dts, mState.video.timescale);
-			uint64_t nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			uint64_t nextFrameTs;
+			if(!mState.sample.next_dts && mState.mFrameCounterIdx == mState.mFramesInVideo)//To handle the case when I frame is last frame of the video
+			{
+				uint64_t nextDts = mState.sample.dts - mState.sample.prev_sync_dts;
+				uint64_t sample_ts_usec = mp4_sample_time_to_usec(nextDts, mState.video.timescale);
+				nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			}
+			else
+			{
+				uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.next_dts, mState.video.timescale);
+				nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			}
 			nextFrameTs++;
 			randomSeek(nextFrameTs);
 		}
