@@ -4388,7 +4388,22 @@ BOOST_AUTO_TEST_CASE(stl_data_mem, *boost::unit_test::disabled())
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::POINTS_3D, FrameMetadata::MemType::HOST));
 	auto point3DpinId = m1->addOutputPin(metadata);
-	auto stlMod = boost::shared_ptr<STLRendererSink>(new STLRendererSink(STLRendererSinkProps()));
+
+	std::vector<double> meshDiffuseColor { 176, 196, 222 };
+
+	double meshSpecularCoefficient = 0.3;
+	double meshSpecularPower = 60.0;
+
+	std::vector<int> cameraPosition{ 10, 10, 10 };
+	std::vector<int> cameraFocalPoint{ 10, 10, 10 };
+
+	std::string winName = "STL_Renderer";
+
+	int winWidth = 600;
+	int winHeight = 600;
+
+	std::vector<double> bkgColor{ 85, 107, 47 };
+	auto stlMod = boost::shared_ptr<STLRendererSink>(new STLRendererSink(STLRendererSinkProps(meshDiffuseColor, meshSpecularCoefficient, meshSpecularPower, cameraPosition, cameraFocalPoint, winName ,winWidth, winHeight, bkgColor)));
 	m1->setNext(stlMod);
 
 	BOOST_TEST(m1->init());
@@ -4406,6 +4421,63 @@ BOOST_AUTO_TEST_CASE(stl_data_mem, *boost::unit_test::disabled())
 	ApraData* data = new ApraData(frame->data(), dataSize, 0);
 	m1->produceExternalFrame(data);
 	stlMod->step();
+
+	delete data;
+	LOG_INFO << "Rendering finished";
+}
+
+
+BOOST_AUTO_TEST_CASE(getSetProps_change_properties, *boost::unit_test::disabled())
+{
+	Raw3DData raw3DData;
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::POINTS_3D, FrameMetadata::MemType::HOST));
+	auto point3DpinId = m1->addOutputPin(metadata);
+
+	std::vector<double> meshDiffuseColor { 176, 196, 222 };
+
+	double meshSpecularCoefficient = 0.3;
+	double meshSpecularPower = 60.0;
+
+	std::vector<int> cameraPosition{ 10, 10, 10 };
+	std::vector<int> cameraFocalPoint{ 10, 10, 10 };
+
+	std::string winName = "STL_Renderer";
+
+	int winWidth = 600;
+	int winHeight = 600;
+
+	std::vector<double> bkgColor{ 85, 107, 47 };
+	auto stlMod = boost::shared_ptr<STLRendererSink>(new STLRendererSink(STLRendererSinkProps(meshDiffuseColor, meshSpecularCoefficient, meshSpecularPower, cameraPosition, cameraFocalPoint, winName ,winWidth, winHeight, bkgColor)));
+	m1->setNext(stlMod);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(stlMod->init());
+
+	std::vector<ApraPoint3f> data3D; // dataSize
+	for (auto i = 0; i < raw3DData.data.size(); ++i)
+	{
+		auto pt = ApraPoint3f(raw3DData.data[i].x, raw3DData.data[i].y, raw3DData.data[i].z);
+		data3D.push_back(pt);
+	}
+	unsigned int dataSize = 3 * sizeof(float) * data3D.size() * 2; // taking 2x margin here.
+	auto frame = m1->makeFrame(dataSize, point3DpinId);
+	Utils::serialize<std::vector<ApraPoint3f>>(data3D, frame->data(), dataSize);
+	ApraData* data = new ApraData(frame->data(), dataSize, 0);
+	m1->produceExternalFrame(data);
+	stlMod->step();
+
+	auto  propsChange = stlMod->getProps();
+
+	propsChange.winWidth = 900;
+	propsChange.winHeight = 900;
+
+	stlMod->setProps(propsChange);
+	m1->produceExternalFrame(data);
+	stlMod->step();
+	m1->produceExternalFrame(data);
+	stlMod->step();
+	
 	delete data;
 	LOG_INFO << "Rendering finished";
 }
