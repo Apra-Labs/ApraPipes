@@ -1,46 +1,42 @@
 #pragma once
+#include "stdafx.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include "Frame.h"
+#include <boost/function.hpp>
+#include "BoundBuffer.h"
+#include "FrameFactory.h"
+#include "CommonDefs.h"
+#include "FrameMetadata.h"
+#include "FrameMetadataFactory.h"
+#include "Command.h"
+#include "BufferMaker.h"
+#include "ModelEnums.h"
+#include "FrameContainerQueue.h"
 
-#include "Module.h"
-
-class LlmModelAbstractProps {
+class LlmModelAbstractProps
+{
 public:
-  enum ModelArchitectureType {
-    TRANSFORMER = 0,
-    ENCODERDECODER,
-    CASUALDECODER,
-    PREFIXDECODER
-  };
-
-  enum DataType { TEXT = 0, IMAGE, AUDIO, TEXT_EMBEDDING, IMAGE_EMBEDDING, AUDIO_EMBEDDING };
-
-  enum UseCase { TEXT_TO_TEXT = 0, SCENE_DESCRIPTOR, OCR };
-
-  LlmModelAbstractProps() {
-    modelArchitecture = ModelArchitectureType::TRANSFORMER;
-    inputTypes = {DataType::TEXT};
-    outputTypes = {DataType::TEXT};
-    useCases = {UseCase::TEXT_TO_TEXT};
-    qlen = 20;
-  }
+  LlmModelAbstractProps();
 
   LlmModelAbstractProps(ModelArchitectureType _modelArchitecture,
-                std::vector<DataType> _inputTypes,
-                std::vector<DataType> _outputTypes,
-                std::vector<UseCase> _useCases) {
-    modelArchitecture = _modelArchitecture;
-    inputTypes = _inputTypes;
-    outputTypes = _outputTypes;
-    useCases = _useCases;
-    qlen = 20;
-  }
+                        std::vector<FrameMetadata::FrameType> _inputTypes,
+                        std::vector<FrameMetadata::FrameType> _outputTypes,
+                        std::vector<UseCase> _useCases);
 
-  size_t getSerializeSize() {
-    return sizeof(modelArchitecture) + sizeof(inputTypes) + sizeof(outputTypes) + sizeof(useCases) + sizeof(qlen);
+  size_t getSerializeSize()
+  {
+    return sizeof(modelArchitecture) + sizeof(inputTypes) +
+           sizeof(outputTypes) + sizeof(useCases) + sizeof(qlen);
   }
 
   ModelArchitectureType modelArchitecture;
-  std::vector<DataType> inputTypes;
-  std::vector<DataType> outputTypes;
+  std::vector<FrameMetadata::FrameType> inputTypes;
+  std::vector<FrameMetadata::FrameType> outputTypes;
   std::vector<UseCase> useCases;
   size_t qlen;
 
@@ -48,8 +44,9 @@ private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &boost::serialization::base_object<ModuleProps>(*this);
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar &boost::serialization::base_object<LlmModelAbstractProps>(*this);
     ar & modelArchitecture;
     ar & inputTypes;
     ar & outputTypes;
@@ -58,34 +55,33 @@ private:
   }
 };
 
-class LlmModelAbstract {
+class LlmModelAbstract
+{
 public:
-  LlmModelAbstract(std::string name, LlmModelAbstractProps props);
+  LlmModelAbstract(std::string _modelName, LlmModelAbstractProps props);
   ~LlmModelAbstract();
 
-  std::string getMyName() {
-    return myName;
-  }
+  std::string getMyName() { return modelName; }
 
-  boost::shared_ptr<FrameContainerQueue> getQue() {
-    return mQue;
-  }
+  boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
 
-	virtual bool modelInit() = 0;
-	virtual bool modelTerm() = 0;
-  virtual bool modelInference(frame_container& frameContainer) {return false;}
+  virtual bool modelInit() = 0;
+  virtual bool modelTerm() = 0;
+  virtual bool modelInference(frame_container &inputFrameContainer, frame_container &outputFrameContainer, std::function<frame_sp(size_t)> makeFrame)
+  {
+    return false;
+  }
   virtual size_t getFrameSize() = 0;
-  virtual void getFrames(frame_sp& frame) = 0;
 
-  virtual bool validateUseCase(LlmModelAbstractProps::UseCase useCase) = 0;
+  virtual bool validateUseCase(UseCase useCase) = 0;
 
-	bool init();
-	bool term();
-  bool step();
-  bool push(frame_container& frameContainer);
+  bool init();
+  bool term();
+  bool step(frame_container &outputFrameContainer, std::function<frame_sp(size_t)> makeFrame);
+  bool push(frame_container &inputFrameContainer, frame_container &outputFrameContainer, std::function<frame_sp(size_t)> makeFrame);
 
 private:
-  std::string myName;
+  std::string modelName;
   boost::shared_ptr<FrameContainerQueue> mQue;
   boost::shared_ptr<LlmModelAbstractProps> mProps;
 };

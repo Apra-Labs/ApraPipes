@@ -4,27 +4,13 @@
 
 class LlavaProps : public LlmModelAbstractProps {
 public:
-  LlavaProps(std::string _modelPath, std::string _prompt,
-             int _contextSize, int _batchSize, float _degreeOfRandomness, int _gpuLayers, int _predictionLength) {
-    
-    /* Set LLM Model Base Class Properties for each model*/
-    modelArchitecture = ModelArchitectureType::TRANSFORMER;
-    inputTypes = {DataType::TEXT, DataType::IMAGE_EMBEDDING};
-    outputTypes = {DataType::TEXT};
-    useCases = {UseCase::TEXT_TO_TEXT, UseCase::OCR, UseCase::SCENE_DESCRIPTOR};
-
-    /*Unique Model Properties*/
-    modelPath = _modelPath;
-    prompt = _prompt;
-    degreeOfRandomness = _degreeOfRandomness;
-    contextSize = _contextSize;
-    batchSize = _batchSize;
-    gpuLayers = _gpuLayers;
-    predictionLength = _predictionLength;
-  }
+  LlavaProps(std::string _modelPath, std::string _systemPrompt,
+             std::string _userPrompt, int _contextSize, int _batchSize,
+             float _degreeOfRandomness, int _gpuLayers, int _predictionLength);
 
   std::string modelPath;
-  std::string prompt;
+  std::string systemPrompt;
+  std::string userPrompt;
   int contextSize;
   int batchSize;
   float degreeOfRandomness;
@@ -33,7 +19,8 @@ public:
 
   size_t getSerializeSize() {
     return LlmModelAbstractProps::getSerializeSize() + sizeof(modelPath) +
-           sizeof(prompt) + sizeof(float) + 4 * sizeof(int);
+           sizeof(systemPrompt) + sizeof(userPrompt) + sizeof(float) +
+           4 * sizeof(int);
   }
 
 private:
@@ -41,8 +28,8 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &boost::serialization::base_object<ModuleProps>(*this);
-    ar & modelPath & prompt;
+    ar &boost::serialization::base_object<LlmModelAbstractProps>(*this);
+    ar & modelPath & systemPrompt & userPrompt;
     ar & degreeOfRandomness;
     ar & contextSize & batchSize & gpuLayers & predictionLength;
   }
@@ -54,10 +41,12 @@ public:
   virtual ~Llava();
   bool modelInit() override;
   bool modelTerm() override;
-  bool modelInference(frame_container& frames) override;
-  bool validateUseCase(LlmModelAbstractProps::UseCase useCase) override;
+  bool modelInference(frame_container &inputFrameContainer,
+                      frame_container &outputFrameContainer,
+                      std::function<frame_sp(size_t)> makeFrame) override;
+  bool validateUseCase(UseCase useCase) override;
   size_t getFrameSize() override;
-  void getFrames(frame_sp& frame) override; 
+  void storeFrames(frame_sp &frame);
 
 private:
   class Detail;

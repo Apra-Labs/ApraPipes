@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include "stdafx.h"
-#include<fstream>
-#include<vector>
+#include <fstream>
+#include <vector>
 
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
@@ -11,7 +11,6 @@
 #include "PipeLine.h"
 #include "FileWriterModule.h"
 #include "FileReaderModule.h"
-#include "FileWriterModule.h"
 #include "LlmModelAbstract.h"
 #include "Llava.h"
 #include "Module.h"
@@ -21,7 +20,12 @@ BOOST_AUTO_TEST_SUITE(llavamodel_test)
 
 BOOST_AUTO_TEST_CASE(llava_init)
 {
-  auto llavaProps = LlavaProps("C:/Users/developer/ws_kushal/llm-integration-branch/ApraPipes/data/llm/llava/llava-v1.6-7b/llava-v1.6-mistral-7b.Q8_0.gguf", "Tell a story", 2048, 512, 0.8, 5, 50);
+  auto llavaProps = LlavaProps(
+      "./data/llm/llava/llava-v1.6-7b/llava-v1.6-mistral-7b.Q8_0.gguf",
+      "A chat between a curious human and an artificial intelligence "
+      "assistant.  The assistant gives helpful, detailed, and polite answers "
+      "to the human's questions.\nUSER:",
+      "Describe the image", 2048, 512, 0.8, 10, 256);
   auto llavaModel = boost::shared_ptr<LlmModelAbstract>(new Llava(llavaProps));
   llavaModel->modelInit();
   llavaModel->modelTerm();

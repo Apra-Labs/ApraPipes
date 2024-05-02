@@ -29,9 +29,9 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(
-    CONFIG_PATH lib/cmake/llama
-    PACKAGE_NAME llama
-    )
+    CONFIG_PATH lib/cmake/Llama
+    PACKAGE_NAME Llama
+)
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")

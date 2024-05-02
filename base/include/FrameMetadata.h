@@ -7,143 +7,131 @@
 
 class RawImageMetadata;
 
-class FrameMetadata {
-public:	
-	static size_t getPaddingLength(size_t length, size_t alignLength)
-	{
-		if (!alignLength)
-		{
-			return 0;
-		}
+class FrameMetadata
+{
+public:
+  static size_t getPaddingLength(size_t length, size_t alignLength)
+  {
+    if (!alignLength)
+    {
+      return 0;
+    }
 
-		auto rem = length % alignLength;
-		if (rem == 0)
-		{
-			return 0;
-		}
+    auto rem = length % alignLength;
+    if (rem == 0)
+    {
+      return 0;
+    }
 
-		return (alignLength - rem);
-	}
+    return (alignLength - rem);
+  }
 
 public:
-	enum FrameType {
-		GENERAL = 0,
-		ENCODED_IMAGE,
-		RAW_IMAGE,
-		RAW_IMAGE_PLANAR,
-		AUDIO,
-		ARRAY,
-		CHANGE_DETECTION,
-		EDGEDEFECT_ANALYSIS_INFO, 
-		PROPS_CHANGE,
-		PAUSE_PLAY,
-		COMMAND,
-		H264_DATA,
-		GPIO,
-		APRA_LINES,
-		LINE,
-		ROI,
-		DEFECTS_INFO,
-		FACEDETECTS_INFO,
-		BMP_IMAGE,
-		MP4_VIDEO_METADATA,
-		HEVC_DATA, //H265
-		MOTION_VECTOR_DATA,
-		OVERLAY_INFO_IMAGE,
-		FACE_LANDMARKS_INFO,
-		TEXT,
-		IMAGE_EMBEDDING
-	};
+  enum FrameType
+  {
+    GENERAL = 0,
+    ENCODED_IMAGE,
+    RAW_IMAGE,
+    RAW_IMAGE_PLANAR,
+    AUDIO,
+    ARRAY,
+    CHANGE_DETECTION,
+    EDGEDEFECT_ANALYSIS_INFO,
+    PROPS_CHANGE,
+    PAUSE_PLAY,
+    COMMAND,
+    H264_DATA,
+    GPIO,
+    APRA_LINES,
+    LINE,
+    ROI,
+    DEFECTS_INFO,
+    FACEDETECTS_INFO,
+    BMP_IMAGE,
+    MP4_VIDEO_METADATA,
+    HEVC_DATA, // H265
+    MOTION_VECTOR_DATA,
+    OVERLAY_INFO_IMAGE,
+    FACE_LANDMARKS_INFO,
+    TEXT,
+    IMAGE_EMBEDDING,
+    TEXT_EMBEDDING
+  };
 
-	enum MemType
-	{
-		HOST = 1,
+  enum MemType
+  {
+    HOST = 1,
 #ifdef APRA_CUDA_ENABLED
-		HOST_PINNED = 2,
-		CUDA_DEVICE = 3,
-		DMABUF = 4
+    HOST_PINNED = 2,
+    CUDA_DEVICE = 3,
+    DMABUF = 4
 #endif
-	};
-		
-	FrameMetadata(FrameType _frameType)
-	{
-		frameType = _frameType;
-		memType = MemType::HOST;
-		hint = "";
-	}
+  };
 
-	FrameMetadata(FrameType _frameType, std::string _hint)
-	{
-		frameType = _frameType;
-		memType = MemType::HOST;
-		hint = _hint;
-	}
+  FrameMetadata(FrameType _frameType)
+  {
+    frameType = _frameType;
+    memType = MemType::HOST;
+    hint = "";
+  }
 
-	FrameMetadata(FrameType _frameType, MemType _memType)
-	{
-		frameType = _frameType;
-		memType = _memType;
-		hint = "";
-	}
+  FrameMetadata(FrameType _frameType, std::string _hint)
+  {
+    frameType = _frameType;
+    memType = MemType::HOST;
+    hint = _hint;
+  }
 
-	virtual ~FrameMetadata() {	}
+  FrameMetadata(FrameType _frameType, MemType _memType)
+  {
+    frameType = _frameType;
+    memType = _memType;
+    hint = "";
+  }
 
-	virtual void reset()
-	{
-		dataSize = NOT_SET_NUM;
-	}
+  virtual ~FrameMetadata() {}
 
-	virtual bool isSet() 
-	{
-		return true;
-	}		
+  virtual void reset() { dataSize = NOT_SET_NUM; }
 
-	FrameType getFrameType()
-	{
-		return frameType;
-	}
+  virtual bool isSet() { return true; }
 
-	MemType getMemType()
-	{
-		return memType;
-	}
+  FrameType getFrameType() { return frameType; }
 
-	virtual size_t getDataSize()
-	{
-		return dataSize;
-	}
+  MemType getMemType() { return memType; }
 
-	std::string getHint() { return hint; }	
+  virtual size_t getDataSize() { return dataSize; }
 
-	void setHint(std::string _hint) { hint = _hint; }
-	void copyHint(FrameMetadata& metadata)
-	{
-		if(!hint.empty())
-		{
-			return;
-		}
+  std::string getHint() { return hint; }
 
-		auto _hint = metadata.getHint();
-		if(_hint.empty())
-		{
-			return;
-		}
+  void setHint(std::string _hint) { hint = _hint; }
+  void copyHint(FrameMetadata &metadata)
+  {
+    if (!hint.empty())
+    {
+      return;
+    }
 
-		setHint(_hint);
-	}
+    auto _hint = metadata.getHint();
+    if (_hint.empty())
+    {
+      return;
+    }
 
-	void setData(FrameMetadata& metadata)
-	{
-		// dont set memType
-		// assuming frameType is same so no need to set 
+    setHint(_hint);
+  }
 
-		// hint I am still undecided whether to copy or not
-	}
+  void setData(FrameMetadata &metadata)
+  {
+    // dont set memType
+    // assuming frameType is same so no need to set
+
+    // hint I am still undecided whether to copy or not
+  }
 
 protected:
-	FrameType frameType;
-	MemType memType;
-	std::string hint;
-	
-	size_t dataSize = NOT_SET_NUM;
+  FrameType frameType;
+  MemType memType;
+  std::string hint;
+
+  size_t dataSize = NOT_SET_NUM;
 };

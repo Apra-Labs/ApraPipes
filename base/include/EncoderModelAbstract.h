@@ -1,46 +1,42 @@
 #pragma once
+#include "stdafx.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include "Frame.h"
+#include <boost/function.hpp>
+#include "BoundBuffer.h"
+#include "FrameFactory.h"
+#include "CommonDefs.h"
+#include "FrameMetadata.h"
+#include "FrameMetadataFactory.h"
+#include "Command.h"
+#include "BufferMaker.h"
+#include "ModelEnums.h"
+#include "FrameContainerQueue.h"
 
-#include "Module.h"
-
-class EncoderModelAbstractProps {
+class EncoderModelAbstractProps
+{
 public:
-  enum ModelArchitectureType {
-    BERT= 0, // Vision Transformer
-    VIT, // Bidirectional Encoder Representations from Transformer
-    AST, // Audio Spectrogram Transformer
-    VIVIT // Video Vision Transformer
-  };
-
-  enum DataType { TEXT = 0, IMAGE, AUDIO, TEXT_EMBEDDING, IMAGE_EMBEDDING, AUDIO_EMBEDDING };
-
-  enum UseCase { TEXT_TO_TEXT = 0, SCENE_DESCRIPTOR, OCR };
-  
-  EncoderModelAbstractProps() {
-    modelArchitecture = ModelArchitectureType::BERT;
-    inputTypes = {DataType::TEXT};
-    outputTypes = {DataType::TEXT_EMBEDDING};
-    useCases = {UseCase::TEXT_TO_TEXT};
-    qlen = 20;
-  }
+  EncoderModelAbstractProps();
 
   EncoderModelAbstractProps(ModelArchitectureType _modelArchitecture,
-                std::vector<DataType> _inputTypes,
-                std::vector<DataType> _outputTypes,
-                std::vector<UseCase> _useCases) {
-    modelArchitecture = _modelArchitecture;
-    inputTypes = _inputTypes;
-    outputTypes = _outputTypes;
-    useCases = _useCases;
-    qlen = 20;
-  }
+                            std::vector<FrameMetadata::FrameType> _inputTypes,
+                            std::vector<FrameMetadata::FrameType> _outputTypes,
+                            std::vector<UseCase> _useCases);
 
-  size_t getSerializeSize() {
-    return sizeof(modelArchitecture) + sizeof(inputTypes) + sizeof(outputTypes) + sizeof(useCases) + sizeof(qlen);
+  size_t getSerializeSize()
+  {
+    return sizeof(modelArchitecture) + sizeof(inputTypes) +
+           sizeof(outputTypes) + sizeof(useCases) + sizeof(qlen);
   }
 
   ModelArchitectureType modelArchitecture;
-  std::vector<DataType> inputTypes;
-  std::vector<DataType> outputTypes;
+  std::vector<FrameMetadata::FrameType> inputTypes;
+  std::vector<FrameMetadata::FrameType> outputTypes;
   std::vector<UseCase> useCases;
   size_t qlen;
 
@@ -48,8 +44,9 @@ private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &boost::serialization::base_object<ModuleProps>(*this);
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar &boost::serialization::base_object<EncoderModelAbstractProps>(*this);
     ar & modelArchitecture;
     ar & inputTypes;
     ar & outputTypes;
@@ -58,34 +55,35 @@ private:
   }
 };
 
-class EncoderModelAbstract {
+class EncoderModelAbstract
+{
 public:
-  EncoderModelAbstract(std::string name, EncoderModelAbstractProps props);
+  EncoderModelAbstract(std::string _modelName, EncoderModelAbstractProps props);
   ~EncoderModelAbstract();
 
-  std::string getMyName() {
-    return myName;
-  }
+  std::string getMyName() { return modelName; }
 
-  boost::shared_ptr<FrameContainerQueue> getQue() {
-    return mQue;
-  }
+  boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
 
-	virtual bool modelInit() = 0;
-	virtual bool modelTerm() = 0;
-  virtual bool modelInference(frame_container& frameContainer) {return false;}
+  virtual bool modelInit() = 0;
+  virtual bool modelTerm() = 0;
+  virtual bool modelInference(frame_container &inputFrameContainer,
+                              frame_container &outputFrameContainer, std::function<frame_sp(size_t)> makeFrame)
+  {
+    return false;
+  }
   virtual size_t getFrameSize() = 0;
-  virtual void getFrames(frame_sp& frame) = 0;
 
-  virtual bool validateUseCase(EncoderModelAbstractProps::UseCase useCase) = 0;
-  
-	bool init();
-	bool term();
-  bool step();
-  bool push(frame_container& frameContainer);
-  
+  virtual bool validateUseCase(UseCase useCase) = 0;
+
+  bool init();
+  bool term();
+  bool step(frame_container &outputFrameContaine, std::function<frame_sp(size_t)> makeFrame);
+  bool push(frame_container &inputFrameContainer,
+            frame_container &outputFrameContainer, std::function<frame_sp(size_t)> _makeFrame);
+
 private:
-  std::string myName;
+  std::string modelName;
   boost::shared_ptr<FrameContainerQueue> mQue;
   boost::shared_ptr<EncoderModelAbstractProps> mProps;
 };
