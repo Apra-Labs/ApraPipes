@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneDescriptorXForm.h"
+#include "ImageToTextXForm.h"
 #include "EncoderModelAbstract.h"
 #include "LlmModelAbstract.h"
 
@@ -29,11 +29,11 @@ public:
   boost::shared_ptr<LlmModelAbstract> llmModel;
 };
 
-class SceneDescriptorModelStrategy : public ModelStrategy
+class ImageToTextModelStrategy : public ModelStrategy
 {
 public:
-  SceneDescriptorModelStrategy(SceneDescriptorXFormProps props);
-  ~SceneDescriptorModelStrategy();
+  ImageToTextModelStrategy(ImageToTextXFormProps props);
+  ~ImageToTextModelStrategy();
 
   bool initStrategy() override;
   bool termStrategy() override;
@@ -56,7 +56,7 @@ boost::shared_ptr<ModelStrategy> ModelStrategy::create(ModelStrategyType type,
   switch (type)
   {
   case ModelStrategyType::LLAVA_SCENE_DESCRIPTOR:
-    return boost::make_shared<SceneDescriptorModelStrategy>(props);
+    return boost::make_shared<ImageToTextModelStrategy>(props);
   case ModelStrategyType::LLAVA_TEXT_TO_TEXT:
     return boost::make_shared<LlavaTextToTextModelStrategy>();
   default:

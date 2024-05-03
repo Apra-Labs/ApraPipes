@@ -7,8 +7,8 @@ ModelStrategy::ModelStrategy() {}
 ModelStrategy::~ModelStrategy() {}
 
 /*LLAVA SCENE-DESCRIPTOR STRATEGY*/
-SceneDescriptorModelStrategy::SceneDescriptorModelStrategy(
-    SceneDescriptorXFormProps props)
+ImageToTextModelStrategy::ImageToTextModelStrategy(
+    ImageToTextXFormProps props)
     : ModelStrategy()
 {
   auto clipProps = ClipEncoderProps(props.encoderModelPath);
@@ -21,16 +21,16 @@ SceneDescriptorModelStrategy::SceneDescriptorModelStrategy(
   llmModel = boost::shared_ptr<LlmModelAbstract>(new Llava(llavaProps));
 }
 
-SceneDescriptorModelStrategy::~SceneDescriptorModelStrategy() {}
+ImageToTextModelStrategy::~ImageToTextModelStrategy() {}
 
-bool SceneDescriptorModelStrategy::initStrategy()
+bool ImageToTextModelStrategy::initStrategy()
 {
   encoderModel->modelInit();
   llmModel->modelInit();
   return true;
 }
 
-bool SceneDescriptorModelStrategy::termStrategy()
+bool ImageToTextModelStrategy::termStrategy()
 {
   encoderModel->modelTerm();
   llmModel->modelTerm();

@@ -289,7 +289,7 @@ SET(IP_FILES
 	src/EncoderModelAbstract.cpp
 	src/Llava.cpp
 	src/ClipEncoder.cpp
-	src/SceneDescriptorXForm.cpp  
+	src/ImageToTextXForm.cpp  
 )
 	
 SET(IP_FILES_H
@@ -321,7 +321,7 @@ SET(IP_FILES_H
 	include/EncoderModelAbstract.h
 	include/Llava.h
 	include/ClipEncoder.h
-	include/SceneDescriptorXForm.h
+	include/ImageToTextXForm.h
 )
 
 SET(CUDA_CORE_FILES
@@ -577,7 +577,7 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/llavamodel_tests.cpp
-	test/sceneDescriptorXForm_tests.cpp
+	test/imageToTextXForm_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

@@ -1,7 +1,7 @@
-#include "SceneDescriptorXForm.h"
+#include "ImageToTextXForm.h"
 #include "ModelStrategy.h"
 
-SceneDescriptorXFormProps::SceneDescriptorXFormProps(
+ImageToTextXFormProps::ImageToTextXFormProps(
     ModelStrategyType _modelStrategyType, std::string _encoderModelPath,
     std::string _llmModelPath, std::string _systemPrompt,
     std::string _userPrompt, int _gpuLayers)
@@ -14,22 +14,22 @@ SceneDescriptorXFormProps::SceneDescriptorXFormProps(
   gpuLayers = _gpuLayers;
 }
 
-class SceneDescriptorXForm::Detail
+class ImageToTextXForm::Detail
 {
 public:
-  Detail(SceneDescriptorXFormProps &_props) : mProps(_props)
+  Detail(ImageToTextXFormProps &_props) : mProps(_props)
   {
     setModelStrategy(_props);
   }
   ~Detail() {}
 
-  void setProps(SceneDescriptorXFormProps &_props) { mProps = _props; }
+  void setProps(ImageToTextXFormProps &_props) { mProps = _props; }
 
-  void setModelStrategy(SceneDescriptorXFormProps &_props)
+  void setModelStrategy(ImageToTextXFormProps &_props)
   {
     switch (_props.modelStrategyType)
     {
-    case SceneDescriptorXFormProps::ModelStrategyType::LLAVA:
+    case ImageToTextXFormProps::ModelStrategyType::LLAVA:
       modelStrategyType =
           ModelStrategy::ModelStrategyType::LLAVA_SCENE_DESCRIPTOR;
       break;
@@ -44,20 +44,20 @@ public:
 public:
   framemetadata_sp mOutputMetadata;
   std::string mOutputPinId;
-  SceneDescriptorXFormProps mProps;
+  ImageToTextXFormProps mProps;
   ModelStrategy::ModelStrategyType modelStrategyType;
   boost::shared_ptr<ModelStrategy> modelStrategy;
 };
 
-SceneDescriptorXForm::SceneDescriptorXForm(SceneDescriptorXFormProps _props)
-    : Module(TRANSFORM, "SceneDescriptorXForm", _props)
+ImageToTextXForm::ImageToTextXForm(ImageToTextXFormProps _props)
+    : Module(TRANSFORM, "ImageToTextXForm", _props)
 {
   mDetail.reset(new Detail(_props));
 }
 
-SceneDescriptorXForm::~SceneDescriptorXForm() {}
+ImageToTextXForm::~ImageToTextXForm() {}
 
-bool SceneDescriptorXForm::validateInputPins()
+bool ImageToTextXForm::validateInputPins()
 {
   if (getNumberOfInputPins() != 1)
   {
@@ -92,7 +92,7 @@ bool SceneDescriptorXForm::validateInputPins()
   return true;
 }
 
-bool SceneDescriptorXForm::validateOutputPins()
+bool ImageToTextXForm::validateOutputPins()
 {
   if (getNumberOfOutputPins() != 1)
   {
@@ -116,7 +116,7 @@ bool SceneDescriptorXForm::validateOutputPins()
   return true;
 }
 
-void SceneDescriptorXForm::addInputPin(framemetadata_sp &metadata,
+void ImageToTextXForm::addInputPin(framemetadata_sp &metadata,
                                        string &pinId)
 {
   Module::addInputPin(metadata, pinId);
@@ -126,7 +126,7 @@ void SceneDescriptorXForm::addInputPin(framemetadata_sp &metadata,
   mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
 }
 
-bool SceneDescriptorXForm::init()
+bool ImageToTextXForm::init()
 {
   bool ret = mDetail->modelStrategy->initStrategy();
   if (!ret)
@@ -136,7 +136,7 @@ bool SceneDescriptorXForm::init()
   return Module::init();
 }
 
-bool SceneDescriptorXForm::term()
+bool ImageToTextXForm::term()
 {
   bool ret = mDetail->modelStrategy->termStrategy();
   if (!ret)
@@ -146,7 +146,7 @@ bool SceneDescriptorXForm::term()
   return Module::term();
 }
 
-bool SceneDescriptorXForm::process(frame_container &frames)
+bool ImageToTextXForm::process(frame_container &frames)
 {
   /*Encoder Model*/
   frame_container clipFrames;
@@ -162,7 +162,7 @@ bool SceneDescriptorXForm::process(frame_container &frames)
   return true;
 }
 
-void SceneDescriptorXForm::setMetadata(framemetadata_sp &metadata)
+void ImageToTextXForm::setMetadata(framemetadata_sp &metadata)
 {
   if (!metadata->isSet())
   {
@@ -170,22 +170,22 @@ void SceneDescriptorXForm::setMetadata(framemetadata_sp &metadata)
   }
 }
 
-bool SceneDescriptorXForm::processSOS(frame_sp &frame)
+bool ImageToTextXForm::processSOS(frame_sp &frame)
 {
   auto metadata = frame->getMetadata();
   setMetadata(metadata);
   return true;
 }
 
-SceneDescriptorXFormProps SceneDescriptorXForm::getProps()
+ImageToTextXFormProps ImageToTextXForm::getProps()
 {
   fillProps(mDetail->mProps);
   return mDetail->mProps;
 }
 
-bool SceneDescriptorXForm::handlePropsChange(frame_sp &frame)
+bool ImageToTextXForm::handlePropsChange(frame_sp &frame)
 {
-  SceneDescriptorXFormProps props(
+  ImageToTextXFormProps props(
       mDetail->mProps.modelStrategyType, mDetail->mProps.encoderModelPath,
       mDetail->mProps.llmModelPath, mDetail->mProps.systemPrompt,
       mDetail->mProps.userPrompt, mDetail->mProps.gpuLayers);
@@ -194,7 +194,7 @@ bool SceneDescriptorXForm::handlePropsChange(frame_sp &frame)
   return ret;
 }
 
-void SceneDescriptorXForm::setProps(SceneDescriptorXFormProps &props)
+void ImageToTextXForm::setProps(ImageToTextXFormProps &props)
 {
   if (props.modelStrategyType != mDetail->mProps.modelStrategyType)
   {

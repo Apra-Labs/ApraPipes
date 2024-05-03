@@ -175,10 +175,15 @@ bool Llava::modelInference(frame_container &inputFrameContainer, frame_container
   /*System Prompt Tokenization*/
   if(mDetail->systemPromptFlag){
     std::vector<llama_token> systemPromptTokens =
-      ::llama_tokenize(mDetail->mLlavaContext, systemPrompt, add_bos);
+      ::llama_tokenize(mDetail->mLlavaContext, systemPrompt, add_bos, true);
     mDetail->compute(mDetail->mLlavaContext, systemPromptTokens, nBatch, &mDetail->nPast);
     mDetail->systemPromptFlag = false;
-    LOG_ERROR << "Loaded System Prompt";
+  }
+  else{
+    systemPrompt = "\nUSER:";
+    std::vector<llama_token> systemPromptTokens =
+      ::llama_tokenize(mDetail->mLlavaContext, systemPrompt, false);
+    mDetail->compute(mDetail->mLlavaContext, systemPromptTokens, nBatch, &mDetail->nPast);
   }
   
   if (frameType == FrameMetadata::FrameType::IMAGE_EMBEDDING)
@@ -199,9 +204,8 @@ bool Llava::modelInference(frame_container &inputFrameContainer, frame_container
 
   /*User Prompt Tokenization*/
   std::vector<llama_token> userPromptTokens = ::llama_tokenize(
-      mDetail->mLlavaContext, (userPrompt + "\nASSISTANT:").c_str(), false);
+      mDetail->mLlavaContext, (userPrompt + "\nASSISTANT:\n").c_str(), false);
   mDetail->compute(mDetail->mLlavaContext, userPromptTokens, nBatch, &mDetail->nPast);
-
   std::string output = "";
 
   std::cout << "\n";

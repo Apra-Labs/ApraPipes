@@ -2,7 +2,7 @@
 
 #include "Module.h"
 
-class SceneDescriptorXFormProps : public ModuleProps
+class ImageToTextXFormProps : public ModuleProps
 {
 public:
   enum ModelStrategyType
@@ -10,7 +10,7 @@ public:
     LLAVA = 0
   };
 
-  SceneDescriptorXFormProps(ModelStrategyType _modelStrategyType,
+  ImageToTextXFormProps(ModelStrategyType _modelStrategyType,
                             std::string _encoderModelPath,
                             std::string _llmModelPath,
                             std::string _systemPrompt, std::string _userPrompt,
@@ -44,15 +44,15 @@ private:
   }
 };
 
-class SceneDescriptorXForm : public Module
+class ImageToTextXForm : public Module
 {
 public:
-  SceneDescriptorXForm(SceneDescriptorXFormProps _props);
-  virtual ~SceneDescriptorXForm();
+  ImageToTextXForm(ImageToTextXFormProps _props);
+  virtual ~ImageToTextXForm();
   bool init();
   bool term();
-  void setProps(SceneDescriptorXFormProps &props);
-  SceneDescriptorXFormProps getProps();
+  void setProps(ImageToTextXFormProps &props);
+  ImageToTextXFormProps getProps();
 
 protected:
   bool process(frame_container &frames);
