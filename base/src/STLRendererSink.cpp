@@ -85,7 +85,6 @@ public:
 		renderer->SetBackground(vtkColor3d(bkgColor[0], bkgColor[1], bkgColor[2]).GetData());
 
 		renWin->SetSize(props.winWidth, props.winHeight);
-		std::cout<<"in function"<< "=" <<props.winWidth << " "<<props.winHeight<<std::endl;
 
 		// interact with data
 		renWin->Render();
