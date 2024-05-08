@@ -106,6 +106,7 @@ H264Utils::H264_NAL_TYPE H264Utils::getNalTypeAfterSpsPps(void* frameData, size_
 				if (getNALUnit(p1, frameSize, offset))
 				{
 					typeFound = getNALUType(p1 + offset - 4); // always looks at 5th byte
+					return typeFound;
 				}
 			}
 		}

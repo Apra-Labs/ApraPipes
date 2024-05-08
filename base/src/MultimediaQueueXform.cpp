@@ -755,7 +755,10 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						break;
 					}
-					it++;
+					if (!mState->queueObject->mQueue.empty())
+					{
+						it++;
+					}
 					if (it == mState->queueObject->mQueue.end())
 					{
 						break;
@@ -763,11 +766,11 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 				}
 				else
 				{
-					if (it != mState->queueObject->mQueue.end())
+					if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
 					{
 						it--;
 					}
-					if (it == mState->queueObject->mQueue.end())
+					if (it == mState->queueObject->mQueue.end() || it == mState->queueObject->mQueue.begin())
 					{
 						if (mState->Type != State::IDLE)
 						{
@@ -910,7 +913,14 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			}
 			if (direction)
 			{
-				it++;
+				if (it == mState->queueObject->mQueue.end())
+				{
+					break;
+				}
+				if (!mState->queueObject->mQueue.empty())
+				{
+					it++;
+				}
 				if (it == mState->queueObject->mQueue.end())
 				{
 					break;
@@ -918,11 +928,11 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			}
 			else
 			{
-				if (it != mState->queueObject->mQueue.end())
+				if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
 				{
 					it--;
 				}
-				if (it == mState->queueObject->mQueue.end())
+				if (it == mState->queueObject->mQueue.end() || it == mState->queueObject->mQueue.begin())
 				{
 					if (mState->Type != State::IDLE)
 					{
