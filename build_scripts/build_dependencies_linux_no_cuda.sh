@@ -11,7 +11,7 @@ missing_dependencies=()
 
 # Check and collect missing dependencies
 for dependency in "${dependencies[@]}"; do
-  if ! sudo dpkg -s "$dependency" >/dev/null 2>&1; then
+  if ! dpkg -s "$dependency" >/dev/null 2>&1; then
     missing_dependencies+=("$dependency")
   fi
 done
@@ -19,26 +19,26 @@ done
 # If there are missing dependencies, install them
 if [ "${#missing_dependencies[@]}" -gt 0 ]; then
   echo "Installing missing dependencies..."
-  sudo apt-get update -qq
-  sudo apt-get -y install "${missing_dependencies[@]}"
+  apt-get update -qq
+  apt-get -y install "${missing_dependencies[@]}"
 fi
 
 # Install Meson if not present
-if ! sudo meson --version &>/dev/null; then
+if ! meson --version &>/dev/null; then
   echo "meson is not installed. Installing meson..."
   pip3 install meson
 fi
 
 # Install Cmake if not present
-if ! sudo cmake --version &>/dev/null; then
+if ! cmake --version &>/dev/null; then
   echo "CMake is not installed. Installing CMake..."
   pip3 install cmake --upgrade
 fi
 
 # Install jq if not present
-if ! sudo jq --version &>/dev/null; then
+if ! jq --version &>/dev/null; then
   echo "jq is not installed. Installing jq..."
-  sudo apt install jq
+  apt install jq
 fi
 
 echo "Dependencies verified and installed successfully."

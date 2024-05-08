@@ -9,7 +9,7 @@ pip install pre-commit
 pre-commit install
 
 chmod +x build_scripts/build_dependencies_linux_no_cuda.sh
-./build_scripts/build_dependencies_linux_no_cuda.sh
+sudo ./build_scripts/build_dependencies_linux_no_cuda.sh
 
 chmod +x base/fix-vcpkg-json.sh
 ./base/fix-vcpkg-json.sh true false false
