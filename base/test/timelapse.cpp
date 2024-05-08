@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(generateTimeLapseUsingMotionDetection)
 	bool enableBFrames = false;
     bool sendDecodedFrames = true;
 	bool sendOverlayFrames = false;
-    std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1707478361303.mp4";
+    std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/video1.mp4";
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
     auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	mp4ReaderProps.fps = 24;
@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(generateTimeLapseUsingMotionDetection)
     auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::MVExtractMethod::OPENH264, sendDecodedFrames, 50, sendOverlayFrames)));
 	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/timelapseframe_????.raw")));
     mp4Reader -> setNext(motionExtractor, mImagePin);
+	// motionExtractor -> setNext(m2);
 
 	auto colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
-	motionExtractor -> setNext(m2);
 	motionExtractor -> setNext(colorchange1);
 
 	auto colorchange2 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::RGB_TO_YUV420PLANAR)));
