@@ -562,6 +562,7 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
+	test/timelapse.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

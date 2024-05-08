@@ -15,7 +15,7 @@ public:
 		OPENH264
 	};
 
-	MotionVectorExtractorProps(MVExtractMethod _MVExtractMethod = MVExtractMethod::FFMPEG, bool _sendDecodedFrame = false, int _motionVectorThreshold = 2) : MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame), motionVectorThreshold(_motionVectorThreshold)
+	MotionVectorExtractorProps(MVExtractMethod _MVExtractMethod = MVExtractMethod::FFMPEG, bool _sendDecodedFrame = false, int _motionVectorThreshold = 2, bool _sendOverlayFrame = true) : MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame), motionVectorThreshold(_motionVectorThreshold), sendOverlayFrame(_sendOverlayFrame)
 	{
 	}
 
@@ -24,6 +24,7 @@ public:
 		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold);
 	}
 	bool sendDecodedFrame = false;
+	bool sendOverlayFrame = false;
 	int motionVectorThreshold;
 	MVExtractMethod MVExtract = MVExtractMethod::FFMPEG;
 private:
