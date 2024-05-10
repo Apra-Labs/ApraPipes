@@ -11,6 +11,7 @@
 #include "AIPExceptions.h"
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
+#include "Overlay.h"
 
 class FaceDetectorXform::Detail
 {
@@ -34,13 +35,12 @@ public:
 	framemetadata_sp mOutputMetadata;
 	FaceDetectorXformProps mProps;
 	std::string mOutputPinId;
+	std::string rawFramePinId;
 	cv::Mat mInputImg;
 	int mFrameType;
 	cv::dnn::Net network;
 	cv::Mat inputBlob;
 	cv::Mat detection;
-	const std::string FACE_DETECTION_CONFIGURATION = "./data/assets/deploy.prototxt";
-	const std::string FACE_DETECTION_WEIGHTS = "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel";
 	// scalar with mean values which are subtracted from channels.
 	// Values are intended to be in (mean-R, mean-G, mean-B) order if image has BGR ordering and swapRB is true.
 	const cv::Scalar meanValuesRGB = cv::Scalar({104., 177.0, 123.0});
@@ -75,7 +75,7 @@ bool FaceDetectorXform::validateInputPins()
 
 bool FaceDetectorXform::validateOutputPins()
 {
-	if (getNumberOfOutputPins() != 1)
+	if (getNumberOfOutputPins() > 2)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
@@ -88,11 +88,12 @@ void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACEDETECTS_INFO));
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
+	mDetail->rawFramePinId = addOutputPin(metadata);
 }
 
 bool FaceDetectorXform::init()
 {
-	mDetail->network = cv::dnn::readNetFromCaffe(mDetail->FACE_DETECTION_CONFIGURATION, mDetail->FACE_DETECTION_WEIGHTS);
+	mDetail->network = cv::dnn::readNetFromCaffe(mDetail->mProps.FACE_DETECTION_CONFIGURATION, mDetail->mProps.FACE_DETECTION_WEIGHTS);
 	if (mDetail->network.empty())
 	{
 		LOG_ERROR << "Failed to load network with the given settings. Please check the loaded parameters.";
@@ -121,10 +122,13 @@ bool FaceDetectorXform::process(frame_container &frames)
 	mDetail->inputBlob = cv::dnn::blobFromImage(mDetail->mInputImg, mDetail->mProps.scaleFactor, cv::Size(mDetail->mInputImg.cols, mDetail->mInputImg.rows),
 												mDetail->meanValuesRGB, false, false);
 	mDetail->network.setInput(mDetail->inputBlob, "data");
-
+	
 	mDetail->detection = mDetail->network.forward("detection_out");
 
 	cv::Mat detectionMatrix(mDetail->detection.size[2], mDetail->detection.size[3], CV_32F, mDetail->detection.ptr<float>());
+
+	std::vector<RectangleOverlay> rectangleOverlays;
+    CompositeOverlay compositeOverlay;
 
 	for (int i = 0; i < detectionMatrix.rows; i++)
 	{
@@ -136,20 +140,42 @@ bool FaceDetectorXform::process(frame_container &frames)
 		}
 
 		mDetail->faceInfo.x1 = detectionMatrix.at<float>(i, 3) * mDetail->mInputImg.cols;
-		mDetail->faceInfo.y2 = detectionMatrix.at<float>(i, 4) * mDetail->mInputImg.rows;
+		mDetail->faceInfo.y1 = detectionMatrix.at<float>(i, 4) * mDetail->mInputImg.rows;
 		mDetail->faceInfo.x2 = detectionMatrix.at<float>(i, 5) * mDetail->mInputImg.cols;
-		mDetail->faceInfo.y1 = detectionMatrix.at<float>(i, 6) * mDetail->mInputImg.rows;
+		mDetail->faceInfo.y2 = detectionMatrix.at<float>(i, 6) * mDetail->mInputImg.rows;
 		mDetail->faceInfo.score = confidence;
 
 		mDetail->faces.emplace_back(mDetail->faceInfo);
+
+		RectangleOverlay rectangleOverlay;
+		rectangleOverlay.x1 = mDetail->faceInfo.x1;
+		rectangleOverlay.y1 = mDetail->faceInfo.y1;
+		rectangleOverlay.x2 = mDetail->faceInfo.x2;
+		rectangleOverlay.y2 = mDetail->faceInfo.y2;
+		rectangleOverlays.push_back(rectangleOverlay);
 	}
 
+	for (auto &rectangleOverlay : rectangleOverlays) {
+          compositeOverlay.add(&rectangleOverlay);
+	}
+
+	auto rawFrame = frames.cbegin()->second;
+	frames.insert(make_pair(mDetail->rawFramePinId, rawFrame));
+
 	mDetail->faceDetectsInfo.faces = mDetail->faces;
-	auto outFrame = makeFrame(mDetail->faceDetectsInfo.getSerializeSize());
-	mDetail->faceDetectsInfo.serialize(outFrame->data(), mDetail->faceDetectsInfo.getSerializeSize());
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+        
+	if (rectangleOverlays.size() > 0) {
+		DrawingOverlay drawingOverlay;
+		drawingOverlay.add(&compositeOverlay);
+		auto mvSize = drawingOverlay.mGetSerializeSize();  
+		auto outFrame = makeFrame(mvSize, mDetail->mOutputPinId);
+		drawingOverlay.serialize(outFrame);
+        frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+    }
+	
 	mDetail->faces.clear();
 	mDetail->faceDetectsInfo.faces.clear();
+
 	send(frames);
 	return true;
 }
