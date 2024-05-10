@@ -11,7 +11,7 @@ missing_dependencies=()
 
 # Check and collect missing dependencies
 for dependency in "${dependencies[@]}"; do
-  if ! sudo dpkg -s "$dependency" >/dev/null 2>&1; then
+  if ! dpkg -s "$dependency" >/dev/null 2>&1; then
     missing_dependencies+=("$dependency")
   fi
 done
