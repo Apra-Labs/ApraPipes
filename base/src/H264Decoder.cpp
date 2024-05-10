@@ -560,7 +560,6 @@ void H264Decoder::sendDecodedFrame()
 				send(frames);
 				lastFrameSent = outFrame->timestamp;
 				auto myId = Module::getId();
-				if(myId == "H264Decoder_16")
 			}
 		}
 		if(playbackSpeed == 2 || playbackSpeed == 4)
