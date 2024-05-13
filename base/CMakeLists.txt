@@ -562,7 +562,6 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
-	test/timelapse.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -619,3 +618,5 @@ IF(ENABLE_WINDOWS)
 		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
 	ENDIF(GHA)
 ENDIF(ENABLE_WINDOWS)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)

@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(generateTimeLapseUsingMotionDetection)
     auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::MVExtractMethod::OPENH264, sendDecodedFrames, 50, sendOverlayFrames)));
 	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/timelapseframe_????.raw")));
     mp4Reader -> setNext(motionExtractor, mImagePin);
-	// motionExtractor -> setNext(m2);
+	motionExtractor -> setNext(m2);
 
-	auto colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
+	/*auto colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
 	motionExtractor -> setNext(colorchange1);
 
 	auto colorchange2 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::RGB_TO_YUV420PLANAR)));
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(generateTimeLapseUsingMotionDetection)
 	sync->setNext(encoder);
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, outFolderPath, false);
 	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
-	encoder -> setNext(mp4WriterSink);
+	encoder -> setNext(mp4WriterSink);*/
 
 	PipeLine p("test");
 	p.appendModule(mp4Reader);

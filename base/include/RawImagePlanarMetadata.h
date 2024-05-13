@@ -28,8 +28,8 @@ public:
 			break;
 		case ImageMetadata::YUV420:
 			_step[0] = _width + FrameMetadata::getPaddingLength(_width, alignLength);
-			_step[1] = _width >> 1;
-			_step[1] = _step[1] + FrameMetadata::getPaddingLength(_step[1], alignLength);
+			_step[1] = _step[0] >> 1;
+			// _step[1] = _step[1] + FrameMetadata::getPaddingLength(_step[1], alignLength);
 			_step[2] = _step[1];
 			break;
 		default:
