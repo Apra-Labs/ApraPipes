@@ -81,4 +81,6 @@ private:
 	int previousFps = 24;
 	float playbackSpeed = 1;
 	int gop;
+	uint64_t lastFrameSent;
+	bool directionChanged = false;
 };

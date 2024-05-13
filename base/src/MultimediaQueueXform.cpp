@@ -624,7 +624,6 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 			{return getInputPinIdByType(type); }, mOutputPinId));
 		}
 	}
-
 }
 
 void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
@@ -688,6 +687,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 
 		if (mState->Type == State::EXPORT)
 		{
+			LOG_ERROR << "inside state export block";
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
 			State::mQueueMap::iterator it;
 			if (direction)
@@ -697,9 +697,20 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 			else
 			{
 				it = mState->queueObject->mQueue.end();
-				it--;
+				if (!mState->queueObject->mQueue.empty()){
+					it--;
+					it--;
+				}
+				else{
+					LOG_ERROR<<"Queue is empty";
+				}
+
 			}
-			while (!mState->queueObject->mQueue.empty() )//&& it != mState->queueObject->mQueue.end()
+			if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
+			{
+				exportFrames = true;
+			}
+			while (!mState->queueObject->mQueue.empty() && exportFrames == true)//&& it != mState->queueObject->mQueue.end()
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
 				{
@@ -747,30 +758,34 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						//LOG_ERROR << "enque frames";
 						auto moduleQueue = getQue();
 						extractFramesAndEnqueue(moduleQueue);
+						it = mState->queueObject->mQueue.find(latestFrameExportedFromHandleCmd);
 					}
 				}
 				if (direction)
 				{
+					if (mState->queueObject->mQueue.empty())
+					{
+						break;
+					}
 					if(it == mState->queueObject->mQueue.end())
 					{
 						break;
 					}
-					if (!mState->queueObject->mQueue.empty())
+					else //(!mState->queueObject->mQueue.empty())
 					{
 						it++;
-					}
-					if (it == mState->queueObject->mQueue.end())
-					{
-						break;
 					}
 				}
 				else
 				{
 					if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
 					{
-						it--;
+						if(it-- == mState->queueObject->mQueue.begin())
+						{
+							break;
+						}
 					}
-					if (it == mState->queueObject->mQueue.end() || it == mState->queueObject->mQueue.begin())
+					if (it == mState->queueObject->mQueue.begin())// || it == mState->queueObject->mQueue.end()
 					{
 						if (mState->Type != State::IDLE)
 						{
@@ -856,9 +871,21 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		else
 		{
 			it = mState->queueObject->mQueue.end();
-			it--;
+			if (!mState->queueObject->mQueue.empty()){
+				it--;
+				it--;
+			}
+			else
+			{
+				LOG_ERROR << "Queue is empty";
+			}
 		}
-		while (!mState->queueObject->mQueue.empty())//&& it != mState->queueObject->mQueue.end()
+		if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
+			{
+				exportFrames = true;
+				LOG_ERROR << "Setting exportFrames as True";
+			}
+		while (!mState->queueObject->mQueue.empty() && exportFrames == true) //&& it != mState->queueObject->mQueue.end()
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
 			{
@@ -878,10 +905,11 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						frame_begin = sys_clock::now();
 						initDone = true;
 					}
-					
-					//LOG_ERROR << "multimediaQueueSize = " << queueSize;	
+
+					//LOG_ERROR << "multimediaQueueSize = " << queueSize;
 					frame_container outFrames;
-					auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+					auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+
 					outFrames.insert(make_pair(outputId, it->second.begin()->second));
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
 					if (!framesToSkip)
@@ -905,34 +933,38 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					}
 					myNextWait += myTargetFrameLen;
 				}
-				if (!(!direction && it == mState->queueObject->mQueue.begin()))
+				if (!((!direction && it == mState->queueObject->mQueue.begin()) || (direction && it == mState->queueObject->mQueue.end())))
 				{
-						auto moduleQueue = getQue();
-						extractFramesAndEnqueue(moduleQueue);
+					auto moduleQueue = getQue();
+					extractFramesAndEnqueue(moduleQueue);
+					it = mState->queueObject->mQueue.find(latestFrameExportedFromHandleCmd);
 				}
 			}
 			if (direction)
 			{
+				if (mState->queueObject->mQueue.empty())
+				{
+					break;
+				}
 				if (it == mState->queueObject->mQueue.end())
 				{
 					break;
 				}
-				if (!mState->queueObject->mQueue.empty())
+				else //(!mState->queueObject->mQueue.empty())
 				{
 					it++;
-				}
-				if (it == mState->queueObject->mQueue.end())
-				{
-					break;
 				}
 			}
 			else
 			{
 				if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
 				{
-					it--;
+					if (it-- == mState->queueObject->mQueue.begin())
+					{
+						break;
+					}
 				}
-				if (it == mState->queueObject->mQueue.end() || it == mState->queueObject->mQueue.begin())
+				if (it == mState->queueObject->mQueue.begin()) // || it == mState->queueObject->mQueue.end()
 				{
 					if (mState->Type != State::IDLE)
 					{
@@ -955,7 +987,8 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		uint64_t tOld, tNew = 0;
 		getQueueBoundaryTS(tOld, tNew);
-		if (queryEndTime > tNew);
+		if (queryEndTime > tNew)
+			;
 		{
 			reset = false;
 		}
@@ -968,10 +1001,10 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		queryEndTime = 0;
 		setState(queryStartTime, queryEndTime);
 	}
-	//This part is done only when Control module is connected 
+	// This part is done only when Control module is connected
 	if (controlModule != nullptr)
 	{
-		//Send commmand to NVRControl module 
+		// Send commmand to NVRControl module
 		if (mState->queueObject->mQueue.size() != 0)
 		{
 			MMQtimestamps cmd;
@@ -1057,3 +1090,6 @@ void  MultimediaQueueXform::setProps(MultimediaQueueXformProps _props)
 	//}
 }
 
+void MultimediaQueueXform::stopExportFrames(){
+	exportFrames = false;
+	}

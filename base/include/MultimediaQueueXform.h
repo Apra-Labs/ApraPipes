@@ -73,6 +73,7 @@ public:
 	void extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& FrameQueue);
 	void setMmqFps(int fps);
 	void setPlaybackSpeed(float playbackSpeed);
+	void stopExportFrames();
 protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
@@ -100,4 +101,5 @@ private:
 	int framesToSkip = 0;
 	int initialFps = 0;
 	float speed = 1;
+	bool exportFrames;
 };
