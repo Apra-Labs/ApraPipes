@@ -394,7 +394,11 @@ bool H264Decoder::process(frame_container& frames)
 		dirChangedToBwd = false;
 		dirChangedToFwd = false;
 	}
-
+	if (directionChanged == true){
+		ReadyToRender cmd;
+		cmd.ReadinessCounter -= 1;
+		controlModule->queueCommand(cmd);
+	}
 	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
 	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
 	if (h264Metadata->mp4Seek)
@@ -554,7 +558,12 @@ void H264Decoder::sendDecodedFrame()
 			frames.insert(make_pair(mOutputPinId, outFrame));
 			if (directionChanged && outFrame->timestamp == lastFrameSent)
 			{
+					LOG_INFO << "resuming decoder";
 					directionChanged = false;
+					
+					ReadyToRender cmd;
+					cmd.ReadinessCounter += 1;
+					controlModule->queueCommand(cmd);
 			}
 			else if(directionChanged == false){
 				send(frames);

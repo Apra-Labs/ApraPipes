@@ -29,6 +29,7 @@ public:
 		RenderPlayPause,
 		Mp4ErrorHandle,
 		DecoderPlaybackSpeed,
+		ReadyToRender
 	};
 
 	Command()
@@ -673,5 +674,29 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& playbackFps;
 		ar& playbackSpeed;
+	}
+};
+
+class ReadyToRender : public Command
+{
+public:
+	ReadyToRender() : Command(Command::CommandType::ReadyToRender)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(ReadinessCounter);
+	}
+
+	int ReadinessCounter = 1;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& ReadinessCounter = 1;
 	}
 };
