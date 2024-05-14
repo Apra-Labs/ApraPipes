@@ -264,8 +264,15 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 	int32_t mMotionVectorSize = mWidth * mHeight * 8;
 	int16_t* mMotionVectorData = nullptr;
 	memset(&pDstInfo, 0, sizeof(SBufferInfo));
-	//outFrame = makeFrameWithPinId(mMotionVectorSize, motionVectorPinId);
-	mMotionVectorData = static_cast<int16_t*>(malloc(mMotionVectorSize*sizeof(int16_t)));
+	if (sendOverlayFrame) 
+	{
+        outFrame = makeFrameWithPinId(mMotionVectorSize,motionVectorPinId);   
+		mMotionVectorData = static_cast<int16_t *>(outFrame->data());
+	}
+	else
+	{
+        mMotionVectorData = static_cast<int16_t *>(malloc(mMotionVectorSize * sizeof(int16_t)));   
+	}
 
 	if (sDecParam.bParseOnly)
 	{
