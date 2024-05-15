@@ -309,10 +309,6 @@ void GtkGlRenderer::processQueue()
         auto frame = frameQueue.front();
         frameQueue.pop();
         auto myId = Module::getId();
-        if(myId == "GtkGlRenderer_35")
-        {
-        //    LOG_INFO << "time diff is = " << timeDiff << "Timestamp is = " << frame->timestamp;
-        }
        
         if (timeDiff >= 33)
         {

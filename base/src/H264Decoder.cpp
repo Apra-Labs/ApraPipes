@@ -382,19 +382,23 @@ bool H264Decoder::process(frame_container& frames)
 	if (mDirection && !h264Metadata->direction)
 	{
 		dirChangedToBwd = true;
-		directionChanged = true;
+		resumeBwdPlayback = false;
 	}
 	else if (!mDirection && h264Metadata->direction)
 	{
 		dirChangedToFwd = true; //rename to directionChangedToFwd
-		directionChanged = true;
+		resumeFwdPlayback = false;
 	}
 	else
 	{
 		dirChangedToBwd = false;
 		dirChangedToFwd = false;
 	}
-
+	if (resumeBwdPlayback == false || resumeFwdPlayback == false){
+		ReadyToRender cmd;
+		cmd.ReadinessCounter -= 1;
+		controlModule->queueCommand(cmd);
+	}
 	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
 	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
 	if (h264Metadata->mp4Seek)
@@ -548,17 +552,42 @@ void H264Decoder::sendDecodedFrame()
 	{
 		auto outFrame = decodedFramesCache[incomingFramesTSQ.front()];
 		incomingFramesTSQ.pop_front();
+		if (resumeBwdPlayback == false && outFrame->timestamp <= lastFrameSent)
+		{
+			LOG_INFO << "resuming decoder";
+			resumeBwdPlayback = true;
+			
+			ReadyToRender cmd;
+			cmd.ReadinessCounter += 1;
+			controlModule->queueCommand(cmd);
+		}
+
+		if (resumeFwdPlayback == false && outFrame->timestamp >= lastFrameSent)
+		{
+			LOG_INFO << "resuming decoder";
+			resumeFwdPlayback = true;
+			
+			ReadyToRender cmd;
+			cmd.ReadinessCounter += 1;
+			controlModule->queueCommand(cmd);
+		}
+
 		if(!framesToSkip)
 		{
 			frame_container frames;
 			frames.insert(make_pair(mOutputPinId, outFrame));
-			if (directionChanged && outFrame->timestamp == lastFrameSent)
-			{
-					directionChanged = false;
-			}
-			else if(directionChanged == false){
+			if(resumeBwdPlayback == true && resumeFwdPlayback == true){
+				if (!mDirection && lastFrameSent <outFrame->timestamp){
+					LOG_ERROR <<"Sending newer frame:" << "lastFrameSent: "<<lastFrameSent<<"This frame:"<<outFrame->timestamp;
+				}
+				else if (mDirection && lastFrameSent >outFrame->timestamp){
+					LOG_ERROR <<"Sending older frame:" << "lastFrameSent: "<<lastFrameSent<<"This frame:"<<outFrame->timestamp;
+				}
 				send(frames);
 				lastFrameSent = outFrame->timestamp;
+				if (lastFrameSent == 0){
+					LOG_ERROR<<"something is wrong";
+				}
 				auto myId = Module::getId();
 			}
 		}
