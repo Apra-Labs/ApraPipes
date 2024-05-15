@@ -84,7 +84,7 @@ int main() {
     return 1; // Or any error code indicating failure
   }
   // Wait for the pipeline to run for 10 seconds
-  boost::this_thread::sleep_for(boost::chrono::seconds(10));
+  boost::this_thread::sleep_for(boost::chrono::seconds(5));
   // Stop the pipeline
   if (!pipelineInstance.stopPipeLine()) {
     std::cerr << "Failed to stop pipeline." << std::endl;
