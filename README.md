@@ -41,6 +41,12 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   <summary>Requirements</summary>
 
   ###  Prerequisites
+  
+  ### Visual Studio
+  * Install Visual Studio 2019 Community 
+    * Install Desktop development C++
+    * .NET Desktop development
+    * Universal Windows Development Platform
 
   ### Cuda
   * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
@@ -51,13 +57,7 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     * Download the correct zip file matching your cuda version. _Do not download the exe/installer/deb package._
     * Windows: 
       * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip).
-
-  ### Visual Studio
-  * Install Visual Studio 2019 Community 
-    * Install Desktop development C++
-    * .NET Desktop development
-    * Universal Windows Development Platform
-  
+    
   * Clone with submodules and LFS. 
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
