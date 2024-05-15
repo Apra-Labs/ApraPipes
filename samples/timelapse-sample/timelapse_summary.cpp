@@ -16,7 +16,7 @@
 TimelapsePipeline::TimelapsePipeline() : pipeline("test") {}
 
 bool TimelapsePipeline::setupPipeline() {
-  std::string outFolderPath = "C:\\Workspace\\ApraPipesFork\\ApraPipes\\data\\timeplase_videos";
+  std::string outFolderPath = "../.././data/timeplase_videos";
     auto cuContext = apracucontext_sp(new ApraCUcontext());
     uint32_t gopLength = 25;
     uint32_t bitRateKbps = 1000;
@@ -25,7 +25,7 @@ bool TimelapsePipeline::setupPipeline() {
     bool enableBFrames = false;
     bool sendDecodedFrames = true;
     bool sendOverlayFrames = false;
-    std::string videoPath = "C:\\Workspace\\ApraPipesFork\\ApraPipes\\data\\Mp4_videos\\h264_video_metadata\\20230514\\0011\\video1.mp4";
+    std::string videoPath = "../.././data/Mp4_videos/h264_video_metadata/20230514/0011/1715748702000.mp4";
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
     auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
     mp4ReaderProps.fps = 24;
@@ -35,8 +35,9 @@ bool TimelapsePipeline::setupPipeline() {
     mp4Reader->addOutPutPin(mp4Metadata);
     std::vector<std::string> mImagePin;
     mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
-    auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MotionVectorExtractorProps::MVExtractMethod::OPENH264,sendDecodedFrames, 20, sendOverlayFrames)));
-    mp4Reader -> setNext(motionExtractor, mImagePin);
+    auto motionExtractorProps = MotionVectorExtractorProps(MotionVectorExtractorProps::MVExtractMethod::OPENH264,sendDecodedFrames, 10, sendOverlayFrames);
+    auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(motionExtractorProps));
+    mp4Reader->setNext(motionExtractor, mImagePin);
 
     auto colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
     motionExtractor -> setNext(colorchange1);
@@ -63,7 +64,6 @@ bool TimelapsePipeline::setupPipeline() {
 
 bool TimelapsePipeline::startPipeline() {
     pipeline.run_all_threaded();
-    boost::this_thread::sleep_for(boost::chrono::seconds(10));
     return true;
 }
 
@@ -75,6 +75,11 @@ bool TimelapsePipeline::stopPipeline() {
 }
 
 int main() {
+  LoggerProps loggerProps;
+  loggerProps.logLevel = boost::log::trivial::severity_level::info;
+  Logger::setLogLevel(boost::log::trivial::severity_level::info);
+  Logger::initLogger(loggerProps);
+
   TimelapsePipeline pipelineInstance;
 
   // Setup the pipeline
