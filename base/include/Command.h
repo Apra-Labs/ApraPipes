@@ -697,6 +697,6 @@ private:
 	void serialize(Archive& ar, const unsigned int /* file_version */)
 	{
 		ar& boost::serialization::base_object<Command>(*this);
-		ar& ReadinessCounter = 1;
+		ar& ReadinessCounter;
 	}
 };

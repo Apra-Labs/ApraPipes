@@ -176,20 +176,28 @@ bool NvTransform::term()
 bool NvTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
-	if (!outFrame.get())
-	{
-		LOG_ERROR << "FAILED TO GET BUFFER";
-		return false;
+	try{
+		auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
+
+		if (!outFrame.get())
+		{
+			LOG_ERROR << "FAILED TO GET BUFFER";
+			return false;
+		}
+
+		auto dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
+		dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
+
+		mDetail->compute(frame, dmaFdWrapper->tempFD);
+
+		frames.insert(make_pair(mDetail->outputPinId, outFrame));
+		send(frames);
 	}
-
-	auto dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
-	dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
-
-	mDetail->compute(frame, dmaFdWrapper->tempFD);
-
-	frames.insert(make_pair(mDetail->outputPinId, outFrame));
-	send(frames);
+	catch(
+		std::exception & e
+	){
+		LOG_ERROR<<"NvTransform seg fault";
+	}
 
 	return true;
 }

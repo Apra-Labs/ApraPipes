@@ -82,5 +82,6 @@ private:
 	float playbackSpeed = 1;
 	int gop;
 	uint64_t lastFrameSent;
-	bool directionChanged = false;
+	bool resumeFwdPlayback = true;
+	bool resumeBwdPlayback = true;
 };

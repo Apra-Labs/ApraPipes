@@ -597,6 +597,7 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 	{
 		BOOST_LOG_TRIVIAL(info) << "IDLE STATE : MAYBE THE FRAMES HAVE PASSED THE QUEUE";
 		mState.reset(new Idle(mState->queueObject));
+		reset = false;
 	}
 
 	else if (tStart > tNew)
