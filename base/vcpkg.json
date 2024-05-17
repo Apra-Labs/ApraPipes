@@ -2,18 +2,24 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "a1c6d4f053281b8e961c24a0035903f5f9d66329",
-  "overrides":[
+  "overrides": [
     {
-      "name":"ffmpeg",
-      "version":"4.4.3"
+      "name": "ffmpeg",
+      "version": "4.4.3"
     },
     {
-      "name":"libarchive",
-      "version":"3.5.2"
+      "name": "libarchive",
+      "version": "3.5.2"
     }
   ],
   "dependencies": [
+    {
+      "name": "whisper",
+      "default-features": false,
+      "features": [
+        "cuda"
+      ]
+    },
     {
       "name": "opencv4",
       "default-features": false,
@@ -94,5 +100,6 @@
     {
       "name": "libmp4"
     }
-  ]
+  ],
+  "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e"
 }

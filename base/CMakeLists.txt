@@ -6,6 +6,8 @@ OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
+set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
+
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
@@ -23,6 +25,7 @@ IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
 	set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
+	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -38,8 +41,6 @@ add_compile_options(-fpermissive)
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
-        
-
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
@@ -50,15 +51,7 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
-
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-pkg_check_modules(GDK3 REQUIRED gdk-3.0)
-pkg_check_modules(GIO REQUIRED gio-2.0)
-pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
-pkg_check_modules(GLFW REQUIRED glfw3)
-
+find_package(whisper CONFIG REQUIRED)
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -135,7 +128,7 @@ IF(ENABLE_CUDA)
 			cublasLt.lib
 			
 		)
-		include_directories(AFTER SYSTEM "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include")
+		include_directories(AFTER SYSTEM "$ENV{CUDA_PATH}/include")
 	ENDIF(ENABLE_ARM64)
 
 ENDIF(ENABLE_CUDA)
@@ -296,12 +289,11 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
+	src/AudioToTextXForm.cpp 
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
 )
-
-
-
+	
 SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
@@ -324,10 +316,9 @@ SET(IP_FILES_H
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
 	include/Overlay.h
+	include/AudioToTextXForm.h
 	include/ThumbnailListGenerator.h
 )
-
-
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
@@ -584,18 +575,18 @@ SET(UT_FILES
   	# test/mp4readersource_tests.cpp
 	# test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
-	# test/motionvector_extractor_and_overlay_tests.cpp
-	# test/mp4_reverse_play_tests.cpp
-	# test/ordered_cache_of_files_tests.cpp
-	# test/mp4_seek_tests.cpp
-	# test/mp4_simul_read_write_tests.cpp
-	# test/mp4_getlivevideots_tests.cpp
-	# test/mp4_dts_strategy_tests.cpp
-	# test/overlaymodule_tests.cpp
-	# test/testSignalGeneratorSrc_tests.cpp
-	# test/abscontrolmodule_tests.cpp
-	# test/thumbnailgenerator_tests.cpp
-	# ${ARM64_UT_FILES}
+	test/rtsp_client_tests.cpp
+	test/motionvector_extractor_and_overlay_tests.cpp
+	test/mp4_reverse_play_tests.cpp
+	test/ordered_cache_of_files_tests.cpp
+	test/mp4_seek_tests.cpp
+	test/mp4_simul_read_write_tests.cpp
+	test/mp4_getlivevideots_tests.cpp
+	test/mp4_dts_strategy_tests.cpp
+	test/overlaymodule_tests.cpp
+	test/testSignalGeneratorSrc_tests.cpp
+	test/audioToTextXform_tests.cpp
+	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
 
@@ -643,6 +634,7 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  whisper::whisper
   )
 
 IF(ENABLE_WINDOWS)
