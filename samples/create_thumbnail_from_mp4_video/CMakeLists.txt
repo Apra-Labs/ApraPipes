@@ -12,9 +12,9 @@ SET(SOURCE
 set(UT_FILE
 	test_generate_thumbnail_from_mp4_video.cpp
 )
-add_library(example_aprapipes STATIC ${SOURCE})
+add_library(create_thumbnail_from_mp4_video_source STATIC ${SOURCE})
 add_executable(${TARGET} ${UT_FILE})
-target_include_directories ( example_aprapipes PRIVATE
+target_include_directories ( create_thumbnail_from_mp4_video_source PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -48,5 +48,5 @@ target_link_libraries(
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  example_aprapipes
+  create_thumbnail_from_mp4_video_source
   )

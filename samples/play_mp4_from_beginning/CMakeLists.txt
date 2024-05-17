@@ -1,20 +1,20 @@
-set(TARGET play_mp4_from_begining)
+set(TARGET play_mp4_from_beginning)
 SET(CORE_FILES
-  play_mp4_video_from_begining.cpp
+  play_mp4_video_from_beginning.cpp
 )
 SET(CORE_FILES_H
-	PlayMp4VideoFromBegining.h
+	PlayMp4VideoFromBeginning.h
 )
 SET(SOURCE
   ${CORE_FILES}
   ${CORE_FILES_H}
 )
 set(UT_FILE
-	test_play_mp4_video_from_begining.cpp
+	test_play_mp4_video_from_beginning.cpp
 )
-add_library(example_aprapipes1 STATIC ${SOURCE})
+add_library(play_mp4_from_beginning_source STATIC ${SOURCE})
 add_executable(${TARGET} ${UT_FILE})
-target_include_directories ( example_aprapipes1 PRIVATE
+target_include_directories ( play_mp4_from_beginning_source PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -48,5 +48,5 @@ target_link_libraries(
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  example_aprapipes1
+  play_mp4_from_beginning_source
   )
