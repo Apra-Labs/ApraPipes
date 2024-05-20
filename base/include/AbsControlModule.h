@@ -2,6 +2,7 @@
 #include <map>
 #include "Module.h"
 
+class PipeLine;
 class AbsControlModuleProps : public ModuleProps
 {
 public:
@@ -15,8 +16,8 @@ public:
 	~AbsControlModule();
 	bool init();
 	bool term();
-	bool enrollModule(std::string role, boost::shared_ptr<Module> module);
-	boost::shared_ptr<Module> getModuleofRole(std::string role);
+	std::string enrollModule(PipeLine p, std::string role, boost::shared_ptr<Module> module);
+	std::pair<bool, boost::shared_ptr<Module>> getModuleofRole(PipeLine p, std::string role);
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
 

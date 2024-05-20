@@ -3,6 +3,7 @@
 #include "AbsControlModule.h"
 #include "Module.h"
 #include "Command.h"
+#include "PipeLine.h"
 
 class AbsControlModule::Detail
 {
@@ -14,6 +15,12 @@ public:
     ~Detail()
     {
     }
+
+    std::string getPipelineRole(std::string pName, std::string role)
+    {
+        return pName + "_" + role;
+    }
+
     AbsControlModuleProps mProps;
 };
 
@@ -53,13 +60,20 @@ bool AbsControlModule::process(frame_container& frames)
     return true;
 }
 
-bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
+std::string AbsControlModule::enrollModule(PipeLine p, std::string role, boost::shared_ptr<Module> module)
 {
-    moduleRoles[role] = module;
-    return true;
+    std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
+    moduleRoles[pipelineRole] = module;
+    return pipelineRole;
 }
 
-boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
+std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(PipeLine p, std::string role)
 {
-    return moduleRoles[role];
+    std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
+    if (moduleRoles.find(pipelineRole) == moduleRoles.end())
+    {
+        return std::make_pair<bool, boost::shared_ptr<Module>>(false, nullptr);
+    }
+    std::pair<bool, boost::shared_ptr<Module>> res(true, moduleRoles[pipelineRole]); 
+    return res;
 }
