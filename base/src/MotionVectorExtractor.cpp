@@ -23,6 +23,7 @@ public:
 		makeFrameWithPinId = _makeFrameWithPinId;
 		makeframe = _makeframe;
 		sendDecodedFrame = props.sendDecodedFrame;
+		sendOverlayFrame = props.sendOverlayFrame;
 		threshold = props.motionVectorThreshold;
 	};
 	~MvExtractDetailAbs()
@@ -31,10 +32,11 @@ public:
 	virtual void setProps(MotionVectorExtractorProps props)
 	{
 		sendDecodedFrame = props.sendDecodedFrame;
+		sendOverlayFrame = props.sendOverlayFrame;
 	}
 	virtual void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame) = 0;
 	virtual void initDecoder() = 0;
-public:
+public: 
 	int mWidth = 0;
 	int mHeight = 0;
 	std::string rawFramePinId;
@@ -42,8 +44,10 @@ public:
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
 	bool sendDecodedFrame = false;
+	bool sendOverlayFrame = true;
 	int threshold;
 	cv::Mat bgrImg;
+	bool motionFound = false;
 };
 class DetailFfmpeg : public MvExtractDetailAbs
 {
@@ -171,7 +175,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 				{
 					const AVMotionVector* mv = &mvs[i];
 
-					if (std::abs(mv->motion_x) > threshold || std::abs(mv->motion_y) > threshold)
+					if (sendOverlayFrame == true && std::abs(mv->motion_x) > threshold || std::abs(mv->motion_y) > threshold)
 					{
 						LineOverlay lineOverlay;
 						lineOverlay.x1 = mv->src_x;
@@ -180,6 +184,8 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 						lineOverlay.y2 = mv->dst_y;
 
 						lineOverlays.push_back(lineOverlay);
+
+						motionFound = true;
 					}
 				}
 
@@ -201,6 +207,19 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 			else
 			{
 				outFrame = makeFrameWithPinId(0, motionVectorPinId);
+			}
+			if (sendOverlayFrame == false) {
+				const AVMotionVector* mvs = (const AVMotionVector*)sideData->data;
+				for (int i = 0; i < sideData->size / sizeof(*mvs); i++)
+				{
+					const AVMotionVector* mv = &mvs[i];
+
+					if (std::abs(mv->motion_x) > threshold || std::abs(mv->motion_y) > threshold)
+					{
+						motionFound = true;
+						break;
+					}
+				}
 			}
 			av_packet_unref(pkt);
 			av_frame_unref(avFrame);
@@ -232,6 +251,7 @@ void DetailOpenH264::initDecoder()
 
 void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
 {
+	motionFound = false;
 	uint8_t* pData[3] = { NULL };
 	pData[0] = NULL;
 	pData[1] = NULL;
@@ -244,8 +264,15 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 	int32_t mMotionVectorSize = mWidth * mHeight * 8;
 	int16_t* mMotionVectorData = nullptr;
 	memset(&pDstInfo, 0, sizeof(SBufferInfo));
-	outFrame = makeFrameWithPinId(mMotionVectorSize, motionVectorPinId);
-	mMotionVectorData = static_cast<int16_t*>(outFrame->data());
+	if (sendOverlayFrame) 
+	{
+        outFrame = makeFrameWithPinId(mMotionVectorSize,motionVectorPinId);   
+		mMotionVectorData = static_cast<int16_t *>(outFrame->data());
+	}
+	else
+	{
+        mMotionVectorData = static_cast<int16_t *>(malloc(mMotionVectorSize * sizeof(int16_t)));   
+	}
 
 	if (sDecParam.bParseOnly)
 	{
@@ -256,7 +283,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		pDecoder->DecodeFrameGetMotionVectorsNoDelay(pSrc, iSrcLen, ppDst, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
 	}
 
-	if (mMotionVectorSize != mWidth * mHeight * 8)
+	if (mMotionVectorSize != mWidth * mHeight * 8 && sendOverlayFrame == true)
 	{
 		std::vector<CircleOverlay> circleOverlays;
 		CompositeOverlay compositeOverlay;
@@ -273,6 +300,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 				circleOverlay.radius = 1;
 
 				circleOverlays.push_back(circleOverlay);
+				motionFound = true;
 			}
 		}
 
@@ -290,8 +318,19 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 			frames.insert(make_pair(motionVectorPinId, outFrame));
 		}
 	}
-
-	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
+	if(sendOverlayFrame == false){
+		for (int i = 0; i < mMotionVectorSize; i += 4)
+		{
+			auto motionX = mMotionVectorData[i];
+			auto motionY = mMotionVectorData[i + 1];
+			if (abs(motionX) > threshold || abs(motionY) > threshold)
+			{
+				motionFound = true;
+				break;
+			}
+		}
+	}
+	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8) && motionFound == true)
 	{
 		decodedFrame = makeFrameWithPinId(mHeight * 3 * mWidth, rawFramePinId);
 		uint8_t* yuvImagePtr = (uint8_t*)malloc(mHeight * 1.5 * pDstInfo.UsrData.sSystemBuffer.iStride[0]);
@@ -322,9 +361,12 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 	{
 		mDetail.reset(new DetailOpenH264(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
 	}
-	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
+	if (props.sendOverlayFrame)
+	{
+		auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
+		mDetail->motionVectorPinId = addOutputPin(motionVectorOutputMetadata);
+	}
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
-	mDetail->motionVectorPinId = addOutputPin(motionVectorOutputMetadata);
 	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
 }
 bool MotionVectorExtractor::init()
