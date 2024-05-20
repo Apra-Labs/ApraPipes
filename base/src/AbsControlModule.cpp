@@ -65,8 +65,8 @@ std::string AbsControlModule::enrollModule(PipeLine p, std::string role, boost::
     std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
     if (moduleRoles.find(pipelineRole) != moduleRoles.end())
     {
-        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" << moduleRoles[pipelineRole] + "> in PipeLine <" + p.getName() + ">";
-        LOG_ERROR << errmsg;
+        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + p.getName() + ">";
+        LOG_ERROR << errMsg;
         throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
     }
     moduleRoles[pipelineRole] = module;
