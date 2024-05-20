@@ -332,25 +332,40 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 	}
 	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8) && motionFound == true)
 	{
+		int rowIndex;
+		unsigned char *pPtr = NULL;
 		decodedFrame = makeFrameWithPinId(mHeight * 3 * mWidth, rawFramePinId);
-		uint8_t* yuvImagePtr = (uint8_t*)malloc(mHeight * 1.5 * pDstInfo.UsrData.sSystemBuffer.iStride[0]);
+		uint8_t* yuvImagePtr = (uint8_t*)malloc(mHeight * 1.5 * mWidth);
 		auto yuvStartPointer = yuvImagePtr;
-		unsigned char* pY = pDstInfo.pDst[0];
-		memcpy(yuvImagePtr, pY, pDstInfo.UsrData.sSystemBuffer.iStride[0] * mHeight);
-		unsigned char* pU = pDstInfo.pDst[1];
-		yuvImagePtr += pDstInfo.UsrData.sSystemBuffer.iStride[0] * mHeight;
-		memcpy(yuvImagePtr, pU, pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2);
-		unsigned char* pV = pDstInfo.pDst[2];
-		yuvImagePtr += pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2;
-		memcpy(yuvImagePtr, pV, pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2);
+		pPtr = pData[0];
+		for (rowIndex = 0; rowIndex < mHeight; rowIndex++) {
+			memcpy(yuvImagePtr, pPtr, mWidth);
+			pPtr += pDstInfo.UsrData.sSystemBuffer.iStride[0];
+			yuvImagePtr += mWidth;
+		}
+		int halfHeight = mHeight / 2;
+		int halfWidth = mWidth / 2;
+		pPtr = pData[1];
+		for (rowIndex = 0; rowIndex < halfHeight; rowIndex++) {
+			memcpy(yuvImagePtr, pPtr, halfWidth);
+			pPtr += pDstInfo.UsrData.sSystemBuffer.iStride[1];
+			yuvImagePtr += halfWidth;
+		}
+		pPtr = pData[2];
+		for (rowIndex = 0; rowIndex < halfHeight; rowIndex++) {
+			memcpy(yuvImagePtr, pPtr, halfWidth);
+			pPtr += pDstInfo.UsrData.sSystemBuffer.iStride[1];
+			yuvImagePtr += halfWidth;
+		}
 
-		cv::Mat yuvImgCV = cv::Mat(mHeight + mHeight / 2, mWidth, CV_8UC1, yuvStartPointer, pDstInfo.UsrData.sSystemBuffer.iStride[0]);
+		cv::Mat yuvImgCV = cv::Mat(mHeight + mHeight / 2, mWidth, CV_8UC1, yuvStartPointer, mWidth);
 		bgrImg.data = static_cast<uint8_t*>(decodedFrame->data());
 
 		cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
 		frames.insert(make_pair(rawFramePinId, decodedFrame));
 	}
 }
+
 MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props)
 {
 	if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::FFMPEG)
