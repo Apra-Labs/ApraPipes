@@ -571,20 +571,20 @@ public:
 		{
 			int seekedToFrame = -1;
 			uint64_t skipMsecsInFile = 0;
-
-			if (!mState.startTimeStampFromFile)
+                        
+			if (!mState.resolvedStartingTS)
 			{
 				LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
 				return false;
 			}
-			if (skipTS < mState.startTimeStampFromFile)
+			if (skipTS < mState.resolvedStartingTS)
 			{
 				LOG_INFO << "seek time outside range. Seeking to start of video.";
 				skipMsecsInFile = 0;
 			}
 			else
 			{
-				skipMsecsInFile = skipTS - mState.startTimeStampFromFile;
+				skipMsecsInFile = skipTS - mState.resolvedStartingTS;
 			}
 
 			LOG_INFO << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
