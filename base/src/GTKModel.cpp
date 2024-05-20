@@ -1,4 +1,4 @@
-
+// source: https://github.com/aklomp/gtk3-opengl/blob/master/model.c
 #include <stdlib.h>
 #include <iostream>
 #include <stddef.h>

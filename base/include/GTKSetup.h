@@ -1,3 +1,4 @@
+// source: https://github.com/aklomp/gtk3-opengl/blob/master/program.c
 #include <GL/gl.h>
 
 void initProgram (void);

@@ -1,14 +1,5 @@
+// source: https://github.com/aklomp/gtk3-opengl/blob/master/view.c
 #include "GTKMatrix.h"
-
-// static struct {
-// 	float matrix[16];
-// 	float width;
-// 	float height;
-// 	float z;
-// }
-// state = {
-// 	.z = 2.0f,
-// };
 
 struct State {
     float matrix[16];

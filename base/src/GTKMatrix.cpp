@@ -1,3 +1,4 @@
+// source: https://github.com/aklomp/gtk3-opengl/blob/master/matrix.c
 #include <math.h>
 
 void
