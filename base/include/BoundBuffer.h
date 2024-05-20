@@ -5,7 +5,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/bind/bind.hpp>
-#include <iostream>
 using namespace boost::placeholders;
 
 template <class T>
@@ -46,7 +45,7 @@ public:
 		bool isCommandQueueNotFull = m_unread < m_capacity * 2;
 		if (m_accept && isCommandQueueNotFull)
 		{
-			std::cout << "command pushed" << std::endl;
+			LOG_TRACE << "command pushed" << std::endl;
 			m_container.push_back(item);
 			++m_unread;
 			lock.unlock();

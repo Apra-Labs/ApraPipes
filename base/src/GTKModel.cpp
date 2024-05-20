@@ -12,8 +12,8 @@
 #include <GL/glut.h>
 #endif
 // #include <opencv2/opencv.hpp>
-#include "Matrix.h"
-#include "Program.h"
+#include "GTKMatrix.h"
+#include "GTKSetup.h"
 #include "GLUtils.h"
 
 static GLuint vao, vbo;

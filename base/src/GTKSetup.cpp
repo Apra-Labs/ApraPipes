@@ -3,19 +3,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//yash change
-// #include <GL/gl.h>
+
 #ifndef GL_H
 #define GL_H
 #include <GL/glew.h>
 #include <GL/glut.h>
-// #include <GL/gl.h>
-// #include <GL/glext.h>
 #endif
+
 #include <GL/gl.h>
-#include "Model.h"
-#include "View.h"
-#include "Program.h"
+#include "GTKModel.h"
+#include "GTKView.h"
+#include "GTKSetup.h"
 #include "GLUtils.h"
 
 const GLchar  *BKGD_VERTEX_SOURCE =

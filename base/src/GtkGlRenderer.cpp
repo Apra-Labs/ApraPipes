@@ -9,11 +9,11 @@
 #include "DMAFDWrapper.h"
 #endif
 #include "Background.h"
-#include "Matrix.h"
-#include "Model.h"
-#include "Program.h"
+#include "GTKMatrix.h"
+#include "GTKModel.h"
+#include "GTKSetup.h"
 #include "GLUtils.h"
-#include "View.h"
+#include "GTKView.h"
 
 struct signal
 {
@@ -285,7 +285,7 @@ bool GtkGlRenderer::process(frame_container &frames)
 
     if ((controlModule != nullptr) && (myNumber % 2 == 1))
 	{
-		Rendertimestamp cmd;
+		SendLastGTKGLRenderTS cmd;
 		auto myTime = frames.cbegin()->second->timestamp;
 		cmd.currentTimeStamp = myTime;
 		controlModule->queueCommand(cmd);
@@ -326,7 +326,7 @@ void GtkGlRenderer::processQueue()
 
             if ((controlModule != nullptr) && (myNumber % 2 == 1))
             {
-                Rendertimestamp cmd;
+                SendLastGTKGLRenderTS cmd;
                 auto myTime = frame->timestamp;
                 cmd.currentTimeStamp = myTime;
                 controlModule->queueCommand(cmd);

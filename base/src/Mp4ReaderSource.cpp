@@ -521,7 +521,7 @@ public:
 			LOG_ERROR << msg;
 			std::string previousFile;
 			std::string nextFile;
-			cof->getPreviosAndNextFile(mState.mVideoPath, previousFile, nextFile);
+			cof->getPreviousAndNextFile(mState.mVideoPath, previousFile, nextFile);
 			throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
 		}
 

@@ -12,17 +12,17 @@ public:
 		Relay,
 		Step,
 		ValvePassThrough,
-		MultimediaQueueXform,
+		ExportMMQ,
 		Seek,
+		MP4WriterLastTS,
+		Mp4ErrorHandle,
+		PlayPause,
 		DeleteWindow,
 		CreateWindow,
-		PlayPause,
-		NVRCommandExportView,
-		MP4WriterLastTS,
-		MMQtimestamps,
-		Rendertimestamp,
-		RenderPlayPause,
-		Mp4ErrorHandle
+		/* NVR Commands */
+		NVRCommandExportView = 1000,
+		SendMMQTimestamps,
+		SendLastGTKGLRenderTS
 	};
 
 	Command()
@@ -252,16 +252,16 @@ private:
 	}
 };
 
-class MultimediaQueueXformCommand : public Command
+class ExportMMQ : public Command
 {
 public:
-	MultimediaQueueXformCommand() : Command(Command::CommandType::MultimediaQueueXform)
+	ExportMMQ() : Command(Command::CommandType::ExportMMQ)
 	{
 	}
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(startTime) + sizeof(endTime);
+		return Command::getSerializeSize() + sizeof(startTime) + sizeof(endTime) + sizeof(direction);
 	}
 
 	int64_t startTime = 0;
@@ -314,40 +314,6 @@ private:
 	}
 };
 
-//NVRCommands
-
-class NVRCommandExportView : public Command
-{
-public:
-	NVRCommandExportView() : Command(Command::CommandType::NVRCommandExportView)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(startViewTS) + sizeof(stopViewTS);
-	}
-
-	uint64_t startViewTS = 0;
-	uint64_t stopViewTS = 0;
-	bool direction = true;
-	bool mp4ReaderExport = false;
-	bool onlyDirectionChange = false;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& startViewTS;
-		ar& stopViewTS;
-		ar& direction;
-		ar& mp4ReaderExport;
-		ar& onlyDirectionChange;
-	}
-};
-
 class MP4WriterLastTS : public Command
 {
 public:
@@ -374,10 +340,10 @@ private:
 	}
 };
 
-class MMQtimestamps : public Command
+class SendMMQTimestamps : public Command
 {
 public:
-	MMQtimestamps() : Command(Command::CommandType::MMQtimestamps)
+	SendMMQTimestamps() : Command(Command::CommandType::SendMMQTimestamps)
 	{
 	}
 
@@ -405,34 +371,6 @@ private:
 		ar& moduleId;
 	}
 };
-
-class Rendertimestamp : public Command
-{
-public:
-	Rendertimestamp() : Command(Command::CommandType::Rendertimestamp)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(currentTimeStamp) +sizeof(moduleId);
-	}
-
-	uint64_t currentTimeStamp = 0;
-	std::string moduleId;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& currentTimeStamp;
-		ar& moduleId;
-	}
-};
-
-
 
 class PlayPauseCommand : public Command
 {
@@ -470,30 +408,6 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& speed;
 		ar& direction;
-	}
-};
-
-class RenderPlayPause : public Command
-{
-public:
-	RenderPlayPause() : Command(Command::CommandType::RenderPlayPause)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(pauseRenderer);
-	}
-
-	bool pauseRenderer;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& pauseRenderer;
 	}
 };
 

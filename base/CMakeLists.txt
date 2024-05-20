@@ -260,6 +260,20 @@ IF(ENABLE_LINUX)
 	list(APPEND CORE_FILES_H include/KeyboardListener.h)
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
+	SET(GTKGL_FILES_H include/Background.h
+		include/GLUtils.h
+		include/GtkGlRenderer.h
+		include/GTKMatrix.h
+		include/GTKModel.h
+		include/GTKSetup.h
+		include/GTKView.h
+	)
+	SET(GTK_GL_CPP src/Background.cpp
+		src/GtkGlRenderer.cpp
+		src/GTKMatrix.cpp
+		src/GTKModel.cpp
+		src/GTKSetup.cpp
+		src/GTKView.cpp)
 ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
@@ -389,12 +403,6 @@ ELSE()
 		src/H264EncoderNVCodec.cpp
 		src/H264DecoderNvCodecHelper.cpp
 		src/H264DecoderNvCodecHelper.h
-		src/Background.cpp
-		src/GtkGlRenderer.cpp
-		src/Matrix.cpp
-		src/Model.cpp
-		src/Program.cpp
-		src/View.cpp
 		)
 ENDIF(ENABLE_ARM64)
 
@@ -443,13 +451,6 @@ ELSE()
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
-		include/Background.h
-		include/GLUtils.h
-		include/GtkGlRenderer.h
-		include/Matrix.h
-		include/Model.h
-		include/Program.h
-		include/View.h
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -466,6 +467,12 @@ IF(ENABLE_CUDA)
 		${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
 	)
 ENDIF(ENABLE_CUDA)
+
+IF(ENABLE_LINUX)
+    set(SOURCE ${SOURCE} 
+	${GTKGL_FILES_H} ${GTKGL_FILES_CPP}
+	)
+ENDIF(ENABLE_LINUX)
 
 add_library(aprapipes STATIC ${SOURCE})
 

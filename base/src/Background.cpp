@@ -1,13 +1,10 @@
 #include <gdk/gdk.h>
-//yash change
-// #include <GL/gl.h>
 #ifndef GL_H
 #define GL_H
 #include <GL/glew.h>
 #include <GL/glut.h>
 #endif
-// #include <GL/gl.h>
-#include "Program.h"
+#include "GTKSetup.h"
 
 static GLuint texture;
 static GLuint vao, vbo;

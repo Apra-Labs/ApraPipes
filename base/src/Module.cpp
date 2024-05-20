@@ -1089,7 +1089,7 @@ bool Module::queueStep()
 	return queueCommand(cmd);
 }
 
-bool Module::relay(boost::shared_ptr<Module> next, bool open)
+bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
 {
 	auto nextModuleId = next->getId();
 	if (mModules.find(nextModuleId) == mModules.end())
@@ -1099,7 +1099,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	}
 
 	auto cmd = RelayCommand(nextModuleId, open);
-	return queueCommand(cmd, true);
+	return queueCommand(cmd, priority);
 }
 
 void Module::flushQueRecursive()

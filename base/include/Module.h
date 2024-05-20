@@ -157,7 +157,7 @@ public:
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
 
-	bool relay(boost::shared_ptr<Module> next, bool open);
+	bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
 		
 	virtual bool init();
 	void operator()(); //to support boost::thread
@@ -179,27 +179,6 @@ public:
 	virtual void flushQue();
 	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
-	template<class T>
-	bool queueCommand(T& cmd, bool priority = false)
-	{
-		auto size = cmd.getSerializeSize();
-		auto frame = makeCommandFrame(size, mCommandMetadata);
-
-		Utils::serialize(cmd, frame->data(), size);
-
-		// add to que
-		frame_container frames;
-		frames.insert(make_pair("command", frame));
-		if(priority)
-		{
-			Module::push_back(frames);
-		}
-		else
-		{
-			Module::push(frames);
-		}
-		return true;
-	}
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
@@ -245,6 +224,28 @@ protected:
 		// set props		
 		Module::setProps(props);
 
+		return true;
+	}
+
+	template<class T>
+	bool queueCommand(T& cmd, bool priority = false)
+	{
+		auto size = cmd.getSerializeSize();
+		auto frame = makeCommandFrame(size, mCommandMetadata);
+
+		Utils::serialize(cmd, frame->data(), size);
+
+		// add to que
+		frame_container frames;
+		frames.insert(make_pair("command", frame));
+		if(priority)
+		{
+			Module::push_back(frames);
+		}
+		else
+		{
+			Module::push(frames);
+		}
 		return true;
 	}
 

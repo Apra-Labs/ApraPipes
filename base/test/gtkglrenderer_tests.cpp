@@ -526,7 +526,7 @@ void on_button_clicked()
 
 BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 {
-	if (!gtk_init_check(NULL, NULL)) // yash argc argv
+	if (!gtk_init_check(NULL, NULL))
 	{
 		fputs("Could not initialize GTK", stderr);
 	}
@@ -552,25 +552,16 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 
 	GtkWidget *mainFixed = GTK_WIDGET(gtk_builder_get_object(m_builder, "A_liveScreen"));
 	gtk_container_add(GTK_CONTAINER(window), mainFixed);
-	// GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(m_builder, "button"));
-    // g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
 
 	glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
     glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw1"));
 	std::cout << "Printing Pointer of Old & New GL AREA" << glarea << "======== " << glAreaSwitch  << std::endl; 
 
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL); 
-	//g_signal_connect(glarea, "size-allocate", G_CALLBACK(my_getsize), NULL);
-	// launchPipeline1();
-	//launchPipeline2();
-	// laucX86Pipeline();
+
 	laucX86RTSPPipeline();
     gtk_widget_show_all(window);
-	
-	// g_timeout_add(2000, hideWidget, NULL);
-	// g_timeout_add(5000, hide_gl_area, NULL);
-	// g_timeout_add(7000, change_gl_area, NULL);
-	// g_timeout_add(9000, show_gl_area, NULL);
+
 	gtk_main();
 
 	p.stop();
