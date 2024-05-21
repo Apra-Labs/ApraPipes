@@ -7,6 +7,7 @@ public:
   bool setupPipeline();
   bool startPipeline();
   bool stopPipeline();
+  void test();
 
 private:
   PipeLine pipeline;

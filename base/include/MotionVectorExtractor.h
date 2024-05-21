@@ -21,7 +21,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold);
+		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold) + sizeof(sendOverlayFrame);
 	}
 	bool sendDecodedFrame = false;
 	bool sendOverlayFrame = false;
@@ -36,6 +36,7 @@ private:
 		ar& boost::serialization::base_object<ModuleProps>(*this);
 		ar& sendDecodedFrame;
 		ar& motionVectorThreshold;
+		ar& sendOverlayFrame;
 	}
 };
 
