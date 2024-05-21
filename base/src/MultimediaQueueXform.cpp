@@ -678,17 +678,20 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		queryEndTime = cmd.endTime;
 		endTimeSaved = cmd.endTime;
 		direction = cmd.direction;
-		LOG_ERROR << "start time = " << cmd.startTime;
-		LOG_ERROR << "end time = " <<  cmd.endTime;
-		LOG_ERROR << "direction = " << cmd.direction;
-		LOG_ERROR << "state = " << mState->Type;
-		LOG_ERROR << "mmq begin ts = " << mState->queueObject->mQueue.begin()->first;
+		LOG_INFO << "start time = " << cmd.startTime;
+		LOG_INFO << "end time = " <<  cmd.endTime;
+		LOG_INFO << "direction = " << cmd.direction;
+		LOG_INFO << "state = " << mState->Type;
+		LOG_INFO << "mmq begin ts = " << mState->queueObject->mQueue.begin()->first;
+		auto itttr =   mState->queueObject->mQueue.end();
+		itttr--;
+		LOG_INFO << "mmq end ts = " << itttr->first;
 		bool reset = false;
 		pushToNextModule = true;
 
 		if (mState->Type == State::EXPORT)
 		{
-			LOG_ERROR << "inside state export block";
+			LOG_INFO << "inside state export block";
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
 			State::mQueueMap::iterator it;
 			if (direction)
@@ -700,17 +703,29 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 				it = mState->queueObject->mQueue.end();
 				if (!mState->queueObject->mQueue.empty()){
 					it--;
-					it--;
+					// it--;
 				}
 				else{
-					LOG_ERROR<<"Queue is empty";
+					LOG_INFO<<"Queue is empty";
 				}
+			}
+			State::mQueueMap::iterator it_last;
+			it_last = mState->queueObject->mQueue.end();
 
+			State::mQueueMap::iterator it_first;
+			it_first = mState->queueObject->mQueue.begin();
+			if (!mState->queueObject->mQueue.empty()){
+				it_last--;
+				if (direction && (queryStartTime >= it->first) && ( queryStartTime <= it_last->first))
+				{
+					exportFrames = true;
+				}
+				else if (!direction && (queryEndTime <= it->first) && ( queryEndTime >= it_first->first))
+				{
+					exportFrames = true;
+				}
 			}
-			if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
-			{
-				exportFrames = true;
-			}
+
 			while (!mState->queueObject->mQueue.empty() && exportFrames == true)//&& it != mState->queueObject->mQueue.end()
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
@@ -720,7 +735,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						pushToNextModule = false;
 						queryStartTime = it->first;
 						queryStartTime--;
-						//BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for queue to be free";
+						LOG_INFO << "The Queue of Next Module is full, waiting for queue to be free";
 						return true;
 					}
 					else
@@ -774,6 +789,9 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					}
 					else //(!mState->queueObject->mQueue.empty())
 					{
+						auto lastItr = mState->queueObject->mQueue.end();
+						lastItr--;
+						queryEndTime = lastItr->first;
 						it++;
 					}
 				}
@@ -796,10 +814,9 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							cmd.direction = direction;
 							cmd.mp4ReaderExport = true;
 							controlModule->queueCommand(cmd, true);
-							LOG_ERROR << "state = " << mState->Type;
+							exportFrames = false;
 						}
 						mState->Type = State::IDLE;
-						LOG_ERROR << "first frame of handle command = " << latestFrameExportedFromHandleCmd;
 						break;
 					}
 				}
@@ -808,7 +825,6 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 		if (mState->Type == mState->EXPORT)
 		{
 			uint64_t tOld = 0, tNew = 0;
-			//getQueueBoundaryTS(tOld, tNew);
 			tNew = latestFrameExportedFromHandleCmd;
 
 			if (endTimeSaved > tNew)
@@ -874,18 +890,25 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			it = mState->queueObject->mQueue.end();
 			if (!mState->queueObject->mQueue.empty()){
 				it--;
-				it--;
 			}
 			else
 			{
 				LOG_ERROR << "Queue is empty";
 			}
 		}
-		if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
+		State::mQueueMap::iterator it_last;
+		it_last = mState->queueObject->mQueue.end();
+		if (!mState->queueObject->mQueue.empty()){
+			it_last--;
+			if (direction && (queryStartTime >= it->first) && ( queryStartTime <= it_last->first))
 			{
 				exportFrames = true;
-				LOG_ERROR << "Setting exportFrames as True";
 			}
+			else if (!direction && (queryEndTime >= it->first) && ( queryEndTime <= it_last->first))
+			{
+				exportFrames = true;
+			}
+		}
 		while (!mState->queueObject->mQueue.empty() && exportFrames == true) //&& it != mState->queueObject->mQueue.end()
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
@@ -895,7 +918,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					pushToNextModule = false;
 					queryStartTime = it->first;
 					queryStartTime--;
-					//BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
+					LOG_INFO << "The Queue of Next Module is full, waiting for some space to be free";
 					return true;
 				}
 				else
@@ -975,6 +998,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						cmd.direction = direction;
 						cmd.mp4ReaderExport = true;
 						controlModule->queueCommand(cmd, true);
+						exportFrames = false;
 					}
 					mState->Type = State::IDLE;
 					LOG_ERROR << "first frame of process = " << latestFrameExportedFromProcess;
@@ -1028,6 +1052,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 void MultimediaQueueXform::setMmqFps(int fps)
 {
 	mProps.mmqFps = fps;
+	mProps.mmqFps--;
 }
 
 void MultimediaQueueXform::setPlaybackSpeed(float playbackSpeed)

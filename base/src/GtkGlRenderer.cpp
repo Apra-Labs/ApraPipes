@@ -242,6 +242,7 @@ public:
     guint realizeId;
     guint renderId;
     guint resizeId;
+    bool isPlaybackRenderer = true;
 };
 
 GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props) : Module(SINK, "GtkGlRenderer", props)
@@ -250,6 +251,7 @@ GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props) : Module(SINK, "GtkGlRend
     mDetail->glarea = props.glArea;
     mDetail->windowWidth = props.windowWidth;
     mDetail->windowHeight = props.windowHeight;
+    mDetail->isPlaybackRenderer = props.isPlaybackRenderer;
     //LOG_ERROR<<"i am creating gtkgl renderer width and height is "<<mDetail->mProps.windowWidth;
 }
 
@@ -276,12 +278,10 @@ bool GtkGlRenderer::process(frame_container &frames)
     // LOG_ERROR << "GOT "
     auto frame = frames.cbegin()->second;
     mDetail->cachedFrame = frame;
-    size_t underscorePos = myId.find('_');
-    std::string numericPart = myId.substr(underscorePos + 1);
-    int myNumber = std::stoi(numericPart);
 
-    if ((controlModule != nullptr) && (myNumber % 2 == 1))
-	{
+
+    if ((controlModule != nullptr && mDetail->isPlaybackRenderer == true))
+    {
 		Rendertimestamp cmd;
 		auto myTime = frames.cbegin()->second->timestamp;
 		cmd.currentTimeStamp = myTime;
@@ -296,39 +296,6 @@ void GtkGlRenderer::pushFrame(frame_sp frame)
 {
     std::lock_guard<std::mutex> lock(queueMutex);
     frameQueue.push(frame);
-}
-
-void GtkGlRenderer::processQueue()
-{
-    auto currentTime = std::chrono::steady_clock::now();
-    auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime).count();
-
-    std::lock_guard<std::mutex> lock(queueMutex);
-    if (!frameQueue.empty())
-    {
-        auto frame = frameQueue.front();
-        frameQueue.pop();
-        auto myId = Module::getId();
-       
-        if (timeDiff >= 33)
-        {
-            // LOG_ERROR << "GOT "
-            mDetail->cachedFrame = frame;
-            size_t underscorePos = myId.find('_');
-            std::string numericPart = myId.substr(underscorePos + 1);
-            int myNumber = std::stoi(numericPart);
-
-            if ((controlModule != nullptr) && (myNumber % 2 == 1))
-            {
-                Rendertimestamp cmd;
-                auto myTime = frame->timestamp;
-                cmd.currentTimeStamp = myTime;
-                controlModule->queueCommand(cmd);
-                // LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
-            }
-            lastFrameTime = currentTime;
-        }
-    }
 }
 
 // Need to check on Mem Type Supported
