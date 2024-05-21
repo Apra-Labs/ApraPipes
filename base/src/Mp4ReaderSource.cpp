@@ -11,6 +11,8 @@
 #include "AIPExceptions.h"
 #include "Mp4ErrorFrame.h"
 #include "Module.h"
+#include "AbsControlModule.h"
+
 
 class Mp4ReaderDetailAbs
 {
@@ -505,13 +507,10 @@ public:
 				mDirection = mState.direction;
 				mDurationInSecs = mState.info.duration / mState.info.timescale;
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
-				if ((controlModule != nullptr))
-				{
-					mProps.fps = mFPS;
-					LOG_INFO << "fps of new video is = " << mFPS;
-					setMp4ReaderProps(mProps);
-					LOG_INFO << "did set Mp4reader props";	
-				}
+				mProps.fps = mFPS;
+				LOG_INFO << "fps of new video is = " << mFPS;
+				setMp4ReaderProps(mProps);
+				LOG_INFO << "did set Mp4reader props";	
 			}
 		}
 
@@ -771,7 +770,9 @@ public:
 					Mp4ErrorHandle cmd;
 					cmd.previousFile = ex.getPreviousFile();
 					cmd.nextFile = ex.getNextFile();
-					controlModule->queueCommand(cmd, true);
+					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
+					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					ctl->handleMp4MissingVideotrack();
 					return false;
 				}
 			}
@@ -822,7 +823,9 @@ public:
 					Mp4ErrorHandle cmd;
 					cmd.previousFile = ex.getPreviousFile();
 					cmd.nextFile = ex.getNextFile();
-					controlModule->queueCommand(cmd, true);
+					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
+					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					ctl->handleMp4MissingVideotrack();
 					return;
 				}
 			}
