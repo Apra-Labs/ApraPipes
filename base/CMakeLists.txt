@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
-set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -52,6 +51,17 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+
+
+IF(ENABLE_LINUX)
+	find_package(GLEW REQUIRED)
+	find_package(glfw3 CONFIG REQUIRED)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GIO REQUIRED gio-2.0)
+	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
+	pkg_check_modules(GLFW REQUIRED glfw3)
+ENDIF()
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -126,7 +136,6 @@ IF(ENABLE_CUDA)
 			nppial.lib					
 			cublas.lib	
 			cublasLt.lib
-			
 		)
 		include_directories(AFTER SYSTEM "$ENV{CUDA_PATH}/include")
 	ENDIF(ENABLE_ARM64)
@@ -477,14 +486,14 @@ ENDIF(ENABLE_LINUX)
 add_library(aprapipes STATIC ${SOURCE})
 
 target_include_directories ( aprapipes PRIVATE 
-${JETSON_MULTIMEDIA_LIB_INCLUDE}
-${FFMPEG_INCLUDE_DIRS} 
-${OpenCV_INCLUDE_DIRS} 
-${Boost_INCLUDE_DIRS}
-${LIBMP4_INC_DIR}
-${BARESIP_INC_DIR}
-${LIBRE_INC_DIR}
-${NVCODEC_INCLUDE_DIR}
+	${JETSON_MULTIMEDIA_LIB_INCLUDE}
+	${FFMPEG_INCLUDE_DIRS} 
+	${OpenCV_INCLUDE_DIRS} 
+	${Boost_INCLUDE_DIRS}
+	${LIBMP4_INC_DIR}
+	${BARESIP_INC_DIR}
+	${LIBRE_INC_DIR}
+	${NVCODEC_INCLUDE_DIR}
 )
 
 
@@ -517,7 +526,6 @@ IF (ENABLE_CUDA)
 		test/rotatenppi_tests.cpp
 		test/ccnppi_tests.cpp
 		test/memtypeconversion_tests.cpp
-		test/gtkglrenderer_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -599,8 +607,13 @@ SET(UT_FILES
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
+		test/gtkglrenderer_tests.cpp
 	# test/virtualcamerasink_tests.cpp
 	# test/QRReader_tests.cpp
+	)
+	set(GTK_LIBRARIES
+		GLEW::GLEW
+		glfw
 	)
 ENDIF(ENABLE_LINUX)
 
@@ -621,8 +634,7 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-  GLEW::GLEW
-  glfw
+  ${GTK_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
@@ -638,7 +650,7 @@ target_link_libraries(aprapipesut
   ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
-  liblzma::liblzma
+  LibLZMA::LibLZMA
   bigint::bigint
   sfml-audio
   whisper::whisper

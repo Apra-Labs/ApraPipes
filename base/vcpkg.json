@@ -66,8 +66,11 @@
     "bzip2",
     "zlib",
     "sfml",
-    "gtk3",
     "brotli",
+    {
+      "name": "gtk3",
+      "platform": "!windows"
+    },
     {
       "name": "glib",
       "default-features": false,

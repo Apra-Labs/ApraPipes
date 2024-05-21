@@ -69,6 +69,7 @@ void secondPipeline()
 }
 boost::shared_ptr<GtkGlRenderer> laucX86Pipeline()
 {
+	string cameraURL = "rtsp://root:pwd@10.102.10.77/axis-media/media.amp";
 	auto fileReaderProps = FileReaderModuleProps("./data/frame_1280x720_rgb.raw", 0, -1);
     fileReaderProps.readLoop = true;
     fileReaderProps.fps = 300;
@@ -94,7 +95,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline()
 	rtsp_client_tests_data d;
 	d.outFile = "./data/testOutput/xyz_???.raw";
 
-	auto url=string("rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp"); 
+	auto url=string(cameraURL);
 	RTSPClientSrcProps rtspProps(url, d.empty, d.empty);
 	rtspProps.logHealth = true;
 	rtspProps.logHealthFrequency = 100;
@@ -122,7 +123,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline1()
 {
 #if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d;
-	string url = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
+	string url = cameraURL;
 
 	//RTSP
 	RTSPClientSrcProps rtspProps = RTSPClientSrcProps(url, d.empty, d.empty);
@@ -365,7 +366,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline6()
 {
 #if defined(__arm__) || defined(__aarch64__)
 	rtsp_client_tests_data d6;
-	string url6 = "rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp";
+	string url6 = cameraURL;
 
 	//RTSP
 	RTSPClientSrcProps rtspProps6 = RTSPClientSrcProps(url6, d6.empty, d6.empty);
