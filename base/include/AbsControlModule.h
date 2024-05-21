@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include "Module.h"
+#include "Command.h"
 
 class PipeLine;
 class AbsControlModuleProps : public ModuleProps
@@ -18,6 +19,10 @@ public:
 	bool term();
 	std::string enrollModule(PipeLine p, std::string role, boost::shared_ptr<Module> module);
 	std::pair<bool, boost::shared_ptr<Module>> getModuleofRole(PipeLine p, std::string role);
+    virtual void handleMp4MissingVideotrack() {}
+	virtual void handleMMQExport(Command cmd, bool priority = false) {}
+	virtual void handleMMQExportView(Command cmd, bool priority = false) {}
+	virtual void handleSendMMQTSCmd(SendMMQTimestamps cmd, bool priority = false) {}
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
 

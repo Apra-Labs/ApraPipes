@@ -10,6 +10,7 @@
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
 #include "FrameContainerQueue.h"
+#include "AbsControlModule.h"
 
 class FramesQueue
 {
@@ -665,7 +666,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 	LOG_INFO << "command received";
 	if (type == Command::CommandType::ExportMMQ)
 	{
-		MultimediaQueueXformCommand cmd;
+        ExportMMQ cmd;
 		getCommand(cmd, frame);
 		setState(cmd.startTime, cmd.endTime);
 		queryStartTime = cmd.startTime;
@@ -755,14 +756,18 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						if (mState->Type != State::IDLE)
 						{
+							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+							Command cmd;
+							bool pritority = true;
+							boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+							ctl->handleMMQExport(cmd, pritority);
+							/* Eventual example:
 							NVRCommandExportView cmd;
 							cmd.startViewTS = latestFrameExportedFromHandleCmd;
 							cmd.stopViewTS = 0;
 							cmd.direction = direction;
 							cmd.mp4ReaderExport = true;
-							controlModule->queueCommand(cmd, true);
-							LOG_INFO << "crashing here?" ;
-							LOG_INFO << "state = " << mState->Type;
+							ctl->handleMMQExport(cmd, true);*/
 						}
 						mState->Type = State::IDLE;
 						LOG_INFO << "first frame of handle command = " << latestFrameExportedFromHandleCmd;
@@ -860,8 +865,6 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						frame_begin = sys_clock::now();
 						initDone = true;
 					}
-					
-					LOG_INFO << "multimediaQueueSize = " << queueSize;	
 					frame_container outFrames;
 					auto outputId =  Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 					outFrames.insert(make_pair(outputId, it->second.begin()->second));
@@ -900,12 +903,17 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				{
 					if (mState->Type != State::IDLE)
 					{
+						// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+						Command cmd;
+						boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+						ctl->handleMMQExportView(cmd, true);
+						/* Eventual example:
 						NVRCommandExportView cmd;
 						cmd.startViewTS = latestFrameExportedFromProcess;
 						cmd.stopViewTS = 0;
 						cmd.direction = direction;
 						cmd.mp4ReaderExport = true;
-						controlModule->queueCommand(cmd, true);
+						ctl->handleMMQExportView(cmd, true);*/
 					}
 					mState->Type = State::IDLE;
 					LOG_INFO << "first frame of process = " << latestFrameExportedFromProcess;
@@ -939,6 +947,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		if (mState->queueObject->mQueue.size() != 0)
 		{
 			SendMMQTimestamps cmd;
+			bool priority = false;
 			auto front = mState->queueObject->mQueue.begin();
 			if (front != mState->queueObject->mQueue.end())
 			{
@@ -948,7 +957,9 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			auto back = mState->queueObject->mQueue.crbegin();
 			uint64_t lastTimeStamp = back->first;
 			cmd.lastTimeStamp = lastTimeStamp;
-			controlModule->queueCommand(cmd);
+			// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+			boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+			ctl->handleSendMMQTSCmd(cmd, priority);
 		}
 		return true;
 	}

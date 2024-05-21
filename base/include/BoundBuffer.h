@@ -5,6 +5,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/bind/bind.hpp>
+#include "Logger.h"
+
 using namespace boost::placeholders;
 
 template <class T>
