@@ -456,6 +456,7 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
+./../samples/timelapse-sample
 )
 
 
