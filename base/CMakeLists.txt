@@ -29,7 +29,7 @@ ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
 
-# add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
+add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -282,7 +282,9 @@ IF(ENABLE_LINUX)
 		src/GTKMatrix.cpp
 		src/GTKModel.cpp
 		src/GTKSetup.cpp
-		src/GTKView.cpp)
+		src/GTKView.cpp
+		test/gtkglrenderer_tests.cpp
+		)
 ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
@@ -553,42 +555,42 @@ SET(UT_FILES
 	test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
-	# test/filewritermodule_tests.cpp
-	# test/logger_tests.cpp
+	test/filewritermodule_tests.cpp
+	test/logger_tests.cpp
 #	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
-	# test/quepushstrategy_tests.cpp	
-	# test/framesmuxer_tests.cpp
-	# test/filereadermodule_tests.cpp
-	# test/merge_tests.cpp
-	# test/split_tests.cpp
-	# test/imagemetadata_tests.cpp
-	# test/bmpconverter_tests.cpp
+	test/quepushstrategy_tests.cpp	
+	test/framesmuxer_tests.cpp
+	test/filereadermodule_tests.cpp
+	test/merge_tests.cpp
+	test/split_tests.cpp
+	test/imagemetadata_tests.cpp
+	test/bmpconverter_tests.cpp
 	test/rtsppusher_tests.cpp
-	# test/findexstrategy_tests.cpp	
-	# test/jpegdecodercv_tests.cpp
-	# test/Imageresizecv_tests.cpp
-	# test/faciallandmarkscv_tests.cpp
-	# test/imageviewermodule_tests.cpp
-	# test/ImageEncodeCV_tests.cpp
-	# test/rotatecv_tests.cpp
-	# test/affinetransform_tests.cpp
-	# test/brightness_contrast_tests.cpp
-	# test/virtualptz_tests.cpp
-	# test/webcam_source_tests.cpp
-	# test/facedetectorXform_tests.cpp
-	# test/sound_record_tests.cpp
-	# test/pullstratergy_tests.cpp
-	# test/QRReader_tests.cpp
-	# test/textoverlayxform_tests.cpp
-	# test/mp4writersink_tests.cpp
-	# test/pipeline_tests.cpp
+	test/findexstrategy_tests.cpp	
+	test/jpegdecodercv_tests.cpp
+	test/Imageresizecv_tests.cpp
+	test/faciallandmarkscv_tests.cpp
+	test/imageviewermodule_tests.cpp
+	test/ImageEncodeCV_tests.cpp
+	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
+	test/brightness_contrast_tests.cpp
+	test/virtualptz_tests.cpp
+	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
+	test/sound_record_tests.cpp
+	test/pullstratergy_tests.cpp
+	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
+	test/mp4writersink_tests.cpp
+	test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	# test/valveModule_tests.cpp
-	# test/color_conversion_tests.cpp
-	# test/archivespacemanager_tests.cpp
-	# test/multimediaqueuexform_tests.cpp
-  	# test/mp4readersource_tests.cpp
-	# test/rtsp_client_tests.cpp
+	test/valveModule_tests.cpp
+	test/color_conversion_tests.cpp
+	test/archivespacemanager_tests.cpp
+	test/multimediaqueuexform_tests.cpp
+  	test/mp4readersource_tests.cpp
+	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/rtsp_client_tests.cpp
 	test/motionvector_extractor_and_overlay_tests.cpp
@@ -607,9 +609,9 @@ SET(UT_FILES
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-		test/gtkglrenderer_tests.cpp
-	# test/virtualcamerasink_tests.cpp
-	# test/QRReader_tests.cpp
+	test/gtkglrenderer_tests.cpp
+	test/virtualcamerasink_tests.cpp
+	test/QRReader_tests.cpp
 	)
 	set(GTK_LIBRARIES
 		GLEW::GLEW
