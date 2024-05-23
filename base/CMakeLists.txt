@@ -567,6 +567,10 @@ SET(UT_FILES
 	${CUDA_UT_FILES}
 )
 
+SET(SAMPLE_UT_FILES
+	.././samples/timelapse-sample/timelapse_summary_test.cpp
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -576,6 +580,8 @@ ENDIF(ENABLE_LINUX)
 
 
 add_executable(aprapipesut ${UT_FILES})
+
+add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
@@ -588,6 +594,29 @@ ENDIF (ENABLE_CUDA)
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+
+target_link_libraries(aprapipessampleut
+	aprapipes
+	${JPEG_LIBRARIES}
+	${LIBMP4_LIB}
+	${OPENH264_LIB}
+	${Boost_LIBRARIES}
+	${FFMPEG_LIBRARIES}
+	${OpenCV_LIBRARIES}
+	${JETSON_LIBS}
+	${NVCUDAToolkit_LIBS}
+	${NVCODEC_LIB}
+	${NVJPEGLIB_L4T}
+	${CURSES_LIBRARIES}
+	ZXing::Core
+	ZXing::ZXing	
+	BZip2::BZip2
+	ZLIB::ZLIB
+	liblzma::liblzma
+	bigint::bigint
+	sfml-audio
+	whisper::whisper
+)
 
 target_link_libraries(aprapipesut   
   aprapipes  

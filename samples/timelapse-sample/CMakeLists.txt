@@ -10,10 +10,7 @@ SET(SOURCE
   ${CORE_FILES}
   ${CORE_FILES_H}
 )
-SET(UT_FILE
-  timelapse_summary_test.cpp
-)
-add_executable(timelapsesample ${SOURCE} ${UT_FILE})
+add_executable(timelapsesample ${SOURCE})
 target_include_directories (timelapsesample PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
