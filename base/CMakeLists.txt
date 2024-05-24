@@ -35,8 +35,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(APRAPIPES)
 
-add_compile_options(-fpermissive)
-
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
