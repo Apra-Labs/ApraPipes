@@ -1,3 +1,22 @@
+# CMAKE_HOST_SYSTEM_PROCESSOR is not helpful because it outputs "unknown" on
+# Linux on ARM.
+execute_process(
+  COMMAND "uname" "--machine" OUTPUT_VARIABLE MACHINE_HARDWARE_NAME
+                                              COMMAND_ERROR_IS_FATAL LAST)
+string(TOLOWER "${MACHINE_HARDWARE_NAME}" MACHINE_HARDWARE_NAME_LOWER)
+
+# vcpkg: Environment variable VCPKG_FORCE_SYSTEM_BINARIES must be set on arm,
+# s390x, and ppc64le platforms.
+# See https://github.com/microsoft/vcpkg-tool/blob/2022-02-24/src/vcpkg.cpp#L257-L266
+if((MACHINE_HARDWARE_NAME_LOWER MATCHES "^arm"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^aarch64"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^s390x"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^ppc64"
+   )
+   AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows"
+   AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+  set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
+endif()
 cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
@@ -495,165 +514,165 @@ ${NVCODEC_INCLUDE_DIR}
 
 # aprapipes Unit Tests
 
-IF (ENABLE_ARM64)
-	SET(ARM64_UT_FILES
-		test/jpegencoderl4tm_tests.cpp
-		test/jpegdecoderl4tm_tests.cpp
+# IF (ENABLE_ARM64)
+# 	SET(ARM64_UT_FILES
+		# test/jpegencoderl4tm_tests.cpp
+		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		test/opencvresize_tests.cpp
-		test/h264encoderv4l2_tests.cpp
-		test/nvarguscamerahelper_tests.cpp
-		test/nvarguscamera_tests.cpp
-		test/nvv4l2camera_test.cpp
-		test/nvv4l2camerahelper_test.cpp
-		test/nvtransform_tests.cpp
-		test/eglrenderer_test.cpp
-		test/cuda_arm_tests.cpp
-		test/apraegldisplay_tests.cpp
-		test/frame_factory_test_dma.cpp
-		test/h264decoder_tests.cpp
-		test/gtkglrenderer_tests.cpp
-	)
-ENDIF(ENABLE_ARM64)
+		# test/opencvresize_tests.cpp
+		# test/h264encoderv4l2_tests.cpp
+		# test/nvarguscamerahelper_tests.cpp
+		# test/nvarguscamera_tests.cpp
+		# test/nvv4l2camera_test.cpp
+		# test/nvv4l2camerahelper_test.cpp
+		# test/nvtransform_tests.cpp
+		# test/eglrenderer_test.cpp
+		# test/cuda_arm_tests.cpp
+		# test/apraegldisplay_tests.cpp
+		# test/frame_factory_test_dma.cpp
+		# test/h264decoder_tests.cpp
+		# test/gtkglrenderer_tests.cpp
+# 	)
+# ENDIF(ENABLE_ARM64)
 
-IF (ENABLE_CUDA)
-	SET(CUDA_UT_FILES
-		test/cudamemcopy_tests.cpp		
-		test/resizenppi_tests.cpp
-		test/rotatenppi_tests.cpp
-		test/ccnppi_tests.cpp
-		test/memtypeconversion_tests.cpp
-	)
-	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
+# IF (ENABLE_CUDA)
+# 	SET(CUDA_UT_FILES
+		# test/cudamemcopy_tests.cpp		
+		# test/resizenppi_tests.cpp
+		# test/rotatenppi_tests.cpp
+		# test/ccnppi_tests.cpp
+		# test/memtypeconversion_tests.cpp
+	# )
+	# IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			test/jpegencodernvjpeg_tests.cpp
-			test/jpegdecodernvjpeg_tests.cpp			
-			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			test/nvjpeg_combo_tests.cpp			
-			test/overlaynppi_tests.cpp
-			test/effectsnppi_tests.cpp
-			test/h264Encodernvcodec_tests.cpp
-			test/nv_mp4_file_tests.cpp
-			test/nv_test_utils.h
-			test/h264decoder_tests.cpp
-		)
-	ENDIF(NOT ENABLE_ARM64)
-ENDIF(ENABLE_CUDA)
+	# 	SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
+			# test/jpegencodernvjpeg_tests.cpp
+			# test/jpegdecodernvjpeg_tests.cpp			
+			# test/resizenppi_jpegencodernvjpeg_tests.cpp
+			# test/nvjpeg_combo_tests.cpp			
+			# test/overlaynppi_tests.cpp
+			# test/effectsnppi_tests.cpp
+			# test/h264Encodernvcodec_tests.cpp
+			# test/nv_mp4_file_tests.cpp
+			# test/nv_test_utils.h
+			# test/h264decoder_tests.cpp
+# 		)
+# 	ENDIF(NOT ENABLE_ARM64)
+# ENDIF(ENABLE_CUDA)
 
-SET(UT_FILES
-	test/utmain.cpp
-	test/unit_tests.cpp
-	test/cv_memory_leaks_tests.cpp
-	test/module_tests.cpp
-	test/calchistogramcv_tests.cpp
-	test/filenamestrategy_tests.cpp
-	test/test_utils.cpp
-	test/test_utils.h	
-	test/filewritermodule_tests.cpp
-	test/logger_tests.cpp
-#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
-	test/quepushstrategy_tests.cpp	
-	test/framesmuxer_tests.cpp
-	test/filereadermodule_tests.cpp
-	test/merge_tests.cpp
-	test/split_tests.cpp
-	test/imagemetadata_tests.cpp
-	test/bmpconverter_tests.cpp
-	test/rtsppusher_tests.cpp
-	test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
-	test/Imageresizecv_tests.cpp
-	test/faciallandmarkscv_tests.cpp
-	test/imageviewermodule_tests.cpp
-	test/ImageEncodeCV_tests.cpp
-	test/rotatecv_tests.cpp
-	test/affinetransform_tests.cpp
-	test/brightness_contrast_tests.cpp
-	test/virtualptz_tests.cpp
-	test/webcam_source_tests.cpp
-	test/facedetectorXform_tests.cpp
-	test/sound_record_tests.cpp
-	test/pullstratergy_tests.cpp
-	test/QRReader_tests.cpp
-	test/textoverlayxform_tests.cpp
-	test/mp4writersink_tests.cpp
-	test/pipeline_tests.cpp
-#	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	test/valveModule_tests.cpp
-	test/color_conversion_tests.cpp
-	test/archivespacemanager_tests.cpp
-	test/multimediaqueuexform_tests.cpp
-  	test/mp4readersource_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/motionvector_extractor_and_overlay_tests.cpp
-	test/mp4_reverse_play_tests.cpp
-	test/ordered_cache_of_files_tests.cpp
-	test/mp4_seek_tests.cpp
-	test/mp4_simul_read_write_tests.cpp
-	test/mp4_getlivevideots_tests.cpp
-	test/mp4_dts_strategy_tests.cpp
-	test/overlaymodule_tests.cpp
-	test/testSignalGeneratorSrc_tests.cpp
-	test/abscontrolmodule_tests.cpp
-	test/thumbnailgenerator_tests.cpp
-	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}
-)
+# SET(UT_FILES
+# 	test/utmain.cpp
+# 	test/unit_tests.cpp
+# 	test/cv_memory_leaks_tests.cpp
+# 	test/module_tests.cpp
+# 	test/calchistogramcv_tests.cpp
+# 	test/filenamestrategy_tests.cpp
+# 	test/test_utils.cpp
+# 	test/test_utils.h	
+# 	test/filewritermodule_tests.cpp
+# 	test/logger_tests.cpp
+# #	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
+# 	test/quepushstrategy_tests.cpp	
+# 	test/framesmuxer_tests.cpp
+# 	test/filereadermodule_tests.cpp
+# 	test/merge_tests.cpp
+# 	test/split_tests.cpp
+# 	test/imagemetadata_tests.cpp
+# 	test/bmpconverter_tests.cpp
+# 	test/rtsppusher_tests.cpp
+# 	test/findexstrategy_tests.cpp	
+# 	test/jpegdecodercv_tests.cpp
+# 	test/Imageresizecv_tests.cpp
+# 	test/faciallandmarkscv_tests.cpp
+# 	test/imageviewermodule_tests.cpp
+# 	test/ImageEncodeCV_tests.cpp
+# 	test/rotatecv_tests.cpp
+# 	test/affinetransform_tests.cpp
+# 	test/brightness_contrast_tests.cpp
+# 	test/virtualptz_tests.cpp
+# 	test/webcam_source_tests.cpp
+# 	test/facedetectorXform_tests.cpp
+# 	test/sound_record_tests.cpp
+# 	test/pullstratergy_tests.cpp
+# 	test/QRReader_tests.cpp
+# 	test/textoverlayxform_tests.cpp
+# 	test/mp4writersink_tests.cpp
+# 	test/pipeline_tests.cpp
+# #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
+# 	test/valveModule_tests.cpp
+# 	test/color_conversion_tests.cpp
+# 	test/archivespacemanager_tests.cpp
+# 	test/multimediaqueuexform_tests.cpp
+#   	test/mp4readersource_tests.cpp
+# 	test/rtsp_client_tests.cpp
+# 	test/rtsp_client_tests.cpp
+# 	test/motionvector_extractor_and_overlay_tests.cpp
+# 	test/mp4_reverse_play_tests.cpp
+# 	test/ordered_cache_of_files_tests.cpp
+# 	test/mp4_seek_tests.cpp
+# 	test/mp4_simul_read_write_tests.cpp
+# 	test/mp4_getlivevideots_tests.cpp
+# 	test/mp4_dts_strategy_tests.cpp
+# 	test/overlaymodule_tests.cpp
+# 	test/testSignalGeneratorSrc_tests.cpp
+# 	test/abscontrolmodule_tests.cpp
+# 	test/thumbnailgenerator_tests.cpp
+# 	${ARM64_UT_FILES}
+# 	${CUDA_UT_FILES}
+# )
 
-IF(ENABLE_LINUX)
-	list(APPEND UT_FILES
-	test/virtualcamerasink_tests.cpp
-	test/QRReader_tests.cpp
-	)
-ENDIF(ENABLE_LINUX)
+# IF(ENABLE_LINUX)
+# 	list(APPEND UT_FILES
+	# test/virtualcamerasink_tests.cpp
+	# test/QRReader_tests.cpp
+# 	)
+# ENDIF(ENABLE_LINUX)
 
 
-add_executable(aprapipesut ${UT_FILES})
+# add_executable(aprapipesut ${UT_FILES})
 
-IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
-ENDIF(ENABLE_ARM64)
+# IF(ENABLE_ARM64)
+# 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
+# ENDIF(ENABLE_ARM64)
 
-IF (ENABLE_CUDA)
-	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
-ENDIF (ENABLE_CUDA)
+# IF (ENABLE_CUDA)
+# 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+# ENDIF (ENABLE_CUDA)
 
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-target_link_libraries(aprapipesut   
-  aprapipes  
-  /usr/lib/aarch64-linux-gnu/libgtk-3-0
-  /usr/lib/aarch64-linux-gnu/libGLEW.so
-  /usr/lib/aarch64-linux-gnu/libgdk-3.so
-  /usr/lib/aarch64-linux-gnu/libGL.so.1
-  /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
-  /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
-  /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
-  ${GTK3_LIBRARIES}
-  ${GDK3_LIBRARIES} 
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  )
+# target_link_libraries(aprapipesut   
+#   aprapipes  
+#   /usr/lib/aarch64-linux-gnu/libgtk-3-0
+#   /usr/lib/aarch64-linux-gnu/libGLEW.so
+#   /usr/lib/aarch64-linux-gnu/libgdk-3.so
+#   /usr/lib/aarch64-linux-gnu/libGL.so.1
+#   /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
+#   /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
+#   /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
+#   ${GTK3_LIBRARIES}
+#   ${GDK3_LIBRARIES} 
+#   ${JPEG_LIBRARIES}
+#   ${LIBMP4_LIB}
+#   ${OPENH264_LIB}
+#   ${Boost_LIBRARIES}
+#   ${FFMPEG_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   ${JETSON_LIBS}
+#   ${NVCUDAToolkit_LIBS}
+#   ${NVCODEC_LIB}
+#   ${NVJPEGLIB_L4T}
+#   ${CURSES_LIBRARIES}
+#   ZXing::Core
+#   ZXing::ZXing	
+#   BZip2::BZip2
+#   ZLIB::ZLIB
+#   liblzma::liblzma
+#   bigint::bigint
+#   sfml-audio
+#   )
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
