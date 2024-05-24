@@ -176,7 +176,8 @@ bool NvTransform::term()
 bool NvTransform::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
-	try{
+	try
+	{
 		auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
 
 		if (!outFrame.get())
@@ -193,9 +194,8 @@ bool NvTransform::process(frame_container &frames)
 		frames.insert(make_pair(mDetail->outputPinId, outFrame));
 		send(frames);
 	}
-	catch(
-		std::exception & e
-	){
+	catch(std::exception & e)
+	{
 		LOG_ERROR<<"NvTransform seg fault";
 	}
 

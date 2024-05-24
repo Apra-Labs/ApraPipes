@@ -938,7 +938,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
 					if (!framesToSkip)
 					{
-						mState->exportSend(outFrames);
+						// mState->exportSend(outFrames);
 					}
 					if (speed != 1 && speed != 0.5)
 					{

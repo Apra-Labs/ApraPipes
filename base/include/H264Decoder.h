@@ -84,4 +84,6 @@ private:
 	uint64_t lastFrameSent;
 	bool resumeFwdPlayback = true;
 	bool resumeBwdPlayback = true;
+	bool resumePlayback = true;
+	int incomingFramesTSQSize = 0;
 };

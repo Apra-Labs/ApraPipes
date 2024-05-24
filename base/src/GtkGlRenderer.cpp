@@ -275,7 +275,6 @@ bool GtkGlRenderer::process(frame_container &frames)
 
 {
     auto myId = Module::getId();
-    // LOG_ERROR << "GOT "
     auto frame = frames.cbegin()->second;
     mDetail->cachedFrame = frame;
 
@@ -286,7 +285,7 @@ bool GtkGlRenderer::process(frame_container &frames)
 		auto myTime = frames.cbegin()->second->timestamp;
 		cmd.currentTimeStamp = myTime;
 		controlModule->queueCommand(cmd);
-        //LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending timestamp "<<myTime;
+        LOG_INFO << "sending timestamp "<<myTime;
 		return true;
 	}
     return true;

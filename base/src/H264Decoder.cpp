@@ -375,7 +375,8 @@ bool H264Decoder::process(frame_container& frames)
 	}
 	auto frame = frames.begin()->second;
 	auto myId = Module::getId();
-	
+	if (myId == "H264Decoder_17")
+		LOG_INFO << "incoming ts = " << frame->timestamp;
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
 
@@ -383,22 +384,25 @@ bool H264Decoder::process(frame_container& frames)
 	{
 		dirChangedToBwd = true;
 		resumeBwdPlayback = false;
+		LOG_INFO<<"Pausing decoder";
+
 	}
 	else if (!mDirection && h264Metadata->direction)
 	{
-		dirChangedToFwd = true; //rename to directionChangedToFwd
+		dirChangedToFwd = true;
 		resumeFwdPlayback = false;
+		LOG_INFO<<"Pausing decoder";
 	}
 	else
 	{
 		dirChangedToBwd = false;
 		dirChangedToFwd = false;
 	}
-	if (resumeBwdPlayback == false || resumeFwdPlayback == false){
-		ReadyToRender cmd;
-		cmd.ReadinessCounter -= 1;
-		controlModule->queueCommand(cmd);
-	}
+	// if (resumeBwdPlayback == false || resumeFwdPlayback == false){
+	// 	ReadyToRender cmd;
+	// 	cmd.ReadinessCounter -= 1;
+	// 	controlModule->queueCommand(cmd);
+	// }
 	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
 	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
 	if (h264Metadata->mp4Seek)
@@ -572,11 +576,32 @@ void H264Decoder::sendDecodedFrame()
 			controlModule->queueCommand(cmd);
 		}
 
+		// while (!decodedFramesCache.empty() && incomingFramesTSQSize >0 && resumePlayback == false){
+		// 	//take decoder frames and keep popping till incomingFramesTSQSize becomes zero
+			
+		// 	incomingFramesTSQ.pop_front();
+		// 	incomingFramesTSQSize -= 1;
+		// }
+		// if (incomingFramesTSQSize == 0){
+		// 	resumePlayback = true;	
+		// 	incomingFramesTSQSize = -1;
+		// 	LOG_ERROR<<"Decoder seek playback continues";
+		// }
+		
+		if (incomingFramesTSQSize > 0){
+			incomingFramesTSQSize -= 1;
+		}
+		else if (incomingFramesTSQSize == 0){
+			resumePlayback = true;
+			LOG_INFO<<"resuming decoder playback ";
+			incomingFramesTSQSize = -1;
+		}
+
 		if(!framesToSkip)
 		{
 			frame_container frames;
 			frames.insert(make_pair(mOutputPinId, outFrame));
-			if(resumeBwdPlayback == true && resumeFwdPlayback == true){
+			if(resumePlayback && resumeFwdPlayback && resumeBwdPlayback){
 				if (!mDirection && lastFrameSent <outFrame->timestamp){
 					LOG_ERROR <<"Sending newer frame:" << "lastFrameSent: "<<lastFrameSent<<"This frame:"<<outFrame->timestamp;
 				}
@@ -584,11 +609,13 @@ void H264Decoder::sendDecodedFrame()
 					LOG_ERROR <<"Sending older frame:" << "lastFrameSent: "<<lastFrameSent<<"This frame:"<<outFrame->timestamp;
 				}
 				send(frames);
+				auto myId = Module::getId();
 				lastFrameSent = outFrame->timestamp;
+				if (myId == "H264Decoder_17")
+					LOG_INFO << "sending frame  = " << lastFrameSent;
 				if (lastFrameSent == 0){
 					LOG_ERROR<<"something is wrong";
 				}
-				auto myId = Module::getId();
 			}
 		}
 		if(playbackSpeed == 2 || playbackSpeed == 4)
@@ -736,7 +763,13 @@ bool H264Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
 		LOG_INFO << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
 		previousFps = currentFps;
 	}
-	else
+	if (type == Command::CommandType::Seek)
+	{
+		incomingFramesTSQSize = incomingFramesTSQ.size();
+		resumePlayback = false;
+		LOG_INFO<<"Pausing decoder";
+	}
+	else if (type == Command::CommandType::Relay)
 	{
 		Module::handleCommand(type, frame);
 	}
