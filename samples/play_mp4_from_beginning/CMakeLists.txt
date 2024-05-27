@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.22)
 set(TARGET play_mp4_from_beginning)
 SET(CORE_FILES
   play_mp4_video_from_beginning.cpp
@@ -11,8 +12,8 @@ SET(SOURCE
   ${CORE_FILES}
   ${CORE_FILES_H}
 )
-add_executable(${TARGET}  ${SOURCE})
-target_include_directories ( ${TARGET}  PRIVATE
+add_executable(${TARGET} ${SOURCE})
+target_include_directories ( ${TARGET} PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}

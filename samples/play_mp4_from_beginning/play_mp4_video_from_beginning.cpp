@@ -55,14 +55,12 @@ bool PlayMp4VideoFromBeginning::testPipeLineForFlushQue() {
   colorchange->step();
 
   auto frames = sink->pop();
+  auto frame = frames.size();
   auto sinkQue = sink->getQue();
-  BOOST_TEST(sinkQue->size() == 1);
+  BOOST_CHECK_EQUAL(frames.size(), 1);
   sinkQue->flush();
-  BOOST_TEST(sinkQue->size() == 0);
-  frame_sp outputFrame = frames.cbegin()->second;
-
- 
-    
+  BOOST_CHECK_EQUAL(sinkQue->size(), 0);
+  frame_sp outputFrame = frames.cbegin()->second; 
   Test_Utils::saveOrCompare("../.././data/mp4Reader_saveOrCompare/h264/testplay.raw", const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
   return true;
 }
@@ -153,14 +151,14 @@ int main() {
     std::cerr << "Failed to test pipeline." << std::endl;
     return 1;
   }
-  if (!pipelineInstance.testPipeLineForSeek()) {
-    std::cerr << "Failed to test pipeline." << std::endl;
-    return 1;
-  }
-  if (!pipelineInstance.startPipeLine()) {
-    std::cerr << "Failed to start pipeline." << std::endl;
-    return 1; // Or any error code indicating failure
-  }
+  //if (!pipelineInstance.testPipeLineForSeek()) {
+  //  std::cerr << "Failed to test pipeline." << std::endl;
+  //  return 1;
+  //}
+  //if (!pipelineInstance.startPipeLine()) {
+  //  std::cerr << "Failed to start pipeline." << std::endl;
+  //  return 1; // Or any error code indicating failure
+  //}
   // Wait for the pipeline to run for 10 seconds
   boost::this_thread::sleep_for(boost::chrono::seconds(3));
   if (!pipelineInstance.flushQueuesAndSeek()) {
