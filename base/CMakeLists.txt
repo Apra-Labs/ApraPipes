@@ -163,6 +163,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	.././samples/face_detection_cpu/face_detection_cpu.cpp
 )
 
 SET(CORE_FILES_H
@@ -224,6 +225,7 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
+	.././samples/face_detection_cpu/face_detection_cpu.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -456,6 +458,7 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
+.././samples/face_detection_cpu
 )
 
 
@@ -573,8 +576,12 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
+SET(SAMPLE_UT_FILES
+.././samples/face_detection_cpu/test_face_detection_cpu.cpp
+)
 
 add_executable(aprapipesut ${UT_FILES})
+add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
@@ -590,7 +597,30 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)
 
-target_link_libraries(aprapipesut   
+target_link_libraries(aprapipessampleut   
+  aprapipes  
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  whisper::whisper
+  )
+
+  target_link_libraries(aprapipesut   
   aprapipes  
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}

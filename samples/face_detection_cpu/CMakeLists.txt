@@ -9,12 +9,10 @@ SET(SOURCE
   ${CORE_FILES}
   ${CORE_FILES_H}
 )
-set(UT_FILE
-	test_face_detection_cpu.cpp
-)
-add_library(face_detection_cpu_source STATIC ${SOURCE})
-add_executable(${TARGET} ${UT_FILE})
-target_include_directories ( face_detection_cpu_source PRIVATE
+
+add_executable(${TARGET} ${SOURCE})
+
+target_include_directories ( ${TARGET} PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -24,16 +22,7 @@ target_include_directories ( face_detection_cpu_source PRIVATE
   ${LIBRE_INC_DIR}
   ${NVCODEC_INCLUDE_DIR}
 )
-target_include_directories ( ${TARGET} PUBLIC
-  ${JETSON_MULTIMEDIA_LIB_INCLUDE}
-  ${FFMPEG_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${LIBMP4_INC_DIR}
-  ${BARESIP_INC_DIR}
-  ${LIBRE_INC_DIR}
-  ${NVCODEC_INCLUDE_DIR}
-)
+
 target_link_libraries(
   ${TARGET}
   aprapipes
@@ -48,5 +37,4 @@ target_link_libraries(
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  face_detection_cpu_source
   )

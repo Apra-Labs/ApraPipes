@@ -6,34 +6,56 @@
 #include "ImageDecoderCV.h"
 #include "FaceDetectorXform.h"
 #include "ColorConversionXForm.h"
+#include <boost/test/unit_test.hpp>
+#include "ExternalSinkModule.h"
 
 
 
 FaceDetectionCPU::FaceDetectionCPU() : pipeline("test") {}
 
+bool FaceDetectionCPU::testPipeline(){
+    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    colorConversion->setNext(sink);
+
+    BOOST_TEST(source->init());
+    BOOST_TEST(faceDetector->init());
+    BOOST_TEST(overlay->init());
+    BOOST_TEST(colorConversion->init());
+    BOOST_TEST(sink->init());
+
+    source->step();
+    faceDetector->step();
+    overlay->step();
+    colorConversion->step();
+    
+    auto frames = sink->pop();
+    BOOST_TEST(frames.size() == 1);
+    return true; 
+}
+
 bool FaceDetectionCPU::setupPipeline() {
     WebCamSourceProps webCamSourceprops(0, 640, 480);
-    auto source = boost::shared_ptr<Module>(new WebCamSource(webCamSourceprops));
+    source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-    FaceDetectorXformProps faceDetectorProps(1.0, 0.8, "../../data/assets/deploy.prototxt", "../../data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel");
-    auto faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
+    FaceDetectorXformProps faceDetectorProps(1.0, 0.8, "./data/assets/deploy.prototxt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel");
+    faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
     source->setNext(faceDetector);
 
-    auto overlay = boost::shared_ptr<Module>(new OverlayModule(OverlayModuleProps()));
+    overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
     faceDetector->setNext(overlay);
 
-    auto colorConversion = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::RGB_TO_BGR)));
+    colorConversion = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::RGB_TO_BGR)));
     overlay->setNext(colorConversion);
 
-    auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
-    colorConversion->setNext(sink);
-    
-    pipeline.appendModule(source);
-    pipeline.init();
+    imageViewerSink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
+    colorConversion->setNext(imageViewerSink);
+  
     return true;
 }
 
 bool FaceDetectionCPU::startPipeline() {
+    pipeline.appendModule(source);
+    pipeline.init();
     pipeline.run_all_threaded();
     return true;
 }
@@ -60,13 +82,13 @@ int main() {
   }
 
   // Start the pipeline
-  if (!pipelineInstance.startPipeline()) {
+  if (!pipelineInstance.testPipeline()) {
     std::cerr << "Failed to start pipeline." << std::endl;
     return 1; // Or any error code indicating failure
   }
 
   // Wait for the pipeline to run for 10 seconds
-  boost::this_thread::sleep_for(boost::chrono::seconds(50));
+  boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
   // Stop the pipeline
   if (!pipelineInstance.stopPipeline()) {
