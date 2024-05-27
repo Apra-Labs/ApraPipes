@@ -664,6 +664,13 @@ boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
 
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
+	if(type ==  Command::CommandType::DecoderPlaybackSpeed)
+	{
+		DecoderPlaybackSpeed dCmd;
+		getCommand(dCmd, frame);
+		setPlaybackSpeed(dCmd.playbackSpeed);
+		//setMmqFps(dCmd.playbackFps);
+	}
 	int fps = mProps.mmqFps * speed;
 	LOG_ERROR << "mmq fps is = " << fps;
 	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
@@ -757,7 +764,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						{
 							if (!framesToSkip)
 							{
-								framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps;
+								framesToSkip = speed;
 							}
 							framesToSkip--;
 						}

@@ -368,6 +368,17 @@ public:
 							LOG_ERROR << "parse found new files but getNextFileAfter hit EOC while looking for a potential file.";
 							mState.end = true;
 						}
+						if(ex.getError() == "Reached End of Cache in fwd play.")
+						{
+							// send command
+							if(!mState.sentCommandToControlModule)
+							{
+								NVRGoLive cmd;
+								controlModule->queueCommand(cmd, true);
+								LOG_ERROR<<"Sending command to mmq";
+								mState.sentCommandToControlModule = true;
+							}
+						}
 						else
 						{
 							auto msg = "unexpected state while getting next file after successful parse <" + ex.getError() + ">";
@@ -591,6 +602,7 @@ public:
 		// reset flags
 		waitFlag = false;
 		sentEOSSignal = false;
+		mState.sentCommandToControlModule = false;
 	}
 
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
@@ -1062,6 +1074,7 @@ protected:
 		Mp4ReaderSourceProps props;
 		float speed;
 		bool direction;
+		bool sentCommandToControlModule = false;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;

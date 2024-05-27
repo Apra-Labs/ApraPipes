@@ -375,8 +375,6 @@ bool H264Decoder::process(frame_container& frames)
 	}
 	auto frame = frames.begin()->second;
 	auto myId = Module::getId();
-	if (myId == "H264Decoder_17")
-		LOG_INFO << "incoming ts = " << frame->timestamp;
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
 
@@ -611,8 +609,6 @@ void H264Decoder::sendDecodedFrame()
 				send(frames);
 				auto myId = Module::getId();
 				lastFrameSent = outFrame->timestamp;
-				if (myId == "H264Decoder_17")
-					LOG_INFO << "sending frame  = " << lastFrameSent;
 				if (lastFrameSent == 0){
 					LOG_ERROR<<"something is wrong";
 				}
@@ -783,9 +779,11 @@ bool H264Decoder::shouldTriggerSOS()
 
 bool H264Decoder::processEOS(string& pinId)
 {
-	auto frame = frame_sp(new EmptyFrame());
-	mDetail->compute(frame->data(), frame->size(), frame->timestamp);
-	LOG_ERROR << "processes sos " ;
+	//THIS HAS BEEN COMMENTED IN NVR - BECAUSE EOS IS SENT FROM MP4READER WHICH COMES TO DECODER AND THE FOLLOWING PROCESS IS NOT REQUIRED IN NVR. 
+	
+	// auto frame = frame_sp(new EmptyFrame());
+	// mDetail->compute(frame->data(), frame->size(), frame->timestamp);
+	// LOG_ERROR << "processes sos " ;
 	//mShouldTriggerSOS = true;
 	return true;
 }

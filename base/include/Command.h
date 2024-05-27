@@ -452,7 +452,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return Command::getSerializeSize() + sizeof(startViewTS) + sizeof(stopViewTS);
+		return Command::getSerializeSize() + sizeof(startViewTS) + sizeof(stopViewTS) + sizeof(direction) + sizeof(mp4ReaderExport) + sizeof(onlyDirectionChange) +sizeof(resetFps);
 	}
 
 	uint64_t startViewTS = 0;
@@ -460,7 +460,7 @@ public:
 	bool direction = true;
 	bool mp4ReaderExport = false;
 	bool onlyDirectionChange = false;
-
+	bool resetFps = false;
 private:
 	friend class boost::serialization::access;
 	template<class Archive>
@@ -472,6 +472,7 @@ private:
 		ar& direction;
 		ar& mp4ReaderExport;
 		ar& onlyDirectionChange;
+		ar& resetFps;
 	}
 };
 
