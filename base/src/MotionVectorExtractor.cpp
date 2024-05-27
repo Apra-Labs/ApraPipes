@@ -261,6 +261,7 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
   int32_t mMotionVectorSize = mWidth * mHeight * 8;
   int16_t *mMotionVectorData = nullptr;
   memset(&pDstInfo, 0, sizeof(SBufferInfo));
+
   if (sendOverlayFrame) {
     outFrame = makeFrameWithPinId(mMotionVectorSize, motionVectorPinId);
     mMotionVectorData = static_cast<int16_t *>(outFrame->data());
@@ -294,6 +295,7 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
 
         circleOverlays.push_back(circleOverlay);
         motionFound = true;
+        free(mMotionVectorData);
       }
     }
 
@@ -310,6 +312,7 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
       frames.insert(make_pair(motionVectorPinId, outFrame));
     }
   }
+
   if (sendOverlayFrame == false) {
     for (int i = 0; i < mMotionVectorSize; i += 4) {
       auto motionX = mMotionVectorData[i];
@@ -319,6 +322,7 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
         break;
       }
     }
+    free(mMotionVectorData);
   }
   if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) &&
       (mMotionVectorSize != mWidth * mHeight * 8) && motionFound == true) {
@@ -354,6 +358,7 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
 
     cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
     frames.insert(make_pair(rawFramePinId, decodedFrame));
+    free(yuvStartPointer);
   }
 }
 
