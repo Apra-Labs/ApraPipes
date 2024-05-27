@@ -163,6 +163,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	.././samples/create_thumbnail_from_mp4_video/generate_thumbnail_from_mp4_video.cpp
 	.././samples/timelapse-sample/timelapse_summary.h
 )
 
@@ -225,6 +226,7 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
 	.././samples/timelapse-sample/timelapse_summary.cpp
 )
 
@@ -458,6 +460,7 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
+.././samples/create_thumbnail_from_mp4_video
 ./../samples/timelapse-sample
 )
 
@@ -570,7 +573,10 @@ SET(UT_FILES
 )
 
 SET(SAMPLE_UT_FILES
-.././samples/timelapse-sample/timelapse_summary_test.cpp
+	test/test_utils.cpp
+	test/test_utils.h	
+	.././samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+	.././samples/play_mp4_from_beginningtest_play_mp4_video_from_beginning.cpp
 )
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
@@ -581,7 +587,6 @@ ENDIF(ENABLE_LINUX)
 
 
 add_executable(aprapipesut ${UT_FILES})
-
 add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
 
 IF(ENABLE_ARM64)
@@ -595,6 +600,29 @@ ENDIF (ENABLE_CUDA)
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+
+target_link_libraries(aprapipessampleut   
+  aprapipes  
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  whisper::whisper
+  )
 
 target_link_libraries(aprapipessampleut   
   aprapipes  
