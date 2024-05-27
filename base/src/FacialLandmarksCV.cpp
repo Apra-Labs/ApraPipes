@@ -12,6 +12,7 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "AIPExceptions.h"
+#include "Overlay.h"
 
 class Detail
 {
@@ -87,6 +88,7 @@ public:
 	FacialLandmarkCVProps props;
 	cv::Mat iImg;
 	vector<vector<cv::Point2f>>landmarks;
+	vector<cv::Rect> faces;
 
 protected:
 	framemetadata_sp mInputMetadata;
@@ -113,6 +115,7 @@ public:
 	{
 		//input must be 3 channel image(RGB)
 	    // Create a 4-dimensional blob from the image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels.
+        iImg.data = static_cast<uint8_t *>(buffer->data());
 		cv::Mat inputBlob = cv::dnn::blobFromImage(iImg, 1.0, cv::Size(300, 300), cv::Scalar(104, 177, 123), false, false);
 
 		// Set the input blob as input to the face detector network
@@ -122,8 +125,6 @@ public:
 		cv::Mat detection = faceDetector.forward("detection_out");
 
 		cv::Mat detectionMatrix(detection.size[2], detection.size[3], CV_32F, detection.ptr<float>());
-
-		vector<cv::Rect> faces;
 
 		for (int i = 0; i < detectionMatrix.rows; i++)
 		{
@@ -139,13 +140,16 @@ public:
 				cv::Rect faceRect(x1, y1, x2 - x1, y2 - y1);
 
 				faces.push_back(faceRect);
-				cv::rectangle(iImg, faceRect, cv::Scalar(0, 255, 0), 2);
 			}
+		}
+
+		if (faces.size() == 0) {
+			return false;
 		}
 
 		bool success = facemark->fit(iImg, faces, landmarks);
 
-		return true;
+		return success;
 	}
 
 private:
@@ -164,17 +168,15 @@ public:
 
 	bool compute(frame_sp buffer)
 	{
-		vector<cv::Rect> faces;
 		faceDetector.detectMultiScale(iImg, faces);
 
-		for (int i = 0; i < faces.size(); i++)
-		{
-			rectangle(iImg, faces[i], cv::Scalar(0, 255, 0), 2);
+		if (faces.size() == 0) {
+			return false;
 		}
 
-		bool success = facemark->fit(iImg, faces, landmarks);
-
-		return true;
+	    bool success = facemark->fit(iImg, faces, landmarks);
+		 
+		return success;
 	}
 
 private:
@@ -243,6 +245,7 @@ void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 	Module::addInputPin(metadata, pinId);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
 	mOutputPinId1 = addOutputPin(landmarksOutputMetadata);
+    rawFramePinId = addOutputPin(metadata);
 }
 
 bool FacialLandmarkCV::init()
@@ -278,8 +281,26 @@ bool FacialLandmarkCV::term()
 bool FacialLandmarkCV::process(frame_container& frames)
 {
 	auto frame = frames.cbegin()->second;
+	bool computeValue = mDetail->compute(frame);
 
-	mDetail->compute(frame);
+	if (computeValue == false) {
+        send(frames);
+        return true;
+	}
+
+	std::vector<RectangleOverlay> rectangleOverlays;
+
+	for (const auto& face :mDetail->faces) {
+		RectangleOverlay rectangleOverlay;
+		rectangleOverlay.x1 = face.x;
+		rectangleOverlay.y1 = face.y;
+		rectangleOverlay.x2 = face.x + face.width;
+		rectangleOverlay.y2 = face.y + face.height;
+
+		rectangleOverlays.push_back(rectangleOverlay);
+    }
+
+	std::vector<CircleOverlay> circleOverlays;
 
 	// Convert the landmarks from cv::Point2f to ApraPoint2f
 	vector<vector<ApraPoint2f>> apralandmarks;
@@ -287,6 +308,13 @@ bool FacialLandmarkCV::process(frame_container& frames)
 		vector<ApraPoint2f> apralandmark;
 		for (const auto& point : landmark) {
 			apralandmark.emplace_back(ApraPoint2f(point));
+
+			CircleOverlay circleOverlay;
+			circleOverlay.x1 = point.x;
+			circleOverlay.y1 = point.y;
+			circleOverlay.radius = 1;
+
+            circleOverlays.push_back(circleOverlay);
 		}
 		apralandmarks.emplace_back(std::move(apralandmark));
 	}
@@ -297,11 +325,31 @@ bool FacialLandmarkCV::process(frame_container& frames)
 		bufferSize += sizeof(apralandmarks[i]) + (sizeof(ApraPoint2f) + 2 * sizeof(int)) * apralandmarks[i].size();
 	}
 
-	auto landmarksFrame = makeFrame(bufferSize);
+	CompositeOverlay compositeOverlay;
 
-	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
+	for (auto &rectangleOverlay : rectangleOverlays) {
+		compositeOverlay.add(&rectangleOverlay);
+    }
 
-	frames.insert(make_pair(mOutputPinId1, landmarksFrame));
+	for (auto &circleOverlay : circleOverlays) {
+		compositeOverlay.add(&circleOverlay);
+	}
+
+	auto rawFrame = frames.cbegin()->second;    
+
+	frames.insert(make_pair(rawFramePinId, rawFrame));
+
+	if (rectangleOverlays.size() > 0 || circleOverlays.size() > 0) {
+		DrawingOverlay drawingOverlay;
+		drawingOverlay.add(&compositeOverlay);
+		auto mvSize = drawingOverlay.mGetSerializeSize();
+		auto landmarksFrame = makeFrame(mvSize, mOutputPinId1);
+		drawingOverlay.serialize(landmarksFrame);
+		frames.insert(make_pair(mOutputPinId1, landmarksFrame));
+	}
+
+	mDetail->faces.clear();
+    mDetail->landmarks.clear();
 
 	send(frames);
 
