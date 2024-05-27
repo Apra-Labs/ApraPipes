@@ -12,69 +12,108 @@
 #include "ColorConversionXForm.h"
 #include "FileWriterModule.h"
 #include "timelapse_summary.h"
+#include <boost/test/unit_test.hpp>
+#include "ExternalSinkModule.h"
 
-TimelapsePipeline::TimelapsePipeline() : pipeline("test") {}
+TimelapsePipeline::TimelapsePipeline()
+    : pipeline("test"), cudaStream_(new ApraCudaStream()),
+      cuContext(new ApraCUcontext()),
+      h264ImageMetadata(new H264Metadata(0, 0)) {}
 
-bool TimelapsePipeline::setupPipeline() {
-  std::string outFolderPath = "../.././data/timeplase_videos";
-    auto cuContext = apracucontext_sp(new ApraCUcontext());
-    uint32_t gopLength = 25;
-    uint32_t bitRateKbps = 1000;
-    uint32_t frameRate = 30;
-    H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::MAIN;
-    bool enableBFrames = false;
-    bool sendDecodedFrames = true;
-    bool sendOverlayFrames = false;
-    std::string videoPath = "../.././data/Mp4_videos/h264_video_metadata/20230514/0011/1715748702000.mp4";
-    auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
-    auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
-    mp4ReaderProps.fps = 24;
-    auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-    mp4Reader -> addOutPutPin(h264ImageMetadata);
-    auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-    mp4Reader->addOutPutPin(mp4Metadata);
-    std::vector<std::string> mImagePin;
-    mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
-    auto motionExtractorProps = MotionVectorExtractorProps(MotionVectorExtractorProps::MVExtractMethod::OPENH264,sendDecodedFrames, 10, sendOverlayFrames);
-    auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(motionExtractorProps));
-    mp4Reader->setNext(motionExtractor, mImagePin);
+bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
+                                      const std::string &outFolderPath) {
+  uint32_t gopLength = 25;
+  uint32_t bitRateKbps = 1000;
+  uint32_t frameRate = 30;
+  H264EncoderNVCodecProps::H264CodecProfile profile =
+      H264EncoderNVCodecProps::MAIN;
+  bool enableBFrames = false;
+  bool sendDecodedFrames = true;
+  bool sendOverlayFrames = false;
 
-    auto colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
-    motionExtractor -> setNext(colorchange1);
+  auto mp4ReaderProps =
+      Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
+  mp4Reader =
+      boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+  auto motionExtractorProps = MotionVectorExtractorProps(
+      MotionVectorExtractorProps::MVExtractMethod::OPENH264, sendDecodedFrames,
+      10, sendOverlayFrames);
+  motionExtractor = boost::shared_ptr<MotionVectorExtractor>(
+      new MotionVectorExtractor(motionExtractorProps));
+  colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(
+      ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
+  colorchange2 = boost::shared_ptr<ColorConversion>(new ColorConversion(
+      ColorConversionProps(ColorConversionProps::RGB_TO_YUV420PLANAR)));
+  sync = boost::shared_ptr<Module>(
+      new CudaStreamSynchronize(CudaStreamSynchronizeProps(cudaStream_)));
+  encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(
+      H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate,
+                              profile, enableBFrames)));
+  auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, outFolderPath, true);
+  mp4WriterSink =
+      boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 
-    auto colorchange2 = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::RGB_TO_YUV420PLANAR)));
-    colorchange1 -> setNext(colorchange2);
+  mp4Reader->addOutPutPin(h264ImageMetadata);
+  auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+  mp4Reader->addOutPutPin(mp4Metadata);
+  std::vector<std::string> mImagePin =
+      mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
+  mp4Reader->setNext(motionExtractor, mImagePin);
+  motionExtractor->setNext(colorchange1);
+  colorchange1->setNext(colorchange2);
+  auto copy = boost::shared_ptr<Module>(
+      new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_)));
+  colorchange2->setNext(copy);
+  copy->setNext(sync);
+  sync->setNext(encoder);
+  encoder->setNext(mp4WriterSink);
 
-    cudastream_sp cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
-    auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_)));
-    colorchange2 -> setNext(copy);
-
-    auto sync = boost::shared_ptr<Module>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(cudaStream_)));
-    copy -> setNext(sync);
-    auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
-    sync -> setNext(encoder);
-    auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 24, outFolderPath, false);
-    auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
-    encoder -> setNext(mp4WriterSink);
-
-    pipeline.appendModule(mp4Reader);
-    pipeline.init();
-    return true;
+  pipeline.appendModule(mp4Reader);
+  pipeline.init();
+  return true;
 }
 
 bool TimelapsePipeline::startPipeline() {
-    pipeline.run_all_threaded();
-    return true;
+  pipeline.run_all_threaded();
+  return true;
 }
 
 bool TimelapsePipeline::stopPipeline() {
-    pipeline.stop();
-    pipeline.term();
-    pipeline.wait_for_all();
-    return true;
+  pipeline.stop();
+  pipeline.term();
+  pipeline.wait_for_all();
+  return true;
 }
 
-int main() {
+void TimelapsePipeline::test() {
+  auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+  BOOST_TEST(mp4Reader->init());
+  BOOST_TEST(motionExtractor->init());
+  BOOST_TEST(colorchange1->init());
+  BOOST_TEST(colorchange2->init());
+  BOOST_TEST(sync->init());
+  BOOST_TEST(encoder->init());
+  BOOST_TEST(mp4WriterSink->init());
+  mp4Reader->step();
+  motionExtractor->step();
+  colorchange1->step();
+  colorchange2->step();
+  sync->step();
+  encoder->step();
+  encoder->setNext(sink);
+  auto frames = sink->pop();
+  BOOST_CHECK_EQUAL(frames.size(), 1);
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 3) {
+    std::cerr << "Usage: " << argv[0] << " <videoPath> <outFolderPath>" << std::endl;
+    return 1;
+  }
+
+  std::string videoPath = argv[argc - 2];
+  std::string outFolderPath = argv[argc - 1];
+
   LoggerProps loggerProps;
   loggerProps.logLevel = boost::log::trivial::severity_level::info;
   Logger::setLogLevel(boost::log::trivial::severity_level::info);
@@ -83,7 +122,7 @@ int main() {
   TimelapsePipeline pipelineInstance;
 
   // Setup the pipeline
-  if (!pipelineInstance.setupPipeline()) {
+  if (!pipelineInstance.setupPipeline(videoPath, outFolderPath)) {
     std::cerr << "Failed to setup pipeline." << std::endl;
     return 1; // Or any error code indicating failure
   }

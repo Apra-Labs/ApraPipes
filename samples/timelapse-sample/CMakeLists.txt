@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.22)
 set(TARGET timelapse-sample)
 SET(CORE_FILES
 	timelapse_summary.cpp
@@ -9,23 +10,8 @@ SET(SOURCE
   ${CORE_FILES}
   ${CORE_FILES_H}
 )
-set(UT_FILE
-	timelapse_summary_test.cpp
-)
-find_library(APRA_PIPES_LIB NAMES aprapipes)
-add_library(example_aprapipes STATIC ${SOURCE})
-add_executable(runner_test ${UT_FILE})
-target_include_directories ( example_aprapipes PRIVATE
-  ${JETSON_MULTIMEDIA_LIB_INCLUDE}
-  ${FFMPEG_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${LIBMP4_INC_DIR}
-  ${BARESIP_INC_DIR}
-  ${LIBRE_INC_DIR}
-  ${NVCODEC_INCLUDE_DIR}
-)
-target_include_directories ( runner_test PUBLIC
+add_executable(timelapsesample ${SOURCE})
+target_include_directories (timelapsesample PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -36,7 +22,7 @@ target_include_directories ( runner_test PUBLIC
   ${NVCODEC_INCLUDE_DIR}
 )
 target_link_libraries(
-  runner_test
+  timelapsesample
   aprapipes
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -49,5 +35,12 @@ target_link_libraries(
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
-  example_aprapipes
-  )
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  whisper::whisper
+)
