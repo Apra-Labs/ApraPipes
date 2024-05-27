@@ -4,7 +4,7 @@
 
 BOOST_AUTO_TEST_SUITE(start_video_from_beginning)
 
-BOOST_AUTO_TEST_CASE(start_from_beginning)
+BOOST_AUTO_TEST_CASE(play_mp4_from_beginning_flush_queue_test)
 {
   auto playMp4VideoFromBeginning = boost::shared_ptr<PlayMp4VideoFromBeginning>(new PlayMp4VideoFromBeginning());
   playMp4VideoFromBeginning->setUpPipeLine();
