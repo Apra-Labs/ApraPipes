@@ -6,7 +6,6 @@ OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
-
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
@@ -140,8 +139,6 @@ IF(ENABLE_CUDA)
 
 ENDIF(ENABLE_CUDA)
 
-include_directories(${GTK3_INCLUDE_DIRS})
-link_directories(${GTK3_LIBRARY_DIRS})
 
 include_directories(AFTER SYSTEM include)
 
@@ -275,7 +272,7 @@ IF(ENABLE_LINUX)
 		include/GTKSetup.h
 		include/GTKView.h
 	)
-	SET(GTK_GL_CPP src/Background.cpp
+	SET(GTKGL_FILES_CPP src/Background.cpp
 		src/GtkGlRenderer.cpp
 		src/GTKMatrix.cpp
 		src/GTKModel.cpp
@@ -351,7 +348,6 @@ SET(CUDA_CORE_FILES
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
-
 )
 
 SET(CUDA_CORE_FILES_H
@@ -485,8 +481,11 @@ ENDIF(ENABLE_LINUX)
 
 add_library(aprapipes STATIC ${SOURCE})
 
+link_directories(${GTK3_LIBRARY_DIRS})
+
 target_include_directories ( aprapipes PRIVATE 
 	${JETSON_MULTIMEDIA_LIB_INCLUDE}
+	${GTK3_INCLUDE_DIRS}
 	${FFMPEG_INCLUDE_DIRS} 
 	${OpenCV_INCLUDE_DIRS} 
 	${Boost_INCLUDE_DIRS}
@@ -530,13 +529,13 @@ IF (ENABLE_CUDA)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			# test/jpegencodernvjpeg_tests.cpp
-			# test/jpegdecodernvjpeg_tests.cpp			
+			test/jpegencodernvjpeg_tests.cpp
+			test/jpegdecodernvjpeg_tests.cpp			
 			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			# test/nvjpeg_combo_tests.cpp			
+			test/nvjpeg_combo_tests.cpp			
 			test/overlaynppi_tests.cpp
 			test/effectsnppi_tests.cpp
-			# test/h264Encodernvcodec_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
 			test/nv_mp4_file_tests.cpp
 			test/nv_test_utils.h
 			test/h264decoder_tests.cpp
@@ -555,7 +554,16 @@ SET(UT_FILES
 	test/test_utils.h	
 	test/filewritermodule_tests.cpp
 	test/logger_tests.cpp
+	test/filewritermodule_tests.cpp
+	test/logger_tests.cpp
 #	test/logger_stress_tests.cpp  #todo this test needs to be improved and added
+	test/quepushstrategy_tests.cpp	
+	test/framesmuxer_tests.cpp
+	test/filereadermodule_tests.cpp
+	test/merge_tests.cpp
+	test/split_tests.cpp
+	test/imagemetadata_tests.cpp
+	test/bmpconverter_tests.cpp
 	test/quepushstrategy_tests.cpp	
 	test/framesmuxer_tests.cpp
 	test/filereadermodule_tests.cpp
@@ -582,7 +590,31 @@ SET(UT_FILES
 	test/textoverlayxform_tests.cpp
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
+	test/findexstrategy_tests.cpp	
+	test/jpegdecodercv_tests.cpp
+	test/Imageresizecv_tests.cpp
+	test/faciallandmarkscv_tests.cpp
+	test/imageviewermodule_tests.cpp
+	test/ImageEncodeCV_tests.cpp
+	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
+	test/brightness_contrast_tests.cpp
+	test/virtualptz_tests.cpp
+	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
+	test/sound_record_tests.cpp
+	test/pullstratergy_tests.cpp
+	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
+	test/mp4writersink_tests.cpp
+	test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
+	test/valveModule_tests.cpp
+	test/color_conversion_tests.cpp
+	test/archivespacemanager_tests.cpp
+	test/multimediaqueuexform_tests.cpp
+  	test/mp4readersource_tests.cpp
+	test/rtsp_client_tests.cpp
 	test/valveModule_tests.cpp
 	test/color_conversion_tests.cpp
 	test/archivespacemanager_tests.cpp
@@ -611,7 +643,7 @@ IF(ENABLE_LINUX)
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
-	set(GTK_LIBRARIES
+	set(GLEW_LIBRARIES
 		GLEW::GLEW
 		glfw
 	)
@@ -632,9 +664,12 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
+
 target_link_libraries(aprapipesut   
   aprapipes  
-  ${GTK_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${GTK3_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
