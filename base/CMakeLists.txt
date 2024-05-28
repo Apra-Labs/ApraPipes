@@ -163,7 +163,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
-	.././samples/timelapse-sample/timelapse_summary.h
+	.././samples/timelapse-sample/timelapse_summary.cpp
 )
 
 SET(CORE_FILES_H
@@ -225,7 +225,7 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	.././samples/timelapse-sample/timelapse_summary.cpp
+	.././samples/timelapse-sample/timelapse_summary.h
 )
 
 IF(ENABLE_WINDOWS)

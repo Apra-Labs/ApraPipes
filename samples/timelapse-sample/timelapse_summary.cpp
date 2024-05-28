@@ -91,6 +91,7 @@ bool TimelapsePipeline::stopPipeline() {
 void TimelapsePipeline::test() {
   auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
   encoder->setNext(sink);
+  
   BOOST_TEST(mp4Reader->init());
   BOOST_TEST(motionExtractor->init());
   BOOST_TEST(colorchange1->init());
@@ -98,13 +99,18 @@ void TimelapsePipeline::test() {
   BOOST_TEST(copy->init());
   BOOST_TEST(sync->init());
   BOOST_TEST(encoder->init());
-  mp4Reader->step();
-  motionExtractor->step();
+  BOOST_TEST(sink->init());
+
+  for (int i = 0; i <= 20; i++) {
+    mp4Reader->step();
+    motionExtractor->step();
+  }
   colorchange1->step();
   colorchange2->step();
   copy->step();
   sync->step();
   encoder->step();
+  
   auto frames = sink->pop();
   BOOST_CHECK_EQUAL(frames.size(), 1);
 }
@@ -131,13 +137,14 @@ int main(int argc, char *argv[]) {
     return 1; // Or any error code indicating failure
   }
   
+  //pipelineInstance.test();
   // Start the pipeline
   if (!pipelineInstance.startPipeline()) {
     std::cerr << "Failed to start pipeline." << std::endl;
     return 1; // Or any error code indicating failure
   }
 
-  boost::this_thread::sleep_for(boost::chrono::seconds(600));
+  boost::this_thread::sleep_for(boost::chrono::minutes(10));
 
   // Stop the pipeline
   if (!pipelineInstance.stopPipeline()) {
