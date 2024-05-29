@@ -12,7 +12,9 @@
 #endif
 #include "AffineTransform.h"
 #include "ColorConversionXForm.h"
+#if defined(__arm__)
 #include "CudaMemCopy.h"
+#endif
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "GtkGlRenderer.h"
