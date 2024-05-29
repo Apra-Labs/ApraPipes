@@ -36,15 +36,7 @@
         "webp"
       ]
     },
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "gtk"
-      ],
-      "platform": "(linux & x64)",
-      "$reason": "skip linux:arm64 and windows"
-    },
+    "freeglut",
     "ffmpeg",
     "openh264-apra",
     "glfw3",
