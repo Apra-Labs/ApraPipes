@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
-OPTION(ENABLE_LINUX "Use this switch to enable LINUX" OFF)
+OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
-OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" ON)
+OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
@@ -698,3 +698,38 @@ IF(ENABLE_WINDOWS)
 		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
 	ENDIF(GHA)
 ENDIF(ENABLE_WINDOWS)
+
+include(GNUInstallDirs)
+
+# BUILD_INTERFACE specifies where to find includes during build time
+# here we set the include directory to be our src include directory
+# as well as CMAKE_CURRENT_BINARY_DIR, which is where the generated
+# calc_exported.h file is located.
+# the command must be included in double quotes so the two directories,
+# separated by a ';' can both be used (cmake needs it to be a string)
+target_include_directories(
+    aprapipes
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/;${CMAKE_CURRENT_BINARY_DIR}/>"
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+set_target_properties(aprapipes PROPERTIES DEBUG_POSTFIX "d")
+
+
+# specify the target to install (calculator library defined above)
+# set the export name <name>-config (does not need to match target name)
+# also specify where the .dylib/.so/.dll+.lib file should be installed
+install(
+    TARGETS aprapipes
+    EXPORT aprapipes-config
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(
+    EXPORT aprapipes-config
+    NAMESPACE aprapipes::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/aprapipes)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aprapipes)
