@@ -760,6 +760,18 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						{
 							mState->exportSend(outFrames);
 						}
+						if(direction && !mState->queueObject->mQueue.empty())
+						{
+							auto lastItr = mState->queueObject->mQueue.end();
+							lastItr--;
+							if(lastItr->second.begin()->second->timestamp == it->second.begin()->second->timestamp)
+							{
+								NVRGoLive goLiveCmd;
+								controlModule->queueCommand(goLiveCmd, true);
+								exportFrames = false;
+								break;
+							}
+						}
 						if (speed != 1 && speed != 0.5)
 						{
 							if (!framesToSkip)
