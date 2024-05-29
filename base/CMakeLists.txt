@@ -52,6 +52,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(Llama CONFIG REQUIRED) 
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -282,7 +283,13 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
+	src/AudioToTextXForm.cpp
+	src/ModelStrategy.cpp
+	src/LlmModelAbstract.cpp
+	src/EncoderModelAbstract.cpp
+	src/Llava.cpp
+	src/ClipEncoder.cpp
+	src/ImageToTextXForm.cpp  
 )
 	
 SET(IP_FILES_H
@@ -308,6 +315,13 @@ SET(IP_FILES_H
 	include/ColorConversionXForm.h
 	include/Overlay.h
 	include/AudioToTextXForm.h
+	include/ModelEnums.h
+	include/ModelStrategy.h
+	include/LlmModelAbstract.h
+	include/EncoderModelAbstract.h
+	include/Llava.h
+	include/ClipEncoder.h
+	include/ImageToTextXForm.h
 )
 
 SET(CUDA_CORE_FILES
@@ -562,6 +576,8 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
+	test/llavamodel_tests.cpp
+	test/imageToTextXForm_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -587,8 +603,10 @@ ENDIF (ENABLE_CUDA)
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+find_library(COMMON_LIB NAMES common_llama.lib libcommon_llama.a REQUIRED)
+find_library(LLAVA_LIB NAMES llavalib.lib libllavalib.a REQUIRED)
 
-target_link_libraries(aprapipesut   
+target_link_libraries(aprapipesut
   aprapipes  
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -608,6 +626,9 @@ target_link_libraries(aprapipesut
   liblzma::liblzma
   bigint::bigint
   sfml-audio
+  ${COMMON_LIB}
+  llama 
+  ${LLAVA_LIB}
   whisper::whisper
   )
 
