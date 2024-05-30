@@ -10,19 +10,6 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkImage" id="id_live_or_rec_status_imgctrl">
-        <property name="width_request">32</property>
-        <property name="height_request">32</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="pixbuf">../images/icons8-green-dot-24.png</property>
-      </object>
-      <packing>
-        <property name="x">1240</property>
-        <property name="y">5</property>
-      </packing>
-    </child>
-    <child>
       <object class="GtkLabel" id="id_app_version_label">
         <property name="width_request">200</property>
         <property name="height_request">32</property>
