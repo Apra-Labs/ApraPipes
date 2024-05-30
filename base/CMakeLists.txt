@@ -279,7 +279,6 @@ IF(ENABLE_LINUX)
 		src/GTKModel.cpp
 		src/GTKSetup.cpp
 		src/GTKView.cpp
-		test/gtkglrenderer_tests.cpp
 		)
 ENDIF(ENABLE_LINUX)
 

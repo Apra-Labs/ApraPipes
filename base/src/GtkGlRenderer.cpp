@@ -31,14 +31,13 @@ public:
 
   static void on_resize(GtkGLArea *area, gint width, gint height,
                         gpointer data) {
-    printf("In resize width = %d, height = %d\n", width, height);
+    LOG_INFO << "GL Area Width " << width << "Height " << height;
     view_set_window(width, height);
     background_set_window(width, height);
   }
   void setProps(GtkGlRendererProps &props) { mProps = props; }
   static gboolean on_render(GtkGLArea *glarea, GdkGLContext *context,
                             gpointer data) {
-    // LOG_ERROR<<"DATA IN RENDER "<<data;
     GtkGlRenderer::Detail *detailInstance = (GtkGlRenderer::Detail *)data;
 
     if (detailInstance->isMetadataSet == false) {
@@ -57,9 +56,6 @@ public:
         // Get the position of the child relative to its parent
         gtk_widget_translate_coordinates(GTK_WIDGET(glarea), parent, 0, 0, &x,
                                          &y);
-        // g_print("Child position relative to parent: x=%d, y=%d\n", x, y);
-        // LOG_ERROR << "Child position relative to parent "<< x << "====="  <<
-        // y << "==============" << detailInstance->mProps.windowWidth ;
       } else {
         // g_print("Error: Child's parent is not realized.\n");
       }
@@ -82,12 +78,7 @@ public:
       frameToRender = detailInstance->renderFrame->data();
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // Draw background:
     background_draw();
-
-    // Draw model:
-    // model_draw();
-    // draw_frames();
     drawCameraFrame(frameToRender, detailInstance->frameWidth,
                     detailInstance->frameHeight);
 
@@ -139,22 +130,6 @@ public:
                            gpointer data) {
     LOG_ERROR << "UNREALIZE "
                  "SIGNAL==================================>>>>>>>>>>>>>>>>>";
-    // GdkGLContext *glcontext = gtk_gl_area_get_context(GTK_GL_AREA(glarea));
-    // GdkWindow *glwindow = gdk_gl_context_get_window(glcontext);
-    // GdkFrameClock *frame_clock = gdk_window_get_frame_clock(glwindow);
-
-    // // Disconnect the update signal from frame_clock
-    // g_signal_handlers_disconnect_by_func(frame_clock,
-    // gtk_gl_area_queue_render, G_OBJECT(glarea));
-
-    // // // Get the parent container
-    // GtkWidget *parent_container = gtk_widget_get_parent(glarea);
-
-    // // Remove the GtkGLArea from its parent container
-    // gtk_container_remove(GTK_CONTAINER(parent_container), glarea);
-
-    // // Destroy the GtkGLArea widget
-    // gtk_widget_destroy(glarea);
   }
 
   static gboolean on_scroll(GtkWidget *widget, GdkEventScroll *event,
@@ -212,7 +187,6 @@ public:
 
   bool init() {
     connect_glarea_signals(glarea);
-    // initialize_gl(GTK_GL_AREA(glarea));
     return true;
   }
 
@@ -235,8 +209,6 @@ GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props)
   mDetail->glarea = props.glArea;
   mDetail->windowWidth = props.windowWidth;
   mDetail->windowHeight = props.windowHeight;
-  // LOG_ERROR<<"i am creating gtkgl renderer width and height is
-  // "<<mDetail->mProps.windowWidth;
 }
 
 GtkGlRenderer::~GtkGlRenderer() {}
@@ -256,7 +228,6 @@ bool GtkGlRenderer::process(frame_container &frames)
 
 {
   auto myId = Module::getId();
-  // LOG_ERROR << "GOT "
   auto frame = frames.cbegin()->second;
   mDetail->cachedFrame = frame;
   size_t underscorePos = myId.find('_');
@@ -272,8 +243,6 @@ bool GtkGlRenderer::process(frame_container &frames)
     boost::shared_ptr<AbsControlModule> ctl =
         boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
     ctl->handleLastGtkGLRenderTS();
-    // LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending
-    // timestamp "<<myTime;
     return true;
   }
   return true;
@@ -300,7 +269,6 @@ void GtkGlRenderer::processQueue() {
     }
 
     if (timeDiff >= 33) {
-      // LOG_ERROR << "GOT "
       mDetail->cachedFrame = frame;
       size_t underscorePos = myId.find('_');
       std::string numericPart = myId.substr(underscorePos + 1);
@@ -315,8 +283,6 @@ void GtkGlRenderer::processQueue() {
         boost::shared_ptr<AbsControlModule> ctl =
             boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
         ctl->handleLastGtkGLRenderTS();
-        // LOG_ERROR << "myID is GtkGlRendererModule_ "<<myNumber << "sending
-        // timestamp "<<myTime;
       }
       lastFrameTime = currentTime;
     }
@@ -362,14 +328,13 @@ bool GtkGlRenderer::changeProps(GtkWidget *glArea, int windowWidth,
 
 bool GtkGlRenderer::shouldTriggerSOS() {
   if (!mDetail->isMetadataSet) {
-    LOG_ERROR << "WIll Trigger SOS";
+    LOG_TRACE << "WIll Trigger SOS";
     return true;
   }
   return false;
 }
 
 bool GtkGlRenderer::processSOS(frame_sp &frame) {
-  // mDetail->connect_glarea_signals(mDetail->glarea);
   auto inputMetadata = frame->getMetadata();
   auto frameType = inputMetadata->getFrameType();
   LOG_TRACE << "GOT METADATA " << inputMetadata->getFrameType();
@@ -391,14 +356,13 @@ bool GtkGlRenderer::processSOS(frame_sp &frame) {
     mDetail->isDmaMem =
         metadata->getMemType() == FrameMetadata::MemType::DMABUF;
 
-    LOG_ERROR << "Width is " << metadata->getWidth() << "Height is "
+    LOG_INFO << "Width is " << metadata->getWidth() << "Height is "
               << metadata->getHeight();
-    // LOG_ERROR << "Width STEP is " << metadata->
     FrameMetadata::MemType memType = metadata->getMemType();
     {
       if (memType != FrameMetadata::MemType::DMABUF)
 
-        LOG_ERROR << "Memory Type Is Not DMA but it's a interleaved Image";
+        LOG_INFO << "Memory Type Is Not DMA but it's a interleaved Image";
     }
   } break;
   case FrameMetadata::FrameType::RAW_IMAGE_PLANAR: {
@@ -413,11 +377,11 @@ bool GtkGlRenderer::processSOS(frame_sp &frame) {
     mDetail->frameHeight = metadata->getHeight(0);
     mDetail->isDmaMem =
         metadata->getMemType() == FrameMetadata::MemType::DMABUF;
-    LOG_ERROR << "Width is " << metadata->getWidth(0) << "Height is "
+    LOG_INFO << "Width is " << metadata->getWidth(0) << "Height is "
               << metadata->getHeight(0);
     FrameMetadata::MemType memType = metadata->getMemType();
     if (memType != FrameMetadata::MemType::DMABUF) {
-      LOG_ERROR << "Memory Type Is Not DMA but it's a planar Image";
+      LOG_INFO << "Memory Type Is Not DMA but it's a planar Image";
     }
   } break;
   default:
@@ -425,8 +389,6 @@ bool GtkGlRenderer::processSOS(frame_sp &frame) {
                                       std::to_string(frameType) + ">");
   }
   mDetail->isMetadataSet = true;
-  LOG_ERROR << "Done Setting Metadata=========================>";
-  // mDetail->init(renderHeight, renderWidth);
   return true;
 }
 
