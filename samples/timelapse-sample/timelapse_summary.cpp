@@ -29,7 +29,6 @@ bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
       H264EncoderNVCodecProps::MAIN;
   bool enableBFrames = false;
   bool sendDecodedFrames = true;
-  bool sendOverlayFrames = false;
 
   auto mp4ReaderProps =
       Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
@@ -39,7 +38,7 @@ bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
       boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
   auto motionExtractorProps = MotionVectorExtractorProps(
       MotionVectorExtractorProps::MVExtractMethod::OPENH264, sendDecodedFrames,
-      50, sendOverlayFrames);
+      1);
   motionExtractor = boost::shared_ptr<MotionVectorExtractor>(
       new MotionVectorExtractor(motionExtractorProps));
   colorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(
@@ -61,8 +60,10 @@ bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
   mp4Reader->addOutPutPin(mp4Metadata);
   std::vector<std::string> mImagePin =
       mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
+  std::vector<std::string> mDecodedPin =
+      motionExtractor->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE);
   mp4Reader->setNext(motionExtractor, mImagePin);
-  motionExtractor->setNext(colorchange1);
+  motionExtractor->setNext(colorchange1, mDecodedPin);
   colorchange1->setNext(colorchange2);
   copy = boost::shared_ptr<Module>(
       new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, cudaStream_)));
@@ -144,7 +145,7 @@ int main(int argc, char *argv[]) {
     return 1; // Or any error code indicating failure
   }
 
-  boost::this_thread::sleep_for(boost::chrono::minutes(10));
+  boost::this_thread::sleep_for(boost::chrono::minutes(120));
 
   // Stop the pipeline
   if (!pipelineInstance.stopPipeline()) {
