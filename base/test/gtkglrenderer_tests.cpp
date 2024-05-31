@@ -11,6 +11,7 @@
 #include "NvV4L2Camera.h"
 #include "MemTypeConversion.h"
 #include "ResizeNPPI.h"
+#include "H264Decoder.h"
 #endif
 #include "AffineTransform.h"
 #include "ColorConversionXForm.h"
@@ -20,7 +21,6 @@
 #include "FileReaderModule.h"
 #include "FileWriterModule.h"
 #include "GtkGlRenderer.h"
-#include "H264Decoder.h"
 #include "H264Metadata.h"
 #include "RTSPClientSrc.h"
 #include "StatSink.h"
@@ -89,6 +89,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86Pipeline() {
 }
 
 boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline() {
+#if defined(__arm__) || defined(__aarch64__)
   Logger::setLogLevel("info");
 
   rtsp_client_tests_data d;
@@ -119,6 +120,8 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline() {
   p.init();
   p.run_all_threaded();
   return GtkGl;
+#endif
+  return NULL;
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline1() {
