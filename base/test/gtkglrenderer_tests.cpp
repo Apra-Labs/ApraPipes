@@ -9,6 +9,7 @@
 #include "NvArgusCamera.h"
 #include "NvTransform.h"
 #include "NvV4L2Camera.h"
+#include "MemTypeConversion.h"
 #endif
 #include "AffineTransform.h"
 #include "ColorConversionXForm.h"
@@ -20,7 +21,6 @@
 #include "GtkGlRenderer.h"
 #include "H264Decoder.h"
 #include "H264Metadata.h"
-#include "MemTypeConversion.h"
 #include "RTSPClientSrc.h"
 #include "ResizeNPPI.h"
 #include "StatSink.h"
