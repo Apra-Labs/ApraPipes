@@ -18,7 +18,10 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       prep-cmd: 'echo skipping builder prep as I can not sudo'
-      bootstrap-cmd: 'export PATH="$HOME/.local/bin/gcc-13:$PATH" && ./vcpkg/bootstrap-vcpkg.sh'
+      bootstrap-cmd: |
+        export PATH="$HOME/.local/bin/gcc-13:$PATH" 
+        ./vcpkg/bootstrap-vcpkg.sh
+        export PATH=$(echo $PATH | sed -e 's|$HOME/.local/bin/gcc-13:||')
       cache-path: './none'
       cmake-conf-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && export VCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay && cmake -B . -DENABLE_ARM64=ON ../base'
       nProc: 6
