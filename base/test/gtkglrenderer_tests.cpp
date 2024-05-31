@@ -10,6 +10,7 @@
 #include "NvTransform.h"
 #include "NvV4L2Camera.h"
 #include "MemTypeConversion.h"
+#include "ResizeNPPI.h"
 #endif
 #include "AffineTransform.h"
 #include "ColorConversionXForm.h"
@@ -22,7 +23,6 @@
 #include "H264Decoder.h"
 #include "H264Metadata.h"
 #include "RTSPClientSrc.h"
-#include "ResizeNPPI.h"
 #include "StatSink.h"
 #include "VirtualCameraSink.h"
 
