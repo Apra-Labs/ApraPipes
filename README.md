@@ -2,7 +2,7 @@
   <img src="./data/ReadMe Images/ApraPipes.png" alt="Header Image">
 </p>
 
-# ApraPipes
+# ApraPipes 
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits.  
 Learn more about ApraPipes here https://apra-labs.github.io/ApraPipes.
 
