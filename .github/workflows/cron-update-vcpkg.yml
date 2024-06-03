@@ -35,5 +35,6 @@ jobs:
           delete-branch: true
           title: 'Update vcpkg submodule'
           branch: update-vcpkg
+          base: main
           commit-message: |
             [BOT] Update vcpkg submodule.
