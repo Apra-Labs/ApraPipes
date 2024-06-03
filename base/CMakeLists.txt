@@ -163,8 +163,6 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
-	.././samples/create_thumbnail_from_mp4_video/generate_thumbnail_from_mp4_video.cpp
-	.././samples/timelapse-sample/timelapse_summary.h
 )
 
 SET(CORE_FILES_H
@@ -226,8 +224,6 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
-	.././samples/timelapse-sample/timelapse_summary.cpp
 )
 
 IF(ENABLE_WINDOWS)
@@ -460,8 +456,6 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
-.././samples/create_thumbnail_from_mp4_video
-./../samples/timelapse-sample
 )
 
 
@@ -573,11 +567,25 @@ SET(UT_FILES
 )
 
 SET(SAMPLE_UT_FILES
+	test/utmain.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
-	.././samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
-	.././samples/play_mp4_from_beginningtest_play_mp4_video_from_beginning.cpp
+	../samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+	../samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
 )
+
+SET(SAMPLE_CORE_FILES
+	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
+	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
+	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
+	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.cpp
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -585,9 +593,20 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
-
 add_executable(aprapipesut ${UT_FILES})
-add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
+add_executable(aprapipessampleut ${SAMPLE_SOURCE})
+
+target_include_directories ( aprapipessampleut PRIVATE 
+${JETSON_MULTIMEDIA_LIB_INCLUDE}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
+${Boost_INCLUDE_DIRS}
+${LIBMP4_INC_DIR}
+${BARESIP_INC_DIR}
+${LIBRE_INC_DIR}
+${NVCODEC_INCLUDE_DIR}
+test
+)
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
@@ -601,28 +620,6 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-target_link_libraries(aprapipessampleut   
-  aprapipes  
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  whisper::whisper
-  )
 
 target_link_libraries(aprapipessampleut   
   aprapipes  
