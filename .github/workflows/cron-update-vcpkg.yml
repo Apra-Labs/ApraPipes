@@ -1,8 +1,6 @@
 name: Weekly Update
 
 on:
-  push:
-    branches: [ aa/update-submodule ]
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
