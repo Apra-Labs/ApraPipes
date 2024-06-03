@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 set(TARGET play_mp4_from_beginning)
 SET(CORE_FILES
-  play_mp4_video_from_beginning.cpp
-  ../../base/test/test_utils.cpp
+	PlayMp4VideoFromBeginning.cpp
+	pipelineMain.cpp
 )
 SET(CORE_FILES_H
 	PlayMp4VideoFromBeginning.h
-	../../base/test/test_utils.h
 )
 SET(SOURCE
   ${CORE_FILES}
