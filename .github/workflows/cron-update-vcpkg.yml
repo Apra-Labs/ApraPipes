@@ -36,4 +36,4 @@ jobs:
           title: 'Update vcpkg submodule'
           branch: update-vcpkg
           commit-message: |
-            [BOT] Update vcpkg submodule
+            [BOT] Update vcpkg submodule.
