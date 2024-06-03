@@ -107,6 +107,24 @@ void DetailFfmpeg::initDecoder() {
     throw AIPException(AIP_FATAL, "failed open decoder");
   }
 }
+
+bool discardNoisyFrames(int black_pixel_percent, cv::Mat image) {
+  cv::Mat gray;
+  cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+
+  cv::Mat binary;
+  cv::threshold(gray, binary, 128, 255, cv::THRESH_BINARY);
+  int totalPixels = binary.total();
+  int whitePixels = cv::countNonZero(binary);
+  int blackPixels = totalPixels - whitePixels;
+
+  double blackPixelPercentage = (static_cast<double>(blackPixels) / static_cast<double>(totalPixels)) * 100.0;
+  if (blackPixelPercentage > black_pixel_percent)
+    return true;
+  else
+    return false;
+}
+
 void DetailFfmpeg::getMotionVectors(frame_container &frames, frame_sp &outFrame,
                                     frame_sp &decodedFrame) {
   int ret = 0;
@@ -325,9 +343,10 @@ void DetailOpenH264::getMotionVectors(frame_container &frames,
     cv::Mat yuvImgCV = cv::Mat(mHeight + mHeight / 2, mWidth, CV_8UC1,
                                yuvStartPointer, mWidth);
     bgrImg.data = static_cast<uint8_t *>(decodedFrame->data());
-
-    cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
-    frames.insert(make_pair(rawFramePinId, decodedFrame));
+    if (!discardNoisyFrames(90, bgrImg)) {
+      cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
+      frames.insert(make_pair(rawFramePinId, decodedFrame));
+    }
     free(yuvStartPointer);
   }
   free(mMotionVectorData);
