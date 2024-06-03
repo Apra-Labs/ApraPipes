@@ -30,15 +30,4 @@ if [ ! -d "/usr/local/cuda/include" ] || [ ! -d "/usr/local/cuda/lib64" ]; then
   exit 1
 fi
 
-if  nvcc --version; then
-  TARGET_USER="$SUDO_USER"
-  TARGET_HOME=$(eval echo ~$TARGET_USER)
-  echo 'export VCPKG_FORCE_SYSTEM_BINARIES=1' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
-  echo 'export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
-  echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' | sudo -u $TARGET_USER tee -a $TARGET_HOME/.bashrc
-  echo "Appended paths to ~/.bashrc and saved changes."
-  source ~/.bashrc
-  echo "Reloaded ~/.bashrc"
-fi
-
 echo "Dependencies verified and installed successfully."
