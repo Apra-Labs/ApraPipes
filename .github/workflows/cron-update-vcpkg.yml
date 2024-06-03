@@ -1,0 +1,38 @@
+name: Weekly Update
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+jobs:
+  update-vcpkg-submodule:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code recursively
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Pull changes in vcpkg submodule
+        id: remote-update
+        run: |
+          cd vcpkg
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          echo "::set-output name=has_update::$(git --no-pager diff --name-only origin/master..HEAD)"
+          git checkout master
+          git pull
+
+      - if: steps.remote-update.outputs.has_update != ''
+        name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          signoff: true
+          delete-branch: true
+          title: 'Update vcpkg submodule'
+          branch: update-vcpkg
+          base: main
+          commit-message: |
+            [BOT] Update vcpkg submodule
