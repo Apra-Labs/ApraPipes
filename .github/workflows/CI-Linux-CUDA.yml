@@ -18,7 +18,7 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       prep-cmd: 'echo skipping builder prep as I can not sudo'
-      bootstrap-cmd: './vcpkg/bootstrap-vcpkg.sh'
+      bootstrap-cmd: 'export PATH="$HOME/.local/bin/gcc-11:$PATH" && ./vcpkg/bootstrap-vcpkg.sh'
       cache-path: './none'
       nProc: 6
   linux-cuda-publish:
