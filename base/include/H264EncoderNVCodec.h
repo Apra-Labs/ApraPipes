@@ -21,12 +21,17 @@ public:
 	{
 
 	}
+	H264EncoderNVCodecProps(const uint32_t &_bitRateKbps, const apracucontext_sp& _cuContext, const uint32_t &_gopLength,const uint32_t &_frameRate,H264CodecProfile _vProfile,bool _enableBFrames, uint32_t &_bufferThres) 
+		: cuContext(_cuContext), gopLength(_gopLength), frameRate(_frameRate), bitRateKbps(_bitRateKbps), vProfile(_vProfile), enableBFrames(_enableBFrames), bufferThres(_bufferThres)
+	{
+	}
 	H264CodecProfile vProfile= H264EncoderNVCodecProps::BASELINE;
 	bool enableBFrames=false;
 	uint32_t gopLength = 30;
 	uint32_t bitRateKbps = 1000;
 	uint32_t frameRate = 30;
 	apracucontext_sp cuContext;
+	uint32_t bufferThres = 30;
 };
 
 class H264EncoderNVCodec : public Module

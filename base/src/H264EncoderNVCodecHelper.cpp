@@ -204,7 +204,7 @@ class H264EncoderNVCodecHelper::Detail
 		}
 	}
 public:
-	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,bool enableBFrames) :
+	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,bool enableBFrames, uint32_t& bufferThres) :
 		m_nWidth(0),
 		m_nHeight(0),
 		m_eBufferFormat(NV_ENC_BUFFER_FORMAT_UNDEFINED),
@@ -214,7 +214,8 @@ public:
 		m_nGopLength(gopLength),
 		m_nFrameRate(frameRate),
 		m_nProfile(profile),
-		m_bEnableBFrames(enableBFrames)
+		m_bEnableBFrames(enableBFrames),
+		m_nBufferThres(bufferThres)
 	{
 		m_nvcodecResources.reset(new NVCodecResources(cuContext));
 
@@ -472,7 +473,7 @@ private:
 	{
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 20;
+		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 30;
 		 m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
 		 for (int i = 0; i < m_nEncoderBuffer; i++)
@@ -574,7 +575,15 @@ private:
 
 	bool is_not_empty() const
 	{
-		if (!m_nvcodecResources->m_nFreeOutputBitstreams)
+		uint32_t busyStreams = m_nvcodecResources->m_nBusyOutputBitstreams;
+		if (!m_nvcodecResources->m_nFreeOutputBitstreams && busyStreams < m_nBufferThres)
+		{
+			uint32_t bufferLength = min(busyStreams, m_nBufferThres - busyStreams);
+			doubleOutputBuffers(bufferLength);
+			LOG_INFO << "Allocated <" << bufferLength << "> outputbitstreams to the encoder buffer.";
+			m_nvcodecResources->m_nFreeOutputBitstreams += bufferLength;
+		}
+		else
 		{
 			LOG_INFO << "waiting for free outputbitstream<> busy streams<" << m_nvcodecResources->m_nBusyOutputBitstreams << ">";
 		}
@@ -585,6 +594,16 @@ private:
 	bool is_output_available() const
 	{
 		return m_nvcodecResources->m_nBusyOutputBitstreams > 0 || !m_bRunning;
+	}
+
+	void doubleOutputBuffers(uint32_t bufferLength) const
+	{
+		for (int i = 0; i < bufferLength; i++)
+		{
+			NV_ENC_CREATE_BITSTREAM_BUFFER createBitstreamBuffer = { NV_ENC_CREATE_BITSTREAM_BUFFER_VER };
+			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncCreateBitstreamBuffer(m_nvcodecResources->m_hEncoder, &createBitstreamBuffer));
+			m_nvcodecResources->m_qBitstreamOutputBitstream.push_back(createBitstreamBuffer.bitstreamBuffer);
+		}
 	}
 
 	std::thread m_thread;
@@ -600,6 +619,7 @@ private:
 	uint32_t m_nFrameRate;
 	H264EncoderNVCodecProps::H264CodecProfile m_nProfile;
 	bool m_bEnableBFrames;
+	uint32_t m_nBufferThres;
 
 	NV_ENC_INITIALIZE_PARAMS m_initializeParams;
 	NV_ENC_CONFIG m_encodeConfig;
@@ -621,7 +641,13 @@ private:
 
 H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
 {
-	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
+	uint32_t _bufferThres = 30;
+	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames,_bufferThres));
+}
+
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames, uint32_t _bufferThres)
+{
+	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames,_bufferThres));
 }
 
 H264EncoderNVCodecHelper::~H264EncoderNVCodecHelper()
