@@ -13,10 +13,9 @@ class GenerateThumbnailsPipeline
 {
 public:
     GenerateThumbnailsPipeline(); 
-    bool setUpPipeLine();
+    bool setUpPipeLine(const std::string &videoPath,const std::string &outFolderPath);
     bool startPipeLine();
     bool stopPipeLine();
-    bool testPipeLine();
 
 private:
     PipeLine pipeLine;

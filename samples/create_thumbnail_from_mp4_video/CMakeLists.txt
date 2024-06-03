@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
-set(TARGET create_thumbnail_from_mp4_video)
+set(TARGET generateThumbnailFromMp4Video)
 SET(CORE_FILES
-	generate_thumbnail_from_mp4_video.cpp
-	../../base/test/test_utils.cpp
+	GenerateThumbnailsPipeline.cpp
+	pipelineMain.cpp
 )
 SET(CORE_FILES_H
 	GenerateThumbnailsPipeline.h
-	 ../../base/test/test_utils.h
 )
 SET(SOURCE
   ${CORE_FILES}
