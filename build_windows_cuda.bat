@@ -23,10 +23,10 @@ SET VCPKG_ARGS=-DENABLE_CUDA=ON -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -DCMAKE_T
 mkdir _build
 cd _build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo %VCPKG_ARGS%
-cmake --build .
+cmake --build . --config RelWithDebInfo
 cd ..
 rem goto :EOF
 mkdir _debugbuild
 cd _debugbuild
 cmake -DCMAKE_BUILD_TYPE=Debug %VCPKG_ARGS%
-cmake --build .
+cmake --build . --config Debug
