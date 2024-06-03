@@ -27,4 +27,5 @@ private:
   boost::shared_ptr<Module> sync;
   boost::shared_ptr<Module> encoder;
   boost::shared_ptr<Module> mp4WriterSink;
+  boost::shared_ptr<Module> copy;
 };
