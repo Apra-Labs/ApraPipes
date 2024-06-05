@@ -834,7 +834,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							bool pritority = true;
 							boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
 							ctl->handleMMQExport(cmd, pritority);
-							/* Eventual example:
+							// Eventual example:
 							NVRCommandExportView cmd;
 							cmd.startViewTS = latestFrameExportedFromHandleCmd;
 							cmd.stopViewTS = 0;
@@ -1023,7 +1023,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						Command cmd;
 						boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
 						ctl->handleMMQExportView(cmd, true);
-						/* Eventual example:
+						// Eventual example:
 						NVRCommandExportView cmd;
 						cmd.startViewTS = latestFrameExportedFromProcess;
 						cmd.stopViewTS = 0;

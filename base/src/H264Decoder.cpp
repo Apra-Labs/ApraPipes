@@ -433,11 +433,6 @@ bool H264Decoder::process(frame_container& frames)
 	{
 		saveSpsPps(frame);
 	}
-	// we get a repeated frame whenever direction changes i.e. the timestamp Q latest frame is repeated
-	if (!incomingFramesTSQ.empty() && incomingFramesTSQ.back() == frame->timestamp)
-	{
-		flushDecoderFlag = true;
-	}
 
 	//Insert the frames time stamp in TS queue. We send the frames to next modules in the same order.
 	incomingFramesTSQ.push_back(frame->timestamp);
@@ -466,17 +461,7 @@ bool H264Decoder::process(frame_container& frames)
 		// if we seeked
 		if (h264Metadata->mp4Seek)
 		{
-			// flush the incomplete GOP
-			flushDecoderFlag = true;
 			clearIncompleteBwdGopTsFromIncomingTSQ(latestBackwardGop);
-		}
-
-		// corner case: partial GOP already present in cache 
-		if (!mDirection && latestBackwardGop.empty() && backwardGopBuffer.empty())
-		{
-			//auto eosFrame = frame_sp(new EmptyFrame());
-			//mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
-			flushDecoderFlag = false;
 		}
 
 		if (!latestBackwardGop.empty())
@@ -501,17 +486,9 @@ bool H264Decoder::process(frame_container& frames)
 		// dont buffer fwd GOP if I frame has not been recieved (possible in intra GOP direction change cases)
 		else if (mDirection && !latestForwardGop.empty() && (nalTypeAfterSpsPpsCurrentFrame == H264Utils::H264_NAL_TYPE_IDR_SLICE || H264Utils::getNALUType((char*)latestForwardGop.front()->data()) == H264Utils::H264_NAL_TYPE_IDR_SLICE))
 		{
-			flushDecoderFlag = false;
 			latestForwardGop.push_back(frame);
 		}
 
-		// While in forward play, if cache has resumed in the middle of the GOP then to get the previous few frames we need to flush the decoder.
-		if (mDirection && !prevFrameInCache)
-		{
-			//auto eosFrame = frame_sp(new EmptyFrame());
-			//mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
-			flushDecoderFlag = false;
-		}
 		prevFrameInCache = true;
 		sendDecodedFrame();
 		return true;
@@ -539,16 +516,6 @@ bool H264Decoder::process(frame_container& frames)
 
 void H264Decoder::sendDecodedFrame()
 {
-	// not in output cache && flushdecoder flag is set
-	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) == decodedFramesCache.end() && flushDecoderFlag && backwardGopBuffer.empty())
-	{
-		// We send empty frame to the decoder , in order to flush out all the frames from decoder.
-		// This is to handle some cases whenever the direction change happens and to get out the latest few frames sent to decoder.
-		//auto eosFrame = frame_sp(new EmptyFrame());
-		//mDetail->compute(eosFrame->data(), eosFrame->size(), eosFrame->timestamp);
-		flushDecoderFlag = false;
-	}
-
 	// timestamp in output cache
 	if (!incomingFramesTSQ.empty() && !decodedFramesCache.empty() && decodedFramesCache.find(incomingFramesTSQ.front()) != decodedFramesCache.end())
 	{
@@ -790,18 +757,5 @@ bool H264Decoder::processEOS(string& pinId)
 
 void H264Decoder::flushQue()
 {
-	if (!incomingFramesTSQ.empty())
-	{
-		
-		// LOG_ERROR << "clearing decoder cache and clear ts  = " << incomingFramesTSQ.size();
-		// incomingFramesTSQ.clear();
-		// latestBackwardGop.clear();
-		// latestForwardGop.clear();
-		// backwardGopBuffer.clear();
-		
-		// auto frame = frame_sp(new EmptyFrame());
-		// LOG_ERROR << "does it compute";
-		// mDetail->compute(frame->data(), frame->size(), frame->timestamp);
-		// LOG_ERROR << " cleared decoder cache " << incomingFramesTSQ.size();
-	}
+	Module::flushQue();
 }
