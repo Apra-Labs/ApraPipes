@@ -118,10 +118,8 @@ bool discardNoisyFrames(int black_pixel_percent, cv::Mat image) {
 	int whitePixels = cv::countNonZero(binary);
 	int blackPixels = totalPixels - whitePixels;
 
-	double blackPixelPercentage =
-		(static_cast<double>(blackPixels) / static_cast<double>(totalPixels)) *
-		100.0;
-	if (blackPixelPercentage > black_pixel_percent)
+	double blackPixelPercentage = (static_cast<double>(blackPixels) / static_cast<double>(totalPixels)) * 100.0;
+	if (blackPixelPercentage > black_pixel_percent || whitePixels == totalPixels)
 		return true;
 	else
 		return false;
@@ -139,9 +137,12 @@ void DetailFfmpeg::getMotionVectors(frame_container& frames, frame_sp& outFrame,
 	if (!pkt) {
 		LOG_ERROR << "Could not allocate AVPacket\n";
 	}
-	ret = decodeAndGetMotionVectors(pkt, frames, outFrame, decodedFrame);
-	av_packet_free(&pkt);
-	av_frame_free(&avFrame);
+	bgrImg.data = static_cast<uint8_t *>(decodedFrame->data());
+	if (!discardNoisyFrames(99, bgrImg)) {
+		ret = decodeAndGetMotionVectors(pkt, frames, outFrame, decodedFrame);
+		av_packet_free(&pkt);
+		av_frame_free(&avFrame);
+	}
 }
 
 int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt,
@@ -351,7 +352,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames,
 		cv::Mat yuvImgCV = cv::Mat(mHeight + mHeight / 2, mWidth, CV_8UC1,
 			yuvStartPointer, mWidth);
 		bgrImg.data = static_cast<uint8_t*>(decodedFrame->data());
-		if (!discardNoisyFrames(97, bgrImg)) {
+		if (!discardNoisyFrames(99, bgrImg)) {
 			cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
 			frames.insert(make_pair(rawFramePinId, decodedFrame));
 		}
