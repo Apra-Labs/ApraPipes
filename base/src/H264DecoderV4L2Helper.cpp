@@ -662,7 +662,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         }
         // Main Capture loop for DQ and Q.
  
-        while (1)
+        while (!ctx->in_error)
         {
             struct v4l2_buffer v4l2_buf;
             struct v4l2_plane planes[MAX_PLANES];
@@ -1317,8 +1317,10 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
     if(inputFrameSize)
 	framesTimestampEntry.push(inputFrameTS);
 
-    if(inputFrameSize && ctx.eos && ctx.got_eos)
+    if((inputFrameSize && ctx.eos && ctx.got_eos) || ctx.in_error)
     {
+        ctx.in_error = false;
+        deQueAllBuffers();
         ctx.eos = false;
         ctx.got_eos = false;
         initializeDecoder();
@@ -1351,13 +1353,19 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         ** It is necessary to queue an empty buffer
         ** to signal EOS to the decoder.
         */
-        ret = q_buffer(&ctx, queue_v4l2_buf_op, buffer,
-            ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
-        if (ret)
+        int qBuffer = 0;
+        int counter = 0;
+        do
         {
-            LOG_ERROR << "Error Qing buffer at output plane" << endl;
-            ctx.in_error = 1;
+            counter++;
+            qBuffer = q_buffer(&ctx, queue_v4l2_buf_op, buffer,
+            ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
+            if(counter > 1)
+            {
+                LOG_INFO << "Unable to queue buffers " << qBuffer;
+            }
         }
+        while(qBuffer);
  
         if (queue_v4l2_buf_op.m.planes[0].bytesused == 0)
         {
@@ -1406,6 +1414,11 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
 void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
 {
     process(eosFrame->data(), eosFrame->size(), 0);
+    deQueAllBuffers();
+}
+
+void h264DecoderV4L2Helper::deQueAllBuffers()
+{
     if (ctx.fd != -1)
     {
         if (ctx.dec_capture_thread)

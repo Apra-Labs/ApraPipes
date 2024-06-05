@@ -370,6 +370,17 @@ public:
 							LOG_ERROR << "parse found new files but getNextFileAfter hit EOC while looking for a potential file.";
 							mState.end = true;
 						}
+						if(ex.getError() == "Reached End of Cache in fwd play.")
+						{
+							// send command
+							if(!mState.sentCommandToControlModule)
+							{
+								NVRGoLive cmd;
+								controlModule->queueCommand(cmd, true);
+								LOG_ERROR<<"Sending command to mmq";
+								mState.sentCommandToControlModule = true;
+							}
+						}
 						else
 						{
 							auto msg = "unexpected state while getting next file after successful parse <" + ex.getError() + ">";
@@ -511,10 +522,18 @@ public:
 				/*mProps.fps = mFPS;
 				if (controlModule != nullptr)
 				{
-					LOG_INFO << "fps of new video is = " << mFPS;
+					auto gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+					mProps.fps = mFPS * playbackSpeed;
+					if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+					{
+						mProps.fps = mProps.fps/gop;
+					}
 					setMp4ReaderProps(mProps);
-					LOG_INFO << "did set Mp4reader props";
-				}*/
+					DecoderPlaybackSpeed cmd;
+					cmd.playbackSpeed = playbackSpeed;
+					cmd.playbackFps = mFPS;
+					cmd.gop = gop;
+				}
 			}
 		}
 
@@ -587,6 +606,7 @@ public:
 		// reset flags
 		waitFlag = false;
 		sentEOSSignal = false;
+		mState.sentCommandToControlModule = false;
 	}
 
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
@@ -727,7 +747,7 @@ public:
 		mState.shouldPrependSpsPps = true;
 		isMp4SeekFrame = true;
 		setMetadata();
-		LOG_ERROR << "seek successfull";
+		LOG_INFO << "seek successfull";
 		return true;
 	}
 
@@ -1062,6 +1082,7 @@ protected:
 		Mp4ReaderSourceProps props;
 		float speed;
 		bool direction;
+		bool sentCommandToControlModule = false;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;
@@ -1087,6 +1108,8 @@ public:
 	bool isMp4SeekFrame = false;
 	int ret;
 	double mFPS = 0;
+	float playbackSpeed = 1;
+	float framesToSkip = 0;
 	double mDurationInSecs = 0;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
 	std::function<void(frame_sp frame)> sendEOS;
@@ -1400,6 +1423,33 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		isMp4SeekFrame = false;
 		setMetadata();
 	}
+	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
+	{
+		if(mDirection)
+		{
+			uint64_t nextFrameTs;
+			if(!mState.sample.next_dts && mState.mFrameCounterIdx == mState.mFramesInVideo)//To handle the case when I frame is last frame of the video
+			{
+				uint64_t nextDts = mState.sample.dts - mState.sample.prev_sync_dts;
+				nextDts += mState.sample.dts;
+				uint64_t sample_ts_usec = mp4_sample_time_to_usec(nextDts, mState.video.timescale);
+				nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			}
+			else
+			{
+				uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.next_dts, mState.video.timescale);
+				nextFrameTs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
+			}
+			nextFrameTs++;
+			randomSeek(nextFrameTs);
+		}
+		else
+		{
+			frameTSInMsecs--;
+			randomSeek(frameTSInMsecs);
+		}
+		
+	}
 	return true;
 }
 
@@ -1631,4 +1681,9 @@ bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)
 {
 	Mp4SeekCommand cmd(skipTS, forceReopen);
 	return queueCommand(cmd);
+}
+
+void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
+{
+	mDetail->playbackSpeed = _playbackSpeed;
 }

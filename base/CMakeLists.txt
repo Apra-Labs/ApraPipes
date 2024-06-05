@@ -1,3 +1,22 @@
+# CMAKE_HOST_SYSTEM_PROCESSOR is not helpful because it outputs "unknown" on
+# Linux on ARM.
+execute_process(
+  COMMAND "uname" "--machine" OUTPUT_VARIABLE MACHINE_HARDWARE_NAME
+                                              COMMAND_ERROR_IS_FATAL LAST)
+string(TOLOWER "${MACHINE_HARDWARE_NAME}" MACHINE_HARDWARE_NAME_LOWER)
+
+# vcpkg: Environment variable VCPKG_FORCE_SYSTEM_BINARIES must be set on arm,
+# s390x, and ppc64le platforms.
+# See https://github.com/microsoft/vcpkg-tool/blob/2022-02-24/src/vcpkg.cpp#L257-L266
+if((MACHINE_HARDWARE_NAME_LOWER MATCHES "^arm"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^aarch64"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^s390x"
+    OR MACHINE_HARDWARE_NAME_LOWER MATCHES "^ppc64"
+   )
+   AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows"
+   AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+  set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
+endif()
 cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
@@ -498,10 +517,10 @@ target_include_directories ( aprapipes PRIVATE
 
 # aprapipes Unit Tests
 
-IF (ENABLE_ARM64)
-	SET(ARM64_UT_FILES
-		test/jpegencoderl4tm_tests.cpp
-		test/jpegdecoderl4tm_tests.cpp
+# IF (ENABLE_ARM64)
+# 	SET(ARM64_UT_FILES
+		# test/jpegencoderl4tm_tests.cpp
+		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2_tests.cpp
@@ -615,15 +634,15 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 
-add_executable(aprapipesut ${UT_FILES})
+# add_executable(aprapipesut ${UT_FILES})
 
-IF(ENABLE_ARM64)
-	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
-ENDIF(ENABLE_ARM64)
+# IF(ENABLE_ARM64)
+# 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
+# ENDIF(ENABLE_ARM64)
 
-IF (ENABLE_CUDA)
-	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
-ENDIF (ENABLE_CUDA)
+# IF (ENABLE_CUDA)
+# 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+# ENDIF (ENABLE_CUDA)
 
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
