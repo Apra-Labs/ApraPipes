@@ -517,10 +517,10 @@ target_include_directories ( aprapipes PRIVATE
 
 # aprapipes Unit Tests
 
-# IF (ENABLE_ARM64)
-# 	SET(ARM64_UT_FILES
-		# test/jpegencoderl4tm_tests.cpp
-		# test/jpegdecoderl4tm_tests.cpp
+IF (ENABLE_ARM64)
+	SET(ARM64_UT_FILES
+		test/jpegencoderl4tm_tests.cpp
+		test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2_tests.cpp
@@ -636,13 +636,13 @@ ENDIF(ENABLE_LINUX)
 
 # add_executable(aprapipesut ${UT_FILES})
 
-# IF(ENABLE_ARM64)
-# 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
-# ENDIF(ENABLE_ARM64)
+IF(ENABLE_ARM64)
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
+ENDIF(ENABLE_ARM64)
 
-# IF (ENABLE_CUDA)
-# 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
-# ENDIF (ENABLE_CUDA)
+IF (ENABLE_CUDA)
+	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+ENDIF (ENABLE_CUDA)
 
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
