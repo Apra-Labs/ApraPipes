@@ -616,7 +616,7 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 
-# add_executable(aprapipesut ${UT_FILES})
+add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
