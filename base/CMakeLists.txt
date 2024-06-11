@@ -21,7 +21,7 @@ ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
-	set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
