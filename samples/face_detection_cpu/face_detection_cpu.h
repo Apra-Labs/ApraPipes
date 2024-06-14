@@ -13,12 +13,11 @@ public:
     bool setupPipeline();
     bool startPipeline();
     bool stopPipeline();
-    bool testPipeline();
 private:
-    PipeLine pipeline;
-    boost::shared_ptr<WebCamSource> source;
-    boost::shared_ptr<FaceDetectorXform> faceDetector;
-    boost::shared_ptr<OverlayModule> overlay;
-    boost::shared_ptr<ColorConversion> colorConversion;
-    boost::shared_ptr<ImageViewerModule> imageViewerSink;
+    PipeLine faceDetectionCPUSamplePipeline;
+    boost::shared_ptr<WebCamSource> mSource;
+    boost::shared_ptr<FaceDetectorXform> mFaceDetector;
+    boost::shared_ptr<OverlayModule> mOverlay;
+    boost::shared_ptr<ColorConversion> mColorConversion;
+    boost::shared_ptr<ImageViewerModule> mImageViewerSink;
 };

@@ -163,7 +163,6 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
-	.././samples/face_detection_cpu/face_detection_cpu.cpp
 )
 
 SET(CORE_FILES_H
@@ -225,7 +224,6 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	.././samples/face_detection_cpu/face_detection_cpu.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -458,7 +456,6 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
-.././samples/face_detection_cpu
 )
 
 
@@ -569,6 +566,23 @@ SET(UT_FILES
 	${CUDA_UT_FILES}
 )
 
+SET(SAMPLE_UT_FILES
+	test/utmain.cpp
+	test/test_utils.cpp
+	test/test_utils.h
+	../samples/face_detection_cpu/test_face_detection_cpu.cpp
+)
+
+SET(SAMPLE_CORE_FILES
+	../samples/face_detection_cpu/face_detection_cpu.h
+	../samples/face_detection_cpu/face_detection_cpu.cpp
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -576,12 +590,20 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
-SET(SAMPLE_UT_FILES
-.././samples/face_detection_cpu/test_face_detection_cpu.cpp
-)
-
 add_executable(aprapipesut ${UT_FILES})
-add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
+add_executable(aprapipessampleut ${SAMPLE_SOURCE})
+
+target_include_directories ( aprapipessampleut PRIVATE 
+	${JETSON_MULTIMEDIA_LIB_INCLUDE}
+	${FFMPEG_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${LIBMP4_INC_DIR}
+	${BARESIP_INC_DIR}
+	${LIBRE_INC_DIR}
+	${NVCODEC_INCLUDE_DIR}
+	test
+)
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})

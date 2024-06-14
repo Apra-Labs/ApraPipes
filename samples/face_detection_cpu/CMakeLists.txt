@@ -1,13 +1,15 @@
+cmake_minimum_required(VERSION 3.22)
 set(TARGET face_detection_cpu)
-SET(CORE_FILES
+SET(SAMPLE_FILES
   face_detection_cpu.cpp
+  pipelineMain.cpp
 )
-SET(CORE_FILES_H
+SET(SAMPLE_FILES_H
 	face_detection_cpu.h
 )
 SET(SOURCE
-  ${CORE_FILES}
-  ${CORE_FILES_H}
+  ${SAMPLE_FILES}
+  ${SAMPLE_FILES_H}
 )
 
 add_executable(${TARGET} ${SOURCE})
