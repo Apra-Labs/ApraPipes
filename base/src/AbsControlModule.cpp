@@ -60,12 +60,12 @@ bool AbsControlModule::process(frame_container& frames)
     return true;
 }
 
-std::string AbsControlModule::enrollModule(PipeLine p, std::string role, boost::shared_ptr<Module> module)
+std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::string role, boost::shared_ptr<Module> module)
 {
-    std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
+    std::string pipelineRole = mDetail->getPipelineRole(p->getName(), role);
     if (moduleRoles.find(pipelineRole) != moduleRoles.end())
     {
-        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + p.getName() + ">";
+        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + p->getName() + ">";
         LOG_ERROR << errMsg;
         throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
     }

@@ -2,7 +2,7 @@
 
 #include "Module.h"
 #include <chrono>
-#include <gtk/gtk.h> // remove this
+#include <gtk/gtk.h>
 
 class GtkGlRendererProps : public ModuleProps {
 public:

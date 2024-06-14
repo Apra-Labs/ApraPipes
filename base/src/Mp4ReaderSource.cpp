@@ -373,11 +373,13 @@ public:
 						if(ex.getError() == "Reached End of Cache in fwd play.")
 						{
 							// send command
-							if(!mState.sentCommandToControlModule)
+							if(!mState.sentCommandToControlModule && controlModule != nullptr)
 							{
-								NVRGoLive cmd;
-								controlModule->queueCommand(cmd, true);
-								LOG_ERROR<<"Sending command to mmq";
+								bool goLive = true;
+								bool priority = true;
+								boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								ctl->handleGoLive(goLive, priority);
+								LOG_TRACE<<"Sending command to mmq";
 								mState.sentCommandToControlModule = true;
 							}
 						}
@@ -519,20 +521,23 @@ public:
 				mDurationInSecs = mState.info.duration / mState.info.timescale;
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 				// todo: Implement a way for mp4reader to update FPS when opening a new video in parseFS enabled mode. Must not set parseFS disabled in a loop.
-				/*mProps.fps = mFPS;
+				mProps.fps = mFPS;
+				auto gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+				mProps.fps = mFPS * playbackSpeed;
+				if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				{
+					mProps.fps = mProps.fps/gop;
+				}
+				setMp4ReaderProps(mProps);
 				if (controlModule != nullptr)
 				{
-					auto gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
-					mProps.fps = mFPS * playbackSpeed;
-					if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
-					{
-						mProps.fps = mProps.fps/gop;
-					}
-					setMp4ReaderProps(mProps);
 					DecoderPlaybackSpeed cmd;
 					cmd.playbackSpeed = playbackSpeed;
 					cmd.playbackFps = mFPS;
 					cmd.gop = gop;
+					bool priority = true;
+					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					ctl->handleDecoderSpeed(cmd, priority);
 				}
 			}
 		}
@@ -791,14 +796,11 @@ public:
 			{
 				if ((controlModule != nullptr))
 				{
-					Mp4ErrorHandle cmd;
-					cmd.previousFile = ex.getPreviousFile();
-					cmd.nextFile = ex.getNextFile();
 					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
 					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-					ctl->handleMp4MissingVideotrack();
-					return false;
+					ctl->handleMp4MissingVideotrack(ex.getPreviousFile(), ex.getNextFile());
 				}
+				return false;
 			}
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), skipTS);
 			return false;
@@ -844,14 +846,11 @@ public:
 			{
 				if ((controlModule != nullptr))
 				{
-					Mp4ErrorHandle cmd;
-					cmd.previousFile = ex.getPreviousFile();
-					cmd.nextFile = ex.getNextFile();
 					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
 					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-					ctl->handleMp4MissingVideotrack();
-					return;
+					ctl->handleMp4MissingVideotrack(ex.getPreviousFile(), ex.getNextFile());
 				}
+				return;
 			}
 			imgSize = 0;
 			// send the last frame timestamp 

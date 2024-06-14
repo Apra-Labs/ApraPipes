@@ -55,11 +55,14 @@ IF(ENABLE_LINUX)
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 	pkg_check_modules(GLFW REQUIRED glfw3)
+ENDIF()
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 ENDIF()
 
 IF(ENABLE_CUDA)
@@ -88,6 +91,20 @@ IF(ENABLE_CUDA)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		find_package(Curses REQUIRED)
+		find_library(GTK3 NAMES libgtk-3.a REQUIRED)
+		find_library(GDK3 NAMES libgdk-3.a REQUIRED)
+
+		set(VCPKG_GTK_INCLUDE_DIRS
+    		../_build/vcpkg_installed/arm64-linux/include/gtk-3.0/
+    		../_build/vcpkg_installed/arm64-linux/include/glib-2.0/
+    		../_build/vcpkg_installed/arm64-linux/include/pango-1.0/
+    		../_build/vcpkg_installed/arm64-linux/include/harfbuzz/
+    		../_build/vcpkg_installed/arm64-linux/include/cairo/
+    		../_build/vcpkg_installed/arm64-linux/include/atk-1.0/
+    		../_build/vcpkg_installed/arm64-linux/include/gdk-pixbuf-2.0/
+    		../_build/vcpkg_installed/arm64-linux/lib/glib-2.0/include/
+		)
+
 
 		SET(JETSON_LIBS
 			libcudart_static.a	
@@ -487,6 +504,7 @@ link_directories(${GTK3_LIBRARY_DIRS})
 target_include_directories ( aprapipes PRIVATE 
 	${JETSON_MULTIMEDIA_LIB_INCLUDE}
 	${GTK3_INCLUDE_DIRS}
+	${VCPKG_GTK_INCLUDE_DIRS}
 	${FFMPEG_INCLUDE_DIRS} 
 	${OpenCV_INCLUDE_DIRS} 
 	${Boost_INCLUDE_DIRS}
@@ -615,7 +633,6 @@ IF(ENABLE_LINUX)
 	)
 ENDIF(ENABLE_LINUX)
 
-
 add_executable(aprapipesut ${UT_FILES})
 
 IF(ENABLE_ARM64)
@@ -626,16 +643,26 @@ IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
-
-find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
+IF(ENABLE_ARM64)
+	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
+	target_link_libraries(aprapipesut
+	${GTK3}
+	${GDK3}
+	)	
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
+	target_link_libraries(aprapipesut
+	${GTK3_LIBRARIES}
+	)
+ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
   aprapipes  
   ${GLEW_LIBRARIES}
-  ${GTK3_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}

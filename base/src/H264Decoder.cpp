@@ -396,11 +396,6 @@ bool H264Decoder::process(frame_container& frames)
 		dirChangedToBwd = false;
 		dirChangedToFwd = false;
 	}
-	// if (resumeBwdPlayback == false || resumeFwdPlayback == false){
-	// 	ReadyToRender cmd;
-	// 	cmd.ReadinessCounter -= 1;
-	// 	controlModule->queueCommand(cmd);
-	// }
 	/* Clear the latest forward gop whenever seek happens bcz there is no buffering for fwd play.
 	We dont clear backwardGOP because there might be a left over GOP to be decoded. */
 	if (h264Metadata->mp4Seek)
@@ -525,20 +520,12 @@ void H264Decoder::sendDecodedFrame()
 		{
 			LOG_INFO << "resuming decoder";
 			resumeBwdPlayback = true;
-			
-			ReadyToRender cmd;
-			cmd.ReadinessCounter += 1;
-			controlModule->queueCommand(cmd);
 		}
 
 		if (resumeFwdPlayback == false && outFrame->timestamp >= lastFrameSent)
 		{
 			LOG_INFO << "resuming decoder";
 			resumeFwdPlayback = true;
-			
-			ReadyToRender cmd;
-			cmd.ReadinessCounter += 1;
-			controlModule->queueCommand(cmd);
 		}
 
 		// while (!decodedFramesCache.empty() && incomingFramesTSQSize >0 && resumePlayback == false){

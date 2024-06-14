@@ -24,7 +24,6 @@ public:
     SendMMQTimestamps,
     SendLastGTKGLRenderTS,
     DecoderPlaybackSpeed,
-    ReadyToRender
   };
 
   Command() { type = CommandType::None; }
@@ -246,80 +245,6 @@ private:
   }
 };
 
-class MP4WriterLastTS : public Command {
-public:
-  MP4WriterLastTS() : Command(Command::CommandType::MP4WriterLastTS) {}
-
-  size_t getSerializeSize() {
-    return Command::getSerializeSize() + sizeof(lastWrittenTimeStamp) +
-           sizeof(moduleId);
-  }
-
-  uint64_t lastWrittenTimeStamp = 0;
-  std::string moduleId;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive &ar, const unsigned int /* file_version */) {
-    ar &boost::serialization::base_object<Command>(*this);
-    ar & lastWrittenTimeStamp;
-    ar & moduleId;
-  }
-};
-
-class SendMMQTimestamps : public Command {
-public:
-  SendMMQTimestamps() : Command(Command::CommandType::SendMMQTimestamps) {}
-
-  size_t getSerializeSize() {
-    return Command::getSerializeSize() + sizeof(firstTimeStamp) +
-           sizeof(lastTimeStamp) + sizeof(nvrExportStart) +
-           sizeof(nvrExportStop) + sizeof(moduleId);
-  }
-
-  uint64_t firstTimeStamp = 0;
-  uint64_t lastTimeStamp = 0;
-  uint64_t nvrExportStart = 0;
-  uint64_t nvrExportStop = 0;
-  std::string moduleId;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive &ar, const unsigned int /* file_version */) {
-    ar &boost::serialization::base_object<Command>(*this);
-    ar & firstTimeStamp;
-    ar & lastTimeStamp;
-    ar & nvrExportStart;
-    ar & nvrExportStop;
-    ar & moduleId;
-  }
-};
-
-class SendLastGTKGLRenderTS : public Command {
-public:
-  SendLastGTKGLRenderTS()
-      : Command(Command::CommandType::SendLastGTKGLRenderTS) {}
-
-  size_t getSerializeSize() {
-    return Command::getSerializeSize() + sizeof(currentTimeStamp) +
-           sizeof(moduleId);
-  }
-
-  uint64_t currentTimeStamp = 0;
-  std::string moduleId;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive &ar, const unsigned int /* file_version */) {
-    ar &boost::serialization::base_object<Command>(*this);
-    ar & currentTimeStamp;
-    ar & moduleId;
-  }
-};
-
 class PlayPauseCommand : public Command {
 public:
   PlayPauseCommand() : Command(CommandType::PlayPause) {}
@@ -354,28 +279,6 @@ private:
   }
 };
 
-class Mp4ErrorHandle : public Command {
-public:
-  Mp4ErrorHandle() : Command(Command::CommandType::Mp4ErrorHandle) {}
-
-  size_t getSerializeSize() {
-    return Command::getSerializeSize() + sizeof(previousFile) +
-           sizeof(nextFile);
-  }
-
-  std::string previousFile;
-  std::string nextFile;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive &ar, const unsigned int /* file_version */) {
-    ar &boost::serialization::base_object<Command>(*this);
-    ar & previousFile;
-    ar & nextFile;
-  }
-};
-
 class DecoderPlaybackSpeed : public Command
 {
 public:
@@ -400,29 +303,5 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& playbackFps;
 		ar& playbackSpeed;
-	}
-};
-
-class ReadyToRender : public Command
-{
-public:
-	ReadyToRender() : Command(Command::CommandType::ReadyToRender)
-	{
-	}
-
-	size_t getSerializeSize()
-	{
-		return Command::getSerializeSize() + sizeof(ReadinessCounter);
-	}
-
-	int ReadinessCounter = 1;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /* file_version */)
-	{
-		ar& boost::serialization::base_object<Command>(*this);
-		ar& ReadinessCounter;
 	}
 };

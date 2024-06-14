@@ -1,5 +1,4 @@
 #include <GL/gl.h>
-#include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -237,13 +236,10 @@ bool GtkGlRenderer::process(frame_container &frames)
 
     if ((controlModule != nullptr && mDetail->isPlaybackRenderer == true))
     {
-		Rendertimestamp cmd;
-		auto myTime = frames.cbegin()->second->timestamp;
-		cmd.currentTimeStamp = myTime;
-		controlModule->queueCommand(cmd);
-        LOG_INFO << "sending timestamp "<<myTime;
-		return true;
-	}
+		  auto currentFrameTs = frames.cbegin()->second->timestamp;
+		  boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+      ctl->handleLastGtkGLRenderTS(currentFrameTs, true);
+	  }
     return true;
 }
 

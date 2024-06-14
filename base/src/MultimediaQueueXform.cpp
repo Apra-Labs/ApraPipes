@@ -677,7 +677,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 	LOG_ERROR << "mmq fps is = " << fps;
 	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
 	initDone = false;
-	if (type == Command::CommandType::MultimediaQueueXform)
+	if (type == Command::CommandType::ExportMMQ)
 	{
         ExportMMQ cmd;
 		getCommand(cmd, frame);
@@ -768,8 +768,13 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							lastItr--;
 							if(lastItr->second.begin()->second->timestamp == it->second.begin()->second->timestamp)
 							{
-								NVRGoLive goLiveCmd;
-								controlModule->queueCommand(goLiveCmd, true);
+								if(controlModule != nullptr)
+								{
+									bool goLive = true;
+									bool priority = true;
+									boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+									ctl->handleGoLive(goLive, priority);
+								}
 								exportFrames = false;
 								break;
 							}
@@ -829,18 +834,12 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						if (mState->Type != State::IDLE)
 						{
-							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-							Command cmd;
-							bool pritority = true;
-							boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-							ctl->handleMMQExport(cmd, pritority);
-							// Eventual example:
-							NVRCommandExportView cmd;
-							cmd.startViewTS = latestFrameExportedFromHandleCmd;
-							cmd.stopViewTS = 0;
-							cmd.direction = direction;
-							cmd.mp4ReaderExport = true;
-							controlModule->queueCommand(cmd, true);
+							if(controlModule != nullptr)
+							{
+								// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+								boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
+							}
 							exportFrames = false;
 						}
 						mState->Type = State::IDLE;
@@ -1019,17 +1018,12 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				{
 					if (mState->Type != State::IDLE)
 					{
-						// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-						Command cmd;
-						boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-						ctl->handleMMQExportView(cmd, true);
-						// Eventual example:
-						NVRCommandExportView cmd;
-						cmd.startViewTS = latestFrameExportedFromProcess;
-						cmd.stopViewTS = 0;
-						cmd.direction = direction;
-						cmd.mp4ReaderExport = true;
-						controlModule->queueCommand(cmd, true);
+						if(controlModule != nullptr)
+						{
+							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+							boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+							ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
+						}
 						exportFrames = false;
 					}
 					mState->Type = State::IDLE;
@@ -1064,20 +1058,18 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		// Send commmand to NVRControl module
 		if (mState->queueObject->mQueue.size() != 0)
 		{
-			SendMMQTimestamps cmd;
 			bool priority = false;
+			uint64_t firstTimeStamp;
 			auto front = mState->queueObject->mQueue.begin();
 			if (front != mState->queueObject->mQueue.end())
 			{
-				uint64_t firstTimeStamp = front->first;
-				cmd.firstTimeStamp = firstTimeStamp;
+				firstTimeStamp = front->first;
 			}
 			auto back = mState->queueObject->mQueue.crbegin();
 			uint64_t lastTimeStamp = back->first;
-			cmd.lastTimeStamp = lastTimeStamp;
 			// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
 			boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-			ctl->handleSendMMQTSCmd(cmd, priority);
+			ctl->handleSendMMQTSCmd(firstTimeStamp, lastTimeStamp, priority);
 		}
 		return true;
 	}
