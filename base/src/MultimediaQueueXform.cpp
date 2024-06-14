@@ -813,7 +813,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 					{
 						break;
 					}
-					else //(!mState->queueObject->mQueue.empty())
+					else
 					{
 						auto lastItr = mState->queueObject->mQueue.end();
 						lastItr--;
@@ -956,7 +956,6 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						initDone = true;
 					}
 
-					//LOG_ERROR << "multimediaQueueSize = " << queueSize;
 					frame_container outFrames;
 					auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 
@@ -1000,7 +999,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 				{
 					break;
 				}
-				else //(!mState->queueObject->mQueue.empty())
+				else
 				{
 					it++;
 				}
@@ -1014,7 +1013,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						break;
 					}
 				}
-				if (it == mState->queueObject->mQueue.begin()) // || it == mState->queueObject->mQueue.end()
+				if (it == mState->queueObject->mQueue.begin())
 				{
 					if (mState->Type != State::IDLE)
 					{
@@ -1038,8 +1037,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		uint64_t tOld, tNew = 0;
 		getQueueBoundaryTS(tOld, tNew);
-		if (queryEndTime > tNew)
-			;
+		if (queryEndTime > tNew);
 		{
 			reset = false;
 		}
