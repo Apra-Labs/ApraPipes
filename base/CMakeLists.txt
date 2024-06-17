@@ -163,7 +163,6 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
-	.././samples/timelapse-sample/timelapse_summary.cpp
 )
 
 SET(CORE_FILES_H
@@ -225,7 +224,6 @@ SET(CORE_FILES_H
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
-	.././samples/timelapse-sample/timelapse_summary.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -458,9 +456,7 @@ ${LIBMP4_INC_DIR}
 ${BARESIP_INC_DIR}
 ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
-./../samples/timelapse-sample
 )
-
 
 # aprapipes Unit Tests
 
@@ -570,8 +566,22 @@ SET(UT_FILES
 )
 
 SET(SAMPLE_UT_FILES
-.././samples/timelapse-sample/timelapse_summary_test.cpp
+		test/utmain.cpp
+		test/test_utils.cpp
+		test/test_utils.h
+		.././samples/timelapse-sample/timelapse_summary_test.cpp
 )
+
+SET(SAMPLE_CORE_FILES
+	../samples/timelapse-sample/timelapse_summary.h
+	../samples/timelapse-sample/timelapse_summary.cpp
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -582,7 +592,7 @@ ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 
-add_executable(aprapipessampleut ${SAMPLE_UT_FILES})
+add_executable(aprapipessampleut ${SAMPLE_SOURCE})
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
@@ -595,6 +605,19 @@ ENDIF (ENABLE_CUDA)
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+
+target_include_directories ( aprapipessampleut PRIVATE 
+${JETSON_MULTIMEDIA_LIB_INCLUDE}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
+${Boost_INCLUDE_DIRS}
+${LIBMP4_INC_DIR}
+${BARESIP_INC_DIR}
+${LIBRE_INC_DIR}
+${NVCODEC_INCLUDE_DIR}
+test
+)
+
 
 target_link_libraries(aprapipessampleut   
   aprapipes  
@@ -618,7 +641,7 @@ target_link_libraries(aprapipessampleut
   sfml-audio
   whisper::whisper
   )
-
+  
 target_link_libraries(aprapipesut   
   aprapipes  
   ${JPEG_LIBRARIES}
