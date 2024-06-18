@@ -621,27 +621,15 @@ test
 
 target_link_libraries(aprapipessampleut   
   aprapipes  
-  ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  whisper::whisper
   )
-  
+
 target_link_libraries(aprapipesut   
   aprapipes  
   ${JPEG_LIBRARIES}

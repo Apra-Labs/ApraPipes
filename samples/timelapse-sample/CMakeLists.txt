@@ -26,8 +26,6 @@ target_link_libraries(
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
   )

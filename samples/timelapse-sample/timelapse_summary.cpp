@@ -1,19 +1,19 @@
-#include "Mp4ReaderSource.h"
-#include "MotionVectorExtractor.h"
-#include "Mp4WriterSink.h"
-#include "H264Metadata.h"
-#include "PipeLine.h"
-#include "OverlayModule.h"
-#include "ImageViewerModule.h"
-#include "Mp4VideoMetadata.h"
-#include "H264EncoderNVCodec.h"
+#include "timelapse_summary.h"
+#include "ColorConversionXForm.h"
 #include "CudaMemCopy.h"
 #include "CudaStreamSynchronize.h"
-#include "ColorConversionXForm.h"
-#include "FileWriterModule.h"
-#include "timelapse_summary.h"
-#include <boost/test/unit_test.hpp>
 #include "ExternalSinkModule.h"
+#include "FileWriterModule.h"
+#include "H264EncoderNVCodec.h"
+#include "H264Metadata.h"
+#include "ImageViewerModule.h"
+#include "MotionVectorExtractor.h"
+#include "Mp4ReaderSource.h"
+#include "Mp4VideoMetadata.h"
+#include "Mp4WriterSink.h"
+#include "OverlayModule.h"
+#include "PipeLine.h"
+#include <boost/test/unit_test.hpp>
 
 TimelapsePipeline::TimelapsePipeline()
     : timelapseSamplePipeline("test"), mCudaStream_(new ApraCudaStream()),
@@ -34,20 +34,21 @@ bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
       Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
   mp4ReaderProps.parseFS = true;
   mp4ReaderProps.readLoop = false;
-  //mp4Reader module is being used here to read the .mp4 videos
+  // mp4Reader module is being used here to read the .mp4 videos
   mMp4Reader =
       boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
   auto motionExtractorProps = MotionVectorExtractorProps(
       MotionVectorExtractorProps::MVExtractMethod::OPENH264, sendDecodedFrames,
       2);
-  //motionVectorExtractor module is being used to get the frames for the defined thershold
+  // motionVectorExtractor module is being used to get the frames for the
+  // defined thershold
   mMotionExtractor = boost::shared_ptr<MotionVectorExtractor>(
       new MotionVectorExtractor(motionExtractorProps));
-  //convert frames from BGR to RGB
+  // convert frames from BGR to RGB
   mColorchange1 = boost::shared_ptr<ColorConversion>(new ColorConversion(
       ColorConversionProps(ColorConversionProps::BGR_TO_RGB)));
-  //convert frames from RGB to YUV420PLANAR
-  //the two step color change is done because H264Encoder takes YUV data and we don't have direct BGR to YUV.
+  // convert frames from RGB to YUV420PLANAR
+  // the two step color change is done because H264Encoder takes YUV data
   mColorchange2 = boost::shared_ptr<ColorConversion>(new ColorConversion(
       ColorConversionProps(ColorConversionProps::RGB_TO_YUV420PLANAR)));
   mSync = boost::shared_ptr<Module>(
@@ -55,8 +56,9 @@ bool TimelapsePipeline::setupPipeline(const std::string &videoPath,
   mEncoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(
       H264EncoderNVCodecProps(bitRateKbps, mCuContext, gopLength, frameRate,
                               profile, enableBFrames)));
-  //write the output video
-  auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, 24, outFolderPath, true);
+  // write the output video
+  auto mp4WriterSinkProps =
+      Mp4WriterSinkProps(UINT32_MAX, 10, 24, outFolderPath, true);
   mp4WriterSinkProps.recordedTSBasedDTS = false;
   mMp4WriterSink =
       boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
