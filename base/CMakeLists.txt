@@ -458,7 +458,6 @@ ${LIBRE_INC_DIR}
 ${NVCODEC_INCLUDE_DIR}
 )
 
-
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -572,6 +571,7 @@ SET(SAMPLE_UT_FILES
 	test/test_utils.h	
 	../samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
 	../samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
+  .././samples/timelapse-sample/timelapse_summary_test.cpp
 )
 
 SET(SAMPLE_CORE_FILES
@@ -579,13 +579,14 @@ SET(SAMPLE_CORE_FILES
 	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
 	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
 	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.cpp
+  ../samples/timelapse-sample/timelapse_summary.h
+	../samples/timelapse-sample/timelapse_summary.cpp
 )
 
 SET(SAMPLE_SOURCE
 	${SAMPLE_CORE_FILES}
 	${SAMPLE_UT_FILES}
 )
-
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/virtualcamerasink_tests.cpp
@@ -620,28 +621,15 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-
 target_link_libraries(aprapipessampleut   
   aprapipes  
-  ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  liblzma::liblzma
-  bigint::bigint
-  sfml-audio
-  whisper::whisper
   )
 
 target_link_libraries(aprapipesut   
