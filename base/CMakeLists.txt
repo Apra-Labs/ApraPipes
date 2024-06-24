@@ -91,8 +91,6 @@ IF(ENABLE_CUDA)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		find_package(Curses REQUIRED)
-		find_library(GTK3 NAMES libgtk-3.a REQUIRED)
-		find_library(GDK3 NAMES libgdk-3.a REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
     		../_build/vcpkg_installed/arm64-linux/include/gtk-3.0/
@@ -643,21 +641,19 @@ IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	target_link_libraries(aprapipesut
-	${GTK3}
-	${GDK3}
-	)	
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX)
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
-	${GTK3_LIBRARIES}
-	)
+	${GDK3_LIBRARIES}
+  	${GTK3_LIBRARIES}
+	)	
 ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
