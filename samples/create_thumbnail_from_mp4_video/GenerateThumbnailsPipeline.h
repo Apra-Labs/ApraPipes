@@ -19,12 +19,12 @@ public:
 
 private:
     PipeLine pipeLine;
-    boost::shared_ptr<ValveModule> valve;
-    boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-    boost::shared_ptr<H264Decoder> decoder;
-    boost::shared_ptr<ColorConversion> colorchange;
-    boost::shared_ptr<CudaMemCopy> cudaCopy;
-    boost::shared_ptr<JPEGEncoderNVJPEG> jpegEncoder;
-    boost::shared_ptr<FileWriterModule> fileWriter;
+    boost::shared_ptr<ValveModule> mValve;
+    boost::shared_ptr<Mp4ReaderSource> mMp4Reader;
+    boost::shared_ptr<H264Decoder> mDecoder;
+    boost::shared_ptr<ColorConversion> mColorchange;
+    boost::shared_ptr<CudaMemCopy> mCudaCopy;
+    boost::shared_ptr<JPEGEncoderNVJPEG> mJpegEncoder;
+    boost::shared_ptr<FileWriterModule> mFileWriter;
 };
 

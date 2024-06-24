@@ -11,8 +11,7 @@ void main(int argc, char *argv[]) {
 
   PlayMp4VideoFromBeginning pipelineInstance;
 
-
-  if (!pipelineInstance.setUpPipeLine(videoPath)){
+  if (!pipelineInstance.setUpPipeLine(videoPath)) {
     std::cerr << "Failed to setup pipeline." << std::endl;
   }
   if (!pipelineInstance.startPipeLine()) {

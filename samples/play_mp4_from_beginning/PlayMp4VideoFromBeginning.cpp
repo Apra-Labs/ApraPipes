@@ -15,7 +15,8 @@
 #include "Mp4VideoMetadata.h"
 #include <boost/filesystem.hpp>
 
-PlayMp4VideoFromBeginning::PlayMp4VideoFromBeginning() : pipeLine("pipeline") {}
+PlayMp4VideoFromBeginning::PlayMp4VideoFromBeginning()
+    : pipeLine("PlayMp4videoFromBeginingSamplePipline") {}
 
 bool PlayMp4VideoFromBeginning::setUpPipeLine(const std::string &videoPath) {
   // Implementation
@@ -25,37 +26,49 @@ bool PlayMp4VideoFromBeginning::setUpPipeLine(const std::string &videoPath) {
   auto mp4ReaderProps =
       Mp4ReaderSourceProps(videoPath, parseFS, 0, true, true, false);
   mp4ReaderProps.fps = 24;
-  mp4Reader =
+  // initializing source Mp4 reader to read Mp4 video
+  mMp4Reader =
       boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
-  mp4Reader->addOutPutPin(h264ImageMetadata);
+  mMp4Reader->addOutPutPin(h264ImageMetadata);
 
   auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-  mp4Reader->addOutPutPin(mp4Metadata);
+  mMp4Reader->addOutPutPin(mp4Metadata);
 
   std::vector<std::string> mImagePin;
-  mImagePin = mp4Reader->getAllOutputPinsByType(frameType);
+  mImagePin = mMp4Reader->getAllOutputPinsByType(frameType);
 
-  decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
-  mp4Reader->setNext(decoder, mImagePin);
+  // initializing H264 decoder to decode frame in H264 format
+  mDecoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
 
+  // Selecting an image pin of H264 data frame type is necessary because the
+  // decoder processes H264 frames for decoding.
+  mMp4Reader->setNext(mDecoder, mImagePin);
+
+  //initializing conversion type module to convert YUV420 frame to RGB
   auto conversionType =
       ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB;
   auto metadata = framemetadata_sp(new RawImagePlanarMetadata(
       1280, 720, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
-  colorchange = boost::shared_ptr<ColorConversion>(
+  mColorchange = boost::shared_ptr<ColorConversion>(
       new ColorConversion(ColorConversionProps(conversionType)));
-  decoder->setNext(colorchange);
+  mDecoder->setNext(mColorchange);
 
-  imageViewerSink = boost::shared_ptr<ImageViewerModule>(
+  //initializing imageViewer module as sink to show video on screen
+  mImageViewerSink = boost::shared_ptr<ImageViewerModule>(
       new ImageViewerModule(ImageViewerModuleProps("imageview")));
-  colorchange->setNext(imageViewerSink);
+  mColorchange->setNext(mImageViewerSink);
 
   return true;
 }
 
 bool PlayMp4VideoFromBeginning::startPipeLine() {
-  pipeLine.appendModule(mp4Reader);
-  pipeLine.init();
+  pipeLine.appendModule(mMp4Reader);
+  if (!pipeLine.init()) {
+    throw AIPException(
+        AIP_FATAL,
+        "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+    return false;
+  }
   pipeLine.run_all_threaded();
   return true;
 }
@@ -69,6 +82,6 @@ bool PlayMp4VideoFromBeginning::stopPipeLine() {
 
 bool PlayMp4VideoFromBeginning::flushQueuesAndSeek() {
   pipeLine.flushAllQueues();
-  mp4Reader->randomSeek(1686723796848, false);
+  mMp4Reader->randomSeek(1686723796848, false);
   return true;
 }

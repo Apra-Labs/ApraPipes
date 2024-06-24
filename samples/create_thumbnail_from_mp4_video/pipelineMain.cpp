@@ -11,12 +11,12 @@ void main(int argc, char *argv[]) {
   std::string videoPath = argv[argc - 2];
   std::string outFolderPath = argv[argc - 1];
 
-  GenerateThumbnailsPipeline pipelineInstance;
-  if (!pipelineInstance.setUpPipeLine(videoPath, outFolderPath)) {
+  GenerateThumbnailsPipeline thumbnailPipeline;
+  if (!thumbnailPipeline.setUpPipeLine(videoPath, outFolderPath)) {
     std::cerr << "Failed to setup pipeline." << std::endl;
   }
 
-  if (!pipelineInstance.startPipeLine()) {
+  if (!thumbnailPipeline.startPipeLine()) {
     std::cerr << "Failed to start pipeline." << std::endl;
   }
 
@@ -24,7 +24,9 @@ void main(int argc, char *argv[]) {
   boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
   // Stop the pipeline
-  if (!pipelineInstance.stopPipeLine()) {
+  if (!thumbnailPipeline.stopPipeLine()) {
     std::cerr << "Failed to stop pipeline." << std::endl;
+  } else {
+    std::cerr << "Saved Generated Thumbnail in <" << outFolderPath << ">"; 
   }
 }

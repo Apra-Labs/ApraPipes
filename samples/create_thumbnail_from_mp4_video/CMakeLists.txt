@@ -1,25 +1,22 @@
 cmake_minimum_required(VERSION 3.22)
 set(TARGET generateThumbnailFromMp4Video)
-SET(CORE_FILES
+SET(SAMPLE_FILES
 	GenerateThumbnailsPipeline.cpp
 	pipelineMain.cpp
 )
-SET(CORE_FILES_H
+SET(SAMPLE_FILES_H
 	GenerateThumbnailsPipeline.h
 )
 SET(SOURCE
-  ${CORE_FILES}
-  ${CORE_FILES_H}
+  ${SAMPLE_FILES}
+  ${SAMPLE_FILES_H}
 )
 add_executable(${TARGET} ${SOURCE})
 target_include_directories ( ${TARGET} PRIVATE
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
-  ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${LIBMP4_INC_DIR}
-  ${BARESIP_INC_DIR}
-  ${LIBRE_INC_DIR}
   ${NVCODEC_INCLUDE_DIR}
 )
 target_link_libraries(
@@ -31,9 +28,7 @@ target_link_libraries(
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
   )

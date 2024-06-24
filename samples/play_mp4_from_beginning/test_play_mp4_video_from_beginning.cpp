@@ -30,17 +30,17 @@ BOOST_AUTO_TEST_CASE(play_mp4_from_beginning_flush_queue_test) {
   playMp4VideoFromBeginning->setUpPipeLine(videoPath);
 
   auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-  playMp4VideoFromBeginning->colorchange->setNext(sink);
-  BOOST_CHECK(playMp4VideoFromBeginning->mp4Reader->init());
-  BOOST_CHECK(playMp4VideoFromBeginning->decoder->init());
-  BOOST_CHECK(playMp4VideoFromBeginning->colorchange->init());
+  playMp4VideoFromBeginning->mColorchange->setNext(sink);
+  BOOST_CHECK(playMp4VideoFromBeginning->mMp4Reader->init());
+  BOOST_CHECK(playMp4VideoFromBeginning->mDecoder->init());
+  BOOST_CHECK(playMp4VideoFromBeginning->mColorchange->init());
   BOOST_CHECK(sink->init());
 
   for (int i = 0; i <= 20; i++) {
-    playMp4VideoFromBeginning->mp4Reader->step();
-    playMp4VideoFromBeginning->decoder->step();
+    playMp4VideoFromBeginning->mMp4Reader->step();
+    playMp4VideoFromBeginning->mDecoder->step();
   }
-  playMp4VideoFromBeginning->colorchange->step();
+  playMp4VideoFromBeginning->mColorchange->step();
 
   auto frames = sink->pop();
   auto frame = frames.size();
@@ -62,21 +62,21 @@ BOOST_AUTO_TEST_CASE(play_mp4_from_beginning_seek_test) {
                           "h264_video_metadata/20230514/0011/1686723796848.mp4";
   playMp4VideoFromBeginning->setUpPipeLine(videoPath);
   auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-  playMp4VideoFromBeginning->mp4Reader->setNext(sink);
+  playMp4VideoFromBeginning->mMp4Reader->setNext(sink);
 
-  BOOST_CHECK(playMp4VideoFromBeginning->mp4Reader->init());
-  BOOST_CHECK(playMp4VideoFromBeginning->decoder->init());
-  BOOST_CHECK(playMp4VideoFromBeginning->colorchange->init());
+  BOOST_CHECK(playMp4VideoFromBeginning->mMp4Reader->init());
+  BOOST_CHECK(playMp4VideoFromBeginning->mDecoder->init());
+  BOOST_CHECK(playMp4VideoFromBeginning->mColorchange->init());
   BOOST_CHECK(sink->init());
 
-  playMp4VideoFromBeginning->mp4Reader->step();
+  playMp4VideoFromBeginning->mMp4Reader->step();
 
   auto frames = sink->pop();
   auto imgFrame = frames.begin()->second;
 
   uint64_t skipTS = 1686723796848;
-  playMp4VideoFromBeginning->mp4Reader->randomSeek(skipTS, false);
-  playMp4VideoFromBeginning->mp4Reader->step();
+  playMp4VideoFromBeginning->mMp4Reader->randomSeek(skipTS, false);
+  playMp4VideoFromBeginning->mMp4Reader->step();
   frames = sink->pop();
   imgFrame = frames.begin()->second;
   BOOST_TEST(imgFrame->timestamp == 1686723796848);

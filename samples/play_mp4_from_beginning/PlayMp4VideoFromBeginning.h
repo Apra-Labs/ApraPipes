@@ -14,10 +14,10 @@ public:
   bool flushQueuesAndSeek();
 
 
-  boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-  boost::shared_ptr<ImageViewerModule> imageViewerSink;
-  boost::shared_ptr<H264Decoder> decoder;
-  boost::shared_ptr<ColorConversion> colorchange;
+  boost::shared_ptr<Mp4ReaderSource> mMp4Reader;
+  boost::shared_ptr<ImageViewerModule> mImageViewerSink;
+  boost::shared_ptr<H264Decoder> mDecoder;
+  boost::shared_ptr<ColorConversion> mColorchange;
 
 private:
   PipeLine pipeLine;
