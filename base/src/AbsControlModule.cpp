@@ -3,6 +3,7 @@
 #include "AbsControlModule.h"
 #include "Module.h"
 #include "Command.h"
+#include "PipeLine.h"
 
 class AbsControlModule::Detail
 {
@@ -14,35 +15,21 @@ public:
     ~Detail()
     {
     }
+
+    std::string getPipelineRole(std::string pName, std::string role)
+    {
+        return pName + "_" + role;
+    }
+
     AbsControlModuleProps mProps;
 };
 
 AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
-    :Module(TRANSFORM, "NVRControlModule", _props)
+    :Module(TRANSFORM, "AbsControlModule", _props)
 {
     mDetail.reset(new Detail(_props));
 }
 AbsControlModule::~AbsControlModule() {}
-
-bool AbsControlModule::validateInputPins()
-{
-    return true;
-}
-
-bool AbsControlModule::validateOutputPins()
-{
-    return true;
-}
-
-bool AbsControlModule::validateInputOutputPins()
-{
-    return true;
-}
-
-void AbsControlModule::addInputPin(framemetadata_sp& metadata, string& pinId)
-{
-    Module::addInputPin(metadata, pinId);
-}
 
 bool AbsControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
@@ -68,29 +55,31 @@ bool AbsControlModule::term()
     return Module::term();
 }
 
-AbsControlModuleProps AbsControlModule::getProps()
-{
-    fillProps(mDetail->mProps);
-    return mDetail->mProps;
-}
-
-void AbsControlModule::setProps(AbsControlModuleProps& props)
-{
-    Module::addPropsToQueue(props);
-}
-
 bool AbsControlModule::process(frame_container& frames)
 {
     return true;
 }
 
-bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
+std::string AbsControlModule::enrollModule(std::string pName, std::string role, boost::shared_ptr<Module> module)
 {
-    moduleRoles[role] = module;
-    return true;
+    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
+    if (moduleRoles.find(pipelineRole) != moduleRoles.end())
+    {
+        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + pName + ">";
+        LOG_ERROR << errMsg;
+        throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
+    }
+    moduleRoles[pipelineRole] = module;
+    return pipelineRole;
 }
 
-boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
+std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(std::string pName, std::string role)
 {
-    return moduleRoles[role];
+    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
+    if (moduleRoles.find(pipelineRole) == moduleRoles.end())
+    {
+        return std::make_pair<bool, boost::shared_ptr<Module>>(false, nullptr);
+    }
+    std::pair<bool, boost::shared_ptr<Module>> res(true, moduleRoles[pipelineRole]); 
+    return res;
 }

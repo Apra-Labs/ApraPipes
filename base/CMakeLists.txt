@@ -514,51 +514,51 @@ ${NVCODEC_INCLUDE_DIR}
 
 # aprapipes Unit Tests
 
-# IF (ENABLE_ARM64)
-# 	SET(ARM64_UT_FILES
-		# test/jpegencoderl4tm_tests.cpp
-		# test/jpegdecoderl4tm_tests.cpp
-#		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		# test/opencvresize_tests.cpp
-		# test/h264encoderv4l2_tests.cpp
-		# test/nvarguscamerahelper_tests.cpp
-		# test/nvarguscamera_tests.cpp
-		# test/nvv4l2camera_test.cpp
-		# test/nvv4l2camerahelper_test.cpp
-		# test/nvtransform_tests.cpp
-		# test/eglrenderer_test.cpp
-		# test/cuda_arm_tests.cpp
-		# test/apraegldisplay_tests.cpp
-		# test/frame_factory_test_dma.cpp
-		# test/h264decoder_tests.cpp
-		# test/gtkglrenderer_tests.cpp
-# 	)
-# ENDIF(ENABLE_ARM64)
+IF (ENABLE_ARM64)
+	SET(ARM64_UT_FILES
+		test/jpegencoderl4tm_tests.cpp
+		test/jpegdecoderl4tm_tests.cpp
+		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
+		test/opencvresize_tests.cpp
+		test/h264encoderv4l2_tests.cpp
+		test/nvarguscamerahelper_tests.cpp
+		test/nvarguscamera_tests.cpp
+		test/nvv4l2camera_test.cpp
+		test/nvv4l2camerahelper_test.cpp
+		test/nvtransform_tests.cpp
+		test/eglrenderer_test.cpp
+		test/cuda_arm_tests.cpp
+		test/apraegldisplay_tests.cpp
+		test/frame_factory_test_dma.cpp
+		test/h264decoder_tests.cpp
+		test/gtkglrenderer_tests.cpp
+	)
+ENDIF(ENABLE_ARM64)
 
-# IF (ENABLE_CUDA)
-# 	SET(CUDA_UT_FILES
-		# test/cudamemcopy_tests.cpp		
-		# test/resizenppi_tests.cpp
-		# test/rotatenppi_tests.cpp
-		# test/ccnppi_tests.cpp
-		# test/memtypeconversion_tests.cpp
-	# )
-	# IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
+IF (ENABLE_CUDA)
+	SET(CUDA_UT_FILES
+		test/cudamemcopy_tests.cpp		
+		test/resizenppi_tests.cpp
+		test/rotatenppi_tests.cpp
+		test/ccnppi_tests.cpp
+		test/memtypeconversion_tests.cpp
+	)
+	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
-	# 	SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			# test/jpegencodernvjpeg_tests.cpp
-			# test/jpegdecodernvjpeg_tests.cpp			
-			# test/resizenppi_jpegencodernvjpeg_tests.cpp
-			# test/nvjpeg_combo_tests.cpp			
-			# test/overlaynppi_tests.cpp
-			# test/effectsnppi_tests.cpp
-			# test/h264Encodernvcodec_tests.cpp
-			# test/nv_mp4_file_tests.cpp
-			# test/nv_test_utils.h
-			# test/h264decoder_tests.cpp
-# 		)
-# 	ENDIF(NOT ENABLE_ARM64)
-# ENDIF(ENABLE_CUDA)
+		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
+			test/jpegencodernvjpeg_tests.cpp
+			test/jpegdecodernvjpeg_tests.cpp			
+			test/resizenppi_jpegencodernvjpeg_tests.cpp
+			test/nvjpeg_combo_tests.cpp			
+			test/overlaynppi_tests.cpp
+			test/effectsnppi_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
+			test/nv_mp4_file_tests.cpp
+			test/nv_test_utils.h
+			test/h264decoder_tests.cpp
+		)
+	ENDIF(NOT ENABLE_ARM64)
+ENDIF(ENABLE_CUDA)
 
 # SET(UT_FILES
 # 	test/utmain.cpp
@@ -621,58 +621,58 @@ ${NVCODEC_INCLUDE_DIR}
 # 	${CUDA_UT_FILES}
 # )
 
-# IF(ENABLE_LINUX)
-# 	list(APPEND UT_FILES
-	# test/virtualcamerasink_tests.cpp
-	# test/QRReader_tests.cpp
-# 	)
-# ENDIF(ENABLE_LINUX)
+IF(ENABLE_LINUX)
+	list(APPEND UT_FILES
+	test/virtualcamerasink_tests.cpp
+	test/QRReader_tests.cpp
+	)
+ENDIF(ENABLE_LINUX)
 
 
-# add_executable(aprapipesut ${UT_FILES})
+add_executable(aprapipesut ${UT_FILES})
 
-# IF(ENABLE_ARM64)
-# 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
-# ENDIF(ENABLE_ARM64)
+IF(ENABLE_ARM64)
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
+ENDIF(ENABLE_ARM64)
 
-# IF (ENABLE_CUDA)
-# 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
-# ENDIF (ENABLE_CUDA)
+IF (ENABLE_CUDA)
+	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+ENDIF (ENABLE_CUDA)
 
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-# target_link_libraries(aprapipesut   
-#   aprapipes  
-#   /usr/lib/aarch64-linux-gnu/libgtk-3-0
-#   /usr/lib/aarch64-linux-gnu/libGLEW.so
-#   /usr/lib/aarch64-linux-gnu/libgdk-3.so
-#   /usr/lib/aarch64-linux-gnu/libGL.so.1
-#   /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
-#   /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
-#   /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
-#   ${GTK3_LIBRARIES}
-#   ${GDK3_LIBRARIES} 
-#   ${JPEG_LIBRARIES}
-#   ${LIBMP4_LIB}
-#   ${OPENH264_LIB}
-#   ${Boost_LIBRARIES}
-#   ${FFMPEG_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${JETSON_LIBS}
-#   ${NVCUDAToolkit_LIBS}
-#   ${NVCODEC_LIB}
-#   ${NVJPEGLIB_L4T}
-#   ${CURSES_LIBRARIES}
-#   ZXing::Core
-#   ZXing::ZXing	
-#   BZip2::BZip2
-#   ZLIB::ZLIB
-#   liblzma::liblzma
-#   bigint::bigint
-#   sfml-audio
-#   )
+target_link_libraries(aprapipesut   
+  aprapipes  
+  /usr/lib/aarch64-linux-gnu/libgtk-3-0
+  /usr/lib/aarch64-linux-gnu/libGLEW.so
+  /usr/lib/aarch64-linux-gnu/libgdk-3.so
+  /usr/lib/aarch64-linux-gnu/libGL.so.1
+  /usr/lib/aarch64-linux-gnu/libgdk_pixbuf-2.0.so.0
+  /usr/lib/aarch64-linux-gnu/libgio-2.0.so.0
+  /usr/lib/aarch64-linux-gnu/libgobject-2.0.so.0
+  ${GTK3_LIBRARIES}
+  ${GDK3_LIBRARIES} 
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  )
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)

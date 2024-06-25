@@ -14,7 +14,9 @@
 #include <jpeglib.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#ifdef __linux__
+    #include <unistd.h>
+#endif
 #include <cstdio>
 
 #if defined(__arm__) || defined(__aarch64__)
@@ -67,12 +69,6 @@ ThumbnailListGenerator::~ThumbnailListGenerator() {}
 
 bool ThumbnailListGenerator::validateInputPins()
 {
-    // if (getNumberOfInputPins() != 1)
-    // {
-    //     LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
-    //     return false;
-    // }
-
     framemetadata_sp metadata = getFirstInputMetadata();
     FrameMetadata::FrameType frameType = metadata->getFrameType();
     if (frameType != FrameMetadata::RAW_IMAGE_PLANAR)

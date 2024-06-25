@@ -71,7 +71,8 @@ public:
         } else {
             // g_print("Error: Child's parent is not realized.\n");
         }
-    } else {
+    } 
+    else {
         // g_print("Error: Child widget is not realized.\n");
     }
         if (!detailInstance->cachedFrame.get())
@@ -281,11 +282,11 @@ bool GtkGlRenderer::process(frame_container &frames)
 
     if ((controlModule != nullptr && mDetail->isPlaybackRenderer == true))
     {
-		Rendertimestamp cmd;
-		auto myTime = frames.cbegin()->second->timestamp;
-		cmd.currentTimeStamp = myTime;
-		controlModule->queueCommand(cmd);
-        LOG_INFO << "sending timestamp "<<myTime;
+		// Rendertimestamp cmd;
+		// auto myTime = frames.cbegin()->second->timestamp;
+		// cmd.currentTimeStamp = myTime;
+		// controlModule->queueCommand(cmd);
+        // LOG_INFO << "sending timestamp "<<myTime;
 		return true;
 	}
     return true;

@@ -50,5 +50,21 @@ public:
 	void interrup_wait_for_all();
 	void flushAllQueues();
 	const char* getStatus();
+
+	size_t getSerializeSize()
+	{
+		return 1024 + sizeof(mName) + sizeof(myStatus) + sizeof(mPlay);
+	}
+
+private:
+	friend class boost::serialization::access;
+
+	template <class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& mName;
+		ar& myStatus;
+		ar& mPlay;
+	}
 };
 

@@ -62,7 +62,6 @@ private:
 	bool dirChangedToFwd = false;
 	bool dirChangedToBwd = false;
 	bool foundIFrameOfReverseGop = false;
-	bool flushDecoderFlag = false;
 	bool decodePreviousFramesOfTheForwardGop = false;
 	bool prevFrameInCache = false;
 	void decodeFrameFromBwdGOP();
