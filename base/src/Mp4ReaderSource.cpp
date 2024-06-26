@@ -46,6 +46,7 @@ public:
 	virtual void sendEndOfStream() = 0;
 	virtual bool produceFrames(frame_container& frames) = 0;
 	virtual int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame) = 0;
+	virtual int getGop() = 0;
 
 	bool Init()
 	{
@@ -118,9 +119,13 @@ public:
 		if (!props.parseFS && cof)
 		{
 			cof->clearCache();
+			if (tempVideoPath == mState.mVideoPath)
+			{
+				updateMstate(props, tempVideoPath);
+				return;
+			}
 			updateMstate(props, tempVideoPath);
 			initNewVideo();
-			return;
 		}
 
 		std::string tempSkipDir;
@@ -522,11 +527,14 @@ public:
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 				// todo: Implement a way for mp4reader to update FPS when opening a new video in parseFS enabled mode. Must not set parseFS disabled in a loop.
 				mProps.fps = mFPS;
-				auto gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+				auto gop = getGop();
 				mProps.fps = mFPS * playbackSpeed;
 				if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
 				{
-					mProps.fps = mProps.fps/gop;
+					if (gop)
+					{
+						mProps.fps = mProps.fps / gop;
+					}
 				}
 				setMp4ReaderProps(mProps);
 				if (controlModule != nullptr)
@@ -1133,6 +1141,7 @@ public:
 	bool produceFrames(frame_container& frames);
 	void sendEndOfStream() {}
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
+	int getGop();
 };
 
 class Mp4ReaderDetailH264 : public Mp4ReaderDetailAbs
@@ -1148,6 +1157,7 @@ public:
 	void prependSpsPps(uint8_t* iFrameBuffer);
 	void sendEndOfStream();
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
+	int getGop();
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
@@ -1174,6 +1184,11 @@ int Mp4ReaderDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp
 {
 	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
 	return ret;
+}
+
+int Mp4ReaderDetailJpeg::getGop()
+{
+	return 0;
 }
 
 bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
@@ -1284,6 +1299,12 @@ int Mp4ReaderDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp
 		ret = 0;
 	}
 	return ret;
+}
+
+int Mp4ReaderDetailH264::getGop()
+{
+	int gop = mState.info.syncSampleEntries[2] - mState.info.syncSampleEntries[1];
+	return gop;
 }
 
 void Mp4ReaderDetailH264::sendEndOfStream()
