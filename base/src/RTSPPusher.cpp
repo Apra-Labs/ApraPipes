@@ -10,22 +10,22 @@ extern "C" {
 #include "Frame.h"
 #include "H264FrameDemuxer.h"
 #include "H264ParserUtils.h"
-#include "H264Utils.h"
-#include "RTSPPusher.h"
-
-class RTSPPusher::Detail {
-  /* video output */
-  AVFrame *frame;
-  AVPicture src_picture, dst_picture;
-  AVFormatContext *outContext;
-  AVStream *video_st;
-  AVCodec *video_codec;
-  string mURL;
-  string mTitle;
-  int64_t totalDuration;
-  AVRational in_time_base;
-  bool isTCP;
-  uint32_t encoderTargetKbps;
+#include "Frame.h"
+#include "AbsControlModule.h"
+class RTSPPusher::Detail
+{
+	/* video output */
+	AVFrame *frame;
+	AVPicture src_picture, dst_picture;
+	AVFormatContext *outContext;
+	AVStream *video_st;
+	AVCodec *video_codec;
+	string mURL;
+	string mTitle;
+	int64_t totalDuration;
+	AVRational in_time_base;
+	bool isTCP;
+	uint32_t encoderTargetKbps;
 
   AVStream *add_stream(AVFormatContext *oc, AVCodec **codec,
                        enum AVCodecID codec_id, int num, int den) {
@@ -90,14 +90,13 @@ class RTSPPusher::Detail {
   }
 
 public:
-  // We need to pass object reference to refer to the connection status etc
-  // bool write_precoded_video_frame(boost::shared_ptr<Frame>& f, RTSPPusher&
-  // rtspMod)
-  bool write_precoded_video_frame(boost::shared_ptr<Frame> &f) {
-    mutable_buffer &codedFrame = *(f.get());
-    bool isKeyFrame = ((f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE) ||
-                       (f->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM));
-    totalDuration += duration;
+	// We need to pass object reference to refer to the connection status etc
+	// bool write_precoded_video_frame(boost::shared_ptr<Frame>& f, RTSPPusher& rtspMod)
+	bool write_precoded_video_frame(boost::shared_ptr<Frame> &f)
+	{
+		mutable_buffer &codedFrame = *(f.get());
+		bool isKeyFrame = ((f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE) || (f->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM));
+		totalDuration += duration;
 
     pkt->stream_index = video_st->index;
     pkt->pts = totalDuration;
@@ -302,12 +301,13 @@ bool RTSPPusher::term() {
   return bRC && res;
 }
 
-bool RTSPPusher::validateInputPins() {
-  // if (getNumberOfInputPins() != 1)
-  // {
-  // 	LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to
-  // be 1. Actual<" << getNumberOfInputPins() << ">"; 	return false;
-  // }
+bool RTSPPusher::validateInputPins()
+{
+    // if (getNumberOfInputPins() != 1)
+    // {
+    //  LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+    //  return false;
+    // }
 
   framemetadata_sp metadata = getFirstInputMetadata();
   FrameMetadata::FrameType frameType = metadata->getFrameType();
@@ -330,107 +330,124 @@ bool RTSPPusher::validateInputPins() {
   return true;
 }
 
-bool RTSPPusher::process(frame_container &frames) {
-  auto frame = frames.begin()->second;
-  bool isKeyFrame = (frame->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE ||
-                     frame->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM);
-
-  if ((controlModule != nullptr) && isKeyFrame) {
-    // LOG_ERROR<<"Got keyFrame after pausing rtspPusher";
-    savedIFrame = frame;
-    keyFrameAfterPause = true;
-    // boost::shared_ptr<AbsControlModule>ctl =
-    // boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-    // ctl->handlePusherPauseTS(frame->timestamp);
-    // LOG_ERROR<<"Sending Keyframetimestamp"<<frame->timestamp;
-  }
-
-  if (mDetail->connectionStatus != CONNECTION_READY) {
-    return true;
-  }
-
-  if (mDetail->isFirstFrame) {
-    mDetail->isFirstFrame = false;
-    return true;
-  }
-
-  if (!pausedState) {
-    keyFrameAfterPause = false;
-  }
-
-  if (!pausedState) {
-    keyFrameAfterPause = false;
-    if (!mDetail->write_precoded_video_frame(frame)) {
-      mDetail->connectionStatus = WRITE_FAILED;
-      LOG_FATAL << "write_precoded_video_frame failed";
-      return false;
-    }
-  }
-  return true;
-}
-
-bool RTSPPusher::setPausedState(bool state) {
-  LOG_ERROR << "RTSP-PUSHER: I am in setPausedState function with state - "
-            << state;
-  pausedState = state;
-  if (state) {
-    boost::shared_ptr<AbsControlModule> ctl =
-        boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-    ctl->handlePusherPauseTS(savedIFrame->timestamp);
-    if (!pauserThread.joinable()) {
-      pauserThread = boost::thread(&RTSPPusher::pauserThreadFunction, this);
-    }
-  } else {
-    if (pauserThread.joinable()) {
-      pauserThread.interrupt();
-      pauserThread.join();
-    }
-  }
-  return true;
-}
-
-void RTSPPusher::pauserThreadFunction() {
-  try {
-    auto sendFrame = savedIFrame;
-    while (pausedState) {
-
-      if (!mDetail) {
-        LOG_ERROR << "mDetail is null";
-        break;
-      }
-      if (!mDetail->write_precoded_video_frame(sendFrame)) {
-        mDetail->connectionStatus = WRITE_FAILED;
-        LOG_FATAL << "write_precoded_video_frame failed";
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(sleepTimeInMilliSec));
-      }
-    }
-  } catch (boost::thread_interrupted &) {
-    LOG_INFO << "Pause thread interrupted. Going to PlayState...";
-  }
-}
-
-void RTSPPusher::setFps(int fps)
+bool RTSPPusher::process(frame_container &frames)
 {
-	sleepTimeInMilliSec = 1000/fps;
+    auto frame = frames.begin()->second;
+    bool isKeyFrame = (frame->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE || frame->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM);
+
+    if((controlModule != nullptr) && isKeyFrame)
+    {
+        // LOG_ERROR<<"Got keyFrame after pausing rtspPusher";
+        savedIFrame = frame;
+        keyFrameAfterPause = true;
+        // boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+        // ctl->handlePusherPauseTS(frame->timestamp);
+        // LOG_ERROR<<"Sending Keyframetimestamp"<<frame->timestamp;
+    }
+
+    if (mDetail->connectionStatus != CONNECTION_READY)
+    {
+        return true;
+    }
+
+    if (mDetail->isFirstFrame)
+    {
+        mDetail->isFirstFrame = false;
+        return true;
+    }
+
+
+    if(!pausedState)
+    {
+        keyFrameAfterPause = false;
+    }
+
+
+    if(!pausedState)
+    {
+        keyFrameAfterPause = false;
+        if (!mDetail->write_precoded_video_frame(frame))
+        {
+            mDetail->connectionStatus = WRITE_FAILED;
+            LOG_FATAL << "write_precoded_video_frame failed";
+            return false;
+        }
+    }
+    return true;
 }
 
-bool RTSPPusher::processSOS(frame_sp &frame) {
-  LOG_TRACE << "at first frame";
-  // stick the sps/pps into extradata
-  if (mDetail->write_header(1, 30) &&
-      mDetail->write_precoded_video_frame(frame)) {
-    // written header and first frame both.
-    mDetail->connectionStatus = CONNECTION_READY;
-    mDetail->isFirstFrame = true;
-    // emit_event(CONNECTION_READY);
+
+bool RTSPPusher::setPausedState(bool state)
+{
+    LOG_ERROR<<"RTSP-PUSHER: I am in setPausedState function with state - "<<state;
+    pausedState = state;
+    if(state)
+    {
+        boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+        ctl->handlePusherPauseTS(savedIFrame->timestamp);
+        if (!pauserThread.joinable()) 
+        {
+            pauserThread = boost::thread(&RTSPPusher::pauserThreadFunction, this);
+        }
+    }
+    else
+    {            
+        if (pauserThread.joinable()) 
+        {
+            pauserThread.interrupt();
+            pauserThread.join(); 
+        }
+    }
     return true;
-  } else {
-    LOG_ERROR << "Could not write stream header... stream will not play !!"
-              << "\n";
-    mDetail->connectionStatus = CONNECTION_FAILED;
-    // emit_event(CONNECTION_FAILED);
-    return false;
-  }
+}
+
+void RTSPPusher::pauserThreadFunction()
+{
+    try 
+    {
+		auto sendFrame = savedIFrame;
+        while(pausedState) 
+        {
+			
+			if (!mDetail)
+			{
+				LOG_ERROR << "mDetail is null";
+				break;
+			}
+
+			if (!mDetail->write_precoded_video_frame(sendFrame))
+			{
+				mDetail->connectionStatus = WRITE_FAILED;
+				LOG_FATAL << "write_precoded_video_frame failed";
+			}
+        }
+    } 
+    catch (boost::thread_interrupted&) 
+    {
+        LOG_INFO << "Pause thread interrupted. Going to PlayState...";
+    }  
+}
+
+bool RTSPPusher::processSOS(frame_sp &frame)
+{
+	LOG_TRACE << "at first frame";
+	//stick the sps/pps into extradata
+	if (mDetail->write_header(1, 30) && mDetail->write_precoded_video_frame(frame))
+	{
+		//written header and first frame both.
+		mDetail->connectionStatus = CONNECTION_READY;
+		mDetail->isFirstFrame = true;
+		// emit_event(CONNECTION_READY);
+		return true;
+	}
+	else
+	{
+		LOG_ERROR << "Could not write stream header... stream will not play !!"
+				  << "\n";
+		mDetail->connectionStatus = CONNECTION_FAILED;
+		// emit_event(CONNECTION_FAILED);
+		return false;
+	}
 
   return true;
 }
