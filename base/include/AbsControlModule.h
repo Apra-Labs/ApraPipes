@@ -25,6 +25,7 @@ public:
   virtual void handleSendMMQTSCmd(uint64_t  mmqBeginTS, uint64_t mmqEndTS, bool priority = false) {}
   virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
   virtual void handleGoLive(bool goLive, bool priority) {}
+  virtual void handlePusherPauseTS(uint64_t keyFrameTS) {}
   virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
   boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
   std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
