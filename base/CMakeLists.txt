@@ -101,6 +101,7 @@ IF(ENABLE_CUDA)
     		/usr/include/atk-1.0/
     		/usr/include/gdk-pixbuf-2.0/
     		/usr/lib/glib-2.0/include/
+			/usr/lib/aarch64-linux-gnu/glib-2.0/include/
 		)
 
 
