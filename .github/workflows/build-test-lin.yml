@@ -140,17 +140,17 @@ jobs:
           restore-keys: ${{ inputs.flav }}-
     
     - name: Make build folder
-      run: mkdir -p _build
+      run: mkdir -p build
       continue-on-error: true
 
     - name: Configure CMake Common
-      working-directory: ${{github.workspace}}/_build
+      working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
-      working-directory: ${{github.workspace}}/_build
+      working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
 
     - name: List Test cases

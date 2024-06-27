@@ -93,14 +93,14 @@ IF(ENABLE_CUDA)
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
-    		../_build/vcpkg_installed/arm64-linux/include/gtk-3.0/
-    		../_build/vcpkg_installed/arm64-linux/include/glib-2.0/
-    		../_build/vcpkg_installed/arm64-linux/include/pango-1.0/
-    		../_build/vcpkg_installed/arm64-linux/include/harfbuzz/
-    		../_build/vcpkg_installed/arm64-linux/include/cairo/
-    		../_build/vcpkg_installed/arm64-linux/include/atk-1.0/
-    		../_build/vcpkg_installed/arm64-linux/include/gdk-pixbuf-2.0/
-    		../_build/vcpkg_installed/arm64-linux/lib/glib-2.0/include/
+    		/usr/include/gtk-3.0/
+    		/usr/include/glib-2.0/
+    		/usr/include/pango-1.0/
+    		/usr/include/harfbuzz/
+    		/usr/include/cairo/
+    		/usr/include/atk-1.0/
+    		/usr/include/gdk-pixbuf-2.0/
+    		/usr/lib/glib-2.0/include/
 		)
 
 
