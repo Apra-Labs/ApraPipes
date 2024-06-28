@@ -60,9 +60,13 @@ IF(ENABLE_LINUX)
 	pkg_check_modules(GLFW REQUIRED glfw3)
 ENDIF()
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+IF(ENABLE_ARM64)
+	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
 IF(ENABLE_CUDA)

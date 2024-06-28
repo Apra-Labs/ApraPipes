@@ -154,6 +154,7 @@ H264EncoderV4L2Helper::enableMotionVectorReporting()
     control.value = 1;
 
     setExtControlsMV(ctrls);
+    return 1;
 }
 
 void H264EncoderV4L2Helper::initEncoderParams(uint32_t bitrate, uint32_t fps)
@@ -265,6 +266,8 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
     control.string = (char *)&metadata;
 
     getExtControls(ctrls);
+
+    return 1;
 }
 
 void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata, frame_container &frames)
@@ -347,6 +350,8 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
 
     mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
+
+    return true;
 }
 
 bool H264EncoderV4L2Helper::processEOS()
@@ -361,4 +366,6 @@ bool H264EncoderV4L2Helper::processEOS()
     mOutputPlane->qBuffer(buffer->getIndex());
 
     mCapturePlane->waitForDQThread(2000); // blocking call - waits for 2 secs for thread to exit
+
+    return true;
 }
