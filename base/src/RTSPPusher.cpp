@@ -89,8 +89,8 @@ class RTSPPusher::Detail
 		fps_den = 30;
 		fps_num = 1;
 
-		return true;
-	}
+    return true;
+  }
 
 public:
 	// We need to pass object reference to refer to the connection status etc
@@ -102,16 +102,16 @@ public:
 		bool isKeyFrame = ((f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE) || (f->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM));
 		totalDuration += duration;
 
-		pkt->stream_index = video_st->index;
-		pkt->pts = totalDuration;
-		pkt->dts = pkt->pts;
+    pkt->stream_index = video_st->index;
+    pkt->pts = totalDuration;
+    pkt->dts = pkt->pts;
 
 		pkt->data = (uint8_t*)codedFrame.data();
 		pkt->size = (int)codedFrame.size();
 		if (isKeyFrame)
 			pkt->flags |= AV_PKT_FLAG_KEY;
 
-		int ret = av_write_frame(outContext, pkt);
+    int ret = av_write_frame(outContext, pkt);
 
 		bool bRC = true;
 		if (ret < 0) 
@@ -121,7 +121,8 @@ public:
 			char avErrorBuf[500] = { '\0' };
 			av_strerror(ret, avErrorBuf, 500);
 
-			LOG_ERROR << "Error while writing video frame : " << ret << ":" << avErrorBuf << ":" << pkt->pts << "\n";
+      LOG_ERROR << "Error while writing video frame : " << ret << ":"
+                << avErrorBuf << ":" << pkt->pts << "\n";
 
 			// On evostream going down the return code is -32 - errno.h says 32 is
 			// EPIPE but AVERROR_EOF not coming as -32
@@ -157,14 +158,14 @@ public:
 	{
 		const char* url = mURL.c_str();
 
-		int ret = 0;
-		totalDuration = 0;
+    int ret = 0;
+    totalDuration = 0;
 
-		av_log_set_level(AV_LOG_INFO);
+    av_log_set_level(AV_LOG_INFO);
 
-		avformat_network_init();
+    avformat_network_init();
 
-		int rc = avformat_alloc_output_context2(&outContext, NULL, "rtsp", url);
+    int rc = avformat_alloc_output_context2(&outContext, NULL, "rtsp", url);
 
 		if (rc < 0) 
 		{
@@ -174,10 +175,10 @@ public:
 				size_t errBufSize = AV_ERROR_MAX_STRING_SIZE;
 				av_strerror(rc, errBuf, errBufSize);
 
-				LOG_ERROR << errBuf;
-			}
-			return false;
-		}
+        LOG_ERROR << errBuf;
+      }
+      return false;
+    }
 
 		if (!outContext) 
 		{
@@ -220,16 +221,16 @@ public:
 
 		AVDictionary* options = NULL;
 
-		av_dict_set(&outContext->metadata, "title", mTitle.c_str(), 0);
-		av_dict_set(&options, "rtsp_transport", isTCP ? "tcp" : "udp", 0);
+    av_dict_set(&outContext->metadata, "title", mTitle.c_str(), 0);
+    av_dict_set(&options, "rtsp_transport", isTCP ? "tcp" : "udp", 0);
 
-		av_dump_format(outContext, 0, mURL.c_str(), 1);
+    av_dump_format(outContext, 0, mURL.c_str(), 1);
 
 		AVFormatContext* ac[] = { outContext };
 		char buf[1024];
 		av_sdp_create(ac, 1, buf, 1024);
 
-		ret = avformat_write_header(outContext, &options);
+    ret = avformat_write_header(outContext, &options);
 
 		// Why is it not returning if RTSP server is not available?
 		// is there some timeout mechanism that needs to be implemented?
@@ -275,9 +276,9 @@ public:
 				av_write_trailer(outContext);
 			}
 
-			video_st->codecpar->extradata = 0;
-			video_st->codecpar->extradata_size = 0;
-		}
+      video_st->codecpar->extradata = 0;
+      video_st->codecpar->extradata_size = 0;
+    }
 
 		if (outContext) 
 		{
@@ -289,10 +290,10 @@ public:
 			return false;
 		}
 
-		// if connection has not been established, free context is causing an
-		// an unhandled exception  because of heap correuption
-		// if we free outContext without freeing up the other members of video_st
-	}
+    // if connection has not been established, free context is causing an
+    // an unhandled exception  because of heap correuption
+    // if we free outContext without freeing up the other members of video_st
+  }
 };
 
 RTSPPusher::RTSPPusher(RTSPPusherProps props) : Module(SINK, "RTSPPusher", props) 
@@ -313,16 +314,16 @@ bool RTSPPusher::init()
 		return false;
 	}
 
-	return mDetail->init();
+  return mDetail->init();
 }
 
 bool RTSPPusher::term() 
 {
 	bool bRC = mDetail->term(mDetail->connectionStatus);
 
-	auto res = Module::term();
+  auto res = Module::term();
 
-	return bRC && res;
+  return bRC && res;
 }
 
 bool RTSPPusher::validateInputPins() 
@@ -341,7 +342,7 @@ bool RTSPPusher::validateInputPins()
 		return false;
 	}
 
-	return true;
+  return true;
 }
 
 bool RTSPPusher::process(frame_container& frames) 
@@ -479,7 +480,7 @@ bool RTSPPusher::processSOS(frame_sp& frame)
 		return false;
 	}
 
-	return true;
+  return true;
 }
 
 bool RTSPPusher::shouldTriggerSOS() 
