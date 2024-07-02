@@ -19,12 +19,20 @@ public:
                            boost::shared_ptr<Module> module);
   std::pair<bool, boost::shared_ptr<Module>> getModuleofRole(std::string pName,
                                                              std::string role);
-  virtual void handleMp4MissingVideotrack(std::string previousVideoFile, std::string nextVideoFile) {}
+  virtual void handleMp4MissingVideotrack(std::string previousVideoFile,
+                                          std::string nextVideoFile) {}
   virtual void handleMMQExport(Command cmd, bool priority = false) {}
-  virtual void handleMMQExportView(uint64_t startTS, uint64_t endTS = 9999999999999, bool playabckDirection = true, bool Mp4ReaderExport = false, bool priority = false) {}
-  virtual void handleSendMMQTSCmd(uint64_t  mmqBeginTS, uint64_t mmqEndTS, bool priority = false) {}
-  virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
+  virtual void handleMMQExportView(uint64_t startTS,
+                                   uint64_t endTS = 9999999999999,
+                                   bool playabckDirection = true,
+                                   bool Mp4ReaderExport = false,
+                                   bool priority = false) {}
+  virtual void handleSendMMQTSCmd(uint64_t mmqBeginTS, uint64_t mmqEndTS,
+                                  bool priority = false) {}
+  virtual void handleLastGtkGLRenderTS(uint64_t latestGtkGlRenderTS,
+                                       bool priority) {}
   virtual void handleGoLive(bool goLive, bool priority) {}
+  virtual void handlePusherPauseTS(uint64_t keyFrameTS) {}
   virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
   boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
   std::map<std::string, boost::shared_ptr<Module>> moduleRoles;

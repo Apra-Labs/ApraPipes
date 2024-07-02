@@ -35,6 +35,13 @@ public:
 
 	bool init();
 	bool term();
+	bool setPausedState(bool state);
+	bool pausedState = false;
+	bool keyFrameAfterPause = false;
+	boost::shared_ptr<Frame> savedIFrame;
+	boost::thread pauserThread;
+	void pauserThreadFunction();
+	void setFps(int fps);
 
 protected:
 	bool process(frame_container &frames);
@@ -46,4 +53,5 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	int sleepTimeInMilliSec;
 };
