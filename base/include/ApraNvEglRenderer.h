@@ -138,7 +138,8 @@ public:
      * @return 0 for success, -1 otherwise.
      */
     static int getDisplayResolution(uint32_t &width, uint32_t &height);
-
+    bool renderAndDrawLoop();
+    bool windowDrag();
     /**
      * Sets the overlay string.
      *
@@ -149,12 +150,21 @@ public:
      * @return 0 for success, -1 otherwise.
      */
     int setOverlayText(char *str, uint32_t x, uint32_t y);
-
-private:
+public:
     Display * x_display;    /**< Connection to the X server created using
                                   XOpenDisplay(). */
     Window x_window;        /**< Holds the window to be used for rendering created using
                                   XCreateWindow(). */
+
+    uint32_t mWidth,mHeight;
+
+    int drag_start_x = 0;
+    int drag_start_y = 0;
+    bool is_dragging = false;
+	uint32_t _x_offset = 0;
+	uint32_t _y_offset = 0;
+	XEvent event;
+    bool drawBorder = false;
 
     EGLDisplay egl_display;     /**< Holds the EGL Display connection. */
     EGLContext egl_context;     /**< Holds the EGL rendering context. */

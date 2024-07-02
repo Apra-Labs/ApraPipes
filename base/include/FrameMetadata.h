@@ -57,11 +57,9 @@ public:
 	enum MemType
 	{
 		HOST = 1,
-#ifdef APRA_CUDA_ENABLED
 		HOST_PINNED = 2,
 		CUDA_DEVICE = 3,
 		DMABUF = 4
-#endif
 	};
 		
 	FrameMetadata(FrameType _frameType)

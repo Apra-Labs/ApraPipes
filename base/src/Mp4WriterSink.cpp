@@ -205,6 +205,7 @@ public:
 		if (mux)
 		{
 			mp4_mux_close(mux);
+			mux = nullptr;
 		}
 		return true;
 	}
@@ -228,13 +229,14 @@ public:
 	boost::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
+	struct mp4_mux* mux;
+	bool syncFlag = false;
 protected:
 	int videotrack;
 	int metatrack;
 	int audiotrack;
 	int current_track;
 	uint64_t now;
-	struct mp4_mux* mux;
 	struct mp4_mux_track_params params, metatrack_params;
 	struct mp4_video_decoder_config vdc;
 	struct mp4_mux_sample mux_sample;
@@ -244,7 +246,6 @@ protected:
 	int mHeight;
 	int mWidth;
 	short mFrameType;
-	bool syncFlag = false;
 	Mp4WriterSinkUtils mWriterSinkUtils;
 	std::string mNextFrameFileName;
 	std::string mSerFormatVersion;
@@ -604,7 +605,7 @@ bool Mp4WriterSink::validateInputOutputPins()
 
 bool Mp4WriterSink::validateInputPins()
 {
-	if (getNumberOfInputPins() > 2)
+	if (getNumberOfInputPins() > 5)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 2. Actual<" << getNumberOfInputPins() << ">";
 		return false;
@@ -729,6 +730,12 @@ bool Mp4WriterSink::handlePropsChange(frame_sp& frame)
 
 void Mp4WriterSink::setProps(Mp4WriterSinkProps& props)
 {
-	Module::addPropsToQueue(props);
+	Module::addPropsToQueue(props, true);
 }
 
+bool Mp4WriterSink::doMp4MuxSync()
+{
+	auto ret = mp4_mux_sync(mDetail->mux);
+	mDetail->syncFlag = false;
+	return ret;
+}
