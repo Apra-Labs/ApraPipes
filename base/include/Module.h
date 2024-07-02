@@ -157,7 +157,7 @@ public:
 	bool addFeedback(boost::shared_ptr<Module> next, bool open = true); // take all the output pins			
 	boost_deque<boost::shared_ptr<Module>> getConnectedModules();
 
-	bool relay(boost::shared_ptr<Module> next, bool open);
+	bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
 		
 	virtual bool init();
 	void operator()(); //to support boost::thread
@@ -194,7 +194,7 @@ protected:
 	void setProps(ModuleProps& props);
 	void fillProps(ModuleProps& props);
 	template<class T>
-	void addPropsToQueue(T& props)
+	void addPropsToQueue(T& props, bool priority = false)
 	{
 		auto size = props.getSerializeSize();
 		auto frame = makeCommandFrame(size, mPropsChangeMetadata);
@@ -204,7 +204,14 @@ protected:
 		// add to que
 		frame_container frames;
 		frames.insert(make_pair("props_change", frame));
-		Module::push(frames);
+		if(!priority)
+		{
+			Module::push(frames);
+		}
+		else
+		{
+			Module::push_back(frames);
+		}
 	}
 	virtual bool handlePropsChange(frame_sp& frame);
 	virtual bool handleCommand(Command::CommandType type, frame_sp& frame);
@@ -221,7 +228,7 @@ protected:
 	}
 
 	template<class T>
-	bool queueCommand(T& cmd)
+	bool queueCommand(T& cmd, bool priority = false)
 	{
 		auto size = cmd.getSerializeSize();
 		auto frame = makeCommandFrame(size, mCommandMetadata);
@@ -231,8 +238,14 @@ protected:
 		// add to que
 		frame_container frames;
 		frames.insert(make_pair("command", frame));
-		Module::push(frames);
-
+		if(priority)
+		{
+			Module::push_back(frames);
+		}
+		else
+		{
+			Module::push(frames);
+		}
 		return true;
 	}
 
@@ -242,7 +255,7 @@ protected:
 		Utils::deSerialize(cmd, frame->data(), frame->size());
 	}
 	
-	bool queuePlayPauseCommand(PlayPauseCommand ppCmd);
+	bool queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority = false);
 	frame_sp makeCommandFrame(size_t size, framemetadata_sp& metadata);
 	frame_sp makeFrame(size_t size, string& pinId);
 	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
@@ -340,11 +353,12 @@ protected:
 	};
 
 	FFBufferMaker createFFBufferMaker();
-
+	boost::shared_ptr<Module> controlModule = nullptr;
 private:	
 	void setSieveDisabledFlag(bool sieve);
 	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
 	bool push(frame_container frameContainer); //exchanges the buffer 
+	bool push_back(frame_container frameContainer);
 	bool try_push(frame_container frameContainer); //tries to exchange the buffer
 	
 	bool addEoPFrame(frame_container& frames);
