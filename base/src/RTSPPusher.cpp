@@ -441,12 +441,18 @@ void RTSPPusher::pauserThreadFunction()
 				mDetail->connectionStatus = WRITE_FAILED;
 				LOG_FATAL << "write_precoded_video_frame failed";
 			}
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(sleepTimeInMilliSec));
         }
     } 
     catch (boost::thread_interrupted&) 
     {
         LOG_INFO << "Pause thread interrupted. Going to PlayState...";
     }  
+}
+
+void RTSPPusher::setFps(int fps)
+{
+	sleepTimeInMilliSec = 1000/fps;
 }
 
 bool RTSPPusher::processSOS(frame_sp &frame)

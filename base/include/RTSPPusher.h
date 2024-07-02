@@ -41,6 +41,7 @@ public:
 	boost::shared_ptr<Frame> savedIFrame;
 	boost::thread pauserThread;
 	void pauserThreadFunction();
+	void setFps(int fps);
 protected:
 	bool process(frame_container &frames);
 	bool validateInputPins();
@@ -51,4 +52,5 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	int sleepTimeInMilliSec;
 };
