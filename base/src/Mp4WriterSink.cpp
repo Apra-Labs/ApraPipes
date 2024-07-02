@@ -595,21 +595,21 @@ bool Mp4WriterSink::init()
 
 bool Mp4WriterSink::validateInputOutputPins()
 {
-	if (getNumberOfInputsByType(FrameMetadata::H264_DATA) != 1 && getNumberOfInputsByType(FrameMetadata::ENCODED_IMAGE) != 1) 
-	{
-		LOG_ERROR << "<" << getId() << ">::validateInputOutputPins expected 1 pin of ENCODED_IMAGE. Actual<" << getNumberOfInputPins() << ">";
-		return false;
-	}
+	// if (getNumberOfInputsByType(FrameMetadata::H264_DATA) != 1 && getNumberOfInputsByType(FrameMetadata::ENCODED_IMAGE) != 1) 
+	// {
+	// 	LOG_ERROR << "<" << getId() << ">::validateInputOutputPins expected 1 pin of ENCODED_IMAGE. Actual<" << getNumberOfInputPins() << ">";
+	// 	return false;
+	// }
 	return true;
 }
 
 bool Mp4WriterSink::validateInputPins()
 {
-	if (getNumberOfInputPins() > 5)
-	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 2. Actual<" << getNumberOfInputPins() << ">";
-		return false;
-	}
+	// if (getNumberOfInputPins() > 5)
+	// {
+	// 	LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 2. Actual<" << getNumberOfInputPins() << ">";
+	// 	return false;
+	// }
 
 	auto inputPinIdMetadataMap = getInputMetadata();
 	for (auto const& element : inputPinIdMetadataMap)

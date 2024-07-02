@@ -328,11 +328,11 @@ bool RTSPPusher::term()
 
 bool RTSPPusher::validateInputPins()
 {
-	if (getNumberOfInputPins() != 1)
-	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
-		return false;
-	}
+	// if (getNumberOfInputPins() != 1)
+	// {
+	// 	LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+	// 	return false;
+	// }
 
 	framemetadata_sp metadata = getFirstInputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();

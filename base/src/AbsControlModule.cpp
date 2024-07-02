@@ -60,12 +60,12 @@ bool AbsControlModule::process(frame_container& frames)
     return true;
 }
 
-std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::string role, boost::shared_ptr<Module> module)
+std::string AbsControlModule::enrollModule(std::string pName, std::string role, boost::shared_ptr<Module> module)
 {
-    std::string pipelineRole = mDetail->getPipelineRole(p->getName(), role);
+    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
     if (moduleRoles.find(pipelineRole) != moduleRoles.end())
     {
-        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + p->getName() + ">";
+        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + pName + ">";
         LOG_ERROR << errMsg;
         throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
     }
@@ -73,9 +73,9 @@ std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::s
     return pipelineRole;
 }
 
-std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(PipeLine p, std::string role)
+std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(std::string pName, std::string role)
 {
-    std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
+    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
     if (moduleRoles.find(pipelineRole) == moduleRoles.end())
     {
         return std::make_pair<bool, boost::shared_ptr<Module>>(false, nullptr);

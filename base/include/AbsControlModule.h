@@ -15,9 +15,9 @@ public:
   ~AbsControlModule();
   bool init();
   bool term();
-  std::string enrollModule(boost::shared_ptr<PipeLine> p, std::string role,
+  std::string enrollModule(std::string pName, std::string role,
                            boost::shared_ptr<Module> module);
-  std::pair<bool, boost::shared_ptr<Module>> getModuleofRole(PipeLine p,
+  std::pair<bool, boost::shared_ptr<Module>> getModuleofRole(std::string pName,
                                                              std::string role);
   virtual void handleMp4MissingVideotrack(std::string previousVideoFile, std::string nextVideoFile) {}
   virtual void handleMMQExport(Command cmd, bool priority = false) {}
