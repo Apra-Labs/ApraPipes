@@ -517,7 +517,6 @@ target_include_directories ( aprapipes PRIVATE
 	${NVCODEC_INCLUDE_DIR}
 )
 
-
 # aprapipes Unit Tests
 
 IF (ENABLE_ARM64)
@@ -624,6 +623,23 @@ SET(UT_FILES
 	${CUDA_UT_FILES}
 )
 
+SET(SAMPLE_UT_FILES
+		test/utmain.cpp
+		test/test_utils.cpp
+		test/test_utils.h
+		.././samples/timelapse-sample/timelapse_summary_test.cpp
+)
+
+SET(SAMPLE_CORE_FILES
+	../samples/timelapse-sample/timelapse_summary.h
+	../samples/timelapse-sample/timelapse_summary.cpp
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/gtkglrenderer_tests.cpp
@@ -638,6 +654,8 @@ ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 
+add_executable(aprapipessampleut ${SAMPLE_SOURCE})
+
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
 ENDIF(ENABLE_ARM64)
@@ -648,6 +666,30 @@ ENDIF (ENABLE_CUDA)
 
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+
+target_include_directories ( aprapipessampleut PRIVATE 
+${JETSON_MULTIMEDIA_LIB_INCLUDE}
+${FFMPEG_INCLUDE_DIRS} 
+${OpenCV_INCLUDE_DIRS} 
+${Boost_INCLUDE_DIRS}
+${LIBMP4_INC_DIR}
+${BARESIP_INC_DIR}
+${LIBRE_INC_DIR}
+${NVCODEC_INCLUDE_DIR}
+test
+)
+
+
+target_link_libraries(aprapipessampleut   
+  aprapipes  
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  )
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
@@ -692,6 +734,8 @@ IF(ENABLE_WINDOWS)
 		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
 	ENDIF(GHA)
 ENDIF(ENABLE_WINDOWS)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)
 
 include(GNUInstallDirs)
 
