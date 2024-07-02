@@ -1,11 +1,13 @@
 <map id="MultimediaQueueXform::allowFrames" name="MultimediaQueueXform::allowFrames">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,163,88"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a39cdcaf6f3094beecf1877f36a6b3a63" title=" " alt="" coords="211,55,374,80"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,65,195,65,195,70,163,70"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,163,113"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a815dd4a2e34761df83a5fcbe194406d5" title=" " alt="" coords="211,80,374,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,90,195,90,195,96,163,96"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="422,5,619,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="355,51,442,32,443,38,356,57"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="323,77,421,40,444,33,445,38,423,45,325,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="472,55,569,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="375,65,457,65,457,70,375,70"/>
-<area shape="rect" id="Node000005" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="470,104,571,130"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="356,78,455,100,454,105,355,84"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="374,81,456,72,457,77,375,86"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="455,104,587,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="375,99,439,106,439,111,374,104"/>
+<area shape="rect" id="Node000006" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="470,153,571,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="326,104,423,140,455,149,454,154,421,145,325,109"/>
 </map>

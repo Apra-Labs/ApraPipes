@@ -1,9 +1,9 @@
 <map id="FrameContainerQueueAdapter" name="FrameContainerQueueAdapter">
-<area shape="rect" id="Node000001" title=" " alt="" coords="13,927,220,1272"/>
-<area shape="rect" id="Node000004" href="$classH264FrameDemuxer.html" title=" " alt="" coords="41,1320,192,1625"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="119,1287,119,1320,114,1320,114,1287"/>
-<area shape="rect" id="Node000002" href="$classFrameContainerQueue.html" title=" " alt="" coords="36,613,197,879"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,893,119,927,114,927,114,893"/>
-<area shape="rect" id="Node000003" href="$classbounded__buffer.html" title=" " alt="" coords="5,5,228,565"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="119,580,119,614,114,614,114,580"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="13,1007,220,1352"/>
+<area shape="rect" id="Node000004" href="$classH264FrameDemuxer.html" title=" " alt="" coords="41,1400,192,1705"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="119,1367,119,1400,114,1400,114,1367"/>
+<area shape="rect" id="Node000002" href="$classFrameContainerQueue.html" title=" " alt="" coords="36,653,197,959"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,974,119,1007,114,1007,114,974"/>
+<area shape="rect" id="Node000003" href="$classbounded__buffer.html" title=" " alt="" coords="5,5,228,605"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="119,620,119,653,114,653,114,620"/>
 </map>

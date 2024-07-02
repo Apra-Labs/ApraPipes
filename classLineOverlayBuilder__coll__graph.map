@@ -1,9 +1,9 @@
 <map id="LineOverlayBuilder" name="LineOverlayBuilder">
-<area shape="rect" id="Node000001" title=" " alt="" coords="38,548,178,634"/>
-<area shape="rect" id="Node000002" href="$classDrawingOverlayBuilder.html" title=" " alt="" coords="5,320,168,405"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,420,107,548,101,549,89,420"/>
-<area shape="rect" id="Node000003" href="$classLineOverlay.html" title=" " alt="" coords="193,240,317,485"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,467,182,487,149,536,145,533,178,484,190,464"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="31,547,171,632"/>
+<area shape="rect" id="Node000002" href="$classDrawingOverlayBuilder.html" title=" " alt="" coords="5,319,168,404"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,418,101,547,96,547,88,419"/>
+<area shape="rect" id="Node000003" href="$classLineOverlay.html" title=" " alt="" coords="193,239,317,484"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,466,182,486,146,535,142,532,178,482,191,463"/>
 <area shape="rect" id="Node000004" href="$classOverlayInfo.html" title=" " alt="" coords="193,5,317,191"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="257,206,257,240,252,240,252,206"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="257,206,257,239,252,239,252,206"/>
 </map>

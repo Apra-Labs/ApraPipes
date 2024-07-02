@@ -1,9 +1,11 @@
 <map id="DMAAllocator::DMAAllocator" name="DMAAllocator::DMAAllocator">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,193,56"/>
-<area shape="rect" id="Node000002" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="247,5,443,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,31,231,27,231,33,194,36"/>
-<area shape="rect" id="Node000003" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="241,55,449,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,50,225,53,225,58,193,55"/>
-<area shape="rect" id="Node000004" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="497,55,714,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="449,65,482,65,482,70,449,70"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,70,193,96"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="267,5,423,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,67,251,45,252,50,158,72"/>
+<area shape="rect" id="Node000003" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="247,70,443,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,80,231,80,231,86,193,86"/>
+<area shape="rect" id="Node000004" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="241,120,449,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,94,263,113,262,118,166,99"/>
+<area shape="rect" id="Node000005" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="497,120,714,145"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="449,130,482,130,482,135,449,135"/>
 </map>

@@ -1,5 +1,7 @@
 <map id="VirtualPTZ::Detail::setProps" name="VirtualPTZ::Detail::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,128,46"/>
-<area shape="rect" id="Node000002" href="$classUtils.html#acd8d3bb860c4a3b02844e5ec1277b91c" title=" " alt="" coords="176,13,335,39"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,23,160,23,160,28,128,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,27,128,68"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#acd8d3bb860c4a3b02844e5ec1277b91c" title=" " alt="" coords="176,5,335,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,35,160,30,161,36,129,41"/>
+<area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="178,55,333,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="129,54,163,59,162,64,128,59"/>
 </map>

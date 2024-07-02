@@ -3,6 +3,7 @@ var classRTSPClientSrc =
     [ "Detail", "classRTSPClientSrc_1_1Detail.html", "classRTSPClientSrc_1_1Detail" ],
     [ "RTSPClientSrc", "classRTSPClientSrc.html#ab8c9332c8cc4ed723d63bd60ee8be4f8", null ],
     [ "~RTSPClientSrc", "classRTSPClientSrc.html#ade45e2155ba9db5db7ce3b647b6add01", null ],
+    [ "getCurrentFps", "classRTSPClientSrc.html#a2691074a027408dffc01da9fa479570c", null ],
     [ "getProps", "classRTSPClientSrc.html#a99d53b6ccc6000ebdc0e33eea2c475ad", null ],
     [ "handleCommand", "classRTSPClientSrc.html#a4bd78af0df31a38684a0c5fcb542f9fd", null ],
     [ "handlePropsChange", "classRTSPClientSrc.html#a9424ba7d57c62f9ffe7d3d1675ec7b13", null ],

@@ -1,7 +1,7 @@
 var classNvArgusCameraHelper =
 [
     [ "MakeFrame", "classNvArgusCameraHelper.html#ad68c88d8a0d5295a4d84218371bf7fe8", null ],
-    [ "SendFrame", "classNvArgusCameraHelper.html#a2cd67d20106ddc562535f9fad3748a31", null ],
+    [ "SendFrame", "classNvArgusCameraHelper.html#aad8d2621ad1946188b31f9edf52210dc", null ],
     [ "NvArgusCameraHelper", "classNvArgusCameraHelper.html#aef41456d99bedc905f56c976bba4beb7", null ],
     [ "~NvArgusCameraHelper", "classNvArgusCameraHelper.html#a8f75bcbf8ac7e4c4bc691c3a4a17c2fe", null ],
     [ "create", "classNvArgusCameraHelper.html#aecc01fdd2ecfc0c0f9b67666b455151b", null ],

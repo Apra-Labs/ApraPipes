@@ -21,6 +21,7 @@ var classOrderedCacheOfFiles =
     [ "getFileFromCache", "classOrderedCacheOfFiles.html#a2c1a3a9e963c47f1f5373a0908cbe9da", null ],
     [ "getLastVideoInCache", "classOrderedCacheOfFiles.html#afd1afa2917ae8ae371b390933c629e07", null ],
     [ "getNextFileAfter", "classOrderedCacheOfFiles.html#a2440da14f2353ea3fb1dc245a7e62a2d", null ],
+    [ "getPreviousAndNextFile", "classOrderedCacheOfFiles.html#a96a8ea22069f27bee737b99eb3354d11", null ],
     [ "getRandomSeekFile", "classOrderedCacheOfFiles.html#af86f52d1a0e6f76dbc89b59e33fceda9", null ],
     [ "getSnapShot", "classOrderedCacheOfFiles.html#ab39f935b97accd7a8b564c58d7b89798", null ],
     [ "hourPatternCheck", "classOrderedCacheOfFiles.html#a0e16fbf050c1dcfc6cb1e9c1711c2aaa", null ],

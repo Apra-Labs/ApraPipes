@@ -1,18 +1,25 @@
 <map id="NoneCommand::getCommandType" name="NoneCommand::getCommandType">
-<area shape="rect" id="Node000001" title=" " alt="" coords="827,55,1049,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a198ab991595cbfc0124d7a1f9421995c" title=" " alt="" coords="578,29,779,55"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="811,58,779,55,779,49,811,52"/>
-<area shape="rect" id="Node000008" href="$classModule.html#a262d6c32ea8823149ab36ec165b73bcf" title=" " alt="" coords="588,79,769,104"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="811,82,769,86,769,80,811,77"/>
-<area shape="rect" id="Node000003" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="436,55,530,80"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="563,60,531,64,530,59,563,55"/>
-<area shape="rect" id="Node000004" href="$classH264EncoderV4L2.html#a7539f857a9084786fc24cbd2d9debf0f" title=" " alt="" coords="178,5,388,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="420,53,387,45,343,34,345,29,389,40,422,48"/>
-<area shape="rect" id="Node000005" href="$classModule.html#a7938c5a5b0891563bd57144f78330dd6" title=" " alt="" coords="239,55,327,80"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="420,70,327,70,327,65,420,65"/>
-<area shape="rect" id="Node000007" href="$classVirtualCameraSink_1_1Detail.html#ac695871d7abc864a74f6d8dc6b48ba41" title=" " alt="" coords="215,105,351,145"/>
-<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="422,88,352,108,350,103,421,82"/>
-<area shape="rect" id="Node000006" href="$classModule.html#ae142fa64aba77f793b2697d42d4d23cc" title=" " alt="" coords="5,55,130,80"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="224,70,130,70,130,65,224,65"/>
-<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="573,81,530,76,531,71,574,76"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="890,86,1112,112"/>
+<area shape="rect" id="Node000002" href="$classMultimediaQueueXform.html#a43fbd8b8b669736c373e1cc7f3dff246" title=" " alt="" coords="650,13,833,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="932,85,824,57,826,52,933,79"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a198ab991595cbfc0124d7a1f9421995c" title=" " alt="" coords="641,86,842,112"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="874,102,842,102,842,96,874,96"/>
+<area shape="rect" id="Node000011" href="$classModule.html#a262d6c32ea8823149ab36ec165b73bcf" title=" " alt="" coords="651,136,832,161"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="915,118,813,137,812,132,914,113"/>
+<area shape="rect" id="Node000003" href="$classMultimediaQueueXform.html#aab0b2f65705e81cbca41bbdfab98df26" title=" " alt="" coords="436,5,593,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="634,42,594,40,594,34,634,36"/>
+<area shape="rect" id="Node000004" href="$classMultimediaQueueXform.html#a7861d878700f180c5103af5893d5aa3e" title=" " alt="" coords="436,71,593,111"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="645,61,594,74,593,69,643,56"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="609,17,650,19,650,24,609,23"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="468,136,562,161"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="665,118,563,141,562,136,664,113"/>
+<area shape="rect" id="Node000007" href="$classH264EncoderV4L2.html#a7539f857a9084786fc24cbd2d9debf0f" title=" " alt="" coords="178,86,388,112"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="452,138,346,115,347,110,453,133"/>
+<area shape="rect" id="Node000008" href="$classModule.html#a7938c5a5b0891563bd57144f78330dd6" title=" " alt="" coords="239,136,327,161"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="452,151,327,151,327,146,452,146"/>
+<area shape="rect" id="Node000010" href="$classVirtualCameraSink_1_1Detail.html#ac695871d7abc864a74f6d8dc6b48ba41" title=" " alt="" coords="215,185,351,226"/>
+<area shape="poly" id="edge10_Node000006_Node000010" title=" " alt="" coords="453,166,352,192,350,186,452,161"/>
+<area shape="rect" id="Node000009" href="$classModule.html#ae142fa64aba77f793b2697d42d4d23cc" title=" " alt="" coords="5,136,130,161"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="224,151,130,151,130,146,224,146"/>
+<area shape="poly" id="edge12_Node000011_Node000006" title=" " alt="" coords="636,151,562,151,562,146,636,146"/>
 </map>

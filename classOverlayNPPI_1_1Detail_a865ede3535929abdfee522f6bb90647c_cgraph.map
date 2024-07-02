@@ -1,7 +1,10 @@
 <map id="OverlayNPPI::Detail::setMetadata" name="OverlayNPPI::Detail::setMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,142,46"/>
-<area shape="rect" id="Node000002" href="$classOverlayNPPI_1_1Detail.html#adf596e9ab6ea40f98cd08ab3a3177c05" title=" " alt="" coords="190,5,326,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,23,174,23,174,28,142,28"/>
-<area shape="rect" id="Node000003" href="$classOverlayNPPI_1_1Detail.html#a6efb258254fb5eb6bd38886f1086d423" title=" " alt="" coords="374,5,510,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="326,23,358,23,358,28,326,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,142,75"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="374,5,529,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,47,358,30,358,36,142,52"/>
+<area shape="rect" id="Node000003" href="$classOverlayNPPI_1_1Detail.html#adf596e9ab6ea40f98cd08ab3a3177c05" title=" " alt="" coords="190,63,326,103"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="142,63,174,68,174,73,142,68"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="326,60,366,48,367,53,327,65"/>
+<area shape="rect" id="Node000004" href="$classOverlayNPPI_1_1Detail.html#a6efb258254fb5eb6bd38886f1086d423" title=" " alt="" coords="384,71,520,111"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="327,83,368,85,368,90,326,88"/>
 </map>

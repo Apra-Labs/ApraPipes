@@ -1,9 +1,0 @@
-<map id="Module::queueCommand" name="Module::queueCommand">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,169,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="217,5,414,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,51,237,32,238,38,151,57"/>
-<area shape="rect" id="Node000003" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="267,55,364,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,65,251,65,251,70,169,70"/>
-<area shape="rect" id="Node000004" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="265,104,366,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="151,78,250,100,249,105,149,84"/>
-</map>

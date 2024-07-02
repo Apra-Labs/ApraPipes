@@ -1,9 +1,13 @@
 <map id="H264Utils::parseNalu" name="H264Utils::parseNalu">
-<area shape="rect" id="Node000001" title=" " alt="" coords="222,70,366,96"/>
-<area shape="rect" id="Node000002" href="$classGroupedFramesQueue.html#a5e796b5a5f75c7562aca8db97b90ba0f" title=" " alt="" coords="13,5,166,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="230,68,164,49,165,44,231,63"/>
-<area shape="rect" id="Node000003" href="$classExportH264.html#af4420d5082d1e14bf86caf850f123e9c" title=" " alt="" coords="5,70,174,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="206,86,174,86,174,80,206,80"/>
-<area shape="rect" id="Node000004" href="$classDetailH264.html#af82f7f1e2e53b8c02c53cccb82274ecd" title=" " alt="" coords="30,120,149,145"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="223,103,147,121,145,116,222,98"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="434,96,578,121"/>
+<area shape="rect" id="Node000002" href="$classGroupedFramesQueue.html#a5e796b5a5f75c7562aca8db97b90ba0f" title=" " alt="" coords="220,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="460,91,385,60,356,49,358,44,387,55,462,86"/>
+<area shape="rect" id="Node000003" href="$classExportH264.html#af4420d5082d1e14bf86caf850f123e9c" title=" " alt="" coords="212,70,380,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="418,100,380,96,381,91,419,95"/>
+<area shape="rect" id="Node000004" href="$classH264Decoder.html#a3f03a477639de1d7ab64f84e4a8bfd14" title=" " alt="" coords="206,120,386,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="418,121,387,125,386,119,418,116"/>
+<area shape="rect" id="Node000006" href="$classDetailH264.html#af82f7f1e2e53b8c02c53cccb82274ecd" title=" " alt="" coords="236,169,356,195"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="463,130,387,160,352,171,351,166,385,155,461,125"/>
+<area shape="rect" id="Node000005" href="$classH264Decoder.html#aafab43f7c652a402ed2ede37eaf92ec1" title=" " alt="" coords="5,120,158,145"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="190,135,158,135,158,130,190,130"/>
 </map>

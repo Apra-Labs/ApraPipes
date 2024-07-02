@@ -1,5 +1,8 @@
 <map id="RotateNPPI::Detail::setMetadata" name="RotateNPPI::Detail::setMetadata">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,5,136,46"/>
-<area shape="rect" id="Node000002" href="$classRotateNPPI_1_1Detail.html#ac675ea7cc3f3735bcb4894c5a315bf67" title=" " alt="" coords="184,5,321,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,23,168,23,168,28,136,28"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="369,5,524,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,20,184,19,321,19,353,20,353,25,321,24,184,24,136,26"/>
+<area shape="rect" id="Node000003" href="$classRotateNPPI_1_1Detail.html#ac675ea7cc3f3735bcb4894c5a315bf67" title=" " alt="" coords="184,33,321,74"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,33,168,38,168,43,136,38"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="321,41,353,36,354,42,322,46"/>
 </map>

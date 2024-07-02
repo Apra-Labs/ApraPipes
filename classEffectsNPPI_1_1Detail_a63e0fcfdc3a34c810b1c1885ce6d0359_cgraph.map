@@ -1,5 +1,7 @@
 <map id="EffectsNPPI::Detail::setMetadata" name="EffectsNPPI::Detail::setMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,138,46"/>
-<area shape="rect" id="Node000002" href="$classEffectsNPPI_1_1Detail.html#a6836a3311d2f821a1922c8bf5aaf4df1" title=" " alt="" coords="186,5,318,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,23,170,23,170,28,138,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,39,138,79"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="186,5,341,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,45,170,39,171,44,138,50"/>
+<area shape="rect" id="Node000003" href="$classEffectsNPPI_1_1Detail.html#a6836a3311d2f821a1922c8bf5aaf4df1" title=" " alt="" coords="197,71,330,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="138,67,182,75,181,80,137,73"/>
 </map>

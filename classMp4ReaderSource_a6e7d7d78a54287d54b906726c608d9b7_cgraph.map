@@ -1,11 +1,13 @@
 <map id="Mp4ReaderSource::randomSeek" name="Mp4ReaderSource::randomSeek">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,213,80"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a39cdcaf6f3094beecf1877f36a6b3a63" title=" " alt="" coords="261,55,424,80"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,65,245,65,245,70,213,70"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,213,106"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a815dd4a2e34761df83a5fcbe194406d5" title=" " alt="" coords="261,80,424,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,90,245,90,245,96,213,96"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="472,5,669,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="405,51,492,32,493,38,406,57"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="373,77,471,40,494,33,495,38,473,45,375,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="522,55,619,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="425,65,507,65,507,70,425,70"/>
-<area shape="rect" id="Node000005" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="520,104,621,130"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="406,78,505,100,504,105,405,84"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="424,81,506,72,507,77,425,86"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="505,104,637,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="425,99,489,106,489,111,424,104"/>
+<area shape="rect" id="Node000006" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="520,153,621,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="376,104,473,140,505,149,504,154,471,145,375,109"/>
 </map>

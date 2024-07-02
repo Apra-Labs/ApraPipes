@@ -1,31 +1,4 @@
 var searchData=
 [
-  ['l_0',['l',['../structRect.html#aa03cbdec8562d97e7fb57e5294710c9a',1,'Rect']]],
-  ['landmarks_1',['landmarks',['../classDetail.html#a74e78de1c1d3c76c2d0ff1634cb3d465',1,'Detail']]],
-  ['landmarksdetectionmodel_2',['landmarksDetectionModel',['../classFacialLandmarkCVProps.html#ab36058433d45e1e203f86ac6b34f1f8c',1,'FacialLandmarkCVProps']]],
-  ['last_3',['last',['../classJPEGDecoderL4TMHelper.html#a721c25fdf61ed361c976251784bf7f56',1,'JPEGDecoderL4TMHelper']]],
-  ['last_5frender_5ftime_4',['last_render_time',['../classNvEglRenderer.html#a5d008574779cde0a959e77629f39c7bb',1,'NvEglRenderer']]],
-  ['lastdiff_5',['lastDiff',['../classRTSPPusher_1_1Detail.html#adc10c35ba1fea6fb6c292c8223c3c7a1',1,'RTSPPusher::Detail']]],
-  ['lastframets_6',['lastFrameTS',['../classDetailAbs.html#a86ce87ec5d5910934320f4e24f000b0c',1,'DetailAbs']]],
-  ['lastindex_7',['lastIndex',['../classMerge_1_1Detail.html#a9d77a05388580c7f4cae416c97716841',1,'Merge::Detail']]],
-  ['lastknownplaybackdir_8',['lastKnownPlaybackDir',['../classOrderedCacheOfFiles.html#a42b7d165ddbce4d7dd146d385dc623dc',1,'OrderedCacheOfFiles']]],
-  ['lastpts_9',['lastPTS',['../classRTSPPusher_1_1Detail.html#a0636aef7e2a7382668f8f294271531ec',1,'RTSPPusher::Detail']]],
-  ['lastsyncts_10',['lastSyncTS',['../classMp4WriterSinkUtils.html#afa7b50d22c8d3628b82f1a1ba53680c0',1,'Mp4WriterSinkUtils']]],
-  ['lastvideofolderpath_11',['lastVideoFolderPath',['../classMp4WriterSinkUtils.html#ad8d504fe44eb7c509da1c6c7c45f042b',1,'Mp4WriterSinkUtils']]],
-  ['lastvideominute_12',['lastVideoMinute',['../classMp4WriterSinkUtils.html#ad9a62ec085e64e80351b319395983a68',1,'Mp4WriterSinkUtils']]],
-  ['lastvideoname_13',['lastVideoName',['../classMp4WriterSinkUtils.html#afaf9f1ebafbf0cf1696bdf01b23a22ea',1,'Mp4WriterSinkUtils']]],
-  ['lastvideots_14',['lastVideoTS',['../classMp4WriterSinkUtils.html#a3d93285f1bd10c8ccfd7c19d5897bd01',1,'Mp4WriterSinkUtils']]],
-  ['left_15',['left',['../classNvTransformProps.html#af6b090e5de227c8d20a5d6a7541bb119',1,'NvTransformProps']]],
-  ['length_16',['length',['../classArrayMetadata.html#a61a0c87e61d59243e15104c9d1e6fb6a',1,'ArrayMetadata::length'],['../structBuffer_1_1BufferPlane.html#abd3254b98836135b2d91864e578feb13',1,'Buffer::BufferPlane::length']]],
-  ['lg_17',['lg',['../classLogger.html#a3f4c88d08e862cd0040f7b36d782d1f0',1,'Logger']]],
-  ['line_18',['line',['../classJPEGDecoderL4TMHelper.html#a0f33cffd400c5d94ed8697608b54e879',1,'JPEGDecoderL4TMHelper::line'],['../classJPEGEncoderL4TMHelper.html#aaa491d743b1554a7a72550e053440185',1,'JPEGEncoderL4TMHelper::line']]],
-  ['lineoverlay_19',['lineOverlay',['../classLineOverlayBuilder.html#aee13fabfb6a06f72a1a5433bdb5ef889',1,'LineOverlayBuilder']]],
-  ['lines_20',['lines',['../classApraLines.html#afa552d455cead5e37c46a046e2eff119',1,'ApraLines::lines'],['../classJPEGDecoderL4TMHelper.html#ae7ed4d492fe7b341a8abc3c62ac90beb',1,'JPEGDecoderL4TMHelper::lines']]],
-  ['list_21',['list',['../classApraPool.html#aa3191e02b20c2cc31d31c478bb5217e3',1,'ApraPool']]],
-  ['locked_22',['locked',['../classApraData.html#a7cd76e1ac73bf5d87f83f4ec701b9b67',1,'ApraData']]],
-  ['logger_5fmutex_23',['logger_mutex',['../classLogger.html#aa640461ef0fcbe30a615ee3729f1c5fe',1,'Logger']]],
-  ['loghealth_24',['logHealth',['../classModuleProps.html#af86595a57f059dd3c08121655485eccc',1,'ModuleProps']]],
-  ['loghealthfrequency_25',['logHealthFrequency',['../classModuleProps.html#a5e6edbce2ed861d6b7ff68ea1f8c0075',1,'ModuleProps']]],
-  ['loglevel_26',['logLevel',['../classLoggerProps.html#abc6044d40cb732c8508116a872055a39',1,'LoggerProps']]],
-  ['lowerwatermark_27',['lowerWaterMark',['../classArchiveSpaceManagerProps.html#a3b4b9dc62cf57c2212a91db71892d551',1,'ArchiveSpaceManagerProps::lowerWaterMark'],['../classMultimediaQueueXformProps.html#a8c3221278d28a7b7166488767eb3f3df',1,'MultimediaQueueXformProps::lowerWaterMark'],['../classOrderedCacheOfFiles.html#a8f026e87658351075786e81bc40218f9',1,'OrderedCacheOfFiles::lowerWaterMark'],['../classFramesQueue.html#a2322508570c8c92a3c37ef2cb7e9ca09',1,'FramesQueue::lowerWaterMark']]]
+  ['kernelsize_0',['kernelSize',['../classGaussianBlurProps.html#ac36eeab7976e4ef9be2723b20a14303e',1,'GaussianBlurProps']]]
 ];

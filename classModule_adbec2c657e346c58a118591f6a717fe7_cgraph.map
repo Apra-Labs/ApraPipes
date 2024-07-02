@@ -1,5 +1,7 @@
 <map id="Module::handlePropsChange" name="Module::handlePropsChange">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,191,31"/>
-<area shape="rect" id="Node000002" href="$classModule.html#add89294898504e274db6c91c6f4aff73" title=" " alt="" coords="239,5,360,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,16,223,16,223,21,191,21"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,191,56"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a107a4076a166836f8283d5f9dccb8e3e" title=" " alt="" coords="239,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,29,223,25,224,31,192,35"/>
+<area shape="rect" id="Node000003" href="$classModule.html#add89294898504e274db6c91c6f4aff73" title=" " alt="" coords="244,55,366,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,52,229,56,228,61,191,57"/>
 </map>

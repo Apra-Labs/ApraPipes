@@ -1,0 +1,11 @@
+<map id="H264Utils::getNalTypeAfterSpsPps" name="H264Utils::getNalTypeAfterSpsPps">
+<area shape="rect" id="Node000001" title=" " alt="" coords="459,63,638,103"/>
+<area shape="rect" id="Node000002" href="$classH264Decoder.html#a3662baa831f568dbd2ccad2f525932b4" title=" " alt="" coords="206,5,411,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="445,61,396,49,397,44,446,56"/>
+<area shape="rect" id="Node000003" href="$classH264Decoder.html#aafab43f7c652a402ed2ede37eaf92ec1" title=" " alt="" coords="5,70,158,96"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="444,86,158,86,158,80,444,80"/>
+<area shape="rect" id="Node000004" href="$classH264Decoder.html#a11bd6e318a0548e6c6dc3c63663de57d" title=" " alt="" coords="210,120,407,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="446,110,397,122,396,117,445,105"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="211,53,136,72,135,67,210,48"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="210,118,135,99,136,94,211,113"/>
+</map>

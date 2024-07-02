@@ -1,17 +1,36 @@
 <map id="MultimediaQueueXform::handleCommand" name="MultimediaQueueXform::handleCommand">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,78,163,119"/>
-<area shape="rect" id="Node000002" href="$classModule.html#aeeba96aff18c5157f7c1d097fdf4f79f" title=" " alt="" coords="458,10,604,35"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,76,154,45,181,31,210,20,269,8,330,3,389,4,442,7,442,13,389,9,330,9,270,13,211,25,183,35,156,49,112,80"/>
-<area shape="rect" id="Node000004" href="$classMultimediaQueueXform.html#a64fc9102ae052cbe9a106ff1292d8f83" title=" " alt="" coords="452,110,609,151"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,101,437,121,436,127,163,107"/>
-<area shape="rect" id="Node000005" href="$classModule.html#af02b89c25fd5676e84e64f79ced2ab07" title=" " alt="" coords="224,35,391,61"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="163,78,232,62,234,67,164,83"/>
-<area shape="rect" id="Node000006" href="$classModule.html#ab6ccbf8e2c1a4b71dff2a2a0cf41382b" title=" " alt="" coords="211,136,404,162"/>
-<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="164,114,234,130,232,135,163,119"/>
-<area shape="rect" id="Node000007" href="$classMultimediaQueueXform.html#ae3cc41b506774cae0fc8f42723d2c258" title=" " alt="" coords="229,186,386,227"/>
-<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="117,117,161,145,212,172,225,178,222,183,210,177,158,149,114,122"/>
-<area shape="rect" id="Node000003" href="$classUtils.html#a5baaee29c6a1902bfb7e34d1d2c1e0d6" title=" " alt="" coords="657,10,775,35"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="604,20,642,20,642,25,604,25"/>
-<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="391,36,441,30,442,35,391,41"/>
-<area shape="poly" id="edge8_Node000007_Node000004" title=" " alt="" coords="370,183,403,172,455,154,457,159,405,177,372,188"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,187,163,227"/>
+<area shape="rect" id="Node000002" href="$classMultimediaQueueXform.html#a43fbd8b8b669736c373e1cc7f3dff246" title=" " alt="" coords="219,29,402,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,184,153,142,209,98,258,74,261,79,212,103,157,146,113,188"/>
+<area shape="rect" id="Node000008" href="$classModule.html#aeeba96aff18c5157f7c1d097fdf4f79f" title=" " alt="" coords="496,120,642,145"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="109,184,154,154,181,140,210,130,280,116,351,111,420,112,481,117,480,122,420,118,352,116,281,122,211,135,184,145,157,159,112,188"/>
+<area shape="rect" id="Node000009" href="$classModule.html#a8981d7aee6c658b9ce8c9df26aa9131a" title=" " alt="" coords="211,145,410,171"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="162,187,233,172,234,177,164,192"/>
+<area shape="rect" id="Node000010" href="$classMultimediaQueueXform.html#a3b9fa33f07c92572898f504feefabdcf" title=" " alt="" coords="232,244,389,285"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="164,224,217,238,216,243,162,229"/>
+<area shape="rect" id="Node000012" href="$classModule.html#af02b89c25fd5676e84e64f79ced2ab07" title=" " alt="" coords="227,194,394,220"/>
+<area shape="poly" id="edge13_Node000001_Node000012" title=" " alt="" coords="163,204,211,204,211,210,163,210"/>
+<area shape="rect" id="Node000013" href="$classModule.html#ab6ccbf8e2c1a4b71dff2a2a0cf41382b" title=" " alt="" coords="214,309,407,335"/>
+<area shape="poly" id="edge15_Node000001_Node000013" title=" " alt="" coords="110,226,156,261,212,294,229,301,227,306,209,299,153,265,107,230"/>
+<area shape="rect" id="Node000014" href="$classMultimediaQueueXform.html#aa0067fe2a879e6eae475c48f5e879d58" title=" " alt="" coords="232,359,389,399"/>
+<area shape="poly" id="edge16_Node000001_Node000014" title=" " alt="" coords="101,226,146,285,177,317,212,345,220,349,217,354,209,349,173,321,142,288,96,229"/>
+<area shape="rect" id="Node000015" href="$classMultimediaQueueXform.html#ae3cc41b506774cae0fc8f42723d2c258" title=" " alt="" coords="232,424,389,465"/>
+<area shape="poly" id="edge17_Node000001_Node000015" title=" " alt="" coords="95,227,111,265,136,314,170,365,212,409,220,414,216,418,209,413,166,368,131,317,106,268,90,229"/>
+<area shape="poly" id="edge5_Node000002_Node000001" title=" " alt="" coords="222,73,212,79,182,101,153,126,108,176,104,172,149,122,178,97,209,74,219,68"/>
+<area shape="rect" id="Node000003" href="$classNoneCommand.html#acbb100ea8f5956c1ad2679a379089b38" title=" " alt="" coords="458,70,680,96"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="403,59,450,65,449,70,402,64"/>
+<area shape="rect" id="Node000006" href="$classMultimediaQueueXform.html#aedfb9b978681abc88d0ac7155c2e833f" title=" " alt="" coords="491,5,648,46"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="402,39,475,32,475,37,403,44"/>
+<area shape="rect" id="Node000004" href="$classUtils.html#a5baaee29c6a1902bfb7e34d1d2c1e0d6" title=" " alt="" coords="762,120,880,145"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="639,94,748,115,747,121,638,99"/>
+<area shape="rect" id="Node000005" href="$classCommand.html#a88fd4effe76229b40f3021e77fcae86e" title=" " alt="" coords="755,70,887,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="681,80,739,80,739,86,681,86"/>
+<area shape="rect" id="Node000007" href="$classModule.html#af5649e169c062949ecb8093f7a258db8" title=" " alt="" coords="728,13,914,39"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="648,23,713,23,713,28,648,28"/>
+<area shape="poly" id="edge9_Node000008_Node000004" title=" " alt="" coords="643,130,747,130,747,135,643,135"/>
+<area shape="rect" id="Node000011" href="$classModule.html#ac488ba4612cae057489278d799f39cc5" title=" " alt="" coords="514,252,625,277"/>
+<area shape="poly" id="edge12_Node000010_Node000011" title=" " alt="" coords="390,262,498,262,498,267,390,267"/>
+<area shape="poly" id="edge14_Node000012_Node000008" title=" " alt="" coords="369,191,409,180,514,148,515,153,411,186,370,196"/>
+<area shape="rect" id="Node000016" href="$classMultimediaQueueXform.html#a64fc9102ae052cbe9a106ff1292d8f83" title=" " alt="" coords="491,424,648,465"/>
+<area shape="poly" id="edge18_Node000015_Node000016" title=" " alt="" coords="390,442,475,442,475,447,390,447"/>
 </map>

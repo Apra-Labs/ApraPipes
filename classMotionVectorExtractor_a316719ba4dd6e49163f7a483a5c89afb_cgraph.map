@@ -1,9 +1,13 @@
 <map id="MotionVectorExtractor::setProps" name="MotionVectorExtractor::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,155,64"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a2b1fd42084b55743ad93000d78bef757" title=" " alt="" coords="203,31,380,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,41,187,41,187,46,155,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,155,113"/>
+<area shape="rect" id="Node000002" href="$classModule.html#aeba20f2c7a904f61cf20911a5d7f84ed" title=" " alt="" coords="203,80,380,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,90,187,90,187,96,155,96"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="428,5,625,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="380,31,412,28,413,33,381,37"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="324,77,427,40,451,33,453,38,429,45,326,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="478,55,575,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="381,50,463,58,462,64,380,55"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="380,81,462,72,463,77,381,86"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="461,104,593,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="381,99,446,106,445,111,380,105"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a9b3624e543f9909401cdfc4686ac1ecd" title=" " alt="" coords="469,153,585,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="327,104,429,140,454,147,453,152,427,145,325,109"/>
 </map>

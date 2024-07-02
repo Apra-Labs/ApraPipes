@@ -1,7 +1,8 @@
 var classMp4ReaderDetailH264 =
 [
-    [ "Mp4ReaderDetailH264", "classMp4ReaderDetailH264.html#abcec7b5b011ee1945f3ac9afc0bbf020", null ],
+    [ "Mp4ReaderDetailH264", "classMp4ReaderDetailH264.html#a8ddefe0fb510bce0069fbb5a1b618497", null ],
     [ "~Mp4ReaderDetailH264", "classMp4ReaderDetailH264.html#ac6a8de0ec11303321f3c20e985dca705", null ],
+    [ "getGop", "classMp4ReaderDetailH264.html#a0882962b71035c54db45ef46e4d456a8", null ],
     [ "mp4Seek", "classMp4ReaderDetailH264.html#a89b845e782ffa31f0c3d62f6e367bbaf", null ],
     [ "prependSpsPps", "classMp4ReaderDetailH264.html#a75a4e0d7d766b8dabda3cc10f55ebc28", null ],
     [ "produceFrames", "classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15", null ],

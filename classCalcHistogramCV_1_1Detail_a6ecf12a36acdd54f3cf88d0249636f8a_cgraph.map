@@ -1,24 +1,28 @@
 <map id="CalcHistogramCV::Detail::Detail" name="CalcHistogramCV::Detail::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,130,170,171"/>
-<area shape="rect" id="Node000002" href="$classCalcHistogramCV_1_1Detail.html#a1633d02ed7ce12ba8dda3ce2adf843f2" title=" " alt="" coords="218,130,382,171"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,148,202,148,202,153,170,153"/>
-<area shape="rect" id="Node000003" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="656,80,793,106"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="331,127,376,102,429,82,484,73,539,71,641,77,641,82,539,76,484,79,431,87,378,107,333,132"/>
-<area shape="rect" id="Node000008" href="$classCalcHistogramCV_1_1Detail.html#ad2fbdf58f155b9c2a243c6b0594541f3" title=" " alt="" coords="430,97,594,137"/>
-<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="382,135,414,130,415,135,383,140"/>
-<area shape="rect" id="Node000009" href="$classCalcHistogramCV_1_1Detail.html#ae1e14d56c0c3f45d7a608b2a6d86f980" title=" " alt="" coords="430,162,594,203"/>
-<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="383,160,415,165,414,170,382,165"/>
-<area shape="rect" id="Node000011" href="$classCalcHistogramCV_1_1Detail.html#a6232553b4b12f164c04a5d99b8938047" title=" " alt="" coords="430,227,594,268"/>
-<area shape="poly" id="edge11_Node000002_Node000011" title=" " alt="" coords="343,169,431,212,446,218,443,223,429,217,340,173"/>
-<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="855,5,1054,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="756,77,854,40,877,33,878,38,856,45,758,82"/>
-<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="860,55,1049,80"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="792,83,844,77,845,82,793,88"/>
-<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="860,104,1049,130"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="793,97,845,103,844,108,792,103"/>
-<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="857,153,1052,179"/>
-<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="758,104,855,140,879,146,878,152,854,145,756,109"/>
-<area shape="poly" id="edge9_Node000009_Node000003" title=" " alt="" coords="563,159,593,146,678,110,680,115,595,151,565,164"/>
-<area shape="rect" id="Node000010" href="$classCalcHistogramCV_1_1Detail.html#acc947fe4208a1dcf69ff382e1ce50bd3" title=" " alt="" coords="642,162,807,203"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="595,180,627,180,627,185,595,185"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,214,170,255"/>
+<area shape="rect" id="Node000002" href="$classCalcHistogramCV_1_1Detail.html#a1633d02ed7ce12ba8dda3ce2adf843f2" title=" " alt="" coords="218,214,382,255"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,232,202,232,202,237,170,237"/>
+<area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="877,206,1032,247"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="373,253,430,264,536,274,618,275,701,269,806,256,861,246,862,251,807,261,701,274,618,280,535,279,430,269,372,258"/>
+<area shape="rect" id="Node000004" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="656,101,793,127"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="319,211,366,171,396,150,429,134,483,119,538,110,641,106,641,111,539,115,484,124,431,139,399,155,369,175,323,215"/>
+<area shape="rect" id="Node000009" href="$classCalcHistogramCV_1_1Detail.html#ad2fbdf58f155b9c2a243c6b0594541f3" title=" " alt="" coords="430,214,594,255"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="382,232,415,232,415,237,382,237"/>
+<area shape="rect" id="Node000010" href="$classCalcHistogramCV_1_1Detail.html#ae1e14d56c0c3f45d7a608b2a6d86f980" title=" " alt="" coords="430,149,594,189"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="367,211,428,192,430,197,369,216"/>
+<area shape="rect" id="Node000012" href="$classCalcHistogramCV_1_1Detail.html#a6232553b4b12f164c04a5d99b8938047" title=" " alt="" coords="430,329,594,369"/>
+<area shape="poly" id="edge14_Node000002_Node000012" title=" " alt="" coords="336,253,431,308,453,319,451,324,429,313,333,257"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="855,55,1054,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="791,98,872,81,873,87,792,103"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="860,104,1049,130"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="793,112,845,113,845,118,793,118"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="860,153,1049,179"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="785,125,880,147,879,152,784,130"/>
+<area shape="rect" id="Node000008" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="857,5,1052,31"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="744,99,793,69,854,40,872,33,874,38,856,45,795,74,747,103"/>
+<area shape="poly" id="edge10_Node000010_Node000003" title=" " alt="" coords="595,170,696,178,807,192,862,202,861,207,806,197,696,184,595,176"/>
+<area shape="poly" id="edge11_Node000010_Node000004" title=" " alt="" coords="593,145,656,129,658,134,595,150"/>
+<area shape="rect" id="Node000011" href="$classCalcHistogramCV_1_1Detail.html#acc947fe4208a1dcf69ff382e1ce50bd3" title=" " alt="" coords="642,206,807,247"/>
+<area shape="poly" id="edge12_Node000010_Node000011" title=" " alt="" coords="590,187,633,199,631,204,589,192"/>
+<area shape="poly" id="edge13_Node000011_Node000003" title=" " alt="" coords="807,224,862,224,862,229,807,229"/>
 </map>

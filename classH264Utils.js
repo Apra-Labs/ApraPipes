@@ -16,6 +16,7 @@ var classH264Utils =
       [ "H264_NAL_TYPE_SEQ_EXTENSION", "classH264Utils.html#a8d315c1620520e9318d923fea0b152eaa9a3e66b2ceacdf9296e85ef427d103d4", null ]
     ] ],
     [ "H264Utils", "classH264Utils.html#af53fea7b257667616bb9e02efc44c643", null ],
+    [ "getNalTypeAfterSpsPps", "classH264Utils.html#af372f8e43a403b1147c390e296e5c444", null ],
     [ "getNALUnit", "classH264Utils.html#a33e08e70ab70829c4af194ea85c1b307", null ],
     [ "getNALUType", "classH264Utils.html#af84ba16af685998a23d7ae3b2824d1f3", null ],
     [ "getNALUType", "classH264Utils.html#a6d71567a1747963b0feb1b0c981ca3f9", null ],

@@ -28,7 +28,10 @@ var classFrameMetadata =
       [ "TEXT", "classFrameMetadata.html#af324c09818d5965791464a2b687c95abad62b9f725368ff0e16290732d2e2634e", null ]
     ] ],
     [ "MemType", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0", [
-      [ "HOST", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a4eb480a73f88f854418f9d8b42cc13d8", null ]
+      [ "HOST", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a4eb480a73f88f854418f9d8b42cc13d8", null ],
+      [ "HOST_PINNED", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a5f8f805be502654d168e4f8d2065b2f5", null ],
+      [ "CUDA_DEVICE", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a8671507724f00a3eaa05def3f21fd800", null ],
+      [ "DMABUF", "classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a9f3db7a02e9816922aefb5b201d213e6", null ]
     ] ],
     [ "FrameMetadata", "classFrameMetadata.html#a1c55d2e6d4c5b0656fca5469b6e3f0c8", null ],
     [ "FrameMetadata", "classFrameMetadata.html#a324efa678e6117dc47b6601ca0608c8d", null ],

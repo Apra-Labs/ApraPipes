@@ -1,7 +1,7 @@
 <map id="Mp4ReaderDetailAbs::readNextFrame" name="Mp4ReaderDetailAbs::readNextFrame">
 <area shape="rect" id="Node000001" title=" " alt="" coords="205,39,348,79"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailJpeg.html#aaaf2a894b27db1aa0ac9067a28aff5e8" title=" " alt="" coords="7,5,155,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,47,155,41,156,36,190,42"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15" title=" " alt="" coords="5,71,157,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="190,76,157,81,156,76,189,71"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15" title=" " alt="" coords="5,5,157,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,47,156,41,157,36,190,42"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailJpeg.html#aaaf2a894b27db1aa0ac9067a28aff5e8" title=" " alt="" coords="7,71,155,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="190,76,156,81,155,76,189,71"/>
 </map>

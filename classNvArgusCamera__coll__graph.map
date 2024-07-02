@@ -1,9 +1,9 @@
 <map id="NvArgusCamera" name="NvArgusCamera">
-<area shape="rect" id="Node000001" title=" " alt="" coords="79,1488,221,1674"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,1440,145,1488,139,1489,135,1440"/>
-<area shape="rect" id="Node000003" href="$classNvArgusCameraProps.html" title=" " alt="" coords="201,860,363,985"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="275,986,241,1182,193,1426,182,1472,176,1471,187,1425,236,1181,270,985"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,1527,217,1712"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,1478,141,1527,136,1527,132,1479"/>
+<area shape="rect" id="Node000003" href="$classNvArgusCameraProps.html" title=" " alt="" coords="201,879,363,1004"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="276,1004,243,1209,193,1465,181,1511,176,1510,187,1463,238,1208,271,1003"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="205,5,359,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="285,385,285,860,279,860,279,385"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="285,386,285,879,279,879,279,386"/>
 </map>

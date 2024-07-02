@@ -9,8 +9,10 @@ var classH264Metadata =
     [ "isSet", "classH264Metadata.html#a234579ae545f79e2e97c0efa461edbfb", null ],
     [ "reset", "classH264Metadata.html#a2765382b64a908b03eb510a0feddd1bc", null ],
     [ "setData", "classH264Metadata.html#aaaf18469b412dafc91ea99d1f49cc11a", null ],
+    [ "direction", "classH264Metadata.html#af34600918c2dc5b56e2136f1a0cf11b9", null ],
     [ "gop_size", "classH264Metadata.html#afc493fa2daff6500f3eb98b60481970f", null ],
     [ "height", "classH264Metadata.html#a8fc9197e2264ca670c72ceee021ddb3b", null ],
     [ "max_b_frames", "classH264Metadata.html#a7353a019296646445d72ee2f9234fb39", null ],
+    [ "mp4Seek", "classH264Metadata.html#a41a6884cc0b8b02501ba92bf5011c385", null ],
     [ "width", "classH264Metadata.html#ae1fe3153f22c247b7454dcfb0afe650a", null ]
 ];

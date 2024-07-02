@@ -1,17 +1,20 @@
 <map id="h264DecoderV4L2Helper::q_buffer" name="h264DecoderV4L2Helper::q_buffer">
-<area shape="rect" id="Node000001" title="Queues a buffer on the plane." alt="" coords="648,61,815,101"/>
-<area shape="rect" id="Node000002" href="$classh264DecoderV4L2Helper.html#a5c5f98ec229ff06bde7717be614ed545" title="Callback function on capture thread." alt="" coords="220,14,386,55"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="685,55,644,34,600,18,545,10,489,9,435,12,387,19,386,14,435,7,489,3,546,5,601,13,647,29,687,50"/>
-<area shape="rect" id="Node000004" href="$classh264DecoderV4L2Helper.html#abe863d787966b5be679699ee3a5451cd" title="Decode processing function for blocking mode." alt="" coords="434,93,600,133"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="633,98,601,103,600,98,632,93"/>
-<area shape="rect" id="Node000005" href="$classh264DecoderV4L2Helper.html#a7ddb956c464aacab2da07654128360df" title=" " alt="" coords="220,107,386,148"/>
-<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="686,112,646,132,601,148,546,156,489,157,386,147,387,142,489,152,545,151,600,142,644,127,684,107"/>
-<area shape="rect" id="Node000007" href="$classh264DecoderV4L2Helper.html#abf17c07f4b3f52ab4915be71a4e9719e" title="Query and Set Capture plane." alt="" coords="434,27,600,68"/>
-<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="632,68,600,63,601,58,633,63"/>
-<area shape="rect" id="Node000003" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="5,14,172,55"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="204,37,172,37,172,32,204,32"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="419,122,387,125,386,119,418,117"/>
-<area shape="rect" id="Node000006" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="5,107,172,148"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="204,130,172,130,172,125,204,125"/>
-<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="418,44,386,42,387,37,419,39"/>
+<area shape="rect" id="Node000001" title="Queues a buffer on the plane." alt="" coords="1077,55,1243,96"/>
+<area shape="rect" id="Node000002" href="$classh264DecoderV4L2Helper.html#a5c5f98ec229ff06bde7717be614ed545" title="Callback function on capture thread." alt="" coords="648,22,815,62"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1111,49,1072,31,1028,17,973,9,917,9,862,15,813,24,812,18,861,10,916,4,973,4,1030,11,1074,26,1113,45"/>
+<area shape="rect" id="Node000005" href="$classh264DecoderV4L2Helper.html#a627d7b15fc9246f9d4a7c2da229f1d60" title=" " alt="" coords="220,86,386,126"/>
+<area shape="poly" id="edge8_Node000001_Node000005" title=" " alt="" coords="1062,81,386,106,386,100,1062,76"/>
+<area shape="rect" id="Node000007" href="$classh264DecoderV4L2Helper.html#a974844191242c0508ba927a9e77742b4" title="Decode processing function for blocking mode." alt="" coords="648,140,815,181"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="1095,104,1030,124,918,145,815,157,814,152,917,140,1028,119,1094,99"/>
+<area shape="rect" id="Node000008" href="$classh264DecoderV4L2Helper.html#a5faafb8b77729dd9bf8b69314034caf0" title="Query and Set Capture plane." alt="" coords="863,26,1029,66"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="1061,64,1029,60,1030,55,1062,59"/>
+<area shape="rect" id="Node000003" href="$classh264DecoderV4L2Helper.html#a5a9e168c103dccc4e5b423334e7fe046" title=" " alt="" coords="434,22,600,62"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="633,45,601,45,601,39,633,39"/>
+<area shape="rect" id="Node000004" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="220,20,386,61"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="418,44,386,44,386,38,418,39"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="433,70,374,88,372,82,431,65"/>
+<area shape="rect" id="Node000006" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="5,86,172,126"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="204,109,172,109,172,103,204,103"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="633,151,386,119,387,114,633,145"/>
+<area shape="poly" id="edge10_Node000008_Node000002" title=" " alt="" coords="847,47,815,46,815,41,847,41"/>
 </map>

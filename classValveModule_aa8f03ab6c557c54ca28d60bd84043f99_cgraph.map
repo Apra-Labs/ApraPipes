@@ -1,9 +1,13 @@
 <map id="ValveModule::setProps" name="ValveModule::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,160,56"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a2b1fd42084b55743ad93000d78bef757" title=" " alt="" coords="208,31,385,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,41,192,41,192,46,160,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,160,106"/>
+<area shape="rect" id="Node000002" href="$classModule.html#aeba20f2c7a904f61cf20911a5d7f84ed" title=" " alt="" coords="208,80,385,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,90,192,90,192,96,160,96"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="433,5,630,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="385,31,417,28,418,33,386,37"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="329,77,432,40,456,33,458,38,434,45,331,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="483,55,580,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="386,50,468,58,467,64,385,55"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="385,81,467,72,468,77,386,86"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="466,104,598,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="386,99,451,106,450,111,385,105"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a9b3624e543f9909401cdfc4686ac1ecd" title=" " alt="" coords="474,153,590,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="332,104,434,140,459,147,458,152,432,145,330,109"/>
 </map>

@@ -1,9 +1,13 @@
 <map id="Mp4ReaderDetailAbs::openVideoSetPointer" name="Mp4ReaderDetailAbs::openVideoSetPointer">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,39,155,79"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#a3dc4055e19c3445a8f16034b981d2d04" title=" " alt="" coords="203,5,346,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,44,187,38,188,43,155,49"/>
-<area shape="rect" id="Node000004" href="$classMp4ReaderDetailAbs.html#ae37b3af15ca3ede4d67e06669e27b82b" title=" " alt="" coords="203,71,346,111"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="155,69,188,74,187,79,154,74"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="394,5,544,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="346,23,378,23,378,28,346,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,71,155,111"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#aad3c1b5309144e7524b0b2e8bdb3788b" title=" " alt="" coords="203,5,346,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,68,197,49,198,54,143,73"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a3dc4055e19c3445a8f16034b981d2d04" title=" " alt="" coords="203,71,346,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,88,187,88,187,94,155,94"/>
+<area shape="rect" id="Node000006" href="$classMp4ReaderDetailAbs.html#ae37b3af15ca3ede4d67e06669e27b82b" title=" " alt="" coords="203,136,346,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="143,109,198,128,197,133,142,114"/>
+<area shape="rect" id="Node000004" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="394,39,549,79"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="346,77,379,71,380,77,347,82"/>
+<area shape="rect" id="Node000005" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="397,104,547,145"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="347,100,381,106,380,112,346,106"/>
 </map>

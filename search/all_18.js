@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['x_0',['x',['../classAffineTransformProps.html#a15ad9c7d1f33aa41697e0f36bd850c5f',1,'AffineTransformProps']]],
+  ['x_0',['x',['../classAffineTransformProps.html#a15ad9c7d1f33aa41697e0f36bd850c5f',1,'AffineTransformProps::x'],['../structvertex.html#a664a5bbbbca4e1a99d85a163f6a08405',1,'vertex::x']]],
   ['x1_1',['x1',['../classApraFaceInfo.html#a09990567763ec206b5b03625e91217ef',1,'ApraFaceInfo::x1'],['../classCircleOverlay.html#ae5d6cb3f81aa1c7dde0bdf39efb43dce',1,'CircleOverlay::x1'],['../classLineOverlay.html#a0f46fd21beb042e5092fc5eb6601278a',1,'LineOverlay::x1'],['../classRectangleOverlay.html#aeb02d26fb5d64e36a0371ae428b53787',1,'RectangleOverlay::x1']]],
   ['x2_2',['x2',['../classApraFaceInfo.html#a706ae8c5d549e444a006e4276314c59e',1,'ApraFaceInfo::x2'],['../classLineOverlay.html#aa9a1b65afc55501bdf079a72fc781ee6',1,'LineOverlay::x2'],['../classRectangleOverlay.html#a45abe8709bb1d69110b547bf1ed881d5',1,'RectangleOverlay::x2']]],
   ['x_5fdisplay_3',['x_display',['../classNvEglRenderer.html#a40d97b9f5eb20c81746c767228df7b88',1,'NvEglRenderer']]],

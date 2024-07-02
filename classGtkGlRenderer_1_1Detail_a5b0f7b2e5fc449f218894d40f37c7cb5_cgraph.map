@@ -1,0 +1,11 @@
+<map id="GtkGlRenderer::Detail::init" name="GtkGlRenderer::Detail::init">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,71,152,111"/>
+<area shape="rect" id="Node000002" href="$classGtkGlRenderer_1_1Detail.html#acc89c8b57c5c3c82bddf00b22585a263" title=" " alt="" coords="200,71,363,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,88,184,88,184,94,152,94"/>
+<area shape="rect" id="Node000003" href="$classGtkGlRenderer_1_1Detail.html#ac87b74be0df4056836bd009be4c78a97" title=" " alt="" coords="411,5,557,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="346,68,403,49,405,54,347,73"/>
+<area shape="rect" id="Node000004" href="$classGtkGlRenderer_1_1Detail.html#acf232ce7c6d1121a1cb366081c483871" title=" " alt="" coords="411,71,557,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="364,88,395,88,395,94,364,94"/>
+<area shape="rect" id="Node000005" href="$classGtkGlRenderer_1_1Detail.html#aceca09383b6404ab9fed4e6c5eb38175" title=" " alt="" coords="411,136,557,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="347,109,405,128,403,133,346,114"/>
+</map>

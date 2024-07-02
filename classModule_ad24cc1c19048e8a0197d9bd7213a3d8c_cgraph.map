@@ -1,0 +1,17 @@
+<map id="Module::queuePlayPauseCommand" name="Module::queuePlayPauseCommand">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,132,231,158"/>
+<area shape="rect" id="Node000002" href="$classPlayPauseCommand.html#aca4b295efb8c5b283c105a9cb48da015" title=" " alt="" coords="279,33,519,59"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,129,202,98,278,68,302,61,303,66,280,73,204,103,144,134"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="300,83,498,108"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="195,129,306,109,307,114,196,134"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="333,132,465,158"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="231,142,317,142,317,148,231,148"/>
+<area shape="rect" id="Node000007" href="$classUtils.html#a0e8095d76324a1caf015d0922f398828" title=" " alt="" coords="348,181,450,207"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="196,156,333,180,332,185,195,161"/>
+<area shape="rect" id="Node000008" href="$classModule.html#a558872d45eb99f67ff009f7264838c8e" title=" " alt="" coords="340,231,458,256"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="144,156,204,186,280,217,325,229,324,234,278,222,202,191,142,160"/>
+<area shape="rect" id="Node000003" href="$classCommand.html#abcb04002665b1ebb3a60c65cff0d14c0" title=" " alt="" coords="583,5,761,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="519,31,567,26,568,31,520,36"/>
+<area shape="rect" id="Node000004" href="$classPlayPauseCommand.html#ace319f714899a9ed58a2753beb8f2489" title=" " alt="" coords="567,55,777,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="520,56,552,60,551,65,519,62"/>
+</map>

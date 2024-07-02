@@ -1,5 +1,7 @@
 <map id="CCNPPI::processSOS" name="CCNPPI::processSOS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,157,31"/>
-<area shape="rect" id="Node000002" href="$classCCNPPI.html#adf493f7e99149abe5792cfc8f60ceb94" title=" " alt="" coords="205,5,354,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,16,189,16,189,21,157,21"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,157,39"/>
+<area shape="rect" id="Node000002" href="$classCCNPPI.html#adf493f7e99149abe5792cfc8f60ceb94" title=" " alt="" coords="205,13,354,39"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,23,189,23,189,28,157,28"/>
+<area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="402,5,557,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="354,23,386,23,386,28,354,28"/>
 </map>

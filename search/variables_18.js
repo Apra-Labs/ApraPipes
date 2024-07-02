@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['y_0',['y',['../classAffineTransformProps.html#a0d58fba792233069478648886b01e4ac',1,'AffineTransformProps::y'],['../classJPEGDecoderL4TMHelper.html#afd9e3220b4dda6a08ea0df18d1b069e6',1,'JPEGDecoderL4TMHelper::y']]],
-  ['y1_1',['y1',['../classApraFaceInfo.html#a9e062f8c3d9752bc1c9b178ddda07b42',1,'ApraFaceInfo::y1'],['../classCircleOverlay.html#a7d13ffdf26eb49ce8b785331c05be7b4',1,'CircleOverlay::y1'],['../classLineOverlay.html#aa567bb15662a61151ce8ad718e15183b',1,'LineOverlay::y1'],['../classRectangleOverlay.html#a551bc91affc803f4c3a8b0ac3647ea59',1,'RectangleOverlay::y1']]],
-  ['y2_2',['y2',['../classApraFaceInfo.html#aa1d2c6d0c95bf151ed77370a87bf237e',1,'ApraFaceInfo::y2'],['../classLineOverlay.html#a0d56b91cd2dfa5866ca15e2e99a07ce9',1,'LineOverlay::y2'],['../classRectangleOverlay.html#adc7e222b60c6787d768ef8639f649771',1,'RectangleOverlay::y2']]],
-  ['y_5foffset_3',['y_offset',['../classEglRendererProps.html#a357ed2615ae54b56ea76b2d174b62ce0',1,'EglRendererProps::y_offset'],['../classImageViewerModuleProps.html#a76b0ee2c41c32ea964d6ad466349f83d',1,'ImageViewerModuleProps::y_offset'],['../classEglRenderer_1_1Detail.html#a38ff711979c15c7bb9117a50f7270a00',1,'EglRenderer::Detail::y_offset']]],
-  ['ypixelpermeter_4',['ypixelpermeter',['../structBitmapInfoHeader.html#afd7ba9c33ede1313f9fdec2c74955ed0',1,'BitmapInfoHeader']]]
+  ['x_0',['x',['../classAffineTransformProps.html#a15ad9c7d1f33aa41697e0f36bd850c5f',1,'AffineTransformProps::x'],['../structvertex.html#a664a5bbbbca4e1a99d85a163f6a08405',1,'vertex::x']]],
+  ['x1_1',['x1',['../classApraFaceInfo.html#a09990567763ec206b5b03625e91217ef',1,'ApraFaceInfo::x1'],['../classCircleOverlay.html#ae5d6cb3f81aa1c7dde0bdf39efb43dce',1,'CircleOverlay::x1'],['../classLineOverlay.html#a0f46fd21beb042e5092fc5eb6601278a',1,'LineOverlay::x1'],['../classRectangleOverlay.html#aeb02d26fb5d64e36a0371ae428b53787',1,'RectangleOverlay::x1']]],
+  ['x2_2',['x2',['../classApraFaceInfo.html#a706ae8c5d549e444a006e4276314c59e',1,'ApraFaceInfo::x2'],['../classLineOverlay.html#aa9a1b65afc55501bdf079a72fc781ee6',1,'LineOverlay::x2'],['../classRectangleOverlay.html#a45abe8709bb1d69110b547bf1ed881d5',1,'RectangleOverlay::x2']]],
+  ['x_5fdisplay_3',['x_display',['../classNvEglRenderer.html#a40d97b9f5eb20c81746c767228df7b88',1,'NvEglRenderer']]],
+  ['x_5foffset_4',['x_offset',['../classEglRendererProps.html#aea59fc98ad264d85bef8d0439a5d0195',1,'EglRendererProps::x_offset'],['../classImageViewerModuleProps.html#a0d454cc942504e904879cb815970c3cd',1,'ImageViewerModuleProps::x_offset'],['../classEglRenderer_1_1Detail.html#aa8d14aa5c5208ad557c49ac98a95aa99',1,'EglRenderer::Detail::x_offset']]],
+  ['x_5fwindow_5',['x_window',['../classNvEglRenderer.html#a122a4f4ba6df332587356b1f458f4ca5',1,'NvEglRenderer']]],
+  ['xpixelpermeter_6',['xpixelpermeter',['../structBitmapInfoHeader.html#a55a356ccb0d48c9cc2eda6e69d5b5747',1,'BitmapInfoHeader']]]
 ];

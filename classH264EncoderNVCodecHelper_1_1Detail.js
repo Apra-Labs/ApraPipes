@@ -36,5 +36,5 @@ var classH264EncoderNVCodecHelper_1_1Detail =
     [ "m_thread", "classH264EncoderNVCodecHelper_1_1Detail.html#ad0e0fcce9b92c32d9bbac906d057adfe", null ],
     [ "makeFrame", "classH264EncoderNVCodecHelper_1_1Detail.html#a20c9382bccca4bec8417d5d11287e55a", null ],
     [ "mProps", "classH264EncoderNVCodecHelper_1_1Detail.html#afebec38c56492060cf7848c47219f772", null ],
-    [ "send", "classH264EncoderNVCodecHelper_1_1Detail.html#ace69e556729f8e28418e816af160fad6", null ]
+    [ "send", "classH264EncoderNVCodecHelper_1_1Detail.html#a187241875c07508d7d68a3e38920f301", null ]
 ];

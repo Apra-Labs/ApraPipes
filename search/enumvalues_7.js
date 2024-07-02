@@ -18,6 +18,7 @@ var searchData=
   ['hevc_5fdata_15',['HEVC_DATA',['../classFrameMetadata.html#af324c09818d5965791464a2b687c95aba12989d8ad508615fafc500528d7b487b',1,'FrameMetadata']]],
   ['high_16',['HIGH',['../classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494ae5880b33fc31beb143ebe46211114965',1,'H264EncoderNVCodecProps']]],
   ['host_17',['HOST',['../classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a4eb480a73f88f854418f9d8b42cc13d8',1,'FrameMetadata']]],
-  ['houghlinescv_18',['HoughLinesCV',['../classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178aadcb22502f8edb803d0c2de26076f4bd',1,'PropsChangeMetadata']]],
-  ['hysteresisthreshold_19',['HysteresisThreshold',['../classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178abfbadbfcf75eadf5919dd2a59bce7774',1,'PropsChangeMetadata']]]
+  ['host_5fpinned_18',['HOST_PINNED',['../classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a5f8f805be502654d168e4f8d2065b2f5',1,'FrameMetadata']]],
+  ['houghlinescv_19',['HoughLinesCV',['../classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178aadcb22502f8edb803d0c2de26076f4bd',1,'PropsChangeMetadata']]],
+  ['hysteresisthreshold_20',['HysteresisThreshold',['../classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178abfbadbfcf75eadf5919dd2a59bce7774',1,'PropsChangeMetadata']]]
 ];

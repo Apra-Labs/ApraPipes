@@ -1,9 +1,9 @@
 <map id="FacialLandmarkCV" name="FacialLandmarkCV">
-<area shape="rect" id="Node000001" title=" " alt="" coords="79,1488,229,1834"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,1440,142,1488,137,1489,133,1440"/>
-<area shape="rect" id="Node000003" href="$classFacialLandmarkCVProps.html" title=" " alt="" coords="201,800,397,1045"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,1046,194,1472,189,1471,273,1045"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,1527,225,1872"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,1479,139,1527,134,1527,130,1479"/>
+<area shape="rect" id="Node000003" href="$classFacialLandmarkCVProps.html" title=" " alt="" coords="201,819,397,1064"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,1064,190,1511,185,1510,273,1063"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="222,5,377,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="302,385,302,800,297,800,297,385"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="302,386,302,819,297,819,297,386"/>
 </map>

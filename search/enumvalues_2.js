@@ -11,5 +11,6 @@ var searchData=
   ['cubic_8',['CUBIC',['../classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23a9c111d4cc7849d66e29f1311af08bf47',1,'AffineTransformProps']]],
   ['cubic2p_5fb05c03_9',['CUBIC2P_B05C03',['../classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23ac9106548e680ef1a828c54eb8d232282',1,'AffineTransformProps']]],
   ['cubic2p_5fbspline_10',['CUBIC2P_BSPLINE',['../classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23a5880ae6c1ef2930a5e0e561cc921d9ff',1,'AffineTransformProps']]],
-  ['cubic2p_5fcatmullrom_11',['CUBIC2P_CATMULLROM',['../classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23acef9f1764aba6ea20478906e8833c5fd',1,'AffineTransformProps']]]
+  ['cubic2p_5fcatmullrom_11',['CUBIC2P_CATMULLROM',['../classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23acef9f1764aba6ea20478906e8833c5fd',1,'AffineTransformProps']]],
+  ['cuda_5fdevice_12',['CUDA_DEVICE',['../classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a8671507724f00a3eaa05def3f21fd800',1,'FrameMetadata']]]
 ];

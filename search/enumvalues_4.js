@@ -6,5 +6,6 @@ var searchData=
   ['encoded_5fimage_3',['ENCODED_IMAGE',['../classFrameMetadata.html#af324c09818d5965791464a2b687c95abaafdd989977cd41740f70383cd8e5d5c0',1,'FrameMetadata']]],
   ['endofstreamnormal_4',['EndOfStreamNormal',['../classModule.html#ab83ab539f60052ae26f0edda7f7c10b3a67052c4eb99e3e3973b97212f4cd1087',1,'Module']]],
   ['endofstreamsocketerror_5',['EndOfStreamSocketError',['../classModule.html#ab83ab539f60052ae26f0edda7f7c10b3a2cff9bb7edbb75d6f77dacffc6da71e1',1,'Module']]],
-  ['export_6',['EXPORT',['../classState.html#a50d35fcb67f5c9ff4ac2b4d80f2923fdaec9e406c45b8a95d5f1ea48c893c6777',1,'State']]]
+  ['export_6',['EXPORT',['../structState.html#a50d35fcb67f5c9ff4ac2b4d80f2923fdaec9e406c45b8a95d5f1ea48c893c6777',1,'State']]],
+  ['exportmmq_7',['ExportMMQ',['../classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eafcf688df0540c4fabb20659150512157',1,'Command']]]
 ];

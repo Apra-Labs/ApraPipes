@@ -1,9 +1,9 @@
 <map id="MultimediaQueueXform" name="MultimediaQueueXform">
-<area shape="rect" id="Node000001" title=" " alt="" coords="67,1488,241,2014"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,1440,137,1489,132,1489,128,1440"/>
-<area shape="rect" id="Node000003" href="$classMultimediaQueueXformProps.html" title=" " alt="" coords="201,860,403,985"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="294,986,206,1472,201,1471,288,985"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="64,1527,239,2112"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,1478,134,1527,129,1528,125,1479"/>
+<area shape="rect" id="Node000003" href="$classMultimediaQueueXformProps.html" title=" " alt="" coords="201,809,403,1074"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,1074,207,1511,202,1510,277,1073"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="225,5,379,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="305,385,305,860,299,860,299,385"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="305,386,305,809,299,809,299,386"/>
 </map>

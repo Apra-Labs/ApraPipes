@@ -1,23 +1,11 @@
 <map id="Buffer::map" name="Buffer::map">
-<area shape="rect" id="Node000001" title=" " alt="" coords="809,112,895,138"/>
-<area shape="poly" id="edge5_Node000001_Node000001" title=" " alt="" coords="876,99,868,93,852,91,837,93,829,97,827,103,831,110,826,113,822,103,825,94,835,88,852,85,870,88,880,95"/>
-<area shape="rect" id="Node000002" href="$classBuffer.html#a1705f0bb0cd761c436631af24e0242ca" title=" " alt="" coords="657,5,752,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="827,103,796,73,759,44,740,34,742,29,762,40,800,69,831,99"/>
-<area shape="rect" id="Node000003" href="$classBuffer.html#a6a53ef7b2ce3def1c2ecc85cf16257a1" title=" " alt="" coords="657,55,752,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="802,108,739,83,741,78,804,103"/>
-<area shape="rect" id="Node000004" href="$classBuffer.html#a6002af2b41087f5cd575e6f49b5a0ea8" title=" " alt="" coords="648,105,761,145"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="793,128,761,128,761,122,793,122"/>
-<area shape="rect" id="Node000005" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="5,223,172,264"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="805,146,761,159,644,181,483,202,173,238,172,232,483,197,643,175,760,154,803,141"/>
-<area shape="rect" id="Node000006" href="$classBuffer.html#aaeecba2e74f8797e81816c433f7d573e" title=" " alt="" coords="654,259,755,284"/>
-<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="829,150,721,260,717,256,825,147"/>
-<area shape="rect" id="Node000007" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="434,219,600,260"/>
-<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="638,263,600,256,601,251,639,258"/>
-<area shape="rect" id="Node000008" href="$classh264DecoderV4L2Helper.html#abf17c07f4b3f52ab4915be71a4e9719e" title="Query and Set Capture plane." alt="" coords="434,285,600,325"/>
-<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="639,286,601,293,600,287,638,281"/>
-<area shape="rect" id="Node000010" href="$classBuffer.html#a59b8743e4a5f731bdd0c4185c9ef263b" title=" " alt="" coords="466,349,568,375"/>
-<area shape="poly" id="edge11_Node000006_Node000010" title=" " alt="" coords="675,296,641,318,601,339,570,351,568,346,599,334,638,314,672,291"/>
-<area shape="rect" id="Node000009" href="$classh264DecoderV4L2Helper.html#a5c5f98ec229ff06bde7717be614ed545" title="Callback function on capture thread." alt="" coords="220,251,386,292"/>
-<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="418,292,386,287,387,282,419,287"/>
-<area shape="poly" id="edge10_Node000009_Node000005" title=" " alt="" coords="204,261,172,257,172,252,204,256"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="648,46,735,72"/>
+<area shape="rect" id="Node000002" href="$classh264DecoderV4L2Helper.html#a5a9e168c103dccc4e5b423334e7fe046" title=" " alt="" coords="434,39,600,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="632,62,601,62,601,56,632,56"/>
+<area shape="rect" id="Node000003" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="220,5,386,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="418,46,386,41,387,36,419,41"/>
+<area shape="rect" id="Node000004" href="$classh264DecoderV4L2Helper.html#a627d7b15fc9246f9d4a7c2da229f1d60" title=" " alt="" coords="220,71,386,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="419,76,387,81,386,76,418,71"/>
+<area shape="rect" id="Node000005" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="5,71,172,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="204,94,172,94,172,88,204,88"/>
 </map>

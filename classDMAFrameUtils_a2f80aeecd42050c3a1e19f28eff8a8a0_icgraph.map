@@ -1,7 +1,9 @@
 <map id="DMAFrameUtils::getImagePlanesFunction" name="DMAFrameUtils::getImagePlanesFunction">
-<area shape="rect" id="Node000001" title=" " alt="" coords="273,27,487,68"/>
-<area shape="rect" id="Node000002" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,5,225,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="257,37,225,33,226,28,258,31"/>
-<area shape="rect" id="Node000003" href="$classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66" title=" " alt="" coords="26,55,204,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="258,63,205,69,204,63,257,58"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="273,63,487,103"/>
+<area shape="rect" id="Node000002" href="$classThumbnailListGenerator.html#afe9732b27b05ac0608fb708603629622" title=" " alt="" coords="35,5,195,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="267,61,195,46,196,40,268,56"/>
+<area shape="rect" id="Node000003" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,70,225,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="257,86,225,86,225,80,257,80"/>
+<area shape="rect" id="Node000004" href="$classDetailMemory.html#ae6a82e30ac8bfb73d7d8d648c3005c66" title=" " alt="" coords="26,120,204,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="269,110,205,124,204,118,268,105"/>
 </map>

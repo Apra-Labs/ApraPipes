@@ -1,7 +1,15 @@
 <map id="h264DecoderV4L2Helper::req_buffers_on_output_plane" name="h264DecoderV4L2Helper::req_buffers_on_output_plane">
-<area shape="rect" id="Node000001" title="Requests for buffers on the decoder output plane." alt="" coords="220,39,413,79"/>
-<area shape="rect" id="Node000002" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="5,5,172,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,45,172,41,173,35,205,40"/>
-<area shape="rect" id="Node000003" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="5,71,172,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,77,173,82,172,77,204,72"/>
+<area shape="rect" id="Node000001" title="Requests for buffers on the decoder output plane." alt="" coords="648,39,842,79"/>
+<area shape="rect" id="Node000002" href="$classh264DecoderV4L2Helper.html#aef1524ebe6c5427a46d5f78aeeb79831" title=" " alt="" coords="434,5,600,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="633,45,601,41,601,35,634,40"/>
+<area shape="rect" id="Node000005" href="$classh264DecoderV4L2Helper.html#a5a9e168c103dccc4e5b423334e7fe046" title=" " alt="" coords="434,71,600,111"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="633,77,601,82,601,77,633,72"/>
+<area shape="rect" id="Node000003" href="$classh264DecoderV4L2Helper.html#ad1b518b5ac557eb749946e6a10a8fbc5" title=" " alt="" coords="5,5,172,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="418,25,386,24,220,24,172,25,172,20,220,19,386,19,418,20"/>
+<area shape="rect" id="Node000004" href="$classh264DecoderV4L2Helper.html#a627d7b15fc9246f9d4a7c2da229f1d60" title=" " alt="" coords="220,33,386,74"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="419,41,387,45,386,40,418,36"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="204,43,172,39,172,34,204,38"/>
+<area shape="poly" id="edge7_Node000005_Node000004" title=" " alt="" coords="418,76,386,71,387,66,419,71"/>
+<area shape="rect" id="Node000006" href="$classh264DecoderV4L2Helper.html#ac7b5fa188d9fdf7ce3e24ae1e4e19a19" title=" " alt="" coords="220,99,386,139"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="419,107,387,111,386,105,418,101"/>
 </map>

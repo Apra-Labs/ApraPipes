@@ -1,13 +1,15 @@
 <map id="VirtualPTZ::Detail::initMatImages" name="VirtualPTZ::Detail::initMatImages">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,128,113"/>
-<area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="176,80,312,106"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,90,160,90,160,96,128,96"/>
-<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="360,5,559,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="271,77,359,40,380,33,382,38,361,45,273,82"/>
-<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="366,55,554,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="312,82,350,78,350,83,313,87"/>
-<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="365,104,554,130"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="313,98,350,102,349,107,312,103"/>
-<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="363,153,557,179"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="274,104,361,140,383,146,381,151,359,145,272,109"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,45,128,85"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="176,15,331,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,53,160,47,161,53,129,58"/>
+<area shape="rect" id="Node000003" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="185,80,322,106"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="129,71,170,78,169,83,128,77"/>
+<area shape="rect" id="Node000004" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="379,5,578,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="298,77,330,65,354,52,378,40,397,33,399,38,380,45,356,57,332,70,300,82"/>
+<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="385,55,573,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="322,83,368,77,369,83,322,88"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="384,104,573,130"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="322,97,369,102,368,108,322,103"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="382,153,576,179"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="286,104,380,140,403,146,401,151,378,145,284,109"/>
 </map>

@@ -1,9 +1,9 @@
 <map id="ColorConversion" name="ColorConversion">
-<area shape="rect" id="Node000001" title=" " alt="" coords="31,1488,194,1874"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1425"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1440,110,1488,105,1488,103,1440"/>
-<area shape="rect" id="Node000003" href="$classColorConversionProps.html" title=" " alt="" coords="202,880,362,965"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="279,966,246,1165,222,1295,193,1426,180,1473,175,1472,187,1425,216,1294,241,1164,273,965"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,1527,187,1912"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,1479,105,1527,100,1527,99,1479"/>
+<area shape="rect" id="Node000003" href="$classColorConversionProps.html" title=" " alt="" coords="202,899,362,984"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="279,984,248,1192,223,1328,193,1465,180,1511,175,1510,187,1463,218,1327,243,1191,274,984"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="205,5,359,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="285,385,285,880,279,880,279,385"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="285,386,285,899,279,899,279,386"/>
 </map>

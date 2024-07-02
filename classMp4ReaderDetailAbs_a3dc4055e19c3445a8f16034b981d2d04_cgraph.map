@@ -1,5 +1,7 @@
 <map id="Mp4ReaderDetailAbs::setMetadata" name="Mp4ReaderDetailAbs::setMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,149,46"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="197,5,347,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,23,181,23,181,28,149,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,39,149,79"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="197,5,352,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,44,181,39,182,44,150,50"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="199,71,350,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="150,68,184,74,183,79,149,73"/>
 </map>

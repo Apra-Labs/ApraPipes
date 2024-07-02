@@ -82,23 +82,25 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classArchiveSpaceManager_1_1Detail.html#a0ee6ae483be4997e99e3271ce82963e3",
-"classCCNPPI_1_1Detail.html#a4b6dcc2ba221dfe56d0a9457eaa3604b",
-"classCpuYUV420Planar2RGB.html#a0a913269b3f07b9659ca459d02798d2d",
-"classDetailGPU.html#aa7bd7ef1eaa120e99fadc749c6e88264",
-"classEoPFrame.html",
-"classFilenameStrategy.html#a9e721a903ae21d284b03d6c33a656c9b",
-"classH264DecoderNvCodecHelper.html#a1edff1347b20b5b96fc616a384c8a3b1",
-"classHistogramOverlay_1_1Detail.html#ada210aef9053fec417fa5f94fb96e094",
-"classJPEGEncoderL4TMHelper.html#a6bdf413cd5f8863a847112cfd029628f",
-"classModule.html#a307bb161625ae47dd57de0c510daa324",
-"classMp4ReaderDetailAbs.html#a80094451eb6b462b847318b6de2eb449",
-"classNVCodecResources.html#ad3d7a9bfdb51a847f80e4cf2a16808d8",
-"classNvV4L2CameraHelper.html#ad79f4133a86c4607de98b0d1775a6253",
-"classQRReader_1_1Detail.html#a6dbf9bacefc0fd5eac89a54c48387fd3",
-"classRotateCV.html#a2dc62db51b999ea58d7ab6cc3111ec86",
-"classValveModule.html#a2891ba297e3356e20d1fcab6d8c4b044",
-"functions_func_j.html"
+"classApraSegregatedStorage.html#accfc95a14cbcc4aa44bb9200519c5c85",
+"classCCNPPI_1_1Detail.html#a044c2ad4e1527a13d523950f59d79164",
+"classCpuBayerBG82RGB.html#ae1b8a1a0fb98a33a2548aa91f43e3e10",
+"classDetailAbs.html#abc958048a452f0ddcd8e2b3f573f1aa6",
+"classEglRendererCloseWindow.html#aa1538fc1915d1cd6b9e37a0af2401391",
+"classFileReaderModuleProps.html#a1e331a399140cb56da03d6a51b5004e9",
+"classGaussianBlur.html#a574126251f733544505cd74ba4591581",
+"classH264EncoderNVCodec_1_1Detail.html#a65bf2bf48ef7fac377ce9a1dde74e49b",
+"classImageResizeCV.html#a1c7b0193cb04c17387e7c85819527beb",
+"classLineMetadata.html#a0edfc6166e93d7f0183e6206d87a9b41",
+"classModule.html#ac059f5b4e08f748a5bb27936ba038fcf",
+"classMp4ReaderSourceProps.html",
+"classNvArgusCameraProps.html",
+"classOrderedCacheOfFiles.html#af24f9164c98cb4b2691a70ee70b90ff9",
+"classRTSPClientSrc_1_1Detail.html",
+"classRotateNPPI_1_1Detail.html",
+"classValveModule_1_1Detail.html#a376430eb3372e8c51d6d7e12a38375d9",
+"functions_l.html",
+"structsps__pps__properties.html#a109245a2b5c90e335adc19f0527b0122"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

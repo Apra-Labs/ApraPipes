@@ -1,12 +1,11 @@
 <map id="AV4L2ElementPlane::setupPlane" name="AV4L2ElementPlane::setupPlane">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,116,153,157"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,92,153,133"/>
 <area shape="rect" id="Node000002" href="$classAV4L2ElementPlane.html#ad93224b6c232a204f7f323298e1fc410" title=" " alt="" coords="201,5,348,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,113,199,55,208,51,210,56,202,60,111,118"/>
-<area shape="rect" id="Node000003" href="$classAV4L2Buffer.html#ac6e05e63668df1025e0d3bf10848b2ec" title=" " alt="" coords="211,94,338,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,123,195,116,196,121,154,128"/>
-<area shape="rect" id="Node000004" href="$classAV4L2ElementPlane.html#a737bc3ea92368c8ab189cb0ecb3017ef" title=" " alt="" coords="201,144,348,185"/>
-<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="154,144,185,149,185,154,153,150"/>
-<area shape="rect" id="Node000005" href="$classAV4L2ElementPlane.html#a22179f2ed9f3e10c5d63890ed394c2ee" title=" " alt="" coords="201,209,348,250"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="123,155,202,194,214,200,212,205,200,199,120,160"/>
-<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="242,95,235,86,239,76,252,70,274,68,298,70,311,77,308,82,297,75,274,73,254,75,243,80,240,85,246,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,89,200,55,211,50,213,55,202,60,127,94"/>
+<area shape="rect" id="Node000003" href="$classAV4L2Buffer.html#ac6e05e63668df1025e0d3bf10848b2ec" title=" " alt="" coords="211,70,338,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,99,195,92,196,97,154,104"/>
+<area shape="rect" id="Node000004" href="$classAV4L2ElementPlane.html#a737bc3ea92368c8ab189cb0ecb3017ef" title=" " alt="" coords="201,120,348,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="154,120,185,125,185,130,153,126"/>
+<area shape="rect" id="Node000005" href="$classAV4L2ElementPlane.html#a22179f2ed9f3e10c5d63890ed394c2ee" title=" " alt="" coords="201,185,348,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="123,131,202,170,214,176,212,181,200,175,120,136"/>
 </map>

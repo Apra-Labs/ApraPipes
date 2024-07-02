@@ -1,0 +1,12 @@
+<map id="H264Decoder::prependSpsPps" name="H264Decoder::prependSpsPps">
+<area shape="rect" id="Node000001" title=" " alt="" coords="692,31,891,57"/>
+<area shape="rect" id="Node000002" href="$classH264Decoder.html#a3662baa831f568dbd2ccad2f525932b4" title=" " alt="" coords="206,27,411,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="677,47,412,50,412,44,677,42"/>
+<area shape="rect" id="Node000003" href="$classH264Decoder.html#aafab43f7c652a402ed2ede37eaf92ec1" title=" " alt="" coords="5,35,158,61"/>
+<area shape="poly" id="edge6_Node000001_Node000003" title=" " alt="" coords="689,31,588,19,467,11,336,9,206,18,124,37,123,32,205,13,336,4,467,5,588,14,690,26"/>
+<area shape="rect" id="Node000004" href="$classH264Decoder.html#a1613454ab490c935b81834f0be03a6bf" title=" " alt="" coords="459,81,644,121"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="720,63,640,83,639,77,719,58"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="190,50,158,50,158,45,190,45"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="443,80,404,71,405,66,444,75"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="443,102,328,96,205,82,126,64,127,59,206,77,329,91,443,97"/>
+</map>

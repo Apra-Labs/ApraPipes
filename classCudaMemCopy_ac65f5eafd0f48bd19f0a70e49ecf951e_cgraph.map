@@ -4,8 +4,10 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,31,270,24,270,29,196,37"/>
 <area shape="rect" id="Node000003" href="$classCudaMemCopy.html#a753216ee0e5968924eac5a0d55fb6f6c" title=" " alt="" coords="243,55,469,80"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,50,227,53,227,58,195,55"/>
-<area shape="rect" id="Node000004" href="$classCudaMemCopy.html#a2f94e3a4df06cb0a144c0de8a4d396c5" title=" " alt="" coords="517,55,717,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="469,65,501,65,501,70,469,70"/>
-<area shape="rect" id="Node000005" href="$classFrameMetadata.html#a90a6bbf6a558d057892331db467ea267" title=" " alt="" coords="765,47,949,88"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="718,65,749,65,749,70,718,70"/>
+<area shape="rect" id="Node000004" href="$classCudaMemCopy.html#a2f94e3a4df06cb0a144c0de8a4d396c5" title=" " alt="" coords="517,25,717,51"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="469,52,501,48,502,54,470,57"/>
+<area shape="rect" id="Node000006" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="540,75,695,116"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="470,77,524,83,524,88,469,82"/>
+<area shape="rect" id="Node000005" href="$classFrameMetadata.html#a90a6bbf6a558d057892331db467ea267" title=" " alt="" coords="765,18,949,59"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="718,36,749,36,749,41,718,41"/>
 </map>

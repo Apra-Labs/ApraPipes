@@ -3,6 +3,7 @@ var classMp4WriterSink =
     [ "Mp4WriterSink", "classMp4WriterSink.html#abd88f52fbc5e48c28c23903d34629972", null ],
     [ "~Mp4WriterSink", "classMp4WriterSink.html#a3c45069914d1faa6ce929a7a348f6077", null ],
     [ "addInputPin", "classMp4WriterSink.html#a0cd26fa9bbc1ec477e35d80e747fbd15", null ],
+    [ "doMp4MuxSync", "classMp4WriterSink.html#a83b6262fe760252f1c375bb23ad60108", null ],
     [ "enableMp4Metadata", "classMp4WriterSink.html#a2217c2185dfc0aeb10188b2b13b7ef02", null ],
     [ "getProps", "classMp4WriterSink.html#ae9ae3e2e99edfcd75ea9d12344fd77cd", null ],
     [ "handlePropsChange", "classMp4WriterSink.html#aa6a772815ec7173fb57d215c2f342839", null ],

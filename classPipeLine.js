@@ -7,6 +7,7 @@ var classPipeLine =
     ] ],
     [ "PipeLine", "classPipeLine.html#a41eabf08aef027834e65eaea0d4dcd3e", null ],
     [ "~PipeLine", "classPipeLine.html#a7b7a8d063b3b521203476f52d40368b2", null ],
+    [ "addControlModule", "classPipeLine.html#acbe8e3dd2129fd3f7f81b7a377caaa30", null ],
     [ "appendModule", "classPipeLine.html#ab833d6e953e91e791e24397a1895d702", null ],
     [ "checkCyclicDependency", "classPipeLine.html#a99bb0bfbe818a8600ae2830a4336afa8", null ],
     [ "flushAllQueues", "classPipeLine.html#ae0bd81a4ae1f7e35e9a230627b0a2e97", null ],

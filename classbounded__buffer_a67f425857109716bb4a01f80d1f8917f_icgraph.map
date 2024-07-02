@@ -1,7 +1,11 @@
 <map id="bounded_buffer::is_not_empty" name="bounded_buffer::is_not_empty">
-<area shape="rect" id="Node000001" title=" " alt="" coords="410,5,535,46"/>
-<area shape="rect" id="Node000002" href="$classbounded__buffer.html#ab4a053fd08a4c24ce72c14e39e0c663a" title=" " alt="" coords="205,13,362,39"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="395,28,363,28,363,23,395,23"/>
-<area shape="rect" id="Node000003" href="$classFrameContainerQueue.html#a2e290275f0ecb8e76e561cb32ef78930" title=" " alt="" coords="5,5,157,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="189,28,157,28,157,23,189,23"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="410,39,535,79"/>
+<area shape="rect" id="Node000002" href="$classbounded__buffer.html#a88a8951a2d528da335baa45b3f894e0a" title=" " alt="" coords="212,17,355,43"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="394,50,355,43,356,38,395,44"/>
+<area shape="rect" id="Node000004" href="$classbounded__buffer.html#ab4a053fd08a4c24ce72c14e39e0c663a" title=" " alt="" coords="205,70,362,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="395,72,363,76,362,70,394,66"/>
+<area shape="rect" id="Node000003" href="$classFrameContainerQueue.html#ad4f4938cdf5893cd5aa068df45e1c5d0" title=" " alt="" coords="5,5,157,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="196,31,157,30,157,24,196,25"/>
+<area shape="rect" id="Node000005" href="$classFrameContainerQueue.html#a2e290275f0ecb8e76e561cb32ef78930" title=" " alt="" coords="5,71,157,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="189,89,157,91,157,85,189,84"/>
 </map>

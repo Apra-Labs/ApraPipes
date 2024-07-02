@@ -20,6 +20,7 @@ var classMp4ReaderSource =
     [ "randomSeek", "classMp4ReaderSource.html#a6e7d7d78a54287d54b906726c608d9b7", null ],
     [ "refreshCache", "classMp4ReaderSource.html#a23d836d6c5b913af76eddaa9652d6510", null ],
     [ "setImageMetadata", "classMp4ReaderSource.html#ab356f0fac1cebe55e6ac3a4547864497", null ],
+    [ "setPlaybackSpeed", "classMp4ReaderSource.html#a01c2d324e072fd2dab4b5e575cfdcc97", null ],
     [ "setProps", "classMp4ReaderSource.html#a782deca5b899bacf8edf998cad4d6d13", null ],
     [ "term", "classMp4ReaderSource.html#ab43e74e52a2e7e4b91d78fc8b6b41d54", null ],
     [ "validateOutputPins", "classMp4ReaderSource.html#a4fb8a09da5d92579480d6bc3574bbeff", null ],

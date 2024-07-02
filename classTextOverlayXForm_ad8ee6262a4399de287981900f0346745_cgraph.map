@@ -1,9 +1,13 @@
 <map id="TextOverlayXForm::setProps" name="TextOverlayXForm::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,193,56"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a2b1fd42084b55743ad93000d78bef757" title=" " alt="" coords="241,31,418,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,41,225,41,225,46,193,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,193,106"/>
+<area shape="rect" id="Node000002" href="$classModule.html#aeba20f2c7a904f61cf20911a5d7f84ed" title=" " alt="" coords="241,80,418,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,90,225,90,225,96,193,96"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="466,5,663,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="418,31,450,28,451,33,419,37"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="362,77,465,40,489,33,491,38,467,45,364,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="516,55,613,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="419,50,501,58,500,64,418,55"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="418,81,500,72,501,77,419,86"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="499,104,631,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="419,99,484,106,483,111,418,105"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a9b3624e543f9909401cdfc4686ac1ecd" title=" " alt="" coords="507,153,623,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="365,104,467,140,492,147,491,152,465,145,363,109"/>
 </map>

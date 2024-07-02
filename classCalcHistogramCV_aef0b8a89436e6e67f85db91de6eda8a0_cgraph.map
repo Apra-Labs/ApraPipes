@@ -1,15 +1,17 @@
 <map id="CalcHistogramCV::handlePropsChange" name="CalcHistogramCV::handlePropsChange">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,63,209,103"/>
-<area shape="rect" id="Node000002" href="$classModule.html#aff79935c5e1078a8ab019dcbc96b2b25" title=" " alt="" coords="259,5,440,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,59,245,48,246,53,196,65"/>
-<area shape="rect" id="Node000003" href="$classModule.html#af5649e169c062949ecb8093f7a258db8" title=" " alt="" coords="257,70,442,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="209,80,241,80,241,86,209,86"/>
-<area shape="rect" id="Node000004" href="$classModule.html#a8385986df35f428da6fdff338848627e" title=" " alt="" coords="287,120,412,145"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="210,101,273,114,271,119,209,106"/>
-<area shape="rect" id="Node000005" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="490,120,587,145"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="412,130,475,130,475,135,412,135"/>
-<area shape="rect" id="Node000006" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="651,94,822,120"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="587,123,636,117,637,122,588,129"/>
-<area shape="rect" id="Node000007" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="635,144,838,169"/>
-<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="588,136,620,140,620,145,587,141"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,100,209,141"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="272,5,427,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,97,256,57,275,49,276,54,258,61,159,102"/>
+<area shape="rect" id="Node000003" href="$classModule.html#aff79935c5e1078a8ab019dcbc96b2b25" title=" " alt="" coords="259,71,440,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="209,105,243,101,244,106,210,111"/>
+<area shape="rect" id="Node000004" href="$classModule.html#af5649e169c062949ecb8093f7a258db8" title=" " alt="" coords="257,136,442,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="210,129,242,133,241,139,209,135"/>
+<area shape="rect" id="Node000005" href="$classModule.html#a8385986df35f428da6fdff338848627e" title=" " alt="" coords="287,185,412,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="164,139,257,171,280,178,278,183,256,176,162,144"/>
+<area shape="rect" id="Node000006" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="490,185,587,211"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="412,195,475,195,475,200,412,200"/>
+<area shape="rect" id="Node000007" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="651,160,822,185"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="587,189,636,183,637,188,588,194"/>
+<area shape="rect" id="Node000008" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="635,209,838,235"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="588,201,620,205,620,210,587,206"/>
 </map>

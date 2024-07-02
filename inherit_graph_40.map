@@ -1,11 +1,15 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="5,55,155,80"/>
-<area shape="rect" id="Node000001" href="$classDetailGPU.html" title=" " alt="" coords="203,29,286,55"/>
-<area shape="poly" id="edge48_Node000000_Node000001" title=" " alt="" coords="169,51,202,46,202,51,170,56"/>
-<area shape="rect" id="Node000004" href="$classDetailHost.html" title=" " alt="" coords="203,79,286,104"/>
-<area shape="poly" id="edge51_Node000000_Node000004" title=" " alt="" coords="170,78,203,83,202,88,170,83"/>
-<area shape="rect" id="Node000002" href="$classDeatilCUDA.html" title=" " alt="" coords="334,5,425,31"/>
-<area shape="poly" id="edge49_Node000001_Node000002" title=" " alt="" coords="301,29,333,24,334,29,302,35"/>
-<area shape="rect" id="Node000003" href="$classDetailDMA.html" title=" " alt="" coords="338,55,421,80"/>
-<area shape="poly" id="edge50_Node000001_Node000003" title=" " alt="" coords="302,50,338,57,337,62,301,55"/>
+<area shape="rect" id="Node000000" href="$classDetailMemory.html" title=" " alt="" coords="5,129,106,155"/>
+<area shape="rect" id="Node000001" href="$classDetailDEVICEtoDMA.html" title=" " alt="" coords="158,5,299,31"/>
+<area shape="poly" id="edge43_Node000000_Node000001" title=" " alt="" coords="73,115,107,77,152,40,174,29,176,34,155,44,111,80,77,119"/>
+<area shape="rect" id="Node000002" href="$classDetailDEVICEtoHOST.html" title=" " alt="" coords="154,55,303,80"/>
+<area shape="poly" id="edge44_Node000000_Node000002" title=" " alt="" coords="92,119,153,89,181,78,183,83,155,94,94,124"/>
+<area shape="rect" id="Node000003" href="$classDetailDMAtoDEVICE.html" title=" " alt="" coords="158,104,299,130"/>
+<area shape="poly" id="edge45_Node000000_Node000003" title=" " alt="" coords="121,130,157,125,157,130,121,135"/>
+<area shape="rect" id="Node000004" href="$classDetailDMAtoHOST.html" title=" " alt="" coords="163,153,294,179"/>
+<area shape="poly" id="edge46_Node000000_Node000004" title=" " alt="" coords="121,149,162,154,162,160,120,154"/>
+<area shape="rect" id="Node000005" href="$classDetailHOSTtoDEVICE.html" title=" " alt="" coords="154,203,303,228"/>
+<area shape="poly" id="edge47_Node000000_Node000005" title=" " alt="" coords="95,160,155,189,183,200,181,205,153,194,93,165"/>
+<area shape="rect" id="Node000006" href="$classDetailHOSTtoDMA.html" title=" " alt="" coords="163,252,294,278"/>
+<area shape="poly" id="edge48_Node000000_Node000006" title=" " alt="" coords="78,166,112,203,155,239,177,249,174,254,152,243,108,207,74,169"/>
 </map>

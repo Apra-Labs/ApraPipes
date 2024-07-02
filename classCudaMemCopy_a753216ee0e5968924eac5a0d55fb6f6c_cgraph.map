@@ -1,7 +1,9 @@
 <map id="CudaMemCopy::setOutputMetadata" name="CudaMemCopy::setOutputMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,232,39"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,42,232,68"/>
 <area shape="rect" id="Node000002" href="$classCudaMemCopy.html#a2f94e3a4df06cb0a144c0de8a4d396c5" title=" " alt="" coords="280,13,480,39"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,23,264,23,264,28,232,28"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,40,264,36,265,41,232,45"/>
+<area shape="rect" id="Node000004" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="302,63,458,103"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="232,65,287,70,286,76,232,70"/>
 <area shape="rect" id="Node000003" href="$classFrameMetadata.html#a90a6bbf6a558d057892331db467ea267" title=" " alt="" coords="528,5,711,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="480,23,512,23,512,28,480,28"/>
 </map>

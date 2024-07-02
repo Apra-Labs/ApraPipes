@@ -1,0 +1,9 @@
+<map id="H264Decoder::bufferBackwardEncodedFrames" name="H264Decoder::bufferBackwardEncodedFrames">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,202,64"/>
+<area shape="rect" id="Node000002" href="$classH264Utils.html#af372f8e43a403b1147c390e296e5c444" title=" " alt="" coords="250,23,429,64"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,41,234,41,234,46,202,46"/>
+<area shape="rect" id="Node000003" href="$classH264Utils.html#a33e08e70ab70829c4af194ea85c1b307" title=" " alt="" coords="484,5,638,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="429,31,468,26,469,31,429,36"/>
+<area shape="rect" id="Node000004" href="$classH264Utils.html#af84ba16af685998a23d7ae3b2824d1f3" title=" " alt="" coords="477,55,645,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="429,51,462,54,461,59,429,56"/>
+</map>

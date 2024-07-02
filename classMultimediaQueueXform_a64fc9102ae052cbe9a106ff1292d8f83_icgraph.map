@@ -1,11 +1,14 @@
 <map id="MultimediaQueueXform::getQueueBoundaryTS" name="MultimediaQueueXform::getQueueBoundaryTS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="416,49,573,90"/>
-<area shape="rect" id="Node000002" href="$classMultimediaQueueXform.html#aab0b2f65705e81cbca41bbdfab98df26" title=" " alt="" coords="5,5,163,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="407,48,368,40,261,30,163,27,163,22,261,25,368,35,408,43"/>
-<area shape="rect" id="Node000003" href="$classMultimediaQueueXform.html#a7861d878700f180c5103af5893d5aa3e" title=" " alt="" coords="5,83,163,123"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="410,97,368,104,261,112,163,110,163,105,261,106,368,99,409,91"/>
-<area shape="rect" id="Node000004" href="$classMultimediaQueueXform.html#ae3cc41b506774cae0fc8f42723d2c258" title=" " alt="" coords="211,49,368,90"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="401,72,369,72,369,67,401,67"/>
-<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="195,52,163,45,164,40,196,47"/>
-<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="196,88,164,93,163,88,195,82"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="853,5,1010,46"/>
+<area shape="rect" id="Node000002" href="$classMultimediaQueueXform.html#a7861d878700f180c5103af5893d5aa3e" title=" " alt="" coords="5,27,163,67"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="837,25,556,22,384,25,211,34,163,38,163,33,210,28,384,19,556,16,837,20"/>
+<area shape="rect" id="Node000003" href="$classMultimediaQueueXform.html#ae3cc41b506774cae0fc8f42723d2c258" title=" " alt="" coords="647,33,805,74"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="838,41,806,46,805,40,837,36"/>
+<area shape="poly" id="edge7_Node000003_Node000002" title=" " alt="" coords="632,55,163,50,163,45,632,50"/>
+<area shape="rect" id="Node000004" href="$classMultimediaQueueXform.html#aab0b2f65705e81cbca41bbdfab98df26" title=" " alt="" coords="442,84,599,125"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="633,79,601,87,599,82,632,74"/>
+<area shape="rect" id="Node000005" href="$classMultimediaQueueXform.html#a43fbd8b8b669736c373e1cc7f3dff246" title=" " alt="" coords="211,84,394,125"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="426,116,395,116,395,111,426,111"/>
+<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="207,82,162,70,164,65,208,77"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="410,93,441,93,441,98,410,98"/>
 </map>

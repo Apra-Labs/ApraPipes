@@ -1,5 +1,7 @@
 <map id="VirtualPTZ::processSOS" name="VirtualPTZ::processSOS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,169,31"/>
-<area shape="rect" id="Node000002" href="$classVirtualPTZ.html#a70ada43a5e8bd7eb09fd523a60e8fc7d" title=" " alt="" coords="217,5,378,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,16,201,16,201,21,169,21"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,169,39"/>
+<area shape="rect" id="Node000002" href="$classVirtualPTZ.html#a70ada43a5e8bd7eb09fd523a60e8fc7d" title=" " alt="" coords="217,13,378,39"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,23,201,23,201,28,169,28"/>
+<area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="426,5,581,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="379,23,411,23,411,28,379,28"/>
 </map>

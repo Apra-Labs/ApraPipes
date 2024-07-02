@@ -1,7 +1,9 @@
 <map id="EffectsNPPI::processSOS" name="EffectsNPPI::processSOS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,179,31"/>
-<area shape="rect" id="Node000002" href="$classEffectsNPPI.html#a8e4e2272ac19c0be97b49c3550aaf09c" title=" " alt="" coords="227,5,398,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,16,211,16,211,21,179,21"/>
-<area shape="rect" id="Node000003" href="$classModule.html#a4dd6881278e65d321313b024f0573fa1" title=" " alt="" coords="446,5,587,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="399,16,431,16,431,21,399,21"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,42,179,68"/>
+<area shape="rect" id="Node000002" href="$classEffectsNPPI.html#a8e4e2272ac19c0be97b49c3550aaf09c" title=" " alt="" coords="227,42,398,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,52,211,52,211,58,179,58"/>
+<area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="446,5,601,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="398,40,430,36,431,41,399,46"/>
+<area shape="rect" id="Node000004" href="$classModule.html#a4dd6881278e65d321313b024f0573fa1" title=" " alt="" coords="453,70,594,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="399,64,438,69,438,74,398,69"/>
 </map>
