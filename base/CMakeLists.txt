@@ -624,14 +624,20 @@ SET(UT_FILES
 )
 
 SET(SAMPLE_UT_FILES
-		test/utmain.cpp
-		test/test_utils.cpp
-		test/test_utils.h
-		.././samples/timelapse-sample/timelapse_summary_test.cpp
+	test/utmain.cpp
+	test/test_utils.cpp
+	test/test_utils.h	
+	../samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+	../samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
+  .././samples/timelapse-sample/timelapse_summary_test.cpp
 )
 
 SET(SAMPLE_CORE_FILES
-	../samples/timelapse-sample/timelapse_summary.h
+	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
+	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
+	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
+	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.cpp
+  ../samples/timelapse-sample/timelapse_summary.h
 	../samples/timelapse-sample/timelapse_summary.cpp
 )
 
@@ -639,7 +645,6 @@ SET(SAMPLE_SOURCE
 	${SAMPLE_CORE_FILES}
 	${SAMPLE_UT_FILES}
 )
-
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/gtkglrenderer_tests.cpp
@@ -653,7 +658,6 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
-
 add_executable(aprapipessampleut ${SAMPLE_SOURCE})
 
 IF(ENABLE_ARM64)
@@ -679,6 +683,17 @@ ${NVCODEC_INCLUDE_DIR}
 test
 )
 
+IF(ENABLE_ARM64)
+	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
+ENDIF(ENABLE_ARM64)
+
+IF (ENABLE_CUDA)
+	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
+ENDIF (ENABLE_CUDA)
+
+
+find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 target_link_libraries(aprapipessampleut   
   aprapipes  
