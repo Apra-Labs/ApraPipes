@@ -15,46 +15,58 @@
 #include <vtk-9.0/vtkRenderer.h>
 #include <vtk-9.0/vtkProperty.h>
 
+
 class STLRendererSinkProps : public ModuleProps
 {
 public:
-	STLRendererSinkProps() : ModuleProps()
+
+	STLRendererSinkProps(std::vector<double> _meshDiffuseColor, double _meshSpecularCoefficient, double _meshSpecularPower, std::vector<int> _cameraPosition, std::vector<int> _cameraFocalPoint, std::string _winName ,int _winWidth, int _winHeight, std::vector<double> _bkgColor )
 	{
+		meshDiffuseColor = _meshDiffuseColor;
+		meshSpecularCoefficient = _meshSpecularCoefficient;
+		meshSpecularPower = _meshSpecularPower;
+		cameraPosition = _cameraPosition;
+		cameraFocalPoint = _cameraFocalPoint;
+		winName = _winName;
+		winWidth = _winWidth;
+		winHeight = _winHeight;
+		bkgColor = _bkgColor;
+
+	}
+	std::vector<double> meshDiffuseColor;
+	double meshSpecularCoefficient;
+	double meshSpecularPower;
+	std::vector<int> cameraPosition;
+	std::vector<int> cameraFocalPoint;
+	std::string winName;
+	int winWidth;
+	int winHeight;
+	std::vector<double> bkgColor;
+
+	size_t getSerializeSize()
+	{
+		return ModuleProps::getSerializeSize() + sizeof(int) * 2 + sizeof(double) *2 + sizeof(winName) + sizeof(meshDiffuseColor)+ sizeof(cameraPosition)+ sizeof(cameraFocalPoint)+ sizeof(bkgColor);
 	}
 
-	~STLRendererSinkProps()
-	{}
 
-	// VTK Named Colors: https://htmlpreview.github.io/?https://github.com/Kitware/vtk-examples/blob/gh-pages/VTKNamedColorPatches.html
+private:
+	friend class boost::serialization::access;
 
-	// RGB in double: val/255
-	double meshDiffuseColor[3] = { 176, 196, 222 }; // LightSteelBlue = {0.69, 0.76, 0.87}
-
-	/* Specular Lighting
-	   https://ogldev.org/www/tutorial19/tutorial19.html
-	   [[R_spec],             [[R_light],            [[R_Surface],
-		[G_spec],     =        [G_light],     *       [G_Surface],   *  M   *   (R.V)^p
-		[B_spec]]              [B_light]]             [B_Surface]]
-	*/
-
-	// Describes the intensity of specular highlight prop of the object(M). Range: [0-1]
-	double meshSpecularCoefficient = 0.3;
-	// Describes the shininess factor(p)
-	double meshSpecularPower = 60.0;
-
-	int cameraPosition[3] = { 10, 10, 10 };
-	int cameraFocalPoint[3] = { 10, 10, 10 };
-
-	std::string winName = "STL_Renderer";
-
-	int winWidth = 600;
-	int winHeight = 600;
-
-	// Background color. def: DarkOliveGreen
-	double bkgColor[3] = { 85, 107, 47 };
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar &boost::serialization::base_object<ModuleProps>(*this);
+		ar &meshDiffuseColor;
+		ar &meshSpecularCoefficient; 
+		ar &meshSpecularPower;
+		ar &cameraPosition ;
+		ar &cameraFocalPoint;
+		ar &winName;
+		ar &winWidth ;
+		ar &winHeight;
+		ar &bkgColor;
+	}
 };
-
-class Detail;
 
 class STLRendererSink : public Module
 {
@@ -63,6 +75,8 @@ public:
 	virtual ~STLRendererSink();
 	bool init();
 	bool term();
+	void setProps(STLRendererSinkProps &props);
+	STLRendererSinkProps getProps();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -70,6 +84,9 @@ protected:
 	bool setMetadata(framemetadata_sp& inputMetadata);
 	bool shouldTriggerSOS();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool handlePropsChange(frame_sp& frame);
+
+private:
+	class Detail;
 	boost::shared_ptr<Detail> mDetail;
-	STLRendererSinkProps mProps;
 };

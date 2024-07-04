@@ -2,14 +2,14 @@
 #include "STLRendererSink.h"
 #include "ApraPoint3f.h"
 
-class Detail
+
+class STLRendererSink::Detail
 {
-private:
-	STLRendererSinkProps mProps;
 public:
-	Detail(STLRendererSinkProps& _props)
+	
+	Detail(STLRendererSinkProps& _props) : props(_props)
 	{
-		mProps = _props;
+		
 	}
 
 	~Detail()
@@ -22,12 +22,15 @@ public:
 		// https://www.kitware.com/a-tour-of-vtk-pointer-classes/
 
 		auto nPoints = points3D.size();
+		int numComponents = 3;
+		vtkSmartPointer<vtkDataArray> vtkArray = vtkDataArray::CreateDataArray(VTK_FLOAT);
+
+		vtkArray->SetNumberOfComponents(numComponents);
+		vtkArray->SetNumberOfTuples(nPoints);
+		vtkArray->SetVoidArray(points3D.data(), nPoints * numComponents, 1);
+
 		vtkNew<vtkPoints> points;
-		for (auto i = 0; i < nPoints; ++i)
-		{
-			auto& pts = points3D[i];
-			points->InsertNextPoint(pts.x, pts.y, pts.z);
-		}
+		points->SetData(vtkArray);
 
 		// define topography using point IDs (indices)
 		vtkNew<vtkCellArray> triangles;
@@ -55,33 +58,33 @@ public:
 		vtkNew<vtkNamedColors> colors;
 		meshActor->GetProperty()->SetDiffuse(0.8);
 		//auto col = colors->GetColor3d("LightSteelBlue").GetData();
-		double meshDiffuseColor[3] = { mProps.meshDiffuseColor[0] / 255.0,
-			mProps.meshDiffuseColor[1] / 255.0,
-			mProps.meshDiffuseColor[2] / 255.0 };
+		double meshDiffuseColor[3] = { props.meshDiffuseColor[0] / 255.0,
+			props.meshDiffuseColor[1] / 255.0,
+			props.meshDiffuseColor[2] / 255.0 };
 		meshActor->GetProperty()->SetDiffuseColor(vtkColor3d(meshDiffuseColor[0], meshDiffuseColor[1], meshDiffuseColor[2]).GetData());
-		meshActor->GetProperty()->SetSpecular(mProps.meshSpecularCoefficient);
-		meshActor->GetProperty()->SetSpecularPower(mProps.meshSpecularPower);
+		meshActor->GetProperty()->SetSpecular(props.meshSpecularCoefficient);
+		meshActor->GetProperty()->SetSpecularPower(props.meshSpecularPower);
 
 		// rendering
 		vtkNew<vtkCamera> camera;
-		camera->SetPosition(mProps.cameraPosition[0], mProps.cameraPosition[1], mProps.cameraPosition[2]);
-		camera->SetFocalPoint(mProps.cameraFocalPoint[0], mProps.cameraFocalPoint[1], mProps.cameraPosition[2]);
+		camera->SetPosition(props.cameraPosition[0], props.cameraPosition[1], props.cameraPosition[2]);
+		camera->SetFocalPoint(props.cameraFocalPoint[0], props.cameraFocalPoint[1], props.cameraPosition[2]);
 
 		vtkNew<vtkRenderer> renderer;
 		vtkNew<vtkRenderWindow> renWin;
 		renWin->AddRenderer(renderer);
-		renWin->SetWindowName(mProps.winName.c_str());
+		renWin->SetWindowName(props.winName.c_str());
 
 		vtkNew<vtkRenderWindowInteractor> iren;
 		iren->SetRenderWindow(renWin);
 
 		renderer->AddActor(meshActor);
-		double bkgColor[3] = { mProps.bkgColor[0] / 255.0,
-			mProps.bkgColor[1] / 255.0,
-			mProps.bkgColor[2] / 255.0 };
+		double bkgColor[3] = { props.bkgColor[0] / 255.0,
+			props.bkgColor[1] / 255.0,
+			props.bkgColor[2] / 255.0 };
 		renderer->SetBackground(vtkColor3d(bkgColor[0], bkgColor[1], bkgColor[2]).GetData());
 
-		renWin->SetSize(mProps.winWidth, mProps.winHeight);
+		renWin->SetSize(props.winWidth, props.winHeight);
 
 		// interact with data
 		renWin->Render();
@@ -90,10 +93,17 @@ public:
 		iren->TerminateApp();
 	}
 
+	void setProps(STLRendererSinkProps &_props)
+	{
+		props = _props;
+	}
+
+public:
+	STLRendererSinkProps props;
+
 };
 
-STLRendererSink::STLRendererSink(STLRendererSinkProps props) :
-	Module(SINK, "STLRendererSink", props), mProps(props)
+STLRendererSink::STLRendererSink(STLRendererSinkProps props) : Module(SINK, "STLRendererSink", props)
 {
 	mDetail.reset(new Detail(props));
 }
@@ -122,6 +132,7 @@ bool STLRendererSink::process(frame_container& frames)
 	std::vector<ApraPoint3f> points;
 	Utils::deSerialize<std::vector<ApraPoint3f>>(points, frame->data(), frame->size());
 	mDetail->renderMesh(points);
+	
 	return true;
 }
 
@@ -168,4 +179,24 @@ bool STLRendererSink::shouldTriggerSOS()
 void STLRendererSink::addInputPin(framemetadata_sp& metadata, string& pinId)
 {
 	Module::addInputPin(metadata, pinId);
+}
+
+
+void STLRendererSink::setProps(STLRendererSinkProps &props)
+{
+	Module::addPropsToQueue(props);
+}
+
+STLRendererSinkProps STLRendererSink::getProps()
+{
+	fillProps(mDetail->props);
+	return mDetail->props;
+}
+
+bool STLRendererSink::handlePropsChange(frame_sp &frame)
+{
+	STLRendererSinkProps props(mDetail->props.meshDiffuseColor,mDetail->props.meshSpecularCoefficient, mDetail->props.meshSpecularPower, mDetail->props.cameraPosition, mDetail->props.cameraFocalPoint, mDetail->props.winName,mDetail->props.winWidth,mDetail->props.winHeight, mDetail->props.bkgColor);
+	bool ret = Module::handlePropsChange(frame, props);
+	mDetail->setProps(props);
+	return ret;
 }
