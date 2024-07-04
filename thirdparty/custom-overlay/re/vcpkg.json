@@ -1,0 +1,7 @@
+{
+    "name": "re",
+    "version": "3.2.0",
+    "description": "libre is a Generic library for real-time communications with async IO support.",
+    "homepage": "https://github.com/baresip/re"
+}
+  

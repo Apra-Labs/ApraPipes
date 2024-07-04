@@ -3,19 +3,16 @@ name: Doxygen Action
 on:
   push:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
     steps:
     - uses: actions/checkout@v2
 
     - name: Update Footer with Commit Hash
       run: |
         COMMIT_HASH=$(git rev-parse --short HEAD)
-        sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" footer.html 
+        sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" data/gh-pages-assets/pages/footer.html
         
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@v1.1.0

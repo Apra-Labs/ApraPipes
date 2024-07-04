@@ -152,6 +152,35 @@ bool OrderedCacheOfFiles::probe(boost::filesystem::path potentialMp4File, std::s
 	return false;
 }
 
+bool OrderedCacheOfFiles::getPreviousAndNextFile(std::string videoPath, std::string& previousFile, std::string& nextFile)
+{
+	auto videoIter = videoCache.find(videoPath);
+	videoIter++;
+	if (videoIter == videoCache.end())
+	{
+		nextFile = "";
+		videoIter--;
+		videoIter--;
+		if(videoIter == videoCache.end())
+		{
+			previousFile = "";
+			return false;
+		}
+		previousFile = videoIter->path;
+		return true;
+	}
+	nextFile = videoIter->path;
+	videoIter--;
+	videoIter--;
+	if (videoIter == videoCache.end())
+	{
+		previousFile = "";
+		return false;
+	}
+	previousFile = videoIter->path;
+	return true;
+}
+
 /*
 Important Note:
 **UNRELIABLE METHOD - Use ONLY if you know what you are doing.**
@@ -561,8 +590,6 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(co
 {
 	std::vector<boost::filesystem::path> dateDir;
 	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
-	LOG_INFO << "parsing files from dir <" << *dateDirIter << ">";
-
 	for (dateDirIter; dateDirIter != dateDirEndIter; ++dateDirIter)
 	{
 		if (fs::is_directory(dateDirIter->path()))
@@ -691,7 +718,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 				}
 
 				// cache insertion
-				LOG_INFO << "cache insert: " << mp4File << "\n";
+				// LOG_INFO << "cache insert: " << mp4File << "\n";
 				Video vid(mp4File.string(), fileTS);
 
 				/* ----- first relevant file found ----- */

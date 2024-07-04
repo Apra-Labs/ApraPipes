@@ -293,31 +293,37 @@ bool NvTransform::init() {
 
 bool NvTransform::term() { return Module::term(); }
 
-bool NvTransform::process(frame_container &frames) {
-  frame_sp frame = frames.cbegin()->second;
-  frame_sp outFrame =
-      makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
-  if (!outFrame.get()) {
-    LOG_ERROR << "FAILED TO GET BUFFER";
-    return false;
-  }
-
-  DMAFDWrapper *dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
-  dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
-
-  mDetail->compute(frame, dmaFdWrapper->tempFD);
-
-  frames.insert(make_pair(mDetail->outputPinId, outFrame));
-  send(frames);
-
-  return true;
-}
-
 bool NvTransform::processSOS(frame_sp &frame) {
   framemetadata_sp metadata = frame->getMetadata();
   setMetadata(metadata);
   return true;
 }
+
+bool NvTransform::process(frame_container &frames)
+{
+	auto frame = frames.cbegin()->second;
+	try
+	{
+		auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
+
+		if (!outFrame.get())
+		{
+			LOG_ERROR << "FAILED TO GET BUFFER";
+			return false;
+		}
+
+		auto dmaFdWrapper = static_cast<DMAFDWrapper *>(outFrame->data());
+		dmaFdWrapper->tempFD = dmaFdWrapper->getFd();
+
+		mDetail->compute(frame, dmaFdWrapper->tempFD);
+
+		frames.insert(make_pair(mDetail->outputPinId, outFrame));
+		send(frames);
+	}
+	catch(std::exception & e)
+	{
+		LOG_ERROR<<"NvTransform seg fault";
+	}
 
 void NvTransform::setMetadata(framemetadata_sp &metadata) {
   FrameMetadata::FrameType frameType = metadata->getFrameType();
@@ -361,11 +367,6 @@ void NvTransform::setMetadata(framemetadata_sp &metadata) {
                             mDetail->props.imageType);
 }
 
-bool NvTransform::processEOS(string &pinId) {
-  mDetail->outputMetadata.reset();
-  return true;
-}
-
 void NvTransform::setProps(NvTransformProps &props) {
   Module::addPropsToQueue(props);
 }
@@ -380,4 +381,11 @@ bool NvTransform::handlePropsChange(frame_sp &frame) {
   bool ret = Module::handlePropsChange(frame, props);
   mDetail->setProps(props);
   return ret;
+}
+  
+bool NvTransform::processEOS(string &pinId)
+{
+	//THE FOLLOWING LINE IS COMMENTED FOR SPECIFIC USE IN NVR - MP4READER PASSING EOS WAS COMING HERE AND CAUSING EOS WHICH IS NOT REQUIRED FOR NVR
+	// mDetail->outputMetadata.reset();
+	return true;
 }
