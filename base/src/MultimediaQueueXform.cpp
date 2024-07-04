@@ -2,12 +2,15 @@
 #include <boost/foreach.hpp>
 #include <stdafx.h>
 #include <map>
+#include <thread>
 #include "Frame.h"
 #include "MultimediaQueueXform.h"
 #include "Logger.h"
 #include "H264Utils.h"
 #include "EncodedImageMetadata.h"
 #include "H264Metadata.h"
+#include "FrameContainerQueue.h"
+#include "AbsControlModule.h"
 
 class FramesQueue
 {
@@ -46,7 +49,6 @@ public:
 				largestTimeStamp = it->second->timestamp;
 			}
 		}
-
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
 		{
 			if ((largestTimeStamp - mQueue.begin()->first > lowerWaterMark) && (pushToNextModule))
@@ -125,7 +127,7 @@ public:
 			auto ret = H264Utils::parseNalu(mFrameBuffer);
 			tie(typeFound, spsBuff, ppsBuff) = ret;
 
-			BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
+			//BOOST_LOG_TRIVIAL(info) << "I-FRAME" << typeFound;
 
 			if (spsBuff.size() != 0)
 			{
@@ -540,7 +542,7 @@ void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, string& pinId
 {
 	Module::addInputPin(metadata, pinId);
 	mOutputPinId = pinId;
-	addOutputPin(metadata, pinId);
+	//addOutputPin(metadata, pinId);
 }
 
 bool MultimediaQueueXform::init()
@@ -555,8 +557,7 @@ bool MultimediaQueueXform::init()
 	{
 		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
-
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState->queueObject.reset(new IndependentFramesQueue(mProps.lowerWaterMark, mProps.upperWaterMark, mProps.isMapDelayInTime));
 		}
@@ -567,7 +568,8 @@ bool MultimediaQueueXform::init()
 		}
 	}
 	mState.reset(new Idle(mState->queueObject));
-
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / mProps.mmqFps);
+	initialFps = mProps.mmqFps;
 	return true;
 }
 
@@ -597,6 +599,7 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 	{
 		BOOST_LOG_TRIVIAL(info) << "IDLE STATE : MAYBE THE FRAMES HAVE PASSED THE QUEUE";
 		mState.reset(new Idle(mState->queueObject));
+		reset = false;
 	}
 
 	else if (tStart > tNew)
@@ -606,7 +609,7 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 
 	else
 	{
-		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE))
+		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
 			mState.reset(new ExportJpeg(mState->queueObject,
 				[&](frame_container& frames, bool forceBlockingPush = false)
@@ -624,28 +627,115 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 			{return getInputPinIdByType(type); }, mOutputPinId));
 		}
 	}
+}
 
+void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
+{
+	//loop over frame container
+	if (frameQueue->size())
+	{
+		frame_container framesContainer;
+		auto frames = frameQueue->pop();
+		for (auto itr = frames.begin(); itr != frames.end(); itr++)
+		{
+			if (itr->second->isCommand())
+			{
+				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
+				handleCommand(cmdType, itr->second);
+			}
+			else if(itr->second->isPropsChange())
+			{
+				handlePropsChange(itr->second);
+			}
+			else
+			{
+				framesContainer.insert(make_pair(itr->first, itr->second));
+			}
+		}
+		if (!framesContainer.empty())
+		{
+			mState->queueObject->enqueue(framesContainer, pushToNextModule);
+		}
+	}
+}
+
+boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
+{
+	return Module::getQue();
 }
 
 bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	if (type == Command::CommandType::MultimediaQueueXform)
+	if(type ==  Command::CommandType::DecoderPlaybackSpeed)
 	{
-		MultimediaQueueXformCommand cmd;
+		DecoderPlaybackSpeed dCmd;
+		getCommand(dCmd, frame);
+		setPlaybackSpeed(dCmd.playbackSpeed);
+		//setMmqFps(dCmd.playbackFps);
+	}
+	int fps = mProps.mmqFps * speed;
+	LOG_ERROR << "mmq fps is = " << fps;
+	myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
+	initDone = false;
+	if (type == Command::CommandType::ExportMMQ)
+	{
+        ExportMMQ cmd;
 		getCommand(cmd, frame);
 		setState(cmd.startTime, cmd.endTime);
 		queryStartTime = cmd.startTime;
 		startTimeSaved = cmd.startTime;
 		queryEndTime = cmd.endTime;
 		endTimeSaved = cmd.endTime;
-
+		direction = cmd.direction;
+		LOG_INFO << "start time = " << cmd.startTime;
+		LOG_INFO << "end time = " <<  cmd.endTime;
+		LOG_INFO << "direction = " << cmd.direction;
+		LOG_INFO << "state = " << mState->Type;
+		LOG_INFO << "mmq begin ts = " << mState->queueObject->mQueue.begin()->first;
+		auto itttr =   mState->queueObject->mQueue.end();
+		itttr--;
+		LOG_INFO << "mmq end ts = " << itttr->first;
 		bool reset = false;
 		pushToNextModule = true;
 
 		if (mState->Type == State::EXPORT)
 		{
+			LOG_INFO << "inside state export block";
 			mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
-			for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
+			State::mQueueMap::iterator it;
+			if (direction)
+			{
+				it = mState->queueObject->mQueue.begin();
+			}
+			else
+			{
+				it = mState->queueObject->mQueue.end();
+				if (!mState->queueObject->mQueue.empty()){
+					it--;
+					// it--;
+				}
+				else{
+					LOG_INFO<<"Queue is empty";
+				}
+			}
+			State::mQueueMap::iterator it_last;
+			it_last = mState->queueObject->mQueue.end();
+
+			State::mQueueMap::iterator it_first;
+			it_first = mState->queueObject->mQueue.begin();
+			if (!mState->queueObject->mQueue.empty()){
+				it_last--;
+				if (direction && (queryStartTime >= it->first) && ( queryStartTime <= it_last->first))
+				{
+					exportFrames = true;
+				}
+				else if (!direction && (queryEndTime <= it->first) && ( queryEndTime >= it_first->first))
+				{
+					exportFrames = true;
+				}
+			}
+
+			while (!mState->queueObject->mQueue.empty() && exportFrames == true)//&& it != mState->queueObject->mQueue.end()
 			{
 				if (((it->first) >= queryStartTime) && (((it->first) <= queryEndTime)))
 				{
@@ -654,21 +744,114 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						pushToNextModule = false;
 						queryStartTime = it->first;
 						queryStartTime--;
-						BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for queue to be free";
+						LOG_INFO << "The Queue of Next Module is full, waiting for queue to be free";
 						return true;
 					}
 					else
 					{
-						mState->exportSend(it->second);
+						if (!initDone)
+						{
+							myNextWait = myTargetFrameLen;
+							frame_begin = sys_clock::now();
+							initDone = true;
+						}
+						frame_container outFrames;
+						auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+						outFrames.insert(make_pair(outputId, it->second.begin()->second));
+						if (!framesToSkip)
+						{
+							mState->exportSend(outFrames);
+						}
+						if(direction && !mState->queueObject->mQueue.empty())
+						{
+							auto lastItr = mState->queueObject->mQueue.end();
+							lastItr--;
+							if(lastItr->second.begin()->second->timestamp == it->second.begin()->second->timestamp)
+							{
+								if(controlModule != nullptr)
+								{
+									bool goLive = true;
+									bool priority = true;
+									boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+									ctl->handleGoLive(goLive, priority);
+								}
+								exportFrames = false;
+								break;
+							}
+						}
+						if (speed != 1 && speed != 0.5)
+						{
+							if (!framesToSkip)
+							{
+								framesToSkip = speed;
+							}
+							framesToSkip--;
+						}
+						latestFrameExportedFromHandleCmd = it->first;
+						std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+						if (myNextWait > frame_len)
+						{
+							std::this_thread::sleep_for(myNextWait - frame_len);
+						}
+						myNextWait += myTargetFrameLen;
+					}
+					if (!((!direction && it == mState->queueObject->mQueue.begin()) || (direction && it == mState->queueObject->mQueue.end())))
+					{
+						LOG_INFO << "enque frames";
+						auto moduleQueue = getQue();
+						extractFramesAndEnqueue(moduleQueue);
+						it = mState->queueObject->mQueue.find(latestFrameExportedFromHandleCmd);
+					}
+				}
+				if (direction)
+				{
+					if (mState->queueObject->mQueue.empty())
+					{
+						break;
+					}
+					if(it == mState->queueObject->mQueue.end())
+					{
+						break;
+					}
+					else
+					{
+						auto lastItr = mState->queueObject->mQueue.end();
+						lastItr--;
+						queryEndTime = lastItr->first;
+						it++;
+					}
+				}
+				else
+				{
+					if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
+					{
+						if(it-- == mState->queueObject->mQueue.begin())
+						{
+							break;
+						}
+					}
+					if (it == mState->queueObject->mQueue.begin())// || it == mState->queueObject->mQueue.end()
+					{
+						if (mState->Type != State::IDLE)
+						{
+							if(controlModule != nullptr)
+							{
+								// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+								boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
+							}
+							exportFrames = false;
+						}
+						mState->Type = State::IDLE;
+						break;
 					}
 				}
 			}
 		}
-
 		if (mState->Type == mState->EXPORT)
 		{
 			uint64_t tOld = 0, tNew = 0;
-			getQueueBoundaryTS(tOld, tNew);
+			tNew = latestFrameExportedFromHandleCmd;
 
 			if (endTimeSaved > tNew)
 			{
@@ -685,7 +868,9 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 			setState(queryStartTime, queryEndTime);
 		}
 		return true;
+		LOG_INFO << "export frames done";
 	}
+	LOG_INFO <<"RELAY COMMAND WAS HERE";
 	return Module::handleCommand(type, frame);
 }
 
@@ -693,7 +878,7 @@ bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
 {
 	if (mState->Type != mState->EXPORT)
 	{
-		MultimediaQueueXformCommand cmd;
+		ExportMMQ cmd;
 		cmd.startTime = ts;
 		cmd.endTime = te;
 		return queueCommand(cmd);
@@ -704,6 +889,7 @@ bool MultimediaQueueXform::allowFrames(uint64_t& ts, uint64_t& te)
 bool MultimediaQueueXform::process(frame_container& frames)
 {
 	mState->queueObject->enqueue(frames, pushToNextModule);
+	LOG_INFO << frames.begin()->second->timestamp;
 	if (mState->Type == State::EXPORT)
 	{
 		uint64_t tOld, tNew = 0;
@@ -720,7 +906,36 @@ bool MultimediaQueueXform::process(frame_container& frames)
 	{
 		mState->isProcessCall = true;
 		mState->handleExport(queryStartTime, queryEndTime, reset, mState->queueObject->mQueue, endTimeSaved);
-		for (auto it = mState->queueObject->mQueue.begin(); it != mState->queueObject->mQueue.end(); it++)
+		State::mQueueMap::iterator it;
+		if (direction)
+		{
+			it = mState->queueObject->mQueue.begin();
+		}
+		else
+		{
+			it = mState->queueObject->mQueue.end();
+			if (!mState->queueObject->mQueue.empty()){
+				it--;
+			}
+			else
+			{
+				LOG_ERROR << "Queue is empty";
+			}
+		}
+		State::mQueueMap::iterator it_last;
+		it_last = mState->queueObject->mQueue.end();
+		if (!mState->queueObject->mQueue.empty()){
+			it_last--;
+			if (direction && (queryStartTime >= it->first) && ( queryStartTime <= it_last->first))
+			{
+				exportFrames = true;
+			}
+			else if (!direction && (queryEndTime >= it->first) && ( queryEndTime <= it_last->first))
+			{
+				exportFrames = true;
+			}
+		}
+		while (!mState->queueObject->mQueue.empty() && exportFrames == true) //&& it != mState->queueObject->mQueue.end()
 		{
 			if (((it->first) >= (queryStartTime + 1)) && (((it->first) <= (endTimeSaved))))
 			{
@@ -729,15 +944,92 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					pushToNextModule = false;
 					queryStartTime = it->first;
 					queryStartTime--;
-					BOOST_LOG_TRIVIAL(info) << "The Queue of Next Module is full, waiting for some space to be free";
+					LOG_INFO << "The Queue of Next Module is full, waiting for some space to be free";
 					return true;
 				}
 				else
 				{
-					mState->exportSend(it->second);
+					if (!initDone)
+					{
+						myNextWait = myTargetFrameLen;
+						frame_begin = sys_clock::now();
+						initDone = true;
+					}
+
+					frame_container outFrames;
+					auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+
+					outFrames.insert(make_pair(outputId, it->second.begin()->second));
+					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
+					if (!framesToSkip)
+					{
+						// mState->exportSend(outFrames);
+					}
+					if (speed != 1 && speed != 0.5)
+					{
+						if (!framesToSkip)
+						{
+							framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps;
+						}
+						framesToSkip--;
+					}
+					latestFrameExportedFromProcess = it->first;
+					std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+					if (myNextWait > frame_len)
+					{
+						LOG_INFO << "is it sleeping in process";
+						std::this_thread::sleep_for(myNextWait - frame_len);
+					}
+					myNextWait += myTargetFrameLen;
+				}
+				if (!((!direction && it == mState->queueObject->mQueue.begin()) || (direction && it == mState->queueObject->mQueue.end())))
+				{
+					auto moduleQueue = getQue();
+					extractFramesAndEnqueue(moduleQueue);
+					it = mState->queueObject->mQueue.find(latestFrameExportedFromHandleCmd);
 				}
 			}
-
+			if (direction)
+			{
+				if (mState->queueObject->mQueue.empty())
+				{
+					break;
+				}
+				if (it == mState->queueObject->mQueue.end())
+				{
+					break;
+				}
+				else
+				{
+					it++;
+				}
+			}
+			else
+			{
+				if (it != mState->queueObject->mQueue.end() && it != mState->queueObject->mQueue.begin())
+				{
+					if (it-- == mState->queueObject->mQueue.begin())
+					{
+						break;
+					}
+				}
+				if (it == mState->queueObject->mQueue.begin())
+				{
+					if (mState->Type != State::IDLE)
+					{
+						if(controlModule != nullptr)
+						{
+							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+							boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+							ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
+						}
+						exportFrames = false;
+					}
+					mState->Type = State::IDLE;
+					LOG_INFO << "first frame of process = " << latestFrameExportedFromProcess;
+					break;
+				}
+			}
 		}
 	}
 
@@ -758,11 +1050,63 @@ bool MultimediaQueueXform::process(frame_container& frames)
 		queryEndTime = 0;
 		setState(queryStartTime, queryEndTime);
 	}
+	// This part is done only when Control module is connected
+	if (controlModule != nullptr)
+	{
+		// Send commmand to NVRControl module
+		if (mState->queueObject->mQueue.size() != 0)
+		{
+			bool priority = false;
+			uint64_t firstTimeStamp;
+			auto front = mState->queueObject->mQueue.begin();
+			if (front != mState->queueObject->mQueue.end())
+			{
+				firstTimeStamp = front->first;
+			}
+			auto back = mState->queueObject->mQueue.crbegin();
+			uint64_t lastTimeStamp = back->first;
+			// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
+			boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+			ctl->handleSendMMQTSCmd(firstTimeStamp, lastTimeStamp, priority);
+		}
+		return true;
+	}
 	return true;
+}
+
+void MultimediaQueueXform::setMmqFps(int fps)
+{
+	mProps.mmqFps = fps;
+	mProps.mmqFps--;
+}
+
+void MultimediaQueueXform::setPlaybackSpeed(float playbackSpeed)
+{
+	framesToSkip = 0;
+	if(speed != playbackSpeed)
+	{
+		speed = playbackSpeed;
+		int fps = mProps.mmqFps * speed;
+		myTargetFrameLen = std::chrono::nanoseconds(1000000000 / fps);
+		initDone = false;
+		
+		if(speed != 1 && speed != 0.5)
+		{
+			framesToSkip = (mProps.mmqFps * speed) / mProps.mmqFps - 1;
+		}
+		else
+		{
+			framesToSkip = 0;
+		}
+	}
+	LOG_INFO << "frames to skip = " << framesToSkip << "speed is  = " << speed;
 }
 
 bool MultimediaQueueXform::handlePropsChange(frame_sp& frame)
 {
+	MultimediaQueueXformProps props(10, 5,2, false);
+	auto ret = Module::handlePropsChange(frame, props);
+
 	if (mState->Type != State::EXPORT)
 	{
 		MultimediaQueueXformProps props(10, 5, false);
@@ -785,14 +1129,18 @@ MultimediaQueueXformProps MultimediaQueueXform::getProps()
 
 void  MultimediaQueueXform::setProps(MultimediaQueueXformProps _props)
 {
-	if (mState->Type != State::EXPORT)
-	{
+	//if (mState->Type != State::EXPORT)
+	//{
 		mProps = _props;
-		Module::addPropsToQueue(mProps);
-	}
+		Module::addPropsToQueue(mProps, true);
+	//}
 
-	else
-	{
+	//else
+	//{
 		BOOST_LOG_TRIVIAL(info) << "Currently in export state, wait until export is completed";
-	}
+	//}
 }
+
+void MultimediaQueueXform::stopExportFrames(){
+	exportFrames = false;
+	}

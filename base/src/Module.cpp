@@ -561,6 +561,12 @@ bool Module::push(frame_container frameContainer)
 	return true;
 }
 
+bool Module::push_back(frame_container frameContainer)
+{
+	mQue->push_back(frameContainer);
+	return true;
+}
+
 bool Module::try_push(frame_container frameContainer)
 {
 	auto rc = mQue->try_push(frameContainer);
@@ -600,6 +606,7 @@ bool Module::isNextModuleQueFull()
 	{
 		if (it->second->mQue->isFull())
 		{
+			auto modID = it->second->myId;
 			ret = true;
 			break;
 		}
@@ -720,10 +727,12 @@ bool Module::send(frame_container &frames, bool forceBlockingPush)
 		// next module push
 		if (!forceBlockingPush)
 		{
+			//LOG_ERROR << "forceBlocking Push myID" << myId << "sending to <" << nextModuleId;
 			mQuePushStrategy->push(nextModuleId, requiredPins);
 		}
 		else
 		{
+			//LOG_ERROR << "normal push myID" << myId << "sending to <" << nextModuleId;
 			mModules[nextModuleId]->push(requiredPins);
 		}
 	}
@@ -1028,7 +1037,7 @@ bool Module::shouldTriggerSOS()
 	return false;
 }
 
-bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
+bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority)
 {
 	auto metadata = framemetadata_sp(new PausePlayMetadata());
 	auto frame = makeCommandFrame(ppCmd.getSerializeSize(), metadata);
@@ -1037,10 +1046,17 @@ bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd)
 	// add to que
 	frame_container frames;
 	frames.insert(make_pair("pause_play", frame));
-	if (!Module::try_push(frames))
+	if (!priority)
 	{
-		LOG_ERROR << "failed to push play command to the que";
-		return false;
+		if (!Module::try_push(frames))
+		{
+			LOG_ERROR << "failed to push play command to the que";
+			return false;
+		}
+	}
+	else
+	{
+		Module::push_back(frames);
 	}
 	return true;
 }
@@ -1073,7 +1089,7 @@ bool Module::queueStep()
 	return queueCommand(cmd);
 }
 
-bool Module::relay(boost::shared_ptr<Module> next, bool open)
+bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
 {
 	auto nextModuleId = next->getId();
 	if (mModules.find(nextModuleId) == mModules.end())
@@ -1083,7 +1099,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	}
 
 	auto cmd = RelayCommand(nextModuleId, open);
-	return queueCommand(cmd);
+	return queueCommand(cmd, priority);
 }
 
 void Module::flushQueRecursive()
@@ -1189,6 +1205,8 @@ bool Module::step()
 	else
 	{
 		mProfiler->startPipelineLap();
+		
+		//LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " << Module::getPipelineFps() << mProps->fps;
 		auto frames = mQue->pop();
 		preProcessNonSource(frames);
 
@@ -1198,9 +1216,16 @@ bool Module::step()
 			return true;
 		}
 
-		mProfiler->startProcessingLap();
-		ret = stepNonSource(frames);
-		mProfiler->endLap(mQue->size());
+		if(mPlay)
+        {
+            mProfiler->startProcessingLap();
+            ret = stepNonSource(frames);
+            mProfiler->endLap(mQue->size());
+        }
+        else
+        {
+            ret = true;
+        }
 	}
 
 	return ret;

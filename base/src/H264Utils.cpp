@@ -86,3 +86,29 @@ std::tuple<short, const_buffer, const_buffer> H264Utils::parseNalu(const const_b
 	typeFound = getNALUType(p1 + offset - 4);
 	return { typeFound, const_buffer(), const_buffer() };
 }
+
+H264Utils::H264_NAL_TYPE H264Utils::getNalTypeAfterSpsPps(void* frameData, size_t frameSize)
+{
+	char* p1 = reinterpret_cast<char*>(const_cast<void*>(frameData));
+	size_t offset = 0;
+	auto typeFound = getNALUType(p1);
+
+	if (typeFound == H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM)
+	{
+		if (getNALUnit(p1, frameSize, offset)) // where does it start
+		{
+			p1 = p1 + offset;
+			offset = 0;
+
+			if (getNALUnit(p1, frameSize, offset)) // where does it end
+			{
+				p1 = p1 + offset;
+				if (getNALUnit(p1, frameSize, offset))
+				{
+					typeFound = getNALUType(p1 + offset - 4); // always looks at 5th byte
+					return typeFound;
+				}
+			}
+		}
+	}
+}
