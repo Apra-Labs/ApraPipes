@@ -16,9 +16,9 @@ public:
 		: MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame),
 		motionVectorThreshold(_motionVectorThreshold) {}
 
-	size_t getSerializeSize() {
-		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) +
-			sizeof(motionVectorThreshold);
+	size_t getSerializeSize()
+	{
+		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold);
 	}
 	bool sendDecodedFrame = false;
 	int motionVectorThreshold;

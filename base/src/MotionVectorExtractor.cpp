@@ -1,20 +1,22 @@
-#include <boost/foreach.hpp>
 #include <cstdint>
-extern "C" {
+#include <boost/foreach.hpp>
+extern "C"
+{
+#include <libavutil/motion_vector.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
-#include <libavutil/motion_vector.h>
-#include <libswscale/swscale.h>
 #include <wels/codec_api.h>
+#include <libswscale/swscale.h>
 }
+#include "MotionVectorExtractor.h"
 #include "H264Metadata.h"
 #include "H264ParserUtils.h"
-#include "MotionVectorExtractor.h"
-#include "Overlay.h"
 #include "Utils.h"
+#include "Overlay.h"
 
-class MvExtractDetailAbs {
+class MvExtractDetailAbs
+{
 public:
 	MvExtractDetailAbs(
 		MotionVectorExtractorProps props,
@@ -47,7 +49,8 @@ public:
 	cv::Mat bgrImg;
 	bool motionFound = false;
 };
-class DetailFfmpeg : public MvExtractDetailAbs {
+class DetailFfmpeg : public MvExtractDetailAbs
+{
 public:
 	DetailFfmpeg(
 		MotionVectorExtractorProps props,
@@ -66,7 +69,8 @@ private:
 	AVFrame* avFrame = NULL;
 	AVCodecContext* decoderContext = NULL;
 };
-class DetailOpenH264 : public MvExtractDetailAbs {
+class DetailOpenH264 : public MvExtractDetailAbs
+{
 public:
 	DetailOpenH264(
 		MotionVectorExtractorProps props,
@@ -310,6 +314,10 @@ void DetailOpenH264::getMotionVectors(frame_container& frames,
 		for (auto& circleOverlay : circleOverlays) {
 			compositeOverlay.add(&circleOverlay);
 		}
+	if (mMotionVectorSize != mWidth * mHeight * 8 && sendOverlayFrame == true)
+	{
+		std::vector<CircleOverlay> circleOverlays;
+		CompositeOverlay compositeOverlay;
 
 		if (circleOverlays.size()) {
 			DrawingOverlay drawingOverlay;

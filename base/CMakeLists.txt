@@ -195,6 +195,9 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	.././samples/relay-sample/relay_sample.cpp
+	.././samples/relay-sample/relay_sample.cpp
+	.././samples/timelapse-sample/timelapse_summary.h
 )
 
 SET(CORE_FILES_H
@@ -257,6 +260,9 @@ SET(CORE_FILES_H
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
+	.././samples/relay-sample/relay_sample.h
+	.././samples/relay-sample/relay_sample.h
+	.././samples/timelapse-sample/timelapse_summary.cpp
 )
 
 IF(ENABLE_WINDOWS)
@@ -515,6 +521,9 @@ target_include_directories ( aprapipes PRIVATE
 	${BARESIP_INC_DIR}
 	${LIBRE_INC_DIR}
 	${NVCODEC_INCLUDE_DIR}
+./../samples/relay-sample
+./../samples/relay-sample
+./../samples/timelapse-sample
 )
 
 # aprapipes Unit Tests
@@ -628,9 +637,13 @@ SET(SAMPLE_UT_FILES
 	test/test_utils.cpp
 	test/test_utils.h
 	../samples/face_detection_cpu/test_face_detection_cpu.cpp
+	../samples/relay-sample/relay_sample_test.cpp
+	.././samples/timelapse-sample/timelapse_summary_test.cpp
 )
 
 SET(SAMPLE_CORE_FILES
+	../samples/relay-sample/relay_sample.cpp
+	../samples/relay-sample/relay_sample.h	
 	../samples/face_detection_cpu/face_detection_cpu.h
 	../samples/face_detection_cpu/face_detection_cpu.cpp
 	test/test_utils.h	
@@ -640,6 +653,8 @@ SET(SAMPLE_CORE_FILES
 )
 
 SET(SAMPLE_CORE_FILES
+	../samples/relay-sample/relay_sample.cpp
+	../samples/relay-sample/relay_sample.h
 	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
 	../samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
 	../samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
@@ -666,6 +681,8 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
+add_executable(aprapipessampleut ${SAMPLE_SOURCE})
+
 add_executable(aprapipessampleut ${SAMPLE_SOURCE})
 
 target_include_directories ( aprapipessampleut PRIVATE 
@@ -784,6 +801,33 @@ target_link_libraries(aprapipesut
   whisper::whisper
   )
 
+  target_include_directories ( aprapipessampleut PRIVATE 
+  ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+  ${FFMPEG_INCLUDE_DIRS} 
+  ${OpenCV_INCLUDE_DIRS} 
+  ${Boost_INCLUDE_DIRS}
+  ${LIBMP4_INC_DIR}
+  ${BARESIP_INC_DIR}
+  ${LIBRE_INC_DIR}
+  ${NVCODEC_INCLUDE_DIR}
+  test
+  )
+
+  target_link_libraries(aprapipessampleut      
+  aprapipes  
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  )
+
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
@@ -792,6 +836,7 @@ IF(ENABLE_WINDOWS)
 	ENDIF(GHA)
 
 ENDIF(ENABLE_WINDOWS)
+
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)
 

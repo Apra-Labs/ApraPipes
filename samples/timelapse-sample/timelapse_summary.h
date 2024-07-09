@@ -1,16 +1,10 @@
 
 #include <PipeLine.h>
-#include <CudaMemCopy.h>
-#include "CudaStreamSynchronize.h"
-#include <Mp4ReaderSource.h>
-#include <MotionVectorExtractor.h>
-#include <ColorConversionXForm.h>
 
 class TimelapsePipeline {
 public:
   TimelapsePipeline();
-  bool setupPipeline(const std::string &videoPath,
-                     const std::string &outFolderPath);
+  bool setupPipeline();
   bool startPipeline();
   bool stopPipeline();
 
