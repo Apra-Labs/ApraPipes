@@ -125,7 +125,7 @@ bool QRReader::process(frame_container &frames)
 
 	const auto &result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, mDetail->mImageFormat}, mDetail->mHints);
 	
-	auto text = ZXing::TextUtfEncoding::ToUtf8(result.text());
+	auto text = result.text();
 	
 	auto outFrame = makeFrame(text.length(), mDetail->mOutputPinId);
 	memcpy(outFrame->data(), text.c_str(), outFrame->size());
