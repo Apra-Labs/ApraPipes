@@ -626,6 +626,13 @@ SET(UT_FILES
 SET(SAMPLE_UT_FILES
 	test/utmain.cpp
 	test/test_utils.cpp
+	test/test_utils.h
+	../samples/face_detection_cpu/test_face_detection_cpu.cpp
+)
+
+SET(SAMPLE_CORE_FILES
+	../samples/face_detection_cpu/face_detection_cpu.h
+	../samples/face_detection_cpu/face_detection_cpu.cpp
 	test/test_utils.h	
 	../samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
 	../samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
@@ -645,6 +652,7 @@ SET(SAMPLE_SOURCE
 	${SAMPLE_CORE_FILES}
 	${SAMPLE_UT_FILES}
 )
+
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
 	test/gtkglrenderer_tests.cpp
@@ -659,6 +667,17 @@ ENDIF(ENABLE_LINUX)
 
 add_executable(aprapipesut ${UT_FILES})
 add_executable(aprapipessampleut ${SAMPLE_SOURCE})
+
+target_include_directories ( aprapipessampleut PRIVATE 
+	${JETSON_MULTIMEDIA_LIB_INCLUDE}
+	${FFMPEG_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${LIBMP4_INC_DIR}
+	${BARESIP_INC_DIR}
+	${LIBRE_INC_DIR}
+	${NVCODEC_INCLUDE_DIR}
+	test
 
 IF(ENABLE_ARM64)
 	target_include_directories ( aprapipesut PRIVATE ${JETSON_MULTIMEDIA_LIB_INCLUDE} ${FFMPEG_ROOT} ${JPEG_INCLUDE_DIR})
@@ -695,13 +714,36 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)
+
 target_link_libraries(aprapipessampleut   
   aprapipes  
+  ${JPEG_LIBRARIES}
+
+target_link_libraries(aprapipessampleut   
+  aprapipes
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  liblzma::liblzma
+  bigint::bigint
+  sfml-audio
+  whisper::whisper
+  )
+
+  target_link_libraries(aprapipesut
   ${NVCUDAToolkit_LIBS}
   ${NVCODEC_LIB}
   )
@@ -718,7 +760,7 @@ IF(ENABLE_LINUX)
 	)	
 ENDIF(ENABLE_LINUX)
 
-target_link_libraries(aprapipesut   
+target_link_libraries(aprapipesut
   aprapipes  
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
@@ -748,6 +790,7 @@ IF(ENABLE_WINDOWS)
 	IF(GHA)
 		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
 	ENDIF(GHA)
+
 ENDIF(ENABLE_WINDOWS)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)
