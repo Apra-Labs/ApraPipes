@@ -2,7 +2,6 @@
 #include "ImageViewerModule.h"
 #include "face_detection_cpu.h"
 #include "OverlayModule.h"
-#include "FacialLandmarksCV.h"
 #include "ImageDecoderCV.h"
 #include "FaceDetectorXform.h"
 #include "ColorConversionXForm.h"
@@ -10,11 +9,11 @@
 
 FaceDetectionCPU::FaceDetectionCPU() : faceDetectionCPUSamplePipeline("faceDetectionCPUSamplePipeline") {}
 
-bool FaceDetectionCPU::setupPipeline() {
-    WebCamSourceProps webCamSourceprops(0, 640, 480);
+bool FaceDetectionCPU::setupPipeline(const int &cameraId, const double &scaleFactor, const double &threshold, const std::string &faceDetectionConfiguration, const std::string &faceDetectionWeight) {
+    WebCamSourceProps webCamSourceprops(cameraId);
     mSource = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-    FaceDetectorXformProps faceDetectorProps(1.0, 0.8, "./data/assets/deploy.prototxt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel");
+    FaceDetectorXformProps faceDetectorProps(scaleFactor, threshold, faceDetectionConfiguration, faceDetectionWeight);
     mFaceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
     mSource->setNext(mFaceDetector);
 

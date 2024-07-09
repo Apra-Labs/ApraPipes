@@ -4,7 +4,7 @@
 
 void main() {
   FaceDetectionCPU faceDetectionCPUSamplePipeline;
-  if (!faceDetectionCPUSamplePipeline.setupPipeline()) {
+  if (!faceDetectionCPUSamplePipeline.setupPipeline(0, 1.0, 0.7, "../../data/assets/deploy.prototxt", "../../data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel")) {
     std::cerr << "Failed to setup pipeline." << std::endl;
   }
 

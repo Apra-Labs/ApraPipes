@@ -10,7 +10,7 @@
 class FaceDetectionCPU {
 public:
     FaceDetectionCPU(); 
-    bool setupPipeline();
+    bool setupPipeline(const int &cameraId, const double &scaleFactor, const double &threshold, const std::string &faceDetectionConfiguration, const std::string &faceDetectionWeight);
     bool startPipeline();
     bool stopPipeline();
 private:
