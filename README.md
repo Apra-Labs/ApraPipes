@@ -42,7 +42,7 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 
   ### Cuda
   * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
-  * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)  or  [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64).
+  * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)  or  [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows).
 
   ### Cudnn
   * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract files where cuda is installed. Note: Please be aware that this process requires some effort. Here are the necessary steps:
@@ -118,7 +118,7 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
   * Ubuntu 18.04/20.04:   
     18.04 - [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork)  
-    20.04 - [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
+    20.04 - [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
 
   ### Cudnn  
   * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102)

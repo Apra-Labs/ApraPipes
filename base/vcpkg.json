@@ -2,42 +2,46 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "eac79fc7bda260819c646d10c97dec825305aecd",
+  "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
+  "overrides": [
+    {
+      "name": "ffmpeg",
+      "version": "4.4.3"
+    },
+    {
+      "name": "libarchive",
+      "version": "3.5.2"
+    }
+  ],
   "dependencies": [
     {
       "name": "whisper",
       "default-features": false,
       "features": [
-          "cuda"
+        "cuda"
       ]
     },
     {
       "name": "opencv4",
       "default-features": false,
       "features": [
-          "contrib",
-          "cuda",
-          "cudnn",
-          "dnn",
-          "jpeg",
-          "nonfree",
-          "png",
-          "tiff",
-          "webp"
+        "contrib",
+        "cuda",
+        "cudnn",
+        "dnn",
+        "jpeg",
+        "nonfree",
+        "png",
+        "tiff",
+        "webp"
       ]
-  },
-  {
-    "name":  "opencv4",
-    "default-features":  false,
-    "features":  [
-                     "gtk"
-                 ],
-    "platform": "(linux \u0026 x64)",
-    "$reason": "skip linux:arm64 and windows"
-  },
-    "libjpeg-turbo",
-    "openh264",
+    },
+    "freeglut",
     "ffmpeg",
+    "openh264-apra",
+    "glfw3",
+    "glew",
+    "libjpeg-turbo",
     "bigint",
     "boost-math",
     "boost-system",
@@ -54,38 +58,43 @@
     "bzip2",
     "zlib",
     "sfml",
+    "brotli",
+    {
+      "name": "gtk3",
+      "platform": "!windows"
+    },
     {
       "name": "glib",
       "default-features": false,
       "features": [
         "libmount"
       ],
-        "platform": "(linux \u0026 x64)",
-        "$reason": "skip linux:arm64 and windows"
-      },
-      {
-        "name": "glib",
-        "default-features": true,
-        "platform": "windows"
-      },
-      {
-        "name": "hiredis",
-        "platform": "!arm64"
-      },
-      {
-        "name": "redis-plus-plus",
-        "platform": "!arm64"
-      },
-      {
-        "name": "re",
-        "platform": "!windows"
-      },
-      {
-        "name": "baresip",
-        "platform": "!windows"
-      },
-      {
-        "name": "libmp4"
-      }
-    ]
-  }
+      "platform": "(linux & x64)",
+      "$reason": "skip linux:arm64 and windows"
+    },
+    {
+      "name": "glib",
+      "default-features": true,
+      "platform": "windows"
+    },
+    {
+      "name": "hiredis",
+      "platform": "!arm64"
+    },
+    {
+      "name": "redis-plus-plus",
+      "platform": "!arm64"
+    },
+    {
+      "name": "re",
+      "platform": "!windows"
+    },
+    {
+      "name": "baresip",
+      "platform": "!windows"
+    },
+    {
+      "name": "libmp4"
+    }
+  ]
+}
