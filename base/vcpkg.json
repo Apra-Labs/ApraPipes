@@ -26,8 +26,6 @@
       "default-features": false,
       "features": [
         "contrib",
-        "cuda",
-        "cudnn",
         "dnn",
         "jpeg",
         "nonfree",
@@ -59,6 +57,8 @@
     "zlib",
     "sfml",
     "brotli",
+	"hiredis",
+	"redis-plus-plus",
     {
       "name": "gtk3",
       "platform": "!windows"
@@ -76,14 +76,6 @@
       "name": "glib",
       "default-features": true,
       "platform": "windows"
-    },
-    {
-      "name": "hiredis",
-      "platform": "!arm64"
-    },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
     },
     {
       "name": "re",
