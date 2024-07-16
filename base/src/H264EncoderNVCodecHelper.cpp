@@ -575,6 +575,24 @@ private:
 		 }
 	}
 
+	/**
+	 * @brief Checks if there are free output bitstreams available and allocates more if needed.
+	 * 
+	 * This function checks the availability of free output bitstreams. If there are no free output bitstreams and the number
+	 * of busy streams is below a predefined threshold, it allocates additional output bitstreams to the encoder buffer.
+	 * 
+	 * @details 
+	 * The function first checks the number of busy output bitstreams. If there are no free output bitstreams and the number
+	 * of busy streams is below `m_nBufferThres`, it calculates the buffer length to be allocated and doubles the output buffers
+	 * by calling `doubleOutputBuffers`. It then logs the allocation and increments the count of free output bitstreams.
+	 * If there are free output bitstreams, it logs a message indicating the current state.
+	 * 
+	 * @return true if there are free output bitstreams available, false otherwise.
+	 * 
+	 * @note This function modifies the state of `m_nvcodecResources->m_nFreeOutputBitstreams`.
+	 * @warning Ensure thread safety when calling this function in a multi-threaded environment.
+	 */
+
 	bool is_not_empty() const
 	{
 		uint32_t busyStreams = m_nvcodecResources->m_nBusyOutputBitstreams;
@@ -593,11 +611,33 @@ private:
 		return m_nvcodecResources->m_nFreeOutputBitstreams > 0;
 	}
 
+	/**
+	 * @brief Checks if there are any busy output bitstreams or if the encoder is not running.
+	 * 
+	 * This function returns true if there are any busy output bitstreams or if the encoder is not running.
+	 * It helps determine if there are any output bitstreams currently being processed or if the encoding process has stopped.
+	 * 
+	 * @return true if there are busy output bitstreams or the encoder is not running, false otherwise.
+	 * 
+	 * @note This function does not modify any state.
+	 */
+
 	bool is_output_available() const
 	{
 		return m_nvcodecResources->m_nBusyOutputBitstreams > 0 || !m_bRunning;
 	}
 
+	/**
+	 * @brief Allocates additional output bitstream buffers.
+	 * 
+	 * This function allocates a specified number of additional output bitstream buffers and adds them to the encoder buffer.
+	 * It uses the NVIDIA Video Codec SDK to create the bitstream buffers and updates the internal queue of output bitstreams.
+	 * 
+	 * @param bufferLength The number of additional output bitstream buffers to allocate.
+	 * 
+	 * @note This function is called internally by `is_not_empty` when more buffers are needed.
+	 * @warning Ensure that the NVIDIA Video Codec SDK is properly initialized before calling this function.
+	 */
 	void doubleOutputBuffers(uint32_t bufferLength) const
 	{
 		for (int i = 0; i < bufferLength; i++)
