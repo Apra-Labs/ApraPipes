@@ -17,7 +17,7 @@ ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${Boost_INCLUDE_DIRS}
   ${LIBMP4_INC_DIR}
 )
-target_include_directories ( runner_test PUBLIC
+target_include_directories (${TARGET} PUBLIC
   ${JETSON_MULTIMEDIA_LIB_INCLUDE}
   ${FFMPEG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -28,7 +28,7 @@ target_include_directories ( runner_test PUBLIC
   ${NVCODEC_INCLUDE_DIR}
 )
 target_link_libraries(
-  runner_test
+  ${TARGET}
   aprapipes
   ${LIBMP4_LIB}
   ${OPENH264_LIB}
