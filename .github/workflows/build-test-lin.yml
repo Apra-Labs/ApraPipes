@@ -73,6 +73,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
