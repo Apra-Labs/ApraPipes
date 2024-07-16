@@ -1,6 +1,6 @@
 #include <string>
 #include <boost/filesystem.hpp>
-
+#include <chrono>
 #include "Logger.h"
 #include "Mp4WriterSinkUtils.h"
 #include "FrameMetadata.h"
@@ -173,6 +173,26 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 	{
 		syncFlag = false;
 	}
+
+	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	{
+		if(currentFolder != baseFolder)
+		{
+			if(naluType == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE || naluType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			{
+				currentFolder = baseFolder;
+			}
+			else
+			{
+				return;
+			}
+		}
+		if(currentFolder == baseFolder)
+		{
+			customNamedFileDirCheck(baseFolder, chunkTimeInMinutes, relPath, nextFrameFileName);
+			return;
+		}
+	}	
 	// used cached values if the difference in ts is less than chunkTime
 	uint32_t chunkTimeInSecs = 60 * chunkTimeInMinutes;
 	if ((t - lastVideoTS) < chunkTimeInSecs && currentFolder == baseFolder)// && chunkTimeInMinutes != UINT32_MAX
