@@ -31,6 +31,8 @@ static inline bool operator!=(const GUID &guid1, const GUID &guid2) {
 }
 #endif
 
+#define DEFAULT_BUFFER_THRESHOLD 30
+
 #define NVENC_API_CALL( nvencAPI )                                                                                 \
     do                                                                                                             \
     {                                                                                                              \
@@ -473,7 +475,7 @@ private:
 	{
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 30;
+		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + DEFAULT_BUFFER_THRESHOLD;
 		 m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
 		 for (int i = 0; i < m_nEncoderBuffer; i++)
