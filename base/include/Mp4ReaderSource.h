@@ -124,6 +124,7 @@ public:
 	double getOpenVideoFPS();
 	double getOpenVideoDurationInSecs();
 	int32_t getOpenVideoFrameCount();
+	void setPlaybackSpeed(float _playbckSpeed);
 	void getResolution(uint32_t& width, uint32_t& height)
 	{
 		width = mWidth;

@@ -5,7 +5,8 @@ dependencies=( "curl" "zip" "unzip" "tar" "autoconf" "automake" "autopoint" "bui
               "flex" "git-core" "git-lfs" "libass-dev" "libfreetype6-dev" "libgnutls28-dev" "libmp3lame-dev" 
               "libsdl2-dev" "libssl-dev" "libtool" "libsoup-gnome2.4-dev" "libncurses5-dev" "libva-dev" "libvdpau-dev" 
               "libvorbis-dev" "libxcb1-dev" "libxdamage-dev" "libxcursor-dev" "libxinerama-dev" "libx11-dev" "libgles2-mesa-dev" "libxcb-shm0-dev" "libxcb-xfixes0-dev" 
-               "ninja-build" "pkg-config" "texinfo" "wget" "yasm" "zlib1g-dev" "nasm" "gperf" "bison" "python3" "python3-pip" "doxygen" "graphviz")
+              "ninja-build" "pkg-config" "texinfo" "wget" "yasm" "zlib1g-dev" "nasm" "gperf" "bison" "python3" "python3-pip" "doxygen" "graphviz" "libxi-dev"
+              "libgl1-mesa-dev" "libglu1-mesa-dev" "mesa-common-dev" "libxrandr-dev" "libxxf86vm-dev" "libxtst-dev" "libudev-dev" "libgl1-mesa-dev" "python3-jinja2")
 
 missing_dependencies=()
 

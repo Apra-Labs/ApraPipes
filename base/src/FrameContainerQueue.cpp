@@ -9,6 +9,11 @@ void FrameContainerQueue::push(frame_container item)
 	bounded_buffer<frame_container>::push(item);
 }
 
+void FrameContainerQueue::push_back(frame_container item)
+{
+	bounded_buffer<frame_container>::push_back(item);
+}
+
 void FrameContainerQueue::push_drop_oldest(frame_container item)
 {
 	bounded_buffer<frame_container>::push_drop_oldest(item);
@@ -27,6 +32,11 @@ bool FrameContainerQueue::try_push(frame_container item)
 frame_container FrameContainerQueue::try_pop()
 {
 	return bounded_buffer<frame_container>::try_pop();
+}
+
+frame_container FrameContainerQueue::peek()
+{
+	return bounded_buffer<frame_container>::peek();
 }
 
 bool FrameContainerQueue::isFull()
