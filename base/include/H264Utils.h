@@ -29,6 +29,8 @@ public:
 		static H264_NAL_TYPE getNALUType(const char *buffer);
 		static H264_NAL_TYPE getNALUType(Frame *frm);
 		static bool getNALUnit(const char *buffer, size_t length, size_t &offset);
+		static bool getNALUnitOffsetAndSizeBasedOnGivenType(char* buffer, size_t length, size_t& offset, int& naluSeparatorSize, H264_NAL_TYPE naluType , bool checkByType = true);
 		static std::tuple<short, const_buffer, const_buffer> parseNalu(const const_buffer input);
 		static H264_NAL_TYPE getNalTypeAfterSpsPps(void* frameData, size_t frameSize);
+		static bool extractSpsAndPpsFromExtradata(char* buffer, size_t length, char*& sps, int& spsSize, char*& pps, int& ppsSize);
 };

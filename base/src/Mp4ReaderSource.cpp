@@ -13,6 +13,11 @@
 #include "Module.h"
 #include "AbsControlModule.h"
 
+extern "C"
+{
+#include "libavutil/intreadwrite.h"
+#include <libavcodec/avcodec.h>
+}
 
 class Mp4ReaderDetailAbs
 {
@@ -756,8 +761,6 @@ public:
 		sentEOSSignal = false;
 		// reset waitFlag
 		waitFlag = false;
-		// prependSpsPps
-		mState.shouldPrependSpsPps = true;
 		isMp4SeekFrame = true;
 		setMetadata();
 		LOG_INFO << "seek successfull";
@@ -960,6 +963,7 @@ public:
 		if (mState.has_more_video)
 		{
 			uint8_t* sampleFrame = static_cast<uint8_t*>(imgFrame->data());
+			skipBytes(sampleFrame);
 			uint8_t* sampleMetadataFrame = static_cast<uint8_t*>(metadetaFrame->data());
 
 			uint32_t imageSize = mProps.biggerFrameSize;
@@ -1034,6 +1038,8 @@ public:
 		}
 		return;
 	}
+
+	virtual void skipBytes(uint8_t*& buffer) {}
 	Mp4ReaderSourceProps mProps;
 protected:
 
@@ -1083,13 +1089,12 @@ protected:
 		uint64_t startTimeStampFromFile;
 		std::string mVideoPath = "";
 		int32_t mFrameCounterIdx;
-		bool shouldPrependSpsPps = false;
-		bool foundFirstReverseIFrame = false;
 		bool end = false;
 		Mp4ReaderSourceProps props;
 		float speed;
 		bool direction;
 		bool sentCommandToControlModule = false;
+		struct mp4_video_decoder_config* vdc;
 	} mState;
 	uint64_t openVideoStartingTS = 0;
 	uint64_t reloadFileAfter = 0;
@@ -1153,17 +1158,24 @@ public:
 	~Mp4ReaderDetailH264() {}
 	void setMetadata();
 	void readSPSPPS();
+	void countOrCopy(uint8_t** out, uint64_t* out_size, const uint8_t* in, int inputSize, int ps, int copy);
+	int h264Mp4ToAnnexbFilter(const uint8_t* inputBuffer, size_t InputSize, frame_sp& outFrame, bool parseOnly, uint8_t& nalType);
 	bool produceFrames(frame_container& frames);
 	void prependSpsPps(uint8_t* iFrameBuffer);
 	void sendEndOfStream();
 	int mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame);
 	int getGop();
+	void skipBytes(uint8_t*& buffer);
 private:
 	uint8_t* sps = nullptr;
 	uint8_t* pps = nullptr;
 	size_t spsSize = 0;
 	size_t ppsSize = 0;
+	uint8_t* spsPpsData = nullptr;
+	size_t spsPpsSize;
 	bool seekedToEndTS = false;
+	int skipOffset = 512;
+	char naluSeprator[4] = { 00 ,00, 00 ,01 };
 };
 
 void Mp4ReaderDetailJpeg::setMetadata()
@@ -1256,6 +1268,11 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 	return true;
 }
 
+void Mp4ReaderDetailH264::skipBytes(uint8_t*& buffer)
+{
+	buffer += skipOffset;
+}
+
 void Mp4ReaderDetailH264::setMetadata()
 {
 	mH264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
@@ -1278,16 +1295,40 @@ void Mp4ReaderDetailH264::setMetadata()
 
 void Mp4ReaderDetailH264::readSPSPPS()
 {
-	struct mp4_video_decoder_config* vdc =
-		(mp4_video_decoder_config*)malloc(
-			sizeof(mp4_video_decoder_config));
+	mState.vdc = (mp4_video_decoder_config*)malloc(sizeof(mp4_video_decoder_config));
 	unsigned int track_id = 1;
-	mp4_demux_get_track_video_decoder_config(
-		mState.demux, track_id, vdc);
-	sps = vdc->avc.sps;
-	pps = vdc->avc.pps;
-	spsSize = vdc->avc.sps_size;
-	ppsSize = vdc->avc.pps_size;
+	mp4_demux_get_track_video_decoder_config(mState.demux, track_id, mState.vdc);
+	auto sps = mState.vdc->avc.sps;
+	auto pps = mState.vdc->avc.pps;
+	auto spsSize = mState.vdc->avc.sps_size;
+	auto ppsSize = mState.vdc->avc.pps_size;
+	spsPpsSize = spsSize + ppsSize + 8;
+	spsPpsData = (uint8_t*)malloc(spsPpsSize);
+	memcpy(spsPpsData, naluSeprator, 4);
+	memcpy(spsPpsData + 4, sps, spsSize);
+	memcpy(spsPpsData + (spsSize + 4), naluSeprator, 4);
+	memcpy(spsPpsData + (spsSize + 8), pps, ppsSize);
+}
+
+void Mp4ReaderDetailH264::countOrCopy(uint8_t** out, uint64_t* out_size, const uint8_t* in, int inputSize, int ps, int copy)
+{
+	uint8_t startCodeSize = ps < 0 ? 0 : *out_size == 0 || ps ? 4 : 3;
+
+	if (copy) 
+	{
+		memcpy(*out + startCodeSize, in, inputSize);
+		if (startCodeSize == 4) 
+		{
+			AV_WB32(*out, 1);
+		}
+		else if (startCodeSize) 
+		{
+			(*out)[0] = (*out)[1] = 0;
+			(*out)[2] = 1;
+		}
+		*out += startCodeSize + inputSize;
+	}
+	*out_size += startCodeSize + inputSize;
 }
 
 int Mp4ReaderDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
@@ -1315,23 +1356,137 @@ void Mp4ReaderDetailH264::sendEndOfStream()
 
 void Mp4ReaderDetailH264::prependSpsPps(uint8_t* iFrameBuffer)
 {
-	//1a write sps on tmpBuffer.data()
-	//1b tmpBuffer+=sizeof_sps
-	//2a write NALU on tmpBuffer.data()
-	//2b tmpBuffer+=4
-	//1a write pps on tmpBuffer.data()
-	//1b tmpBuffer+=sizeof_pps
-	// Now pass tmpBuffer.data() and tmpBuffer.size() to libmp4
-	char NaluSeprator[4] = { 00 ,00, 00 ,01 };
-	auto nalu = reinterpret_cast<uint8_t*>(NaluSeprator);
-	memcpy(iFrameBuffer, nalu, 4);
-	iFrameBuffer += 4;
-	memcpy(iFrameBuffer, sps, spsSize);
-	iFrameBuffer += spsSize;
-	memcpy(iFrameBuffer, nalu, 4);
-	iFrameBuffer += 4;
-	memcpy(iFrameBuffer, pps, ppsSize);
-	iFrameBuffer += ppsSize;
+	iFrameBuffer -= 4;
+	memcpy(iFrameBuffer, naluSeprator, 4);
+	iFrameBuffer -= spsPpsSize;
+	memcpy(iFrameBuffer, spsPpsData, spsPpsSize);
+}
+
+int Mp4ReaderDetailH264::h264Mp4ToAnnexbFilter(const uint8_t* inputBuffer, size_t InputSize, frame_sp& outFrame, bool parseOnly, uint8_t& unitType) {
+	uint8_t newIdr = 0, spsSeen = 0, ppsSeen = 0;
+	int lengthSize = 0;;
+	int spsSize = 0, ppsSize = 0;
+	const uint8_t* buf;
+	const uint8_t* bufEnd;
+	uint8_t* out;
+	uint64_t outSize;
+	uint32_t nalSize = 0;
+	int ret;
+	bufEnd = inputBuffer + InputSize;
+	uint8_t* avccData = (uint8_t*)mState.vdc->avccData;
+	avccData += 1;
+	lengthSize = (*avccData - 1);
+	lengthSize = (lengthSize & 0x3) + 1;
+	int totalBufferIncrement = 0;
+	int numIterations = (parseOnly) ? 1 : 2;
+
+	for (int j = 0; j < numIterations; j++)
+	{
+		buf = inputBuffer;
+		outSize = 0;
+
+		do 
+		{
+			nalSize = 0;
+
+			/* possible overread ok due to padding */
+			for (int i = 0; i < lengthSize; i++)
+				nalSize = (nalSize << 8) | buf[i];
+
+			totalBufferIncrement += lengthSize;
+			buf += lengthSize;
+
+			/* This check requires the cast as the right side might
+			 * otherwise be promoted to an unsigned value. */
+			if ((int64_t)nalSize > bufEnd - buf) 
+			{
+				LOG_ERROR << "Invalid data";
+				return 0;
+			}
+
+			if (!nalSize)
+				continue;
+
+			unitType = *buf & 0x1f;
+
+			if (parseOnly && (unitType == H264Utils::H264_NAL_TYPE_IDR_SLICE || unitType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE))
+			{
+				return totalBufferIncrement;
+			}
+
+			if (unitType == H264Utils::H264_NAL_TYPE_SEQ_PARAM) 
+			{
+				spsSeen = newIdr = 1;
+			}
+			else if (unitType == H264Utils::H264_NAL_TYPE_PIC_PARAM) 
+			{
+				ppsSeen = newIdr = 1;
+				/* if SPS has not been seen yet, prepend the AVCC one to PPS */
+				if (!spsSeen) 
+				{
+					if (!spsSize) 
+					{
+						LOG_ERROR << "SPS not present in the stream, nor in AVCC, stream may be unreadable";
+						return 0;
+					}
+					else 
+					{
+						countOrCopy(&out, &outSize, sps, spsSize, -1, j);
+						spsSeen = 1;
+					}
+				}
+			}
+
+			/* If this is a new IDR picture following an IDR picture, reset the idr flag.
+			 * Just check first_mb_in_slice to be 0 as this is the simplest solution.
+			 * This could be checking idr_pic_id instead, but would complexify the parsing. */
+			if (!newIdr && unitType == H264Utils::H264_NAL_TYPE_IDR_SLICE && (buf[1] & 0x80))
+				newIdr = 1;
+
+			/* prepend only to the first type 5 NAL unit of an IDR picture, if no sps/pps are already present */
+			if (newIdr && unitType == H264Utils::H264_NAL_TYPE_IDR_SLICE && !spsSeen && !ppsSeen) 
+			{
+				if (spsPpsData)
+					countOrCopy(&out, &outSize, (uint8_t*)spsPpsData,spsPpsSize, -1, j);
+
+				newIdr = 0;
+				/* if only SPS has been seen, also insert PPS */
+			}
+			else if (newIdr && unitType == H264Utils::H264_NAL_TYPE_IDR_SLICE && spsSeen && !ppsSeen) 
+			{
+				if (!ppsSize) 
+				{
+					LOG_ERROR << "PPS not present in the stream, nor in AVCC, stream may be unreadable";
+				}
+				else 
+				{
+					countOrCopy(&out, &outSize, pps, ppsSize, -1, j);
+				}
+			}
+
+			countOrCopy(&out, &outSize, buf, nalSize, unitType == H264Utils::H264_NAL_TYPE_SEQ_PARAM || unitType == H264Utils::H264_NAL_TYPE_PIC_PARAM, j);
+
+			if (!newIdr && unitType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
+			{
+				newIdr = 1;
+				spsSeen = 0;
+				ppsSeen = 0;
+			}
+			totalBufferIncrement += nalSize;
+			buf += nalSize;
+		} while (buf < bufEnd);
+
+		if (!j) 
+		{
+			if (outSize > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE) 
+			{
+				LOG_ERROR << "Invalid data";
+				return ret = 0;
+			}
+			outFrame = makeFrame(outSize, h264ImagePinId);
+			out = (uint8_t*)outFrame->data();
+		}
+	}
 }
 
 bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
@@ -1342,7 +1497,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	size_t metadataSize = 0;
 	uint64_t frameTSInMsecs;
 	int32_t mp4FIndex = 0;
-
+	
 	try
 	{
 		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
@@ -1357,49 +1512,33 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		return true;
 	}
+	bool parseOnly = true;
+	frame_sp outFrame; // used only when the parseonly mode is false - extra functionality that can be used in future
+	size_t totalImageSize = imgSize + skipOffset;
+	auto trimmedImgFrame = makeFrameTrim(imgFrame, totalImageSize, h264ImagePinId);
 
-	if (mState.shouldPrependSpsPps || (!mState.direction && !mState.foundFirstReverseIFrame))
+	uint8_t* imgBufer = (uint8_t*)trimmedImgFrame->data();
+	imgBufer += skipOffset;
+	uint8_t nalType;
+	int frameOffset = h264Mp4ToAnnexbFilter(imgBufer, imgSize, outFrame, parseOnly, nalType);
+	imgBufer += frameOffset;
+	if (!frameOffset)
 	{
-		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
-		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
-		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE)
-		{
-			auto tempFrame = makeFrame(imgSize + spsSize + ppsSize + 8, h264ImagePinId);
-			uint8_t* tempFrameBuffer = reinterpret_cast<uint8_t*>(tempFrame->data());
-			prependSpsPps(tempFrameBuffer);
-			tempFrameBuffer += spsSize + ppsSize + 8;
-			memcpy(tempFrameBuffer, imgFrame->data(), imgSize);
-			imgSize += spsSize + ppsSize + 8;
-			imgFrame = tempFrame;
-			mState.foundFirstReverseIFrame = true;
-			mState.shouldPrependSpsPps = false;
-		}
-		else if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
-		{
-			mState.shouldPrependSpsPps = false;
-			mState.foundFirstReverseIFrame = true;
-		}
+		LOG_ERROR << "Filtering failed";
 	}
 
-	auto trimmedImgFrame = makeFrameTrim(imgFrame, imgSize, h264ImagePinId);
-
-	uint8_t* frameData = reinterpret_cast<uint8_t*>(trimmedImgFrame->data());
-	short nalType = H264Utils::getNALUType((char*)trimmedImgFrame->data());
-	if (nalType == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+	if (nalType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
-		frameData[3] = 0x1;
-		frameData[spsSize + 7] = 0x1;
-		frameData[spsSize + ppsSize + 8] = 0x0;
-		frameData[spsSize + ppsSize + 9] = 0x0;
-		frameData[spsSize + ppsSize + 10] = 0x0;
-		frameData[spsSize + ppsSize + 11] = 0x1;
+		prependSpsPps(imgBufer);
+		int bytesToIncrement = skipOffset + frameOffset - 4 - spsPpsSize;
+		*trimmedImgFrame += bytesToIncrement;
 	}
-	else
+	else if (nalType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
 	{
-		frameData[0] = 0x0;
-		frameData[1] = 0x0;
-		frameData[2] = 0x0;
-		frameData[3] = 0x1;
+		imgBufer -= 4;
+		memcpy(imgBufer, naluSeprator, 4);
+		int bytesToIncrement = skipOffset + frameOffset - 4;
+		*trimmedImgFrame += bytesToIncrement;
 	}
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;

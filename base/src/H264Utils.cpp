@@ -16,14 +16,124 @@ H264Utils::H264_NAL_TYPE H264Utils::getNALUType(const char* buffer)
 bool H264Utils::getNALUnit(const char* buffer, size_t length, size_t& offset)
 {
 	if (length < 3) return false;
-	size_t cnt = 3;
+	size_t cnt = 4;
 
 	while (cnt < length)
 	{
-		if (buffer[cnt - 1] == 0x1 && buffer[cnt - 2] == 0x0 && buffer[cnt - 3] == 0x0)
+		if (buffer[cnt - 1] == 0x1 && buffer[cnt - 2] == 0x0 && buffer[cnt - 3] == 0x0 && buffer[cnt - 4] == 0x0)
 		{
 			offset = cnt;
 			return true;
+		}
+		else if (buffer[cnt - 1] == 0x1 && buffer[cnt - 2] == 0x0 && buffer[cnt - 3] == 0x0)
+		{
+			offset = cnt - 1;
+			return true;
+		}
+		cnt++;
+	}
+
+	return false;
+}
+
+bool H264Utils::getNALUnitOffsetAndSizeBasedOnGivenType(char* buffer, size_t length, size_t& offset, int& naluSeparatorSize, H264Utils::H264_NAL_TYPE naluType, bool checkByType)
+{
+	if (length < 3) return false;
+	size_t cnt = 5;
+
+	while (cnt < length)
+	{
+		if (buffer[cnt - 3] == 0x1 && buffer[cnt - 4] == 0x0 && buffer[cnt - 5] == 0x0)
+		{
+			char type = (buffer[cnt - 2] & 0x1F);
+			if (type == naluType || !checkByType)
+			{
+				naluSeparatorSize = 3;
+				offset = cnt - 2;
+				return true;
+			}
+		}
+		else if (buffer[cnt - 2] == 0x1 && buffer[cnt - 3] == 0x0 && buffer[cnt - 4] == 0x0 && buffer[cnt - 5] == 0x0)
+		{
+			char type = (buffer[cnt - 1] & 0x1F);
+			if (type == naluType || !checkByType)
+			{
+				naluSeparatorSize = 4;
+				offset = cnt - 1;
+				return true;
+			}
+		}
+		cnt++;
+	}
+
+	return false;
+}
+
+bool H264Utils::extractSpsAndPpsFromExtradata(char* buffer, size_t length, char*& sps, int& spsSize, char*& pps, int& ppsSize)
+{
+	if (length < 3) return false;
+	size_t cnt = 5;
+	spsSize = 0;
+	ppsSize = 0;
+	while ((cnt < length) && (!spsSize || !ppsSize))
+	{
+		if (buffer[cnt - 3] == 0x1 && buffer[cnt - 4] == 0x0 && buffer[cnt - 5] == 0x0)
+		{
+			char type = (buffer[cnt - 2] & 0x1F);
+			if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			{
+				sps = buffer + (cnt - 5);
+				size_t offset = 0;
+				int naluSeparatorSize = 0;
+				getNALUnitOffsetAndSizeBasedOnGivenType(buffer + (cnt - 2), length - (cnt - 2), offset, naluSeparatorSize, H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_NON_IDR_SLICE, false);
+				spsSize = offset + 3 - naluSeparatorSize;
+				cnt += offset - naluSeparatorSize;
+			}
+			if (type == H264Utils::H264_NAL_TYPE_PIC_PARAM)
+			{
+				pps = buffer + (cnt - 5);
+				size_t offset = 0;
+				int naluSeparatorSize = 0;
+				getNALUnitOffsetAndSizeBasedOnGivenType(buffer + (cnt - 2), length - (cnt - 2), offset, naluSeparatorSize, H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_NON_IDR_SLICE, false);
+				if (!offset && !naluSeparatorSize)
+				{
+					ppsSize = length - (cnt - 5);
+				}
+				else
+				{
+					ppsSize = offset + 3 - naluSeparatorSize;
+				}
+				cnt += offset - naluSeparatorSize;
+			}
+		}
+		else if (buffer[cnt - 2] == 0x1 && buffer[cnt - 3] == 0x0 && buffer[cnt - 4] == 0x0 && buffer[cnt - 5] == 0x0)
+		{
+			char type = (buffer[cnt - 1] & 0x1F);
+			if (type == H264Utils::H264_NAL_TYPE_SEQ_PARAM)
+			{
+				sps = buffer + (cnt - 5);
+				size_t offset = 0;
+				int naluSeparatorSize = 0;
+				getNALUnitOffsetAndSizeBasedOnGivenType(buffer + (cnt - 1), length - (cnt - 1), offset, naluSeparatorSize, H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_NON_IDR_SLICE, false);
+				spsSize = offset + 4 - naluSeparatorSize;
+				cnt += offset - naluSeparatorSize;
+			}
+			if (type == H264Utils::H264_NAL_TYPE_PIC_PARAM)
+			{
+				pps = buffer + (cnt - 5);
+				size_t offset = 0;
+				int naluSeparatorSize = 0;
+				getNALUnitOffsetAndSizeBasedOnGivenType(buffer + (cnt - 1), length - (cnt - 1), offset, naluSeparatorSize, H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_NON_IDR_SLICE, false);
+				if (!offset && !naluSeparatorSize)
+				{
+					ppsSize = length - (cnt - 5);
+				}
+				else
+				{
+					ppsSize = offset + 4 - naluSeparatorSize;
+				}
+				cnt += offset - naluSeparatorSize;
+			}
 		}
 		cnt++;
 	}
