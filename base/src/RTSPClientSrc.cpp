@@ -109,19 +109,27 @@ public:
         }
         av_init_packet(&packet);
         bConnected = true;
+        saveSpsPps();
         return bConnected;
     }
 
-    frame_sp prependSpsPpsToFrame(std::string id)
+    void saveSpsPps()
     {
-        auto spsPpsData = pFormatCtx->streams[0]->codec->extradata;
-        auto spsPpsSize = pFormatCtx->streams[0]->codec->extradata_size;
-        size_t totalFrameSize = packet.size + spsPpsSize;
+        H264Utils::extractSpsAndPpsFromExtradata((char*)pFormatCtx->streams[0]->codec->extradata, pFormatCtx->streams[0]->codec->extradata_size, spsData, spsSize, ppsData, ppsSize);
+    }
+
+    frame_sp prependSpsPpsToFrame(std::string id, size_t offsetToSkip, int naluSeparatorSize)
+    {
+        packet.data += (offsetToSkip - naluSeparatorSize);
+        packet.size -= (offsetToSkip - naluSeparatorSize);
+        size_t totalFrameSize = packet.size + spsSize + ppsSize;
 
         auto frm = myModule->makeFrame(totalFrameSize, id);
         uint8_t* frameData = static_cast<uint8_t*>(frm->data());
-        memcpy(frameData, spsPpsData, spsPpsSize);
-        frameData += spsPpsSize;
+        memcpy(frameData, spsData, spsSize);
+        frameData += spsSize;
+        memcpy(frameData, ppsData, ppsSize);
+        frameData += ppsSize;
         memcpy(frameData, packet.data, packet.size);
         return frm;
     }
@@ -134,6 +142,7 @@ public:
             beginTs = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
             initDone = true;
         }
+        
         frame_container outFrames;
         bool got_something = false;
         while(!got_something)
@@ -151,28 +160,22 @@ public:
                 {
                     got_something = true; //does not need video and got something
                 }
+              
+                size_t offset = 0;
+                int naluSeparatorSize = 0;
+                H264Utils::getNALUnitOffsetAndSizeBasedOnGivenType((char*)packet.data, packet.size, offset, naluSeparatorSize, H264Utils::H264_NAL_TYPE_IDR_SLICE);
                 auto it = streamsMap.find(packet.stream_index);
                 if (it != streamsMap.end()) { // so we have an interest in sending this
                     frame_sp frm;
-                    auto naluType = H264Utils::getNALUType((const char*)packet.data);
-                    if (naluType == H264Utils::H264_NAL_TYPE_SEI)
-                    {
-                        size_t offset = 0;
-                        packet.data += 4;
-                        packet.size -= 4;
-                        H264Utils::getNALUnit((const char*)packet.data, packet.size, offset);
-                        packet.data += offset - 4;
-                        packet.size -= offset - 4;
-                        frm = prependSpsPpsToFrame(it->second);
-                    }
-                    else if (naluType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
-                    {
-                        frm = prependSpsPpsToFrame(it->second);
-                    }
-                    else
+                    if (!offset && !naluSeparatorSize)
                     {
                         frm = myModule->makeFrame(packet.size, it->second);
                         memcpy(frm->data(), packet.data, packet.size);
+                    }
+                    else
+                    {
+
+                        frm = prependSpsPpsToFrame(it->second, offset, naluSeparatorSize);
                     }
 
                     std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
@@ -214,6 +217,10 @@ private:
     RTSPClientSrc* myModule;
 	std::chrono::milliseconds beginTs;
 	bool initDone = false;
+    char* spsData = nullptr;
+    char* ppsData = nullptr;
+    int spsSize = 0;
+    int ppsSize = 0;
 };
 
 RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPClientSrc", _props), mProps(_props)
