@@ -261,6 +261,7 @@ protected:
 	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
 	frame_sp makeFrame();
 	frame_sp makeFrame(frame_sp& bigFrame, size_t& newSize, string& pinId);
+	frame_sp makeFrame(frame_sp& frame, size_t& incrementSize);
 	frame_sp getEOSFrame();
 	frame_sp getEmptyFrame();
 
