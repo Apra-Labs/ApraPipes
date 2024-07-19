@@ -25,11 +25,12 @@ public:
 	Mp4ReaderDetailAbs(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS,
 		std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& errorFrame)> _sendMp4ErrorFrame,
-		std::function<void(Mp4ReaderSourceProps& props)> _setProps)
+		std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront)
 	{
 		setProps(props);
 		makeFrame = _makeFrame;
 		makeFrameTrim = _makeFrameTrim;
+		makeFrameTrimFront = _makeFrameTrimFront;
 		sendEOS = _sendEOS;
 		mSetMetadata = _setMetadata;
 		sendMp4ErrorFrame = _sendMp4ErrorFrame;
@@ -1126,6 +1127,7 @@ public:
 	std::function<frame_sp(size_t size, string& pinId)> makeFrame;
 	std::function<void(frame_sp frame)> sendEOS;
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeFrameTrim;
+	std::function<frame_sp(frame_sp& bigFrame, size_t& size)> makeFrameTrimFront;
 	std::function<void(frame_sp& errorFrame)> sendMp4ErrorFrame;
 	std::function<void(std::string& pinId, framemetadata_sp& metadata)> mSetMetadata;
 	std::function<void(Mp4ReaderSourceProps& props)> setMp4ReaderProps;
@@ -1139,7 +1141,7 @@ class Mp4ReaderDetailJpeg : public Mp4ReaderDetailAbs
 {
 public:
 	Mp4ReaderDetailJpeg(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, std::string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps)
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps, _makeFrameTrimFront)
 	{}
 	~Mp4ReaderDetailJpeg() {}
 	void setMetadata();
@@ -1153,7 +1155,7 @@ class Mp4ReaderDetailH264 : public Mp4ReaderDetailAbs
 {
 public:
 	Mp4ReaderDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
-		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps)
+		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps, _makeFrameTrimFront)
 	{}
 	~Mp4ReaderDetailH264() {}
 	void setMetadata();
@@ -1530,18 +1532,23 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	if (nalType == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 	{
 		prependSpsPps(imgBufer);
-		int bytesToIncrement = skipOffset + frameOffset - 4 - spsPpsSize;
-		*trimmedImgFrame += bytesToIncrement;
+		size_t bytesToIncrement = skipOffset + frameOffset - 4 - spsPpsSize;
+		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, bytesToIncrement);
 	}
 	else if (nalType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
 	{
 		imgBufer -= 4;
 		memcpy(imgBufer, naluSeprator, 4);
-		int bytesToIncrement = skipOffset + frameOffset - 4;
-		*trimmedImgFrame += bytesToIncrement;
+		size_t bytesToIncrement = skipOffset + frameOffset - 4;
+		trimmedImgFrame = makeFrameTrimFront(trimmedImgFrame, bytesToIncrement);
 	}
 
 	trimmedImgFrame->timestamp = frameTSInMsecs;
+	if(mp4FIndex == 288)
+	{
+		LOG_INFO << mp4FIndex;
+
+	}
 	trimmedImgFrame->fIndex = mp4FIndex;
 
 	// give recorded timestamps 
@@ -1641,7 +1648,9 @@ bool Mp4ReaderSource::init()
 			{ return setImageMetadata(pinId, metadata); },
 			[&](frame_sp& frame) {return Module::sendMp4ErrorFrame(frame); },
 			[&](Mp4ReaderSourceProps& props)
-			{return setProps(props); }));
+			{return setProps(props); },
+			[&](frame_sp& frame, size_t& size)
+			{ return makeFrame(frame, size); }));
 	}
 	else if (mFrameType == FrameMetadata::FrameType::H264_DATA)
 	{
@@ -1657,7 +1666,9 @@ bool Mp4ReaderSource::init()
 			[&](frame_sp& frame) 
 			{return Module::sendMp4ErrorFrame(frame); },
 			[&](Mp4ReaderSourceProps& props)
-			{return setProps(props);  }));
+			{return setProps(props);  },
+			[&](frame_sp& frame, size_t& size)
+			{ return makeFrame(frame, size); }));
 	}
 	mDetail->encodedImagePinId = encodedImagePinId;
 	mDetail->h264ImagePinId = h264ImagePinId;
