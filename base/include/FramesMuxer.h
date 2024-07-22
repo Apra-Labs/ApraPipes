@@ -16,7 +16,7 @@ public:
 	{
 		maxTsDelayInMS = 16.67;
 		maxDelay = 30;
-		strategy = MAX_TIMESTAMP_DELAY;
+		strategy = ALL_OR_NONE;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::NONE;
 	}
 
