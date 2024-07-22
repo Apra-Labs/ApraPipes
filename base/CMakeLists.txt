@@ -195,6 +195,8 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	src/ErrorObject.cpp 
+	src/HealthObject.cpp
 )
 
 SET(CORE_FILES_H
@@ -257,6 +259,9 @@ SET(CORE_FILES_H
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
+	include/ErrorObject.h
+	include/Callback.h
+	include/HealthObject.h
 )
 
 IF(ENABLE_WINDOWS)
