@@ -13,7 +13,7 @@ git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
 
 ## Prerequisites
 * Run ```sudo apt-get update && sudo apt-get install build-essential```  to get latest build tools
-* CMake minimum version 3.14 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
+* CMake minimum version 3.17 - Follow [this article](https://anglehit.com/how-to-install-the-latest-version-of-cmake-via-command-line/) to update cmake
 * ffmpeg
 ```
 sudo apt install yasm -y
@@ -23,9 +23,10 @@ make -j"$(($(nproc) - 1))"
 ```
 * zxing
 ```
-cd thirdparty/zxing-cpp
-chmod +x build.sh
-./build.sh
+cd thirdparty
+git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --single-branch --depth 1
+cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+cmake --build zxing-cpp.release -j8 --config Release
 ```
 
 ## Ubuntu 18.04 x64

@@ -3,4 +3,4 @@
 	url = https://github.com/FFmpeg/FFmpeg.git
 [submodule "thirdparty/zxing-cpp"]
 	path = thirdparty/zxing-cpp
-	url = https://github.com/Apra-Labs/zxing-cpp.git
+	url = https://github.com/zxing-cpp/zxing-cpp.git

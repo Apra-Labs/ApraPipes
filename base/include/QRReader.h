@@ -2,11 +2,27 @@
 
 #include "Module.h"
 #include "ReadBarcode.h"
+#include "TextUtfEncoding.h"
 
 class QRReaderProps : public ModuleProps
 {
 public:
-	QRReaderProps() : ModuleProps() {}
+	QRReaderProps(bool _tryHarder = false, bool _saveQRImages = false, string _qrImagesPath = "", int _frameRotationCounter = 10) : ModuleProps() 
+	{
+		tryHarder = _tryHarder;
+		saveQRImages = _saveQRImages;
+		qrImagesPath = _qrImagesPath;
+		frameRotationCounter = _frameRotationCounter;
+	}
+
+	size_t getSerializeSize()
+    {
+        return ModuleProps::getSerializeSize();
+    }
+    bool tryHarder;
+	bool saveQRImages;
+	string qrImagesPath;
+	int frameRotationCounter;
 };
 
 class QRReader : public Module

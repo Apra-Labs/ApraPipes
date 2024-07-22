@@ -26,7 +26,7 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 project(APRAPIPES)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 hunter_add_package(Boost COMPONENTS system thread filesystem serialization log chrono)
 find_package(Boost CONFIG REQUIRED system thread filesystem serialization log chrono)
@@ -60,13 +60,13 @@ find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFA
 find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
 find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
 find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
-find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_install/lib NO_DEFAULT_PATH)
+find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp.release/core NO_DEFAULT_PATH)
 
 
 IF(ENABLE_CUDA)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
-		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )					
+		SET ( JETSON_MULTIMEDIA_LIB_INCLUDE "/usr/src/jetson_multimedia_api/include" )		
 
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
@@ -117,7 +117,7 @@ include_directories(AFTER SYSTEM include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
 	${CURSES_INCLUDE_DIR}
-	../thirdparty/zxing-cpp/_install/include/ZXing
+	../thirdparty/zxing-cpp/core/src
 )
 
 # ApraPipes library
