@@ -282,7 +282,84 @@ BOOST_AUTO_TEST_CASE(allornone)
 	sink.reset();
 }
 
+BOOST_AUTO_TEST_CASE(allornone_sampling_by_drops) {
+	size_t readDataSize = 1024;
 
+	auto metadata =
+		framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto pin1_1 = m1->addOutputPin(metadata);
+	auto pin1_2 = m1->addOutputPin(metadata);
+
+	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto pin2_1 = m2->addOutputPin(metadata);
+
+	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto pin3_1 = m3->addOutputPin(metadata);
+
+	// drop 3 out of 4 frames
+	auto muxProps = new FramesMuxerProps();
+	muxProps->skipN = 3;
+	muxProps->skipD = 4;
+
+	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(*muxProps));
+	m1->setNext(muxer);
+	m2->setNext(muxer);
+	m3->setNext(muxer);
+
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	muxer->setNext(sink);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+
+	BOOST_TEST(muxer->init());
+	BOOST_TEST(sink->init());
+
+	{
+		// basic
+		int countMuxOutput = 0;
+		int iterations = 4000;
+
+		auto encodedImageFrame = m1->makeFrame(readDataSize, pin1_1);
+		for (int i = 0; i < iterations; ++i)
+		{
+			encodedImageFrame->fIndex = 500 + i;
+
+			frame_container frames;
+			frames.insert(make_pair(pin1_1, encodedImageFrame));
+			frames.insert(make_pair(pin1_2, encodedImageFrame));
+			frames.insert(make_pair(pin2_1, encodedImageFrame));
+			frames.insert(make_pair(pin3_1, encodedImageFrame));
+
+			m1->send(frames);
+			muxer->step();
+			if ((i + 1) % 3 != 0)
+				BOOST_TEST(sink->try_pop().size() == 0);
+
+			m2->send(frames);
+			muxer->step();
+			if ((i + 1) % 3 != 0)
+				BOOST_TEST(sink->try_pop().size() == 0);
+
+			m3->send(frames);
+			muxer->step();
+			auto outFrames = sink->try_pop();
+			LOG_ERROR << "outFrames <" << outFrames.size() << ">";
+			if (outFrames.size())
+			{
+				countMuxOutput += 1;
+				testFrames(outFrames, 500 + i, 4);
+			}
+		}
+		LOG_ERROR << "COUNT MUX FRAMES OUTPUT <" << countMuxOutput << "> / " << iterations << ".";
+		float passThroughRatio = (muxProps->skipD - muxProps->skipN) / (float)muxProps->skipD;
+		BOOST_TEST(countMuxOutput == (iterations * passThroughRatio));
+
+	}
+}
 
 BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 {
