@@ -132,7 +132,8 @@ public:
 	enum Kind {
 		SOURCE,
 		TRANSFORM,
-		SINK
+		SINK,
+		CONTROL
 	};
 	enum ModuleState {
 		Initialized,
@@ -188,6 +189,7 @@ protected:
 	virtual bool produce() { return false; }
 	bool stepNonSource(frame_container& frames);
 	bool preProcessNonSource(frame_container& frames);
+	bool preProcessControl(frame_container& frames);
 	bool isRunning() { return mRunning; }
 
 	ModuleProps getProps();

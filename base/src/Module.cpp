@@ -130,6 +130,7 @@ Module::Module(Kind nature, string name, ModuleProps _props) : mRunning(false), 
 	mQue.reset(new FrameContainerQueue(_props.qlen));
 
 	onStepFail = boost::bind(&Module::ignore, this, 0);
+	LOG_INFO << "Setting Module tolerance for step failure as: " << "<0>. Currently there is no way to change this.";
 
 	pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
 	auto tempId = getId();
@@ -465,7 +466,10 @@ bool Module::validateInputPins()
 	{
 		return true;
 	}
-
+	else if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
+	}
 	return false;
 }
 
@@ -475,7 +479,10 @@ bool Module::validateOutputPins()
 	{
 		return true;
 	}
-
+	else if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
+	}
 	return false;
 }
 
@@ -511,6 +518,7 @@ bool Module::init()
 	}
 
 	mQue->accept();
+
 	if (mModules.size() == 1 && mProps->quePushStrategyType == QuePushStrategy::NON_BLOCKING_ALL_OR_NONE)
 	{
 		mProps->quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
@@ -617,6 +625,11 @@ bool Module::isNextModuleQueFull()
 
 bool Module::send(frame_container &frames, bool forceBlockingPush)
 {
+	if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module can not send data frames.");
+	}
+
 	// mFindex may be propagated for EOS, EOP, Command, PropsChange also - which is wrong
 	uint64_t fIndex = 0;
 	uint64_t timestamp = 0;
@@ -1202,6 +1215,17 @@ bool Module::step()
 
 		pacer->end();
 	}
+	else if (myNature == CONTROL)
+	{
+		auto frames = mQue->pop();
+		preProcessNonSource(frames); // ctrl
+		if (frames.size() != 0)
+		{
+			std::string msg = "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.";
+			LOG_ERROR << msg;
+			throw AIPException(CTRL_MODULE_INVALID_STATE, msg);
+		}
+	}
 	else
 	{
 		mProfiler->startPipelineLap();
@@ -1233,7 +1257,7 @@ bool Module::step()
 
 void Module::sendEOS()
 {
-	if (myNature == SINK)
+	if (myNature == SINK || myNature == CONTROL)
 	{
 		return;
 	}
@@ -1251,7 +1275,7 @@ void Module::sendEOS()
 
 void Module::sendEOS(frame_sp& frame)
 {
-	if (myNature == SINK)
+	if (myNature == SINK || myNature == CONTROL)
 	{
 		return;
 	}
@@ -1279,6 +1303,58 @@ void Module::sendMp4ErrorFrame(frame_sp& frame)
 	}
 
 	send(frames, true);
+}
+
+bool Module::preProcessControl(frame_container& frames) //ctrl: continue on this.
+{
+	bool eosEncountered = false;
+	auto it = frames.cbegin();
+	while (it != frames.cend())
+	{
+		// increase the iterator manually
+		auto frame = it->second;
+		auto pinId = it->first;
+		it++;
+		if (frame->isEOS())
+		{
+			// EOS Strategy
+			processEOS(pinId);
+			if (!eosEncountered)
+			{
+				sendEOS(); // propagating  eosframe with every eos encountered
+			}
+			frames.erase(pinId);
+			eosEncountered = true;
+			continue;
+		}
+
+		if (frame->isPropsChange())
+		{
+			if (!handlePropsChange(frame))
+			{
+				throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));
+			}
+			frames.erase(pinId);
+			continue;
+		}
+
+		if (frame->isEoP())
+		{
+			handleStop();
+			frames.erase(pinId);
+			continue;
+		}
+
+		if (frame->isCommand())
+		{
+			auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
+			handleCommand(cmdType, frame);
+			frames.erase(pinId);
+			continue;
+		}
+	}
+
+	return true;
 }
 
 bool Module::preProcessNonSource(frame_container &frames)
@@ -1419,6 +1495,7 @@ bool Module::addEoPFrame(frame_container &frames)
 
 bool Module::handleStop()
 {
+	// ctrl module - crash or ignore the command or send an CtrlErrorCommandFrame ?
 	// force stop is required
 	if (mRunning == false)
 	{
@@ -1481,6 +1558,7 @@ void Module::ignore(int times)
 
 void Module::stop_onStepfail()
 {
+	// ctrl - get and print the last command processed which might have caused the error
 	LOG_ERROR << "Stopping " << myId << " due to step failure ";
 	handleStop();
 }
