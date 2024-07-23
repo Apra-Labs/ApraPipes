@@ -147,6 +147,7 @@ public:
         bool got_something = false;
         while(!got_something)
         {
+			LOG_TRACE << "got something from stream ? <" << got_something << ">";
             if (av_read_frame(pFormatCtx, &packet) >= 0)
             {
                 if (videoStream >= 0) //source has video
@@ -199,7 +200,10 @@ public:
         }
 
         if(outFrames.size()>0)
-           myModule->send(outFrames);
+		{
+			LOG_TRACE << "sending out data from RTSPCLIENTSRC !";
+			myModule->send(outFrames);
+		}
         return true;
     }
 
@@ -250,7 +254,10 @@ RTSPClientSrcProps RTSPClientSrc::getProps() {
 }
 
 bool RTSPClientSrc::produce() { 
-    return mDetail->readBuffer();
+	LOG_TRACE << "Produce called: starting readBuffer for RTSPCLIENTSRC";
+    auto ret = mDetail->readBuffer();
+	LOG_TRACE << "Produce called: finished readBuffer for RTSPCLIENTSRC";
+	return ret;
 }
 bool RTSPClientSrc::validateOutputPins() { 
     //smallest check at least one output pin should be there

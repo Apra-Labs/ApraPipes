@@ -988,6 +988,7 @@ bool Module::run()
 	handlePausePlay(mPlay);
 	while (mRunning)
 	{
+		LOG_TRACE << "stepping <" << myId << ">";
 		if (!step())
 		{
 			stop_onStepfail();
@@ -1186,19 +1187,23 @@ bool Module::step()
 	bool ret = false;
 	if (myNature == SOURCE)
 	{
+		LOG_TRACE << "Step start";
 		if (!processSourceQue())
 		{
 			return true;
 		}
+		LOG_TRACE << "Step source q processed";
 		bool forceStep = shouldForceStep();
 
 		pacer->start();
 
 		if (mPlay || forceStep)
 		{
+			LOG_TRACE << "produce call immminent";
 			mProfiler->startPipelineLap();
 			ret = produce();
 			mProfiler->endLap(0);
+			LOG_TRACE << "produce call fin";
 		}
 		else
 		{
