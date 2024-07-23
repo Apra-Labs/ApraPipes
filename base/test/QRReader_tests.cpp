@@ -46,13 +46,13 @@ BOOST_AUTO_TEST_CASE(rgb)
 
 BOOST_AUTO_TEST_CASE(test)
 {	
-	FileReaderModuleProps fileReaderProps("/mnt/disks/ssd/ws/ApraPipes/data/qrData/h.raw");
+	FileReaderModuleProps fileReaderProps("./data/qrData/h.raw");
 	fileReaderProps.readLoop = true;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(720, 1280, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 	
-	QRReaderProps qrReaderProps(true,true,"/mnt/disks/ssd/ws/ApraPipes/data",10);
+	QRReaderProps qrReaderProps(true,true,"./data",10);
 	auto QRData = boost::shared_ptr<QRReader>(new QRReader(qrReaderProps));
 	fileReader->setNext(QRData);
 				
@@ -70,7 +70,6 @@ BOOST_AUTO_TEST_CASE(test)
 	auto outputFrame = frames.cbegin()->second;
 	std::string expectedOutput = "0005100788";
 	auto actualOutput = std::string(const_cast<const char*>( static_cast<char*>(outputFrame->data()) ), outputFrame->size() );
-	// BOOST_TEST(expectedOutput == actualOutput);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420)
@@ -103,7 +102,7 @@ BOOST_AUTO_TEST_CASE(yuv420)
 BOOST_AUTO_TEST_CASE(readLoop)
 {	
 	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
-	FileReaderModuleProps fileReaderProps("/mnt/disks/ssd/ws/ApraPipes/data/qrData/h.raw");
+	FileReaderModuleProps fileReaderProps("./data/qrData/h.raw");
 	fileReaderProps.readLoop = true;
     auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(720, 1280, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -112,7 +111,7 @@ BOOST_AUTO_TEST_CASE(readLoop)
 	auto m1 = boost::shared_ptr<RotateCV>(new RotateCV(RotateCVProps(90)));
 	fileReader->setNext(m1);
 
-    QRReaderProps qrReaderProps(true, true, "/mnt/disks/ssd/ws/ApraPipes/data", 10);
+    QRReaderProps qrReaderProps(true, true, "./data", 10);
 	auto QRData = boost::shared_ptr<QRReader>(new QRReader(qrReaderProps));
 	m1->setNext(QRData);
 

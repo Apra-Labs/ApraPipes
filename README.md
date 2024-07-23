@@ -24,7 +24,6 @@ make -j"$(($(nproc) - 1))"
 * zxing
 ```
 cd thirdparty
-git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --single-branch --depth 1
 cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
 cmake --build zxing-cpp.release -j8 --config Release
 ```
