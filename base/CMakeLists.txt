@@ -720,7 +720,7 @@ target_link_libraries(aprapipessampleut
   ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
-  liblzma::liblzma
+  LibLZMA::LibLZMA
   bigint::bigint
   sfml-audio
   whisper::whisper

@@ -1,7 +1,7 @@
 set(TARGET generateTimeLapse)
 SET(SAMPLE_FILES
 	timelapse_summary.cpp
-  pipelineMain.cpp
+  PipelineMain.cpp
 )
 SET(SAMPLE_FILES_H
 timelapse_summary.h
