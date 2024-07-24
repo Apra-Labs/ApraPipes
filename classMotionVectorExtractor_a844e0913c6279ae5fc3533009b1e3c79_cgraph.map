@@ -1,6 +1,6 @@
 <map id="MotionVectorExtractor::processSOS" name="MotionVectorExtractor::processSOS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,97,155,137"/>
-<area shape="rect" id="Node000002" href="$classMotionVectorExtractor.html#a5e395a07b3fa6961fc6dbf23c50a9bdb" title=" " alt="" coords="203,97,352,137"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,96,155,137"/>
+<area shape="rect" id="Node000002" href="$classMotionVectorExtractor.html#a5e395a07b3fa6961fc6dbf23c50a9bdb" title=" " alt="" coords="203,96,352,137"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,114,187,114,187,120,155,120"/>
 <area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="414,39,569,80"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="351,94,398,82,399,87,353,100"/>

@@ -1,8 +1,8 @@
 <map id="ImageResizeCV::Detail::initMatImages" name="ImageResizeCV::Detail::initMatImages">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,45,159,85"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,44,159,85"/>
 <area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="207,15,362,56"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,51,191,46,191,52,159,56"/>
-<area shape="rect" id="Node000003" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="216,80,353,106"/>
+<area shape="rect" id="Node000003" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="216,80,352,106"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,73,201,79,201,84,158,78"/>
 <area shape="rect" id="Node000004" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="410,5,609,31"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="329,77,361,65,385,52,409,40,428,33,430,38,411,45,387,57,363,70,331,82"/>
@@ -10,6 +10,6 @@
 <area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="353,83,399,77,400,83,353,88"/>
 <area shape="rect" id="Node000006" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="415,104,604,130"/>
 <area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="353,97,400,102,399,108,353,103"/>
-<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="413,153,607,179"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="412,153,607,179"/>
 <area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="317,104,411,140,434,146,432,151,409,145,315,109"/>
 </map>

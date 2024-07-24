@@ -1,6 +1,6 @@
 <map id="OverlayFactory::create" name="OverlayFactory::create">
-<area shape="rect" id="Node000001" title=" " alt="" coords="463,13,613,39"/>
-<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#a16b7b653b38317dab739b9edb12d53fe" title=" " alt="" coords="221,13,415,39"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="463,13,613,38"/>
+<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#a16b7b653b38317dab739b9edb12d53fe" title=" " alt="" coords="221,13,415,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="447,28,415,28,415,23,447,23"/>
 <area shape="rect" id="Node000003" href="$classCompositeOverlayBuilder.html#a044a7ad3ecd75c1a6ab23a536624c755" title=" " alt="" coords="5,5,173,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="205,28,173,28,173,23,205,23"/>

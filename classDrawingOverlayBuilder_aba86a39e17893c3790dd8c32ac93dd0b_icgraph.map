@@ -1,7 +1,7 @@
 <map id="DrawingOverlayBuilder::deserialize" name="DrawingOverlayBuilder::deserialize">
 <area shape="rect" id="Node000001" title=" " alt="" coords="440,5,592,46"/>
-<area shape="rect" id="Node000002" href="$classDrawingOverlay.html#afa2956263c0f5ac59eb8b48afc003d1b" title=" " alt="" coords="213,13,392,39"/>
+<area shape="rect" id="Node000002" href="$classDrawingOverlay.html#afa2956263c0f5ac59eb8b48afc003d1b" title=" " alt="" coords="213,13,392,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="424,28,393,28,393,23,424,23"/>
-<area shape="rect" id="Node000003" href="$classOverlayModule.html#aa49b7bddb071b2e5820a51f0d78ce53f" title=" " alt="" coords="5,13,165,39"/>
+<area shape="rect" id="Node000003" href="$classOverlayModule.html#aa49b7bddb071b2e5820a51f0d78ce53f" title=" " alt="" coords="5,13,165,38"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="197,28,165,28,165,23,197,23"/>
 </map>

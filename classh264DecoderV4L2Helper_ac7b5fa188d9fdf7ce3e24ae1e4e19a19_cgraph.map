@@ -29,7 +29,7 @@
 <area shape="poly" id="edge8_Node000008_Node000007" title=" " alt="" coords="832,233,900,214,901,219,834,238"/>
 <area shape="rect" id="Node000009" href="$classh264DecoderV4L2Helper.html#a32f90a6a02f39087296319207211c697" title="Requests for buffers on the decoder capture plane." alt="" coords="890,236,1090,277"/>
 <area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="842,254,874,254,874,259,842,259"/>
-<area shape="rect" id="Node000010" href="$classh264DecoderV4L2Helper.html#a3b1d7c6d5c331139e3d34a3de3e15569" title="Sets the format on the decoder capture plane." alt="" coords="901,301,1079,342"/>
+<area shape="rect" id="Node000010" href="$classh264DecoderV4L2Helper.html#a3b1d7c6d5c331139e3d34a3de3e15569" title="Sets the format on the decoder capture plane." alt="" coords="901,301,1078,342"/>
 <area shape="poly" id="edge10_Node000008_Node000010" title=" " alt="" coords="834,275,901,294,900,299,832,280"/>
 <area shape="rect" id="Node000011" href="$classBuffer.html#aaeecba2e74f8797e81816c433f7d573e" title=" " alt="" coords="940,366,1040,392"/>
 <area shape="poly" id="edge11_Node000008_Node000011" title=" " alt="" coords="823,275,843,288,859,305,868,321,876,337,891,351,925,367,923,372,888,356,872,340,863,324,855,308,840,292,820,280"/>

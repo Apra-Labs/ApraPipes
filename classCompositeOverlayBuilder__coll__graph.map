@@ -1,9 +1,9 @@
 <map id="CompositeOverlayBuilder" name="CompositeOverlayBuilder">
-<area shape="rect" id="Node000001" title=" " alt="" coords="13,527,190,612"/>
-<area shape="rect" id="Node000002" href="$classDrawingOverlayBuilder.html" title=" " alt="" coords="5,309,168,394"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,409,101,527,96,527,88,409"/>
-<area shape="rect" id="Node000003" href="$classCompositeOverlay.html" title=" " alt="" coords="193,239,330,464"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,448,182,466,145,515,141,512,178,462,191,445"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="19,528,197,614"/>
+<area shape="rect" id="Node000002" href="$classDrawingOverlayBuilder.html" title=" " alt="" coords="5,310,168,395"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,410,107,528,101,529,90,410"/>
+<area shape="rect" id="Node000003" href="$classCompositeOverlay.html" title=" " alt="" coords="193,240,330,465"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,452,149,516,145,513,191,449"/>
 <area shape="rect" id="Node000004" href="$classOverlayInfo.html" title=" " alt="" coords="199,5,323,191"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="264,206,264,239,259,239,259,206"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="264,205,264,240,259,240,259,205"/>
 </map>

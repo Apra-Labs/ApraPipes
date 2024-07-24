@@ -1,8 +1,8 @@
 <map id="VirtualCameraSink::Detail::setMetadata" name="VirtualCameraSink::Detail::setMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,517,141,557"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,516,141,557"/>
 <area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="189,451,344,492"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,513,189,495,191,500,136,519"/>
-<area shape="rect" id="Node000003" href="$classVirtualCameraSink_1_1Detail.html#a3956ec08248cdfae47499738855becff" title=" " alt="" coords="199,517,334,557"/>
+<area shape="rect" id="Node000003" href="$classVirtualCameraSink_1_1Detail.html#a3956ec08248cdfae47499738855becff" title=" " alt="" coords="199,516,334,557"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="141,534,183,534,183,540,141,540"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a1b42548243be0bb61e2f442d5079ec88" title=" " alt="" coords="219,581,314,607"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="142,554,207,574,205,579,140,559"/>
@@ -10,13 +10,13 @@
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="313,579,343,566,407,529,461,491,464,495,410,533,345,571,315,583"/>
 <area shape="rect" id="Node000024" href="$classModule.html#a262d6c32ea8823149ab36ec165b73bcf" title=" " alt="" coords="402,283,582,308"/>
 <area shape="poly" id="edge25_Node000004_Node000024" title=" " alt="" coords="313,583,329,577,342,567,363,538,371,511,376,480,390,444,430,375,469,319,474,323,435,378,394,446,382,481,376,512,368,541,346,571,331,581,315,588"/>
-<area shape="rect" id="Node000036" href="$classModule.html#a130499e069fd8cfeff33d84c52107a7b" title=" " alt="" coords="435,605,550,631"/>
+<area shape="rect" id="Node000036" href="$classModule.html#a130499e069fd8cfeff33d84c52107a7b" title=" " alt="" coords="434,605,550,631"/>
 <area shape="poly" id="edge43_Node000004_Node000036" title=" " alt="" coords="314,596,419,608,419,613,314,602"/>
-<area shape="rect" id="Node000037" href="$classModule.html#ab9575ede6723bfd17f6b7ad23dba4c38" title=" " alt="" coords="409,655,576,680"/>
+<area shape="rect" id="Node000037" href="$classModule.html#ab9575ede6723bfd17f6b7ad23dba4c38" title=" " alt="" coords="408,655,576,680"/>
 <area shape="poly" id="edge44_Node000004_Node000037" title=" " alt="" coords="299,605,393,641,416,648,415,653,391,646,297,610"/>
 <area shape="rect" id="Node000038" href="$classModule.html#aeee3f97593504647a5c43d4f45061c22" title=" " alt="" coords="426,704,559,730"/>
 <area shape="poly" id="edge45_Node000004_Node000038" title=" " alt="" coords="282,606,329,648,360,671,393,690,412,698,410,703,391,695,357,675,325,652,279,610"/>
-<area shape="rect" id="Node000039" href="$classModule.html#a43f2c2866b6c260acc5b0772cdfbf4fe" title=" " alt="" coords="413,556,572,582"/>
+<area shape="rect" id="Node000039" href="$classModule.html#a43f2c2866b6c260acc5b0772cdfbf4fe" title=" " alt="" coords="412,556,572,582"/>
 <area shape="poly" id="edge46_Node000004_Node000039" title=" " alt="" coords="314,586,397,577,398,582,314,592"/>
 <area shape="rect" id="Node000006" href="$classNoneCommand.html#acbb100ea8f5956c1ad2679a379089b38" title=" " alt="" coords="640,181,863,207"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="499,455,552,372,593,319,638,268,675,238,712,213,715,218,678,242,642,272,597,322,557,375,503,458"/>
@@ -63,7 +63,7 @@
 <area shape="poly" id="edge42_Node000024_Node000013" title=" " alt="" coords="516,306,572,337,641,368,670,376,668,381,639,373,570,342,514,311"/>
 <area shape="rect" id="Node000025" href="$classModule.html#ac455cfd32f665a46d64b077052baaac2" title=" " alt="" coords="667,132,836,158"/>
 <area shape="poly" id="edge29_Node000024_Node000025" title=" " alt="" coords="503,280,557,225,596,193,639,166,652,161,654,166,642,171,599,197,561,229,506,284"/>
-<area shape="rect" id="Node000026" href="$classModule.html#a0962206e93dc80c31febd714bc3ff1d4" title=" " alt="" coords="927,83,1053,108"/>
+<area shape="rect" id="Node000026" href="$classModule.html#a0962206e93dc80c31febd714bc3ff1d4" title=" " alt="" coords="927,83,1052,108"/>
 <area shape="poly" id="edge30_Node000025_Node000026" title=" " alt="" coords="817,129,911,109,913,114,818,134"/>
 <area shape="rect" id="Node000027" href="$classModule.html#ad8294686e82ae0f9a961df3642c7f500" title=" " alt="" coords="944,132,1036,158"/>
 <area shape="poly" id="edge31_Node000025_Node000027" title=" " alt="" coords="837,151,928,150,928,155,837,156"/>

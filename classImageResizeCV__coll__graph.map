@@ -1,9 +1,9 @@
 <map id="ImageResizeCV" name="ImageResizeCV">
-<area shape="rect" id="Node000001" title=" " alt="" coords="75,1527,217,1832"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,1478,137,1527,132,1528,129,1479"/>
-<area shape="rect" id="Node000003" href="$classImageResizeCVProps.html" title=" " alt="" coords="201,899,360,984"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="277,984,193,1464,184,1511,178,1510,187,1464,271,984"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="78,1528,219,1834"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,1480,140,1529,134,1529,130,1480"/>
+<area shape="rect" id="Node000003" href="$classImageResizeCVProps.html" title=" " alt="" coords="201,900,360,985"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="276,986,193,1466,184,1512,179,1511,187,1465,271,985"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="203,5,358,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="283,386,283,899,278,899,278,386"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="283,386,283,900,278,900,278,386"/>
 </map>

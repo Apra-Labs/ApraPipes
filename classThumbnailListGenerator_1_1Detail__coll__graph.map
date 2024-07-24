@@ -1,7 +1,7 @@
 <map id="ThumbnailListGenerator::Detail" name="ThumbnailListGenerator::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="31,627,183,927"/>
-<area shape="rect" id="Node000002" href="$classThumbnailListGeneratorProps.html" title=" " alt="" coords="5,419,209,564"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,564,110,610,105,610,105,564"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="31,628,183,928"/>
+<area shape="rect" id="Node000002" href="$classThumbnailListGeneratorProps.html" title=" " alt="" coords="5,420,209,565"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,565,110,611,105,611,105,565"/>
 <area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="30,5,185,371"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="110,385,110,419,105,419,105,385"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="110,385,110,420,105,420,105,385"/>
 </map>

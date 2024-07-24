@@ -1,5 +1,5 @@
 <map id="WebCamSource::Detail::setProps" name="WebCamSource::Detail::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,160,113"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,72,160,113"/>
 <area shape="rect" id="Node000002" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="208,80,344,106"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,90,192,90,192,96,160,96"/>
 <area shape="rect" id="Node000003" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="392,5,591,31"/>
@@ -8,6 +8,6 @@
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="344,82,382,78,382,83,345,87"/>
 <area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="397,104,586,130"/>
 <area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="345,98,382,102,381,107,344,103"/>
-<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="395,153,589,179"/>
+<area shape="rect" id="Node000006" href="$classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4" title=" " alt="" coords="394,153,589,179"/>
 <area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="306,104,393,140,415,146,413,151,391,145,304,109"/>
 </map>

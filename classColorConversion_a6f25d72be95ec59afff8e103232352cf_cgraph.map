@@ -1,20 +1,20 @@
 <map id="ColorConversion::processSOS" name="ColorConversion::processSOS">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,137,202,163"/>
-<area shape="rect" id="Node000002" href="$classColorConversion.html#acc9a50aa3286afe70b733b6c868bf58f" title=" " alt="" coords="250,73,455,113"/>
+<area shape="rect" id="Node000002" href="$classColorConversion.html#acc9a50aa3286afe70b733b6c868bf58f" title=" " alt="" coords="250,72,455,113"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,134,245,115,247,120,163,139"/>
 <area shape="rect" id="Node000010" href="$classColorConversion.html#aab8b824fff20cafe965fd49d46848955" title=" " alt="" coords="503,137,697,163"/>
 <area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="202,148,487,148,487,153,202,153"/>
 <area shape="rect" id="Node000011" href="$classModule.html#a4dd6881278e65d321313b024f0573fa1" title=" " alt="" coords="282,188,423,214"/>
 <area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="171,161,272,182,271,187,170,166"/>
-<area shape="rect" id="Node000003" href="$classAbsColorConversionFactory.html#a58f4349613034682956a98d0f7fdc394" title=" " alt="" coords="509,73,691,113"/>
+<area shape="rect" id="Node000003" href="$classAbsColorConversionFactory.html#a58f4349613034682956a98d0f7fdc394" title=" " alt="" coords="509,72,691,113"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="456,90,493,90,493,96,456,96"/>
-<area shape="rect" id="Node000004" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="745,130,901,171"/>
+<area shape="rect" id="Node000004" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="745,130,901,170"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="682,111,731,124,730,129,681,116"/>
 <area shape="rect" id="Node000005" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="755,80,891,106"/>
 <area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="692,90,739,90,739,96,692,96"/>
 <area shape="rect" id="Node000006" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="949,5,1148,31"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="853,77,948,40,970,33,972,38,950,45,854,82"/>
-<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="954,55,1143,80"/>
+<area shape="rect" id="Node000007" href="$classRawImageMetadata.html#a9ea7691f42da6160fc809e65e6d61e37" title=" " alt="" coords="954,55,1142,80"/>
 <area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="891,83,938,77,939,83,892,88"/>
 <area shape="rect" id="Node000008" href="$classRawImageMetadata.html#ad42cb2bae1b368a1c8d8250599fbce28" title=" " alt="" coords="954,104,1143,130"/>
 <area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="892,97,938,102,938,108,891,103"/>

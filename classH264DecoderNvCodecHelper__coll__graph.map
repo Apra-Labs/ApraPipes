@@ -1,7 +1,7 @@
 <map id="H264DecoderNvCodecHelper" name="H264DecoderNvCodecHelper">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,942,215,1167"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,943,215,1169"/>
 <area shape="rect" id="Node000002" href="$classNvDecoder.html" title="Base class for decoder interface." alt="" coords="15,209,205,894"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,909,113,942,107,942,107,909"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,909,113,944,107,944,107,909"/>
 <area shape="rect" id="Node000003" href="$structRect.html" title=" " alt="" coords="30,5,70,131"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="52,130,54,184,55,192,50,192,49,185,47,131"/>
 <area shape="rect" id="Node000004" href="$structDim.html" title=" " alt="" coords="152,25,188,111"/>

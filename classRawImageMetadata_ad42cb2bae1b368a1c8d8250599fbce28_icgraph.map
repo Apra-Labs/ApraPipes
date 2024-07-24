@@ -1,8 +1,8 @@
 <map id="RawImageMetadata::getType" name="RawImageMetadata::getType">
-<area shape="rect" id="Node000001" title=" " alt="" coords="947,341,1136,367"/>
-<area shape="rect" id="Node000002" href="$classUtils.html#aa5ef17fb0cb50cf67ca4b8f45a384547" title=" " alt="" coords="733,153,899,179"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="947,341,1136,366"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#aa5ef17fb0cb50cf67ca4b8f45a384547" title=" " alt="" coords="733,153,899,178"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1011,333,832,181,835,177,1015,329"/>
-<area shape="rect" id="Node000005" href="$classUtils.html#ad7a48e928e61ef9529d1dc768fa89938" title=" " alt="" coords="748,341,884,367"/>
+<area shape="rect" id="Node000005" href="$classUtils.html#ad7a48e928e61ef9529d1dc768fa89938" title=" " alt="" coords="748,341,884,366"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="931,356,885,356,885,351,931,351"/>
 <area shape="rect" id="Node000006" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="748,668,884,693"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1025,381,829,668,824,665,1020,378"/>
@@ -14,7 +14,7 @@
 <area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="804,654,770,535,731,380,724,340,723,304,725,243,724,214,718,186,705,157,683,126,669,114,673,110,687,123,710,155,723,185,729,214,730,243,728,304,730,339,736,378,775,534,809,652"/>
 <area shape="rect" id="Node000010" href="$classBrightnessContrastControl_1_1Detail.html#a9fce71aee861d4a74616865d8caf7075" title=" " alt="" coords="508,136,681,177"/>
 <area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="804,653,731,380,722,323,720,277,712,234,701,213,683,190,670,179,674,175,687,186,706,210,717,233,726,276,727,322,736,378,810,652"/>
-<area shape="rect" id="Node000011" href="$classDetail.html#a743db086de4d22bbc13c381cb2d7b6cf" title=" " alt="" coords="523,201,665,227"/>
+<area shape="rect" id="Node000011" href="$classDetail.html#a743db086de4d22bbc13c381cb2d7b6cf" title=" " alt="" coords="523,201,665,226"/>
 <area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="805,653,740,417,705,298,683,241,664,228,667,223,687,237,710,296,745,415,810,652"/>
 <area shape="rect" id="Node000012" href="$classFaceDetectorXform_1_1Detail.html#ae6614c9c4a1db3e173da1b3c1a9b08a3" title=" " alt="" coords="523,251,665,291"/>
 <area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="806,653,786,573,756,469,721,371,702,332,683,306,664,292,668,288,687,302,707,330,726,368,761,468,791,572,811,652"/>
@@ -26,7 +26,7 @@
 <area shape="poly" id="edge14_Node000006_Node000015" title=" " alt="" coords="800,655,755,579,722,538,684,502,664,490,666,486,687,498,726,535,759,576,804,652"/>
 <area shape="rect" id="Node000016" href="$classVirtualPTZ_1_1Detail.html#aba6135b5557c51a8001a6278976c12b6" title=" " alt="" coords="533,512,655,553"/>
 <area shape="poly" id="edge15_Node000006_Node000016" title=" " alt="" coords="791,658,744,612,684,567,655,553,657,548,687,562,748,608,795,654"/>
-<area shape="rect" id="Node000017" href="$classDetailHost.html#ab91fc19acfc806dae947fcc897f9f792" title=" " alt="" coords="508,577,681,603"/>
+<area shape="rect" id="Node000017" href="$classDetailHost.html#ab91fc19acfc806dae947fcc897f9f792" title=" " alt="" coords="508,577,681,602"/>
 <area shape="poly" id="edge16_Node000006_Node000017" title=" " alt="" coords="777,662,684,617,649,606,651,601,686,613,779,657"/>
 <area shape="rect" id="Node000018" href="$classOverlayInfoDrawingVisitor.html#a8df81ffb8506b065c2d1ce16e7081282" title=" " alt="" coords="506,627,683,667"/>
 <area shape="poly" id="edge17_Node000006_Node000018" title=" " alt="" coords="732,670,683,663,684,658,733,665"/>
@@ -36,7 +36,7 @@
 <area shape="poly" id="edge19_Node000006_Node000020" title=" " alt="" coords="777,703,686,747,655,759,653,754,684,742,775,698"/>
 <area shape="rect" id="Node000021" href="$classCalcHistogramCV_1_1Detail.html#ae1e14d56c0c3f45d7a608b2a6d86f980" title=" " alt="" coords="512,823,676,863"/>
 <area shape="poly" id="edge20_Node000006_Node000021" title=" " alt="" coords="797,707,750,759,720,787,687,812,663,824,661,820,684,807,717,783,747,756,793,704"/>
-<area shape="rect" id="Node000022" href="$classCalcHistogramCV_1_1Detail.html#a1633d02ed7ce12ba8dda3ce2adf843f2" title=" " alt="" coords="270,851,435,891"/>
+<area shape="rect" id="Node000022" href="$classCalcHistogramCV_1_1Detail.html#a1633d02ed7ce12ba8dda3ce2adf843f2" title=" " alt="" coords="270,851,434,891"/>
 <area shape="poly" id="edge30_Node000006_Node000022" title=" " alt="" coords="808,709,792,749,767,796,732,842,711,862,687,877,656,891,623,900,555,908,489,904,430,895,431,889,489,899,555,902,622,895,654,886,684,873,707,857,728,838,762,793,787,747,803,707"/>
 <area shape="rect" id="Node000024" href="$classDetailRenderer.html#a0b3f054b7c468335cb5b1125bf6631f7" title=" " alt="" coords="507,938,681,964"/>
 <area shape="poly" id="edge23_Node000006_Node000024" title=" " alt="" coords="810,709,794,754,768,811,733,870,711,897,687,921,654,940,652,935,684,917,708,893,729,867,764,809,789,752,804,707"/>

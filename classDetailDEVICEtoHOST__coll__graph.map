@@ -1,9 +1,9 @@
 <map id="DetailDEVICEtoHOST" name="DetailDEVICEtoHOST">
-<area shape="rect" id="Node000001" title=" " alt="" coords="19,1160,179,1246"/>
-<area shape="rect" id="Node000002" href="$classDetailMemory.html" title=" " alt="" coords="29,607,170,1112"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,1127,102,1161,97,1161,97,1127"/>
-<area shape="rect" id="Node000003" href="$classMemTypeConversionProps.html" title=" " alt="" coords="5,419,193,544"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="102,544,102,590,97,590,97,544"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="19,1163,179,1248"/>
+<area shape="rect" id="Node000002" href="$classDetailMemory.html" title=" " alt="" coords="29,608,170,1114"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,1129,102,1163,97,1163,97,1129"/>
+<area shape="rect" id="Node000003" href="$classMemTypeConversionProps.html" title=" " alt="" coords="5,420,193,545"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="102,545,102,592,97,592,97,545"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="22,5,177,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="102,386,102,419,97,419,97,386"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="102,386,102,420,97,420,97,386"/>
 </map>

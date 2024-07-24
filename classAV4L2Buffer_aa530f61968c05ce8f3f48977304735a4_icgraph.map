@@ -1,6 +1,6 @@
 <map id="AV4L2Buffer::getNumPlanes" name="AV4L2Buffer::getNumPlanes">
 <area shape="rect" id="Node000001" title=" " alt="" coords="425,46,612,72"/>
-<area shape="rect" id="Node000002" href="$classAV4L2ElementPlane.html#a910f6dc1414ad6b9358d58839814cad1" title=" " alt="" coords="215,5,363,46"/>
+<area shape="rect" id="Node000002" href="$classAV4L2ElementPlane.html#a910f6dc1414ad6b9358d58839814cad1" title=" " alt="" coords="215,5,362,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="410,46,363,39,363,34,411,41"/>
 <area shape="rect" id="Node000004" href="$classV4L2CUYUV420Converter.html#a23079dc94f28e09c87119383701ec5b0" title=" " alt="" coords="201,71,377,111"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="410,77,378,81,377,76,410,71"/>

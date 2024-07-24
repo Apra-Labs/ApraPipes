@@ -1,12 +1,12 @@
 <map id="Module::getFrameByType" name="Module::getFrameByType">
 <area shape="rect" id="Node000001" title=" " alt="" coords="482,657,649,683"/>
-<area shape="rect" id="Node000002" href="$classFaceDetectsInfo.html#ae9aeb01ec96f10609e9b3cb51f973fb9" title=" " alt="" coords="246,195,433,220"/>
+<area shape="rect" id="Node000002" href="$classFaceDetectsInfo.html#ae9aeb01ec96f10609e9b3cb51f973fb9" title=" " alt="" coords="246,195,432,220"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="562,642,558,562,552,509,541,452,524,393,502,335,471,282,432,235,416,223,419,219,436,231,476,279,506,333,530,391,546,451,557,508,563,561,567,642"/>
-<area shape="rect" id="Node000003" href="$classCpuInterleaved2Interleaved.html#a0202feae20bdb27bab559a15a318603b" title=" " alt="" coords="250,245,429,285"/>
+<area shape="rect" id="Node000003" href="$classCpuInterleaved2Interleaved.html#a0202feae20bdb27bab559a15a318603b" title=" " alt="" coords="250,244,429,285"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="553,643,508,520,474,443,432,369,397,324,361,287,365,284,401,320,436,366,478,441,513,518,558,641"/>
 <area shape="rect" id="Node000013" href="$classCpuInterleaved2Planar.html#ae90cfa6c077685f34d45262b79a8ca4e" title=" " alt="" coords="263,379,416,420"/>
 <area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="554,643,538,598,512,542,477,485,456,458,432,435,414,423,417,418,436,431,460,455,482,481,517,539,543,596,559,641"/>
-<area shape="rect" id="Node000015" href="$classCpuPlanar2Interleaved.html#a76167126ccac1448f2ea73237faea632" title=" " alt="" coords="263,445,416,485"/>
+<area shape="rect" id="Node000015" href="$classCpuPlanar2Interleaved.html#a76167126ccac1448f2ea73237faea632" title=" " alt="" coords="263,444,416,485"/>
 <area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="549,645,503,572,471,533,432,499,414,488,416,483,436,495,474,529,507,569,553,642"/>
 <area shape="rect" id="Node000017" href="$classCalcHistogramCV.html#a361e4af2d339a9bb96ffa07925fe00cf" title=" " alt="" coords="251,509,428,535"/>
 <area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="543,647,496,597,466,571,433,549,408,538,411,533,435,544,469,566,500,593,547,644"/>
@@ -16,15 +16,15 @@
 <area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="488,656,401,637,402,632,489,651"/>
 <area shape="rect" id="Node000020" href="$classImageDecoderCV.html#ae142723cb7b129adc1568f7430244a15" title=" " alt="" coords="252,657,427,683"/>
 <area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="467,673,427,673,427,668,467,668"/>
-<area shape="rect" id="Node000021" href="$classImageEncoderCV.html#ad0629234b44e9c1dcd042eb248f670e1" title=" " alt="" coords="252,707,427,732"/>
+<area shape="rect" id="Node000021" href="$classImageEncoderCV.html#ad0629234b44e9c1dcd042eb248f670e1" title=" " alt="" coords="252,707,426,732"/>
 <area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="489,690,402,709,401,703,488,684"/>
-<area shape="rect" id="Node000022" href="$classImageResizeCV.html#a8975c30547ee95791f507683d17b23e4" title=" " alt="" coords="256,756,423,782"/>
+<area shape="rect" id="Node000022" href="$classImageResizeCV.html#a8975c30547ee95791f507683d17b23e4" title=" " alt="" coords="256,756,422,782"/>
 <area shape="poly" id="edge21_Node000001_Node000022" title=" " alt="" coords="534,694,488,721,435,747,404,758,402,753,433,742,485,717,531,690"/>
 <area shape="rect" id="Node000023" href="$classJPEGDecoderL4TM.html#a107f7c39e60d618b4bf74578df487782" title=" " alt="" coords="245,805,434,831"/>
 <area shape="poly" id="edge22_Node000001_Node000023" title=" " alt="" coords="547,697,500,747,469,774,435,797,411,807,408,802,433,792,466,770,496,744,543,693"/>
 <area shape="rect" id="Node000024" href="$classJPEGEncoderL4TM.html#a86a26ba919bed2f6893cb36617e8b26b" title=" " alt="" coords="245,855,434,880"/>
 <area shape="poly" id="edge23_Node000001_Node000024" title=" " alt="" coords="554,698,535,732,509,772,475,812,435,846,414,857,412,852,433,841,472,808,504,769,531,729,549,696"/>
-<area shape="rect" id="Node000025" href="$classThumbnailListGenerator.html#afe9732b27b05ac0608fb708603629622" title=" " alt="" coords="259,905,420,945"/>
+<area shape="rect" id="Node000025" href="$classThumbnailListGenerator.html#afe9732b27b05ac0608fb708603629622" title=" " alt="" coords="259,904,420,945"/>
 <area shape="poly" id="edge24_Node000001_Node000025" title=" " alt="" coords="558,699,541,742,515,794,480,848,436,895,418,906,416,902,432,891,476,845,511,792,536,739,553,697"/>
 <area shape="rect" id="Node000026" href="$classDetailH264.html#af82f7f1e2e53b8c02c53cccb82274ecd" title=" " alt="" coords="280,969,399,995"/>
 <area shape="poly" id="edge25_Node000001_Node000026" title=" " alt="" coords="562,699,549,754,526,824,509,861,489,897,464,930,436,959,419,970,400,977,398,972,416,965,432,955,460,926,484,894,504,859,521,822,544,753,557,698"/>
@@ -48,7 +48,7 @@
 <area shape="poly" id="edge10_Node000003_Node000011" title=" " alt="" coords="293,295,247,320,198,342,165,353,163,348,196,337,245,315,290,291"/>
 <area shape="rect" id="Node000012" href="$classCpuRGB2MONO.html#a857c4b3bba46f20f318cdc87b4f653db" title=" " alt="" coords="16,400,186,426"/>
 <area shape="poly" id="edge11_Node000003_Node000012" title=" " alt="" coords="312,299,262,347,231,371,198,391,172,402,170,397,195,386,228,366,258,343,308,295"/>
-<area shape="rect" id="Node000014" href="$classCpuRGB2YUV420Planar.html#afcb374ef9d14725015af432f19b6421a" title=" " alt="" coords="18,450,184,491"/>
+<area shape="rect" id="Node000014" href="$classCpuRGB2YUV420Planar.html#afcb374ef9d14725015af432f19b6421a" title=" " alt="" coords="18,450,184,490"/>
 <area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="255,427,173,452,171,447,253,422"/>
 <area shape="rect" id="Node000016" href="$classCpuYUV420Planar2RGB.html#afe49858cd6a923a19dd90022818fad6b" title=" " alt="" coords="18,515,184,556"/>
 <area shape="poly" id="edge15_Node000015_Node000016" title=" " alt="" coords="255,493,173,517,171,512,253,487"/>

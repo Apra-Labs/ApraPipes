@@ -1,7 +1,7 @@
 <map id="DetailH264" name="DetailH264">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,1087,209,1292"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,1088,209,1294"/>
 <area shape="rect" id="Node000002" href="$classDetailAbs.html" title=" " alt="" coords="11,474,203,1039"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1054,110,1087,105,1087,105,1054"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1054,110,1088,105,1088,105,1054"/>
 <area shape="rect" id="Node000003" href="$classMp4WriterSinkUtils.html" title=" " alt="" coords="12,5,203,411"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="110,411,110,457,105,457,105,411"/>
 </map>

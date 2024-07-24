@@ -1,6 +1,6 @@
 <map id="Detail::setProps" name="Detail::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,118,39"/>
-<area shape="rect" id="Node000002" href="$classDetail.html#a83c3f7a02b1d2062026186a8464200ba" title=" " alt="" coords="166,13,298,39"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,118,38"/>
+<area shape="rect" id="Node000002" href="$classDetail.html#a83c3f7a02b1d2062026186a8464200ba" title=" " alt="" coords="166,13,298,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,23,150,23,150,28,118,28"/>
 <area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="346,5,501,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="298,23,330,23,330,28,298,28"/>

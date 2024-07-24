@@ -1,6 +1,6 @@
 <map id="NvV4L2Camera::NvV4L2Camera" name="NvV4L2Camera::NvV4L2Camera">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,128,219,154"/>
-<area shape="rect" id="Node000002" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="282,29,431,55"/>
+<area shape="rect" id="Node000002" href="$classModule.html#a71ef4f709d24d69a69ed8ae44d69739c" title=" " alt="" coords="282,29,430,55"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,125,194,95,266,64,284,57,286,62,268,69,196,100,138,130"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a264d18f5907844d6d413c5d529804c4d" title=" " alt="" coords="287,103,426,128"/>
 <area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="219,127,271,122,272,127,220,132"/>
@@ -16,7 +16,7 @@
 <area shape="poly" id="edge7_Node000004_Node000006" title=" " alt="" coords="405,162,481,162,481,168,405,168"/>
 <area shape="rect" id="Node000008" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="520,201,677,227"/>
 <area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="413,255,525,229,526,234,414,261"/>
-<area shape="rect" id="Node000011" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="521,251,676,292"/>
+<area shape="rect" id="Node000011" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="520,251,676,292"/>
 <area shape="poly" id="edge12_Node000007_Node000011" title=" " alt="" coords="446,269,505,269,505,274,446,274"/>
 <area shape="rect" id="Node000012" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="500,316,696,342"/>
 <area shape="poly" id="edge13_Node000007_Node000012" title=" " alt="" coords="414,282,526,309,525,314,413,288"/>

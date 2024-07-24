@@ -1,7 +1,7 @@
 <map id="GtkGlRenderer::Detail" name="GtkGlRenderer::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,607,189,1172"/>
-<area shape="rect" id="Node000002" href="$classGtkGlRendererProps.html" title=" " alt="" coords="21,419,173,544"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,544,100,590,95,590,95,544"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,608,189,1174"/>
+<area shape="rect" id="Node000002" href="$classGtkGlRendererProps.html" title=" " alt="" coords="21,420,173,545"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,545,100,591,95,591,95,545"/>
 <area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="20,5,175,371"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="100,386,100,419,95,419,95,386"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="100,386,100,420,95,420,95,386"/>
 </map>

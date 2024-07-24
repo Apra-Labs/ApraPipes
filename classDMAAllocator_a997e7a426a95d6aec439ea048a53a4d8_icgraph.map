@@ -1,6 +1,6 @@
 <map id="DMAAllocator::getColorFormat" name="DMAAllocator::getColorFormat">
 <area shape="rect" id="Node000001" title=" " alt="" coords="775,154,972,180"/>
-<area shape="rect" id="Node000002" href="$classDMAAllocator.html#a947f2a8d570ff381271878be58710153" title=" " alt="" coords="540,129,727,155"/>
+<area shape="rect" id="Node000002" href="$classDMAAllocator.html#a947f2a8d570ff381271878be58710153" title=" " alt="" coords="540,129,727,154"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="759,158,728,154,728,149,760,152"/>
 <area shape="rect" id="Node000003" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="544,178,723,204"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="760,181,724,185,723,179,759,176"/>
@@ -12,13 +12,13 @@
 <area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="529,194,492,194,492,188,529,188"/>
 <area shape="rect" id="Node000009" href="$classNvV4L2Camera.html#ad1d29dbfbca69a70af362b1321b5af32" title=" " alt="" coords="276,228,489,253"/>
 <area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="550,210,452,229,451,224,549,205"/>
-<area shape="rect" id="Node000010" href="$classNvTransform.html#a7827d1d425a1279d0b2be2b3d0d83be4" title=" " alt="" coords="295,277,470,303"/>
+<area shape="rect" id="Node000010" href="$classNvTransform.html#a7827d1d425a1279d0b2be2b3d0d83be4" title=" " alt="" coords="295,277,470,302"/>
 <area shape="poly" id="edge9_Node000003_Node000010" title=" " alt="" coords="600,214,551,242,493,268,458,279,457,274,491,263,548,237,598,210"/>
 <area shape="rect" id="Node000005" href="$classThumbnailListGenerator.html#afe9732b27b05ac0608fb708603629622" title=" " alt="" coords="35,5,195,46"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="269,61,195,45,196,40,270,56"/>
 <area shape="rect" id="Node000006" href="$classDMAFDToHostCopy.html#a48b6fa4690c5cf4eaefa91b0a13f7167" title=" " alt="" coords="5,70,225,96"/>
 <area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="260,86,225,86,225,80,260,80"/>
 <area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="270,110,205,124,204,119,269,105"/>
-<area shape="rect" id="Node000011" href="$classNvTransform.html#a976d8cb55f069ed75e8469977c990286" title=" " alt="" coords="26,277,204,303"/>
+<area shape="rect" id="Node000011" href="$classNvTransform.html#a976d8cb55f069ed75e8469977c990286" title=" " alt="" coords="26,277,204,302"/>
 <area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="279,292,204,292,204,287,279,287"/>
 </map>

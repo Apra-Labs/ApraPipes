@@ -11,9 +11,9 @@
 <area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="431,164,536,204,561,213,559,218,534,210,429,169"/>
 <area shape="rect" id="Node000008" href="$classDMAFrameUtils.html#ab2832b65c2e6068238f76738f8630a88" title=" " alt="" coords="535,155,768,195"/>
 <area shape="poly" id="edge9_Node000003_Node000008" title=" " alt="" coords="488,155,520,158,519,163,487,160"/>
-<area shape="rect" id="Node000009" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="562,105,741,131"/>
+<area shape="rect" id="Node000009" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="562,105,741,130"/>
 <area shape="poly" id="edge11_Node000003_Node000009" title=" " alt="" coords="487,132,546,126,547,131,488,137"/>
-<area shape="rect" id="Node000005" href="$classDMAFDWrapper.html#a1c67a9080e04d2f99a458e6b552fa325" title=" " alt="" coords="1089,253,1274,279"/>
+<area shape="rect" id="Node000005" href="$classDMAFDWrapper.html#a1c67a9080e04d2f99a458e6b552fa325" title=" " alt="" coords="1089,253,1274,278"/>
 <area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="758,295,1074,271,1074,276,759,300"/>
 <area shape="rect" id="Node000007" href="$classDMAFDWrapper.html#a3a13928095fd2628ebc5d8f3974b28ad" title=" " alt="" coords="824,228,1017,253"/>
 <area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="761,238,809,238,809,243,761,243"/>
@@ -24,12 +24,12 @@
 <area shape="poly" id="edge12_Node000009_Node000010" title=" " alt="" coords="742,103,826,92,827,98,742,109"/>
 <area shape="rect" id="Node000013" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="822,120,1019,145"/>
 <area shape="poly" id="edge16_Node000009_Node000013" title=" " alt="" coords="742,120,807,123,807,129,742,125"/>
-<area shape="rect" id="Node000014" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="816,169,1025,195"/>
+<area shape="rect" id="Node000014" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="816,169,1025,194"/>
 <area shape="poly" id="edge17_Node000009_Node000014" title=" " alt="" coords="719,128,769,140,817,155,844,162,843,167,816,160,768,146,718,134"/>
 <area shape="rect" id="Node000011" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="1074,96,1289,121"/>
 <area shape="poly" id="edge13_Node000010_Node000011" title=" " alt="" coords="1000,88,1058,94,1058,99,999,93"/>
 <area shape="rect" id="Node000012" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="1107,46,1256,72"/>
 <area shape="poly" id="edge14_Node000010_Node000012" title=" " alt="" coords="999,73,1091,65,1092,70,1000,78"/>
-<area shape="rect" id="Node000015" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="1073,169,1290,195"/>
+<area shape="rect" id="Node000015" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="1073,169,1290,194"/>
 <area shape="poly" id="edge18_Node000014_Node000015" title=" " alt="" coords="1025,179,1057,179,1057,184,1025,184"/>
 </map>

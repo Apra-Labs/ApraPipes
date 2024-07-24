@@ -1,6 +1,6 @@
 <map id="FramesMuxerStrategy::getMuxOutputPinId" name="FramesMuxerStrategy::getMuxOutputPinId">
 <area shape="rect" id="Node000001" title=" " alt="" coords="420,95,568,135"/>
-<area shape="rect" id="Node000002" href="$classFramesMuxerStrategy.html#a90a0e198811721d9fa82da121fd5d6a8" title=" " alt="" coords="212,37,361,78"/>
+<area shape="rect" id="Node000002" href="$classFramesMuxerStrategy.html#a90a0e198811721d9fa82da121fd5d6a8" title=" " alt="" coords="212,37,360,78"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="404,93,360,81,362,76,406,88"/>
 <area shape="rect" id="Node000005" href="$classAllOrNoneStrategy.html#a6f6585c244a9926dcc69a1d9f823ee1f" title=" " alt="" coords="210,102,363,128"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="404,118,363,118,363,112,404,112"/>

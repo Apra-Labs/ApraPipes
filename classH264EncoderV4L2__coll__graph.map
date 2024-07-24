@@ -1,9 +1,9 @@
 <map id="H264EncoderV4L2" name="H264EncoderV4L2">
-<area shape="rect" id="Node000001" title=" " alt="" coords="63,1527,231,1812"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,419,177,1464"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,1479,139,1527,134,1528,130,1479"/>
-<area shape="rect" id="Node000003" href="$classH264EncoderV4L2Props.html" title=" " alt="" coords="201,889,376,994"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,994,193,1465,183,1511,178,1510,187,1463,277,993"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="67,1528,235,1814"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,1480,142,1529,137,1529,133,1480"/>
+<area shape="rect" id="Node000003" href="$classH264EncoderV4L2Props.html" title=" " alt="" coords="201,890,376,995"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,996,184,1512,179,1511,276,995"/>
 <area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="211,5,366,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="291,386,291,889,286,889,286,386"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="291,386,291,890,286,890,286,386"/>
 </map>

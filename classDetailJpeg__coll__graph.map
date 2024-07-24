@@ -1,7 +1,7 @@
 <map id="DetailJpeg" name="DetailJpeg">
-<area shape="rect" id="Node000001" title=" " alt="" coords="11,1087,192,1192"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="11,1088,192,1194"/>
 <area shape="rect" id="Node000002" href="$classDetailAbs.html" title=" " alt="" coords="5,474,197,1039"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,1054,104,1087,99,1087,99,1054"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,1054,104,1089,99,1089,99,1054"/>
 <area shape="rect" id="Node000003" href="$classMp4WriterSinkUtils.html" title=" " alt="" coords="6,5,197,411"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,411,104,457,99,457,99,411"/>
 </map>

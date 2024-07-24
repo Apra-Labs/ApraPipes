@@ -1,10 +1,10 @@
 <map id="ColorConversion::setConversionStrategy" name="ColorConversion::setConversionStrategy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,45,211,85"/>
-<area shape="rect" id="Node000002" href="$classAbsColorConversionFactory.html#a58f4349613034682956a98d0f7fdc394" title=" " alt="" coords="259,45,441,85"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,44,211,85"/>
+<area shape="rect" id="Node000002" href="$classAbsColorConversionFactory.html#a58f4349613034682956a98d0f7fdc394" title=" " alt="" coords="259,44,441,85"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,62,243,62,243,68,211,68"/>
 <area shape="rect" id="Node000003" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="489,15,644,56"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="441,50,473,45,474,51,442,55"/>
-<area shape="rect" id="Node000004" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="499,80,635,106"/>
+<area shape="rect" id="Node000004" href="$classUtils.html#a2112c0e11595398590f3ba4dddd2b2c0" title=" " alt="" coords="498,80,635,106"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="442,74,483,79,483,85,441,79"/>
 <area shape="rect" id="Node000005" href="$classRawImageMetadata.html#ad38cbc1f17e78b014bfcc5b588b36209" title=" " alt="" coords="692,5,892,31"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="612,77,643,65,667,52,691,40,711,33,712,38,693,45,669,57,645,70,613,82"/>
