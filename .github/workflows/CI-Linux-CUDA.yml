@@ -8,6 +8,7 @@ on:
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   
 jobs:
   linux-cuda-build-test:
@@ -18,6 +19,7 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       prep-cmd: 'echo skipping builder prep as I can not sudo'
+      bootstrap-cmd: 'export PATH="/usr/bin/gcc-8:$PATH" && ./vcpkg/bootstrap-vcpkg.sh'
       cache-path: './none'
       nProc: 6
   linux-cuda-publish:

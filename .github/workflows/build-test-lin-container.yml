@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev && pip3 install meson'
+        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install meson'
         required: false
       prep-check-cmd:
         type: string

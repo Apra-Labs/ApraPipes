@@ -84,11 +84,11 @@ jobs:
       if: ${{ contains(inputs.cuda,'ON')}} 
       run: |
         (nvcc --version) || echo 'please install cuda'
-        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
+        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
         Get-Item Env:CUDA_HOME
         Get-Item Env:CUDA_PATH
-        echo "CUDA_HOME=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7" >> $GITHUB_ENV
-        echo "CUDA_PATH=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\bin" >> $GITHUB_ENV
+        echo "CUDA_HOME=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8" >> $GITHUB_ENV
+        echo "CUDA_PATH=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin" >> $GITHUB_ENV
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
