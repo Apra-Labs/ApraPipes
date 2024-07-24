@@ -230,6 +230,12 @@ protected:
 	}
 
 	template<class T>
+	bool queuePriorityCommand(T& cmd)
+	{
+		queueCommand(cmd, true);
+	}
+
+	template<class T>
 	bool queueCommand(T& cmd, bool priority = false)
 	{
 		auto size = cmd.getSerializeSize();

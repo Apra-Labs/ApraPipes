@@ -1218,12 +1218,10 @@ bool Module::step()
 	else if (myNature == CONTROL)
 	{
 		auto frames = mQue->pop();
-		preProcessNonSource(frames); // ctrl
+		preProcessControl(frames);
 		if (frames.size() != 0)
 		{
-			std::string msg = "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.";
-			LOG_ERROR << msg;
-			throw AIPException(CTRL_MODULE_INVALID_STATE, msg);
+			throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.");
 		}
 	}
 	else
@@ -1352,6 +1350,8 @@ bool Module::preProcessControl(frame_container& frames) //ctrl: continue on this
 			frames.erase(pinId);
 			continue;
 		}
+
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected data frame recieved in control module");
 	}
 
 	return true;
