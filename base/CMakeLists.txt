@@ -92,8 +92,7 @@ IF(ENABLE_CUDA)
 		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
-		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
@@ -127,8 +126,6 @@ IF(ENABLE_CUDA)
 	ELSEIF(ENABLE_LINUX)
 		find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
 		find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
-		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
 			libcuda.so		
@@ -512,8 +509,6 @@ target_include_directories ( aprapipes PRIVATE
 	${OpenCV_INCLUDE_DIRS} 
 	${Boost_INCLUDE_DIRS}
 	${LIBMP4_INC_DIR}
-	${BARESIP_INC_DIR}
-	${LIBRE_INC_DIR}
 	${NVCODEC_INCLUDE_DIR}
 )
 
