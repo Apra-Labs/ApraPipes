@@ -12,6 +12,8 @@ extern "C" {
 #include "H264ParserUtils.h"
 #include "Frame.h"
 #include "AbsControlModule.h"
+#include "H264Utils.h"
+#include "RTSPPusher.h"
 class RTSPPusher::Detail
 {
 	/* video output */
