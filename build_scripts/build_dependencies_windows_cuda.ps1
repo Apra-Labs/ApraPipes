@@ -22,10 +22,14 @@ if (-not (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\$cudaVer
 } else {
     $userName = $env:UserName
     $zipFilePath = "C:\Users\$userName\Downloads\cudnn-*.zip"
+    $extractedPath = "C:\Users\$userName\Downloads\cudnn-*\"
 
-    Write-Host "Extracting zip file..."
-    
-    Expand-Archive -Path $zipFilePath -DestinationPath C:\Users\$userName\Downloads\ -Force
+    if (-not (Test-Path $extractedPath)) {
+        Write-Host "Extracting zip file..."
+        Expand-Archive -Path $zipFilePath -DestinationPath "C:\Users\$userName\Downloads\" -Force
+    } else {
+        Write-Host "Already extracted files found."
+    }
 
     Write-Host "Copying files..."
     Copy-Item -Path "C:\Users\$userName\Downloads\cudnn-*\include\*.h" -Destination "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\$cudaVersion\include\" -Recurse
