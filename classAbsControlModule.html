@@ -148,10 +148,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1dcbd497ac5835c8736728fbb5d09c94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6069df721f08952d22768bc18286a946" id="r_a6069df721f08952d22768bc18286a946"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6069df721f08952d22768bc18286a946">term</a> ()</td></tr>
 <tr class="separator:a6069df721f08952d22768bc18286a946"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31d0199d7f558d6b5eb3d5621a39b50d" id="r_a31d0199d7f558d6b5eb3d5621a39b50d"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a31d0199d7f558d6b5eb3d5621a39b50d">enrollModule</a> (boost::shared_ptr&lt; <a class="el" href="classPipeLine.html">PipeLine</a> &gt; p, std::string role, boost::shared_ptr&lt; <a class="el" href="classModule.html">Module</a> &gt; module)</td></tr>
-<tr class="separator:a31d0199d7f558d6b5eb3d5621a39b50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7fd8c3b7590bee80d4aaf10eed0e400f" id="r_a7fd8c3b7590bee80d4aaf10eed0e400f"><td class="memItemLeft" align="right" valign="top">std::pair&lt; bool, boost::shared_ptr&lt; <a class="el" href="classModule.html">Module</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7fd8c3b7590bee80d4aaf10eed0e400f">getModuleofRole</a> (<a class="el" href="classPipeLine.html">PipeLine</a> p, std::string role)</td></tr>
-<tr class="separator:a7fd8c3b7590bee80d4aaf10eed0e400f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29e0de1af824ce41a72345ebddc8d436" id="r_a29e0de1af824ce41a72345ebddc8d436"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29e0de1af824ce41a72345ebddc8d436">enrollModule</a> (std::string pName, std::string role, boost::shared_ptr&lt; <a class="el" href="classModule.html">Module</a> &gt; module)</td></tr>
+<tr class="separator:a29e0de1af824ce41a72345ebddc8d436"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e625f3632b2a3e4b6128e34a692d67c" id="r_a8e625f3632b2a3e4b6128e34a692d67c"><td class="memItemLeft" align="right" valign="top">std::pair&lt; bool, boost::shared_ptr&lt; <a class="el" href="classModule.html">Module</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e625f3632b2a3e4b6128e34a692d67c">getModuleofRole</a> (std::string pName, std::string role)</td></tr>
+<tr class="separator:a8e625f3632b2a3e4b6128e34a692d67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a803abee9032ecad58ec2ecac13932551" id="r_a803abee9032ecad58ec2ecac13932551"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a803abee9032ecad58ec2ecac13932551">handleMp4MissingVideotrack</a> (std::string previousVideoFile, std::string nextVideoFile)</td></tr>
 <tr class="separator:a803abee9032ecad58ec2ecac13932551"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1e7c63dddf982403ba68fc929b81dec" id="r_ac1e7c63dddf982403ba68fc929b81dec"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac1e7c63dddf982403ba68fc929b81dec">handleMMQExport</a> (<a class="el" href="classCommand.html">Command</a> cmd, bool priority=false)</td></tr>
@@ -455,8 +455,8 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a31d0199d7f558d6b5eb3d5621a39b50d" name="a31d0199d7f558d6b5eb3d5621a39b50d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a31d0199d7f558d6b5eb3d5621a39b50d">&#9670;&#160;</a></span>enrollModule()</h2>
+<a id="a29e0de1af824ce41a72345ebddc8d436" name="a29e0de1af824ce41a72345ebddc8d436"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29e0de1af824ce41a72345ebddc8d436">&#9670;&#160;</a></span>enrollModule()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -464,7 +464,7 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="memname">std::string AbsControlModule::enrollModule </td>
           <td>(</td>
-          <td class="paramtype">boost::shared_ptr&lt; <a class="el" href="classPipeLine.html">PipeLine</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>p</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>pName</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -481,8 +481,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a7fd8c3b7590bee80d4aaf10eed0e400f" name="a7fd8c3b7590bee80d4aaf10eed0e400f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7fd8c3b7590bee80d4aaf10eed0e400f">&#9670;&#160;</a></span>getModuleofRole()</h2>
+<a id="a8e625f3632b2a3e4b6128e34a692d67c" name="a8e625f3632b2a3e4b6128e34a692d67c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e625f3632b2a3e4b6128e34a692d67c">&#9670;&#160;</a></span>getModuleofRole()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -490,7 +490,7 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="memname">std::pair&lt; bool, boost::shared_ptr&lt; <a class="el" href="classModule.html">Module</a> &gt; &gt; AbsControlModule::getModuleofRole </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classPipeLine.html">PipeLine</a></td>          <td class="paramname"><span class="paramname"><em>p</em></span>, </td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>pName</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -499,16 +499,6 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classAbsControlModule_a7fd8c3b7590bee80d4aaf10eed0e400f_cgraph.png" border="0" usemap="#aclassAbsControlModule_a7fd8c3b7590bee80d4aaf10eed0e400f_cgraph" alt=""/></div>
-<map name="aclassAbsControlModule_a7fd8c3b7590bee80d4aaf10eed0e400f_cgraph" id="aclassAbsControlModule_a7fd8c3b7590bee80d4aaf10eed0e400f_cgraph">
-<area shape="rect" title=" " alt="" coords="5,5,236,31"/>
-<area shape="rect" href="classPipeLine.html#af489eebbff7ad86c6dd4bd75cb463b28" title=" " alt="" coords="284,5,415,31"/>
-<area shape="poly" title=" " alt="" coords="236,16,268,16,268,21,236,21"/>
-</map>
-</div>
 
 </div>
 </div>
@@ -976,7 +966,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classAbsControlModule.html">AbsControlModule</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 62d7a07</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 19190c3</a></li>
     </ul>
   </div>
   </body>

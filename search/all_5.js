@@ -59,7 +59,7 @@ var searchData=
   ['endtimesaved_56',['endTimeSaved',['../classMultimediaQueueXform.html#aa5f7c577d3cc2455a5fe00e102a8fd52',1,'MultimediaQueueXform']]],
   ['endts_57',['endTS',['../structMp4ReaderDetailAbs_1_1DemuxAndParserState.html#afc5e3db7b5321c90d7c4281c05288fcf',1,'Mp4ReaderDetailAbs::DemuxAndParserState']]],
   ['enqueue_58',['enqueue',['../classFramesQueue.html#af0b63d2e8c79c4f96a4ea1a27e4e180b',1,'FramesQueue::enqueue()'],['../classIndependentFramesQueue.html#ad493912e3a856a809631aa363d8c0bca',1,'IndependentFramesQueue::enqueue()'],['../classGroupedFramesQueue.html#a5e796b5a5f75c7562aca8db97b90ba0f',1,'GroupedFramesQueue::enqueue()']]],
-  ['enrollmodule_59',['enrollModule',['../classAbsControlModule.html#a31d0199d7f558d6b5eb3d5621a39b50d',1,'AbsControlModule']]],
+  ['enrollmodule_59',['enrollModule',['../classAbsControlModule.html#a29e0de1af824ce41a72345ebddc8d436',1,'AbsControlModule']]],
   ['enumsize_60',['enumSize',['../classCCNPPI_1_1Detail.html#a0e0f8593237c87b4ff2bcf1d2cb52971',1,'CCNPPI::Detail']]],
   ['eopframe_61',['EoPFrame',['../classEoPFrame.html',1,'EoPFrame'],['../classEoPFrame.html#a71e9b4a0afa7197a66c4fce7ee2e9564',1,'EoPFrame::EoPFrame()']]],
   ['eos_62',['eos',['../structh264DecoderV4L2Helper_1_1context__t.html#a6173dca1385ad04730a1bf0d8f3edf7c',1,'h264DecoderV4L2Helper::context_t']]],

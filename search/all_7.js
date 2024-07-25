@@ -95,7 +95,7 @@ var searchData=
   ['getmemtype_92',['getMemType',['../classFrameMetadata.html#a0864f2f0fa701a2d22e10ae20f52e90c',1,'FrameMetadata']]],
   ['getmetadata_93',['getMetadata',['../classFrame.html#a874db1c573742b97b0a50887114b471d',1,'Frame::getMetadata()'],['../classImageDecoderCV_1_1Detail.html#a4a88bfe61d8d05aa7ae91fb799dc43e4',1,'ImageDecoderCV::Detail::getMetadata()'],['../classJPEGDecoderL4TM_1_1Detail.html#a160bb98b67cf700712498162903a4b2a',1,'JPEGDecoderL4TM::Detail::getMetadata()']]],
   ['getmodulename_94',['getModuleName',['../classPropsChangeMetadata.html#ad44f1d2be495fed50794cc6af8e2e321',1,'PropsChangeMetadata']]],
-  ['getmoduleofrole_95',['getModuleofRole',['../classAbsControlModule.html#a7fd8c3b7590bee80d4aaf10eed0e400f',1,'AbsControlModule']]],
+  ['getmoduleofrole_95',['getModuleofRole',['../classAbsControlModule.html#a8e625f3632b2a3e4b6128e34a692d67c',1,'AbsControlModule']]],
   ['getmodulestate_96',['getModuleState',['../classModule.html#a57d845e7d64a7a7733e55e3fddb73ba6',1,'Module']]],
   ['getmotionvectors_97',['getMotionVectors',['../classH264EncoderV4L2Helper.html#a21063967633160a745668df90306eee3',1,'H264EncoderV4L2Helper::getMotionVectors()'],['../classMvExtractDetailAbs.html#afeab7e42df5bb07d1f6b47f73a74c838',1,'MvExtractDetailAbs::getMotionVectors()'],['../classDetailFfmpeg.html#a8a29cff2d7440648c7b18e6260fb1550',1,'DetailFfmpeg::getMotionVectors()'],['../classDetailOpenH264.html#a443b9d57d4a41a7b0198bd0684ba80ab',1,'DetailOpenH264::getMotionVectors()']]],
   ['getmuxoutputpinid_98',['getMuxOutputPinId',['../classFramesMuxerStrategy.html#a56ece39b0bdc8c36b055d555a5dc9fa6',1,'FramesMuxerStrategy']]],

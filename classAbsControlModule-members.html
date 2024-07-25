@@ -123,7 +123,7 @@ $(function(){initNavTree('classAbsControlModule.html',''); initResizable(true); 
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#a608b29d1c11e08975d918b992bf13516">emit_fatal</a>(unsigned short eventID)</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="classModule.html#ab83ab539f60052ae26f0edda7f7c10b3a67052c4eb99e3e3973b97212f4cd1087">EndOfStreamNormal</a> enum value</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#ab83ab539f60052ae26f0edda7f7c10b3a2cff9bb7edbb75d6f77dacffc6da71e1">EndOfStreamSocketError</a> enum value</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"></td></tr>
-  <tr class="odd"><td class="entry"><a class="el" href="classAbsControlModule.html#a31d0199d7f558d6b5eb3d5621a39b50d">enrollModule</a>(boost::shared_ptr&lt; PipeLine &gt; p, std::string role, boost::shared_ptr&lt; Module &gt; module)</td><td class="entry"><a class="el" href="classAbsControlModule.html">AbsControlModule</a></td><td class="entry"></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="classAbsControlModule.html#a29e0de1af824ce41a72345ebddc8d436">enrollModule</a>(std::string pName, std::string role, boost::shared_ptr&lt; Module &gt; module)</td><td class="entry"><a class="el" href="classAbsControlModule.html">AbsControlModule</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#a3d1d1177ed4d6cb63e28612ed63ccdfd">event_consumer</a></td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="classModule.html#a219cfce9b256fbf5567eefb0a7d1f88e">fatal_event_consumer</a></td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#ae8fc0b7db1267f590c2df9ae6500e365">fillProps</a>(ModuleProps &amp;props)</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
@@ -143,7 +143,7 @@ $(function(){initNavTree('classAbsControlModule.html',''); initResizable(true); 
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#ac8535c5d19605b8f045c4a44fe652e84">getInputMetadata</a>()</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">protected</span></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="classModule.html#ac6a37f0fd4d38a3847cd69eaaab6ad3d">getInputMetadataByType</a>(int type)</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#a2b2ebb574b5f8df8325c760354882d72">getInputPinIdByType</a>(int type)</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr class="odd"><td class="entry"><a class="el" href="classAbsControlModule.html#a7fd8c3b7590bee80d4aaf10eed0e400f">getModuleofRole</a>(PipeLine p, std::string role)</td><td class="entry"><a class="el" href="classAbsControlModule.html">AbsControlModule</a></td><td class="entry"></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="classAbsControlModule.html#a8e625f3632b2a3e4b6128e34a692d67c">getModuleofRole</a>(std::string pName, std::string role)</td><td class="entry"><a class="el" href="classAbsControlModule.html">AbsControlModule</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#a57d845e7d64a7a7733e55e3fddb73ba6">getModuleState</a>()</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">protected</span></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="classModule.html#a2d5cc09f7dc83b294790a9f5f89c289a">getName</a>()</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classModule.html#aaea1990b0a837666b555ce06e08d58e7">getNature</a>()</td><td class="entry"><a class="el" href="classModule.html">Module</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
@@ -283,7 +283,7 @@ $(function(){initNavTree('classAbsControlModule.html',''); initResizable(true); 
 </div><!-- doc-content -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 62d7a07</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 19190c3</a></li>
     </ul>
   </div>
   </body>

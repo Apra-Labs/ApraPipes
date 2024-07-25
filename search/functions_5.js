@@ -20,7 +20,7 @@ var searchData=
   ['endencode_17',['endEncode',['../classH264EncoderNVCodecHelper.html#a0df4eb287ddb8033223322a5207a945f',1,'H264EncoderNVCodecHelper::endEncode()'],['../classH264EncoderNVCodec_1_1Detail.html#a304fd192017b8a935bc5d0b877b8338f',1,'H264EncoderNVCodec::Detail::endEncode()'],['../classH264EncoderNVCodecHelper_1_1Detail.html#a3d5905e60c7d0d0462b8a1e02412dfdd',1,'H264EncoderNVCodecHelper::Detail::endEncode()']]],
   ['endlap_18',['endLap',['../classModule_1_1Profiler.html#a739f4dedcf90ef6372dcf9cbf9b90efb',1,'Module::Profiler']]],
   ['enqueue_19',['enqueue',['../classFramesQueue.html#af0b63d2e8c79c4f96a4ea1a27e4e180b',1,'FramesQueue::enqueue()'],['../classIndependentFramesQueue.html#ad493912e3a856a809631aa363d8c0bca',1,'IndependentFramesQueue::enqueue()'],['../classGroupedFramesQueue.html#a5e796b5a5f75c7562aca8db97b90ba0f',1,'GroupedFramesQueue::enqueue()']]],
-  ['enrollmodule_20',['enrollModule',['../classAbsControlModule.html#a31d0199d7f558d6b5eb3d5621a39b50d',1,'AbsControlModule']]],
+  ['enrollmodule_20',['enrollModule',['../classAbsControlModule.html#a29e0de1af824ce41a72345ebddc8d436',1,'AbsControlModule']]],
   ['eopframe_21',['EoPFrame',['../classEoPFrame.html#a71e9b4a0afa7197a66c4fce7ee2e9564',1,'EoPFrame']]],
   ['eosframe_22',['EoSFrame',['../classEoSFrame.html#a7e0a3c49545463eedf0c9cdda0f7531a',1,'EoSFrame::EoSFrame()'],['../classEoSFrame.html#a814f386f84d903cf55f3bc4e1d53261b',1,'EoSFrame::EoSFrame(EoSFrameType eosType, uint64_t mp4TS)']]],
   ['estimatedirectorysize_23',['estimateDirectorySize',['../classArchiveSpaceManager_1_1Detail.html#a1749bdbbd980979ae1020abd40d62638',1,'ArchiveSpaceManager::Detail']]],
