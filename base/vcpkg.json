@@ -80,14 +80,6 @@
       "platform": "windows"
     },
     {
-      "name": "re",
-      "platform": "!windows"
-    },
-    {
-      "name": "baresip",
-      "platform": "!windows"
-    },
-    {
       "name": "libmp4"
     }
   ]
