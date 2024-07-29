@@ -195,13 +195,10 @@ public:
 	virtual void flushQue();
 	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
-<<<<<<< HEAD
 	virtual void addControlModule(boost::shared_ptr<Module> cModule);
-=======
   virtual void registerErrorCallback(ErrorCallback callback){};
   void registerHealthCallback(HealthCallback callback);
   ModuleProps getProps();
->>>>>>> 47094c91c3f3ec3c2e752679e9b4163436a0a2e4
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
