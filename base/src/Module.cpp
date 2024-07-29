@@ -1115,6 +1115,11 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
 	return queueCommand(cmd, priority);
 }
 
+void Module::addControlModule(boost::shared_ptr<Module> cModule)
+{
+	controlModule = cModule;
+}
+
 void Module::flushQueRecursive()
 {
 	flushQue();

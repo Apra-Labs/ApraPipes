@@ -36,7 +36,7 @@ bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
 {
 	for (int i = 0; i < modules.size(); i++)
 	{
-		modules[i]->controlModule = cModule;
+		modules[i]->addControlModule(cModule);
 		cModule->pipelineModules.push_back(modules[i]);
 	}
 	return true;

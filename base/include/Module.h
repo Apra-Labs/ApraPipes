@@ -180,6 +180,7 @@ public:
 	virtual void flushQue();
 	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
+	virtual void addControlModule(boost::shared_ptr<Module> cModule);
 protected:
 	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
 	virtual bool process(frame_container& frames) { return false; }
