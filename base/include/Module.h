@@ -19,6 +19,7 @@
 #include "FIndexStrategy.h"
 #include "Command.h"
 #include "BufferMaker.h"
+#include "Callback.h"
 
 using namespace std;
 
