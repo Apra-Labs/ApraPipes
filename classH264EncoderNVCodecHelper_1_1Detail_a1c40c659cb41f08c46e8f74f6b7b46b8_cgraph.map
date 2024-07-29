@@ -10,6 +10,6 @@
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="440,42,472,38,473,43,441,47"/>
 <area shape="rect" id="Node000004" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a3d31ea983fd096696adcec13deaffa4c" title=" " alt="" coords="488,71,681,111"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="441,68,473,73,472,78,440,74"/>
-<area shape="rect" id="Node000007" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title=" " alt="" coords="488,175,681,215"/>
+<area shape="rect" id="Node000007" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title="Checks if there are any busy output bitstreams or if the encoder is not running." alt="" coords="488,175,681,215"/>
 <area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="440,192,473,192,473,198,440,198"/>
 </map>

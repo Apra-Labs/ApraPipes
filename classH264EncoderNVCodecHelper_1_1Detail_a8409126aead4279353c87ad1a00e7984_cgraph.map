@@ -1,7 +1,9 @@
 <map id="H264EncoderNVCodecHelper::Detail::encode" name="H264EncoderNVCodecHelper::Detail::encode">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,39,199,79"/>
-<area shape="rect" id="Node000002" href="$classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title=" " alt="" coords="247,5,440,46"/>
+<area shape="rect" id="Node000002" href="$classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="247,5,440,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,43,231,39,232,44,199,48"/>
-<area shape="rect" id="Node000003" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a99251d30b70ea59b8024df2fc6e671d1" title=" " alt="" coords="247,71,440,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,69,232,73,231,79,199,74"/>
+<area shape="rect" id="Node000004" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a99251d30b70ea59b8024df2fc6e671d1" title=" " alt="" coords="247,71,440,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="199,69,232,73,231,79,199,74"/>
+<area shape="rect" id="Node000003" href="$classH264EncoderNVCodecHelper_1_1Detail.html#ab9edc7d19bccf18b466818efcdb63c90" title="Allocates additional output bitstream buffers." alt="" coords="488,5,681,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="440,23,473,23,473,28,440,28"/>
 </map>

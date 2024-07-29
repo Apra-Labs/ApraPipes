@@ -1,0 +1,5 @@
+<map id="H264EncoderNVCodecHelper::Detail::is_not_empty" name="H264EncoderNVCodecHelper::Detail::is_not_empty">
+<area shape="rect" id="Node000001" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="5,5,199,46"/>
+<area shape="rect" id="Node000002" href="$classH264EncoderNVCodecHelper_1_1Detail.html#ab9edc7d19bccf18b466818efcdb63c90" title="Allocates additional output bitstream buffers." alt="" coords="247,5,440,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,23,231,23,231,28,199,28"/>
+</map>

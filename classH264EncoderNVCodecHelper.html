@@ -109,13 +109,16 @@ $(function(){initNavTree('classH264EncoderNVCodecHelper.html',''); initResizable
 </div><!--header-->
 <div class="contents">
 
+<p>Helper class for H264 encoding using NVCodec.  
+ <a href="#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="H264EncoderNVCodecHelper_8h_source.html">H264EncoderNVCodecHelper.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for H264EncoderNVCodecHelper:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264EncoderNVCodecHelper__coll__graph.png" border="0" usemap="#aH264EncoderNVCodecHelper_coll__map" alt="Collaboration graph"/></div>
 <map name="aH264EncoderNVCodecHelper_coll__map" id="aH264EncoderNVCodecHelper_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,216,171"/>
+<area shape="rect" title="Helper class for H264 encoding using NVCodec." alt="" coords="5,5,216,191"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -127,26 +130,38 @@ Classes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a5f472a82e00d66120d9e555f79d4e05c" id="r_a5f472a82e00d66120d9e555f79d4e05c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f472a82e00d66120d9e555f79d4e05c">H264EncoderNVCodecHelper</a> (uint32_t _bitRateKbps, apracucontext_sp &amp;_cuContext, uint32_t _gopLength, uint32_t _frameRate, <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494">H264EncoderNVCodecProps::H264CodecProfile</a> _profile, bool enableBFrames)</td></tr>
+<tr class="memdesc:a5f472a82e00d66120d9e555f79d4e05c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a>.  <br /></td></tr>
 <tr class="separator:a5f472a82e00d66120d9e555f79d4e05c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36eb974619c73c11ff589fe72be0e925" id="r_a36eb974619c73c11ff589fe72be0e925"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a36eb974619c73c11ff589fe72be0e925">H264EncoderNVCodecHelper</a> (uint32_t _bitRateKbps, apracucontext_sp &amp;_cuContext, uint32_t _gopLength, uint32_t _frameRate, <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494">H264EncoderNVCodecProps::H264CodecProfile</a> _profile, bool enableBFrames, uint32_t _bufferThres)</td></tr>
+<tr class="memdesc:a36eb974619c73c11ff589fe72be0e925"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a> with buffer threshold.  <br /></td></tr>
+<tr class="separator:a36eb974619c73c11ff589fe72be0e925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4575afcaa900b425ba39094b1f8949e7" id="r_a4575afcaa900b425ba39094b1f8949e7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4575afcaa900b425ba39094b1f8949e7">~H264EncoderNVCodecHelper</a> ()</td></tr>
+<tr class="memdesc:a4575afcaa900b425ba39094b1f8949e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a>.  <br /></td></tr>
 <tr class="separator:a4575afcaa900b425ba39094b1f8949e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8278c4fc378ea1510ab98b647f5b1b2e" id="r_a8278c4fc378ea1510ab98b647f5b1b2e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8278c4fc378ea1510ab98b647f5b1b2e">init</a> (uint32_t width, uint32_t height, uint32_t pitch, <a class="el" href="classImageMetadata.html#af04036a83bf90d2fdc1353cebc0a979e">ImageMetadata::ImageType</a> imageType, std::function&lt; frame_sp(size_t)&gt; makeFrame, std::function&lt; void(frame_sp &amp;, frame_sp &amp;)&gt; send)</td></tr>
+<tr class="memdesc:a8278c4fc378ea1510ab98b647f5b1b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the encoder.  <br /></td></tr>
 <tr class="separator:a8278c4fc378ea1510ab98b647f5b1b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab42d75bce1a552b07ef0a5eaa852d7f3" id="r_ab42d75bce1a552b07ef0a5eaa852d7f3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab42d75bce1a552b07ef0a5eaa852d7f3">process</a> (frame_sp &amp;frame)</td></tr>
+<tr class="memdesc:ab42d75bce1a552b07ef0a5eaa852d7f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process a frame.  <br /></td></tr>
 <tr class="separator:ab42d75bce1a552b07ef0a5eaa852d7f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0df4eb287ddb8033223322a5207a945f" id="r_a0df4eb287ddb8033223322a5207a945f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0df4eb287ddb8033223322a5207a945f">endEncode</a> ()</td></tr>
+<tr class="memdesc:a0df4eb287ddb8033223322a5207a945f"><td class="mdescLeft">&#160;</td><td class="mdescRight">End encoding.  <br /></td></tr>
 <tr class="separator:a0df4eb287ddb8033223322a5207a945f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9d52d412075b2425e5180a7271e2ff5" id="r_ac9d52d412075b2425e5180a7271e2ff5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac9d52d412075b2425e5180a7271e2ff5">getSPSPPS</a> (void *&amp;buffer, size_t &amp;size, int &amp;width, int &amp;height)</td></tr>
+<tr class="memdesc:ac9d52d412075b2425e5180a7271e2ff5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get SPS and PPS data.  <br /></td></tr>
 <tr class="separator:ac9d52d412075b2425e5180a7271e2ff5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a0483f1a532ce26c80c3f7a4ee92037e4" id="r_a0483f1a532ce26c80c3f7a4ee92037e4"><td class="memItemLeft" align="right" valign="top">boost::shared_ptr&lt; <a class="el" href="classH264EncoderNVCodecHelper_1_1Detail.html">Detail</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0483f1a532ce26c80c3f7a4ee92037e4">mDetail</a></td></tr>
+<tr class="memdesc:a0483f1a532ce26c80c3f7a4ee92037e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shared pointer to the internal detail class.  <br /></td></tr>
 <tr class="separator:a0483f1a532ce26c80c3f7a4ee92037e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Helper class for H264 encoding using NVCodec. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5f472a82e00d66120d9e555f79d4e05c" name="a5f472a82e00d66120d9e555f79d4e05c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f472a82e00d66120d9e555f79d4e05c">&#9670;&#160;</a></span>H264EncoderNVCodecHelper()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f472a82e00d66120d9e555f79d4e05c">&#9670;&#160;</a></span>H264EncoderNVCodecHelper() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -184,6 +199,79 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">_bitRateKbps</td><td>Bit rate in kilobits per second. </td></tr>
+    <tr><td class="paramname">_cuContext</td><td>CUDA context. </td></tr>
+    <tr><td class="paramname">_gopLength</td><td>Group of Pictures (GOP) length. </td></tr>
+    <tr><td class="paramname">_frameRate</td><td><a class="el" href="classFrame.html">Frame</a> rate. </td></tr>
+    <tr><td class="paramname">_profile</td><td>Video profile from <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494" title="Enum representing different H.264 codec profiles.">H264EncoderNVCodecProps::H264CodecProfile</a> enum. </td></tr>
+    <tr><td class="paramname">enableBFrames</td><td>Enable or disable B-frames. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a36eb974619c73c11ff589fe72be0e925" name="a36eb974619c73c11ff589fe72be0e925"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36eb974619c73c11ff589fe72be0e925">&#9670;&#160;</a></span>H264EncoderNVCodecHelper() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">H264EncoderNVCodecHelper::H264EncoderNVCodecHelper </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>_bitRateKbps</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">apracucontext_sp &amp;</td>          <td class="paramname"><span class="paramname"><em>_cuContext</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>_gopLength</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>_frameRate</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494">H264EncoderNVCodecProps::H264CodecProfile</a></td>          <td class="paramname"><span class="paramname"><em>_profile</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>enableBFrames</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>_bufferThres</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a> with buffer threshold. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">_bitRateKbps</td><td>Bit rate in kilobits per second. </td></tr>
+    <tr><td class="paramname">_cuContext</td><td>CUDA context. </td></tr>
+    <tr><td class="paramname">_gopLength</td><td>Group of Pictures (GOP) length. </td></tr>
+    <tr><td class="paramname">_frameRate</td><td><a class="el" href="classFrame.html">Frame</a> rate. </td></tr>
+    <tr><td class="paramname">_profile</td><td>Video profile from <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494" title="Enum representing different H.264 codec profiles.">H264EncoderNVCodecProps::H264CodecProfile</a> enum. </td></tr>
+    <tr><td class="paramname">enableBFrames</td><td>Enable or disable B-frames. </td></tr>
+    <tr><td class="paramname">_bufferThres</td><td><a class="el" href="classBuffer.html" title="Class representing a buffer.">Buffer</a> threshold. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a4575afcaa900b425ba39094b1f8949e7" name="a4575afcaa900b425ba39094b1f8949e7"></a>
@@ -200,6 +288,8 @@ Private Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Destructor for <a class="el" href="classH264EncoderNVCodecHelper.html" title="Helper class for H264 encoding using NVCodec.">H264EncoderNVCodecHelper</a>. </p>
 
 </div>
 </div>
@@ -218,6 +308,8 @@ Private Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>End encoding. </p>
 
 </div>
 </div>
@@ -249,6 +341,18 @@ Private Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get SPS and PPS data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>Pointer to buffer to store SPS and PPS data. </td></tr>
+    <tr><td class="paramname">size</td><td>Size of the buffer. </td></tr>
+    <tr><td class="paramname">width</td><td>Width of the frame. </td></tr>
+    <tr><td class="paramname">height</td><td>Height of the frame. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if SPS and PPS data was retrieved successfully, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -291,6 +395,20 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Initialize the encoder. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">width</td><td><a class="el" href="classFrame.html">Frame</a> width. </td></tr>
+    <tr><td class="paramname">height</td><td><a class="el" href="classFrame.html">Frame</a> height. </td></tr>
+    <tr><td class="paramname">pitch</td><td><a class="el" href="classFrame.html">Frame</a> pitch. </td></tr>
+    <tr><td class="paramname">imageType</td><td>Type of the image from <a class="el" href="classImageMetadata.html#af04036a83bf90d2fdc1353cebc0a979e">ImageMetadata::ImageType</a>. </td></tr>
+    <tr><td class="paramname">makeFrame</td><td>Function to create a frame. </td></tr>
+    <tr><td class="paramname">send</td><td>Function to send a frame. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if initialization was successful, false otherwise. </dd></dl>
+
 </div>
 </div>
 <a id="ab42d75bce1a552b07ef0a5eaa852d7f3" name="ab42d75bce1a552b07ef0a5eaa852d7f3"></a>
@@ -307,6 +425,15 @@ Private Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Process a frame. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">frame</td><td><a class="el" href="classFrame.html">Frame</a> to process. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the frame was processed successfully, false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -331,6 +458,8 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Shared pointer to the internal detail class. </p>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
@@ -342,7 +471,7 @@ Private Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classH264EncoderNVCodecHelper.html">H264EncoderNVCodecHelper</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 19190c3</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 7b852c8</a></li>
     </ul>
   </div>
   </body>

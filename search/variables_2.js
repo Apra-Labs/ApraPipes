@@ -31,7 +31,8 @@ var searchData=
   ['buffermul_28',['bufferMul',['../classEffectsNPPI_1_1Detail.html#a0a5c223d15f92b61ddf6a86147e3ffde',1,'EffectsNPPI::Detail']]],
   ['buffers_29',['buffers',['../classNvArgusCameraHelper.html#a3e948ab8c8c07c49c9a168c5d88d00e7',1,'NvArgusCameraHelper']]],
   ['buffersize_30',['bufferSize',['../classAudioToTextXFormProps.html#a1caaca1be654191a5bf5eccf9522889c',1,'AudioToTextXFormProps']]],
-  ['busetcp_31',['bUseTCP',['../classRTSPClientSrc_1_1Detail.html#a4ef3b1e331dbe24a288a44d06cd5558c',1,'RTSPClientSrc::Detail']]],
-  ['bytesperpixel_32',['bytesperpixel',['../structBuffer_1_1BufferPlaneFormat.html#a5c9d6237a77735b96a8902057b5d9ee3',1,'Buffer::BufferPlaneFormat']]],
-  ['bytesused_33',['bytesused',['../structBuffer_1_1BufferPlane.html#aef32afb4526a90a883a3f50e224995c1',1,'Buffer::BufferPlane']]]
+  ['bufferthres_31',['bufferThres',['../classH264EncoderNVCodecProps.html#a51eaa25c028da5a42147618283f022c6',1,'H264EncoderNVCodecProps']]],
+  ['busetcp_32',['bUseTCP',['../classRTSPClientSrc_1_1Detail.html#a4ef3b1e331dbe24a288a44d06cd5558c',1,'RTSPClientSrc::Detail']]],
+  ['bytesperpixel_33',['bytesperpixel',['../structBuffer_1_1BufferPlaneFormat.html#a5c9d6237a77735b96a8902057b5d9ee3',1,'Buffer::BufferPlaneFormat']]],
+  ['bytesused_34',['bytesused',['../structBuffer_1_1BufferPlane.html#aef32afb4526a90a883a3f50e224995c1',1,'Buffer::BufferPlane']]]
 ];

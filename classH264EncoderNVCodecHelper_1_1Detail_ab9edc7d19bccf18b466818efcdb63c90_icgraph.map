@@ -1,0 +1,7 @@
+<map id="H264EncoderNVCodecHelper::Detail::doubleOutputBuffers" name="H264EncoderNVCodecHelper::Detail::doubleOutputBuffers">
+<area shape="rect" id="Node000001" title="Allocates additional output bitstream buffers." alt="" coords="488,5,681,46"/>
+<area shape="rect" id="Node000002" href="$classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="247,5,440,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="473,28,440,28,440,23,473,23"/>
+<area shape="rect" id="Node000003" href="$classH264EncoderNVCodecHelper_1_1Detail.html#a8409126aead4279353c87ad1a00e7984" title=" " alt="" coords="5,5,199,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="231,28,199,28,199,23,231,23"/>
+</map>

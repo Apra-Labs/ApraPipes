@@ -52,7 +52,7 @@
 <area shape="poly" id="edge168_Node000000_Node000025" title=" " alt="" coords="52,1560,54,1495,66,1409,78,1363,95,1318,118,1277,149,1240,177,1223,180,1228,152,1244,123,1280,100,1321,83,1365,71,1410,59,1495,57,1560"/>
 <area shape="rect" id="Node000026" href="$classH264DecoderProps.html" title=" " alt="" coords="182,1255,316,1280"/>
 <area shape="poly" id="edge169_Node000000_Node000026" title=" " alt="" coords="53,1561,58,1504,72,1431,84,1392,101,1355,122,1320,149,1290,164,1279,181,1272,183,1277,166,1284,152,1293,126,1323,106,1357,89,1394,77,1432,63,1505,58,1561"/>
-<area shape="rect" id="Node000027" href="$classH264EncoderNVCodecProps.html" title=" " alt="" coords="155,1304,344,1330"/>
+<area shape="rect" id="Node000027" href="$classH264EncoderNVCodecProps.html" title="Properties for the H264 encoder using NVCodec." alt="" coords="155,1304,344,1330"/>
 <area shape="poly" id="edge170_Node000000_Node000027" title=" " alt="" coords="55,1560,63,1512,79,1452,107,1391,126,1363,149,1339,165,1328,168,1332,152,1343,130,1367,111,1394,84,1454,68,1513,60,1561"/>
 <area shape="rect" id="Node000028" href="$classH264EncoderV4L2Props.html" title=" " alt="" coords="167,1353,332,1379"/>
 <area shape="poly" id="edge171_Node000000_Node000028" title=" " alt="" coords="58,1560,69,1521,87,1475,113,1428,149,1388,166,1377,169,1382,152,1392,117,1431,91,1477,74,1523,63,1562"/>

@@ -71,8 +71,9 @@ var searchData=
   ['bufferplaneformat_68',['BufferPlaneFormat',['../structBuffer_1_1BufferPlaneFormat.html',1,'Buffer']]],
   ['buffers_69',['buffers',['../classNvArgusCameraHelper.html#a3e948ab8c8c07c49c9a168c5d88d00e7',1,'NvArgusCameraHelper']]],
   ['buffersize_70',['bufferSize',['../classAudioToTextXFormProps.html#a1caaca1be654191a5bf5eccf9522889c',1,'AudioToTextXFormProps']]],
-  ['builderoverlayfactory_71',['BuilderOverlayFactory',['../classBuilderOverlayFactory.html',1,'']]],
-  ['busetcp_72',['bUseTCP',['../classRTSPClientSrc_1_1Detail.html#a4ef3b1e331dbe24a288a44d06cd5558c',1,'RTSPClientSrc::Detail']]],
-  ['bytesperpixel_73',['bytesperpixel',['../structBuffer_1_1BufferPlaneFormat.html#a5c9d6237a77735b96a8902057b5d9ee3',1,'Buffer::BufferPlaneFormat']]],
-  ['bytesused_74',['bytesused',['../structBuffer_1_1BufferPlane.html#aef32afb4526a90a883a3f50e224995c1',1,'Buffer::BufferPlane']]]
+  ['bufferthres_71',['bufferThres',['../classH264EncoderNVCodecProps.html#a51eaa25c028da5a42147618283f022c6',1,'H264EncoderNVCodecProps']]],
+  ['builderoverlayfactory_72',['BuilderOverlayFactory',['../classBuilderOverlayFactory.html',1,'']]],
+  ['busetcp_73',['bUseTCP',['../classRTSPClientSrc_1_1Detail.html#a4ef3b1e331dbe24a288a44d06cd5558c',1,'RTSPClientSrc::Detail']]],
+  ['bytesperpixel_74',['bytesperpixel',['../structBuffer_1_1BufferPlaneFormat.html#a5c9d6237a77735b96a8902057b5d9ee3',1,'Buffer::BufferPlaneFormat']]],
+  ['bytesused_75',['bytesused',['../structBuffer_1_1BufferPlane.html#aef32afb4526a90a883a3f50e224995c1',1,'Buffer::BufferPlane']]]
 ];

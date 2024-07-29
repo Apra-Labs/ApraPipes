@@ -1,5 +1,10 @@
 var NAVTREEINDEX19 =
 {
+"structsignal.html#a0f7b9b2e92af799f68e423355aefcf01":[5,0,289,2],
+"structsignal.html#a7387bbc39500414397d722c4f6c6ab30":[5,0,289,1],
+"structsignal.html#abcb9519b8829e8cabdb96deb5ff31b4a":[5,0,289,0],
+"structsps__pps__properties.html":[5,0,292],
+"structsps__pps__properties.html#a05bf413a5dcef4159e6a688313d75087":[5,0,292,1],
 "structsps__pps__properties.html#a109245a2b5c90e335adc19f0527b0122":[5,0,292,3],
 "structsps__pps__properties.html#a279c4dae7be6e1940426c9020fd03075":[5,0,292,2],
 "structsps__pps__properties.html#a2dab41c5dfdf785cc5ce6d65e302078d":[5,0,292,0],

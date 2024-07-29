@@ -114,14 +114,14 @@ Collaboration diagram for H264EncoderNVCodecHelper::Detail:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail__coll__graph.png" border="0" usemap="#aH264EncoderNVCodecHelper_1_1Detail_coll__map" alt="Collaboration graph"/></div>
 <map name="aH264EncoderNVCodecHelper_1_1Detail_coll__map" id="aH264EncoderNVCodecHelper_1_1Detail_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,205,565"/>
+<area shape="rect" title=" " alt="" coords="5,5,205,585"/>
 </map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a9d337d96ca5dfc938d284988d9a57825" id="r_a9d337d96ca5dfc938d284988d9a57825"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d337d96ca5dfc938d284988d9a57825">Detail</a> (uint32_t &amp;bitRateKbps, apracucontext_sp &amp;cuContext, uint32_t &amp;gopLength, uint32_t &amp;frameRate, <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494">H264EncoderNVCodecProps::H264CodecProfile</a> profile, bool enableBFrames)</td></tr>
-<tr class="separator:a9d337d96ca5dfc938d284988d9a57825"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e052104a2ae8a717501c87df69be25c" id="r_a0e052104a2ae8a717501c87df69be25c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e052104a2ae8a717501c87df69be25c">Detail</a> (uint32_t &amp;bitRateKbps, apracucontext_sp &amp;cuContext, uint32_t &amp;gopLength, uint32_t &amp;frameRate, <a class="el" href="classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494">H264EncoderNVCodecProps::H264CodecProfile</a> profile, bool enableBFrames, uint32_t &amp;bufferThres)</td></tr>
+<tr class="separator:a0e052104a2ae8a717501c87df69be25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c40c659cb41f08c46e8f74f6b7b46b8" id="r_a1c40c659cb41f08c46e8f74f6b7b46b8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c40c659cb41f08c46e8f74f6b7b46b8">init</a> (uint32_t width, uint32_t height, uint32_t pitch, <a class="el" href="classImageMetadata.html#af04036a83bf90d2fdc1353cebc0a979e">ImageMetadata::ImageType</a> imageType, std::function&lt; frame_sp(size_t)&gt; _makeFrame, std::function&lt; void(frame_sp &amp;, frame_sp &amp;)&gt; _send)</td></tr>
 <tr class="separator:a1c40c659cb41f08c46e8f74f6b7b46b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8409126aead4279353c87ad1a00e7984" id="r_a8409126aead4279353c87ad1a00e7984"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8409126aead4279353c87ad1a00e7984">encode</a> (frame_sp &amp;frame)</td></tr>
@@ -148,9 +148,14 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:a5caf5a7b2eaef9cae08a42dd7386ac3a" id="r_a5caf5a7b2eaef9cae08a42dd7386ac3a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5caf5a7b2eaef9cae08a42dd7386ac3a">processOutput</a> ()</td></tr>
 <tr class="separator:a5caf5a7b2eaef9cae08a42dd7386ac3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf928d553bc43c2b54c97f876687fa88" id="r_aaf928d553bc43c2b54c97f876687fa88"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf928d553bc43c2b54c97f876687fa88">is_not_empty</a> () const</td></tr>
+<tr class="memdesc:aaf928d553bc43c2b54c97f876687fa88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there are free output bitstreams available and allocates more if needed.  <br /></td></tr>
 <tr class="separator:aaf928d553bc43c2b54c97f876687fa88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a770af2d2a52b9a65d10cd17828c917aa" id="r_a770af2d2a52b9a65d10cd17828c917aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a770af2d2a52b9a65d10cd17828c917aa">is_output_available</a> () const</td></tr>
+<tr class="memdesc:a770af2d2a52b9a65d10cd17828c917aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there are any busy output bitstreams or if the encoder is not running.  <br /></td></tr>
 <tr class="separator:a770af2d2a52b9a65d10cd17828c917aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9edc7d19bccf18b466818efcdb63c90" id="r_ab9edc7d19bccf18b466818efcdb63c90"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9edc7d19bccf18b466818efcdb63c90">doubleOutputBuffers</a> (uint32_t bufferLength) const</td></tr>
+<tr class="memdesc:ab9edc7d19bccf18b466818efcdb63c90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates additional output bitstream buffers.  <br /></td></tr>
+<tr class="separator:ab9edc7d19bccf18b466818efcdb63c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-static-methods" name="pri-static-methods"></a>
 Static Private Member Functions</h2></td></tr>
@@ -181,6 +186,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:affb69702f16453b7e90525da9f14c8de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5696f7e172233406f3f3caf75fae82d" id="r_af5696f7e172233406f3f3caf75fae82d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5696f7e172233406f3f3caf75fae82d">m_bEnableBFrames</a></td></tr>
 <tr class="separator:af5696f7e172233406f3f3caf75fae82d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1287a02d0ea3dcd2989b94b5f67bf67b" id="r_a1287a02d0ea3dcd2989b94b5f67bf67b"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1287a02d0ea3dcd2989b94b5f67bf67b">m_nBufferThres</a></td></tr>
+<tr class="separator:a1287a02d0ea3dcd2989b94b5f67bf67b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65e6cfdf96dfedcd89a6bca37a75636c" id="r_a65e6cfdf96dfedcd89a6bca37a75636c"><td class="memItemLeft" align="right" valign="top">NV_ENC_INITIALIZE_PARAMS&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a65e6cfdf96dfedcd89a6bca37a75636c">m_initializeParams</a></td></tr>
 <tr class="separator:a65e6cfdf96dfedcd89a6bca37a75636c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae94c5a7e99056d3b42c074ba54314b69" id="r_ae94c5a7e99056d3b42c074ba54314b69"><td class="memItemLeft" align="right" valign="top">NV_ENC_CONFIG&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae94c5a7e99056d3b42c074ba54314b69">m_encodeConfig</a></td></tr>
@@ -205,8 +212,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:ac06412eccf263caff5225aafed721a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a9d337d96ca5dfc938d284988d9a57825" name="a9d337d96ca5dfc938d284988d9a57825"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d337d96ca5dfc938d284988d9a57825">&#9670;&#160;</a></span>Detail()</h2>
+<a id="a0e052104a2ae8a717501c87df69be25c" name="a0e052104a2ae8a717501c87df69be25c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e052104a2ae8a717501c87df69be25c">&#9670;&#160;</a></span>Detail()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -242,7 +249,12 @@ Private Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>enableBFrames</em></span>&#160;)</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>enableBFrames</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t &amp;</td>          <td class="paramname"><span class="paramname"><em>bufferThres</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -374,6 +386,54 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<a id="ab9edc7d19bccf18b466818efcdb63c90" name="ab9edc7d19bccf18b466818efcdb63c90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9edc7d19bccf18b466818efcdb63c90">&#9670;&#160;</a></span>doubleOutputBuffers()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void H264EncoderNVCodecHelper::Detail::doubleOutputBuffers </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>bufferLength</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Allocates additional output bitstream buffers. </p>
+<p>This function allocates a specified number of additional output bitstream buffers and adds them to the encoder buffer. It uses the NVIDIA Video Codec SDK to create the bitstream buffers and updates the internal queue of output bitstreams.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bufferLength</td><td>The number of additional output bitstream buffers to allocate.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>This function is called internally by <code>is_not_empty</code> when more buffers are needed. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Ensure that the NVIDIA Video Codec SDK is properly initialized before calling this function. </dd></dl>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_ab9edc7d19bccf18b466818efcdb63c90_icgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_ab9edc7d19bccf18b466818efcdb63c90_icgraph" alt=""/></div>
+<map name="aclassH264EncoderNVCodecHelper_1_1Detail_ab9edc7d19bccf18b466818efcdb63c90_icgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_ab9edc7d19bccf18b466818efcdb63c90_icgraph">
+<area shape="rect" title="Allocates additional output bitstream buffers." alt="" coords="488,5,681,46"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="247,5,440,46"/>
+<area shape="poly" title=" " alt="" coords="473,28,440,28,440,23,473,23"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a8409126aead4279353c87ad1a00e7984" title=" " alt="" coords="5,5,199,46"/>
+<area shape="poly" title=" " alt="" coords="231,28,199,28,199,23,231,23"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a8409126aead4279353c87ad1a00e7984" name="a8409126aead4279353c87ad1a00e7984"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8409126aead4279353c87ad1a00e7984">&#9670;&#160;</a></span>encode()</h2>
 
@@ -402,10 +462,12 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_a8409126aead4279353c87ad1a00e7984_cgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_a8409126aead4279353c87ad1a00e7984_cgraph" alt=""/></div>
 <map name="aclassH264EncoderNVCodecHelper_1_1Detail_a8409126aead4279353c87ad1a00e7984_cgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_a8409126aead4279353c87ad1a00e7984_cgraph">
 <area shape="rect" title=" " alt="" coords="5,39,199,79"/>
-<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title=" " alt="" coords="247,5,440,46"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#aaf928d553bc43c2b54c97f876687fa88" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="247,5,440,46"/>
 <area shape="poly" title=" " alt="" coords="199,43,231,39,232,44,199,48"/>
 <area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a99251d30b70ea59b8024df2fc6e671d1" title=" " alt="" coords="247,71,440,111"/>
 <area shape="poly" title=" " alt="" coords="199,69,232,73,231,79,199,74"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#ab9edc7d19bccf18b466818efcdb63c90" title="Allocates additional output bitstream buffers." alt="" coords="488,5,681,46"/>
+<area shape="poly" title=" " alt="" coords="440,23,473,23,473,28,440,28"/>
 </map>
 </div>
 
@@ -578,7 +640,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="440,42,472,38,473,43,441,47"/>
 <area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a3d31ea983fd096696adcec13deaffa4c" title=" " alt="" coords="488,71,681,111"/>
 <area shape="poly" title=" " alt="" coords="441,68,473,73,472,78,440,74"/>
-<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title=" " alt="" coords="488,175,681,215"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title="Checks if there are any busy output bitstreams or if the encoder is not running." alt="" coords="488,175,681,215"/>
 <area shape="poly" title=" " alt="" coords="440,192,473,192,473,198,440,198"/>
 </map>
 </div>
@@ -642,12 +704,29 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Checks if there are free output bitstreams available and allocates more if needed. </p>
+<p>This function checks the availability of free output bitstreams. If there are no free output bitstreams and the number of busy streams is below a predefined threshold, it allocates additional output bitstreams to the encoder buffer.</p>
+<p>The function first checks the number of busy output bitstreams. If there are no free output bitstreams and the number of busy streams is below <code>m_nBufferThres</code>, it calculates the buffer length to be allocated and doubles the output buffers by calling <code>doubleOutputBuffers</code>. It then logs the allocation and increments the count of free output bitstreams. If there are free output bitstreams, it logs a message indicating the current state.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if there are free output bitstreams available, false otherwise.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function modifies the state of <code>m_nvcodecResources-&gt;m_nFreeOutputBitstreams</code>. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Ensure thread safety when calling this function in a multi-threaded environment. </dd></dl>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_cgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_cgraph" alt=""/></div>
+<map name="aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_cgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_cgraph">
+<area shape="rect" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="5,5,199,46"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#ab9edc7d19bccf18b466818efcdb63c90" title="Allocates additional output bitstream buffers." alt="" coords="247,5,440,46"/>
+<area shape="poly" title=" " alt="" coords="199,23,231,23,231,28,199,28"/>
+</map>
+</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_icgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_icgraph" alt=""/></div>
 <map name="aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_icgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_aaf928d553bc43c2b54c97f876687fa88_icgraph">
-<area shape="rect" title=" " alt="" coords="247,5,440,46"/>
+<area shape="rect" title="Checks if there are free output bitstreams available and allocates more if needed." alt="" coords="247,5,440,46"/>
 <area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a8409126aead4279353c87ad1a00e7984" title=" " alt="" coords="5,5,199,46"/>
 <area shape="poly" title=" " alt="" coords="231,28,199,28,199,23,231,23"/>
 </map>
@@ -677,12 +756,17 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Checks if there are any busy output bitstreams or if the encoder is not running. </p>
+<p>This function returns true if there are any busy output bitstreams or if the encoder is not running. It helps determine if there are any output bitstreams currently being processed or if the encoding process has stopped.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if there are busy output bitstreams or the encoder is not running, false otherwise.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function does not modify any state. </dd></dl>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_a770af2d2a52b9a65d10cd17828c917aa_icgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_a770af2d2a52b9a65d10cd17828c917aa_icgraph" alt=""/></div>
 <map name="aclassH264EncoderNVCodecHelper_1_1Detail_a770af2d2a52b9a65d10cd17828c917aa_icgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_a770af2d2a52b9a65d10cd17828c917aa_icgraph">
-<area shape="rect" title=" " alt="" coords="488,5,681,46"/>
+<area shape="rect" title="Checks if there are any busy output bitstreams or if the encoder is not running." alt="" coords="488,5,681,46"/>
 <area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a5caf5a7b2eaef9cae08a42dd7386ac3a" title=" " alt="" coords="247,5,440,46"/>
 <area shape="poly" title=" " alt="" coords="473,28,440,28,440,23,473,23"/>
 <area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a1c40c659cb41f08c46e8f74f6b7b46b8" title=" " alt="" coords="5,5,199,46"/>
@@ -720,7 +804,7 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="classH264EncoderNVCodecHelper_1_1Detail_a5caf5a7b2eaef9cae08a42dd7386ac3a_cgraph.png" border="0" usemap="#aclassH264EncoderNVCodecHelper_1_1Detail_a5caf5a7b2eaef9cae08a42dd7386ac3a_cgraph" alt=""/></div>
 <map name="aclassH264EncoderNVCodecHelper_1_1Detail_a5caf5a7b2eaef9cae08a42dd7386ac3a_cgraph" id="aclassH264EncoderNVCodecHelper_1_1Detail_a5caf5a7b2eaef9cae08a42dd7386ac3a_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,199,46"/>
-<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title=" " alt="" coords="247,5,440,46"/>
+<area shape="rect" href="classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa" title="Checks if there are any busy output bitstreams or if the encoder is not running." alt="" coords="247,5,440,46"/>
 <area shape="poly" title=" " alt="" coords="199,23,231,23,231,28,199,28"/>
 </map>
 </div>
@@ -958,6 +1042,28 @@ Here is the caller graph for this function:</div>
       <table class="memname">
         <tr>
           <td class="memname">uint32_t H264EncoderNVCodecHelper::Detail::m_nBitRateKbps</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1287a02d0ea3dcd2989b94b5f67bf67b" name="a1287a02d0ea3dcd2989b94b5f67bf67b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1287a02d0ea3dcd2989b94b5f67bf67b">&#9670;&#160;</a></span>m_nBufferThres</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t H264EncoderNVCodecHelper::Detail::m_nBufferThres</td>
         </tr>
       </table>
   </td>
@@ -1329,7 +1435,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classH264EncoderNVCodecHelper.html">H264EncoderNVCodecHelper</a></li><li class="navelem"><a class="el" href="classH264EncoderNVCodecHelper_1_1Detail.html">Detail</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 19190c3</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 7b852c8</a></li>
     </ul>
   </div>
   </body>

@@ -1,9 +1,10 @@
 var classH264EncoderNVCodecHelper_1_1Detail =
 [
-    [ "Detail", "classH264EncoderNVCodecHelper_1_1Detail.html#a9d337d96ca5dfc938d284988d9a57825", null ],
+    [ "Detail", "classH264EncoderNVCodecHelper_1_1Detail.html#a0e052104a2ae8a717501c87df69be25c", null ],
     [ "~Detail", "classH264EncoderNVCodecHelper_1_1Detail.html#add7e5215d47ca03ce5341cc374ba571e", null ],
     [ "asNvidiaGUID", "classH264EncoderNVCodecHelper_1_1Detail.html#a3ad6697cba72b757e8ac084fad142712", null ],
     [ "createDefaultEncoderParams", "classH264EncoderNVCodecHelper_1_1Detail.html#abf06cb84358fc5b15c7ba5bcf79ca3a5", null ],
+    [ "doubleOutputBuffers", "classH264EncoderNVCodecHelper_1_1Detail.html#ab9edc7d19bccf18b466818efcdb63c90", null ],
     [ "encode", "classH264EncoderNVCodecHelper_1_1Detail.html#a8409126aead4279353c87ad1a00e7984", null ],
     [ "endEncode", "classH264EncoderNVCodecHelper_1_1Detail.html#a3d5905e60c7d0d0462b8a1e02412dfdd", null ],
     [ "GetCapabilityValue", "classH264EncoderNVCodecHelper_1_1Detail.html#a3d31ea983fd096696adcec13deaffa4c", null ],
@@ -21,6 +22,7 @@ var classH264EncoderNVCodecHelper_1_1Detail =
     [ "m_encodeConfig", "classH264EncoderNVCodecHelper_1_1Detail.html#ae94c5a7e99056d3b42c074ba54314b69", null ],
     [ "m_initializeParams", "classH264EncoderNVCodecHelper_1_1Detail.html#a65e6cfdf96dfedcd89a6bca37a75636c", null ],
     [ "m_nBitRateKbps", "classH264EncoderNVCodecHelper_1_1Detail.html#a6b417d2bc22e0976f3ff905f8d409c4f", null ],
+    [ "m_nBufferThres", "classH264EncoderNVCodecHelper_1_1Detail.html#a1287a02d0ea3dcd2989b94b5f67bf67b", null ],
     [ "m_nencodeParam", "classH264EncoderNVCodecHelper_1_1Detail.html#aca2ae5f700e650715057996fb4e115c1", null ],
     [ "m_nEncoderBuffer", "classH264EncoderNVCodecHelper_1_1Detail.html#a2997b85db7d69184fdb138b38e036098", null ],
     [ "m_nFrameRate", "classH264EncoderNVCodecHelper_1_1Detail.html#ab89b7f93484ea406e0dbf7cbadeeb327", null ],
