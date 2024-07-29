@@ -354,7 +354,7 @@ public:
 
 	bool queue(frame_container& frames)
 	{
-		double largestTimeStamp = 0;
+		uint64_t largestTimeStamp = 0;
 		for (auto it = frames.cbegin(); it != frames.cend(); it++)
 		{
 			mQueue[it->first].push_back(it->second);

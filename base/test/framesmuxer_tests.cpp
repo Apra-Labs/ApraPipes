@@ -1036,4 +1036,93 @@ BOOST_AUTO_TEST_CASE(timestamp_strategy_with_maxdelay)
     sink.reset();
 }
 
+BOOST_AUTO_TEST_CASE(timestamp_strategy_with_negativeTImeDelay) // This test was added to test How Muxer Behave When A Frame From relative past was pushed into the queue 
+{
+    size_t readDataSize = 1024;
+
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+
+    auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto pin1_1 = m1->addOutputPin(metadata);
+
+    auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto pin2_1 = m2->addOutputPin(metadata);
+
+    auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto pin3_1 = m3->addOutputPin(metadata);
+
+    FramesMuxerProps props;
+    props.strategy = FramesMuxerProps::MAX_TIMESTAMP_DELAY;
+    props.maxTsDelayInMS = 100; // Max delay in milliseconds
+    auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+    m1->setNext(muxer);
+    m2->setNext(muxer);
+    m3->setNext(muxer);
+
+    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    muxer->setNext(sink);
+
+    BOOST_TEST(m1->init());
+    BOOST_TEST(m2->init());
+    BOOST_TEST(m3->init());
+
+    BOOST_TEST(muxer->init());
+    BOOST_TEST(sink->init());
+
+    {
+        // Send frames with timestamps differing by more than maxDelay
+        auto baseTimestamp = std::chrono::system_clock::now().time_since_epoch().count();
+
+        auto encodedImageFrame1 = m1->makeFrame(readDataSize, pin1_1);
+        encodedImageFrame1->fIndex = 300;
+        encodedImageFrame1->timestamp = baseTimestamp;
+
+        auto encodedImageFrame2 = m2->makeFrame(readDataSize, pin2_1);
+        encodedImageFrame2->fIndex = 300;
+        encodedImageFrame2->timestamp = baseTimestamp + std::chrono::milliseconds(150).count(); // 150 ms difference
+
+        auto encodedImageFrame3 = m3->makeFrame(readDataSize, pin3_1);
+        encodedImageFrame3->fIndex = 300;
+        encodedImageFrame3->timestamp = baseTimestamp - std::chrono::milliseconds(150).count();
+
+        frame_container frames1;
+        frames1.insert(make_pair(pin1_1, encodedImageFrame1));
+        m1->send(frames1);
+        muxer->step();
+        BOOST_TEST(sink->try_pop().size() == 0);
+
+        frame_container frames2;
+        frames2.insert(make_pair(pin2_1, encodedImageFrame2));
+        m2->send(frames2);
+        muxer->step();
+        BOOST_TEST(sink->try_pop().size() == 0);
+
+        frame_container frames3;
+        frames3.insert(make_pair(pin3_1, encodedImageFrame3));
+        m3->send(frames3);
+        muxer->step();
+        auto outFrames = sink->try_pop();
+        // Frames should not be muxed because of maxDelay
+        BOOST_TEST(outFrames.size() == 0);
+    }
+
+    BOOST_TEST(m1->term());
+    BOOST_TEST(m2->term());
+    BOOST_TEST(m3->term());
+    BOOST_TEST(muxer->term());
+    BOOST_TEST(sink->term());
+
+    m1.reset();
+    m2.reset();
+    m3.reset();
+    muxer.reset();
+    sink.reset();
+}
+
+// To Do:- 
+// 1. Need to have Public Function To Get Curr State of Muxer
+// 2. Need to add more strategies
+// 3. Need to add more tests
+// 4. Need to add proper documentation for each of this strategy 
+
 BOOST_AUTO_TEST_SUITE_END()
