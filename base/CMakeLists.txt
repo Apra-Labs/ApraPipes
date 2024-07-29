@@ -195,6 +195,7 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	src/SimpleControlModule.cpp
 	src/ErrorObject.cpp 
 	src/HealthObject.cpp
 )
@@ -259,6 +260,7 @@ SET(CORE_FILES_H
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
+	include/SimpleControlModule.h
 	include/ErrorObject.h
 	include/Callback.h
 	include/HealthObject.h

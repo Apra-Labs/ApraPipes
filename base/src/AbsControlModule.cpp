@@ -25,7 +25,7 @@ public:
 };
 
 AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
-    :Module(TRANSFORM, "AbsControlModule", _props)
+    :Module(CONTROL, "AbsControlModule", _props)
 {
     mDetail.reset(new Detail(_props));
 }
@@ -57,6 +57,7 @@ bool AbsControlModule::term()
 
 bool AbsControlModule::process(frame_container& frames)
 {
+    // Commands are already processed by the time we reach here.
     return true;
 }
 

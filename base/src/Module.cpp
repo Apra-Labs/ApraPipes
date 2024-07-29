@@ -150,7 +150,8 @@ Module::Module(Kind nature, string name, ModuleProps _props)
 
   mQue.reset(new FrameContainerQueue(_props.qlen));
 
-  onStepFail = boost::bind(&Module::ignore, this, 0);
+	onStepFail = boost::bind(&Module::ignore, this, 0);
+	LOG_INFO << "Setting Module tolerance for step failure as: " << "<0>. Currently there is no way to change this.";
 
   pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
   auto tempId = getId();
@@ -511,22 +512,28 @@ bool Module::isFeedbackEnabled(std::string &moduleId)
 
 bool Module::validateInputPins()
 {
-  if (myNature == SOURCE && getNumberOfInputPins() == 0)
-  {
-    return true;
-  }
-
-  return false;
+	if (myNature == SOURCE && getNumberOfInputPins() == 0)
+	{
+		return true;
+	}
+	else if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
+	}
+	return false;
 }
 
 bool Module::validateOutputPins()
 {
-  if (myNature == SINK && getNumberOfOutputPins() == 0)
-  {
-    return true;
-  }
-
-  return false;
+	if (myNature == SINK && getNumberOfOutputPins() == 0)
+	{
+		return true;
+	}
+	else if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
+	}
+	return false;
 }
 
 framemetadata_sp Module::getFirstInputMetadata()
@@ -557,63 +564,56 @@ Module::getConnectedModules()
 
 bool Module::init()
 {
-  auto ret = validateInputOutputPins();
-  if (!ret)
-  {
-    return ret;
-  }
+	auto ret = validateInputOutputPins();
+	if (!ret)
+	{
+		return ret;
+	}
 
-  mQue->accept();
-  if (mModules.size() == 1 && mProps->quePushStrategyType ==
-                                  QuePushStrategy::NON_BLOCKING_ALL_OR_NONE)
-  {
-    mProps->quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
-  }
-  mQuePushStrategy =
-      QuePushStrategy::getStrategy(mProps->quePushStrategyType, myId);
-  // loop all the downstream modules and set the que
-  for (map<string, boost::shared_ptr<Module>>::const_iterator it =
-           mModules.begin();
-       it != mModules.end(); ++it)
-  {
-    auto pModule = it->second;
-    auto que = pModule->getQue();
-    mQuePushStrategy->addQue(it->first, que);
-  }
+	mQue->accept();
 
-  if (myNature == TRANSFORM && getNumberOfInputPins() == 1 &&
-      getNumberOfOutputPins() == 1)
-  {
-    // propagate hint
-    // currently propagating if 1 input and 1 output
+	if (mModules.size() == 1 && mProps->quePushStrategyType == QuePushStrategy::NON_BLOCKING_ALL_OR_NONE)
+	{
+		mProps->quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
+	}
+	mQuePushStrategy = QuePushStrategy::getStrategy(mProps->quePushStrategyType, myId);
+	// loop all the downstream modules and set the que
+	for (map<string, boost::shared_ptr<Module>>::const_iterator it = mModules.begin(); it != mModules.end(); ++it)
+	{
+		auto pModule = it->second;
+		auto que = pModule->getQue();
+		mQuePushStrategy->addQue(it->first, que);
+	}
 
-    auto in = getFirstInputMetadata();
-    auto out = getFirstOutputMetadata();
-    out->copyHint(*in.get());
-  }
-  if (myNature == SOURCE)
-  {
-    pair<string, framefactory_sp> me; // map element
-    BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
-    {
-      auto metadata = me.second->getFrameMetadata();
-      if (!metadata->isSet())
-      {
-        throw AIPException(
-            AIP_FATAL,
-            "Source FrameFactory is constructed without metadata set");
-      }
-      mOutputPinIdFrameFactoryMap[me.first].reset(
-          new FrameFactory(metadata, mProps->maxConcurrentFrames));
-    }
-  }
-  mpCommandFactory.reset(new FrameFactory(mCommandMetadata));
+	if (myNature == TRANSFORM && getNumberOfInputPins() == 1 && getNumberOfOutputPins() == 1)
+	{
+		// propagate hint
+		// currently propagating if 1 input and 1 output
 
-  mStopCount = 0;
+		auto in = getFirstInputMetadata();
+		auto out = getFirstOutputMetadata();
+		out->copyHint(*in.get());
+	}
+	if (myNature == SOURCE)
+	{
+		pair<string, framefactory_sp> me; // map element
+		BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+		{
+			auto metadata = me.second->getFrameMetadata();
+			if(!metadata->isSet())
+			{
+				throw AIPException(AIP_FATAL, "Source FrameFactory is constructed without metadata set");
+			}
+			mOutputPinIdFrameFactoryMap[me.first].reset(new FrameFactory(metadata, mProps->maxConcurrentFrames));
+		}
+	}
+	mpCommandFactory.reset(new FrameFactory(mCommandMetadata));
 
-  mFIndexStrategy = FIndexStrategy::create(mProps->fIndexStrategyType);
+	mStopCount = 0;
 
-  return ret;
+	mFIndexStrategy = FIndexStrategy::create(mProps->fIndexStrategyType);
+
+	return ret;
 }
 
 bool Module::push(frame_container frameContainer)
@@ -672,137 +672,132 @@ bool Module::isNextModuleQueFull()
 
 bool Module::send(frame_container &frames, bool forceBlockingPush)
 {
-  // mFindex may be propagated for EOS, EOP, Command, PropsChange also - which
-  // is wrong
-  uint64_t fIndex = 0;
-  uint64_t timestamp = 0;
-  if (frames.size() != 0)
-  {
-    if (myNature == TRANSFORM && getNumberOfInputPins() == 1)
-    {
-      // propagating fIndex2
-      auto pinId = getInputMetadata().begin()->first;
-      if (frames.find(pinId) != frames.end())
-      {
-        auto fIndex2 = frames[pinId]->fIndex2;
-        for (auto me = mOutputPinIdFrameFactoryMap.cbegin();
-             me != mOutputPinIdFrameFactoryMap.cend(); me++)
-        {
-          if (frames.find(me->first) != frames.end())
-          {
-            frames[me->first]->fIndex2 = fIndex2;
-          }
-        }
-      }
-    }
+	if (myNature == CONTROL)
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module can not send data frames.");
+	}
 
-    if (myNature != SOURCE)
-    {
-      // first input pin
-      auto pinId = getInputMetadata().begin()->first;
-      if (frames.find(pinId) != frames.end())
-      {
-        fIndex = frames[pinId]->fIndex;
-        timestamp = frames[pinId]->timestamp;
-      }
-      else
-      {
-        // try output pins - muxer comes here
-        for (auto me = mOutputPinIdFrameFactoryMap.cbegin();
-             me != mOutputPinIdFrameFactoryMap.cend(); me++)
-        {
-          auto &pinId = me->first;
-          if (frames.find(pinId) != frames.end())
-          {
-            fIndex = frames[pinId]->fIndex;
-            timestamp = frames[pinId]->timestamp;
-            break;
-          }
-        }
-      }
-    }
-    else
-    {
-      // try for all output pins
-      for (auto me = mOutputPinIdFrameFactoryMap.cbegin();
-           me != mOutputPinIdFrameFactoryMap.cend(); me++)
-      {
-        auto &pinId = me->first;
-        if (frames.find(pinId) != frames.end())
-        {
-          fIndex = frames[pinId]->fIndex;
-          timestamp = frames[pinId]->timestamp;
-          break;
-        }
-      }
-    }
-  }
+	// mFindex may be propagated for EOS, EOP, Command, PropsChange also - which is wrong
+	uint64_t fIndex = 0;
+	uint64_t timestamp = 0;
+	if (frames.size() != 0)
+	{
+		if (myNature == TRANSFORM && getNumberOfInputPins() == 1)
+		{
+			// propagating fIndex2
+			auto pinId = getInputMetadata().begin()->first;
+			if (frames.find(pinId) != frames.end())
+			{
+				auto fIndex2 = frames[pinId]->fIndex2;
+				for (auto me = mOutputPinIdFrameFactoryMap.cbegin(); me != mOutputPinIdFrameFactoryMap.cend(); me++)
+				{
+					if (frames.find(me->first) != frames.end())
+					{
+						frames[me->first]->fIndex2 = fIndex2;
+					}
+				}
+			}
+		}
 
-  fIndex = mFIndexStrategy->getFIndex(fIndex);
+		if (myNature != SOURCE)
+		{
+			// first input pin
+			auto pinId = getInputMetadata().begin()->first;
+			if (frames.find(pinId) != frames.end())
+			{
+				fIndex = frames[pinId]->fIndex;
+				timestamp = frames[pinId]->timestamp;
+			}
+			else
+			{
+				// try output pins - muxer comes here
+				for (auto me = mOutputPinIdFrameFactoryMap.cbegin(); me != mOutputPinIdFrameFactoryMap.cend(); me++)
+				{
+					auto &pinId = me->first;
+					if (frames.find(pinId) != frames.end())
+					{
+						fIndex = frames[pinId]->fIndex;
+						timestamp = frames[pinId]->timestamp;
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// try for all output pins
+			for (auto me = mOutputPinIdFrameFactoryMap.cbegin(); me != mOutputPinIdFrameFactoryMap.cend(); me++)
+			{
+				auto &pinId = me->first;
+				if (frames.find(pinId) != frames.end())
+				{
+					fIndex = frames[pinId]->fIndex;
+					timestamp = frames[pinId]->timestamp;
+					break;
+				}
+			}
+		}
+	}
 
-  for (auto it = frames.cbegin(); it != frames.cend(); it++)
-  {
-    if (mOutputPinIdFrameFactoryMap.find(it->first) ==
-        mOutputPinIdFrameFactoryMap.end())
-    {
-      continue;
-    }
-    it->second->fIndex = fIndex;
-    it->second->timestamp = timestamp;
-  }
+	fIndex = mFIndexStrategy->getFIndex(fIndex);
 
-  auto ret = true;
-  // loop over all the modules and send
-  for (Connections::const_iterator it = mConnections.begin();
-       it != mConnections.end(); it++)
-  {
-    auto &nextModuleId = it->first;
-    if (!mRelay[nextModuleId] && !forceBlockingPush)
-    {
-      // This is dangerous - the callers may assume that all the frames go
-      // through - but since it is relay - they wont go through so using
-      // forceBlockingPush to open the relay for important messages currently
-      // only EOS and EOP frames can break the relay
-      continue;
-    }
+	for (auto it = frames.cbegin(); it != frames.cend(); it++)
+	{
+		if (mOutputPinIdFrameFactoryMap.find(it->first) == mOutputPinIdFrameFactoryMap.end())
+		{
+			continue;
+		}
+		it->second->fIndex = fIndex;
+		it->second->timestamp = timestamp;
+	}
 
-    auto pinsArr = it->second;
-    frame_container requiredPins;
+	auto ret = true;
+	// loop over all the modules and send
+	for (Connections::const_iterator it = mConnections.begin(); it != mConnections.end(); it++)
+	{
+		auto &nextModuleId = it->first;
+		if (!mRelay[nextModuleId] && !forceBlockingPush)
+		{
+			// This is dangerous - the callers may assume that all the frames go through - but since it is relay - they wont go through
+			// so using forceBlockingPush to open the relay for important messages
+			// currently only EOS and EOP frames can break the relay
+			continue;
+		}
 
-    for (auto i = pinsArr.begin(); i != pinsArr.end(); i++)
-    {
-      auto pinId = *i;
-      if (frames.find(pinId) == frames.end())
-      {
-        // pinId not found
-        continue;
-      }
-      requiredPins.insert(
-          make_pair(pinId, frames[pinId])); // only required pins map is created
-    }
+		auto pinsArr = it->second;
+		frame_container requiredPins;
 
-    if (requiredPins.size() == 0)
-    {
-      // no pins found
-      continue;
-    }
+		for (auto i = pinsArr.begin(); i != pinsArr.end(); i++)
+		{
+			auto pinId = *i;
+			if (frames.find(pinId) == frames.end())
+			{
+				// pinId not found
+				continue;
+			}
+			requiredPins.insert(make_pair(pinId, frames[pinId])); // only required pins map is created
+		}
 
-    // next module push
-    if (!forceBlockingPush)
-    {
-      // LOG_ERROR << "forceBlocking Push myID" << myId << "sending to <" <<
-      // nextModuleId;
-      mQuePushStrategy->push(nextModuleId, requiredPins);
-    }
-    else
-    {
-      // LOG_ERROR << "normal push myID" << myId << "sending to <" <<
-      // nextModuleId;
-      mModules[nextModuleId]->push(requiredPins);
-    }
-  }
+		if (requiredPins.size() == 0)
+		{
+			// no pins found
+			continue;
+		}
 
-  return mQuePushStrategy->flush();
+		// next module push
+		if (!forceBlockingPush)
+		{
+			//LOG_ERROR << "forceBlocking Push myID" << myId << "sending to <" << nextModuleId;
+			mQuePushStrategy->push(nextModuleId, requiredPins);
+		}
+		else
+		{
+			//LOG_ERROR << "normal push myID" << myId << "sending to <" << nextModuleId;
+			mModules[nextModuleId]->push(requiredPins);
+		}
+	}
+
+	return mQuePushStrategy->flush();
 }
 
 boost_deque<frame_sp> Module::getFrames(frame_container &frames)
@@ -1168,6 +1163,11 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
   return queueCommand(cmd, priority);
 }
 
+void Module::addControlModule(boost::shared_ptr<Module> cModule)
+{
+	controlModule = cModule;
+}
+
 void Module::flushQueRecursive()
 {
   flushQue();
@@ -1244,60 +1244,67 @@ bool Module::handlePausePlay(bool play)
 
 bool Module::step()
 {
-  bool ret = false;
-  if (myNature == SOURCE)
-  {
-    if (!processSourceQue())
-    {
-      return true;
-    }
-    bool forceStep = shouldForceStep();
+	bool ret = false;
+	if (myNature == SOURCE)
+	{
+		if (!processSourceQue())
+		{
+			return true;
+		}
+		bool forceStep = shouldForceStep();
 
-    pacer->start();
+		pacer->start();
 
-    if (mPlay || forceStep)
-    {
-      mProfiler->startPipelineLap();
-      ret = produce();
-      mProfiler->endLap(0);
-    }
-    else
-    {
-      ret = true;
-      // ret false will kill the thread
-    }
+		if (mPlay || forceStep)
+		{
+			mProfiler->startPipelineLap();
+			ret = produce();
+			mProfiler->endLap(0);
+		}
+		else
+		{
+			ret = true;
+			// ret false will kill the thread
+		}
 
-    pacer->end();
-  }
-  else
-  {
-    mProfiler->startPipelineLap();
+		pacer->end();
+	}
+	else if (myNature == CONTROL)
+	{
+		auto frames = mQue->pop();
+		preProcessControl(frames);
+		if (frames.size() != 0)
+		{
+			throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.");
+		}
+	}
+	else
+	{
+		mProfiler->startPipelineLap();
+		
+		//LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " << Module::getPipelineFps() << mProps->fps;
+		auto frames = mQue->pop();
+		preProcessNonSource(frames);
 
-    // LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " <<
-    // Module::getPipelineFps() << mProps->fps;
-    auto frames = mQue->pop();
-    preProcessNonSource(frames);
+		if (frames.size() == 0 || shouldSkip())
+		{
+			// it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
+			return true;
+		}
 
-    if (frames.size() == 0 || shouldSkip())
-    {
-      // it can come here only if frames.erase from processEOS or processSOS or
-      // processEoP or isPropsChange() or isCommand()
-      return true;
-    }
+		if(mPlay)
+        {
+            mProfiler->startProcessingLap();
+            ret = stepNonSource(frames);
+            mProfiler->endLap(mQue->size());
+        }
+        else
+        {
+            ret = true;
+        }
+	}
 
-    if (mPlay)
-    {
-      mProfiler->startProcessingLap();
-      ret = stepNonSource(frames);
-      mProfiler->endLap(mQue->size());
-    }
-    else
-    {
-      ret = true;
-    }
-  }
-
-  return ret;
+	return ret;
 }
 
 void Module::registerHealthCallback(HealthCallback callback)
@@ -1308,10 +1315,10 @@ void Module::registerHealthCallback(HealthCallback callback)
 
 void Module::sendEOS()
 {
-  if (myNature == SINK)
-  {
-    return;
-  }
+	if (myNature == SINK || myNature == CONTROL)
+	{
+		return;
+	}
 
   frame_container frames;
   auto frame = frame_sp(new EoSFrame());
@@ -1326,16 +1333,16 @@ void Module::sendEOS()
 
 void Module::sendEOS(frame_sp &frame)
 {
-  if (myNature == SINK)
-  {
-    return;
-  }
-  frame_container frames;
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
-  {
-    frames.insert(make_pair(me.first, frame));
-  }
+	if (myNature == SINK || myNature == CONTROL)
+	{
+		return;
+	}
+	frame_container frames;
+	pair<string, framefactory_sp> me; // map element
+	BOOST_FOREACH(me, mOutputPinIdFrameFactoryMap)
+	{
+		frames.insert(make_pair(me.first, frame));
+	}
 
   send(frames, true);
 }
@@ -1355,6 +1362,60 @@ void Module::sendMp4ErrorFrame(frame_sp &frame)
   }
 
   send(frames, true);
+}
+
+bool Module::preProcessControl(frame_container& frames) //ctrl: continue on this.
+{
+	bool eosEncountered = false;
+	auto it = frames.cbegin();
+	while (it != frames.cend())
+	{
+		// increase the iterator manually
+		auto frame = it->second;
+		auto pinId = it->first;
+		it++;
+		if (frame->isEOS())
+		{
+			// EOS Strategy
+			processEOS(pinId);
+			if (!eosEncountered)
+			{
+				sendEOS(); // propagating  eosframe with every eos encountered
+			}
+			frames.erase(pinId);
+			eosEncountered = true;
+			continue;
+		}
+
+		if (frame->isPropsChange())
+		{
+			if (!handlePropsChange(frame))
+			{
+				throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));
+			}
+			frames.erase(pinId);
+			continue;
+		}
+
+		if (frame->isEoP())
+		{
+			handleStop();
+			frames.erase(pinId);
+			continue;
+		}
+
+		if (frame->isCommand())
+		{
+			auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
+			handleCommand(cmdType, frame);
+			frames.erase(pinId);
+			continue;
+		}
+
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected data frame recieved in control module");
+	}
+
+	return true;
 }
 
 bool Module::preProcessNonSource(frame_container &frames)
@@ -1501,29 +1562,29 @@ bool Module::addEoPFrame(frame_container &frames)
 
 bool Module::handleStop()
 {
-  // force stop is required
-  if (mRunning == false)
-  {
-    return true;
-  }
-  mStopCount++;
-  if (myNature != SOURCE && mStopCount != mForwardPins)
-  {
-    return true;
-  }
-  if (myNature != SINK)
-  {
-    sendEoPFrame();
-  }
-  mRunning = false;
-  // if pull and not source - call term
-  if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PULL &&
-      myNature != SOURCE)
-  {
-    term();
-  }
+	// ctrl module - crash or ignore the command or send an CtrlErrorCommandFrame ?
+	// force stop is required
+	if (mRunning == false)
+	{
+		return true;
+	}
+	mStopCount++;
+	if (myNature != SOURCE && mStopCount != mForwardPins)
+	{
+		return true;
+	}
+	if (myNature != SINK)
+	{
+		sendEoPFrame();
+	}
+	mRunning = false;
+	// if pull and not source - call term
+	if (mProps->frameFetchStrategy == ModuleProps::FrameFetchStrategy::PULL && myNature != SOURCE)
+	{
+		term();
+	}
 
-  return true;
+	return true;
 }
 
 void Module::sendEoPFrame()
@@ -1565,8 +1626,9 @@ void Module::ignore(int times)
 
 void Module::stop_onStepfail()
 {
-  LOG_ERROR << "Stopping " << myId << " due to step failure ";
-  handleStop();
+	// ctrl - get and print the last command processed which might have caused the error
+	LOG_ERROR << "Stopping " << myId << " due to step failure ";
+	handleStop();
 }
 
 void Module::emit_event(unsigned short eventID)

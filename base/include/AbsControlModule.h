@@ -34,6 +34,9 @@ protected:
   bool process(frame_container &frames);
   bool handleCommand(Command::CommandType type, frame_sp &frame);
   bool handlePropsChange(frame_sp &frame);
+  virtual void sendEOS();
+  virtual void sendEOS(frame_sp& frame);
+  virtual void sendEOPFrame();
 
 private:
   class Detail;

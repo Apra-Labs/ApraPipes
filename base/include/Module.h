@@ -141,11 +141,12 @@ private:
 class Module {
 
 public:
-  enum Kind { 
-    SOURCE, 
-    TRANSFORM, 
-    SINK 
-  };
+	enum Kind {
+		SOURCE,
+		TRANSFORM,
+		SINK,
+		CONTROL
+	};
   enum ModuleState {
     Initialized,
     Running,
@@ -195,6 +196,7 @@ public:
 	virtual void flushQue();
 	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
+	virtual void addControlModule(boost::shared_ptr<Module> cModule);
   virtual void registerErrorCallback(ErrorCallback callback){};
   void registerHealthCallback(HealthCallback callback);
   ModuleProps getProps();
@@ -207,6 +209,7 @@ protected:
 	virtual bool produce() { return false; }
 	bool stepNonSource(frame_container& frames);
 	bool preProcessNonSource(frame_container& frames);
+	bool preProcessControl(frame_container& frames);
 	bool isRunning() { return mRunning; }
 
 	void setProps(ModuleProps& props);
@@ -243,6 +246,12 @@ protected:
 		Module::setProps(props);
 
 		return true;
+	}
+
+	template<class T>
+	bool queuePriorityCommand(T& cmd)
+	{
+		queueCommand(cmd, true);
 	}
 
 	template<class T>
