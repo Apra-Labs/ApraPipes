@@ -13,6 +13,7 @@ using namespace std;
 #include <mutex>
 #include <chrono>
 #include "H264Utils.h"
+#include "AbsControlModule.h"
 
 extern "C"
 {
@@ -189,6 +190,16 @@ public:
                     auto diff = dur - beginTs;
                     if(diff.count() > 1000)
                     {
+                        if (currentCameraFps && controlModule != nullptr && currentCameraFps != frameCount)
+                        {
+                            DecoderPlaybackSpeed cmd;
+                            cmd.playbackSpeed = 1;
+                            cmd.playbackFps = frameCount;
+                            cmd.gop = 1;
+                            bool priority = true;
+                            boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+                            ctl->handleDecoderSpeed(cmd, priority);
+                        }
                         currentCameraFps = frameCount;
                         frameCount = 0;
                         beginTs = dur;
@@ -210,6 +221,7 @@ public:
     bool isConncected() const { return bConnected; }
     int frameCount = 0;
     int currentCameraFps = 0;
+    boost::shared_ptr<Module> controlModule = nullptr;
 private:
     AVPacket packet;
     AVFormatContext* pFormatCtx = nullptr;
@@ -238,6 +250,7 @@ bool RTSPClientSrc::init() {
     {
         return Module::init();
     }
+    mDetail->controlModule = controlModule;
     return false;
 }
 bool RTSPClientSrc::term() {

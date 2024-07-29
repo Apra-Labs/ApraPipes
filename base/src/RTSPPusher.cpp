@@ -242,11 +242,18 @@ public:
       return false;
     }
 
-    duration =
-        av_rescale_q_rnd(1, in_time_base, video_st->time_base,
-                         AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+    calculateDuration();
 
     return true;
+  }
+
+  void calculateDuration(int den = 0)
+  {
+      if (den)
+      {
+          in_time_base.den = den;
+      }
+      duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
   }
 
   bool term(EventType status) {
@@ -433,7 +440,8 @@ void RTSPPusher::pauserThreadFunction()
 
 void RTSPPusher::setFps(int fps)
 {
-	sleepTimeInMilliSec = 1000/fps;
+    sleepTimeInMilliSec = 1000 / fps;
+    mDetail->calculateDuration(fps);
 }
 
 bool RTSPPusher::processSOS(frame_sp &frame)
