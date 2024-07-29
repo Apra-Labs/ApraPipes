@@ -93,7 +93,7 @@ std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::s
     return pipelineRole;
 }
 
-std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(PipeLine p, std::string role)
+std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModulefRole(PipeLine p, std::string role)
 {
     std::string pipelineRole = mDetail->getPipelineRole(p.getName(), role);
     if (moduleRoles.find(pipelineRole) == moduleRoles.end())
