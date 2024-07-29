@@ -1376,9 +1376,8 @@ int Mp4ReaderDetailH264::h264Mp4ToAnnexbFilter(const uint8_t* inputBuffer, size_
 	int ret;
 	bufEnd = inputBuffer + InputSize;
 	uint8_t* avccData = (uint8_t*)mState.vdc->avccData;
-	avccData += 1;
-	lengthSize = (*avccData - 1);
-	lengthSize = (lengthSize & 0x3) + 1;
+	avccData += 4;
+	lengthSize = (*avccData & 0x3) + 1;
 	int totalBufferIncrement = 0;
 	int numIterations = (parseOnly) ? 1 : 2;
 
