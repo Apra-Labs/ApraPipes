@@ -13,6 +13,7 @@
 #include "ImageEncoderCV.h"
 #include "PipeLine.h"
 #include "StatSink.h"
+#include "AbsControlModule.h"
 
 BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
 
@@ -159,13 +160,16 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	
-	auto m2 = boost::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
+	ImageEncoderCVProps encoderProps;
+	encoderProps.enableHealthCallBack = true;
+	auto m2 = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(encoderProps));
 	fileReader->setNext(m2);
 	
 	
 	auto outputPinId = m2->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
-	
+
+	auto controlProps = AbsControlModuleProps();
+	boost::shared_ptr<AbsControlModule> mControl = boost::shared_ptr<AbsControlModule>(new AbsControlModule(controlProps));
 	
 	StatSinkProps statSinkProps;
 	statSinkProps.logHealth = true;
@@ -175,7 +179,10 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 
 	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
+	p->addControlModule(mControl);
 	p->init();
+	mControl->init();
+	mControl->enrollModule(p, "Encode", m2);
 	p->run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();

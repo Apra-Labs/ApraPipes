@@ -61,6 +61,18 @@ bool AbsControlModule::process(frame_container& frames)
     return true;
 }
 
+void AbsControlModule::handleError(const ErrorObject &error) 
+{
+  LOG_ERROR << "Error in module " << error.getModuleName() << "Module Id"
+            << error.getModuleId() << " (Code " << error.getErrorCode()
+            << "): " << error.getErrorMessage();
+}
+
+void AbsControlModule::handleHealthCallback(const HealthObject &healthObj) 
+{
+  LOG_ERROR << "Health Callback from  module " << healthObj.getModuleId();
+}
+
 std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::string role, boost::shared_ptr<Module> module)
 {
     std::string pipelineRole = mDetail->getPipelineRole(p->getName(), role);
@@ -71,6 +83,13 @@ std::string AbsControlModule::enrollModule(boost::shared_ptr<PipeLine> p, std::s
         throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
     }
     moduleRoles[pipelineRole] = module;
+    module->registerErrorCallback(
+      [this](const ErrorObject &error) { handleError(error); });
+    if (module->getProps().enableHealthCallBack) 
+    {
+      module->registerHealthCallback(
+        [this](const HealthObject &message) { handleHealthCallback(message); });
+    }
     return pipelineRole;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "Callback.h"
 #include "Command.h"
 #include "Module.h"
 #include <map>
@@ -40,4 +41,6 @@ protected:
 private:
   class Detail;
   boost::shared_ptr<Detail> mDetail;
+  void handleError(const ErrorObject &error);
+  void handleHealthCallback(const HealthObject &healthObj);
 };

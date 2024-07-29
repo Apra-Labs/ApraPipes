@@ -19,7 +19,7 @@ public:
 	virtual ~ImageEncoderCV();
 	bool init();
 	bool term();
-
+	void registerErrorCallback(ErrorCallback callback);
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);

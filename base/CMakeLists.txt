@@ -196,6 +196,8 @@ SET(CORE_FILES
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
+	src/ErrorObject.cpp 
+	src/HealthObject.cpp
 )
 
 SET(CORE_FILES_H
@@ -259,6 +261,9 @@ SET(CORE_FILES_H
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
 	include/SimpleControlModule.h
+	include/ErrorObject.h
+	include/Callback.h
+	include/HealthObject.h
 )
 
 IF(ENABLE_WINDOWS)
