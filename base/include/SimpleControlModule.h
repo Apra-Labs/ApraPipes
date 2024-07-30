@@ -18,6 +18,9 @@ public:
 
 	}
 
+	void handleError(const ErrorObject &error);
+    void handleHealthCallback(const HealthObject &healthObj);
+
 	// ErrorCallbacks
 protected:
 	void sendEOS();
