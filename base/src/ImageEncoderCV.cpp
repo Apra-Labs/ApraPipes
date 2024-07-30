@@ -56,22 +56,10 @@ public:
 
 	}
 
-	// void executeCallback() {
-	// 	if (mErrorCallback) 
-	// 	{
-	// 		ErrorObject error(0, "Error: Testing ImageEncoder CV", mModuleName,
-	// 			    		  mModuleId);
-	// 		mErrorCallback(error);
-	// 	}
-	// }
-
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	cv::Mat iImg;
 	vector<int> flags;
-	ErrorCallback mErrorCallback;
-    std::string mModuleId;
-	std::string mModuleName;
 
 private:
 	ImageEncoderCVProps props;
@@ -152,8 +140,6 @@ bool ImageEncoderCV::process(frame_container &frames)
 	{
 		return true;
 	}
-	// mDetail->executeCallback();
-	// Above is a way to getError Call Backs in any of the module
 	vector<uchar> buf;
 
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
@@ -170,11 +156,4 @@ bool ImageEncoderCV::processSOS(frame_sp &frame)
 	auto metadata = frame->getMetadata();
 	mDetail->setMetadata(metadata);
 	return true;
-}
-
-void ImageEncoderCV::registerErrorCallback(ErrorCallback callback)
-{
-	mDetail->mModuleId = getId();
-	mDetail->mModuleName = getName();
-	mDetail->mErrorCallback = callback;
 }
