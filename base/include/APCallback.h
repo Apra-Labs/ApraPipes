@@ -3,5 +3,5 @@
 #include "APHealthObject.h"
 #include <functional>
 
-using ErrorCallback = std::function<void(const APErrorObject &)>;
-using HealthCallback = std::function<void(const APHealthObject &)>;
+using APErrorCallback = std::function<void(const APErrorObject &)>;
+using APHealthCallback = std::function<void(const APHealthObject &)>;

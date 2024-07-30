@@ -36,7 +36,7 @@ class Module::Profiler
 public:
   Profiler(string &id, bool _shouldLog, int _printFrequency,
            std::function<string()> _getPoolHealthRecord,
-           HealthCallback _healthCallback)
+           APHealthCallback _healthCallback)
       : moduleId(id), shouldLog(_shouldLog), mPipelineFps(0),
         printFrequency(_printFrequency), healthCallback(_healthCallback)
   {
@@ -117,7 +117,7 @@ public:
 
   void resetStats() { mPipelineFps = 0; }
 
-  void setHealthCallback(HealthCallback _healthCallback)
+  void setHealthCallback(APHealthCallback _healthCallback)
   {
     healthCallback = _healthCallback;
   }
@@ -136,7 +136,7 @@ private:
   std::function<string()> getPoolHealthRecord;
 
   double mPipelineFps;
-  HealthCallback healthCallback;
+  APHealthCallback healthCallback;
 };
 
 Module::Module(Kind nature, string name, ModuleProps _props)
@@ -1307,7 +1307,7 @@ bool Module::step()
   return ret;
 }
 
-void Module::registerHealthCallback(HealthCallback callback)
+void Module::registerHealthCallback(APHealthCallback callback)
 {
   mHealthCallback = callback;
   mProfiler->setHealthCallback(mHealthCallback);

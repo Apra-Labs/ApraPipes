@@ -202,8 +202,8 @@ public:
   bool getPlayDirection() { return mDirection; }
   virtual void flushQueRecursive();
   virtual void addControlModule(boost::shared_ptr<Module> cModule);
-  virtual void registerErrorCallback(ErrorCallback callback) {};
-  void registerHealthCallback(HealthCallback callback);
+  virtual void registerErrorCallback(APErrorCallback callback);
+  void registerHealthCallback(APHealthCallback callback);
   ModuleProps getProps();
 
 protected:
@@ -469,5 +469,5 @@ private:
 
   framemetadata_sp mCommandMetadata;
   framemetadata_sp mPropsChangeMetadata;
-  HealthCallback mHealthCallback;
+  APHealthCallback mHealthCallback;
 };
