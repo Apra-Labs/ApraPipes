@@ -252,10 +252,9 @@ public:
       if (den)
       {
           in_time_base.den = den;
+		  in_time_base.num = 1;
       }
-	  LOG_INFO << "den = " << in_time_base.den <<" num = " << in_time_base.num;
       duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-      LOG_INFO << "duration = " << duration;
   }
 
   bool term(EventType status) {
