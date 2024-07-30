@@ -199,6 +199,7 @@ public:
                             bool priority = true;
                             boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
                             ctl->handleDecoderSpeed(cmd, priority);
+                            LOG_INFO << "cam fps" << frameCount;
                         }
                         currentCameraFps = frameCount;
                         frameCount = 0;
