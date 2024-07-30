@@ -14,6 +14,7 @@
 #include "PipeLine.h"
 #include "StatSink.h"
 #include "AbsControlModule.h"
+#include "SimpleControlModule.h"
 
 BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
 
@@ -168,8 +169,8 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	
 	auto outputPinId = m2->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
-	auto controlProps = AbsControlModuleProps();
-	boost::shared_ptr<AbsControlModule> mControl = boost::shared_ptr<AbsControlModule>(new AbsControlModule(controlProps));
+	auto controlProps = SimpleControlModuleProps();
+	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
 	
 	StatSinkProps statSinkProps;
 	statSinkProps.logHealth = true;
