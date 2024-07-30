@@ -202,7 +202,7 @@ public:
   bool getPlayDirection() { return mDirection; }
   virtual void flushQueRecursive();
   virtual void addControlModule(boost::shared_ptr<Module> cModule);
-  virtual void registerErrorCallback(APErrorCallback callback);
+  virtual void registerErrorCallback(APErrorCallback callback){}
   void registerHealthCallback(APHealthCallback callback);
   ModuleProps getProps();
 
