@@ -182,7 +182,8 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	p->addControlModule(mControl);
 	p->init();
 	mControl->init();
-	mControl->enrollModule(p, "Encode", m2);
+	// If you want error callbackand health callback to work with a module, registering it with control is mandatory.
+	mControl->enrollModule("Encode", m2);
 	p->run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();
