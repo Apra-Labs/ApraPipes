@@ -1,5 +1,7 @@
 var NAVTREEINDEX7 =
 {
+"classGaussianBlur.html#a49d5b97d4b675348218fff5e6b0d28aa":[5,0,157,7],
+"classGaussianBlur.html#a538dbf5ee171feaf310cfb9915f09b85":[5,0,157,16],
 "classGaussianBlur.html#a574126251f733544505cd74ba4591581":[5,0,157,12],
 "classGaussianBlur.html#a76f030a35b65e29a36eb7b27f8986a84":[5,0,157,15],
 "classGaussianBlur.html#a815d80b58ceb4a8de69e8c96a78cb3dc":[5,0,157,14],
@@ -247,7 +249,5 @@ var NAVTREEINDEX7 =
 "classH264EncoderNVCodecProps.html#aac9b9b939f307e9928d3bac2cfe6b1cd":[5,0,168,10],
 "classH264EncoderNVCodecProps.html#ace70f1049fb190b502ecc39170e08992":[5,0,168,3],
 "classH264EncoderNVCodecProps.html#ad1b27e5ee997f92e5044bf567aff2b70":[5,0,168,4],
-"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494":[5,0,168,0],
-"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494acb5e7905c9103c4dd441acbc4bc5207a":[5,0,168,0,1],
-"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494adc2b2dd1e489178b9162446e51f3a832":[5,0,168,0,0]
+"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494":[5,0,168,0]
 };

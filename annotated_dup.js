@@ -305,6 +305,7 @@ var annotated_dup =
     [ "threadsafe_que", "classthreadsafe__que.html", "classthreadsafe__que" ],
     [ "ThumbnailListGenerator", "classThumbnailListGenerator.html", "classThumbnailListGenerator" ],
     [ "ThumbnailListGeneratorProps", "classThumbnailListGeneratorProps.html", "classThumbnailListGeneratorProps" ],
+    [ "TimeStampStrategy", "classTimeStampStrategy.html", "classTimeStampStrategy" ],
     [ "Utils", "classUtils.html", "classUtils" ],
     [ "V4L2CUDMABufYUV420Converter", "classV4L2CUDMABufYUV420Converter.html", "classV4L2CUDMABufYUV420Converter" ],
     [ "V4L2CURGBToYUV420Converter", "classV4L2CURGBToYUV420Converter.html", "classV4L2CURGBToYUV420Converter" ],

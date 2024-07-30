@@ -184,7 +184,8 @@ var hierarchy =
     [ "FrameMetadataFactory", "classFrameMetadataFactory.html", null ],
     [ "FramesMuxerStrategy", "classFramesMuxerStrategy.html", [
       [ "AllOrNoneStrategy", "classAllOrNoneStrategy.html", null ],
-      [ "MaxDelayAnyStrategy", "classMaxDelayAnyStrategy.html", null ]
+      [ "MaxDelayAnyStrategy", "classMaxDelayAnyStrategy.html", null ],
+      [ "TimeStampStrategy", "classTimeStampStrategy.html", null ]
     ] ],
     [ "FramesQueue", "classFramesQueue.html", [
       [ "GroupedFramesQueue", "classGroupedFramesQueue.html", null ],

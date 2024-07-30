@@ -1,5 +1,7 @@
 var NAVTREEINDEX8 =
 {
+"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494acb5e7905c9103c4dd441acbc4bc5207a":[5,0,168,0,1],
+"classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494adc2b2dd1e489178b9162446e51f3a832":[5,0,168,0,0],
 "classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494ae5880b33fc31beb143ebe46211114965":[5,0,168,0,2],
 "classH264EncoderNVCodec_1_1Detail.html":[5,0,166,0],
 "classH264EncoderNVCodec_1_1Detail.html#a08f8afb03c979cc2835efeffb2d6f1f8":[5,0,166,0,6],
@@ -247,7 +249,5 @@ var NAVTREEINDEX8 =
 "classImagePlaneData.html#a4641d32beda2272be4adbe82e47d360f":[5,0,185,2],
 "classImagePlaneData.html#a4e0b9ceee30a1b2451ecba2520efdebf":[5,0,185,0],
 "classImagePlaneData.html#a598cf35b0739fae414b61f99c87445e8":[5,0,185,1],
-"classImagePlaneData.html#a5b1b2fd1353d43d5e4e3d9ac7e932fba":[5,0,185,8],
-"classImagePlaneData.html#a73ad98e00b2ed517a695bf99a3ce22cf":[5,0,185,9],
-"classImagePlaneData.html#a8923955a723810feb7256d5916352fab":[5,0,185,6]
+"classImagePlaneData.html#a5b1b2fd1353d43d5e4e3d9ac7e932fba":[5,0,185,8]
 };

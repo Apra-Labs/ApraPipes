@@ -221,9 +221,11 @@ var NAVTREEINDEX6 =
 "classFramesMuxer.html#aff4200a8664990e489136322da103756":[5,0,153,9],
 "classFramesMuxerProps.html":[5,0,154],
 "classFramesMuxerProps.html#a1d5e195e3a8ecbb31260680cb050fd5f":[5,0,154,2],
+"classFramesMuxerProps.html#a4aa8565c12d2d5a7facea5a017293c09":[5,0,154,3],
 "classFramesMuxerProps.html#a6fdd5535c3f2f0060f75a719fa88d3ee":[5,0,154,1],
-"classFramesMuxerProps.html#a82fb5469f904fffa5a02b718b9b79367":[5,0,154,3],
+"classFramesMuxerProps.html#a82fb5469f904fffa5a02b718b9b79367":[5,0,154,4],
 "classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9":[5,0,154,0],
+"classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9a5b41fe070e0eb5a64ae581404a17e301":[5,0,154,0,2],
 "classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9aeaddcda02960452f6440efd72c0be716":[5,0,154,0,1],
 "classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9af1f2cc8178daf66d361f43a19fcc66fc":[5,0,154,0,0],
 "classFramesMuxerStrategy.html":[5,0,155],
@@ -247,7 +249,5 @@ var NAVTREEINDEX6 =
 "classGaussianBlur.html#a119dd37ed8cf91180acaca8d7b21645d":[5,0,157,1],
 "classGaussianBlur.html#a1b8df42058dcb042c8ccd0722240e538":[5,0,157,8],
 "classGaussianBlur.html#a3c079234f5db94eadb41e12c9bb6153b":[5,0,157,3],
-"classGaussianBlur.html#a431a81201803b195b8192833fdd2ae8b":[5,0,157,13],
-"classGaussianBlur.html#a49d5b97d4b675348218fff5e6b0d28aa":[5,0,157,7],
-"classGaussianBlur.html#a538dbf5ee171feaf310cfb9915f09b85":[5,0,157,16]
+"classGaussianBlur.html#a431a81201803b195b8192833fdd2ae8b":[5,0,157,13]
 };

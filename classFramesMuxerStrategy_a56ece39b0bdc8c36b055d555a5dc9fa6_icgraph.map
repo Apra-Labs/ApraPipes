@@ -1,13 +1,17 @@
 <map id="FramesMuxerStrategy::getMuxOutputPinId" name="FramesMuxerStrategy::getMuxOutputPinId">
-<area shape="rect" id="Node000001" title=" " alt="" coords="420,95,568,135"/>
-<area shape="rect" id="Node000002" href="$classFramesMuxerStrategy.html#a90a0e198811721d9fa82da121fd5d6a8" title=" " alt="" coords="212,37,360,78"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="404,93,360,81,362,76,406,88"/>
-<area shape="rect" id="Node000005" href="$classAllOrNoneStrategy.html#a6f6585c244a9926dcc69a1d9f823ee1f" title=" " alt="" coords="210,102,363,128"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="404,118,363,118,363,112,404,112"/>
-<area shape="rect" id="Node000006" href="$classMaxDelayAnyStrategy.html#a31a40075ab979774031483b63a0fab51" title=" " alt="" coords="201,152,372,177"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="406,139,344,154,343,148,404,134"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="420,153,568,194"/>
+<area shape="rect" id="Node000002" href="$classFramesMuxerStrategy.html#a90a0e198811721d9fa82da121fd5d6a8" title=" " alt="" coords="212,71,360,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="429,149,371,125,343,114,345,109,373,121,431,145"/>
+<area shape="rect" id="Node000006" href="$classAllOrNoneStrategy.html#a6f6585c244a9926dcc69a1d9f823ee1f" title=" " alt="" coords="210,136,363,161"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="404,165,363,160,364,155,405,160"/>
+<area shape="rect" id="Node000007" href="$classMaxDelayAnyStrategy.html#a31a40075ab979774031483b63a0fab51" title=" " alt="" coords="201,185,372,210"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="404,187,373,190,372,185,404,181"/>
+<area shape="rect" id="Node000008" href="$classTimeStampStrategy.html#ab6aa8484cd2048f00f0ddba56952ae32" title=" " alt="" coords="206,234,366,260"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="432,203,373,226,339,236,338,231,371,220,430,198"/>
 <area shape="rect" id="Node000003" href="$classAllOrNoneStrategy.html#a1b714cdac8b59de7571b5fe9af7b28b4" title=" " alt="" coords="11,5,147,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="196,46,147,39,147,33,197,41"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="205,68,145,49,147,44,206,63"/>
 <area shape="rect" id="Node000004" href="$classMaxDelayAnyStrategy.html#a1898a8ee297533da9091213cacb40394" title=" " alt="" coords="5,71,153,111"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="197,75,154,82,153,77,196,69"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="197,94,153,94,153,88,197,88"/>
+<area shape="rect" id="Node000005" href="$classTimeStampStrategy.html#ac6bc825da690705258bed3bead8f398c" title=" " alt="" coords="8,136,150,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="206,119,147,138,145,133,205,114"/>
 </map>

@@ -145,12 +145,13 @@ var searchData=
   ['_7etestsignalgeneratorprops_142',['~TestSignalGeneratorProps',['../classTestSignalGeneratorProps.html#a725541562eb6d4f8f6900bee704629f4',1,'TestSignalGeneratorProps']]],
   ['_7etextoverlayxform_143',['~TextOverlayXForm',['../classTextOverlayXForm.html#ac8f2a331df9de2908b04662a26fec5fa',1,'TextOverlayXForm']]],
   ['_7ethumbnaillistgenerator_144',['~ThumbnailListGenerator',['../classThumbnailListGenerator.html#ac1f10f15efda6de6c11531db7d0ccbab',1,'ThumbnailListGenerator']]],
-  ['_7ev4l2cudmabufyuv420converter_145',['~V4L2CUDMABufYUV420Converter',['../classV4L2CUDMABufYUV420Converter.html#a4e8db7b06f894a229fdab16f23dc4fd5',1,'V4L2CUDMABufYUV420Converter']]],
-  ['_7ev4l2curgbtoyuv420converter_146',['~V4L2CURGBToYUV420Converter',['../classV4L2CURGBToYUV420Converter.html#a7c08bfb7dfbe5d453c53e354763c3ef1',1,'V4L2CURGBToYUV420Converter']]],
-  ['_7ev4l2cuyuv420converter_147',['~V4L2CUYUV420Converter',['../classV4L2CUYUV420Converter.html#aa426c8025ab193f69ed4a6ba7c22ac6c',1,'V4L2CUYUV420Converter']]],
-  ['_7evalvemodule_148',['~ValveModule',['../classValveModule.html#ae3371984ca105f0078039127f518f39d',1,'ValveModule']]],
-  ['_7evirtualcamerasink_149',['~VirtualCameraSink',['../classVirtualCameraSink.html#ac3ccc12c0681d8120eb916f4329fac36',1,'VirtualCameraSink']]],
-  ['_7evirtualptz_150',['~VirtualPTZ',['../classVirtualPTZ.html#a8bd19abd0f0c845f9c2f64f8eb610841',1,'VirtualPTZ']]],
-  ['_7ewebcamsource_151',['~WebCamSource',['../classWebCamSource.html#aa032fd5c91ff5d8dcb485b74e49e8a79',1,'WebCamSource']]],
-  ['_7eyuvconverter_152',['~YuvConverter',['../classYuvConverter.html#a2174113a551789ef2671e51dea4fe5bb',1,'YuvConverter']]]
+  ['_7etimestampstrategy_145',['~TimeStampStrategy',['../classTimeStampStrategy.html#a1a3f0c3cbe6064ce00c15c747ae05dae',1,'TimeStampStrategy']]],
+  ['_7ev4l2cudmabufyuv420converter_146',['~V4L2CUDMABufYUV420Converter',['../classV4L2CUDMABufYUV420Converter.html#a4e8db7b06f894a229fdab16f23dc4fd5',1,'V4L2CUDMABufYUV420Converter']]],
+  ['_7ev4l2curgbtoyuv420converter_147',['~V4L2CURGBToYUV420Converter',['../classV4L2CURGBToYUV420Converter.html#a7c08bfb7dfbe5d453c53e354763c3ef1',1,'V4L2CURGBToYUV420Converter']]],
+  ['_7ev4l2cuyuv420converter_148',['~V4L2CUYUV420Converter',['../classV4L2CUYUV420Converter.html#aa426c8025ab193f69ed4a6ba7c22ac6c',1,'V4L2CUYUV420Converter']]],
+  ['_7evalvemodule_149',['~ValveModule',['../classValveModule.html#ae3371984ca105f0078039127f518f39d',1,'ValveModule']]],
+  ['_7evirtualcamerasink_150',['~VirtualCameraSink',['../classVirtualCameraSink.html#ac3ccc12c0681d8120eb916f4329fac36',1,'VirtualCameraSink']]],
+  ['_7evirtualptz_151',['~VirtualPTZ',['../classVirtualPTZ.html#a8bd19abd0f0c845f9c2f64f8eb610841',1,'VirtualPTZ']]],
+  ['_7ewebcamsource_152',['~WebCamSource',['../classWebCamSource.html#aa032fd5c91ff5d8dcb485b74e49e8a79',1,'WebCamSource']]],
+  ['_7eyuvconverter_153',['~YuvConverter',['../classYuvConverter.html#a2174113a551789ef2671e51dea4fe5bb',1,'YuvConverter']]]
 ];

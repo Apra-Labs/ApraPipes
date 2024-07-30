@@ -7,5 +7,6 @@ var searchData=
   ['threadsafe_5fque_4',['threadsafe_que',['../classthreadsafe__que.html',1,'']]],
   ['threadsafe_5fque_3c_20std_3a_3astring_20_3e_5',['threadsafe_que&lt; std::string &gt;',['../classthreadsafe__que.html',1,'']]],
   ['thumbnaillistgenerator_6',['ThumbnailListGenerator',['../classThumbnailListGenerator.html',1,'']]],
-  ['thumbnaillistgeneratorprops_7',['ThumbnailListGeneratorProps',['../classThumbnailListGeneratorProps.html',1,'']]]
+  ['thumbnaillistgeneratorprops_7',['ThumbnailListGeneratorProps',['../classThumbnailListGeneratorProps.html',1,'']]],
+  ['timestampstrategy_8',['TimeStampStrategy',['../classTimeStampStrategy.html',1,'']]]
 ];
