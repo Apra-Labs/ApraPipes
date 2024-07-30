@@ -260,6 +260,8 @@ public:
 	  {
 		  in_time_base.den = fps_den;
 	  }
+      video_st->time_base.den = 90000;
+      video_st->time_base.num = 1;
 	  in_time_base.num = fps_num;
       duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
   }
