@@ -19,7 +19,7 @@
 #include "FIndexStrategy.h"
 #include "Command.h"
 #include "BufferMaker.h"
-#include "Callback.h"
+#include "APCallback.h"
 
 using namespace std;
 
@@ -30,9 +30,10 @@ class PaceMaker;
 class ModuleProps
 {
 public:
-  enum FrameFetchStrategy {
-    PUSH, 
-    PULL 
+  enum FrameFetchStrategy
+  {
+    PUSH,
+    PULL
   };
   ModuleProps()
   {
@@ -86,10 +87,10 @@ public:
     enableHealthCallBack = false;
   }
 
-	size_t getQLen()
-	{
-		return qlen;
-	}
+  size_t getQLen()
+  {
+    return qlen;
+  }
 
   virtual size_t getSerializeSize()
   {
@@ -131,23 +132,27 @@ private:
 
   friend class boost::serialization::access;
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int /* file_version */) {
+  void serialize(Archive &ar, const unsigned int /* file_version */)
+  {
     ar & fps & qlen & logHealth & logHealthFrequency & maxConcurrentFrames &
         skipN & skipD & quePushStrategyType & fIndexStrategyType &
         frameFetchStrategy & enableHealthCallBack;
   }
 };
 
-class Module {
+class Module
+{
 
 public:
-	enum Kind {
-		SOURCE,
-		TRANSFORM,
-		SINK,
-		CONTROL
-	};
-  enum ModuleState {
+  enum Kind
+  {
+    SOURCE,
+    TRANSFORM,
+    SINK,
+    CONTROL
+  };
+  enum ModuleState
+  {
     Initialized,
     Running,
     EndOfStreamNormal,
@@ -174,106 +179,112 @@ public:
                    bool open = true); // take all the output pins
   boost_deque<boost::shared_ptr<Module>> getConnectedModules();
 
-	bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
-		
-	virtual bool init();
-	void operator()(); //to support boost::thread
-	virtual bool run();	
-	bool play(float speed, bool direction = true);
-	bool play(bool play);
-	bool queueStep();
-	virtual bool step();
-	virtual bool stop();
-	virtual bool term();
-	virtual bool isFull();
-	bool isNextModuleQueFull();
+  bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
 
-	void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
-	
-	void register_consumer(boost::function<void(Module*, unsigned short)>, bool bFatal=false);
-	boost::shared_ptr<PaceMaker> getPacer() { return pacer; }	
-	static frame_sp getFrameByType(frame_container& frames, int frameType); 
-	virtual void flushQue();
-	bool getPlayDirection() { return mDirection; }
-	virtual void flushQueRecursive();
-	virtual void addControlModule(boost::shared_ptr<Module> cModule);
-  virtual void registerErrorCallback(ErrorCallback callback){};
+  virtual bool init();
+  void operator()(); // to support boost::thread
+  virtual bool run();
+  bool play(float speed, bool direction = true);
+  bool play(bool play);
+  bool queueStep();
+  virtual bool step();
+  virtual bool stop();
+  virtual bool term();
+  virtual bool isFull();
+  bool isNextModuleQueFull();
+
+  void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
+
+  void register_consumer(boost::function<void(Module *, unsigned short)>, bool bFatal = false);
+  boost::shared_ptr<PaceMaker> getPacer() { return pacer; }
+  static frame_sp getFrameByType(frame_container &frames, int frameType);
+  virtual void flushQue();
+  bool getPlayDirection() { return mDirection; }
+  virtual void flushQueRecursive();
+  virtual void addControlModule(boost::shared_ptr<Module> cModule);
+  virtual void registerErrorCallback(ErrorCallback callback) {};
   void registerHealthCallback(HealthCallback callback);
   ModuleProps getProps();
+
 protected:
-	virtual boost_deque<frame_sp> getFrames(frame_container& frames);	
-	virtual bool process(frame_container& frames) { return false; }
-	virtual bool processEOS(string& pinId) { return true; } // EOS is propagated in stepNonSource for every encountered EOSFrame - pinId is first stream in the map
-	virtual bool processSOS(frame_sp& frame) { return true; } // SOS is Start of Stream	
-	virtual bool shouldTriggerSOS();
-	virtual bool produce() { return false; }
-	bool stepNonSource(frame_container& frames);
-	bool preProcessNonSource(frame_container& frames);
-	bool preProcessControl(frame_container& frames);
-	bool isRunning() { return mRunning; }
+  virtual boost_deque<frame_sp> getFrames(frame_container &frames);
+  virtual bool process(frame_container &frames) { return false; }
+  virtual bool processEOS(string &pinId) { return true; }   // EOS is propagated in stepNonSource for every encountered EOSFrame - pinId is first stream in the map
+  virtual bool processSOS(frame_sp &frame) { return true; } // SOS is Start of Stream
+  virtual bool shouldTriggerSOS();
+  virtual bool produce() { return false; }
+  bool stepNonSource(frame_container &frames);
+  bool preProcessNonSource(frame_container &frames);
+  bool preProcessControl(frame_container &frames);
+  bool isRunning() { return mRunning; }
 
-	void setProps(ModuleProps& props);
-	void fillProps(ModuleProps& props);
-	template<class T>
-	void addPropsToQueue(T& props, bool priority = false)
-	{
-		auto size = props.getSerializeSize();
-		auto frame = makeCommandFrame(size, mPropsChangeMetadata);
+  void setProps(ModuleProps &props);
+  void fillProps(ModuleProps &props);
+  template <class T>
+  void addPropsToQueue(T &props, bool priority = false)
+  {
+    auto size = props.getSerializeSize();
+    auto frame = makeCommandFrame(size, mPropsChangeMetadata);
 
-		// serialize
-		serialize<T>(props, frame);
-		// add to que
-		frame_container frames;
-		frames.insert(make_pair("props_change", frame));
-		if(!priority)
-		{
-			Module::push(frames);
-		}
-		else
-		{
-			Module::push_back(frames);
-		}
-	}
-	virtual bool handlePropsChange(frame_sp& frame);
-	virtual bool handleCommand(Command::CommandType type, frame_sp& frame);
-	template<class T>
-	bool handlePropsChange(frame_sp& frame, T& props)
-	{
-		//deserialize
-		deSerialize<T>(props, frame);
+    // serialize
+    serialize<T>(props, frame);
+    // add to que
+    frame_container frames;
+    frames.insert(make_pair("props_change", frame));
+    if (!priority)
+    {
+      Module::push(frames);
+    }
+    else
+    {
+      Module::push_back(frames);
+    }
+  }
+  virtual bool handlePropsChange(frame_sp &frame);
+  virtual bool handleCommand(Command::CommandType type, frame_sp &frame);
+  template <class T>
+  bool handlePropsChange(frame_sp &frame, T &props)
+  {
+    // deserialize
+    deSerialize<T>(props, frame);
 
-		// set props		
-		Module::setProps(props);
+    // set props
+    Module::setProps(props);
 
-		return true;
-	}
+    return true;
+  }
 
-	template<class T>
-	bool queuePriorityCommand(T& cmd)
-	{
-		queueCommand(cmd, true);
-	}
+  template <class T>
+  bool queuePriorityCommand(T &cmd)
+  {
+    queueCommand(cmd, true);
+  }
 
-	template<class T>
-	bool queueCommand(T& cmd, bool priority = false)
-	{
-		auto size = cmd.getSerializeSize();
-		auto frame = makeCommandFrame(size, mCommandMetadata);
+  template <class T>
+  bool queueCommand(T &cmd, bool priority = false)
+  {
+    auto size = cmd.getSerializeSize();
+    auto frame = makeCommandFrame(size, mCommandMetadata);
 
-		Utils::serialize(cmd, frame->data(), size);
+    Utils::serialize(cmd, frame->data(), size);
 
     // add to que
     frame_container frames;
     frames.insert(make_pair("command", frame));
-    if (priority) {
+    if (priority)
+    {
       Module::push_back(frames);
-    } else {
+    }
+    else
+    {
       Module::push(frames);
     }
     return true;
   }
 
-  template <class T> void getCommand(T &cmd, frame_sp &frame) {
+  template <class T>
+  void getCommand(T &cmd, frame_sp &frame)
+  {
     Utils::deSerialize(cmd, frame->data(), frame->size());
   }
 
@@ -313,14 +324,17 @@ protected:
 
   virtual bool validateInputPins();  // invoked with setInputPin
   virtual bool validateOutputPins(); // invoked with addOutputPin
-  virtual bool validateInputOutputPins() {
+  virtual bool validateInputOutputPins()
+  {
     return validateInputPins() && validateOutputPins();
   } // invoked during Module::init before anything else
 
-  size_t getNumberOfOutputPins(bool implicit = true) {
+  size_t getNumberOfOutputPins(bool implicit = true)
+  {
     auto pinCount = mOutputPinIdFrameFactoryMap.size();
     // override the implicit behaviour
-    if (!implicit) {
+    if (!implicit)
+    {
       pinCount += mInputPinIdMetadataMap.size();
     }
     return pinCount;
@@ -330,7 +344,8 @@ protected:
   framemetadata_sp getFirstOutputMetadata();
   framemetadata_sp getOutputMetadata(string outPinID);
   metadata_by_pin &getInputMetadata() { return mInputPinIdMetadataMap; }
-  framefactory_by_pin &getOutputFrameFactory() {
+  framefactory_by_pin &getOutputFrameFactory()
+  {
     return mOutputPinIdFrameFactoryMap;
   }
   framemetadata_sp getInputMetadataByType(int type);
@@ -354,101 +369,105 @@ protected:
 
   bool getPlayState() { return mPlay; }
 
-	// only for unit test
-	Connections getConnections() { return mConnections; } 	
-	
-	//following is useful for testing to know whats in queue
-	frame_container try_pop();
-	frame_container pop();
+  // only for unit test
+  Connections getConnections() { return mConnections; }
 
-	bool processSourceQue();
-	bool handlePausePlay(bool play);
-	virtual bool handlePausePlay(float speed = 1, bool direction = true);
-	virtual void notifyPlay(bool play) {}
+  // following is useful for testing to know whats in queue
+  frame_container try_pop();
+  frame_container pop();
 
-	//makes buffers from frameFactory
-	class FFBufferMaker : public BufferMaker {
-	public:
-		FFBufferMaker(Module& module);
-		virtual void* make(size_t dataSize);
-		frame_sp getFrame() {
-			return frameIMade;
-		}
-	private:
-		Module& myModule;
-		frame_sp frameIMade;
-	};
+  bool processSourceQue();
+  bool handlePausePlay(bool play);
+  virtual bool handlePausePlay(float speed = 1, bool direction = true);
+  virtual void notifyPlay(bool play) {}
 
-	FFBufferMaker createFFBufferMaker();
-	boost::shared_ptr<Module> controlModule = nullptr;
-private:	
-	void setSieveDisabledFlag(bool sieve);
-	frame_sp makeFrame(size_t size, framefactory_sp& framefactory);
-	bool push(frame_container frameContainer); //exchanges the buffer 
-	bool push_back(frame_container frameContainer);
-	bool try_push(frame_container frameContainer); //tries to exchange the buffer
-	
-	bool addEoPFrame(frame_container& frames);
-	bool handleStop();
+  // makes buffers from frameFactory
+  class FFBufferMaker : public BufferMaker
+  {
+  public:
+    FFBufferMaker(Module &module);
+    virtual void *make(size_t dataSize);
+    frame_sp getFrame()
+    {
+      return frameIMade;
+    }
 
-	template<class T>
-	void serialize(T& props, frame_sp& frame)
-	{
-		boost::iostreams::basic_array_sink<char> device_sink((char*)frame->data(), frame->size());
-		boost::iostreams::stream<boost::iostreams::basic_array_sink<char> > s_sink(device_sink);
+  private:
+    Module &myModule;
+    frame_sp frameIMade;
+  };
 
-		boost::archive::binary_oarchive oa(s_sink);
-		oa << props;
-	}
+  FFBufferMaker createFFBufferMaker();
+  boost::shared_ptr<Module> controlModule = nullptr;
 
-	template<class T>
-	void deSerialize(T& props, frame_sp& frame)
-	{
-		boost::iostreams::basic_array_source<char> device((char*)frame->data(), frame->size());
-		boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-		boost::archive::binary_iarchive ia(s);
+private:
+  void setSieveDisabledFlag(bool sieve);
+  frame_sp makeFrame(size_t size, framefactory_sp &framefactory);
+  bool push(frame_container frameContainer); // exchanges the buffer
+  bool push_back(frame_container frameContainer);
+  bool try_push(frame_container frameContainer); // tries to exchange the buffer
 
-		ia >> props;
-	}
+  bool addEoPFrame(frame_container &frames);
+  bool handleStop();
 
-	bool shouldForceStep();
-	bool shouldSkip();
+  template <class T>
+  void serialize(T &props, frame_sp &frame)
+  {
+    boost::iostreams::basic_array_sink<char> device_sink((char *)frame->data(), frame->size());
+    boost::iostreams::stream<boost::iostreams::basic_array_sink<char>> s_sink(device_sink);
 
-	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
-	
-	bool mPlay;
-	bool mDirection;
-	float mSpeed;
-	uint32_t mForceStepCount;
-	int mSkipIndex;
-	Kind myNature;
-	string myName;
-	string myId;
-	boost::thread myThread;
-	boost::shared_ptr<FrameContainerQueue> mQue;
-	bool mRunning;
-	uint32_t mStopCount;
-	uint32_t mForwardPins;
-	bool mIsSieveDisabledForAny = false;
-	boost::shared_ptr<FrameFactory> mpFrameFactory;
-	boost::shared_ptr<FrameFactory> mpCommandFactory;
-	boost::shared_ptr<PaceMaker> pacer;
-	
-	Connections mConnections; // For each module, all the required pins
-	map<string, boost::shared_ptr<Module>> mModules;
-	map<string, bool> mRelay;
-		
-	std::map<std::string, bool> mInputPinsDirection;
-	metadata_by_pin mInputPinIdMetadataMap;
-	framefactory_by_pin mOutputPinIdFrameFactoryMap;
-	std::shared_ptr<FIndexStrategy> mFIndexStrategy;
+    boost::archive::binary_oarchive oa(s_sink);
+    oa << props;
+  }
 
-	class Profiler;
-	boost::shared_ptr<Profiler> mProfiler;
-	boost::shared_ptr<ModuleProps> mProps;
-	boost::shared_ptr<QuePushStrategy> mQuePushStrategy;
+  template <class T>
+  void deSerialize(T &props, frame_sp &frame)
+  {
+    boost::iostreams::basic_array_source<char> device((char *)frame->data(), frame->size());
+    boost::iostreams::stream<boost::iostreams::basic_array_source<char>> s(device);
+    boost::archive::binary_iarchive ia(s);
 
-	framemetadata_sp mCommandMetadata;
-	framemetadata_sp mPropsChangeMetadata;
+    ia >> props;
+  }
+
+  bool shouldForceStep();
+  bool shouldSkip();
+
+  bool isFeedbackEnabled(std::string &moduleId); // get pins and call
+
+  bool mPlay;
+  bool mDirection;
+  float mSpeed;
+  uint32_t mForceStepCount;
+  int mSkipIndex;
+  Kind myNature;
+  string myName;
+  string myId;
+  boost::thread myThread;
+  boost::shared_ptr<FrameContainerQueue> mQue;
+  bool mRunning;
+  uint32_t mStopCount;
+  uint32_t mForwardPins;
+  bool mIsSieveDisabledForAny = false;
+  boost::shared_ptr<FrameFactory> mpFrameFactory;
+  boost::shared_ptr<FrameFactory> mpCommandFactory;
+  boost::shared_ptr<PaceMaker> pacer;
+
+  Connections mConnections; // For each module, all the required pins
+  map<string, boost::shared_ptr<Module>> mModules;
+  map<string, bool> mRelay;
+
+  std::map<std::string, bool> mInputPinsDirection;
+  metadata_by_pin mInputPinIdMetadataMap;
+  framefactory_by_pin mOutputPinIdFrameFactoryMap;
+  std::shared_ptr<FIndexStrategy> mFIndexStrategy;
+
+  class Profiler;
+  boost::shared_ptr<Profiler> mProfiler;
+  boost::shared_ptr<ModuleProps> mProps;
+  boost::shared_ptr<QuePushStrategy> mQuePushStrategy;
+
+  framemetadata_sp mCommandMetadata;
+  framemetadata_sp mPropsChangeMetadata;
   HealthCallback mHealthCallback;
 };

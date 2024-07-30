@@ -1,5 +1,5 @@
 #pragma once
-#include "Callback.h"
+#include "APCallback.h"
 #include "Command.h"
 #include "Module.h"
 #include <map>
@@ -27,8 +27,8 @@ public:
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
-  virtual void handleError(const ErrorObject &error) {}
-  virtual void handleHealthCallback(const HealthObject &healthObj) {}
+  	virtual void handleError(const APErrorObject &error) {}
+  	virtual void handleHealthCallback(const APHealthObject &healthObj) {}
 
 
 protected:

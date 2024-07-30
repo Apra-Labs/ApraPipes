@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 
-class HealthObject {
+class APHealthObject
+{
 private:
   std::string mModuleId;
   std::string mTimestamp;
@@ -9,7 +10,7 @@ private:
   std::string getCurrentTimestamp() const;
 
 public:
-  HealthObject(const std::string &modId);
+  APHealthObject(const std::string &modId);
 
   std::string getModuleId() const;
   std::string getTimestamp() const;

@@ -68,12 +68,12 @@ bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> 
 
 	// NOTE: If you want error callback and health callback to work with a module, registering it with control is mandatory.
 	module->registerErrorCallback(
-		[this](const ErrorObject& error) { handleError(error); });
+		[this](const APErrorObject& error) { handleError(error); });
 	
 	if (module->getProps().enableHealthCallBack)
 	{
 		module->registerHealthCallback(
-			[this](const HealthObject& message) { handleHealthCallback(message); });
+			[this](const APHealthObject& message) { handleHealthCallback(message); });
 	}
 	
 	return true;

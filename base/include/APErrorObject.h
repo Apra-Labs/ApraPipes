@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-class ErrorObject {
+class APErrorObject {
 private:
   int mErrorCode;
   std::string mErrorMessage;
@@ -12,7 +12,7 @@ private:
   std::string getCurrentTimestamp() const;
 
 public:
-  ErrorObject(int errCode, const std::string &errorMsg,
+  APErrorObject(int errCode, const std::string &errorMsg,
               const std::string &modName, const std::string &modId);
 
   int getErrorCode() const;
