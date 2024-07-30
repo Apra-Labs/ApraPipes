@@ -70,15 +70,23 @@ void AbsControlModule::handleHealthCallback(const HealthObject& healthObj)
 
 bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
 {
+	if (moduleRoles.find(role) != moduleRoles.end())
+	{
+		throw AIPException(CTRL_MODULE_INVALID_STATE, "Role already registered with the control module.");
+	}
+
 	moduleRoles[role] = module;
+
 	// NOTE: If you want error callback and health callback to work with a module, registering it with control is mandatory.
 	module->registerErrorCallback(
 		[this](const ErrorObject& error) { handleError(error); });
+	
 	if (module->getProps().enableHealthCallBack)
 	{
 		module->registerHealthCallback(
 			[this](const HealthObject& message) { handleHealthCallback(message); });
 	}
+	
 	return true;
 }
 
