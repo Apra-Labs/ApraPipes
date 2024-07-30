@@ -138,7 +138,7 @@ public:
   size_t width, height, bitrate;
   size_t fps_den = 30; 
   size_t fps_num = 1;
-  int64_t lastPTS, lastDiff, pts_adder, duration;
+  int64_t lastPTS, lastDiff, pts_adder, duration = 0;
   boost::shared_ptr<H264FrameDemuxer> demuxer;
   EventType connectionStatus;
   bool isFirstFrame;
@@ -244,6 +244,7 @@ public:
       return false;
     }
 
+    if(!duration)
     calculateDuration();
 
     return true;
@@ -260,10 +261,11 @@ public:
 	  {
 		  in_time_base.den = fps_den;
 	  }
-      video_st->time_base.den = 90000;
-      video_st->time_base.num = 1;
+      AVRational timeBase;
+      timeBase.den = 90000;
+      timeBase.num = 1;
 	  in_time_base.num = fps_num;
-      duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+      duration = av_rescale_q_rnd(1, in_time_base, timeBase, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
   }
 
   bool term(EventType status) {
