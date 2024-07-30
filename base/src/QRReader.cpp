@@ -19,9 +19,10 @@ public:
 		mSaveQRImages = _props.saveQRImages;
 		mQRImagesFolderName = _props.qrImagesPath;
 		mFrameRotationCounter = _props.frameRotationCounter;
-		if(mFrameRotationCounter <= 0)
+		if (mFrameRotationCounter <= 0)
 		{
-			mFrameRotationCounter=1;
+			LOG_WARNING << "You are setting frameRotationCounter less than 1";
+			mFrameRotationCounter = 1;
 		}
 		mFrameCounter = 0;
 	}
@@ -143,28 +144,35 @@ bool QRReader::term()
 bool QRReader::process(frame_container &frames)
 {
 	auto frame = frames.begin()->second;
- 
+
 	const auto &result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, mDetail->mImageFormat}, mDetail->mReaderOptions);
-	
+
 	auto text = result.text();
-	if(text.length())
+	if (text.length())
 	{
 		LOG_INFO << "ZXING decoded QR: " << text;
 	}
-	
+
 	if (mDetail->mSaveQRImages && (mDetail->mQRImagesFolderName != ""))
 	{
 		fs::path savePath = mDetail->mQRImagesFolderName / (std::to_string(mDetail->mFrameCounter) + ".raw");
-        std::ofstream outFile(savePath.string(), std::ios::binary);
-        if (outFile)
-        {
-            outFile.write(static_cast<char*>(frame->data()), frame->size());
-            outFile.close();
-        }
-        else
-        {
-            LOG_ERROR << "Failed to save frame to " << savePath.string();
-        }
+		try
+		{
+			std::ofstream outFile(savePath.string(), std::ios::binary);
+			if (outFile)
+			{
+				outFile.write(static_cast<char *>(frame->data()), frame->size());
+				outFile.close();
+			}
+			else
+			{
+				LOG_ERROR << "Failed to save frame to " << savePath.string();
+			}
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR << "Exception caught while saving frame to " << savePath.string() << ": " << e.what() << std::endl;
+		}
 		mDetail->mFrameCounter++;
 		if ((mDetail->mFrameCounter % mDetail->mFrameRotationCounter) == 0)
 		{
