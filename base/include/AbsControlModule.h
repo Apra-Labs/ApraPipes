@@ -28,6 +28,7 @@ public:
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
 
+
 protected:
 	bool process(frame_container& frames);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);

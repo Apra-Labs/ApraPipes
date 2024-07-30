@@ -72,7 +72,8 @@ bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> 
 {
 	if (moduleRoles.find(role) != moduleRoles.end())
 	{
-		throw AIPException(CTRL_MODULE_INVALID_STATE, "Role already registered with the control module.");
+		LOG_ERROR << "Role already registered with the control module."
+    return false;
 	}
 
 	moduleRoles[role] = module;
