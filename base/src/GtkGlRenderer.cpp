@@ -230,7 +230,7 @@ public:
   bool isPlaybackRenderer = true;
 
   // Error Object 
-  ErrorCallback mErrorCallback;
+  APErrorCallback mErrorCallback;
   std::string mModuleId;
 	std::string mModuleName;
 
@@ -396,7 +396,7 @@ bool GtkGlRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
   return Module::handleCommand(type, frame);
 }
 
-void GtkGlRenderer::registerErrorCallback(ErrorCallback callback)
+void GtkGlRenderer::registerErrorCallback(APErrorCallback callback)
 {
   mDetail->mModuleId = getId();
   mDetail->mModuleName = getName();
