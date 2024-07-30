@@ -56,18 +56,6 @@ bool AbsControlModule::process(frame_container& frames)
 	return true;
 }
 
-void AbsControlModule::handleError(const ErrorObject& error)
-{
-	LOG_ERROR << "Error in module " << error.getModuleName() << "Module Id"
-		<< error.getModuleId() << " (Code " << error.getErrorCode()
-		<< "): " << error.getErrorMessage();
-}
-
-void AbsControlModule::handleHealthCallback(const HealthObject& healthObj)
-{
-	LOG_ERROR << "Health Callback from  module " << healthObj.getModuleId();
-}
-
 bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
 {
 	if (moduleRoles.find(role) != moduleRoles.end())

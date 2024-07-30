@@ -27,6 +27,8 @@ public:
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
+  virtual void handleError(const ErrorObject &error) {}
+  virtual void handleHealthCallback(const HealthObject &healthObj) {}
 
 
 protected:
@@ -40,6 +42,4 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
-	void handleError(const ErrorObject& error);
-	void handleHealthCallback(const HealthObject& healthObj);
 };
