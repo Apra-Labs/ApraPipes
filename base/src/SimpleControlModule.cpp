@@ -16,14 +16,14 @@ void SimpleControlModule::sendEOPFrame()
 }
 
 // Right Now, Just Logging But Can be used to Do bunch of other things 
-void SimpleControlModule::handleError(const ErrorObject &error)
+void SimpleControlModule::handleError(const APErrorObject &error)
 {
 	LOG_ERROR << "Error in module " << error.getModuleName() << "Module Id"
 			  << error.getModuleId() << " (Code " << error.getErrorCode()
 			  << "): " << error.getErrorMessage();
 }
 
-void SimpleControlModule::handleHealthCallback(const HealthObject &healthObj)
+void SimpleControlModule::handleHealthCallback(const APHealthObject &healthObj)
 {
 	LOG_ERROR << "Health Callback from  module " << healthObj.getModuleId();
 }

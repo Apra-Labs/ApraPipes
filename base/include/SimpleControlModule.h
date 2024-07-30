@@ -18,8 +18,8 @@ public:
 
 	}
 
-	void handleError(const ErrorObject &error);
-    void handleHealthCallback(const HealthObject &healthObj);
+	void handleError(const APErrorObject &error);
+    void handleHealthCallback(const APHealthObject &healthObj);
 
 	// ErrorCallbacks
 protected:
