@@ -85,8 +85,8 @@ class RTSPPusher::Detail
     width = p.width;
     height = p.height;
     bitrate = 2000000;
-    fps_den = 1;
-    fps_num = 30;
+    fps_den = 30;
+    fps_num = 1;
 
     return true;
   }
@@ -135,7 +135,9 @@ public:
     }
     return bRC;
   }
-  size_t width, height, bitrate, fps_den, fps_num;
+  size_t width, height, bitrate;
+  size_t fps_den = 30; 
+  size_t fps_num = 1;
   int64_t lastPTS, lastDiff, pts_adder, duration;
   boost::shared_ptr<H264FrameDemuxer> demuxer;
   EventType connectionStatus;
@@ -252,8 +254,13 @@ public:
       if (den)
       {
           in_time_base.den = den;
-		  in_time_base.num = 1;
+		  fps_den = den;
       }
+	  else
+	  {
+		  in_time_base.den = fps_den;
+	  }
+	  in_time_base.num = fps_num;
       duration = av_rescale_q_rnd(1, in_time_base, video_st->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
   }
 
