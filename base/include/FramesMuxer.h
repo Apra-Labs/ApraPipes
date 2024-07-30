@@ -7,11 +7,14 @@ class FramesMuxerProps : public ModuleProps
 public:
 	enum Strategy {
 		ALL_OR_NONE,
-		MAX_DELAY_ANY
+		MAX_DELAY_ANY,
+		MAX_TIMESTAMP_DELAY
 	};
+
 public:
-	FramesMuxerProps() : ModuleProps() 
+	FramesMuxerProps() : ModuleProps()
 	{
+		maxTsDelayInMS = 16.67;
 		maxDelay = 30;
 		strategy = ALL_OR_NONE;
 		fIndexStrategyType = FIndexStrategy::FIndexStrategyType::NONE;
@@ -19,6 +22,7 @@ public:
 
 	int maxDelay; // Difference between current frame and first frame in the queue
 	Strategy strategy;
+	double maxTsDelayInMS; // Max TimeStampDelay in Milli Seconds
 };
 
 class FramesMuxerStrategy;
