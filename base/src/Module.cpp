@@ -516,7 +516,7 @@ bool Module::validateInputPins()
 	{
 		return true;
 	}
-	else if (myNature == CONTROL)
+	else if (myNature == CONTROL && getNumberOfInputPins() > 0)
 	{
 		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
 	}
@@ -529,7 +529,7 @@ bool Module::validateOutputPins()
 	{
 		return true;
 	}
-	else if (myNature == CONTROL)
+	else if (myNature == CONTROL && getNumberOfOutputPins() > 0)
 	{
 		throw AIPException(CTRL_MODULE_INVALID_STATE, "Illegal: Control module does not take any input pins.");
 	}
