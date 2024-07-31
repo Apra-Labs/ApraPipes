@@ -3,16 +3,28 @@
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
-#include "ReadBarcode.h"
-#include "TextUtfEncoding.h"
+#include "RawImageMetadata.h"
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 class QRReader::Detail
 {
 
 public:
-	Detail() : mWidth(0), mHeight(0)
+	Detail(QRReaderProps _props) : mWidth(0), mHeight(0)
 	{
-		mHints.setEanAddOnSymbol(ZXing::EanAddOnSymbol::Read);
+		mReaderOptions.setEanAddOnSymbol(ZXing::EanAddOnSymbol::Read);
+		LOG_INFO << "Setting tryHarder as " << _props.tryHarder;
+		mReaderOptions.setTryHarder(_props.tryHarder);
+		mSaveQRImages = _props.saveQRImages;
+		mQRImagesFolderName = _props.qrImagesPath;
+		mFrameRotationCounter = _props.frameRotationCounter;
+		if (mFrameRotationCounter <= 0)
+		{
+			LOG_WARNING << "You are setting frameRotationCounter less than 1";
+			mFrameRotationCounter = 1;
+		}
+		mFrameCounter = 0;
 	}
 
 	~Detail() {}
@@ -50,17 +62,18 @@ public:
 
 	int mWidth;
 	int mHeight;
-	ZXing::DecodeHints mHints;
+	ZXing::ReaderOptions mReaderOptions;
 	std::string mOutputPinId;
 	ZXing::ImageFormat mImageFormat;
-
-private:
-	framemetadata_sp mMetadata;
+	bool mSaveQRImages;
+	fs::path mQRImagesFolderName;
+	int mFrameCounter;
+	int mFrameRotationCounter;
 };
 
 QRReader::QRReader(QRReaderProps _props) : Module(TRANSFORM, "QRReader", _props)
 {
-	mDetail.reset(new Detail());
+	mDetail.reset(new Detail(_props));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	mDetail->mOutputPinId = addOutputPin(metadata);
 }
@@ -111,7 +124,15 @@ bool QRReader::init()
 	{
 		return false;
 	}
-
+	boost::system::error_code ec;
+	if (mDetail->mSaveQRImages && (!fs::create_directories(mDetail->mQRImagesFolderName, ec)))
+	{
+		if (ec)
+		{
+			LOG_ERROR << "Failed to create directory: " << mDetail->mQRImagesFolderName << ". Error: " << ec.message();
+			mDetail->mQRImagesFolderName = "";
+		}
+	}
 	return true;
 }
 
@@ -124,10 +145,40 @@ bool QRReader::process(frame_container &frames)
 {
 	auto frame = frames.begin()->second;
 
-	const auto &result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, mDetail->mImageFormat}, mDetail->mHints);
-	
-	auto text = ZXing::TextUtfEncoding::ToUtf8(result.text());
-	
+	const auto &result = ZXing::ReadBarcode({static_cast<uint8_t *>(frame->data()), mDetail->mWidth, mDetail->mHeight, mDetail->mImageFormat}, mDetail->mReaderOptions);
+
+	auto text = result.text();
+	if (text.length())
+	{
+		LOG_INFO << "ZXING decoded QR: " << text;
+	}
+
+	if (mDetail->mSaveQRImages && (mDetail->mQRImagesFolderName != ""))
+	{
+		fs::path savePath = mDetail->mQRImagesFolderName / (std::to_string(mDetail->mFrameCounter) + ".raw");
+		try
+		{
+			std::ofstream outFile(savePath.string(), std::ios::binary);
+			if (outFile)
+			{
+				outFile.write(static_cast<char *>(frame->data()), frame->size());
+				outFile.close();
+			}
+			else
+			{
+				LOG_ERROR << "Failed to save frame to " << savePath.string();
+			}
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR << "Exception caught while saving frame to " << savePath.string() << ": " << e.what() << std::endl;
+		}
+		mDetail->mFrameCounter++;
+		if ((mDetail->mFrameCounter % mDetail->mFrameRotationCounter) == 0)
+		{
+			mDetail->mFrameCounter = 0;
+		}
+	}
 	auto outFrame = makeFrame(text.length(), mDetail->mOutputPinId);
 	memcpy(outFrame->data(), text.c_str(), outFrame->size());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
