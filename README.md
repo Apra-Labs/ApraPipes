@@ -23,9 +23,9 @@ make -j"$(($(nproc) - 1))"
 ```
 * zxing
 ```
-cd thirdparty
-cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
-cmake --build zxing-cpp.release -j8 --config Release
+cd thirdparty/zxing-cpp
+chmod +x build.sh
+./build.sh
 ```
 
 ## Ubuntu 18.04 x64

@@ -60,7 +60,7 @@ find_library(LIB_AVFORMAT libavformat.a PATHS ${FFMPEG_ROOT}/libavformat NO_DEFA
 find_library(LIB_AVCODEC libavcodec.a PATHS ${FFMPEG_ROOT}/libavcodec NO_DEFAULT_PATH)
 find_library(LIB_AVUTIL libavutil.a PATHS ${FFMPEG_ROOT}/libavutil NO_DEFAULT_PATH)
 find_library(LIB_FFSWR libswresample.a PATHS ${FFMPEG_ROOT}/libswresample NO_DEFAULT_PATH)
-find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp.release/core NO_DEFAULT_PATH)
+find_library(LIB_ZXING libZXing.a PATHS ../thirdparty/zxing-cpp/_build/zxing-cpp.release/core NO_DEFAULT_PATH)
 
 
 IF(ENABLE_CUDA)
