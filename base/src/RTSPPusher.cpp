@@ -429,7 +429,7 @@ void RTSPPusher::pauserThreadFunction()
 		auto sendFrame = savedIFrame;
         while(pausedState) 
         {
-			
+            start();
 			if (!mDetail)
 			{
 				LOG_ERROR << "mDetail is null";
@@ -441,7 +441,7 @@ void RTSPPusher::pauserThreadFunction()
 				mDetail->connectionStatus = WRITE_FAILED;
 				LOG_FATAL << "write_precoded_video_frame failed";
 			}
-			boost::this_thread::sleep_for(boost::chrono::milliseconds(sleepTimeInMilliSec));
+            end();
         }
     } 
     catch (boost::thread_interrupted&) 
@@ -450,9 +450,36 @@ void RTSPPusher::pauserThreadFunction()
     }  
 }
 
-void RTSPPusher::setFps(int fps)
+void RTSPPusher::start() {
+    if (!initDone)
+    {
+        myNextWait = myTargetFrameLen;
+        frame_begin = sys_clock::now();
+        initDone = true;
+    }
+}
+
+void RTSPPusher::end() {
+
+    std::chrono::nanoseconds frame_len = sys_clock::now() - frame_begin;
+    if (myNextWait > frame_len)
+    {
+        std::this_thread::sleep_for(myNextWait - frame_len);
+    }
+    myNextWait += myTargetFrameLen;
+}
+
+void RTSPPusher::setFps(int _fps)
 {
-    sleepTimeInMilliSec = 1000 / fps;
+    if (_fps <= 0)
+    {
+        myTargetFrameLen = std::chrono::nanoseconds(1);
+    }
+    else
+    {
+        myTargetFrameLen = std::chrono::nanoseconds(1000000000 / _fps);
+    }
+    fps = _fps;
     mDetail->calculateDuration(fps);
 }
 
