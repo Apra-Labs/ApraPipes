@@ -34,7 +34,7 @@ class Module::Profiler
   using sys_clock = std::chrono::system_clock;
 
 public:
-  Profiler(string &id, bool _shouldLog, int _printFrequency,
+  Profiler(string &id, bool _shouldLog, int _printFrequency, int _healthUpdateIntervalInSec,
            std::function<string()> _getPoolHealthRecord,
            APHealthCallback _healthCallback)
       : moduleId(id), shouldLog(_shouldLog), mPipelineFps(0),
@@ -42,6 +42,7 @@ public:
   {
     getPoolHealthRecord = _getPoolHealthRecord;
     lastHealthCallbackTime = sys_clock::now();
+    mHealthUpdateIntervalInSec = _healthUpdateIntervalInSec;
   }
 
   void setShouldLog(bool _shouldLog) { shouldLog = _shouldLog; }
@@ -100,7 +101,7 @@ public:
     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                        now - lastHealthCallbackTime)
                        .count();
-    if (elapsed >= 1)
+    if (elapsed >= mHealthUpdateIntervalInSec)
     {
       if (healthCallback)
       {
@@ -137,6 +138,7 @@ private:
 
   double mPipelineFps;
   APHealthCallback healthCallback;
+  int mHealthUpdateIntervalInSec;
 };
 
 Module::Module(Kind nature, string name, ModuleProps _props)
@@ -156,7 +158,7 @@ Module::Module(Kind nature, string name, ModuleProps _props)
   pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
   auto tempId = getId();
   mProfiler.reset(new Profiler(
-      tempId, _props.logHealth, _props.logHealthFrequency,
+      tempId, _props.logHealth, _props.logHealthFrequency, _props.healthUpdateIntervalInSec, 
       [&]() -> std::string
       {
         if (!mpFrameFactory.get())

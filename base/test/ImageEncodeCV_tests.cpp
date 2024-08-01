@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 {
 	LoggerProps logprops;
-	logprops.logLevel = boost::log::trivial::severity_level::info;
+	logprops.logLevel = boost::log::trivial::severity_level::error;
 	Logger::initLogger(logprops);
 
 	
@@ -162,6 +162,7 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 
 	ImageEncoderCVProps encoderProps;
 	encoderProps.enableHealthCallBack = true;
+	encoderProps.healthUpdateIntervalInSec = 10;
 	auto m2 = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(encoderProps));
 	fileReader->setNext(m2);
 	
@@ -172,8 +173,8 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
 	
 	StatSinkProps statSinkProps;
-	statSinkProps.logHealth = true;
-	statSinkProps.logHealthFrequency = 10;
+	// statSinkProps.logHealth = true;
+	// statSinkProps.logHealthFrequency = 10;
 	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
 	m2->setNext(statSink);
 

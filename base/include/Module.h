@@ -46,6 +46,7 @@ public:
     fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
     frameFetchStrategy = FrameFetchStrategy::PUSH;
     enableHealthCallBack = false;
+    healthUpdateIntervalInSec = 5;
   }
 
   ModuleProps(float _fps)
@@ -59,6 +60,7 @@ public:
     fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
     frameFetchStrategy = FrameFetchStrategy::PUSH;
     enableHealthCallBack = false;
+    healthUpdateIntervalInSec = 5;
   }
 
   ModuleProps(float _fps, size_t _qlen, bool _logHealth)
@@ -72,6 +74,7 @@ public:
     fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
     frameFetchStrategy = FrameFetchStrategy::PUSH;
     enableHealthCallBack = false;
+    healthUpdateIntervalInSec = 5;
   }
 
   ModuleProps(FrameFetchStrategy _frameFetchStrategy)
@@ -85,6 +88,7 @@ public:
     fIndexStrategyType = FIndexStrategy::FIndexStrategyType::AUTO_INCREMENT;
     frameFetchStrategy = _frameFetchStrategy;
     enableHealthCallBack = false;
+    healthUpdateIntervalInSec = 5;
   }
 
   size_t getQLen()
@@ -125,8 +129,9 @@ public:
   FrameFetchStrategy frameFetchStrategy;
   QuePushStrategy::QuePushStrategyType quePushStrategyType;
   FIndexStrategy::FIndexStrategyType fIndexStrategyType;
-  bool enableHealthCallBack;
-
+  bool enableHealthCallBack; // ToEnable HealthCallback we need to set ModuleProps as true, Will get Callbacks only if ControlModule is there
+  int healthUpdateIntervalInSec; // Health Callback Interval Defined in Sec, if Value is  
+  // set to 5, then it means after every 5 sec Control Module will receive health callback
 private:
   friend class Module;
 
