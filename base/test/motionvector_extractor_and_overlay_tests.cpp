@@ -148,9 +148,7 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	p.term();
 	p.wait_for_all();
 }
-
-void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract)
-{
+void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract) {
 	LoggerProps loggerProps;
 	loggerProps.logLevel = boost::log::trivial::severity_level::info;
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
@@ -185,7 +183,7 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	p.stop();
 	p.term();
 	p.wait_for_all();
-}
+ }
 
 void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 {
@@ -197,6 +195,7 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	rtsp_client_tests_data d;
 
 	bool overlayFrames = false;
+
 	const std::string url = "";
 	std::string username = "";
 	std::string password = "";
@@ -259,11 +258,6 @@ BOOST_AUTO_TEST_CASE(basic_extract_motion_vector_openh264)
 BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_openh264)
 {
 	motionVectorExtractAndOverlay(MotionVectorExtractorProps::OPENH264);
-}
-
-BOOST_AUTO_TEST_CASE(extract_motion_vectors_and_overlay_render_openh264, *boost::unit_test::disabled())
-{
-	motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::OPENH264);
 }
 
 BOOST_AUTO_TEST_CASE(rtspcam_extract_motion_vectors_and_overlay_render_openh264, *boost::unit_test::disabled())
