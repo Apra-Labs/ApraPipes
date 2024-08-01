@@ -13,7 +13,6 @@
 #include "ImageEncoderCV.h"
 #include "PipeLine.h"
 #include "StatSink.h"
-#include "AbsControlModule.h"
 #include "SimpleControlModule.h"
 
 BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
