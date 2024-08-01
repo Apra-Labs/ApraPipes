@@ -508,12 +508,15 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 }
 
 bool RTSPPusher::shouldTriggerSOS() {
+	std::string err = mDetail->connectionStatus == CONNECTION_FAILED ? "connection failed" : "stream ended";
+	LOG_INFO << "shouldTriggerSOS connvetion status<" << err << ">";
   return mDetail->connectionStatus == CONNECTION_FAILED ||
          mDetail->connectionStatus == STREAM_ENDED;
 }
 
 bool RTSPPusher::processEOS(string &pinId) {
-  mDetail->connectionStatus = STREAM_ENDED;
+	LOG_INFO << "EOS recieved for pinID <" << pinId << ">";
+  //mDetail->connectionStatus = STREAM_ENDED;
 
   return true;
 }
