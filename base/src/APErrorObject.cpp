@@ -6,10 +6,9 @@
 #include "APErrorObject.h"
 #include "Logger.h"
 
-APErrorObject::APErrorObject(int errCode, const std::string &errorMsg,
-                             const std::string &modName, const std::string &modId)
-    : mErrorCode(errCode), mErrorMessage(errorMsg), mModuleName(modName),
-      mModuleId(modId)
+APErrorObject::APErrorObject(int errCode, const std::string &errorMsg)
+    : mErrorCode(errCode), mErrorMessage(errorMsg), mModuleName(""),
+      mModuleId("")
 {
   mTimestamp = getCurrentTimestamp();
 }

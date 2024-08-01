@@ -202,8 +202,10 @@ public:
   bool getPlayDirection() { return mDirection; }
   virtual void flushQueRecursive();
   virtual void addControlModule(boost::shared_ptr<Module> cModule);
-  virtual void registerErrorCallback(APErrorCallback callback){}
   void registerHealthCallback(APHealthCallback callback);
+  void executeErrorCallback(const APErrorObject &error);
+  void registerErrorCallback(APErrorCallback callback);
+
   ModuleProps getProps();
 
 protected:
@@ -452,6 +454,7 @@ private:
   boost::shared_ptr<FrameFactory> mpFrameFactory;
   boost::shared_ptr<FrameFactory> mpCommandFactory;
   boost::shared_ptr<PaceMaker> pacer;
+  APErrorCallback mErrorCallback;
 
   Connections mConnections; // For each module, all the required pins
   map<string, boost::shared_ptr<Module>> mModules;

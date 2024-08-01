@@ -1168,6 +1168,22 @@ void Module::addControlModule(boost::shared_ptr<Module> cModule)
   controlModule = cModule;
 }
 
+void Module::registerErrorCallback(APErrorCallback callback)
+{
+  mErrorCallback = callback;
+}
+
+void Module::executeErrorCallback(const APErrorObject& _error)
+{
+  APErrorObject error = _error;
+  if(mErrorCallback)
+  {
+    error.setModuleId(myId);
+    error.setModuleName(myName);
+    mErrorCallback(error);
+  }
+}
+
 void Module::flushQueRecursive()
 {
   flushQue();

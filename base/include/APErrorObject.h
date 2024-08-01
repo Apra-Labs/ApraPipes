@@ -12,8 +12,7 @@ private:
   std::string getCurrentTimestamp() const;
 
 public:
-  APErrorObject(int errCode, const std::string &errorMsg,
-              const std::string &modName, const std::string &modId);
+  APErrorObject(int errCode, const std::string &errorMsg);
 
   int getErrorCode() const;
   std::string getErrorMessage() const;
