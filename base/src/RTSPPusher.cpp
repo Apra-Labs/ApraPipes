@@ -412,7 +412,8 @@ bool RTSPPusher::setPausedState(bool state)
         }
     }
     else
-    {            
+    {   
+        setFps(fps);
         if (pauserThread.joinable()) 
         {
             pauserThread.interrupt();
@@ -430,6 +431,9 @@ void RTSPPusher::pauserThreadFunction()
         while(pausedState) 
         {
             start();
+            std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
+            auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
+
 			if (!mDetail)
 			{
 				LOG_ERROR << "mDetail is null";
@@ -441,7 +445,12 @@ void RTSPPusher::pauserThreadFunction()
 				mDetail->connectionStatus = WRITE_FAILED;
 				LOG_FATAL << "write_precoded_video_frame failed";
 			}
+            std::chrono::time_point<std::chrono::system_clock> t1 = std::chrono::system_clock::now();
+            auto dur1 = std::chrono::duration_cast<std::chrono::milliseconds>(t1.time_since_epoch());
+            auto diff = dur1.count() - dur.count();
+            int newfps = 1000 / diff;
             end();
+            setFps(newfps, true);
         }
     } 
     catch (boost::thread_interrupted&) 
@@ -469,7 +478,7 @@ void RTSPPusher::end() {
     myNextWait += myTargetFrameLen;
 }
 
-void RTSPPusher::setFps(int _fps)
+void RTSPPusher::setFps(int _fps, bool pausedState)
 {
     if (_fps <= 0)
     {
@@ -479,8 +488,12 @@ void RTSPPusher::setFps(int _fps)
     {
         myTargetFrameLen = std::chrono::nanoseconds(1000000000 / _fps);
     }
-    fps = _fps;
-    mDetail->calculateDuration(fps);
+    if (!pausedState)
+    {
+        fps = _fps;
+    }
+    
+    mDetail->calculateDuration(_fps);
 }
 
 bool RTSPPusher::processSOS(frame_sp &frame)
