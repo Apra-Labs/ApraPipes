@@ -739,7 +739,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 					}
 				}
 				/* ----- first relevant file found end ----- */
-
+				LOG_INFO << "ocof parse : relevant video found <" << vid.path << ">";
 				insertInVideoCache(vid);
 				++parsedFilesCount;
 			}
@@ -748,10 +748,13 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 	/* corner case: first relevant file was never found --- */
 	if (!startTSofRelevantFile) // no file with ts > start_ts was found
 	{
+
+		LOG_INFO << "ocof parse : no file with ts > start_ts found <>";
 		if (exactMatchFound) // only 1 file with exactmatch was found
 		{
 			startTSofRelevantFile = start_ts;
 			Video exactMatchVid(exactMatchFile.string(), start_ts);
+			LOG_INFO << "ocof parse: exact file match found <" << exactMatchVid.path << ">";
 			insertInVideoCache(exactMatchVid);
 			++parsedFilesCount;
 		}
@@ -791,6 +794,7 @@ void OrderedCacheOfFiles::retireOldFiles(uint64_t ts)
 
 void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 {
+	LOG_INFO << "OCOF: Drop Strategy Triggered <farthestFromTS> <" << ts << ">";
 	if (videoCache.empty())
 	{
 		return;
@@ -813,6 +817,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				{
 					boost::mutex::scoped_lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
+					LOG_INFO << "OCOF: Dropped <" << itr->path << ">";
 					itr = videoCache.erase(itr);
 				}
 				else
@@ -833,6 +838,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				{
 					boost::mutex::scoped_lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
+					LOG_INFO << "OCOF: Dropped <" << itr->path << ">";
 					itr = videoCache.erase(itr);
 					--itr;
 				}
