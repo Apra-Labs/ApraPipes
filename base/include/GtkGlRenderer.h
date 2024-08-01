@@ -29,7 +29,6 @@ public:
 	bool init();
 	bool term();
 	bool changeProps(GtkWidget *glArea, int windowWidth, int windowHeight);
-	void registerErrorCallback(APErrorCallback callback);
 protected:
 	bool process(frame_container &frames);
 	bool processSOS(frame_sp &frame);

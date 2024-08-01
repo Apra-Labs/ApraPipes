@@ -66,9 +66,7 @@ public:
     }
     if (!detailInstance->cachedFrame.get())
     {
-      APErrorObject error(0, "Error: Got Empty Frame", detailInstance->mModuleName,
-                          detailInstance->mModuleId);
-      detailInstance->executeCallback(error);
+      LOG_TRACE << "Got Empty Frame";
       return TRUE;
     }
     detailInstance->renderFrame = detailInstance->cachedFrame;
@@ -208,14 +206,6 @@ public:
     return true;
   }
 
-  void executeCallback(APErrorObject error) // Can it be part of module class
-  {
-    if (mErrorCallback)
-    {
-      mErrorCallback(error);
-    }
-  }
-
   GtkWidget *glarea;
   int windowWidth, windowHeight;
   uint64_t frameWidth, frameHeight;
@@ -341,6 +331,8 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     if (metadata->getImageType() != ImageMetadata::RGBA &&
         metadata->getImageType() != ImageMetadata::RGB)
     {
+      APErrorObject error(0, "Unsupported Image Type");
+      executeErrorCallback(error);
       throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only RGB "
                                     ", BGR , BGRA and RGBA is supported<" +
                                         std::to_string(frameType) + ">");
@@ -366,6 +358,8 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
         FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
     if (metadata->getImageType() != ImageMetadata::RGBA)
     {
+      APErrorObject error(0, "Unsupported Image Type");
+      executeErrorCallback(error);
       throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only "
                                     "RGB, BGR, BGRA and RGBA is supported<" +
                                         std::to_string(frameType) + ">");
@@ -394,11 +388,4 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
 bool GtkGlRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
 {
   return Module::handleCommand(type, frame);
-}
-
-void GtkGlRenderer::registerErrorCallback(APErrorCallback callback)
-{
-  mDetail->mModuleId = getId();
-  mDetail->mModuleName = getName();
-  mDetail->mErrorCallback = callback;
 }

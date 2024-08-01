@@ -25,6 +25,7 @@
 #include "RTSPClientSrc.h"
 #include "StatSink.h"
 #include "VirtualCameraSink.h"
+#include "SimpleControlModule.h"
 
 #include <gtk/gtk.h>
 
@@ -66,6 +67,34 @@ void secondPipeline() {
   p.init();
   p.run_all_threaded();
 }
+
+// Below Test is added to Give an Idea about How  Error Callbacks can be used
+boost::shared_ptr<GtkGlRenderer> launchErrorCallPipeline() {
+  auto fileReaderProps = FileReaderModuleProps("./data/mono_200x200.raw", 0, -1);
+  fileReaderProps.readLoop = true;
+  fileReaderProps.fps = 300;
+  auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+  auto metadata = framemetadata_sp(new RawImageMetadata(200, 200, ImageMetadata::ImageType::MONO, CV_8UC1, 0,
+                           CV_8U, FrameMetadata::HOST, true));
+  auto rawImagePin = fileReader->addOutputPin(metadata);
+
+  GtkGlRendererProps gtkglsinkProps(glarea, 1, 1);
+  GtkGl = boost::shared_ptr<GtkGlRenderer>(new GtkGlRenderer(gtkglsinkProps));
+  fileReader->setNext(GtkGl);
+
+  auto controlProps = SimpleControlModuleProps();
+	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
+
+
+  p.appendModule(fileReader);
+  p.addControlModule(mControl);
+  p.init();
+  mControl->init();
+  mControl->enrollModule("Renderer", GtkGl);
+  p.run_all_threaded();
+  return GtkGl;
+}
+
 boost::shared_ptr<GtkGlRenderer> laucX86Pipeline() {
   auto fileReaderProps =
       FileReaderModuleProps("./data/frame_1280x720_rgb.raw", 0, -1);
@@ -586,6 +615,46 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled()) {
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
   laucX86Pipeline();
+  gtk_widget_show_all(window);
+
+  gtk_main();
+
+  p.stop();
+  p.term();
+  p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(getErrorCallback, *boost::unit_test::disabled()) {
+  if (!gtk_init_check(NULL, NULL)) {
+    fputs("Could not initialize GTK", stderr);
+  }
+  GtkBuilder *m_builder = gtk_builder_new();
+  if (!m_builder) {
+    LOG_ERROR << "Builder not found";
+  }
+  gtk_builder_add_from_file(m_builder, "./data/app_ui.glade", NULL);
+
+  window = GTK_WIDGET(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+  gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+  g_object_ref(window);
+  gtk_window_set_default_size(GTK_WINDOW(window), 1920, 1080);
+  gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+  gtk_widget_set_app_paintable(window, TRUE);
+
+  do {
+    gtk_main_iteration();
+  } while (gtk_events_pending());
+
+  GtkWidget *mainFixed =
+      GTK_WIDGET(gtk_builder_get_object(m_builder, "A_liveScreen"));
+  gtk_container_add(GTK_CONTAINER(window), mainFixed);
+
+  glarea = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw"));
+  glAreaSwitch = GTK_WIDGET(gtk_builder_get_object(m_builder, "glareadraw1"));
+
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  launchErrorCallPipeline();
   gtk_widget_show_all(window);
 
   gtk_main();
