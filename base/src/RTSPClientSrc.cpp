@@ -182,6 +182,7 @@ public:
         
         frame_container outFrames;
         bool got_something = false;
+        int count = 0;
         while(!got_something)
         {
 			LOG_TRACE << "got something from stream ? <" << got_something << ">";
@@ -243,6 +244,15 @@ public:
                     frameCount++;
                 }
                 av_packet_unref(&packet);
+            }
+            else
+            { //Inform control module about stopping of stream
+                LOG_ERROR<<"Not getting data from source";
+                count++;
+                if(count == 10)
+                {
+                    return false;
+                }
             }
         }
 
