@@ -4,7 +4,7 @@
 class ValveModuleProps : public ModuleProps
 {
 public:
-	ValveModuleProps()
+	ValveModuleProps() 
 	{
 
 	}

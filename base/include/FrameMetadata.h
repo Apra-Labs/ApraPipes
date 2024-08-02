@@ -50,17 +50,16 @@ public:
 		HEVC_DATA, //H265
 		MOTION_VECTOR_DATA,
 		OVERLAY_INFO_IMAGE,
-		FACE_LANDMARKS_INFO
+		FACE_LANDMARKS_INFO,
+		TEXT
 	};
 
 	enum MemType
 	{
 		HOST = 1,
-#ifdef APRA_CUDA_ENABLED
 		HOST_PINNED = 2,
 		CUDA_DEVICE = 3,
 		DMABUF = 4
-#endif
 	};
 		
 	FrameMetadata(FrameType _frameType)

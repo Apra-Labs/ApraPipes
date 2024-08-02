@@ -7,7 +7,7 @@ A pipeline framework for developing video and image processing applications. Sup
 Learn more about ApraPipes here https://apra-labs.github.io/ApraPipes.
 
 ## Build status
-Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2017 Community.
+Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2019 Community.
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
 |Windows|2019|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)|[![CI-Win-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml)|
@@ -40,22 +40,24 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 <details>
   <summary>Requirements</summary>
 
-  ### Cuda
-  * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
-  * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)  or  [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64).
-
-  ### Cudnn
-  * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract files where cuda is installed. Note: Please be aware that this process requires some effort. Here are the necessary steps:
-   * Download the correct zip file matching your cuda version. _Do not download the exe/installer/deb package._
-   * Windows: 
-     * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip).
-
-  ###  Prerequisites 
+  ###  Prerequisites
+  
+  ### Visual Studio
   * Install Visual Studio 2019 Community 
     * Install Desktop development C++
     * .NET Desktop development
     * Universal Windows Development Platform
-  
+
+  ### Cuda
+  * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
+  * Windows 10/11 : [Cuda Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal)  or  [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows).
+
+  ### Cudnn
+  * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102) and extract files where cuda is installed. Note: Please be aware that this process requires some effort. Here are the necessary steps:
+    * Download the correct zip file matching your cuda version. _Do not download the exe/installer/deb package._
+    * Windows: 
+      * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip).
+    
   * Clone with submodules and LFS. 
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
@@ -66,9 +68,9 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 <details>
   <summary>Build</summary>
 
-  ### Build Without Cuda
   Open PowerShell as an administrator and execute the following commands
 
+  ### Build Without Cuda
   If your windows system does not have an NVIDIA GPU use this script
   ```
   build_windows_no_cuda.bat
@@ -77,7 +79,10 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   ```
   build_windows_cuda.bat
   ```
-
+  ### To Build With Documentation
+  ```
+  build_windows_cuda.bat --build-doc
+  ```
 </details>
 
 <details>
@@ -114,18 +119,21 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
 <details>
   <summary>Requirements</summary>
   
+  ### Prerequisites
+
   ### Cuda
   * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
   * Ubuntu 18.04/20.04:   
     18.04 - [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork)  
-    20.04 - [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
+    20.04 - [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
 
   ### Cudnn  
   * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102)
   * Linux:
       * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar.xz)
 
-  ### Prerequisites
+  * Clone with submodules and LFS.
+    ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
 
@@ -141,11 +149,15 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   ### Build Without Cuda
   If your windows system does not have an NVIDIA GPU use this script
   ```
-  sudo ./build_linux_no_cuda.sh
+  ./build_linux_no_cuda.sh
   ```
   ### Build With Cuda
   ```
-  sudo ./build_linux_cuda.sh
+  ./build_linux_cuda.sh
+  ```
+  ### To Build With Documentation
+  ```
+  ./build_linux_cuda.sh --build-doc
   ```
 
   Build can take ~2 hours depending on the machine configuration.
@@ -200,11 +212,14 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
   ```
   chmod +x build_jetson.sh
   ```
-  * ApraPipes builds CUDA version on Jerson Boads.
+  * ApraPipes builds CUDA version on Jetson Boards.
   ```
-  sudo ./build_jetson.sh
+  ./build_jetson.sh
   ```
-
+  * To Build With Documentation
+  ```
+  ./build_jetson.sh --build-doc
+  ```
   Build can take ~12 hours on Jetson Nano. 
   Note: Jetson build can also be done using Ubuntu 18.04 x86_64 Laptop via cross compilation.
 </details>
@@ -290,13 +305,10 @@ This build will be fairly fast (~10 mins) as entire vcpkg cache comes down with 
 git submodule update --init --recursive
 ```
 ## Update Documentation
- After making changes to the documentation located in the /docs/source folder, it's essential to regenerate the documentation by following the provided steps. Once regenerated, commit the new content to ensure the latest documentation is up-to-date.
+To update documentation, refer to Documentation Guidelines in the [Contribution-Guidelines](https://github.com/Apra-Labs/ApraPipes/wiki/Contribution-Guidelines).
 
 ### To regenerate documentation
+Run,
 ```
-To build docs
-apt-install get python-sphinx 
-pip install sphinx-rtd-theme
-cd docs
-make html
+./build_documentation.sh
 ```

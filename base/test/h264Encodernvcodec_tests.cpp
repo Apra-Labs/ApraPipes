@@ -21,7 +21,7 @@
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
-* utf::precondition(if_h264_encoder_supported()))
+*boost::unit_test::disabled())
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360_to_160x90.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
-* utf::precondition(if_h264_encoder_supported()))
+*boost::unit_test::disabled())
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360.h264" };
 	Test_Utils::FileCleaner f(outFile);

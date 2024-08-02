@@ -5,7 +5,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 # Enable feature and install dependencies
 choco feature enable -n allowEmptyChecksums
-choco install 7zip git python3 cmake pkgconfiglite -y
+choco install 7zip git python3 cmake pkgconfiglite doxygen.portable graphviz -y
 
 # Install required Python packages
 pip3 install ninja
@@ -22,10 +22,14 @@ if (-not (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\$cudaVer
 } else {
     $userName = $env:UserName
     $zipFilePath = "C:\Users\$userName\Downloads\cudnn-*.zip"
+    $extractedPath = "C:\Users\$userName\Downloads\cudnn-*\"
 
-    Write-Host "Extracting zip file..."
-    
-    Expand-Archive -Path $zipFilePath -DestinationPath C:\Users\$userName\Downloads\ -Force
+    if (-not (Test-Path $extractedPath)) {
+        Write-Host "Extracting zip file..."
+        Expand-Archive -Path $zipFilePath -DestinationPath "C:\Users\$userName\Downloads\" -Force
+    } else {
+        Write-Host "Already extracted files found."
+    }
 
     Write-Host "Copying files..."
     Copy-Item -Path "C:\Users\$userName\Downloads\cudnn-*\include\*.h" -Destination "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\$cudaVersion\include\" -Recurse

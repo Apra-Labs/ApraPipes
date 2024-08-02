@@ -13,12 +13,21 @@
 #include "nvEncodeAPI.h"
 #include "Command.h"
 
+#define DEFAULT_BUFFER_THRESHOLD 30
+
 class H264EncoderNVCodec::Detail
 {
 public:
 	Detail(H264EncoderNVCodecProps &_props) : mProps(_props)
 	{
-		helper.reset(new H264EncoderNVCodecHelper(_props.bitRateKbps, _props.cuContext,_props.gopLength,_props.frameRate,_props.vProfile,_props.enableBFrames));
+		if(_props.bufferThres == DEFAULT_BUFFER_THRESHOLD)
+		{
+			helper.reset(new H264EncoderNVCodecHelper(_props.bitRateKbps, _props.cuContext,_props.gopLength,_props.frameRate,_props.vProfile,_props.enableBFrames));
+		}
+		else
+		{
+			helper.reset(new H264EncoderNVCodecHelper(_props.bitRateKbps, _props.cuContext,_props.gopLength,_props.frameRate,_props.vProfile,_props.enableBFrames,_props.bufferThres));
+		}
 	}
 
 	~Detail()
