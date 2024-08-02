@@ -35,7 +35,7 @@ public:
 		helper.reset();
 	}
 
-	bool setMetadata(framemetadata_sp& metadata, void* inputFrameBuffer, std::function<frame_sp(size_t)> makeFrame, std::function<void(frame_sp&, frame_sp&)> send)
+	bool setMetadata(framemetadata_sp& metadata, std::function<frame_sp(size_t)> makeFrame, std::function<void(frame_sp&, frame_sp&)> send)
 	{
 		uint32_t width = 0;
 		uint32_t height = 0;
@@ -68,7 +68,7 @@ public:
 			throw AIPException(AIP_NOTIMPLEMENTED, "Only YUV420 Supported");
 		}
 
-		return helper->init(width, height, pitch, imageType, inputFrameBuffer, makeFrame, send);
+		return helper->init(width, height, pitch, imageType, makeFrame, send);
 	}
 
 	bool compute(frame_sp& frame)
@@ -170,7 +170,9 @@ bool H264EncoderNVCodec::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
 
-	return mDetail->compute(frame);
+	mDetail->compute(frame);
+
+	return true;
 }
 
 bool H264EncoderNVCodec::getSPSPPS(void*& buffer, size_t& size, int& width, int& height)
@@ -181,8 +183,7 @@ bool H264EncoderNVCodec::getSPSPPS(void*& buffer, size_t& size, int& width, int&
 bool H264EncoderNVCodec::processSOS(frame_sp &frame)
 {
 	auto metadata=frame->getMetadata();
-	auto frameBuffer = frame->data();
-	mDetail->setMetadata(metadata, frameBuffer,
+	mDetail->setMetadata(metadata,
 		[&](size_t size) -> frame_sp {return makeFrame(size, mOutputPinId); },
 		[&](frame_sp& inputFrame, frame_sp& outputFrame) {
 

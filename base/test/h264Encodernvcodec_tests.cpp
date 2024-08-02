@@ -192,10 +192,6 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
 		encoder->step();
 		fileWriter->step();
 	}
-	fileReader->term();
-	copy->term();
-	encoder->term();
-	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 
@@ -257,12 +253,6 @@ BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
 		encoder->step();
 		fileWriter->step();
 	}
-	fileReader->term();
-	copy->term();
-	cc->term();
-	sync->term();
-	encoder->term();
-	fileWriter->term();
 
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
