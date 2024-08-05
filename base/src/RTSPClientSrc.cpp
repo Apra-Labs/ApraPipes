@@ -24,6 +24,8 @@ extern "C"
 #include <libavdevice/avdevice.h>
 }
 
+static time_t start_time;
+
 FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCodecID avCodecID)
 {
     if (avMediaType == AVMEDIA_TYPE_VIDEO)
@@ -45,6 +47,14 @@ FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCode
     return  FrameMetadata::GENERAL; //for everything else we may not have a match
 }
 
+// Interrupt callback function
+int interrupt_cb(void *ctx)
+{
+	int timeout = 5; // Timeout in seconds
+	if (time(NULL) - start_time > timeout)
+		return 1; // Return 1 to interrupt the operation
+	return 0; // Return 0 to continue
+}
 
 class RTSPClientSrc::Detail
 {
@@ -62,7 +72,12 @@ public:
         avformat_network_init();
         av_register_all();
 
+		AVIOInterruptCB int_cb = { interrupt_cb, NULL };
+    	// Record the start time
+    	start_time = time(NULL);
+
         pFormatCtx = avformat_alloc_context();
+		pFormatCtx->interrupt_callback = int_cb;
 
         AVDictionary* avdic = NULL;
 
