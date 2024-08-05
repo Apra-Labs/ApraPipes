@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Module.h"
+#include "PaceMaker.h"
 
 class RTSPPusherProps : public ModuleProps
 {
@@ -52,13 +53,7 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	boost::shared_ptr<PaceMaker> paceMaker;
 	int sleepTimeInMilliSec;
-	using sys_clock = std::chrono::system_clock;
-	sys_clock::time_point frame_begin;
-	std::chrono::nanoseconds myNextWait;
-	std::chrono::nanoseconds myTargetFrameLen;
-	bool initDone = false;
 	int fps;
-	void start();
-	void end();
 };
