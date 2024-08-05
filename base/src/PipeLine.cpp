@@ -229,6 +229,7 @@ void PipeLine::stop()
 	{
 		if (i->get()->getNature() == Module::SOURCE)
 		{
+			LOG_INFO << "Stopping module " << "name:" << i->get()->getName() << "id:" << i->get()->getId();
 			i->get()->stop();
 		}
 	}
@@ -244,6 +245,7 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
+		LOG_INFO << "Joining module" << "name:" << i->get()->getName() << "id:" << i->get()->getId();
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
