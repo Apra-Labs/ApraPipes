@@ -6,8 +6,8 @@
 class RTSPClientSrcProps : public ModuleProps
 {
 public:
-	RTSPClientSrcProps(const std::string& rtspURL, const std::string& userName, const std::string& password, bool useTCP=true) : ModuleProps(),
-		rtspURL(rtspURL), userName(userName), password(password),useTCP(useTCP)
+	RTSPClientSrcProps(const std::string& rtspURL, const std::string& userName, const std::string& password, bool useTCP=true, int timeout=5) : ModuleProps(),
+		rtspURL(rtspURL), userName(userName), password(password), useTCP(useTCP), timeout(timeout)
 	{
 	}
 
@@ -17,11 +17,12 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(rtspURL) + sizeof(userName) + sizeof(password), sizeof(useTCP);
+		return ModuleProps::getSerializeSize() + sizeof(rtspURL) + sizeof(userName) + sizeof(password) + sizeof(useTCP) + sizeof(timeout);
 	}
 
 	string rtspURL, userName, password;
 	bool useTCP;
+	int timeout;
 private:
 	friend class boost::serialization::access;
 
@@ -33,6 +34,7 @@ private:
 		ar& userName;
 		ar& password;
 		ar& useTCP;
+		ar& timeout;
 	}
 };
 
@@ -45,6 +47,7 @@ public:
 	void setProps(RTSPClientSrcProps& props);
 	int getCurrentFps();
 	RTSPClientSrcProps getProps();
+	static int interrupt_cb(void *ctx);
 
 protected:
 	bool produce();

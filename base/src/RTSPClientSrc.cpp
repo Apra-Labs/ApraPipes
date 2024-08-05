@@ -24,7 +24,6 @@ extern "C"
 #include <libavdevice/avdevice.h>
 }
 
-static time_t start_time;
 
 FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCodecID avCodecID)
 {
@@ -47,10 +46,20 @@ FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCode
     return  FrameMetadata::GENERAL; //for everything else we may not have a match
 }
 
+struct MyCallbackData {
+    void *ctx;      // Your original context
+    int timeout;   // The extra argument you want to pass
+	time_t start_time;   // The extra argument you want to pass
+};
+
 // Interrupt callback function
-int interrupt_cb(void *ctx)
+int RTSPClientSrc::interrupt_cb(void *opaque)
 {
-	int timeout = 5; // Timeout in seconds
+    MyCallbackData *data = static_cast<MyCallbackData*>(opaque);
+    
+    // Access the context and the extra argument
+    int timeout = data->timeout;
+	time_t start_time = data->start_time;
 	if (time(NULL) - start_time > timeout)
 		return 1; // Return 1 to interrupt the operation
 	return 0; // Return 0 to continue
@@ -59,7 +68,7 @@ int interrupt_cb(void *ctx)
 class RTSPClientSrc::Detail
 {
 public:
-    Detail(RTSPClientSrc* m,std::string path, bool useTCP) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP){}
+    Detail(RTSPClientSrc* m, std::string path, bool useTCP, int timeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), bTimeout(timeout){}
     ~Detail() { destroy(); }
     void destroy()
     {
@@ -72,11 +81,19 @@ public:
         avformat_network_init();
         av_register_all();
 
-		AVIOInterruptCB int_cb = { interrupt_cb, NULL };
     	// Record the start time
-    	start_time = time(NULL);
+    	time_t start_time = time(NULL);
 
-        pFormatCtx = avformat_alloc_context();
+		MyCallbackData *callbackData = new MyCallbackData();
+		void *ctx = nullptr; // Replace with your actual context
+		callbackData->ctx = ctx;
+		callbackData->start_time = start_time;
+		callbackData->timeout = bTimeout;
+
+		int (*funcPtr)(void *) = RTSPClientSrc::interrupt_cb;
+		AVIOInterruptCB int_cb = { interrupt_cb, static_cast<void*>(callbackData) };
+
+		pFormatCtx = avformat_alloc_context();
 		pFormatCtx->interrupt_callback = int_cb;
 
         AVDictionary* avdic = NULL;
@@ -88,8 +105,10 @@ public:
         {
             LOG_ERROR << "can't open the URL." << path <<std::endl;
             bConnected = false;
+			delete callbackData;
             return bConnected;
         }
+		delete callbackData;
 
         if (avformat_find_stream_info(pFormatCtx, NULL) < 0)
         {
@@ -244,6 +263,7 @@ private:
     bool bConnected;
     int videoStream=-1;
     bool bUseTCP;
+	bool bTimeout;
     std::map<unsigned int, std::string> streamsMap;
     RTSPClientSrc* myModule;
 	std::chrono::milliseconds beginTs;
@@ -256,7 +276,7 @@ private:
 
 RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPClientSrc", _props), mProps(_props)
 {
-    mDetail.reset(new Detail(this,mProps.rtspURL, mProps.useTCP));
+    mDetail.reset(new Detail(this, mProps.rtspURL, mProps.useTCP, mProps.timeout));
 }
 RTSPClientSrc::~RTSPClientSrc() {
 }
