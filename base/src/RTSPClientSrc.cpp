@@ -60,7 +60,7 @@ int RTSPClientSrc::interrupt_cb(void *opaque)
     // Access the context and the extra argument
     int timeout = data->timeout;
 	time_t start_time = data->start_time;
-	LOG_INFO << "timeout" <<timeout << " " << start_time;
+	LOG_DEBUG << "timeout" << timeout << " " << start_time;
 	if (time(NULL) - start_time > timeout)
 		return 1; // Return 1 to interrupt the operation
 	return 0; // Return 0 to continue
@@ -69,7 +69,7 @@ int RTSPClientSrc::interrupt_cb(void *opaque)
 class RTSPClientSrc::Detail
 {
 public:
-    Detail(RTSPClientSrc* m, std::string path, bool useTCP, int timeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), bTimeout(timeout){}
+    Detail(RTSPClientSrc* m, std::string path, bool useTCP, int timeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), iTimeout(timeout){}
     ~Detail() { destroy(); }
     void destroy()
     {
@@ -89,8 +89,8 @@ public:
 		void *ctx = nullptr; // Replace with your actual context
 		callbackData->ctx = ctx;
 		callbackData->start_time = start_time;
-		callbackData->timeout = bTimeout;
-		LOG_INFO << "timeout" << bTimeout << " " << start_time;
+		callbackData->timeout = iTimeout;
+		LOG_DEBUG << "timeout" << iTimeout << " " << start_time;
 
 		int (*funcPtr)(void *) = RTSPClientSrc::interrupt_cb;
 		AVIOInterruptCB int_cb = { interrupt_cb, static_cast<void*>(callbackData) };
@@ -265,7 +265,7 @@ private:
     bool bConnected;
     int videoStream=-1;
     bool bUseTCP;
-	bool bTimeout;
+	int iTimeout;
     std::map<unsigned int, std::string> streamsMap;
     RTSPClientSrc* myModule;
 	std::chrono::milliseconds beginTs;
