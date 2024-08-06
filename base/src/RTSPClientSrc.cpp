@@ -60,6 +60,7 @@ int RTSPClientSrc::interrupt_cb(void *opaque)
     // Access the context and the extra argument
     int timeout = data->timeout;
 	time_t start_time = data->start_time;
+	LOG_INFO << "timeout" <<timeout << " " << start_time;
 	if (time(NULL) - start_time > timeout)
 		return 1; // Return 1 to interrupt the operation
 	return 0; // Return 0 to continue
@@ -89,6 +90,7 @@ public:
 		callbackData->ctx = ctx;
 		callbackData->start_time = start_time;
 		callbackData->timeout = bTimeout;
+		LOG_INFO << "timeout" << bTimeout << " " << start_time;
 
 		int (*funcPtr)(void *) = RTSPClientSrc::interrupt_cb;
 		AVIOInterruptCB int_cb = { interrupt_cb, static_cast<void*>(callbackData) };
