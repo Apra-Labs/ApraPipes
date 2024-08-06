@@ -953,6 +953,12 @@ frame_sp Module::makeFrame(frame_sp &bigFrame, size_t &size, string &pinId)
 	return mOutputPinIdFrameFactoryMap[pinId]->create(bigFrame, size, mOutputPinIdFrameFactoryMap[pinId]);
 }
 
+frame_sp Module::makeFrame(frame_sp& frame, size_t& incrementSize)
+{
+	*frame += incrementSize;
+	return frame;
+}
+
 void Module::setMetadata(std::string& pinId, framemetadata_sp& metadata){
 	mOutputPinIdFrameFactoryMap[pinId]->setMetadata(metadata);
 	return;
