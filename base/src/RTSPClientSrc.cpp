@@ -46,30 +46,10 @@ FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCode
     return  FrameMetadata::GENERAL; //for everything else we may not have a match
 }
 
-struct MyCallbackData {
-    void *ctx;      // Your original context
-    int timeout;   // The extra argument you want to pass
-	time_t start_time;   // The extra argument you want to pass
-};
-
-// Interrupt callback function
-int RTSPClientSrc::interrupt_cb(void *opaque)
-{
-    MyCallbackData *data = static_cast<MyCallbackData*>(opaque);
-    
-    // Access the context and the extra argument
-    int timeout = data->timeout;
-	time_t start_time = data->start_time;
-	LOG_DEBUG << "timeout" << timeout << " " << start_time;
-	if (time(NULL) - start_time > timeout)
-		return 1; // Return 1 to interrupt the operation
-	return 0; // Return 0 to continue
-}
-
 class RTSPClientSrc::Detail
 {
 public:
-    Detail(RTSPClientSrc* m, std::string path, bool useTCP, int timeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), iTimeout(timeout){}
+    Detail(RTSPClientSrc* m,std::string path, bool useTCP, int urlTimeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), iUrlTimeout(urlTimeout){}
     ~Detail() { destroy(); }
     void destroy()
     {
@@ -77,25 +57,27 @@ public:
             avformat_close_input(&pFormatCtx);
     }
     
+	// Interrupt callback function
+    static int interrupt_cb(void *ctx)
+    {
+        std::pair<int, time_t>* context = static_cast<std::pair<int, time_t>*>(ctx);
+        int timeout = context->first;
+        time_t start_time = context->second;
+        if (time(NULL) - start_time > timeout)
+            return 1; // Return 1 to interrupt the operation
+        return 0; 
+    }
+
     bool connect()
     {
         avformat_network_init();
         av_register_all();
+        //Start time initialize
+        start_time = time(NULL);
+        std::pair<int, time_t> int_ctx(iUrlTimeout, start_time);
+		AVIOInterruptCB int_cb = { interrupt_cb, &int_ctx };
 
-    	// Record the start time
-    	time_t start_time = time(NULL);
-
-		MyCallbackData *callbackData = new MyCallbackData();
-		void *ctx = nullptr; // Replace with your actual context
-		callbackData->ctx = ctx;
-		callbackData->start_time = start_time;
-		callbackData->timeout = iTimeout;
-		LOG_DEBUG << "timeout" << iTimeout << " " << start_time;
-
-		int (*funcPtr)(void *) = RTSPClientSrc::interrupt_cb;
-		AVIOInterruptCB int_cb = { interrupt_cb, static_cast<void*>(callbackData) };
-
-		pFormatCtx = avformat_alloc_context();
+        pFormatCtx = avformat_alloc_context();
 		pFormatCtx->interrupt_callback = int_cb;
 
         AVDictionary* avdic = NULL;
@@ -107,10 +89,8 @@ public:
         {
             LOG_ERROR << "can't open the URL." << path <<std::endl;
             bConnected = false;
-			delete callbackData;
             return bConnected;
         }
-		delete callbackData;
 
         if (avformat_find_stream_info(pFormatCtx, NULL) < 0)
         {
@@ -275,7 +255,8 @@ private:
     bool bConnected;
     int videoStream=-1;
     bool bUseTCP;
-	int iTimeout;
+	int iUrlTimeout;
+	time_t start_time;
     std::map<unsigned int, std::string> streamsMap;
     RTSPClientSrc* myModule;
 	std::chrono::milliseconds beginTs;

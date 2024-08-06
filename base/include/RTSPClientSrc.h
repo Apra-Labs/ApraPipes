@@ -22,7 +22,7 @@ public:
 
 	string rtspURL, userName, password;
 	bool useTCP;
-	int timeout;
+	int timeout = 5; //Default - change this accordingly : Vin
 private:
 	friend class boost::serialization::access;
 
