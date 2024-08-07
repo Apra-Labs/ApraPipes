@@ -38,6 +38,7 @@
 #define MP4_OCOF_INVALID_DUR 7823
 #define MP4_UNEXPECTED_STATE 7824
 #define MODULE_ENROLLMENT_FAILED 7825
+#define CTRL_MODULE_INVALID_STATE 7826
 
 
 #define AIPException_LOG_SEV(severity,type) for(std::ostringstream stream; Logger::getLogger()->push(severity, stream);) Logger::getLogger()->aipexceptionPre(stream, severity,type)

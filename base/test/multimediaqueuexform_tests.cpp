@@ -37,7 +37,9 @@ public:
     }
 
 protected:
-    bool process() {};
+    bool process() {
+      return true;
+    };
     bool validateOutputPins()
     {
         return true;

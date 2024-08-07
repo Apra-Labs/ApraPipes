@@ -52,7 +52,6 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	void setProps(VirtualPTZ);
 	bool handlePropsChange(frame_sp &frame);
 
 private:
