@@ -57,13 +57,24 @@ public:
             avformat_close_input(&pFormatCtx);
     }
     
+    static int replace_cb(void *ctx)
+    {
+        return 0;
+    }
+
 	// Interrupt callback function
     static int interrupt_cb(void *ctx)
     {
+        if (!ctx)
+        return 0;
+        // LOG_ERROR<<"Interrupt callback triggered!";
         std::pair<int, time_t>* context = static_cast<std::pair<int, time_t>*>(ctx);
         int timeout = context->first;
         time_t start_time = context->second;
-        if (time(NULL) - start_time > timeout)
+        // LOG_ERROR<<"Start TIME- "<<start_time;
+        // LOG_ERROR<<"timeout TIME- "<<timeout;
+        // LOG_ERROR<<"Time difference : "<<time(NULL) - start_time;
+        if ((time(NULL) - start_time) > timeout)
             return 1; // Return 1 to interrupt the operation
         return 0; 
     }
@@ -85,12 +96,16 @@ public:
         av_dict_set(&avdic, "rtsp_transport", (bUseTCP)?"tcp":"udp", 0);
         av_dict_set(&avdic, "max_delay", "100", 0);
 
+        // LOG_ERROR<<"Trying to connect";
+
         if (avformat_open_input(&pFormatCtx, path.c_str(), NULL, &avdic) != 0)
         {
             LOG_ERROR << "can't open the URL." << path <<std::endl;
             bConnected = false;
             return bConnected;
         }
+        AVIOInterruptCB int_new_cb = { replace_cb, NULL };
+        pFormatCtx->interrupt_callback = int_new_cb;
 
         if (avformat_find_stream_info(pFormatCtx, NULL) < 0)
         {
@@ -98,7 +113,7 @@ public:
             bConnected = false;
             return bConnected;
         }
-
+        LOG_ERROR<<"Opened url and found stream info";
         //this loop should check that each output pin is satisfied
         for (unsigned int i = 0; i < pFormatCtx->nb_streams; i++)
         {
