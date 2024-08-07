@@ -47,7 +47,6 @@ public:
 	void setProps(RTSPClientSrcProps& props);
 	int getCurrentFps();
 	RTSPClientSrcProps getProps();
-	static int interrupt_cb(void *ctx);
 
 protected:
 	bool produce();
