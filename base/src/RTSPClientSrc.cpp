@@ -49,7 +49,11 @@ FrameMetadata::FrameType getFrameType_fromFFMPEG(AVMediaType avMediaType, AVCode
 class RTSPClientSrc::Detail
 {
 public:
-    Detail(RTSPClientSrc* m,std::string path, bool useTCP, int urlTimeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), iUrlTimeout(urlTimeout){}
+    Detail(RTSPClientSrc* m,std::string path, bool useTCP, int urlTimeout) :myModule(m), path(path), bConnected(false), bUseTCP(useTCP), iUrlTimeout(urlTimeout)
+    {
+        int_ctx = std::make_pair(iUrlTimeout, start_time);
+        int_cb = { interrupt_cb, &int_ctx };
+    }
     ~Detail() { destroy(); }
     void destroy()
     {
@@ -62,7 +66,7 @@ public:
         return 0;
     }
 
-	// Interrupt callback function
+    // https://stackoverflow.com/questions/10666242/detecting-a-timeout-in-ffmpeg
     static int interrupt_cb(void *ctx)
     {
         if (!ctx)
@@ -85,8 +89,6 @@ public:
         av_register_all();
         //Start time initialize
         start_time = time(NULL);
-        std::pair<int, time_t> int_ctx(iUrlTimeout, start_time);
-		AVIOInterruptCB int_cb = { interrupt_cb, &int_ctx };
 
         pFormatCtx = avformat_alloc_context();
 		pFormatCtx->interrupt_callback = int_cb;
@@ -104,8 +106,8 @@ public:
             bConnected = false;
             return bConnected;
         }
-        AVIOInterruptCB int_new_cb = { replace_cb, NULL };
-        pFormatCtx->interrupt_callback = int_new_cb;
+       /* AVIOInterruptCB int_new_cb = { replace_cb, NULL };
+        pFormatCtx->interrupt_callback = int_new_cb;*/
 
         if (avformat_find_stream_info(pFormatCtx, NULL) < 0)
         {
@@ -181,6 +183,7 @@ public:
         while(!got_something)
         {
 			LOG_TRACE << "got something from stream ? <" << got_something << ">";
+            start_time = time(NULL);
             if (av_read_frame(pFormatCtx, &packet) >= 0)
             {
                 if (videoStream >= 0) //source has video
@@ -280,6 +283,10 @@ private:
     char* ppsData = nullptr;
     int spsSize = 0;
     int ppsSize = 0;
+
+    
+    std::pair<int, time_t> int_ctx;
+    AVIOInterruptCB int_cb;
 };
 
 RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPClientSrc", _props), mProps(_props)
