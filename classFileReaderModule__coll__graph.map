@@ -1,9 +1,9 @@
 <map id="FileReaderModule" name="FileReaderModule">
-<area shape="rect" id="Node000001" title=" " alt="" coords="39,1528,187,1874"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1480,110,1528,105,1529,104,1481"/>
-<area shape="rect" id="Node000003" href="$classFileReaderModuleProps.html" title=" " alt="" coords="202,840,386,1045"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="280,1046,244,1241,193,1466,179,1513,174,1512,187,1465,239,1240,275,1045"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="217,5,371,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="297,386,297,840,291,840,291,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="39,1568,187,1914"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1520,110,1568,105,1569,104,1521"/>
+<area shape="rect" id="Node000003" href="$classFileReaderModuleProps.html" title=" " alt="" coords="202,880,386,1085"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="280,1086,244,1281,193,1506,179,1553,174,1552,187,1505,239,1280,275,1085"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="205,5,383,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="297,426,297,880,291,880,291,426"/>
 </map>

@@ -1,5 +1,11 @@
 <map id="GtkGlRenderer::processSOS" name="GtkGlRenderer::processSOS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,193,38"/>
-<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="241,5,396,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,23,225,23,225,28,193,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,42,193,68"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="259,5,414,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,41,243,34,243,40,193,46"/>
+<area shape="rect" id="Node000003" href="$classModule.html#aafd48279ca6780cd531c66ebb0278b91" title=" " alt="" coords="241,70,432,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,63,225,67,225,73,193,69"/>
+<area shape="rect" id="Node000004" href="$classAPErrorObject.html#a98e1d070b392052724f2ca7f3d22223e" title=" " alt="" coords="492,45,673,70"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="432,70,476,66,477,71,433,76"/>
+<area shape="rect" id="Node000005" href="$classAPErrorObject.html#ad0c52ba6ee57f1f99a26f73027cabe20" title=" " alt="" coords="480,94,685,120"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="433,90,465,93,464,98,432,95"/>
 </map>

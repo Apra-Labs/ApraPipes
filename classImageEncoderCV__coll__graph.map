@@ -1,9 +1,9 @@
 <map id="ImageEncoderCV" name="ImageEncoderCV">
-<area shape="rect" id="Node000001" title=" " alt="" coords="79,1528,221,1814"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,1480,141,1529,136,1529,132,1480"/>
-<area shape="rect" id="Node000003" href="$classImageEncoderCVProps.html" title=" " alt="" coords="201,910,368,975"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,976,193,1466,184,1512,179,1511,187,1465,277,975"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="207,5,362,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="287,386,287,910,282,910,282,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="79,1568,221,1834"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,1520,142,1568,137,1569,133,1520"/>
+<area shape="rect" id="Node000003" href="$classImageEncoderCVProps.html" title=" " alt="" coords="201,950,368,1015"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="282,1016,193,1506,183,1552,178,1551,187,1505,277,1015"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="196,5,373,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="287,426,287,950,282,950,282,426"/>
 </map>

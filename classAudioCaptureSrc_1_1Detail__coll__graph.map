@@ -1,9 +1,9 @@
 <map id="AudioCaptureSrc::Detail" name="AudioCaptureSrc::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="65,658,214,803"/>
-<area shape="rect" id="Node000002" href="$classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html" title=" " alt="" coords="5,420,169,595"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,594,121,640,116,641,105,595"/>
-<area shape="rect" id="Node000003" href="$classAudioCaptureSrcProps.html" title=" " alt="" coords="193,445,357,570"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="240,571,195,645,190,642,236,568"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="198,5,353,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="278,385,278,445,273,445,273,385"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="65,698,214,843"/>
+<area shape="rect" id="Node000002" href="$classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html" title=" " alt="" coords="5,460,169,635"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,634,121,680,116,681,105,635"/>
+<area shape="rect" id="Node000003" href="$classAudioCaptureSrcProps.html" title=" " alt="" coords="193,485,357,610"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="240,611,195,685,190,682,236,608"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="187,5,364,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="278,426,278,485,273,485,273,426"/>
 </map>

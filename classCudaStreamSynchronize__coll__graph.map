@@ -1,9 +1,9 @@
 <map id="CudaStreamSynchronize" name="CudaStreamSynchronize">
-<area shape="rect" id="Node000001" title=" " alt="" coords="23,1528,203,1734"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,1480,112,1528,107,1529,105,1480"/>
-<area shape="rect" id="Node000003" href="$classCudaStreamSynchronizeProps.html" title=" " alt="" coords="202,900,410,985"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="303,986,265,1194,233,1330,193,1466,174,1514,169,1512,187,1464,228,1329,260,1193,297,985"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="229,5,383,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="309,386,309,900,303,900,303,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="23,1568,203,1774"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,1520,112,1568,107,1569,105,1520"/>
+<area shape="rect" id="Node000003" href="$classCudaStreamSynchronizeProps.html" title=" " alt="" coords="202,940,410,1025"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="303,1026,265,1234,233,1370,193,1506,174,1554,169,1552,187,1504,228,1369,260,1233,297,1025"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="217,5,395,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="309,426,309,940,303,940,303,426"/>
 </map>

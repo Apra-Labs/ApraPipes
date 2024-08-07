@@ -1,9 +1,9 @@
 <map id="ImageViewerModule" name="ImageViewerModule">
-<area shape="rect" id="Node000001" title=" " alt="" coords="35,1528,191,1814"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1480,111,1529,106,1529,104,1480"/>
-<area shape="rect" id="Node000003" href="$classImageViewerModuleProps.html" title=" " alt="" coords="202,860,386,1025"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="285,1025,249,1227,223,1347,193,1466,178,1513,173,1512,187,1465,218,1346,244,1226,279,1024"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="217,5,371,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="297,386,297,860,291,860,291,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="35,1568,191,1854"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1520,111,1569,106,1569,104,1520"/>
+<area shape="rect" id="Node000003" href="$classImageViewerModuleProps.html" title=" " alt="" coords="202,900,386,1065"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="285,1065,249,1267,223,1387,193,1506,178,1553,173,1552,187,1505,218,1386,244,1266,279,1064"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="205,5,383,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="297,426,297,900,291,900,291,426"/>
 </map>

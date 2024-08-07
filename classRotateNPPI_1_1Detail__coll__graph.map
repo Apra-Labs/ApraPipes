@@ -1,7 +1,7 @@
 <map id="RotateNPPI::Detail" name="RotateNPPI::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="12,568,153,1034"/>
-<area shape="rect" id="Node000002" href="$classRotateNPPIProps.html" title=" " alt="" coords="15,420,151,505"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,505,85,551,80,551,80,505"/>
-<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,160,371"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="85,386,85,420,80,420,80,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="23,608,165,1074"/>
+<area shape="rect" id="Node000002" href="$classRotateNPPIProps.html" title=" " alt="" coords="26,460,162,545"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,545,97,591,91,591,91,545"/>
+<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,411"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,426,97,460,91,460,91,426"/>
 </map>

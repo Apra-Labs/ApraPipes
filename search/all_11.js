@@ -26,5 +26,6 @@ var searchData=
   ['queuemutex_23',['queueMutex',['../classGtkGlRenderer.html#a0a9dc15e2759367582c4c5d46a3345e5',1,'GtkGlRenderer']]],
   ['queueobject_24',['queueObject',['../structState.html#a60dc6898636ce32d40477ec46140f081',1,'State']]],
   ['queueplaypausecommand_25',['queuePlayPauseCommand',['../classModule.html#ad24cc1c19048e8a0197d9bd7213a3d8c',1,'Module']]],
-  ['queuestep_26',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
+  ['queueprioritycommand_26',['queuePriorityCommand',['../classModule.html#a6192818693d0f3869d8d6ed012f12727',1,'Module']]],
+  ['queuestep_27',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
 ];

@@ -13,5 +13,6 @@ var searchData=
   ['queuecommand_10',['queueCommand',['../classModule.html#a815dd4a2e34761df83a5fcbe194406d5',1,'Module']]],
   ['queueframetocamera_11',['queueFrameToCamera',['../classNvArgusCameraHelper.html#ae39cb9ff12e5d00c824e68a1ced554c2',1,'NvArgusCameraHelper']]],
   ['queueplaypausecommand_12',['queuePlayPauseCommand',['../classModule.html#ad24cc1c19048e8a0197d9bd7213a3d8c',1,'Module']]],
-  ['queuestep_13',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
+  ['queueprioritycommand_13',['queuePriorityCommand',['../classModule.html#a6192818693d0f3869d8d6ed012f12727',1,'Module']]],
+  ['queuestep_14',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
 ];

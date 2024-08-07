@@ -1,0 +1,7 @@
+<map id="SimpleControlModule" name="SimpleControlModule">
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,1652,187,1837"/>
+<area shape="rect" id="Node000002" href="$classAbsControlModule.html" title=" " alt="" coords="5,1099,207,1604"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1619,109,1652,103,1652,103,1619"/>
+<area shape="rect" id="Node000003" href="$classModule.html" title=" " alt="" coords="20,5,192,1051"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="109,1065,109,1099,103,1099,103,1065"/>
+</map>

@@ -113,14 +113,14 @@ Collaboration diagram for Module::Profiler:</div>
 <div class="dyncontent">
 <div class="center"><img src="classModule_1_1Profiler__coll__graph.png" border="0" usemap="#aModule_1_1Profiler_coll__map" alt="Collaboration graph"/></div>
 <map name="aModule_1_1Profiler_coll__map" id="aModule_1_1Profiler_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,167,431"/>
+<area shape="rect" title=" " alt="" coords="5,5,197,511"/>
 </map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa6f8788ea44250973d4afa2ecaf490f1" id="r_aa6f8788ea44250973d4afa2ecaf490f1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa6f8788ea44250973d4afa2ecaf490f1">Profiler</a> (string &amp;id, bool _shouldLog, int _printFrequency, std::function&lt; string()&gt; _getPoolHealthRecord)</td></tr>
-<tr class="separator:aa6f8788ea44250973d4afa2ecaf490f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade29ea4a902f72057f2d6744989b81ec" id="r_ade29ea4a902f72057f2d6744989b81ec"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade29ea4a902f72057f2d6744989b81ec">Profiler</a> (string &amp;id, bool _shouldLog, int _printFrequency, int _healthUpdateIntervalInSec, std::function&lt; string()&gt; _getPoolHealthRecord, APHealthCallback _healthCallback)</td></tr>
+<tr class="separator:ade29ea4a902f72057f2d6744989b81ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4cf3e332299af65beed0d266d3b7ed0" id="r_ae4cf3e332299af65beed0d266d3b7ed0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae4cf3e332299af65beed0d266d3b7ed0">setShouldLog</a> (bool _shouldLog)</td></tr>
 <tr class="separator:ae4cf3e332299af65beed0d266d3b7ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8dd976e89e6b87260cafeaeed4544b6" id="r_ab8dd976e89e6b87260cafeaeed4544b6"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab8dd976e89e6b87260cafeaeed4544b6">~Profiler</a> ()</td></tr>
@@ -137,6 +137,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a246ebb57aef3b6099b47b924c343899b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ec1a2d7308c001d8db8876f7d85ecd7" id="r_a3ec1a2d7308c001d8db8876f7d85ecd7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3ec1a2d7308c001d8db8876f7d85ecd7">resetStats</a> ()</td></tr>
 <tr class="separator:a3ec1a2d7308c001d8db8876f7d85ecd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addaddf48db378d69f470f2fa623fed12" id="r_addaddf48db378d69f470f2fa623fed12"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#addaddf48db378d69f470f2fa623fed12">setHealthCallback</a> (APHealthCallback _healthCallback)</td></tr>
+<tr class="separator:addaddf48db378d69f470f2fa623fed12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Private Types</h2></td></tr>
@@ -151,6 +153,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:aeba797fc91da9844181e5da5f1f1b07a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5dea47a32b8d58d647e185770d4378b2" id="r_a5dea47a32b8d58d647e185770d4378b2"><td class="memItemLeft" align="right" valign="top">sys_clock::time_point&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dea47a32b8d58d647e185770d4378b2">pipelineStart</a></td></tr>
 <tr class="separator:a5dea47a32b8d58d647e185770d4378b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf927ab020190c2cb8a5ad223671bba4" id="r_aaf927ab020190c2cb8a5ad223671bba4"><td class="memItemLeft" align="right" valign="top">sys_clock::time_point&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf927ab020190c2cb8a5ad223671bba4">lastHealthCallbackTime</a></td></tr>
+<tr class="separator:aaf927ab020190c2cb8a5ad223671bba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeed103433b6d5e4648adecf7376b9d7b" id="r_aeed103433b6d5e4648adecf7376b9d7b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeed103433b6d5e4648adecf7376b9d7b">printFrequency</a></td></tr>
 <tr class="separator:aeed103433b6d5e4648adecf7376b9d7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad120157c9d6c7504d641cdd6dc3a2409" id="r_ad120157c9d6c7504d641cdd6dc3a2409"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad120157c9d6c7504d641cdd6dc3a2409">counter</a> = 0</td></tr>
@@ -167,6 +171,10 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a4d348b7635b04d0e3598f76069c0ec7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af038a0dc03380cafb80b70c0b57cd519" id="r_af038a0dc03380cafb80b70c0b57cd519"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af038a0dc03380cafb80b70c0b57cd519">mPipelineFps</a></td></tr>
 <tr class="separator:af038a0dc03380cafb80b70c0b57cd519"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a843e0a9dd65d4297b30d2de2b2a80cad" id="r_a843e0a9dd65d4297b30d2de2b2a80cad"><td class="memItemLeft" align="right" valign="top">APHealthCallback&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a843e0a9dd65d4297b30d2de2b2a80cad">healthCallback</a></td></tr>
+<tr class="separator:a843e0a9dd65d4297b30d2de2b2a80cad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad23219a73dd6dd6a24649cb9f7441130" id="r_ad23219a73dd6dd6a24649cb9f7441130"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad23219a73dd6dd6a24649cb9f7441130">mHealthUpdateIntervalInSec</a></td></tr>
+<tr class="separator:ad23219a73dd6dd6a24649cb9f7441130"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a047a5698c124ecf306043d081b1e9d7f" name="a047a5698c124ecf306043d081b1e9d7f"></a>
@@ -192,8 +200,8 @@ Private Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aa6f8788ea44250973d4afa2ecaf490f1" name="aa6f8788ea44250973d4afa2ecaf490f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6f8788ea44250973d4afa2ecaf490f1">&#9670;&#160;</a></span>Profiler()</h2>
+<a id="ade29ea4a902f72057f2d6744989b81ec" name="ade29ea4a902f72057f2d6744989b81ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade29ea4a902f72057f2d6744989b81ec">&#9670;&#160;</a></span>Profiler()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -219,7 +227,17 @@ Private Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::function&lt; string()&gt;</td>          <td class="paramname"><span class="paramname"><em>_getPoolHealthRecord</em></span>&#160;)</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>_healthUpdateIntervalInSec</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::function&lt; string()&gt;</td>          <td class="paramname"><span class="paramname"><em>_getPoolHealthRecord</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">APHealthCallback</td>          <td class="paramname"><span class="paramname"><em>_healthCallback</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -357,6 +375,31 @@ Private Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="addaddf48db378d69f470f2fa623fed12" name="addaddf48db378d69f470f2fa623fed12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addaddf48db378d69f470f2fa623fed12">&#9670;&#160;</a></span>setHealthCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Module::Profiler::setHealthCallback </td>
+          <td>(</td>
+          <td class="paramtype">APHealthCallback</td>          <td class="paramname"><span class="paramname"><em>_healthCallback</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ae4cf3e332299af65beed0d266d3b7ed0" name="ae4cf3e332299af65beed0d266d3b7ed0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae4cf3e332299af65beed0d266d3b7ed0">&#9670;&#160;</a></span>setShouldLog()</h2>
 
@@ -466,6 +509,72 @@ Private Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::function&lt;string()&gt; Module::Profiler::getPoolHealthRecord</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a843e0a9dd65d4297b30d2de2b2a80cad" name="a843e0a9dd65d4297b30d2de2b2a80cad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a843e0a9dd65d4297b30d2de2b2a80cad">&#9670;&#160;</a></span>healthCallback</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">APHealthCallback Module::Profiler::healthCallback</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aaf927ab020190c2cb8a5ad223671bba4" name="aaf927ab020190c2cb8a5ad223671bba4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf927ab020190c2cb8a5ad223671bba4">&#9670;&#160;</a></span>lastHealthCallbackTime</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">sys_clock::time_point Module::Profiler::lastHealthCallbackTime</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad23219a73dd6dd6a24649cb9f7441130" name="ad23219a73dd6dd6a24649cb9f7441130"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad23219a73dd6dd6a24649cb9f7441130">&#9670;&#160;</a></span>mHealthUpdateIntervalInSec</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Module::Profiler::mHealthUpdateIntervalInSec</td>
         </tr>
       </table>
   </td>
@@ -683,7 +792,7 @@ Private Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classModule.html">Module</a></li><li class="navelem"><a class="el" href="classModule_1_1Profiler.html">Profiler</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 320408d</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 9ecea0d</a></li>
     </ul>
   </div>
   </body>

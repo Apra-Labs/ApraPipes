@@ -10,7 +10,6 @@ var classTextOverlayXForm =
     [ "process", "classTextOverlayXForm.html#a55ac410d64782b40007facd5b6076613", null ],
     [ "processSOS", "classTextOverlayXForm.html#a6e2155dbaa09214ba7ae92a6d510dd13", null ],
     [ "setMetadata", "classTextOverlayXForm.html#a17e15d6570201854c3f390dcd476058b", null ],
-    [ "setProps", "classTextOverlayXForm.html#ab16960b7df29935883e9c7c4ed38b297", null ],
     [ "setProps", "classTextOverlayXForm.html#ad8ee6262a4399de287981900f0346745", null ],
     [ "term", "classTextOverlayXForm.html#a743dc07633f06a4a37769074d0786324", null ],
     [ "validateInputPins", "classTextOverlayXForm.html#ace327541d7892e2f2888e8b28cf5a2e6", null ],

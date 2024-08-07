@@ -1,9 +1,9 @@
 <map id="NvV4L2Camera" name="NvV4L2Camera">
-<area shape="rect" id="Node000001" title=" " alt="" coords="78,1528,219,1714"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,1480,144,1528,138,1529,134,1480"/>
-<area shape="rect" id="Node000003" href="$classNvV4L2CameraProps.html" title=" " alt="" coords="201,880,360,1005"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="275,1005,242,1210,193,1466,181,1512,176,1511,187,1465,237,1209,269,1005"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="203,5,358,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="283,386,283,880,278,880,278,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="78,1568,219,1754"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,1520,144,1568,138,1569,134,1520"/>
+<area shape="rect" id="Node000003" href="$classNvV4L2CameraProps.html" title=" " alt="" coords="201,920,360,1045"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="275,1045,242,1250,193,1506,181,1552,176,1551,187,1505,237,1249,269,1045"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="192,5,369,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="283,426,283,920,278,920,278,426"/>
 </map>

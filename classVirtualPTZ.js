@@ -10,7 +10,6 @@ var classVirtualPTZ =
     [ "process", "classVirtualPTZ.html#a89270830908046170ad7565ef748666e", null ],
     [ "processSOS", "classVirtualPTZ.html#abf35ddac8bc1dce24f9e258cb100fe34", null ],
     [ "setMetadata", "classVirtualPTZ.html#a70ada43a5e8bd7eb09fd523a60e8fc7d", null ],
-    [ "setProps", "classVirtualPTZ.html#a6c73e836fffcd8770e20f5806b81bb77", null ],
     [ "setProps", "classVirtualPTZ.html#aa2608b662e44b4dc6f107753f38c012a", null ],
     [ "term", "classVirtualPTZ.html#a93ce7e8c2e227c77ff587f3384a14c68", null ],
     [ "validateInputPins", "classVirtualPTZ.html#acb10485a10b26408c9da2f71e76866ed", null ],

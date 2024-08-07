@@ -10,7 +10,6 @@ var classBrightnessContrastControl =
     [ "process", "classBrightnessContrastControl.html#aa51b0ecd09671615a09238aebfd1008e", null ],
     [ "processSOS", "classBrightnessContrastControl.html#abf38fd87e6c3c5e3fa94882deb999b3a", null ],
     [ "setMetadata", "classBrightnessContrastControl.html#aa15cf09a020df418d6217ec2491ce64a", null ],
-    [ "setProps", "classBrightnessContrastControl.html#ae5737c4944c2ea5b86cfc34ca7fecd66", null ],
     [ "setProps", "classBrightnessContrastControl.html#a2ed300ab5a795b42a71ca0b424d81aec", null ],
     [ "term", "classBrightnessContrastControl.html#a2a3eb73d510771dac000d13e6038e6ec", null ],
     [ "validateInputPins", "classBrightnessContrastControl.html#a9afbf52b29aedbac941eb599ade59bd6", null ],

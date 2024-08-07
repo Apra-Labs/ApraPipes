@@ -1,7 +1,7 @@
 <map id="Detail" name="Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="39,728,167,1094"/>
-<area shape="rect" id="Node000002" href="$classFacialLandmarkCVProps.html" title=" " alt="" coords="5,420,201,665"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,665,106,712,101,712,101,665"/>
-<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="26,5,181,371"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,385,106,420,101,420,101,385"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="39,768,167,1134"/>
+<area shape="rect" id="Node000002" href="$classFacialLandmarkCVProps.html" title=" " alt="" coords="5,460,201,705"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,705,106,752,101,752,101,705"/>
+<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="15,5,192,411"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,426,106,460,101,460,101,426"/>
 </map>

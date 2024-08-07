@@ -2,6 +2,8 @@ var hierarchy =
 [
     [ "_CompInfo", "struct__CompInfo.html", null ],
     [ "AbsColorConversionFactory", "classAbsColorConversionFactory.html", null ],
+    [ "APErrorObject", "classAPErrorObject.html", null ],
+    [ "APHealthObject", "classAPHealthObject.html", null ],
     [ "apra_cudamalloc_allocator", "structapra__cudamalloc__allocator.html", null ],
     [ "apra_cudamallochost_allocator", "structapra__cudamallochost__allocator.html", null ],
     [ "ApraChunk", "classApraChunk.html", null ],
@@ -207,7 +209,9 @@ var hierarchy =
     [ "Logger", "classLogger.html", null ],
     [ "LoggerProps", "classLoggerProps.html", null ],
     [ "Module", "classModule.html", [
-      [ "AbsControlModule", "classAbsControlModule.html", null ],
+      [ "AbsControlModule", "classAbsControlModule.html", [
+        [ "SimpleControlModule", "classSimpleControlModule.html", null ]
+      ] ],
       [ "AffineTransform", "classAffineTransform.html", null ],
       [ "ArchiveSpaceManager", "classArchiveSpaceManager.html", null ],
       [ "AudioCaptureSrc", "classAudioCaptureSrc.html", null ],
@@ -274,7 +278,9 @@ var hierarchy =
     ] ],
     [ "ModuleFactory", "classModuleFactory.html", null ],
     [ "ModuleProps", "classModuleProps.html", [
-      [ "AbsControlModuleProps", "classAbsControlModuleProps.html", null ],
+      [ "AbsControlModuleProps", "classAbsControlModuleProps.html", [
+        [ "SimpleControlModuleProps", "classSimpleControlModuleProps.html", null ]
+      ] ],
       [ "AffineTransformProps", "classAffineTransformProps.html", null ],
       [ "ArchiveSpaceManagerProps", "classArchiveSpaceManagerProps.html", null ],
       [ "AudioCaptureSrcProps", "classAudioCaptureSrcProps.html", null ],

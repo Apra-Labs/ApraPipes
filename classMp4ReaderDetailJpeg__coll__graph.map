@@ -1,12 +1,12 @@
 <map id="Mp4ReaderDetailJpeg" name="Mp4ReaderDetailJpeg">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,1946,186,2131"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html" title=" " alt="" coords="5,1191,201,1897"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,1911,106,1946,101,1946,101,1911"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderSourceProps.html" title=" " alt="" coords="16,420,191,765"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="99,765,98,828,98,1174,93,1174,93,828,94,765"/>
-<area shape="rect" id="Node000005" href="$structMp4ReaderDetailAbs_1_1DemuxAndParserState.html" title=" " alt="" coords="163,828,327,1128"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="169,764,187,812,182,814,164,766"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="26,5,181,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="106,386,106,420,101,420,101,386"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="210,1129,198,1175,193,1174,205,1128"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="21,1986,186,2171"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html" title=" " alt="" coords="5,1231,201,1937"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,1951,106,1986,101,1986,101,1951"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderSourceProps.html" title=" " alt="" coords="16,460,191,805"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="99,805,98,868,98,1214,93,1214,93,868,94,805"/>
+<area shape="rect" id="Node000005" href="$structMp4ReaderDetailAbs_1_1DemuxAndParserState.html" title=" " alt="" coords="163,868,327,1168"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="169,804,187,852,182,854,164,806"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="15,5,192,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="106,426,106,461,101,461,101,426"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="210,1169,198,1215,193,1214,205,1168"/>
 </map>

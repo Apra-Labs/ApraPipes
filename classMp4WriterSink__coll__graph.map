@@ -1,9 +1,9 @@
 <map id="Mp4WriterSink" name="Mp4WriterSink">
-<area shape="rect" id="Node000001" title=" " alt="" coords="63,1528,234,1914"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,420,177,1465"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,1480,137,1528,132,1529,128,1481"/>
-<area shape="rect" id="Node000003" href="$classMp4WriterSinkProps.html" title=" " alt="" coords="201,830,355,1055"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,1056,186,1512,181,1511,257,1055"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="201,5,355,371"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="281,386,281,830,275,830,275,386"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="63,1568,234,1954"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,1520,137,1568,132,1569,128,1521"/>
+<area shape="rect" id="Node000003" href="$classMp4WriterSinkProps.html" title=" " alt="" coords="201,870,355,1095"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,1096,186,1552,181,1551,257,1095"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="189,5,367,411"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="281,426,281,871,275,871,275,426"/>
 </map>
