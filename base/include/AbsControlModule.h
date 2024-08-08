@@ -26,6 +26,7 @@ public:
 	virtual void handleGoLive(bool goLive, bool priority) {}
 	virtual void handlePusherPauseTS(uint64_t keyFrameTS) {}
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
+	virtual void handleNoRTSPFrame(bool isFramIncoming);
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
   	virtual void handleError(const APErrorObject &error) {}

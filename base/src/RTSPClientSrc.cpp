@@ -234,12 +234,15 @@ public:
                 av_packet_unref(&packet);
             }
             else
-            { //Inform control module about stopping of stream
-                LOG_ERROR<<"Not getting data from source";
+            {  //Inform control module about stopping of stream
+                LOG_INFO<<"Not getting data from source will retry - "<<count;
                 count++;
-                if(count == 10)
+                if(count == 10 && controlModule != nullptr)
                 {
-                    // return false;
+                    if(control)
+                    boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+                    ctl->handleNoRTSPFrame(false);
+                    return false;
                 }
             }
         }
