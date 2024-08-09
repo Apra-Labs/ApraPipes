@@ -239,8 +239,7 @@ public:
                 count++;
                 if(count == 10 && controlModule != nullptr)
                 {
-                    if(control)
-                    boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+                    boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
                     ctl->handleNoRTSPFrame(false);
                     return false;
                 }
