@@ -19,7 +19,6 @@ public:
 	virtual ~ImageEncoderCV();
 	bool init();
 	bool term();
-
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -27,7 +26,6 @@ protected:
 	bool validateOutputPins();
 
 private:		
-	void setMetadata(framemetadata_sp& metadata);
 	int mFrameType;
 	ImageEncoderCVProps props;
 	class Detail;
