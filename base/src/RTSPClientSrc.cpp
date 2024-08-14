@@ -170,7 +170,7 @@ public:
         int count = 0;
         while(!got_something)
         {
-			LOG_TRACE << "got something from stream ? <" << got_something << ">";
+			LOG_INFO << "got something from stream ? <" << got_something << ">";
 
 			int_ctx.second = time(NULL);
 
@@ -285,6 +285,7 @@ RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPCl
     mDetail.reset(new Detail(this, mProps.rtspURL, mProps.useTCP, mProps.timeout));
 }
 RTSPClientSrc::~RTSPClientSrc() {
+	LOG_INFO << "Destructor called for rtspclientsrc";
 }
 bool RTSPClientSrc::init() {
     if (mDetail->connect())
@@ -295,7 +296,8 @@ bool RTSPClientSrc::init() {
     return false;
 }
 bool RTSPClientSrc::term() {
-    mDetail.reset();
+    LOG_INFO << "Term called for rtspclientsrc";
+	mDetail.reset();
     return true;
 }
 void RTSPClientSrc::setProps(RTSPClientSrcProps& props)
@@ -308,7 +310,7 @@ RTSPClientSrcProps RTSPClientSrc::getProps() {
 }
 
 bool RTSPClientSrc::produce() { 
-	LOG_TRACE << "Produce called: starting readBuffer for RTSPCLIENTSRC";
+	LOG_INFO << "Produce called: starting readBuffer for RTSPCLIENTSRC";
     auto ret = mDetail->readBuffer();
 	LOG_TRACE << "Produce called: finished readBuffer for RTSPCLIENTSRC";
 	return ret;

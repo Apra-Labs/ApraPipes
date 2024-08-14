@@ -52,6 +52,7 @@ bool AbsControlModule::term()
 bool AbsControlModule::process(frame_container& frames)
 {
 	// Commands are already processed by the time we reach here.
+	LOG_INFO << "process called for abscontrol module";
 	return true;
 }
 

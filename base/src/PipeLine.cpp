@@ -233,6 +233,10 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		modules[0]->controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -248,6 +252,14 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		LOG_INFO << "Joining module" << "name:" << i->get()->getName() << "id:" << i->get()->getId();
 		Module& m = *(i->get());
 		m.myThread.join();
+		LOG_INFO << "Joining finished for module" << "name:" << i->get()->getName() << "id:" << i->get()->getId();
+	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		LOG_INFO << "Joining control module thread";
+		modules[0]->controlModule->myThread.join();
+		LOG_INFO << "joined ctrl module thread success";
 	}
 }
 
