@@ -143,7 +143,8 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	if (customNamedFileDirCheck(baseFolder, chunkTimeInMinutes, relPath, nextFrameFileName))
 		return;
 
-	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
+	auto month = tm.tm_mon + 1;
+	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(month) + format_2(tm.tm_mday);
 	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoFolderPath = relPath;
@@ -219,8 +220,8 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 
 	if (customNamedFileDirCheck(baseFolder, chunkTimeInMinutes, relPath, nextFrameFileName))
 		return;
-
-	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
+	auto month = tm.tm_mon + 1;
+	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(month) + format_2(tm.tm_mday);
 	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoName = mp4FileName;
