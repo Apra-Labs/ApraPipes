@@ -7,6 +7,8 @@
 #include "Logger.h"
 #include "test_utils.h"
 #include "PipeLine.h"
+#include "RTSPClientSrc.h"
+#include "H264Metadata.h"
 
 BOOST_AUTO_TEST_SUITE(rtsppusher_tests)
 
@@ -31,7 +33,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	RTSPPusherProps sinkProps(rtspServer, "hola");
 	sinkProps.encoderTargetKbps = encoderTargetKbps;
-	auto sink = boost::shared_ptr<Module>(new RTSPPusher(sinkProps));
+	auto sink = boost::shared_ptr<RTSPPusher>(new RTSPPusher(sinkProps));
 	fileReader->setNext(sink);
 
 	PipeLine p("test");
@@ -50,4 +52,65 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	LOG_INFO << "TEST DONE";
 }
 
+struct rtsp_client_tests_data {
+	rtsp_client_tests_data()
+	{
+		outFile = string("./data/testOutput/bunny_????.h264");
+		Test_Utils::FileCleaner fc;
+		fc.pathsOfFiles.push_back(outFile); //clear any occurance before starting the tests
+	}
+	string outFile;
+	string empty;
+};
+
+BOOST_AUTO_TEST_CASE(rtsp_fetcher_and_pusher, *boost::unit_test::disabled())
+{	
+	rtsp_client_tests_data d;
+	auto url=string("rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp?resolution=1280x720"); 
+	std::string rtspServer = Test_Utils::getArgValue("rtspserver", "rtsp://10.102.10.197:5544");
+	auto encoderTargetKbpsStr = Test_Utils::getArgValue("bitrate", "4096");
+	uint32_t encoderTargetKbps = atoi(encoderTargetKbpsStr.c_str());
+
+	auto src = boost::shared_ptr<RTSPClientSrc>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
+	auto meta = framemetadata_sp(new H264Metadata());
+	src->addOutputPin(meta);
+
+	RTSPPusherProps sinkProps(rtspServer, "hola");
+	sinkProps.encoderTargetKbps = encoderTargetKbps;
+	auto sink = boost::shared_ptr<RTSPPusher>(new RTSPPusher(sinkProps));
+	src->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(src);
+	bool pipeLineInitStatus = p.init();
+	// BOOST_TEST(p.init());
+	LOG_ERROR << "Pipeline Init Status " << pipeLineInitStatus;
+	if (pipeLineInitStatus)
+	{
+		p.run_all_threaded();
+
+		boost::this_thread::sleep_for(boost::chrono::seconds(5));
+		// p.pause();
+		LOG_ERROR << "Will Pause the Stream";
+		sink->setPausedState(true);
+		boost::this_thread::sleep_for(boost::chrono::seconds(15));
+		LOG_ERROR << "Will Play the Stream";
+		sink->setPausedState(false);
+		boost::this_thread::sleep_for(boost::chrono::seconds(5));
+		LOG_ERROR << "Will Pause the Stream";
+		sink->setPausedState(true);
+		boost::this_thread::sleep_for(boost::chrono::seconds(15));
+		LOG_ERROR << "Will Play the Stream";
+		sink->setPausedState(false);
+		boost::this_thread::sleep_for(boost::chrono::seconds(500000000000000));
+
+		LOG_INFO << "STOPPING";
+
+		p.stop();
+		p.term();
+		LOG_INFO << "WAITING";
+		p.wait_for_all();
+		LOG_INFO << "TEST DONE";
+	}
+}
 BOOST_AUTO_TEST_SUITE_END()
