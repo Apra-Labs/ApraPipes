@@ -170,7 +170,7 @@ public:
         int count = 0;
         while(!got_something)
         {
-			LOG_INFO << "got something from stream ? <" << got_something << ">";
+			LOG_TRACE << "got something from stream ? <" << got_something << ">";
 
 			int_ctx.second = time(NULL);
 
@@ -235,7 +235,7 @@ public:
             }
             else
             {  //Inform control module about stopping of stream
-                LOG_INFO<<"Not getting data from source will retry - "<<count;
+                LOG_TRACE <<"Not getting data from source will retry - "<<count;
                 count++;
                 if(count == 10 && controlModule != nullptr)
                 {
@@ -310,7 +310,7 @@ RTSPClientSrcProps RTSPClientSrc::getProps() {
 }
 
 bool RTSPClientSrc::produce() { 
-	LOG_INFO << "Produce called: starting readBuffer for RTSPCLIENTSRC";
+	LOG_TRACE << "Produce called: starting readBuffer for RTSPCLIENTSRC";
     auto ret = mDetail->readBuffer();
 	LOG_TRACE << "Produce called: finished readBuffer for RTSPCLIENTSRC";
 	return ret;
