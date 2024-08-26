@@ -432,7 +432,7 @@ void RTSPPusher::pauserThreadFunction()
 			auto dur1 = std::chrono::duration_cast<std::chrono::milliseconds>(t1.time_since_epoch());
 			auto diff = dur1.count() - dur.count();
 			// int newfps = 1000 / diff;
-			int newfps = 20;
+			int newfps = 9;
 			paceMaker->end();
 			setFps(newfps, true);
 		}
