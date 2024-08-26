@@ -6,14 +6,16 @@
 #include <sstream>
 #include <string>
 
-APErrorObject::APErrorObject(int errCode, const std::string &errorMsg)
-    : mErrorCode(errCode), mErrorMessage(errorMsg), mModuleName(""),
-      mModuleId("")
+APErrorObject::APErrorObject(APErrorCodes errCode, const std::string &errorMsg)
+    : mErrorCode(errCode), mErrorMessage(errorMsg), mModuleName(""), mModuleId("")
 {
   mTimestamp = getCurrentTimestamp();
 }
 
-int APErrorObject::getErrorCode() const { return mErrorCode; }
+APErrorCodes APErrorObject::getErrorCode() const
+{
+  return mErrorCode;
+}
 
 std::string APErrorObject::getCurrentTimestamp() const
 {
@@ -25,24 +27,38 @@ std::string APErrorObject::getCurrentTimestamp() const
   return ss.str();
 }
 
-std::string APErrorObject::getErrorMessage() const { return mErrorMessage; }
+std::string APErrorObject::getErrorMessage() const
+{
+  return mErrorMessage;
+}
 
-std::string APErrorObject::getModuleName() const { return mModuleName; }
+std::string APErrorObject::getModuleName() const
+{
+  return mModuleName;
+}
 
-std::string APErrorObject::getModuleId() const { return mModuleId; }
+std::string APErrorObject::getModuleId() const
+{
+  return mModuleId;
+}
 
-std::string APErrorObject::getTimestamp() const { return mTimestamp; }
+std::string APErrorObject::getTimestamp() const
+{
+  return mTimestamp;
+}
 
 void APErrorObject::displayError() const
 {
-  LOG_ERROR << "Module Name < " << mModuleName << " > Module Id < " << mModuleId
-            << " > Time Stamp < " << mTimestamp << " > Error Message < "
-            << mErrorMessage << " >";
+  LOG_ERROR << "Module Name < " << mModuleName
+            << " > Module Id < " << mModuleId
+            << " > Time Stamp < " << mTimestamp
+            << " > Error Code < " << static_cast<int>(mErrorCode)
+            << " > Error Message < " << mErrorMessage << " >";
 }
 
-void APErrorObject::setErrorCode(int errCode) 
-{ 
-  mErrorCode = errCode; 
+void APErrorObject::setErrorCode(APErrorCodes errCode)
+{
+  mErrorCode = errCode;
 }
 
 void APErrorObject::setErrorMessage(const std::string &errorMsg)
@@ -55,4 +71,7 @@ void APErrorObject::setModuleName(const std::string &modName)
   mModuleName = modName;
 }
 
-void APErrorObject::setModuleId(const std::string &modId) { mModuleId = modId; }
+void APErrorObject::setModuleId(const std::string &modId)
+{
+  mModuleId = modId;
+}

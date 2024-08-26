@@ -9,6 +9,7 @@
 #include "PipeLine.h"
 #include "RTSPClientSrc.h"
 #include "H264Metadata.h"
+#include "SimpleControlModule.h"
 
 BOOST_AUTO_TEST_SUITE(rtsppusher_tests)
 
@@ -20,7 +21,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-1");  //works
 	//std::string dataPath = Test_Utils::getArgValue("data", "./data/h264data/769d-rec");  //works
 	
-	std::string rtspServer = Test_Utils::getArgValue("rtspserver", "rtsp://10.102.10.81:5544");
+	std::string rtspServer = Test_Utils::getArgValue("rtspserver", "rtsp://10.102.10.197:5544");
 	
 	auto encoderTargetKbpsStr = Test_Utils::getArgValue("bitrate", "4096");
 	uint32_t encoderTargetKbps = atoi(encoderTargetKbpsStr.c_str());
@@ -80,10 +81,13 @@ BOOST_AUTO_TEST_CASE(rtsp_fetcher_and_pusher, *boost::unit_test::disabled())
 	auto sink = boost::shared_ptr<RTSPPusher>(new RTSPPusher(sinkProps));
 	src->setNext(sink);
 
+	auto controlProps = SimpleControlModuleProps();
+	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
 	PipeLine p("test");
 	p.appendModule(src);
+	p.addControlModule(mControl);
 	bool pipeLineInitStatus = p.init();
-	// BOOST_TEST(p.init());
+	mControl->enrollModule("Renderer", sink);
 	LOG_ERROR << "Pipeline Init Status " << pipeLineInitStatus;
 	if (pipeLineInitStatus)
 	{

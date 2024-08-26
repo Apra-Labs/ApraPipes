@@ -14,6 +14,7 @@
 #include "GTKModel.h"
 #include "GTKSetup.h"
 #include "GTKView.h"
+#include "APErrorCodes.h"
 
 struct signal
 {
@@ -331,7 +332,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     if (metadata->getImageType() != ImageMetadata::RGBA &&
         metadata->getImageType() != ImageMetadata::RGB)
     {
-      APErrorObject error(0, "Unsupported Image Type");
+      APErrorObject error(APErrorCodes::GTKGLRENDERER_UNSUPPORTED_IMAGE, "Unsupported Image Type");
       executeErrorCallback(error);
       throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only RGB "
                                     ", BGR , BGRA and RGBA is supported<" +
@@ -358,7 +359,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
         FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
     if (metadata->getImageType() != ImageMetadata::RGBA)
     {
-      APErrorObject error(0, "Unsupported Image Type");
+      APErrorObject error(APErrorCodes::GTKGLRENDERER_UNSUPPORTED_IMAGE, "Unsupported Image Type");
       executeErrorCallback(error);
       throw AIPException(AIP_FATAL, "Unsupported ImageType, Currently Only "
                                     "RGB, BGR, BGRA and RGBA is supported<" +

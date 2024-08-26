@@ -312,7 +312,7 @@ RTSPClientSrcProps RTSPClientSrc::getProps() {
 bool RTSPClientSrc::produce() { 
 	LOG_TRACE << "Produce called: starting readBuffer for RTSPCLIENTSRC";
     auto ret = mDetail->readBuffer();
-	LOG_INFO << "Produce called: finished readBuffer for RTSPCLIENTSRC";
+	LOG_TRACE << "Produce called: finished readBuffer for RTSPCLIENTSRC";
 	return ret;
 }
 bool RTSPClientSrc::validateOutputPins() { 

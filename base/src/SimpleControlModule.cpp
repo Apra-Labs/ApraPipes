@@ -19,7 +19,7 @@ void SimpleControlModule::sendEOPFrame()
 void SimpleControlModule::handleError(const APErrorObject &error)
 {
 	LOG_ERROR << "Error in module " << error.getModuleName() << "Module Id"
-			  << error.getModuleId() << " (Code " << error.getErrorCode()
+			  << error.getModuleId() << " (Code " << static_cast<int>(error.getErrorCode())
 			  << "): " << error.getErrorMessage();
 }
 

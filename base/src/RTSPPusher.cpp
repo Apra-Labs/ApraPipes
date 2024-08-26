@@ -319,12 +319,21 @@ RTSPPusher::~RTSPPusher() { mDetail.reset(); }
 
 bool RTSPPusher::init()
 {
+	bool initStatus = true;
 	if (!Module::init())
 	{
-		return false;
+		initStatus = false;
 	}
-
-	return mDetail->init();
+	if (initStatus)
+	{
+		initStatus = mDetail->init();
+	}
+	if (!initStatus)
+	{
+		APErrorObject error(APErrorCodes::RTSPPUSHER_INIT_FAILED, "Failed TO Initialize RTSP PUSHER");
+		executeErrorCallback(error);
+	}
+	return initStatus;
 }
 
 bool RTSPPusher::term()
@@ -390,6 +399,8 @@ bool RTSPPusher::process(frame_container &frames)
 		if (!mDetail->write_precoded_video_frame(frame))
 		{
 			// ToDo :- Send Callback from Here to Control Module, Control Module Will then propogate this to Engine Which Will Update Redis DB  and bunch of other required things
+			APErrorObject error(APErrorCodes::RTSPPUSHER_WRITE_FAILED, "Failed TO Write to RTSP Connection");
+			executeErrorCallback(error);
 			mDetail->connectionStatus = WRITE_FAILED;
 			LOG_FATAL << "write_precoded_video_frame failed";
 			return false;
@@ -447,7 +458,8 @@ void RTSPPusher::pauserThreadFunction()
 				if (!mDetail->write_precoded_video_frame(sendFrame))
 				{
 					mDetail->connectionStatus = WRITE_FAILED;
-					// ToDo :- Send Callback from Here to Control Module, Control Module Will then propogate this to Engine Which Will Update Redis DB  and bunch of other required things
+					APErrorObject error(APErrorCodes::RTSPPUSHER_WRITE_FAILED, "Failed TO Write to RTSP Connection");
+					executeErrorCallback(error);
 					LOG_FATAL << "write_precoded_video_frame failed";
 				}
 			}
@@ -456,7 +468,6 @@ void RTSPPusher::pauserThreadFunction()
 			auto diff = dur1.count() - dur.count();
 			int newfps = 22;
 			LOG_TRACE << "================Printing Diff================" << diff;
-			// int newfps = 1000 / diff;
 			paceMaker->end();
 			setFps(newfps, true);
 		}
@@ -493,6 +504,8 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 	{
 		// ToDo :- Send Callback from Here to Control Module, Control Module Will then propogate this to Engine Which Will Update Redis DB  and bunch of other required things
 		LOG_ERROR << "Could not write stream header... stream will not play !!";
+		APErrorObject error(APErrorCodes::RTSPPUSHER_WRITE_FAILED, "Failed TO Write to RTSP Connection");
+		executeErrorCallback(error);
 		mDetail->connectionStatus = CONNECTION_FAILED;
 		return false;
 	}

@@ -1,0 +1,8 @@
+#pragma once
+
+enum class APErrorCodes
+{
+    RTSPPUSHER_WRITE_FAILED = 0,
+    RTSPPUSHER_INIT_FAILED,
+    GTKGLRENDERER_UNSUPPORTED_IMAGE = 10,
+};
