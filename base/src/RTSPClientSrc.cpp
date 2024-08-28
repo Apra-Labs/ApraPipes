@@ -14,7 +14,7 @@ using namespace std;
 #include <chrono>
 #include "H264Utils.h"
 #include "AbsControlModule.h"
-
+#include "APErrorObject.h"
 extern "C"
 {
 #include <libavutil/mathematics.h>
@@ -236,10 +236,8 @@ public:
             {  //Inform control module about stopping of stream
                 LOG_INFO<<"Not getting data from source will retry - "<<count;
                 count++;
-                if(count == 10 && controlModule != nullptr)
+                if(count == 10)
                 {
-                    boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-                    ctl->handleNoRTSPFrame(false);
                     return false;
                 }
             }
@@ -289,9 +287,11 @@ RTSPClientSrc::~RTSPClientSrc() {
 bool RTSPClientSrc::init() {
     if (mDetail->connect())
     {
+        mDetail->controlModule = controlModule;
         return Module::init();
     }
-    mDetail->controlModule = controlModule;
+    APErrorObject error(0, "RTSPClientSource init has failed");
+    executeErrorCallback(error);
     return false;
 }
 bool RTSPClientSrc::term() {
