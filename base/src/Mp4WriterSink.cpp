@@ -510,6 +510,8 @@ bool Mp4WriterSink::init() {
   bool enableVideoMetadata = false;
   framemetadata_sp mp4VideoMetadata;
   if (!Module::init()) {
+    APErrorObject error(0, "MP4Writer Error while initialization.");
+    executeErrorCallback(error);
     return false;
   }
   auto inputPinIdMetadataMap = getInputMetadata();
@@ -635,6 +637,8 @@ bool Mp4WriterSink::process(frame_container &frames) {
   try {
     if (!mDetail->write(frames)) {
       LOG_FATAL << "Error occured while writing mp4 file<>";
+      APErrorObject error(0, "MP4Writer Error while writing frame.");
+      executeErrorCallback(error);
       return true;
     }
   } catch (const std::exception &e) {

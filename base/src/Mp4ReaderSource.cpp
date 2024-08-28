@@ -1221,6 +1221,8 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 	catch (const std::exception& e)
 	{
 		LOG_ERROR << e.what();
+		APErrorObject error(0, "MP4Reader Error while reading next frame.");
+        executeErrorCallback(error);
 		attemptFileClose();
 	}
 
@@ -1506,6 +1508,8 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	catch (const std::exception& e)
 	{
 		LOG_ERROR << e.what();
+		APErrorObject error(0, "MP4Reader Error while reading next frame.");
+        executeErrorCallback(error);
 		attemptFileClose();
 	}
 
@@ -1629,6 +1633,8 @@ bool Mp4ReaderSource::init()
 {
 	if (!Module::init())
 	{
+		APErrorObject error(0, "MP4Reader init error");
+    	executeErrorCallback(error);
 		return false;
 	}
 	auto outMetadata = getFirstOutputMetadata();

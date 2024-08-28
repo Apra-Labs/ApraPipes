@@ -311,6 +311,8 @@ bool RTSPPusher::init()
 {
 	if (!Module::init())
 	{
+		APErrorObject error(0, "RTSPPusher Error while initialization.");
+        executeErrorCallback(error);
 		return false;
 	}
 
@@ -367,6 +369,8 @@ bool RTSPPusher::process(frame_container &frames)
 		if (!mDetail->write_precoded_video_frame(frame))
 		{
 			mDetail->connectionStatus = WRITE_FAILED;
+			APErrorObject error(0, "RTSPPusher Error while writing frame.");
+        	executeErrorCallback(error);
 			LOG_FATAL << "write_precoded_video_frame failed";
 			return false;
 		}
@@ -426,6 +430,8 @@ void RTSPPusher::pauserThreadFunction()
 			if (!mDetail->write_precoded_video_frame(sendFrame))
 			{
 				mDetail->connectionStatus = WRITE_FAILED;
+				APErrorObject error(0, "RTSPPusher Error while writing frame.");
+        		executeErrorCallback(error);
 				LOG_FATAL << "write_precoded_video_frame failed";
 			}
 			std::chrono::time_point<std::chrono::system_clock> t1 = std::chrono::system_clock::now();
@@ -467,6 +473,8 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 	}
 	else
 	{
+		APErrorObject error(0, "RTSPPusher Error while writing header.");
+        executeErrorCallback(error);
 		LOG_ERROR << "Could not write stream header... stream will not play !!" << "\n";
 		mDetail->connectionStatus = CONNECTION_FAILED;
 

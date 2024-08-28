@@ -285,9 +285,8 @@ RTSPClientSrc::~RTSPClientSrc() {
 	LOG_INFO << "Destructor called for rtspclientsrc";
 }
 bool RTSPClientSrc::init() {
-    if (mDetail->connect())
+    if(mDetail->connect())
     {
-        mDetail->controlModule = controlModule;
         return Module::init();
     }
     APErrorObject error(0, "RTSPClientSource init has failed");
