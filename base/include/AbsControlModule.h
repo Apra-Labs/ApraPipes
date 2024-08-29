@@ -23,6 +23,7 @@ public:
 	virtual void handleMMQExportView(uint64_t startTS, uint64_t endTS = 9999999999999, bool playabckDirection = true, bool Mp4ReaderExport = false, bool priority = false) {}
 	virtual void handleSendMMQTSCmd(uint64_t  mmqBeginTS, uint64_t mmqEndTS, bool priority = false) {}
 	virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
+	virtual void handleLastRTSPPusherTS(uint64_t latestPusherTS) {}
 	virtual void handleGoLive(bool goLive, bool priority) {}
 	virtual void handlePusherPauseTS(uint64_t keyFrameTS) {}
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}

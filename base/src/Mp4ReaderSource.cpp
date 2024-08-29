@@ -1213,7 +1213,6 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 	size_t metadataSize = 0;
 	int32_t mp4FIndex = 0;
 	uint64_t frameTSInMsecs;
-
 	try
 	{
 		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
@@ -1221,8 +1220,6 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 	catch (const std::exception& e)
 	{
 		LOG_ERROR << e.what();
-		APErrorObject error(0, "MP4Reader Error while reading next frame.");
-        executeErrorCallback(error);
 		attemptFileClose();
 	}
 
@@ -1508,8 +1505,6 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	catch (const std::exception& e)
 	{
 		LOG_ERROR << e.what();
-		APErrorObject error(0, "MP4Reader Error while reading next frame.");
-        executeErrorCallback(error);
 		attemptFileClose();
 	}
 

@@ -6,7 +6,7 @@ extern "C"
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 }
-
+#include "APErrorObject.h"
 #include "AbsControlModule.h"
 #include "Frame.h"
 #include "H264FrameDemuxer.h"
@@ -353,6 +353,12 @@ bool RTSPPusher::process(frame_container &frames)
 {
 	auto frame = frames.begin()->second;
 	bool isKeyFrame = (frame->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE || frame->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM);
+
+	if (controlModule != nullptr)
+	{
+    	boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+    	ctl->handleLastRTSPPusherTS(frame->timestamp);
+	}
 
 	if (isKeyFrame)
 	{
