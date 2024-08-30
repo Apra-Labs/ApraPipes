@@ -543,16 +543,6 @@ public:
 					}
 				}
 				setMp4ReaderProps(mProps);
-				if (controlModule != nullptr)
-				{
-					DecoderPlaybackSpeed cmd;
-					cmd.playbackSpeed = playbackSpeed;
-					cmd.playbackFps = mFPS;
-					cmd.gop = gop;
-					bool priority = true;
-					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-					ctl->handleDecoderSpeed(cmd, priority);
-				}
 			}
 		}
 
