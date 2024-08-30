@@ -118,16 +118,19 @@ bool PipeLine::init()
 		}
 		catch (const std::exception& ex)
 		{
+			LOG_INFO << "Failed init " << i->get()->getId() << "Exception" << ex.what();
 			LOG_ERROR << "Failed init " << i->get()->getId() << "Exception" << ex.what();
 
 		}
 		catch (...)
 		{
+			LOG_INFO << "Failed init " << i->get()->getId() << "Unknown Exception";
 			LOG_ERROR << "Failed init " << i->get()->getId() << "Unknown Exception";
 
 		}
 		if (!bRCInit)
 		{
+			LOG_INFO << " Failed init " << i->get()->getId();
 			LOG_ERROR << " Failed init " << i->get()->getId();
 			myStatus = PL_INITFAILED;
 			return false;
