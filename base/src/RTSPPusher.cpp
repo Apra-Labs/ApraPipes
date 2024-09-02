@@ -356,10 +356,8 @@ bool RTSPPusher::process(frame_container &frames)
 
 	if (controlModule != nullptr)
 	{
-		LOG_INFO<<"sending pusher timestamp - 1";
     	boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
     	ctl->handleLastRTSPPusherTS(frame->timestamp);
-		LOG_INFO<<"sending pusher timestamp - 2 >> "<<frame->timestamp;
 	}
 
 	if (isKeyFrame)
