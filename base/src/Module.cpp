@@ -1305,6 +1305,7 @@ bool Module::step()
     {
       throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.");
     }
+    ret = true;
   }
   else
   {
