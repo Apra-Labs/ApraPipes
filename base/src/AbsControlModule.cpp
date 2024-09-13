@@ -8,78 +8,87 @@
 class AbsControlModule::Detail
 {
 public:
-    Detail(AbsControlModuleProps& _props) : mProps(_props)
-    {
-    }
+	Detail(AbsControlModuleProps& _props) : mProps(_props)
+	{
+	}
 
-    ~Detail()
-    {
-    }
+	~Detail()
+	{
+	}
 
-    std::string getPipelineRole(std::string pName, std::string role)
-    {
-        return pName + "_" + role;
-    }
-
-    AbsControlModuleProps mProps;
+	AbsControlModuleProps mProps;
 };
 
 AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
-    :Module(TRANSFORM, "AbsControlModule", _props)
+	:Module(CONTROL, "AbsControlModule", _props)
 {
-    mDetail.reset(new Detail(_props));
+	mDetail.reset(new Detail(_props));
 }
 AbsControlModule::~AbsControlModule() {}
 
 bool AbsControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-    return true;
+	return true;
 }
 
 bool AbsControlModule::handlePropsChange(frame_sp& frame)
 {
-    return true;
+	return true;
 }
 
 bool AbsControlModule::init()
 {
-    if (!Module::init())
-    {
-        return false;
-    }
-    return true;
+	if (!Module::init())
+	{
+		return false;
+	}
+	return true;
 }
 
 bool AbsControlModule::term()
 {
-    return Module::term();
+	return Module::term();
 }
 
 bool AbsControlModule::process(frame_container& frames)
 {
-    return true;
+	// Commands are already processed by the time we reach here.
+	return true;
 }
 
-std::string AbsControlModule::enrollModule(std::string pName, std::string role, boost::shared_ptr<Module> module)
+bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
 {
-    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
-    if (moduleRoles.find(pipelineRole) != moduleRoles.end())
-    {
-        std::string errMsg = "Enrollment Failed: This role <" + role + "> already registered with the Module <" + moduleRoles[pipelineRole]->getName() + "> in PipeLine <" + pName + ">";
-        LOG_ERROR << errMsg;
-        throw AIPException(MODULE_ENROLLMENT_FAILED, errMsg);
-    }
-    moduleRoles[pipelineRole] = module;
-    return pipelineRole;
+	if (moduleRoles.find(role) != moduleRoles.end())
+	{
+		LOG_ERROR << "Role already registered with the control module.";
+        return false;
+	}
+
+	moduleRoles[role] = module;
+
+	// NOTE: If you want error callback and health callback to work with a module, registering it with control is mandatory.
+	module->registerErrorCallback(
+		[this](const APErrorObject& error) { handleError(error); });
+	
+	if (module->getProps().enableHealthCallBack)
+	{
+		module->registerHealthCallback(
+			[this](const APHealthObject& message) { handleHealthCallback(message); });
+	}
+	
+	return true;
 }
 
-std::pair<bool, boost::shared_ptr<Module>> AbsControlModule::getModuleofRole(std::string pName, std::string role)
+boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 {
-    std::string pipelineRole = mDetail->getPipelineRole(pName, role);
-    if (moduleRoles.find(pipelineRole) == moduleRoles.end())
-    {
-        return std::make_pair<bool, boost::shared_ptr<Module>>(false, nullptr);
-    }
-    std::pair<bool, boost::shared_ptr<Module>> res(true, moduleRoles[pipelineRole]); 
-    return res;
+	boost::shared_ptr<Module> moduleWithRole = nullptr;
+	try
+	{
+		moduleWithRole = moduleRoles[role];
+	}
+	catch (std::out_of_range)
+	{
+		LOG_ERROR << "no module with the role <" << role << "> registered with the control module.";
+	}
+	return moduleWithRole;
 }

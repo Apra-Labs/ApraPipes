@@ -334,6 +334,101 @@ private:
 };
 
 
+class TimeStampStrategy : public FramesMuxerStrategy
+{
+
+public:
+	TimeStampStrategy(FramesMuxerProps& _props) :FramesMuxerStrategy(_props), maxTsDelayInMS(_props.maxTsDelayInMS) {}
+
+	~TimeStampStrategy()
+	{
+		clear();
+	}
+
+	std::string addInputPin(std::string& pinId)
+	{
+		mQueue[pinId] = boost::container::deque<frame_sp>();
+
+		return FramesMuxerStrategy::addInputPin(pinId);
+	}
+
+	bool queue(frame_container& frames)
+	{
+		uint64_t largestTimeStamp = 0;
+		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+		{
+			mQueue[it->first].push_back(it->second);
+			if (largestTimeStamp < it->second->timestamp)
+			{
+				largestTimeStamp = it->second->timestamp;
+			}
+		}
+
+		for (auto it = mQueue.begin(); it != mQueue.end(); it++)
+		{
+			auto& frames_arr = it->second;
+			while (frames_arr.size())
+			{
+				auto& frame = frames_arr.front();
+				if (largestTimeStamp - frame->timestamp > maxTsDelayInMS)
+				{
+					frames_arr.pop_front();
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool get(frame_container& frames)
+	{
+		bool allFound = true;
+		size_t fIndex = 0;
+		bool firstIter = true;
+
+		for (auto it = mQueue.begin(); it != mQueue.end(); it++)
+		{
+			auto& frames_arr = it->second;
+			if (frames_arr.size() == 0)
+			{
+				allFound = false;
+				break;
+			}
+		}
+
+		if (!allFound)
+		{
+			return false;
+		}
+		for (auto it = mQueue.begin(); it != mQueue.end(); it++)
+		{
+			frames[FramesMuxerStrategy::getMuxOutputPinId(it->first)] = it->second.front();
+			it->second.pop_front();
+		}
+		return true;
+	}
+
+	void clear()
+	{
+		for (auto it = mQueue.begin(); it != mQueue.end(); it++)
+		{
+			it->second.clear();
+		}
+		mQueue.clear();
+	}
+
+private:
+
+	typedef std::map<std::string, boost_deque<frame_sp>> MuxerQueue;
+	MuxerQueue mQueue;
+	double maxTsDelayInMS;
+	int maxDelay;
+
+};
+
 FramesMuxer::FramesMuxer(FramesMuxerProps _props) :Module(TRANSFORM, "FramesMuxer", _props)
 {
 
@@ -345,6 +440,9 @@ FramesMuxer::FramesMuxer(FramesMuxerProps _props) :Module(TRANSFORM, "FramesMuxe
 	case FramesMuxerProps::MAX_DELAY_ANY:
 		mDetail.reset(new MaxDelayAnyStrategy(_props));
 		break;
+	case FramesMuxerProps::MAX_TIMESTAMP_DELAY:
+		mDetail.reset(new TimeStampStrategy(_props));
+		break;	
 	default:
 		LOG_ERROR << "Strategy not implemented " << _props.strategy;
 		break;
