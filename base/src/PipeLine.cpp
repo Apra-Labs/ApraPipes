@@ -232,6 +232,11 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		modules[0]->controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -242,15 +247,15 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		return;
 	}
 
-	for (auto i = modules.begin(); i != modules.end(); i++)
-	{
-		Module& m = *(i->get());
-		m.myThread.join();
-	}
-
 	if ((modules[0]->controlModule) != nullptr)
 	{
 		Module& m = *(modules[0]->controlModule);
+		m.myThread.join();
+	}
+
+	for (auto i = modules.begin(); i != modules.end(); i++)
+	{
+		Module& m = *(i->get());
 		m.myThread.join();
 	}
 }
@@ -264,12 +269,6 @@ void PipeLine::interrupt_wait_for_all()
 		return;
 	}
 
-	for (auto i = modules.begin(); i != modules.end(); i++)
-	{
-		Module& m = *(i->get());
-		m.myThread.interrupt();
-	}
-
 	if ((modules[0]->controlModule) != nullptr)
 	{
 		Module& m = *(modules[0]->controlModule);
@@ -279,12 +278,18 @@ void PipeLine::interrupt_wait_for_all()
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
+		m.myThread.interrupt();
+	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
 		m.myThread.join();
 	}
 
-	if ((modules[0]->controlModule) != nullptr)
+	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(i->get());
 		m.myThread.join();
 	}
 
