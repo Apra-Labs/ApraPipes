@@ -232,6 +232,11 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		modules[0]->controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -242,6 +247,12 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		return;
 	}
 
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.join();
+	}
+
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
@@ -250,12 +261,18 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 }
 
 
-void PipeLine::interrup_wait_for_all()
+void PipeLine::interrupt_wait_for_all()
 {
 	if (myStatus > PL_STOPPING)
 	{
 		LOG_INFO << "Pipeline status " << getStatus() << " Can not be stopped !";
 		return;
+	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.interrupt();
 	}
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
@@ -264,11 +281,18 @@ void PipeLine::interrup_wait_for_all()
 		m.myThread.interrupt();
 	}
 
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.join();
+	}
+
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
+
 	myStatus = PL_STOPPED;
 }
 

@@ -603,7 +603,7 @@ private:
 			LOG_INFO << "Allocated <" << bufferLength << "> outputbitstreams to the encoder buffer.";
 			m_nvcodecResources->m_nFreeOutputBitstreams += bufferLength;
 		}
-		else
+		else if(!m_nvcodecResources->m_nFreeOutputBitstreams)
 		{
 			LOG_INFO << "waiting for free outputbitstream<> busy streams<" << m_nvcodecResources->m_nBusyOutputBitstreams << ">";
 		}
