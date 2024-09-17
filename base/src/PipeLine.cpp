@@ -247,6 +247,12 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.join();
+	}
 }
 
 
@@ -264,11 +270,24 @@ void PipeLine::interrup_wait_for_all()
 		m.myThread.interrupt();
 	}
 
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.interrupt();
+	}
+
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
+
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		m.myThread.join();
+	}
+
 	myStatus = PL_STOPPED;
 }
 
