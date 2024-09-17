@@ -161,7 +161,7 @@ void PipeLine::run_all_threaded()
 	}
 	if ((modules[0]->controlModule) != nullptr)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(modules[0]->controlModule->get());
 		m.myThread = boost::thread(ref(m));
 	}
 	mPlay = true;
@@ -250,13 +250,13 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 
 	if ((modules[0]->controlModule) != nullptr)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(modules[0]->controlModule->get());
 		m.myThread.join();
 	}
 }
 
 
-void PipeLine::interrup_wait_for_all()
+void PipeLine::interrupt_wait_for_all()
 {
 	if (myStatus > PL_STOPPING)
 	{
@@ -272,7 +272,7 @@ void PipeLine::interrup_wait_for_all()
 
 	if ((modules[0]->controlModule) != nullptr)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(modules[0]->controlModule->get());
 		m.myThread.interrupt();
 	}
 
@@ -284,7 +284,7 @@ void PipeLine::interrup_wait_for_all()
 
 	if ((modules[0]->controlModule) != nullptr)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(modules[0]->controlModule->get());
 		m.myThread.join();
 	}
 
