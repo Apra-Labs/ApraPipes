@@ -161,7 +161,7 @@ public:
 		int ret = 0;
 		totalDuration = 0;
 
-		av_log_set_level(AV_LOG_INFO);
+		av_log_set_level(AV_LOG_TRACE);
 
 		avformat_network_init();
 
@@ -296,7 +296,7 @@ public:
 	}
 };
 
-RTSPPusher::RTSPPusher(RTSPPusherProps props) : Module(SINK, "RTSPPusher", props), pausedState(false)
+RTSPPusher::RTSPPusher(RTSPPusherProps props) : Module(SINK, "RTSPPusher", props), pausedState(false), savedIFrame(nullptr)
 {
 	mDetail.reset(new RTSPPusher::Detail(props));
 
@@ -360,7 +360,7 @@ bool RTSPPusher::process(frame_container &frames)
     	ctl->handleLastRTSPPusherTS(frame->timestamp);
 	}
 
-	if (isKeyFrame)
+	if (isKeyFrame && !pausedState)
 	{
 		savedIFrame = frame;
 	}
@@ -385,6 +385,21 @@ bool RTSPPusher::process(frame_container &frames)
 			LOG_TRACE << "write_precoded_video_frame successful";
 		}
 	}
+	else
+	{
+		if (!mDetail->write_precoded_video_frame(savedIFrame))
+		{
+			mDetail->connectionStatus = WRITE_FAILED;
+			APErrorObject error(0, "RTSPPusher Error while writing frame.");
+        	executeErrorCallback(error);
+			LOG_FATAL << "write_precoded_video_frame failed";
+			return false;
+		}
+		else
+		{
+			LOG_TRACE << "write_precoded_video_frame successful";
+		}
+	}
 	return true;
 }
 
@@ -392,27 +407,6 @@ bool RTSPPusher::setPausedState(bool state)
 {
 	LOG_TRACE << "RTSP-PUSHER: I am in setPausedState function with state - " << state;
 	pausedState = state;
-	if (state)
-	{
-		if (controlModule != nullptr)
-		{
-			boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-			ctl->handlePusherPauseTS(savedIFrame->timestamp);
-		}
-		if (!pauserThread.joinable())
-		{
-			pauserThread = boost::thread(&RTSPPusher::pauserThreadFunction, this);
-		}
-	}
-	else
-	{
-		setFps(fps);
-		if (pauserThread.joinable())
-		{
-			pauserThread.interrupt();
-			pauserThread.join();
-		}
-	}
 	return true;
 }
 
