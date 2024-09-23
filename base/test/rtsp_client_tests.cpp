@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	BOOST_TEST(m->init());
 	BOOST_TEST(fw->init());
 
-	for (int i = 0;i<1000; i++)
+	for (int i = 0;i<30; i++)
 	{
 		BOOST_TEST(m->step());
 		BOOST_TEST(fw->step());

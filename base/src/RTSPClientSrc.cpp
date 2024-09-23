@@ -51,6 +51,7 @@ public:
     {
         int_ctx = std::make_pair(iUrlTimeout, start_time);
         int_cb = {interrupt_cb, &int_ctx};
+        shouldForceRetryTermination = false;
     }
 
     ~Detail() 
@@ -175,6 +176,11 @@ public:
         return frm;
     }
 
+    void updateForceRetryTermination()
+    {
+        shouldForceRetryTermination = true;
+    }
+
     bool readBuffer()
     {
         if (!initDone)
@@ -187,7 +193,7 @@ public:
         frame_container outFrames;
         bool got_something = false;
         int count = 0;
-        while (!got_something)
+        while (!got_something && !shouldForceRetryTermination)
         {
 
             int_ctx.second = time(NULL);
@@ -285,6 +291,7 @@ private:
     int ppsSize = 0;
     std::pair<int, time_t> int_ctx;
     AVIOInterruptCB int_cb;
+    bool shouldForceRetryTermination;
 };
 
 RTSPClientSrc::RTSPClientSrc(RTSPClientSrcProps _props) : Module(SOURCE, "RTSPClientSrc", _props), mProps(_props)
@@ -308,6 +315,7 @@ bool RTSPClientSrc::init()
 bool RTSPClientSrc::term()
 {
     LOG_INFO << "Term called for rtspclientsrc";
+    mDetail->updateForceRetryTermination();
     mDetail.reset();
     return true;
 }
