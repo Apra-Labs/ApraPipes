@@ -56,6 +56,8 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 }
 
+
+// All the Below tests will be helpful for ApraNVR,Need to move from here
 BOOST_AUTO_TEST_CASE(recording24x7, *boost::unit_test::disabled())
 {
 	rtsp_client_tests_data d;
