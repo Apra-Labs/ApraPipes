@@ -163,6 +163,7 @@ void PipeLine::run_all_threaded()
 	{
 		Module& m = *(modules[0]->controlModule);
 		m.myThread = boost::thread(ref(m));
+		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	mPlay = true;
 }
