@@ -18,6 +18,7 @@ public:
 	bool term();
 	bool enrollModule(std::string role, boost::shared_ptr<Module> module);
 	boost::shared_ptr<Module> getModuleofRole(std::string role);
+	virtual std::string getStatus() { return ""; };
 	virtual void handleMp4MissingVideotrack(std::string previousVideoFile, std::string nextVideoFile) {}
 	virtual void handleMMQExport(Command cmd, bool priority = false) {}
 	virtual void handleMMQExportView(uint64_t startTS, uint64_t endTS = 9999999999999, bool playabckDirection = true, bool Mp4ReaderExport = false, bool priority = false) {}
@@ -28,9 +29,10 @@ public:
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
   	virtual void handleError(const APErrorObject &error) {}
-  	virtual void handleHealthCallback(const APHealthObject &healthObj) {}
-
-
+	virtual void handleHealthCallback(const APHealthObject& healthObj);
+	// this will be called 
+	void register_healthCallback_extention(
+		boost::function<void(const APHealthObject*, unsigned short)> callbackFunction);
 protected:
 	bool process(frame_container& frames);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
@@ -38,7 +40,7 @@ protected:
 	virtual void sendEOS() {}
 	virtual void sendEOS(frame_sp& frame) {}
 	virtual void sendEOPFrame() {}
-
+	boost::function<void(const APHealthObject*, unsigned short)> healthCallbackExtention;
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;

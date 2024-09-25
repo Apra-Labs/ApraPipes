@@ -18,9 +18,8 @@ public:
 
 	}
 
-	void handleError(const APErrorObject &error);
-    void handleHealthCallback(const APHealthObject &healthObj);
-
+	void handleError(const APErrorObject &error) override;
+    void handleHealthCallback(const APHealthObject &healthObj) override;
 	// ErrorCallbacks
 protected:
 	void sendEOS();

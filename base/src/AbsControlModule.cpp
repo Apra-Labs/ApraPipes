@@ -92,3 +92,19 @@ boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 	}
 	return moduleWithRole;
 }
+
+void AbsControlModule::register_healthCallback_extention(
+	boost::function<void(const APHealthObject*, unsigned short)> callbackFunction)
+{
+	healthCallbackExtention = callbackFunction;
+};
+
+void AbsControlModule::handleHealthCallback(const APHealthObject& healthObj)
+{
+	LOG_INFO << "Health Callback from  module " << healthObj.getModuleId();
+	if (!healthCallbackExtention.empty())
+	{
+		LOG_INFO << "Calling the registered Health Callback Extention...";
+		healthCallbackExtention(&healthObj, 1);
+	}
+}
