@@ -739,7 +739,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 					}
 				}
 				/* ----- first relevant file found end ----- */
-				LOG_INFO << "ocof parse : relevant video found <" << vid.path << ">";
+				LOG_TRACE << "ocof parse : relevant video found <" << vid.path << ">";
 				insertInVideoCache(vid);
 				++parsedFilesCount;
 			}
