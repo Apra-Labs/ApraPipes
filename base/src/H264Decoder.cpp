@@ -735,10 +735,10 @@ bool H264Decoder::processEOS(string& pinId)
 {
 	//THIS HAS BEEN COMMENTED IN NVR - BECAUSE EOS IS SENT FROM MP4READER WHICH COMES TO DECODER AND THE FOLLOWING PROCESS IS NOT REQUIRED IN NVR. 
 	
-	// auto frame = frame_sp(new EmptyFrame());
-	// mDetail->compute(frame->data(), frame->size(), frame->timestamp);
-	// LOG_ERROR << "processes sos " ;
-	//mShouldTriggerSOS = true;
+	auto frame = frame_sp(new EmptyFrame());
+	mDetail->compute(frame->data(), frame->size(), frame->timestamp);
+	LOG_ERROR << "processes sos " ;
+	mShouldTriggerSOS = true;
 	return true;
 }
 
