@@ -562,6 +562,14 @@ NvDecoder::~NvDecoder() {
 			delete[] pFrame;
 		}
 	}
+
+	if(m_cuContext)
+	{
+		if (m_pMutex) m_pMutex->lock();
+		cuCtxDestroy(m_cuContext);
+		if (m_pMutex) m_pMutex->unlock();
+	}
+	
 	STOP_TIMER("Session Deinitialization Time: ");
 }
 
