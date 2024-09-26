@@ -37,7 +37,6 @@ bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
 	for (int i = 0; i < modules.size(); i++)
 	{
 		modules[i]->addControlModule(cModule);
-		cModule->pipelineModules.push_back(modules[i]);
 	}
 	return true;
 }
@@ -105,6 +104,7 @@ bool PipeLine::init()
 	if(!checkCyclicDependency())
 	{
 		myStatus = PL_INITFAILED;
+		return false;
 		return false;
 	}
 

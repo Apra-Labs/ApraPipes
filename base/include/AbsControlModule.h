@@ -26,11 +26,15 @@ public:
 	virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
 	virtual void handleGoLive(bool goLive, bool priority) {}
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
-	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
 	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
   	virtual void handleError(const APErrorObject &error) {}
 	virtual void handleHealthCallback(const APHealthObject& healthObj);
-	// this will be called 
+	/**
+	 * @brief Register external function to be triggered on every health callBack that control modules recieves from the modules.
+	 * In SimpleControlModule, this extention is called at the end of handleHealthCallback function.
+	 * @param function with signature void f(const APHealthObject*, unsigned short)
+	 * @return nothing.
+	 */
 	void register_healthCallback_extention(
 		boost::function<void(const APHealthObject*, unsigned short)> callbackFunction);
 protected:
