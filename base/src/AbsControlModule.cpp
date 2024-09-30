@@ -24,6 +24,7 @@ AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
 {
 	mDetail.reset(new Detail(_props));
 }
+
 AbsControlModule::~AbsControlModule() {}
 
 bool AbsControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
@@ -84,7 +85,7 @@ boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 	boost::shared_ptr<Module> moduleWithRole = nullptr;
 	try
 	{
-		moduleWithRole = moduleRoles[role];
+		moduleWithRole = moduleRoles[role].lock();
 	}
 	catch (std::out_of_range)
 	{

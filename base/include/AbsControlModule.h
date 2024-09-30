@@ -26,7 +26,8 @@ public:
 	virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
 	virtual void handleGoLive(bool goLive, bool priority) {}
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
-	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
+	// Note: weak pointers to avoid cyclic dependency and mem leaks
+	std::map<std::string, boost::weak_ptr<Module>> moduleRoles;
   	virtual void handleError(const APErrorObject &error) {}
 	virtual void handleHealthCallback(const APHealthObject& healthObj);
 	/**

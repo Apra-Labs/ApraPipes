@@ -178,7 +178,10 @@ Module::Module(Kind nature, string name, ModuleProps _props)
   mPropsChangeMetadata.reset(
       new FrameMetadata(FrameMetadata::FrameType::PROPS_CHANGE));
 }
-Module::~Module() {}
+Module::~Module() 
+{
+    LOG_INFO << "Module destructor <" << myId << ">";
+}
 
 bool Module::term()
 {

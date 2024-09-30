@@ -173,7 +173,9 @@ struct SimpleControlModuleTests
 
 		p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	}
-	~SimpleControlModuleTests() {}
+	~SimpleControlModuleTests() 
+	{
+	}
 
 	void createPipeline()
 	{

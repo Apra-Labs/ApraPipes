@@ -15,7 +15,6 @@ public:
 
 	~SimpleControlModule()
 	{
-
 	}
 
 	void handleError(const APErrorObject &error) override;
