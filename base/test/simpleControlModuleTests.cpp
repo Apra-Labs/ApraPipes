@@ -252,6 +252,7 @@ BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 
 	t.startPipeline();
 	t.addControlModule();
+	t.simpleCtrl->printStatus();
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(5000));
 	t.stopPipeline();
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(3000));

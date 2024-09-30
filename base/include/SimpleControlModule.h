@@ -16,7 +16,7 @@ public:
 	~SimpleControlModule()
 	{
 	}
-
+	std::string printStatus();
 	void handleError(const APErrorObject &error) override;
     void handleHealthCallback(const APHealthObject &healthObj) override;
 	// ErrorCallbacks

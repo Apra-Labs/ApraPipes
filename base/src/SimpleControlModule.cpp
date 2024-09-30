@@ -15,6 +15,11 @@ void SimpleControlModule::sendEOPFrame()
 	return Module::sendEoPFrame();
 }
 
+std::string SimpleControlModule::printStatus()
+{
+	return AbsControlModule::printStatus();
+}
+
 // Right Now, Just Logging But Can be used to Do bunch of other things 
 void SimpleControlModule::handleError(const APErrorObject &error)
 {
