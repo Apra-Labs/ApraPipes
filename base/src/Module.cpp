@@ -1295,6 +1295,16 @@ bool Module::step()
     {
       throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected: " + std::to_string(frames.size()) + " frames remain unprocessed in control module.");
     }
+    if (mPlay)
+    {
+        mProfiler->startProcessingLap();
+        ret = stepNonSource(frames);
+        mProfiler->endLap(mQue->size());
+    }
+    else
+    {
+        ret = true;
+    }
   }
   else
   {
@@ -1563,6 +1573,14 @@ bool Module::addEoPFrame(frame_container &frames)
     frames.insert(make_pair(me.first, frame));
   }
 
+  if (myNature == CONTROL)
+  {
+      auto frame = frame_sp(new EoPFrame());
+      auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+      frame->setMetadata((metadata));
+      frames.insert(make_pair("dummy_eop_ctrl_pin", frame));
+  }
+
   // if sieve is disabled for atleast one connection - send additional EOP
   // frames - extra EOP frames downstream shouldn't matter
   if (mIsSieveDisabledForAny)
@@ -1586,6 +1604,13 @@ bool Module::handleStop()
   {
     return true;
   }
+  if (myNature == CONTROL)
+  {
+      mRunning = false;
+      term();
+      return true;
+  }
+  // handle SOURCE, TRANSFORM, SINK below
   mStopCount++;
   if (myNature != SOURCE && mStopCount != mForwardPins)
   {

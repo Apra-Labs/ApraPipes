@@ -175,13 +175,6 @@ struct SimpleControlModuleTests
 	}
 	~SimpleControlModuleTests() {}
 
-	void initModules()
-	{
-		BOOST_TEST(sourceMod->init());
-		BOOST_TEST(transformMod1->init());
-		BOOST_TEST(sinkMod->init());
-	}
-
 	void createPipeline()
 	{
 		sourceMod->setNext(transformMod1);
@@ -202,7 +195,6 @@ struct SimpleControlModuleTests
 	void initPipeline()
 	{
 		p->init();
-		simpleCtrl->init();
 	}
 
 	void runPipeline()
@@ -222,14 +214,6 @@ struct SimpleControlModuleTests
 		runPipeline();
 
 		return;
-	}
-
-	bool termModules()
-	{
-		sourceMod->term();
-		transformMod1->term();
-		sinkMod->term();
-		return true;
 	}
 
 	bool stopPipeline()
@@ -268,6 +252,7 @@ BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 	t.addControlModule();
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(5000));
 	t.stopPipeline();
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(3000));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
