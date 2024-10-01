@@ -157,7 +157,6 @@ struct SimpleControlModuleTests
 
 		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 		sourceMod = boost::shared_ptr<TestModuleSrc>(new TestModuleSrc);
-		//auto source_pin_1 = sourceMod->addOutputPin(metadata);
 
 		/* set transform module health callbacks */
 		TestModuleTransformProps props;
@@ -167,6 +166,10 @@ struct SimpleControlModuleTests
 		transformMod1 = boost::shared_ptr<TestModuleTransform>(new TestModuleTransform(props));
 
 		sinkMod = boost::shared_ptr<TestSink>(new TestSink);
+
+		// pins connection
+		sourceMod->setNext(transformMod1);
+		transformMod1->setNext(sinkMod);
 
 		auto simpleCtrlProps = SimpleControlModuleProps();
 		simpleCtrl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(simpleCtrlProps));
@@ -248,7 +251,7 @@ void TestCallackExtention(const APHealthObject* healthObj, unsigned int eventId)
 BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 {
 	SimpleControlModuleTests t;
-	t.simpleCtrl->register_healthCallback_extention(TestCallackExtention);
+	t.simpleCtrl->registerHealthCallbackExtention(TestCallackExtention);
 
 	t.startPipeline();
 	t.addControlModule();
@@ -256,6 +259,62 @@ BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(5000));
 	t.stopPipeline();
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(3000));
+}
+
+BOOST_AUTO_TEST_CASE(simpleControlModule_enroll_ctrlMod_step_test, *boost::unit_test::disabled())
+{
+	SimpleControlModuleTests t;
+
+	t.simpleCtrl->registerHealthCallbackExtention(TestCallackExtention);
+	t.addControlModule();
+
+	t.sourceMod->init();
+	t.transformMod1->init();
+	t.sinkMod->init();
+	t.simpleCtrl->init();
+
+	t.sourceMod->step();
+	t.transformMod1->step();
+	t.sinkMod->step();
+
+	t.simpleCtrl->enrollModule("transform_test_module", t.transformMod1);
+	t.simpleCtrl->enrollModule("source_test_module", t.sourceMod);
+
+	// BOOSTASSERT the printStatus for enrollment
+	auto status = t.simpleCtrl->printStatus();
+	BOOST_ASSERT(status.find("transform_test_module") != std::string::npos);
+	BOOST_ASSERT(status.find("source_test_module") != std::string::npos);
+	
+	// since we are queueing any command in control module, the step should remain blocked at mQue->pop inside step()
+	// the following code tests exactly that.
+	auto future = std::async(std::launch::async, &SimpleControlModule::step, t.simpleCtrl.get());
+	if (future.wait_for(std::chrono::seconds(2)) == std::future_status::ready)
+	{
+		try
+		{
+			bool result = future.get();
+			LOG_ERROR << "Simple control module step() unexpectedly returned a value <" << result << ">";
+		}
+		catch (const std::exception& e) 
+		{
+			std::cout << "Task threw an exception: " << e.what() << std::endl;
+		}
+		BOOST_ASSERT(false);
+	}
+	BOOST_ASSERT(true);
+
+	t.sourceMod->stop();
+	t.transformMod1->stop();
+	t.sinkMod->stop();
+	t.simpleCtrl->stop();
+	
+	t.sourceMod->term();
+	t.transformMod1->term();
+	t.sinkMod->term();
+	t.simpleCtrl->term();
+
+	LOG_INFO << "SUCCESS: do not wait for step() to finish..."; // future.get()
+	return;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

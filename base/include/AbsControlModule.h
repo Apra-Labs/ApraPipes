@@ -32,11 +32,11 @@ public:
 	virtual void handleHealthCallback(const APHealthObject& healthObj);
 	/**
 	 * @brief Register external function to be triggered on every health callBack that control modules recieves from the modules.
-	 * In SimpleControlModule, this extention is called at the end of handleHealthCallback function.
+	 * For eg. In SimpleControlModule, this extention is called at the end of handleHealthCallback function.
 	 * @param function with signature void f(const APHealthObject*, unsigned short)
 	 * @return nothing.
 	 */
-	void register_healthCallback_extention(
+	void registerHealthCallbackExtention(
 		boost::function<void(const APHealthObject*, unsigned short)> callbackFunction);
 protected:
 	bool process(frame_container& frames);

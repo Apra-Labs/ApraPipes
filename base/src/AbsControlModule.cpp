@@ -101,7 +101,7 @@ boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 	return moduleWithRole;
 }
 
-void AbsControlModule::register_healthCallback_extention(
+void AbsControlModule::registerHealthCallbackExtention(
 	boost::function<void(const APHealthObject*, unsigned short)> callbackFunction)
 {
 	healthCallbackExtention = callbackFunction;
@@ -129,9 +129,9 @@ std::vector<std::string> AbsControlModule::serializeControlModule()
 		std::string cbStatus = "registered for...\n";
 		if (it.second.lock()->getProps().enableHealthCallBack)
 		{
-			cbStatus += spacedLineFmt + "<health callbacks> \n";
+			cbStatus += spacedLineFmt + "health callbacks \n";
 		}
-		cbStatus += spacedLineFmt + "<error callbacks>";
+		cbStatus += spacedLineFmt + "error callbacks \n";
 		status.push_back(spacedLineFmt + cbStatus);
 	}
 	return status;

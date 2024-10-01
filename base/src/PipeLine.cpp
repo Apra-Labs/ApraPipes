@@ -106,7 +106,6 @@ bool PipeLine::init()
 	{
 		myStatus = PL_INITFAILED;
 		return false;
-		return false;
 	}
 
 	LOG_TRACE << " Initializing pipeline";
@@ -270,7 +269,7 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 }
 
 
-void PipeLine::interrup_wait_for_all()
+void PipeLine::interrupt_wait_for_all()
 {
 	if (myStatus > PL_STOPPING)
 	{
