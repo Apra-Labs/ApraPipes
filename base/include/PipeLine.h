@@ -47,7 +47,7 @@ public:
 	void stop();
 	void term();
 	void wait_for_all(bool ignoreStatus = false);
-	void interrup_wait_for_all();
+	void interrupt_wait_for_all();
 	void flushAllQueues();
 	const char* getStatus();
 };

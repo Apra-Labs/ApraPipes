@@ -86,14 +86,6 @@
       "platform": "!arm64"
     },
     {
-      "name": "re",
-      "platform": "!windows"
-    },
-    {
-      "name": "baresip",
-      "platform": "!windows"
-    },
-    {
       "name": "libmp4"
     }
   ]
