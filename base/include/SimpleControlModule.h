@@ -17,8 +17,8 @@ public:
 	{
 	}
 	std::string printStatus();
-	void handleError(const APErrorObject &error) override;
-    void handleHealthCallback(const APHealthObject &healthObj) override;
+	void handleError(const APErrorObject& error) override;
+	void handleHealthCallback(const APHealthObject& healthObj) override;
 protected:
 	void sendEOS();
 	void sendEOS(frame_sp& frame);

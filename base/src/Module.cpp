@@ -1581,7 +1581,7 @@ bool Module::addEoPFrame(frame_container &frames)
       auto frame = frame_sp(new EoPFrame());
       auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
       frame->setMetadata((metadata));
-      frames.insert(make_pair("dummy_eop_ctrl_pin", frame));
+      frames.insert(make_pair(DUMMY_CTRL_EOP_PIN, frame));
   }
 
   // if sieve is disabled for atleast one connection - send additional EOP
