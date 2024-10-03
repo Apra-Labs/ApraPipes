@@ -1,5 +1,9 @@
 var NAVTREEINDEX15 =
 {
+"classQRReader.html#afbc62934259488ef83a1d1ef6cee08ca":[5,0,270,5],
+"classQRReaderProps.html":[5,0,271],
+"classQRReaderProps.html#a536ce26a36b0ebea1613e90d5cf34197":[5,0,271,0],
+"classQRReader_1_1Detail.html":[5,0,270,0],
 "classQRReader_1_1Detail.html#a2ca7fd2e5d9b103625750760a2963ab3":[5,0,270,0,4],
 "classQRReader_1_1Detail.html#a3439ec527ed35cdbfa0fb5125026d564":[5,0,270,0,3],
 "classQRReader_1_1Detail.html#a657ab9133cf0b4548f78409854875d99":[5,0,270,0,6],
@@ -245,9 +249,5 @@ var NAVTREEINDEX15 =
 "classResizeNPPI_1_1Detail.html#a4771e9cd3b167f636d37fe36d71808db":[5,0,279,0,7],
 "classResizeNPPI_1_1Detail.html#a4a3b4881095ee352b51765194ea7cd7c":[5,0,279,0,5],
 "classResizeNPPI_1_1Detail.html#a678a88e67fee15a144220908661756fb":[5,0,279,0,12],
-"classResizeNPPI_1_1Detail.html#a98852b1b7a645e5310930390248b980e":[5,0,279,0,2],
-"classResizeNPPI_1_1Detail.html#a99308a2627cb68df2d8add90dd9028ce":[5,0,279,0,4],
-"classResizeNPPI_1_1Detail.html#a9c27d3211d8866f3e31d1970009a5023":[5,0,279,0,15],
-"classResizeNPPI_1_1Detail.html#ab17828d28e0abdca9e3b6f97e177f520":[5,0,279,0,0],
-"classResizeNPPI_1_1Detail.html#abdc8bbbf016ac60ec612aefd932f5524":[5,0,279,0,8]
+"classResizeNPPI_1_1Detail.html#a98852b1b7a645e5310930390248b980e":[5,0,279,0,2]
 };

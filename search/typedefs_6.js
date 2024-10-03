@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['param_5ftype_0',['param_type',['../classbounded__buffer.html#a1d4787471c7e57c4afd03d12c9c3635e',1,'bounded_buffer']]]
+  ['param_5ftype_0',['param_type',['../classbounded__buffer.html#a7e3f09d978c133c321cd25a0a991ebf1',1,'bounded_buffer']]]
 ];

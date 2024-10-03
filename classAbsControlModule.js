@@ -9,7 +9,7 @@ var classAbsControlModule =
     [ "handleDecoderSpeed", "classAbsControlModule.html#a62a52e35c9d747ee957fcd3e33edf3a5", null ],
     [ "handleError", "classAbsControlModule.html#a77c74d379137584ef0cdfe5e44dc7321", null ],
     [ "handleGoLive", "classAbsControlModule.html#a2da51a861c1d260c2d43bf9d5594c1ff", null ],
-    [ "handleHealthCallback", "classAbsControlModule.html#a3e4d1681def29541000f4de9b6ee945f", null ],
+    [ "handleHealthCallback", "classAbsControlModule.html#aa94fdc125c09d1cdbaf12dbd655cc92f", null ],
     [ "handleLastGtkGLRenderTS", "classAbsControlModule.html#ad3bd141e0e02439619bcd3de27134445", null ],
     [ "handleMMQExport", "classAbsControlModule.html#ac1e7c63dddf982403ba68fc929b81dec", null ],
     [ "handleMMQExportView", "classAbsControlModule.html#a6b1926922f2feb83993eb4a8232f5b0a", null ],
@@ -17,12 +17,15 @@ var classAbsControlModule =
     [ "handlePropsChange", "classAbsControlModule.html#ae129f64fbc2d8972847764e255c2f243", null ],
     [ "handleSendMMQTSCmd", "classAbsControlModule.html#a42e82b977a36728a9b062cc639298d0a", null ],
     [ "init", "classAbsControlModule.html#a1dcbd497ac5835c8736728fbb5d09c94", null ],
+    [ "printStatus", "classAbsControlModule.html#aa6ddd3e01936500340a0590627148787", null ],
     [ "process", "classAbsControlModule.html#ad601e04824a8f9792c17081fcd6dbe01", null ],
+    [ "registerHealthCallbackExtention", "classAbsControlModule.html#ae4fd496d683e51e88dc83aea8fc5e78e", null ],
     [ "sendEOPFrame", "classAbsControlModule.html#aa35b7d8ad752b468bfe97ab360dcf3f7", null ],
     [ "sendEOS", "classAbsControlModule.html#a71ada636d508c0a2aeba90582cdea32a", null ],
     [ "sendEOS", "classAbsControlModule.html#a844c1ed5a2d9936dbf61a685b5761966", null ],
+    [ "serializeControlModule", "classAbsControlModule.html#a5c028e1459501c76def1bf2f58d15378", null ],
     [ "term", "classAbsControlModule.html#a6069df721f08952d22768bc18286a946", null ],
+    [ "healthCallbackExtention", "classAbsControlModule.html#a2f287ea1c4d42ef763cc2b461c0f2553", null ],
     [ "mDetail", "classAbsControlModule.html#af97cbde946baeb5735954a16894df3ce", null ],
-    [ "moduleRoles", "classAbsControlModule.html#a5ec42d61f33ad7812df82b12f1d384e2", null ],
-    [ "pipelineModules", "classAbsControlModule.html#a0d451b8178fc925ace3c7df83668c5a9", null ]
+    [ "moduleRoles", "classAbsControlModule.html#ad32be9bcd4635ad7c10ecbc489ea332a", null ]
 ];

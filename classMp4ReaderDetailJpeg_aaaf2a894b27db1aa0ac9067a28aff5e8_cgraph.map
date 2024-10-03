@@ -1,49 +1,49 @@
 <map id="Mp4ReaderDetailJpeg::produceFrames" name="Mp4ReaderDetailJpeg::produceFrames">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,154,194"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#a330696b33427a098aa628451d7c63e6a" title=" " alt="" coords="202,120,345,160"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,158,186,152,187,158,155,163"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408" title=" " alt="" coords="202,185,345,226"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,183,187,188,186,194,154,188"/>
-<area shape="rect" id="Node000004" href="$classAIP__Exception.html#a941bce77019ca6445f20363cbfad2aea" title=" " alt="" coords="842,28,1002,54"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="327,182,343,170,353,158,359,145,364,119,371,94,379,82,391,71,447,41,508,21,570,9,634,3,695,4,753,8,851,22,850,27,753,13,695,9,634,9,571,14,509,26,449,46,395,75,383,86,376,96,369,120,364,147,358,160,347,174,330,187"/>
-<area shape="rect" id="Node000005" href="$classAIP__Exception.html#ab9c4bd8fa15842b8204b3be0eedf5e3e" title=" " alt="" coords="843,78,1000,103"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="324,182,343,170,357,155,365,140,375,126,392,114,448,91,506,75,567,65,627,61,740,62,836,72,835,78,740,68,627,66,567,71,508,80,449,96,394,118,379,130,370,143,361,158,347,174,327,187"/>
-<area shape="rect" id="Node000006" href="$classAIP__Exception.html#afbfa0293c79d479dacfabe3b7bc11694" title=" " alt="" coords="405,192,583,218"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="345,203,389,203,389,208,345,208"/>
-<area shape="rect" id="Node000007" href="$classMp4__Exception.html#af59461ccc2c15fd61d2c539af0476efb" title=" " alt="" coords="402,242,587,283"/>
-<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="346,221,399,235,398,240,345,226"/>
-<area shape="rect" id="Node000008" href="$classAIP__Exception.html#a89880e347b2118296dbb7e7abb5c754e" title=" " alt="" coords="393,307,595,333"/>
-<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="298,224,341,259,394,292,411,299,409,304,392,297,338,263,295,228"/>
-<area shape="rect" id="Node000009" href="$classMp4ReaderDetailAbs.html#ac09f3adf0add91a0ea9e802dbd00de3c" title=" " alt="" coords="412,357,576,398"/>
-<area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="289,224,331,283,361,315,395,343,402,348,399,352,391,347,357,319,327,287,285,228"/>
-<area shape="rect" id="Node000010" href="$classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763" title=" " alt="" coords="414,128,574,168"/>
-<area shape="poly" id="edge9_Node000003_Node000010" title=" " alt="" coords="345,184,399,170,400,175,346,189"/>
-<area shape="rect" id="Node000011" href="$classMp4ReaderDetailAbs.html#a19ae358e1df728625e7ac75f184dcb1c" title=" " alt="" coords="647,193,790,234"/>
-<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="567,166,632,185,631,191,565,171"/>
-<area shape="rect" id="Node000012" href="$classMp4ReaderDetailAbs.html#ab96c475addc021059150de28ff0b24a5" title=" " alt="" coords="647,128,790,168"/>
-<area shape="poly" id="edge11_Node000010_Node000012" title=" " alt="" coords="574,145,632,145,632,151,574,151"/>
-<area shape="rect" id="Node000022" href="$classMp4ReaderDetailAbs.html#a4f450edef4c2a3f5c31e1b74d8f266cc" title=" " alt="" coords="643,258,794,299"/>
-<area shape="poly" id="edge25_Node000010_Node000022" title=" " alt="" coords="575,165,597,178,613,194,622,211,630,227,645,243,651,248,648,252,642,247,626,230,617,213,609,197,594,182,573,170"/>
-<area shape="poly" id="edge12_Node000012_Node000004" title=" " alt="" coords="744,125,788,93,840,63,853,57,855,62,843,68,791,98,747,129"/>
-<area shape="poly" id="edge13_Node000012_Node000005" title=" " alt="" coords="790,125,858,106,860,111,791,130"/>
-<area shape="rect" id="Node000013" href="$classMp4ReaderDetailAbs.html#afdf6d55361cb504db9aeafc8507de333" title=" " alt="" coords="1050,121,1199,162"/>
-<area shape="poly" id="edge14_Node000012_Node000013" title=" " alt="" coords="791,144,1034,140,1034,145,791,149"/>
-<area shape="rect" id="Node000019" href="$classMp4ReaderDetailAbs.html#a940a5418c38b7368c90d3c884723fa71" title=" " alt="" coords="850,244,994,284"/>
-<area shape="poly" id="edge20_Node000012_Node000019" title=" " alt="" coords="774,167,795,179,810,192,820,204,829,216,843,228,852,234,849,238,840,233,825,220,815,208,806,196,792,183,771,171"/>
-<area shape="rect" id="Node000020" href="$classMp4ReaderDetailAbs.html#a2d581ac7e6f5232f09da29ca34a01177" title=" " alt="" coords="850,178,994,219"/>
-<area shape="poly" id="edge21_Node000012_Node000020" title=" " alt="" coords="791,163,836,174,834,180,790,168"/>
-<area shape="rect" id="Node000014" href="$classMp4ReaderDetailAbs.html#aad3c1b5309144e7524b0b2e8bdb3788b" title=" " alt="" coords="1247,52,1391,92"/>
-<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="1183,118,1245,95,1247,100,1185,123"/>
-<area shape="rect" id="Node000015" href="$classMp4ReaderDetailAbs.html#a3dc4055e19c3445a8f16034b981d2d04" title=" " alt="" coords="1247,182,1391,223"/>
-<area shape="poly" id="edge16_Node000013_Node000015" title=" " alt="" coords="1192,160,1239,175,1237,180,1191,165"/>
-<area shape="rect" id="Node000018" href="$classMp4ReaderDetailAbs.html#ae37b3af15ca3ede4d67e06669e27b82b" title=" " alt="" coords="1247,117,1391,158"/>
-<area shape="poly" id="edge19_Node000013_Node000018" title=" " alt="" coords="1199,137,1232,136,1232,142,1200,142"/>
-<area shape="rect" id="Node000016" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="1439,149,1594,190"/>
-<area shape="poly" id="edge17_Node000015_Node000016" title=" " alt="" coords="1391,188,1423,182,1424,187,1392,193"/>
-<area shape="rect" id="Node000017" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="1441,214,1592,255"/>
-<area shape="poly" id="edge18_Node000015_Node000017" title=" " alt="" coords="1392,212,1426,217,1425,223,1391,217"/>
-<area shape="poly" id="edge23_Node000020_Node000013" title=" " alt="" coords="993,176,1035,164,1037,169,994,181"/>
-<area shape="poly" id="edge24_Node000020_Node000015" title=" " alt="" coords="994,197,1232,199,1232,204,994,202"/>
-<area shape="rect" id="Node000021" href="$classMp4ReaderDetailAbs.html#a972bb12ac32b5875e12957be24ff9ef9" title=" " alt="" coords="1053,236,1196,276"/>
-<area shape="poly" id="edge22_Node000020_Node000021" title=" " alt="" coords="994,216,1039,229,1037,234,993,221"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,154,154,195"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#a330696b33427a098aa628451d7c63e6a" title=" " alt="" coords="202,121,345,161"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,159,186,153,187,159,155,164"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408" title=" " alt="" coords="202,186,345,227"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,184,187,189,186,195,154,189"/>
+<area shape="rect" id="Node000004" href="$classAIP__Exception.html#a941bce77019ca6445f20363cbfad2aea" title=" " alt="" coords="842,29,1002,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="327,183,343,171,353,158,359,146,364,120,371,94,379,82,391,71,447,41,508,20,571,8,634,3,696,4,755,8,852,23,851,28,754,13,696,9,635,9,572,14,509,25,450,45,395,75,383,85,376,96,369,121,364,147,358,161,347,175,331,187"/>
+<area shape="rect" id="Node000005" href="$classAIP__Exception.html#ab9c4bd8fa15842b8204b3be0eedf5e3e" title=" " alt="" coords="843,79,1000,104"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="324,183,343,171,357,156,365,141,375,127,392,115,448,92,506,76,567,66,627,62,740,63,836,73,835,79,740,69,627,67,567,72,508,81,449,97,394,119,379,131,370,144,361,159,347,175,327,188"/>
+<area shape="rect" id="Node000006" href="$classAIP__Exception.html#afbfa0293c79d479dacfabe3b7bc11694" title=" " alt="" coords="405,193,583,219"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="345,204,389,204,389,209,345,209"/>
+<area shape="rect" id="Node000007" href="$classMp4__Exception.html#af59461ccc2c15fd61d2c539af0476efb" title=" " alt="" coords="402,243,587,284"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="346,222,399,236,398,241,345,227"/>
+<area shape="rect" id="Node000008" href="$classAIP__Exception.html#a89880e347b2118296dbb7e7abb5c754e" title=" " alt="" coords="393,308,595,334"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="298,225,341,260,394,293,411,300,409,305,392,298,338,264,295,229"/>
+<area shape="rect" id="Node000009" href="$classMp4ReaderDetailAbs.html#ac09f3adf0add91a0ea9e802dbd00de3c" title=" " alt="" coords="412,358,576,399"/>
+<area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="289,225,331,284,361,316,395,344,402,349,399,353,391,348,357,320,327,288,285,229"/>
+<area shape="rect" id="Node000010" href="$classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763" title=" " alt="" coords="414,129,574,169"/>
+<area shape="poly" id="edge9_Node000003_Node000010" title=" " alt="" coords="345,185,399,171,400,176,346,190"/>
+<area shape="rect" id="Node000011" href="$classMp4ReaderDetailAbs.html#a19ae358e1df728625e7ac75f184dcb1c" title=" " alt="" coords="647,194,790,235"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="567,167,632,186,631,192,565,172"/>
+<area shape="rect" id="Node000012" href="$classMp4ReaderDetailAbs.html#ab96c475addc021059150de28ff0b24a5" title=" " alt="" coords="647,129,790,169"/>
+<area shape="poly" id="edge11_Node000010_Node000012" title=" " alt="" coords="574,146,632,146,632,152,574,152"/>
+<area shape="rect" id="Node000022" href="$classMp4ReaderDetailAbs.html#a4f450edef4c2a3f5c31e1b74d8f266cc" title=" " alt="" coords="643,259,794,300"/>
+<area shape="poly" id="edge25_Node000010_Node000022" title=" " alt="" coords="575,166,597,179,613,195,622,212,630,228,645,244,651,249,648,253,642,248,626,231,617,214,609,198,594,183,573,171"/>
+<area shape="poly" id="edge12_Node000012_Node000004" title=" " alt="" coords="744,126,788,94,840,64,853,58,855,63,843,69,791,99,747,130"/>
+<area shape="poly" id="edge13_Node000012_Node000005" title=" " alt="" coords="790,126,858,107,860,112,791,131"/>
+<area shape="rect" id="Node000013" href="$classMp4ReaderDetailAbs.html#afdf6d55361cb504db9aeafc8507de333" title=" " alt="" coords="1050,122,1199,163"/>
+<area shape="poly" id="edge14_Node000012_Node000013" title=" " alt="" coords="791,145,1034,141,1034,146,791,150"/>
+<area shape="rect" id="Node000019" href="$classMp4ReaderDetailAbs.html#a940a5418c38b7368c90d3c884723fa71" title=" " alt="" coords="850,245,994,285"/>
+<area shape="poly" id="edge20_Node000012_Node000019" title=" " alt="" coords="774,168,795,180,810,193,820,205,829,217,843,229,852,235,849,239,840,234,825,221,815,209,806,197,792,184,771,172"/>
+<area shape="rect" id="Node000020" href="$classMp4ReaderDetailAbs.html#a2d581ac7e6f5232f09da29ca34a01177" title=" " alt="" coords="850,179,994,220"/>
+<area shape="poly" id="edge21_Node000012_Node000020" title=" " alt="" coords="791,164,836,175,834,181,790,169"/>
+<area shape="rect" id="Node000014" href="$classMp4ReaderDetailAbs.html#aad3c1b5309144e7524b0b2e8bdb3788b" title=" " alt="" coords="1247,53,1391,93"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="1183,119,1245,96,1247,101,1185,124"/>
+<area shape="rect" id="Node000015" href="$classMp4ReaderDetailAbs.html#a3dc4055e19c3445a8f16034b981d2d04" title=" " alt="" coords="1247,183,1391,224"/>
+<area shape="poly" id="edge16_Node000013_Node000015" title=" " alt="" coords="1192,161,1239,176,1237,181,1191,166"/>
+<area shape="rect" id="Node000018" href="$classMp4ReaderDetailAbs.html#ae37b3af15ca3ede4d67e06669e27b82b" title=" " alt="" coords="1247,118,1391,159"/>
+<area shape="poly" id="edge19_Node000013_Node000018" title=" " alt="" coords="1199,138,1232,137,1232,143,1200,143"/>
+<area shape="rect" id="Node000016" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="1439,150,1594,191"/>
+<area shape="poly" id="edge17_Node000015_Node000016" title=" " alt="" coords="1391,189,1423,183,1424,188,1392,194"/>
+<area shape="rect" id="Node000017" href="$classMp4ReaderDetailAbs.html#a594c78afc67caf0ce15cac91c4a29ee4" title=" " alt="" coords="1441,215,1592,256"/>
+<area shape="poly" id="edge18_Node000015_Node000017" title=" " alt="" coords="1392,213,1426,218,1425,224,1391,218"/>
+<area shape="poly" id="edge23_Node000020_Node000013" title=" " alt="" coords="993,177,1035,165,1037,170,994,182"/>
+<area shape="poly" id="edge24_Node000020_Node000015" title=" " alt="" coords="994,198,1232,200,1232,205,994,203"/>
+<area shape="rect" id="Node000021" href="$classMp4ReaderDetailAbs.html#a972bb12ac32b5875e12957be24ff9ef9" title=" " alt="" coords="1053,237,1196,277"/>
+<area shape="poly" id="edge22_Node000020_Node000021" title=" " alt="" coords="994,217,1039,230,1037,235,993,222"/>
 </map>

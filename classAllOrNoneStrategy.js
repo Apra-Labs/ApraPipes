@@ -1,6 +1,6 @@
 var classAllOrNoneStrategy =
 [
-    [ "MuxerQueue", "classAllOrNoneStrategy.html#a69c895c75bf3f8ff0b72940d00ba047d", null ],
+    [ "MuxerQueue", "classAllOrNoneStrategy.html#a82b6dbf55d42cd24b85ba0c560f8df2d", null ],
     [ "AllOrNoneStrategy", "classAllOrNoneStrategy.html#ae00410db9d67a1952e2576def57d3a13", null ],
     [ "~AllOrNoneStrategy", "classAllOrNoneStrategy.html#a7c445121f749eac3f0b48dbffd697c80", null ],
     [ "addInputPin", "classAllOrNoneStrategy.html#a1b714cdac8b59de7571b5fe9af7b28b4", null ],

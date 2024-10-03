@@ -1,5 +1,8 @@
 var NAVTREEINDEX7 =
 {
+"classFramesMuxer.html#aff4200a8664990e489136322da103756":[5,0,155,9],
+"classFramesMuxerProps.html":[5,0,156],
+"classFramesMuxerProps.html#a1d5e195e3a8ecbb31260680cb050fd5f":[5,0,156,2],
 "classFramesMuxerProps.html#a4aa8565c12d2d5a7facea5a017293c09":[5,0,156,3],
 "classFramesMuxerProps.html#a6fdd5535c3f2f0060f75a719fa88d3ee":[5,0,156,1],
 "classFramesMuxerProps.html#a82fb5469f904fffa5a02b718b9b79367":[5,0,156,4],
@@ -17,7 +20,7 @@ var NAVTREEINDEX7 =
 "classFramesQueue.html":[5,0,158],
 "classFramesQueue.html#a12e5d31c5d774fcd9c66fdd357ca775f":[5,0,158,5],
 "classFramesQueue.html#a2322508570c8c92a3c37ef2cb7e9ca09":[5,0,158,3],
-"classFramesQueue.html#a662372e93e7235eb7c415e87f0a17e68":[5,0,158,0],
+"classFramesQueue.html#ad9be8685c224220adff8705baa2c1d42":[5,0,158,0],
 "classFramesQueue.html#adcb718718998bf52792d43e967d18dcb":[5,0,158,2],
 "classFramesQueue.html#aee1012d50eeac1e0bb4d7d4ff20fce1c":[5,0,158,6],
 "classFramesQueue.html#af0b63d2e8c79c4f96a4ea1a27e4e180b":[5,0,158,1],
@@ -246,8 +249,5 @@ var NAVTREEINDEX7 =
 "classH264EncoderNVCodecHelper_1_1Detail.html#a3d5905e60c7d0d0462b8a1e02412dfdd":[5,0,169,0,6],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a468b512ec8801cf3cb6a8b91bc5e136e":[5,0,169,0,29],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a5caf5a7b2eaef9cae08a42dd7386ac3a":[5,0,169,0,13],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a5e0d5764b94554c578986722aafb68e7":[5,0,169,0,10],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a605657ce5adb7d5019284dc11e59d83f":[5,0,169,0,34],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a65e6cfdf96dfedcd89a6bca37a75636c":[5,0,169,0,20],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a6b417d2bc22e0976f3ff905f8d409c4f":[5,0,169,0,21]
+"classH264EncoderNVCodecHelper_1_1Detail.html#a5e0d5764b94554c578986722aafb68e7":[5,0,169,0,10]
 };

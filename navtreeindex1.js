@@ -1,5 +1,8 @@
 var NAVTREEINDEX1 =
 {
+"classApraPoint2f.html#a572fa429a9f55234541bd94f1d5fac47":[5,0,21,3],
+"classApraPoint2f.html#a5cbb933ab9c16fa168e6e5ce45b9b1c4":[5,0,21,1],
+"classApraPoint2f.html#a5f14cb772d70176d0f66f8f1e1602d8e":[5,0,21,0],
 "classApraPoint2f.html#a69c8136f95e36a59a217ce002347b2d4":[5,0,21,2],
 "classApraPoint2f.html#ac98d07dd8f7b70e16ccb9a01abf56b9c":[5,0,21,4],
 "classApraPool.html":[5,0,22],
@@ -246,8 +249,5 @@ var NAVTREEINDEX1 =
 "classBuffer.html#a95709171c4c8c9dfa7991bceec271e15":[5,0,42,14],
 "classBuffer.html#aaeecba2e74f8797e81816c433f7d573e":[5,0,42,8],
 "classBuffer.html#ae7ef2cd201190fde551dcb902627112b":[5,0,42,2],
-"classBufferMaker.html":[5,0,43],
-"classBufferMaker.html#ae93fd7e0ad716e663f4ec5f364bbb13e":[5,0,43,0],
-"classBuilderOverlayFactory.html":[5,0,44],
-"classBuilderOverlayFactory.html#a1b222df6526421c1749a1b5b7235e077":[5,0,44,1]
+"classBufferMaker.html":[5,0,43]
 };

@@ -1,7 +1,7 @@
 var classPipeLine =
 [
-    [ "container_type", "classPipeLine.html#adbbc7b456198a0b917882499fe385390", null ],
-    [ "item_type", "classPipeLine.html#a9d5ebd34a6f42a85d5022b5be4a8000a", null ],
+    [ "container_type", "classPipeLine.html#acbbd18d7e3773ddb9c67ae992f9049ed", null ],
+    [ "item_type", "classPipeLine.html#abd95de9fc0e43834120a7a447a37323c", null ],
     [ "Status", "classPipeLine.html#a373d1ab9c9d81ed5b67bf9fc58f1e105", [
       [ "Status_ENUM", "classPipeLine.html#a373d1ab9c9d81ed5b67bf9fc58f1e105a9fa3fe968547589df8a351f6d0bf9848", null ]
     ] ],
@@ -10,11 +10,11 @@ var classPipeLine =
     [ "addControlModule", "classPipeLine.html#acbe8e3dd2129fd3f7f81b7a377caaa30", null ],
     [ "appendModule", "classPipeLine.html#ab833d6e953e91e791e24397a1895d702", null ],
     [ "checkCyclicDependency", "classPipeLine.html#a99bb0bfbe818a8600ae2830a4336afa8", null ],
-    [ "flushAllQueues", "classPipeLine.html#ae0bd81a4ae1f7e35e9a230627b0a2e97", null ],
+    [ "flushAllQueues", "classPipeLine.html#afc99292a08f5c1c8ca917c5540a14ad4", null ],
     [ "getName", "classPipeLine.html#af489eebbff7ad86c6dd4bd75cb463b28", null ],
     [ "getStatus", "classPipeLine.html#a1b20193bf3631f0ad525ef4f9019a463", null ],
     [ "init", "classPipeLine.html#aba436d135966fea33f218d1be7688650", null ],
-    [ "interrup_wait_for_all", "classPipeLine.html#a6e94b80d082a6aa6672b791776a70c6c", null ],
+    [ "interrupt_wait_for_all", "classPipeLine.html#a8a978b389fb0764eb4a49023134ba850", null ],
     [ "pause", "classPipeLine.html#a04631579ceda95b73c9fa6a78d272202", null ],
     [ "play", "classPipeLine.html#a884fdfb9cd3d8963711cd88adf1cb888", null ],
     [ "run_all_threaded", "classPipeLine.html#ae2e66bba5f73bb8c671c4eea5ea16d5f", null ],
@@ -24,6 +24,7 @@ var classPipeLine =
     [ "term", "classPipeLine.html#ab75b3c441d9da7a943e4d7fd7ba21a91", null ],
     [ "validate", "classPipeLine.html#ad6db59d0523162b77fbe79fcac8bce63", null ],
     [ "wait_for_all", "classPipeLine.html#a518f980d63cf4578320f3f0dcf53aea8", null ],
+    [ "controlModule", "classPipeLine.html#a61c0aad95df73387047d462f3d8c5d82", null ],
     [ "mName", "classPipeLine.html#ae1c6ac8dcc09d36a450805337c7ecded", null ],
     [ "modules", "classPipeLine.html#a55b2e4769e8ecd1424dcfb7524d3ad15", null ],
     [ "mPlay", "classPipeLine.html#a72cc0e9dd04c1e1eb0c2516dc2e6f15a", null ],

@@ -1,5 +1,8 @@
 var NAVTREEINDEX6 =
 {
+"classFacialLandmarkCVProps.html#ab36058433d45e1e203f86ac6b34f1f8c":[5,0,138,11],
+"classFacialLandmarkCVProps.html#ac70e569cebe4619a7872024753c4b08e":[5,0,138,1],
+"classFacialLandmarkCVProps.html#ac98d07dd8f7b70e16ccb9a01abf56b9c":[5,0,138,6],
 "classFacialLandmarkCVProps.html#af81f067d23a79b4e55021f89a046d642":[5,0,138,8],
 "classFileReaderModule.html":[5,0,141],
 "classFileReaderModule.html#a065f8651545055b96ebba38bb2648494":[5,0,141,1],
@@ -246,8 +249,5 @@ var NAVTREEINDEX6 =
 "classFramesMuxer.html#a63d351a15d8a01924898050005e5f3a5":[5,0,155,8],
 "classFramesMuxer.html#a7b6581bbffa551d02d9aa36a34bb9bee":[5,0,155,0],
 "classFramesMuxer.html#a86bab23a1cff087febc5aeff35aed374":[5,0,155,2],
-"classFramesMuxer.html#aeafdc3c2112c5a3a343dc646541b4314":[5,0,155,7],
-"classFramesMuxer.html#aff4200a8664990e489136322da103756":[5,0,155,9],
-"classFramesMuxerProps.html":[5,0,156],
-"classFramesMuxerProps.html#a1d5e195e3a8ecbb31260680cb050fd5f":[5,0,156,2]
+"classFramesMuxer.html#aeafdc3c2112c5a3a343dc646541b4314":[5,0,155,7]
 };

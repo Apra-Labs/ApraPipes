@@ -1,5 +1,8 @@
 var NAVTREEINDEX9 =
 {
+"classImageEncoderCV_1_1Detail.html#a670bbe5566452f25c7da10917dd64d0b":[5,0,184,0,1],
+"classImageEncoderCV_1_1Detail.html#a6c9ef7d9c7870266d6e69ab8ed17e379":[5,0,184,0,0],
+"classImageEncoderCV_1_1Detail.html#a85434dc331570bc6eca1e96ef30faeca":[5,0,184,0,2],
 "classImageEncoderCV_1_1Detail.html#a8a83a1944f979c47a1afcdc8116cddd1":[5,0,184,0,3],
 "classImageEncoderCV_1_1Detail.html#aedda26ad9a9d8913e90c519c9c76b0ba":[5,0,184,0,5],
 "classImageMetadata.html":[5,0,186],
@@ -28,13 +31,13 @@ var NAVTREEINDEX9 =
 "classImagePlaneData.html#a3dc9b52c07bf7a9d20662df5f52203f1":[5,0,187,11],
 "classImagePlaneData.html#a3de59916572ca8e94b1d5b5daa7059e7":[5,0,187,4],
 "classImagePlaneData.html#a4641d32beda2272be4adbe82e47d360f":[5,0,187,2],
-"classImagePlaneData.html#a4e0b9ceee30a1b2451ecba2520efdebf":[5,0,187,0],
 "classImagePlaneData.html#a598cf35b0739fae414b61f99c87445e8":[5,0,187,1],
 "classImagePlaneData.html#a5b1b2fd1353d43d5e4e3d9ac7e932fba":[5,0,187,8],
 "classImagePlaneData.html#a73ad98e00b2ed517a695bf99a3ce22cf":[5,0,187,9],
 "classImagePlaneData.html#a8923955a723810feb7256d5916352fab":[5,0,187,6],
 "classImagePlaneData.html#aa2e4d14ac0a6b04ef3638e305d40b53e":[5,0,187,10],
 "classImagePlaneData.html#ad52ad3c13c2594a9e93e1bab4f1860e3":[5,0,187,7],
+"classImagePlaneData.html#af7920cf793dedf4283e67bbd466b9794":[5,0,187,0],
 "classImageResizeCV.html":[5,0,188],
 "classImageResizeCV.html#a031f91243c9c847b6e1e97fd4809635a":[5,0,188,8],
 "classImageResizeCV.html#a1378ba08fdecf94018f811388b64c514":[5,0,188,15],
@@ -246,8 +249,5 @@ var NAVTREEINDEX9 =
 "classJPEGEncoderNVJPEGProps.html#a1ede65e7d27e130a08a1c08694fa187f":[5,0,202,2],
 "classJPEGEncoderNVJPEGProps.html#a4662215fca9b68ff45db63687c69ff0a":[5,0,202,3],
 "classJPEGEncoderNVJPEGProps.html#a8554f985543029ae4797318c9bf85bfd":[5,0,202,0],
-"classJPEGEncoderNVJPEGProps.html#ad9d96d8df7d0d79dea25e1aaca1f3eda":[5,0,202,1],
-"classJPEGEncoderNVJPEG_1_1Detail.html":[5,0,201,0],
-"classJPEGEncoderNVJPEG_1_1Detail.html#a01990669ae208c4bb1ac6f10d74fec74":[5,0,201,0,16],
-"classJPEGEncoderNVJPEG_1_1Detail.html#a0487b886aeb0a2659fb7c16f55d59d89":[5,0,201,0,7]
+"classJPEGEncoderNVJPEGProps.html#ad9d96d8df7d0d79dea25e1aaca1f3eda":[5,0,202,1]
 };
