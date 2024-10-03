@@ -37,8 +37,8 @@ bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
 	for (int i = 0; i < modules.size(); i++)
 	{
 		modules[i]->addControlModule(cModule);
-		cModule->pipelineModules.push_back(modules[i]);
 	}
+	controlModule = cModule;
 	return true;
 }
 
@@ -133,6 +133,10 @@ bool PipeLine::init()
 			return false;
 		}
 	}
+	if (controlModule != nullptr)
+	{
+		controlModule->init();
+	}
 	myStatus = PL_INITED;
 	LOG_TRACE << " Pipeline initialized";
 	return true;
@@ -159,10 +163,11 @@ void PipeLine::run_all_threaded()
 		m.myThread = boost::thread(ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
-	if ((modules[0]->controlModule) != nullptr)
+	if (controlModule != nullptr)
 	{
-		Module& m = *(modules[0]->controlModule);
+		Module& m = *(controlModule);
 		m.myThread = boost::thread(ref(m));
+		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	mPlay = true;
 }
@@ -183,7 +188,7 @@ void PipeLine::pause()
 			i->get()->play(false);
 		}
 	}
-
+	//Note: controlModule should not be paused
 	mPlay = false;
 }
 
@@ -196,7 +201,11 @@ void PipeLine::play()
 			i->get()->play(true);
 		}
 	}
-
+	// Control module should continue running anyways
+	if (controlModule != nullptr)
+	{
+		controlModule->play(true);
+	}
 	mPlay = true;
 }
 
@@ -215,6 +224,7 @@ void PipeLine::step()
 			i->get()->queueStep();
 		}
 	}
+	// should controlModule step ?
 }
 
 void PipeLine::stop()
@@ -232,6 +242,10 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
+	if (controlModule != nullptr)
+	{
+		controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
@@ -247,10 +261,15 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
+
+	if (controlModule != nullptr)
+	{
+		controlModule->myThread.join();
+	}
 }
 
 
-void PipeLine::interrup_wait_for_all()
+void PipeLine::interrupt_wait_for_all()
 {
 	if (myStatus > PL_STOPPING)
 	{
@@ -269,6 +288,12 @@ void PipeLine::interrup_wait_for_all()
 		Module& m = *(i->get());
 		m.myThread.join();
 	}
+
+	if (controlModule != nullptr)
+	{
+		controlModule->myThread.interrupt();
+		controlModule->myThread.join();
+	}
 	myStatus = PL_STOPPED;
 }
 
@@ -280,7 +305,12 @@ const char * PipeLine::getStatus()
 	return StatusNames[myStatus];
 }
 
-void PipeLine::flushAllQueues() {
+void PipeLine::flushAllQueues(bool flushControlModuleQ)
+{
+	if (flushControlModuleQ && controlModule != nullptr)
+	{
+		controlModule->flushQue();
+	}
 	for (auto& m : modules)
 	{
 		if (m->myNature == Module::Kind::SOURCE)
@@ -289,3 +319,4 @@ void PipeLine::flushAllQueues() {
 		}
 	}
 }
+

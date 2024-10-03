@@ -21,6 +21,8 @@
 #include "BufferMaker.h"
 #include "APCallback.h"
 
+#define DUMMY_CTRL_EOP_PIN "dummy_ctrl_eop_pin"
+
 using namespace std;
 
 class FrameContainerQueue;
