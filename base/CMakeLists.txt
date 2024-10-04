@@ -195,6 +195,9 @@ SET(CORE_FILES
 	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
+	src/SimpleControlModule.cpp
+	src/APErrorObject.cpp 
+	src/APHealthObject.cpp
 )
 
 SET(CORE_FILES_H
@@ -257,6 +260,10 @@ SET(CORE_FILES_H
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
+	include/SimpleControlModule.h
+	include/APErrorObject.h
+	include/APCallback.h
+	include/APHealthObject.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -620,6 +627,7 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
+	test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

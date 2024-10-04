@@ -46,7 +46,6 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	void setProps(TextOverlayXForm);
 	bool handlePropsChange(frame_sp &frame);
 
 private:

@@ -19,8 +19,8 @@ done
 # If there are missing dependencies, install them
 if [ "${#missing_dependencies[@]}" -gt 0 ]; then
   echo "Installing missing dependencies..."
-   apt-get update -qq
-   apt-get -y install "${missing_dependencies[@]}"
+  apt-get update -qq
+  apt-get -y install "${missing_dependencies[@]}"
 fi
 
 # Install Meson if not present
