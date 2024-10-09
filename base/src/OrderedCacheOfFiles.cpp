@@ -668,7 +668,8 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 	uint64_t startTSofPrevFileOnDisk = 0;
 	boost::filesystem::path previousFileOnDisk = "";
 	boost::filesystem::path exactMatchFile = "";
-
+	uint64_t prevTS = 0;
+	uint64_t startTimeBatch = 0;
 	auto dateDir = parseAndSortDateDir(rootDir);
 
 	for (auto& dateDirPath : dateDir)
@@ -683,7 +684,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 			}
 
 			auto mp4Files = parseAndSortMp4Files(hourDirPath.string());
-
+			
 			for (auto& mp4File : mp4Files)
 			{
 				// time based filtering
@@ -693,6 +694,26 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 				try
 				{
 					fileTS = std::stoull(mp4File.stem().string());
+					uint64_t diff = 0;
+					
+					if(prevTS != 0)
+					{
+						diff = fileTS - prevTS;
+					}
+					else if (startTimeBatch == 0)  //first init
+					{
+						startTimeBatch = fileTS;
+						LOG_INFO<<"Starting 1st Disk timeBatch at "<<fileTS;
+					}
+
+					if(diff > 65000) //65 seconds as time chunk is 1 minute
+					{
+						timeline.push_back({startTimeBatch, prevTS});
+						startTimeBatch = fileTS;
+						LOG_INFO<<"Parsed file with previous - "<<prevTS<<" and current - "<<fileTS<<" with diff "<<diff;
+
+					}
+					prevTS = fileTS;
 				}
 				catch (...)
 				{

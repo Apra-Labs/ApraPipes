@@ -58,6 +58,7 @@ public:
 	std::map<std::string, std::pair<uint64_t, uint64_t>> getSnapShot(); // too costly, use for debugging only
 	bool probe(boost::filesystem::path dirPath, std::string& videoName);
 	bool getPreviousAndNextFile(std::string videoPath, std::string& previousFile, std::string& nextFile);
+	std::vector<std::pair<uint64_t, uint64_t>> timeline;
 private:
 	bool lastKnownPlaybackDir = true; // sync with mp4 playback
 	boost::mutex m_mutex;
