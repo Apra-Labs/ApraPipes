@@ -621,6 +621,7 @@ public:
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
 	{
 		/* Seeking in custom file i.e. parseFS is disabled */
+		LOG_ERROR << "IN Random Seek Interval";
 		if (!mProps.parseFS)
 		{
 			int seekedToFrame = -1;
@@ -679,8 +680,10 @@ public:
 		*/
 		std::string skipVideoFile;
 		uint64_t skipMsecsInFile;
+		LOG_ERROR << "Handling Random Seek Command";
 		if (!isVideoFileFound)
 		{
+			LOG_ERROR << "Probing =======>>>";
 			try
 			{
 				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
@@ -703,6 +706,7 @@ public:
 		}
 		if (mProps.parseFS)
 		{
+			LOG_ERROR << "Checking Video File Name";
 			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
@@ -734,6 +738,7 @@ public:
 		bool ret;
 		try
 		{
+			LOG_ERROR << "Handling Random Seek Command";
 			ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
 		}
 		catch (const std::exception &e)
