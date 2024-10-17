@@ -681,10 +681,24 @@ public:
 		uint64_t skipMsecsInFile;
 		if (!isVideoFileFound)
 		{
-			if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+			try
 			{
+				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+				{
+					return false;
+				}
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR << "Exception caught while probing the video path: " << e.what();
 				return false;
 			}
+			catch (...)
+			{
+				LOG_ERROR << "Unknown error occurred while probing the video path.";
+				return false;
+			}
+
 			isVideoFileFound = true;
 		}
 		if (mProps.parseFS)
@@ -702,14 +716,43 @@ public:
 				LOG_ERROR << msg;
 				throw AIPException(AIP_FATAL, msg);
 			}
-			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
+			try
+			{
+				cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, don't disable disableBatchSizeCheck
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR << "Exception caught while parsing files: " << e.what();
+				throw; // Rethrow if you want to propagate the exception further
+			}
+			catch (...)
+			{
+				LOG_ERROR << "Unknown error occurred while parsing files.";
+				throw; // Rethrow if you want to propagate the exception further
+			}
 		}
-		bool ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
+		bool ret;
+		try
+		{
+			ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR << "Exception caught while getting random seek file: " << e.what();
+			return false; // Handle failure according to your application's logic
+		}
+		catch (...)
+		{
+			LOG_ERROR << "Unknown error occurred while getting random seek file.";
+			return false; // Handle failure according to your application's logic
+		}
+
 		if (!ret)
 		{
 			// send EOS signal
 			auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, skipTS));
 			sendEOS(frame);
+			LOG_ERROR << "Sending EOS Frame";
 			// skip the frame in the readNextFrame that happens in the same step
 			seekReachedEOF = true;
 			LOG_INFO << "Seek to skipTS <" << skipTS << "> failed. Resuming playback...";
@@ -724,6 +767,7 @@ public:
 		// force reopen the video file if skipVideo is the last file in cache
 		auto lastVideoInCache = boost::filesystem::canonical(cof->getLastVideoInCache());
 		bool skipFileIsLastInCache = boost::filesystem::equivalent(lastVideoInCache, boost::filesystem::canonical(skipVideoFile));
+		LOG_ERROR << "Next is to Open Video Set Pointer";
 		if (!skipTSInOpenFile || skipFileIsLastInCache)
 		{
 			// open skipVideoFile if mState.end has reached or skipTS not in currently open video
@@ -745,6 +789,7 @@ public:
 			mState.mFrameCounterIdx = seekedToFrame;
 			LOG_TRACE << "Time offset usec <" << time_offset_usec << ">, seekedToFrame <" << seekedToFrame << ">";
 		}
+		LOG_ERROR << "Will Set Metadata";
 
 		// seek successful
 		mState.end = false; // enable seeking after eof
