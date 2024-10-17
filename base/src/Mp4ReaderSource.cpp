@@ -869,8 +869,8 @@ public:
 	void makeAndSendMp4Error(int errorType, int errorCode, std::string errorMsg, int openErrorCode, uint64_t _errorMp4TS)
 	{
 		LOG_ERROR << "makeAndSendMp4Error <" << errorType << "," << errorCode << "," << errorMsg << "," << openErrorCode << "," << _errorMp4TS << ">";
-		frame_sp errorFrame = boost::shared_ptr<Mp4ErrorFrame>(new Mp4ErrorFrame(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS));
-		sendMp4ErrorFrame(errorFrame);
+		// frame_sp errorFrame = boost::shared_ptr<Mp4ErrorFrame>(new Mp4ErrorFrame(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS));
+		// sendMp4ErrorFrame(errorFrame);
 	}
 
 	bool isOpenVideoFinished()
