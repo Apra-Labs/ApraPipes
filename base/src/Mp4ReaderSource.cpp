@@ -463,159 +463,178 @@ public:
 	throws MP4_OPEN_FAILED_EXCEPTION, MP4_MISSING_VIDEOTRACK, MP4_MISSING_START_TS,
 	MP4_TIME_RANGE_FETCH_FAILED, MP4_SET_POINTER_END_FAILED
 	*/
-	void openVideoSetPointer(std::string& filePath)
+	void openVideoSetPointer(std::string &filePath)
 	{
-		if (mState.demux)
+		int maxRetries = 3; // maximum number of retries
+		int attempts = 0;
+		bool success = false;
+
+		while (attempts < maxRetries && !success)
 		{
-			termOpenVideo();
-		}
-
-		LOG_INFO << "opening video <" << filePath << ">";
-		ret = mp4_demux_open(filePath.c_str(), &mState.demux);
-		if (ret < 0)
-		{
-			//TODO: Behaviour yet to be decided in case a file is deleted while it is cached, generating a hole in the cache.
-			auto msg = "Failed to open the file <" + filePath + "> libmp4 errorcode<" + std::to_string(ret) + ">";
-			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
-		}
-
-		/* read metadata string to get serializer format version & starting timestamp from the header */
-		unsigned int count = 0;
-		char** keys = NULL;
-		char** values = NULL;
-		ret = mp4_demux_get_metadata_strings(mState.demux, &count, &keys, &values);
-		if (ret < 0)
-		{
-			LOG_ERROR << "mp4_demux_get_metadata_strings <" << -ret;
-		}
-
-		if (count > 0) {
-			LOG_INFO << "Reading User Metadata Key-Values\n";
-			for (unsigned int i = 0; i < count; i++) {
-				if ((keys[i]) && (values[i]))
-				{
-					if (!strcmp(keys[i], "\251too"))
-					{
-						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
-						mState.mSerFormatVersion.assign(values[i]);
-					}
-					if (!strcmp(keys[i], "\251sts"))
-					{
-						LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
-						mState.startTimeStampFromFile = std::stoull(values[i]);
-					}
-				}
-			}
-		}
-
-		/* Update mState with relevant information */
-		mState.mVideoPath = filePath;
-		mState.ntracks = mp4_demux_get_track_count(mState.demux);
-		for (auto i = 0; i < mState.ntracks; i++)
-		{
-			ret = mp4_demux_get_track_info(mState.demux, i, &mState.info);
-			if (ret < 0) {
-				LOG_ERROR << "mp4 track info fetch failed <" << i << "> ret<" << ret << ">";
-				continue;
-			}
-
-			if (mState.info.type == MP4_TRACK_TYPE_VIDEO && mState.videotrack == -1)
+			if (mState.demux)
 			{
-				mState.video = mState.info;
-				mState.has_more_video = mState.info.sample_count > 0;
-				mState.videotrack = 1;
-				mState.mFramesInVideo = mState.info.sample_count;
-				mWidth = mState.info.video_width;
-				mHeight = mState.info.video_height;
-				mDirection = mState.direction;
-				mDurationInSecs = mState.info.duration / mState.info.timescale;
-				mFPS = mState.mFramesInVideo / mDurationInSecs;
-				// todo: Implement a way for mp4reader to update FPS when opening a new video in parseFS enabled mode. Must not set parseFS disabled in a loop.
-				mProps.fps = mFPS;
-				auto gop = getGop();
-				mProps.fps = mFPS * playbackSpeed;
-				if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
-				{
-					if (gop)
-					{
-						mProps.fps = mProps.fps / gop;
-					}
-				}
-				setMp4ReaderProps(mProps);
+				termOpenVideo();
 			}
-		}
 
-		if (mState.videotrack == -1)
-		{
-			auto msg = "No Videotrack found in the video <" + mState.mVideoPath + ">";
-			LOG_ERROR << msg;
-			std::string previousFile;
-			std::string nextFile;
-			cof->getPreviousAndNextFile(mState.mVideoPath, previousFile, nextFile);
-			throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
-		}
-
-		// starting timestamp of the video will either come from the video name or the header
-		if (mState.startTimeStampFromFile)
-		{
-			mState.resolvedStartingTS = mState.startTimeStampFromFile;
-		}
-		else
-		{
-			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-			try
+			LOG_INFO << "opening video <" << filePath << "> attempt <" << (attempts + 1) << ">";
+			ret = mp4_demux_open(filePath.c_str(), &mState.demux);
+			if (ret < 0)
 			{
-				mState.resolvedStartingTS = std::stoull(boostVideoTS);
-			}
-			catch (std::invalid_argument)
-			{
-				auto msg = "unexpected: starting ts not found in video name or metadata";
+				auto msg = "Failed to open the file <" + filePath + "> libmp4 errorcode<" + std::to_string(ret) + ">";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_MISSING_START_TS, msg);
+				throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
+			}
+
+			// Read metadata string to get serializer format version & starting timestamp
+			unsigned int count = 0;
+			char **keys = NULL;
+			char **values = NULL;
+			ret = mp4_demux_get_metadata_strings(mState.demux, &count, &keys, &values);
+			if (ret < 0)
+			{
+				LOG_ERROR << "mp4_demux_get_metadata_strings <" << -ret;
+			}
+
+			if (count > 0)
+			{
+				LOG_INFO << "Reading User Metadata Key-Values\n";
+				for (unsigned int i = 0; i < count; i++)
+				{
+					if ((keys[i]) && (values[i]))
+					{
+						if (!strcmp(keys[i], "\251too"))
+						{
+							LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+							mState.mSerFormatVersion.assign(values[i]);
+						}
+						if (!strcmp(keys[i], "\251sts"))
+						{
+							LOG_INFO << "key <" << keys[i] << ",<" << values[i] << ">";
+							mState.startTimeStampFromFile = std::stoull(values[i]);
+						}
+					}
+				}
+			}
+
+			// Update mState with relevant information
+			mState.mVideoPath = filePath;
+			mState.ntracks = mp4_demux_get_track_count(mState.demux);
+			for (auto i = 0; i < mState.ntracks; i++)
+			{
+				ret = mp4_demux_get_track_info(mState.demux, i, &mState.info);
+				if (ret < 0)
+				{
+					LOG_ERROR << "mp4 track info fetch failed <" << i << "> ret<" << ret << ">";
+					continue;
+				}
+
+				if (mState.info.type == MP4_TRACK_TYPE_VIDEO && mState.videotrack == -1)
+				{
+					mState.video = mState.info;
+					mState.has_more_video = mState.info.sample_count > 0;
+					mState.videotrack = 1;
+					mState.mFramesInVideo = mState.info.sample_count;
+					mWidth = mState.info.video_width;
+					mHeight = mState.info.video_height;
+					mDirection = mState.direction;
+					mDurationInSecs = mState.info.duration / mState.info.timescale;
+					mFPS = mState.mFramesInVideo / mDurationInSecs;
+					mProps.fps = mFPS;
+
+					// Adjust FPS based on playback speed and GOP
+					auto gop = getGop();
+					mProps.fps = mFPS * playbackSpeed;
+					if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+					{
+						if (gop)
+						{
+							mProps.fps = mProps.fps / gop;
+						}
+					}
+					setMp4ReaderProps(mProps);
+					success = true; // Successfully found video track
+					break;			// Exit the loop
+				}
+			}
+
+			if (mState.videotrack == -1)
+			{
+				LOG_INFO << "No Videotrack found in the video <" << mState.mVideoPath << "> attempt <" << (attempts + 1) << ">";
+				attempts++;
+				if (attempts >= maxRetries)
+				{
+					auto msg = "No Videotrack found after <" + std::to_string(attempts) + "> attempts";
+					LOG_ERROR << msg;
+					std::string previousFile;
+					std::string nextFile;
+					cof->getPreviousAndNextFile(mState.mVideoPath, previousFile, nextFile);
+					throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
+				}
 			}
 		}
 
-		// update metadata
-		setMetadata();
+		if (success)
+		{
+			// The rest of your code remains unchanged, handling timestamp, metadata, etc.
+			if (mState.startTimeStampFromFile)
+			{
+				mState.resolvedStartingTS = mState.startTimeStampFromFile;
+			}
+			else
+			{
+				auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+				try
+				{
+					mState.resolvedStartingTS = std::stoull(boostVideoTS);
+				}
+				catch (std::invalid_argument)
+				{
+					auto msg = "unexpected: starting ts not found in video name or metadata";
+					LOG_ERROR << msg;
+					throw Mp4Exception(MP4_MISSING_START_TS, msg);
+				}
+			}
 
-		// get the end_ts of the video and update the cache 
-		uint64_t dummy_start_ts, duration;
-		try
-		{
-			mp4_demux_time_range(mState.demux, &dummy_start_ts, &duration);
-		}
-		catch (...)
-		{
-			auto msg = "Failed to get time range of the video.";
-			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_TIME_RANGE_FETCH_FAILED, msg);
-		}
-		mState.endTS = mState.resolvedStartingTS + duration;
-		if (mProps.parseFS)
-		{
-			cof->updateCache(mState.mVideoPath, mState.resolvedStartingTS, mState.endTS);
-		}
+			setMetadata();
 
-		// if playback direction is reverse, move the pointer to the last frame of the video
-		if (!mState.direction)
-		{
+			// Get the end timestamp of the video and update the cache
+			uint64_t dummy_start_ts, duration;
 			try
 			{
-				mp4_set_reader_pos_lastframe(mState.demux, mState.videotrack, mState.direction);
+				mp4_demux_time_range(mState.demux, &dummy_start_ts, &duration);
 			}
 			catch (...)
 			{
-				auto msg = "Unexpected error while moving the read pointer to last frame of <" + mState.mVideoPath + ">";
+				auto msg = "Failed to get time range of the video.";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_SET_POINTER_END_FAILED, msg);
+				throw Mp4Exception(MP4_TIME_RANGE_FETCH_FAILED, msg);
 			}
-			mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
+			mState.endTS = mState.resolvedStartingTS + duration;
+			if (mProps.parseFS)
+			{
+				cof->updateCache(mState.mVideoPath, mState.resolvedStartingTS, mState.endTS);
+			}
+
+			if (!mState.direction)
+			{
+				try
+				{
+					mp4_set_reader_pos_lastframe(mState.demux, mState.videotrack, mState.direction);
+				}
+				catch (...)
+				{
+					auto msg = "Unexpected error while moving the read pointer to last frame of <" + mState.mVideoPath + ">";
+					LOG_ERROR << msg;
+					throw Mp4Exception(MP4_SET_POINTER_END_FAILED, msg);
+				}
+				mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
+			}
+
+			// Reset flags
+			waitFlag = false;
+			sentEOSSignal = false;
+			mState.sentCommandToControlModule = false;
 		}
-		// reset flags
-		waitFlag = false;
-		sentEOSSignal = false;
-		mState.sentCommandToControlModule = false;
 	}
 
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
