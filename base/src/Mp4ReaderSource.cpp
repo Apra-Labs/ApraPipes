@@ -1888,9 +1888,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	{
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
-		//LOG_ERROR<<"seek play 1 ";
 		return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.forceReopen);
-		//LOG_ERROR<<"seek play 2 ";
 	}
 	else
 	{
@@ -1900,10 +1898,8 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 
 bool Mp4ReaderSource::handlePausePlay(float speed, bool direction)
 {
-	//LOG_ERROR<<"hanlde play 1 ";
 	mDetail->setPlayback(speed, direction);
 	return Module::handlePausePlay(speed, direction);
-	//LOG_ERROR<<"hanlde play 2 ";
 }
 
 bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)

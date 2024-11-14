@@ -675,3 +675,23 @@ bool Mp4WriterSink::doMp4MuxSync() {
   mDetail->syncFlag = false;
   return ret;
 }
+
+bool Mp4WriterSink::closeCurrentOpenFile()
+{
+  Mp4WriterFileCloseCommand mp4CloseCmd;
+  return queueCommand(mp4CloseCmd);
+}
+
+bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp &frame)
+{
+  if (type == Command::CommandType::Mp4FileClose)
+  {
+    Mp4WriterFileCloseCommand mp4FileCloseCmd;
+    getCommand(mp4FileCloseCmd, frame);
+    return mDetail->attemptFileClose();
+  }
+  else
+  {
+    return Module::handleCommand(type, frame);
+  }
+}

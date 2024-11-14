@@ -86,6 +86,7 @@ public:
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
 	bool doMp4MuxSync();
+	bool closeCurrentOpenFile();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -97,6 +98,8 @@ protected:
 	bool shouldTriggerSOS();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
+	bool handleCommand(Command::CommandType type, frame_sp& fame);
+
 	boost::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;
 

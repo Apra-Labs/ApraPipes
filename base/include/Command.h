@@ -24,6 +24,7 @@ public:
     SendMMQTimestamps,
     SendLastGTKGLRenderTS,
     DecoderPlaybackSpeed,
+    Mp4FileClose
   };
 
   Command() { type = CommandType::None; }
@@ -242,6 +243,25 @@ private:
     ar &boost::serialization::base_object<Command>(*this);
     ar & seekStartTS;
     ar & forceReopen;
+  }
+};
+
+class Mp4WriterFileCloseCommand : public Command
+{
+public:
+  Mp4WriterFileCloseCommand() : Command(CommandType::Mp4FileClose) {}
+
+  size_t getSerializeSize()
+  {
+    return 128 + sizeof(Mp4WriterFileCloseCommand);
+  }
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int)
+  {
+    ar &boost::serialization::base_object<Command>(*this);
   }
 };
 
