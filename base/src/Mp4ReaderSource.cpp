@@ -474,7 +474,7 @@ public:
 	*/
 	void openVideoSetPointer(std::string &filePath)
 	{
-		int maxRetries = 3; // maximum number of retries
+		int maxRetries = 5; // maximum number of retries
 		int attempts = 0;
 		bool success = false;
 
@@ -583,7 +583,7 @@ public:
 				}
 			}
 
-			boost::this_thread::sleep_for(boost::chrono::milliseconds(200));
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
 		}
 
 		if (success)
