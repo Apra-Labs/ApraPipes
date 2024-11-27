@@ -561,7 +561,7 @@ public:
 		if (mState.videotrack == -1)
 		{
 			auto msg = "No Videotrack found in the video <" + mState.mVideoPath + ">";
-			APErrorObject error(0, msg);
+			APErrorObject error(100, msg);
 			propagateError(error);
 			LOG_ERROR << msg;
 			std::string previousFile;
@@ -960,7 +960,7 @@ public:
 			std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
 			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 			uint64_t nowTS = dur.count();
-			LOG_INFO << "readNextFrameInternal: nowTS <" << nowTS << "> reloadFileAfter <" << reloadFileAfter << ">";
+			LOG_TRACE << "readNextFrameInternal: nowTS <" << nowTS << "> reloadFileAfter <" << reloadFileAfter << ">";
 			if (reloadFileAfter > nowTS)
 			{
 				LOG_TRACE << "waiting....";
