@@ -128,6 +128,8 @@ public:
   // skipD >= skipN
   int skipN = 0;
   int skipD = 1;
+	int intervalLength = 0;
+	int framesToSkip = 0;
   // have one more enum and then in module.cpp dont call run if the enum is pull
   // type.
   FrameFetchStrategy frameFetchStrategy;
