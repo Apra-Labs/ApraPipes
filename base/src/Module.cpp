@@ -123,13 +123,12 @@ public:
   {
     healthCallback = _healthCallback;
   }
-
+  int printFrequency;
 private:
   string moduleId;
   sys_clock::time_point processingStart;
   sys_clock::time_point pipelineStart;
   sys_clock::time_point lastHealthCallbackTime;
-  int printFrequency;
   uint64_t counter = 0;
   double totalProcessingDuration = 0;
   double totalPipelineDuration = 0;
