@@ -1401,27 +1401,31 @@ bool Module::step()
   else
   {
     mProfiler->startPipelineLap();
-
-    // LOG_ERROR  << "Module Id is " << Module::getId() << "Module FPS is  " << Module::getPipelineFps() << mProps->fps;
     auto frames = mQue->pop();
     preProcessNonSource(frames);
-
-    // shouldSkip is moved inside stepNonSource to factor in the fps 
+    // shouldSkip is moved inside stepNonSource to factor in the fps
     if (frames.size() == 0)
     {
-      // it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
-      return true;
+        // it can come here only if frames.erase from processEOS or processSOS or processEoP or isPropsChange() or isCommand()
+        return true;
     }
-
     if (mPlay)
     {
       mProfiler->startProcessingLap();
       ret = stepNonSource(frames);
       mProfiler->endLap(mQue->size());
-    }
-    else
-    {
-      ret = true;
+      if (mProps->enableFpsThrottle && (getPipelineFps() != 0))
+      {
+          if (!mProps->fpsCheckIterations)
+          {
+              setTargetModuleFPS();
+              mProps->enableFpsThrottle = false;
+          }
+          else
+          {
+              mProps->fpsCheckIterations--;
+          }
+      }
     }
   }
 
