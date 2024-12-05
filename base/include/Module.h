@@ -230,7 +230,7 @@ protected:
   bool preProcessNonSource(frame_container &frames);
   bool preProcessControl(frame_container &frames);
   bool isRunning() { return mRunning; }
-
+  bool setTargetModuleFPS();
   void setProps(ModuleProps &props);
   void fillProps(ModuleProps &props);
   template <class T>
