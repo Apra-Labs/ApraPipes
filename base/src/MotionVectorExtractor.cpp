@@ -23,7 +23,8 @@ public:
 		makeFrameWithPinId = _makeFrameWithPinId;
 		makeframe = _makeframe;
 		sendDecodedFrame = props.sendDecodedFrame;
-		threshold = props.motionVectorThreshold;
+		motionMagnitudeThreshold = props.motionVectorThreshold;
+		minMotionPixelCountThreshold = props.minMotionVectorRequired;
 	};
 	~MvExtractDetailAbs()
 	{
@@ -42,7 +43,8 @@ public:
 	std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> makeframe;
 	std::function<frame_sp(size_t size, string& pinId)> makeFrameWithPinId;
 	bool sendDecodedFrame = false;
-	int threshold;
+	int motionMagnitudeThreshold;
+	int minMotionPixelCountThreshold;
 	cv::Mat bgrImg;
 };
 class DetailFfmpeg : public MvExtractDetailAbs
@@ -171,7 +173,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 				{
 					const AVMotionVector* mv = &mvs[i];
 
-					if (std::abs(mv->motion_x) > threshold || std::abs(mv->motion_y) > threshold)
+					if (std::abs(mv->motion_x) > motionMagnitudeThreshold || std::abs(mv->motion_y) > motionMagnitudeThreshold)
 					{
 						LineOverlay lineOverlay;
 						lineOverlay.x1 = mv->src_x;
@@ -249,23 +251,26 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 
 	if (sDecParam.bParseOnly)
 	{
-		pDecoder->ParseBitstreamGetMotionVectors(pSrc, iSrcLen, ppDst, &parseInfo, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
+		auto result = pDecoder->ParseBitstreamGetMotionVectors(pSrc, iSrcLen, ppDst, &parseInfo, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
+		if(result != 0)
+		{
+			LOG_ERROR << "Result is " << result;
+		}
 	}
 	else
 	{
 		pDecoder->DecodeFrameGetMotionVectorsNoDelay(pSrc, iSrcLen, ppDst, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
 	}
-
+	int motionCount = 0;
 	if (mMotionVectorSize != mWidth * mHeight * 8)
 	{
 		std::vector<CircleOverlay> circleOverlays;
 		CompositeOverlay compositeOverlay;
-
 		for (int i = 0; i < mMotionVectorSize; i += 4)
 		{
 			auto motionX = mMotionVectorData[i];
 			auto motionY = mMotionVectorData[i + 1];
-			if (abs(motionX) > threshold || abs(motionY) > threshold)
+			if (abs(motionX) > motionMagnitudeThreshold || abs(motionY) > motionMagnitudeThreshold)
 			{
 				CircleOverlay circleOverlay;
 				circleOverlay.x1 = mMotionVectorData[i + 2];
@@ -273,6 +278,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 				circleOverlay.radius = 1;
 
 				circleOverlays.push_back(circleOverlay);
+				motionCount++;
 			}
 		}
 
@@ -280,8 +286,9 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 			compositeOverlay.add(&circleOverlay);
 		}
 
-		if (circleOverlays.size())
+		if (circleOverlays.size() && (motionCount >= minMotionPixelCountThreshold))
 		{
+			LOG_DEBUG << "Motion Greater Than Threshold Req:" <<  minMotionPixelCountThreshold << " :Current: " << motionCount;
 			DrawingOverlay drawingOverlay;
 			drawingOverlay.add(&compositeOverlay);
 			auto mvSize = drawingOverlay.mGetSerializeSize();

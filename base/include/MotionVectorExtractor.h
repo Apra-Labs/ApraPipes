@@ -15,17 +15,18 @@ public:
 		OPENH264
 	};
 
-	MotionVectorExtractorProps(MVExtractMethod _MVExtractMethod = MVExtractMethod::FFMPEG, bool _sendDecodedFrame = false, int _motionVectorThreshold = 2) : MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame), motionVectorThreshold(_motionVectorThreshold)
+	MotionVectorExtractorProps(MVExtractMethod _MVExtractMethod = MVExtractMethod::FFMPEG, bool _sendDecodedFrame = false, int _motionVectorThreshold = 1, int _minMotionVectorRequired = 1) : MVExtract(_MVExtractMethod), sendDecodedFrame(_sendDecodedFrame), motionVectorThreshold(_motionVectorThreshold), minMotionVectorRequired(_minMotionVectorRequired)
 	{
 	}
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold);
+		return ModuleProps::getSerializeSize() + sizeof(sendDecodedFrame) + sizeof(motionVectorThreshold) + sizeof(MVExtract) + sizeof(minMotionVectorRequired);
 	}
 	bool sendDecodedFrame = false;
 	int motionVectorThreshold;
 	MVExtractMethod MVExtract = MVExtractMethod::FFMPEG;
+	int minMotionVectorRequired;
 private:
 	friend class boost::serialization::access;
 
