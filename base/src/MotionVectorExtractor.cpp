@@ -1,5 +1,8 @@
 #include <cstdint>
 #include <boost/foreach.hpp>
+
+#include <nlohmann/json.hpp>
+
 extern "C"
 {
 #include <libavutil/motion_vector.h>
@@ -65,20 +68,22 @@ private:
 class DetailOpenH264 : public MvExtractDetailAbs
 {
 public:
-	DetailOpenH264(MotionVectorExtractorProps props, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe) : MvExtractDetailAbs(props, _makeFrameWithPinId, _makeframe) {}
-	~DetailOpenH264() {
-		if (pDecoder) {
-			pDecoder->Uninitialize();
-			WelsDestroyDecoder(pDecoder);
-		}
-	}
-	void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
-	void initDecoder();
+    DetailOpenH264(MotionVectorExtractorProps props, std::function<frame_sp(size_t size, string& pinId)> _makeFrameWithPinId, std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeframe, std::function<void(const APErrorObject& error)> _errorCallback)
+        : MvExtractDetailAbs(props, _makeFrameWithPinId, _makeframe), errorCallback(_errorCallback) {}
+    ~DetailOpenH264() {
+        if (pDecoder) {
+            pDecoder->Uninitialize();
+            WelsDestroyDecoder(pDecoder);
+        }
+    }
+    void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
+    void initDecoder();
 private:
-	ISVCDecoder* pDecoder;
-	SBufferInfo pDstInfo;
-	SDecodingParam sDecParam;
-	SParserBsInfo parseInfo;
+    ISVCDecoder* pDecoder;
+    SBufferInfo pDstInfo;
+    SDecodingParam sDecParam;
+    SParserBsInfo parseInfo;
+    std::function<void(const APErrorObject& error)> errorCallback;
 };
 void DetailFfmpeg::initDecoder()
 {
@@ -286,17 +291,33 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 			compositeOverlay.add(&circleOverlay);
 		}
 
-		if (circleOverlays.size() && (motionCount >= minMotionPixelCountThreshold))
-		{
-			LOG_DEBUG << "Motion Greater Than Threshold Req:" <<  minMotionPixelCountThreshold << " :Current: " << motionCount;
-			DrawingOverlay drawingOverlay;
-			drawingOverlay.add(&compositeOverlay);
-			auto mvSize = drawingOverlay.mGetSerializeSize();
-			outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
-			drawingOverlay.serialize(outFrame);
-			frames.insert(make_pair(motionVectorPinId, outFrame));
-		}
-	}
+        if (circleOverlays.size() && (motionCount >= minMotionPixelCountThreshold))
+        {
+            LOG_DEBUG << "Motion Greater Than Threshold Req:" <<  minMotionPixelCountThreshold << " :Current: " << motionCount;
+            DrawingOverlay drawingOverlay;
+            drawingOverlay.add(&compositeOverlay);
+            auto mvSize = drawingOverlay.mGetSerializeSize();
+            outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
+            drawingOverlay.serialize(outFrame);
+            frames.insert(make_pair(motionVectorPinId, outFrame));
+
+            // Convert CircleOverlays to JSON and send error callback
+            nlohmann::json jsonOverlays = nlohmann::json::array();
+            for (const auto& overlay : circleOverlays)
+            {
+                jsonOverlays.push_back({
+                    {"x1", overlay.x1},
+                    {"y1", overlay.y1},
+                    {"radius", overlay.radius},
+					{"timeStamp", outFrame->timestamp}
+                });
+            }
+			std::string jsonString = jsonOverlays.dump();
+			LOG_DEBUG << "Motion Vector Overlays: " << jsonString;
+            APErrorObject error(1006, jsonString);
+            errorCallback(error);
+        }
+    }
 
 	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
 	{
@@ -327,7 +348,8 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 	}
 	else if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::OPENH264)
 	{
-		mDetail.reset(new DetailOpenH264(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }));
+		mDetail.reset(new DetailOpenH264(props, [&](size_t size, string& pinId) -> frame_sp { return makeFrame(size, pinId); }, [&](frame_sp& frame, size_t& size, string& pinId) -> frame_sp { return makeFrame(frame, size, pinId); }, [&](const APErrorObject &error)
+			{ executeErrorCallback(error); }));
 	}
 	auto motionVectorOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
