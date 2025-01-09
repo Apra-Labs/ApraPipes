@@ -300,18 +300,19 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
             outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
             drawingOverlay.serialize(outFrame);
             frames.insert(make_pair(motionVectorPinId, outFrame));
-
-            // Convert CircleOverlays to JSON and send error callback
-            nlohmann::json jsonOverlays = nlohmann::json::array();
-            for (const auto& overlay : circleOverlays)
-            {
-                jsonOverlays.push_back({
-                    {"x1", overlay.x1},
-                    {"y1", overlay.y1},
-                    {"radius", overlay.radius},
-					{"timeStamp", outFrame->timestamp}
-                });
-            }
+			// Convert CircleOverlays to JSON and send error callback
+			nlohmann::json jsonOverlays = {
+				{"timestamp", h264Frame->timestamp},
+				{"results", nlohmann::json::array()}
+			};
+			for (const auto& overlay : circleOverlays)
+			{
+				jsonOverlays["results"].push_back({
+					{"x", overlay.x1},
+					{"y", overlay.y1},
+					{"radius", overlay.radius}
+				});
+			}
 			std::string jsonString = jsonOverlays.dump();
 			LOG_DEBUG << "Motion Vector Overlays: " << jsonString;
             APErrorObject error(1006, jsonString);
