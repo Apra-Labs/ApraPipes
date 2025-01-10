@@ -13,6 +13,8 @@
 #include "Logger.h"
 #include "RTSPClientSrc.h"
 #include "OverlayModule.h"
+#include "SimpleControlModule.h"
+
 
 BOOST_AUTO_TEST_SUITE(overlay_motion_vectors_tests)
 
@@ -197,28 +199,42 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	rtsp_client_tests_data d;
 
 	bool overlayFrames = false;
-	const std::string url = "";
+	const std::string url = string("rtsp://root:m4m1g0@10.102.10.77/axis-media/media.amp?resolution=1280x720");
 	std::string username = "";
 	std::string password = "";
 	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	rtspSrc->addOutputPin(meta);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
+	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
 	rtspSrc->setNext(motionExtractor);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
-	motionExtractor->setNext(overlay);
+	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	motionExtractor->setNext(sink);
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
-	overlay->setNext(sink);
+	auto controlProps = SimpleControlModuleProps();
+	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
+
 
 	PipeLine p("test");
 	p.appendModule(rtspSrc);
+	p.addControlModule(mControl);
+
 	p.init();
+	mControl->init();
+
+	mControl->enrollModule("Renderer", motionExtractor);
+
+
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	auto currentProps = motionExtractor->getProps();
+	LOG_INFO << "Current FPS: " << currentProps.motionVectorThreshold;
+	currentProps.motionVectorThreshold = currentProps.motionVectorThreshold + 100;
+	motionExtractor->setProps(currentProps);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

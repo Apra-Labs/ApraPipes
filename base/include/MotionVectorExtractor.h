@@ -36,6 +36,8 @@ private:
 		ar& boost::serialization::base_object<ModuleProps>(*this);
 		ar& sendDecodedFrame;
 		ar& motionVectorThreshold;
+		ar& MVExtract;
+		ar& minMotionVectorRequired;
 	}
 };
 
@@ -47,6 +49,7 @@ public:
 	bool init();
 	bool term();
 	void setProps(MotionVectorExtractorProps& props);
+	MotionVectorExtractorProps getProps();
 protected:
 	bool process(frame_container& frame);
 	bool validateInputPins();

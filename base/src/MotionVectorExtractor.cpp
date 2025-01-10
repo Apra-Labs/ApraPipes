@@ -28,6 +28,7 @@ public:
 		sendDecodedFrame = props.sendDecodedFrame;
 		motionMagnitudeThreshold = props.motionVectorThreshold;
 		minMotionPixelCountThreshold = props.minMotionVectorRequired;
+		mProps = props;
 	};
 	~MvExtractDetailAbs()
 	{
@@ -35,7 +36,15 @@ public:
 	virtual void setProps(MotionVectorExtractorProps props)
 	{
 		sendDecodedFrame = props.sendDecodedFrame;
+		motionMagnitudeThreshold = props.motionVectorThreshold;
+		minMotionPixelCountThreshold = props.minMotionVectorRequired;
 	}
+
+	MotionVectorExtractorProps getProps()
+	{
+		return mProps;
+	}
+
 	virtual void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame) = 0;
 	virtual void initDecoder() = 0;
 public:
@@ -49,6 +58,7 @@ public:
 	int motionMagnitudeThreshold;
 	int minMotionPixelCountThreshold;
 	cv::Mat bgrImg;
+	MotionVectorExtractorProps mProps;
 };
 class DetailFfmpeg : public MvExtractDetailAbs
 {
@@ -447,4 +457,9 @@ bool MotionVectorExtractor::handlePropsChange(frame_sp& frame)
 void MotionVectorExtractor::setProps(MotionVectorExtractorProps& props)
 {
 	Module::addPropsToQueue(props);
+}
+
+MotionVectorExtractorProps MotionVectorExtractor::getProps()
+{
+	return mDetail->getProps();
 }
