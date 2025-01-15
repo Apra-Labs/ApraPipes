@@ -7,8 +7,9 @@
 #include "Logger.h"
 
 #include "test_utils.h"
-
-#include "nvbuf_utils.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2helper_tests)
 

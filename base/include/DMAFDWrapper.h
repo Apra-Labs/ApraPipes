@@ -1,5 +1,5 @@
 #pragma once
-#include "nvbuf_utils.h"
+#include "nvbufsurface.h"
 #include "EGL/egl.h"
 #include "cudaEGL.h"
 
@@ -8,8 +8,8 @@ class DMAFDWrapper
 public:
     /* Always use this static method to create DMAFDWrapper */
     static DMAFDWrapper *create(int index, int width, int height,
-                             NvBufferColorFormat colorFormat,
-                             NvBufferLayout layout, EGLDisplay eglDisplay);
+                             NvBufSurfaceColorFormat colorFormat,
+                             NvBufSurfaceLayout layout, EGLDisplay eglDisplay);
 
     virtual ~DMAFDWrapper();
 

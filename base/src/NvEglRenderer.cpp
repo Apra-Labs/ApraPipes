@@ -28,7 +28,9 @@
 
 #include "ApraNvEglRenderer.h"
 #include "NvLogging.h"
+#ifdef JP512_TBD
 #include "nvbuf_utils.h"
+#endif 
 #include "NvElement.h"
 #include <cstring>
 #include <sys/time.h>

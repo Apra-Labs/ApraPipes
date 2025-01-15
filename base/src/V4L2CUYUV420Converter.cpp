@@ -4,7 +4,9 @@
 #include "Frame.h"
 #include "AIPExceptions.h"
 
-#include "nvbuf_utils.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif
 #include <cstring>
 
 V4L2CUYUV420Converter::V4L2CUYUV420Converter(uint32_t srcWidth, uint32_t srcHeight, struct v4l2_format &format) : mFormat(format)
@@ -53,7 +55,10 @@ void V4L2CUYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 
     for (i = 0; i < numPlanes; i++)
     {
+
+#ifdef JP512_TBD
         if (NvBufferMemSyncForDevice(buffer->planesInfo[i].fd, i, (void **)(&buffer->planesInfo[i].data)) < 0)
+#endif        
         {
             LOG_FATAL << "NvBufferMemSyncForDevice failed<>" << i;
         }
@@ -106,6 +111,7 @@ V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
 
 void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
+#ifdef JP512_TBD    
     eglImage = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[0].fd);
     status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
     if (status != CUDA_SUCCESS)
@@ -162,4 +168,5 @@ void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
             buffer->v4l2_buf.m.planes[i].bytesused = mBytesUsedUV;
         }
     }
+#endif    
 }

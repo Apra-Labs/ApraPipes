@@ -1,21 +1,23 @@
 #include "DMAFDWrapper.h"
 #include "DMAUtils.h"
-#include "nvbuf_utils.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif    
 #include "Logger.h"
 #include "AIPExceptions.h"
 
 #include "cuda_runtime.h"
 
 DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
-                                   NvBufferColorFormat colorFormat,
-                                   NvBufferLayout layout, EGLDisplay eglDisplay)
+                                   NvBufSurfaceColorFormat colorFormat,
+                                   NvBufSurfaceLayout layout, EGLDisplay eglDisplay)
 {
     DMAFDWrapper *buffer = new DMAFDWrapper(index, eglDisplay);
     if (!buffer)
     {
         return nullptr;
     }
-
+#ifdef JP512_TBD
     NvBufferCreateParams inputParams = {0};
 
     inputParams.width = width;
@@ -77,7 +79,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         cudaFree(0);
         buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
     }
-
+#endif
     return buffer;
 }
 
@@ -99,7 +101,7 @@ DMAFDWrapper::~DMAFDWrapper()
         cudaFree(0);
         DMAUtils::freeCudaPtr(eglImage, &pResource, eglDisplay);
     }
-
+#ifdef JP512_TBD
     if (hostPtr)
     {
         auto res = NvBufferMemUnMap(m_fd, 0, &hostPtr);
@@ -132,15 +134,17 @@ DMAFDWrapper::~DMAFDWrapper()
         NvBufferDestroy(m_fd);
         m_fd = -1;
     }
+#endif
 }
 
 void *DMAFDWrapper::getHostPtr()
 {
+#ifdef JP512_TBD
     if (NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
     {
         throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
     }
-
+#endif
     return hostPtr;
 }
 
@@ -151,21 +155,23 @@ void *DMAFDWrapper::getHostPtrY()
 
 void *DMAFDWrapper::getHostPtrU()
 {
+#ifdef JP512_TBD
     if (NvBufferMemSyncForCpu(m_fd, 1, &hostPtrU))
     {
         throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
     }
-
+#endif
     return hostPtrU;
 }
 
 void *DMAFDWrapper::getHostPtrV()
 {
+#ifdef JP512_TBD    
     if (NvBufferMemSyncForCpu(m_fd, 2, &hostPtrV))
     {
         throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
     }
-
+#endif
     return hostPtrV;
 }
 

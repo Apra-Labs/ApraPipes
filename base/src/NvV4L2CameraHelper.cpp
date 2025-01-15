@@ -2,7 +2,9 @@
 #include "DMAFDWrapper.h"
 #include "NvEglRenderer.h"
 #include "NvUtils.h"
-#include "nvbuf_utils.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif    
 #include "Logger.h"
 
 NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_sp()> _makeFrame)

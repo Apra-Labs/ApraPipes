@@ -1,7 +1,7 @@
 #pragma once
 #include "Allocators.h"
 #include "DMAFDWrapper.h"
-#include "nvbuf_utils.h"
+#include "nvbufsurface.h"
 #include "FrameMetadataFactory.h"
 #include "ApraEGLDisplay.h"
 #include "Logger.h"
@@ -12,31 +12,31 @@ class DMAAllocator : public HostAllocator
 private:
     std::vector<DMAFDWrapper *> mDMAFDWrapperArr;
     int mFreeDMACount;
-    NvBufferColorFormat mColorFormat;
+    NvBufSurfaceColorFormat mColorFormat;
     EGLDisplay mEglDisplay;
     int mHeight;
     int mWidth;
     int mCount;
 
-    static NvBufferColorFormat getColorFormat(ImageMetadata::ImageType imageType)
+    static NvBufSurfaceColorFormat getColorFormat(ImageMetadata::ImageType imageType)
     {
-        NvBufferColorFormat colorFormat;
+        NvBufSurfaceColorFormat colorFormat;
         switch (imageType)
         {
         case ImageMetadata::UYVY:
-            colorFormat = NvBufferColorFormat_UYVY;
+            colorFormat = NVBUF_COLOR_FORMAT_UYVY;
             break;
         case ImageMetadata::RGBA:
-            colorFormat = NvBufferColorFormat_ABGR32;
+            colorFormat = NVBUF_COLOR_FORMAT_RGBA;
             break;
         case ImageMetadata::BGRA:
-            colorFormat = NvBufferColorFormat_ARGB32;
+            colorFormat = NVBUF_COLOR_FORMAT_BGRA;
             break;
         case ImageMetadata::YUV420:
-            colorFormat = NvBufferColorFormat_YUV420;
+            colorFormat = NVBUF_COLOR_FORMAT_YUV420;
             break;
         case ImageMetadata::NV12:
-            colorFormat = NvBufferColorFormat_NV12;
+            colorFormat = NVBUF_COLOR_FORMAT_NV12;
             break;
         default:
             throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12> Actual<" + std::to_string(imageType) + ">");
@@ -97,14 +97,14 @@ public:
         auto eglDisplay = ApraEGLDisplay::getEGLDisplay();
         auto colorFormat = getColorFormat(imageType);
 
-        auto dmaFDWrapper = DMAFDWrapper::create(0, width, height, colorFormat, NvBufferLayout_Pitch, eglDisplay);
+        auto dmaFDWrapper = DMAFDWrapper::create(0, width, height, colorFormat, NVBUF_LAYOUT_PITCH, eglDisplay);
         if (!dmaFDWrapper)
         {
             LOG_ERROR << "Failed to allocate dmaFDWrapper";
             throw AIPException(AIP_FATAL, "Memory Allocation Failed.");
         }
-
-        NvBufferParams fdParams;
+#ifdef JP512_TBD
+        NvBufSurfaceParams fdParams;
         if (NvBufferGetParams(dmaFDWrapper->getFd(), &fdParams))
         {
             throw AIPException(AIP_FATAL, "NvBufferGetParams Failed.");
@@ -155,7 +155,7 @@ public:
             throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
             break;
         }
-
+#endif
         delete dmaFDWrapper;
     }
 
@@ -163,7 +163,7 @@ public:
     {
         if (mFreeDMACount == 0)
         {
-            auto dmaFDWrapper = DMAFDWrapper::create(mCount++, mWidth, mHeight, mColorFormat, NvBufferLayout_Pitch, mEglDisplay);
+            auto dmaFDWrapper = DMAFDWrapper::create(mCount++, mWidth, mHeight, mColorFormat, NVBUF_LAYOUT_PITCH, mEglDisplay);
             if (!dmaFDWrapper)
             {
                 LOG_ERROR << "Failed to allocate dmaFDWrapper";

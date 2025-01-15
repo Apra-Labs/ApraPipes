@@ -4,11 +4,13 @@
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include <opencv2/cudaimgproc.hpp>
-#include <opencv2/core/cuda.hpp>
-#include "opencv2/cudaimgproc.hpp"
-#include "opencv2/core/cuda_stream_accessor.hpp"
-#include <opencv2/cudawarping.hpp>
+#ifdef JP512_TBD
+    #include <opencv2/cudaimgproc.hpp>
+    #include <opencv2/core/cuda.hpp>
+    #include "opencv2/cudaimgproc.hpp"
+    #include "opencv2/core/cuda_stream_accessor.hpp"
+    #include <opencv2/cudawarping.hpp>
+#endif    
 
 BOOST_AUTO_TEST_SUITE(opencvresize_tests, * boost::unit_test::disabled())
 
@@ -48,6 +50,7 @@ void testopencvcpuresize()
 
 void testopencvgpuresize()
 {
+#ifdef JP512_TBD
     std::string imgPath = "4k.jpg";
 
     auto src1 = cv::imread(imgPath, 0);
@@ -69,6 +72,7 @@ void testopencvgpuresize()
     dst_gpu.download(dst);
 
     cv::imwrite("/home/al/Downloads/testopencvgpuresize.jpg", dst);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(cpu)

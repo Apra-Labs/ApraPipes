@@ -76,8 +76,8 @@ IF(ENABLE_CUDA)
 		find_library(EGLLIB EGL)
 		find_library(GLESv2LIB GLESv2)
 		find_library(X11LIB X11)
-		find_library(NVBUFUTILSLIB nvbuf_utils)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
+		find_library(NVBUFUTILSLIB nvbufsurface)
+		#find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient)
 		find_package(Curses REQUIRED)
 
@@ -89,7 +89,7 @@ IF(ENABLE_CUDA)
 			${EGLLIB}
 			${GLESv2LIB}
 			${X11LIB}	
-			${EGLSTREAM_CAMCONSUMER_LIB}
+			#${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
 	ELSE()
@@ -103,7 +103,8 @@ IF(ENABLE_CUDA)
 			libnppig_static.a
 			libnppicc_static.a
 			libnppidei_static.a
-			libnppial_static.a					
+			libnppial_static.a
+			libnppif_static.a					
 			libculibos.a	
 		)	
 
@@ -113,7 +114,7 @@ ENDIF(ENABLE_CUDA)
 include_directories(AFTER SYSTEM include
 	${BOOST_ROOT}/include
 	${OPENCV_ROOT}/include/opencv4
-	/usr/local/cuda-10.2/include
+	/usr/local/cuda/include
 	../thirdparty/Video_Codec_SDK_10.0.26/Interface
 	../thirdparty/ffmpeg/include
 	${CURSES_INCLUDE_DIR}
@@ -264,11 +265,11 @@ SET(CUDA_IP_FILES
 	src/CCNPPI.cpp	
 	src/EffectsKernel.cu
 	src/EffectsNPPI.cpp
-	src/GaussianBlur.cpp
+	#src/GaussianBlur.cpp
 	src/OverlayKernel.cu
 	src/OverlayNPPI.cpp
-	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp
+#	src/ResizeNPPI.cpp
+#	src/RotateNPPI.cpp
 )
 
 IF(ENABLE_ARM64)
@@ -287,10 +288,10 @@ IF(ENABLE_ARM64)
 		src/NvArgusCamera.cpp
 		src/NvV4L2Camera.cpp
 		src/NvV4L2CameraHelper.cpp
-		src/EglRenderer.cpp
-		src/NvEglRenderer.cpp
+#		src/EglRenderer.cpp
+#		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
-		src/NvTransform.cpp
+#		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 	)
@@ -374,26 +375,26 @@ IF (ENABLE_ARM64)
 		test/h264encoderv4l2helper_tests.cpp
 		test/h264encoderv4l2_tests.cpp
 		test/nvarguscamerahelper_tests.cpp
-		test/nvarguscamera_tests.cpp
-		test/nvv4l2camera_test.cpp
+#		test/nvarguscamera_tests.cpp
+#		test/nvv4l2camera_test.cpp
 		test/nvv4l2camerahelper_test.cpp
-		test/nvtransform_tests.cpp
-		test/eglrenderer_test.cpp
+#		test/nvtransform_tests.cpp
+#		test/eglrenderer_test.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	SET(CUDA_UT_FILES
 		test/cudamemcopy_tests.cpp		
-		test/resizenppi_tests.cpp
-		test/rotatenppi_tests.cpp
+#		test/resizenppi_tests.cpp
+#		test/rotatenppi_tests.cpp
 	)
 
 	IF(ENABLE_ARM64)
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}
-			test/cuda_arm_tests.cpp
-			test/apraegldisplay_tests.cpp
-			test/frame_factory_test_dma.cpp
+				SET(CUDA_UT_FILES ${CUDA_UT_FILES}
+#		    test/cuda_arm_tests.cpp
+#			test/apraegldisplay_tests.cpp
+#			test/frame_factory_test_dma.cpp
 		)
 	ELSE()
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	

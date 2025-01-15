@@ -1,8 +1,13 @@
 #include "DMAUtils.h"
 #include "Logger.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif
 
 uint8_t* DMAUtils::getCudaPtrForFD(int fd, EGLImageKHR eglImage, CUgraphicsResource *pResource, CUeglFrame eglFrame, EGLDisplay eglDisplay){
+#ifdef JP512_TBD    
     eglImage = NvEGLImageFromFd(eglDisplay, fd);
+#endif    
     if (eglImage == NULL)
     {
         LOG_ERROR << "DID not find eglImage for File Descriptor";
@@ -51,10 +56,11 @@ void DMAUtils::freeCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResource, 
         LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status;
         return;
     }
-
+#ifdef JP512_TBD
     auto res = NvDestroyEGLImage(eglDisplay, eglImage);
     if (res)
     {
         LOG_ERROR << "NvDestroyEGLImage Error<>" << res;
     }
+#endif    
 }

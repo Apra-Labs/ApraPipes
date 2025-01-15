@@ -4,7 +4,9 @@
 #include <thread>
 #include "ExtFrame.h"
 #include "NvUtils.h"
-#include "nvbuf_utils.h"
+#ifdef JP512_TBD
+    #include "nvbuf_utils.h"
+#endif 
 #include <map>
 #include <mutex>
 
