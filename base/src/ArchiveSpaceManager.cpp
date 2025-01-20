@@ -88,6 +88,11 @@ public:
       archiveSize = archiveSize - tempSize;
       try {
         boost::filesystem::remove_all(delDir);
+        boost::filesystem::path parentDir = delDir.parent_path();
+        if (boost::filesystem::is_empty(parentDir)) {
+          BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
+          boost::filesystem::remove_all(parentDir);
+        }
       } catch (...) {
         LOG_ERROR << "Could not delete directory!..";
       }
