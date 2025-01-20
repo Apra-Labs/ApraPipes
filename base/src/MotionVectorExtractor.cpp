@@ -29,8 +29,8 @@ public:
 		motionMagnitudeThreshold = props.motionVectorThreshold;
 		minMotionPixelCountThreshold = props.minMotionVectorRequired;
 		mProps = props;
-		mWidth = props.frameWidth;
-		mHeight = props.frameHeight;
+		mWidth = props.streamWidth;
+		mHeight = props.streamWidth;
 	};
 	~MvExtractDetailAbs()
 	{
@@ -368,6 +368,8 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 	rawOutputMetadata = framemetadata_sp(new RawImageMetadata());
 	mDetail->motionVectorPinId = addOutputPin(motionVectorOutputMetadata);
 	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
+	mDetail->mWidth = props.streamWidth;
+	mDetail->mHeight = props.streamWidth;
 }
 bool MotionVectorExtractor::init()
 {
@@ -441,6 +443,7 @@ void MotionVectorExtractor::setMetadata(frame_sp frame)
 		mDetail->mWidth = p.width;
 		mDetail->mHeight = p.height;
 	}
+	LOG_INFO << "Motion Vector Width is " << mDetail->mWidth << "Height is " <<  mDetail->mHeight;
 	// mDetail->mWidth = 1280;
 	// mDetail->mHeight = 720;
 
