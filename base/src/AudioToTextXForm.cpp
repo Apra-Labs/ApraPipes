@@ -162,8 +162,7 @@ bool AudioToTextXForm::process(frame_container& frames)
 	}
 
 	if (mDetail->mInputAudioBuffer.size() < mDetail->mProps.bufferSize) {
-		sendEOS();
-		return true;
+		return handleFlushingBuffer();
 	}
 	whisper_full(
 		mDetail->mWhisperContext,
@@ -221,4 +220,18 @@ void AudioToTextXForm::setProps(AudioToTextXFormProps& props)
 		throw AIPException(AIP_FATAL, "Model Path dynamic change not handled");
 	}
 	Module::addPropsToQueue(props);
+}
+
+bool AudioToTextXForm::processEOS(string &pinId)
+{
+	mDetail->mInputAudioBuffer.clear();
+	return true;
+}
+
+bool AudioToTextXForm::handleFlushingBuffer()
+{
+	mDetail->mInputAudioBuffer.clear();
+	LOG_ERROR << "Flushed Buffer Successfully...\n";
+	Module::sendEOS();
+	return true;
 }
