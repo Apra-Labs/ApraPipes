@@ -29,6 +29,8 @@ public:
 		motionMagnitudeThreshold = props.motionVectorThreshold;
 		minMotionPixelCountThreshold = props.minMotionVectorRequired;
 		mProps = props;
+		mWidth = props.frameWidth;
+		mHeight = props.frameHeight;
 	};
 	~MvExtractDetailAbs()
 	{
@@ -434,8 +436,11 @@ void MotionVectorExtractor::setMetadata(frame_sp frame)
 	}
 	sps_pps_properties p;
 	H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
-	mDetail->mWidth = p.width;
-	mDetail->mHeight = p.height;
+	// mDetail->mWidth = p.width;
+	// mDetail->mHeight = p.height;
+	// mDetail->mWidth = 1280;
+	// mDetail->mHeight = 720;
+
 	RawImageMetadata outputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::BGR, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true);
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(rawOutputMetadata);
 	rawOutMetadata->setData(outputMetadata);
