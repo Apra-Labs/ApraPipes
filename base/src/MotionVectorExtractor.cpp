@@ -436,8 +436,11 @@ void MotionVectorExtractor::setMetadata(frame_sp frame)
 	}
 	sps_pps_properties p;
 	H264ParserUtils::parse_sps(((const char*)frame->data()) + 5, frame->size() > 5 ? frame->size() - 5 : frame->size(), &p);
-	// mDetail->mWidth = p.width;
-	// mDetail->mHeight = p.height;
+	if(mDetail->mWidth == -1 || mDetail->mHeight == -1)
+	{
+		mDetail->mWidth = p.width;
+		mDetail->mHeight = p.height;
+	}
 	// mDetail->mWidth = 1280;
 	// mDetail->mHeight = 720;
 
