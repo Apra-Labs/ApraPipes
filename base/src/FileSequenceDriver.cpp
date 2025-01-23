@@ -82,7 +82,7 @@ void FileSequenceDriver::jump(uint64_t index)
 bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index)
 {
     bool readRes = false;
-
+	
     const std::string fileNameToUse = mStrategy->GetFileNameToUse(true, index);
 
     if (!fileNameToUse.empty())
@@ -106,7 +106,57 @@ bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index)
 				readRes = true;
 
 			}
-			else {
+			else 
+			{
+				LOG_ERROR << "FileSequenceDriver::Read can not read file " << fileNameToUse;
+			}
+            
+            file.close();
+        }
+    }
+
+    return readRes;
+}
+
+bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index, size_t &userMetadataSize)
+{
+    bool readRes = false;
+	
+    const std::string fileNameToUse = mStrategy->GetFileNameToUse(true, index);
+
+    if (!fileNameToUse.empty())
+    {
+		LOG_TRACE << "FileSequenceDriver::Reading File " << fileNameToUse;
+
+        std::ifstream file(fileNameToUse.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+        if (file.is_open())
+        {
+            //ios::ate implies that file has been seeked to the end
+            //so tellg should give total size
+			size_t fileSize = static_cast<size_t>(file.tellg());
+			if (fileSize > 0U)
+			{
+				// Determine buffer size
+                size_t bufferSize = fileSize;
+				if (userMetadataSize > fileSize)
+                {
+                    bufferSize = userMetadataSize; // Resize frame to userMetadataSize
+                }
+                else
+                {
+                    LOG_WARNING << "File size is larger than user metadata size. Reading the entire file.";
+                }
+
+				auto dataToRead = buffMaker.make(bufferSize);
+				file.seekg(0, std::ios::beg);
+				file.read((char*)dataToRead, fileSize);
+
+				LOG_TRACE << "FileSequenceDriver::Read " << fileSize << " Bytes ";
+
+				readRes = true;
+			}
+			else 
+			{
 				LOG_ERROR << "FileSequenceDriver::Read can not read file " << fileNameToUse;
 			}
             
