@@ -14,7 +14,7 @@
 
 BOOST_AUTO_TEST_SUITE(filereadermodule_tests)
 
-BOOST_AUTO_TEST_CASE(metadatasize)
+BOOST_AUTO_TEST_CASE(custom_metadatasize_larger)
 {
     auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(metadatasize)
     size_t alignLength = 1;
     int depth = CV_8U;
     auto rawImageMetadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, type, alignLength, depth, FrameMetadata::HOST, true));
-	auto expectedDataSize = width * height * channels;
+	auto expectedDataSize = width * height * channels; // expectedDataSize = 500 * 500 * 3 = 750000
 
     auto pinId = fileReader->addOutputPin(rawImageMetadata);
 
@@ -45,13 +45,87 @@ BOOST_AUTO_TEST_CASE(metadatasize)
     
 	auto frame = frames[pinId];
 
-    BOOST_TEST(frame->size() == expectedDataSize);
+    BOOST_TEST(frame->size() == expectedDataSize); // The original frame size should be equal than the custom metadata size
 
     // Print the size of the frame and the metadata size
     std::cout << "Frame size: " << frame->size() << std::endl;
     std::cout << "Metadata size: " << rawImageMetadata->getDataSize() << std::endl;
 	std::cout << "FrameType: " << rawImageMetadata->getFrameType() << std::endl;
     std::cout << "MemType: " << rawImageMetadata->getMemType() << std::endl;
+
+    fileReader->term();
+    sink->term();
+}
+
+BOOST_AUTO_TEST_CASE(custom_metadatasize_smaller)
+{
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+
+    // Custom RawImageMetadata configurations
+    int width = 100;
+    int height = 100;
+    int channels = 3;
+    int type = CV_8UC3;
+    size_t alignLength = 1;
+    int depth = CV_8U;
+    auto rawImageMetadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, type, alignLength, depth, FrameMetadata::HOST, true));
+	auto expectedDataSize = width * height * channels; // expectedDataSize = 100 * 100 * 3 = 30000
+
+    auto pinId = fileReader->addOutputPin(rawImageMetadata);
+
+    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    fileReader->setNext(sink);
+        
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(sink->init());
+
+    fileReader->play(true);
+    
+    fileReader->step();
+    auto frames = sink->pop();
+    
+	BOOST_TEST((frames.find(pinId) != frames.end()));
+    
+	auto frame = frames[pinId];
+
+    BOOST_TEST(frame->size() > expectedDataSize); // The original frame size should be greater than the custom metadata size
+
+    fileReader->term();
+    sink->term();
+}
+
+BOOST_AUTO_TEST_CASE(custom_metadatasize_equal)
+{
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+
+    // Custom RawImageMetadata configurations
+    int width = 320;
+    int height = 180;
+    int channels = 3;
+    int type = CV_8UC3;
+    size_t alignLength = 1;
+    int depth = CV_8U;
+    auto rawImageMetadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, type, alignLength, depth, FrameMetadata::HOST, true));
+	auto expectedDataSize = width * height * channels; // expectedDataSize = 320 * 180 * 3 = 172800
+
+    auto pinId = fileReader->addOutputPin(rawImageMetadata);
+
+    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    fileReader->setNext(sink);
+        
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(sink->init());
+
+    fileReader->play(true);
+    
+    fileReader->step();
+    auto frames = sink->pop();
+    
+	BOOST_TEST((frames.find(pinId) != frames.end()));
+    
+	auto frame = frames[pinId];
+
+    BOOST_TEST(frame->size() == expectedDataSize); // The original frame size is equal to the custom metadata size
 
     fileReader->term();
     sink->term();
