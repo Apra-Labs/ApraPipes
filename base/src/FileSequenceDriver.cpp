@@ -118,6 +118,7 @@ bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index)
     return readRes;
 }
 
+// Reads the file and makes the buffer when metadata is provided
 bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index, size_t &userMetadataSize)
 {
     bool readRes = false;
@@ -138,7 +139,7 @@ bool FileSequenceDriver::ReadP(BufferMaker& buffMaker, uint64_t& index, size_t &
 			{
 				// Determine buffer size
                 size_t bufferSize = fileSize;
-				if (userMetadataSize > fileSize)
+				if (userMetadataSize > fileSize) // check if userMetadataSize is larger than file size
                 {
                     bufferSize = userMetadataSize; // Resize frame to userMetadataSize
                 }
