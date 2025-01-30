@@ -18,6 +18,20 @@ extern "C"
 #include "Utils.h"
 #include "Overlay.h"
 
+#include <vector>
+#include <cmath>
+#include <unordered_set>
+
+struct Point {
+    int x, y;
+    bool visited = false;
+    bool isNoise = false;
+    int clusterId = -1;
+};
+
+struct Cluster {
+    std::vector<Point> points;
+};
 class MvExtractDetailAbs
 {
 public:
@@ -91,6 +105,8 @@ public:
     void getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame);
     void initDecoder();
 private:
+	std::vector<Cluster> dbscanClustering(std::vector<Point>& points, float epsilon, int minPts);
+
     ISVCDecoder* pDecoder;
     SBufferInfo pDstInfo;
     SDecodingParam sDecParam;
@@ -249,6 +265,66 @@ void DetailOpenH264::initDecoder()
 	}
 }
 
+std::vector<Cluster> DetailOpenH264::dbscanClustering(std::vector<Point>& points, float epsilon, int minPts) {
+    std::vector<Cluster> clusters;
+    int clusterId = 0;
+    
+    for (auto& point : points) {
+        if (point.visited) continue;
+        point.visited = true;
+        
+        std::vector<Point*> neighbors;
+        for (auto& other : points) {
+            if (&other == &point) continue;
+            float dx = other.x - point.x;
+            float dy = other.y - point.y;
+            if (std::sqrt(dx*dx + dy*dy) <= epsilon) {
+                neighbors.push_back(&other);
+            }
+        }
+        
+        if (neighbors.size() < minPts) {
+            point.isNoise = true;
+        } else {
+            Cluster cluster;
+            std::unordered_set<Point*> clusterPoints;
+            clusterPoints.insert(&point);
+            point.clusterId = clusterId;
+            
+            for (size_t i = 0; i < neighbors.size(); ++i) {
+                Point* neighbor = neighbors[i];
+                if (!neighbor->visited) {
+                    neighbor->visited = true;
+                    std::vector<Point*> newNeighbors;
+                    for (auto& other : points) {
+                        if (&other == neighbor) continue;
+                        float dx = other.x - neighbor->x;
+                        float dy = other.y - neighbor->y;
+                        if (std::sqrt(dx*dx + dy*dy) <= epsilon) {
+                            newNeighbors.push_back(&other);
+                        }
+                    }
+                    if (newNeighbors.size() >= minPts) {
+                        neighbors.insert(neighbors.end(), newNeighbors.begin(), newNeighbors.end());
+                    }
+                }
+                if (neighbor->clusterId == -1) {
+                    clusterPoints.insert(neighbor);
+                    neighbor->clusterId = clusterId;
+                }
+            }
+            
+            for (auto* p : clusterPoints) {
+                cluster.points.push_back(*p);
+            }
+            clusters.push_back(cluster);
+            clusterId++;
+        }
+    }
+    
+    return clusters;
+}
+
 void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFrame, frame_sp& decodedFrame)
 {
 	uint8_t* pData[3] = { NULL };
@@ -279,9 +355,14 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		pDecoder->DecodeFrameGetMotionVectorsNoDelay(pSrc, iSrcLen, ppDst, &pDstInfo, &mMotionVectorSize, &mMotionVectorData);
 	}
 	int motionCount = 0;
+	float epsilon = 20.0f; // Max distance between points in a cluster
+    int minPts = 5;        // Minimum points to form a cluster
+	std::vector<Point> motionPoints;
+	CompositeOverlay compositeOverlay1;
 	if (mMotionVectorSize != mWidth * mHeight * 8)
 	{
 		std::vector<CircleOverlay> circleOverlays;
+		std::vector<CircleOverlay> circleOverlays1;
 		CompositeOverlay compositeOverlay;
 		for (int i = 0; i < mMotionVectorSize; i += 4)
 		{
@@ -293,8 +374,9 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 				circleOverlay.x1 = mMotionVectorData[i + 2];
 				circleOverlay.y1 = mMotionVectorData[i + 3];
 				circleOverlay.radius = 1;
-
 				circleOverlays.push_back(circleOverlay);
+				motionPoints.push_back({mMotionVectorData[i + 2], mMotionVectorData[i + 3]});
+
 				motionCount++;
 			}
 		}
@@ -304,8 +386,48 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		}
 
         if (circleOverlays.size() && (motionCount >= minMotionPixelCountThreshold))
-        {
-            LOG_DEBUG << "Motion Greater Than Threshold Req:" <<  minMotionPixelCountThreshold << " :Current: " << motionCount;
+		{
+			std::vector<Cluster> clusters = dbscanClustering(motionPoints, epsilon, minPts);
+			int motionCount1 = 0;
+
+			for (const auto &cluster : clusters)
+			{
+				if (cluster.points.empty())
+					continue;
+
+				// Calculate cluster centroid
+				double sumX = 0, sumY = 0;
+				for (const auto &point : cluster.points)
+				{
+					sumX += point.x;
+					sumY += point.y;
+					motionCount1++;
+				}
+				int centerX = static_cast<int>(sumX / cluster.points.size());
+				int centerY = static_cast<int>(sumY / cluster.points.size());
+
+				// Calculate cluster radius (max distance from centroid)
+				double maxDistance = 0;
+				for (const auto &point : cluster.points)
+				{
+					double dx = point.x - centerX;
+					double dy = point.y - centerY;
+					double distance = std::sqrt(dx * dx + dy * dy);
+					if (distance > maxDistance)
+					{
+						maxDistance = distance;
+					}
+				}
+				int radius = static_cast<int>(maxDistance) + 1; // Add original point radius
+
+				CircleOverlay clusterOverlay;
+				clusterOverlay.x1 = centerX;
+				clusterOverlay.y1 = centerY;
+				clusterOverlay.radius = radius;
+				circleOverlays1.push_back(clusterOverlay);
+			}
+
+			LOG_DEBUG << "Motion Greater Than Threshold Req:" <<  minMotionPixelCountThreshold << " :Current: " << motionCount;
             DrawingOverlay drawingOverlay;
             drawingOverlay.add(&compositeOverlay);
             auto mvSize = drawingOverlay.mGetSerializeSize();
@@ -317,7 +439,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 				{"timestamp", h264Frame->timestamp},
 				{"results", nlohmann::json::array()}
 			};
-			for (const auto& overlay : circleOverlays)
+			for (const auto& overlay : circleOverlays1)
 			{
 				jsonOverlays["results"].push_back({
 					{"x", overlay.x1},
@@ -329,8 +451,8 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 			LOG_DEBUG << "Motion Vector Overlays: " << jsonString;
             APErrorObject error(1006, jsonString);
             errorCallback(error);
-        }
-    }
+		}
+	}
 
 	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
 	{
