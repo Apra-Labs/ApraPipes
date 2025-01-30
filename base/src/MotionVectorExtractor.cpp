@@ -44,7 +44,7 @@ public:
 		minMotionPixelCountThreshold = props.minMotionVectorRequired;
 		mProps = props;
 		mWidth = props.streamWidth;
-		mHeight = props.streamWidth;
+		mHeight = props.streamHeight;
 	};
 	~MvExtractDetailAbs()
 	{
