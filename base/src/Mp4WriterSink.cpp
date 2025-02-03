@@ -1,5 +1,6 @@
 #include <ctime>
 #include <fstream>
+#include <vector>
 
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -12,6 +13,7 @@
 #include "libmp4.h"
 #include "PropsChangeMetadata.h"
 #include "H264Metadata.h"
+#include <openssl/sha.h>
 
 class DetailAbs
 {
@@ -22,6 +24,8 @@ public:
 		mNextFrameFileName = "";
 		mux = nullptr;
 		mMetadataEnabled = false;
+		m_frameNumber = 0;
+		
 	};
 
 	void setProps(Mp4WriterSinkProps& _props)
@@ -75,9 +79,11 @@ public:
 		auto ret = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
 		if (mMetadataEnabled)
 		{
+			LOG_ERROR << "mMetadataEnabled Called!\n";
 			/* \251too -> �too */
 			std::string key = "\251too";
-			std::string val = mSerFormatVersion.c_str();
+			// std::string val = mSerFormatVersion.c_str();
+			std::string val = "gibberish data";
 			mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
 		}
 		// track parameters
@@ -137,9 +143,12 @@ public:
 
 	bool attemptFileClose()
 	{
+		LOG_ERROR << "ATTEMPTING TO CLOSE FILE";
 		if (mux)
 		{
-			mp4_mux_close(mux);
+			LOG_ERROR << "Got Mux OPen Closing File";
+			int status = mp4_mux_close(mux);
+			LOG_ERROR << "Status of File CLosed" << status;
 		}
 		mux = NULL;
 		return true;
@@ -161,9 +170,17 @@ public:
 		}
 	}
 
+	void addMetadataInVideoHeaderAtEnd(const char* key, const char* data)
+	{
+		LOG_ERROR << "adding metadata <" << key << "> <" << data << ">";
+		mp4_mux_add_file_metadata(mux, key, data);
+	}
+
 	boost::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
+	uint64_t m_frameNumber = 0;
+	vector<uint64_t> queuedFrames;
 protected:
 	int videotrack;
 	int metatrack;
@@ -241,8 +258,7 @@ bool DetailJpeg::write(frame_container& frames)
 	}
 	short naluType = 0;
 	std::string _nextFrameFileName;
-	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inJpegImageFrame->timestamp, mProps->baseFolder,
-		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag ,mFrameType, naluType);
+	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inJpegImageFrame->timestamp, mProps->baseFolder, mProps->chunkTime, mProps->syncTimeInSecs, syncFlag ,mFrameType, naluType);
 
 	if (_nextFrameFileName == "")
 	{
@@ -423,6 +439,7 @@ bool DetailH264::write(frame_container& frames)
 	if (syncFlag)
 	{
 		mp4_mux_sync(mux);
+		LOG_ERROR << " media synced!";
 		syncFlag = false;
 	}
 
@@ -471,12 +488,20 @@ bool DetailH264::write(frame_container& frames)
 		mux_sample.len = inMp4MetaFrame->size();
 		mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
 	}
+	m_frameNumber++;
 	return true;
 }
 
 Mp4WriterSink::Mp4WriterSink(Mp4WriterSinkProps _props)
-	: Module(SINK, "Mp4WriterSink", _props), mProp(_props)
+	: Module(SINK, "Mp4WriterSink", _props), mProp(_props),
+	m_hashFrameStartQueue(), m_hashFrameEndQueue(), m_hashFrameQueue(),
+	m_shouldStopFileWrite(false)
 {
+	LOG_ERROR << "FPS was set to " << mProp.fps;
+	// TODO: Have separate cache limit for first and last buffer
+	m_hashFrameStartQueue.clear();
+	m_hashFrameEndQueue.clear();
+	m_hashFrameQueue.clear();
 }
 
 Mp4WriterSink::~Mp4WriterSink() {}
@@ -564,6 +589,7 @@ bool Mp4WriterSink::processSOS(frame_sp& frame)
 	{
 		auto mp4VideoMetadata = FrameMetadataFactory::downcast<Mp4VideoMetadata>(inputMetadata);
 		std::string formatVersion = mp4VideoMetadata->getVersion();
+		LOG_ERROR << "processSOS Called!\n";
 		if (formatVersion.empty())
 		{
 			LOG_ERROR << "Serialization Format Information missing from the metadata. Metadata writing will be disabled";
@@ -589,6 +615,26 @@ bool Mp4WriterSink::process(frame_container& frames)
 {
 	try
 	{
+		m_currFrame++;
+		if (m_shouldStopFileWrite)
+		{
+			LOG_ERROR << "Frame can not come through";
+			return true;
+		}
+		else
+		{
+			auto frame = getFrameByType(frames, FrameMetadata::H264_DATA);
+			auto type =  H264Utils::getNALUType((char*)(frame->data()));
+			if (!frame) 
+			{
+				LOG_ERROR << "Frame not found";
+			}
+			else if (((type == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE || type == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_SEQ_PARAM) && m_lastFrameStored < 0) || m_lastFrameStored >= 0)
+			{
+				m_lastFrameStored++;
+				cacheFrames(5, 5, frame);
+			}
+		}
 		if (!mDetail->write(frames))
 		{
 			LOG_FATAL << "Error occured while writing mp4 file<>";
@@ -602,6 +648,51 @@ bool Mp4WriterSink::process(frame_container& frames)
 		mDetail->attemptFileClose();
 	}
 	return true;
+}
+
+vector<uint8_t> Mp4WriterSink::getFrameBytes(frame_sp frame)
+{
+	uint8_t* rawBuffer = static_cast<uint8_t*>(frame->data());
+	char* signedBuffer = static_cast<char*>(frame->data());
+	vector<uint8_t> frameCopy;
+	size_t frameLength = frame->size();
+	size_t iFrameOffset = 0;
+	int32_t naluSeparatorSize = 0;
+	bool isKeyFrame = H264Utils::getNALUnitOffsetAndSizeBasedOnGivenType(signedBuffer, frameLength, 
+		iFrameOffset, naluSeparatorSize, H264Utils::H264_NAL_TYPE_IDR_SLICE, true);
+	if(!isKeyFrame || (isKeyFrame && !iFrameOffset))
+	{
+		frameCopy.insert(frameCopy.end(), rawBuffer + 4, rawBuffer + frameLength);
+	}
+	else
+	{
+		frameCopy.insert(frameCopy.end(), rawBuffer + iFrameOffset, rawBuffer + frameLength);
+	}
+	return frameCopy;
+}
+
+void Mp4WriterSink::cacheFrames(uint32_t firstLimit, uint32_t endLimit, frame_sp frame)
+{
+	// uint8_t* frameCopy;
+	vector<uint8_t> frameCopy = getFrameBytes(frame);
+	if (m_hashFrameStartQueue.size() < firstLimit) 
+	{
+		m_hashFrameStartQueue.push_back(frameCopy);
+		mDetail->queuedFrames.push_back(m_lastFrameStored);
+		// LOG_ERROR<<"Size of start buffer ->" << m_hashFrameStartQueue.size();
+	}
+	else 
+	{
+		if (m_hashFrameEndQueue.size() >= endLimit) 
+		{
+			m_hashFrameEndQueue.erase(m_hashFrameEndQueue.begin());
+			// mDetail->queuedFrames.erase(mDetail->queuedFrames.begin() + endLimit);
+		}
+		m_hashFrameEndQueue.push_back(frameCopy);
+		mDetail->queuedFrames.push_back(m_lastFrameStored);
+		// LOG_ERROR<<"Size of end buffer ->" << m_hashFrameEndQueue.size();
+	}
+	// hashing(frameCopy.data(), frameCopy.size());
 }
 
 bool Mp4WriterSink::processEOS(string& pinId)
@@ -625,6 +716,7 @@ bool Mp4WriterSink::handlePropsChange(frame_sp& frame)
 	Mp4WriterSinkProps props;
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
+	m_shouldStopFileWrite = false;
 	return ret;
 }
 
@@ -639,7 +731,45 @@ bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp& frame)
     {
         Mp4WriterSinkCloseFile cmd;
         getCommand(cmd, frame);
+		if (m_customMetadata.empty())
+		{
+			m_customMetadata = "dummy data";
+		}
+		mDetail->addMetadataInVideoHeaderAtEnd("\251too", m_customMetadata.c_str());
 		mDetail->attemptFileClose();
+		m_hashFrameQueue.clear();
+		m_shouldStopFileWrite = false;
+
+		LOG_ERROR << "Total frames that were considered for caching -> " << m_lastFrameStored;
+
+		m_lastFrameStored = -1;
+
+		for (uint64_t val : mDetail->queuedFrames)
+		{
+			std::cout << val << ", ";
+		}
+		std::cout << std::endl;
+		LOG_ERROR << "Total frames that ever came -> " << m_currFrame;
+		m_currFrame = -1;
+		mDetail->queuedFrames.clear();
+
+        return true;
+    }
+	else  if (type == Command::CommandType::StopMp4Write)
+    {
+        Mp4StopWrite cmd;
+        getCommand(cmd, frame);
+		m_shouldStopFileWrite = true;
+		m_hashFrameQueue.clear();
+		m_hashFrameQueue.insert(m_hashFrameQueue.end(), m_hashFrameStartQueue.begin(), m_hashFrameStartQueue.end());
+		m_hashFrameStartQueue.clear();
+		m_hashFrameQueue.insert(m_hashFrameQueue.end(), m_hashFrameEndQueue.begin(), m_hashFrameEndQueue.end());
+		m_hashFrameEndQueue.clear();
+		hashing();
+		if (m_callbackFunction)
+		{
+			m_callbackFunction();
+		}
         return true;
     }
     return Module::handleCommand(type, frame);
@@ -649,4 +779,52 @@ bool Mp4WriterSink::closeFile()
 {
     Mp4WriterSinkCloseFile cmd;
     return queueCommand(cmd);
+}
+
+bool Mp4WriterSink::retortCallback()
+{
+	Mp4StopWrite cmd;
+    return queueCommand(cmd);
+}
+
+void Mp4WriterSink::setCustomMetadata(std::string data)
+{
+	LOG_ERROR << "setCustomMetadata called -> "<< data.c_str();
+	m_customMetadata = data;
+}
+
+std::vector<std::vector<uint8_t>> Mp4WriterSink::getQueuedFrames()
+{
+	return m_hashFrameQueue;
+	// return mDetail->queuedFrames;
+}
+
+void Mp4WriterSink::hashing(uint8_t* frame, size_t frameSize)
+{
+	unsigned char hash[SHA512_DIGEST_LENGTH] = { 0 }; // Buffer for SHA-512 hash
+	char computedHash[SHA512_DIGEST_LENGTH * 2 + 1] = { 0 };
+	// SHA512(vec[i], sizeof(vec[i]), hash); 
+	SHA512(frame, frameSize, hash); 
+	for (int j = 0; j < SHA512_DIGEST_LENGTH; j++)
+	{
+		sprintf(computedHash + (j * 2), "%02x", hash[j]);
+	}
+	printf("\tHex of frame at generation %lu -> %s with size %lu \n", m_lastFrameStored, computedHash, frameSize);
+}
+
+
+void Mp4WriterSink::hashing()
+{
+	std::vector<std::vector<uint8_t>> vec = m_hashFrameQueue;
+	for (size_t i = 0; i < vec.size(); ++i) 
+	{
+		unsigned char hash[SHA512_DIGEST_LENGTH]; // Buffer for SHA-512 hash
+		char computedHash[SHA512_DIGEST_LENGTH * 2 + 1];
+		SHA512(vec[i].data(), vec[i].size(), hash);
+		for (int j = 0; j < SHA512_DIGEST_LENGTH; j++)
+		{
+			sprintf(computedHash + (j * 2), "%02x", hash[j]);
+		}
+		printf("\tHex of frame at close file %lu -> %s (%lu)  \n", i, computedHash, vec[i].size());
+	}
 }

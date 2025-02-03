@@ -21,16 +21,16 @@ __global__ void applySquareRotationIndicatorKernel(unsigned char *ptr, int width
     switch (rotationDegree)
     {
     case 90:
-        isEdgePixel = (x > (1000 - 8));
+        isEdgePixel = (x > (1000 - 20));
         break;
     case 180:
-        isEdgePixel = (y > (height - 8));
+        isEdgePixel = (y > (height - 20));
         break;
     case 270:
-        isEdgePixel = (x < 8);
+        isEdgePixel = (x < 20);
         break;
     default:
-        isEdgePixel = (y < 8);
+        isEdgePixel = (y < 20);
     }
 
     if (isEdgePixel)
@@ -39,6 +39,7 @@ __global__ void applySquareRotationIndicatorKernel(unsigned char *ptr, int width
         ptr[index + 0] = 0;
         ptr[index + 1] = 159;
         ptr[index + 2] = 148;
+        ptr[index + 3] = 255;
         // ptr[index + 3] = 160; // Uncomment if needed
     }
     

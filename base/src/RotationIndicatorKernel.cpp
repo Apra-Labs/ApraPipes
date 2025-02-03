@@ -102,7 +102,12 @@ public:
 		}
 		LOG_DEBUG << "Indicator Enabled ============>>>>> Current Angle To Rotate is " << props.rotationAngle << "================";
         applySquareRotationIndicator((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, props.rotationAngle, props.stream);
-        return true;
+		auto cudaStatus = cudaStreamSynchronize(props.stream);
+		if (cudaStatus != cudaSuccess)
+		{
+			LOG_ERROR << "cudaStreamSynchronize failed <" << cudaStatus << ">";
+		}
+		return true;
 	}
 
 private:

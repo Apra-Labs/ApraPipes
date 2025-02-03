@@ -178,6 +178,7 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
         LOG_ERROR << "Got Command TO Destroy Window";
         EglRendererCloseWindow cmd;
         getCommand(cmd, frame);
+        LOG_ERROR << "IS EGL WINDOW " << mDetail->m_isEglWindowCreated;
         if (mDetail->m_isEglWindowCreated)
         {
             mDetail->destroyWindow();
@@ -204,6 +205,7 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
 
 bool EglRendererReview::closeWindow()
 {
+    LOG_ERROR << " I have Queue The Command to Close Window" ;
     EglRendererCloseWindow cmd;
     return queueCommand(cmd, false);
 }

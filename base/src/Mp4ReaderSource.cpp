@@ -8,6 +8,7 @@
 #include "Command.h"
 #include "libmp4.h"
 #include "H264Utils.h"
+// #include "ulog.h"
 
 class Mp4readerDetailAbs
 {
@@ -22,6 +23,7 @@ public:
 		mFSParser = boost::shared_ptr<FileStructureParser>(new FileStructureParser());
 		mDetailCallbackFunction = callback;
 		mIsFrameStillAvailable = false;
+		m_shouldForceClose = false;
 	}
 
 	~Mp4readerDetailAbs()
@@ -91,6 +93,7 @@ public:
 	bool initNewVideo()
 	{
 		LOG_DEBUG << "Init New Video is Called";
+		m_shouldForceClose = false;
 		/*  parseFS() is called:
 			only if parseFS is set AND (it is the first time OR if parse file limit is reached)
 			returns false if no relevant mp4 file left on disk. */
@@ -158,7 +161,7 @@ public:
 		if (ret < 0)
 		{
 			mediaBroke = true;
-			LOG_ERROR << "Failed to open file ";
+			LOG_ERROR << "Failed to open file with error code: " << ret;
 			// throw AIPException(AIP_FATAL, "Failed to open the file <" + mState.mVideoPath + ">");
 			return true;
 
@@ -385,14 +388,14 @@ public:
 
 	void readNextFrame(uint8_t* sampleFrame, uint8_t* sampleMetadataFrame, size_t& imageFrameSize, size_t& metadataFrameSize)
 	{
-
 		// all frames of the open video are already read and end has not reached
 		if (mState.mFrameCounter == mState.mFramesInVideo && !mState.end)
 		{
 			sendEndOfStream();
 			// if parseFS is unset, it is the end
-            LOG_DEBUG << "frames number" << mState.mFrameCounter;		
+            LOG_ERROR << "frames number" << mState.mFrameCounter;		
 			mState.end = !mProps.parseFS;
+			// LOG_ERROR << "Got EOS FRAME =>  " << mState.end; 
 			initNewVideo();
 		}
 		if (mState.end) // no files left to be parsed
@@ -419,14 +422,22 @@ public:
 				demux, id, 1, NULL, 0, NULL, 0, &sample);
 			*/
 
+			if (ret != 0 && true)
+			{
+				m_shouldForceClose = true;
+				LOG_ERROR << "SHOULD CLOSING THE FILE!!!!!!\n";
+			}
 			if (ret != 0 || mState.sample.size == 0)
 			{
 				LOG_INFO << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
 				mState.has_more_video = 0;
 				sampleFrame = nullptr;
 				imageFrameSize = 0;
+				sendEndOfStream();
 				return;
 			}
+
+			LOG_ERROR << "Frames count " << mState.mFrameCounter << "/" << mState.mFramesInVideo;
 			++mState.mFrameCounter;
 		}
 		
@@ -501,6 +512,7 @@ public:
 	bool mediaBroke = false;
 	uint64_t videoStartTime;
 	bool mIsFrameStillAvailable;
+	bool m_shouldForceClose;
 };
 
 class Mp4readerDetailJpeg : public Mp4readerDetailAbs
@@ -683,7 +695,6 @@ bool Mp4readerDetailH264::produceFrames(frame_container& frames)
 	size_t metadataActualSize = 0;
 	if(mState.mVideoPath != "")
 	{
-
 		readNextFrame(sampleFrame, sampleMetadataFrame, imageActualSize, metadataActualSize);
 	}
 	else
@@ -850,6 +861,12 @@ bool Mp4ReaderSource::produce()
 
 //     // Print the formatted time
 //    LOG_ERROR<< "Current timestamp: " << buffer;
+	// if (mDetail->m_shouldForceClose)
+	// {
+	// 	LOG_ERROR << "Going to Close File Immediately!!";
+	// 	closeOpenFile();
+	// 	return true;
+	// }
 	send(frames);
 	return true;
 }

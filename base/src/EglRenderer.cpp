@@ -231,5 +231,6 @@ void EglRenderer::waitForNextFrame()
 
 bool EglRenderer::statusOfEglWindow()
 {
+    LOG_ERROR << "Egl Renderer " << mDetail->m_isEglWindowCreated; 
     return mDetail->m_isEglWindowCreated;
 }

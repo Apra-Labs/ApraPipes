@@ -209,9 +209,42 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 
 void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self)
 {
-    // take care of destruction case
-    frame_opool.free(pointer);
-    mCapturePlane->qBuffer(index);
+    try
+    {
+        if (pointer == nullptr) {
+            LOG_ERROR << "Null pointer passed to reuseCatureBuffer";
+            return;
+        }
+
+        // Debug log for frame info
+        LOG_DEBUG << "Reusing capture buffer at index " << index << " with pointer " << pointer;
+
+        // Check if the frame is valid before freeing it
+        if (!frame_opool.is_from(pointer)) {
+            LOG_ERROR << "Pointer does not belong to the object pool.";
+            return;
+        }
+        else
+        {
+            // LOG_ERROR << "Belongs to Object Pool";
+        }
+
+        // Free the frame
+        frame_opool.free(pointer);
+
+        // Requeue the buffer on the capture plane
+        mCapturePlane->qBuffer(index);
+    }
+    catch (const std::exception &e)
+    {
+        LOG_ERROR << "Exception caught in reuseCatureBuffer: " << e.what();
+        throw;
+    }
+    catch (...)
+    {
+        LOG_ERROR << "Unknown exception caught in reuseCatureBuffer.";
+        throw;
+    }
 }
 
 bool H264EncoderV4L2Helper::process(frame_sp& frame)

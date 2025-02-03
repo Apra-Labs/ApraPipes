@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
+#include <exiv2/exiv2.hpp>
 
 class ThumbnailListGenerator::Detail
 {
@@ -154,6 +155,8 @@ bool ThumbnailListGenerator::process(frame_container &frames)
 
     // return true;
 
+    LOG_ERROR << " image data -> width<" << width <<"> & height <" << height <<">";
+
     // Loop over the image rows
     while (cinfo.next_scanline < cinfo.image_height)
     {
@@ -175,8 +178,14 @@ bool ThumbnailListGenerator::process(frame_container &frames)
 
     // Clean up the JPEG compression object and close the output file
     jpeg_destroy_compress(&cinfo);
+    fflush(outfile);
     fclose(outfile);
-
+    // decompressFrame();
+    sync();
+    if (m_callbackFunction)
+    {
+        m_callbackFunction();
+    }
     return true;
 }
 
@@ -197,4 +206,91 @@ bool ThumbnailListGenerator::handlePropsChange(frame_sp &frame)
     bool ret = Module::handlePropsChange(frame, props);
     mDetail->setProps(props);
     return ret;
+}
+
+void ThumbnailListGenerator::decompressFrame()
+{
+    FILE *file = fopen(mDetail->mProps.fileToStore.c_str(), "rb");
+	if (!file)
+	{
+		std::cerr << "Error: Could not open the image file." << std::endl;
+		perror("fopen error");
+		return;
+	}
+
+	jpeg_decompress_struct jpegInfo;
+	jpeg_error_mgr jpegErr;
+	jpegInfo.err = jpeg_std_error(&jpegErr);
+	jpeg_create_decompress(&jpegInfo);
+	jpeg_stdio_src(&jpegInfo, file);
+	jpeg_read_header(&jpegInfo, TRUE);
+
+	jpegInfo.do_fancy_upsampling = FALSE;
+	jpegInfo.do_block_smoothing = FALSE;
+
+	jpeg_start_decompress(&jpegInfo);
+
+	int32_t width = jpegInfo.output_width;
+	int32_t height = jpegInfo.output_height;
+	int32_t channels = 4;
+
+	std::vector<unsigned char> imageData;
+    imageData.resize(width * height * channels);
+	unsigned char *rowPtr = imageData.data();
+	while (jpegInfo.output_scanline < jpegInfo.output_height)
+	{
+		rowPtr = &imageData[jpegInfo.output_scanline * width * channels];
+		if (rowPtr && &jpegInfo)
+		{
+			jpeg_read_scanlines(&jpegInfo, &rowPtr, 1);
+		}
+	}
+    m_frameBuffer = imageData;
+    if (m_callbackFunction)
+    {
+        m_callbackFunction();
+    }
+    fflush(file);
+	jpeg_finish_decompress(&jpegInfo);
+	jpeg_destroy_decompress(&jpegInfo); 
+	fclose(file);
+    sync();
+    try
+	{
+        LOG_ERROR << "For " << mDetail->mProps.fileToStore.c_str() << ", Custom Metadata -> " << m_customMetadata.c_str();
+		Exiv2::Image::AutoPtr mediaFile = Exiv2::ImageFactory::open(mDetail->mProps.fileToStore);
+		if (!mediaFile.get() || m_customMetadata.empty())
+		{
+			std::cerr << "Could not open media file for EXIF modification."
+					<< std::endl;
+			return;
+		}
+
+		mediaFile->readMetadata();
+		Exiv2::ExifData &exifData = mediaFile->exifData();
+
+		exifData["Exif.Photo.UserComment"] = m_customMetadata;
+		mediaFile->setExifData(exifData);
+		mediaFile->writeMetadata();
+
+        std::cout << "Hash saved in EXIF metadata successfully."
+                << std::endl;
+	} catch (Exiv2::Error &e)
+	{
+		std::cerr << "Error writing EXIF metadata: " << e.what() << std::endl;
+	}
+    // OPen Give Frame Buffer And Size to XCIF library, 
+    // Calculate Hash
+    // Store it in XCIF
+}
+
+std::vector<unsigned char> ThumbnailListGenerator::getFrameBuffer()
+{
+    return m_frameBuffer;
+}
+
+void ThumbnailListGenerator::setMetadata(std::string data)
+{
+    LOG_ERROR << "setCustomMetadata called -> "<< data.c_str();
+    m_customMetadata = data;
 }

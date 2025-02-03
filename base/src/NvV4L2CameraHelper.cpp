@@ -318,7 +318,7 @@ bool NvV4L2CameraHelper::stop()
 
 bool NvV4L2CameraHelper::isCameraConnected()
 {
-    // LOG_ERROR << "Camera Connected " <<mCameraConnected;
+    LOG_ERROR << "Camera Connected " <<mCameraConnected;
     bool camStatus = false;
     // m_lockCameraStatus.lock();
     camStatus = mCameraConnected;

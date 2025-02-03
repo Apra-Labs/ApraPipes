@@ -133,7 +133,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 }
-void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath,
+void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds, boost::filesystem::path& relPath,
 	std::string& mp4FileName, bool& syncFlag, short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName)
 {
 	std::chrono::milliseconds duration(ts);

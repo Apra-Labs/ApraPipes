@@ -1,6 +1,7 @@
 #pragma once
 #include "Module.h"
 
+using CallbackFunction = std::function<void()>;
 class ThumbnailListGeneratorProps : public ModuleProps
 {
 public:
@@ -38,10 +39,16 @@ class ThumbnailListGenerator : public Module
 public:
     ThumbnailListGenerator(ThumbnailListGeneratorProps _props);
     virtual ~ThumbnailListGenerator();
+    void registerCallback(const CallbackFunction &_callback)
+	{
+		m_callbackFunction = _callback;
+	}
     bool init();
     bool term();
     void setProps(ThumbnailListGeneratorProps &props);
     ThumbnailListGeneratorProps getProps();
+    std::vector<unsigned char>getFrameBuffer();
+    void setMetadata(std::string data);
 
 protected:
     bool process(frame_container &frames);
@@ -49,8 +56,12 @@ protected:
     // bool processSOS(frame_sp &frame);
     // bool shouldTriggerSOS();
     bool handlePropsChange(frame_sp &frame);
+    void decompressFrame();
 
 private:
     class Detail;
     boost::shared_ptr<Detail> mDetail;
+    std::vector<unsigned char> m_frameBuffer;
+    std::string m_customMetadata;
+    CallbackFunction m_callbackFunction = NULL;
 };

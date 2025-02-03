@@ -82,6 +82,11 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         if (buffer->eglImage == EGL_NO_IMAGE_KHR)
         {
             LOG_ERROR << "Failed to create eglImage";
+            EGLint error = eglGetError();
+            std::stringstream errorMsg;
+            errorMsg << "Failed to create eglImage. EGL Error: " << std::hex << error;
+            LOG_ERROR << errorMsg.str();
+            LOG_ERROR << "Buffer details - fd: " << buffer->m_fd;
             delete buffer;
             return nullptr;
         }

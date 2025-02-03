@@ -14,6 +14,7 @@ public:
 		ValvePassThrough,
 		MultimediaQueueXform,
 		Seek,
+		StopMp4Write,
 		Mp4FileClose,
 		DeleteWindow,
 		CreateWindow,
@@ -205,6 +206,28 @@ class Mp4WriterSinkCloseFile : public Command
 {
 public:
 	Mp4WriterSinkCloseFile() : Command(Command::CommandType::Mp4FileClose)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
+
+class Mp4StopWrite : public Command
+{
+public:
+	Mp4StopWrite() : Command(Command::CommandType::StopMp4Write)
 	{
 	}
 
