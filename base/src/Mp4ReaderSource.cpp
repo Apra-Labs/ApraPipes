@@ -628,7 +628,7 @@ public:
 		mState.sentCommandToControlModule = false;
 	}
 
-	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
+	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = true)
 	{
 		/* Seeking in custom file i.e. parseFS is disabled */
 		if (!mProps.parseFS)
@@ -796,7 +796,7 @@ public:
 		mState.mFrameCounterIdx = 0;
 	}
 
-	bool randomSeek(uint64_t& skipTS, bool forceReopen = false) noexcept
+	bool randomSeek(uint64_t& skipTS, bool forceReopen = true) noexcept
 	{
 		try
 		{
