@@ -341,6 +341,7 @@ public:
 			isVideoFileFound = true;
 		}
 
+		mState.mVideoPath = mProps.videoPath; 
 		auto nextFilePath = mState.mVideoPath;
 		if (mProps.parseFS)
 		{
