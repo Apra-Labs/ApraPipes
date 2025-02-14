@@ -192,6 +192,7 @@ public:
   bool isKeyFrame;
   struct mp4_mux *mux;
   bool syncFlag = false;
+  uint64_t lastWrittenFrameTS = 0;
 
 protected:
   int videotrack;
@@ -641,6 +642,9 @@ bool Mp4WriterSink::process(frame_container &frames) {
       executeErrorCallback(error);
       return true;
     }
+    else {
+      mDetail->lastWrittenFrameTS = frames.begin()->second->timestamp;
+    }
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     // close any open file
@@ -694,4 +698,9 @@ bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp &frame)
   {
     return Module::handleCommand(type, frame);
   }
+}
+
+uint64_t Mp4WriterSink::getLastWrittenFrameTS() 
+{ 
+  return mDetail->lastWrittenFrameTS;
 }

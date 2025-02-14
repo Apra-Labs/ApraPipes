@@ -87,6 +87,7 @@ public:
 	Mp4WriterSinkProps getProps();
 	bool doMp4MuxSync();
 	bool closeCurrentOpenFile();
+	uint64_t getLastWrittenFrameTS();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
