@@ -692,6 +692,7 @@ bool Mp4WriterSink::handleCommand(Command::CommandType type, frame_sp &frame)
   {
     Mp4WriterFileCloseCommand mp4FileCloseCmd;
     getCommand(mp4FileCloseCmd, frame);
+    mDetail->lastWrittenFrameTS = 0;
     return mDetail->attemptFileClose();
   }
   else
