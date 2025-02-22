@@ -5,7 +5,7 @@
 class ArchiveSpaceManagerProps : public ModuleProps
 {
 public:
-	ArchiveSpaceManagerProps(uint32_t _lowerWaterMark, uint32_t _upperWaterMark, string _pathToWatch, int _samplingFreq)
+	ArchiveSpaceManagerProps(uint64_t _lowerWaterMark, uint64_t _upperWaterMark, string _pathToWatch, int _samplingFreq)
 	{
 		lowerWaterMark = _lowerWaterMark;
 		upperWaterMark = _upperWaterMark;
@@ -22,7 +22,7 @@ public:
 		}
 	}
 
-	ArchiveSpaceManagerProps(uint32_t maxSizeAllowed, string _pathToWatch, int _samplingFreq)
+	ArchiveSpaceManagerProps(uint64_t maxSizeAllowed, string _pathToWatch, int _samplingFreq)
 	{
 		lowerWaterMark = maxSizeAllowed - (maxSizeAllowed / 10);
 		upperWaterMark = maxSizeAllowed;
@@ -40,8 +40,8 @@ public:
 	}
 
 
-	uint32_t lowerWaterMark; // Lower disk space
-	uint32_t upperWaterMark; // Higher disk space
+	uint64_t lowerWaterMark; // Lower disk space
+	uint64_t upperWaterMark; // Higher disk space
 	std::string pathToWatch;
 	int samplingFreq;
 	size_t getSerializeSize()
@@ -71,12 +71,12 @@ public:
 	}
 	bool init();
 	bool term();
-	uint32_t finalArchiveSpace = 0;
+	uint64_t finalArchiveSpace = 0;
 	void setProps(ArchiveSpaceManagerProps& props);
 	ArchiveSpaceManagerProps getProps();
 
 protected:
-	bool process();
+	bool produce();
 	bool validateInputPins();
 	bool validateOutputPins();
 	bool validateInputOutputPins();
