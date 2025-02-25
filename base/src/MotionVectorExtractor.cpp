@@ -495,7 +495,7 @@ MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) :
 	mDetail->motionVectorPinId = addOutputPin(motionVectorOutputMetadata);
 	mDetail->rawFramePinId = addOutputPin(rawOutputMetadata);
 	mDetail->mWidth = props.streamWidth;
-	mDetail->mHeight = props.streamWidth;
+	mDetail->mHeight = props.streamHeight;
 }
 bool MotionVectorExtractor::init()
 {
