@@ -4,7 +4,8 @@
 #include <cstdlib>
 #include <stdafx.h>
 
-class ArchiveSpaceManager::Detail {
+class ArchiveSpaceManager::Detail
+{
 public:
   Detail(ArchiveSpaceManagerProps &_props) : mProps(_props) {}
 
@@ -12,8 +13,8 @@ public:
 
   void setProps(ArchiveSpaceManagerProps _props) { mProps = _props; }
 
-  uint64_t estimateDirectorySize(boost::filesystem::path _dir) {
-    std::cout << "Estimating size for directory: " << _dir << std::endl;
+  uint64_t estimateDirectorySize(boost::filesystem::path _dir)
+  {
     uint64_t dirSize = 0;
     int sample = 0;
     int inCount = 0;
@@ -21,20 +22,27 @@ public:
     uint64_t tempSize = 0;
 
     for (const auto &entry :
-         boost::filesystem::recursive_directory_iterator(_dir)) {
-      if (boost::filesystem::is_regular_file(entry)) {
-        if (countFreq % mProps.samplingFreq == 0) {
+         boost::filesystem::recursive_directory_iterator(_dir))
+    {
+      if (boost::filesystem::is_regular_file(entry))
+      {
+        if (countFreq % mProps.samplingFreq == 0)
+        {
           sample = (rand() % mProps.samplingFreq);
           inCount = 0;
         }
 
-        if (inCount == sample) {
-          try {
+        if (inCount == sample)
+        {
+          try
+          {
             tempSize = boost::filesystem::file_size(entry);
             dirSize += tempSize * mProps.samplingFreq;
-          } catch (const std::exception &e) {
-            std::cout << "Failed to get file size for " << entry << ": "
-                      << e.what() << std::endl;
+          }
+          catch (const std::exception &e)
+          {
+            LOG_INFO << "Failed to get file size for " << entry << ": "
+                      << e.what();
           }
         }
 
@@ -45,19 +53,24 @@ public:
 
     // Adjust for the remaining files if they are fewer than the sampling
     // frequency
-    if (inCount < mProps.samplingFreq && inCount > 0) {
+    if (inCount < mProps.samplingFreq && inCount > 0)
+    {
       dirSize += tempSize * inCount;
     }
 
-    std::cout << "Total Directory Size: " << dirSize << std::endl;
+    LOG_TRACE << "Total Directory Size: " << dirSize;
     return dirSize;
   }
 
-  boost::filesystem::path getOldestDirectory(boost::filesystem::path _cam) {
-    for (const auto &camFolder : boost::filesystem::directory_iterator(_cam)) {
+  boost::filesystem::path getOldestDirectory(boost::filesystem::path _cam)
+  {
+    for (const auto &camFolder : boost::filesystem::directory_iterator(_cam))
+    {
       for (const auto &folder :
-           boost::filesystem::recursive_directory_iterator(camFolder)) {
-        if (boost::filesystem::is_regular_file(folder)) {
+           boost::filesystem::recursive_directory_iterator(camFolder))
+      {
+        if (boost::filesystem::is_regular_file(folder))
+        {
           boost::filesystem::path p = folder.path().parent_path();
           return p;
         }
@@ -66,14 +79,18 @@ public:
     return _cam;
   };
 
-  void manageDirectory() {
+  void manageDirectory()
+  {
     auto comparator = [](std::pair<boost::filesystem::path, uint64_t> &a,
-                         std::pair<boost::filesystem::path, uint64_t> &b) {
+                         std::pair<boost::filesystem::path, uint64_t> &b)
+    {
       return a.second < b.second;
     };
-    while (archiveSize > mProps.lowerWaterMark) {
+    while (archiveSize > mProps.lowerWaterMark)
+    {
       for (const auto &camFolder :
-           boost::filesystem::directory_iterator(mProps.pathToWatch)) {
+           boost::filesystem::directory_iterator(mProps.pathToWatch))
+      {
         boost::filesystem::path oldHrDir = getOldestDirectory(camFolder);
         foldVector.push_back(
             {oldHrDir, boost::filesystem::last_write_time(oldHrDir)});
@@ -86,25 +103,33 @@ public:
       BOOST_LOG_TRIVIAL(info) << "Deleting file : " << delDir.string();
       tempSize = estimateDirectorySize(delDir);
       archiveSize = archiveSize - tempSize;
-      try {
+      try
+      {
         boost::filesystem::remove_all(delDir);
         boost::filesystem::path parentDir = delDir.parent_path();
-        if (boost::filesystem::is_empty(parentDir)) {
+        if (boost::filesystem::is_empty(parentDir))
+        {
           BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
           boost::filesystem::remove_all(parentDir);
         }
-      } catch (...) {
+      }
+      catch (...)
+      {
         LOG_ERROR << "Could not delete directory!..";
       }
       foldVector.clear();
     }
   }
 
-  uint64_t diskOperation() {
+  uint64_t diskOperation()
+  {
     archiveSize = estimateDirectorySize(mProps.pathToWatch);
-    if (archiveSize > mProps.upperWaterMark) {
+    if (archiveSize > mProps.upperWaterMark)
+    {
       manageDirectory();
-    } else {
+    }
+    else
+    {
       LOG_INFO << "DiskSpace is under range";
     }
     uint64_t tempSize = archiveSize;
@@ -117,7 +142,8 @@ public:
 };
 
 ArchiveSpaceManager::ArchiveSpaceManager(ArchiveSpaceManagerProps _props)
-    : Module(SOURCE, "ArchiveSpaceManager", _props) {
+    : Module(SOURCE, "ArchiveSpaceManager", _props)
+{
   mDetail.reset(new Detail(_props));
 }
 
@@ -128,13 +154,16 @@ bool ArchiveSpaceManager::validateOutputPins() { return true; }
 bool ArchiveSpaceManager::validateInputOutputPins() { return true; }
 
 void ArchiveSpaceManager::addInputPin(framemetadata_sp &metadata,
-                                      string &pinId) {
+                                      string &pinId)
+{
   Module::addInputPin(metadata, pinId);
   Module::addOutputPin(metadata, pinId);
 }
 
-bool ArchiveSpaceManager::init() {
-  if (!Module::init()) {
+bool ArchiveSpaceManager::init()
+{
+  if (!Module::init())
+  {
     return false;
   }
   return true;
@@ -142,25 +171,32 @@ bool ArchiveSpaceManager::init() {
 
 bool ArchiveSpaceManager::term() { return Module::term(); }
 
-ArchiveSpaceManagerProps ArchiveSpaceManager::getProps() {
+ArchiveSpaceManagerProps ArchiveSpaceManager::getProps()
+{
   return mDetail->mProps;
 }
 
-void ArchiveSpaceManager::setProps(ArchiveSpaceManagerProps &props) {
+void ArchiveSpaceManager::setProps(ArchiveSpaceManagerProps &props)
+{
   Module::addPropsToQueue(props);
 }
 
-bool ArchiveSpaceManager::handlePropsChange(frame_sp &frame) {
+bool ArchiveSpaceManager::handlePropsChange(frame_sp &frame)
+{
   ArchiveSpaceManagerProps props(mDetail->mProps);
   auto ret = Module::handlePropsChange(frame, props);
   mDetail->setProps(props);
   return ret;
 }
 
-bool ArchiveSpaceManager::produce() {
-  try {
+bool ArchiveSpaceManager::produce()
+{
+  try
+  {
     finalArchiveSpace = mDetail->diskOperation();
-  } catch (...) {
+  }
+  catch (...)
+  {
     LOG_ERROR << "Archive Disk Manager encountered an error.";
   }
   return true;
