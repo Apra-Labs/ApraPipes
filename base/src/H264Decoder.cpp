@@ -744,5 +744,7 @@ bool H264Decoder::processEOS(string& pinId)
 
 void H264Decoder::flushQue()
 {
+	incomingFramesTSQ.clear();
+	LOG_ERROR<<"Decoder incomingFramesTSQ is full, clearing the queue";
 	Module::flushQue();
 }
