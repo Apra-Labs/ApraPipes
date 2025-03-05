@@ -1,7 +1,7 @@
 <map id="DetailAbs" name="DetailAbs">
-<area shape="rect" id="Node000001" title=" " alt="" coords="119,5,311,571"/>
-<area shape="rect" id="Node000002" href="$classDetailH264.html" title=" " alt="" coords="5,619,209,824"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,586,135,620,130,618,139,584"/>
-<area shape="rect" id="Node000003" href="$classDetailJpeg.html" title=" " alt="" coords="234,669,415,774"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="293,585,314,668,309,669,288,586"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="119,5,312,580"/>
+<area shape="rect" id="Node000002" href="$classDetailH264.html" title=" " alt="" coords="5,628,210,837"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,595,136,629,131,627,139,594"/>
+<area shape="rect" id="Node000003" href="$classDetailJpeg.html" title=" " alt="" coords="234,679,416,786"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="294,594,315,678,310,680,289,595"/>
 </map>

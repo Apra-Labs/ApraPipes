@@ -1,5 +1,5 @@
 <map id="DetailImageviewer" name="DetailImageviewer">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,299,144,384"/>
-<area shape="rect" id="Node000002" href="$classDetailRenderer.html" title=" " alt="" coords="6,5,143,251"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,266,77,299,72,299,72,266"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,303,144,389"/>
+<area shape="rect" id="Node000002" href="$classDetailRenderer.html" title=" " alt="" coords="6,5,144,255"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,269,78,303,72,303,72,269"/>
 </map>

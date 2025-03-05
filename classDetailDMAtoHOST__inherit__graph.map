@@ -1,5 +1,5 @@
 <map id="DetailDMAtoHOST" name="DetailDMAtoHOST">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,579,147,664"/>
-<area shape="rect" id="Node000002" href="$classDetailMemory.html" title=" " alt="" coords="5,5,147,531"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,546,79,579,73,579,73,546"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,587,147,674"/>
+<area shape="rect" id="Node000002" href="$classDetailMemory.html" title=" " alt="" coords="5,5,147,539"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,554,79,588,74,588,74,554"/>
 </map>

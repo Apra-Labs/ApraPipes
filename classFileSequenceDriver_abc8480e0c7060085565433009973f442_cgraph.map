@@ -1,0 +1,9 @@
+<map id="FileSequenceDriver::operator=" name="FileSequenceDriver::operator=">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,140,46"/>
+<area shape="rect" id="Node000002" href="$classFileSequenceDriver.html#af8b50c2e119e8a3939af91f4d3047be4" title=" " alt="" coords="188,5,328,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,23,172,23,172,28,140,28"/>
+<area shape="rect" id="Node000003" href="$classFilenameStrategy.html#ae12fc3997c76bd0efc7cc61069964c11" title=" " alt="" coords="376,13,570,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="328,23,361,23,361,28,328,28"/>
+<area shape="rect" id="Node000004" href="$classFilenameStrategy.html#aa5cef1198bbb26744a9726ec35ab149e" title=" " alt="" coords="618,5,800,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="571,23,602,23,602,28,571,28"/>
+</map>

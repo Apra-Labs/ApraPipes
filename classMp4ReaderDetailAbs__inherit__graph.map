@@ -1,7 +1,7 @@
 <map id="Mp4ReaderDetailAbs" name="Mp4ReaderDetailAbs">
-<area shape="rect" id="Node000001" title=" " alt="" coords="86,5,282,731"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailH264.html" title=" " alt="" coords="5,779,173,1084"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="123,746,117,780,112,779,118,745"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderDetailJpeg.html" title=" " alt="" coords="197,839,363,1024"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="251,745,267,838,262,839,246,746"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="88,5,284,743"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailH264.html" title=" " alt="" coords="5,791,174,1101"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,758,118,791,113,790,119,757"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailJpeg.html" title=" " alt="" coords="199,852,365,1040"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="253,757,269,851,264,852,248,758"/>
 </map>

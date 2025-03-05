@@ -1,0 +1,7 @@
+<map id="DrawingOverlay::DrawingOverlay" name="DrawingOverlay::DrawingOverlay">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,215,38"/>
+<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#a6da8c8af5467e247c2556b436c1a4433" title=" " alt="" coords="263,5,458,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,23,247,23,247,28,215,28"/>
+<area shape="rect" id="Node000003" href="$classOverlayInfo.html#a4cd0c477a373019aa19c52ea154c17a1" title=" " alt="" coords="506,13,665,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="458,23,491,23,491,28,458,28"/>
+</map>

@@ -1,11 +1,11 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
 <area shape="rect" id="Node000000" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="5,55,155,80"/>
 <area shape="rect" id="Node000001" href="$classDetailGPU.html" title=" " alt="" coords="203,29,286,55"/>
-<area shape="poly" id="edge49_Node000000_Node000001" title=" " alt="" coords="169,51,202,46,202,51,170,56"/>
+<area shape="poly" id="edge50_Node000000_Node000001" title=" " alt="" coords="169,51,202,46,202,51,170,56"/>
 <area shape="rect" id="Node000004" href="$classDetailHost.html" title=" " alt="" coords="203,79,286,104"/>
-<area shape="poly" id="edge52_Node000000_Node000004" title=" " alt="" coords="170,78,203,83,202,88,170,83"/>
+<area shape="poly" id="edge53_Node000000_Node000004" title=" " alt="" coords="170,78,203,83,202,88,170,83"/>
 <area shape="rect" id="Node000002" href="$classDeatilCUDA.html" title=" " alt="" coords="334,5,425,31"/>
-<area shape="poly" id="edge50_Node000001_Node000002" title=" " alt="" coords="301,29,333,24,334,29,302,35"/>
+<area shape="poly" id="edge51_Node000001_Node000002" title=" " alt="" coords="301,29,333,24,334,29,302,35"/>
 <area shape="rect" id="Node000003" href="$classDetailDMA.html" title=" " alt="" coords="338,55,421,80"/>
-<area shape="poly" id="edge51_Node000001_Node000003" title=" " alt="" coords="302,50,338,57,337,62,301,55"/>
+<area shape="poly" id="edge52_Node000001_Node000003" title=" " alt="" coords="302,50,338,57,337,62,301,55"/>
 </map>

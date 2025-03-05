@@ -1,9 +1,9 @@
 <map id="FramesMuxerStrategy" name="FramesMuxerStrategy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="176,5,341,171"/>
-<area shape="rect" id="Node000002" href="$classAllOrNoneStrategy.html" title=" " alt="" coords="5,229,152,414"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,184,152,230,148,227,184,181"/>
-<area shape="rect" id="Node000003" href="$classMaxDelayAnyStrategy.html" title=" " alt="" coords="177,219,341,424"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="261,186,261,219,256,219,256,186"/>
-<area shape="rect" id="Node000004" href="$classTimeStampStrategy.html" title=" " alt="" coords="365,219,518,424"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="334,181,367,222,363,225,330,184"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="176,5,342,173"/>
+<area shape="rect" id="Node000002" href="$classAllOrNoneStrategy.html" title=" " alt="" coords="5,232,152,420"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,187,152,233,148,230,184,184"/>
+<area shape="rect" id="Node000003" href="$classMaxDelayAnyStrategy.html" title=" " alt="" coords="176,221,341,430"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,188,262,221,256,221,256,188"/>
+<area shape="rect" id="Node000004" href="$classTimeStampStrategy.html" title=" " alt="" coords="366,221,520,430"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="335,183,368,225,364,228,331,187"/>
 </map>

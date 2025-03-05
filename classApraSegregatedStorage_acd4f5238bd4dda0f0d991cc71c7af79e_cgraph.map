@@ -1,7 +1,7 @@
 <map id="ApraSegregatedStorage::getFreeApraChunk" name="ApraSegregatedStorage::getFreeApraChunk">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,165,64"/>
-<area shape="rect" id="Node000002" href="$classApraChunk.html#a9299c12a8ac3d237260392946175edaf" title=" " alt="" coords="213,5,349,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,31,197,26,198,32,165,36"/>
-<area shape="rect" id="Node000003" href="$classApraChunk.html#a0470843a24693f2a751d12d51415a352" title=" " alt="" coords="226,55,336,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,51,211,56,210,62,165,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,165,46"/>
+<area shape="rect" id="Node000002" href="$classApraChunk.html#a0470843a24693f2a751d12d51415a352" title=" " alt="" coords="213,13,322,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,23,197,23,197,28,165,28"/>
+<area shape="rect" id="Node000003" href="$classApraChunk.html#a9be6ceb456a88f5a3b4034cb7c3bea07" title=" " alt="" coords="370,13,525,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="322,23,355,23,355,28,322,28"/>
 </map>

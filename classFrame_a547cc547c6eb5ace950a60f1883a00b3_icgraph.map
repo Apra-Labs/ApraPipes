@@ -1,5 +1,7 @@
 <map id="Frame::data" name="Frame::data">
-<area shape="rect" id="Node000001" title=" " alt="" coords="222,5,311,31"/>
-<area shape="rect" id="Node000002" href="$classH264Utils.html#a6d71567a1747963b0feb1b0c981ca3f9" title=" " alt="" coords="5,5,174,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,21,174,21,174,16,206,16"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="222,31,311,56"/>
+<area shape="rect" id="Node000002" href="$classExtFrame.html#a9e10d17a45fd2db5a47987f99b99b1f7" title=" " alt="" coords="21,5,158,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,38,158,31,159,25,207,32"/>
+<area shape="rect" id="Node000003" href="$classH264Utils.html#a6d71567a1747963b0feb1b0c981ca3f9" title=" " alt="" coords="5,55,174,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="206,54,175,59,174,53,206,49"/>
 </map>

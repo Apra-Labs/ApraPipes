@@ -1,5 +1,9 @@
 <map id="DetailAbs::setProps" name="DetailAbs::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="193,5,328,31"/>
-<area shape="rect" id="Node000002" href="$classDetailAbs.html#a47aca95eedeeb774f0fb20bcffab0a4c" title=" " alt="" coords="5,5,145,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="177,21,145,21,145,16,177,16"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="396,31,531,56"/>
+<area shape="rect" id="Node000002" href="$classDetailAbs.html#a47aca95eedeeb774f0fb20bcffab0a4c" title=" " alt="" coords="209,31,348,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="380,46,348,46,348,41,380,41"/>
+<area shape="rect" id="Node000003" href="$classDetailH264.html#a8910ccc84bf92865eda8021858b345b8" title=" " alt="" coords="5,5,161,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="193,35,161,31,161,26,194,30"/>
+<area shape="rect" id="Node000004" href="$classDetailJpeg.html#ab88f59b3b0b46c9d35c3e2130a2db867" title=" " alt="" coords="8,55,158,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="194,57,158,61,157,56,193,51"/>
 </map>

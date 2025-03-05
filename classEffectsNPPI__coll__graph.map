@@ -1,9 +1,9 @@
 <map id="EffectsNPPI" name="EffectsNPPI">
-<area shape="rect" id="Node000001" title=" " alt="" coords="72,1568,220,1994"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,1520,134,1568,129,1569,126,1521"/>
-<area shape="rect" id="Node000003" href="$classEffectsNPPIProps.html" title=" " alt="" coords="201,880,339,1085"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="257,1085,193,1506,185,1552,180,1551,187,1505,252,1085"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="181,5,359,411"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="273,426,273,880,267,880,267,426"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="39,1592,187,2025"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,467,178,1529"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,1544,110,1592,105,1592,104,1544"/>
+<area shape="rect" id="Node000003" href="$classEffectsNPPIProps.html" title=" " alt="" coords="203,894,341,1102"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,1102,235,1301,193,1530,182,1577,177,1575,188,1529,229,1300,257,1102"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="183,5,361,417"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="274,432,274,894,269,894,269,432"/>
 </map>

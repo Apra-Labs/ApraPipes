@@ -1,6 +1,6 @@
 var classFramesQueue =
 [
-    [ "MultimediaQueueXformMap", "classFramesQueue.html#ad9be8685c224220adff8705baa2c1d42", null ],
+    [ "MultimediaQueueXformMap", "classFramesQueue.html#a662372e93e7235eb7c415e87f0a17e68", null ],
     [ "enqueue", "classFramesQueue.html#af0b63d2e8c79c4f96a4ea1a27e4e180b", null ],
     [ "isMapDelayInTime", "classFramesQueue.html#adcb718718998bf52792d43e967d18dcb", null ],
     [ "lowerWaterMark", "classFramesQueue.html#a2322508570c8c92a3c37ef2cb7e9ca09", null ],

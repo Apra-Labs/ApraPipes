@@ -1,9 +1,9 @@
 <map id="CudaMemCopy" name="CudaMemCopy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="77,1568,220,2114"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,460,177,1505"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,1520,133,1569,128,1569,125,1520"/>
-<area shape="rect" id="Node000003" href="$classCudaMemCopyProps.html" title=" " alt="" coords="201,910,355,1055"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="270,1056,195,1552,190,1551,265,1055"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="189,5,367,411"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="281,426,281,910,275,910,275,426"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="42,1592,185,2147"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,467,178,1529"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,1544,109,1593,104,1593,103,1544"/>
+<area shape="rect" id="Node000003" href="$classCudaMemCopyProps.html" title=" " alt="" coords="203,924,357,1072"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="272,1072,239,1278,193,1530,184,1576,178,1575,188,1529,233,1277,266,1071"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="191,5,369,417"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="282,432,282,925,277,925,277,432"/>
 </map>

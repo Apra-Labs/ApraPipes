@@ -1,8 +1,7 @@
 <map id="Module::makeFrame" name="Module::makeFrame">
-<area shape="rect" id="Node000001" title=" " alt="" coords="421,42,559,68"/>
-<area shape="rect" id="Node000002" href="$classRTSPClientSrc_1_1Detail.html#adade51d2dd98c50fbc135c61c28f188a" title=" " alt="" coords="202,5,373,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="405,45,373,41,374,35,406,40"/>
-<area shape="rect" id="Node000003" href="$classRTSPClientSrc_1_1Detail.html#acdc4d99f88cb6b153eadf1c749487981" title=" " alt="" coords="5,35,154,75"/>
-<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="406,60,373,60,202,60,154,60,154,54,202,55,373,55,405,54"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="187,43,155,47,154,42,186,37"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="209,46,347,72"/>
+<area shape="rect" id="Node000002" href="$classH264Decoder_1_1Detail.html#a9c9cc6f247513e22cc5298481cdc155e" title=" " alt="" coords="13,5,153,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,47,153,40,154,35,194,42"/>
+<area shape="rect" id="Node000003" href="$classH264EncoderNVCodec_1_1Detail.html#a9f056fd786c786f8f3caf995487e6c7d" title=" " alt="" coords="5,71,161,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,75,161,81,160,76,193,70"/>
 </map>

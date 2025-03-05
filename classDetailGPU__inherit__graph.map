@@ -1,9 +1,9 @@
 <map id="DetailGPU" name="DetailGPU">
-<area shape="rect" id="Node000001" title=" " alt="" coords="45,499,187,624"/>
-<area shape="rect" id="Node000003" href="$classDeatilCUDA.html" title=" " alt="" coords="5,672,107,757"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="89,639,75,673,70,671,84,637"/>
-<area shape="rect" id="Node000004" href="$classDetailDMA.html" title=" " alt="" coords="131,672,224,757"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="149,637,163,671,158,673,144,639"/>
-<area shape="rect" id="Node000002" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="33,5,199,451"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,466,119,499,113,499,113,466"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="47,506,189,633"/>
+<area shape="rect" id="Node000003" href="$classDeatilCUDA.html" title=" " alt="" coords="5,681,107,768"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="90,648,76,682,71,680,85,646"/>
+<area shape="rect" id="Node000004" href="$classDetailDMA.html" title=" " alt="" coords="132,681,226,768"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="151,646,165,680,160,682,146,648"/>
+<area shape="rect" id="Node000002" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="34,5,201,458"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="120,473,120,506,115,506,115,473"/>
 </map>

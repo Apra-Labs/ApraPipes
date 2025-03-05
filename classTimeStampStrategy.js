@@ -1,6 +1,6 @@
 var classTimeStampStrategy =
 [
-    [ "MuxerQueue", "classTimeStampStrategy.html#a053cff05e48d72fce102738b419ac099", null ],
+    [ "MuxerQueue", "classTimeStampStrategy.html#ae337e3231e2363182df37bcb441bf9ac", null ],
     [ "TimeStampStrategy", "classTimeStampStrategy.html#a2ae8ba1feb846995f1855212ceaec0f7", null ],
     [ "~TimeStampStrategy", "classTimeStampStrategy.html#a1a3f0c3cbe6064ce00c15c747ae05dae", null ],
     [ "addInputPin", "classTimeStampStrategy.html#ac6bc825da690705258bed3bead8f398c", null ],

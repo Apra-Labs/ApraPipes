@@ -1,15 +1,22 @@
 <map id="NvEglRenderer::renderThread" name="NvEglRenderer::renderThread">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,144,196,169"/>
-<area shape="rect" id="Node000002" href="$classNvEglRenderer.html#a6fbca0878accb9aa0a19f1e41fab7cdd" title=" " alt="" coords="265,5,416,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,141,171,101,242,57,257,50,259,55,245,61,174,105,120,145"/>
-<area shape="rect" id="Node000003" href="$classNvEglRenderer.html#a685818e90efea1d95b3d5da2a57c54e6" title=" " alt="" coords="260,71,421,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="150,140,248,113,249,119,151,146"/>
-<area shape="rect" id="Node000005" href="$classNvEglRenderer.html#a36c2d45c3e2c31e42c2b442e2f647ce9" title=" " alt="" coords="254,136,427,177"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="196,154,238,154,238,159,196,159"/>
-<area shape="rect" id="Node000006" href="$classNvEglRenderer.html#aa3e45c5e455cce3f8d2c324f97826443" title=" " alt="" coords="244,201,437,226"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="158,167,269,194,268,199,157,172"/>
-<area shape="rect" id="Node000007" href="$classNvEglRenderer.html#a038bec0b90108e66fbf2d04ac8f4f9d3" title=" " alt="" coords="248,250,433,276"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="122,167,176,202,245,237,262,243,260,248,243,241,173,206,119,172"/>
-<area shape="rect" id="Node000004" href="$classNvEglRenderer.html#a110ebe8ccd5dd9a4d67f3d57d075b904" title=" " alt="" coords="485,78,678,104"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="421,88,470,88,470,94,421,94"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,136,196,161"/>
+<area shape="rect" id="Node000002" href="$classNvEglRenderer.html#a6fbca0878accb9aa0a19f1e41fab7cdd" title=" " alt="" coords="269,5,420,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,133,173,96,242,57,259,49,261,54,245,61,175,101,121,137"/>
+<area shape="rect" id="Node000003" href="$classNvEglRenderer.html#a685818e90efea1d95b3d5da2a57c54e6" title=" " alt="" coords="264,71,425,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,132,248,111,249,116,159,137"/>
+<area shape="rect" id="Node000005" href="$classNvEglRenderer.html#ae1613003a447ab9835f251ef52db2b15" title=" " alt="" coords="244,136,445,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="196,154,228,155,228,160,196,160"/>
+<area shape="rect" id="Node000008" href="$classNvEglRenderer.html#a36c2d45c3e2c31e42c2b442e2f647ce9" title=" " alt="" coords="258,185,431,226"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="159,159,243,179,242,184,158,164"/>
+<area shape="rect" id="Node000009" href="$classNvEglRenderer.html#aa3e45c5e455cce3f8d2c324f97826443" title=" " alt="" coords="248,250,441,276"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="121,160,174,197,245,235,265,243,263,248,243,240,172,202,118,164"/>
+<area shape="rect" id="Node000010" href="$classNvEglRenderer.html#a038bec0b90108e66fbf2d04ac8f4f9d3" title=" " alt="" coords="252,300,437,325"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="113,160,165,221,202,256,245,286,255,291,253,296,242,291,199,260,161,225,109,163"/>
+<area shape="rect" id="Node000004" href="$classNvEglRenderer.html#a110ebe8ccd5dd9a4d67f3d57d075b904" title=" " alt="" coords="493,78,686,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="425,88,477,88,477,94,425,94"/>
+<area shape="poly" id="edge6_Node000005_Node000001" title=" " alt="" coords="243,142,211,142,211,137,243,137"/>
+<area shape="rect" id="Node000006" href="$classNvEglRenderer.html#a97e08eec941e7254379ad17ce8b2fba7" title=" " alt="" coords="515,132,664,157"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="445,144,499,143,499,148,445,149"/>
+<area shape="rect" id="Node000007" href="$classNvEglRenderer.html#a7e53fa72eb9430251d17931f101c91ae" title=" " alt="" coords="510,181,669,206"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="418,159,502,175,501,180,417,164"/>
 </map>

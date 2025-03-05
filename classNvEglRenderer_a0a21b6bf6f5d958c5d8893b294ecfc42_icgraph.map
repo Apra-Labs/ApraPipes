@@ -1,7 +1,8 @@
 <map id="NvEglRenderer::renderThread" name="NvEglRenderer::renderThread">
 <area shape="rect" id="Node000001" title=" " alt="" coords="699,35,890,60"/>
 <area shape="rect" id="Node000002" href="$classNvEglRenderer.html#ae1613003a447ab9835f251ef52db2b15" title=" " alt="" coords="450,35,651,60"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="684,50,652,50,652,45,684,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="684,59,652,59,652,54,684,54"/>
+<area shape="poly" id="edge5_Node000002_Node000001" title=" " alt="" coords="667,36,699,36,699,41,667,41"/>
 <area shape="rect" id="Node000003" href="$classNvEglRenderer.html#ad64f4def9756e85ec7f2d091bc1ac48d" title=" " alt="" coords="234,27,402,68"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="434,50,402,50,402,45,434,45"/>
 <area shape="rect" id="Node000004" href="$classDetailRenderer.html#ada39c225f0a5cb46e3f73396b1b6907c" title=" " alt="" coords="5,5,186,31"/>

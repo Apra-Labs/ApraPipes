@@ -1,7 +1,7 @@
 <map id="Module::FFBufferMaker" name="Module::FFBufferMaker">
-<area shape="rect" id="Node000001" title=" " alt="" coords="49,1114,196,1219"/>
-<area shape="rect" id="Node000002" href="$classBufferMaker.html" title=" " alt="" coords="5,495,88,561"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="53,576,70,782,103,1050,114,1113,109,1114,97,1051,65,782,47,576"/>
-<area shape="rect" id="Node000003" href="$classModule.html" title=" " alt="" coords="113,5,285,1051"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,1051,133,1097,128,1096,134,1050"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="48,1131,193,1238"/>
+<area shape="rect" id="Node000002" href="$classBufferMaker.html" title=" " alt="" coords="5,504,86,570"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="51,584,68,794,83,930,100,1068,112,1131,106,1132,95,1068,77,931,63,795,46,585"/>
+<area shape="rect" id="Node000003" href="$classModule.html" title=" " alt="" coords="110,5,283,1068"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="137,1068,131,1115,126,1114,131,1068"/>
 </map>

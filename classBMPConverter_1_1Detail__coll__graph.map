@@ -1,7 +1,7 @@
 <map id="BMPConverter::Detail" name="BMPConverter::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="25,588,163,874"/>
-<area shape="rect" id="Node000002" href="$classBMPConverterProps.html" title=" " alt="" coords="19,460,169,525"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,525,97,571,91,571,91,525"/>
-<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,411"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,426,97,460,91,460,91,426"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="27,596,162,886"/>
+<area shape="rect" id="Node000002" href="$classBMPConverterProps.html" title=" " alt="" coords="19,467,170,533"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,533,97,579,92,579,92,533"/>
+<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

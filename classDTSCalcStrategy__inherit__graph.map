@@ -1,7 +1,7 @@
 <map id="DTSCalcStrategy" name="DTSCalcStrategy">
-<area shape="rect" id="Node000001" title=" " alt="" coords="120,5,252,91"/>
-<area shape="rect" id="Node000002" href="$classDTSFixedRateStrategy.html" title=" " alt="" coords="5,139,169,224"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,104,121,140,116,137,144,101"/>
-<area shape="rect" id="Node000003" href="$classDTSPassThroughStrategy.html" title=" " alt="" coords="193,139,376,224"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,101,256,137,251,140,224,104"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="120,5,252,92"/>
+<area shape="rect" id="Node000002" href="$classDTSFixedRateStrategy.html" title=" " alt="" coords="5,140,169,227"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,106,121,142,117,138,143,102"/>
+<area shape="rect" id="Node000003" href="$classDTSPassThroughStrategy.html" title=" " alt="" coords="193,140,376,227"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="229,102,255,138,251,142,224,106"/>
 </map>

@@ -1,13 +1,13 @@
 <map id="State" name="State">
-<area shape="rect" id="Node000001" title=" " alt="" coords="215,5,359,331"/>
-<area shape="rect" id="Node000002" href="$classExportQState.html" title=" " alt="" coords="103,389,211,474"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,327,180,390,175,388,206,325"/>
-<area shape="rect" id="Node000005" href="$classIdle.html" title=" " alt="" coords="235,379,340,484"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="290,346,290,379,285,379,285,346"/>
-<area shape="rect" id="Node000006" href="$classWaiting.html" title=" " alt="" coords="364,379,469,484"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="368,326,394,378,389,380,363,329"/>
-<area shape="rect" id="Node000003" href="$classExportH264.html" title=" " alt="" coords="5,532,156,837"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="142,489,129,533,124,532,137,487"/>
-<area shape="rect" id="Node000004" href="$classExportJpeg.html" title=" " alt="" coords="180,622,285,747"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="176,487,217,622,212,623,171,489"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="217,5,361,336"/>
+<area shape="rect" id="Node000002" href="$classExportQState.html" title=" " alt="" coords="102,394,211,481"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,331,180,396,175,393,208,328"/>
+<area shape="rect" id="Node000005" href="$classIdle.html" title=" " alt="" coords="236,384,342,491"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="292,351,292,384,286,384,286,351"/>
+<area shape="rect" id="Node000006" href="$classWaiting.html" title=" " alt="" coords="366,384,472,491"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="370,329,396,383,391,385,365,332"/>
+<area shape="rect" id="Node000003" href="$classExportH264.html" title=" " alt="" coords="5,539,156,849"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="142,496,129,540,124,539,137,495"/>
+<area shape="rect" id="Node000004" href="$classExportJpeg.html" title=" " alt="" coords="180,630,286,758"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="176,495,217,630,212,632,171,496"/>
 </map>

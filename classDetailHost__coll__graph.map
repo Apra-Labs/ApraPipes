@@ -1,9 +1,9 @@
 <map id="DetailHost" name="DetailHost">
-<area shape="rect" id="Node000001" title=" " alt="" coords="36,1203,152,1368"/>
-<area shape="rect" id="Node000002" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="11,728,177,1154"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,1169,97,1203,91,1203,91,1169"/>
-<area shape="rect" id="Node000003" href="$classAffineTransformProps.html" title=" " alt="" coords="16,460,172,665"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,665,97,711,91,711,91,665"/>
-<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,411"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="97,426,97,460,91,460,91,426"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="36,1220,153,1388"/>
+<area shape="rect" id="Node000002" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="11,738,178,1171"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,1186,97,1220,92,1220,92,1186"/>
+<area shape="rect" id="Node000003" href="$classAffineTransformProps.html" title=" " alt="" coords="16,467,173,675"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,675,97,722,92,722,92,675"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

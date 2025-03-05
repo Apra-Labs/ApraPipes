@@ -236,6 +236,7 @@ var annotated_dup =
     [ "Mp4WriterSinkUtils", "classMp4WriterSinkUtils.html", "classMp4WriterSinkUtils" ],
     [ "MultimediaQueueXform", "classMultimediaQueueXform.html", "classMultimediaQueueXform" ],
     [ "MultimediaQueueXformProps", "classMultimediaQueueXformProps.html", "classMultimediaQueueXformProps" ],
+    [ "mutable_buffer", "classmutable__buffer.html", null ],
     [ "MvExtractDetailAbs", "classMvExtractDetailAbs.html", "classMvExtractDetailAbs" ],
     [ "NonBlockingAllOrNonePushStrategy", "classNonBlockingAllOrNonePushStrategy.html", "classNonBlockingAllOrNonePushStrategy" ],
     [ "NonBlockingAnyPushStrategy", "classNonBlockingAnyPushStrategy.html", "classNonBlockingAnyPushStrategy" ],

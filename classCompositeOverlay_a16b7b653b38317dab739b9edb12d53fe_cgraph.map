@@ -1,7 +1,9 @@
 <map id="CompositeOverlay::deserialize" name="CompositeOverlay::deserialize">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,200,56"/>
-<area shape="rect" id="Node000002" href="$classOverlayFactory.html#a46a81624ca9825e7bc5dcfd2894a3efe" title=" " alt="" coords="250,5,400,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="200,30,234,26,234,31,200,35"/>
-<area shape="rect" id="Node000003" href="$classOverlayInfo.html#afc0008b78e12fe261f7f01ea5a9fb18b" title=" " alt="" coords="248,55,402,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,51,232,55,232,60,200,57"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,200,80"/>
+<area shape="rect" id="Node000002" href="$classOverlayFactory.html#a46a81624ca9825e7bc5dcfd2894a3efe" title=" " alt="" coords="252,5,402,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,51,250,32,251,38,165,57"/>
+<area shape="rect" id="Node000003" href="$classOverlayInfo.html#afc0008b78e12fe261f7f01ea5a9fb18b" title=" " alt="" coords="250,55,404,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,65,234,65,234,70,200,70"/>
+<area shape="rect" id="Node000004" href="$classOverlayInfo.html#a4cd0c477a373019aa19c52ea154c17a1" title=" " alt="" coords="248,104,407,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="165,78,251,97,250,103,164,84"/>
 </map>

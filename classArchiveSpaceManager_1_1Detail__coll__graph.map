@@ -1,7 +1,7 @@
 <map id="ArchiveSpaceManager::Detail" name="ArchiveSpaceManager::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="25,708,182,928"/>
-<area shape="rect" id="Node000002" href="$classArchiveSpaceManagerProps.html" title=" " alt="" coords="5,460,201,645"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,645,106,692,101,692,101,645"/>
-<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="15,5,192,411"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,426,106,460,101,460,101,426"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,718,183,942"/>
+<area shape="rect" id="Node000002" href="$classArchiveSpaceManagerProps.html" title=" " alt="" coords="5,467,202,655"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,655,106,701,101,701,101,655"/>
+<area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="15,5,193,417"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,432,106,467,101,467,101,432"/>
 </map>

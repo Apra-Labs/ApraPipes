@@ -1,0 +1,9 @@
+<map id="ImagePlaneData::copyFromImagePlaneByLine" name="ImagePlaneData::copyFromImagePlaneByLine">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,186,46"/>
+<area shape="rect" id="Node000002" href="$classImagePlaneData.html#a598cf35b0739fae414b61f99c87445e8" title=" " alt="" coords="234,13,453,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,32,218,32,218,37,186,37"/>
+<area shape="poly" id="edge4_Node000002_Node000001" title=" " alt="" coords="233,19,201,19,201,14,233,14"/>
+<area shape="rect" id="Node000003" href="$classImagePlaneData.html#a4641d32beda2272be4adbe82e47d360f" title=" " alt="" coords="501,5,681,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="454,32,485,32,485,37,454,37"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="501,20,469,19,469,14,501,14"/>
+</map>

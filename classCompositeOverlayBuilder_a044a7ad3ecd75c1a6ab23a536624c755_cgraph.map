@@ -1,9 +1,0 @@
-<map id="CompositeOverlayBuilder::deserialize" name="CompositeOverlayBuilder::deserialize">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,173,64"/>
-<area shape="rect" id="Node000002" href="$classCompositeOverlay.html#a16b7b653b38317dab739b9edb12d53fe" title=" " alt="" coords="221,31,415,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,41,205,41,205,46,173,46"/>
-<area shape="rect" id="Node000003" href="$classOverlayFactory.html#a46a81624ca9825e7bc5dcfd2894a3efe" title=" " alt="" coords="465,5,615,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="415,30,449,26,450,31,416,35"/>
-<area shape="rect" id="Node000004" href="$classOverlayInfo.html#afc0008b78e12fe261f7f01ea5a9fb18b" title=" " alt="" coords="463,55,617,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="416,51,448,55,447,60,415,57"/>
-</map>

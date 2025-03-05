@@ -1,12 +1,12 @@
 <map id="h264DecoderV4L2Helper" name="h264DecoderV4L2Helper">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,1123,200,1509"/>
-<area shape="rect" id="Node000002" href="$structh264DecoderV4L2Helper_1_1context__t.html" title=" " alt="" coords="24,780,181,1060"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,1060,105,1107,100,1107,100,1060"/>
-<area shape="rect" id="Node000003" href="$structBuffer_1_1BufferPlaneFormat.html" title=" " alt="" coords="22,5,183,151"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,151,102,383,103,764,98,764,96,383,99,150"/>
-<area shape="rect" id="Node000005" href="$structBuffer_1_1BufferPlane.html" title=" " alt="" coords="129,214,249,359"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="135,149,155,197,150,199,130,151"/>
-<area shape="rect" id="Node000004" href="$classBuffer.html" title="Class representing a buffer." alt="" coords="119,437,283,702"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="167,703,149,765,144,763,162,701"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="195,359,198,420,192,420,190,359"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,1137,200,1529"/>
+<area shape="rect" id="Node000002" href="$structh264DecoderV4L2Helper_1_1context__t.html" title=" " alt="" coords="25,789,181,1074"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,1073,106,1120,100,1120,100,1073"/>
+<area shape="rect" id="Node000003" href="$structBuffer_1_1BufferPlaneFormat.html" title=" " alt="" coords="24,5,182,153"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,153,102,388,103,772,98,772,97,388,99,152"/>
+<area shape="rect" id="Node000005" href="$structBuffer_1_1BufferPlane.html" title=" " alt="" coords="131,216,248,364"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="135,152,155,199,150,201,130,154"/>
+<area shape="rect" id="Node000004" href="$classBuffer.html" title="Class representing a buffer." alt="" coords="119,442,284,711"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="167,712,149,774,144,773,162,710"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="195,363,198,425,192,425,190,364"/>
 </map>
