@@ -5,6 +5,7 @@
 class Mp4ReaderDetailAbs;
 class Mp4ReaderDetailJpeg;
 class Mp4ReaderDetailH264;
+using TimestampCallback = std::function<void(uint64_t)>;
 
 class Mp4ReaderSourceProps : public ModuleProps
 {
@@ -130,6 +131,10 @@ public:
 		width = mWidth;
 		height = mHeight;
 	}
+	
+	void setTimestampCallback(const TimestampCallback& callback);
+	void resetTimestampCallback();
+
 protected:
 	bool produce();
 	bool validateOutputPins();

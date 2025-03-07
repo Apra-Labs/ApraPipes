@@ -26,7 +26,7 @@ public:
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS,
 		std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& errorFrame)> _sendMp4ErrorFrame,
 		std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront,
-		std::function<void(const APErrorObject& error)> _errorCallback) : errorCallback(_errorCallback)
+		std::function<void(const APErrorObject& error)> _errorCallback) : errorCallback(_errorCallback) 
 	{
 		setProps(props);
 		makeFrame = _makeFrame;
@@ -37,6 +37,7 @@ public:
 		sendMp4ErrorFrame = _sendMp4ErrorFrame;
 		setMp4ReaderProps = _setProps;
 		cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(mProps.skipDir));
+		mTimestampCallback = nullptr;
 	}
 
 	~Mp4ReaderDetailAbs()
@@ -96,6 +97,14 @@ public:
             errorCallback(error); // Use the callback to propagate the error
         }
     }
+
+	void propagateTimeStamp(uint64_t ts)
+	{
+		if (mTimestampCallback)
+		{
+			mTimestampCallback(ts);
+		}
+	}
 
 	void updateMstate(Mp4ReaderSourceProps& props, std::string videoPath)
 	{
@@ -1095,7 +1104,14 @@ public:
 	}
 
 	virtual void skipBytes(uint8_t*& buffer) {}
+
+	void setTimestampCallback(TimestampCallback tsCallback)
+	{
+		mTimestampCallback = tsCallback;
+	}
+
 	Mp4ReaderSourceProps mProps;
+	
 protected:
 
 	struct DemuxAndParserState
@@ -1164,6 +1180,7 @@ protected:
 	framemetadata_sp updatedEncodedImgMetadata;
 	framemetadata_sp mH264Metadata;
 	std::function<void(const APErrorObject& error)> errorCallback;
+	TimestampCallback mTimestampCallback = nullptr;
 	/*
 		mState.end = true is possible only in two cases:
 		- if parseFS found no more relevant files on the disk
@@ -1619,6 +1636,12 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		auto nowTS = dur.count();
 		trimmedImgFrame->timestamp = nowTS;
 	}
+	// timestampCallback_ is defined in Mp4ReaderClass we need to propagate it here
+
+	if(mTimestampCallback)
+	{
+		mTimestampCallback(trimmedImgFrame->timestamp);
+	}
 
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataSize)
@@ -1916,3 +1939,15 @@ void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
 {
 	mDetail->playbackSpeed = _playbackSpeed;
 }
+
+void Mp4ReaderSource::setTimestampCallback(const TimestampCallback& callback)
+{
+	mDetail->setTimestampCallback(callback);
+}
+
+void Mp4ReaderSource::resetTimestampCallback()
+{
+	mDetail->setTimestampCallback(nullptr);
+}
+
+
