@@ -1932,7 +1932,7 @@ bool Mp4ReaderSource::handlePausePlay(float speed, bool direction)
 bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)
 {
 	Mp4SeekCommand cmd(skipTS, forceReopen);
-	return queueCommand(cmd);
+	return queueCommand(cmd, true);
 }
 
 void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
