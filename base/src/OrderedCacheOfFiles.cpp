@@ -710,7 +710,7 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 					{
 						timeline.push_back({startTimeBatch, prevTS});
 						startTimeBatch = fileTS;
-						LOG_INFO<<"Parsed file with previous - "<<prevTS<<" and current - "<<fileTS<<" with diff "<<diff;
+						LOG_DEBUG<<"Parsed file with previous - "<<prevTS<<" and current - "<<fileTS<<" with diff "<<diff;
 
 					}
 					prevTS = fileTS;

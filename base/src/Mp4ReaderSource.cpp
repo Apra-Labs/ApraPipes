@@ -165,7 +165,7 @@ public:
 		{
 			if (mProps.videoPath == props.videoPath)
 				mProps = props;
-			LOG_ERROR << "The root dir is same and only file path has changed, Please use SEEK functionality instead for this use case!, cannot change props";
+			LOG_INFO << "The root dir is same and only file path has changed, Please use SEEK functionality instead for this use case!, cannot change props";
 			return;
 		}
 		
@@ -644,7 +644,6 @@ public:
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
 	{
 		/* Seeking in custom file i.e. parseFS is disabled */
-		LOG_ERROR << "IN Random Seek Interval";
 		if (!mProps.parseFS)
 		{
 			int seekedToFrame = -1;
@@ -703,10 +702,10 @@ public:
 		*/
 		std::string skipVideoFile;
 		uint64_t skipMsecsInFile;
-		LOG_ERROR << "Handling Random Seek Command";
+		LOG_DEBUG << "Handling Random Seek Command";
 		if (!isVideoFileFound)
 		{
-			LOG_ERROR << "Probing =======>>>";
+			LOG_DEBUG << "Probing =======>>>";
 			try
 			{
 				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
@@ -729,7 +728,7 @@ public:
 		}
 		if (mProps.parseFS)
 		{
-			LOG_ERROR << "Checking Video File Name";
+			LOG_DEBUG << "Checking Video File Name";
 			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
@@ -795,7 +794,7 @@ public:
 		// force reopen the video file if skipVideo is the last file in cache
 		auto lastVideoInCache = boost::filesystem::canonical(cof->getLastVideoInCache());
 		bool skipFileIsLastInCache = boost::filesystem::equivalent(lastVideoInCache, boost::filesystem::canonical(skipVideoFile));
-		LOG_ERROR << "Next is to Open Video Set Pointer";
+		LOG_DEBUG << "Next is to Open Video Set Pointer";
 		if (!skipTSInOpenFile || skipFileIsLastInCache)
 		{
 			// open skipVideoFile if mState.end has reached or skipTS not in currently open video
@@ -817,7 +816,7 @@ public:
 			mState.mFrameCounterIdx = seekedToFrame;
 			LOG_TRACE << "Time offset usec <" << time_offset_usec << ">, seekedToFrame <" << seekedToFrame << ">";
 		}
-		LOG_ERROR << "Will Set Metadata";
+		LOG_DEBUG << "Will Set Metadata";
 
 		// seek successful
 		mState.end = false; // enable seeking after eof

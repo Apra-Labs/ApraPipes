@@ -374,7 +374,7 @@ bool H264Decoder::process(frame_container& frames)
 		flushQue();
 	}
 	auto frame = frames.begin()->second;
-	LOG_ERROR << "frame->timestamp: " << frame->timestamp;
+	LOG_TRACE << "frame->timestamp: " << frame->timestamp;
 	auto myId = Module::getId();
 	auto frameMetadata = frame->getMetadata();
 	auto h264Metadata = FrameMetadataFactory::downcast<H264Metadata>(frameMetadata);
