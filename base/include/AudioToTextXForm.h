@@ -49,6 +49,8 @@ protected:
 	bool validateOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool handlePropsChange(frame_sp& frame);
+	bool processEOS(string &pinId);
+	bool handleFlushingBuffer();
 
 private:
 	void setMetadata(framemetadata_sp& metadata);
