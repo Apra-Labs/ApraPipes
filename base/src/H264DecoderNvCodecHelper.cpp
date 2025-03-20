@@ -748,10 +748,22 @@ void H264DecoderNvCodecHelper::process(frame_sp& frame)
 
 	for (int i = 0; i < nFrameReturned; i++)
 	{
-		ConvertToPlanar(outBuffer[i], helper->GetWidth(), helper->GetHeight(), helper->GetBitDepth());
+		// LOG_ERROR << "framesToSkip -> " << framesToSkip;
+		if(!framesToSkip)
+		{
+			ConvertToPlanar(outBuffer[i], helper->GetWidth(), helper->GetHeight(), helper->GetBitDepth());
 
-		memcpy(outputFrame->data(), outBuffer[i], outputFrame->size());
-		send(outputFrame);
+			memcpy(outputFrame->data(), outBuffer[i], outputFrame->size());
+			send(outputFrame);
+		}
+		if(playbackSpeed == 2 || playbackSpeed == 4)
+		{
+			if(!framesToSkip)
+			{
+				framesToSkip = (currentFps * playbackSpeed) / currentFps ;
+			}
+			framesToSkip--;
+		}
 	}
 
 	return;

@@ -15,6 +15,7 @@
 #include "NvTransform.h"
 #include "AffineTransform.h"
 #include "CudaStreamSynchronize.h"
+#include "AffineTransformRev.h"
 
 BOOST_AUTO_TEST_SUITE(Mp4ReaderSource_tests)
 
@@ -83,7 +84,7 @@ void read_video_extract_frames(std::string videoPath, std::string outPath, boost
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	mp4Reader->addOutPutPin(inputMetadata);
@@ -138,7 +139,7 @@ void random_seek_video(std::string skipDir, uint64_t seekStartTS, uint64_t seekE
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false,true);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	mp4Reader->addOutPutPin(inputMetadata);
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
@@ -236,8 +237,8 @@ BOOST_AUTO_TEST_CASE(random_seek_jpg)
 
 BOOST_AUTO_TEST_CASE(mp4v_to_h264frames_metadata)
 {
-	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20221009/0019/1668001826042.mp4";
-	std::string outPath = "data/testOutput/outFrames";
+	std::string videoPath = "./data/Mp4_videos/corruptFrame/countFrame.mp4";
+	std::string outPath = "testP/outFrames";
 	bool parseFS = false;
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	boost::filesystem::path file("frame_??????.h264");
@@ -310,7 +311,8 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.fps = 1000;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 	mp4Reader->addOutPutPin(encodedImageMetadata);
@@ -350,7 +352,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(30));
 
-	Mp4ReaderSourceProps propsChange(changedVideoPath, true);
+	Mp4ReaderSourceProps propsChange(changedVideoPath, true, 0, true, false, false);
 	mp4Reader->setProps(propsChange);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(100));
@@ -376,7 +378,7 @@ BOOST_AUTO_TEST_CASE(getSetProps2)
 
 	boost::filesystem::path dir(outPath);
 
-	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false);
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	mp4ReaderProps.fps = 33;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -442,6 +444,142 @@ BOOST_AUTO_TEST_CASE(getSetProps2)
 	mp4Reader->play(true, true);
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(300));
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(inCompleteRead)
+{
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	std::string videoPath = "./testPlayback.mp4";
+	bool parseFS = true;
+	int uniqMetadata = 0;
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
+	mp4ReaderProps.fps = 35;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+
+	auto decProps = H264DecoderProps(); 
+	decProps.fps = 35;
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps(decProps)));
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	// nvTransformProps.qlen = 2;
+	nvTransformProps.fps = 35; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformRevProps affineProps(AffineTransformRevProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 35;
+	// affineProps.qlen = 20;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransformRev>(new AffineTransformRev(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererProps eglProps(0,0);
+	eglProps.fps = 60;
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(eglProps));
+	sync->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
+	//p->stop();
+	//p->term();
+	//p->wait_for_all();
+	//p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(defineSpeed)
+{
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+	std::string videoPath = "data/Mp4_videos/corruptFrame/test.mp4";
+	bool parseFS = true;
+	int uniqMetadata = 0;
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false, 0);
+	mp4ReaderProps.fps = 35;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	std::vector<std::string> mImagePin;
+	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+
+	auto decProps = H264DecoderProps(); 
+	decProps.fps = 35;
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps(decProps)));
+	mp4Reader->setNext(Decoder, mImagePin);
+
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	// nvTransformProps.qlen = 2;
+	nvTransformProps.fps = 35; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformRevProps affineProps(AffineTransformRevProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 35;
+	// affineProps.qlen = 20;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransformRev>(new AffineTransformRev(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererProps eglProps(0,0);
+	eglProps.fps = 60;
+	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(eglProps));
+	sync->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+	p->run_all_threaded();
+	// boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	// mp4Reader->setPlaybackSpeed(4);
+	// int64_t gop = mp4Reader->getGOP();
+	Decoder->changeDecoderSpeed(30,4,20);
+	boost::this_thread::sleep_for(boost::chrono::seconds(200));
 	p->stop();
 	p->term();
 	p->wait_for_all();

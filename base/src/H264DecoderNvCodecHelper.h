@@ -238,8 +238,15 @@ public:
     bool init(std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame);
     void ConvertToPlanar(uint8_t* pHostFrame, int nWidth, int nHeight, int nBitDepth);
     void process(frame_sp& frame);
+    void intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop);
     std::function<void( frame_sp&)> send;
     std::function<frame_sp()> makeFrame;
 private:
     boost::shared_ptr<NvDecoder> helper;
+    int framesToSkip = 0;
+	int iFramesToSkip = 0;
+	int currentFps = 24;
+	int previousFps = 24;
+	float playbackSpeed = 1;
+	int gop;
 };

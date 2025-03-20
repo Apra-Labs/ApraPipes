@@ -18,12 +18,6 @@
 #include <cstdio>
 #include <exiv2/exiv2.hpp>
 
-#include <openssl/md5.h>
-#include <sstream>
-#include <iomanip>
-
-// #include <exif.h>
-
 class ThumbnailListGenerator::Detail
 {
 
@@ -111,87 +105,83 @@ bool ThumbnailListGenerator::term()
 //     mDetail->initMatImages(metadata); // should do inside SOS
 // }
 
-std::string ThumbnailListGenerator::calculateMD5(const unsigned char *data, size_t length)
-{
-    unsigned char md5Digest[MD5_DIGEST_LENGTH];
-    MD5_CTX md5Context;
-    MD5_Init(&md5Context);
-    MD5_Update(&md5Context, data, length);
-    MD5_Final(md5Digest, &md5Context);
-
-    std::stringstream ss;
-    for (int i = 0; i < MD5_DIGEST_LENGTH; ++i)
-    {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int)md5Digest[i];
-    }
-    return ss.str();
-}
-
 bool ThumbnailListGenerator::process(frame_container &frames)
 {
     auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE);
     if (isFrameEmpty(frame))
     {
-        LOG_ERROR << "Got Empty Frames, returning";
+        LOG_ERROR << "Got Empty Frames will return from here ";
         return true;
     }
 
     framemetadata_sp frameMeta = frame->getMetadata();
+    FrameMetadata::FrameType fType = frameMeta->getFrameType();
+
     auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(frameMeta);
     auto height = rawMetadata->getHeight();
     auto width = rawMetadata->getWidth();
+    auto st = rawMetadata->getStep();
 
     unsigned char *frame_buffer = (unsigned char *)frame->data();
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
 
     JSAMPROW row_pointer[1];
-    unsigned char *jpegBuffer = nullptr; // Buffer to hold JPEG data
-    unsigned long jpegSize = 0;          // Size of the JPEG data
-
+    FILE *outfile = fopen(mDetail->mProps.fileToStore.c_str(), "wb");
+    if (!outfile)
+    {
+        // fprintf(stderr, "Error: could not open \n", filename);
+        LOG_ERROR << "Couldn't open file";
+        return false;
+    }
+    mDetail->count = mDetail->count + 1;
     cinfo.err = jpeg_std_error(&jerr);
     jpeg_create_compress(&cinfo);
-    jpeg_mem_dest(&cinfo, &jpegBuffer, &jpegSize); // Store JPEG in memory
+    jpeg_stdio_dest(&cinfo, outfile);
 
+    // Set the image dimensions and color space
     cinfo.image_width = width;
     cinfo.image_height = height;
     cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_RGBA;
 
+    // Set the JPEG compression parameters
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, 80, TRUE);
+
+    // Start the compression process
     jpeg_start_compress(&cinfo, TRUE);
+    // fclose(outfile);
 
-    LOG_INFO << "Compressing image -> width<" << width << "> & height <" << height << ">";
+    // return true;
 
+    LOG_ERROR << " image data -> width<" << width <<"> & height <" << height <<">";
+
+    // Loop over the image rows
     while (cinfo.next_scanline < cinfo.image_height)
     {
+        // Get a pointer to the current row
         row_pointer[0] = &frame_buffer[cinfo.next_scanline * width * 4];
-        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+        if(row_pointer && &cinfo)
+        {
+            // Compress the row
+            jpeg_write_scanlines(&cinfo, row_pointer, 1);
+        }
+        else
+        {
+            LOG_ERROR << "COULDN'T WRITE .......................................";
+        }
     }
 
+    // Finish the compression process
     jpeg_finish_compress(&cinfo);
-    jpeg_destroy_compress(&cinfo);
-    LOG_INFO << "JPEG Compression Done. Buffer Size: " << jpegSize;
-    std::string md5Val = calculateMD5(jpegBuffer, jpegSize);
-    LOG_ERROR << "================MD5 val is=====================" << md5Val;
-    std::string filename = mDetail->mProps.fileToStore;
-    FILE *outfile = fopen(filename.c_str(), "wb");
-    if (!outfile)
-    {
-        LOG_ERROR << "Couldn't open file for writing: " << filename;
-        free(jpegBuffer);
-        return false;
-    }
 
-    fwrite(jpegBuffer, 1, jpegSize, outfile); // Write buffer to file
+    // Clean up the JPEG compression object and close the output file
+    jpeg_destroy_compress(&cinfo);
     fflush(outfile);
     fclose(outfile);
-
-    LOG_INFO << "JPEG file written successfully: " << filename;
-
-    // Free the allocated memory
-    free(jpegBuffer);
+    // decompressFrame();
+    sync();
     if (m_callbackFunction)
     {
         m_callbackFunction();

@@ -207,6 +207,7 @@ arguement to allowFrames else module props value is taken if no arguements are p
 
 bool ValveModule::allowFrames(int numframes)
 {
+    LOG_INFO << "Got Command to FLOW Number of Frames " << numframes;
     ValvePassThroughCommand cmd;
     cmd.numOfFrames = numframes;
     return queueCommand(cmd);

@@ -25,7 +25,7 @@ public:
 		helper.reset();
 	}
 
-	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame)
+	bool setMetadata(framemetadata_sp& metadata, frame_sp frame, std::function<void(frame_sp&)> send, std::function<frame_sp()> makeFrame, std::function<void()> flushModuleQueue)
 	{
 		if (metadata->getFrameType() == FrameMetadata::FrameType::H264_DATA)
 		{
@@ -46,7 +46,7 @@ public:
 		
 #ifdef ARM64
 		helper.reset(new h264DecoderV4L2Helper());
-		return helper->init(send, makeFrame);
+		return helper->init(send, makeFrame, flushModuleQueue);
 #else
 		helper.reset(new H264DecoderNvCodecHelper(mWidth, mHeight));
 		return helper->init(send, makeFrame);//
@@ -55,11 +55,21 @@ public:
 
 	void compute(frame_sp& frame)
 	{
-		helper->process(frame);
+		if(frame->size())
+		{
+			helper->process(frame);
+		}
 	}
+	
+	void intitliazeSpeedElement(int _playbackFps, float _playbackSpeed, int _gop)
+	{
+		LOG_ERROR << "Decoder is initializing speed factor.";
+		helper->intitliazeSpeed(_playbackFps, _playbackSpeed, _gop);
+	}
+
 	void terminateHelper()
 	{
-		LOG_DEBUG << "Should Free all the resources ";
+		LOG_ERROR << "Should Free all the resources ";
 		helper->term_helper();
 	}
 public:
@@ -143,6 +153,7 @@ bool H264Decoder::init()
 
 bool H264Decoder::term()
 {
+	LOG_ERROR << "calling decoder term";
 #ifdef ARM64
 	mDetail->terminateHelper();
 #endif
@@ -164,13 +175,14 @@ bool H264Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
 	// change bool to true
-	mDetail->setMetadata(metadata, frame,
-		[&](frame_sp& outputFrame) {
+	LOG_ERROR << "================Got SOS FRAME ==============";
+	mDetail->setMetadata(metadata, frame, [&](frame_sp &outputFrame)
+						 {
 			frame_container frames;
 			frames.insert(make_pair(mOutputPinId, outputFrame));
-			send(frames);
-		}, [&]() -> frame_sp {return makeFrame(); }
-		);
+			send(frames); }, [&]() -> frame_sp
+						 { return makeFrame(); }, [&]()
+						 { flushQue(); });
 	mShouldTriggerSOS = false;
 	auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
@@ -191,6 +203,7 @@ bool H264Decoder::shouldTriggerSOS()
 
 bool H264Decoder::processEOS(string& pinId)
 {
+	LOG_ERROR << "Got EOS Frame";
 	auto frame = frame_sp(new EmptyFrame());
 	mDetail->compute(frame);
 	mDetail->terminateHelper();
@@ -200,8 +213,18 @@ bool H264Decoder::processEOS(string& pinId)
 
 bool H264Decoder::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-	if (type == Command::CommandType::DecoderEOS)
+	if (type == Command::CommandType::DecoderPlaybackSpeed)
 	{
+		DecoderPlaybackSpeed cmd;
+		getCommand(cmd, frame);
+		// currentFps = cmd.playbackFps;
+		// playbackSpeed = cmd.playbackSpeed;
+		// gop = cmd.gop;
+		
+		mDetail->intitliazeSpeedElement(cmd.playbackFps, cmd.playbackSpeed, cmd.gop);
+	}
+	else if (type == Command::CommandType::DecoderEOS)
+	{ 
 		DecoderEOS decEos;
 		getCommand(decEos, frame);
 		processEOS(mOutputPinId);
@@ -217,3 +240,19 @@ bool H264Decoder::decoderEos()
 	DecoderEOS cmd;
 	return queueCommand(cmd);
 }
+
+void H264Decoder::changeDecoderSpeed(int _playbackFps, float _playbackSpeed, int _gop)
+{
+	DecoderPlaybackSpeed cmd;
+	cmd.playbackFps = _playbackFps;
+	cmd.playbackSpeed = _playbackSpeed;
+	cmd.gop = _gop;
+
+	Module::queueCommand(cmd, true);
+}
+
+void H264Decoder::flushQue()
+{
+	Module::flushQue();
+}
+ 

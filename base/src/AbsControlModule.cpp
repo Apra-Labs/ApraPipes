@@ -3,24 +3,27 @@
 #include "AbsControlModule.h"
 #include "Module.h"
 #include "Command.h"
+#include "PipeLine.h"
+#include "boost/algorithm/string/join.hpp"
 
 class AbsControlModule::Detail
 {
 public:
-    Detail(AbsControlModuleProps& _props) : mProps(_props)
-    {
-    }
+	Detail(AbsControlModuleProps& _props) : mProps(_props)
+	{
+	}
 
-    ~Detail()
-    {
-    }
-    AbsControlModuleProps mProps;
+	~Detail()
+	{
+	}
+
+	AbsControlModuleProps mProps;
 };
 
 AbsControlModule::AbsControlModule(AbsControlModuleProps _props)
     :Module(TRANSFORM, "NVRControlModule", _props)
 {
-    mDetail.reset(new Detail(_props));
+	mDetail.reset(new Detail(_props));
 }
 AbsControlModule::~AbsControlModule() {}
 
@@ -46,26 +49,26 @@ void AbsControlModule::addInputPin(framemetadata_sp& metadata, string& pinId)
 
 bool AbsControlModule::handleCommand(Command::CommandType type, frame_sp& frame)
 {
-    return true;
+	return true;
 }
 
 bool AbsControlModule::handlePropsChange(frame_sp& frame)
 {
-    return true;
+	return true;
 }
 
 bool AbsControlModule::init()
 {
-    if (!Module::init())
-    {
-        return false;
-    }
-    return true;
+	if (!Module::init())
+	{
+		return false;
+	}
+	return true;
 }
 
 bool AbsControlModule::term()
 {
-    return Module::term();
+	return Module::term();
 }
 
 AbsControlModuleProps AbsControlModule::getProps()
@@ -81,13 +84,26 @@ void AbsControlModule::setProps(AbsControlModuleProps& props)
 
 bool AbsControlModule::process(frame_container& frames)
 {
-    return true;
+	// Commands are already processed by the time we reach here.
+	return true;
 }
 
+/**
+ * @brief Enroll your module to use healthcallback, errorcallback and other control module functions
+ * @param boost::shared_ptr<Module> the module to be registered
+ * @param role unique string for role of the module
+ * @return bool.
+ */
 bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
 {
-    moduleRoles[role] = module;
-    return true;
+	if (moduleRoles.find(role) != moduleRoles.end())
+	{
+		LOG_ERROR << "Role already registered with the control module.";
+        return false;
+	}
+
+	moduleRoles[role] = module;
+	return true;
 }
 
 boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)

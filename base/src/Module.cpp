@@ -1134,6 +1134,7 @@ bool Module::processSourceQue()
 			}
 			else if (frame->isPropsChange())
 			{
+				LOG_ERROR << "Got Props Change Command @ processSourceQue";
 				handlePropsChange(frame);
 			}
 			else if (frame->isCommand())
@@ -1154,6 +1155,12 @@ bool Module::processSourceQue()
 	}
 
 	return true;
+}
+
+bool Module::handlePausePlay(float speed, bool direction)
+{
+	mDirection = direction;
+	return handlePausePlay(speed > 0);
 }
 
 bool Module::handlePausePlay(bool play)
@@ -1235,6 +1242,94 @@ void Module::sendEOS()
 	send(frames, true);
 }
 
+void Module::sendEOS(frame_sp &frame)
+{
+  if (myNature == SINK || myNature == CONTROL)
+  {
+    return;
+  }
+  frame_container frames;
+  pair<string, framefactory_sp> me; // map element
+  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  {
+    frames.insert(make_pair(me.first, frame));
+  }
+
+  send(frames, true);
+}
+
+void Module::sendMp4ErrorFrame(frame_sp &frame)
+{
+  if (myNature == SINK)
+  {
+    return;
+  }
+
+  frame_container frames;
+  pair<string, framefactory_sp> me; // map element
+  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  {
+    frames.insert(make_pair(me.first, frame));
+  }
+
+  send(frames, true);
+}
+
+bool Module::preProcessControl(frame_container &frames) // ctrl: continue on this.
+{
+  bool eosEncountered = false;
+  auto it = frames.cbegin();
+  while (it != frames.cend())
+  {
+    // increase the iterator manually
+    auto frame = it->second;
+    auto pinId = it->first;
+    it++;
+    if (frame->isEOS())
+    {
+      // EOS Strategy
+      processEOS(pinId);
+      if (!eosEncountered)
+      {
+        sendEOS(); // propagating  eosframe with every eos encountered
+      }
+      frames.erase(pinId);
+      eosEncountered = true;
+      continue;
+    }
+
+    if (frame->isPropsChange())
+    {
+		LOG_ERROR << "Got Props Change Command @ preProcessControl";
+      if (!handlePropsChange(frame))
+      {
+        throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));
+      }
+      frames.erase(pinId);
+      continue;
+    }
+
+    if (frame->isEoP())
+    {
+      handleStop();
+      frames.erase(pinId);
+      continue;
+    }
+
+    if (frame->isCommand())
+    {
+      auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
+      handleCommand(cmdType, frame);
+      frames.erase(pinId);
+      continue;
+    }
+
+    throw AIPException(CTRL_MODULE_INVALID_STATE, "Unexpected data frame recieved in control module");
+  }
+
+  return true;
+}
+
 bool Module::preProcessNonSource(frame_container &frames)
 {
 	auto bTriggerSOS = shouldTriggerSOS(); // donot calculate every time - store the state when condition changes
@@ -1264,6 +1359,7 @@ bool Module::preProcessNonSource(frame_container &frames)
 
 		if (frame->isPropsChange())
 		{
+			LOG_ERROR << "Got Props Change Command @ preProcessNonSource";
 			if (!handlePropsChange(frame))
 			{
 				throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));

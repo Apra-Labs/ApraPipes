@@ -51,9 +51,20 @@ public:
 
 class EoSFrame : public Frame {
 public:
+enum EoSFrameType
+	{
+		GENERAL = 0,
+		MP4_PLYB_EOS,
+		MP4_SEEK_EOS,
+	};
 	EoSFrame();
 	virtual ~EoSFrame() {}
 	virtual bool isEOS();
+	EoSFrameType getEoSFrameType();
+	EoSFrame(EoSFrameType eosType, uint64_t mp4TS);
+private:
+	EoSFrameType type;
+	uint64_t mp4TS;
 };
 
 class EmptyFrame :public Frame {

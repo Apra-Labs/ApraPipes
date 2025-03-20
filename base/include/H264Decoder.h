@@ -18,6 +18,9 @@ public:
 	bool term();
 	bool processEOS(string& pinId);
     bool decoderEos();
+	void flushQue();
+	void changeDecoderSpeed(int _playbackFps, float _playbackSpeed, int _gop);
+
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -26,7 +29,6 @@ protected:
 	bool validateOutputPins();
 	bool shouldTriggerSOS();
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
-
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;

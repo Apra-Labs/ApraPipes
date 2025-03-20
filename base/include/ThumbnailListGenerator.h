@@ -64,4 +64,5 @@ private:
     std::vector<unsigned char> m_frameBuffer;
     std::string m_customMetadata;
     CallbackFunction m_callbackFunction = NULL;
+    std::string calculateMD5(const unsigned char *data, size_t length);
 };

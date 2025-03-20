@@ -9,6 +9,7 @@
       "default-features": false,
       "features": ["contrib", "cuda", "cudnn", "dnn", "jpeg", "nonfree", "png", "tiff", "webp" ]
     },
+    "libjpeg-turbo",
     "ffmpeg",
     "bigint",
     "boost-math",

@@ -95,11 +95,13 @@ static gboolean rotateCam(GtkWidget *widget, GdkEvent *event, gpointer data)
 void lauchAtlPipeline()
 {
 	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/xyz.mp4";
+	std::string outFolderPath = "/media/developer/UUI/apraH264.mp4";
+	// std::string outFolderPath = "/mnt/disks/ssd/ws_yashraj/ApraPipes/temp.mp4";
 	// auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 2)));
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(400, 400, 3)));
+	uint8_t sensorType = 0;
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 10, sensorType)));
 
-	auto nvtransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	auto nvtransform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 1000, 1000)));
 	source->setNext(nvtransform);
 
     // double angle = 0.0f;
@@ -115,16 +117,16 @@ void lauchAtlPipeline()
 	valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(1)));
 	nvtransform->setNext(valve);
 
-	auto dmaToHostCopy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
-	valve->setNext(dmaToHostCopy);
+	// auto dmaToHostCopy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	// valve->setNext(dmaToHostCopy);
 
-	auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/OutputImages/Frame???.raw")));
-	dmaToHostCopy->setNext(fileWriter);
+	// auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/OutputImages/Frame???.raw")));
+	// dmaToHostCopy->setNext(fileWriter);
 
 	// close
 
 	// mp4 write
-	recordvalve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(0)));
+	recordvalve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
 	nvtransform->setNext(recordvalve);
 
 	auto nvtransformtoy20 = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
@@ -135,7 +137,7 @@ void lauchAtlPipeline()
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	nvtransformtoy20->setNext(encoder);
 
-	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, 24, outFolderPath);
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 1, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
 	mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
@@ -155,41 +157,41 @@ void lauchAtlPipeline()
 }
 void launchRendererPipelineUSB()
 {
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 2)));
+	// auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 2)));
 
-	auto nvtransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
-	source->setNext(nvtransform);
+	// auto nvtransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	// source->setNext(nvtransform);
 
-	GtkGlRendererProps gtkglsinkProps(glarea, 640, 480);
-	auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
-	nvtransform->setNext(sink);
+	// GtkGlRendererProps gtkglsinkProps(glarea, 640, 480);
+	// auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
+	// nvtransform->setNext(sink);
 
-	auto mControl = boost::shared_ptr<EndocamControlModule>(new EndocamControlModule(EndocamControlModuleProps()));
-	p.appendModule(source);
-	p.addControlModule(mControl);
-	// mControl->enrollModule("valve", valve);
-	p.init();
+	// auto mControl = boost::shared_ptr<EndocamControlModule>(new EndocamControlModule(EndocamControlModuleProps()));
+	// p.appendModule(source);
+	// p.addControlModule(mControl);
+	// // mControl->enrollModule("valve", valve);
+	// p.init();
 
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	p.run_all_threaded();
+	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	// p.run_all_threaded();
 	// boost::this_thread::sleep_for(boost::chrono::seconds(100));
 }
 
 void launchPipeline()
 {
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/xyz.mp4";
+	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	// std::string outFolderPath = "./data/testOutput/mp4_videos/rgb_24bpp/xyz.mp4";
 
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 10)));
+	// auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 10)));
 
-	auto nvtransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
-	source->setNext(nvtransform);
+	// auto nvtransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	// source->setNext(nvtransform);
 
-	GtkGlRendererProps gtkglsinkProps(glarea, 640, 480);
-	auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
-	nvtransform->setNext(sink);
+	// GtkGlRendererProps gtkglsinkProps(glarea, 640, 480);
+	// auto sink = boost::shared_ptr<Module>(new GtkGlRenderer(gtkglsinkProps));
+	// nvtransform->setNext(sink);
 
 	/// block For Saving Screenshot File
 	// valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(1)));
@@ -223,15 +225,15 @@ void launchPipeline()
 	// // transform->setNext(sink);
 
 	// auto mControl = boost::shared_ptr<EndocamControlModule>(new EndocamControlModule(EndocamControlModuleProps()));
-	p.appendModule(source);
-	//p.addControlModule(mControl);
-	//mControl->enrollModule("valve", valve);
-	p.init();
+	// p.appendModule(source);
+	// //p.addControlModule(mControl);
+	// //mControl->enrollModule("valve", valve);
+	// p.init();
 
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	p.run_all_threaded();
+	// Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	// p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(400));
+	// boost::this_thread::sleep_for(boost::chrono::seconds(400));
 }
 void screenChanged(GtkWidget *widget, GdkScreen *old_screen,
 				   gpointer userdata)
@@ -286,7 +288,7 @@ BOOST_AUTO_TEST_CASE(windowInit2, *boost::unit_test::disabled())
 	// } while (gtk_events_pending());
 	// launchPipeline();
 	// launchRendererPipelineUSB();
-	// lauchAtlPipeline();
+	lauchAtlPipeline();
 	// std::thread pipelineThread();
 	// std::thread &&threaddbar = std::thread(launchPipeline);
 	// pipelineThread = std::move(threaddbar);

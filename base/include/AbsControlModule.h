@@ -1,17 +1,16 @@
 #pragma once
-#include <map>
+#include "APCallback.h"
+#include "Command.h"
 #include "Module.h"
+#include <map>
 
-class AbsControlModuleProps : public ModuleProps
-{
+class PipeLine;
+class AbsControlModuleProps : public ModuleProps {
 public:
-	AbsControlModuleProps()
-	{
-	}
+	AbsControlModuleProps() {}
 };
 
-class AbsControlModule : public Module
-{
+class AbsControlModule : public Module {
 public:
 	AbsControlModule(AbsControlModuleProps _props);
 	~AbsControlModule();
@@ -22,8 +21,15 @@ public:
 	boost::shared_ptr<Module> getModuleofRole(std::string role);
 	AbsControlModuleProps getProps();
 	boost::container::deque<boost::shared_ptr<Module>> pipelineModules;
-	std::map<std::string, boost::shared_ptr<Module>> moduleRoles; // map of role and modules
-
+	std::string printStatus();
+	virtual void handleMp4MissingVideotrack(std::string previousVideoFile, std::string nextVideoFile) {}
+	virtual void handleMMQExport(Command cmd, bool priority = false) {}
+	virtual void handleMMQExportView(uint64_t startTS, uint64_t endTS = 9999999999999, bool playabckDirection = true, bool Mp4ReaderExport = false, bool priority = false) {}
+	virtual void handleSendMMQTSCmd(uint64_t  mmqBeginTS, uint64_t mmqEndTS, bool priority = false) {}
+	virtual void handleLastGtkGLRenderTS(uint64_t  latestGtkGlRenderTS, bool priority) {}
+	virtual void handleGoLive(bool goLive, bool priority) {}
+	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
+	std::map<std::string, boost::shared_ptr<Module>> moduleRoles;
 protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
@@ -32,9 +38,10 @@ protected:
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 	bool handlePropsChange(frame_sp& frame);
-
+	virtual void sendEOS() {}
+	virtual void sendEOS(frame_sp& frame) {}
+	virtual void sendEOPFrame() {}
 private:
-	void setMetadata(framemetadata_sp& metadata);
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
 };

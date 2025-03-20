@@ -36,6 +36,10 @@ public:
 	{
 		m_callbackFunction = _callback;
 	}
+	void registerTsCallback(const CallbackFunction &__tsCallback)
+	{
+		m_tsCallbackFunction = __tsCallback;
+	}
     bool init();
     bool term();
 	bool closeWindow();
@@ -43,6 +47,8 @@ public:
 	void waitForNextFrame();
 	bool statusOfEglWindow();
 	bool getCurrentStausOfMedia();
+	uint64_t getCurrentFrameTimestamp();
+	uint64_t getStartTimestamp();
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -54,5 +60,8 @@ protected:
 private:
 	class Detail;
 	boost::shared_ptr<Detail> mDetail;
+	uint64_t mFrameTs;
+	uint64_t mStartTime;
 	CallbackFunction m_callbackFunction = NULL;
+	CallbackFunction m_tsCallbackFunction = NULL;
 };

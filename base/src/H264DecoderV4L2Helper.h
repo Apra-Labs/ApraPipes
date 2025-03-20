@@ -384,7 +384,7 @@ public:
 
     int process(frame_sp inputFrame);
 
-    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame, std::function<void()> flushPipelineQueue);
 
     bool term_helper();
 
@@ -393,7 +393,21 @@ protected:
     context_t ctx;
     std::function<frame_sp()> makeFrame;
     std::function<void(frame_sp &)> send;
+    std::function<void()> flushPipelineQueue;
     int ret = 0;
     bool runCaptureThread = true;
     std::queue<uint64_t> framesTimestampEntry;
+
+public:
+    void intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop);
+    void registerCallback(const std::string &name, std::function<void()> callback);
+private:
+    int framesToSkip = 0;
+    int iFramesToSkip = 0;
+    int currentFps = 24;
+    int previousFps = 24;
+    float playbackSpeed = 1;
+    int gop;
+
+    std::unordered_map<std::string, std::function<void()>> callbacks;
 };

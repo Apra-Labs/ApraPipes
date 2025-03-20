@@ -342,7 +342,7 @@ static GLuint matToTexture(unsigned char* buffer , GLenum minFilter, GLenum magF
     }
 	GLint max_texture_size;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-	std::cout << "Maximum texture size: " << max_texture_size << std::endl;
+	// std::cout << "Maximum texture size: " << max_texture_size << std::endl;
     // Create the texture
 	glTexImage2D(GL_TEXTURE_2D,		// Type of texture
 				 0,					// Pyramid level (for mip-mapping) - 0 is the top level

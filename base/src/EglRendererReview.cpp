@@ -75,6 +75,8 @@ public:
 
 EglRendererReview::EglRendererReview(EglRendererReviewProps props) : Module(SINK, "EglRendererReview", props)
 {
+    mFrameTs = 0;
+    mStartTime = 0;
     mDetail.reset(new Detail(props.x_offset, props.y_offset, props.width, props.height));
 }
 
@@ -99,7 +101,16 @@ bool EglRendererReview::process(frame_container &frames)
     }
     if (mDetail->renderer)
     {
-        // LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp; 
+        if (mStartTime == 0 && statusOfEglWindow())
+        {
+            LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp;
+            mStartTime = frame->timestamp;
+        }
+        mFrameTs = frame->timestamp;
+        if (m_tsCallbackFunction)
+        {
+            m_tsCallbackFunction();
+        }
         mDetail->renderer->render((static_cast<DMAFDWrapper *>(frame->data()))->getFd());
         waitForNextFrame();
     }
@@ -161,7 +172,8 @@ bool EglRendererReview::processSOS(frame_sp &frame)
     default:
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
-
+    LOG_ERROR << "Egl Frame TimeStamp at the beginning " << frame->timestamp;
+    mStartTime = frame->timestamp;
     mDetail->init(height, width);
     return true;
 }
@@ -206,6 +218,8 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
 bool EglRendererReview::closeWindow()
 {
     LOG_ERROR << " I have Queue The Command to Close Window" ;
+    mFrameTs = 0;
+    mStartTime = 0;
     EglRendererCloseWindow cmd;
     return queueCommand(cmd, false);
 }
@@ -214,6 +228,8 @@ bool EglRendererReview::createWindow(int width, int height)
 {
     LOG_ERROR << "GOT REQUEST TO CREATE WINDOW";
     EglRendererCreateWindow cmd;
+    mFrameTs = 0;
+    mStartTime = 0;
     cmd.width = width;
     cmd.height = height;
     return queueCommand(cmd, false);
@@ -222,11 +238,12 @@ bool EglRendererReview::createWindow(int width, int height)
 bool EglRendererReview::processEOS(string &pinId)
 {
     mDetail->m_mediaRunning = false;
+    mFrameTs = 0;
     if (m_callbackFunction)
     {
         m_callbackFunction();
     }
-    LOG_ERROR << "WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONSWILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS WILL CALL CALLBACK FUNCTIONS";
+    LOG_ERROR << "WILL CALL CALLBACK FUNCTIONS";
     return true;
 }
 
@@ -237,6 +254,7 @@ void EglRendererReview::waitForNextFrame()
 
 bool EglRendererReview::statusOfEglWindow()
 {
+    // LOG_ERROR << "Current State of renderer is " << mDetail->m_isEglWindowCreated;
     return mDetail->m_isEglWindowCreated;
 }
 
@@ -244,4 +262,14 @@ bool EglRendererReview::getCurrentStausOfMedia()
 {
     LOG_ERROR << "CUrrent State of Media is " << mDetail->m_mediaRunning;
     return mDetail->m_mediaRunning;
+}
+
+uint64_t EglRendererReview::getCurrentFrameTimestamp()
+{
+    return mFrameTs;
+}
+
+uint64_t EglRendererReview::getStartTimestamp()
+{
+    return mStartTime;
 }

@@ -318,9 +318,65 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
     outputFrame->timestamp = framesTimestampEntry.front();
     framesTimestampEntry.pop();
     // LOG_ERROR << "DEcoder TimeStamp is " << outputFrame->timestamp;
-    send(outputFrame);
+    // LOG_ERROR << "framesToSkip -> " << framesToSkip;
+    if(!framesToSkip)
+    {
+        send(outputFrame);
+    }
+    
+    if(playbackSpeed == 2 || playbackSpeed == 4)
+    {
+        if(!framesToSkip)
+        {
+            framesToSkip = (currentFps * playbackSpeed) / currentFps ;
+        }
+        framesToSkip--;
+    }
 
     return 0;
+}
+
+void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop)
+{
+	currentFps = _playbackFps;
+	playbackSpeed = _playbackSpeed;
+	gop = _gop;
+	if(playbackSpeed == 2 || playbackSpeed == 4)
+		{
+			if(previousFps >= currentFps * 8)
+			{
+                if(flushPipelineQueue)
+                {
+                    flushPipelineQueue();
+                }
+			}
+			framesToSkip = (currentFps *playbackSpeed) / currentFps - 1;
+		}
+		else if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+		{
+            if(flushPipelineQueue)
+            {
+                flushPipelineQueue();
+            }
+			framesToSkip = 0;
+			if((currentFps * playbackSpeed) / gop > currentFps)
+			{
+				iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
+			}
+		}
+		else
+		{
+			if(previousFps >= currentFps * 8)
+			{
+                if(flushPipelineQueue)
+                {
+                    flushPipelineQueue();
+                }
+			}
+			framesToSkip = 0;
+		}
+		LOG_ERROR << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
+		previousFps = currentFps;
 }
  
  int h264DecoderV4L2Helper::set_capture_plane_format(context_t * ctx, uint32_t pixfmt,
@@ -488,7 +544,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
  
     struct v4l2_control ctl;
     ctl.id = V4L2_CID_MIN_BUFFERS_FOR_CAPTURE;
- 
+    
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_CTRL, &ctl);
     if (ret_val)
     {
@@ -649,6 +705,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     /* Check for resolution event to again
     ** set format and buffers on capture plane.
     */
+    LOG_ERROR << " m_nThread->runCaptureThread " << m_nThread->runCaptureThread <<"ctx->got_eos " <<ctx->got_eos ; 
     while (m_nThread->runCaptureThread && !(ctx->in_error || ctx->got_eos))
     {
         Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
@@ -782,6 +839,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         }
    
     }
+    LOG_ERROR << "ctx->in_error" << ctx->in_error;
     LOG_ERROR << "eos value ==" << ctx->got_eos << " m_nThread->runCaptureThread = " << m_nThread->runCaptureThread;
     LOG_ERROR << "Exiting decoder capture loop thread" << endl;
  
@@ -1131,12 +1189,19 @@ int h264DecoderV4L2Helper::subscribe_event(int fd, uint32_t type, uint32_t id, u
  
     return ret_val;
 }
+
+void h264DecoderV4L2Helper::registerCallback(const std::string &name, std::function<void()> callback) {
+    callbacks[name] = callback;
+}
  
-bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
+bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame, std::function<void()> _flushPipelineQueue)
 {
     makeFrame = _makeFrame;
     mBuffer.reset(new Buffer());
     send =  _send;
+    flushPipelineQueue = _flushPipelineQueue;
+    
+    // init Will Take One Mpre FUnction to send 
     int flags = 0;
     struct v4l2_capability caps;
     struct v4l2_buffer op_v4l2_buf;
@@ -1353,7 +1418,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
         if (queue_v4l2_buf_op.m.planes[0].bytesused == 0)
         {
             ctx.eos = true;
-            LOG_DEBUG << "Input file read complete" << endl;
+            LOG_ERROR << "Input file read complete" << endl;
             break;
         }
         idx++;
@@ -1400,10 +1465,13 @@ h264DecoderV4L2Helper::~h264DecoderV4L2Helper()
 
 bool h264DecoderV4L2Helper::term_helper()
 {
+    LOG_ERROR << "Terminating Helper WITH FD " << ctx.fd;
     if (ctx.fd != -1)
     {
+        LOG_ERROR << "ctx.dec_capture_thread " << ctx.dec_capture_thread << "ctx.fd " << ctx.fd;  
         if (ctx.dec_capture_thread)
         {
+            LOG_ERROR << "SHould Join The tHread";
             runCaptureThread = false;
             pthread_join(ctx.dec_capture_thread, NULL);
         }

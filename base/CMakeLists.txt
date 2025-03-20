@@ -95,6 +95,7 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -200,9 +201,12 @@ SET(CORE_FILES
 	src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
 	src/Mp4WriterSink.cpp
+	# src/Mp4WriterSink_new.cpp
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
+	src/OrderedCacheOfFiles.cpp
+	# src/Mp4ReaderSource_new.cpp
    	src/Mp4ReaderSourceUtils.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
@@ -251,6 +255,7 @@ SET(CORE_FILES_H
 	include/AudioCaptureSrc.h
 	include/QRReader.h
 	include/Mp4WriterSink.h
+	# include/Mp4WriterSink_new.h
 	include/Mp4WriterSinkUtils.h
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
@@ -259,7 +264,9 @@ SET(CORE_FILES_H
 	include/MultimediaQueueXform.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
+	include/OrderedCacheOfFiles.h
 	include/Mp4ReaderSource.h
+	# include/Mp4ReaderSource_new.h
     include/Mp4ReaderSourceUtils.h
 	include/RTSPClientSrc.h
 	include/H264Metadata.h
@@ -358,7 +365,7 @@ SET(IP_FILES_H
 IF(ENABLE_GST)
 	IF(NOT ENABLE_WINDOWS)
 		list(APPEND IP_FILES
-			include/GstWebRTCSink.h
+		include/GstWebRTCSink.h
 		)
 	ENDIF(NOT ENABLE_WINDOWS)
 	list(APPEND IP_FILES
@@ -373,6 +380,7 @@ SET(CUDA_CORE_FILES
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
+	# src/MemTypeConversion.cpp
 
 )
 
@@ -383,6 +391,7 @@ SET(CUDA_CORE_FILES_H
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
 	include/CudaCommon.h
+	# include/MemTypeConversion.h
 
 )
 
@@ -402,6 +411,7 @@ SET(CUDA_IP_FILES
 	src/RotationIndicator.cu
 	src/RotationIndicatorKernel.cpp
 	src/AffineTransform.cpp
+	src/AffineTransformRev.cpp
 	src/H264Decoder.cpp
 	src/SquareMaskNPPI.cpp
 	src/SquareMask.cu
@@ -424,6 +434,8 @@ IF(ENABLE_ARM64)
 		src/NvV4L2Camera.cpp
 		src/NvV4L2CameraHelper.cpp
 		src/EglRenderer.cpp
+		src/EglRendererReview.cpp
+		src/ApraEglRenderer.cpp
 		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
 		src/NvTransform.cpp
@@ -465,6 +477,7 @@ SET(CUDA_IP_FILES_H
 	include/RotationIndicator.h
 	include/RotationIndicatorKernel.h
 	include/AffineTransform.h
+	include/AffineTransformRev.h
 	include/H264Decoder.h
 	include/SquareMaskNPPI.h
 	include/SquareMask.h
@@ -490,7 +503,9 @@ IF(ENABLE_ARM64)
 		include/NvV4L2Camera.h
 		include/NvV4L2CameraHelper.h
 		include/EglRenderer.h
+		include/EglRendererReview.h
 		include/ApraNvEglRenderer.h
+		include/ApraEglRenderer.h
 		include/DMAUtils.h
 		include/NvTransform.h
 		include/ApraEGLDisplay.h
@@ -575,9 +590,9 @@ IF (ENABLE_ARM64)
 		# test/jpegencoderl4tm_tests.cpp
 		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		test/opencvresize_tests.cpp
-		# test/h264encoderv4l2helper_tests.cpp
-		# test/h264encoderv4l2_tests.cpp
+		# test/opencvresize_tests.cpp
+		test/h264encoderv4l2helper_tests.cpp
+		test/h264encoderv4l2_tests.cpp
 		# test/nvarguscamerahelper_tests.cpp
 		# test/nvarguscamera_tests.cpp
 		test/nvv4l2camera_test.cpp
@@ -588,9 +603,10 @@ IF (ENABLE_ARM64)
 		# test/apraegldisplay_tests.cpp
 		# test/frame_factory_test_dma.cpp
 		test/gtkglrenderer_tests.cpp
-		# test/affine_transform_tests.cpp
+		test/affine_transform_tests.cpp
 		# test/at_tests.cpp
-		test/h264decoder_tests.cpp
+		# test/h264decoder_tests.cpp
+		# test/memtypeconversion_tests.cpp
 
 	)
 ENDIF(ENABLE_ARM64)
@@ -640,7 +656,7 @@ SET(UT_FILES
 	# test/bmpconverter_tests.cpp
 	# test/rtsppusher_tests.cpp
 	# test/findexstrategy_tests.cpp	
-	# test/jpegdecodercv_tests.cpp
+	test/jpegdecodercv_tests.cpp
 	# test/Imageresizecv_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	# test/rotatecv_tests.cpp
@@ -652,7 +668,7 @@ SET(UT_FILES
 	# test/pullstratergy_tests.cpp
 	# test/QRReader_tests.cpp
 	# test/textoverlayxform_tests.cpp
-	# test/mp4writersink_tests.cpp
+	test/mp4writersink_tests.cpp
 	# test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	# test/valveModule_tests.cpp
@@ -660,6 +676,7 @@ SET(UT_FILES
 	# test/archivespacemanager_tests.cpp
 	# test/multimediaqueuexform_tests.cpp
 	test/mp4readersource_tests.cpp
+	test/fileRecovery_tests.cpp
 	# test/rtsp_client_tests.cpp
 	# test/rtsp_client_tests.cpp
 	${ARM64_UT_FILES}
@@ -713,7 +730,10 @@ IF (ENABLE_CUDA)
 ENDIF (ENABLE_CUDA)
 message("============================================================== "${JPEG_LIBRARIES}" ==================================================")
 target_link_libraries(aprapipesut   
-  aprapipes  
+
+  aprapipes 
+  /usr/lib/aarch64-linux-gnu/libssl.so
+ 
 #   libturbojpeg 
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -735,7 +755,10 @@ target_link_libraries(aprapipesut
   sfml-audio
   GL
   GLEW::GLEW
+  OpenSSL::SSL
+  OpenSSL::Crypto
   ${GTK3_LIBRARIES}
+  
 #   ${ApraGTKUtils}
 #   /home/developer/atl-app/third_party/ApraGTKUtils/lib_arm64/libApraGTKUtils.a
   )

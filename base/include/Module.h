@@ -132,7 +132,8 @@ public:
 	enum Kind {
 		SOURCE,
 		TRANSFORM,
-		SINK
+		SINK,
+		CONTROL
 	};
 	enum ModuleState {
 		Initialized,
@@ -176,6 +177,7 @@ public:
 	boost::shared_ptr<PaceMaker> getPacer() { return pacer; }	
 	static frame_sp getFrameByType(frame_container& frames, int frameType); 
 	virtual void flushQue();
+	bool getPlayDirection() { return mDirection; }
 	virtual void flushQueRecursive();
 	template<class T>
 	bool queueCommand(T& cmd, bool priority = false)
@@ -208,6 +210,7 @@ protected:
 	virtual bool produce() { return false; }
 	bool stepNonSource(frame_container& frames);
 	bool preProcessNonSource(frame_container& frames);
+	bool preProcessControl(frame_container &frames);
 	bool isRunning() { return mRunning; }
 
 	ModuleProps getProps();
@@ -264,7 +267,9 @@ protected:
 	void setMetadata(std::string& pinId, framemetadata_sp& metadata);
 		
 	virtual bool send(frame_container& frames, bool forceBlockingPush=false);
-	virtual void sendEOS();	
+	virtual void sendEOS();
+	virtual void sendEOS(frame_sp &frame);
+  	virtual void sendMp4ErrorFrame(frame_sp &frame);
 	virtual void sendEoPFrame();
 	
 	boost::function<void () > onStepFail;
@@ -331,6 +336,7 @@ protected:
 
 	bool processSourceQue();
 	bool handlePausePlay(bool play);
+	virtual bool handlePausePlay(float speed = 1, bool direction = true);
 	virtual void notifyPlay(bool play) {}
 
 	//makes buffers from frameFactory
@@ -383,6 +389,7 @@ private:
 	bool isFeedbackEnabled(std::string& moduleId); // get pins and call
 	
 	bool mPlay;
+	bool mDirection;
 	uint32_t mForceStepCount;
 	int mSkipIndex;
 	Kind myNature;
