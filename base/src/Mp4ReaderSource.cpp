@@ -1075,6 +1075,11 @@ public:
 			{
 				LOG_ERROR << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
 				mState.has_more_video = 0;
+				if(fileCompletionCallback)
+				{
+					LOG_ERROR << "File Read Completely, Sending Callback";
+					fileCompletionCallback();
+				}
 				if (false) /// YASH DOn't Send EOS
 				{
 					LOG_ERROR << "Ignoring EOS Frame for Now";
