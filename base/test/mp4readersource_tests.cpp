@@ -573,4 +573,40 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	BOOST_TEST((frames.find(pinId) != frames.end()));
 }
 
+
+BOOST_AUTO_TEST_CASE(mp4_reader_memory_leak)
+{
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";	
+	bool parseFS = false;
+	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
+	mp4ReaderProps.readLoop = true;
+	mp4ReaderProps.fps = 250;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+
+	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
+	mp4Reader->addOutPutPin(encodedImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto statSink = boost::shared_ptr<StatSink>(new StatSink());
+	mp4Reader->setNext(statSink);
+
+	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+	p->init();
+
+	p->run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+
+	LOG_INFO<<"Stopping pipeline";
+	p->stop();
+	p->term();
+	 // Explicitly reset shared pointers in reverse order of creation
+	p->wait_for_all();
+
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
