@@ -1228,9 +1228,12 @@ public:
 	Mp4ReaderDetailH264(Mp4ReaderSourceProps& props, std::function<frame_sp(size_t size, string& pinId)> _makeFrame,
 		std::function<frame_sp(frame_sp& bigFrame, size_t& size, string& pinId)> _makeFrameTrim, std::function<void(frame_sp frame)> _sendEOS, std::function<void(std::string& pinId, framemetadata_sp& metadata)> _setMetadata, std::function<void(frame_sp& frame)> _sendMp4ErrorFrame, std::function<void(Mp4ReaderSourceProps& props)> _setProps, std::function<frame_sp(frame_sp& bigFrame, size_t& size)> _makeFrameTrimFront, std::function<void(const APErrorObject& error)> _errorCallback) : Mp4ReaderDetailAbs(props, _makeFrame, _makeFrameTrim, _sendEOS, _setMetadata, _sendMp4ErrorFrame, _setProps, _makeFrameTrimFront, _errorCallback)
 	{}
-	~Mp4ReaderDetailH264() {}
+	~Mp4ReaderDetailH264() {
+		freeSpsPpsData();
+	}
 	void setMetadata();
 	void readSPSPPS();
+	void freeSpsPpsData();
 	void countOrCopy(uint8_t** out, uint64_t* out_size, const uint8_t* in, int inputSize, int ps, int copy);
 	int h264Mp4ToAnnexbFilter(const uint8_t* inputBuffer, size_t InputSize, frame_sp& outFrame, bool parseOnly, uint8_t& nalType);
 	bool produceFrames(frame_container& frames);
@@ -1337,6 +1340,7 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 
 		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
 	}
+	
 	return true;
 }
 
@@ -1367,6 +1371,7 @@ void Mp4ReaderDetailH264::setMetadata()
 
 void Mp4ReaderDetailH264::readSPSPPS()
 {
+	freeSpsPpsData();
 	mState.vdc = (mp4_video_decoder_config*)malloc(sizeof(mp4_video_decoder_config));
 	unsigned int track_id = 1;
 	mp4_demux_get_track_video_decoder_config(mState.demux, track_id, mState.vdc);
@@ -1380,6 +1385,22 @@ void Mp4ReaderDetailH264::readSPSPPS()
 	memcpy(spsPpsData + 4, sps, spsSize);
 	memcpy(spsPpsData + (spsSize + 4), naluSeprator, 4);
 	memcpy(spsPpsData + (spsSize + 8), pps, ppsSize);
+	LOG_WARNING << "spsPpsData: memory allocated";
+}
+
+void Mp4ReaderDetailH264::freeSpsPpsData()
+{
+	if(spsPpsData)
+	{
+		free(spsPpsData);
+		spsPpsData = nullptr;
+		LOG_WARNING << "spsPpsData: memory freed";
+	}
+	  // Free previous allocations first
+    if (mState.vdc) {
+        free(mState.vdc);
+        mState.vdc = nullptr;
+    }
 }
 
 void Mp4ReaderDetailH264::countOrCopy(uint8_t** out, uint64_t* out_size, const uint8_t* in, int inputSize, int ps, int copy)
@@ -1577,6 +1598,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	{
 		LOG_ERROR << e.what();
 		attemptFileClose();
+		freeSpsPpsData();
 	}
 
 	if (!imgSize)

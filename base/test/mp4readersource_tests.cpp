@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(mp4_reader_memory_leak)
 	bool parseFS = false;
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
 	mp4ReaderProps.readLoop = true;
-	mp4ReaderProps.fps = 250;
+	mp4ReaderProps.fps = 500;
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE(mp4_reader_memory_leak)
 	p->init();
 
 	p->run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(60));
+	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
 
 	LOG_INFO<<"Stopping pipeline";
 	p->stop();
@@ -607,6 +607,34 @@ BOOST_AUTO_TEST_CASE(mp4_reader_memory_leak)
 
 }
 
+BOOST_AUTO_TEST_CASE(mp4_reader_memory_leak_h264)
+{
+    LoggerProps logprops;
+    logprops.logLevel = boost::log::trivial::severity_level::info;
+    Logger::initLogger(logprops);
+	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";	
+    auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, true, false);
+    mp4ReaderProps.fps = 1000;
+    mp4ReaderProps.logHealth = true;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+    auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
+    mp4Reader->addOutPutPin(h264ImageMetadata_2);
+    auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+    mp4Reader->addOutPutPin(mp4Metadata_2);
+    std::vector<std::string> mp4readerPin = mp4Reader->getAllOutputPinsByType(FrameMetadata::FrameType::H264_DATA);
+	boost::shared_ptr<PipeLine> p;
+    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    p->appendModule(mp4Reader);    
+	if (!p->init())
+    {
+        throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+    }    p->run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(60));
+    p->stop();
+    p->term();
+    p->wait_for_all();
+    p.reset();
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()
