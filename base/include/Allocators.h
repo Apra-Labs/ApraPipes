@@ -14,24 +14,26 @@ protected:
     boost::pool<> buff_allocator;
 
 public:
-    HostAllocator() : buff_allocator(1024) {};
+    HostAllocator() : buff_allocator(512) {};
     virtual ~HostAllocator()
     {
         buff_allocator.release_memory();
     }
     virtual void *allocateChunks(size_t n)
-    {
-        return buff_allocator.ordered_malloc(n);
+    {   void *ptr = buff_allocator.ordered_malloc(n);
+        // LOG_ERROR << "Allocated " << n << " chunks at " << ptr;
+        return ptr;
     }
 
     virtual void freeChunks(void *MemPtr, size_t n)
     {
+        // LOG_ERROR << "Freeing " << n << " chunks at " << MemPtr;
         buff_allocator.ordered_free(MemPtr, n);
     }
 
     virtual size_t getChunkSize()
     {
-        return 1024;
+        return 512;
     }
 };
 

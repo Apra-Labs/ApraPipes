@@ -79,10 +79,34 @@ void FrameFactory::destroy(Frame *pointer)
 {
 	boost::mutex::scoped_lock lock(m_mutex);
 	counter.fetch_sub(1, memory_order_seq_cst);
-
 	if (pointer->myOrig != NULL)
 	{
 		size_t n = getNumberOfChunks(pointer->size());
+		bool isOriginal = (pointer->myOrig == pointer->data());
+		
+		if (!isOriginal) {
+			// Calculate the offset in bytes
+			ptrdiff_t offset = static_cast<uint8_t*>(pointer->data()) - static_cast<uint8_t*>(pointer->myOrig);
+			// Calculate how many chunks this offset represents
+			size_t offsetChunks = offset / memory_allocator->getChunkSize();
+			// Total chunks allocated originally would be current chunks + offset chunks
+			size_t totalChunks = n + offsetChunks;
+			
+			// LOG_ERROR << "destroy frame: Size " << pointer->size() 
+			// 		 << " offset bytes: " << offset
+			// 		 << " offset chunks: " << offsetChunks
+			// 		 << " total chunks: " << totalChunks
+			// 		 << " pointer: " << pointer->myOrig;
+			
+			n = totalChunks; // Use total chunks for freeing
+		}
+
+		// LOG_ERROR << "destroy frame: Size " << pointer->size()
+		// 		 << " counter: " << counter 
+		// 		 << " pointer: " << pointer->myOrig 
+		// 		 << " number of chunks: " << n
+		// 		 << " isOriginal: " << isOriginal;
+
 		numberOfChunks.fetch_sub(n, memory_order_seq_cst);
 		memory_allocator->freeChunks(pointer->myOrig, n);
 	}
@@ -97,7 +121,6 @@ frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<Fr
 	size_t oldChunks = getNumberOfChunks(frame->size());
 	size_t newChunks = getNumberOfChunks(size);
 	size_t chunksToFree = oldChunks - newChunks;
-
 	auto origPtr = frame->myOrig;
 	if (origPtr == NULL)
 	{
@@ -124,6 +147,7 @@ frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<Fr
 		frame_allocator.construct(origPtr, size, mother),
 		boost::bind(&FrameFactory::destroy, this, _1));
 	outFrame->setMetadata(mMetadata);
+	LOG_ERROR << "Created frame trimmed: " << outFrame->myOrig;
 	return outFrame;
 }
 
