@@ -80,7 +80,7 @@ jobs:
       run: |
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
-        pip3 install cmake --upgrade || echo 'did not update cmake'
+        pip3 install cmake==3.31.6 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
