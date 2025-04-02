@@ -194,13 +194,14 @@ jobs:
       
 
     - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a failure above
+      if:  ${{ always() }} # only upload logs when we have a failure above
       uses: actions/upload-artifact@v4
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          ${{ github.workspace }}/vcpkg_installed/vcpkg/*
 
 
 
