@@ -83,7 +83,7 @@ jobs:
       run: |
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
-        pip3 install cmake --upgrade || echo 'did not update cmake'
+        pip3 install cmake==3.29.6 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
       shell: wsl-bash {0}
     
