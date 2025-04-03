@@ -175,7 +175,7 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{ always() }}
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
@@ -189,7 +189,7 @@ jobs:
       if:  ${{ always() }} # only upload logs when we have a failure above
       uses: actions/upload-artifact@v4
       with:
-        name: BuildLogs_${{ inputs.flav }}
+        name: BuildLogs_${{ inputs.flav }}_${{ inputs.is-prep-phase && '0' || '1' }}
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
