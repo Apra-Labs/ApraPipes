@@ -1,7 +1,0 @@
-<map id="DetailRenderer::DetailRenderer" name="DetailRenderer::DetailRenderer">
-<area shape="rect" id="Node000001" title=" " alt="" coords="188,35,385,60"/>
-<area shape="rect" id="Node000002" href="$classDetailEgl.html#a3fcf4aabc4ef733ea037a9b2fac7e24f" title=" " alt="" coords="8,5,137,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,35,137,30,138,24,174,29"/>
-<area shape="rect" id="Node000003" href="$classDetailImageviewer.html#a7a5460d3d53778a0bd89486b236c7fb8" title=" " alt="" coords="5,55,140,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="173,65,141,69,140,64,172,60"/>
-</map>

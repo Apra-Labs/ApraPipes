@@ -1,7 +1,0 @@
-<map id="ApraPool::store" name="ApraPool::store">
-<area shape="rect" id="Node000001" title=" " alt="" coords="222,31,331,56"/>
-<area shape="rect" id="Node000002" href="$classApraPool.html#a3f4470ae228addc75f7e63d96d1d56a9" title=" " alt="" coords="13,5,166,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,37,166,31,167,26,207,31"/>
-<area shape="rect" id="Node000003" href="$classApraPool.html#ae4fbbae92593775e770aa075ff0404fb" title=" " alt="" coords="5,55,174,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="207,55,174,59,174,54,206,50"/>
-</map>

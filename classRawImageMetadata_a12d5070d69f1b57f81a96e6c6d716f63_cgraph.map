@@ -1,12 +1,7 @@
 <map id="RawImageMetadata::setData" name="RawImageMetadata::setData">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,70,194,96"/>
-<area shape="rect" id="Node000002" href="$classRawImageMetadata.html#acad6d58f09ece271b9928988ad56db94" title=" " alt="" coords="246,5,451,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,67,241,48,243,53,159,72"/>
-<area shape="rect" id="Node000004" href="$classFrameMetadata.html#a9917daf870d53e017bc55413d88928d5" title=" " alt="" coords="267,70,430,96"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="194,80,251,80,251,86,194,86"/>
-<area shape="rect" id="Node000005" href="$classRawImageMetadata.html#adf65033593077c6ab7f967c22e12a9bf" title=" " alt="" coords="242,120,455,145"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="169,94,266,113,265,119,168,99"/>
-<area shape="rect" id="Node000003" href="$classFrameMetadata.html#a1c55d2e6d4c5b0656fca5469b6e3f0c8" title=" " alt="" coords="503,42,712,68"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="452,35,488,39,487,44,451,40"/>
-<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="430,72,488,65,488,71,431,77"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,194,56"/>
+<area shape="rect" id="Node000002" href="$classFrameMetadata.html#a9917daf870d53e017bc55413d88928d5" title=" " alt="" coords="267,5,430,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,31,251,25,252,31,195,37"/>
+<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#adf65033593077c6ab7f967c22e12a9bf" title=" " alt="" coords="242,55,455,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,50,226,53,226,58,194,55"/>
 </map>

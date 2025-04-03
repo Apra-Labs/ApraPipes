@@ -1,11 +1,7 @@
 <map id="NoneCommand::getCommandType" name="NoneCommand::getCommandType">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,228,80"/>
-<area shape="rect" id="Node000002" href="$classUtils.html#a5baaee29c6a1902bfb7e34d1d2c1e0d6" title=" " alt="" coords="321,5,438,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,51,305,29,306,35,189,57"/>
-<area shape="rect" id="Node000003" href="$classCommand.html#a88fd4effe76229b40f3021e77fcae86e" title=" " alt="" coords="313,55,446,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,65,298,65,298,70,228,70"/>
-<area shape="rect" id="Node000004" href="$classNoneCommand.html#a7556afae05dd0b158da018052c5ef812" title=" " alt="" coords="276,104,483,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="189,78,292,98,291,103,188,84"/>
-<area shape="rect" id="Node000005" href="$classCommand.html#a18df2d81039392daeb0b78c346a70537" title=" " alt="" coords="531,104,676,130"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="483,114,515,114,515,120,483,120"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,228,56"/>
+<area shape="rect" id="Node000002" href="$classUtils.html#a5baaee29c6a1902bfb7e34d1d2c1e0d6" title=" " alt="" coords="283,5,400,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="228,28,267,24,268,29,228,34"/>
+<area shape="rect" id="Node000003" href="$classCommand.html#a88fd4effe76229b40f3021e77fcae86e" title=" " alt="" coords="276,55,408,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,53,260,56,260,61,228,58"/>
 </map>

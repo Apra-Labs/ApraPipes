@@ -24,6 +24,5 @@ var searchData=
   ['mp4writersinkutils_21',['Mp4WriterSinkUtils',['../classMp4WriterSinkUtils.html',1,'']]],
   ['multimediaqueuexform_22',['MultimediaQueueXform',['../classMultimediaQueueXform.html',1,'']]],
   ['multimediaqueuexformprops_23',['MultimediaQueueXformProps',['../classMultimediaQueueXformProps.html',1,'']]],
-  ['mutable_5fbuffer_24',['mutable_buffer',['../classmutable__buffer.html',1,'']]],
-  ['mvextractdetailabs_25',['MvExtractDetailAbs',['../classMvExtractDetailAbs.html',1,'']]]
+  ['mvextractdetailabs_24',['MvExtractDetailAbs',['../classMvExtractDetailAbs.html',1,'']]]
 ];

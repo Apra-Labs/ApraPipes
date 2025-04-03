@@ -1,9 +1,7 @@
 <map id="FrameContainerQueue::push" name="FrameContainerQueue::push">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,39,157,79"/>
-<area shape="rect" id="Node000002" href="$classbounded__buffer.html#addd0ec3a641c1b7887a6677d6b70e823" title=" " alt="" coords="205,46,348,72"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,56,189,56,189,62,157,62"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,157,46"/>
+<area shape="rect" id="Node000002" href="$classbounded__buffer.html#addd0ec3a641c1b7887a6677d6b70e823" title=" " alt="" coords="205,13,348,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,23,189,23,189,28,157,28"/>
 <area shape="rect" id="Node000003" href="$classbounded__buffer.html#a9b39f13d25759eb10c5d10671abcbbb2" title=" " alt="" coords="396,5,521,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="348,43,380,37,381,42,349,49"/>
-<area shape="rect" id="Node000004" href="$classbounded__buffer.html#a32a79620e450ec9fbfbd909e333a574b" title=" " alt="" coords="396,71,521,111"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="349,69,381,75,380,80,348,74"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="348,23,381,23,381,28,348,28"/>
 </map>

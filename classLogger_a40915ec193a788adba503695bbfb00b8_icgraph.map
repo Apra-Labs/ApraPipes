@@ -1,15 +1,13 @@
 <map id="Logger::Logger" name="Logger::Logger">
 <area shape="rect" id="Node000001" title=" " alt="" coords="726,31,833,56"/>
-<area shape="poly" id="edge7_Node000001_Node000001" title=" " alt="" coords="807,18,798,12,779,9,762,11,753,16,751,21,756,29,751,32,746,22,749,12,761,6,779,4,799,7,810,13"/>
-<area shape="rect" id="Node000002" href="$classLogger.html#aa6f6d11f892277aacaf0fe1db82e6829" title=" " alt="" coords="380,31,505,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="710,46,506,46,506,41,710,41"/>
-<area shape="rect" id="Node000006" href="$classLogger.html#acdaeaa5dea3891a5417d8a979b879eaf" title=" " alt="" coords="553,56,678,82"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="711,57,679,62,678,57,710,51"/>
-<area shape="rect" id="Node000003" href="$classLogger.html#a8c6016798e5674bff044772ebe95dbb7" title=" " alt="" coords="196,5,328,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="364,35,328,30,329,25,365,30"/>
-<area shape="rect" id="Node000004" href="$classLogger.html#a8cc48636631d0f3a603959afc9c70546" title=" " alt="" coords="193,55,332,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="365,56,333,61,332,56,364,51"/>
-<area shape="rect" id="Node000005" href="$classLogger.html#a874e780b2f5e3b15eb14c04263a3f49a" title=" " alt="" coords="5,55,145,80"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="177,70,145,70,145,65,177,65"/>
-<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="537,60,506,55,506,50,538,55"/>
+<area shape="rect" id="Node000002" href="$classLogger.html#acdaeaa5dea3891a5417d8a979b879eaf" title=" " alt="" coords="553,31,678,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="710,46,678,46,678,41,710,41"/>
+<area shape="rect" id="Node000003" href="$classLogger.html#aa6f6d11f892277aacaf0fe1db82e6829" title=" " alt="" coords="380,31,505,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="537,46,506,46,506,41,537,41"/>
+<area shape="rect" id="Node000004" href="$classLogger.html#a8c6016798e5674bff044772ebe95dbb7" title=" " alt="" coords="196,5,328,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="364,35,328,30,329,25,365,30"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#a8cc48636631d0f3a603959afc9c70546" title=" " alt="" coords="193,55,332,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="365,56,333,61,332,56,364,51"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#a874e780b2f5e3b15eb14c04263a3f49a" title=" " alt="" coords="5,55,145,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="177,70,145,70,145,65,177,65"/>
 </map>

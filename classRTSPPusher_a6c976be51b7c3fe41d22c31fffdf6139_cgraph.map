@@ -1,25 +1,5 @@
 <map id="RTSPPusher::RTSPPusher" name="RTSPPusher::RTSPPusher">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,185,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,185,31"/>
 <area shape="rect" id="Node000002" href="$classModule.html#a76fba64b8e67c692de88499d7b162a11" title=" " alt="" coords="233,5,372,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,30,217,26,217,31,185,35"/>
-<area shape="rect" id="Node000003" href="$classModule.html#aafec388ec0cbcf0eaaeb94b5d30a16c2" title=" " alt="" coords="247,55,358,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="185,51,232,57,231,62,185,57"/>
-<area shape="rect" id="Node000004" href="$classModule.html#ab818cbf84a7b14b70de54a121d28ae75" title=" " alt="" coords="423,29,521,55"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="358,57,407,49,408,54,359,62"/>
-<area shape="rect" id="Node000005" href="$classModule.html#a0f042172c70d5be744726b6815284e83" title=" " alt="" coords="420,79,524,104"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="359,73,405,79,404,85,358,78"/>
-<area shape="rect" id="Node000006" href="$classModule.html#a7139a0dfd4b789d354169f80e01ad029" title=" " alt="" coords="572,79,707,104"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="525,89,557,89,557,94,525,94"/>
-<area shape="rect" id="Node000007" href="$classModule.html#a38c2c0d05b34ab84a6b544cf166d0205" title=" " alt="" coords="755,53,913,79"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="707,80,739,76,740,81,708,85"/>
-<area shape="rect" id="Node000012" href="$classModule.html#abc5436ff930a9c9101d0217fcca841c8" title=" " alt="" coords="786,103,882,128"/>
-<area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="708,97,771,105,771,110,707,102"/>
-<area shape="rect" id="Node000008" href="$classModule.html#a137d79e7797b318af4f6fa69915e08a4" title=" " alt="" coords="961,29,1112,55"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="913,54,945,50,946,56,913,59"/>
-<area shape="rect" id="Node000009" href="$classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="988,79,1085,104"/>
-<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="913,73,972,81,972,86,913,79"/>
-<area shape="rect" id="Node000010" href="$classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="1176,53,1347,79"/>
-<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1085,83,1160,75,1161,80,1086,89"/>
-<area shape="rect" id="Node000011" href="$classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="1160,103,1363,128"/>
-<area shape="poly" id="edge10_Node000009_Node000011" title=" " alt="" coords="1086,94,1145,100,1145,106,1085,99"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,16,217,16,217,21,185,21"/>
 </map>

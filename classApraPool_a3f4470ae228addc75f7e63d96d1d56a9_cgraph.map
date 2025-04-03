@@ -1,7 +1,0 @@
-<map id="ApraPool::ordered_free" name="ApraPool::ordered_free">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,158,38"/>
-<area shape="rect" id="Node000002" href="$classApraPool.html#aead07e62674771884b4541008aeaf85f" title=" " alt="" coords="206,13,315,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,23,190,23,190,28,158,28"/>
-<area shape="rect" id="Node000003" href="$classApraSegregatedStorage.html#a419232c47999281c4f8c9d51584c50af" title=" " alt="" coords="363,5,528,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="315,23,347,23,347,28,315,28"/>
-</map>

@@ -1,19 +1,15 @@
 <map id="Mp4ReaderDetailAbs::calcReloadFileAfter" name="Mp4ReaderDetailAbs::calcReloadFileAfter">
-<area shape="rect" id="Node000001" title=" " alt="" coords="615,104,759,145"/>
-<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763" title=" " alt="" coords="408,71,567,111"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="600,112,568,107,568,102,601,107"/>
-<area shape="rect" id="Node000006" href="$classMp4ReaderDetailAbs.html#a7b6ca77e6fbe61346dae567daa1b811a" title=" " alt="" coords="416,136,559,177"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="601,141,560,147,559,142,600,136"/>
-<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408" title=" " alt="" coords="214,71,357,111"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="392,94,357,94,357,88,392,88"/>
-<area shape="rect" id="Node000004" href="$classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15" title=" " alt="" coords="8,5,160,46"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="206,68,148,49,150,44,207,63"/>
-<area shape="rect" id="Node000005" href="$classMp4ReaderDetailJpeg.html#aaaf2a894b27db1aa0ac9067a28aff5e8" title=" " alt="" coords="10,71,158,111"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="198,94,159,94,159,88,198,88"/>
-<area shape="rect" id="Node000007" href="$classMp4ReaderDetailAbs.html#a8987cb77dfd9bcf2d875667f19b0e8b4" title=" " alt="" coords="211,136,360,177"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="400,159,360,159,360,154,400,154"/>
-<area shape="rect" id="Node000008" href="$classMp4ReaderDetailH264.html#a8ddefe0fb510bce0069fbb5a1b618497" title=" " alt="" coords="5,136,163,177"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="195,159,163,159,163,154,195,154"/>
-<area shape="rect" id="Node000009" href="$classMp4ReaderDetailJpeg.html#a809ecaa5e681e2b01f10a088d13b06c4" title=" " alt="" coords="7,201,161,242"/>
-<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="207,184,150,203,148,198,206,179"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="609,71,753,111"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763" title=" " alt="" coords="402,37,561,78"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="594,79,562,74,562,68,595,74"/>
+<area shape="rect" id="Node000006" href="$classMp4ReaderDetailAbs.html#a7b6ca77e6fbe61346dae567daa1b811a" title=" " alt="" coords="410,103,553,143"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="595,108,554,114,553,109,594,102"/>
+<area shape="rect" id="Node000003" href="$classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408" title=" " alt="" coords="208,37,351,78"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="386,60,351,60,351,55,386,55"/>
+<area shape="rect" id="Node000004" href="$classMp4ReaderDetailH264.html#a7895f7a71e37b53b597973b1bb910c15" title=" " alt="" coords="5,5,157,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="192,46,156,40,157,35,193,41"/>
+<area shape="rect" id="Node000005" href="$classMp4ReaderDetailJpeg.html#aaaf2a894b27db1aa0ac9067a28aff5e8" title=" " alt="" coords="7,71,155,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="193,75,156,81,155,76,192,70"/>
+<area shape="rect" id="Node000007" href="$classMp4ReaderDetailAbs.html#a8987cb77dfd9bcf2d875667f19b0e8b4" title=" " alt="" coords="205,103,354,143"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="394,126,354,126,354,120,394,120"/>
 </map>

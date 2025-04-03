@@ -1,12 +1,5 @@
 <map id="NvDecoder::HandleVideoSequenceProc" name="NvDecoder::HandleVideoSequenceProc">
-<area shape="rect" id="Node000001" title="Callback function to be registered for getting a callback when decoding of sequence starts." alt="" coords="433,46,684,72"/>
-<area shape="rect" id="Node000002" href="$classNvDecoder.html#aac00241633003ac4455be54b41997c93" title="This function is used to initialize the decoder session. Application must call this function to initi..." alt="" coords="228,46,385,72"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="417,71,386,70,386,65,417,65"/>
-<area shape="poly" id="edge6_Node000002_Node000001" title=" " alt="" coords="401,48,432,47,433,53,401,53"/>
-<area shape="rect" id="Node000003" href="$classNvDecoder.html#ad68948005dd67eeeeb665cf4400510a7" title="Callback function to be registered for getting a callback when a decoded frame is ready to be decoded..." alt="" coords="5,5,180,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="212,56,171,49,172,44,213,51"/>
-<area shape="rect" id="Node000004" href="$classNvDecoder.html#ad0058235e6c03cae000a34f6c1b073fb" title="Callback function to be registered for getting a callback when a decoded frame is available for displ..." alt="" coords="5,71,180,111"/>
-<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="250,78,181,89,180,84,249,73"/>
-<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="196,30,266,43,265,48,195,35"/>
-<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="189,65,227,59,228,65,190,70"/>
+<area shape="rect" id="Node000001" title="Callback function to be registered for getting a callback when decoding of sequence starts." alt="" coords="211,5,462,31"/>
+<area shape="rect" id="Node000002" href="$classNvDecoder.html#aac00241633003ac4455be54b41997c93" title="This function is used to initialize the decoder session. Application must call this function to initi..." alt="" coords="5,5,163,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,21,163,21,163,16,195,16"/>
 </map>

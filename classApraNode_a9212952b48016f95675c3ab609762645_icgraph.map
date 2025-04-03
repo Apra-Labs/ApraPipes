@@ -1,7 +1,9 @@
 <map id="ApraNode::getNext" name="ApraNode::getNext">
-<area shape="rect" id="Node000001" title=" " alt="" coords="229,31,359,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="229,55,359,80"/>
 <area shape="rect" id="Node000002" href="$classApraPool.html#ae4fbbae92593775e770aa075ff0404fb" title=" " alt="" coords="9,5,177,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,36,177,31,178,26,213,31"/>
-<area shape="rect" id="Node000003" href="$classApraPool.html#ad68e98f4823372e7c658013573faf7a2" title=" " alt="" coords="5,55,181,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="213,56,181,60,181,54,213,50"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="223,53,148,34,149,29,224,48"/>
+<area shape="rect" id="Node000003" href="$classApraPool.html#a017d524fb65f55500e8ea772d8de8e57" title=" " alt="" coords="10,55,176,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="213,70,176,70,176,65,213,65"/>
+<area shape="rect" id="Node000004" href="$classApraPool.html#ad68e98f4823372e7c658013573faf7a2" title=" " alt="" coords="5,104,181,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="224,87,149,106,148,101,223,82"/>
 </map>

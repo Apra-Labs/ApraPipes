@@ -1,9 +1,0 @@
-<map id="EoPFrame::EoPFrame" name="EoPFrame::EoPFrame">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,155,56"/>
-<area shape="rect" id="Node000002" href="$classFrame.html#ac88cac660e121436f89437fec96fe7e9" title=" " alt="" coords="203,31,304,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,41,187,41,187,46,155,46"/>
-<area shape="rect" id="Node000003" href="$classFrame.html#a8c3d2be9ad81b690c2966e0c8ae4f43b" title=" " alt="" coords="352,5,515,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="304,34,336,29,337,34,305,39"/>
-<area shape="rect" id="Node000004" href="$classFrame.html#a3e78f0df6a009372f4836ada8e92fd06" title=" " alt="" coords="390,55,477,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="305,48,375,57,374,62,304,53"/>
-</map>

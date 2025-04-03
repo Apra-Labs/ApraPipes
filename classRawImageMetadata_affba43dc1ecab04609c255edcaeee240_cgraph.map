@@ -1,7 +1,5 @@
 <map id="RawImageMetadata::RawImageMetadata" name="RawImageMetadata::RawImageMetadata">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,211,64"/>
-<area shape="rect" id="Node000002" href="$classFrameMetadata.html#a1c55d2e6d4c5b0656fca5469b6e3f0c8" title=" " alt="" coords="261,5,470,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,31,245,27,246,33,211,36"/>
-<area shape="rect" id="Node000003" href="$classRawImageMetadata.html#adf65033593077c6ab7f967c22e12a9bf" title=" " alt="" coords="259,55,472,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="211,50,243,53,243,59,211,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,211,46"/>
+<area shape="rect" id="Node000002" href="$classRawImageMetadata.html#adf65033593077c6ab7f967c22e12a9bf" title=" " alt="" coords="259,13,472,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,23,243,23,243,28,211,28"/>
 </map>

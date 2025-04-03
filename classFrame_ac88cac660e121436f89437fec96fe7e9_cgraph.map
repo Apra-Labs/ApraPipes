@@ -1,7 +1,5 @@
 <map id="Frame::Frame" name="Frame::Frame">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,107,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,107,31"/>
 <area shape="rect" id="Node000002" href="$classFrame.html#a8c3d2be9ad81b690c2966e0c8ae4f43b" title=" " alt="" coords="155,5,318,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,34,139,29,140,34,108,39"/>
-<area shape="rect" id="Node000003" href="$classFrame.html#a3e78f0df6a009372f4836ada8e92fd06" title=" " alt="" coords="193,55,280,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="108,48,177,57,177,62,107,53"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,16,139,16,139,21,107,21"/>
 </map>

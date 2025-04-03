@@ -25,7 +25,7 @@
 var NAVTREE =
 [
   [ "ApraPipes", "index.html", [
-    [ "Welcome to Apra Pipes documentation!", "md_data_2gh-pages-assets_2pages_2index.html", null ],
+    [ "Welcome to Apra Pipes documentation!", "index.html", null ],
     [ "Introduction", "md_data_2gh-pages-assets_2pages_2introduction.html", [
       [ "Design", "md_data_2gh-pages-assets_2pages_2introduction.html#autotoc_md13", null ],
       [ "Stack", "md_data_2gh-pages-assets_2pages_2introduction.html#autotoc_md14", null ],
@@ -95,13 +95,13 @@ var NAVTREEINDEX =
 "classModule.html#a7f86e84752ac36be8076d3c56df59de8",
 "classMp4ReaderDetailAbs.html#afdf6d55361cb504db9aeafc8507de333",
 "classNVDECException.html#a70cdbaa9cd9adf58bc96e6216d9a41ab",
-"classNvV4L2CameraHelper.html#a901bb082d5c882e4aa4ee056c56b33b1",
+"classNvV4L2CameraHelper.html#a8493fbba7e3066e0fb189c65d62725eb",
 "classQRReader.html#afbc62934259488ef83a1d1ef6cee08ca",
 "classResizeNPPI_1_1Detail.html#a99308a2627cb68df2d8add90dd9028ce",
-"classTimeStampStrategy.html#ae337e3231e2363182df37bcb441bf9ac",
+"classTimeStampStrategy.html#ad7827a2a0f974856a632063b82e08de7",
 "classh264DecoderV4L2Helper.html#a906bccbceeee497c0c8bf1b6b759a925",
 "structState.html#a4cebcdea0b21b87cdef8f735b8b036e6"
 ];
 
-var SYNCONMSG = 'click to disable panel synchronization';
-var SYNCOFFMSG = 'click to enable panel synchronization';
+var SYNCONMSG = 'click to disable panel synchronisation';
+var SYNCOFFMSG = 'click to enable panel synchronisation';

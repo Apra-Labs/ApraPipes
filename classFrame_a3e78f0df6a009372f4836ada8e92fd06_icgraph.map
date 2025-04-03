@@ -1,24 +1,9 @@
 <map id="Frame::size" name="Frame::size">
-<area shape="rect" id="Node000001" title=" " alt="" coords="444,105,531,131"/>
-<area shape="rect" id="Node000002" href="$classFrameFactory.html#a2c75257be7323d0133cbff4cf55104ea" title=" " alt="" coords="247,55,396,80"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="428,103,365,84,367,78,430,98"/>
-<area shape="rect" id="Node000005" href="$classExtFrame.html#a9e10d17a45fd2db5a47987f99b99b1f7" title=" " alt="" coords="33,104,171,130"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="428,121,171,120,171,114,428,115"/>
-<area shape="rect" id="Node000006" href="$classFrame.html#ac88cac660e121436f89437fec96fe7e9" title=" " alt="" coords="271,203,372,228"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="452,142,347,204,344,200,449,137"/>
-<area shape="rect" id="Node000003" href="$classFrameFactory.html#ab1edbb992f665c203323f509c657f73d" title=" " alt="" coords="30,5,174,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="245,53,162,34,163,29,247,48"/>
-<area shape="rect" id="Node000004" href="$classFrameFactory.html#aab7c88c02d09b715dff2baa1a5001b00" title=" " alt="" coords="30,55,174,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="231,70,174,70,174,65,231,65"/>
-<area shape="poly" id="edge11_Node000006_Node000005" title=" " alt="" coords="289,196,247,169,198,143,167,133,169,128,200,138,249,164,292,191"/>
-<area shape="rect" id="Node000007" href="$classEmptyFrame.html#acb31ab3e1279ac1bb88e24a63239525e" title=" " alt="" coords="15,153,189,179"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="255,203,162,182,163,177,256,198"/>
-<area shape="rect" id="Node000008" href="$classEoPFrame.html#a71e9b4a0afa7197a66c4fce7ee2e9564" title=" " alt="" coords="27,203,177,228"/>
-<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="255,218,177,218,177,213,255,213"/>
-<area shape="rect" id="Node000009" href="$classEoSFrame.html#a7e0a3c49545463eedf0c9cdda0f7531a" title=" " alt="" coords="27,252,177,278"/>
-<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="256,233,163,254,162,249,255,228"/>
-<area shape="rect" id="Node000010" href="$classEoSFrame.html#a814f386f84d903cf55f3bc4e1d53261b" title=" " alt="" coords="27,301,177,327"/>
-<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="292,240,249,267,200,293,169,303,167,298,198,288,247,262,289,235"/>
-<area shape="rect" id="Node000011" href="$classExternalFrame.html#aa11466e767c0f0da4929454ab64d173a" title=" " alt="" coords="5,351,199,376"/>
-<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="304,242,261,293,232,320,200,342,176,353,174,348,197,337,229,315,257,289,300,239"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="394,31,481,56"/>
+<area shape="rect" id="Node000002" href="$classFrameFactory.html#a2c75257be7323d0133cbff4cf55104ea" title=" " alt="" coords="197,31,346,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="378,46,346,46,346,41,378,41"/>
+<area shape="rect" id="Node000003" href="$classFrameFactory.html#ab1edbb992f665c203323f509c657f73d" title=" " alt="" coords="5,5,149,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="181,34,149,30,149,25,182,29"/>
+<area shape="rect" id="Node000004" href="$classFrameFactory.html#aab7c88c02d09b715dff2baa1a5001b00" title=" " alt="" coords="5,55,149,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="182,57,149,61,149,56,181,52"/>
 </map>

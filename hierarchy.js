@@ -360,9 +360,6 @@ var hierarchy =
         [ "Mp4ErrorFrame", "classMp4ErrorFrame.html", null ]
       ] ]
     ] ],
-    [ "mutable_buffer", "classmutable__buffer.html", [
-      [ "Frame", "classFrame.html", null ]
-    ] ],
     [ "MvExtractDetailAbs", "classMvExtractDetailAbs.html", [
       [ "DetailFfmpeg", "classDetailFfmpeg.html", null ],
       [ "DetailOpenH264", "classDetailOpenH264.html", null ]
@@ -423,6 +420,7 @@ var hierarchy =
       [ "Waiting", "classWaiting.html", null ]
     ] ],
     [ "threadsafe_que< T >", "classthreadsafe__que.html", null ],
+    [ "threadsafe_que< std::string >", "classthreadsafe__que.html", null ],
     [ "Utils", "classUtils.html", null ],
     [ "V4L2CUYUV420Converter", "classV4L2CUYUV420Converter.html", [
       [ "V4L2CUDMABufYUV420Converter", "classV4L2CUDMABufYUV420Converter.html", null ],

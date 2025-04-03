@@ -1,5 +1,5 @@
 <map id="ApraPool::purge_memory" name="ApraPool::purge_memory">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,171,38"/>
-<area shape="rect" id="Node000002" href="$classApraSegregatedStorage.html#a85c1d7abb91210dcda96a6be119e60c7" title=" " alt="" coords="219,5,378,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,23,203,23,203,28,171,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,171,31"/>
+<area shape="rect" id="Node000002" href="$classApraNode.html#a9212952b48016f95675c3ab609762645" title=" " alt="" coords="219,5,349,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,16,203,16,203,21,171,21"/>
 </map>

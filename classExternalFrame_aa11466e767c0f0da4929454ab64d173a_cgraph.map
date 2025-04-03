@@ -1,11 +1,5 @@
 <map id="ExternalFrame::ExternalFrame" name="ExternalFrame::ExternalFrame">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,199,56"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,199,31"/>
 <area shape="rect" id="Node000002" href="$classExternalFrame.html#af2385041ada0ce33edaf58541422d79d" title=" " alt="" coords="247,5,382,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,29,231,25,231,31,199,35"/>
-<area shape="rect" id="Node000003" href="$classFrame.html#ac88cac660e121436f89437fec96fe7e9" title=" " alt="" coords="264,55,365,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,52,249,57,248,63,199,57"/>
-<area shape="rect" id="Node000004" href="$classFrame.html#a8c3d2be9ad81b690c2966e0c8ae4f43b" title=" " alt="" coords="430,29,593,55"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="365,58,414,52,415,57,366,64"/>
-<area shape="rect" id="Node000005" href="$classFrame.html#a3e78f0df6a009372f4836ada8e92fd06" title=" " alt="" coords="468,79,555,104"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="366,71,453,82,452,87,365,76"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,16,231,16,231,21,199,21"/>
 </map>

@@ -1,7 +1,5 @@
 <map id="FaceDetectsInfo::FaceDetectsInfo" name="FaceDetectsInfo::FaceDetectsInfo">
-<area shape="rect" id="Node000001" title=" " alt="" coords="269,31,488,56"/>
-<area shape="rect" id="Node000002" href="$classFaceDetectsInfo.html#ae9aeb01ec96f10609e9b3cb51f973fb9" title=" " alt="" coords="20,5,206,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="253,34,206,30,207,24,254,29"/>
-<area shape="rect" id="Node000003" href="$classFaceDetectsInfo.html#a3a8b863e82c42e5c39356915144ff7c8" title=" " alt="" coords="5,55,221,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="253,57,222,60,221,55,253,52"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="269,5,488,31"/>
+<area shape="rect" id="Node000002" href="$classFaceDetectsInfo.html#a3a8b863e82c42e5c39356915144ff7c8" title=" " alt="" coords="5,5,221,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="253,21,221,21,221,16,253,16"/>
 </map>

@@ -1,9 +1,0 @@
-<map id="ImagePlaneData::ImagePlaneData" name="ImagePlaneData::ImagePlaneData">
-<area shape="rect" id="Node000001" title=" " alt="" coords="234,46,453,72"/>
-<area shape="rect" id="Node000002" href="$classImagePlaneData.html#a4641d32beda2272be4adbe82e47d360f" title=" " alt="" coords="5,5,186,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="217,54,186,49,186,44,218,48"/>
-<area shape="rect" id="Node000003" href="$classImagePlaneData.html#a26abfe7e018ffbe965b336243fef3673" title=" " alt="" coords="5,71,186,111"/>
-<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="280,78,187,91,186,85,279,72"/>
-<area shape="poly" id="edge2_Node000002_Node000001" title=" " alt="" coords="201,28,296,43,295,48,201,34"/>
-<area shape="poly" id="edge4_Node000003_Node000001" title=" " alt="" coords="201,66,233,62,233,67,201,71"/>
-</map>
