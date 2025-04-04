@@ -48,11 +48,11 @@ on:
         description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
         default: false
         required: false
-      cache-path:
-        type: string
-        description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ '~/.cache/vcpkg/archives' }}
-        required: false
+      # cache-path:
+      #   type: string
+      #   description: 'the folder which needs to be cached e.g. .cache/vcpkg'
+      #   default: ${{ '~/.cache/vcpkg/archives' }}
+      #   required: false
       cmake-conf-cmd:
         type: string
         description: 'command needed for installing and configuring cmake'
@@ -73,6 +73,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
     defaults:
       run:
@@ -134,14 +135,14 @@ jobs:
     #     ls ${{ inputs.cache-path }} || true
     #   continue-on-error: true
 
-    - name: Cache dependencies for fast cloud build
-      id: cache-all
-      uses: actions/cache@v3
-      with:
-          path: |
-            ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+    # - name: Cache dependencies for fast cloud build
+    #   id: cache-all
+    #   uses: actions/cache@v3
+    #   with:
+    #       path: |
+    #         ${{ inputs.cache-path }}
+    #       key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+    #       restore-keys: ${{ inputs.flav }}-
     
     - name: Make build folder
       run: mkdir -p build
