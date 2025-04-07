@@ -1,0 +1,1 @@
+This folder contains definition of docker images which are required to build or run ApraPipes 
