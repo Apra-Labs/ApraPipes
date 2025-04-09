@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'apt-get update -qq && apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core git-lfs libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install meson && pip3 install cmake==3.29.6'
+        default: 'apt-get update -qq && apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 libssl-dev libssl1.1 && pip3 install meson && pip3 install Jinja2 && pip3 install cmake==3.29.6'
         required: false
       prep-check-cmd:
         type: string
@@ -102,7 +102,6 @@ jobs:
       uses: actions/checkout@v3
       with: 
         submodules: 'recursive' 
-        lfs: true
         fetch-depth: 0
         
     - name: List Submodules
