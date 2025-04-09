@@ -74,7 +74,7 @@ jobs:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
     container: 
-      image: nvidia/cuda/11.8.0-devel-ubuntu20.04:latest
+      image: nvidia/cuda:11.8.0-devel-ubuntu20.04
       options: --user root
     defaults:
       run:
