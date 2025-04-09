@@ -19,7 +19,7 @@ done
 # If there are missing dependencies, install them
 if [ "${#missing_dependencies[@]}" -gt 0 ]; then
   echo "Installing missing dependencies..."
-  apt-get update -qq
+  apt-get -y update -qq
   apt-get -y install "${missing_dependencies[@]}"
 fi
 
@@ -38,7 +38,7 @@ fi
 # Install jq if not present
 if ! jq --version &>/dev/null; then
   echo "jq is not installed. Installing jq..."
-  apt install jq
+  apt install -y jq
 fi
 
 echo "Installing pip install Jinja2"

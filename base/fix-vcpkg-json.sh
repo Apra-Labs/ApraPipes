@@ -16,16 +16,20 @@ if $removeCUDA; then
     echo "Removing CUDA..."
     # Loop through each "opencv4" instance
     for index in $(echo "$v" | jq -r '.dependencies | keys | .[]'); do
+    # Check if the dependency is an object and has a "name" property
+    is_object=$(echo "$v" | jq -r ".dependencies[$index] | if type==\"object\" and has(\"name\") then \"yes\" else \"no\" end")
+    if [ "$is_object" == "yes" ]; then
         name=$(echo "$v" | jq -r ".dependencies[$index].name")
         if [ "$name" == "opencv4" ]; then
             # Remove "cuda" and "cudnn" features for this "opencv4" instance
             v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\" and . != \"cudnn\"))")
         fi
-        if [ "$name" == "whisper"]; then
+        if [ "$name" == "whisper" ]; then
             # Remove "cuda" features for this "whisper" instance
             v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\"))")
         fi
-    done
+    fi
+done
 fi
 
 if $removeOpenCV; then

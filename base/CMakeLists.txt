@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.5)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
