@@ -42,8 +42,6 @@ RUN chmod +x build_linux_no_cuda_docker.sh \
     && chmod +x build_scripts/build_dependencies_linux_no_cuda.sh \
     && chmod +x base/fix-vcpkg-json.sh
 
-# Execute the build script to generate the base image
 RUN bash ./build_linux_no_cuda_docker.sh
 
-# Optionally, specify a default command or entrypoint if needed
 CMD ["bash"]
