@@ -14,7 +14,7 @@ jobs:
   # this is in caching, not using it for now
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
-      runner: 'ubuntu-20.04'
+      runner: 'ubuntu-latest'
       flav: 'Linux-Cuda'
       is-selfhosted: false
       cuda: 'ON'
@@ -26,7 +26,7 @@ jobs:
     needs: linux-cuda-docker-build-prep
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
-      runner: 'ubuntu-20.04'
+      runner: 'ubuntu-latest'
       flav: Linux-Cuda
       is-selfhosted: false      
       cuda: 'ON'
