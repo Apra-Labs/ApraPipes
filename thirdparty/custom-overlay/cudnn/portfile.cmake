@@ -8,7 +8,7 @@ find_path(CUDNN_INCLUDE_DIR NAMES cudnn.h cudnn_v8.h cudnn_v7.h
   PATH_SUFFIXES cuda/include include include/12.3)
 message(STATUS "CUDNN_INCLUDE_DIR: ${CUDNN_INCLUDE_DIR}")
 find_library(CUDNN_LIBRARY NAMES cudnn cudnn8 cudnn7 libcudnn libcudnn8 libcudnn7
-  HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 /usr/lib/aarch64-linux-gnu/ /usr/include/aarch64-linux-gnu/ /usr/
+HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 /usr/lib/x86_64-linux-gnu/ /usr/lib/aarch64-linux-gnu/ /usr/include/aarch64-linux-gnu/ /usr/
   PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64 cuda/lib/x64 lib/12.3/x64)
 message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
 if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")
