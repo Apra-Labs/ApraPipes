@@ -151,6 +151,13 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+    - name: Remove files not needed for the build
+      if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only
+      working-directory: ${{github.workspace}}
+      run: remove-item vcpkg/downloads -Recurse -Force && remove-item * -Recurse -Force -Include *.pdb,*.ilk
+      shell: pwsh
+      continue-on-error: true
+
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
