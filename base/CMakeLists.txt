@@ -61,7 +61,7 @@ IF(ENABLE_LINUX)
 ENDIF()
 
 IF(ENABLE_ARM64)
-	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+	set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/aarch64-linux-gnu/pkgconfig:/usr/local/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX)
