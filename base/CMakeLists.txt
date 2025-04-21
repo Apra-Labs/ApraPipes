@@ -60,9 +60,9 @@ IF(ENABLE_LINUX)
 	pkg_check_modules(GLFW REQUIRED glfw3)
 ENDIF()
 
-IF(ENABLE_ARM64)
-	set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/aarch64-linux-gnu/pkgconfig:/usr/local/share/pkgconfig")
-ENDIF(ENABLE_ARM64)
+if(ENABLE_ARM64)
+    set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/aarch64-linux-gnu/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+endif()
 
 IF(ENABLE_LINUX)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
