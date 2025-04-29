@@ -178,7 +178,10 @@ Module::Module(Kind nature, string name, ModuleProps _props)
   mPropsChangeMetadata.reset(
       new FrameMetadata(FrameMetadata::FrameType::PROPS_CHANGE));
 }
-Module::~Module() {}
+Module::~Module() 
+{
+    LOG_INFO << "Module destructor <" << myId << ">";
+}
 
 bool Module::term()
 {
@@ -1015,7 +1018,8 @@ frame_sp Module::makeFrame(size_t size, framefactory_sp &frameFactory)
 
 frame_sp Module::makeFrame(frame_sp &bigFrame, size_t &size, string &pinId)
 {
-	return mOutputPinIdFrameFactoryMap[pinId]->create(bigFrame, size, mOutputPinIdFrameFactoryMap[pinId]);
+  return mOutputPinIdFrameFactoryMap[pinId]->create(
+      bigFrame, size, mOutputPinIdFrameFactoryMap[pinId]);
 }
 
 frame_sp Module::makeFrame(frame_sp& frame, size_t& incrementSize)
@@ -1574,6 +1578,14 @@ bool Module::addEoPFrame(frame_container &frames)
     frames.insert(make_pair(me.first, frame));
   }
 
+  if (myNature == CONTROL)
+  {
+      auto frame = frame_sp(new EoPFrame());
+      auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+      frame->setMetadata((metadata));
+      frames.insert(make_pair(DUMMY_CTRL_EOP_PIN, frame));
+  }
+
   // if sieve is disabled for atleast one connection - send additional EOP
   // frames - extra EOP frames downstream shouldn't matter
   if (mIsSieveDisabledForAny)
@@ -1597,6 +1609,13 @@ bool Module::handleStop()
   {
     return true;
   }
+  if (myNature == CONTROL)
+  {
+      mRunning = false;
+      term();
+      return true;
+  }
+  // handle SOURCE, TRANSFORM, SINK below
   mStopCount++;
   if (myNature != SOURCE && mStopCount != mForwardPins)
   {

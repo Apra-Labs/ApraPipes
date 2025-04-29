@@ -27,7 +27,8 @@ class PipeLine {
 	Status myStatus;
 	typedef boost::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
-	
+	boost::shared_ptr<Module> controlModule = nullptr;
+
 	std::string mName;
 	container_type modules;
 	bool validate();
@@ -47,8 +48,8 @@ public:
 	void stop();
 	void term();
 	void wait_for_all(bool ignoreStatus = false);
-	void interrup_wait_for_all();
-	void flushAllQueues();
+	void interrupt_wait_for_all();
+	void flushAllQueues(bool flushControlModuleQ=false);
 	const char* getStatus();
 };
 

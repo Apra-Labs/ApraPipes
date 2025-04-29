@@ -15,13 +15,10 @@ public:
 
 	~SimpleControlModule()
 	{
-
 	}
-
-	void handleError(const APErrorObject &error);
-    void handleHealthCallback(const APHealthObject &healthObj);
-
-	// ErrorCallbacks
+	std::string printStatus();
+	void handleError(const APErrorObject& error) override;
+	void handleHealthCallback(const APHealthObject& healthObj) override;
 protected:
 	void sendEOS();
 	void sendEOS(frame_sp& frame);

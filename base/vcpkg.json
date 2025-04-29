@@ -15,13 +15,6 @@
   ],
   "dependencies": [
     {
-      "name": "whisper",
-      "default-features": false,
-      "features": [
-        "cuda"
-      ]
-    },
-    {
       "name": "opencv4",
       "default-features": false,
       "features": [

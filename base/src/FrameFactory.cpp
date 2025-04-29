@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include <boost/bind/bind.hpp>
 #include "FrameFactory.h"
-#ifdef ARM64
-#include "DMAAllocator.h"
-#endif
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -15,11 +12,6 @@ FrameFactory::FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrame
 	auto memType = metadata->getMemType();
 	switch (memType)
 	{
-#ifdef ARM64
-		case FrameMetadata::MemType::DMABUF:
-			memory_allocator = std::make_shared<DMAAllocator>(metadata);
-			break;
-#endif
 #ifdef APRA_CUDA_ENABLED
 		case FrameMetadata::MemType::HOST_PINNED:
 			memory_allocator = std::make_shared<HostPinnedAllocator>();

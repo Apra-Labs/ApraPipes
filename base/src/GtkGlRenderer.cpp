@@ -4,7 +4,7 @@
 
 #include "GtkGlRenderer.h"
 #include "Logger.h"
-#if defined(__arm__) || defined(__aarch64__)
+#ifdef ARM64
 #include "DMAFDWrapper.h"
 #endif
 #include "AbsControlModule.h"
@@ -73,7 +73,7 @@ public:
     void *frameToRender;
     if (detailInstance->isDmaMem)
     {
-#if defined(__arm__) || defined(__aarch64__)
+#ifdef ARM64
       frameToRender =
           static_cast<DMAFDWrapper *>(detailInstance->renderFrame->data())
               ->getHostPtr();

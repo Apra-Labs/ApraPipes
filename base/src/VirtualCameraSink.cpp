@@ -1,8 +1,5 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
-#ifdef ARM64
-	#include "DMAFDWrapper.h"
-#endif
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
@@ -93,10 +90,6 @@ public:
 		{
 		case FrameMetadata::MemType::HOST:
 			break;
-#ifdef ARM64
-		case FrameMetadata::MemType::DMABUF:
-			break;
-#endif
 		default:
 			throw AIPException(AIP_FATAL, "Expected MemType HOST or DMABUF. Actual<" + std::to_string(memType) + ">");
 		}

@@ -73,5 +73,6 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/developer/ws/ApraPipes/base"
 }

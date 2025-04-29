@@ -21,6 +21,8 @@
 #include "BufferMaker.h"
 #include "APCallback.h"
 
+#define DUMMY_CTRL_EOP_PIN "dummy_ctrl_eop_pin"
+
 using namespace std;
 
 class FrameContainerQueue;
@@ -289,21 +291,20 @@ protected:
     return true;
   }
 
-	template<class T>
-	void getCommand(T& cmd, frame_sp& frame)
-	{
-		Utils::deSerialize(cmd, frame->data(), frame->size());
-	}
-	
-	bool queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority = false);
-	frame_sp makeCommandFrame(size_t size, framemetadata_sp& metadata);
-	frame_sp makeFrame(size_t size, string& pinId);
-	frame_sp makeFrame(size_t size); // use only if 1 output pin is there
-	frame_sp makeFrame();
-	frame_sp makeFrame(frame_sp& bigFrame, size_t& newSize, string& pinId);
-	frame_sp makeFrame(frame_sp& frame, size_t& incrementSize);
-	frame_sp getEOSFrame();
-	frame_sp getEmptyFrame();
+  template <class T>
+  void getCommand(T &cmd, frame_sp &frame)
+  {
+    Utils::deSerialize(cmd, frame->data(), frame->size());
+  }
+
+  bool queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority = false);
+  frame_sp makeCommandFrame(size_t size, framemetadata_sp &metadata);
+  frame_sp makeFrame(size_t size, string &pinId);
+  frame_sp makeFrame(size_t size); // use only if 1 output pin is there
+  frame_sp makeFrame();
+  frame_sp makeFrame(frame_sp &bigFrame, size_t &newSize, string &pinId);
+  frame_sp getEOSFrame();
+  frame_sp getEmptyFrame();
 
   void setMetadata(std::string &pinId, framemetadata_sp &metadata);
 
