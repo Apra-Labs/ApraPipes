@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
-OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
+OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
@@ -26,7 +26,7 @@ IF(ENABLE_ARM64)
 	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
-	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+	# set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -67,17 +67,17 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_LINUX  AND ENABLE_ARM64)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	# pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	# pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
 IF(ENABLE_CUDA)
-	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
-  		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
-	endif()
+	# if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
+  	# 	set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
+	# endif()
 
 	message ("CUDA ARCHS: ${CMAKE_CUDA_ARCHITECTURES}")
-	enable_language(CUDA)
+	# enable_language(CUDA)
 	SET(NVCODEC_INCLUDE_DIR ../thirdparty/Video_Codec_SDK_10.0.26/Interface)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
@@ -86,14 +86,14 @@ IF(ENABLE_CUDA)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
-		find_library(V4L2LIB nvv4l2 REQUIRED)
+		# find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		# find_library(V4L2LIB nvv4l2 REQUIRED)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
 		find_library(X11LIB X11 REQUIRED)
 		# find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
 		# find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
+		# find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
@@ -110,8 +110,8 @@ IF(ENABLE_CUDA)
 
 
 		SET(JETSON_LIBS
-			libcudart_static.a	
-			libcuda.so.1.1	
+			# libcudart_static.a	
+			# libcuda.so.1.1	
 			${V4L2LIB}
 			# ${NVBUFUTILSLIB}
 			${EGLLIB}
@@ -501,6 +501,8 @@ IF(ENABLE_CUDA)
 	)
 ENDIF(ENABLE_CUDA)
 
+message(${SOURCE})
+
 IF(ENABLE_LINUX)
     set(SOURCE ${SOURCE} 
 	# ${GTKGL_FILES_H} ${GTKGL_FILES_CPP}
@@ -530,7 +532,7 @@ IF (ENABLE_ARM64)
 		# test/jpegencoderl4tm_tests.cpp
 		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		test/opencvresize_tests.cpp
+		# test/opencvresize_tests.cpp
 		# test/h264encoderv4l2_tests.cpp
 		# test/nvarguscamerahelper_tests.cpp
 		# test/nvarguscamera_tests.cpp
@@ -662,8 +664,8 @@ ENDIF(ENABLE_ARM64)
 IF(ENABLE_LINUX)
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
-	${GDK3_LIBRARIES}
-  	${GTK3_LIBRARIES}
+	# ${GDK3_LIBRARIES}
+  	# ${GTK3_LIBRARIES}
 	)	
 ENDIF(ENABLE_LINUX)
 

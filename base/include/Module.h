@@ -299,6 +299,7 @@ protected:
 
   bool queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority = false);
   frame_sp makeCommandFrame(size_t size, framemetadata_sp &metadata);
+  frame_sp makeFrame(frame_sp& frame, size_t& incrementSize);
   frame_sp makeFrame(size_t size, string &pinId);
   frame_sp makeFrame(size_t size); // use only if 1 output pin is there
   frame_sp makeFrame();

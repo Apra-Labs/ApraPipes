@@ -357,7 +357,7 @@ bool RTSPPusher::process(frame_container &frames)
 	if (controlModule != nullptr)
 	{
     	boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-    	ctl->handleLastRTSPPusherTS(frame->timestamp);
+    	// ctl->handleLastRTSPPusherTS(frame->timestamp);
 	}
 
 	if (isKeyFrame && !pausedState)
