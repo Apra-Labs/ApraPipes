@@ -15,7 +15,7 @@
 #include "ImageDecoderCV.h"
 
 BOOST_AUTO_TEST_SUITE(facedetector_tests)
-#ifdef ARM64
+#ifdef ARM64OLD
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 #else
 BOOST_AUTO_TEST_CASE(basic)

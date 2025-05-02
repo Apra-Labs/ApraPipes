@@ -1,6 +1,6 @@
 #include "VirtualCameraSink.h"
 #include "FrameMetadata.h"
-#ifdef ARM64
+#ifdef ARM64OLD
 	#include "DMAFDWrapper.h"
 #endif
 #include "Frame.h"
@@ -93,7 +93,7 @@ public:
 		{
 		case FrameMetadata::MemType::HOST:
 			break;
-#ifdef ARM64
+#ifdef ARM64OLD
 		case FrameMetadata::MemType::DMABUF:
 			break;
 #endif

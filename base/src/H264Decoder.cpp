@@ -1,6 +1,6 @@
 #include "H264Decoder.h"
 
-#ifdef ARM64
+#ifdef ARM64OLD
 #include "H264DecoderV4L2Helper.h"
 #else
 #include "H264DecoderNvCodecHelper.h"
@@ -41,7 +41,7 @@ public:
 				auto h264Metadata = framemetadata_sp(new H264Metadata(mWidth, mHeight));
 				auto rawOutMetadata = FrameMetadataFactory::downcast<H264Metadata>(h264Metadata);
 				rawOutMetadata->setData(*rawOutMetadata);
-#ifdef ARM64
+#ifdef ARM64OLD
 				helper.reset(new h264DecoderV4L2Helper());
 				return helper->init(send, makeFrame);
 #else
@@ -69,7 +69,7 @@ public:
 		}
 	}
 
-#ifdef ARM64
+#ifdef ARM64OLD
 	void closeAllThreads(frame_sp eosFrame)
 	{
 		helper->closeAllThreads(eosFrame);
@@ -80,7 +80,7 @@ public:
 	int mHeight;
 private:
 
-#ifdef ARM64
+#ifdef ARM64OLD
 	boost::shared_ptr<h264DecoderV4L2Helper> helper;
 #else
 	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
@@ -90,7 +90,7 @@ private:
 H264Decoder::H264Decoder(H264DecoderProps _props) : Module(TRANSFORM, "H264Decoder", _props), mShouldTriggerSOS(true), mProps(_props)
 {
 	mDetail.reset(new Detail(mProps));
-#ifdef ARM64
+#ifdef ARM64OLD
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
 #else
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
@@ -155,7 +155,7 @@ bool H264Decoder::init()
 
 bool H264Decoder::term()
 {
-#ifdef ARM64
+#ifdef ARM64OLD
 	auto eosFrame = frame_sp(new EoSFrame());
 	mDetail->closeAllThreads(eosFrame);
 #endif
@@ -663,7 +663,7 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		mShouldTriggerSOS = false;
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
-#ifdef ARM64
+#ifdef ARM64OLD
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
 #else
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);

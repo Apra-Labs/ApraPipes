@@ -14,7 +14,7 @@
 #include "PipeLine.h"
 #include "StatSink.h"
 
-#ifdef ARM64
+#ifdef ARM64OLD
 BOOST_AUTO_TEST_SUITE(Imageresizecv_tests, *boost::unit_test::disabled())
 #else
 BOOST_AUTO_TEST_SUITE(Imageresizecv_tests)

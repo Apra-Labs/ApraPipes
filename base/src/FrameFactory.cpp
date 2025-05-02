@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <boost/bind/bind.hpp>
 #include "FrameFactory.h"
-#ifdef ARM64
+#ifdef ARM64OLD
 #include "DMAAllocator.h"
 #endif
 #include "Frame.h"
@@ -15,7 +15,7 @@ FrameFactory::FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrame
 	auto memType = metadata->getMemType();
 	switch (memType)
 	{
-#ifdef ARM64
+#ifdef ARM64OLD
 		case FrameMetadata::MemType::DMABUF:
 			memory_allocator = std::make_shared<DMAAllocator>(metadata);
 			break;

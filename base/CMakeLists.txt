@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
-OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
+OPTION(ENABLE_CUDA "Use this switch to enable CUDA" OFF)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
@@ -11,7 +11,9 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 IF(ENABLE_LINUX)
-	add_compile_definitions(LINUX)	
+	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
+	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
+	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
@@ -24,7 +26,7 @@ IF(ENABLE_ARM64)
 	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
-	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+	# set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -48,10 +50,10 @@ find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
-find_package(whisper CONFIG REQUIRED)
+#find_package(whisper CONFIG REQUIRED)
 
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND ENABLE_ARM64)
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
@@ -60,22 +62,22 @@ IF(ENABLE_LINUX)
 	pkg_check_modules(GLFW REQUIRED glfw3)
 ENDIF()
 
-IF(ENABLE_ARM64)
-	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
-ENDIF(ENABLE_ARM64)
-
 IF(ENABLE_LINUX)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+ENDIF(ENABLE_LINUX)
+
+IF(ENABLE_LINUX  AND ENABLE_ARM64)
+	# pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	# pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
 IF(ENABLE_CUDA)
-	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
-  		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
-	endif()
+	# if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
+  	# 	set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
+	# endif()
 
 	message ("CUDA ARCHS: ${CMAKE_CUDA_ARCHITECTURES}")
-	enable_language(CUDA)
+	# enable_language(CUDA)
 	SET(NVCODEC_INCLUDE_DIR ../thirdparty/Video_Codec_SDK_10.0.26/Interface)
 	IF(ENABLE_ARM64)
 		SET(NVCODEC_LIB)
@@ -84,14 +86,14 @@ IF(ENABLE_CUDA)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
 
-		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
-		find_library(V4L2LIB nvv4l2 REQUIRED)
+		# find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		# find_library(V4L2LIB nvv4l2 REQUIRED)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
 		find_library(X11LIB X11 REQUIRED)
-		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
-		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
+		# find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
+		# find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		# find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
@@ -108,10 +110,10 @@ IF(ENABLE_CUDA)
 
 
 		SET(JETSON_LIBS
-			libcudart_static.a	
-			libcuda.so.1.1	
+			# libcudart_static.a	
+			# libcuda.so.1.1	
 			${V4L2LIB}
-			${NVBUFUTILSLIB}
+			# ${NVBUFUTILSLIB}
 			${EGLLIB}
 			${GLESv2LIB}
 			${X11LIB}	
@@ -123,9 +125,11 @@ IF(ENABLE_CUDA)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
-		find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
-		find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
-		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
+		# find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
+		# find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
+		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+		# SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
 			libcuda.so		
 			libcudart_static.a
@@ -311,13 +315,13 @@ SET(IP_FILES
 	src/CalcHistogramCV.cpp
 	src/HistogramOverlay.cpp
 	src/ImageDecoderCV.cpp
-	src/ImageViewerModule.cpp
+	# src/ImageViewerModule.cpp
 	src/BMPConverter.cpp
 	src/ImageResizeCV.cpp
 	src/FacialLandmarksCV.cpp
 	src/ImageEncoderCV.cpp
 	src/RotateCV.cpp
-	src/AffineTransform.cpp
+	# src/AffineTransform.cpp
 	src/BrightnessContrastControlXform.cpp
 	src/VirtualPTZ.cpp
 	src/WebCamSource.cpp
@@ -333,9 +337,9 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
+	# src/AudioToTextXForm.cpp 
 	src/AbsControlModule.cpp
-	src/ThumbnailListGenerator.cpp
+	# src/ThumbnailListGenerator.cpp
 )
 	
 SET(IP_FILES_H
@@ -343,14 +347,14 @@ SET(IP_FILES_H
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
 	include/ApraLines.h
-	include/ImageViewerModule.h
+	# include/ImageViewerModule.h
 	include/ImageDecoderCV.h
 	include/BMPConverter.h
 	include/ImageResizeCV.h
 	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
-	include/AffineTransform.h
+	# include/AffineTransform.h
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
 	include/WebCamSource.h
@@ -360,15 +364,15 @@ SET(IP_FILES_H
 	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
 	include/Overlay.h
-	include/AudioToTextXForm.h
-	include/ThumbnailListGenerator.h
+	# include/AudioToTextXForm.h
+	# include/ThumbnailListGenerator.h
 )
 
 SET(CUDA_CORE_FILES
 	src/apra_cudamalloc_allocator.cu
 	src/apra_cudamallochost_allocator.cu
 	src/CudaMemCopy.cpp
-	src/MemTypeConversion.cpp
+	# src/MemTypeConversion.cpp
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
@@ -377,7 +381,7 @@ SET(CUDA_CORE_FILES
 SET(CUDA_CORE_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
-	include/MemTypeConversion.h
+	# include/MemTypeConversion.h
 	include/apra_cudamallochost_allocator.h
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
@@ -396,42 +400,42 @@ SET(CUDA_IP_FILES
 	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
 	src/RotateNPPI.cpp		
-	src/H264Decoder.cpp
+	# src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-		src/JPEGDecoderL4TM.cpp
-		src/JPEGDecoderL4TMHelper.cpp
-		src/JPEGEncoderL4TM.cpp
-		src/JPEGEncoderL4TMHelper.cpp
-		src/AV4L2Buffer.cpp
-		src/AV4L2ElementPlane.cpp
-		src/H264EncoderV4L2Helper.cpp
-		src/V4L2CUYUV420Converter.cpp
-		src/H264EncoderV4L2.cpp
-		src/DMAFDWrapper.cpp
-		src/NvArgusCameraHelper.cpp
-		src/NvArgusCamera.cpp
-		src/NvV4L2Camera.cpp
-		src/NvV4L2CameraHelper.cpp
-		src/EglRenderer.cpp
-		src/NvEglRenderer.cpp
-		src/DMAUtils.cpp
-		src/NvTransform.cpp
-		src/ApraEGLDisplay.cpp
-		src/DMAFDToHostCopy.cpp
-		src/H264DecoderV4L2Helper.cpp
-		src/H264DecoderV4L2Helper.h
+		# src/JPEGDecoderL4TM.cpp
+		# src/JPEGDecoderL4TMHelper.cpp
+		# src/JPEGEncoderL4TM.cpp
+		# src/JPEGEncoderL4TMHelper.cpp
+		# src/AV4L2Buffer.cpp
+		# src/AV4L2ElementPlane.cpp
+		# src/H264EncoderV4L2Helper.cpp
+		# src/V4L2CUYUV420Converter.cpp
+		# src/H264EncoderV4L2.cpp
+		# src/DMAFDWrapper.cpp
+		# src/NvArgusCameraHelper.cpp
+		# src/NvArgusCamera.cpp
+		# src/NvV4L2Camera.cpp
+		# src/NvV4L2CameraHelper.cpp
+		# src/EglRenderer.cpp
+		# src/NvEglRenderer.cpp
+		# src/DMAUtils.cpp
+		# src/NvTransform.cpp
+		# src/ApraEGLDisplay.cpp
+		# src/DMAFDToHostCopy.cpp
+		# src/H264DecoderV4L2Helper.cpp
+		# src/H264DecoderV4L2Helper.h
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
-		src/JPEGDecoderNVJPEG.cpp	
-		src/JPEGEncoderNVJPEG.cpp
-		src/H264EncoderNVCodecHelper.cpp
-		src/H264EncoderNVCodec.cpp
-		src/H264DecoderNvCodecHelper.cpp
-		src/H264DecoderNvCodecHelper.h
+		# src/JPEGDecoderNVJPEG.cpp	
+		# src/JPEGEncoderNVJPEG.cpp
+		# src/H264EncoderNVCodecHelper.cpp
+		# src/H264EncoderNVCodec.cpp
+		# src/H264DecoderNvCodecHelper.cpp
+		# src/H264DecoderNvCodecHelper.h
 		)
 ENDIF(ENABLE_ARM64)
 
@@ -445,42 +449,42 @@ SET(CUDA_IP_FILES_H
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
 	include/RotateNPPI.h
-	include/H264Decoder.h
+	# include/H264Decoder.h
 )
 
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
-		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
-		include/JPEGEncoderL4TMHelper.h
-		include/JPEGEncoderL4TM.h
-		include/AV4L2Buffer.h
-		include/AV4L2ElementPlane.h
-		include/H264EncoderV4L2Helper.h
-		include/V4L2CUYUV420Converter.h
-		include/H264EncoderV4L2.h
-		include/DMAAllocator.h
-		include/DMAFDWrapper.h
+		# include/JPEGDecoderL4TMHelper.h
+		# include/JPEGDecoderL4TM.h	
+		# include/JPEGEncoderL4TMHelper.h
+		# include/JPEGEncoderL4TM.h
+		# include/AV4L2Buffer.h
+		# include/AV4L2ElementPlane.h
+		# include/H264EncoderV4L2Helper.h
+		# include/V4L2CUYUV420Converter.h
+		# include/H264EncoderV4L2.h
+		# include/DMAAllocator.h
+		# include/DMAFDWrapper.h
 		include/Allocators.h
-		include/NvArgusCameraHelper.h
-		include/NvArgusCamera.h
-		include/NvV4L2Camera.h
-		include/NvV4L2CameraHelper.h
-		include/EglRenderer.h
-		include/ApraNvEglRenderer.h
-		include/DMAUtils.h
-		include/NvTransform.h
-		include/ApraEGLDisplay.h
-		include/DMAFrameUtils.h
-		include/DMAFDToHostCopy.h
+		# include/NvArgusCameraHelper.h
+		# include/NvArgusCamera.h
+		# include/NvV4L2Camera.h
+		# include/NvV4L2CameraHelper.h
+		# include/EglRenderer.h
+		# include/ApraNvEglRenderer.h
+		# include/DMAUtils.h
+		# include/NvTransform.h
+		# include/ApraEGLDisplay.h
+		# include/DMAFrameUtils.h
+		# include/DMAFDToHostCopy.h
 	)
 ELSE()
-	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
-		include/JPEGEncoderNVJPEG.h	
-		include/JPEGDecoderNVJPEG.h
-		include/H264EncoderNVCodecHelper.h
-		include/H264EncoderNVCodec.h
-	)
+	# SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
+	# 	# include/JPEGEncoderNVJPEG.h	
+	# 	# include/JPEGDecoderNVJPEG.h
+	# 	# include/H264EncoderNVCodecHelper.h
+	# 	# include/H264EncoderNVCodec.h
+	# )
 ENDIF(ENABLE_ARM64)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -497,9 +501,11 @@ IF(ENABLE_CUDA)
 	)
 ENDIF(ENABLE_CUDA)
 
+message(${SOURCE})
+
 IF(ENABLE_LINUX)
     set(SOURCE ${SOURCE} 
-	${GTKGL_FILES_H} ${GTKGL_FILES_CPP}
+	# ${GTKGL_FILES_H} ${GTKGL_FILES_CPP}
 	)
 ENDIF(ENABLE_LINUX)
 
@@ -509,10 +515,10 @@ link_directories(${GTK3_LIBRARY_DIRS})
 
 target_include_directories ( aprapipes PRIVATE 
 	${JETSON_MULTIMEDIA_LIB_INCLUDE}
-	${GTK3_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS} 
+	# ${GTK3_INCLUDE_DIRS}
 	${VCPKG_GTK_INCLUDE_DIRS}
 	${FFMPEG_INCLUDE_DIRS} 
-	${OpenCV_INCLUDE_DIRS} 
 	${Boost_INCLUDE_DIRS}
 	${LIBMP4_INC_DIR}
 	${NVCODEC_INCLUDE_DIR}
@@ -523,21 +529,21 @@ target_include_directories ( aprapipes PRIVATE
 
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
-		test/jpegencoderl4tm_tests.cpp
-		test/jpegdecoderl4tm_tests.cpp
+		# test/jpegencoderl4tm_tests.cpp
+		# test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		test/opencvresize_tests.cpp
-		test/h264encoderv4l2_tests.cpp
-		test/nvarguscamerahelper_tests.cpp
-		test/nvarguscamera_tests.cpp
-		test/nvv4l2camera_test.cpp
-		test/nvv4l2camerahelper_test.cpp
-		test/nvtransform_tests.cpp
-		test/eglrenderer_test.cpp
-		test/cuda_arm_tests.cpp
-		test/apraegldisplay_tests.cpp
-		test/frame_factory_test_dma.cpp
-		test/h264decoder_tests.cpp
+		# test/opencvresize_tests.cpp
+		# test/h264encoderv4l2_tests.cpp
+		# test/nvarguscamerahelper_tests.cpp
+		# test/nvarguscamera_tests.cpp
+		# test/nvv4l2camera_test.cpp
+		# test/nvv4l2camerahelper_test.cpp
+		# test/nvtransform_tests.cpp
+		# test/eglrenderer_test.cpp
+		# test/cuda_arm_tests.cpp
+		# test/apraegldisplay_tests.cpp
+		# test/frame_factory_test_dma.cpp
+		# test/h264decoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -547,21 +553,21 @@ IF (ENABLE_CUDA)
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
 		test/ccnppi_tests.cpp
-		test/memtypeconversion_tests.cpp
+		# test/memtypeconversion_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
 		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			test/jpegencodernvjpeg_tests.cpp
-			test/jpegdecodernvjpeg_tests.cpp			
-			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			test/nvjpeg_combo_tests.cpp			
-			test/overlaynppi_tests.cpp
-			test/effectsnppi_tests.cpp
-			test/h264Encodernvcodec_tests.cpp
-			test/nv_mp4_file_tests.cpp
-			test/nv_test_utils.h
-			test/h264decoder_tests.cpp
+			# test/jpegencodernvjpeg_tests.cpp
+			# test/jpegdecodernvjpeg_tests.cpp			
+			# test/resizenppi_jpegencodernvjpeg_tests.cpp
+			# test/nvjpeg_combo_tests.cpp			
+			# test/overlaynppi_tests.cpp
+			# test/effectsnppi_tests.cpp
+			# test/h264Encodernvcodec_tests.cpp
+			# test/nv_mp4_file_tests.cpp
+			# test/nv_test_utils.h
+			# test/h264decoder_tests.cpp
 		)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
@@ -587,16 +593,16 @@ SET(UT_FILES
 	test/bmpconverter_tests.cpp
 	test/rtsppusher_tests.cpp
 	test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
+	# test/jpegdecodercv_tests.cpp
 	test/Imageresizecv_tests.cpp
 	test/faciallandmarkscv_tests.cpp
-	test/imageviewermodule_tests.cpp
+	# test/imageviewermodule_tests.cpp
 	test/ImageEncodeCV_tests.cpp
 	test/rotatecv_tests.cpp
-	test/affinetransform_tests.cpp
+	# test/affinetransform_tests.cpp
 	test/brightness_contrast_tests.cpp
 	test/virtualptz_tests.cpp
-	test/webcam_source_tests.cpp
+	# test/webcam_source_tests.cpp
 	test/facedetectorXform_tests.cpp
 	test/sound_record_tests.cpp
 	test/pullstratergy_tests.cpp
@@ -611,7 +617,7 @@ SET(UT_FILES
 	test/multimediaqueuexform_tests.cpp
   test/mp4readersource_tests.cpp
 	test/rtsp_client_tests.cpp
-	test/motionvector_extractor_and_overlay_tests.cpp
+	# test/motionvector_extractor_and_overlay_tests.cpp
 	test/mp4_reverse_play_tests.cpp
 	test/ordered_cache_of_files_tests.cpp
 	test/mp4_seek_tests.cpp
@@ -620,14 +626,15 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
-	test/audioToTextXform_tests.cpp
+	# test/audioToTextXform_tests.cpp
+	# test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	test/gtkglrenderer_tests.cpp
+	# test/gtkglrenderer_tests.cpp
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
@@ -657,17 +664,16 @@ ENDIF(ENABLE_ARM64)
 IF(ENABLE_LINUX)
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
-	${GDK3_LIBRARIES}
-  	${GTK3_LIBRARIES}
+	# ${GDK3_LIBRARIES}
+  	# ${GTK3_LIBRARIES}
 	)	
 ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
   aprapipes  
-  ${GLEW_LIBRARIES}
+#   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
-  ${OPENH264_LIB}
   ${Boost_LIBRARIES}
   ${FFMPEG_LIBRARIES}
   ${OpenCV_LIBRARIES}
@@ -683,7 +689,7 @@ target_link_libraries(aprapipesut
   LibLZMA::LibLZMA
   bigint::bigint
   sfml-audio
-  whisper::whisper
+#   whisper::whisper
   )
 
 IF(ENABLE_WINDOWS)

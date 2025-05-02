@@ -15,7 +15,7 @@
 #include "StatSink.h"
 #include "FileWriterModule.h"
 #include "ImageEncoderCV.h"
-#ifdef ARM64
+#ifdef ARM64OLD
 BOOST_AUTO_TEST_SUITE(text_overlay_tests, *boost::unit_test::disabled())
 #else
 BOOST_AUTO_TEST_SUITE(text_overlay_tests)

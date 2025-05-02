@@ -11,7 +11,7 @@
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
-#ifdef ARM64
+#ifdef ARM64OLD
 #include "EglRenderer.h"
 
 #else
@@ -21,7 +21,7 @@
 
 BOOST_AUTO_TEST_SUITE(h264decoder_tests)
 
-#ifdef ARM64
+#ifdef ARM64OLD
 
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled())
 {
