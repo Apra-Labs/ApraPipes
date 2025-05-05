@@ -329,6 +329,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer 
         if(!framesToSkip)
         {
             framesToSkip = (currentFps * playbackSpeed) / currentFps ;
+            // LOG_ERROR << " Frames to SKp " << framesToSkip;
         }
         framesToSkip--;
     }
@@ -342,41 +343,42 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
 	playbackSpeed = _playbackSpeed;
 	gop = _gop;
 	if(playbackSpeed == 2 || playbackSpeed == 4)
-		{
-			if(previousFps >= currentFps * 8)
-			{
-                if(flushPipelineQueue)
-                {
-                    flushPipelineQueue();
-                }
-			}
-			framesToSkip = (currentFps *playbackSpeed) / currentFps - 1;
-		}
-		else if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
-		{
+    {
+        if(previousFps >= currentFps * 8)
+        {
             if(flushPipelineQueue)
             {
                 flushPipelineQueue();
             }
-			framesToSkip = 0;
-			if((currentFps * playbackSpeed) / gop > currentFps)
-			{
-				iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
-			}
-		}
-		else
-		{
-			if(previousFps >= currentFps * 8)
-			{
-                if(flushPipelineQueue)
-                {
-                    flushPipelineQueue();
-                }
-			}
-			framesToSkip = 0;
-		}
-		LOG_ERROR << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
-		previousFps = currentFps;
+        }
+        framesToSkip = (currentFps *playbackSpeed) / currentFps - 1;
+        // LOG_ERROR << " Frames to Skip  " << framesToSkip << " previousFps  " << previousFps;
+    }
+    else if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+    {
+        if(flushPipelineQueue)
+        {
+            flushPipelineQueue();
+        }
+        framesToSkip = 0;
+        if((currentFps * playbackSpeed) / gop > currentFps)
+        {
+            iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
+        }
+    }
+    else
+    {
+        if(previousFps >= currentFps * 8)
+        {
+            if(flushPipelineQueue)
+            {
+                flushPipelineQueue();
+            }
+        }
+        framesToSkip = 0;
+    }
+    LOG_ERROR << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
+    previousFps = currentFps;
 }
  
  int h264DecoderV4L2Helper::set_capture_plane_format(context_t * ctx, uint32_t pixfmt,

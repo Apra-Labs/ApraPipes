@@ -219,18 +219,26 @@ void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index,
         // Debug log for frame info
         LOG_DEBUG << "Reusing capture buffer at index " << index << " with pointer " << pointer;
 
-        // Check if the frame is valid before freeing it
+        // More verbose debugging
+        LOG_DEBUG << "About to free pointer: " << pointer;
+        LOG_DEBUG << "Pool address: " << &frame_opool;
+
         if (!frame_opool.is_from(pointer)) {
             LOG_ERROR << "Pointer does not belong to the object pool.";
             return;
         }
         else
         {
-            // LOG_ERROR << "Belongs to Object Pool";
+            LOG_DEBUG << "Belongs to Object Pool";
+            // Add more info about the pointer and the frame
+            LOG_DEBUG << "ExtFrame pointer: " << pointer;
+            // If ExtFrame has member fields you can log, add them here
         }
 
         // Free the frame
+        LOG_DEBUG << "About to call frame_opool.free()";
         frame_opool.free(pointer);
+        LOG_DEBUG << "Successfully freed pointer";
 
         // Requeue the buffer on the capture plane
         mCapturePlane->qBuffer(index);

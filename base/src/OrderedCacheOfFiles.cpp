@@ -155,7 +155,17 @@ bool OrderedCacheOfFiles::probe(boost::filesystem::path potentialMp4File, std::s
 bool OrderedCacheOfFiles::getPreviousAndNextFile(std::string videoPath, std::string& previousFile, std::string& nextFile)
 {
 	auto videoIter = videoCache.find(videoPath);
-	videoIter++;
+	if(videoIter != videoCache.end())
+	{
+		videoIter++;
+	}
+	else
+	{
+		// TODO: Omkar Changes
+		nextFile = "";
+		previousFile = "";
+		return false;
+	}
 	if (videoIter == videoCache.end())
 	{
 		nextFile = "";

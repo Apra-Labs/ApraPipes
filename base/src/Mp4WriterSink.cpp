@@ -129,9 +129,14 @@ public:
 
 	void initNewMp4File(std::string& filename)
 	{
+		int retVal = 0;
 		if (mux)
 		{
-			mp4_mux_close(mux);
+			retVal = mp4_mux_close(mux);
+			if (retVal != 0)
+			{
+				LOG_ERROR << "Failed to close the mux "<< std::to_string(retVal).c_str();
+			}
 		}
 		syncFlag = false;
 		lastFrameTS = 0;
@@ -139,13 +144,21 @@ public:
 		uint32_t timescale = 30000;
 		now = std::time(nullptr);
 
-		auto ret = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
+		retVal = mp4_mux_open(filename.c_str(), timescale, now, now, &mux);
+		if (retVal != 0)
+		{
+			LOG_ERROR << "Failed to open the mux "<< std::to_string(retVal).c_str();
+		}
 		if (mMetadataEnabled)
 		{
 			/* \251too -> �too */
 			std::string key = "\251too";
 			std::string val = mSerFormatVersion.c_str();
-			mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+			retVal = mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+			if (retVal != 0)
+			{
+				LOG_ERROR << "Failed to mp4_mux_add_file_metadata "<< std::to_string(retVal).c_str();
+			}
 		}
 		// track parameters
 		params.type = MP4_TRACK_TYPE_VIDEO;
@@ -161,7 +174,11 @@ public:
 
 		set_video_decoder_config();
 
-		mp4_mux_track_set_video_decoder_config(mux, videotrack, &vdc);
+		retVal = mp4_mux_track_set_video_decoder_config(mux, videotrack, &vdc);
+		if (retVal != 0)
+		{
+			LOG_ERROR << "Failed to mp4_mux_track_set_video_decoder_config "<< std::to_string(retVal).c_str();
+		}
 
 		// METADATA stuff
 		if (mMetadataEnabled)
@@ -173,33 +190,34 @@ public:
 
 			if (metatrack < 0)
 			{
-				LOG_ERROR << "Failed to add metadata track";
+				LOG_ERROR << "Failed to add metadata track "<< std::to_string(metatrack).c_str();
 			}
 
 			// https://www.rfc-editor.org/rfc/rfc4337.txt
 			std::string content_encoding = "base64";
 			std::string mime_format = "video/mp4";
 
-			auto ret = mp4_mux_track_set_metadata_mime_type(
+			retVal = mp4_mux_track_set_metadata_mime_type(
 				mux,
 				metatrack,
 				content_encoding.c_str(),
 				mime_format.c_str());
-			if(ret != 0)
+			if (retVal != 0)
 			{
-				LOG_ERROR << "Failed to add metadata track mime type";
+				LOG_ERROR << "Failed to add metadata track mime type "<< std::to_string(retVal).c_str();
 			}
 			/* Add track reference */
 			if (metatrack > 0)
 			{
 				LOG_INFO << "metatrack <" << metatrack << "> videotrack <" << videotrack << ">";
-				ret = mp4_mux_add_ref_to_track(mux, metatrack, videotrack);
-				if (ret != 0)
+				retVal = mp4_mux_add_ref_to_track(mux, metatrack, videotrack);
+				if (retVal != 0)
 				{
-					LOG_ERROR << "Failed to add metadata track as reference";
+					LOG_ERROR << "Failed to add metadata track as reference "<< std::to_string(retVal).c_str();
 				}
 			}
 		}
+		// return retVal;
 	}
 
 	bool attemptFileClose()
@@ -226,14 +244,22 @@ public:
 			/* \251sts -> ©sts */
 			std::string key = "\251sts";
 			std::string val = std::to_string(inFrame->timestamp);
-			mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+			int ret = mp4_mux_add_file_metadata(mux, key.c_str(), val.c_str());
+			if (ret != 0)
+			{
+				LOG_ERROR << "Failed to mp4_mux_add_file_metadata "<< std::to_string(ret).c_str();
+			}
 		}
 	}
 
 	void addMetadataInVideoHeaderAtEnd(const char* key, const char* data)
 	{
 		LOG_ERROR << "adding metadata <" << key << "> <" << data << ">";
-		mp4_mux_add_file_metadata(mux, key, data);
+		int ret = mp4_mux_add_file_metadata(mux, key, data);
+		if (ret != 0)
+		{
+			LOG_ERROR << "Failed to mp4_mux_add_file_metadata last "<< std::to_string(ret).c_str();
+		}
 	}
 
 	boost::shared_ptr<Mp4WriterSinkProps> mProps;
@@ -338,6 +364,10 @@ bool DetailJpeg::write(frame_container& frames)
 	{
 		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
 		auto ret = mp4_mux_sync(mux);
+		if (ret != 0)
+		{
+			LOG_ERROR << "Failed to mp4_mux_sync " << std::to_string(ret).c_str();
+		}
 		syncFlag = false;
 	}
 
@@ -360,7 +390,11 @@ bool DetailJpeg::write(frame_container& frames)
 	lastFrameTS = inJpegImageFrame->timestamp;
 	mux_sample.dts = mux_sample.dts + static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
 
-	mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
+	int ret = mp4_mux_track_add_sample(mux, videotrack, &mux_sample);
+	if (ret != 0)
+	{
+		LOG_ERROR << "Failed to mp4_mux_track_add_sample "<< std::to_string(ret).c_str();
+	}
 
 	if (metatrack != -1 && mMetadataEnabled)
 		{
@@ -375,7 +409,11 @@ bool DetailJpeg::write(frame_container& frames)
 				mux_sample.len = 0;
 			}
 			
-			mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+			ret = mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+			if (ret != 0)
+			{
+				LOG_ERROR << "Failed to mp4_mux_track_add_sample " << std::to_string(ret).c_str();
+			}
 		}
 	return true;
 }
@@ -511,7 +549,11 @@ bool DetailH264::write(frame_container& frames)
 	if (syncFlag)
 	{
 		LOG_TRACE << "attempting to sync <" << mNextFrameFileName << ">";
-		auto ret = mp4_mux_sync(mux);
+		int retVal = mp4_mux_sync(mux);
+		if (retVal != 0)
+		{
+			LOG_ERROR << "Failed to mp4_mux_sync " << std::to_string(retVal).c_str();
+		}
 		syncFlag = false;
 	}
 
@@ -539,7 +581,11 @@ bool DetailH264::write(frame_container& frames)
 	lastFrameTS = inH264ImageFrame->timestamp;
 	mux_sample.dts = mux_sample.dts + static_cast<int64_t>((params.timescale / 1000) * diffInMsecs);
 
-	mp4_mux_track_add_sample_with_prepend_buffer(mux, videotrack, &prepend_buffer, &mux_sample);
+	int retVal = mp4_mux_track_add_sample_with_prepend_buffer(mux, videotrack, &prepend_buffer, &mux_sample);
+	if (retVal != 0)
+	{
+		LOG_ERROR << "Failed to mp4_mux_track_add_sample_with_prepend_buffer " << std::to_string(retVal).c_str();
+	}
 
 	if (metatrack != -1 && mMetadataEnabled)
 	{
@@ -555,8 +601,14 @@ bool DetailH264::write(frame_container& frames)
 			mux_sample.buffer = nullptr;
 			mux_sample.len = 0;
 		}
-		mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+		retVal = mp4_mux_track_add_sample(mux, metatrack, &mux_sample);
+		if (retVal != 0)
+		{
+			LOG_ERROR << "Failed to mp4_mux_track_add_sample "<< std::to_string(retVal).c_str();
+		}
 	}
+	// return (retVal == 0);
+	// failure in above libmp4 functions may lead into dropping of frames and not the header of file entirely
 	return true;
 }
 
@@ -713,28 +765,18 @@ bool Mp4WriterSink::process(frame_container& frames)
 		// LOG_ERROR << " Frame =====================++>>>>>>>>>>>>>>>>>>>>>>>>>>";
 		if (m_shouldStopFileWrite)
 		{
-			// LOG_ERROR << "Frame can not come through";
+			LOG_ERROR << "Frame can not come through";
 			return true;
-		}
-		else
-		{
-			auto frame = getFrameByType(frames, FrameMetadata::H264_DATA);
-			auto type =  H264Utils::getNALUType((char*)(frame->data()));
-			if (!frame) 
-			{
-				LOG_ERROR << "Frame not found";
-			}
-			else if (((type == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE) && m_lastFrameStored < 0) || m_lastFrameStored >= 0)
-			{
-				LOG_ERROR << "============================ CACHING FRAMES ===================";
-				m_lastFrameStored++;
-				cacheFrames(5, 5, frame);
-			}
 		}
 		if (!mDetail->write(frames))
 		{
 			LOG_FATAL << "Error occured while writing mp4 file<>";
+			// pop the frame
 			return true;
+		}
+		else
+		{
+			saveInCache(frames);
 		}
 	}
 	catch (const std::exception& e)
@@ -744,6 +786,22 @@ bool Mp4WriterSink::process(frame_container& frames)
 		mDetail->attemptFileClose();
 	}
 	return true;
+}
+
+void Mp4WriterSink::saveInCache(frame_container & frames)
+{
+	auto frame = getFrameByType(frames, FrameMetadata::H264_DATA);
+	auto type =  H264Utils::getNALUType((char*)(frame->data()));
+	if (!frame) 
+	{
+		LOG_ERROR << "Frame not found";
+	}
+	else if (((type == H264Utils::H264_NAL_TYPE::H264_NAL_TYPE_IDR_SLICE) && m_lastFrameStored < 0) || m_lastFrameStored >= 0)
+	{
+		m_lastFrameStored++;
+		// LOG_INFO << "============================ CACHING FRAMES " << m_lastFrameStored << " ============================";
+		cacheFrames(5, 5, frame);
+	}
 }
 
 vector<uint8_t> Mp4WriterSink::getFrameBytes(frame_sp frame)

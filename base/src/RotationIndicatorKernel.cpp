@@ -100,7 +100,7 @@ public:
 			src[i] = static_cast<const Npp8u *>(buffer) + srcNextPtrOffset[i];
 			dst[i] = static_cast<Npp8u *>(outBuffer) + dstNextPtrOffset[i];
 		}
-		LOG_DEBUG << "Indicator Enabled ============>>>>> Current Angle To Rotate is " << props.rotationAngle << "================";
+		// LOG_DEBUG << "Indicator Enabled ============>>>>> Current Angle To Rotate is " << props.rotationAngle << "================";
         applySquareRotationIndicator((unsigned char *)buffer, (unsigned char *)outBuffer, srcPitch[0], srcSize[0].height, props.rotationAngle, props.stream);
 		auto cudaStatus = cudaStreamSynchronize(props.stream);
 		if (cudaStatus != cudaSuccess)

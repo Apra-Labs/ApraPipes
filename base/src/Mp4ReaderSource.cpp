@@ -432,7 +432,7 @@ public:
 						{
 							auto msg = "unexpected state while getting next file after successful parse <" + ex.getError() + ">";
 							LOG_ERROR << msg;
-							throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
+							// throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
 						}
 					}
 				}
@@ -483,7 +483,7 @@ public:
 					auto msg = "Unexpected issue occured while resuming playback after reloading the file <"
 						+ mState.mVideoPath + "> @seekTS <" + std::to_string(seekTS) + ">";
 					LOG_ERROR << msg;
-					throw Mp4Exception(MP4_RELOAD_RESUME_FAILED, msg);
+					// throw Mp4Exception(MP4_RELOAD_RESUME_FAILED, msg);
 				}
 				// disable reloading now
 				waitFlag = false;
@@ -499,16 +499,16 @@ public:
 		*/
 		mIsFrameStillAvailable = true;
 		LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to true";
-		openVideoSetPointer(nextFilePath);
-		return true;
+		return openVideoSetPointer(nextFilePath);
 	}
 
 	/*
 	throws MP4_OPEN_FAILED_EXCEPTION, MP4_MISSING_VIDEOTRACK, MP4_MISSING_START_TS,
 	MP4_TIME_RANGE_FETCH_FAILED, MP4_SET_POINTER_END_FAILED
 	*/
-	void openVideoSetPointer(std::string& filePath)
+	bool openVideoSetPointer(std::string& filePath)
 	{
+		bool isSuccess = true;
 		if (mState.demux)
 		{
 			termOpenVideo();
@@ -523,7 +523,7 @@ public:
 			// m_mediaBroke = true;
 			auto msg = "Failed to open the file <" + filePath + "> libmp4 errorcode<" + std::to_string(ret) + ">";
 			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
+			// throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
 		}
 
 		/* read metadata string to get serializer format version & starting timestamp from the header */
@@ -601,9 +601,17 @@ public:
 			LOG_ERROR << msg;
 			std::string previousFile;
 			std::string nextFile;
+			mIsFrameStillAvailable = false;
+			LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
+			if (fileCompletionCallback)
+			{
+				LOG_ERROR << "File Read Completely, Sending Callback";
+				fileCompletionCallback();
+			}
 			cof->getPreviousAndNextFile(mState.mVideoPath, previousFile, nextFile);
+			isSuccess = false;
 			// m_mediaBroke = true;
-			throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
+			// throw Mp4ExceptionNoVideoTrack(MP4_MISSING_VIDEOTRACK, msg, previousFile, nextFile);
 		}
 		else
 		{
@@ -626,7 +634,7 @@ public:
 			{
 				auto msg = "unexpected: starting ts not found in video name or metadata";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_MISSING_START_TS, msg);
+				// throw Mp4Exception(MP4_MISSING_START_TS, msg);
 			}
 		}
 
@@ -643,7 +651,7 @@ public:
 		{
 			auto msg = "Failed to get time range of the video.";
 			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_TIME_RANGE_FETCH_FAILED, msg);
+			// throw Mp4Exception(MP4_TIME_RANGE_FETCH_FAILED, msg);
 		}
 		mState.endTS = mState.resolvedStartingTS + duration;
 		if (mProps.parseFS)
@@ -662,7 +670,7 @@ public:
 			{
 				auto msg = "Unexpected error while moving the read pointer to last frame of <" + mState.mVideoPath + ">";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_SET_POINTER_END_FAILED, msg);
+				// throw Mp4Exception(MP4_SET_POINTER_END_FAILED, msg);
 			}
 			mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
 		}
@@ -670,6 +678,7 @@ public:
 		waitFlag = false;
 		sentEOSSignal = false;
 		mState.sentCommandToControlModule = false;
+		return isSuccess;
 	}
 
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
@@ -712,7 +721,7 @@ public:
 				LOG_ERROR << "Seek failed. Unexpected error.";
 				auto msg = "Unexpected error happened whie seeking inside the video file.";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
+				// throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
 			}
 			// continue reading file if seek is successful
 			mState.has_more_video = 1;
@@ -754,7 +763,7 @@ public:
 				auto msg = "Video File name not in proper format.Check the filename sent as props. \
 					If you want to read a file with custom name instead, please disable parseFS flag.";
 				LOG_ERROR << msg;
-				throw AIPException(AIP_FATAL, msg);
+				// throw AIPException(AIP_FATAL, msg);
 			}
 			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
 		}
@@ -794,7 +803,7 @@ public:
 			{
 				auto msg = "Unexpected error happened whie seeking inside the video file.";
 				LOG_ERROR << msg;
-				throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
+				// throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
 			}
 			mState.mFrameCounterIdx = seekedToFrame;
 			LOG_TRACE << "Time offset usec <" << time_offset_usec << ">, seekedToFrame <" << seekedToFrame << ">";
@@ -837,7 +846,7 @@ public:
 		{
 			auto msg = "Error occured while closing the video file <" + mState.mVideoPath + ">";
 			LOG_ERROR << msg;
-			throw Mp4Exception(MP4_FILE_CLOSE_FAILED, msg);
+			// throw Mp4Exception(MP4_FILE_CLOSE_FAILED, msg);
 		}
 		mState.videotrack = -1;
 		mState.metatrack = -1;
@@ -980,7 +989,10 @@ public:
 		{
 			// if video is not finished, end and wait states are not possible. 
 			// This can happen due to direction change after EOF.
-			// LOG_ERROR << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
+			if (mIsFrameStillAvailable)
+			{
+				LOG_TRACE << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
+			}
 			mState.end = false;
 			waitFlag = false;
 			sentEOSSignal = false;
@@ -1063,23 +1075,18 @@ public:
 			if (mState.sample.size > mProps.biggerFrameSize)
 			{
 				std::string msg = "Buffer size too small. Please check maxImgFrameSize property. maxImgFrameSize <" + std::to_string(mProps.biggerFrameSize) + "> frame size <" + std::to_string(mState.sample.size) + ">";
-				throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
+				// throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
 			}
 			if (mState.sample.metadata_size > mProps.biggerMetadataFrameSize)
 			{
 				std::string msg = "Buffer size too small. Please check maxMetadataFrameSize property. maxMetadataFrameSize <" + std::to_string(mProps.biggerMetadataFrameSize) + "> frame size <" + std::to_string(mState.sample.metadata_size) + ">";
-				throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
+				// throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
 			}
 
 			if (ret != 0 || mState.sample.size == 0)
 			{
 				LOG_ERROR << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
 				mState.has_more_video = 0;
-				if(fileCompletionCallback)
-				{
-					LOG_ERROR << "File Read Completely, Sending Callback";
-					fileCompletionCallback();
-				}
 				if (false) /// YASH DOn't Send EOS
 				{
 					LOG_ERROR << "Ignoring EOS Frame for Now";
@@ -1090,8 +1097,13 @@ public:
 						sentEOSSignal = true;
 					}
 				}
-				mIsFrameStillAvailable = false;
 				LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
+				mIsFrameStillAvailable = false;
+				if(fileCompletionCallback)
+				{
+					LOG_ERROR << "File Read Completely, Sending Callback";
+					fileCompletionCallback();
+				}
 				return;
 			}
 

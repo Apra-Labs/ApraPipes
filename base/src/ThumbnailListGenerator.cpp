@@ -192,6 +192,7 @@ bool ThumbnailListGenerator::process(frame_container &frames)
 
     // Free the allocated memory
     free(jpegBuffer);
+    sync();
     if (m_callbackFunction)
     {
         m_callbackFunction();
