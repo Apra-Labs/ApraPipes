@@ -12,7 +12,7 @@
     {
       "kind": "git",
       "repository": "https://github.com/Apra-Labs/vcpkg.git",
-      "baseline": "29a017687d56121cb9d200a7dc519c0de2c78a4a",
+      "baseline": "93ed97e55480cd545ef1c72160ae59c075b8ec23",
       "packages": [ "boost*", "boost-*"]
     }
   ]
