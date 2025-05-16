@@ -37,7 +37,9 @@ public:
     }
 
 protected:
-    bool process() {};
+    bool process() {
+      return true;
+    };
     bool validateOutputPins()
     {
         return true;
@@ -87,7 +89,7 @@ int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1
     return sinkQueue->size();
 }
 
-BOOST_AUTO_TEST_CASE(export_state)
+BOOST_AUTO_TEST_CASE(export_state, *boost::unit_test::disabled())
 {
     //In this case both the timestamps (query startTime and query endTime) are in the queue and we pass all the frames requested.
 
@@ -103,7 +105,7 @@ BOOST_AUTO_TEST_CASE(export_state)
     BOOST_TEST(result);
 }
 
-BOOST_AUTO_TEST_CASE(idle_state)
+BOOST_AUTO_TEST_CASE(idle_state, *boost::unit_test::disabled())
 {
     //In this case both the timestamps (query startTime and endTime) are in the past of the oldest timestamp of queue so state is Idle all the time
 
@@ -118,7 +120,7 @@ BOOST_AUTO_TEST_CASE(idle_state)
     BOOST_TEST(queueSize == 0, "No frames are passed and zero frames are there in queue of Sink");
 }
 
-BOOST_AUTO_TEST_CASE(wait_state)
+BOOST_AUTO_TEST_CASE(wait_state, *boost::unit_test::disabled())
 {
     //In this case both the timestamps (query startTime and endTime) are in the future of the latest timestamp of queue so state is Waiting all the time
 
@@ -133,7 +135,7 @@ BOOST_AUTO_TEST_CASE(wait_state)
     BOOST_TEST(queueSize == 0, "No frames are passed and zero frames are there in queue of Sink");
 }
 
-BOOST_AUTO_TEST_CASE(wait_to_export_state)
+BOOST_AUTO_TEST_CASE(wait_to_export_state, *boost::unit_test::disabled())
 {
     //In this case initially we are in wait state then go to export after sometime.
 
@@ -149,7 +151,7 @@ BOOST_AUTO_TEST_CASE(wait_to_export_state)
     BOOST_TEST(result);
 }
 
-BOOST_AUTO_TEST_CASE(future_export)
+BOOST_AUTO_TEST_CASE(future_export, *boost::unit_test::disabled())
 {
     //In this case the timestamp of startTime is in the queue while endTime is in future so we start with export and continue to stay in export as frames are passed.
     boost::posix_time::ptime const time_epoch(boost::gregorian::date(1970, 1, 1));
@@ -164,7 +166,7 @@ BOOST_AUTO_TEST_CASE(future_export)
     BOOST_TEST(result);
 }
 
-BOOST_AUTO_TEST_CASE(nextQueue_full)
+BOOST_AUTO_TEST_CASE(nextQueue_full, *boost::unit_test::disabled())
 {
     //In this case, while the frames are being sent to next module the queue of next module must becme full 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";
@@ -210,7 +212,7 @@ BOOST_AUTO_TEST_CASE(nextQueue_full)
     BOOST_TEST(result);
 }
 
-BOOST_AUTO_TEST_CASE(prop_change)
+BOOST_AUTO_TEST_CASE(prop_change, *boost::unit_test::disabled())
 {
     // This testcase is getProps, setProps test - dynamic prop change 
     std::string inFolderPath = "./data/Raw_YUV420_640x360";

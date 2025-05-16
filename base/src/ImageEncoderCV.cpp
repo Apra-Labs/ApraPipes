@@ -61,10 +61,8 @@ public:
 	cv::Mat iImg;
 	vector<int> flags;
 
-
 private:
 	ImageEncoderCVProps props;
-
 };
 
 ImageEncoderCV::ImageEncoderCV(ImageEncoderCVProps _props) : Module(TRANSFORM, "ImageEncoderCV", _props)
@@ -143,7 +141,7 @@ bool ImageEncoderCV::process(frame_container &frames)
 		return true;
 	}
 	vector<uchar> buf;
-	
+
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
 	cv::imencode(".jpg",mDetail->iImg,buf,mDetail->flags);
 	auto outFrame = makeFrame(buf.size());

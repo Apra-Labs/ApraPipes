@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/shared_ptr.hpp>
 #include <boost/container/deque.hpp>
+#include "AbsControlModule.h"
 #include "enum_macros.h"
 #include <string>
 
@@ -26,7 +27,8 @@ class PipeLine {
 	Status myStatus;
 	typedef boost::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
-	
+	boost::shared_ptr<Module> controlModule = nullptr;
+
 	std::string mName;
 	container_type modules;
 	bool validate();
@@ -36,6 +38,7 @@ public:
 	~PipeLine();
 	std::string getName() { return mName; }
 	bool appendModule(boost::shared_ptr<Module> pModule);
+	bool addControlModule(boost::shared_ptr<AbsControlModule>cModule);
 	bool init();
 	void run_all_threaded();
 	void run_all_threaded_withpause();
@@ -45,8 +48,8 @@ public:
 	void stop();
 	void term();
 	void wait_for_all(bool ignoreStatus = false);
-	void interrup_wait_for_all();
-	void flushAllQueues();
+	void interrupt_wait_for_all();
+	void flushAllQueues(bool flushControlModuleQ=false);
 	const char* getStatus();
 };
 

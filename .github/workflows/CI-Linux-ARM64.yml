@@ -8,6 +8,7 @@ on:
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   
 jobs:
   jetson-build-test:
@@ -18,8 +19,9 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       prep-cmd: 'echo skipping builder prep as I can not sudo'
+      bootstrap-cmd: 'export PATH="$HOME/.local/bin/gcc-8:$PATH" && export VCPKG_FORCE_SYSTEM_BINARIES=1 && ./vcpkg/bootstrap-vcpkg.sh'
       cache-path: './none'
-      cmake-conf-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && export VCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay && cmake -B . -DENABLE_ARM64=ON ../base'
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay && cmake -B . -DENABLE_ARM64=ON ../base'
       nProc: 6
   jetson-publish:
     needs: jetson-build-test

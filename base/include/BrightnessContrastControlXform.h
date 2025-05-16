@@ -44,7 +44,6 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	void setProps(BrightnessContrastControl);
 	bool handlePropsChange(frame_sp &frame);
 
 private:

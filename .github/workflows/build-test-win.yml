@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite'
+        default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite && choco install cmake --version=3.29.6 --force'
         required: false
       prep-check-cmd:
         type: string
@@ -84,11 +84,11 @@ jobs:
       if: ${{ contains(inputs.cuda,'ON')}} 
       run: |
         (nvcc --version) || echo 'please install cuda'
-        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
+        Get-Item 'c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include\cudnn.h' || echo 'install cudnn as described in the readme.md'
         Get-Item Env:CUDA_HOME
         Get-Item Env:CUDA_PATH
-        echo "CUDA_HOME=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7" >> $GITHUB_ENV
-        echo "CUDA_PATH=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\bin" >> $GITHUB_ENV
+        echo "CUDA_HOME=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8" >> $GITHUB_ENV
+        echo "CUDA_PATH=c:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin" >> $GITHUB_ENV
     
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted
@@ -175,9 +175,9 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{ always() }}
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       continue-on-error: true
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
@@ -186,13 +186,14 @@ jobs:
       
 
     - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a failure above
-      uses: actions/upload-artifact@v3
+      if:  ${{ always() }} # only upload logs when we have a failure above
+      uses: actions/upload-artifact@v4
       with:
-        name: BuildLogs_${{ inputs.flav }}
+        name: BuildLogs_${{ inputs.flav }}_${{ inputs.is-prep-phase && '0' || '1' }}
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          ${{ github.workspace }}/vcpkg_installed/vcpkg/*
 
 
 

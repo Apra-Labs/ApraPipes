@@ -31,6 +31,8 @@ static inline bool operator!=(const GUID &guid1, const GUID &guid2) {
 }
 #endif
 
+#define DEFAULT_BUFFER_THRESHOLD 30
+
 #define NVENC_API_CALL( nvencAPI )                                                                                 \
     do                                                                                                             \
     {                                                                                                              \
@@ -204,7 +206,7 @@ class H264EncoderNVCodecHelper::Detail
 		}
 	}
 public:
-	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,bool enableBFrames) :
+	Detail(uint32_t& bitRateKbps, apracucontext_sp& cuContext, uint32_t& gopLength, uint32_t& frameRate,H264EncoderNVCodecProps::H264CodecProfile profile,bool enableBFrames, uint32_t& bufferThres) :
 		m_nWidth(0),
 		m_nHeight(0),
 		m_eBufferFormat(NV_ENC_BUFFER_FORMAT_UNDEFINED),
@@ -214,7 +216,8 @@ public:
 		m_nGopLength(gopLength),
 		m_nFrameRate(frameRate),
 		m_nProfile(profile),
-		m_bEnableBFrames(enableBFrames)
+		m_bEnableBFrames(enableBFrames),
+		m_nBufferThres(bufferThres)
 	{
 		m_nvcodecResources.reset(new NVCodecResources(cuContext));
 
@@ -472,7 +475,7 @@ private:
 	{
 		 NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncInitializeEncoder(m_nvcodecResources->m_hEncoder, &m_initializeParams));
 
-		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + 20;
+		 m_nEncoderBuffer = m_encodeConfig.frameIntervalP + m_encodeConfig.rcParams.lookaheadDepth + DEFAULT_BUFFER_THRESHOLD;
 		 m_nvcodecResources->m_nFreeOutputBitstreams = m_nEncoderBuffer;
 
 		 for (int i = 0; i < m_nEncoderBuffer; i++)
@@ -572,9 +575,35 @@ private:
 		 }
 	}
 
+	/**
+	 * @brief Checks if there are free output bitstreams available and allocates more if needed.
+	 * 
+	 * This function checks the availability of free output bitstreams. If there are no free output bitstreams and the number
+	 * of busy streams is below a predefined threshold, it allocates additional output bitstreams to the encoder buffer.
+	 * 
+	 * @details 
+	 * The function first checks the number of busy output bitstreams. If there are no free output bitstreams and the number
+	 * of busy streams is below `m_nBufferThres`, it calculates the buffer length to be allocated and doubles the output buffers
+	 * by calling `doubleOutputBuffers`. It then logs the allocation and increments the count of free output bitstreams.
+	 * If there are free output bitstreams, it logs a message indicating the current state.
+	 * 
+	 * @return true if there are free output bitstreams available, false otherwise.
+	 * 
+	 * @note This function modifies the state of `m_nvcodecResources->m_nFreeOutputBitstreams`.
+	 * @warning Ensure thread safety when calling this function in a multi-threaded environment.
+	 */
+
 	bool is_not_empty() const
 	{
-		if (!m_nvcodecResources->m_nFreeOutputBitstreams)
+		uint32_t busyStreams = m_nvcodecResources->m_nBusyOutputBitstreams;
+		if (!m_nvcodecResources->m_nFreeOutputBitstreams && busyStreams < m_nBufferThres)
+		{
+			uint32_t bufferLength = min(busyStreams, m_nBufferThres - busyStreams);
+			doubleOutputBuffers(bufferLength);
+			LOG_INFO << "Allocated <" << bufferLength << "> outputbitstreams to the encoder buffer.";
+			m_nvcodecResources->m_nFreeOutputBitstreams += bufferLength;
+		}
+		else
 		{
 			LOG_INFO << "waiting for free outputbitstream<> busy streams<" << m_nvcodecResources->m_nBusyOutputBitstreams << ">";
 		}
@@ -582,9 +611,41 @@ private:
 		return m_nvcodecResources->m_nFreeOutputBitstreams > 0;
 	}
 
+	/**
+	 * @brief Checks if there are any busy output bitstreams or if the encoder is not running.
+	 * 
+	 * This function returns true if there are any busy output bitstreams or if the encoder is not running.
+	 * It helps determine if there are any output bitstreams currently being processed or if the encoding process has stopped.
+	 * 
+	 * @return true if there are busy output bitstreams or the encoder is not running, false otherwise.
+	 * 
+	 * @note This function does not modify any state.
+	 */
+
 	bool is_output_available() const
 	{
 		return m_nvcodecResources->m_nBusyOutputBitstreams > 0 || !m_bRunning;
+	}
+
+	/**
+	 * @brief Allocates additional output bitstream buffers.
+	 * 
+	 * This function allocates a specified number of additional output bitstream buffers and adds them to the encoder buffer.
+	 * It uses the NVIDIA Video Codec SDK to create the bitstream buffers and updates the internal queue of output bitstreams.
+	 * 
+	 * @param bufferLength The number of additional output bitstream buffers to allocate.
+	 * 
+	 * @note This function is called internally by `is_not_empty` when more buffers are needed.
+	 * @warning Ensure that the NVIDIA Video Codec SDK is properly initialized before calling this function.
+	 */
+	void doubleOutputBuffers(uint32_t bufferLength) const
+	{
+		for (int i = 0; i < bufferLength; i++)
+		{
+			NV_ENC_CREATE_BITSTREAM_BUFFER createBitstreamBuffer = { NV_ENC_CREATE_BITSTREAM_BUFFER_VER };
+			NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncCreateBitstreamBuffer(m_nvcodecResources->m_hEncoder, &createBitstreamBuffer));
+			m_nvcodecResources->m_qBitstreamOutputBitstream.push_back(createBitstreamBuffer.bitstreamBuffer);
+		}
 	}
 
 	std::thread m_thread;
@@ -600,6 +661,7 @@ private:
 	uint32_t m_nFrameRate;
 	H264EncoderNVCodecProps::H264CodecProfile m_nProfile;
 	bool m_bEnableBFrames;
+	uint32_t m_nBufferThres;
 
 	NV_ENC_INITIALIZE_PARAMS m_initializeParams;
 	NV_ENC_CONFIG m_encodeConfig;
@@ -621,7 +683,13 @@ private:
 
 H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)
 {
-	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames));
+	uint32_t _bufferThres = 30;
+	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames,_bufferThres));
+}
+
+H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames, uint32_t _bufferThres)
+{
+	mDetail.reset(new Detail(_bitRateKbps, _cuContext,_gopLength,_frameRate,_profile,enableBFrames,_bufferThres));
 }
 
 H264EncoderNVCodecHelper::~H264EncoderNVCodecHelper()

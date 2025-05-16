@@ -60,4 +60,6 @@ private:
     framemetadata_sp h264Metadata;
     std::function<frame_sp(size_t size, string& pinId)> makeFrame;
     std::unique_ptr<V4L2CUYUV420Converter> mConverter;
+protected:
+    std::queue <uint64_t> incomingTimeStamp;
 };

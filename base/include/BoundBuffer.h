@@ -5,6 +5,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/bind/bind.hpp>
+#include "Logger.h"
+
 using namespace boost::placeholders;
 
 template <class T>
@@ -27,6 +29,26 @@ public:
 		if (is_not_full() && m_accept)
 		{
 			m_container.push_front(item);
+			++m_unread;
+			lock.unlock();
+			m_not_empty.notify_one();
+		}
+		else
+		{
+			// check and remove if explicit unlock is required
+			lock.unlock();
+		}
+	}
+
+	void push_back(typename boost::call_traits<value_type>::param_type item)
+	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
+
+		boost::mutex::scoped_lock lock(m_mutex);
+		bool isCommandQueueNotFull = m_unread < m_capacity * 2;
+		if (m_accept && isCommandQueueNotFull)
+		{
+			LOG_TRACE << "command pushed" << std::endl;
+			m_container.push_back(item);
 			++m_unread;
 			lock.unlock();
 			m_not_empty.notify_one();
@@ -91,6 +113,15 @@ public:
 		lock.unlock();
 		m_not_full.notify_one();
 		return ret;
+	}
+
+	value_type peek() {
+		boost::mutex::scoped_lock lock(m_mutex);
+		if (is_not_empty())
+		{
+			value_type ret = m_container.back();
+			return ret;
+		}
 	}
 
 	value_type try_pop() {

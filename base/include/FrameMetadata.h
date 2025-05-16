@@ -58,22 +58,20 @@ public:
     TEXT_EMBEDDING
   };
 
-  enum MemType
-  {
-    HOST = 1,
-#ifdef APRA_CUDA_ENABLED
-    HOST_PINNED = 2,
-    CUDA_DEVICE = 3,
-    DMABUF = 4
-#endif
-  };
-
-  FrameMetadata(FrameType _frameType)
-  {
-    frameType = _frameType;
-    memType = MemType::HOST;
-    hint = "";
-  }
+	enum MemType
+	{
+		HOST = 1,
+		HOST_PINNED = 2,
+		CUDA_DEVICE = 3,
+		DMABUF = 4
+	};
+		
+	FrameMetadata(FrameType _frameType)
+	{
+		frameType = _frameType;
+		memType = MemType::HOST;
+		hint = "";
+	}
 
   FrameMetadata(FrameType _frameType, std::string _hint)
   {
