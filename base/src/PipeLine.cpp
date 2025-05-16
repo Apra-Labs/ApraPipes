@@ -74,7 +74,7 @@ bool PipeLine::checkCyclicDependency()
 					if (!parentModule->isFeedbackEnabled(childId) && !childModule->isFeedbackEnabled(parentId))
 					{
 						// feedback not enabled
-						LOG_ERROR << "Cyclic Dependency detected between <" << parentId << "> and <" << childId << ">. Please use addFeedback when connecting the pins for one of the module.";
+						LOG_INFO << "Cyclic Dependency detected between <" << parentId << "> and <" << childId << ">. Please use addFeedback when connecting the pins for one of the module.";
 						valid = false;
 					}
 				}
@@ -89,12 +89,12 @@ bool PipeLine::validate()
 {
 	if (modules.front()->getNature() != Module::SOURCE)
 	{
-		LOG_ERROR << "Pipeline should start with a source, but starts with " << modules.front()->getId();
+		LOG_INFO << "Pipeline should start with a source, but starts with " << modules.front()->getId();
 		return false;
 	}
 	if (modules.back()->getNature() != Module::SINK)
 	{
-		LOG_ERROR << "Pipeline should end with a sink, but ends with " << modules.back()->getId();
+		LOG_INFO << "Pipeline should end with a sink, but ends with " << modules.back()->getId();
 		return false;
 	}
 	return true;
@@ -119,18 +119,18 @@ bool PipeLine::init()
 		}
 		catch (const std::exception& ex)
 		{
-			LOG_ERROR << "Failed init " << i->get()->getId() << "Exception" << ex.what();
+			LOG_INFO << "Failed init " << i->get()->getId() << "Exception" << ex.what();
 
 		}
 		catch (...)
 		{
-			LOG_ERROR << "Failed init " << i->get()->getId() << "Unknown Exception";
+			LOG_INFO << "Failed init " << i->get()->getId() << "Unknown Exception";
 
 		}
 		if (!bRCInit)
 		{
 			auto s = i->get()->getId();
-			LOG_ERROR << " Failed init " << i->get()->getId();
+			LOG_INFO << " Failed init " << i->get()->getId();
 			myStatus = PL_INITFAILED;
 			return false;
 		}

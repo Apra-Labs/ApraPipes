@@ -63,13 +63,19 @@ public:
 	
 	void intitliazeSpeedElement(int _playbackFps, float _playbackSpeed, int _gop)
 	{
-		LOG_ERROR << "Decoder is initializing speed factor.";
+		LOG_DEBUG << "Decoder is initializing speed factor.";
 		helper->intitliazeSpeed(_playbackFps, _playbackSpeed, _gop);
+	}
+
+	bool flush_frames()
+	{
+		LOG_DEBUG << "Decoder is flushing frames.";
+		return helper->flush_frames();
 	}
 
 	void terminateHelper()
 	{
-		LOG_ERROR << "Should Free all the resources ";
+		LOG_DEBUG << "Should Free all the resources ";
 		helper->term_helper();
 	}
 public:
@@ -102,7 +108,7 @@ bool H264Decoder::validateInputPins()
 	auto numberOfInputPins = getNumberOfInputPins();
 	if (numberOfInputPins != 1 && numberOfInputPins != 2)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1 or 2. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1 or 2. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -110,7 +116,7 @@ bool H264Decoder::validateInputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::FrameType::H264_DATA)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -121,7 +127,7 @@ bool H264Decoder::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
@@ -129,7 +135,7 @@ bool H264Decoder::validateOutputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -153,7 +159,7 @@ bool H264Decoder::init()
 
 bool H264Decoder::term()
 {
-	LOG_ERROR << "calling decoder term";
+	LOG_DEBUG << "calling decoder term";
 #ifdef ARM64
 	mDetail->terminateHelper();
 #endif
@@ -167,6 +173,8 @@ bool H264Decoder::process(frame_container& frames)
 	auto frame = frames.cbegin()->second;
 
 	mDetail->compute(frame);
+
+	// LOG_DEBUG << "Got H264 Frame";
 	
 	return true;
 }
@@ -175,7 +183,7 @@ bool H264Decoder::processSOS(frame_sp& frame)
 {
 	auto metadata = frame->getMetadata();
 	// change bool to true
-	LOG_ERROR << "================Got SOS FRAME ==============";
+	LOG_DEBUG << "================Got SOS FRAME ==============";
 	mDetail->setMetadata(metadata, frame, [&](frame_sp &outputFrame)
 						 {
 			frame_container frames;
@@ -203,7 +211,7 @@ bool H264Decoder::shouldTriggerSOS()
 
 bool H264Decoder::processEOS(string& pinId)
 {
-	LOG_ERROR << "Got EOS Frame";
+	LOG_DEBUG << "Got EOS Frame";
 	auto frame = frame_sp(new EmptyFrame());
 	mDetail->compute(frame);
 	mDetail->terminateHelper();
@@ -251,8 +259,9 @@ void H264Decoder::changeDecoderSpeed(int _playbackFps, float _playbackSpeed, int
 	Module::queueCommand(cmd, true);
 }
 
-void H264Decoder::flushQue()
+void H264Decoder::flushQueue()
 {
+	mDetail->flush_frames();
 	Module::flushQue();
 }
  

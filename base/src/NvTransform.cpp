@@ -43,7 +43,7 @@ public:
 		auto ret_val = NvBufferTransform(dmaFDWrapper->getFd(), outFD, &transParams);
 		if (ret_val == -1)
 		{
-			LOG_ERROR << "Transform failed============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
+			LOG_INFO << "Transform failed============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
 		}
 		return true;
 	}
@@ -69,7 +69,7 @@ bool NvTransform::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -77,14 +77,14 @@ bool NvTransform::validateInputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -95,7 +95,7 @@ bool NvTransform::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
@@ -103,14 +103,14 @@ bool NvTransform::validateOutputPins()
 	auto frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -159,7 +159,7 @@ bool NvTransform::process(frame_container &frames)
 	auto frame = frames.cbegin()->second;
 	if(isFrameEmpty(frame))
 	{
-		LOG_ERROR << "Found Empty Frame ";
+		LOG_INFO << "Found Empty Frame ";
 		return true;
 	}
 	if(!mDetail->outputMetadata->getDataSize())
@@ -169,7 +169,7 @@ bool NvTransform::process(frame_container &frames)
 	auto outFrame = makeFrame(mDetail->outputMetadata->getDataSize(), mDetail->outputPinId);
 	if (!outFrame.get())
 	{
-		LOG_ERROR << "FAILED TO GET BUFFER";
+		LOG_INFO << "FAILED TO GET BUFFER";
 		return false;
 	}
 
@@ -180,6 +180,8 @@ bool NvTransform::process(frame_container &frames)
 
 	frames.insert(make_pair(mDetail->outputPinId, outFrame));
 	send(frames);
+
+	// LOG_DEBUG << "Processed Frame " << frame->fIndex << " to " << mDetail->outputPinId;
 
 	return true;
 }

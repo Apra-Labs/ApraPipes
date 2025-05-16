@@ -77,12 +77,11 @@ public:
 			{
 				auto msg = "Video File name not in proper format.Check the filename sent as props. \
 					If you want to read a file with custom name instead, please disable parseFS flag.";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				throw AIPException(AIP_FATAL, msg);
 			}
 			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
 		}
-		LOG_ERROR << "REPLAYING BCZ IT NEW FILE!!!";
 		return initNewVideo(true); // enable firstOpenAfterinit
 	}
 
@@ -116,11 +115,9 @@ public:
 		{
 			auto msg = "Video File name not in proper format.Check the filename sent as props. \
 					If you want to read a file with custom name instead, please disable parseFS flag.";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			return;
 		}
-		
-		LOG_ERROR << " props.videoPath -> " << props.videoPath << " tempVideoPath -> " << tempVideoPath;
 
 		// If the video path is a custom file - don't parse just open the video, cof check says that not to open video if setProps if called from module init(). 
 		if (!props.parseFS && cof)
@@ -149,7 +146,7 @@ public:
 		{
 			if (mProps.videoPath == props.videoPath)
 				mProps = props;
-			LOG_ERROR << "The root dir is same and only file path has changed, Please use SEEK functionality instead for this use case!, cannot change props";
+			LOG_INFO << "The root dir is same and only file path has changed, Please use SEEK functionality instead for this use case!, cannot change props";
 			return;
 		}
 		
@@ -179,7 +176,7 @@ public:
 			{
 				auto msg = "Video File name not in proper format.Check the filename sent as props. \
 				If you want to read a file with custom name instead, please disable parseFS flag.";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				throw AIPException(AIP_FATAL, msg);
 			}
 			
@@ -307,7 +304,7 @@ public:
 		catch (...)
 		{
 			auto msg = "Error occured while closing the video file <" + mState.mVideoPath + ">";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			throw Mp4Exception(MP4_FILE_CLOSE_FAILED, msg);
 		}
 		return true;
@@ -320,7 +317,7 @@ public:
 
 	bool closeOpenFile()
 	{
-		LOG_ERROR << "attemptFileClose called";
+		LOG_DEBUG << "attemptFileClose called";
 		try
 		{
 			if (mState.demux)
@@ -332,7 +329,7 @@ public:
 		catch (...)
 		{
 			auto msg = "Error occured while closing the video file <" + mState.mVideoPath + ">";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			throw Mp4Exception(MP4_FILE_CLOSE_FAILED, msg);
 		}
 		return true;
@@ -361,7 +358,6 @@ public:
 			returns false if no relevant mp4 file left on disk. */
 
 			// in case race conditions happen between writer and reader (videotrack not found etc) - use code will retry
-		LOG_ERROR << "Yash Debug:: Initializing New File " << mState.mVideoPath;
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
@@ -375,7 +371,7 @@ public:
 		}
 
 		auto nextFilePath = mState.mVideoPath;
-		LOG_ERROR << "====================NEXT FILE PATH IS " << nextFilePath;
+		LOG_DEBUG << "====================NEXT FILE PATH IS " << nextFilePath;
 		if (mProps.parseFS)
 		{
 			if (!firstOpenAfterInit)
@@ -394,7 +390,7 @@ public:
 					else
 					{
 						auto msg = "Failed to find next file to <" + mState.mVideoPath + ">";
-						LOG_ERROR << msg;
+						LOG_INFO << msg;
 						throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
 					}
 				}
@@ -412,7 +408,7 @@ public:
 					{
 						if (ex.getCode() == MP4_OCOF_END)
 						{
-							LOG_ERROR << "parse found new files but getNextFileAfter hit EOC while looking for a potential file.";
+							LOG_INFO << "parse found new files but getNextFileAfter hit EOC while looking for a potential file.";
 							mState.end = true;
 						}
 						if(ex.getError() == "Reached End of Cache in fwd play.")
@@ -431,7 +427,7 @@ public:
 						else
 						{
 							auto msg = "unexpected state while getting next file after successful parse <" + ex.getError() + ">";
-							LOG_ERROR << msg;
+							LOG_INFO << msg;
 							// throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
 						}
 					}
@@ -482,7 +478,7 @@ public:
 				{
 					auto msg = "Unexpected issue occured while resuming playback after reloading the file <"
 						+ mState.mVideoPath + "> @seekTS <" + std::to_string(seekTS) + ">";
-					LOG_ERROR << msg;
+					LOG_INFO << msg;
 					// throw Mp4Exception(MP4_RELOAD_RESUME_FAILED, msg);
 				}
 				// disable reloading now
@@ -498,7 +494,7 @@ public:
 		   the waitFlag will be reset in openVideoSetPointer
 		*/
 		mIsFrameStillAvailable = true;
-		LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to true";
+		LOG_DEBUG << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to true";
 		return openVideoSetPointer(nextFilePath);
 	}
 
@@ -522,7 +518,7 @@ public:
 			//TODO: Behaviour yet to be decided in case a file is deleted while it is cached, generating a hole in the cache.
 			// m_mediaBroke = true;
 			auto msg = "Failed to open the file <" + filePath + "> libmp4 errorcode<" + std::to_string(ret) + ">";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			// throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
 		}
 
@@ -533,7 +529,7 @@ public:
 		ret = mp4_demux_get_metadata_strings(mState.demux, &count, &keys, &values);
 		if (ret < 0)
 		{
-			LOG_ERROR << "mp4_demux_get_metadata_strings <" << -ret;
+			LOG_INFO << "mp4_demux_get_metadata_strings <" << -ret;
 		}
 
 		if (count > 0) {
@@ -557,13 +553,13 @@ public:
 
 		/* Update mState with relevant information */
 		mState.mVideoPath = filePath;
-		LOG_ERROR << "Setting mState Video Path to " << mState.mVideoPath;  
+		LOG_DEBUG << "Setting mState Video Path to " << mState.mVideoPath;  
 		mState.ntracks = mp4_demux_get_track_count(mState.demux);
 		for (auto i = 0; i < mState.ntracks; i++)
 		{
 			ret = mp4_demux_get_track_info(mState.demux, i, &mState.info);
 			if (ret < 0) {
-				LOG_ERROR << "mp4 track info fetch failed <" << i << "> ret<" << ret << ">";
+				LOG_INFO << "mp4 track info fetch failed <" << i << "> ret<" << ret << ">";
 				continue;
 			}
 
@@ -590,7 +586,7 @@ public:
 						mProps.fps = mProps.fps / gop;
 					}
 				}
-				LOG_ERROR << "Calling Set Mp4 Reader Props " << mState.mVideoPath;
+				LOG_DEBUG << "Calling Set Mp4 Reader Props " << mState.mVideoPath;
 				setMp4ReaderProps(mProps);
 			}
 		}
@@ -598,14 +594,14 @@ public:
 		if (mState.videotrack == -1)
 		{
 			auto msg = "No Videotrack found in the video <" + mState.mVideoPath + ">";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			std::string previousFile;
 			std::string nextFile;
 			mIsFrameStillAvailable = false;
-			LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
+			LOG_DEBUG << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
 			if (fileCompletionCallback)
 			{
-				LOG_ERROR << "File Read Completely, Sending Callback";
+				LOG_DEBUG << "File Read Completely, Sending Callback";
 				fileCompletionCallback();
 			}
 			cof->getPreviousAndNextFile(mState.mVideoPath, previousFile, nextFile);
@@ -633,7 +629,7 @@ public:
 			catch (std::invalid_argument)
 			{
 				auto msg = "unexpected: starting ts not found in video name or metadata";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				// throw Mp4Exception(MP4_MISSING_START_TS, msg);
 			}
 		}
@@ -650,7 +646,7 @@ public:
 		catch (...)
 		{
 			auto msg = "Failed to get time range of the video.";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			// throw Mp4Exception(MP4_TIME_RANGE_FETCH_FAILED, msg);
 		}
 		mState.endTS = mState.resolvedStartingTS + duration;
@@ -669,7 +665,7 @@ public:
 			catch (...)
 			{
 				auto msg = "Unexpected error while moving the read pointer to last frame of <" + mState.mVideoPath + ">";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				// throw Mp4Exception(MP4_SET_POINTER_END_FAILED, msg);
 			}
 			mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
@@ -688,10 +684,10 @@ public:
 		{
 			int seekedToFrame = -1;
 			uint64_t skipMsecsInFile = 0;
-			LOG_ERROR << "Start Timestamp <" << mState.startTimeStampFromFile << ">";
+			LOG_DEBUG << "Start Timestamp <" << mState.startTimeStampFromFile << ">";
 			if (!mState.startTimeStampFromFile)
 			{
-				LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
+				LOG_DEBUG << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
 				return false;
 			}
 			if (skipTS < mState.startTimeStampFromFile)
@@ -704,7 +700,7 @@ public:
 				skipMsecsInFile = skipTS - mState.startTimeStampFromFile;
 			}
 
-			LOG_ERROR << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+			LOG_DEBUG << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
 			uint64_t time_offset_usec = skipMsecsInFile * 1000;
 			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC, seekedToFrame);
 			mState.mFrameCounterIdx = seekedToFrame;
@@ -718,9 +714,8 @@ public:
 			}
 			if (returnCode < 0)
 			{
-				LOG_ERROR << "Seek failed. Unexpected error.";
 				auto msg = "Unexpected error happened whie seeking inside the video file.";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				// throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
 			}
 			// continue reading file if seek is successful
@@ -762,7 +757,7 @@ public:
 			{
 				auto msg = "Video File name not in proper format.Check the filename sent as props. \
 					If you want to read a file with custom name instead, please disable parseFS flag.";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				// throw AIPException(AIP_FATAL, msg);
 			}
 			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
@@ -775,7 +770,7 @@ public:
 			sendEOS(frame);
 			// skip the frame in the readNextFrame that happens in the same step
 			seekReachedEOF = true;
-			LOG_ERROR << "Seek to skipTS <" << skipTS << "> failed. Resuming playback...";
+			LOG_INFO << "Seek to skipTS <" << skipTS << "> failed. Resuming playback...";
 			return false;
 		}
 		// check if the skipTS is in already opened file (if mState.end has not reached)
@@ -802,7 +797,7 @@ public:
 			if (returnCode < 0)
 			{
 				auto msg = "Unexpected error happened whie seeking inside the video file.";
-				LOG_ERROR << msg;
+				LOG_INFO << msg;
 				// throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
 			}
 			mState.mFrameCounterIdx = seekedToFrame;
@@ -837,7 +832,7 @@ public:
 	{
 		try
 		{
-			LOG_ERROR << "------------------FILE CLOSED-------------------";
+			LOG_DEBUG << "------------------FILE CLOSED-------------------";
 			mp4_demux_close(mState.demux);
 			mState.demux = nullptr;
 			// mState.resetState();
@@ -845,7 +840,7 @@ public:
 		catch (...)
 		{
 			auto msg = "Error occured while closing the video file <" + mState.mVideoPath + ">";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			// throw Mp4Exception(MP4_FILE_CLOSE_FAILED, msg);
 		}
 		mState.videotrack = -1;
@@ -859,7 +854,7 @@ public:
 		try
 		{
 			mIsFrameStillAvailable = true;
-			LOG_ERROR << " Seeking to " << skipTS << " for file " << mState.mVideoPath;
+			LOG_DEBUG << " Seeking to " << skipTS << " for file " << mState.mVideoPath;
 			randomSeekInternal(skipTS, forceReopen);
 		}
 		catch (Mp4_Exception& ex)
@@ -888,7 +883,7 @@ public:
 
 	void makeAndSendMp4Error(int errorType, int errorCode, std::string errorMsg, int openErrorCode, uint64_t _errorMp4TS)
 	{
-		LOG_ERROR << "makeAndSendMp4Error <" << errorType << "," << errorCode << "," << errorMsg << "," << openErrorCode << "," << _errorMp4TS << ">";
+		LOG_INFO << "makeAndSendMp4Error <" << errorType << "," << errorCode << "," << errorMsg << "," << openErrorCode << "," << _errorMp4TS << ">";
 		frame_sp errorFrame = boost::shared_ptr<Mp4ErrorFrame>(new Mp4ErrorFrame(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS));
 		// sendMp4ErrorFrame(errorFrame);
 	}
@@ -991,7 +986,7 @@ public:
 			// This can happen due to direction change after EOF.
 			if (mIsFrameStillAvailable)
 			{
-				LOG_TRACE << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
+				// LOG_TRACE << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
 			}
 			mState.end = false;
 			waitFlag = false;
@@ -1010,12 +1005,12 @@ public:
 			}
 			if (!sentEOSSignal)
 			{
-				LOG_ERROR << "EOS will be sent";
+				LOG_DEBUG << "EOS will be sent";
 				auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_PLYB_EOS, mState.frameTSInMsecs));
 				// sendEOS(frame); // just send once
 				if(fileCompletionCallback)
 				{
-					LOG_ERROR << "File Read Completely, Sending Callback";
+					LOG_DEBUG << "File Read Completely, Sending Callback";
 					fileCompletionCallback();
 				}
 				sentEOSSignal = true;
@@ -1023,7 +1018,7 @@ public:
 				// I want to send Callback
 			}
 			mIsFrameStillAvailable = false;
-			LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
+			LOG_DEBUG << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
 			return;
 		}
 
@@ -1085,11 +1080,11 @@ public:
 
 			if (ret != 0 || mState.sample.size == 0)
 			{
-				LOG_ERROR << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
+				LOG_DEBUG << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
 				mState.has_more_video = 0;
 				if (false) /// YASH DOn't Send EOS
 				{
-					LOG_ERROR << "Ignoring EOS Frame for Now";
+					LOG_DEBUG << "Ignoring EOS Frame for Now";
 					if (!sentEOSSignal)
 					{
 						auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_PLYB_EOS, mState.frameTSInMsecs));
@@ -1097,11 +1092,11 @@ public:
 						sentEOSSignal = true;
 					}
 				}
-				LOG_ERROR << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
+				LOG_DEBUG << "mIsFrameStillAvailable======>>>>>>>>>>>>>>>> Setting to false";
 				mIsFrameStillAvailable = false;
 				if(fileCompletionCallback)
 				{
-					LOG_ERROR << "File Read Completely, Sending Callback";
+					LOG_DEBUG << "File Read Completely, Sending Callback";
 					fileCompletionCallback();
 				}
 				return;
@@ -1295,7 +1290,7 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 	}
 	catch (const std::exception& e)
 	{
-		LOG_ERROR << e.what();
+		LOG_INFO << e.what();
 		attemptFileClose();
 	}
 
@@ -1436,12 +1431,12 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
 		if(imgSize > 0)
 		{
-			// LOG_ERROR << "Producing Frames  ";
+			LOG_DEBUG << "Producing Frames @ timestamp: " << frameTSInMsecs;
 		}
 	}
 	catch (const std::exception& e)
 	{
-		LOG_ERROR << e.what();
+		LOG_INFO << e.what();
 		attemptFileClose();
 	}
 	
@@ -1569,7 +1564,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 Mp4ReaderSource::Mp4ReaderSource(Mp4ReaderSourceProps _props)
 	: Module(SOURCE, "Mp4ReaderSource", _props), props(_props)
 {
-	LOG_ERROR << "Video path from props @ Mp4ReaderSource constructor -> " << props.videoPath;
+	LOG_DEBUG << "Video path from props @ Mp4ReaderSource constructor -> " << props.videoPath;
 }
 
 Mp4ReaderSource::~Mp4ReaderSource() {}
@@ -1741,14 +1736,14 @@ bool Mp4ReaderSource::validateOutputPins()
 
 	if (frameType != FrameMetadata::MP4_VIDEO_METADATA && frameType != FrameMetadata::ENCODED_IMAGE && frameType != FrameMetadata::H264_DATA)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be MP4_VIDEO_METADATA or ENCODED_IMAGE. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input frameType is expected to be MP4_VIDEO_METADATA or ENCODED_IMAGE. Actual<" << frameType << ">";
 		return false;
 	}
 
 	auto memType = outputMetadataByPin->getMemType();
 	if (memType != FrameMetadata::MemType::HOST)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input memType is expected to be HOST. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -1763,19 +1758,19 @@ Mp4ReaderSourceProps Mp4ReaderSource::getProps()
 bool Mp4ReaderSource::handlePropsChange(frame_sp& frame)
 {
 	bool direction = getPlayDirection();
-	LOG_ERROR << "Entered HANDLE PROPS CHANGE";
+	LOG_DEBUG << "Entered HANDLE PROPS CHANGE";
 
 	Mp4ReaderSourceProps props(mDetail->mProps.videoPath, mDetail->mProps.parseFS, mDetail->mProps.reInitInterval, direction, mDetail->mProps.readLoop, mDetail->mProps.giveLiveTS, mDetail->mProps.parseFSTimeoutDuration, mDetail->mProps.bFramesEnabled);
-	LOG_ERROR << "File Path to be read before @ handlePropsChange -> " << mDetail->mProps.videoPath.c_str();
+	LOG_DEBUG << "File Path to be read before @ handlePropsChange -> " << mDetail->mProps.videoPath.c_str();
 	bool ret = Module::handlePropsChange(frame, props);
 	mDetail->setProps(props);
-	LOG_ERROR << "File Path to be read after @ handlePropsChange -> " << props.videoPath.c_str();
+	LOG_DEBUG << "File Path to be read after @ handlePropsChange -> " << props.videoPath.c_str();
 	return ret;
 }
 
 void Mp4ReaderSource::setProps(Mp4ReaderSourceProps& props)
 {
-	LOG_ERROR << "File Path to be read @ setProps -> " << props.videoPath.c_str();
+	LOG_DEBUG << "File Path to be read @ setProps -> " << props.videoPath.c_str();
 	Module::addPropsToQueue(props, true);
 }
 
@@ -1797,7 +1792,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 	else if (type == Command::CommandType::Mp4ReadCloseFile)
 	{
-		LOG_ERROR << "Will try closing the file!!";
+		LOG_DEBUG << "Will try closing the file!!";
 		Mp4ReaderCloseFile closeFile;
 		getCommand(closeFile, frame);
 		mDetail->termOpenVideo();
@@ -1805,7 +1800,7 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 	}
 	else if (type == Command::CommandType::Mp4ReaderCloseOpenFile)
 	{
-		LOG_ERROR << "WIll Close OPen File=================================>>>>>>>>>>>>>>>>>>";
+		LOG_DEBUG << "WIll Close OPen File=================================>>>>>>>>>>>>>>>>>>";
 		Mp4ReaderCloseOpenFile closeFile;
 		getCommand(closeFile, frame);
 		return mDetail->closeOpenFile();
@@ -1832,7 +1827,7 @@ bool Mp4ReaderSource::randomSeek(uint64_t skipTS, bool forceReopen)
 
 void Mp4ReaderSource::setPlaybackSpeed(float _playbackSpeed)
 {
-    LOG_ERROR << "Updating Playnback Speed to " << _playbackSpeed;
+    LOG_INFO << "Updating Playback Speed to " << _playbackSpeed;
 	mDetail->playbackSpeed = _playbackSpeed;
 	mDetail->mProps.fps = mDetail->mProps.fps * _playbackSpeed;
 	mDetail->mFPS = mDetail->mProps.fps;
@@ -1866,7 +1861,7 @@ int Mp4ReaderSource::getGOP()
 bool Mp4ReaderSource::processEOS(string& pinId)
 {
 	closeOpenFile();
-	LOG_ERROR << "Will terminate the file!";
+	LOG_DEBUG << "Will terminate the file!";
 	return true;
 }
 

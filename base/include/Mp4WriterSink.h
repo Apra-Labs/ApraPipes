@@ -100,8 +100,9 @@ public:
 	void hashing();
 	bool isFileWriteComplete();
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
+    bool process(frame_container &frames);
+    void saveInCache(frame_container &frames);
+    bool processSOS(frame_sp& frame);
 	bool processEOS(string &pinId);
 	bool validateInputPins();
 	bool validateInputOutputPins();
@@ -127,5 +128,9 @@ private:
 	std::string m_customMetadata;
 	bool m_shouldStopFileWrite;
 	string m_prevFile;
+
+	std::vector<uint8_t> m_sps;
+	std::vector<uint8_t> m_pps;
+
 
 };

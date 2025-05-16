@@ -452,12 +452,14 @@ void readAndCloseFiles(std::string fileToPlay, std::string changedVideoPath)
 	
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	
+	mp4Reader->closeOpenFile();  // Replace "" with closeOPenFileFUnction
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	LOG_ERROR << "==============================++Updating New FIle======================================";
 	auto currReaderProps = mp4Reader->getProps();
-	currReaderProps.videoPath = changedVideoPath;
+	currReaderProps.videoPath = fileToPlay;
 	mp4Reader->setProps(currReaderProps);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
-	mp4Reader->closeOpenFile();  // Replace "" with closeOPenFileFUnction
+	boost::this_thread::sleep_for(boost::chrono::seconds(100));
 	boost::this_thread::sleep_for(boost::chrono::seconds(5));
 
 	currReaderProps = mp4Reader->getProps();
@@ -578,6 +580,260 @@ void checkRename(std::string fileToPlay, std::string changedVideoPath)
 	
 }
 
+void stopVideo(std::string fileToPlay)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::trace;
+	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+	Logger::initLogger(loggerProps);
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+
+	LOG_ERROR << "Reading file..."<< fileToPlay <<"\n";
+	auto mp4ReaderProps = Mp4ReaderSourceProps(fileToPlay, false, 10, true, false, false); // 10 is iMp
+	mp4ReaderProps.fps = 33;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	H264DecoderProps decprops();
+	// decprops.fps = 33;
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder);
+
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	nvTransformProps.qlen = 1;
+	nvTransformProps.fps = 33; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformProps affineProps(AffineTransformProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 33;
+	affineProps.qlen = 1;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	// sync.qlen = 1;
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererReviewProps eglProps(0,0);
+	eglProps.qlen = 1;
+	eglProps.fps = 33;
+	auto sink = boost::shared_ptr<EglRendererReview>(new EglRendererReview(eglProps));
+	sync->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	
+	LOG_ERROR << "Pausing video for 5 seconds";
+	mp4Reader->play(false, true);
+	sink->play(false, true);
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	mp4Reader->flushQueRecursive();
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	
+	mp4Reader->randomSeek(0);
+	sink->flushQue();
+
+	LOG_ERROR << "Resuming video for 10 seconds";
+	mp4Reader->play(true, true);
+	sink->play(true, true);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(25));
+	LOG_ERROR << "<======================Stopping Pipeline ==============+++>>> ";
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+	
+}
+
+void stopVideoReset(std::string fileToPlay)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::trace;
+	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+	Logger::initLogger(loggerProps);
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+
+	LOG_ERROR << "Reading file..."<< fileToPlay <<"\n";
+	auto mp4ReaderProps = Mp4ReaderSourceProps(fileToPlay, false, 10, true, false, false); // 10 is iMp
+	mp4ReaderProps.fps = 33;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	H264DecoderProps decprops();
+	// decprops.fps = 33;
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder);
+
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	nvTransformProps.qlen = 1;
+	nvTransformProps.fps = 33; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformProps affineProps(AffineTransformProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 33;
+	affineProps.qlen = 1;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	// sync.qlen = 1;
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererReviewProps eglProps(0,0);
+	eglProps.qlen = 1;
+	eglProps.fps = 33;
+	auto sink = boost::shared_ptr<EglRendererReview>(new EglRendererReview(eglProps));
+	sync->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+
+	// Pause
+	LOG_ERROR << "Pausing video for 5 seconds";
+	mp4Reader->play(false, true);
+	sink->play(false, true);
+	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	mp4Reader->flushQueRecursive();
+	sink->skipFrame();
+	Decoder->flushQueue();
+	// Pause OP Finish
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+
+	// sink->closeWindow();
+	// boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	// sink->createWindow(1000, 1000);
+	// boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	// boost::this_thread::sleep_for(boost::chrono::milliseconds(300));
+
+	mp4Reader->randomSeek(0);
+	sink->flushQue();
+
+	LOG_ERROR << "Resuming video for 10 seconds";
+	mp4Reader->play(true, true);
+	sink->play(true, true);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(25));
+	LOG_ERROR << "<======================Stopping Pipeline ==============+++>>> ";
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+	
+}
+
+void playPauseVideo(std::string fileToPlay)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::trace;
+	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+	Logger::initLogger(loggerProps);
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+
+	LOG_ERROR << "Reading file..."<< fileToPlay <<"\n";
+	auto mp4ReaderProps = Mp4ReaderSourceProps(fileToPlay, false, 10, true, false, false); // 10 is iMp
+	mp4ReaderProps.fps = 33;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+
+	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	H264DecoderProps decprops();
+	// decprops.fps = 33;
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader->setNext(Decoder);
+
+	auto nvTransformProps = NvTransformProps(ImageMetadata::RGBA);
+	nvTransformProps.qlen = 1;
+	nvTransformProps.fps = 33; 
+	auto m_nv12_to_yuv444Transform = boost::shared_ptr<NvTransform>(new NvTransform(nvTransformProps));
+	Decoder->setNext(m_nv12_to_yuv444Transform);
+
+	AffineTransformProps affineProps(AffineTransformProps::LINEAR, stream, 0, 4096, 0, 0, 1);
+	affineProps.fps = 33;
+	affineProps.qlen = 1;
+	auto m_reviewAffineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	m_nv12_to_yuv444Transform->setNext(m_reviewAffineTransform);
+
+	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	// sync.qlen = 1;
+	m_reviewAffineTransform->setNext(sync);
+
+	EglRendererReviewProps eglProps(0,0);
+	eglProps.qlen = 1;
+	eglProps.fps = 33;
+	auto sink = boost::shared_ptr<EglRendererReview>(new EglRendererReview(eglProps));
+	sync->setNext(sink);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	
+	LOG_ERROR << "Pausing video for 5 seconds";
+	mp4Reader->play(false, true);
+	sink->play(false, true);
+	
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+
+	LOG_ERROR << "Resuming video for 10 seconds";
+	mp4Reader->play(true, true);
+	sink->play(true, true);
+
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	LOG_ERROR << "<======================Stopping Pipeline ==============+++>>> ";
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+	
+}
+
 BOOST_AUTO_TEST_CASE(testFrameNumbers)
 {
 	std::string videoPath = "data/Mp4_videos/corruptFrame/repairedVideo2.mp4";
@@ -637,6 +893,24 @@ BOOST_AUTO_TEST_CASE(checkMultipleFiles)
 	std::string videoPath = "./data/Mp4_videos/corruptFrame/27feb.mp4";
 	std::string outFolderPath = "./data/Mp4_videos/corruptFrame/repairedVideo.mp4";
 	checkRename(videoPath, outFolderPath);
+}
+
+BOOST_AUTO_TEST_CASE(playPause)
+{
+	std::string videoPath = "./data/Mp4_videos/corruptFrame/repairedVideo2.mp4";
+	playPauseVideo(videoPath);
+}
+
+BOOST_AUTO_TEST_CASE(replayVideo)
+{
+	std::string videoPath = "./data/Mp4_videos/corruptFrame/repairedVideo2.mp4";
+	stopVideo(videoPath);
+}
+
+BOOST_AUTO_TEST_CASE(replayVideoReset)
+{
+	std::string videoPath = "./data/Mp4_videos/corruptFrame/repairedVideo2.mp4";
+	stopVideoReset(videoPath);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -24,7 +24,7 @@ public:
 
     bool init(uint32_t _height, uint32_t _width)
     {
-        LOG_ERROR << "WILL INITIALIZE NEW WINDOW";
+        LOG_DEBUG << "WILL INITIALIZE NEW WINDOW";
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
         if (height != 0 && width != 0)
@@ -43,7 +43,7 @@ public:
         }
         if (!renderer)
         {
-            LOG_ERROR << "Failed to create EGL renderer";
+            LOG_INFO << "Failed to create EGL renderer";
             return false;
         }
         m_isEglWindowCreated = true;
@@ -52,10 +52,10 @@ public:
 
     bool destroyWindow()
     {
-        LOG_ERROR << "GOING TO DESTROY WINDOW";
+        LOG_DEBUG << "GOING TO DESTROY WINDOW";
         if (renderer)
         {
-            LOG_ERROR << "Window Exist";
+            LOG_DEBUG << "Window Exist";
             m_isEglWindowCreated = false;
             delete renderer;
         }
@@ -103,10 +103,21 @@ bool EglRendererReview::process(frame_container &frames)
     {
         if (mStartTime == 0 && statusOfEglWindow())
         {
-            LOG_ERROR << "Egl Frame TimeStamp is " << frame->timestamp;
+            LOG_DEBUG << "Egl Frame TimeStamp is " << frame->timestamp;
             mStartTime = frame->timestamp;
         }
         mFrameTs = frame->timestamp;
+        if (mSkipFrame)
+        {
+            LOG_DEBUG << "SKIP Frame Ts is " << mFrameTs;
+            m_skipFrameCount++;
+            if (m_skipFrameCount > 25)
+            {
+                mSkipFrame = false;
+                m_skipFrameCount = 0;
+            }
+            return true;
+        }
         if (m_tsCallbackFunction)
         {
             m_tsCallbackFunction();
@@ -116,7 +127,7 @@ bool EglRendererReview::process(frame_container &frames)
     }
     else
     {
-        LOG_ERROR << "renderer not found for rendering frames =============================>>>>>>>>>";
+        LOG_INFO << "renderer not found for rendering frames =============================>>>>>>>>>";
     }
     return true;
 }
@@ -125,7 +136,7 @@ bool EglRendererReview::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
         return false;
     }
 
@@ -133,7 +144,7 @@ bool EglRendererReview::validateInputPins()
     FrameMetadata::MemType memType = metadata->getMemType();
     if (memType != FrameMetadata::MemType::DMABUF)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
         return false;
     }
 
@@ -172,7 +183,7 @@ bool EglRendererReview::processSOS(frame_sp &frame)
     default:
         throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
     }
-    LOG_ERROR << "Egl Frame TimeStamp at the beginning " << frame->timestamp;
+    LOG_DEBUG << "Egl Frame TimeStamp at the beginning " << frame->timestamp;
     mStartTime = frame->timestamp;
     mDetail->init(height, width);
     return true;
@@ -187,10 +198,10 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
 {
     if (type == Command::CommandType::DeleteWindow)
     {
-        LOG_ERROR << "Got Command TO Destroy Window";
+        LOG_DEBUG << "Got Command TO Destroy Window";
         EglRendererCloseWindow cmd;
         getCommand(cmd, frame);
-        LOG_ERROR << "IS EGL WINDOW " << mDetail->m_isEglWindowCreated;
+        LOG_DEBUG << "IS EGL WINDOW " << mDetail->m_isEglWindowCreated;
         if (mDetail->m_isEglWindowCreated)
         {
             mDetail->destroyWindow();
@@ -199,7 +210,7 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
     }
     else if (type == Command::CommandType::CreateWindow)
     {
-        LOG_ERROR << "GOT CREATE WINDOW COMMAND";
+        LOG_DEBUG << "GOT CREATE WINDOW COMMAND";
         EglRendererCreateWindow cmd;
         getCommand(cmd, frame);
         if(!mDetail->m_isEglWindowCreated)
@@ -208,16 +219,24 @@ bool EglRendererReview::handleCommand(Command::CommandType type, frame_sp &frame
         }
         return true;
     }
+    else if (type == Command::CommandType::SkipFrame)
+    {
+        LOG_DEBUG << "GOT Skip Frame COMMAND";
+        EglRendererSkipFrame cmd;
+        getCommand(cmd, frame);
+        mSkipFrame = true;
+        return true;
+    }
     else
     {
-        LOG_ERROR << " In Else :- Type Of Command is " << type;
+        LOG_DEBUG << " In Else :- Type Of Command is " << type;
         return Module::handleCommand(type, frame);
     }
 }
 
 bool EglRendererReview::closeWindow()
 {
-    LOG_ERROR << " I have Queue The Command to Close Window" ;
+    LOG_DEBUG << " I have Queue The Command to Close Window" ;
     mFrameTs = 0;
     mStartTime = 0;
     EglRendererCloseWindow cmd;
@@ -226,7 +245,7 @@ bool EglRendererReview::closeWindow()
 
 bool EglRendererReview::createWindow(int width, int height)
 {
-    LOG_ERROR << "GOT REQUEST TO CREATE WINDOW";
+    LOG_DEBUG << "GOT REQUEST TO CREATE WINDOW";
     EglRendererCreateWindow cmd;
     mFrameTs = 0;
     mStartTime = 0;
@@ -243,7 +262,7 @@ bool EglRendererReview::processEOS(string &pinId)
     {
         m_callbackFunction();
     }
-    LOG_ERROR << "WILL CALL CALLBACK FUNCTIONS";
+    LOG_DEBUG << "WILL CALL CALLBACK FUNCTIONS";
     return true;
 }
 
@@ -260,7 +279,7 @@ bool EglRendererReview::statusOfEglWindow()
 
 bool EglRendererReview::getCurrentStausOfMedia()
 {
-    LOG_ERROR << "CUrrent State of Media is " << mDetail->m_mediaRunning;
+    LOG_DEBUG << "CUrrent State of Media is " << mDetail->m_mediaRunning;
     return mDetail->m_mediaRunning;
 }
 
@@ -272,4 +291,16 @@ uint64_t EglRendererReview::getCurrentFrameTimestamp()
 uint64_t EglRendererReview::getStartTimestamp()
 {
     return mStartTime;
+}
+
+bool EglRendererReview::skipFrame()
+{
+    LOG_DEBUG << "GOT REQUEST TO Skip FRAME";
+    EglRendererSkipFrame cmd;
+    return queueCommand(cmd, true);
+}
+
+bool EglRendererReview::isFramesSkipped()
+{
+    return mSkipFrame;
 }

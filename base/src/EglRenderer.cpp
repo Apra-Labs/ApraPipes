@@ -23,7 +23,7 @@ public:
 
     bool init(uint32_t _height, uint32_t _width)
     {
-        LOG_ERROR << "WILL INITIALIZE NEW WINDOW";
+        LOG_DEBUG << "WILL INITIALIZE NEW WINDOW";
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
         if (height != 0 && width != 0)
@@ -42,7 +42,7 @@ public:
         }
         if (!renderer)
         {
-            LOG_ERROR << "Failed to create EGL renderer";
+            LOG_INFO << "Failed to create EGL renderer";
             return false;
         }
         m_isEglWindowCreated = true;
@@ -51,10 +51,10 @@ public:
 
     bool destroyWindow()
     {
-        LOG_ERROR << "GOING TO DESTROY WINDOW";
+        LOG_DEBUG << "GOING TO DESTROY WINDOW";
         if (renderer)
         {
-            LOG_ERROR << "Window Exist";
+            LOG_DEBUG << "Window Exist";
             m_isEglWindowCreated = false;
             delete renderer;
         }
@@ -102,7 +102,7 @@ bool EglRenderer::process(frame_container &frames)
     }
     else
     {
-        LOG_ERROR << "renderer not found for rendering frames =============================>>>>>>>>>";
+        LOG_INFO << "renderer not found for rendering frames =============================>>>>>>>>>";
     }
     return true;
 }
@@ -111,7 +111,7 @@ bool EglRenderer::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
         return false;
     }
 
@@ -119,7 +119,7 @@ bool EglRenderer::validateInputPins()
     FrameMetadata::MemType memType = metadata->getMemType();
     if (memType != FrameMetadata::MemType::DMABUF)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
         return false;
     }
 
@@ -172,7 +172,7 @@ bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
 {
     if (type == Command::CommandType::DeleteWindow)
     {
-        LOG_ERROR << "Got Command TO Destroy Window";
+        LOG_DEBUG << "Got Command TO Destroy Window";
         EglRendererCloseWindow cmd;
         getCommand(cmd, frame);
         if (mDetail->m_isEglWindowCreated)
@@ -183,7 +183,7 @@ bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
     }
     else if (type == Command::CommandType::CreateWindow)
     {
-        LOG_ERROR << "GOT CREATE WINDOW COMMAND";
+        LOG_DEBUG << "GOT CREATE WINDOW COMMAND";
         EglRendererCreateWindow cmd;
         getCommand(cmd, frame);
         if(!mDetail->m_isEglWindowCreated)
@@ -194,7 +194,7 @@ bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
     }
     else
     {
-        LOG_ERROR << " In Else :- Type Of Command is " << type;
+        LOG_DEBUG << " In Else :- Type Of Command is " << type;
         return Module::handleCommand(type, frame);
     }
 }
@@ -207,7 +207,7 @@ bool EglRenderer::closeWindow()
 
 bool EglRenderer::createWindow(int width, int height)
 {
-    LOG_ERROR << "GOT REQUEST TO CREATE WINDOW";
+    LOG_DEBUG << "GOT REQUEST TO CREATE WINDOW";
     EglRendererCreateWindow cmd;
     cmd.width = width;
     cmd.height = height;
@@ -231,6 +231,6 @@ void EglRenderer::waitForNextFrame()
 
 bool EglRenderer::statusOfEglWindow()
 {
-    LOG_ERROR << "Egl Renderer " << mDetail->m_isEglWindowCreated; 
+    // LOG_ERROR << "Egl Renderer " << mDetail->m_isEglWindowCreated; 
     return mDetail->m_isEglWindowCreated;
 }

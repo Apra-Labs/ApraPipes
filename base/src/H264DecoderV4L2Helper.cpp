@@ -377,7 +377,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         }
         framesToSkip = 0;
     }
-    LOG_ERROR << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
+    LOG_DEBUG << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
     previousFps = currentFps;
 }
  
@@ -391,7 +391,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
  
     if (pixfmt != V4L2_PIX_FMT_NV12M)
     {
-        LOG_ERROR << "Only V4L2_PIX_FMT_NV12M is supported" << endl;
+        LOG_INFO << "Only V4L2_PIX_FMT_NV12M is supported" << endl;
         ctx->in_error = 1;
         return -1;
     }
@@ -414,7 +414,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_S_FMT, &format);
     if (ret_val)
     {
-        LOG_ERROR << "Error in VIDIOC_S_FMT" << endl;
+        LOG_INFO << "Error in VIDIOC_S_FMT" << endl;
         ctx->in_error = 1;
     }
     else
@@ -446,7 +446,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_FMT, &format);
     if (ret_val)
     {
-        LOG_ERROR << "Could not get format from decoder capture plane" << endl;
+        LOG_INFO << "Could not get format from decoder capture plane" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -457,7 +457,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_CROP, &crop);
     if (ret_val)
     {
-        LOG_ERROR << "Could not get crop from decoder capture plane" << endl;
+        LOG_INFO << "Could not get crop from decoder capture plane" << endl;
         ctx->in_error = 1;
         return;
     }
@@ -506,7 +506,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         ctx->cp_mem_type, 0);
     if (ret_val)
     {
-        LOG_ERROR << "Error in requesting 0 capture plane buffers" << endl;
+        LOG_INFO << "Error in requesting 0 capture plane buffers" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -522,7 +522,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
                 ret_val = NvBufferDestroy(ctx->dmabuff_fd[index]);
                 if (ret_val)
                 {
-                    LOG_ERROR << "Failed to Destroy NvBuffer" << endl;
+                    LOG_INFO << "Failed to Destroy NvBuffer" << endl;
                     ctx->in_error = 1;
                 }
             }
@@ -535,7 +535,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         format.fmt.pix_mp.width, format.fmt.pix_mp.height);
     if (ret_val)
     {
-        LOG_ERROR << "Error in setting capture plane format" << endl;
+        LOG_INFO << "Error in setting capture plane format" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -550,7 +550,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_CTRL, &ctl);
     if (ret_val)
     {
-        LOG_ERROR << "Error getting value of control " << ctl.id << endl;
+        LOG_INFO << "Error getting value of control " << ctl.id << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -594,7 +594,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
             ret_val = NvBufferCreateEx(&ctx->dmabuff_fd[index], &cap_params);
             if (ret_val)
             {
-                LOG_ERROR << "Failed to create buffers" << endl;
+                LOG_INFO << "Failed to create buffers" << endl;
                 ctx->in_error = 1;
                 break;
             }
@@ -606,7 +606,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         ctx->cp_mem_type, ctx->cp_num_buffers);
         if (ret_val)
         {
-            LOG_ERROR << "Error in requesting capture plane buffers" << endl;
+            LOG_INFO << "Error in requesting capture plane buffers" << endl;
             ctx->in_error = 1;
             return ;
         }
@@ -640,7 +640,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
  
         if (ret_val)
         {
-            LOG_ERROR << "Qing failed on capture plane" << endl;
+            LOG_INFO << "Qing failed on capture plane" << endl;
             ctx->in_error = 1;
             return ;
         }
@@ -651,7 +651,7 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     ret_val = v4l2_ioctl(ctx->fd,VIDIOC_STREAMON, &ctx->cp_buf_type);
     if (ret_val != 0)
     {
-        LOG_ERROR << "Streaming error on capture plane" << endl;
+        LOG_INFO << "Streaming error on capture plane" << endl;
         ctx->in_error = 1;
     }
     ctx->cp_streamon = 1;
@@ -681,11 +681,11 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         {
             if (errno == EAGAIN)
             {
-                LOG_ERROR << "Timeout waiting for first V4L2_EVENT_RESOLUTION_CHANGE";
+                LOG_INFO << "Timeout waiting for first V4L2_EVENT_RESOLUTION_CHANGE";
             }
             else
             {
-                LOG_ERROR << "Error in dequeueing decoder event";
+                LOG_INFO << "Error in dequeueing decoder event";
             }
             ctx->in_error = 1;
             break;
@@ -707,7 +707,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     /* Check for resolution event to again
     ** set format and buffers on capture plane.
     */
-    LOG_ERROR << " m_nThread->runCaptureThread " << m_nThread->runCaptureThread <<"ctx->got_eos " <<ctx->got_eos ; 
+   LOG_INFO << " m_nThread->runCaptureThread " << m_nThread->runCaptureThread <<"ctx->got_eos " <<ctx->got_eos ; 
     while (m_nThread->runCaptureThread && !(ctx->in_error || ctx->got_eos))
     {
         Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
@@ -744,7 +744,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 else
                 {
                     ctx->in_error = 1;
-                    LOG_ERROR << "Error while DQing at capture plane" << endl;
+                    LOG_INFO << "Error while DQing at capture plane" << endl;
                 }
                 break;
             }
@@ -797,7 +797,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 if (ret_val == -1)
                 {
                     ctx->in_error = 1;
-                    LOG_ERROR << "Transform failed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                    LOG_INFO << "Transform failed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                     break;
                 }
  
@@ -815,7 +815,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                     ctx->cp_num_planes);
                 if (ret_val)
                 {
-                    LOG_ERROR << "Qing failed on capture plane" << endl;
+                    LOG_INFO << "Qing failed on capture plane" << endl;
                     ctx->in_error = 1;
                     break;
                 }
@@ -833,7 +833,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                     ctx->cp_num_planes);
                 if (ret_val)
                 {
-                    LOG_ERROR << "Qing failed on capture plane" << endl;
+                    LOG_INFO << "Qing failed on capture plane" << endl;
                     ctx->in_error = 1;
                     break;
                 }
@@ -841,9 +841,9 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         }
    
     }
-    LOG_ERROR << "ctx->in_error" << ctx->in_error;
-    LOG_ERROR << "eos value ==" << ctx->got_eos << " m_nThread->runCaptureThread = " << m_nThread->runCaptureThread;
-    LOG_ERROR << "Exiting decoder capture loop thread" << endl;
+    LOG_DEBUG << "ctx->in_error" << ctx->in_error;
+    LOG_DEBUG << "eos value ==" << ctx->got_eos << " m_nThread->runCaptureThread = " << m_nThread->runCaptureThread;
+    LOG_DEBUG << "Exiting decoder capture loop thread" << endl;
  
     return NULL;
 }
@@ -874,7 +874,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 ctx.op_mem_type, -1);
             if (ret_val)
             {
-                LOG_ERROR << "Error DQing buffer at output plane" << endl;
+                LOG_INFO << "Error DQing buffer at output plane" << endl;
                 ctx.in_error = 1;
             }
         }
@@ -900,7 +900,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
         if (ret_val)
         {
-            LOG_ERROR << "Error Qing buffer at output plane" << endl;
+            LOG_INFO << "Error Qing buffer at output plane" << endl;
             ctx.in_error = 1;
         }
 
@@ -1235,7 +1235,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     
     if (ctx.fd == -1)
     {
-        LOG_ERROR << "Could not open device" << DECODER_DEV << endl;
+        LOG_INFO << "Could not open device" << DECODER_DEV << endl;
         ctx.in_error = 1;
     }
  
@@ -1247,12 +1247,12 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     ret = v4l2_ioctl(ctx.fd, VIDIOC_QUERYCAP, &caps);
     if (ret)
     {
-        LOG_ERROR << "Failed to query video capabilities" << endl;
+        LOG_INFO << "Failed to query video capabilities" << endl;
         ctx.in_error = 1;
     }
     if (!(caps.capabilities & V4L2_CAP_VIDEO_M2M_MPLANE))
     {
-        LOG_ERROR << "Device does not support V4L2_CAP_VIDEO_M2M_MPLANE" << endl;
+        LOG_INFO << "Device does not support V4L2_CAP_VIDEO_M2M_MPLANE" << endl;
         ctx.in_error = 1;
     }
  
@@ -1264,7 +1264,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     ret = subscribe_event(ctx.fd, V4L2_EVENT_RESOLUTION_CHANGE, 0, 0);
     if (ret)
     {
-        LOG_ERROR << "Failed to subscribe for resolution change" << endl;
+        LOG_INFO << "Failed to subscribe for resolution change" << endl;
         ctx.in_error = 1;
     }
  
@@ -1277,7 +1277,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     ret = set_ext_controls(ctx.fd, V4L2_CID_MPEG_VIDEO_DISABLE_COMPLETE_FRAME_INPUT, 1);
     if (ret)
     {
-        LOG_ERROR << "Failed to set control disable complete frame" << endl;
+        LOG_INFO << "Failed to set control disable complete frame" << endl;
         ctx.in_error = 1;
     }
  
@@ -1288,7 +1288,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     ret = set_output_plane_format(ctx, ctx.decode_pixfmt, CHUNK_SIZE);
     if (ret)
     {
-        LOG_ERROR << "Error in setting output plane format" << endl;
+        LOG_INFO << "Error in setting output plane format" << endl;
         ctx.in_error = 1;
     }
  
@@ -1302,7 +1302,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
         ctx.op_mem_type, 1); //maxBufferr should come from props
     if (ret)
     {
-        LOG_ERROR << "Error in requesting buffers on output plane" << endl;
+        LOG_INFO << "Error in requesting buffers on output plane" << endl;
         ctx.in_error = 1;
     }
  
@@ -1324,7 +1324,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
         ret = v4l2_ioctl(ctx.fd, VIDIOC_QUERYBUF, &op_v4l2_buf);
         if (ret)
         {
-            LOG_ERROR << "Error in querying buffers" << endl;
+            LOG_INFO << "Error in querying buffers" << endl;
             ctx.in_error = 1;
         }
  
@@ -1346,7 +1346,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
             ret = v4l2_ioctl(ctx.fd, VIDIOC_EXPBUF, &op_expbuf);
             if (ret)
             {
-                LOG_ERROR << "Error in exporting buffer at index" << i << endl;
+                LOG_INFO << "Error in exporting buffer at index" << i << endl;
                 ctx.in_error = 1;
             }
             ctx.op_buffers[i]->planes[j].fd = op_expbuf.fd;
@@ -1354,7 +1354,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
  
         if (ctx.op_buffers[i]->map())
         {
-            LOG_ERROR << "Buffer mapping error on output plane" << endl;
+            LOG_INFO << "Buffer mapping error on output plane" << endl;
             ctx.in_error = 1;
         }
     }
@@ -1366,7 +1366,7 @@ bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::func
     ret = v4l2_ioctl(ctx.fd,VIDIOC_STREAMON, &ctx.op_buf_type);
     if (ret != 0)
     {
-        LOG_ERROR << "Streaming error on output plane" << endl;
+        LOG_INFO << "Streaming error on output plane" << endl;
         ctx.in_error = 1;
     }
  
@@ -1398,7 +1398,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
         }
         else
         {
-            LOG_ERROR << "Currently only H264 supported" << endl;
+            LOG_INFO << "Currently only H264 supported" << endl;
             ctx.in_error = 1;
         }
  
@@ -1413,14 +1413,14 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
             ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
         if (ret)
         {
-            LOG_ERROR << "Error Qing buffer at output plane" << endl;
+            LOG_INFO << "Error Qing buffer at output plane" << endl;
             ctx.in_error = 1;
         }
  
         if (queue_v4l2_buf_op.m.planes[0].bytesused == 0)
         {
             ctx.eos = true;
-            LOG_ERROR << "Input file read complete" << endl;
+            LOG_INFO << "Input file read complete" << endl;
             break;
         }
         idx++;
@@ -1446,7 +1446,7 @@ int h264DecoderV4L2Helper::process(frame_sp inputFrame)
         ret = dq_buffer(&ctx, v4l2_buf, NULL, ctx.op_buf_type, ctx.op_mem_type, -1);
         if (ret)
         {
-            LOG_ERROR << "Error DQing buffer at output plane" << endl;
+            LOG_INFO << "Error DQing buffer at output plane" << endl;
             ctx.in_error = 1;
             break;
             return true;
@@ -1467,13 +1467,13 @@ h264DecoderV4L2Helper::~h264DecoderV4L2Helper()
 
 bool h264DecoderV4L2Helper::term_helper()
 {
-    LOG_ERROR << "Terminating Helper WITH FD " << ctx.fd;
+    LOG_DEBUG << "Terminating Helper WITH FD " << ctx.fd;
     if (ctx.fd != -1)
     {
-        LOG_ERROR << "ctx.dec_capture_thread " << ctx.dec_capture_thread << "ctx.fd " << ctx.fd;  
+        LOG_DEBUG << "ctx.dec_capture_thread " << ctx.dec_capture_thread << "ctx.fd " << ctx.fd;  
         if (ctx.dec_capture_thread)
         {
-            LOG_ERROR << "SHould Join The tHread";
+            LOG_DEBUG << "SHould Join The tHread";
             runCaptureThread = false;
             pthread_join(ctx.dec_capture_thread, NULL);
         }
@@ -1486,7 +1486,7 @@ bool h264DecoderV4L2Helper::term_helper()
                 ret = NvBufferDestroy(ctx.dmabuff_fd[idx]);
                 if (ret)
                 {
-                    LOG_ERROR << "Failed to Destroy Buffers" << endl;
+                    LOG_DEBUG << "Failed to Destroy Buffers" << endl;
                 }
             }
         }
@@ -1522,7 +1522,7 @@ bool h264DecoderV4L2Helper::term_helper()
                     ctx.dmabuff_fd[i] = 0;
                     if (ret < 0)
                     {
-                        LOG_ERROR << "Failed to destroy buffer" << endl;
+                        LOG_DEBUG << "Failed to destroy buffer" << endl;
                     }
                 }
             }
@@ -1561,5 +1561,51 @@ bool h264DecoderV4L2Helper::term_helper()
 
 }
  
- 
- 
+bool h264DecoderV4L2Helper::flush_frames()
+{
+    LOG_DEBUG << "Flushing all frames from decoder";
+    
+    // Signal end of stream
+    struct v4l2_buffer v4l2_buf;
+    struct v4l2_plane planes[MAX_PLANES];
+    Buffer *buffer;
+
+    memset(&v4l2_buf, 0, sizeof(v4l2_buf));
+    memset(planes, 0, sizeof(planes));
+    v4l2_buf.m.planes = planes;
+
+    // Queue empty buffer to signal EOS
+    buffer = ctx.op_buffers[0];
+    buffer->planes[0].bytesused = 0;
+    
+    int ret = q_buffer(&ctx, v4l2_buf, buffer,
+        ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
+    if (ret) {
+        LOG_DEBUG << "Error queueing EOS buffer";
+        ctx.in_error = 1;
+        return false;
+    }
+
+    // Wait for all queued buffers to be processed
+    while (ctx.num_queued_op_buffers > 0 && !ctx.in_error) {
+        memset(&v4l2_buf, 0, sizeof(v4l2_buf));
+        memset(planes, 0, sizeof(planes));
+        v4l2_buf.m.planes = planes;
+
+        ret = dq_buffer(&ctx, v4l2_buf, NULL, ctx.op_buf_type, ctx.op_mem_type, -1);
+        if (ret) {
+            LOG_DEBUG << "Error dequeuing buffer during flush";
+            ctx.in_error = 1;
+            return false;
+        }
+    }
+
+    // // Signal capture thread to stop
+    // ctx.eos = true;
+    // ctx.got_eos = 1;
+
+    // Let capture thread process remaining frames
+    usleep(1000);
+
+    return true;
+}

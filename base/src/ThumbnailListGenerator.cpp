@@ -76,7 +76,7 @@ bool ThumbnailListGenerator::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
         return false;
     }
 
@@ -84,7 +84,7 @@ bool ThumbnailListGenerator::validateInputPins()
     FrameMetadata::FrameType frameType = metadata->getFrameType();
     if (frameType != FrameMetadata::RAW_IMAGE)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
         return false;
     }
 
@@ -132,7 +132,7 @@ bool ThumbnailListGenerator::process(frame_container &frames)
     auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE);
     if (isFrameEmpty(frame))
     {
-        LOG_ERROR << "Got Empty Frames, returning";
+        LOG_INFO << "Got Empty Frames, returning";
         return true;
     }
 
@@ -173,13 +173,11 @@ bool ThumbnailListGenerator::process(frame_container &frames)
     jpeg_finish_compress(&cinfo);
     jpeg_destroy_compress(&cinfo);
     LOG_INFO << "JPEG Compression Done. Buffer Size: " << jpegSize;
-    std::string md5Val = calculateMD5(jpegBuffer, jpegSize);
-    LOG_ERROR << "================MD5 val is=====================" << md5Val;
     std::string filename = mDetail->mProps.fileToStore;
     FILE *outfile = fopen(filename.c_str(), "wb");
     if (!outfile)
     {
-        LOG_ERROR << "Couldn't open file for writing: " << filename;
+        LOG_INFO << "Couldn't open file for writing: " << filename;
         free(jpegBuffer);
         return false;
     }
@@ -268,7 +266,7 @@ void ThumbnailListGenerator::decompressFrame()
     sync();
     try
 	{
-        LOG_ERROR << "For " << mDetail->mProps.fileToStore.c_str() << ", Custom Metadata -> " << m_customMetadata.c_str();
+        LOG_DEBUG << "For " << mDetail->mProps.fileToStore.c_str() << ", Custom Metadata -> " << m_customMetadata.c_str();
 		Exiv2::Image::AutoPtr mediaFile = Exiv2::ImageFactory::open(mDetail->mProps.fileToStore);
 		if (!mediaFile.get() || m_customMetadata.empty())
 		{
@@ -302,6 +300,6 @@ std::vector<unsigned char> ThumbnailListGenerator::getFrameBuffer()
 
 void ThumbnailListGenerator::setMetadata(std::string data)
 {
-    LOG_ERROR << "setCustomMetadata called -> "<< data.c_str();
+    LOG_DEBUG << "setCustomMetadata called -> "<< data.c_str();
     m_customMetadata = data;
 }

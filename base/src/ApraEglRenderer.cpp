@@ -42,7 +42,7 @@ public:
                 }
                 else
                 {
-                    LOG_ERROR << "Renderer not found for rendering frames";
+                    LOG_INFO << "Renderer not found for rendering frames";
                 }
             }
         }
@@ -50,7 +50,7 @@ public:
 
     bool init(uint32_t _height, uint32_t _width)
     {
-        LOG_ERROR << "WILL INITIALIZE NEW WINDOW";
+        LOG_INFO << "WILL INITIALIZE NEW WINDOW";
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
         if (height != 0 && width != 0)
@@ -67,7 +67,7 @@ public:
         }
         if (!renderer)
         {
-            LOG_ERROR << "Failed to create EGL renderer";
+            LOG_INFO << "Failed to create EGL renderer";
             return false;
         }
         m_isEglWindowCreated = true;
@@ -132,7 +132,7 @@ bool ApraEglRenderer::validateInputPins()
 {
     if (getNumberOfInputPins() != 1)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
         return false;
     }
 
@@ -140,7 +140,7 @@ bool ApraEglRenderer::validateInputPins()
     FrameMetadata::MemType memType = metadata->getMemType();
     if (memType != FrameMetadata::MemType::DMABUF)
     {
-        LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+        LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
         return false;
     }
 

@@ -19,7 +19,7 @@ public:
 
 	void setFps(int _fps)
 	{
-		LOG_ERROR << "SETTING FPS TO " << _fps;
+		LOG_TRACE << "SETTING FPS TO " << _fps;
 		if(_fps <= 0)
 		{
 			myTargetFrameLen = std::chrono::nanoseconds(1);

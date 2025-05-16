@@ -49,6 +49,9 @@ public:
 	bool getCurrentStausOfMedia();
 	uint64_t getCurrentFrameTimestamp();
 	uint64_t getStartTimestamp();
+	bool skipFrame();
+	bool isFramesSkipped();
+
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -64,4 +67,6 @@ private:
 	uint64_t mStartTime;
 	CallbackFunction m_callbackFunction = NULL;
 	CallbackFunction m_tsCallbackFunction = NULL;
+	bool mSkipFrame = false;
+	uint64_t m_skipFrameCount = 0;
 };

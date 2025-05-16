@@ -18,7 +18,7 @@ public:
 	bool term();
 	bool processEOS(string& pinId);
     bool decoderEos();
-	void flushQue();
+	void flushQueue();
 	void changeDecoderSpeed(int _playbackFps, float _playbackSpeed, int _gop);
 
 protected:

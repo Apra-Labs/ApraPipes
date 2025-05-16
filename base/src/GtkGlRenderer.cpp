@@ -99,7 +99,7 @@ public:
 
     if (gtk_gl_area_get_error(glarea) != NULL)
     {
-      LOG_ERROR << "Failed to initialize buffer";
+      LOG_INFO << "Failed to initialize buffer";
       return FALSE;
     }
     // Print version info:
@@ -136,7 +136,7 @@ public:
   static void on_unrealize(GtkGLArea *glarea, gint width, gint height,
                            gpointer data)
   {
-    LOG_ERROR << "UNREALIZE "
+    LOG_DEBUG << "UNREALIZE "
                  "SIGNAL==================================>>>>>>>>>>>>>>>>>";
   }
 
@@ -230,7 +230,7 @@ GtkGlRenderer::GtkGlRenderer(GtkGlRendererProps props) : Module(SINK, "GtkGlRend
   mDetail->glarea = props.glArea;
   mDetail->windowWidth = props.windowWidth;
   mDetail->windowHeight = props.windowHeight;
-  LOG_ERROR << "Width -> " << mDetail->windowWidth << " Height -> " << mDetail->windowHeight;
+  LOG_DEBUG << "Width -> " << mDetail->windowWidth << " Height -> " << mDetail->windowHeight;
   mDetail->isPlaybackRenderer = props.isPlaybackRenderer;
 }
 
@@ -244,7 +244,7 @@ bool GtkGlRenderer::init()
   }
   if (!mDetail->init())
   {
-    LOG_ERROR << "Failed To Initialize GtkGl Area ";
+    LOG_INFO << "Failed To Initialize GtkGl Area ";
     return false;
   }
   return true;
@@ -276,7 +276,7 @@ bool GtkGlRenderer::validateInputPins()
 {
   if (getNumberOfInputPins() < 1)
   {
-    LOG_ERROR << "<" << getId()
+    LOG_INFO << "<" << getId()
               << ">::validateInputPins size is expected to be 1. Actual<"
               << getNumberOfInputPins() << ">";
     return false;
@@ -339,7 +339,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     mDetail->isDmaMem =
         metadata->getMemType() == FrameMetadata::MemType::DMABUF;
 
-    LOG_ERROR << "Width is " << metadata->getWidth() << " Height is "
+    LOG_DEBUG << "Width is " << metadata->getWidth() << " Height is "
              << metadata->getHeight();
     FrameMetadata::MemType memType = metadata->getMemType();
     {
@@ -363,7 +363,7 @@ bool GtkGlRenderer::processSOS(frame_sp &frame)
     mDetail->frameHeight = metadata->getHeight(0);
     mDetail->isDmaMem =
         metadata->getMemType() == FrameMetadata::MemType::DMABUF;
-    LOG_ERROR << "Width is " << metadata->getWidth(0) << "Height is "
+    LOG_DEBUG << "Width is " << metadata->getWidth(0) << "Height is "
              << metadata->getHeight(0);
     FrameMetadata::MemType memType = metadata->getMemType();
     if (memType != FrameMetadata::MemType::DMABUF)

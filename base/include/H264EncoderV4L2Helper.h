@@ -5,6 +5,9 @@
 
 #include "ExtFrame.h"
 #include <boost/pool/object_pool.hpp>
+#include <mutex>
+#include <atomic>
+
 
 class H264EncoderV4L2Helper
 {
@@ -46,8 +49,10 @@ private:
     std::unique_ptr<AV4L2ElementPlane> mOutputPlane;
     std::unique_ptr<AV4L2ElementPlane> mCapturePlane;
 
-    boost::object_pool<ExtFrame> frame_opool;
+    std::shared_ptr<boost::object_pool<ExtFrame>> frame_opool;
     SendFrame mSendFrame;
 
     std::unique_ptr<V4L2CUYUV420Converter> mConverter;
+    std::recursive_mutex mPoolMutex;
+    std::atomic<bool> mShuttingDown{false};
 };

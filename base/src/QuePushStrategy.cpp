@@ -53,7 +53,7 @@ void NonBlockingAnyPushStrategy::push(std::string dstModuleId, frame_container& 
 		mDropCount++;
 		if (mDropCount%mPrintFrequency == 1)
 		{
-			LOG_ERROR << mId << "<" << dstModuleId << "> dropping from que. DropCount<" << mDropCount << ">";
+			LOG_INFO << mId << "<" << dstModuleId << "> dropping from que. DropCount<" << mDropCount << ">";
 		}		
 	}
 }
@@ -73,7 +73,7 @@ void NonBlockingAllOrNonePushStrategy::push(std::string dstModuleId, frame_conta
 	auto ret = mFramesByModule.insert(std::make_pair(dstModuleId, frames));
 	if (!ret.second)
 	{
-		LOG_ERROR << mId << "<" << dstModuleId << "> already has an entry. Not expected to come here.";
+		LOG_INFO << mId << "<" << dstModuleId << "> already has an entry. Not expected to come here.";
 	}
 }
 

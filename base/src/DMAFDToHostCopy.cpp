@@ -34,7 +34,7 @@ bool DMAFDToHostCopy::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -45,7 +45,7 @@ bool DMAFDToHostCopy::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 

@@ -191,7 +191,7 @@ void H264ParserUtils::parse_sps(const char *sps, size_t len, sps_pps_properties 
 		parser.ParseSps((unsigned char*)sps, len, output);
 	}
 	catch (std::exception &ex) {
-		LOG_ERROR << "exception occured in parsing sps buffer";
+		LOG_INFO << "exception occured in parsing sps buffer";
 	}
 }
 
@@ -201,6 +201,6 @@ void H264ParserUtils::parse_pps(const char *pps, size_t len, sps_pps_properties 
 		parser.ParsePps((unsigned char*)pps, len, output);
 	}
 	catch (std::exception &ex) {
-		LOG_ERROR << "exception occured in parsing pps buffer";
+		LOG_INFO << "exception occured in parsing pps buffer";
 	}
 }

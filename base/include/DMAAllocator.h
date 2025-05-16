@@ -109,7 +109,7 @@ public:
         auto dmaFDWrapper = DMAFDWrapper::create(0, width, height, colorFormat, NvBufferLayout_Pitch, eglDisplay);
         if (!dmaFDWrapper)
         {
-            LOG_ERROR << "Failed to allocate dmaFDWrapper";
+            LOG_INFO << "Failed to allocate dmaFDWrapper";
             throw AIPException(AIP_FATAL, "Memory Allocation Failed.");
         }
 
@@ -176,7 +176,7 @@ public:
             auto dmaFDWrapper = DMAFDWrapper::create(mCount++, mWidth, mHeight, mColorFormat, NvBufferLayout_Pitch, mEglDisplay);
             if (!dmaFDWrapper)
             {
-                LOG_ERROR << "Failed to allocate dmaFDWrapper";
+                LOG_INFO << "Failed to allocate dmaFDWrapper";
                 throw AIPException(AIP_FATAL, "Memory Allocation Failed.");
             }
             mDMAFDWrapperArr.push_back(dmaFDWrapper);

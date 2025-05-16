@@ -45,7 +45,7 @@ bool OrderedCacheOfFiles::fetchFromCache(std::string& videoFile, uint64_t& start
 	}
 	catch (...)
 	{
-		LOG_ERROR << "File not found on disk: " + videoFile;
+		LOG_INFO << "File not found on disk: " + videoFile;
 		return false;
 	}
 
@@ -77,7 +77,7 @@ bool OrderedCacheOfFiles::fetchAndUpdateFromDisk(std::string videoFile, uint64_t
 	}
 	catch (...)
 	{
-		LOG_ERROR << "File not found on disk: " + videoFile;
+		LOG_INFO << "File not found on disk: " + videoFile;
 		return false;
 	}
 
@@ -207,7 +207,7 @@ std::string OrderedCacheOfFiles::getFileAt(uint64_t timestamp, bool direction)
 	if (videoCache.empty())
 	{
 		auto msg = "Calling getFileAt() on empty cache. Call parseFiles first.";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw AIPException(MP4_OCOF_EMPTY, msg);
 	}
 	// Note: start_ts will never have cache miss
@@ -245,7 +245,7 @@ std::string OrderedCacheOfFiles::getFileAt(uint64_t timestamp, bool direction)
 	{
 		if (!direction)
 		{
-			LOG_ERROR << "this exception will be caught!!";
+			LOG_INFO << "this exception will be caught!!";
 			throw Mp4Exception(MP4_OCOF_END, "Reached end of cache in bwd play");	// EOF in bwd play
 		}
 
@@ -279,7 +279,7 @@ std::string OrderedCacheOfFiles::getNextFileAfter(std::string& currentFile, bool
 	if (iter == videoCache.end())
 	{
 		auto msg = "currentFile <" + currentFile + "> missing in the cache.";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw Mp4Exception(MP4_OCOF_MISSING_FILE, msg);
 	}
 
@@ -293,7 +293,7 @@ std::string OrderedCacheOfFiles::getNextFileAfter(std::string& currentFile, bool
 		}
 		else
 		{
-			LOG_ERROR << "this exception will be caught!!";
+			LOG_INFO << "this exception will be caught!!";
 			throw Mp4Exception(MP4_OCOF_END, "Reached End of Cache in fwd play.");
 		}
 	}
@@ -307,7 +307,7 @@ std::string OrderedCacheOfFiles::getNextFileAfter(std::string& currentFile, bool
 		}
 		else
 		{
-			LOG_ERROR << "this exception will be caught!!";
+			LOG_INFO << "this exception will be caught!!";
 			throw Mp4Exception(MP4_OCOF_END, "Reached End of Cache in bwd play.");
 		}
 	}
@@ -356,7 +356,7 @@ void OrderedCacheOfFiles::readVideoStartEnd(std::string& filePath, uint64_t& sta
 	if (ret < 0)
 	{
 		auto msg = "Error opening the file <" + filePath + "> libmp4 errorcode<" + std::to_string(ret) + ">";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw Mp4Exception(MP4_OPEN_FILE_FAILED, msg);
 	}
 	// get the video span from the file
@@ -367,7 +367,7 @@ void OrderedCacheOfFiles::readVideoStartEnd(std::string& filePath, uint64_t& sta
 	catch (...)
 	{
 		auto msg = "Unexpected error occured getting time range of the video <" + filePath + ">";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw AIPException(MP4_TIME_RANGE_FETCH_FAILED, msg);
 	}
 	// if timestamp not present in header (returns 0) - try reading from the filename
@@ -381,7 +381,7 @@ void OrderedCacheOfFiles::readVideoStartEnd(std::string& filePath, uint64_t& sta
 		catch (std::invalid_argument)
 		{
 			auto msg = "unexpected state - starting ts not found in video name or metadata";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
 		}
 	}
@@ -390,7 +390,7 @@ void OrderedCacheOfFiles::readVideoStartEnd(std::string& filePath, uint64_t& sta
 	if (end_ts < start_ts)
 	{
 		auto msg = "Invalid values: end ts < start ts in videoCache entry";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw Mp4Exception(MP4_UNEXPECTED_STATE, msg);
 	}
 	// close the file
@@ -404,7 +404,7 @@ void OrderedCacheOfFiles::updateCache(std::string& filePath, uint64_t& start_ts,
 	if (videoIter == videoCache.end())
 	{
 		auto msg = "Trying to update non existing video data";
-		LOG_ERROR << msg;
+		LOG_INFO << msg;
 		throw Mp4Exception(MP4_OCOF_MISSING_FILE, msg);
 	}
 	if (end_ts == videoIter->end_ts)
@@ -568,7 +568,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 		{
 			fileName = "";
 			auto msg = "Unexpected error happened in OrderedCacheOfFiles while getting file from it";
-			LOG_ERROR << msg;
+			LOG_INFO << msg;
 			throw Mp4Exception(MP4_OCOF_EMPTY, msg);
 		}
 		if (exception.getCode() == MP4_OCOF_END)

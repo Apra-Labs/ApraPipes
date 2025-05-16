@@ -15,7 +15,7 @@ bool CudaStreamSynchronize::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -26,7 +26,7 @@ bool CudaStreamSynchronize::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
@@ -57,13 +57,20 @@ void CudaStreamSynchronize::addInputPin(framemetadata_sp& metadata, string& pinI
 
 bool CudaStreamSynchronize::process(frame_container& frames)
 {
+	// auto startTime = std::chrono::high_resolution_clock::now(); // Start timer
+
 	auto cudaStatus = cudaStreamSynchronize(props.stream);
 	if (cudaStatus != cudaSuccess)
 	{
-		LOG_ERROR << "cudaStreamSynchronize failed <" << cudaStatus << ">";
+		LOG_INFO << "cudaStreamSynchronize failed <" << cudaStatus << ">";
 	}
 
 	send(frames);
+
+	// auto endTime = std::chrono::high_resolution_clock::now(); // End timer
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count(); // Calculate duration in milliseconds
+
+    // LOG_DEBUG << "Time taken to process frame: " << duration << " ms";
 
 	return true;
 }

@@ -241,20 +241,20 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 {
 	if (next->getNature() < this->getNature())
 	{
-		LOG_ERROR << "Can not connect these modules " << this->getId() << " -> " << next->getId();
+		LOG_INFO << "Can not connect these modules " << this->getId() << " -> " << next->getId();
 		return false;
 	}
 
 	if (pinIdArr.size() == 0)
 	{
-		LOG_ERROR << "No Pins to connect. " << this->getId() << " -> " << next->getId();
+		LOG_INFO << "No Pins to connect. " << this->getId() << " -> " << next->getId();
 		return false;
 	}
 
 	auto nextModuleId = next->getId();
 	if (mModules.find(nextModuleId) != mModules.end())
 	{
-		LOG_ERROR << "<" << getId() << "> Connection for <" << nextModuleId << " > already done.";
+		LOG_INFO << "<" << getId() << "> Connection for <" << nextModuleId << " > already done.";
 		return false;
 	}
 	mModules[nextModuleId] = next;
@@ -288,7 +288,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 			{
 				mModules.erase(nextModuleId);
 				mConnections.erase(nextModuleId);
-				LOG_FATAL << "";
+				LOG_INFO << "";
 				throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
 			}
 
@@ -322,7 +322,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 				{
 					mModules.erase(nextModuleId);
 					mConnections.erase(nextModuleId);
-					LOG_FATAL << "";
+					LOG_INFO << "";
 					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
 				}
 			}
@@ -346,7 +346,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr, b
 				{
 					mModules.erase(nextModuleId);
 					mConnections.erase(nextModuleId);
-					LOG_FATAL << "";
+					LOG_INFO << "";
 					throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" + pinId + ">. Unknown exception.");
 				}
 			}
@@ -1041,7 +1041,7 @@ bool Module::play(bool play, bool priority)
 {
 	if (!mRunning)
 	{
-		LOG_ERROR << "Returning from PLAY===================================?>>>";
+		LOG_DEBUG << "Returning from PLAY===================================?>>>";
 		// comes here if module is not running in a thread
 		// comes here when pipeline is started with run_all_threaded_withpause
 		return handlePausePlay(play);
@@ -1060,18 +1060,18 @@ bool Module::play(bool play, bool priority)
 	{
 		if (!Module::try_push(frames))
 		{
-			LOG_ERROR << "failed to push play command to the que";
+			LOG_INFO << "failed to push play command to the que";
 		}
 	}
 	else
 	{
 		if (!Module::push_back(frames))
 		{
-			LOG_ERROR << "failed to push play command At the back of the to the que";
+			LOG_INFO << "failed to push play command At the back of the to the que";
 		}
 		else
 		{
-			LOG_ERROR << "Succesfully Pushed the Frame =========>>>>>>>>";
+			LOG_DEBUG << "Succesfully Pushed the Frame =========>>>>>>>>";
 		}
 	}
 
@@ -1089,7 +1089,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open)
 	auto nextModuleId = next->getId();
 	if (mModules.find(nextModuleId) == mModules.end())
 	{
-		LOG_ERROR << "<" << getId() << "> Connection for <" << nextModuleId << " > doesn't exist.";
+		LOG_INFO << "<" << getId() << "> Connection for <" << nextModuleId << " > doesn't exist.";
 		return false;
 	}
 
@@ -1112,6 +1112,7 @@ void Module::flushQue()
 {
 	LOG_INFO << "mQue flushed for <" << myId << ">";
 	mQue->flush();
+	// LOG_ERROR << "mQue flushed for <" << myId << "> with queue length <" << mProps->qlen << "> and queue size <" << mQue->size() << ">";
 }
 
 bool Module::processSourceQue()
@@ -1134,7 +1135,6 @@ bool Module::processSourceQue()
 			}
 			else if (frame->isPropsChange())
 			{
-				LOG_ERROR << "Got Props Change Command @ processSourceQue";
 				handlePropsChange(frame);
 			}
 			else if (frame->isCommand())
@@ -1149,7 +1149,7 @@ bool Module::processSourceQue()
 			}
 			else
 			{
-				LOG_ERROR << frame->getMetadata()->getFrameType() << "<> not handled";
+				LOG_INFO << frame->getMetadata()->getFrameType() << "<> not handled";
 			}
 		}
 	}
@@ -1300,7 +1300,6 @@ bool Module::preProcessControl(frame_container &frames) // ctrl: continue on thi
 
     if (frame->isPropsChange())
     {
-		LOG_ERROR << "Got Props Change Command @ preProcessControl";
       if (!handlePropsChange(frame))
       {
         throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));
@@ -1359,7 +1358,6 @@ bool Module::preProcessNonSource(frame_container &frames)
 
 		if (frame->isPropsChange())
 		{
-			LOG_ERROR << "Got Props Change Command @ preProcessNonSource";
 			if (!handlePropsChange(frame))
 			{
 				throw AIPException(AIP_FATAL, string("Handle PropsChange failed"));
@@ -1442,11 +1440,11 @@ bool Module::stepNonSource(frame_container &frames)
 	}
 	catch(const std::exception& exception)
 	{
-		LOG_FATAL << getId() << "<>" << exception.what();
+		LOG_INFO << getId() << "<>" << exception.what();
 	}
 	catch (...)
 	{
-		LOG_FATAL << getId() << "<> Unknown exception. Catching throw";
+		LOG_INFO << getId() << "<> Unknown exception. Catching throw";
 	}
 
 	return ret;
@@ -1541,7 +1539,7 @@ void Module::ignore(int times)
 
 void Module::stop_onStepfail()
 {
-	LOG_ERROR << "Stopping " << myId << " due to step failure ";
+	LOG_INFO << "Stopping " << myId << " due to step failure ";
 	handleStop();
 }
 
@@ -1565,7 +1563,7 @@ void Module::emit_fatal(unsigned short eventID)
 	{
 		//we dont have a handler let's kill this thread
 		std::string msg("Fatal error in module ");
-		LOG_FATAL << "FATAL error in module : " << myName;
+		LOG_INFO << "FATAL error in module : " << myName;
 		msg += myName;
 		msg += " Event ID ";
 		msg += std::to_string(eventID);

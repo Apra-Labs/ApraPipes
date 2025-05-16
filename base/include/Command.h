@@ -21,7 +21,8 @@ public:
 		DecoderEOS,
 		Mp4ReadCloseFile,
 		DecoderPlaybackSpeed,
-		Mp4ReaderCloseOpenFile
+		Mp4ReaderCloseOpenFile,
+		SkipFrame
 	};
 
 	Command()
@@ -292,6 +293,28 @@ private:
 		ar &boost::serialization::base_object<Command>(*this);
 		ar &width;
 		ar &height;
+	}
+};
+
+class EglRendererSkipFrame : public Command
+{
+public:
+	EglRendererSkipFrame() : Command(Command::CommandType::SkipFrame)
+	{
+	}
+	
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int /* file_version */)
+	{
+		ar &boost::serialization::base_object<Command>(*this);
 	}
 };
 

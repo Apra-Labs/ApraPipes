@@ -35,7 +35,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror, uint8_t sensorType)
     mCamFD = open(mCamDevname, O_RDWR);
     if (mCamFD == -1)
     {
-        LOG_ERROR << "Failed to open camera /dev/video0";
+        LOG_INFO << "Failed to open camera /dev/video0";
         return false;
     }
 
@@ -66,7 +66,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror, uint8_t sensorType)
     }
     if (ioctl(mCamFD, VIDIOC_S_FMT, &fmt) < 0)
     {
-        LOG_ERROR << "Failed to set camera ouput format to UYVY";
+        LOG_INFO << "Failed to set camera ouput format to UYVY";
         return false;
     }
 
@@ -75,7 +75,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror, uint8_t sensorType)
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (ioctl(mCamFD, VIDIOC_G_FMT, &fmt) < 0)
     {
-        LOG_ERROR << "Failed to get camera output format";
+        LOG_INFO << "Failed to get camera output format";
         return false;
     }
 
@@ -83,10 +83,10 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror, uint8_t sensorType)
         fmt.fmt.pix.height != mCamHeight ||
         fmt.fmt.pix.pixelformat != mCamPixFmt)
     {
-        LOG_ERROR << "The desired format is not supported";
-        LOG_ERROR << "Supported width is : " << fmt.fmt.pix.width;
-        LOG_ERROR << "Supported height is : " << fmt.fmt.pix.height;
-        LOG_ERROR << "Supported pixelformat is : " << fmt.fmt.pix.pixelformat;
+        LOG_DEBUG << "The desired format is not supported";
+        LOG_DEBUG << "Supported width is : " << fmt.fmt.pix.width;
+        LOG_DEBUG << "Supported height is : " << fmt.fmt.pix.height;
+        LOG_DEBUG << "Supported pixelformat is : " << fmt.fmt.pix.pixelformat;
 
         return false;
     }
@@ -100,7 +100,7 @@ bool NvV4L2CameraHelper::startStream()
     auto type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (ioctl(mCamFD, VIDIOC_STREAMON, &type) < 0)
     {
-        LOG_ERROR << "Failed to start streaming";
+        LOG_INFO << "Failed to start streaming";
         return false;
     }
 
@@ -114,7 +114,7 @@ bool NvV4L2CameraHelper::stopStream()
     auto type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if (ioctl(mCamFD, VIDIOC_STREAMOFF, &type))
     {
-        LOG_ERROR << "Failed to stop streaming";
+        LOG_INFO << "Failed to stop streaming";
         return false;
     }
 
@@ -147,7 +147,7 @@ void NvV4L2CameraHelper::operator()()
 
         if (result == -1)
         {
-            LOG_ERROR << "select error";
+            LOG_INFO << "select error";
             // break;
         }
         else if (result == 0)
@@ -172,7 +172,7 @@ void NvV4L2CameraHelper::operator()()
             v4l2_buf.memory = V4L2_MEMORY_DMABUF;
             if (ioctl(mCamFD, VIDIOC_DQBUF, &v4l2_buf) < 0)
             {
-                LOG_ERROR << "Failed to dequeue camera buff";
+                LOG_INFO << "Failed to dequeue camera buff";
                 break;
             }
 
@@ -181,7 +181,7 @@ void NvV4L2CameraHelper::operator()()
             auto frameItr = mBufferFD.find(v4l2_buf.m.fd);
             if (frameItr == mBufferFD.end())
             {
-                LOG_FATAL << " mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
+                LOG_INFO << " mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
             }
             // LOG_ERROR << "SEND FRAMES FROM OPERATOR ";
             mSendFrame(frameItr->second);
@@ -221,7 +221,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
         buf.memory = V4L2_MEMORY_DMABUF;
 
         if (ioctl(mCamFD, VIDIOC_QUERYBUF, &buf) < 0){
-            LOG_ERROR << "Failed to query buff";
+            LOG_INFO << "Failed to query buff";
             return false;
         }
         buf.m.fd = (unsigned long)dmaFDWrapper->tempFD;
@@ -233,7 +233,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
         }
 
         if (ioctl(mCamFD, VIDIOC_QBUF, &buf) < 0){
-            LOG_ERROR << "Failed to enqueue buffers";
+            LOG_INFO << "Failed to enqueue buffers";
             return false;
         }
     }
@@ -250,13 +250,13 @@ bool NvV4L2CameraHelper::requestCameraBuff()
     rb.memory = V4L2_MEMORY_DMABUF;
     if (ioctl(mCamFD, VIDIOC_REQBUFS, &rb) < 0)
     {
-        LOG_ERROR << "Failed to request v4l2 buffers";
+        LOG_INFO << "Failed to request v4l2 buffers";
         return false;
     }
 
     if (rb.count != mMaxConcurrentFrames)
     {
-        LOG_ERROR << "V4l2 buffer number is not as desired";
+        LOG_INFO << "V4l2 buffer number is not as desired";
         return false;
     }
 
@@ -277,19 +277,19 @@ bool NvV4L2CameraHelper::start(uint32_t width, uint32_t height, uint32_t _maxCon
     status = cameraInitialize(isMirror, sensorType);
     if (status == false)
     {
-        LOG_ERROR << "Camera Initialization Failed";
+        LOG_INFO << "Camera Initialization Failed";
         return false;
     }
     status = requestCameraBuff();
     if (status == false)
     {
-        LOG_ERROR << "Buffer Preparation Failed";
+        LOG_INFO << "Buffer Preparation Failed";
         return false;
     }
     status = startStream();
     if (status == false)
     {
-        LOG_ERROR << "Start Stream Failed";
+        LOG_INFO << "Start Stream Failed";
         return false;
     }
     mThread = std::thread(std::ref(*this));
@@ -305,7 +305,7 @@ bool NvV4L2CameraHelper::stop()
 
     if (!stopStream())
     {
-        LOG_ERROR << "Stop Stream Failed";
+        LOG_INFO << "Stop Stream Failed";
         return false;
     }
 
@@ -318,7 +318,7 @@ bool NvV4L2CameraHelper::stop()
 
 bool NvV4L2CameraHelper::isCameraConnected()
 {
-    LOG_ERROR << "Camera Connected " <<mCameraConnected;
+    LOG_DEBUG << "Camera Connected " <<mCameraConnected;
     bool camStatus = false;
     // m_lockCameraStatus.lock();
     camStatus = mCameraConnected;

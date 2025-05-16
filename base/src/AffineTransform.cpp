@@ -88,7 +88,7 @@ public:
 			int x, y, w, h;
 			w = rawMetadata->getWidth();
 			h = rawMetadata->getHeight();
-			LOG_ERROR << "STEP ISS   _=======================================>" << rawMetadata->getStep() << "===========================";
+			LOG_DEBUG << "STEP ISS   _=======================================>" << rawMetadata->getStep() << "===========================";
 			RawImageMetadata outputMetadata(w * props.scale, h * props.scale, rawMetadata->getImageType(), rawMetadata->getType(), props.step, rawMetadata->getDepth(), FrameMetadata::DMABUF, true); //3328 for oh0131 rawMetadata->getStep()
 			auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 			rawOutMetadata->setData(outputMetadata);
@@ -268,7 +268,7 @@ public:
 		}
 		if (status != NPP_SUCCESS)
 		{
-			LOG_ERROR << "AffineTransform failed<" << status << ">";
+			LOG_INFO << "AffineTransform failed<" << status << ">";
 			throw AIPException(AIP_FATAL, "Failed to tranform the image");
 		}
 		return true;
@@ -383,7 +383,7 @@ bool AffineTransform::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -391,14 +391,14 @@ bool AffineTransform::validateInputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -409,7 +409,7 @@ bool AffineTransform::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
@@ -417,14 +417,14 @@ bool AffineTransform::validateOutputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::DMABUF)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input memType is expected to be DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -467,6 +467,8 @@ bool AffineTransform::process(frame_container &frames)
 	mDetail->compute(static_cast<DMAFDWrapper *>(frame->data())->getCudaPtr(), static_cast<DMAFDWrapper *>(outFrame->data())->getCudaPtr());
 	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
 	send(frames);
+
+	// LOG_DEBUG << "Processed Frame " << frame->fIndex << " to " << mDetail->mOutputPinId;
 
 	return true;
 }

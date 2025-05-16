@@ -123,7 +123,7 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     //     unsigned long status;
     // } wmHints = { (1L << 1), 0, 0, 0, 0 }; // this we added to remove title bar
 
-    // LOG_ERROR << "X_OFFSET " << x_offset << "Y_OFFSET "<< y_offset << "========================>>>>";
+    // LOG_DEBUG << "X_OFFSET " << x_offset << "Y_OFFSET "<< y_offset << "========================>>>>";
     x_window = XCreateWindow(x_display,
                              DefaultRootWindow(x_display), x_offset,
                              y_offset, width, height,
@@ -456,7 +456,7 @@ NvEglRenderer::setOverlayText(char *str, uint32_t x, uint32_t y)
 int
 NvEglRenderer::setFPS(float fps)
 {
-    LOG_ERROR << "Setting FPS to =======>>>" << fps;
+    LOG_DEBUG << "Setting FPS to =======>>>" << fps;
     uint64_t render_time_usec;
 
     if (fps == 0)

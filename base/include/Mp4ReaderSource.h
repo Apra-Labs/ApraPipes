@@ -26,8 +26,6 @@ public:
 			- readLoop - Read a single video in loop. It can not be used in conjuction with live mode (reInitInterval > 0) or NVR mode (parseFS = true) mode.
 			- giveLiveTS - If enabled, gives live timestamps instead of recorded timestamps in the video files.
 		*/
-
-		LOG_ERROR << "Mp4ReaderSourceProps constructor -> " << _videoPath.c_str();
 		if (reInitInterval < 0)
 		{
 			auto errMsg = "incorrect prop reInitInterval <" + std::to_string(reInitInterval) + ">";

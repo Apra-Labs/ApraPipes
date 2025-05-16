@@ -33,7 +33,7 @@ bool FileReaderModule::init() {
 
 	if (!mDriver->Connect())
 	{
-		LOG_ERROR << "Can not read directory";
+		LOG_INFO << "Can not read directory";
 		return false;
 	}
 
@@ -140,7 +140,7 @@ bool FileReaderModule::handlePropsChange(frame_sp& frame)
 	mDriver = boost::shared_ptr<FileSequenceDriver>(new FileSequenceDriver(mProps.strFullFileNameWithPattern, mProps.startIndex, mProps.maxIndex, mProps.readLoop, mProps.files));
 	if (!mDriver->Connect())
 	{
-		LOG_ERROR << "Driver Connect Failed";
+		LOG_INFO << "Driver Connect Failed";
 		return false;
 	}
 

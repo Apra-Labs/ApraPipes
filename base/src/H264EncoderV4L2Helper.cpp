@@ -14,7 +14,7 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
             throw AIPException(AIP_FATAL, errorMsg.c_str());
         }
 
-        LOG_ERROR << errorMsg;
+        LOG_INFO << errorMsg;
         return false;
     }
 
@@ -38,6 +38,7 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
 
 H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
 {
+    frame_opool = std::make_shared<boost::object_pool<ExtFrame>>();
     initV4L2();
 
     mCapturePlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, V4L2_PIX_FMT_H264, V4L2_MEMORY_MMAP);
@@ -79,6 +80,11 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t 
 
 H264EncoderV4L2Helper::~H264EncoderV4L2Helper()
 {
+    mShuttingDown = true;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        frame_opool.reset(); // Ensure pool is destroyed after all frames are released
+    }
     processEOS();
     mOutputPlane->deinitPlane();
     mCapturePlane->deinitPlane();
@@ -99,7 +105,7 @@ void H264EncoderV4L2Helper::termV4L2()
     if (mFD != -1)
     {
         v4l2_close(mFD);
-        LOG_FATAL << "Device closed, fd = " << mFD;
+        LOG_INFO << "Device closed, fd = " << mFD;
     }
 }
 
@@ -202,56 +208,83 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
 
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
-    auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
-    mSendFrame(frame);
-    mConverter->releaseFrame();
+    if (!buffer || mShuttingDown) 
+    {
+        LOG_INFO << "capturePlaneDQCallback called with null buffer or during shutdown";
+        return;
+    }
+
+    if (!buffer->planesInfo[0].data || buffer->v4l2_buf.m.planes[0].bytesused == 0) 
+    {
+        LOG_INFO << "Invalid buffer data or size in capturePlaneDQCallback";
+        return;
+    }
+
+    try {
+        LOG_DEBUG << "capturePlaneDQCallback Wait for LOCK;";
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        LOG_DEBUG << "capturePlaneDQCallback Got LOCK;";
+        
+        // Only create new frame if we have a valid pool
+        if (!frame_opool) {
+            LOG_INFO << "Object pool no longer valid";
+            return;
+        }
+
+        // Create frame with deleter that checks for shutdown
+        auto frame = frame_sp(
+            frame_opool->construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused),
+            [this, index=buffer->getIndex(), self=mSelf](ExtFrame* p) {
+                if (!mShuttingDown) {
+                    this->reuseCatureBuffer(p, index, self);
+                }
+            }
+        );
+        LOG_DEBUG << "Created Frameeeesss";
+        if (!frame) {
+            LOG_INFO << "Failed to construct frame in capturePlaneDQCallback";
+            return;
+        }
+
+        mSendFrame(frame);
+        LOG_DEBUG << "releaseFrame will be called ";
+        mConverter->releaseFrame();
+        LOG_DEBUG << "releaseFrame Released Frameeeesss";
+    } catch (const std::exception& e) {
+        LOG_DEBUG << "Exception in capturePlaneDQCallback: " << e.what();
+    }
 }
 
 void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self)
 {
-    try
-    {
-        if (pointer == nullptr) {
-            LOG_ERROR << "Null pointer passed to reuseCatureBuffer";
+    // Validate input parameters and ensure self pointer is still valid
+    if (!pointer || !self) {
+        LOG_INFO << "reuseCatureBuffer called with null pointer or invalid self reference";
+        return;
+    }
+
+    try {
+        // Lock to prevent concurrent access to frame_opool
+        LOG_DEBUG << " Waiting for LOCK;";
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        LOG_DEBUG << "Got LOCK;";
+        if (pointer) {
+            frame_opool->free(pointer);
+            pointer = nullptr;
+        }
+        
+        if (!mCapturePlane) {
+            LOG_INFO << "Invalid capture plane in reuseCatureBuffer";
             return;
         }
 
-        // Debug log for frame info
-        LOG_DEBUG << "Reusing capture buffer at index " << index << " with pointer " << pointer;
-
-        // More verbose debugging
-        LOG_DEBUG << "About to free pointer: " << pointer;
-        LOG_DEBUG << "Pool address: " << &frame_opool;
-
-        if (!frame_opool.is_from(pointer)) {
-            LOG_ERROR << "Pointer does not belong to the object pool.";
-            return;
-        }
-        else
-        {
-            LOG_DEBUG << "Belongs to Object Pool";
-            // Add more info about the pointer and the frame
-            LOG_DEBUG << "ExtFrame pointer: " << pointer;
-            // If ExtFrame has member fields you can log, add them here
-        }
-
-        // Free the frame
-        LOG_DEBUG << "About to call frame_opool.free()";
-        frame_opool.free(pointer);
-        LOG_DEBUG << "Successfully freed pointer";
-
-        // Requeue the buffer on the capture plane
+        // Queue the buffer only if the index is valid
         mCapturePlane->qBuffer(index);
-    }
-    catch (const std::exception &e)
-    {
-        LOG_ERROR << "Exception caught in reuseCatureBuffer: " << e.what();
-        throw;
-    }
-    catch (...)
-    {
-        LOG_ERROR << "Unknown exception caught in reuseCatureBuffer.";
-        throw;
+        
+    } catch (const std::exception& e) {
+        LOG_INFO << "Exception in reuseCatureBuffer: " << e.what();
+    } catch (...) {
+        LOG_INFO << "Unknown exception in reuseCatureBuffer";
     }
 }
 
@@ -260,9 +293,10 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
     auto buffer = mOutputPlane->getFreeBuffer();
     if (!buffer)
     {
+        LOG_INFO << "No free buffer available in process";
         return true;
     }
-
+    LOG_DEBUG << "Got Free Buffer in process";
     mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
 }

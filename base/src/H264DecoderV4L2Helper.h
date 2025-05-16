@@ -401,6 +401,7 @@ protected:
 public:
     void intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop);
     void registerCallback(const std::string &name, std::function<void()> callback);
+    bool flush_frames();
 private:
     int framesToSkip = 0;
     int iFramesToSkip = 0;

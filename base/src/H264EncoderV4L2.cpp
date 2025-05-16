@@ -27,7 +27,7 @@ bool H264EncoderV4L2::validateInputPins()
 {
 	if (getNumberOfInputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins size is expected to be 1. Actual<" << getNumberOfInputPins() << ">";
 		return false;
 	}
 
@@ -35,19 +35,19 @@ bool H264EncoderV4L2::validateInputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::RAW_IMAGE_PLANAR && frameType != FrameMetadata::RAW_IMAGE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if(frameType == FrameMetadata::RAW_IMAGE_PLANAR && (memType != FrameMetadata::HOST && memType != FrameMetadata::DMABUF) )
 	{	
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST OR DMABUF. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be HOST OR DMABUF. Actual<" << memType << ">";
 		return false;
 	}
 	if (frameType == FrameMetadata::RAW_IMAGE && memType != FrameMetadata::CUDA_DEVICE)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE. Actual<" << memType << ">";
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool H264EncoderV4L2::validateOutputPins()
 {
 	if (getNumberOfOutputPins() != 1)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins size is expected to be 1. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
 
@@ -66,7 +66,7 @@ bool H264EncoderV4L2::validateOutputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	if (frameType != FrameMetadata::H264_DATA)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
+		LOG_INFO << "<" << getId() << ">::validateOutputPins input frameType is expected to be H264_DATA. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -91,6 +91,7 @@ bool H264EncoderV4L2::term()
 bool H264EncoderV4L2::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
+	// LOG_DEBUG << "Got Frames of Size " << frames.size() << " in H264EncoderV4L2";
 	mHelper->process(frame);
 
 	return true;
