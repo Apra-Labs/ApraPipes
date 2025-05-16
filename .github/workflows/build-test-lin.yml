@@ -80,7 +80,7 @@ jobs:
       run: |
         ${{ inputs.prep-cmd }} 
         apt purge cmake || true
-        pip3 install cmake --upgrade || echo 'did not update cmake'
+        pip3 install cmake==3.29.6 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
@@ -169,7 +169,7 @@ jobs:
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
@@ -178,13 +178,14 @@ jobs:
       
 
     - name: Upload build logs 
-      if:  ${{ failure() }} # only upload logs when we have a failure above
-      uses: actions/upload-artifact@v3
+      if:  ${{ always() }} # only upload logs when we have a failure above
+      uses: actions/upload-artifact@v4
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          ${{ github.workspace }}/vcpkg_installed/vcpkg/*
 
 
 
