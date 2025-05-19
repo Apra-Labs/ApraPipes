@@ -249,6 +249,28 @@ bool ImageToTextXForm::process(frame_container &frames) {
 }
 ```
 
+## Model Resources
+
+### Available Models
+The following models are available for use with the LLM framework:
+
+#### LLaVA (Large Language and Vision Assistant)
+- **Model**: LLaVA-1.6-Mistral-7B
+- **Download Link**: [Hugging Face Repository](https://huggingface.co/cjpais/llava-1.6-mistral-7b-gguf/tree/main)
+- **Description**: A multimodal model that combines vision and language capabilities for tasks like image understanding and scene description
+- **Supported Use Cases**: 
+  - Text-to-Text generation
+  - OCR (Optical Character Recognition)
+  - Scene Description
+- **Model Variants**:
+  - Q3_K: 3.52 GB (Lower precision, smaller size)
+  - Q4_K_M: 4.37 GB (Balanced precision and size)
+  - Q5_K_M: 5.13 GB (Higher precision)
+  - Q6_K: 5.94 GB (High precision)
+  - Q8_0: 7.7 GB (Highest precision, largest size)
+
+Note: Choose the model variant based on your hardware capabilities and precision requirements. Higher precision models (Q6_K, Q8_0) provide better quality but require more memory and computational resources.
+
 ## Design Trade-offs
 
 ### 1. Flexibility vs. Performance
