@@ -12,6 +12,6 @@ pip3 install ninja
 pip3 install meson
 
 # Install cmake
-pip3 install cmake=3.30.0
+pip3 install cmake==3.30.0
 
 Write-Host "Dependencies verified and installed successfully."
