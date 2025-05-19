@@ -8,11 +8,18 @@
     "repository": "https://github.com/Apra-Labs/vcpkg.git",
     "baseline": "a1c6d4f053281b8e961c24a0035903f5f9d66329"
   },
+  
   "registries": [
     {
       "kind": "git",
       "repository": "https://github.com/Apra-Labs/vcpkg.git",
-      "baseline": "93ed97e55480cd545ef1c72160ae59c075b8ec23",
+      "baseline": "7ef729383ab801504035a4445b6dbca18c8865c8",
+      "packages": [ "boost-modular-build-helper","boost-atomic" ]
+    },
+    {
+      "kind": "git",
+      "repository": "https://github.com/Apra-Labs/vcpkg.git",
+      "baseline": "d8ffd8800041c157806b84f4c64445ce5e3d0173",
       "packages": [ "boost*", "boost-*"]
     }
   ]
