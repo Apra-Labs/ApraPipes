@@ -13,6 +13,7 @@
 #include "ImageEncoderCV.h"
 #include "PipeLine.h"
 #include "StatSink.h"
+#include "SimpleControlModule.h"
 
 BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
 
@@ -147,7 +148,7 @@ BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 {
 	LoggerProps logprops;
-	logprops.logLevel = boost::log::trivial::severity_level::info;
+	logprops.logLevel = boost::log::trivial::severity_level::error;
 	Logger::initLogger(logprops);
 
 	
@@ -159,23 +160,31 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	
-	auto m2 = boost::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
+	ImageEncoderCVProps encoderProps;
+	encoderProps.enableHealthCallBack = true;
+	encoderProps.healthUpdateIntervalInSec = 10;
+	auto m2 = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(encoderProps));
 	fileReader->setNext(m2);
 	
 	
 	auto outputPinId = m2->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
-	
+
+	auto controlProps = SimpleControlModuleProps();
+	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
 	
 	StatSinkProps statSinkProps;
-	statSinkProps.logHealth = true;
-	statSinkProps.logHealthFrequency = 10;
+	// statSinkProps.logHealth = true;
+	// statSinkProps.logHealthFrequency = 10;
 	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
 	m2->setNext(statSink);
 
 	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
+	p->addControlModule(mControl);
 	p->init();
+	mControl->init();
+	// If you want error callbackand health callback to work with a module, registering it with control is mandatory.
+	mControl->enrollModule("Encode", m2);
 	p->run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();
