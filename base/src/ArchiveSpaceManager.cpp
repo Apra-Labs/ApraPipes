@@ -20,36 +20,46 @@ public:
         mProps = _props;
     }
 
-    uint32_t estimateDirectorySize(boost::filesystem::path _dir)
+  uint64_t estimateDirectorySize(boost::filesystem::path _dir) 
     {
-        uint32_t dirSize = 0;
+    std::cout << "Estimating size for directory: " << _dir << std::endl;
+    uint64_t dirSize = 0;
         int sample = 0;
         int inCount = 0;
         int countFreq = 0;
-        uint32_t tempSize = 0;
+    uint64_t tempSize = 0;
 
         for (const auto& entry : boost::filesystem::recursive_directory_iterator(_dir))
         {
-            if ((boost::filesystem::is_regular_file(entry)))
+      if (boost::filesystem::is_regular_file(entry)) 
             {
-                if (!(countFreq % mProps.samplingFreq))
+        if (countFreq % mProps.samplingFreq == 0) 
                 {
-                    sample = (rand() % mProps.samplingFreq) + 1;
+          sample = (rand() % mProps.samplingFreq);
                     inCount = 0;
                 }
                 if (inCount == sample)
+        {
+          try 
                 {
                     tempSize = boost::filesystem::file_size(entry);
                     dirSize += tempSize * mProps.samplingFreq;
+          } 
+          catch (const std::exception &e) 
+          {
+            std::cout << "Failed to get file size for " << entry << ": "
+                      << e.what() << std::endl;
+          }
                 }
                 inCount++;
                 countFreq++;
             }
         }
-        if (inCount < mProps.samplingFreq)
+    if (inCount < mProps.samplingFreq && inCount > 0) 
         {
-            dirSize = dirSize + (tempSize * inCount);
+      dirSize += tempSize * inCount;
         }
+    std::cout << "Total Directory Size: " << dirSize << std::endl;
         return dirSize;
     }
 
@@ -71,7 +81,7 @@ public:
 
     void manageDirectory()
     {
-        auto comparator = [](std::pair<boost::filesystem::path, uint32_t>& a, std::pair<boost::filesystem::path, uint32_t>& b) {return a.second < b.second; };
+    auto comparator = [](std::pair<boost::filesystem::path, uint64_t>& a, std::pair<boost::filesystem::path, uint64_t>& b) {return a.second < b.second; };
         while (archiveSize > mProps.lowerWaterMark)
         {
             for (const auto& camFolder : boost::filesystem::directory_iterator(mProps.pathToWatch))
@@ -81,7 +91,7 @@ public:
             }
             sort(foldVector.begin(), foldVector.end(), comparator); //Sorting the vector
 
-            uint32_t tempSize = 0;
+      uint64_t tempSize = 0;
             boost::filesystem::path delDir = foldVector[0].first;
             BOOST_LOG_TRIVIAL(info) << "Deleting file : " << delDir.string();
             tempSize = estimateDirectorySize(delDir);
@@ -98,20 +108,24 @@ public:
         }
     }
 
-    uint32_t diskOperation()
+  uint64_t diskOperation() 
     {
         archiveSize = estimateDirectorySize(mProps.pathToWatch);
         if (archiveSize > mProps.upperWaterMark)
         {
             manageDirectory();
         }
-        uint32_t tempSize = archiveSize;
+    else 
+    {
+      LOG_INFO << "DiskSpace is under range";
+    }
+    uint64_t tempSize = archiveSize;
         archiveSize = 0;
         return tempSize;
     }
     ArchiveSpaceManagerProps mProps;
-    uint32_t archiveSize = 0;
-    std::vector<std::pair<boost::filesystem::path, uint32_t>> foldVector;
+  uint64_t archiveSize = 0;
+  std::vector<std::pair<boost::filesystem::path, uint64_t>> foldVector;
 };
 
 
@@ -174,8 +188,7 @@ bool ArchiveSpaceManager::handlePropsChange(frame_sp& frame)
     return ret;
 }
 
-bool ArchiveSpaceManager::process()
-{
+bool ArchiveSpaceManager::produce() {
     try
     {
         finalArchiveSpace = mDetail->diskOperation();
