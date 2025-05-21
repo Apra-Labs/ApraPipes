@@ -1,4 +1,3 @@
-#pragma once
 #include "Overlay.h"
 #include "OverlayFactory.h"
 
