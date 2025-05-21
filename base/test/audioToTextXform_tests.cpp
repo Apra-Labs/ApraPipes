@@ -224,9 +224,9 @@ BOOST_AUTO_TEST_CASE(change_unsupported_prop_asr)
     BOOST_CHECK_THROW(asr->setProps(propschange), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE(checkEOS_asr)
+BOOST_AUTO_TEST_CASE(check_eos_frame_asr)
 {
-    std::vector<std::string> asrOutText = { "./data/asr_out.txt" };
+    std::vector<std::string> asrOutText = { "./data/asr_check_eos_frame.txt" };
     Test_Utils::FileCleaner f(asrOutText);
 
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
@@ -269,6 +269,65 @@ BOOST_AUTO_TEST_CASE(checkEOS_asr)
     std:string output = " The Matic speech recognition also known as ASR is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
     double thres = 0;
     BOOST_TEST(cosineSimilarity(buffer.str(), output) == thres);
+    // BOOST_TEST(buffer.str() == output);
+    in_file_text.close();
+}
+
+BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr)
+{
+    std::vector<std::string> asrOutText = { "./data/asr_flushed_buffer.txt" };
+    Test_Utils::FileCleaner f(asrOutText);
+
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    // This is a PCM file without WAV header
+    auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
+    fileReaderProps.readLoop = true;
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
+    auto pinId = fileReader->addOutputPin(metadata);
+   
+    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+        AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
+        ,"./data/whisper/models/ggml-tiny.en-q8_0.bin",160000)));
+    fileReader->setNext(asr);
+
+    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    asr->setNext(outputFile);
+
+    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    asr->setNext(sink);
+
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(asr->init());
+    BOOST_TEST(outputFile->init());
+    BOOST_TEST(sink->init());
+
+    fileReader->step();
+    asr->step();
+
+    auto frames = sink->pop();
+    auto eosframe = frames.begin()->second;
+    BOOST_TEST(eosframe->isEOS());
+    
+    outputFile->step();
+
+    AudioToTextXFormProps propschange = asr->getProps();
+    propschange.bufferSize = 18000;
+    asr->setProps(propschange);
+
+    for (int i = 0; i < 2; i++) {
+        fileReader->step();
+        asr->step();
+    }
+    outputFile->step();
+
+    std::ifstream in_file_text(asrOutText[0]);
+    std::ostringstream  buffer;
+    buffer << in_file_text.rdbuf();
+    std:string output = " The Matic speech recognition also known as ASR is the use of machine learning or artificial intelligence technology to process human speech into readable text.";
+    double thres = 0.95;
+    BOOST_TEST(cosineSimilarity(buffer.str(), output) >= thres);
     // BOOST_TEST(buffer.str() == output);
     in_file_text.close();
 }
