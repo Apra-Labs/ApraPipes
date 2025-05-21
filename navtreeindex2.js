@@ -1,5 +1,7 @@
 var NAVTREEINDEX2 =
 {
+"classBuffer.html#ae7ef2cd201190fde551dcb902627112b":[5,0,42,2],
+"classBufferMaker.html":[5,0,43],
 "classBufferMaker.html#ae93fd7e0ad716e663f4ec5f364bbb13e":[5,0,43,0],
 "classBuilderOverlayFactory.html":[5,0,44],
 "classBuilderOverlayFactory.html#a1b222df6526421c1749a1b5b7235e077":[5,0,44,1],
@@ -247,7 +249,5 @@ var NAVTREEINDEX2 =
 "classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eac2ae04114ef3ce01ae2932a2287668f3":[5,0,53,0,2],
 "classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40ead6a06cde180e01b7497b8a92ed55652b":[5,0,53,0,9],
 "classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eaf28f38c4c528d67e02e00eac9ab6973b":[5,0,53,0,3],
-"classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eafcf688df0540c4fabb20659150512157":[5,0,53,0,5],
-"classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eaff58d41dec4ba9d16062540cca118903":[5,0,53,0,10],
-"classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eaffa622e32a05613dcb378e68d6053756":[5,0,53,0,0]
+"classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eafcf688df0540c4fabb20659150512157":[5,0,53,0,5]
 };

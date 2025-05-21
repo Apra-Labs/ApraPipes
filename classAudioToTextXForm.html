@@ -117,7 +117,7 @@ Inheritance diagram for AudioToTextXForm:</div>
 <div class="dyncontent">
 <div class="center"><img src="classAudioToTextXForm__inherit__graph.png" border="0" usemap="#aAudioToTextXForm_inherit__map" alt="Inheritance graph"/></div>
 <map name="aAudioToTextXForm_inherit__map" id="aAudioToTextXForm_inherit__map">
-<area shape="rect" title=" " alt="" coords="16,1116,167,1426"/>
+<area shape="rect" title=" " alt="" coords="15,1116,168,1467"/>
 <area shape="rect" href="classModule.html" title=" " alt="" coords="5,5,178,1068"/>
 <area shape="poly" title=" " alt="" coords="94,1083,94,1116,89,1116,89,1083"/>
 </map>
@@ -127,7 +127,7 @@ Collaboration diagram for AudioToTextXForm:</div>
 <div class="dyncontent">
 <div class="center"><img src="classAudioToTextXForm__coll__graph.png" border="0" usemap="#aAudioToTextXForm_coll__map" alt="Collaboration graph"/></div>
 <map name="aAudioToTextXForm_coll__map" id="aAudioToTextXForm_coll__map">
-<area shape="rect" title=" " alt="" coords="16,1116,167,1426"/>
+<area shape="rect" title=" " alt="" coords="15,1116,168,1467"/>
 <area shape="rect" href="classModule.html" title=" " alt="" coords="5,5,178,1068"/>
 <area shape="poly" title=" " alt="" coords="94,1083,94,1116,89,1116,89,1083"/>
 </map>
@@ -240,11 +240,13 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:abcc0a6fd1c9e0e0cc909b6bea4268d05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add47d0711e9d46c92a9f8f32081c15b2" id="r_add47d0711e9d46c92a9f8f32081c15b2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add47d0711e9d46c92a9f8f32081c15b2">handlePropsChange</a> (frame_sp &amp;frame)</td></tr>
 <tr class="separator:add47d0711e9d46c92a9f8f32081c15b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca62b8a4ec0c3fcc79cf0aba175b99cb" id="r_aca62b8a4ec0c3fcc79cf0aba175b99cb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aca62b8a4ec0c3fcc79cf0aba175b99cb">processEOS</a> (string &amp;pinId)</td></tr>
+<tr class="separator:aca62b8a4ec0c3fcc79cf0aba175b99cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a200f19c10135a331f8f74d85a6bad901" id="r_a200f19c10135a331f8f74d85a6bad901"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a200f19c10135a331f8f74d85a6bad901">handleFlushingBuffer</a> ()</td></tr>
+<tr class="separator:a200f19c10135a331f8f74d85a6bad901"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classModule"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_methods_classModule')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classModule.html">Module</a></td></tr>
 <tr class="memitem:a8b52a1f03ba1f22e645a1a27f6837a5c inherit pro_methods_classModule" id="r_a8b52a1f03ba1f22e645a1a27f6837a5c"><td class="memItemLeft" align="right" valign="top">virtual boost_deque&lt; frame_sp &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModule.html#a8b52a1f03ba1f22e645a1a27f6837a5c">getFrames</a> (frame_container &amp;frames)</td></tr>
 <tr class="separator:a8b52a1f03ba1f22e645a1a27f6837a5c inherit pro_methods_classModule"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91fde367bf636614d02f3e75374bf78e inherit pro_methods_classModule" id="r_a91fde367bf636614d02f3e75374bf78e"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModule.html#a91fde367bf636614d02f3e75374bf78e">processEOS</a> (string &amp;pinId)</td></tr>
-<tr class="separator:a91fde367bf636614d02f3e75374bf78e inherit pro_methods_classModule"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2868b41e75921edbec7fb85f16a93beb inherit pro_methods_classModule" id="r_a2868b41e75921edbec7fb85f16a93beb"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModule.html#a2868b41e75921edbec7fb85f16a93beb">shouldTriggerSOS</a> ()</td></tr>
 <tr class="separator:a2868b41e75921edbec7fb85f16a93beb inherit pro_methods_classModule"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a130499e069fd8cfeff33d84c52107a7b inherit pro_methods_classModule" id="r_a130499e069fd8cfeff33d84c52107a7b"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModule.html#a130499e069fd8cfeff33d84c52107a7b">produce</a> ()</td></tr>
@@ -533,6 +535,57 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
+<a id="a200f19c10135a331f8f74d85a6bad901" name="a200f19c10135a331f8f74d85a6bad901"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a200f19c10135a331f8f74d85a6bad901">&#9670;&#160;</a></span>handleFlushingBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool AudioToTextXForm::handleFlushingBuffer </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_cgraph.png" border="0" usemap="#aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_cgraph" alt=""/></div>
+<map name="aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_cgraph" id="aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_cgraph">
+<area shape="rect" title=" " alt="" coords="5,23,183,64"/>
+<area shape="rect" href="classModule.html#a8385986df35f428da6fdff338848627e" title=" " alt="" coords="231,31,355,56"/>
+<area shape="poly" title=" " alt="" coords="183,41,215,41,215,46,183,46"/>
+<area shape="rect" href="classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="403,31,500,56"/>
+<area shape="poly" title=" " alt="" coords="355,41,388,41,388,46,355,46"/>
+<area shape="rect" href="classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="564,5,735,31"/>
+<area shape="poly" title=" " alt="" coords="500,35,549,28,550,34,501,40"/>
+<area shape="rect" href="classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="548,55,751,80"/>
+<area shape="poly" title=" " alt="" coords="501,47,533,51,533,56,500,52"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_icgraph.png" border="0" usemap="#aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_icgraph" alt=""/></div>
+<map name="aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_icgraph" id="aclassAudioToTextXForm_a200f19c10135a331f8f74d85a6bad901_icgraph">
+<area shape="rect" title=" " alt="" coords="239,5,416,46"/>
+<area shape="rect" href="classAudioToTextXForm.html#a15320dc69b960fed789d16563ab3bd9c" title=" " alt="" coords="5,13,191,38"/>
+<area shape="poly" title=" " alt="" coords="223,28,191,28,191,23,223,23"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="add47d0711e9d46c92a9f8f32081c15b2" name="add47d0711e9d46c92a9f8f32081c15b2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#add47d0711e9d46c92a9f8f32081c15b2">&#9670;&#160;</a></span>handlePropsChange()</h2>
 
@@ -658,21 +711,50 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classAudioToTextXForm_a15320dc69b960fed789d16563ab3bd9c_cgraph.png" border="0" usemap="#aclassAudioToTextXForm_a15320dc69b960fed789d16563ab3bd9c_cgraph" alt=""/></div>
 <map name="aclassAudioToTextXForm_a15320dc69b960fed789d16563ab3bd9c_cgraph" id="aclassAudioToTextXForm_a15320dc69b960fed789d16563ab3bd9c_cgraph">
-<area shape="rect" title=" " alt="" coords="5,80,191,106"/>
-<area shape="rect" href="classModule.html#a264d18f5907844d6d413c5d529804c4d" title=" " alt="" coords="239,29,377,55"/>
-<area shape="poly" title=" " alt="" coords="154,77,236,57,238,62,155,82"/>
-<area shape="rect" href="classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="425,105,522,131"/>
-<area shape="poly" title=" " alt="" coords="191,96,410,111,409,117,191,102"/>
-<area shape="rect" href="classModule.html#a8385986df35f428da6fdff338848627e" title=" " alt="" coords="246,131,370,156"/>
-<area shape="poly" title=" " alt="" coords="155,104,238,124,236,129,154,109"/>
-<area shape="poly" title=" " alt="" coords="280,30,274,21,277,11,289,5,308,3,328,5,339,12,336,16,326,10,308,8,291,10,281,15,279,20,284,28"/>
-<area shape="rect" href="classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="586,80,757,106"/>
-<area shape="poly" title=" " alt="" coords="522,109,571,103,572,108,523,115"/>
-<area shape="rect" href="classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="570,129,773,155"/>
-<area shape="poly" title=" " alt="" coords="523,121,555,125,555,131,522,127"/>
-<area shape="poly" title=" " alt="" coords="370,131,409,125,410,131,371,137"/>
+<area shape="rect" title=" " alt="" coords="5,70,191,96"/>
+<area shape="rect" href="classAudioToTextXForm.html#a200f19c10135a331f8f74d85a6bad901" title=" " alt="" coords="239,5,416,46"/>
+<area shape="poly" title=" " alt="" coords="152,67,228,48,229,53,153,72"/>
+<area shape="rect" href="classModule.html#a2184c5e3e8d5db858dba3afc4bc4d7c6" title=" " alt="" coords="636,45,734,70"/>
+<area shape="poly" title=" " alt="" coords="191,76,621,58,621,63,191,82"/>
+<area shape="rect" href="classModule.html#a264d18f5907844d6d413c5d529804c4d" title=" " alt="" coords="258,145,396,170"/>
+<area shape="poly" title=" " alt="" coords="141,94,272,137,270,142,139,99"/>
+<area shape="rect" href="classModule.html#a8385986df35f428da6fdff338848627e" title=" " alt="" coords="464,17,588,42"/>
+<area shape="poly" title=" " alt="" coords="416,25,449,25,448,31,416,30"/>
+<area shape="poly" title=" " alt="" coords="589,38,622,44,621,49,588,43"/>
+<area shape="rect" href="classModule.html#ac8535c5d19605b8f045c4a44fe652e84" title=" " alt="" coords="798,20,968,45"/>
+<area shape="poly" title=" " alt="" coords="734,49,782,43,783,48,734,54"/>
+<area shape="rect" href="classModule.html#a52b1c32ce5d1d35bf1062420b25f5a7c" title=" " alt="" coords="782,69,984,94"/>
+<area shape="poly" title=" " alt="" coords="734,61,767,65,766,70,734,66"/>
+<area shape="poly" title=" " alt="" coords="294,146,288,136,291,126,305,120,327,118,352,121,364,128,362,132,350,126,327,123,306,125,295,130,293,136,298,143"/>
 </map>
 </div>
+
+</div>
+</div>
+<a id="aca62b8a4ec0c3fcc79cf0aba175b99cb" name="aca62b8a4ec0c3fcc79cf0aba175b99cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca62b8a4ec0c3fcc79cf0aba175b99cb">&#9670;&#160;</a></span>processEOS()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool AudioToTextXForm::processEOS </td>
+          <td>(</td>
+          <td class="paramtype">string &amp;</td>          <td class="paramname"><span class="paramname"><em>pinId</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="classModule.html#a91fde367bf636614d02f3e75374bf78e">Module</a>.</p>
 
 </div>
 </div>
@@ -934,7 +1016,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classAudioToTextXForm.html">AudioToTextXForm</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: f080372</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 82a5908</a></li>
     </ul>
   </div>
   </body>

@@ -1,5 +1,7 @@
 var NAVTREEINDEX7 =
 {
+"classFramesMuxer.html#a86bab23a1cff087febc5aeff35aed374":[5,0,155,2],
+"classFramesMuxer.html#aeafdc3c2112c5a3a343dc646541b4314":[5,0,155,7],
 "classFramesMuxer.html#aff4200a8664990e489136322da103756":[5,0,155,9],
 "classFramesMuxerProps.html":[5,0,156],
 "classFramesMuxerProps.html#a1d5e195e3a8ecbb31260680cb050fd5f":[5,0,156,2],
@@ -247,7 +249,5 @@ var NAVTREEINDEX7 =
 "classH264EncoderNVCodecHelper_1_1Detail.html#a3ad6697cba72b757e8ac084fad142712":[5,0,169,0,2],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a3d31ea983fd096696adcec13deaffa4c":[5,0,169,0,7],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a3d5905e60c7d0d0462b8a1e02412dfdd":[5,0,169,0,6],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a468b512ec8801cf3cb6a8b91bc5e136e":[5,0,169,0,29],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a5caf5a7b2eaef9cae08a42dd7386ac3a":[5,0,169,0,13],
-"classH264EncoderNVCodecHelper_1_1Detail.html#a5e0d5764b94554c578986722aafb68e7":[5,0,169,0,10]
+"classH264EncoderNVCodecHelper_1_1Detail.html#a468b512ec8801cf3cb6a8b91bc5e136e":[5,0,169,0,29]
 };

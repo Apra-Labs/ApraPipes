@@ -1,5 +1,7 @@
 var NAVTREEINDEX16 =
 {
+"classResizeNPPI_1_1Detail.html#a678a88e67fee15a144220908661756fb":[5,0,279,0,12],
+"classResizeNPPI_1_1Detail.html#a98852b1b7a645e5310930390248b980e":[5,0,279,0,2],
 "classResizeNPPI_1_1Detail.html#a99308a2627cb68df2d8add90dd9028ce":[5,0,279,0,4],
 "classResizeNPPI_1_1Detail.html#a9c27d3211d8866f3e31d1970009a5023":[5,0,279,0,15],
 "classResizeNPPI_1_1Detail.html#ab17828d28e0abdca9e3b6f97e177f520":[5,0,279,0,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX16 =
 "classTimeStampStrategy.html#a2ae8ba1feb846995f1855212ceaec0f7":[5,0,309,1],
 "classTimeStampStrategy.html#a2b24b6542bd55fdaca6fce58d259853b":[5,0,309,9],
 "classTimeStampStrategy.html#a61c3f3d37c710378b246994ac98e2eb0":[5,0,309,6],
-"classTimeStampStrategy.html#ab6aa8484cd2048f00f0ddba56952ae32":[5,0,309,5],
-"classTimeStampStrategy.html#ac1cbb1008483ade330da5d2e47b5897c":[5,0,309,7],
-"classTimeStampStrategy.html#ac6bc825da690705258bed3bead8f398c":[5,0,309,3]
+"classTimeStampStrategy.html#ab6aa8484cd2048f00f0ddba56952ae32":[5,0,309,5]
 };
