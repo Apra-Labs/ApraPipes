@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "ArchiveSpaceManager.h"
