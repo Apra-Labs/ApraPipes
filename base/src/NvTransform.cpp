@@ -259,7 +259,6 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 
 bool NvTransform::processEOS(string &pinId)
 {
-	//THE FOLLOWING LINE IS COMMENTED FOR SPECIFIC USE IN NVR - MP4READER PASSING EOS WAS COMING HERE AND CAUSING EOS WHICH IS NOT REQUIRED FOR NVR
-	// mDetail->outputMetadata.reset();
+	mDetail->outputMetadata.reset();
 	return true;
 }
