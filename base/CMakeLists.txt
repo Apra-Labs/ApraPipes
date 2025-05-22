@@ -577,6 +577,7 @@ SET(UT_FILES
 	test/unit_tests.cpp
 	test/cv_memory_leaks_tests.cpp
 	test/module_tests.cpp
+	test/modulefpsthrottle_tests.cpp
 	test/calchistogramcv_tests.cpp
 	test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
