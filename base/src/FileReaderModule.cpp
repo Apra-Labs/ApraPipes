@@ -69,12 +69,29 @@ bool FileReaderModule::produce()
 	}
 	
 	FFBufferMaker buffMaker(*this);
-		
 	uint64_t fIndex2 = 0;
-	if (!mDriver->ReadP(buffMaker, fIndex2))
-	{
-		return false;
-	}
+
+	auto metadata = getOutputFrameFactory().begin()->second->getFrameMetadata();
+	size_t userMetadataSize = metadata->getDataSize();
+
+	// Handle cases where dataSize is not set
+    if (!metadata->isSet() || userMetadataSize == NOT_SET_NUM)
+    {
+        // Use file size as buffer size
+        if (!mDriver->ReadP(buffMaker, fIndex2))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        // Use metadata's dataSize
+        if (!mDriver->ReadP(buffMaker, fIndex2, userMetadataSize))
+        {
+            return false;
+        }
+    }
+
 	auto frame = buffMaker.getFrame();
 	frame->fIndex2 = fIndex2;
 	
