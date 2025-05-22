@@ -12,7 +12,7 @@ var searchData=
   ['readexponentialgolombcode_9',['ReadExponentialGolombCode',['../classSpsPpsParsser.html#abb41e3cc993f713e1dbbcc501db22af9',1,'SpsPpsParsser']]],
   ['readnextframe_10',['readNextFrame',['../classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408',1,'Mp4ReaderDetailAbs']]],
   ['readnextframeinternal_11',['readNextFrameInternal',['../classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763',1,'Mp4ReaderDetailAbs']]],
-  ['readp_12',['ReadP',['../classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a',1,'FileSequenceDriver']]],
+  ['readp_12',['ReadP',['../classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a',1,'FileSequenceDriver::ReadP(BufferMaker &amp;buffMaker, uint64_t &amp;index)'],['../classFileSequenceDriver.html#ab118f25f9ee18a2ea797b6e085921178',1,'FileSequenceDriver::ReadP(BufferMaker &amp;buffMaker, uint64_t &amp;index, size_t &amp;userMetadataSize)']]],
   ['readse_13',['ReadSE',['../classSpsPpsParsser.html#a56d5bdc443833ef1cbb4f4fd04ee7efa',1,'SpsPpsParsser']]],
   ['readspspps_14',['readSPSPPS',['../classMp4ReaderDetailH264.html#a0b70d1b3b316286a37afa0a7c9e4bf27',1,'Mp4ReaderDetailH264']]],
   ['readvideostartend_15',['readVideoStartEnd',['../classOrderedCacheOfFiles.html#a2624ea3f2d0e3067d59a26d47b5a21e4',1,'OrderedCacheOfFiles']]],

@@ -23,7 +23,7 @@ var searchData=
   ['enrollmodule_20',['enrollModule',['../classAbsControlModule.html#ae41c28afce79dc8dc01982953b276bd8',1,'AbsControlModule']]],
   ['eopframe_21',['EoPFrame',['../classEoPFrame.html#a71e9b4a0afa7197a66c4fce7ee2e9564',1,'EoPFrame']]],
   ['eosframe_22',['EoSFrame',['../classEoSFrame.html#a7e0a3c49545463eedf0c9cdda0f7531a',1,'EoSFrame::EoSFrame()'],['../classEoSFrame.html#a814f386f84d903cf55f3bc4e1d53261b',1,'EoSFrame::EoSFrame(EoSFrameType eosType, uint64_t mp4TS)']]],
-  ['estimatedirectorysize_23',['estimateDirectorySize',['../classArchiveSpaceManager_1_1Detail.html#a1749bdbbd980979ae1020abd40d62638',1,'ArchiveSpaceManager::Detail']]],
+  ['estimatedirectorysize_23',['estimateDirectorySize',['../classArchiveSpaceManager_1_1Detail.html#af91535aab8a7c8fcef82549f37978bd1',1,'ArchiveSpaceManager::Detail']]],
   ['execute_24',['execute',['../classCCNPPI_1_1Detail.html#a347b91546971be2257883145fcc51e6a',1,'CCNPPI::Detail']]],
   ['executeerrorcallback_25',['executeErrorCallback',['../classModule.html#aafd48279ca6780cd531c66ebb0278b91',1,'Module']]],
   ['exportbuffer_26',['exportBuffer',['../classAV4L2ElementPlane.html#ad93224b6c232a204f7f323298e1fc410',1,'AV4L2ElementPlane']]],

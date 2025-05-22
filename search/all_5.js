@@ -72,7 +72,7 @@ var searchData=
   ['errormp4ts_69',['errorMp4TS',['../classMp4ErrorFrame.html#adf9ebaddb65c21c1965467726effdf1e',1,'Mp4ErrorFrame']]],
   ['errormsg_70',['errorMsg',['../classMp4ErrorFrame.html#a5b081332aaf6f4d9290ebe4c8eb13e23',1,'Mp4ErrorFrame']]],
   ['errortype_71',['errorType',['../classMp4ErrorFrame.html#a265c6c8e7cff060f84b34583af769405',1,'Mp4ErrorFrame']]],
-  ['estimatedirectorysize_72',['estimateDirectorySize',['../classArchiveSpaceManager_1_1Detail.html#a1749bdbbd980979ae1020abd40d62638',1,'ArchiveSpaceManager::Detail']]],
+  ['estimatedirectorysize_72',['estimateDirectorySize',['../classArchiveSpaceManager_1_1Detail.html#af91535aab8a7c8fcef82549f37978bd1',1,'ArchiveSpaceManager::Detail']]],
   ['event_73',['event',['../classNvEglRenderer.html#abb09950c07d415a4a8b4aac5e8cd8426',1,'NvEglRenderer']]],
   ['event_5fconsumer_74',['event_consumer',['../classModule.html#a24b1b6a2ec08a40d3f030736deef8c85',1,'Module']]],
   ['events_75',['Events',['../classBuffer.html#autotoc_md8',1,'Handling Resolution Change Events'],['../classBuffer.html#autotoc_md3',1,'Supported Events']]],

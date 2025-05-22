@@ -1,5 +1,6 @@
 var NAVTREEINDEX8 =
 {
+"classH264EncoderNVCodecHelper_1_1Detail.html#a468b512ec8801cf3cb6a8b91bc5e136e":[5,0,169,0,29],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a5caf5a7b2eaef9cae08a42dd7386ac3a":[5,0,169,0,13],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a5e0d5764b94554c578986722aafb68e7":[5,0,169,0,10],
 "classH264EncoderNVCodecHelper_1_1Detail.html#a605657ce5adb7d5019284dc11e59d83f":[5,0,169,0,34],
@@ -248,6 +249,5 @@ var NAVTREEINDEX8 =
 "classImageEncoderCV.html#afdb4710a9a083e60b07f5f749d86da78":[5,0,184,9],
 "classImageEncoderCVProps.html":[5,0,185],
 "classImageEncoderCVProps.html#ae070e8040db63b55cecea56cc7431c46":[5,0,185,0],
-"classImageEncoderCV_1_1Detail.html":[5,0,184,0],
-"classImageEncoderCV_1_1Detail.html#a114f6a3b9ccee5d523a3ab8593a8c697":[5,0,184,0,7]
+"classImageEncoderCV_1_1Detail.html":[5,0,184,0]
 };

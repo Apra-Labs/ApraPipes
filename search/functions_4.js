@@ -43,7 +43,7 @@ var searchData=
   ['detailssd_40',['DetailSSD',['../classDetailSSD.html#a8dbe908705d1cb2e2486cd6f779bb8c3',1,'DetailSSD']]],
   ['disconnect_41',['Disconnect',['../classFilenameStrategy.html#aaddd0c80119eadaa5cff48763b2fca5d',1,'FilenameStrategy::Disconnect()'],['../classFileSequenceDriver.html#a1dd84ffa3faa67190179212d033488d6',1,'FileSequenceDriver::Disconnect()']]],
   ['disconnect_5fglarea_5fsignals_42',['disconnect_glarea_signals',['../classGtkGlRenderer_1_1Detail.html#a379ff7bf22ffd20a5c08ec4a30492fba',1,'GtkGlRenderer::Detail']]],
-  ['diskoperation_43',['diskOperation',['../classArchiveSpaceManager_1_1Detail.html#ad16fe2956076c884893c9f02accb7883',1,'ArchiveSpaceManager::Detail']]],
+  ['diskoperation_43',['diskOperation',['../classArchiveSpaceManager_1_1Detail.html#a008012f2ecfae7b15e33ea5c46e74b5b',1,'ArchiveSpaceManager::Detail']]],
   ['displayerror_44',['displayError',['../classAPErrorObject.html#ab0ebf74129c1142e15db3dcff9493591',1,'APErrorObject']]],
   ['dmaallocator_45',['DMAAllocator',['../classDMAAllocator.html#a947f2a8d570ff381271878be58710153',1,'DMAAllocator']]],
   ['dmafdtohostcopy_46',['DMAFDToHostCopy',['../classDMAFDToHostCopy.html#a74cb53a2aed6e0231ddd25e7af773f6f',1,'DMAFDToHostCopy']]],

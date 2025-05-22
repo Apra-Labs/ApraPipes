@@ -1,5 +1,6 @@
 var NAVTREEINDEX10 =
 {
+"classJPEGEncoderNVJPEGProps.html#a4662215fca9b68ff45db63687c69ff0a":[5,0,202,3],
 "classJPEGEncoderNVJPEGProps.html#a8554f985543029ae4797318c9bf85bfd":[5,0,202,0],
 "classJPEGEncoderNVJPEGProps.html#ad9d96d8df7d0d79dea25e1aaca1f3eda":[5,0,202,1],
 "classJPEGEncoderNVJPEG_1_1Detail.html":[5,0,201,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX10 =
 "classModule.html#a71ef4f709d24d69a69ed8ae44d69739c":[5,0,217,13],
 "classModule.html#a74068adacc56ff679eece597ec276e45":[5,0,217,139],
 "classModule.html#a75ffc265ccd23ed3517c4aadb1e87a0d":[5,0,217,118],
-"classModule.html#a76fba64b8e67c692de88499d7b162a11":[5,0,217,6],
-"classModule.html#a7938c5a5b0891563bd57144f78330dd6":[5,0,217,98]
+"classModule.html#a76fba64b8e67c692de88499d7b162a11":[5,0,217,6]
 };

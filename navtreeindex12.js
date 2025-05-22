@@ -1,5 +1,6 @@
 var NAVTREEINDEX12 =
 {
+"classMp4ReaderDetailAbs.html#aefbf3dcc3ff8fe4e8b58cb2bee2a2b75":[5,0,224,2],
 "classMp4ReaderDetailAbs.html#af6e4944338886aac86639dd1557830ff":[5,0,224,6],
 "classMp4ReaderDetailAbs.html#afdbba0a6a98e5130206afe82df655b0d":[5,0,224,24],
 "classMp4ReaderDetailAbs.html#afdf6d55361cb504db9aeafc8507de333":[5,0,224,16],
@@ -248,6 +249,5 @@ var NAVTREEINDEX12 =
 "classNVCodecResources.html#ad3d7a9bfdb51a847f80e4cf2a16808d8":[5,0,244,2],
 "classNVCodecResources.html#ae063a5742fdabcbe0467aed0d8d4f043":[5,0,244,9],
 "classNVCodecResources.html#ae3653de51af4a1f77114e3208ec93116":[5,0,244,19],
-"classNVCodecResources.html#afc7519492ffd5adc0d7419a71b7cf3a7":[5,0,244,0],
-"classNVDECException.html":[5,0,245]
+"classNVCodecResources.html#afc7519492ffd5adc0d7419a71b7cf3a7":[5,0,244,0]
 };

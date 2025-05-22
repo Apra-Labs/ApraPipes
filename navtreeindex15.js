@@ -1,5 +1,6 @@
 var NAVTREEINDEX15 =
 {
+"classQRReader.html#ab6b70ffaff014cc2369cbbfacba37708":[5,0,270,1],
 "classQRReader.html#ad763590a5ebbb699f57fa35430ad6033":[5,0,270,6],
 "classQRReader.html#ad7e7b36f544b952336fc5f8d884180e2":[5,0,270,9],
 "classQRReader.html#afbc62934259488ef83a1d1ef6cee08ca":[5,0,270,5],
@@ -248,6 +249,5 @@ var NAVTREEINDEX15 =
 "classResizeNPPI_1_1Detail.html#a0a6d67f53af5cd543289a7734518dea7":[5,0,279,0,14],
 "classResizeNPPI_1_1Detail.html#a29202da78ff3264046d1d0fe05cbca5b":[5,0,279,0,3],
 "classResizeNPPI_1_1Detail.html#a3726e40a98dc3d60249264817ef2f7cd":[5,0,279,0,9],
-"classResizeNPPI_1_1Detail.html#a4771e9cd3b167f636d37fe36d71808db":[5,0,279,0,7],
-"classResizeNPPI_1_1Detail.html#a4a3b4881095ee352b51765194ea7cd7c":[5,0,279,0,5]
+"classResizeNPPI_1_1Detail.html#a4771e9cd3b167f636d37fe36d71808db":[5,0,279,0,7]
 };

@@ -13,6 +13,7 @@ var classFileSequenceDriver =
     [ "operator=", "classFileSequenceDriver.html#abc8480e0c7060085565433009973f442", null ],
     [ "Read", "classFileSequenceDriver.html#acddc332ae0da7c386ff7e1c4720bbcde", null ],
     [ "ReadP", "classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a", null ],
+    [ "ReadP", "classFileSequenceDriver.html#ab118f25f9ee18a2ea797b6e085921178", null ],
     [ "SetReadLoop", "classFileSequenceDriver.html#adcc7a00dd2db4d59c1d6858689b728f7", null ],
     [ "Write", "classFileSequenceDriver.html#a591e443af40c44fcc01c21f6eeed0b72", null ],
     [ "writeHelper", "classFileSequenceDriver.html#ab1f63ae909cabc8045ee4eb6d97635bd", null ],

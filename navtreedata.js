@@ -88,19 +88,19 @@ var NAVTREEINDEX =
 "classDetail.html#a9f494a9563bf81f4526c864ead2420a9",
 "classEffectsNPPI_1_1Detail.html#a63e0fcfdc3a34c810b1c1885ce6d0359",
 "classFacialLandmarkCVProps.html#aa11431143a7888a3f148885596991f68",
-"classFramesMuxer.html#a86bab23a1cff087febc5aeff35aed374",
-"classH264EncoderNVCodecHelper_1_1Detail.html#a5caf5a7b2eaef9cae08a42dd7386ac3a",
-"classImageEncoderCV_1_1Detail.html#a2029c94e8178e26e15ee683dec35ce38",
-"classJPEGEncoderNVJPEGProps.html#a8554f985543029ae4797318c9bf85bfd",
-"classModule.html#a7ad598c9bc6f641ad569e829feb318d1",
-"classMp4ReaderDetailAbs.html#af6e4944338886aac86639dd1557830ff",
-"classNVDECException.html#a278d9aecf5c350cd056c245b04a4fded",
-"classNvV4L2CameraHelper.html#a77f154faa5ebdc041ee0b9c8297bd446",
-"classQRReader.html#ad763590a5ebbb699f57fa35430ad6033",
-"classResizeNPPI_1_1Detail.html#a678a88e67fee15a144220908661756fb",
-"classTimeStampStrategy.html#ac1cbb1008483ade330da5d2e47b5897c",
-"classh264DecoderV4L2Helper.html#a8de7a59ea2adcd8173764efca6d2953c",
-"structState.html#a334d1741a721bbb5b5ec75f64a2599cb"
+"classFramesMuxer.html#a7b6581bbffa551d02d9aa36a34bb9bee",
+"classH264EncoderNVCodecHelper_1_1Detail.html#a468b512ec8801cf3cb6a8b91bc5e136e",
+"classImageEncoderCV_1_1Detail.html#a114f6a3b9ccee5d523a3ab8593a8c697",
+"classJPEGEncoderNVJPEGProps.html#a4662215fca9b68ff45db63687c69ff0a",
+"classModule.html#a7938c5a5b0891563bd57144f78330dd6",
+"classMp4ReaderDetailAbs.html#aefbf3dcc3ff8fe4e8b58cb2bee2a2b75",
+"classNVDECException.html",
+"classNvV4L2CameraHelper.html#a73f0d05035e11ae0802833155855b766",
+"classQRReader.html#ab6b70ffaff014cc2369cbbfacba37708",
+"classResizeNPPI_1_1Detail.html#a4a3b4881095ee352b51765194ea7cd7c",
+"classTimeStampStrategy.html#ab6aa8484cd2048f00f0ddba56952ae32",
+"classh264DecoderV4L2Helper.html#a8cf2789692e5603ff99c12ce9c31cfd5",
+"structState.html#a2147798046dcc32902dbe46d9ced7777"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

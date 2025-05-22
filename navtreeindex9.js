@@ -1,5 +1,6 @@
 var NAVTREEINDEX9 =
 {
+"classImageEncoderCV_1_1Detail.html#a114f6a3b9ccee5d523a3ab8593a8c697":[5,0,184,0,7],
 "classImageEncoderCV_1_1Detail.html#a2029c94e8178e26e15ee683dec35ce38":[5,0,184,0,6],
 "classImageEncoderCV_1_1Detail.html#a43c891ab2f37ad61c2201ba203971411":[5,0,184,0,4],
 "classImageEncoderCV_1_1Detail.html#a670bbe5566452f25c7da10917dd64d0b":[5,0,184,0,1],
@@ -248,6 +249,5 @@ var NAVTREEINDEX9 =
 "classJPEGEncoderNVJPEG.html#ad17ec4444f73396706b7f4d34bfde966":[5,0,201,2],
 "classJPEGEncoderNVJPEG.html#afed2d7fa5bbfdf0973d55551f515b1da":[5,0,201,11],
 "classJPEGEncoderNVJPEGProps.html":[5,0,202],
-"classJPEGEncoderNVJPEGProps.html#a1ede65e7d27e130a08a1c08694fa187f":[5,0,202,2],
-"classJPEGEncoderNVJPEGProps.html#a4662215fca9b68ff45db63687c69ff0a":[5,0,202,3]
+"classJPEGEncoderNVJPEGProps.html#a1ede65e7d27e130a08a1c08694fa187f":[5,0,202,2]
 };

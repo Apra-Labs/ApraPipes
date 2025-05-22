@@ -21,7 +21,7 @@ var searchData=
   ['readloop_18',['readLoop',['../classFileReaderModuleProps.html#a1e331a399140cb56da03d6a51b5004e9',1,'FileReaderModuleProps::readLoop'],['../classMp4ReaderSourceProps.html#a341b21d73063580c5b032fbd9d81ab6b',1,'Mp4ReaderSourceProps::readLoop'],['../classMultimediaQueueXformProps.html#a03d0206234a46dca8517e7786781e401',1,'MultimediaQueueXformProps::readLoop']]],
   ['readnextframe_19',['readNextFrame',['../classMp4ReaderDetailAbs.html#a51442ab215ad9d1741fb4186c7695408',1,'Mp4ReaderDetailAbs']]],
   ['readnextframeinternal_20',['readNextFrameInternal',['../classMp4ReaderDetailAbs.html#ac92b2dcb43908fb075d42f123d848763',1,'Mp4ReaderDetailAbs']]],
-  ['readp_21',['ReadP',['../classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a',1,'FileSequenceDriver']]],
+  ['readp_21',['ReadP',['../classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a',1,'FileSequenceDriver::ReadP(BufferMaker &amp;buffMaker, uint64_t &amp;index)'],['../classFileSequenceDriver.html#ab118f25f9ee18a2ea797b6e085921178',1,'FileSequenceDriver::ReadP(BufferMaker &amp;buffMaker, uint64_t &amp;index, size_t &amp;userMetadataSize)']]],
   ['readse_22',['ReadSE',['../classSpsPpsParsser.html#a56d5bdc443833ef1cbb4f4fd04ee7efa',1,'SpsPpsParsser']]],
   ['readspspps_23',['readSPSPPS',['../classMp4ReaderDetailH264.html#a0b70d1b3b316286a37afa0a7c9e4bf27',1,'Mp4ReaderDetailH264']]],
   ['readvideostartend_24',['readVideoStartEnd',['../classOrderedCacheOfFiles.html#a2624ea3f2d0e3067d59a26d47b5a21e4',1,'OrderedCacheOfFiles']]],

@@ -1,5 +1,7 @@
 <map id="BufferMaker::make" name="BufferMaker::make">
-<area shape="rect" id="Node000001" title=" " alt="" coords="188,13,317,38"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="188,46,317,72"/>
 <area shape="rect" id="Node000002" href="$classFileSequenceDriver.html#ad331c5c960d196dd70b7b3cdae65f78a" title=" " alt="" coords="5,5,140,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,28,140,28,140,23,172,23"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,47,140,41,141,36,173,42"/>
+<area shape="rect" id="Node000003" href="$classFileSequenceDriver.html#ab118f25f9ee18a2ea797b6e085921178" title=" " alt="" coords="5,71,140,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="173,76,141,82,140,76,172,71"/>
 </map>
