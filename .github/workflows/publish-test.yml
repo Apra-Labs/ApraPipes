@@ -19,7 +19,7 @@ jobs:
     if: always()
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
           name: TestResults_${{inputs.flav}}
@@ -51,7 +51,7 @@ jobs:
               ;;
           esac
       - name: Create badge
-        uses: emibcn/badge-action@v1.2.4
+        uses: emibcn/badge-action@v2
         with:
           label: Tests
           status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
