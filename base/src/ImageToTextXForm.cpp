@@ -201,5 +201,10 @@ void ImageToTextXForm::setProps(ImageToTextXFormProps &props)
     throw AIPException(AIP_FATAL,
                        "Model Strategy Type dynamic change not handled");
   }
+  if (props.gpuLayers != mDetail->mProps.gpuLayers)
+  {
+    throw AIPException(AIP_FATAL,
+                       "GPU Layers cannot be changed after initialization");
+  }
   Module::addPropsToQueue(props);
 }

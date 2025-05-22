@@ -9,7 +9,7 @@
 #include <llama/clip.h>
 #include <llama/llava.h>
 
-ClipEncoderProps::ClipEncoderProps(std::string _modelPath)
+ClipEncoderProps::ClipEncoderProps(std::string _modelPath, int _numThreads)
 {
   /* Set LLM Model Base Class Properties for each model*/
   modelArchitecture = ModelArchitectureType::VIT;
@@ -20,6 +20,7 @@ ClipEncoderProps::ClipEncoderProps(std::string _modelPath)
 
   /*Unique Model Properties*/
   modelPath = _modelPath;
+  numThreads = _numThreads;
 }
 
 class ClipEncoder::Detail
@@ -34,7 +35,7 @@ public:
 public:
   ClipEncoderProps mProps;
   clip_ctx *mClipContext;
-  llava_image_embed *storedData;
+  llava_image_embed *storedData = nullptr;
 };
 
 ClipEncoder::ClipEncoder(ClipEncoderProps _props)
@@ -87,7 +88,7 @@ bool ClipEncoder::modelInference(frame_container &inputFrameContainer,
    auto outputPinId = inputFrameContainer.begin()->first;
   auto inputFrame = inputFrameContainer.begin()->second;
   mDetail->storedData = llava_image_embed_make_with_bytes(
-      mDetail->mClipContext, 8,
+      mDetail->mClipContext, mDetail->mProps.numThreads,
       static_cast<unsigned char *>(inputFrame->data()), inputFrame->size());
 
   auto outputFrame = makeFrame(getFrameSize());
@@ -96,6 +97,7 @@ bool ClipEncoder::modelInference(frame_container &inputFrameContainer,
   outputFrame->setMetadata(metaData);
   storeFrames(outputFrame);
   outputFrameContainer.insert(make_pair(outputPinId, outputFrame));
+  mDetail->storedData = nullptr;
   return true;
 }
 

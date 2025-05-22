@@ -5,13 +5,14 @@
 class ClipEncoderProps : public EncoderModelAbstractProps
 {
 public:
-  ClipEncoderProps(std::string _modelPath);
+  ClipEncoderProps(std::string _modelPath, int _numThreads = 8);
 
   std::string modelPath;
+  int numThreads; // Removed default value since it's set in constructor
 
   size_t getSerializeSize()
   {
-    return EncoderModelAbstractProps::getSerializeSize() + sizeof(modelPath);
+    return EncoderModelAbstractProps::getSerializeSize() + sizeof(modelPath) + sizeof(numThreads);
   }
 
 private:
@@ -22,6 +23,7 @@ private:
   {
     ar &boost::serialization::base_object<EncoderModelAbstractProps>(*this);
     ar & modelPath;
+    ar & numThreads;
   }
 };
 

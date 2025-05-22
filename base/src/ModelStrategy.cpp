@@ -13,8 +13,12 @@ ImageToTextModelStrategy::ImageToTextModelStrategy(
 {
   auto clipProps = ClipEncoderProps(props.encoderModelPath);
   auto llavaProps =
-      LlavaProps(props.llmModelPath, props.systemPrompt, props.userPrompt, 4096,
-                 512, 0.8, props.gpuLayers, 256);
+      LlavaProps(props.llmModelPath, props.systemPrompt, props.userPrompt, 
+                 ModelStrategy::DEFAULT_CONTEXT_SIZE, 
+                 ModelStrategy::DEFAULT_BATCH_SIZE, 
+                 ModelStrategy::DEFAULT_TEMPERATURE, 
+                 props.gpuLayers, 
+                 ModelStrategy::DEFAULT_MAX_TOKENS);
 
   encoderModel =
       boost::shared_ptr<EncoderModelAbstract>(new ClipEncoder(clipProps));
@@ -38,15 +42,18 @@ bool ImageToTextModelStrategy::termStrategy()
 }
 
 /*LLAVE TEXT-TO-TEXT STRATEGY*/
-LlavaTextToTextModelStrategy::LlavaTextToTextModelStrategy() : ModelStrategy()
+LlavaTextToTextModelStrategy::LlavaTextToTextModelStrategy(ImageToTextXFormProps props) : ModelStrategy()
 {
   auto llavaProps = LlavaProps(
-      "./data/llm/llava/llava-v1.6-7b/llava-v1.6-mistral-7b.Q8_0.gguf",
-      "A chat between a curious human and an artificial intelligence "
-      "assistant.  The assistant gives helpful, detailed, and polite answers "
-      "to the human's questions.\nUSER:",
-      "Tell me a story", 2048, 512, 0.8, 10, 256);
-  ;
+      props.llmModelPath,
+      props.systemPrompt,
+      props.userPrompt,
+      ModelStrategy::DEFAULT_CONTEXT_SIZE,
+      ModelStrategy::DEFAULT_BATCH_SIZE,
+      ModelStrategy::DEFAULT_TEMPERATURE,
+      props.gpuLayers,
+      ModelStrategy::DEFAULT_MAX_TOKENS
+  );
   llmModel = boost::shared_ptr<LlmModelAbstract>(new Llava(llavaProps));
 }
 

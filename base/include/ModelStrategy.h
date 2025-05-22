@@ -14,6 +14,12 @@ public:
     LLAVA_SCENE_DESCRIPTOR
   };
 
+  // Model configuration constants
+  static constexpr int DEFAULT_CONTEXT_SIZE = 4096;
+  static constexpr int DEFAULT_BATCH_SIZE = 512;
+  static constexpr float DEFAULT_TEMPERATURE = 0.8f;
+  static constexpr int DEFAULT_MAX_TOKENS = 256;
+
   template <typename T>
   static boost::shared_ptr<ModelStrategy> create(ModelStrategyType type,
                                                  T &props);
