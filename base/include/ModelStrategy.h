@@ -66,7 +66,7 @@ boost::shared_ptr<ModelStrategy> ModelStrategy::create(ModelStrategyType type,
   case ModelStrategyType::LLAVA_TEXT_TO_TEXT:
     return boost::make_shared<LlavaTextToTextModelStrategy>(props);
   default:
-    return boost::make_shared<LlavaTextToTextModelStrategy>();
+    return boost::make_shared<LlavaTextToTextModelStrategy>(props);
     break;
   }
 }
