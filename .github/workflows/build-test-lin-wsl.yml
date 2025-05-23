@@ -78,7 +78,7 @@ jobs:
     - name: Prepare WSL Image
       uses: Vampire/setup-wsl@v1
       with:
-        distribution: Ubuntu-20.04
+        distribution: Ubuntu-22.04
     - name: Prepare builder
       run: |
         ${{ inputs.prep-cmd }} 

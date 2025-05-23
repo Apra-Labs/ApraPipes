@@ -4,8 +4,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/framework.hpp>
 #include "iostream"
-#include <boost/filesystem.hpp>
-#include <fstream>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #ifndef SAFE_DELETE_ARRAY
 #define SAFE_DELETE_ARRAY(p) \

@@ -53,6 +53,8 @@
     "boost-test",
     "boost-iostreams",
     "boost-dll",
+    "boost-format",
+    "boost-foreach",
     "nu-book-zxing-cpp",
     "liblzma",
     "bzip2",

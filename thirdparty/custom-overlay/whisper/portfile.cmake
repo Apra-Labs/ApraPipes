@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Apra-Labs/whisper.cpp
-    REF c3bff0d121e2af823344939643d64a27e4a76ea2 #v1.5.4
-    SHA512 d51a32c91340d2b9f18bf5221e134e57a0259bc3a1c803ef427adc6e3de5f54c556232cd4ef070b9c07f93968efd942a61cfe311c2cbca013a928f0eb8055e6f  # This is a temporary value. We will modify this value in the next section.
+    REF 779050a5edfb47f115cd1c1c1e010b1c533bf174 #v1.5.4
+    SHA512 fe354506c7377a7a6a783caccd09f1b9333394ada5046fadc77a51b1e2442089b73fcb730cea2ec82d31d205f47426349aa5e6206f294727341a829f90c127bf  # This is a temporary value. We will modify this value in the next section.
     HEAD_REF kj/add-Config-for-vcpkg
     PATCHES "fix-for-arm64.patch"
 )
@@ -18,7 +18,6 @@ set(WHISPER_CUBLAS OFF)
 if("cuda" IN_LIST FEATURES)
   set(WHISPER_CUBLAS ON)
 endif()
-
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
