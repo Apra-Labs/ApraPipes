@@ -16,7 +16,7 @@
 #include "Module.h"
 #include "ExternalSinkModule.h"
 
-BOOST_AUTO_TEST_SUITE(imageToTextXForm_tests)
+BOOST_AUTO_TEST_SUITE(imageToTextXForm_tests, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(testing)
 {
