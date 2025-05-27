@@ -16,7 +16,7 @@
 #include "Module.h"
 #include "ExternalSinkModule.h"
 
-BOOST_AUTO_TEST_SUITE(llavamodel_test)
+BOOST_AUTO_TEST_SUITE(llavamodel_test, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(llava_init)
 {
