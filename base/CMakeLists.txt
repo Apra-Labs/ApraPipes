@@ -49,6 +49,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(Llama CONFIG REQUIRED) 
 
 
 IF(ENABLE_LINUX)
@@ -337,9 +338,15 @@ SET(IP_FILES
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
+	src/AudioToTextXForm.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
+	src/ModelStrategy.cpp
+	src/LlmModelAbstract.cpp
+	src/EncoderModelAbstract.cpp
+	src/Llava.cpp
+	src/ClipEncoder.cpp
+	src/ImageToTextXForm.cpp  
 )
 	
 SET(IP_FILES_H
@@ -366,6 +373,13 @@ SET(IP_FILES_H
 	include/Overlay.h
 	include/AudioToTextXForm.h
 	include/ThumbnailListGenerator.h
+	include/ModelEnums.h
+	include/ModelStrategy.h
+	include/LlmModelAbstract.h
+	include/EncoderModelAbstract.h
+	include/Llava.h
+	include/ClipEncoder.h
+	include/ImageToTextXForm.h
 )
 
 SET(CUDA_CORE_FILES
@@ -628,6 +642,8 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
+	test/llavamodel_tests.cpp
+	test/imageToTextXForm_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -668,8 +684,10 @@ IF(ENABLE_LINUX)
   	${GTK3_LIBRARIES}
 	)	
 ENDIF(ENABLE_LINUX)
+find_library(COMMON_LIB NAMES common_llama.lib libcommon_llama.a REQUIRED)
+find_library(LLAVA_LIB NAMES llavalib.lib libllavalib.a REQUIRED)
 
-target_link_libraries(aprapipesut   
+target_link_libraries(aprapipesut
   aprapipes  
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
@@ -690,6 +708,9 @@ target_link_libraries(aprapipesut
   LibLZMA::LibLZMA
   bigint::bigint
   sfml-audio
+  ${COMMON_LIB}
+  llama 
+  ${LLAVA_LIB}
   whisper::whisper
   )
 
@@ -700,7 +721,6 @@ IF(ENABLE_WINDOWS)
 		file(COPY ${RUNTIME_DLLS} DESTINATION RelWithDebInfo/)
 	ENDIF(GHA)
 ENDIF(ENABLE_WINDOWS)
-
 include(GNUInstallDirs)
 
 # BUILD_INTERFACE specifies where to find includes during build time
