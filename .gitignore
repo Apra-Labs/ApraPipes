@@ -1,4 +1,5 @@
 _build*
+build
 _debug*
 data/testOutput
 thirdparty/gst-build/gst-build-1.16
