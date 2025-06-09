@@ -13,7 +13,7 @@ jobs:
   win-nocuda-build-prep:
     uses: ./.github/workflows/build-test-win.yml
     with:
-      runner: 'windows-latest'
+      runner: 'windows-2022'
       flav: 'Win-nocuda'
       cuda: 'OFF'
       is-selfhosted: false
@@ -23,7 +23,7 @@ jobs:
     needs: win-nocuda-build-prep
     uses: ./.github/workflows/build-test-win.yml
     with:
-      runner: 'windows-latest'
+      runner: 'windows-2022'
       flav: 'Win-nocuda'
       is-selfhosted: false
       cuda: 'OFF'
