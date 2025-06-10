@@ -12,7 +12,7 @@ pip3 install ninja
 pip3 install meson
 
 # Install cmake
-pip3 install cmake --upgrade
+pip3 install cmake==3.30.0
 
 $cudaVersion = (Get-ChildItem "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\" -Directory | Where-Object { $_.Name -match 'v\d+\.\d+' }).Name
 
