@@ -467,6 +467,7 @@ public:
 				LOG_TRACE << "old endTS <" << mState.endTS << "> new endTS <" << tend_ts << ">";
 				if (mState.endTS >= tend_ts)
 				{
+					LOG_DEBUG << "File <" << mState.mVideoPath << "> not updated, waiting for next file to be written";
 					return true;
 				}
 				// open the video in reader and set pointer at correct place
@@ -986,7 +987,7 @@ public:
 			// This can happen due to direction change after EOF.
 			if (mIsFrameStillAvailable)
 			{
-				// LOG_TRACE << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
+				LOG_DEBUG << "Frames count " << mState.mFrameCounterIdx << "/" << mState.mFramesInVideo << " with speed <" << playbackSpeed << "> fps <" << mProps.fps << "> gop <" << getGop() << ">";
 			}
 			mState.end = false;
 			waitFlag = false;
@@ -1429,7 +1430,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	try
 	{
 		readNextFrame(imgFrame, metadataFrame, imgSize, metadataSize, frameTSInMsecs, mp4FIndex);
-		if(imgSize > 0)
+		if (imgSize > 0)
 		{
 			LOG_DEBUG << "Producing Frames @ timestamp: " << frameTSInMsecs;
 		}
@@ -1713,13 +1714,6 @@ bool Mp4ReaderSource::produce()
 	frame_container frames;
 	mDetail->produceFrames(frames);
 	send(frames);
-	if (!mDetail->mIsFrameStillAvailable)
-	{
-		// if (callbackFunction)
-		// {
-		// 	callbackFunction();
-		// }
-	}
 	return true;
 }
 

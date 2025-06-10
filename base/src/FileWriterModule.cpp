@@ -33,7 +33,7 @@ bool FileWriterModule::validateInputPins()
 	FrameMetadata::MemType memType = metadata->getMemType();
 	if (memType != FrameMetadata::MemType::HOST)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
+		LOG_INFO << "<" << getId() << ">::validateInputPins input memType is expected to be HOST. Actual<" << memType << ">";
 		return false;
 	}
 	
@@ -49,7 +49,7 @@ bool FileWriterModule::init() {
 
 	if (!mDriver->Connect())
 	{
-		LOG_ERROR << "Can not read directory";
+		LOG_INFO << "Can not read directory";
 		return false;
 	}
 	return true;
@@ -69,12 +69,12 @@ bool FileWriterModule::process(frame_container& frames)
 							frame->size()) &&
 			mDriver->IsConnected())
 		{
-			LOG_FATAL << "write failed<>" << frame->fIndex;
+			LOG_INFO << "write failed<>" << frame->fIndex;
 		}
 	}
 	catch (...)
 	{
-		LOG_FATAL << "unknown exception<>" << frame->fIndex;
+		LOG_INFO << "unknown exception<>" << frame->fIndex;
 	}
 	
 	return true;
