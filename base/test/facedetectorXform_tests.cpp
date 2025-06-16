@@ -13,6 +13,8 @@
 #include "ApraFaceInfo.h"
 #include "FaceDetectsInfo.h"
 #include "ImageDecoderCV.h"
+#include "OverlayModule.h"
+#include "ImageViewerModule.h"
 
 BOOST_AUTO_TEST_SUITE(facedetector_tests)
 #ifdef ARM64
@@ -57,6 +59,40 @@ BOOST_AUTO_TEST_CASE(basic)
 		cv::rectangle(frame, pt1, pt2, cv::Scalar(0, 255, 0), 2);
 	}
 	Test_Utils::saveOrCompare("./data/testOutput/facesResult.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(frame.data)), frame.step[0] * frame.rows, 0);
+}
+
+BOOST_AUTO_TEST_CASE(basic_faces)
+{
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	fileReader->addOutputPin(metadata);
+
+	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
+    auto metadata2 = framemetadata_sp(new RawImageMetadata());
+    decoder->addOutputPin(metadata2);
+	fileReader->setNext(decoder);
+
+	FaceDetectorXformProps faceDetectorProps;
+	auto faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
+	decoder->setNext(faceDetector);
+
+	auto overlay = boost::shared_ptr<Module>(new OverlayModule(OverlayModuleProps()));
+	faceDetector->setNext(overlay);
+
+	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
+	overlay->setNext(sink);
+
+	PipeLine p("test");
+	p.appendModule(fileReader);
+	p.init();
+
+	p.run_all_threaded();
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+
+	LOG_INFO << "profiling done - stopping the pipeline";
+	p.stop();
+	p.term();
+	p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_CASE(serialization_test)
