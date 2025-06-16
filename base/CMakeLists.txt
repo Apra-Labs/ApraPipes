@@ -724,8 +724,6 @@ target_include_directories ( aprapipessampleut PRIVATE
 	test
 )
 
-add_executable(aprapipessampleut ${SAMPLE_SOURCE})
-
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
 ENDIF(ENABLE_ARM64)
@@ -787,8 +785,30 @@ ${NVCODEC_INCLUDE_DIR}
 test
 )
 
-
 target_link_libraries(aprapipessampleut   
+  aprapipes  
+  ${JPEG_LIBRARIES}
+  ${LIBMP4_LIB}
+  ${OPENH264_LIB}
+  ${Boost_LIBRARIES}
+  ${FFMPEG_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${JETSON_LIBS}
+  ${NVCUDAToolkit_LIBS}
+  ${NVCODEC_LIB}
+  ${NVJPEGLIB_L4T}
+  ${CURSES_LIBRARIES}
+  ZXing::Core
+  ZXing::ZXing	
+  BZip2::BZip2
+  ZLIB::ZLIB
+  LibLZMA::LibLZMA
+  bigint::bigint
+  sfml-audio
+  whisper::whisper
+  )
+
+target_link_libraries(aprapipesut   
   aprapipes  
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
