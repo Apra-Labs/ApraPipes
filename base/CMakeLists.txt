@@ -4,6 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_ARM_WITHOUT_JETSON "Use this switch to enable ARM without JETSON libs" OFF)
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
@@ -13,6 +14,12 @@ ENDIF(ENABLE_CUDA)
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)	
 ENDIF(ENABLE_LINUX)
+
+IF(ENABLE_ARM_WITHOUT_JETSON)
+	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
+	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
+	add_compile_definitions(APRA_ARM_WITHOUT_JETSON)
+ENDIF(ENABLE_ARM_WITHOUT_JETSON)
 
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
@@ -60,9 +67,9 @@ IF(ENABLE_LINUX)
 	pkg_check_modules(GLFW REQUIRED glfw3)
 ENDIF()
 
-IF(ENABLE_ARM64)
+IF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
-ENDIF(ENABLE_ARM64)
+ENDIF(ENABLE_ARM64 OR ENABLE_ARM_WITHOUT_JETSON)
 
 IF(ENABLE_LINUX)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
@@ -133,8 +140,8 @@ IF(ENABLE_CUDA)
 			libnppig_static.a
 			libnppicc_static.a
 			libnppidei_static.a
-			libnppial_static.a					
-			libculibos.a	
+			libnppial_static.a
+			libculibos.a
 		) 
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
