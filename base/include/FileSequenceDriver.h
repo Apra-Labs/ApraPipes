@@ -26,6 +26,7 @@ public:
 
     bool Read(uint8_t*& dataToRead, size_t& dataSize, uint64_t& index);
 	bool ReadP(BufferMaker& buffMaker, uint64_t& index);
+    bool ReadP(BufferMaker& buffMaker, uint64_t& index, size_t& userMetadataSize);
     bool Write(const uint8_t* dataToWrite, size_t dataSize);
 	    
     void SetReadLoop(bool readLoop);
