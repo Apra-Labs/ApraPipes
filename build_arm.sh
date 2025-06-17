@@ -8,6 +8,9 @@ fi
 pip install pre-commit
 pre-commit install
 
+chmod +x base/fix-vcpkg-json.sh
+./base/fix-vcpkg-json.sh true false false
+
 chmod +x build_scripts/build_dependencies_arm.sh
 sudo ./build_scripts/build_dependencies_arm.sh
 
