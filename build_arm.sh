@@ -8,8 +8,8 @@ fi
 pip install pre-commit
 pre-commit install
 
-chmod +x build_scripts/build_dependencies_arm.sh.sh
-sudo ./build_scripts/build_dependencies_arm.sh.sh
+chmod +x build_scripts/build_dependencies_arm.sh
+sudo ./build_scripts/build_dependencies_arm.sh
 
 
 cd vcpkg
