@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of required dependencies
-dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev" "doxygen" "graphviz")
+dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev" "doxygen" "graphviz" "libxinerama-dev" "libxcursor-dev xorg-dev" "libglu1-mesa-dev" "pkg-config")
 
 missing_dependencies=()
 
@@ -22,7 +22,14 @@ fi
 # Install Cmake if not present
 if ! cmake --version; then
   echo "CMake is not installed. Installing CMake..."
-  snap install cmake --classic
+  chmod +x build_scripts/updateCmake3_29.sh
+  ./build_scripts/updateCmake3_29.sh
+fi
+
+if [[ $(cmake --version | grep -oP 'cmake version \K[0-9]+\.[0-9]+') < "3.29" ]]; then
+  echo "CMake version is less than 3.29. Updating CMake..."
+  chmod +x build_scripts/updateCmake3_29.sh
+  ./build_scripts/updateCmake3_29.sh
 fi
 
 echo "Dependencies verified and installed successfully."
