@@ -13,7 +13,7 @@
 #include "ImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
 #endif
@@ -356,7 +356,7 @@ public:
 
 	bool setPtrs()
 	{
-        #if defined(__arm__) || defined(__aarch64__)
+        #if defined ENABLE_ARM64
 		inputPtr = (static_cast<DMAFDWrapper*>(inputFrame->data()))->getCudaPtr();
 		outputPtr = (static_cast<DMAFDWrapper*>(outputFrame->data()))->getCudaPtr();
 		cudaMemset(outputPtr, 0, outputFrame->size());

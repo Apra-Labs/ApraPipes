@@ -8,7 +8,7 @@
 #include "Logger.h"
 #include "Utils.h"
 
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
 #include "Command.h"
@@ -22,7 +22,7 @@ public:
 
 	~DetailRenderer()
 	{
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 		destroyWindow();
 #endif
 	}
@@ -33,7 +33,7 @@ public:
 
 	bool eglInitializer(uint32_t _height, uint32_t _width)
 	{
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 		uint32_t displayHeight, displayWidth;
 		NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
 		if (props.height != 0 && props.width != 0)
@@ -60,7 +60,7 @@ public:
 
 	bool destroyWindow()
 	{
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 		if (renderer)
 		{
 			delete renderer;
@@ -72,7 +72,7 @@ public:
 
 	bool shouldTriggerSOS()
 	{
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 		return !renderer;
 #else
 		return !mImg.rows;
@@ -97,7 +97,7 @@ public:
 
 protected:
 	cv::Mat mImg;
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	NvEglRenderer *renderer = nullptr;
 #endif
 };
@@ -113,7 +113,7 @@ public:
 
 	bool view()
 	{
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 		renderer->render((static_cast<DMAFDWrapper *>(inputFrame->data()))->getFd());
 #endif
 		return true;
@@ -143,7 +143,7 @@ bool ImageViewerModule::validateInputPins()
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
 	FrameMetadata::MemType inputMemType = metadata->getMemType();
 
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	if (inputMemType != FrameMetadata::MemType::DMABUF)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be DMABUF. Actual<" << inputMemType << ">";
@@ -167,7 +167,7 @@ bool ImageViewerModule::validateInputPins()
 void ImageViewerModule::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	mDetail.reset(new DetailEgl(mProps));
 #else
 	mDetail.reset(new DetailImageviewer(mProps));
@@ -202,7 +202,7 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 	auto inputMetadata = frame->getMetadata();
 	auto frameType = inputMetadata->getFrameType();
 	FrameMetadata::MemType mInputMemType = inputMetadata->getMemType();
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	int width = 0;
 	int height = 0;
 	switch (frameType)
@@ -239,7 +239,7 @@ bool ImageViewerModule::shouldTriggerSOS()
 
 bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame)
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	if (type == Command::CommandType::DeleteWindow)
 	{
 		mDetail->destroyWindow();
@@ -260,7 +260,7 @@ bool ImageViewerModule::handleCommand(Command::CommandType type, frame_sp &frame
 
 bool ImageViewerModule::closeWindow()
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	EglRendererCloseWindow cmd;
 	return queueCommand(cmd);
 #else
@@ -270,7 +270,7 @@ bool ImageViewerModule::closeWindow()
 
 bool ImageViewerModule::createWindow(int width, int height)
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	EglRendererCreateWindow cmd;
 	cmd.width = width;
 	cmd.height = height;

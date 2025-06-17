@@ -6,7 +6,7 @@
 #include "ImageViewerModule.h"
 #include "WebCamSource.h"
 
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
 #endif
@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE(imageviewermodule_tests)
 
 BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if defined ENABLE_ARM64
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
