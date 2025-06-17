@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of required dependencies
-dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev" "doxygen" "graphviz" "libxinerama-dev" "libxcursor-dev xorg-dev" "libglu1-mesa-dev" "pkg-config")
+dependencies=("git-lfs" "libncurses5-dev" "ninja-build" "nasm" "curl" "libudev-dev" "libssl-dev" "doxygen" "graphviz" "libxinerama-dev" "libxcursor-dev xorg-dev" "libglu1-mesa-dev" "pkg-config" "python3-jinja2")
 
 missing_dependencies=()
 
