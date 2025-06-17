@@ -8,8 +8,8 @@ fi
 pip install pre-commit
 pre-commit install
 
-chmod +x build_scripts/build_dependencies_jetson_cuda.sh
-sudo ./build_scripts/build_dependencies_jetson_cuda.sh
+chmod +x build_scripts/build_dependencies_arm.sh.sh
+sudo ./build_scripts/build_dependencies_arm.sh.sh
 
 
 cd vcpkg
