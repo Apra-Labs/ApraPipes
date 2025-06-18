@@ -33,7 +33,7 @@ fi
 # Install Cmake if not present
 if ! cmake --version &>/dev/null; then
   echo "CMake is not installed. Installing CMake..."
-  pip3 install cmake --upgrade
+  pip3 install cmake==3.29.6
 fi
 
 # Install jq if not present
