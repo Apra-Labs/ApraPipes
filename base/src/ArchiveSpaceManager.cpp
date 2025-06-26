@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <stdafx.h>
+#include "Logger.h"
 
 class ArchiveSpaceManager::Detail
 {
@@ -81,35 +82,36 @@ public:
 
   void manageDirectory()
   {
-    auto comparator = [](std::pair<boost::filesystem::path, uint64_t> &a,
-                         std::pair<boost::filesystem::path, uint64_t> &b)
+    auto comparator = [](const std::pair<boost::filesystem::path, uint64_t> &a,
+                         const std::pair<boost::filesystem::path, uint64_t> &b)
     {
       return a.second < b.second;
     };
     while (archiveSize > mProps.lowerWaterMark)
     {
-      for (const auto &camFolder :
-           boost::filesystem::directory_iterator(mProps.pathToWatch))
+      foldVector.clear();
+      for (const auto &entry : boost::filesystem::directory_iterator(mProps.pathToWatch))
       {
-        boost::filesystem::path oldHrDir = getOldestDirectory(camFolder);
-        foldVector.push_back(
-            {oldHrDir, boost::filesystem::last_write_time(oldHrDir)});
+        if (boost::filesystem::is_directory(entry))
+        {
+          foldVector.push_back({entry.path(), boost::filesystem::last_write_time(entry)});
+        }
       }
-      sort(foldVector.begin(), foldVector.end(),
-           comparator); // Sorting the vector
+      if (foldVector.empty())
+        break;
+      std::sort(foldVector.begin(), foldVector.end(), comparator);
 
-      uint64_t tempSize = 0;
       boost::filesystem::path delDir = foldVector[0].first;
-      BOOST_LOG_TRIVIAL(info) << "Deleting file : " << delDir.string();
-      tempSize = estimateDirectorySize(delDir);
-      archiveSize = archiveSize - tempSize;
+      LOG_INFO << "Deleting directory : " << delDir.string();
+      uint64_t tempSize = estimateDirectorySize(delDir);
+      archiveSize -= tempSize;
       try
       {
         boost::filesystem::remove_all(delDir);
         boost::filesystem::path parentDir = delDir.parent_path();
         if (boost::filesystem::is_empty(parentDir))
         {
-          BOOST_LOG_TRIVIAL(info) << "Deleting parent directory : " << parentDir.string();
+          LOG_INFO << "Deleting parent directory : " << parentDir.string();
           boost::filesystem::remove_all(parentDir);
         }
       }
@@ -117,7 +119,6 @@ public:
       {
         LOG_ERROR << "Could not delete directory!..";
       }
-      foldVector.clear();
     }
   }
 
