@@ -21,7 +21,7 @@ if $removeCUDA; then
             # Remove "cuda" and "cudnn" features for this "opencv4" instance
             v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\" and . != \"cudnn\"))")
         fi
-        if [ "$name" == "whisper"]; then
+        if [ "$name" == "whisper" ]; then
             # Remove "cuda" features for this "whisper" instance
             v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\"))")
         fi
