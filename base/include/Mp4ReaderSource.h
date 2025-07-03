@@ -70,7 +70,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled);
+		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled) + sizeof(forceFPS);
 	}
 
 	std::string skipDir = "./data/Mp4_videos";
@@ -84,6 +84,7 @@ public:
 	int parseFSTimeoutDuration = 15;
 	bool readLoop = false;
 	bool giveLiveTS = false;
+	bool forceFPS = false;
 private:
 	friend class boost::serialization::access;
 
@@ -101,6 +102,7 @@ private:
 		ar& direction;
 		ar& readLoop;
 		ar& giveLiveTS;
+		ar& forceFPS;
 	}
 };
 

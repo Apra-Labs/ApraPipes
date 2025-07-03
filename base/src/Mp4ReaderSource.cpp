@@ -544,9 +544,15 @@ public:
 				mDurationInSecs = mState.info.duration / mState.info.timescale;
 				mFPS = mState.mFramesInVideo / mDurationInSecs;
 				// todo: Implement a way for mp4reader to update FPS when opening a new video in parseFS enabled mode. Must not set parseFS disabled in a loop.
+				auto propsFPS = mProps.fps;
 				mProps.fps = mFPS;
 				auto gop = getGop();
 				mProps.fps = mFPS * playbackSpeed;
+				if (mProps.forceFPS)
+				{
+					mProps.fps = propsFPS;
+					mFPS = propsFPS;
+				}
 				if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
 				{
 					if (gop)

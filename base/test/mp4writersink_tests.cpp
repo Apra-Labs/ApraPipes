@@ -667,4 +667,58 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 
 	Test_Utils::deleteFolder(mp4FileName.string());
 }
+
+BOOST_AUTO_TEST_CASE(clip_export_pipeline)
+{
+
+	std::string inFolderPath = "/mnt/storage/ApraPipes/data/VideoDir/6b208b5d-dd17-4ead-808c-25963c7071c0_cam42/";
+	std::string outFolderPath = "/mnt/storage/ApraPipes/data/clipExport/expClip.mp4";
+
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::info;
+	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	Logger::initLogger(loggerProps);
+
+
+	auto mp4ReaderProps = Mp4ReaderSourceProps(inFolderPath, true ,0,true,false,false);
+	mp4ReaderProps.logHealth = true;
+	mp4ReaderProps.logHealthFrequency = 300;
+	mp4ReaderProps.forceFPS = true;
+	mp4ReaderProps.fps = 0;
+	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	framemetadata_sp h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
+    framemetadata_sp mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader->addOutPutPin(h264ImageMetadata);
+	mp4Reader->addOutPutPin(mp4Metadata);
+
+	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 1, 1000, outFolderPath, true);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 100;
+	auto mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+	mp4Reader->setNext(mp4WriterSink);
+
+	// #Dec_27_Review - do manual init, step and use saveorcompare
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(mp4Reader);
+
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	LOG_ERROR << "processing folder <" << inFolderPath << ">";
+	p->run_all_threaded();
+
+	Test_Utils::sleep_for_seconds(20);
+	mp4WriterSink->closeCurrentOpenFile();
+	Test_Utils::sleep_for_seconds(1);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+
+	// Test_Utils::deleteFolder(outFolderPath);
+}
 BOOST_AUTO_TEST_SUITE_END()
