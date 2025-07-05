@@ -1606,10 +1606,10 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 	if(mp4FIndex == 288)
 	{
 		LOG_INFO << mp4FIndex;
-
+		
 	}
 	trimmedImgFrame->fIndex = mp4FIndex;
-
+	
 	// give recorded timestamps 
 	if (!mProps.giveLiveTS)
 	{
@@ -1625,7 +1625,8 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		auto nowTS = dur.count();
 		trimmedImgFrame->timestamp = nowTS;
 	}
-
+	
+	LOG_ERROR << " Mp4ReaderDetailH264::produceFrames: frameTSInMsecs <" << frameTSInMsecs << ">";
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataSize)
 	{
