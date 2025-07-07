@@ -129,9 +129,8 @@ bool PerspectiveTransform::process(frame_container &frames)
 
     mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
     mDetail->oImg.data = static_cast<uint8_t *>(outFrame->data());
-    
-    std::cout << "Transformation Matrix" << std::endl;
-    std::cout << mDetail->transformMatrix << std::endl;
+
+    LOG_INFO << "Transformation Matrix: " << mDetail->transformMatrix;
     
     cv::warpPerspective(mDetail->iImg, mDetail->oImg, mDetail->transformMatrix, mDetail->oImg.size());
     frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
