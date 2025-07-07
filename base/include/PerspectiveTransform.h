@@ -1,6 +1,7 @@
 #pragma once
 #include "FrameMetadata.h"
 #include "Module.h"
+#include "Logger.h"
 
 class PerspectiveTransformProps : public ModuleProps
 {
