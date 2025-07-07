@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960)
     auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(outputFrame->getMetadata());
     BOOST_TEST(rawMetadata->getDepth() == CV_8U);
 
-    Test_Utils::saveOrCompare("./data/testOutput/perspectivetransform-mono_1920x960_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+    Test_Utils::saveOrCompare("./data/PerspectiveTransform_outputs/perspectivetransform-mono_1920x960_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(bgr_1080x720)
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(bgr_1080x720)
     auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(outputFrame->getMetadata());
     BOOST_TEST(rawMetadata->getDepth() == CV_8U);
 
-    Test_Utils::saveOrCompare("./data/testOutput/perspectivetransform-bgr_1080x720_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+    Test_Utils::saveOrCompare("./data/PerspectiveTransform_outputs/perspectivetransform-bgr_1080x720_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(rgb_320x180)
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(rgb_320x180)
     auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(outputFrame->getMetadata());
     BOOST_TEST(rawMetadata->getDepth() == CV_8U);
 
-    Test_Utils::saveOrCompare("./data/testOutput/perspectivetransform-rgb_320x180_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
+    Test_Utils::saveOrCompare("./data/PerspectiveTransform_outputs/perspectivetransform-rgb_320x180_transform.raw", const_cast<const uint8_t *>(static_cast<uint8_t *>(outputFrame->data())), outputFrame->size(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
