@@ -20,10 +20,11 @@ if [ "${#missing_dependencies[@]}" -gt 0 ]; then
 fi
 
 # Install Cmake if not present
-if ! cmake --version; then
+if ! cmake --version &>/dev/null; then
   echo "CMake is not installed. Installing CMake..."
-  snap install cmake --classic
+  pip3 install cmake==3.29.6
 fi
+
 
 if [ ! -d "/usr/local/cuda/include" ] || [ ! -d "/usr/local/cuda/lib64" ]; then
   echo "ERROR: CUDA Toolkit is not properly installed. Please install CUDA Toolkit."
