@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/overlay_1920x960_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
 {
-	std::vector<std::string> outFile = { "./data/testOutput/mono_1920x960.h264" };
+	std::vector<std::string> outFile = { "../data/testOutput/mono_1920x960.h264" };
 	Test_Utils::FileCleaner f(outFile);
 
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/mono_1920x960.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReaderProps = FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw");
+	auto fileReaderProps = FileReaderModuleProps("../data/Raw_YUV420_640x360/Image???_YUV420.raw");
 	fileReaderProps.fps = 10000;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));

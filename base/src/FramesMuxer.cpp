@@ -130,6 +130,12 @@ public:
 			{
 				firstIter = false;
 				fIndex = frame->fIndex;
+
+				LOG_INFO << "Reference fIndex = " << fIndex;
+			}
+			else
+			{
+				LOG_INFO << "Comparing frame->fIndex = " << frame->fIndex;
 			}
 
 			if (fIndex != frame->fIndex)

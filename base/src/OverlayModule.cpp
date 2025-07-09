@@ -31,6 +31,8 @@ bool OverlayModule::validateInputPins()
 	auto inputMetadataByPin = getInputMetadata();
 	BOOST_FOREACH(me, inputMetadataByPin)
 	{
+
+
 		FrameMetadata::FrameType frameType = me.second->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
@@ -60,25 +62,60 @@ bool OverlayModule::shouldTriggerSOS()
 
 bool OverlayModule::process(frame_container& frames)
 {
+	std::cout << "[OverlayModule] process() called" << std::endl;
+
 	DrawingOverlay drawOverlay;
-	for (auto it = frames.cbegin(); it != frames.cend(); it++)
+
+	std::cout << "First pinId in frames : " << frames.cbegin()->first << std::endl;
+	std::cout << "First frame size: " << frames.cbegin()->second->size() << std::endl;
+
+
+	if (!frames.empty())
 	{
+		auto last = std::prev(frames.cend());
+		std::cout << "Last pinId: " << last->first << std::endl;
+		std::cout << "Last frame size: " << last->second->size() << std::endl;
+	}
+
+
+
+	for (auto it = frames.cbegin(); it != frames.cend(); ++it)
+	{
+
+
+		std::cout << "[OverlayModule] check point 1: iterating over input frames" << std::endl;
+
 		auto metadata = it->second->getMetadata();
 		auto frameType = metadata->getFrameType();
+
+		std::cout << "[OverlayModule] frame received with type = " << frameType << std::endl;
+
 		frame_sp frame = it->second;
 
 		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
+			std::cout << "[OverlayModule] Deserializing OVERLAY_INFO_IMAGE" << std::endl;
 			drawOverlay.deserialize(frame);
 		}
-
 		else if (frameType == FrameMetadata::RAW_IMAGE)
 		{
+			std::cout << "[OverlayModule] Drawing on RAW_IMAGE" << std::endl;
 			drawOverlay.draw(frame);
-			frame_container overlayConatiner;
-			overlayConatiner.insert(make_pair(mOutputPinId, frame));
-			send(overlayConatiner);
+
+			frame_container overlayContainer;
+			overlayContainer.insert(make_pair(mOutputPinId, frame));
+
+			std::cout << "[OverlayModule] Sending processed frame downstream" << std::endl;
+			send(overlayContainer);
+		}
+		else
+		{
+			std::cout << "[OverlayModule] Unknown frame type received: " << frameType << std::endl;
 		}
 	}
+
+	std::cout << "[OverlayModule] process() completed" << std::endl;
+
 	return true;
 }
+

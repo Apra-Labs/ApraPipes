@@ -109,6 +109,11 @@ bool PipeLine::init()
 	}
 
 	LOG_TRACE << " Initializing pipeline";
+	for (auto i : modules)
+	{
+		std::cout << "Module name: " << i<< std::endl;
+	}
+	 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		bool bRCInit = false;

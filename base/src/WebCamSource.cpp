@@ -85,11 +85,17 @@ bool WebCamSource::term()
 
 bool WebCamSource::produce()
 {
+    std::cout << "[WebCamSource] produce() called" << std::endl;
     auto mProps = mDetail->getProps();
     auto frame = makeFrame(mProps.width * mProps.height * 3);
     mDetail->produce(frame);
     frame_container frames;
     frames.insert(make_pair(mDetail->mOutputPinId, frame));
+
+    //  Print the frame type
+    auto metadata = getOutputMetadata(mDetail->mOutputPinId);
+    std::cout << "FrameType emitted: " << metadata->getFrameType() << std::endl;
+
     send(frames);
     return true;
 }

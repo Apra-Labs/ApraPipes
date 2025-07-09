@@ -172,6 +172,8 @@ bool H264EncoderNVCodec::process(frame_container &frames)
 
 	mDetail->compute(frame);
 
+	LOG_INFO << "[H264EncoderNVCodec] Sending encoded frame.";
+
 	return true;
 }
 
@@ -192,6 +194,12 @@ bool H264EncoderNVCodec::processSOS(frame_sp &frame)
 		frame_container frames;
 		frames.insert(make_pair(mInputPinId, inputFrame));
 		frames.insert(make_pair(mOutputPinId, outputFrame));
+
+		LOG_INFO << "[H264EncoderNVCodec] Sending encoded frame from processSOS. "
+			<< "Input frameType: " << inputFrame->getMetadata()->getFrameType()
+			<< ", Output frameType: " << outputFrame->getMetadata()->getFrameType();
+
+
 		send(frames);
 	}
 	);

@@ -188,6 +188,9 @@ bool ImageViewerModule::term() { return Module::term(); }
 
 bool ImageViewerModule::process(frame_container &frames)
 {
+
+	std::cout << "[ImageViewer] Received frame" << std::endl;
+
 	mDetail->inputFrame = frames.cbegin()->second;
 	if (isFrameEmpty(mDetail->inputFrame))
 	{

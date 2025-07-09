@@ -50,8 +50,10 @@ bool FileReaderModule::term() {
 }
 bool FileReaderModule::produce() 
 {	
+	LOG_INFO << "I am in filereader :produce() function";
 	if (mCache && mFrames.size() == 1)
 	{
+		LOG_INFO << "I am in (mCache && mFrames.size() condition";
 		if(!mProps.readLoop)
 		{
 			stop();
@@ -64,7 +66,10 @@ bool FileReaderModule::produce()
 		auto metadata = getOutputFrameFactory().begin()->second->getFrameMetadata();	
 		frame->setMetadata(metadata);
 		frames.insert(make_pair(mPinId, frame));
+		//send(frames);
+		LOG_INFO << "FileReader sending frame1.....";
 		send(frames);
+		LOG_INFO << "FileReader sent frame1.....";
 		return true;
 	}
 	
@@ -101,7 +106,9 @@ bool FileReaderModule::produce()
 
 	frame_container frames;
 	frames.insert(make_pair(mPinId, frame));
+	LOG_INFO << "FileReader sending frame2.....";
 	send(frames);
+	LOG_INFO << "FileReader sent frame2.....";
 
 	if (mCache)
 	{

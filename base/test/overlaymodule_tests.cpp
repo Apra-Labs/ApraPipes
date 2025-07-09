@@ -8,6 +8,8 @@
 #include "FileReaderModule.h"
 #include "FramesMuxer.h"
 #include "FileWriterModule.h"
+#include <filesystem>
+
 
 BOOST_AUTO_TEST_SUITE(overlaymodule_tests)
 
@@ -137,8 +139,13 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	}
 }
 
+
 BOOST_AUTO_TEST_CASE(drawing_test)
 {
+	LoggerProps logprops;
+	logprops.logLevel = boost::log::trivial::severity_level::info;
+	Logger::initLogger(logprops);
+
 	RectangleOverlay recOverlay;
 	recOverlay.x1 = 100;
 	recOverlay.x2 = 150;
@@ -187,7 +194,9 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	auto pinId = source->addOutputPin(metadata);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/frame_1280x720_rgb.raw")));
+	//auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("C:/Users/developer/Desktop/chandan_project/ApraPipes_withcuda/ApraPipes/data/frame_1280x720_rgb.raw")));
+ 
 	auto rawMetadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	auto rawPinId = fileReader->addOutputPin(rawMetadata);
 
@@ -198,7 +207,9 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	muxer->setNext(overlay);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage.raw")));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("../data/testOutput/Overlay/OverlayImage.raw")));
+	//auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("C:/Users/developer/Desktop/chandan_project/ApraPipes_withcuda/ApraPipes/data/testOutput/Overlay/OverlayImage.raw")));
+
 	overlay->setNext(fileWriter);
 
 	auto size = drawingOverlay.mGetSerializeSize();
@@ -222,5 +233,45 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	muxer->step();
 	overlay->step();
 	fileWriter->step();
+
+	 
+	std::cout << "Current path: " << std::filesystem::current_path() << std::endl;
 }
+
+
+BOOST_AUTO_TEST_CASE(file_read_write_test)
+{
+	LoggerProps loggerProps;
+	loggerProps.logLevel = boost::log::trivial::severity_level::trace;
+	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+	Logger::initLogger(loggerProps);
+
+	auto fileReader = boost::shared_ptr<FileReaderModule>(
+		//new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+		new FileReaderModule(FileReaderModuleProps("C:/Users/developer/Desktop/chandan_project/ApraPipes_withcuda/ApraPipes/data/frame_1280x720_rgb.raw")));
+
+	auto rawMetadata = framemetadata_sp(new RawImageMetadata(
+		1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
+	auto rawPinId = fileReader->addOutputPin(rawMetadata);
+
+	auto fileWriter = boost::shared_ptr<FileWriterModule>(
+		//new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage_debug.raw")));
+		new FileWriterModule(FileWriterModuleProps("C:/Users/developer/Desktop/chandan_project/ApraPipes_withcuda/ApraPipes/data/testOutput/Overlay/OverlayImage_debug.raw")));
+	fileReader->setNext(fileWriter);
+
+	BOOST_TEST(fileReader->init());
+	BOOST_TEST(fileWriter->init());
+
+	fileReader->step();
+	LOG_INFO << "FileReader step done";
+
+	// Try multiple steps to ensure frame delivery
+	fileWriter->step();
+	LOG_INFO << "FileWriter step done";
+
+	 
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()

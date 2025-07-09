@@ -54,17 +54,27 @@ bool FileWriterModule::init() {
 	}
 	return true;
 }
+
 bool FileWriterModule::term() {
 	auto ret = mDriver->Disconnect();
 	auto moduleRet = Module::term();
 
 	return ret && moduleRet;
 }
+
+
+
 bool FileWriterModule::process(frame_container& frames) 
 {
 	auto frame = frames.begin()->second;
+
+	LOG_INFO << "FileWriterModule::process() called";
+	LOG_INFO << "Received frame of size: " << frame->size() << ", fIndex: " << frame->fIndex;
+
 	try
 	{
+		LOG_INFO << "Attempting to write frame to file...";
+
 		if (!mDriver->Write(const_cast<const uint8_t *>(static_cast<uint8_t *>(frame->data())),
 							frame->size()) &&
 			mDriver->IsConnected())
@@ -75,7 +85,13 @@ bool FileWriterModule::process(frame_container& frames)
 	catch (...)
 	{
 		LOG_FATAL << "unknown exception<>" << frame->fIndex;
+		LOG_FATAL << "Unknown exception while writing frame. fIndex = " << frame->fIndex;
+
 	}
 	
 	return true;
 }
+
+
+
+ 

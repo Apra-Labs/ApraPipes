@@ -693,20 +693,25 @@ bool Mp4WriterSink::process(frame_container& frames)
 {
 	try
 	{
+		LOG_INFO << "[Mp4WriterSink] Attempting to write encoded frame to MP4.";
+
 		if (!mDetail->write(frames))
 		{
-			LOG_FATAL << "Error occured while writing mp4 file<>";
+			LOG_FATAL << "[Mp4WriterSink] Failed to write frame to MP4!";
 			return true;
 		}
+
+		LOG_INFO << "[Mp4WriterSink] Frame written successfully.";
 	}
 	catch (const std::exception& e)
 	{
-		LOG_ERROR << e.what();
+		LOG_ERROR << "[Mp4WriterSink] Exception: " << e.what();
 		// close any open file
 		mDetail->attemptFileClose();
 	}
 	return true;
 }
+
 
 bool Mp4WriterSink::processEOS(string& pinId)
 {

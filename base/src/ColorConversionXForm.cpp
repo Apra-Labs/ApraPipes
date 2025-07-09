@@ -50,6 +50,9 @@ bool ColorConversion::validateOutputPins()
 
 void ColorConversion::setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata)
 {
+
+	 
+
 	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,mDetail->inpImg,mDetail->outImg);
 }
 
@@ -167,3 +170,5 @@ bool ColorConversion::shouldTriggerSOS()
 {
 	return mShouldTriggerSos;
 }
+
+

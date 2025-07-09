@@ -199,7 +199,16 @@ SET(CORE_FILES
 	src/SimpleControlModule.cpp
 	src/APErrorObject.cpp 
 	src/APHealthObject.cpp
-)
+
+	.././samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+
+	.././samples/timelapse-sample/timelapse_summary.cpp
+	.././samples/face_detection_cpu/face_detection_cpu.cpp
+
+	.././samples/RecordWebcam/RecordWebcam.cpp
+
+	.././samples/relay-sample/relay_sample.cpp
+ )
 
 SET(CORE_FILES_H
 	include/BufferMaker.h	
@@ -265,6 +274,13 @@ SET(CORE_FILES_H
 	include/APErrorObject.h
 	include/APCallback.h
 	include/APHealthObject.h
+
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
+	.././samples/timelapse-sample/timelapse_summary.h
+	.././samples/face_detection_cpu/face_detection_cpu.h
+	.././samples/relay-sample/relay_sample.h
+	
+	.././samples/RecordWebcam/RecordWebcam.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -573,6 +589,46 @@ IF (ENABLE_CUDA)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
 
+
+SET(SAMPLE_UT_FILES
+	test/utmain.cpp
+	test/test_utils.cpp
+	test/test_utils.h
+	.././samples/timelapse-sample/timelapse_summary_test.cpp
+	.././samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+ 	.././samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
+	.././samples/face_detection_cpu/test_face_detection_cpu.cpp
+	.././samples/relay-sample/relay_sample_test.cpp
+
+	 
+ )
+
+SET(SAMPLE_CORE_FILES
+	.././samples/timelapse-sample/timelapse_summary.h
+	.././samples/timelapse-sample/timelapse_summary.cpp
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
+ 
+	.././samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
+	.././samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.cpp
+
+	.././samples/face_detection_cpu/face_detection_cpu.h
+	.././samples/face_detection_cpu/face_detection_cpu.cpp
+
+	.././samples/RecordWebcam/RecordWebcam.h
+	.././samples/RecordWebcam/RecordWebcam.cpp
+
+	.././samples/relay-sample/relay_sample.cpp
+	.././samples/relay-sample/relay_sample.h
+ 
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
+
 SET(UT_FILES
 	test/utmain.cpp
 	test/unit_tests.cpp
@@ -632,6 +688,49 @@ SET(UT_FILES
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
+
+
+SET(SAMPLE_UT_FILES
+	test/utmain.cpp
+	test/test_utils.cpp
+	test/test_utils.h
+	 
+	.././samples/play_mp4_from_beginning/test_play_mp4_video_from_beginning.cpp
+	.././samples/create_thumbnail_from_mp4_video/test_generate_thumbnail_from_mp4_video.cpp
+	.././samples/timelapse-sample/timelapse_summary_test.cpp
+	../samples/face_detection_cpu/test_face_detection_cpu.cpp
+	 
+	.././samples/relay-sample/relay_sample_test.cpp
+)
+
+SET(SAMPLE_CORE_FILES
+ 
+	.././samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.h
+	.././samples/play_mp4_from_beginning/PlayMp4VideoFromBeginning.cpp
+
+
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.cpp
+	.././samples/create_thumbnail_from_mp4_video/GenerateThumbnailsPipeline.h
+
+	.././samples/timelapse-sample/timelapse_summary.h
+	.././samples/timelapse-sample/timelapse_summary.cpp
+
+	../samples/face_detection_cpu/face_detection_cpu.cpp
+	../samples/face_detection_cpu/face_detection_cpu.h
+
+	.././samples/relay-sample/relay_sample.cpp
+	.././samples/relay-sample/relay_sample.h
+
+	.././samples/RecordWebcam/RecordWebcam.cpp
+	.././samples/RecordWebcam/RecordWebcam.h
+ 
+)
+
+SET(SAMPLE_SOURCE
+	${SAMPLE_CORE_FILES}
+	${SAMPLE_UT_FILES}
+)
+
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
@@ -736,3 +835,5 @@ install(
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aprapipes)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../samples ${CMAKE_CURRENT_BINARY_DIR}/samples)

@@ -62,6 +62,10 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 		}
 		else
 		{
+
+			std::cout << "[DEBUG] Conversion inputImageType = " << inputImageType
+				<< ", outputImageType = " << outputImageType << std::endl;
+
 			throw AIPException(AIP_FATAL, "This conversion is not supported");
 		}
 	}
