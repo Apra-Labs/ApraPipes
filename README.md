@@ -4,7 +4,7 @@
 
 # ApraPipes
 A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits.  
-Learn more about ApraPipes here https://apra-labs.github.io/ApraPipes.
+Learn more about ApraPipes [here](https://deepwiki.com/Apra-Labs/ApraPipes).
 
 ## Build status
 Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson Boards (Jetpack 4.4) and Windows (11) x64 Visual Studio 2019 Community.
