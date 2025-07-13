@@ -53,20 +53,14 @@ public:
 			}
 		}
 	}
-	frame_container pop() {
-		if (mAdaptee.get() != nullptr)
-		{
-			frame_container ret = mAdaptee->try_pop();
-			if (ret.size() == 0)
-			{
-				return on_failed_pop();
-			}
-			else {
-				return on_pop_success(ret);
-			}
-		}
-		return frame_container();
-	}
+frame_container pop() {
+    if (mAdaptee.get() != nullptr)
+{
+        frame_container ret = mAdaptee->pop();
+        return on_pop_success(ret);
+    }
+    return frame_container();
+}
 	bool try_push(frame_container item)
 	{
 		if (mAdaptee.get() != nullptr)

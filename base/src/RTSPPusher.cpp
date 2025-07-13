@@ -13,6 +13,7 @@ extern "C"
 #include "H264ParserUtils.h"
 #include "H264Utils.h"
 #include "RTSPPusher.h"
+
 class RTSPPusher::Detail
 {
 	/* video output */
@@ -70,7 +71,6 @@ class RTSPPusher::Detail
 	int open_video_precoded()
 	{
 		AVCodecParameters *c = video_st->codecpar;
-
 		c->extradata = (uint8_t *)(demuxer->getSPS_PPS().data());
 		c->extradata_size = (int)demuxer->getSPS_PPS().size();
 		lastDiff = pts_adder = lastPTS = 0;
@@ -152,7 +152,10 @@ public:
 		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
 		pkt = av_packet_alloc();
 	}
-	~Detail() { av_packet_free(&pkt); }
+	~Detail() 
+	{
+		av_packet_free(&pkt); 
+	}
 
 	bool init()
 	{
@@ -160,13 +163,9 @@ public:
 
 		int ret = 0;
 		totalDuration = 0;
-
-		av_log_set_level(AV_LOG_TRACE);
-
+		av_log_set_level(AV_LOG_ERROR);
 		avformat_network_init();
-
 		int rc = avformat_alloc_output_context2(&outContext, NULL, "rtsp", url);
-
 		if (rc < 0)
 		{
 			LOG_FATAL << "Alloc failure in avformat : " << rc << "<>" << url;
@@ -312,7 +311,7 @@ bool RTSPPusher::init()
 	if (!Module::init())
 	{
 		APErrorObject error(0, "RTSPPusher Error while initialization.");
-        executeErrorCallback(error);
+		executeErrorCallback(error);
 		return false;
 	}
 
@@ -356,8 +355,8 @@ bool RTSPPusher::process(frame_container &frames)
 
 	if (controlModule != nullptr)
 	{
-    	boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
-    	ctl->handleLastRTSPPusherTS(frame->timestamp);
+		boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+		ctl->handleLastRTSPPusherTS(frame->timestamp);
 	}
 
 	if (isKeyFrame && !pausedState)
@@ -376,7 +375,7 @@ bool RTSPPusher::process(frame_container &frames)
 		{
 			mDetail->connectionStatus = WRITE_FAILED;
 			APErrorObject error(0, "RTSPPusher Error while writing frame.");
-        	executeErrorCallback(error);
+			executeErrorCallback(error);
 			LOG_FATAL << "write_precoded_video_frame failed";
 			return false;
 		}
@@ -391,7 +390,7 @@ bool RTSPPusher::process(frame_container &frames)
 		{
 			mDetail->connectionStatus = WRITE_FAILED;
 			APErrorObject error(0, "RTSPPusher Error while writing frame.");
-        	executeErrorCallback(error);
+			executeErrorCallback(error);
 			LOG_FATAL << "write_precoded_video_frame failed";
 			return false;
 		}
@@ -431,7 +430,7 @@ void RTSPPusher::pauserThreadFunction()
 			{
 				mDetail->connectionStatus = WRITE_FAILED;
 				APErrorObject error(0, "RTSPPusher Error while writing frame.");
-        		executeErrorCallback(error);
+				executeErrorCallback(error);
 				LOG_FATAL << "write_precoded_video_frame failed";
 			}
 			std::chrono::time_point<std::chrono::system_clock> t1 = std::chrono::system_clock::now();
@@ -474,7 +473,7 @@ bool RTSPPusher::processSOS(frame_sp &frame)
 	else
 	{
 		APErrorObject error(0, "RTSPPusher Error while writing header.");
-        executeErrorCallback(error);
+		executeErrorCallback(error);
 		LOG_ERROR << "Could not write stream header... stream will not play !!" << "\n";
 		mDetail->connectionStatus = CONNECTION_FAILED;
 
