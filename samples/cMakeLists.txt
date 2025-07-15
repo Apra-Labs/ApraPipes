@@ -10,7 +10,7 @@ add_subdirectory(timelapse-sample)
 add_subdirectory(face_detection_cpu)
 add_subdirectory(relay-sample)
 add_subdirectory(RecordWebcam)
-add_subdirectory(assignment)
+ 
  
 
  
