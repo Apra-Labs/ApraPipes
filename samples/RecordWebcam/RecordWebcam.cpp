@@ -89,35 +89,42 @@ bool RecordWebcam::setUpPipeLine(const int& cameraId, const std::string& videoPa
     mEncoder = boost::shared_ptr<H264EncoderNVCodec>(new H264EncoderNVCodec(h264encprops));
     mCopy->setNext(mEncoder);
  
-
+    // mSync = boost::shared_ptr<Module>(
+    //     new CudaStreamSynchronize(CudaStreamSynchronizeProps(mCudaStream_)));
+    // mCopy_gpu2cpu->setNext(mSync);
 
   
 
-    //  [6] Device to Host copy  
-    auto cuda_2Props = CudaMemCopyProps(cudaMemcpyDeviceToHost, mCudaStream_);
-    cuda_2Props.logHealth = true;
-    cuda_2Props.logHealthFrequency = 1;
-    mCopy_gpu2cpu = boost::shared_ptr<CudaMemCopy>(
-        new CudaMemCopy(cuda_2Props));
-    mEncoder->setNext(mCopy_gpu2cpu);
+    // //  [6] Device to Host copy  
+    // auto cuda_2Props = CudaMemCopyProps(cudaMemcpyDeviceToHost, mCudaStream_);
+    // cuda_2Props.logHealth = true;
+    // cuda_2Props.logHealthFrequency = 1;
+    // mCopy_gpu2cpu = boost::shared_ptr<CudaMemCopy>(
+    //     new CudaMemCopy(cuda_2Props));
+    // mEncoder->setNext(mCopy_gpu2cpu);
 
 
 
-    mSync = boost::shared_ptr<Module>(
-        new CudaStreamSynchronize(CudaStreamSynchronizeProps(mCudaStream_)));
-    mCopy_gpu2cpu->setNext(mSync);
+    // mSync = boost::shared_ptr<Module>(
+    //     new CudaStreamSynchronize(CudaStreamSynchronizeProps(mCudaStream_)));
+    // mCopy_gpu2cpu->setNext(mSync);
 
 
     //  [7] MP4 File Writer Sink 
-    std::string outFolderPath = "C:\\Users\\developer\\Desktop\\chandan_project\\ApraPipes_withcuda\\ApraPipes\\output\\check";
-    auto mp4WriterSinkProps = Mp4WriterSinkProps();
-    mp4WriterSinkProps.baseFolder = outFolderPath;
-    mp4WriterSinkProps.logHealth = true;
-    mp4WriterSinkProps.logHealthFrequency = 1;
+    std::string outFolderPath = "D:/New_ApraPipes_NEW/ApraPipes/samples/output/test.mp4"; // Pass mp4 file path D:\New_ApraPipes_NEW\ApraPipes\samples\output\test.mp4
+    
+    // auto mp4WriterSinkProps = Mp4WriterSinkProps();
+    // mp4WriterSinkProps.baseFolder = outFolderPath;
+    // mp4WriterSinkProps.logHealth = true;
+    // mp4WriterSinkProps.logHealthFrequency = 1;
+
+    auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 1, 24, outFolderPath);
+	mp4WriterSinkProps.logHealth = true;
+	mp4WriterSinkProps.logHealthFrequency = 100;
 
     mMp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
     //mCopy_gpu2cpu->setNext(mMp4WriterSink);
-    mSync->setNext(mMp4WriterSink);
+    mEncoder->setNext(mMp4WriterSink);
 
     return true;
 
