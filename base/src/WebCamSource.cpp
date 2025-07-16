@@ -89,6 +89,7 @@ bool WebCamSource::produce()
     auto mProps = mDetail->getProps();
     auto frame = makeFrame(mProps.width * mProps.height * 3);
     mDetail->produce(frame);
+    frame->timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     frame_container frames;
     frames.insert(make_pair(mDetail->mOutputPinId, frame));
 
