@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
 *boost::unit_test::disabled())
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360.h264" };
-	Test_Utils::FileCleaner f(outFile);
+	//Test_Utils::FileCleaner f(outFile);
 
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	uint32_t gopLength = 25;
