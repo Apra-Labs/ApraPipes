@@ -444,9 +444,7 @@ bool DetailH264::write(frame_container& frames)
 	}
 	auto naluType = H264Utils::getNALUType((char*)mFrameBuffer.data());
 	std::string _nextFrameFileName;
-	// inH264ImageFrame->timestamp = current_timestamp;
-	auto current_timestamp = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, current_timestamp, mProps->baseFolder,
+	mWriterSinkUtils.getFilenameForNextFrame(_nextFrameFileName, inH264ImageFrame->timestamp, mProps->baseFolder,
 		mProps->chunkTime, mProps->syncTimeInSecs, syncFlag,mFrameType, naluType);
 
 	if (_nextFrameFileName == "")
