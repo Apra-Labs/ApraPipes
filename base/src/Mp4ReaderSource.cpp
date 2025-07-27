@@ -1626,7 +1626,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		trimmedImgFrame->timestamp = nowTS;
 	}
 	
-	LOG_ERROR << " Mp4ReaderDetailH264::produceFrames: frameTSInMsecs <" << frameTSInMsecs << ">";
+	LOG_TRACE << " Mp4ReaderDetailH264::produceFrames: frameTSInMsecs <" << frameTSInMsecs << ">";
 	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
 	if (metadataSize)
 	{

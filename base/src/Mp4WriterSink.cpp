@@ -645,7 +645,7 @@ bool Mp4WriterSink::process(frame_container &frames) {
     else {
       mDetail->lastWrittenFrameTS = frames.begin()->second->timestamp;
     }
-    LOG_ERROR << "MP4Writer: TS " << mDetail->lastWrittenFrameTS;
+    LOG_TRACE << "MP4Writer: TS " << mDetail->lastWrittenFrameTS;
   } catch (const std::exception &e) {
     LOG_ERROR << e.what();
     // close any open file
