@@ -7,11 +7,10 @@ private:
   std::string mErrorMessage;
   std::string mModuleName;
   std::string mModuleId;
-  std::string mTimestamp;
-
   std::string getCurrentTimestamp() const;
-
+  
 public:
+  std::string mTimestamp;
   APErrorObject(int errCode, const std::string &errorMsg);
 
   int getErrorCode() const;
