@@ -35,26 +35,37 @@ const_buffer H264FrameDemuxer::parseNALU(mutable_buffer& input, short &typeFound
 
 FrameContainerQueueAdapter::PushType H264FrameDemuxer::should_push(frame_container item)
 {
-	auto frame = item.begin()->second;
-	//allow EOS to be pushed
-	if (frame->isEOS() || frame->isEoP()) return MUST_PUSH; 
-	auto metadata = frame->getMetadata();
-	if(!metadata.get() || metadata->getFrameType() != FrameMetadata::FrameType::H264_DATA)
-	{
-		// non H264 Data
-		return MUST_PUSH;
-	}
+    auto frame = item.begin()->second;
+    
+    // LOG THE CURRENT STATE AND DECISION
+    LOG_INFO << "should_push: Frame type " << frame->mFrameType 
+             << ", Current state: " << myState 
+             << ", Decision: ";
+    
+    //allow EOS to be pushed
+    if (frame->isEOS() || frame->isEoP()) {
+        LOG_INFO << "should_push: MUST_PUSH (EOS/EoP)";
+        return MUST_PUSH;
+    }
+    
+    auto metadata = frame->getMetadata();
+    if(!metadata.get() || metadata->getFrameType() != FrameMetadata::FrameType::H264_DATA)
+    {
+        LOG_INFO << "should_push: MUST_PUSH (non-H264)";
+        return MUST_PUSH;
+    }
 
-	//assign the current frame type 
-	frame->mFrameType = H264Utils::getNALUType(frame.get());
-	if (
-		(myState == WAITING_FOR_IFRAME || myState == INITIAL) 
-		&& frame->mFrameType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
-	{
-		LOG_INFO << "dropping frame of type " << frame->mFrameType << " while waiting for I frame";
-		return DONT_PUSH; // we keep dropping P frames if we are waiting for an I frame
-	}
-	return TRY_PUSH;
+    frame->mFrameType = H264Utils::getNALUType(frame.get());
+    
+    if ((myState == WAITING_FOR_IFRAME || myState == INITIAL) 
+        && frame->mFrameType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
+    {
+        LOG_INFO << "should_push: DONT_PUSH (P-frame while state=" << myState << ")";
+        return DONT_PUSH;
+    }
+    
+    LOG_INFO << "should_push: TRY_PUSH";
+    return TRY_PUSH;
 }
 
 void H264FrameDemuxer::on_failed_push(frame_container item) {

@@ -10,15 +10,15 @@ public:
 		MP4_STEP
 	};
 
-	Mp4ErrorFrame() {}
-	Mp4ErrorFrame(int _errorType, int _errorCode, std::string &_errorMsg)
+	Mp4ErrorFrame(): Frame() {} 
+	Mp4ErrorFrame(int _errorType, int _errorCode, std::string &_errorMsg): Frame() 
 	{
 		errorType = _errorType;
 		errorCode = _errorCode;
 		errorMsg = _errorMsg;
 	}
 
-	Mp4ErrorFrame(int _errorType, int _errorCode, std::string &_errorMsg, int _openErrorCode, uint64_t& _errorMp4TS)
+	Mp4ErrorFrame(int _errorType, int _errorCode, std::string &_errorMsg, int _openErrorCode, uint64_t& _errorMp4TS): Frame()
 	{
 		errorType = _errorType;
 		errorCode = _errorCode;
