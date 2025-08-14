@@ -130,6 +130,7 @@ frame_container H264FrameDemuxer::on_pop_success(frame_container item)
 			h264Frame->mFrameType = nextTypeFound;
 		}
 	}
+	myState = NORMAL;
 	LOG_ERROR << " State: " << myState;
 	return item;
 }
