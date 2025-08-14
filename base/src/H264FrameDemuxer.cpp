@@ -38,20 +38,20 @@ FrameContainerQueueAdapter::PushType H264FrameDemuxer::should_push(frame_contain
     auto frame = item.begin()->second;
     
     // LOG THE CURRENT STATE AND DECISION
-    LOG_INFO << "should_push: Frame type " << frame->mFrameType 
+    LOG_ERROR << "should_push: Frame type " << frame->mFrameType 
              << ", Current state: " << myState 
              << ", Decision: ";
     
     //allow EOS to be pushed
     if (frame->isEOS() || frame->isEoP()) {
-        LOG_INFO << "should_push: MUST_PUSH (EOS/EoP)";
+        LOG_ERROR << "should_push: MUST_PUSH (EOS/EoP)";
         return MUST_PUSH;
     }
     
     auto metadata = frame->getMetadata();
     if(!metadata.get() || metadata->getFrameType() != FrameMetadata::FrameType::H264_DATA)
     {
-        LOG_INFO << "should_push: MUST_PUSH (non-H264)";
+        LOG_ERROR << "should_push: MUST_PUSH (non-H264)";
         return MUST_PUSH;
     }
 
@@ -60,11 +60,11 @@ FrameContainerQueueAdapter::PushType H264FrameDemuxer::should_push(frame_contain
     if ((myState == WAITING_FOR_IFRAME || myState == INITIAL) 
         && frame->mFrameType == H264Utils::H264_NAL_TYPE_NON_IDR_SLICE)
     {
-        LOG_INFO << "should_push: DONT_PUSH (P-frame while state=" << myState << ")";
+        LOG_ERROR << "should_push: DONT_PUSH (P-frame while state=" << myState << ")";
         return DONT_PUSH;
     }
     
-    LOG_INFO << "should_push: TRY_PUSH";
+    LOG_ERROR << "should_push: TRY_PUSH";
     return TRY_PUSH;
 }
 
@@ -82,11 +82,14 @@ void H264FrameDemuxer::on_push_success(frame_container item) {
 		|| frame->mFrameType == H264Utils::H264_NAL_TYPE_SEI
 		|| frame->mFrameType == H264Utils::H264_NAL_TYPE_ACCESS_UNIT))
 	{
+		LOG_ERROR << " Setting State to Normal";
 		myState = NORMAL;
 	}
+	LOG_ERROR << " State: " << myState;
 }
 frame_container H264FrameDemuxer::on_pop_success(frame_container item)
 {
+
 	auto h264Frame = item.begin()->second;
 	if(myState == INITIAL && 
 		(h264Frame->mFrameType == H264Utils::H264_NAL_TYPE_SEQ_PARAM
@@ -127,5 +130,6 @@ frame_container H264FrameDemuxer::on_pop_success(frame_container item)
 			h264Frame->mFrameType = nextTypeFound;
 		}
 	}
+	LOG_ERROR << " State: " << myState;
 	return item;
 }

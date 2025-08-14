@@ -31,6 +31,7 @@ public:
 	FrameContainerQueueAdapter() : FrameContainerQueue(0) {}
 	void adapt(boost::shared_ptr<FrameContainerQueue> adaptee) {
 		mAdaptee = adaptee;
+		accept();
 	}
 	void push(frame_container item) {
 		if (mAdaptee.get() != nullptr)
