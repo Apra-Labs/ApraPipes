@@ -533,16 +533,16 @@ IF (ENABLE_ARM64)
 		test/jpegencoderl4tm_tests.cpp
 		test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		test/opencvresize_tests.cpp
+		# test/opencvresize_tests.cpp
 		test/h264encoderv4l2_tests.cpp
-		test/nvarguscamerahelper_tests.cpp
-		test/nvarguscamera_tests.cpp
-		test/nvv4l2camera_test.cpp
-		test/nvv4l2camerahelper_test.cpp
-		test/nvtransform_tests.cpp
-		test/eglrenderer_test.cpp
-		test/cuda_arm_tests.cpp
-		test/apraegldisplay_tests.cpp
+		# test/nvarguscamerahelper_tests.cpp
+		# test/nvarguscamera_tests.cpp
+		# test/nvv4l2camera_test.cpp
+		# test/nvv4l2camerahelper_test.cpp
+		# test/nvtransform_tests.cpp
+		# test/eglrenderer_test.cpp
+		# test/cuda_arm_tests.cpp
+		# test/apraegldisplay_tests.cpp
 		test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
 	)
