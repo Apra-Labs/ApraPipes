@@ -18,7 +18,7 @@
 #include "CudaMemCopy.h"
 #endif
 
-#if defined ENABLE_ARM64
+#if 1
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
 #include "CudaStreamSynchronize.h"
@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(DMABUF_RGBA, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 

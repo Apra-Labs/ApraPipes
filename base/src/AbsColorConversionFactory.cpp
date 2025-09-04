@@ -104,6 +104,16 @@ boost::shared_ptr<DetailAbstract> AbsColorConversionFactory::create(framemetadat
 			outImg = Utils::getMatHeader(rawPlanarMetadata);
 			mapper = boost::shared_ptr<DetailAbstract>(new CpuYUV420Planar2RGB(inpImg, outImg));
 		}
+		else if (inputImageType == ImageMetadata::NV12 && outputImageType == ImageMetadata::RGB)
+		{
+			// For NV12, OpenCV expects a two-plane NV12 buffer with rows H + H/2
+			auto height = rawMetadata->getHeight(0);
+			int inputRows = height + (height / 2);
+
+			inpImg = Utils::getMatHeader(rawMetadata, inputRows);
+			outImg = Utils::getMatHeader(rawPlanarMetadata);
+			mapper = boost::shared_ptr<DetailAbstract>(new CpuNV12Planar2RGB(inpImg, outImg));
+		}
 
 		else
 		{

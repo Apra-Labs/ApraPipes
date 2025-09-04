@@ -23,7 +23,7 @@ JPEGDecoderL4TMHelper::JPEGDecoderL4TMHelper()
     cinfo.do_fancy_upsampling = FALSE;
     cinfo.do_block_smoothing = FALSE;
     cinfo.dct_method = JDCT_FASTEST;
-    cinfo.bMeasure_ImageProcessTime = FALSE;
+    // cinfo.bMeasure_ImageProcessTime = FALSE;
     cinfo.raw_data_out = TRUE;
 }
 

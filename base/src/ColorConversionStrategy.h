@@ -201,3 +201,17 @@ public:
 		cv::cvtColor(inpImg, outImg, cv::COLOR_YUV420p2RGB);
 	}
 };
+
+class CpuNV12Planar2RGB : public CpuPlanar2Interleaved
+{
+public:
+	CpuNV12Planar2RGB(cv::Mat _inpImg, cv::Mat _outImg) : CpuPlanar2Interleaved(_inpImg,_outImg) {}
+	~CpuNV12Planar2RGB() {}
+
+	void convert(frame_container& inputFrame, frame_sp& outputFrame, framemetadata_sp outputMetadata)
+	{
+		initMatImages(inputFrame, outputFrame, outputMetadata);
+		// NV12 two-plane: Y (H x W), UV (H/2 x W)
+		cv::cvtColor(inpImg, outImg, cv::COLOR_YUV2RGB_NV12);
+	}
+};

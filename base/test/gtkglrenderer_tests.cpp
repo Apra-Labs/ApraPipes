@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 #include <iostream>
 
-#if defined ENABLE_ARM64
+#if 1
 #include "DMAFDToHostCopy.h"
 #include "EglRenderer.h"
 #include "NvArgusCamera.h"
@@ -118,7 +118,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86Pipeline() {
 }
 
 boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline() {
-#if defined ENABLE_ARM64
+#if 1
   Logger::setLogLevel("info");
 
   rtsp_client_tests_data d;
@@ -154,7 +154,7 @@ boost::shared_ptr<GtkGlRenderer> laucX86RTSPPipeline() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline1() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d;
   string url = cameraURL;
 
@@ -206,7 +206,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline1() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline2() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d2;
   string url2 = "rtsp://10.102.10.75/axis-media/media.amp";
 
@@ -262,7 +262,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline2() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline3() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d3;
   string url3 = "rtsp://10.102.10.42/axis-media/media.amp";
 
@@ -318,7 +318,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline3() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline4() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d4;
   string url4 = "rtsp://10.102.10.42/axis-media/media.amp";
 
@@ -374,7 +374,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline4() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline5() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d5;
   string url5 = "rtsp://10.102.10.75/axis-media/media.amp";
 
@@ -430,7 +430,7 @@ boost::shared_ptr<GtkGlRenderer> launchPipeline5() {
 }
 
 boost::shared_ptr<GtkGlRenderer> launchPipeline6() {
-#if defined ENABLE_ARM64
+#if 1
   rtsp_client_tests_data d6;
   string url6 = cameraURL;
 

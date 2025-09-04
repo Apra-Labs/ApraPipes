@@ -8,8 +8,8 @@
 #include "FileWriterModule.h"
 #include "test_utils.h"
 #include "ExternalSinkModule.h"
-
-#if defined ENABLE_ARM64
+#define ENABLE_ARM64
+#if 1
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
 #include "EglRenderer.h"
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(memtypeconversion_tests)
 
 BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 {
-#if defined ENABLE_ARM64
+#if 1
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 {
-#if defined ENABLE_ARM64
+#if 1
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 {
-#if defined ENABLE_ARM64
+#if 1
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 
 BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 {
-#if defined ENABLE_ARM64
+#if 1
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
 	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 

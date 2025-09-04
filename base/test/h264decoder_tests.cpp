@@ -11,13 +11,15 @@
 #include "Mp4ReaderSource.h"
 #include "Mp4VideoMetadata.h"
 #include "StatSink.h"
-#ifdef ARM64
+#include "MemTypeConversion.h"
+#include "ResizeNPPI.h"
 #include "EglRenderer.h"
-
-#else
 #include "CudaMemCopy.h"
+#include "JPEGEncoderL4TM.h"
+#include "ColorConversionXForm.h"
 #include "nv_test_utils.h"
-#endif
+#include "NvTransform.h"
+
 
 BOOST_AUTO_TEST_SUITE(h264decoder_tests)
 
@@ -99,6 +101,86 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 
 	Test_Utils::sleep_for_seconds(15);
 
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink) //, *utf::precondition(if_h264_encoder_supported())
+{
+	Logger::setLogLevel("info");
+	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	
+	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false, 0, true, false, false);
+	mp4ReaderProps_2.logHealth = true;
+	mp4ReaderProps_2.logHealthFrequency = 100;
+	mp4ReaderProps_2.fps = 30;
+	
+	auto mp4Reader_2 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_2));
+	auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
+	mp4Reader_2->addOutPutPin(h264ImageMetadata_2);
+	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+	mp4Reader_2->addOutPutPin(mp4Metadata_2);
+
+	auto Decoder = boost::shared_ptr<H264Decoder>(new H264Decoder(H264DecoderProps()));
+	mp4Reader_2->setNext(Decoder);
+
+	auto nv_transform = boost::shared_ptr<NvTransform>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	Decoder->setNext(nv_transform);
+
+	auto rend = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0)));
+	nv_transform->setNext(rend);
+
+	auto stream = cudastream_sp(new ApraCudaStream);
+
+	auto memconversion4 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	Decoder->setNext(memconversion4);
+
+	auto sink3 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ULTIMATE3/decodedframe_????.raw")));
+	memconversion4->setNext(sink3);
+
+	auto memconversion3 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	Decoder->setNext(memconversion3);
+
+	auto m2 = boost::shared_ptr<ResizeNPPI>(new ResizeNPPI(ResizeNPPIProps(640, 360, stream)));
+	memconversion3->setNext(m2);
+
+	auto memconversion5 = boost::shared_ptr<MemTypeConversion>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	m2->setNext(memconversion5);
+
+	auto copy2 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	m2->setNext(copy2);
+	// auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
+
+	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(ColorConversionProps::ConversionType::NV12PLANAR_TO_RGB)));
+	memconversion5->setNext(colorchange);
+
+	auto encM = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	colorchange->setNext(encM);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = encM->addOutputPin(encodedImageMetadata);
+
+	auto sink = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ULTIMATE/frame_????.raw")));
+	copy2->setNext(sink);
+
+	auto sink2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ULTIMATE2/frame_????.raw")));
+	colorchange->setNext(sink2);
+
+	auto sink4 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ULTIMATEJPEG/frame_????.jpeg")));
+	encM->setNext(sink4);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+
+	p->appendModule(mp4Reader_2);
+	if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(100);
 	p->stop();
 	p->term();
 	p->wait_for_all();
@@ -194,49 +276,6 @@ BOOST_AUTO_TEST_CASE(encoder_to_decoder, *utf::precondition(if_h264_encoder_supp
 
 	Test_Utils::sleep_for_seconds(8);
 
-	p->stop();
-	p->term();
-	p->wait_for_all();
-	p.reset();
-}
-
-BOOST_AUTO_TEST_CASE(mp4reader_to_decoder_extSink, *utf::precondition(if_h264_encoder_supported()))
-{
-	Logger::setLogLevel("info");
-
-	std::string startingVideoPath_2 = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
-	auto mp4ReaderProps_2 = Mp4ReaderSourceProps(startingVideoPath_2, false, 0, true, false, false);
-	mp4ReaderProps_2.logHealth = true;
-	mp4ReaderProps_2.logHealthFrequency = 100;
-	mp4ReaderProps_2.fps = 30;
-	auto mp4Reader_2 = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps_2));
-	auto h264ImageMetadata_2 = framemetadata_sp(new H264Metadata(0, 0));
-	mp4Reader_2->addOutPutPin(h264ImageMetadata_2);
-	auto mp4Metadata_2 = framemetadata_sp(new Mp4VideoMetadata("v_1"));
-	mp4Reader_2->addOutPutPin(mp4Metadata_2);
-	// metadata is known
-
-	auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
-	mp4Reader_2->setNext(Decoder);
-
-	StatSinkProps sinkProps;
-	sinkProps.logHealth = true;
-	sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
-	Decoder->setNext(sink);
-
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
-
-	p->appendModule(mp4Reader_2);
-
-	if (!p->init())
-	{
-		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
-	}
-
-	p->run_all_threaded();
-	Test_Utils::sleep_for_seconds(10);
 	p->stop();
 	p->term();
 	p->wait_for_all();

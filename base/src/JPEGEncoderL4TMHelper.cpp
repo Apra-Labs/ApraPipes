@@ -82,9 +82,9 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
     if (scale != 1)
     {
-        cinfo.image_scale = TRUE;
-        cinfo.scaled_image_width = width * scale;
-        cinfo.scaled_image_height = height * scale;
+        // cinfo.image_scale = TRUE;
+        // cinfo.scaled_image_width = width * scale;
+        // cinfo.scaled_image_height = height * scale;
     }
 
     jpeg_set_defaults(&cinfo);
@@ -128,7 +128,7 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
     }
 
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
-    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
+    // jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
 
     unsigned char *base[planes], *end[planes];
 

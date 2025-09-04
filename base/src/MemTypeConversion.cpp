@@ -4,7 +4,7 @@
 #include "RawImagePlanarMetadata.h"
 #include "CudaCommon.h"
 
-#if defined ENABLE_ARM64
+#if 1
 #include "DMAFrameUtils.h"
 #include "DMAFDWrapper.h"
 #include "ImagePlaneData.h"
@@ -30,14 +30,14 @@ public:
 		FrameMetadata::MemType inputMemType = inputMetadata->getMemType();
 		if (inputMemType == FrameMetadata::MemType::DMABUF && props.outputMemType == FrameMetadata::MemType::HOST)
 		{
-#if defined ENABLE_ARM64
+#if 1
 			mGetImagePlanes = DMAFrameUtils::getImagePlanesFunction(inputMetadata, mImagePlanes);
 			mNumPlanes = static_cast<int>(mImagePlanes.size());
 #endif
 		}
 		else if (inputMemType == FrameMetadata::MemType::HOST && props.outputMemType == FrameMetadata::MemType::DMABUF)
 		{
-#if defined ENABLE_ARM64
+#if 1
 			mGetImagePlanes = DMAFrameUtils::getImagePlanesFunction(inputMetadata, mImagePlanes);
 			mNumPlanes = static_cast<int>(mImagePlanes.size());
 #endif
@@ -61,7 +61,7 @@ public:
 
 				if (inputMemType == FrameMetadata::MemType::DMABUF || props.outputMemType == FrameMetadata::MemType::DMABUF)
 				{
-#if defined ENABLE_ARM64
+#if 1
 					int type = CV_8UC4;
 					switch (imageType)
 					{
@@ -112,7 +112,7 @@ public:
 
 				if (inputMemType == FrameMetadata::MemType::DMABUF || props.outputMemType == FrameMetadata::MemType::DMABUF)
 				{
-#if defined ENABLE_ARM64
+#if 1
 					auto metadata = framemetadata_sp(new RawImagePlanarMetadata(rowSize[0], height[0], imageType, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
 					DMAAllocator::setMetadata(metadata, rowSize[0], height[0], imageType, pitch, offset);
 					if (inputMemType == FrameMetadata::MemType::DMABUF)
@@ -164,7 +164,7 @@ protected:
 	size_t height[4];
 	size_t width[4];
 
-#if defined ENABLE_ARM64
+#if 1
 	ImagePlanes mImagePlanes;
 	DMAFrameUtils::GetImagePlanes mGetImagePlanes;
 #endif
@@ -177,7 +177,7 @@ public:
 
 	bool compute()
 	{
-#if defined ENABLE_ARM64
+#if 1
 		mGetImagePlanes(inputFrame, mImagePlanes);
 		dstPtr = static_cast<uint8_t *>(outputFrame->data());
 
@@ -198,7 +198,7 @@ public:
 
 	bool compute()
 	{
-#if defined ENABLE_ARM64
+#if 1
 		mGetImagePlanes(inputFrame, mImagePlanes);
 		dstPtr = (static_cast<DMAFDWrapper *>(outputFrame->data()))->getHostPtr();
 
@@ -219,7 +219,7 @@ public:
 
 	bool compute()
 	{
-#if defined ENABLE_ARM64
+#if 1
 		auto cudaStatus = cudaSuccess;
 
 		for (auto i = 0; i < imageChannels; i++)
@@ -247,7 +247,7 @@ public:
 
 	bool compute()
 	{
-#if defined ENABLE_ARM64
+#if 1
 		auto cudaStatus = cudaSuccess;
 
 		for (auto i = 0; i < imageChannels; i++)

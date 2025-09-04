@@ -124,6 +124,7 @@ bool ColorConversion::setMetadata(framemetadata_sp& metadata)
 	case ColorConversionProps::ConversionType::BGR_TO_RGB:
 	case ColorConversionProps::ConversionType::BAYERBG8_TO_RGB:
 	case ColorConversionProps::ConversionType::YUV420PLANAR_TO_RGB:
+	case ColorConversionProps::ConversionType::NV12PLANAR_TO_RGB:
 	case ColorConversionProps::ConversionType::BAYERGB8_TO_RGB:
 	case ColorConversionProps::ConversionType::BAYERGR8_TO_RGB:
 	case ColorConversionProps::ConversionType::BAYERRG8_TO_RGB:

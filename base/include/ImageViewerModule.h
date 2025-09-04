@@ -9,7 +9,7 @@ class DetailImageviewer;
 class ImageViewerModuleProps : public ModuleProps
 {
 public:
-#if defined ENABLE_ARM64
+#if 1
 	ImageViewerModuleProps(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height, bool _displayOnTop = true) : ModuleProps()
 	{
 		x_offset = _x_offset;

@@ -19,7 +19,7 @@
 #endif
 #include <cstdio>
 
-#if defined ENABLE_ARM64
+#if 1
 #include "DMAFDWrapper.h"
 #include "DMAFrameUtils.h"
 #endif
@@ -96,7 +96,7 @@ bool ThumbnailListGenerator::term()
 
 bool ThumbnailListGenerator::process(frame_container &frames)
 {
-#if defined ENABLE_ARM64
+#if 1
     auto frame = getFrameByType(frames, FrameMetadata::RAW_IMAGE_PLANAR);
     if (isFrameEmpty(frame))
     {
