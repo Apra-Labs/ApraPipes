@@ -10,22 +10,15 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out repository code recursively
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
-      - name: Pull changes in vcpkg submodule
-        id: remote-update
+      - name: Update vcpkg submodule
         run: |
-          cd vcpkg
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          echo "::set-output name=has_update::$(git --no-pager diff --name-only origin/master..HEAD)"
-          git checkout master
-          git pull
-
-      - if: steps.remote-update.outputs.has_update != ''
-        name: Create Pull Request
+          git submodule update --remote vcpkg
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
