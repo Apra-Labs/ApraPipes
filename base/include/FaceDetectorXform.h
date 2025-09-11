@@ -6,11 +6,14 @@
 class FaceDetectorXformProps : public ModuleProps
 {
 public:
-    FaceDetectorXformProps(double _scaleFactor = 1.0, float _confidenceThreshold = 0.5) : scaleFactor(_scaleFactor), confidenceThreshold(_confidenceThreshold)
+    FaceDetectorXformProps(double _scaleFactor = 1.0, float _confidenceThreshold = 0.5, std::string _Face_Detection_Configuration= "./data/assets/deploy.prototxt", std::string _Face_Detection_Weights= "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel")
+        : scaleFactor(_scaleFactor), confidenceThreshold(_confidenceThreshold), FACE_DETECTION_CONFIGURATION(_Face_Detection_Configuration), FACE_DETECTION_WEIGHTS(_Face_Detection_Weights)
     {
     }
     double scaleFactor;
     float confidenceThreshold;
+    std::string FACE_DETECTION_CONFIGURATION;
+	std::string FACE_DETECTION_WEIGHTS;
 
     size_t getSerializeSize()
     {

@@ -32,7 +32,7 @@ bool OverlayModule::validateInputPins()
 	BOOST_FOREACH(me, inputMetadataByPin)
 	{
 		FrameMetadata::FrameType frameType = me.second->getFrameType();
-		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
+		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE && frameType != FrameMetadata::FACE_LANDMARKS_INFO && frameType != FrameMetadata::FACEDETECTS_INFO)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR OVERLAY_INFO_IMAGE. Actual<" << frameType << ">";
 			return false;
@@ -70,8 +70,13 @@ bool OverlayModule::process(frame_container& frames)
 		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
 			drawOverlay.deserialize(frame);
+		} 
+		else if (frameType == FrameMetadata::FACE_LANDMARKS_INFO) {
+			drawOverlay.deserialize(frame);
+        }
+		else if (frameType == FrameMetadata::FACEDETECTS_INFO) {
+			drawOverlay.deserialize(frame);
 		}
-
 		else if (frameType == FrameMetadata::RAW_IMAGE)
 		{
 			drawOverlay.draw(frame);
