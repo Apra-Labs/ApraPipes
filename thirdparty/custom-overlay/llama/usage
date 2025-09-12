@@ -1,0 +1,4 @@
+llama provides CMake targets:
+
+find_package(llama CONFIG REQUIRED)
+target_link_libraries(main PRIVATE common_llama llama llavalib)

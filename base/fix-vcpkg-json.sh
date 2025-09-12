@@ -25,6 +25,10 @@ if $removeCUDA; then
             # Remove "cuda" features for this "whisper" instance
             v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\"))")
         fi
+        if [ "$name" == "llama"]; then
+            # Remove "cuda" features for this "llama" instance
+            v=$(echo "$v" | jq ".dependencies[$index].features |= map(select(. != \"cuda\"))")
+        fi
     done
 fi
 

@@ -2,36 +2,36 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO Apra-Labs/whisper.cpp
-    REF 779050a5edfb47f115cd1c1c1e010b1c533bf174 #v1.5.4
-    SHA512 fe354506c7377a7a6a783caccd09f1b9333394ada5046fadc77a51b1e2442089b73fcb730cea2ec82d31d205f47426349aa5e6206f294727341a829f90c127bf  # This is a temporary value. We will modify this value in the next section.
-    HEAD_REF kj/add-Config-for-vcpkg
-    PATCHES "fix-for-arm64.patch"
+    REPO Apra-Labs/llama.cpp
+    REF e5bd6e1abb146b38649236429c22ed6b4db0f3da
+    SHA512 f36a0731e7b5044b1d75297fdd806cf19206a439bc9996bba1ee36b0b2e692e4482d5fac9b7dcd111c7d69bbd900b99ed38b301c572c450a48ad6fd484b3322f
+    HEAD_REF kj/vcpkg-port
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
  FEATURES
- "cuda" WHISPER_CUBLAS
+ "cuda" LLAMA_CUBLAS
 )
 
-set(WHISPER_CUBLAS OFF)
+set(LLAMA_CUBLAS OFF)
 if("cuda" IN_LIST FEATURES)
-  set(WHISPER_CUBLAS ON)
+  set(LLAMA_CUBLAS ON)
 endif()
+
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
-        -DWHISPER_CUBLAS=${WHISPER_CUBLAS}
+        -DLLAMA_CUBLAS=${LLAMA_CUBLAS}
     DISABLE_PARALLEL_CONFIGURE
 )
 
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(
-    CONFIG_PATH lib/cmake/whisper
-    PACKAGE_NAME whisper
-    )
+    CONFIG_PATH lib/cmake/Llama
+    PACKAGE_NAME Llama
+)
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
@@ -40,3 +40,7 @@ file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share
 configure_file("${CMAKE_CURRENT_LIST_DIR}/usage" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" COPYONLY)
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin" "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
