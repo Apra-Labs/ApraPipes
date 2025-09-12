@@ -111,4 +111,6 @@ H264Utils::H264_NAL_TYPE H264Utils::getNalTypeAfterSpsPps(void* frameData, size_
 			}
 		}
 	}
+
+	return typeFound;
 }
