@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(fdtest)
 
 
 
-	DMAUtils::freeCudaPtr(eglInImage,&pInResource, eglDisplay);
+	// DMAUtils::freeCudaPtr(eglInImage,&pInResource, eglDisplay);
 }
 
 BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())

@@ -2,7 +2,7 @@
 #define __NV_JPEG_ENCODER_H__
 
 #include <stdint.h>
-#include<stdio.h>
+#include <stdio.h>
 #include <jpeglib.h>
 
 class JPEGEncoderL4TMHelper
