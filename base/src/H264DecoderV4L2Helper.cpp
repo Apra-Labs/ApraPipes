@@ -31,7 +31,8 @@
  * ./decode_sample elementary_h264file.264 output_raw_file.yuv
 **/
 #include "DMAFDWrapper.h" 
-#include "nvbuf_utils.h"
+#include "nvbufsurface.h"
+#include "nvbufsurftransform.h"
 #include <iostream>
 #include <stdint.h>
 #include <unistd.h>
@@ -129,157 +130,154 @@
  *
  */
  
-Buffer::Buffer(enum v4l2_buf_type buf_type, enum v4l2_memory memory_type,
-        uint32_t index)
-        :buf_type(buf_type),
-         memory_type(memory_type),
-         index(index)
+ Buffer::Buffer(enum v4l2_buf_type buf_type, enum v4l2_memory memory_type,
+    uint32_t index)
+    :buf_type(buf_type),
+     memory_type(memory_type),
+     index(index)
 {
-    uint32_t i;
- 
-    memset(planes, 0, sizeof(planes));
- 
-    mapped = false;
-    n_planes = 1;
-    for (i = 0; i < n_planes; i++)
-    {
-        this->planes[i].fd = -1;
-        this->planes[i].data = NULL;
-        this->planes[i].bytesused = 0;
-        this->planes[i].mem_offset = 0;
-        this->planes[i].length = 0;
-        this->planes[i].fmt.sizeimage = 0;
-    }
-}
- 
-Buffer::Buffer(enum v4l2_buf_type buf_type, enum v4l2_memory memory_type,
-        uint32_t n_planes, BufferPlaneFormat * fmt, uint32_t index)
-        :buf_type(buf_type),
-         memory_type(memory_type),
-         index(index),
-         n_planes(n_planes)
+uint32_t i;
+
+memset(planes, 0, sizeof(planes));
+
+mapped = false;
+n_planes = 1;
+for (i = 0; i < n_planes; i++)
 {
-    uint32_t i;
- 
-    mapped = false;
- 
-    memset(planes, 0, sizeof(planes));
-    for (i = 0; i < n_planes; i++)
-    {
-        this->planes[i].fd = -1;
-        this->planes[i].fmt = fmt[i];
-    }
+    this->planes[i].fd = -1;
+    this->planes[i].data = NULL;
+    this->planes[i].bytesused = 0;
+    this->planes[i].mem_offset = 0;
+    this->planes[i].length = 0;
+    this->planes[i].fmt.sizeimage = 0;
 }
- 
+}
+
+Buffer::Buffer(enum v4l2_buf_type buf_type, enum v4l2_memory memory_type,
+    uint32_t n_planes, BufferPlaneFormat * fmt, uint32_t index)
+    :buf_type(buf_type),
+     memory_type(memory_type),
+     index(index),
+     n_planes(n_planes)
+{
+uint32_t i;
+
+mapped = false;
+
+memset(planes, 0, sizeof(planes));
+for (i = 0; i < n_planes; i++)
+{
+    this->planes[i].fd = -1;
+    this->planes[i].fmt = fmt[i];
+}
+}
+
 Buffer::~Buffer()
 {
-    if (mapped)
-    {
-        unmap();
-    }
+if (mapped)
+{
+    unmap();
 }
- 
+}
+
 int
 Buffer::map()
 {
-    uint32_t j;
- 
-    if (memory_type != V4L2_MEMORY_MMAP)
-    {
-        LOG_INFO << "Buffer " << index << "already mapped" << endl;
-        return -1;
-    }
- 
-    if (mapped)
-    {
-        LOG_INFO << "Buffer " << index << "already mapped" << endl;
-        return 0;
-    }
- 
-    for (j = 0; j < n_planes; j++)
-    {
-        if (planes[j].fd == -1)
-        {
-            return -1;
-        }
- 
-        planes[j].data = (unsigned char *) mmap(NULL,
-                                                planes[j].length,
-                                                PROT_READ | PROT_WRITE,
-                                                MAP_SHARED,
-                                                planes[j].fd,
-                                                planes[j].mem_offset);
-        if (planes[j].data == MAP_FAILED)
-        {
-            LOG_INFO << "Could not map buffer " << index << ", plane " << j << endl;
-            return -1;
-        }
- 
-    }
-    mapped = true;
+uint32_t j;
+
+if (memory_type != V4L2_MEMORY_MMAP)
+{
+    cout << "Buffer " << index << "already mapped" << endl;
+    return -1;
+}
+
+if (mapped)
+{
+    cout << "Buffer " << index << "already mapped" << endl;
     return 0;
 }
- 
+
+for (j = 0; j < n_planes; j++)
+{
+    if (planes[j].fd == -1)
+    {
+        return -1;
+    }
+
+    planes[j].data = (unsigned char *) mmap(NULL,
+                                            planes[j].length,
+                                            PROT_READ | PROT_WRITE,
+                                            MAP_SHARED,
+                                            planes[j].fd,
+                                            planes[j].mem_offset);
+    if (planes[j].data == MAP_FAILED)
+    {
+        cout << "Could not map buffer " << index << ", plane " << j << endl;
+        return -1;
+    }
+
+}
+mapped = true;
+return 0;
+}
+
 void
 Buffer::unmap()
 {
-    if (memory_type != V4L2_MEMORY_MMAP || !mapped)
-    {
-        LOG_INFO << "Cannot Unmap Buffer " << index <<
-                ". Only mapped MMAP buffer can be unmapped" << endl;
-        return;
-    }
- 
-    for (uint32_t j = 0; j < n_planes; j++)
-    {
-        if (planes[j].data)
-        {
-            munmap(planes[j].data, planes[j].length);
-        }
-        planes[j].data = NULL;
-    }
-    mapped = false;
-}
- 
-int
-Buffer::fill_buffer_plane_format(uint32_t *num_planes,
-        Buffer::BufferPlaneFormat *planefmts,
-        uint32_t width, uint32_t height, uint32_t raw_pixfmt)
+if (memory_type != V4L2_MEMORY_MMAP || !mapped)
 {
-    switch (raw_pixfmt)
+    cout << "Cannot Unmap Buffer " << index <<
+            ". Only mapped MMAP buffer can be unmapped" << endl;
+    return;
+}
+
+for (uint32_t j = 0; j < n_planes; j++)
+{
+    if (planes[j].data)
     {
-        case V4L2_PIX_FMT_YUV420M:
-            *num_planes = 3;
- 
-            planefmts[0].width = width;
-            planefmts[1].width = width / 2;
-            planefmts[2].width = width / 2;
- 
-            planefmts[0].height = height;
-            planefmts[1].height = height / 2;
-            planefmts[2].height = height / 2;
- 
-            planefmts[0].bytesperpixel = 1;
-            planefmts[1].bytesperpixel = 1;
-            planefmts[2].bytesperpixel = 1;
-            break;
-        case V4L2_PIX_FMT_NV12M:
-            *num_planes = 2;
- 
-            planefmts[0].width = width;
-            planefmts[1].width = width / 2;
- 
-            planefmts[0].height = height;
-            planefmts[1].height = height / 2;
- 
-            planefmts[0].bytesperpixel = 1;
-            planefmts[1].bytesperpixel = 2;
-            break;
-        default:
-            LOG_INFO << "Unsupported pixel format " << raw_pixfmt << endl;
-            return -1;
+        munmap(planes[j].data, planes[j].length);
     }
-    return 0;
+    planes[j].data = NULL;
+}
+mapped = false;
+}
+
+int Buffer::fill_buffer_plane_format(uint32_t *num_planes, Buffer::BufferPlaneFormat *planefmts, uint32_t width, uint32_t height, uint32_t raw_pixfmt)
+{
+switch (raw_pixfmt)
+{
+    case V4L2_PIX_FMT_YUV420M:
+        *num_planes = 3;
+
+        planefmts[0].width = width;
+        planefmts[1].width = width / 2;
+        planefmts[2].width = width / 2;
+
+        planefmts[0].height = height;
+        planefmts[1].height = height / 2;
+        planefmts[2].height = height / 2;
+
+        planefmts[0].bytesperpixel = 1;
+        planefmts[1].bytesperpixel = 1;
+        planefmts[2].bytesperpixel = 1;
+        break;
+    case V4L2_PIX_FMT_NV12M:
+        *num_planes = 2;
+
+        planefmts[0].width = width;
+        planefmts[1].width = width / 2;
+
+        planefmts[0].height = height;
+        planefmts[1].height = height / 2;
+
+        planefmts[0].bytesperpixel = 1;
+        planefmts[1].bytesperpixel = 2;
+        break;
+    default:
+        cout << "Unsupported pixel format " << raw_pixfmt << endl;
+        return -1;
+}
+return 0;
 }
  
 void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer * buffer)
@@ -436,12 +434,16 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
     struct v4l2_crop crop;
     int ret_val;
     int32_t min_cap_buffers;
-    NvBufferCreateParams input_params = {0};
-    NvBufferCreateParams cap_params = {0};
+    NvBufSurfaceAllocateParams dstParams = {{0}};
+    NvBufSurface *dst_nvbuf_surf = NULL;
+    NvBufSurfaceAllocateParams capParams = {{0}};
+    NvBufSurface *cap_nvbuf_surf = NULL;
+
  
     /* Get format on capture plane set by device.
     ** This may change after an resolution change event.
     */
+
     format.type = ctx->cp_buf_type;
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_FMT, &format);
     if (ret_val)
@@ -468,7 +470,19 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
  
     if (ctx->dst_dma_fd != -1)
     {
-        NvBufferDestroy(ctx->dst_dma_fd);
+        ret_val = NvBufSurfaceFromFd((int)ctx->dst_dma_fd,
+                                     (void**)(&dst_nvbuf_surf));
+        if (ret_val) {
+            cerr << "Failed to Get NvBufSurface from FD" << endl;
+            ctx->in_error = 1;
+        }
+
+        ret_val = NvBufSurfaceDestroy(dst_nvbuf_surf);
+        if (ret_val) {
+            cerr << "Failed to destroy NvBufSurface" << endl;
+            ctx->in_error = 1;
+        }
+
         ctx->dst_dma_fd = -1;
     }
  
@@ -519,12 +533,20 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         {
             if (ctx->dmabuff_fd[index] != 0)
             {
-                ret_val = NvBufferDestroy(ctx->dmabuff_fd[index]);
-                if (ret_val)
-                {
-                    LOG_INFO << "Failed to Destroy NvBuffer" << endl;
+                ret_val = NvBufSurfaceFromFd((int)ctx->dmabuff_fd[index],
+                                             (void**)(&cap_nvbuf_surf));
+                if (ret_val) {
+                    cerr << "Failed to Get NvBufSurface from FD" << endl;
                     ctx->in_error = 1;
                 }
+
+                ret_val = NvBufSurfaceDestroy(cap_nvbuf_surf);
+                if (ret_val) {
+                    cerr << "Failed to destroy NvBufSurface" << endl;
+                    ctx->in_error = 1;
+                }
+
+                ctx->dmabuff_fd[index] = 0;
             }
         }
     }
@@ -564,12 +586,12 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
         if (format.fmt.pix_mp.quantization == V4L2_QUANTIZATION_DEFAULT)
         {
             LOG_INFO << "Decoder colorspace ITU-R BT.601 with standard range luma (16-235)" << endl;
-            cap_params.colorFormat = NvBufferColorFormat_NV12;
+            capParams.params.colorFormat = NVBUF_COLOR_FORMAT_NV12;
         }
         else
         {
             LOG_INFO << "Decoder colorspace ITU-R BT.601 with extended range luma (0-255)" << endl;
-            cap_params.colorFormat = NvBufferColorFormat_NV12_ER;
+            capParams.params.colorFormat = NVBUF_COLOR_FORMAT_NV12_ER;
         }
  
         // Request number of buffers more than minimum returned by ctrl.
@@ -586,18 +608,21 @@ void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpe
  
         for (uint32_t index = 0; index < ctx->cp_num_buffers; index++)
         {
-            cap_params.width = crop.c.width;
-            cap_params.height = crop.c.height;
-            cap_params.layout = NvBufferLayout_BlockLinear;
-            cap_params.payloadType = NvBufferPayload_SurfArray;
-            cap_params.nvbuf_tag = NvBufferTag_VIDEO_DEC;
-            ret_val = NvBufferCreateEx(&ctx->dmabuff_fd[index], &cap_params);
+            capParams.params.width = crop.c.width;
+            capParams.params.height = crop.c.height;
+            capParams.params.layout = NVBUF_LAYOUT_BLOCK_LINEAR;
+            capParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
+            capParams.memtag = NvBufSurfaceTag_VIDEO_DEC;
+
+            ret_val = NvBufSurfaceAllocate(&cap_nvbuf_surf, 1, &capParams);
             if (ret_val)
             {
-                LOG_INFO << "Failed to create buffers" << endl;
+                cerr << "Creation of dmabuf failed" << endl;
                 ctx->in_error = 1;
                 break;
             }
+            cap_nvbuf_surf->numFilled = 1;
+            ctx->dmabuff_fd[index] = cap_nvbuf_surf->surfaceList[0].bufferDesc;
         }
  
         // Request buffers on capture plane.
@@ -749,13 +774,14 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 break;
             }
             
+            LOG_INFO << "Transform check: display_width=" << ctx->display_width;
             if (ctx->display_width != 0)
             {
                 /* Transformation parameters are defined
                 ** which are passed to the NvBufferTransform
                 ** for required conversion.
                 */
-                NvBufferRect src_rect, dest_rect;
+                NvBufSurfTransformRect src_rect, dest_rect;
                 src_rect.top = 0;
                 src_rect.left = 0;
                 src_rect.width = ctx->display_width;
@@ -765,18 +791,18 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 dest_rect.width = ctx->display_width;
                 dest_rect.height = ctx->display_height;
  
-                NvBufferTransformParams transform_params;
+                NvBufSurfTransformParams transform_params;
                 memset(&transform_params,0,sizeof (transform_params));
  
                 /* @transform_flag defines the flags for enabling the
                 ** valid transforms. All the valid parameters are
                 **  present in the nvbuf_utils header.
                 */
-                transform_params.transform_flag = NVBUFFER_TRANSFORM_FILTER;
-                transform_params.transform_flip = NvBufferTransform_None;
-                transform_params.transform_filter = NvBufferTransform_Filter_Smart;
-                transform_params.src_rect = src_rect;
-                transform_params.dst_rect = dest_rect;
+                transform_params.transform_flag = NVBUFSURF_TRANSFORM_FILTER;
+                transform_params.transform_flip = NvBufSurfTransform_None;
+                transform_params.transform_filter = NvBufSurfTransformInter_Nearest;
+                transform_params.src_rect = &src_rect;
+                transform_params.dst_rect = &dest_rect;
  
                 // Written for NV12.
                 if (ctx->cp_mem_type == V4L2_MEMORY_DMABUF)
@@ -792,8 +818,39 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
 
                 auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
                 int f_d = dmaOutFrame->getFd();
+// JP5: Proper transform implementation following official sample
+                NvBufSurface* src_nvbuf_surf = nullptr;
+                NvBufSurface* dst_nvbuf_surf = nullptr;
+
+                // Get source buffer from decoder
+                ret_val = NvBufSurfaceFromFd(ctx->dmabuff_fd[v4l2_buf.index], (void**)(&src_nvbuf_surf));
+                if (ret_val != 0) {
+                    LOG_ERROR << "Failed to get source NvBufSurface from FD " << ctx->dmabuff_fd[v4l2_buf.index] << ": " << ret_val;
+                    ctx->in_error = 1;
+                    break;
+                }
+
+                // Get destination buffer from output frame
+                dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
+                if (!dst_nvbuf_surf) {
+                    LOG_ERROR << "Failed to get destination NvBufSurface";
+                    ctx->in_error = 1;
+                    break;
+                }
+
+                // Ensure destination is properly configured for pitch layout
+                dst_nvbuf_surf->surfaceList[0].layout = NVBUF_LAYOUT_PITCH;
+
+                // Perform the transform
+                ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
+                LOG_INFO << "NvBufSurfTransform result: " << ret_val << " (0=success)";
                 
-                ret_val = NvBufferTransform(decoded_buffer->planes[0].fd,f_d, &transform_params);
+                if (ret_val != 0) {
+                    LOG_ERROR << "NvBufSurfTransform failed with error: " << ret_val;
+                    // Try to get more details about the error
+                    LOG_ERROR << "Source format: " << src_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << src_nvbuf_surf->surfaceList[0].layout;
+                    LOG_ERROR << "Dest format: " << dst_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << dst_nvbuf_surf->surfaceList[0].layout;
+                }
                 if (ret_val == -1)
                 {
                     ctx->in_error = 1;
@@ -1483,7 +1540,7 @@ bool h264DecoderV4L2Helper::term_helper()
         {
             for (uint32_t idx = 0; idx < ctx.cp_num_buffers; ++idx)
             {
-                ret = NvBufferDestroy(ctx.dmabuff_fd[idx]);
+                // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
                 if (ret)
                 {
                     LOG_DEBUG << "Failed to Destroy Buffers" << endl;
@@ -1518,7 +1575,7 @@ bool h264DecoderV4L2Helper::term_helper()
             {
                 if (ctx.dmabuff_fd[i] != 0)
                 {
-                    ret = NvBufferDestroy(ctx.dmabuff_fd[i]);
+                    // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
                     ctx.dmabuff_fd[i] = 0;
                     if (ret < 0)
                     {
@@ -1529,7 +1586,7 @@ bool h264DecoderV4L2Helper::term_helper()
         }
         if (ctx.dst_dma_fd != -1)
         {
-            NvBufferDestroy(ctx.dst_dma_fd);
+            // TODO: Fix cleanup - NvBufSurfaceDestroy(ctx.dst_dma_fd);
             ctx.dst_dma_fd = -1;
         }
  
@@ -1557,55 +1614,5 @@ bool h264DecoderV4L2Helper::term_helper()
         LOG_DEBUG  << "Decoder Run is successful" << endl;
     }
  
-    return true;
-
-}
- 
-bool h264DecoderV4L2Helper::flush_frames()
-{
-    LOG_DEBUG << "Flushing all frames from decoder";
-    
-    // Signal end of stream
-    struct v4l2_buffer v4l2_buf;
-    struct v4l2_plane planes[MAX_PLANES];
-    Buffer *buffer;
-
-    memset(&v4l2_buf, 0, sizeof(v4l2_buf));
-    memset(planes, 0, sizeof(planes));
-    v4l2_buf.m.planes = planes;
-
-    // Queue empty buffer to signal EOS
-    buffer = ctx.op_buffers[0];
-    buffer->planes[0].bytesused = 0;
-    
-    int ret = q_buffer(&ctx, v4l2_buf, buffer,
-        ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
-    if (ret) {
-        LOG_DEBUG << "Error queueing EOS buffer";
-        ctx.in_error = 1;
-        return false;
-    }
-
-    // Wait for all queued buffers to be processed
-    while (ctx.num_queued_op_buffers > 0 && !ctx.in_error) {
-        memset(&v4l2_buf, 0, sizeof(v4l2_buf));
-        memset(planes, 0, sizeof(planes));
-        v4l2_buf.m.planes = planes;
-
-        ret = dq_buffer(&ctx, v4l2_buf, NULL, ctx.op_buf_type, ctx.op_mem_type, -1);
-        if (ret) {
-            LOG_DEBUG << "Error dequeuing buffer during flush";
-            ctx.in_error = 1;
-            return false;
-        }
-    }
-
-    // // Signal capture thread to stop
-    // ctx.eos = true;
-    // ctx.got_eos = 1;
-
-    // Let capture thread process remaining frames
-    usleep(1000);
-
-    return true;
+    return;
 }

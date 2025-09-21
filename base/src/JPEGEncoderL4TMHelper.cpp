@@ -80,12 +80,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
     cinfo.input_components = 3; // YUV RGB
     cinfo.in_color_space = color_space;
 
-    if (scale != 1)
-    {
-        cinfo.image_scale = TRUE;
-        cinfo.scaled_image_width = width * scale;
-        cinfo.scaled_image_height = height * scale;
-    }
+// Scaling functionality removed - not available in standard libjpeg    // if (scale != 1) { ... }
 
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, quality, TRUE);
@@ -177,7 +172,6 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
             jpeg_write_scanlines(&cinfo, &row, 1); 
         }
     }
-            
 
     jpeg_finish_compress(&cinfo);
 

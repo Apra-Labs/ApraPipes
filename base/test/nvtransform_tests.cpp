@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(fdtest)
 
 
 
-	DMAUtils::freeCudaPtr(eglInImage,&pInResource, eglDisplay);
+	// DMAUtils::freeCudaPtr(eglInImage,&pInResource, eglDisplay);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
