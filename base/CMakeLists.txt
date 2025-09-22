@@ -341,7 +341,7 @@ SET(IP_FILES
 	# src/OverlayFactory.cpp
 	# src/TestSignalGeneratorSrc.cpp
 	# src/AudioToTextXForm.cpp 
-	# src/AbsControlModule.cpp
+	src/AbsControlModule.cpp
 	# src/ThumbnailListGenerator.cpp
 )
 	
