@@ -671,7 +671,8 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
-  aprapipes  
+  aprapipes
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -684,6 +685,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -692,6 +694,8 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
+
   )
 
 IF(ENABLE_WINDOWS)
