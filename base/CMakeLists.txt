@@ -90,8 +90,9 @@ IF(ENABLE_CUDA)
 		
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
+		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/nvidia)
 
-		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
+		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED PATHS /usr/lib/aarch64-linux-gnu/nvidia/)
 		find_library(V4L2LIB nvv4l2 REQUIRED)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
