@@ -337,9 +337,9 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
-	# src/Overlay.cpp
-	# src/OverlayFactory.h
-	# src/OverlayFactory.cpp
+	src/Overlay.cpp
+	src/OverlayFactory.h
+	src/OverlayFactory.cpp
 	# src/TestSignalGeneratorSrc.cpp
 	# src/AudioToTextXForm.cpp 
 	src/AbsControlModule.cpp
