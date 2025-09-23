@@ -23,7 +23,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
     inputParams.params.layout = layout;
     inputParams.params.colorFormat = colorFormat;
     inputParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
-    inputParams.memtag = NvBufSurfaceTag_CAMERA;
+    inputParams.memtag = NvBufSurfaceTag_VIDEO_DEC;
 
     if (NvBufSurfaceAllocate(&buffer->m_surf, 1, &inputParams))
     {
@@ -58,7 +58,17 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         }
 
         // JP5: Set hostPtrU to mapped address for plane 1
-        buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
+        // For NV12, UV plane comes after Y plane in memory
+        if (colorFormat == NVBUF_COLOR_FORMAT_NV12) {
+            uint32_t yPitch = buffer->m_surf->surfaceList[0].planeParams.pitch[0];
+            uint32_t yHeight = buffer->m_surf->surfaceList[0].planeParams.height[0];
+            buffer->hostPtrU = (uint8_t*)buffer->hostPtr + (yPitch * yHeight);
+            //LOG_ERROR << "[DMAFDWrapper] NV12 UV pointer fix:";
+            LOG_ERROR << "  Y ptr = " << buffer->hostPtr << " UV ptr = " << buffer->hostPtrU;
+            //LOG_ERROR << "  UV offset = " << (yPitch * yHeight) << " bytes";
+        } else {
+            buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
+        }
     }
 
     if (colorFormat == NVBUF_COLOR_FORMAT_YUV420)
@@ -193,4 +203,25 @@ const void *DMAFDWrapper::getClientData() const
 void DMAFDWrapper::setClientData(const void *_clientData)
 {
     clientData = _clientData;
+}
+void DMAFDWrapper::refreshHostPointers()
+{
+    if (m_surf) {
+        hostPtr = m_surf->surfaceList[0].mappedAddr.addr[0];
+        
+        // For NV12, calculate UV pointer correctly
+        if (m_surf->surfaceList[0].colorFormat == NVBUF_COLOR_FORMAT_NV12) {
+            uint32_t yPitch = m_surf->surfaceList[0].planeParams.pitch[0];
+            uint32_t yHeight = m_surf->surfaceList[0].planeParams.height[0];
+            hostPtrU = (uint8_t*)hostPtr + (yPitch * yHeight);
+        } else {
+            if (m_surf->surfaceList[0].planeParams.num_planes > 1) {
+                hostPtrU = m_surf->surfaceList[0].mappedAddr.addr[1];
+            }
+        }
+        
+        if (m_surf->surfaceList[0].planeParams.num_planes > 2) {
+            hostPtrV = m_surf->surfaceList[0].mappedAddr.addr[2];
+        }
+    }
 }

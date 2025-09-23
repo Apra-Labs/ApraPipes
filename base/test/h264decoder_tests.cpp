@@ -19,6 +19,46 @@
 
 BOOST_AUTO_TEST_SUITE(h264decoder_tests)
 
+BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer_2)
+{
+	Logger::setLogLevel("debug");
+
+        auto fileReader =
+            boost::shared_ptr<FileReaderModule>(new FileReaderModule(
+                FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+        auto metadata = framemetadata_sp(
+            new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA,
+                                 CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
+        fileReader->addOutputPin(metadata);
+
+        auto stream = cudastream_sp(new ApraCudaStream);
+	auto memconversionDMA = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	fileReader->setNext(memconversionDMA);
+
+	auto memconversionHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	memconversionDMA->setNext(memconversionHost);
+
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/MEMCPY_TEST/frame_????.raw")));
+	memconversionHost->setNext(fileWriter);
+
+	boost::shared_ptr<PipeLine> p;
+	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	p->appendModule(fileReader);
+
+        if (!p->init())
+	{
+		throw AIPException(AIP_FATAL, "Engine Pipeline init failed. Check IPEngine Logs for more details.");
+	}
+
+	p->run_all_threaded();
+	Test_Utils::sleep_for_seconds(1);
+	p->stop();
+	p->term();
+	p->wait_for_all();
+	p.reset();
+}
+
+
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 {
 	Logger::setLogLevel("info");

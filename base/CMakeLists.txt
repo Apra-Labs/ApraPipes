@@ -545,7 +545,7 @@ IF (ENABLE_ARM64)
 		# test/cuda_arm_tests.cpp
 		# test/apraegldisplay_tests.cpp
 		# test/frame_factory_test_dma.cpp
-		# test/h264decoder_tests.cpp
+		test/h264decoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 

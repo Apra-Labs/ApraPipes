@@ -27,6 +27,8 @@ public:
     void* getHostPtrV();
     void* getHostPtrUV();
     void* getCudaPtr() const;
+    void refreshHostPointers();
+    
     int getIndex() const;
 
     const void* getClientData() const;

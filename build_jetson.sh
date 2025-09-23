@@ -48,10 +48,10 @@ if [[ $1 == "--build-doc" ]]; then
     ./build_documentation.sh
 fi
 
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg integrate install
-cd ..
+# cd vcpkg
+# ./bootstrap-vcpkg.sh
+# ./vcpkg integrate install
+# cd ..
 
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build

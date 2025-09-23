@@ -664,7 +664,8 @@ bool H264Decoder::processSOS(frame_sp& frame)
 		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
 
 #ifdef ARM64
-		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
+		size_t alignedStride = ((mDetail->mWidth + 127) / 128) * 128;
+		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, alignedStride, CV_8U, FrameMetadata::MemType::DMABUF);
 #else
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 #endif

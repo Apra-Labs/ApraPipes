@@ -410,6 +410,34 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ctx->display_height = crop.c.height;
     ctx->display_width = crop.c.width;
  
+    // Create intermediate PITCH buffer for transform (following decoder_unit_sample approach)
+    if (ctx->dst_dma_fd == -1)
+    {
+        NvBufSurface *intermediate_nvbuf_surf = NULL;
+        NvBufSurfaceAllocateParams intermediateParams = {0};
+        
+        intermediateParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
+        intermediateParams.params.width = ctx->display_width;
+        intermediateParams.params.height = ctx->display_height;
+        intermediateParams.params.layout = NVBUF_LAYOUT_PITCH;
+        intermediateParams.params.colorFormat = NVBUF_COLOR_FORMAT_NV12;
+        intermediateParams.memtag = NvBufSurfaceTag_VIDEO_DEC;
+        
+        ret_val = NvBufSurfaceAllocate(&intermediate_nvbuf_surf, 1, &intermediateParams);
+        if (ret_val != 0) {
+            LOG_ERROR << "Failed to allocate intermediate buffer:"  << ret_val;
+            ctx->in_error = 1;
+            return;
+        }
+        
+        ret_val = 0; ctx->dst_dma_fd = intermediate_nvbuf_surf->surfaceList[0].bufferDesc;
+        if (ret_val != 0) {
+            LOG_ERROR << "Failed to export intermediate FD:"  << ret_val;
+            NvBufSurfaceDestroy(intermediate_nvbuf_surf);
+            ctx->in_error = 1;
+            return;
+        }
+    }
     if (ctx->dst_dma_fd != -1)
     {
         ret_val = NvBufSurfaceFromFd((int)ctx->dst_dma_fd,
@@ -784,10 +812,113 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
                 LOG_INFO << "NvBufSurfTransform result: " << ret_val << " (0=success)";
                 
+                // Debug: Dump intermediate buffer after transform to verify colors
+                if (ret_val == 0) {
+                    static int dump_count = 0;
+                    if (dump_count < 3) {
+                        LOG_INFO << "Dumping intermediate buffer frame " << dump_count;
+                        
+                        // Map and dump both planes
+                        if (NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ) == 0 &&
+                            NvBufSurfaceMap(dst_nvbuf_surf, 0, 1, NVBUF_MAP_READ) == 0) {
+                            
+                            NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
+                            NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 1);
+                            
+                            // Dump Y plane
+                            char filename[256];
+                            snprintf(filename, sizeof(filename), "/tmp/intermediate_plane0_frame%04d.yuv", dump_count);
+                            FILE* fp = fopen(filename, "wb");
+                            if (fp) {
+                                void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
+                                uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
+                                uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
+                                for (uint32_t i = 0; i < height; i++) {
+                                    fwrite((uint8_t*)data + i * pitch, dst_nvbuf_surf->surfaceList[0].planeParams.width[0], 1, fp);
+                                }
+                                fclose(fp);
+                            }
+                            
+                            // Dump UV plane
+                            snprintf(filename, sizeof(filename), "/tmp/intermediate_plane1_frame%04d.yuv", dump_count);
+                            fp = fopen(filename, "wb");
+                            if (fp) {
+                                void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[1];
+                                uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[1];
+                                uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[1];
+                                uint32_t width = dst_nvbuf_surf->surfaceList[0].planeParams.width[1] * 2;
+                                for (uint32_t i = 0; i < height; i++) {
+                                    fwrite((uint8_t*)data + i * pitch, width, 1, fp);
+                                }
+                                fclose(fp);
+                            }
+                            
+                            NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
+                            NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 1);
+                            dump_count++;
+                        }
+                    }
+                }
+                
                 if (ret_val != 0) {
                     LOG_ERROR << "NvBufSurfTransform failed with error: " << ret_val;
                     // Try to get more details about the error
                     LOG_ERROR << "Source format: " << src_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << src_nvbuf_surf->surfaceList[0].layout;
+                
+                // Manual copy from intermediate to output DMA buffer
+                if (ret_val == 0) {
+                    auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
+                    
+                    // Map intermediate buffer for reading
+                    ret_val = NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ);
+                    if (ret_val == 0) {
+                        ret_val = NvBufSurfaceMap(dst_nvbuf_surf, 0, 1, NVBUF_MAP_READ);
+                    }
+                    
+                    if (ret_val == 0) {
+                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
+                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 1);
+                        
+                        // Get pointers
+                        void* srcY = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
+                        void* srcUV = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[1];
+                        void* dstY = dmaOutFrame->getHostPtrY();
+                        void* dstUV = dmaOutFrame->getHostPtrUV();
+                        
+                        // Get dimensions
+                        uint32_t yHeight = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
+                        uint32_t yPitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
+                        uint32_t yWidth = dst_nvbuf_surf->surfaceList[0].planeParams.width[0];
+                        
+                        // Copy Y plane
+                        for (uint32_t i = 0; i < yHeight; i++) {
+                            memcpy((uint8_t*)dstY + i * yPitch, (uint8_t*)srcY + i * yPitch, yWidth);
+                        }
+                        
+                        // Copy UV plane
+                        // Copy UV plane with correct destination pitch
+                        uint32_t uvHeight = dst_nvbuf_surf->surfaceList[0].planeParams.height[1];
+                        uint32_t srcUvPitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[1];
+                        uint32_t uvWidth = dst_nvbuf_surf->surfaceList[0].planeParams.width[1] * 2;
+                        
+                        // Get destination buffer pitch for UV
+                        auto dstSurface = dmaOutFrame->getNvBufSurface();
+                        uint32_t dstUvPitch = dstSurface->surfaceList[0].planeParams.pitch[1];
+                        
+                        for (uint32_t i = 0; i < uvHeight; i++) {
+                            memcpy((uint8_t*)dstUV + i * dstUvPitch, (uint8_t*)srcUV + i * srcUvPitch, uvWidth);
+                    
+                        }
+                        
+                        __sync_synchronize();
+                        
+                        NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
+                        NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 1);
+                        
+                        NvBufSurfaceSyncForDevice(dmaOutFrame->getNvBufSurface(), 0, 0);
+                        NvBufSurfaceSyncForDevice(dmaOutFrame->getNvBufSurface(), 0, 1);
+                    }
+                }
                     LOG_ERROR << "Dest format: " << dst_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << dst_nvbuf_surf->surfaceList[0].layout;
                 }
                 if (ret_val == -1)
