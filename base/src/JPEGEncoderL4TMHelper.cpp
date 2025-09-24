@@ -1,3 +1,4 @@
+#include <iostream>
 #include "JPEGEncoderL4TMHelper.h"
 #include <string.h>
 #include <malloc.h>
@@ -39,7 +40,7 @@ JPEGEncoderL4TMHelper::~JPEGEncoderL4TMHelper()
 
 bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stride, J_COLOR_SPACE color_space, double scale)
 {
-    if (color_space == JCS_RGB)
+    if (color_space == JCS_RGB || color_space == JCS_EXT_RGBA)
     {
         planes = 1;
     }
@@ -77,7 +78,14 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
     cinfo.image_width = width;
     cinfo.image_height = height;
-    cinfo.input_components = 3; // YUV RGB
+    if(color_space == JCS_EXT_RGBA)
+    {
+        cinfo.input_components = 4; // RGBA
+    }
+    else
+    {
+        cinfo.input_components = 3; // YUV RGB
+    }
     cinfo.in_color_space = color_space;
 
 // Scaling functionality removed - not available in standard libjpeg    // if (scale != 1) { ... }
@@ -102,8 +110,11 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
 int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **out_buf, unsigned long &out_buf_size)
 {
-    if(cinfo.in_color_space == JCS_RGB)
+    if(cinfo.in_color_space == JCS_RGB || cinfo.in_color_space == JCS_EXT_RGBA)
     {
+        // Store original color space before destroying
+        J_COLOR_SPACE orig_color_space = cinfo.in_color_space;
+
         // every time destroy the cinfo and create it
         // if we don't do this per encode memory leak of the order of input frame
         jpeg_destroy_compress(&cinfo);
@@ -115,14 +126,24 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
 
         cinfo.image_width = comp_width[0];
         cinfo.image_height = comp_height[0];
-        cinfo.input_components = 3; // YUV RGB
-        cinfo.in_color_space = JCS_RGB;
 
+        // Restore correct components based on original color space
+        if(orig_color_space == JCS_EXT_RGBA)
+        {
+            cinfo.input_components = 4; // RGBA
+            cinfo.in_color_space = JCS_EXT_RGBA;
+        }
+        else
+        {
+            cinfo.input_components = 3; // RGB
+            cinfo.in_color_space = JCS_RGB;
+        }
         jpeg_set_defaults(&cinfo);
         jpeg_set_quality(&cinfo, quality, TRUE);
     }
 
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
+
     // jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
 
     unsigned char *base[planes], *end[planes];

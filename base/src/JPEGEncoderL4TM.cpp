@@ -151,15 +151,15 @@ public:
 	bool validateMetadata(framemetadata_sp &metadata, std::string id)
 	{
 		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3)
+		if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3 && rawImageMetadata->getChannels() != 4)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1 or 3";
+			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1, 3, or 4";
 			return false;
 		}
 
-		if(rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB && rawImageMetadata->getImageType() != ImageMetadata::NV12)
+		if(rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB && rawImageMetadata->getImageType() != ImageMetadata::RGBA && rawImageMetadata->getImageType() != ImageMetadata::NV12)
 		{
-			LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, or NV12";
+			LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, RGBA, or NV12";
 			return false;
 		}
 
@@ -269,6 +269,10 @@ private:
 			{
 				color_space = JCS_RGB;
 			}
+			else if(rawImageMetadata->getImageType() == ImageMetadata::RGBA)
+			{
+				color_space = JCS_EXT_RGBA;
+			}
 			else if(rawImageMetadata->getImageType() == ImageMetadata::NV12 || rawImageMetadata->getImageType() == ImageMetadata::YUV420)
 			{
 				color_space = JCS_YCbCr;
@@ -293,6 +297,10 @@ private:
 			if(rim->getImageType() == ImageMetadata::RGB)
 			{
 				color_space = JCS_RGB;
+			}
+			else if(rim->getImageType() == ImageMetadata::RGBA)
+			{
+				color_space = JCS_EXT_RGBA;
 			}
 			else if(rim->getImageType() == ImageMetadata::NV12 || rim->getImageType() == ImageMetadata::YUV420)
 			{
