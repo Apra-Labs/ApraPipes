@@ -273,6 +273,14 @@ switch (raw_pixfmt)
         planefmts[0].bytesperpixel = 1;
         planefmts[1].bytesperpixel = 2;
         break;
+    case V4L2_PIX_FMT_RGB32:
+    case V4L2_PIX_FMT_ABGR32:
+        *num_planes = 1;
+
+        planefmts[0].width = width;
+        planefmts[0].height = height;
+        planefmts[0].bytesperpixel = 4;
+        break;
     default:
         cout << "Unsupported pixel format " << raw_pixfmt << endl;
         return -1;
@@ -329,9 +337,9 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     uint32_t num_bufferplanes;
     Buffer::BufferPlaneFormat planefmts[MAX_PLANES];
  
-    if (pixfmt != V4L2_PIX_FMT_NV12M)
+    if (pixfmt != V4L2_PIX_FMT_NV12M && pixfmt != V4L2_PIX_FMT_RGB32 && pixfmt != V4L2_PIX_FMT_ABGR32)
     {
-        LOG_ERROR << "Only V4L2_PIX_FMT_NV12M is supported" << endl;
+        LOG_ERROR << "Only V4L2_PIX_FMT_NV12M, V4L2_PIX_FMT_RGB32, V4L2_PIX_FMT_ABGR32 are supported. Got: " << pixfmt << endl;
         ctx->in_error = 1;
         return -1;
     }
@@ -522,9 +530,25 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     }
  
     // Set capture plane format to update vars.
- 
-    ret_val = set_capture_plane_format(ctx, format.fmt.pix_mp.pixelformat,
-        format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+    // Try RGBA first, fallback to NV12 if not supported
+    uint32_t requested_format = format.fmt.pix_mp.pixelformat;
+    if (requested_format == V4L2_PIX_FMT_ABGR32) {
+        // Try to set RGBA format
+        ret_val = set_capture_plane_format(ctx, V4L2_PIX_FMT_ABGR32,
+            format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+        if (ret_val) {
+            LOG_INFO << "RGBA format not supported, falling back to NV12" << endl;
+            ctx->out_pixfmt = V4L2_PIX_FMT_NV12M;
+            ret_val = set_capture_plane_format(ctx, V4L2_PIX_FMT_NV12M,
+                format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+        } else {
+            LOG_INFO << "Using RGBA output format" << endl;
+        }
+    } else {
+        ret_val = set_capture_plane_format(ctx, requested_format,
+            format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+    }
+    
     if (ret_val)
     {
         LOG_ERROR << "Error in setting capture plane format" << endl;
@@ -741,7 +765,6 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 break;
             }
             
-            LOG_INFO << "Transform check: display_width=" << ctx->display_width;
             if (ctx->display_width != 0)
             {
                 /* Transformation parameters are defined
@@ -771,155 +794,99 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 transform_params.src_rect = &src_rect;
                 transform_params.dst_rect = &dest_rect;
  
-                // Written for NV12.
+                // Handle both direct RGBA output and NV12->RGBA transform
                 if (ctx->cp_mem_type == V4L2_MEMORY_DMABUF)
                 {
                     decoded_buffer->planes[0].fd = ctx->dmabuff_fd[v4l2_buf.index];
                 }
- 
-                /* Blocklinear to Pitch transformation is required
-                ** to dump the raw decoded buffer data.
-                */
 
                 auto outputFrame = m_nThread->makeFrame();
-
                 auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
                 int f_d = dmaOutFrame->getFd();
-// JP5: Proper transform implementation following official sample
+
+                // Declare variables outside the if/else block
                 NvBufSurface* src_nvbuf_surf = nullptr;
                 NvBufSurface* dst_nvbuf_surf = nullptr;
-
-                // Get source buffer from decoder
-                ret_val = NvBufSurfaceFromFd(ctx->dmabuff_fd[v4l2_buf.index], (void**)(&src_nvbuf_surf));
-                if (ret_val != 0) {
-                    LOG_ERROR << "Failed to get source NvBufSurface from FD " << ctx->dmabuff_fd[v4l2_buf.index] << ": " << ret_val;
-                    ctx->in_error = 1;
-                    break;
-                }
-
-                // Get destination buffer from output frame
-                dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
-                if (!dst_nvbuf_surf) {
-                    LOG_ERROR << "Failed to get destination NvBufSurface";
-                    ctx->in_error = 1;
-                    break;
-                }
-
-                // Ensure destination is properly configured for pitch layout
-                dst_nvbuf_surf->surfaceList[0].layout = NVBUF_LAYOUT_PITCH;
-
-                // Perform the transform
-                ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
-                LOG_INFO << "NvBufSurfTransform result: " << ret_val << " (0=success)";
                 
-                // Debug: Dump intermediate buffer after transform to verify colors
+                // Check if decoder outputs RGBA directly
+                if (ctx->out_pixfmt == V4L2_PIX_FMT_ABGR32) {
+                    // Direct RGBA output - no transform needed
+                    ret_val = 0; // Success
+                } else {
+                    // NV12 output - need transform to RGBA
+
+                    // Get source buffer from decoder (NV12 BlockLinear)
+                    ret_val = NvBufSurfaceFromFd(ctx->dmabuff_fd[v4l2_buf.index], (void**)(&src_nvbuf_surf));
+                    if (ret_val != 0) {
+                        LOG_ERROR << "Failed to get source NvBufSurface from FD " << ctx->dmabuff_fd[v4l2_buf.index] << ": " << ret_val;
+                        ctx->in_error = 1;
+                        break;
+                    }
+                    
+                    // Get destination buffer from output frame (RGBA Pitch)
+                    dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
+                    if (!dst_nvbuf_surf) {
+                        LOG_ERROR << "Failed to get destination NvBufSurface";
+                        ctx->in_error = 1;
+                        break;
+                    }
+
+                    // Skip device sync - decoder output is already device-ready
+                    // NvBufSurfaceSyncForDevice calls are causing driver warnings
+
+                    // Perform NV12 to RGBA transform
+                    ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
+                    if (ret_val == 0) {
+                        // Ensure CPU can read transformed RGBA data
+                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
+                    }
+                }
+                
+                // Debug file dumping disabled for production
+                /*
                 if (ret_val == 0) {
                     static int dump_count = 0;
                     if (dump_count < 3) {
-                        LOG_INFO << "Dumping intermediate buffer frame " << dump_count;
+                        LOG_INFO << "Dumping RGBA buffer frame " << dump_count;
                         
-                        // Map and dump both planes
-                        if (NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ) == 0 &&
-                            NvBufSurfaceMap(dst_nvbuf_surf, 0, 1, NVBUF_MAP_READ) == 0) {
-                            
-                            NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
-                            NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 1);
-                            
-                            // Dump Y plane
-                            char filename[256];
-                            snprintf(filename, sizeof(filename), "/tmp/intermediate_plane0_frame%04d.yuv", dump_count);
-                            FILE* fp = fopen(filename, "wb");
-                            if (fp) {
-                                void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
-                                uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
-                                uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
-                                for (uint32_t i = 0; i < height; i++) {
-                                    fwrite((uint8_t*)data + i * pitch, dst_nvbuf_surf->surfaceList[0].planeParams.width[0], 1, fp);
+                        // Get destination surface for dumping (either from transform or direct output)
+                        if (ctx->out_pixfmt == V4L2_PIX_FMT_ABGR32) {
+                            // Direct RGBA output - get surface from output frame
+                            dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
+                        }
+                        
+                        if (dst_nvbuf_surf) {
+                            // Map and dump RGBA plane
+                            if (NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ) == 0) {
+                                
+                                NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
+                                
+                                // Dump RGBA plane
+                                char filename[256];
+                                snprintf(filename, sizeof(filename), "/tmp/rgba_frame%04d.raw", dump_count);
+                                FILE* fp = fopen(filename, "wb");
+                                if (fp) {
+                                    void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
+                                    uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
+                                    uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
+                                    uint32_t width = dst_nvbuf_surf->surfaceList[0].planeParams.width[0];
+                                    for (uint32_t i = 0; i < height; i++) {
+                                        fwrite((uint8_t*)data + i * pitch, width * 4, 1, fp); // 4 bytes per RGBA pixel
+                                    }
+                                    fclose(fp);
+                                    LOG_INFO << "Dumped RGBA frame " << dump_count << " to " << filename;
                                 }
-                                fclose(fp);
+                                
+                                NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
+                                dump_count++;
                             }
-                            
-                            // Dump UV plane
-                            snprintf(filename, sizeof(filename), "/tmp/intermediate_plane1_frame%04d.yuv", dump_count);
-                            fp = fopen(filename, "wb");
-                            if (fp) {
-                                void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[1];
-                                uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[1];
-                                uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[1];
-                                uint32_t width = dst_nvbuf_surf->surfaceList[0].planeParams.width[1] * 2;
-                                for (uint32_t i = 0; i < height; i++) {
-                                    fwrite((uint8_t*)data + i * pitch, width, 1, fp);
-                                }
-                                fclose(fp);
-                            }
-                            
-                            NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
-                            NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 1);
-                            dump_count++;
                         }
                     }
                 }
+                */
                 
                 if (ret_val != 0) {
-                    LOG_ERROR << "NvBufSurfTransform failed with error: " << ret_val;
-                    // Try to get more details about the error
-                    LOG_ERROR << "Source format: " << src_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << src_nvbuf_surf->surfaceList[0].layout;
-                
-                // Manual copy from intermediate to output DMA buffer
-                if (ret_val == 0) {
-                    auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
-                    
-                    // Map intermediate buffer for reading
-                    ret_val = NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ);
-                    if (ret_val == 0) {
-                        ret_val = NvBufSurfaceMap(dst_nvbuf_surf, 0, 1, NVBUF_MAP_READ);
-                    }
-                    
-                    if (ret_val == 0) {
-                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
-                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 1);
-                        
-                        // Get pointers
-                        void* srcY = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
-                        void* srcUV = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[1];
-                        void* dstY = dmaOutFrame->getHostPtrY();
-                        void* dstUV = dmaOutFrame->getHostPtrUV();
-                        
-                        // Get dimensions
-                        uint32_t yHeight = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
-                        uint32_t yPitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
-                        uint32_t yWidth = dst_nvbuf_surf->surfaceList[0].planeParams.width[0];
-                        
-                        // Copy Y plane
-                        for (uint32_t i = 0; i < yHeight; i++) {
-                            memcpy((uint8_t*)dstY + i * yPitch, (uint8_t*)srcY + i * yPitch, yWidth);
-                        }
-                        
-                        // Copy UV plane
-                        // Copy UV plane with correct destination pitch
-                        uint32_t uvHeight = dst_nvbuf_surf->surfaceList[0].planeParams.height[1];
-                        uint32_t srcUvPitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[1];
-                        uint32_t uvWidth = dst_nvbuf_surf->surfaceList[0].planeParams.width[1] * 2;
-                        
-                        // Get destination buffer pitch for UV
-                        auto dstSurface = dmaOutFrame->getNvBufSurface();
-                        uint32_t dstUvPitch = dstSurface->surfaceList[0].planeParams.pitch[1];
-                        
-                        for (uint32_t i = 0; i < uvHeight; i++) {
-                            memcpy((uint8_t*)dstUV + i * dstUvPitch, (uint8_t*)srcUV + i * srcUvPitch, uvWidth);
-                    
-                        }
-                        
-                        __sync_synchronize();
-                        
-                        NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
-                        NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 1);
-                        
-                        NvBufSurfaceSyncForDevice(dmaOutFrame->getNvBufSurface(), 0, 0);
-                        NvBufSurfaceSyncForDevice(dmaOutFrame->getNvBufSurface(), 0, 1);
-                    }
-                }
-                    LOG_ERROR << "Dest format: " << dst_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << dst_nvbuf_surf->surfaceList[0].layout;
+                    LOG_ERROR << "Transform/processing failed with error: " << ret_val;
                 }
                 if (ret_val == -1)
                 {
@@ -1333,7 +1300,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     struct v4l2_exportbuffer op_expbuf;
  
     memset(&ctx, 0, sizeof (context_t));
-    ctx.out_pixfmt = V4L2_PIX_FMT_NV12;
+    ctx.out_pixfmt = V4L2_PIX_FMT_ABGR32; // Try RGBA first, fallback to NV12 if not supported
     ctx.decode_pixfmt = V4L2_PIX_FMT_H264;
     ctx.op_mem_type = V4L2_MEMORY_MMAP;
     ctx.cp_mem_type = V4L2_MEMORY_DMABUF;

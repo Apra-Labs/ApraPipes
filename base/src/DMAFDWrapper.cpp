@@ -59,13 +59,21 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
 
         // JP5: Set hostPtrU to mapped address for plane 1
         // For NV12, UV plane comes after Y plane in memory
+        // For NV12, use the actual mapped address for UV plane
+        // NvBufSurfaceCopy copies to addr[1], not to Y + offset
         if (colorFormat == NVBUF_COLOR_FORMAT_NV12) {
-            uint32_t yPitch = buffer->m_surf->surfaceList[0].planeParams.pitch[0];
-            uint32_t yHeight = buffer->m_surf->surfaceList[0].planeParams.height[0];
-            buffer->hostPtrU = (uint8_t*)buffer->hostPtr + (yPitch * yHeight);
-            //LOG_ERROR << "[DMAFDWrapper] NV12 UV pointer fix:";
+            // Use the actual mapped UV address, not calculated offset
+            buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
+            LOG_ERROR << "[DMAFDWrapper] NV12 UV pointer using mapped addr[1]:";
             LOG_ERROR << "  Y ptr = " << buffer->hostPtr << " UV ptr = " << buffer->hostPtrU;
-            //LOG_ERROR << "  UV offset = " << (yPitch * yHeight) << " bytes";
+            
+            // Verify if addr[1] is valid
+            if (buffer->hostPtrU == nullptr) {
+                LOG_ERROR << "[DMAFDWrapper] WARNING: UV addr[1] is NULL, calculating offset";
+                uint32_t yPitch = buffer->m_surf->surfaceList[0].planeParams.pitch[0];
+                uint32_t yHeight = buffer->m_surf->surfaceList[0].planeParams.height[0];
+                buffer->hostPtrU = (uint8_t*)buffer->hostPtr + (yPitch * yHeight);
+            }
         } else {
             buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
         }
@@ -209,11 +217,15 @@ void DMAFDWrapper::refreshHostPointers()
     if (m_surf) {
         hostPtr = m_surf->surfaceList[0].mappedAddr.addr[0];
         
-        // For NV12, calculate UV pointer correctly
+        // For NV12, use the actual mapped address for UV
         if (m_surf->surfaceList[0].colorFormat == NVBUF_COLOR_FORMAT_NV12) {
-            uint32_t yPitch = m_surf->surfaceList[0].planeParams.pitch[0];
-            uint32_t yHeight = m_surf->surfaceList[0].planeParams.height[0];
-            hostPtrU = (uint8_t*)hostPtr + (yPitch * yHeight);
+            hostPtrU = m_surf->surfaceList[0].mappedAddr.addr[1];
+            if (hostPtrU == nullptr) {
+                // Fallback to calculated offset if addr[1] is NULL
+                uint32_t yPitch = m_surf->surfaceList[0].planeParams.pitch[0];
+                uint32_t yHeight = m_surf->surfaceList[0].planeParams.height[0];
+                hostPtrU = (uint8_t*)hostPtr + (yPitch * yHeight);
+            }
         } else {
             if (m_surf->surfaceList[0].planeParams.num_planes > 1) {
                 hostPtrU = m_surf->surfaceList[0].mappedAddr.addr[1];

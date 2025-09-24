@@ -395,15 +395,15 @@ SET(CUDA_CORE_FILES_H
 
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
-	src/CCKernel.cu
-	src/CCNPPI.cpp	
-	src/EffectsKernel.cu
-	src/EffectsNPPI.cpp
-	src/GaussianBlur.cpp
-	src/OverlayKernel.cu
-	src/OverlayNPPI.cpp
+	# src/CCKernel.cu
+	# src/CCNPPI.cpp	
+	# src/EffectsKernel.cu
+	# src/EffectsNPPI.cpp
+	# src/GaussianBlur.cpp
+	# src/OverlayKernel.cu
+	# src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp		
+	# src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
 )
 
