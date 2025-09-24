@@ -91,7 +91,7 @@ H264Decoder::H264Decoder(H264DecoderProps _props) : Module(TRANSFORM, "H264Decod
 {
 	mDetail.reset(new Detail(mProps));
 #ifdef ARM64
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+    mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
 #else
 	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
 #endif
@@ -130,9 +130,9 @@ bool H264Decoder::validateOutputPins()
 
 	framemetadata_sp metadata = getFirstOutputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::RAW_IMAGE_PLANAR)
+	if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::RAW_IMAGE_PLANAR)
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -661,10 +661,10 @@ bool H264Decoder::processSOS(frame_sp& frame)
 	if (ret)
 	{
 		mShouldTriggerSOS = false;
-		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mOutputMetadata);
+		auto rawOutMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata);
 
 #ifdef ARM64
-		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::NV12, 128, CV_8U, FrameMetadata::MemType::DMABUF);
+        RawImageMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::ImageType::RGBA, CV_8UC4, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true);
 #else
 		RawImagePlanarMetadata OutputMetadata(mDetail->mWidth, mDetail->mHeight, ImageMetadata::YUV420, size_t(0), CV_8U, FrameMetadata::HOST);
 #endif

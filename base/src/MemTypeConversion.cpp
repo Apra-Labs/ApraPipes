@@ -180,6 +180,24 @@ public:
 #if 1
 		mGetImagePlanes(inputFrame, mImagePlanes);
 		dstPtr = static_cast<uint8_t *>(outputFrame->data());
+		
+		// Debug UV plane pointers
+		// auto dmaPtr = static_cast<DMAFDWrapper *>(inputFrame->data());
+		// LOG_ERROR << "[UV DEBUG] DMAFDWrapper pointers:";
+		// LOG_ERROR << "  Y ptr = " << dmaPtr->getHostPtrY() << " UV ptr = " << dmaPtr->getHostPtrUV();
+		// LOG_ERROR << "  UV offset from Y = " << ((uint8_t*)dmaPtr->getHostPtrUV() - (uint8_t*)dmaPtr->getHostPtrY()) << " bytes";
+		
+		// // Debug: Log plane pointers and first few bytes
+		// LOG_INFO << "DetailDMAtoHOST copying " << mNumPlanes << " planes";
+		// for (auto i = 0; i < mNumPlanes; i++) {
+		// 	LOG_INFO << "  Plane " << i << " data ptr = " << mImagePlanes[i]->data;
+		// 	uint8_t* planeData = (uint8_t*)mImagePlanes[i]->data;
+		// 	LOG_INFO << "    First 8 bytes: " << std::hex 
+		// 	         << (int)planeData[0] << " " << (int)planeData[1] << " " 
+		// 	         << (int)planeData[2] << " " << (int)planeData[3] << " " 
+		// 	         << (int)planeData[4] << " " << (int)planeData[5] << " " 
+		// 	         << (int)planeData[6] << " " << (int)planeData[7] << std::dec;
+		// }
 
 		for (auto i = 0; i < mNumPlanes; i++)
 		{
@@ -498,7 +516,8 @@ bool MemTypeConversion::processSOS(frame_sp &frame)
 		auto outputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mDetail->mOutputMetadata);
 
 		mDetail->imageType = inputRawMetadata->getImageType();
-		RawImagePlanarMetadata rawMetadata(inputRawMetadata->getWidth(0), inputRawMetadata->getHeight(0), mDetail->imageType, mDetail->mAlignLength, inputRawMetadata->getDepth(), mInputMemType);
+		size_t outputStride = inputRawMetadata->getStep(0);
+		RawImagePlanarMetadata rawMetadata(inputRawMetadata->getWidth(0), inputRawMetadata->getHeight(0), mDetail->imageType, size_t(0), inputRawMetadata->getDepth(), mProps.outputMemType);
 		outputRawMetadata->setData(rawMetadata);
 	}
 	break;

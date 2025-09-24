@@ -151,14 +151,19 @@ public:
         {
             auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
             size_t step[4] = {0, 0, 0, 0};
-            step[0] = fdParams.planeParams.pitch[0];
-            if(pitchValues != nullptr)
+            // Populate pitch/offset for all available planes
+            int num_planes = fdParams.planeParams.num_planes;
+            for (int i = 0; i < num_planes && i < 4; i++)
             {
-              pitchValues[0] = fdParams.planeParams.pitch[0];
-            }
-            if(offsetValues != nullptr)
-            {
-              offsetValues[0] = fdParams.planeParams.offset[0];
+                step[i] = fdParams.planeParams.pitch[i];
+                if (pitchValues != nullptr)
+                {
+                    pitchValues[i] = fdParams.planeParams.pitch[i];
+                }
+                if (offsetValues != nullptr)
+                {
+                    offsetValues[i] = fdParams.planeParams.offset[i];
+                }
             }
             RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
             inputRawMetadata->setData(rawMetadata);

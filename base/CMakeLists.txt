@@ -90,6 +90,7 @@ IF(ENABLE_CUDA)
 		
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra)
 		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/tegra-egl)
+		list(APPEND CMAKE_PREFIX_PATH /usr/lib/aarch64-linux-gnu/nvidia)
 
 		find_library(NVJPEGLIB_L4T nvjpeg REQUIRED)
 		find_library(V4L2LIB nvv4l2 REQUIRED)
@@ -336,9 +337,9 @@ SET(IP_FILES
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
-	# src/Overlay.cpp
-	# src/OverlayFactory.h
-	# src/OverlayFactory.cpp
+	src/Overlay.cpp
+	src/OverlayFactory.h
+	src/OverlayFactory.cpp
 	# src/TestSignalGeneratorSrc.cpp
 	# src/AudioToTextXForm.cpp 
 	src/AbsControlModule.cpp
@@ -394,15 +395,15 @@ SET(CUDA_CORE_FILES_H
 
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
-	src/CCKernel.cu
-	src/CCNPPI.cpp	
-	src/EffectsKernel.cu
-	src/EffectsNPPI.cpp
-	src/GaussianBlur.cpp
-	src/OverlayKernel.cu
-	src/OverlayNPPI.cpp
+	# src/CCKernel.cu
+	# src/CCNPPI.cpp	
+	# src/EffectsKernel.cu
+	# src/EffectsNPPI.cpp
+	# src/GaussianBlur.cpp
+	# src/OverlayKernel.cu
+	# src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp		
+	# src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
 )
 
@@ -544,7 +545,7 @@ IF (ENABLE_ARM64)
 		# test/cuda_arm_tests.cpp
 		# test/apraegldisplay_tests.cpp
 		# test/frame_factory_test_dma.cpp
-		# test/h264decoder_tests.cpp
+		test/h264decoder_tests.cpp
 	)
 ENDIF(ENABLE_ARM64)
 
@@ -670,7 +671,8 @@ IF(ENABLE_LINUX)
 ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
-  aprapipes  
+  aprapipes
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -683,6 +685,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
   ZXing::Core
   ZXing::ZXing	
   BZip2::BZip2
@@ -691,6 +694,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
+  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
   )
 
 IF(ENABLE_WINDOWS)
