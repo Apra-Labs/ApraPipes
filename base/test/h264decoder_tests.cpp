@@ -62,6 +62,8 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer_2)
 
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 {
+	for(int i =0 ; i < 100000; i++)
+	{
 	Logger::setLogLevel("info");
 
 	// metadata is known
@@ -99,15 +101,15 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 
 	p->run_all_threaded();
 
-	Test_Utils::sleep_for_seconds(15);
+	Test_Utils::sleep_for_seconds(5);
 
 	p->stop();
 	p->term();
 	p->wait_for_all();
 	p.reset();
+	}
+
 }
-
-
 BOOST_AUTO_TEST_CASE(sample_mp4_file_decoder_cuda_device_to_host)
 {
 	Logger::setLogLevel("info");

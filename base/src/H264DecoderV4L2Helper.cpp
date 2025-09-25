@@ -1587,7 +1587,14 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
         {
             for (uint32_t idx = 0; idx < ctx.cp_num_buffers; ++idx)
             {
-                // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
+                if (ctx.dmabuff_fd[idx] != 0) {
+                    NvBufSurface *nvbuf_surf = nullptr;
+                    ret = NvBufSurfaceFromFd((int)ctx.dmabuff_fd[idx], (void**)(&nvbuf_surf));
+                    if (ret == 0 && nvbuf_surf) {
+                        ret = NvBufSurfaceDestroy(nvbuf_surf);
+                    }
+                    ctx.dmabuff_fd[idx] = 0;
+                }
                 if (ret)
                 {
                     LOG_ERROR << "Failed to Destroy Buffers" << endl;
@@ -1622,7 +1629,12 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
             {
                 if (ctx.dmabuff_fd[i] != 0)
                 {
-                    // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
+                    NvBufSurface *nvbuf_surf = nullptr;
+                    ret = NvBufSurfaceFromFd((int)ctx.dst_dma_fd, (void**)(&nvbuf_surf));
+                    if (ret == 0 && nvbuf_surf)
+                    {
+                        ret = NvBufSurfaceDestroy(nvbuf_surf);
+                    }
                     ctx.dmabuff_fd[i] = 0;
                     if (ret < 0)
                     {
@@ -1633,7 +1645,11 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
         }
         if (ctx.dst_dma_fd != -1)
         {
-            // TODO: Fix cleanup - NvBufSurfaceDestroy(ctx.dst_dma_fd);
+            NvBufSurface *nvbuf_surf = nullptr;
+            ret = NvBufSurfaceFromFd((int)ctx.dst_dma_fd, (void**)(&nvbuf_surf));
+            if (ret == 0 && nvbuf_surf) {
+                ret = NvBufSurfaceDestroy(nvbuf_surf);
+            }
             ctx.dst_dma_fd = -1;
         }
  
