@@ -628,6 +628,7 @@ SET(UT_FILES
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
+	test/framefactory_memory_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
