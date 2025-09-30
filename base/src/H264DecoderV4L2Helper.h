@@ -34,21 +34,8 @@
  * Jetpack 5: /dev/nvhost-nvdec
  * Jetpack 6: /dev/v4l2-nvdec
  */
-#define DECODER_DEV_JP5 "/dev/nvhost-nvdec"
 #define DECODER_DEV_JP6 "/dev/v4l2-nvdec"
 
-inline const char* getDecoderDevice() {
-    // Try Jetpack 6 device first
-    if (access(DECODER_DEV_JP6, F_OK) == 0) {
-        return DECODER_DEV_JP6;
-    }
-    // Fall back to Jetpack 5 device
-    if (access(DECODER_DEV_JP5, F_OK) == 0) {
-        return DECODER_DEV_JP5;
-    }
-    // Default to Jetpack 5 for backward compatibility
-    return DECODER_DEV_JP5;
-}
 #define MAX_BUFFERS 32
 #define CHUNK_SIZE 4000000
 /**
