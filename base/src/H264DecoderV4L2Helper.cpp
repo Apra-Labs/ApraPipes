@@ -1320,11 +1320,11 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ** should be opened.
     ** This opens the device in Blocking mode.
     */
-    ctx.fd = v4l2_open(DECODER_DEV, flags | O_RDWR);
+    ctx.fd = v4l2_open(getDecoderDevice(), flags | O_RDWR);
     
     if (ctx.fd == -1)
     {
-        LOG_ERROR << "Could not open device" << DECODER_DEV << endl;
+        LOG_ERROR << "Could not open device " << getDecoderDevice() << endl;
         ctx.in_error = 1;
     }
  
