@@ -34,6 +34,11 @@ add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
 
 set(CMAKE_CXX_STANDARD 17)
 
+IF(ENABLE_CUDA)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 17)
+ENDIF()
+
 project(APRAPIPES)
 
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
@@ -41,6 +46,10 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 find_package(PkgConfig REQUIRED)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
+
+# Add custom cmake modules directory for FindCUDA.cmake compatibility
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
