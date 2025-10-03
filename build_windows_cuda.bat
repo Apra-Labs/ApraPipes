@@ -33,15 +33,15 @@ IF EXIST "%CUDA_VERSION_FILE%" (
     REM Check for VS 2019 first (most compatible)
     IF EXIST "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community" (
         echo Using Visual Studio 2019 Community for CUDA 11.8 compatibility
-        SET VS_GENERATOR=-G "Visual Studio 16 2019"
+        SET "VS_GENERATOR=-G Visual Studio 16 2019"
         SET VCPKG_PLATFORM_TOOLSET=v142
     ) ELSE IF EXIST "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional" (
         echo Using Visual Studio 2019 Professional for CUDA 11.8 compatibility
-        SET VS_GENERATOR=-G "Visual Studio 16 2019"
+        SET "VS_GENERATOR=-G Visual Studio 16 2019"
         SET VCPKG_PLATFORM_TOOLSET=v142
     ) ELSE IF EXIST "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise" (
         echo Using Visual Studio 2019 Enterprise for CUDA 11.8 compatibility
-        SET VS_GENERATOR=-G "Visual Studio 16 2019"
+        SET "VS_GENERATOR=-G Visual Studio 16 2019"
         SET VCPKG_PLATFORM_TOOLSET=v142
     ) ELSE (
         REM VS 2019 not found, check for compatible VS 2022 version
@@ -56,7 +56,7 @@ IF EXIST "%CUDA_VERSION_FILE%" (
             FOR /F "tokens=*" %%i IN ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -version "[17.0,17.4)" -latest -property installationVersion 2^>nul') DO SET "VS2022_VERSION=%%i"
             echo Found Visual Studio 2022 version !VS2022_VERSION!
             echo Using Visual Studio 2022 for CUDA 11.8 ^(compatible up to v17.3^)
-            SET VS_GENERATOR=-G "Visual Studio 17 2022"
+            SET "VS_GENERATOR=-G Visual Studio 17 2022"
             SET VCPKG_PLATFORM_TOOLSET=v143
         ) ELSE (
             echo WARNING: CUDA 11.8 detected but no compatible Visual Studio found
