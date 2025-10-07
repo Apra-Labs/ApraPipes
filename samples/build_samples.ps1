@@ -28,8 +28,10 @@ Write-Host ""
 
 Write-Host "[1/5] Verifying prerequisites..." -ForegroundColor Yellow
 
-# Check if main library exists
-$libPath = Join-Path $rootDir "_build\$BuildType\aprapipes.lib"
+# Check if main library exists (aprapipesd.lib for Debug, aprapipes.lib for others)
+$libName = if ($BuildType -eq "Debug") { "aprapipesd.lib" } else { "aprapipes.lib" }
+$libPath = Join-Path $rootDir "_build\$BuildType\$libName"
+
 if (-not (Test-Path $libPath)) {
     Write-Host ""
     Write-Host "ERROR: Main aprapipes library not found!" -ForegroundColor Red

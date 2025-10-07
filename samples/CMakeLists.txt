@@ -20,13 +20,15 @@ set(APRAPIPES_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../base")
 
 message(STATUS "Looking for aprapipes library in: ${APRAPIPES_BUILD_DIR}")
 
-# Find the library file
+# Find the library file (aprapipesd for Debug, aprapipes for others)
+# Try current build type directory first, then fallback to others
 find_library(APRAPIPES_LIB
     NAMES aprapipes aprapipesd
     PATHS
+        ${APRAPIPES_BUILD_DIR}/${CMAKE_BUILD_TYPE}
         ${APRAPIPES_BUILD_DIR}/RelWithDebInfo
-        ${APRAPIPES_BUILD_DIR}/Debug
         ${APRAPIPES_BUILD_DIR}/Release
+        ${APRAPIPES_BUILD_DIR}/Debug
     NO_DEFAULT_PATH
 )
 
@@ -75,6 +77,24 @@ find_package(Boost REQUIRED COMPONENTS
 
 message(STATUS "Found Boost: ${Boost_VERSION}")
 
+# Set up Boost library directories for debug/release
+set(BOOST_LIB_DIR_RELEASE "${BOOST_ROOT}/lib")
+set(BOOST_LIB_DIR_DEBUG "${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/debug/lib")
+
+# Create a function to get Boost library path with debug/release variants
+function(get_boost_libraries OUTPUT_VAR)
+    set(BOOST_LIBS "")
+    foreach(COMPONENT ${ARGN})
+        # Use generator expressions to select debug (-gd) or release libs
+        # .lib files use vc140 naming convention
+        list(APPEND BOOST_LIBS
+            "$<$<CONFIG:Debug>:${BOOST_LIB_DIR_DEBUG}/boost_${COMPONENT}-vc140-mt-gd.lib>"
+            "$<$<NOT:$<CONFIG:Debug>>:${BOOST_LIB_DIR_RELEASE}/boost_${COMPONENT}-vc140-mt.lib>"
+        )
+    endforeach()
+    set(${OUTPUT_VAR} ${BOOST_LIBS} PARENT_SCOPE)
+endfunction()
+
 # Find CUDA (required since aprapipes uses CUDA)
 find_package(CUDAToolkit REQUIRED)
 message(STATUS "Found CUDA: ${CUDAToolkit_VERSION}")
@@ -88,10 +108,15 @@ function(add_apra_sample SAMPLE_NAME SOURCE_FILE)
 
     add_executable(${SAMPLE_NAME} ${SOURCE_FILE})
 
+    # Get Boost libraries with automatic debug/release selection
+    get_boost_libraries(BOOST_LIBS_FOR_SAMPLE
+        system thread filesystem serialization log chrono
+    )
+
     # Link against aprapipes library and dependencies
     target_link_libraries(${SAMPLE_NAME} PRIVATE
         ${APRAPIPES_LIB}
-        ${Boost_LIBRARIES}
+        ${BOOST_LIBS_FOR_SAMPLE}
         CUDA::cudart
         CUDA::cuda_driver
     )
@@ -107,7 +132,8 @@ function(add_apra_sample SAMPLE_NAME SOURCE_FILE)
         # Use /MP for parallel compilation
         target_compile_options(${SAMPLE_NAME} PRIVATE /MP)
 
-        # Set runtime library to match aprapipes
+        # Use correct runtime: /MDd for Debug, /MD for Release/RelWithDebInfo
+        # This matches how aprapipesd.lib and aprapipes.lib are built
         set_property(TARGET ${SAMPLE_NAME} PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
         )
@@ -118,21 +144,14 @@ function(add_apra_sample SAMPLE_NAME SOURCE_FILE)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>
     )
 
-    # Copy Boost DLLs to output directory (needed when running from VS)
+    # Copy Boost DLLs to output directory (uses config-aware script)
     add_custom_command(TARGET ${SAMPLE_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${APRAPIPES_BUILD_DIR}/$<CONFIG>/boost_filesystem-vc142-mt-x64-1_84.dll"
-            "$<TARGET_FILE_DIR:${SAMPLE_NAME}>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${APRAPIPES_BUILD_DIR}/$<CONFIG>/boost_log-vc142-mt-x64-1_84.dll"
-            "$<TARGET_FILE_DIR:${SAMPLE_NAME}>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${APRAPIPES_BUILD_DIR}/$<CONFIG>/boost_serialization-vc142-mt-x64-1_84.dll"
-            "$<TARGET_FILE_DIR:${SAMPLE_NAME}>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${APRAPIPES_BUILD_DIR}/$<CONFIG>/boost_thread-vc142-mt-x64-1_84.dll"
-            "$<TARGET_FILE_DIR:${SAMPLE_NAME}>/"
-        COMMENT "Copying Boost DLLs to ${SAMPLE_NAME} output directory"
+        COMMAND ${CMAKE_COMMAND}
+            -DCONFIG=$<CONFIG>
+            -DAPRAPIPES_BUILD_DIR=${APRAPIPES_BUILD_DIR}
+            -DOUTPUT_DIR=$<TARGET_FILE_DIR:${SAMPLE_NAME}>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/copy_dlls.cmake
+        COMMENT "Copying Boost DLLs for $<CONFIG> configuration"
         VERBATIM
     )
 endfunction()
