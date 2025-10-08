@@ -2,9 +2,9 @@ name: CI-Win-NoCUDA
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ aa/runner-fix ]
+  # pull_request:
+  #   branches: [ main ]
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
