@@ -54,7 +54,24 @@ set(ENABLE_COMPONENTS "ALL" CACHE STRING "Semicolon-separated list of components
 # Parse and validate components
 if(ENABLE_COMPONENTS STREQUAL "ALL")
 	# Build all components - maintain backward compatibility
+	# But filter out platform-specific components if platform isn't enabled
 	set(APRAPIPES_ENABLED_COMPONENTS ${APRAPIPES_ALL_COMPONENTS})
+
+	# Remove ARM64_COMPONENT if ARM64 is not enabled
+	if(NOT ENABLE_ARM64)
+		list(REMOVE_ITEM APRAPIPES_ENABLED_COMPONENTS ARM64_COMPONENT)
+	endif()
+
+	# Remove GTK_RENDERING if Linux is not enabled
+	if(NOT ENABLE_LINUX)
+		list(REMOVE_ITEM APRAPIPES_ENABLED_COMPONENTS GTK_RENDERING)
+	endif()
+
+	# Remove CUDA_COMPONENT if CUDA is not enabled
+	if(NOT ENABLE_CUDA)
+		list(REMOVE_ITEM APRAPIPES_ENABLED_COMPONENTS CUDA_COMPONENT)
+	endif()
+
 	message(STATUS "Building ALL components (backward compatibility mode)")
 else()
 	# Split the user-provided component list
@@ -841,7 +858,8 @@ if(APRAPIPES_ENABLE_IMAGE_VIEWER)
 	)
 endif()
 
-message(STATUS "Building with ${list(LENGTH, SOURCE)} source files")
+list(LENGTH SOURCE SOURCE_FILE_COUNT)
+message(STATUS "Building with ${SOURCE_FILE_COUNT} source files")
 # ============================================================================
 
 add_library(aprapipes STATIC ${SOURCE})
