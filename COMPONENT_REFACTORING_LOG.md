@@ -317,8 +317,9 @@ Restructuring ApraPipes build system to support optional COMPONENTS (similar to 
 
 ### Phase 5.5: Local Testing (Windows)
 **Duration:** 1-2 days
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETE
 **Start Date:** 2025-10-08
+**Completion Date:** 2025-10-08
 
 **Objective:**
 Perform extensive local testing on Windows for all component combinations. Ensure not only successful builds but also:
@@ -333,21 +334,34 @@ Perform extensive local testing on Windows for all component combinations. Ensur
 3. [x] Fix OpenCV dependency (Made OpenCV minimal a base dependency for CORE)
 4. [x] **CRITICAL ISSUE #2 DISCOVERED**: CUDA allocator dependency in CORE
 5. [x] Fix CUDA allocator dependency (Moved to CORE when ENABLE_CUDA=ON)
-6. [x] Test CORE-only build with all fixes - **SUCCESS**
-7. [ ] Test VIDEO preset (CORE+VIDEO+IMAGE_PROCESSING)
-8. [ ] Test CUDA preset (CORE+VIDEO+IMAGE_PROCESSING+CUDA_COMPONENT)
-9. [ ] Test custom combinations (CORE+VIDEO, etc.)
-10. [ ] Test full build (ALL - baseline)
-11. [ ] Validate runtime execution for each build
-12. [ ] Monitor disk space usage
-13. [ ] Generate comprehensive testing report
+6. [x] **CRITICAL ISSUE #3 DISCOVERED**: Test organization and NPP dependencies
+7. [x] Fix test organization (Moved tests to correct components, added NPP linking)
+8. [x] Test CORE-only build with all fixes - **SUCCESS**
+9. [x] Test VIDEO preset (CORE+VIDEO+IMAGE_PROCESSING) - **SUCCESS**
+10. [x] Test CUDA preset (CORE+VIDEO+IMAGE_PROCESSING+CUDA_COMPONENT) - **SUCCESS**
+11. [x] Test custom combinations (CORE+VIDEO) - **SUCCESS**
+12. [x] Test full build (ALL - baseline) - **SUCCESS**
+13. [x] Validate runtime execution for each build - **SUCCESS**
+14. [x] Monitor disk space usage - **SUCCESS** (>55GB free maintained)
+15. [x] Generate comprehensive testing report - **COMPLETE**
 
 **Success Criteria:**
-- All builds succeed without compilation errors ✅ (CORE done)
-- No linking or DLL runtime errors ✅ (CORE done)
-- Tests execute successfully for RelWithDebInfo ✅ (CORE done)
-- Disk space remains under control (<50% of available) ✅ (119 GB free)
-- Component isolation verified (no unexpected dependencies) 🔄 (in progress)
+- All builds succeed without compilation errors ✅
+- No linking or DLL runtime errors ✅
+- Tests execute successfully for RelWithDebInfo ✅
+- Disk space remains under control (<50% of available) ✅
+- Component isolation verified (no unexpected dependencies) ✅
+
+**Test Results Summary:**
+| Configuration | Source Files | Build Status | Runtime Status |
+|--------------|--------------|--------------|----------------|
+| CORE only | 77 | ✅ SUCCESS | ✅ VALIDATED |
+| CORE+VIDEO | ~100 | ✅ SUCCESS | ✅ VALIDATED |
+| VIDEO preset | 139 | ✅ SUCCESS | ✅ VALIDATED |
+| CUDA preset | ~180 | ✅ SUCCESS | ✅ VALIDATED |
+| Full (ALL) | ~250 | ✅ SUCCESS | ✅ VALIDATED |
+
+**Detailed Report:** See `TESTING_PHASE5_5_REPORT.md` for comprehensive findings and recommendations.
 
 **Critical Issues Found & Resolved:**
 
@@ -370,6 +384,23 @@ Perform extensive local testing on Windows for all component combinations. Ensur
 - **Files modified**:
   - `base/CMakeLists.txt:698-705`: Added CUDA allocators to CORE conditionally
   - `base/CMakeLists.txt:707-745`: Removed allocators from CUDA_COMPONENT
+
+**Issue #3: Test Organization & NPP Dependencies**
+- **Problem**: Multiple linking errors in VIDEO preset:
+  - `motionvector_extractor_and_overlay_tests.obj` linking to ImageViewerModule (not in build)
+  - `affinetransform_tests.obj` linking to CudaMemCopy (not in build)
+  - `AffineTransform.obj` unresolved NPP symbols (nppiWarpAffine_8u_C1R_Ctx, etc.)
+- **Root cause**:
+  1. Tests using modules from components not enabled
+  2. AffineTransform GPU implementation uses NPP but NPP wasn't linked for IMAGE_PROCESSING
+- **Resolution**:
+  1. Moved `affinetransform_tests.cpp` → CUDA_COMPONENT (requires CudaMemCopy)
+  2. Moved `motionvector_extractor_and_overlay_tests.cpp` → IMAGE_VIEWER
+  3. Added NPP linking for IMAGE_PROCESSING when CUDA enabled
+- **Impact**: VIDEO preset now builds successfully, tests properly organized by dependencies
+- **Files modified**:
+  - `base/CMakeLists.txt:1056,1070,1084,1173`: Test file reorganization
+  - `base/CMakeLists.txt:965-971,1247-1253`: NPP library linking for IMAGE_PROCESSING
 
 **Test Results - CORE Build (Minimal Preset):**
 - ✅ CMake configuration: Success (4.5s)
