@@ -212,41 +212,62 @@ project(APRAPIPES)
 
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
+# ============================================================================
+# Component-Based Dependency Resolution
+# ============================================================================
 find_package(PkgConfig REQUIRED)
-find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
-find_package(JPEG REQUIRED)
 
 # Add custom cmake modules directory for FindCUDA.cmake compatibility
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(OpenCV CONFIG REQUIRED)
+# --- CORE Component Dependencies (Always required) ---
+find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
+find_package(JPEG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibLZMA REQUIRED)
-find_package(FFMPEG REQUIRED)
-find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
-find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
-find_package(whisper CONFIG REQUIRED)
 
+# --- IMAGE_PROCESSING Component Dependencies ---
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING OR APRAPIPES_ENABLE_CUDA_COMPONENT OR APRAPIPES_ENABLE_ARM64_COMPONENT)
+	find_package(OpenCV CONFIG REQUIRED)
+endif()
 
-IF(ENABLE_LINUX)
+# --- VIDEO Component Dependencies ---
+if(APRAPIPES_ENABLE_VIDEO)
+	find_package(FFMPEG REQUIRED)
+endif()
+
+# --- QR Component Dependencies ---
+if(APRAPIPES_ENABLE_QR)
+	find_package(ZXing CONFIG REQUIRED)
+endif()
+
+# --- AUDIO Component Dependencies ---
+if(APRAPIPES_ENABLE_AUDIO)
+	find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+	find_package(whisper CONFIG REQUIRED)
+endif()
+
+# --- GTK_RENDERING Component Dependencies (Linux only) ---
+if(APRAPIPES_ENABLE_GTK_RENDERING AND ENABLE_LINUX)
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 	pkg_check_modules(GLFW REQUIRED glfw3)
-ENDIF()
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+endif()
 
+# Platform-specific package config paths
 IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-ENDIF()
+message(STATUS "Dependency resolution complete")
+# ============================================================================
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
@@ -973,41 +994,90 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
-IF(ENABLE_ARM64)
-	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-ENDIF(ENABLE_ARM64)
+# ============================================================================
+# Component-Based Linking for Test Executable
+# ============================================================================
 
-IF(ENABLE_LINUX)
-	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
-	target_link_libraries(aprapipesut
-	${GDK3_LIBRARIES}
-  	${GTK3_LIBRARIES}
-	)	
-ENDIF(ENABLE_LINUX)
+# Setup include directories based on components
+IF(ENABLE_ARM64 AND APRAPIPES_ENABLE_ARM64_COMPONENT)
+	target_include_directories(aprapipesut PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+ENDIF()
 
-target_link_libraries(aprapipesut   
-  aprapipes  
-  ${GLEW_LIBRARIES}
+IF(ENABLE_LINUX AND APRAPIPES_ENABLE_GTK_RENDERING)
+	target_include_directories(aprapipesut PRIVATE ${GTK3_INCLUDE_DIRS})
+ENDIF()
+
+# Start with core libraries (always linked)
+target_link_libraries(aprapipesut
+  aprapipes
   ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
   ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ZXing::Core
-  ZXing::ZXing	
   BZip2::BZip2
   ZLIB::ZLIB
   LibLZMA::LibLZMA
   bigint::bigint
-  sfml-audio
-  whisper::whisper
-  )
+)
+
+# VIDEO Component libraries
+if(APRAPIPES_ENABLE_VIDEO)
+	target_link_libraries(aprapipesut
+		${LIBMP4_LIB}
+		${OPENH264_LIB}
+		${FFMPEG_LIBRARIES}
+	)
+endif()
+
+# IMAGE_PROCESSING Component libraries
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING OR APRAPIPES_ENABLE_CUDA_COMPONENT OR APRAPIPES_ENABLE_ARM64_COMPONENT)
+	target_link_libraries(aprapipesut
+		${OpenCV_LIBRARIES}
+	)
+endif()
+
+# CUDA_COMPONENT libraries
+if(APRAPIPES_ENABLE_CUDA_COMPONENT)
+	target_link_libraries(aprapipesut
+		${NVCUDAToolkit_LIBS}
+		${NVCODEC_LIB}
+	)
+endif()
+
+# ARM64_COMPONENT libraries
+if(APRAPIPES_ENABLE_ARM64_COMPONENT)
+	target_link_libraries(aprapipesut
+		${JETSON_LIBS}
+		${NVJPEGLIB_L4T}
+		${CURSES_LIBRARIES}
+	)
+endif()
+
+# QR Component libraries
+if(APRAPIPES_ENABLE_QR)
+	target_link_libraries(aprapipesut
+		ZXing::Core
+		ZXing::ZXing
+	)
+endif()
+
+# AUDIO Component libraries
+if(APRAPIPES_ENABLE_AUDIO)
+	target_link_libraries(aprapipesut
+		sfml-audio
+		whisper::whisper
+	)
+endif()
+
+# GTK_RENDERING Component libraries
+if(APRAPIPES_ENABLE_GTK_RENDERING AND ENABLE_LINUX)
+	target_link_libraries(aprapipesut
+		${GLEW_LIBRARIES}
+		${GDK3_LIBRARIES}
+		${GTK3_LIBRARIES}
+	)
+endif()
+
+message(STATUS "Linking configuration complete")
+# ============================================================================
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
