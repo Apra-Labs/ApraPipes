@@ -299,10 +299,9 @@ find_package(ZLIB REQUIRED)
 find_package(LibLZMA REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 
-# --- IMAGE_PROCESSING Component Dependencies ---
-if(APRAPIPES_ENABLE_IMAGE_PROCESSING OR APRAPIPES_ENABLE_CUDA_COMPONENT OR APRAPIPES_ENABLE_ARM64_COMPONENT)
-	find_package(OpenCV CONFIG REQUIRED)
-endif()
+# OpenCV (minimal) is required for CORE component
+# CORE uses OpenCV headers in Utils.h, ImageMetadata.h, and other core files
+find_package(OpenCV CONFIG REQUIRED)
 
 # --- VIDEO Component Dependencies ---
 if(APRAPIPES_ENABLE_VIDEO)
@@ -696,10 +695,19 @@ IF(ENABLE_LINUX)
 	list(APPEND COMPONENT_CORE_FILES_H include/KeyboardListener.h)
 ENDIF(ENABLE_LINUX)
 
+# CUDA allocators are part of CORE infrastructure when CUDA is enabled
+# These are memory management primitives used by FrameFactory
+IF(ENABLE_CUDA)
+	list(APPEND COMPONENT_CORE_FILES src/apra_cudamalloc_allocator.cu)
+	list(APPEND COMPONENT_CORE_FILES src/apra_cudamallochost_allocator.cu)
+	list(APPEND COMPONENT_CORE_FILES_H include/apra_cudamalloc_allocator.h)
+	list(APPEND COMPONENT_CORE_FILES_H include/apra_cudamallochost_allocator.h)
+ENDIF(ENABLE_CUDA)
+
 # --- CUDA_COMPONENT (GPU acceleration) ---
+# Note: CUDA allocators (apra_cudamalloc_allocator, apra_cudamallochost_allocator)
+# are now part of CORE when ENABLE_CUDA=ON (see above)
 SET(COMPONENT_CUDA_FILES
-	src/apra_cudamalloc_allocator.cu
-	src/apra_cudamallochost_allocator.cu
 	src/CudaMemCopy.cpp
 	src/MemTypeConversion.cpp
 	src/CudaStreamSynchronize.cpp
@@ -722,8 +730,6 @@ SET(COMPONENT_CUDA_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
 	include/MemTypeConversion.h
-	include/apra_cudamallochost_allocator.h
-	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
 	include/CudaCommon.h
 	include/GaussianBlur.h
@@ -920,12 +926,12 @@ add_library(aprapipes STATIC ${SOURCE})
 
 link_directories(${GTK3_LIBRARY_DIRS})
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-target_include_directories ( aprapipes PRIVATE 
+target_include_directories ( aprapipes PRIVATE
 	${JETSON_MULTIMEDIA_LIB_INCLUDE}
 	${GTK3_INCLUDE_DIRS}
 	${VCPKG_GTK_INCLUDE_DIRS}
-	${FFMPEG_INCLUDE_DIRS} 
-	${OpenCV_INCLUDE_DIRS} 
+	${FFMPEG_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${LIBMP4_INC_DIR}
 	${BARESIP_INC_DIR}
@@ -933,6 +939,80 @@ target_include_directories ( aprapipes PRIVATE
 	${NVCODEC_INCLUDE_DIR}
 )
 
+# ============================================================================
+# Component-Based Library Linking for aprapipes
+# ============================================================================
+# CORE Component libraries (always linked)
+target_link_libraries(aprapipes
+	${JPEG_LIBRARIES}
+	${Boost_LIBRARIES}
+	BZip2::BZip2
+	ZLIB::ZLIB
+	LibLZMA::LibLZMA
+	bigint::bigint
+	${OpenCV_LIBRARIES}
+)
+
+# VIDEO Component libraries
+if(APRAPIPES_ENABLE_VIDEO)
+	target_link_libraries(aprapipes
+		${LIBMP4_LIB}
+		${OPENH264_LIB}
+		${FFMPEG_LIBRARIES}
+	)
+endif()
+
+# IMAGE_PROCESSING Component libraries
+# IMAGE_PROCESSING modules (like AffineTransform) use NPP libraries when CUDA is enabled
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING AND ENABLE_CUDA)
+	target_link_libraries(aprapipes
+		${NVCUDAToolkit_LIBS}
+	)
+endif()
+
+# CUDA_COMPONENT libraries
+if(APRAPIPES_ENABLE_CUDA_COMPONENT)
+	target_link_libraries(aprapipes
+		${NVCUDAToolkit_LIBS}
+		${NVCODEC_LIB}
+	)
+endif()
+
+# ARM64_COMPONENT libraries
+if(APRAPIPES_ENABLE_ARM64_COMPONENT)
+	target_link_libraries(aprapipes
+		${JETSON_LIBS}
+		${NVJPEGLIB_L4T}
+		${CURSES_LIBRARIES}
+	)
+endif()
+
+# QR Component libraries
+if(APRAPIPES_ENABLE_QR)
+	target_link_libraries(aprapipes
+		ZXing::Core
+		ZXing::ZXing
+	)
+endif()
+
+# AUDIO Component libraries
+if(APRAPIPES_ENABLE_AUDIO)
+	target_link_libraries(aprapipes
+		sfml-audio
+		whisper::whisper
+	)
+endif()
+
+# GTK_RENDERING Component libraries
+if(APRAPIPES_ENABLE_GTK_RENDERING AND ENABLE_LINUX)
+	target_link_libraries(aprapipes
+		${GLEW_LIBRARIES}
+		${GDK3_LIBRARIES}
+		${GTK3_LIBRARIES}
+	)
+endif()
+
+message(STATUS "aprapipes library linking complete")
 
 # ============================================================================
 # Component-Based Test File Organization
@@ -976,7 +1056,6 @@ if(APRAPIPES_ENABLE_VIDEO)
 		test/rtsp_client_tests.cpp
 		test/rtsppusher_tests.cpp
 		test/multimediaqueuexform_tests.cpp
-		test/motionvector_extractor_and_overlay_tests.cpp
 	)
 endif()
 
@@ -991,7 +1070,6 @@ if(APRAPIPES_ENABLE_IMAGE_PROCESSING)
 		test/ImageEncodeCV_tests.cpp
 		test/Imageresizecv_tests.cpp
 		test/rotatecv_tests.cpp
-		test/affinetransform_tests.cpp
 		test/brightness_contrast_tests.cpp
 		test/virtualptz_tests.cpp
 		test/color_conversion_tests.cpp
@@ -1004,6 +1082,7 @@ endif()
 # CUDA_COMPONENT Tests
 if(APRAPIPES_ENABLE_CUDA_COMPONENT)
 	SET(COMPONENT_CUDA_UT_FILES
+		test/affinetransform_tests.cpp
 		test/cudamemcopy_tests.cpp
 		test/resizenppi_tests.cpp
 		test/rotatenppi_tests.cpp
@@ -1092,6 +1171,7 @@ endif()
 if(APRAPIPES_ENABLE_IMAGE_VIEWER)
 	SET(COMPONENT_IMAGE_VIEWER_UT_FILES
 		test/imageviewermodule_tests.cpp
+		test/motionvector_extractor_and_overlay_tests.cpp
 	)
 endif()
 
@@ -1124,8 +1204,11 @@ IF (ENABLE_CUDA)
 	target_include_directories ( aprapipesut PRIVATE ${NVCODEC_INCLUDE_DIR})
 ENDIF (ENABLE_CUDA)
 
-find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
-find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+# VIDEO component libraries (only required when VIDEO is enabled)
+IF(APRAPIPES_ENABLE_VIDEO)
+	find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
+	find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
+ENDIF(APRAPIPES_ENABLE_VIDEO)
 
 # ============================================================================
 # Component-Based Linking for Test Executable
@@ -1149,6 +1232,7 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   LibLZMA::LibLZMA
   bigint::bigint
+  ${OpenCV_LIBRARIES}
 )
 
 # VIDEO Component libraries
@@ -1161,9 +1245,11 @@ if(APRAPIPES_ENABLE_VIDEO)
 endif()
 
 # IMAGE_PROCESSING Component libraries
-if(APRAPIPES_ENABLE_IMAGE_PROCESSING OR APRAPIPES_ENABLE_CUDA_COMPONENT OR APRAPIPES_ENABLE_ARM64_COMPONENT)
+# Note: OpenCV is now always linked as part of CORE (see above)
+# IMAGE_PROCESSING modules (like AffineTransform) use NPP libraries when CUDA is enabled
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING AND ENABLE_CUDA)
 	target_link_libraries(aprapipesut
-		${OpenCV_LIBRARIES}
+		${NVCUDAToolkit_LIBS}
 	)
 endif()
 
