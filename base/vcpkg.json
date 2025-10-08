@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "name": "apra-pipes-cuda",
+  "name": "apra-pipes",
   "version": "0.0.1",
   "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
   "overrides": [
@@ -14,33 +14,6 @@
     }
   ],
   "dependencies": [
-    {
-      "name": "whisper",
-      "default-features": false,
-      "features": [
-        "cuda"
-      ]
-    },
-    {
-      "name": "opencv4",
-      "default-features": false,
-      "features": [
-        "contrib",
-        "cuda",
-        "cudnn",
-        "dnn",
-        "jpeg",
-        "nonfree",
-        "png",
-        "tiff",
-        "webp"
-      ]
-    },
-    "freeglut",
-    "ffmpeg",
-    "openh264-apra",
-    "glfw3",
-    "glew",
     "libjpeg-turbo",
     "bigint",
     "boost-math",
@@ -55,48 +28,209 @@
     "boost-dll",
     "boost-format",
     "boost-foreach",
-    "nu-book-zxing-cpp",
     "liblzma",
     "bzip2",
     "zlib",
-    "sfml",
-    "brotli",
-    {
-      "name": "gtk3",
-      "platform": "!windows"
+    "brotli"
+  ],
+  "features": {
+    "video": {
+      "description": "Video codecs and streaming support (Mp4, H264, RTSP)",
+      "dependencies": [
+        "ffmpeg",
+        "openh264-apra",
+        "libmp4"
+      ]
     },
-    {
-      "name": "glib",
-      "default-features": false,
-      "features": [
-        "libmount"
-      ],
-      "platform": "(linux & x64)",
-      "$reason": "skip linux:arm64 and windows"
+    "image-processing": {
+      "description": "OpenCV CPU-based image processing",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "jpeg",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
     },
-    {
-      "name": "glib",
-      "default-features": true,
-      "platform": "windows"
+    "cuda": {
+      "description": "GPU acceleration with CUDA, NPP, NVJPEG, NVCODEC",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "contrib",
+            "cuda",
+            "cudnn",
+            "dnn",
+            "jpeg",
+            "nonfree",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
     },
-    {
-      "name": "hiredis",
-      "platform": "!arm64"
+    "webcam": {
+      "description": "Webcam capture support",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "jpeg",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
     },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
+    "qr": {
+      "description": "QR code reading support",
+      "dependencies": [
+        "nu-book-zxing-cpp"
+      ]
     },
-    {
-      "name": "re",
-      "platform": "!windows"
+    "audio": {
+      "description": "Audio capture and transcription support",
+      "dependencies": [
+        "sfml",
+        {
+          "name": "whisper",
+          "default-features": false,
+          "features": [
+            "cuda"
+          ]
+        }
+      ]
     },
-    {
-      "name": "baresip",
-      "platform": "!windows"
+    "face-detection": {
+      "description": "Face detection and facial landmarks",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "contrib",
+            "dnn",
+            "jpeg",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
     },
-    {
-      "name": "libmp4"
+    "gtk-rendering": {
+      "description": "GTK/OpenGL rendering support (Linux only)",
+      "dependencies": [
+        {
+          "name": "gtk3",
+          "platform": "!windows"
+        },
+        "freeglut",
+        "glfw3",
+        "glew",
+        {
+          "name": "glib",
+          "default-features": false,
+          "features": [
+            "libmount"
+          ],
+          "platform": "(linux & x64)",
+          "$reason": "skip linux:arm64 and windows"
+        },
+        {
+          "name": "glib",
+          "default-features": true,
+          "platform": "windows"
+        }
+      ]
+    },
+    "thumbnail": {
+      "description": "Thumbnail generation support",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "jpeg",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
+    },
+    "image-viewer": {
+      "description": "Image viewing GUI support",
+      "dependencies": [
+        {
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "jpeg",
+            "png",
+            "tiff",
+            "webp"
+          ]
+        }
+      ]
+    },
+    "redis": {
+      "description": "Redis client support (non-ARM64)",
+      "dependencies": [
+        {
+          "name": "hiredis",
+          "platform": "!arm64"
+        },
+        {
+          "name": "redis-plus-plus",
+          "platform": "!arm64"
+        }
+      ]
+    },
+    "voip": {
+      "description": "VoIP support with baresip (non-Windows)",
+      "dependencies": [
+        {
+          "name": "re",
+          "platform": "!windows"
+        },
+        {
+          "name": "baresip",
+          "platform": "!windows"
+        }
+      ]
+    },
+    "all": {
+      "description": "All components (default, backward compatible)",
+      "dependencies": [
+        {
+          "name": "apra-pipes",
+          "features": [
+            "video",
+            "image-processing",
+            "cuda",
+            "webcam",
+            "qr",
+            "audio",
+            "face-detection",
+            "gtk-rendering",
+            "thumbnail",
+            "image-viewer",
+            "redis",
+            "voip"
+          ]
+        }
+      ]
     }
-  ]
+  }
 }

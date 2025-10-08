@@ -212,6 +212,60 @@ foreach(component ${APRAPIPES_ENABLED_COMPONENTS})
 endforeach()
 
 message(STATUS "Component configuration complete")
+
+# ============================================================================
+# vcpkg Manifest Feature Mapping
+# ============================================================================
+# Map ENABLE_COMPONENTS to VCPKG_MANIFEST_FEATURES for conditional dependency installation
+# This must be done before project() command since vcpkg runs during project initialization
+
+# Create mapping from component names to vcpkg feature names
+set(VCPKG_MANIFEST_FEATURES "")
+
+if(ENABLE_COMPONENTS STREQUAL "ALL")
+	# Enable all vcpkg features for backward compatibility
+	list(APPEND VCPKG_MANIFEST_FEATURES "all")
+	message(STATUS "vcpkg features: all (full backward-compatible build)")
+else()
+	# Map enabled components to vcpkg features
+	foreach(component ${APRAPIPES_ENABLED_COMPONENTS})
+		if(component STREQUAL "CORE")
+			# CORE dependencies are always in base dependencies, no feature needed
+		elseif(component STREQUAL "VIDEO")
+			list(APPEND VCPKG_MANIFEST_FEATURES "video")
+		elseif(component STREQUAL "IMAGE_PROCESSING")
+			list(APPEND VCPKG_MANIFEST_FEATURES "image-processing")
+		elseif(component STREQUAL "CUDA_COMPONENT")
+			list(APPEND VCPKG_MANIFEST_FEATURES "cuda")
+		elseif(component STREQUAL "ARM64_COMPONENT")
+			# ARM64 doesn't use vcpkg, uses system libraries
+		elseif(component STREQUAL "WEBCAM")
+			list(APPEND VCPKG_MANIFEST_FEATURES "webcam")
+		elseif(component STREQUAL "QR")
+			list(APPEND VCPKG_MANIFEST_FEATURES "qr")
+		elseif(component STREQUAL "AUDIO")
+			list(APPEND VCPKG_MANIFEST_FEATURES "audio")
+		elseif(component STREQUAL "FACE_DETECTION")
+			list(APPEND VCPKG_MANIFEST_FEATURES "face-detection")
+		elseif(component STREQUAL "GTK_RENDERING")
+			list(APPEND VCPKG_MANIFEST_FEATURES "gtk-rendering")
+		elseif(component STREQUAL "THUMBNAIL")
+			list(APPEND VCPKG_MANIFEST_FEATURES "thumbnail")
+		elseif(component STREQUAL "IMAGE_VIEWER")
+			list(APPEND VCPKG_MANIFEST_FEATURES "image-viewer")
+		endif()
+	endforeach()
+
+	# Display enabled vcpkg features
+	if(VCPKG_MANIFEST_FEATURES)
+		string(REPLACE ";" ", " FEATURES_STR "${VCPKG_MANIFEST_FEATURES}")
+		message(STATUS "vcpkg features: ${FEATURES_STR}")
+	else()
+		message(STATUS "vcpkg features: none (CORE-only build with base dependencies)")
+	endif()
+endif()
+
+# Note: VCPKG_MANIFEST_FEATURES is automatically used by vcpkg during project() initialization
 # ============================================================================
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
