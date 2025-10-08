@@ -241,6 +241,9 @@ Restructuring ApraPipes build system to support optional COMPONENTS (similar to 
 **Status:** Complete
 **Completion Date:** 2025-10-08
 
+**Commits:**
+- `0be030b1c`: Phase 2 - vcpkg conditional dependency management
+
 **Tasks:**
 1. [x] Make vcpkg dependencies conditional
 2. [x] Split OpenCV into minimal vs full configurations
