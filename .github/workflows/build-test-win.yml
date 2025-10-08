@@ -138,6 +138,7 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
+            ${{ github.workspace }}/vcpkg/downloads
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
     
@@ -149,7 +150,7 @@ jobs:
       if: ${{!inputs.is-prep-phase}}
       shell: pwsh
       run: |
-        $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse | Select-Object -First 1).FullName
+        $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         if ($pythonPath) {
           Write-Host "Found vcpkg Python at $pythonPath. Installing setuptools..."
           & $pythonPath -m ensurepip --upgrade
