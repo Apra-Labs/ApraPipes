@@ -22,11 +22,180 @@ ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
-	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 ENDIF(ENABLE_ARM64)
+
+# ============================================================================
+# Component-Based Build System
+# ============================================================================
+# Define available components
+set(APRAPIPES_ALL_COMPONENTS
+	CORE
+	VIDEO
+	IMAGE_PROCESSING
+	CUDA_COMPONENT
+	ARM64_COMPONENT
+	WEBCAM
+	QR
+	AUDIO
+	FACE_DETECTION
+	GTK_RENDERING
+	THUMBNAIL
+	IMAGE_VIEWER
+)
+
+# User can specify which components to build
+# Default is ALL (maintains backward compatibility)
+set(ENABLE_COMPONENTS "ALL" CACHE STRING "Semicolon-separated list of components to build (or ALL)")
+
+# Parse and validate components
+if(ENABLE_COMPONENTS STREQUAL "ALL")
+	# Build all components - maintain backward compatibility
+	set(APRAPIPES_ENABLED_COMPONENTS ${APRAPIPES_ALL_COMPONENTS})
+	message(STATUS "Building ALL components (backward compatibility mode)")
+else()
+	# Split the user-provided component list
+	string(REPLACE ";" " " COMPONENTS_STR "${ENABLE_COMPONENTS}")
+	message(STATUS "Building selected components: ${COMPONENTS_STR}")
+	set(APRAPIPES_ENABLED_COMPONENTS ${ENABLE_COMPONENTS})
+endif()
+
+# Initialize all component flags to OFF
+foreach(component ${APRAPIPES_ALL_COMPONENTS})
+	set(APRAPIPES_ENABLE_${component} OFF)
+endforeach()
+
+# Enable requested components
+foreach(component ${APRAPIPES_ENABLED_COMPONENTS})
+	# Validate component exists
+	list(FIND APRAPIPES_ALL_COMPONENTS ${component} component_index)
+	if(component_index EQUAL -1)
+		message(FATAL_ERROR "Unknown component: ${component}. Valid components: ${APRAPIPES_ALL_COMPONENTS}")
+	endif()
+	set(APRAPIPES_ENABLE_${component} ON)
+	message(STATUS "  - Enabling component: ${component}")
+endforeach()
+
+# Component dependency resolution
+# CORE is always required
+if(NOT APRAPIPES_ENABLE_CORE)
+	message(FATAL_ERROR "CORE component is required but not enabled")
+endif()
+
+# VIDEO depends on CORE
+if(APRAPIPES_ENABLE_VIDEO AND NOT APRAPIPES_ENABLE_CORE)
+	message(FATAL_ERROR "VIDEO component requires CORE")
+endif()
+
+# IMAGE_PROCESSING depends on CORE
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING AND NOT APRAPIPES_ENABLE_CORE)
+	message(FATAL_ERROR "IMAGE_PROCESSING component requires CORE")
+endif()
+
+# CUDA_COMPONENT depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_CUDA_COMPONENT)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "CUDA_COMPONENT requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "CUDA_COMPONENT requires IMAGE_PROCESSING")
+	endif()
+	if(NOT ENABLE_CUDA)
+		message(FATAL_ERROR "CUDA_COMPONENT requires ENABLE_CUDA=ON")
+	endif()
+endif()
+
+# ARM64_COMPONENT depends on CORE and CUDA_COMPONENT
+if(APRAPIPES_ENABLE_ARM64_COMPONENT)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "ARM64_COMPONENT requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_CUDA_COMPONENT)
+		message(FATAL_ERROR "ARM64_COMPONENT requires CUDA_COMPONENT")
+	endif()
+	if(NOT ENABLE_ARM64)
+		message(FATAL_ERROR "ARM64_COMPONENT requires ENABLE_ARM64=ON")
+	endif()
+endif()
+
+# WEBCAM depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_WEBCAM)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "WEBCAM component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "WEBCAM component requires IMAGE_PROCESSING")
+	endif()
+endif()
+
+# QR depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_QR)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "QR component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "QR component requires IMAGE_PROCESSING")
+	endif()
+endif()
+
+# AUDIO depends on CORE
+if(APRAPIPES_ENABLE_AUDIO AND NOT APRAPIPES_ENABLE_CORE)
+	message(FATAL_ERROR "AUDIO component requires CORE")
+endif()
+
+# FACE_DETECTION depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_FACE_DETECTION)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "FACE_DETECTION component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "FACE_DETECTION component requires IMAGE_PROCESSING")
+	endif()
+endif()
+
+# GTK_RENDERING depends on CORE and IMAGE_PROCESSING (Linux only)
+if(APRAPIPES_ENABLE_GTK_RENDERING)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "GTK_RENDERING component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "GTK_RENDERING component requires IMAGE_PROCESSING")
+	endif()
+	if(NOT ENABLE_LINUX)
+		message(FATAL_ERROR "GTK_RENDERING component requires ENABLE_LINUX=ON")
+	endif()
+endif()
+
+# THUMBNAIL depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_THUMBNAIL)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "THUMBNAIL component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "THUMBNAIL component requires IMAGE_PROCESSING")
+	endif()
+endif()
+
+# IMAGE_VIEWER depends on CORE and IMAGE_PROCESSING
+if(APRAPIPES_ENABLE_IMAGE_VIEWER)
+	if(NOT APRAPIPES_ENABLE_CORE)
+		message(FATAL_ERROR "IMAGE_VIEWER component requires CORE")
+	endif()
+	if(NOT APRAPIPES_ENABLE_IMAGE_PROCESSING)
+		message(FATAL_ERROR "IMAGE_VIEWER component requires IMAGE_PROCESSING")
+	endif()
+endif()
+
+# Add compile definitions for enabled components
+foreach(component ${APRAPIPES_ENABLED_COMPONENTS})
+	add_compile_definitions(APRAPIPES_ENABLE_${component})
+endforeach()
+
+message(STATUS "Component configuration complete")
+# ============================================================================
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
 
@@ -174,9 +343,11 @@ ENDIF(ENABLE_CUDA)
 
 include_directories(AFTER SYSTEM include)
 
-# ApraPipes library
+# ApraPipes library - Component-Based Source Organization
+# ============================================================================
 
-SET(CORE_FILES
+# --- CORE Component (Always built) ---
+SET(COMPONENT_CORE_FILES
 	src/ApraPool.cpp
 	src/FilenameStrategy.cpp
 	src/FileReaderModule.cpp
@@ -194,25 +365,89 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/AudioCaptureSrc.cpp
-	src/QRReader.cpp
-	src/Mp4WriterSink.cpp
-	src/Mp4WriterSinkUtils.cpp
-	src/MultimediaQueueXform.cpp
-	src/Mp4ReaderSource.cpp
-	src/RTSPClientSrc.cpp
-	src/RTSPClientSrc.cpp
-	src/MotionVectorExtractor.cpp
-	src/OverlayModule.cpp
-	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
-	src/APErrorObject.cpp 
+	src/APErrorObject.cpp
 	src/APHealthObject.cpp
+	src/AbsControlModule.cpp
+	src/ValveModule.cpp
+	src/TestSignalGeneratorSrc.cpp
 )
 
-SET(CORE_FILES_H
-	include/BufferMaker.h	
-	include/Mp4ErrorFrame.h
+# --- VIDEO Component ---
+SET(COMPONENT_VIDEO_FILES
+	src/Mp4WriterSink.cpp
+	src/Mp4WriterSinkUtils.cpp
+	src/Mp4ReaderSource.cpp
+	src/MultimediaQueueXform.cpp
+	src/RTSPClientSrc.cpp
+	src/RTSPPusher.cpp
+	src/H264FrameDemuxer.cpp
+	src/H264ParserUtils.cpp
+	src/H264Utils.cpp
+	src/MotionVectorExtractor.cpp
+	src/OrderedCacheOfFiles.cpp
+)
+
+# --- IMAGE_PROCESSING Component ---
+SET(COMPONENT_IMAGE_PROCESSING_FILES
+	src/ApraLines.cpp
+	src/CalcHistogramCV.cpp
+	src/HistogramOverlay.cpp
+	src/ImageDecoderCV.cpp
+	src/BMPConverter.cpp
+	src/ImageResizeCV.cpp
+	src/ImageEncoderCV.cpp
+	src/RotateCV.cpp
+	src/AffineTransform.cpp
+	src/BrightnessContrastControlXform.cpp
+	src/VirtualPTZ.cpp
+	src/ColorConversionXForm.cpp
+	src/AbsColorConversionFactory.cpp
+	src/ColorConversionStrategy.h
+	src/AbsColorConversionFactory.h
+	src/ArchiveSpaceManager.cpp
+	src/Overlay.cpp
+	src/OverlayFactory.h
+	src/OverlayFactory.cpp
+	src/OverlayModule.cpp
+	src/TextOverlayXForm.cpp
+)
+
+# --- AUDIO Component ---
+SET(COMPONENT_AUDIO_FILES
+	src/AudioCaptureSrc.cpp
+	src/AudioToTextXForm.cpp
+)
+
+# --- QR Component ---
+SET(COMPONENT_QR_FILES
+	src/QRReader.cpp
+)
+
+# --- WEBCAM Component ---
+SET(COMPONENT_WEBCAM_FILES
+	src/WebCamSource.cpp
+)
+
+# --- FACE_DETECTION Component ---
+SET(COMPONENT_FACE_DETECTION_FILES
+	src/FaceDetectorXform.cpp
+	src/FacialLandmarksCV.cpp
+)
+
+# --- THUMBNAIL Component ---
+SET(COMPONENT_THUMBNAIL_FILES
+	src/ThumbnailListGenerator.cpp
+)
+
+# --- IMAGE_VIEWER Component ---
+SET(COMPONENT_IMAGE_VIEWER_FILES
+	src/ImageViewerModule.cpp
+)
+
+# --- CORE Component Headers ---
+SET(COMPONENT_CORE_FILES_H
+	include/BufferMaker.h
 	include/FramesMuxer.h
 	include/FrameMetadata.h
 	include/FrameMetadataFactory.h
@@ -233,7 +468,7 @@ SET(CORE_FILES_H
 	include/ApraData.h
 	include/AIPExceptions.h
 	include/Utils.h
-	include/ThreadSafeQue.h	
+	include/ThreadSafeQue.h
 	include/StatSink.h
 	include/Split.h
 	include/ROIMetadata.h
@@ -251,23 +486,9 @@ SET(CORE_FILES_H
 	include/enum_macros.h
 	include/MetadataHints.h
 	include/FIndexStrategy.h
-	include/AudioCaptureSrc.h
-	include/QRReader.h
-	include/Mp4WriterSink.h
-	include/Mp4WriterSinkUtils.h
 	include/EncodedImageMetadata.h
 	include/PropsChangeMetadata.h
 	include/ValveModule.h
-	include/ArchiveSpaceManager.h
-	include/MultimediaQueueXform.h
-	include/RTSPClientSrc.h
-	include/H264Metadata.h
-	include/Mp4ReaderSource.h
-	include/RTSPClientSrc.h
-	include/H264Metadata.h
-	include/MotionVectorExtractor.h
-	include/OverlayModule.h
-	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
 	include/AbsControlModule.h
 	include/SimpleControlModule.h
@@ -277,108 +498,114 @@ SET(CORE_FILES_H
 )
 
 IF(ENABLE_WINDOWS)
-	SET(CORE_FILES_H ${CORE_FILES_H}
+	list(APPEND COMPONENT_CORE_FILES_H
 		include/targetver.h
 		include/stdafx.h
 	)
 ENDIF(ENABLE_WINDOWS)
 
-SET(GENERIC_FILES
-	src/RTSPPusher.cpp
-	src/H264FrameDemuxer.cpp
-	src/H264ParserUtils.cpp
-	src/H264Utils.cpp
-	src/QRReader.cpp
-)
-SET(GENERIC_FILES_H
+# --- VIDEO Component Headers ---
+SET(COMPONENT_VIDEO_FILES_H
+	include/Mp4ErrorFrame.h
+	include/Mp4WriterSink.h
+	include/Mp4WriterSinkUtils.h
+	include/Mp4ReaderSource.h
+	include/MultimediaQueueXform.h
+	include/RTSPClientSrc.h
+	include/RTSPPusher.h
 	include/H264FrameDemuxer.h
 	include/H264ParserUtils.h
 	include/H264Utils.h
-	include/RTSPPusher.h
-	include/QRReader.h
+	include/H264Metadata.h
+	include/MotionVectorExtractor.h
+	include/OrderedCacheOfFiles.h
 )
 
-IF(ENABLE_LINUX)
-	list(APPEND CORE_FILES src/KeyboardListener.cpp)
-	list(APPEND CORE_FILES_H include/KeyboardListener.h)
-	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
-	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-	SET(GTKGL_FILES_H include/Background.h
-		include/GLUtils.h
-		include/GtkGlRenderer.h
-		include/GTKMatrix.h
-		include/GTKModel.h
-		include/GTKSetup.h
-		include/GTKView.h
-	)
-	SET(GTKGL_FILES_CPP src/Background.cpp
-		src/GtkGlRenderer.cpp
-		src/GTKMatrix.cpp
-		src/GTKModel.cpp
-		src/GTKSetup.cpp
-		src/GTKView.cpp
-		)
-ENDIF(ENABLE_LINUX)
-
-SET(IP_FILES
-	src/ApraLines.cpp
-	src/CalcHistogramCV.cpp
-	src/HistogramOverlay.cpp
-	src/ImageDecoderCV.cpp
-	src/ImageViewerModule.cpp
-	src/BMPConverter.cpp
-	src/ImageResizeCV.cpp
-	src/FacialLandmarksCV.cpp
-	src/ImageEncoderCV.cpp
-	src/RotateCV.cpp
-	src/AffineTransform.cpp
-	src/BrightnessContrastControlXform.cpp
-	src/VirtualPTZ.cpp
-	src/WebCamSource.cpp
-	src/FaceDetectorXform.cpp
-	src/TextOverlayXForm.cpp
-	src/ValveModule.cpp
-	src/ColorConversionXForm.cpp
-	src/AbsColorConversionFactory.cpp
-	src/ColorConversionStrategy.h
-	src/AbsColorConversionFactory.h
-	src/ArchiveSpaceManager.cpp
-	src/Overlay.cpp
-	src/OverlayFactory.h
-	src/OverlayFactory.cpp
-	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
-	src/AbsControlModule.cpp
-	src/ThumbnailListGenerator.cpp
-)
-	
-SET(IP_FILES_H
+# --- IMAGE_PROCESSING Component Headers ---
+SET(COMPONENT_IMAGE_PROCESSING_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
 	include/ApraLines.h
-	include/ImageViewerModule.h
 	include/ImageDecoderCV.h
 	include/BMPConverter.h
 	include/ImageResizeCV.h
-	include/FacialLandmarksCV.h
 	include/ImageEncoderCV.h
 	include/RotateCV.h
 	include/AffineTransform.h
 	include/BrightnessContrastControlXform.h
 	include/VirtualPTZ.h
-	include/WebCamSource.h
-	include/ApraFaceInfo.h
-	include/FaceDetectsInfo.h
-	include/FaceDetectorXform.h
-	include/TextOverlayXForm.h
 	include/ColorConversionXForm.h
 	include/Overlay.h
+	include/OverlayModule.h
+	include/TextOverlayXForm.h
+	include/ArchiveSpaceManager.h
+)
+
+# --- AUDIO Component Headers ---
+SET(COMPONENT_AUDIO_FILES_H
+	include/AudioCaptureSrc.h
 	include/AudioToTextXForm.h
+)
+
+# --- QR Component Headers ---
+SET(COMPONENT_QR_FILES_H
+	include/QRReader.h
+)
+
+# --- WEBCAM Component Headers ---
+SET(COMPONENT_WEBCAM_FILES_H
+	include/WebCamSource.h
+)
+
+# --- FACE_DETECTION Component Headers ---
+SET(COMPONENT_FACE_DETECTION_FILES_H
+	include/FaceDetectorXform.h
+	include/FacialLandmarksCV.h
+	include/ApraFaceInfo.h
+	include/FaceDetectsInfo.h
+)
+
+# --- THUMBNAIL Component Headers ---
+SET(COMPONENT_THUMBNAIL_FILES_H
 	include/ThumbnailListGenerator.h
 )
 
-SET(CUDA_CORE_FILES
+# --- IMAGE_VIEWER Component Headers ---
+SET(COMPONENT_IMAGE_VIEWER_FILES_H
+	include/ImageViewerModule.h
+)
+
+# --- GTK_RENDERING Component (Linux only) ---
+SET(COMPONENT_GTK_RENDERING_FILES
+	src/Background.cpp
+	src/GtkGlRenderer.cpp
+	src/GTKMatrix.cpp
+	src/GTKModel.cpp
+	src/GTKSetup.cpp
+	src/GTKView.cpp
+	src/VirtualCameraSink.cpp
+)
+
+SET(COMPONENT_GTK_RENDERING_FILES_H
+	include/Background.h
+	include/GLUtils.h
+	include/GtkGlRenderer.h
+	include/GTKMatrix.h
+	include/GTKModel.h
+	include/GTKSetup.h
+	include/GTKView.h
+	include/VirtualCameraSink.h
+)
+
+# Linux-specific additions
+IF(ENABLE_LINUX)
+	list(APPEND COMPONENT_CORE_FILES src/KeyboardListener.cpp)
+	list(APPEND COMPONENT_CORE_FILES_H include/KeyboardListener.h)
+ENDIF(ENABLE_LINUX)
+
+# --- CUDA_COMPONENT (GPU acceleration) ---
+SET(COMPONENT_CUDA_FILES
 	src/apra_cudamalloc_allocator.cu
 	src/apra_cudamallochost_allocator.cu
 	src/CudaMemCopy.cpp
@@ -386,9 +613,20 @@ SET(CUDA_CORE_FILES
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
+	src/build_point_list.cu
+	src/CCKernel.cu
+	src/CCNPPI.cpp
+	src/EffectsKernel.cu
+	src/EffectsNPPI.cpp
+	src/GaussianBlur.cpp
+	src/OverlayKernel.cu
+	src/OverlayNPPI.cpp
+	src/ResizeNPPI.cpp
+	src/RotateNPPI.cpp
+	src/H264Decoder.cpp
 )
 
-SET(CUDA_CORE_FILES_H
+SET(COMPONENT_CUDA_FILES_H
 	include/CudaStreamSynchronize.h
 	include/CudaMemCopy.h
 	include/MemTypeConversion.h
@@ -396,65 +634,11 @@ SET(CUDA_CORE_FILES_H
 	include/apra_cudamalloc_allocator.h
 	include/CuCtxSynchronize.h
 	include/CudaCommon.h
-
-)
-
-SET(CUDA_IP_FILES
-	src/build_point_list.cu
-	src/CCKernel.cu
-	src/CCNPPI.cpp	
-	src/EffectsKernel.cu
-	src/EffectsNPPI.cpp
-	src/GaussianBlur.cpp
-	src/OverlayKernel.cu
-	src/OverlayNPPI.cpp
-	src/ResizeNPPI.cpp
-	src/RotateNPPI.cpp		
-	src/H264Decoder.cpp
-)
-
-IF(ENABLE_ARM64)
-	SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-		src/JPEGDecoderL4TM.cpp
-		src/JPEGDecoderL4TMHelper.cpp
-		src/JPEGEncoderL4TM.cpp
-		src/JPEGEncoderL4TMHelper.cpp
-		src/AV4L2Buffer.cpp
-		src/AV4L2ElementPlane.cpp
-		src/H264EncoderV4L2Helper.cpp
-		src/V4L2CUYUV420Converter.cpp
-		src/H264EncoderV4L2.cpp
-		src/DMAFDWrapper.cpp
-		src/NvArgusCameraHelper.cpp
-		src/NvArgusCamera.cpp
-		src/NvV4L2Camera.cpp
-		src/NvV4L2CameraHelper.cpp
-		src/EglRenderer.cpp
-		src/NvEglRenderer.cpp
-		src/DMAUtils.cpp
-		src/NvTransform.cpp
-		src/ApraEGLDisplay.cpp
-		src/DMAFDToHostCopy.cpp
-		src/H264DecoderV4L2Helper.cpp
-		src/H264DecoderV4L2Helper.h
-	)
-ELSE()
-	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
-		src/JPEGDecoderNVJPEG.cpp	
-		src/JPEGEncoderNVJPEG.cpp
-		src/H264EncoderNVCodecHelper.cpp
-		src/H264EncoderNVCodec.cpp
-		src/H264DecoderNvCodecHelper.cpp
-		src/H264DecoderNvCodecHelper.h
-		)
-ENDIF(ENABLE_ARM64)
-
-SET(CUDA_IP_FILES_H
 	include/GaussianBlur.h
 	include/EffectsNPPI.h
 	include/EffectsKernel.h
 	include/CCNPPI.h
-	include/CCKernel.h	
+	include/CCKernel.h
 	include/ResizeNPPI.h
 	include/OverlayNPPI.h
 	include/OverlayKernel.h
@@ -462,60 +646,182 @@ SET(CUDA_IP_FILES_H
 	include/H264Decoder.h
 )
 
-IF(ENABLE_ARM64)
-	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
-		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
-		include/JPEGEncoderL4TMHelper.h
-		include/JPEGEncoderL4TM.h
-		include/AV4L2Buffer.h
-		include/AV4L2ElementPlane.h
-		include/H264EncoderV4L2Helper.h
-		include/V4L2CUYUV420Converter.h
-		include/H264EncoderV4L2.h
-		include/DMAAllocator.h
-		include/DMAFDWrapper.h
-		include/Allocators.h
-		include/NvArgusCameraHelper.h
-		include/NvArgusCamera.h
-		include/NvV4L2Camera.h
-		include/NvV4L2CameraHelper.h
-		include/EglRenderer.h
-		include/ApraNvEglRenderer.h
-		include/DMAUtils.h
-		include/NvTransform.h
-		include/ApraEGLDisplay.h
-		include/DMAFrameUtils.h
-		include/DMAFDToHostCopy.h
+# Add platform-specific CUDA modules (non-ARM64: NVJPEG/NVCodec)
+IF(NOT ENABLE_ARM64)
+	list(APPEND COMPONENT_CUDA_FILES
+		src/JPEGDecoderNVJPEG.cpp
+		src/JPEGEncoderNVJPEG.cpp
+		src/H264EncoderNVCodecHelper.cpp
+		src/H264EncoderNVCodec.cpp
+		src/H264DecoderNvCodecHelper.cpp
+		src/H264DecoderNvCodecHelper.h
 	)
-ELSE()
-	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}		# following modules and related files do not work on ARM64
-		include/JPEGEncoderNVJPEG.h	
+	list(APPEND COMPONENT_CUDA_FILES_H
+		include/JPEGEncoderNVJPEG.h
 		include/JPEGDecoderNVJPEG.h
 		include/H264EncoderNVCodecHelper.h
 		include/H264EncoderNVCodec.h
 	)
-ENDIF(ENABLE_ARM64)
+ENDIF(NOT ENABLE_ARM64)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(SOURCE
-	${CORE_FILES} ${CORE_FILES_H}
-	${GENERIC_FILES} ${GENERIC_FILES_H}
-	${IP_FILES} ${IP_FILES_H}
+# --- ARM64_COMPONENT (Jetson-specific) ---
+SET(COMPONENT_ARM64_FILES
+	src/JPEGDecoderL4TM.cpp
+	src/JPEGDecoderL4TMHelper.cpp
+	src/JPEGEncoderL4TM.cpp
+	src/JPEGEncoderL4TMHelper.cpp
+	src/AV4L2Buffer.cpp
+	src/AV4L2ElementPlane.cpp
+	src/H264EncoderV4L2Helper.cpp
+	src/V4L2CUYUV420Converter.cpp
+	src/H264EncoderV4L2.cpp
+	src/DMAFDWrapper.cpp
+	src/NvArgusCameraHelper.cpp
+	src/NvArgusCamera.cpp
+	src/NvV4L2Camera.cpp
+	src/NvV4L2CameraHelper.cpp
+	src/EglRenderer.cpp
+	src/NvEglRenderer.cpp
+	src/DMAUtils.cpp
+	src/NvTransform.cpp
+	src/ApraEGLDisplay.cpp
+	src/DMAFDToHostCopy.cpp
+	src/H264DecoderV4L2Helper.cpp
+	src/H264DecoderV4L2Helper.h
 )
 
-IF(ENABLE_CUDA)
-	set(SOURCE ${SOURCE}
-		${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
-		${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
-	)
-ENDIF(ENABLE_CUDA)
+SET(COMPONENT_ARM64_FILES_H
+	include/JPEGDecoderL4TMHelper.h
+	include/JPEGDecoderL4TM.h
+	include/JPEGEncoderL4TMHelper.h
+	include/JPEGEncoderL4TM.h
+	include/AV4L2Buffer.h
+	include/AV4L2ElementPlane.h
+	include/H264EncoderV4L2Helper.h
+	include/V4L2CUYUV420Converter.h
+	include/H264EncoderV4L2.h
+	include/DMAAllocator.h
+	include/DMAFDWrapper.h
+	include/Allocators.h
+	include/NvArgusCameraHelper.h
+	include/NvArgusCamera.h
+	include/NvV4L2Camera.h
+	include/NvV4L2CameraHelper.h
+	include/EglRenderer.h
+	include/ApraNvEglRenderer.h
+	include/DMAUtils.h
+	include/NvTransform.h
+	include/ApraEGLDisplay.h
+	include/DMAFrameUtils.h
+	include/DMAFDToHostCopy.h
+)
 
-IF(ENABLE_LINUX)
-    set(SOURCE ${SOURCE} 
-	${GTKGL_FILES_H} ${GTKGL_FILES_CPP}
+# ============================================================================
+# Build SOURCE list based on enabled components
+# ============================================================================
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Initialize with empty SOURCE
+set(SOURCE "")
+
+# CORE is always included
+if(APRAPIPES_ENABLE_CORE)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_CORE_FILES}
+		${COMPONENT_CORE_FILES_H}
 	)
-ENDIF(ENABLE_LINUX)
+endif()
+
+# VIDEO component
+if(APRAPIPES_ENABLE_VIDEO)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_VIDEO_FILES}
+		${COMPONENT_VIDEO_FILES_H}
+	)
+endif()
+
+# IMAGE_PROCESSING component
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_IMAGE_PROCESSING_FILES}
+		${COMPONENT_IMAGE_PROCESSING_FILES_H}
+	)
+endif()
+
+# CUDA_COMPONENT
+if(APRAPIPES_ENABLE_CUDA_COMPONENT)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_CUDA_FILES}
+		${COMPONENT_CUDA_FILES_H}
+	)
+endif()
+
+# ARM64_COMPONENT
+if(APRAPIPES_ENABLE_ARM64_COMPONENT)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_ARM64_FILES}
+		${COMPONENT_ARM64_FILES_H}
+	)
+endif()
+
+# WEBCAM component
+if(APRAPIPES_ENABLE_WEBCAM)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_WEBCAM_FILES}
+		${COMPONENT_WEBCAM_FILES_H}
+	)
+endif()
+
+# QR component
+if(APRAPIPES_ENABLE_QR)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_QR_FILES}
+		${COMPONENT_QR_FILES_H}
+	)
+endif()
+
+# AUDIO component
+if(APRAPIPES_ENABLE_AUDIO)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_AUDIO_FILES}
+		${COMPONENT_AUDIO_FILES_H}
+	)
+endif()
+
+# FACE_DETECTION component
+if(APRAPIPES_ENABLE_FACE_DETECTION)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_FACE_DETECTION_FILES}
+		${COMPONENT_FACE_DETECTION_FILES_H}
+	)
+endif()
+
+# GTK_RENDERING component (Linux only)
+if(APRAPIPES_ENABLE_GTK_RENDERING)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_GTK_RENDERING_FILES}
+		${COMPONENT_GTK_RENDERING_FILES_H}
+	)
+endif()
+
+# THUMBNAIL component
+if(APRAPIPES_ENABLE_THUMBNAIL)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_THUMBNAIL_FILES}
+		${COMPONENT_THUMBNAIL_FILES_H}
+	)
+endif()
+
+# IMAGE_VIEWER component
+if(APRAPIPES_ENABLE_IMAGE_VIEWER)
+	set(SOURCE ${SOURCE}
+		${COMPONENT_IMAGE_VIEWER_FILES}
+		${COMPONENT_IMAGE_VIEWER_FILES_H}
+	)
+endif()
+
+message(STATUS "Building with ${list(LENGTH, SOURCE)} source files")
+# ============================================================================
 
 add_library(aprapipes STATIC ${SOURCE})
 
