@@ -265,7 +265,7 @@ Restructuring ApraPipes build system to support optional COMPONENTS (similar to 
 **Completion Date:** 2025-10-08
 
 **Commits:**
-- TBD (will be added after commit)
+- `1bdf44287`: Phase 3&4 - Component-based test file organization
 
 **Tasks:**
 1. [x] Analyze module registration patterns (no central registry found)
