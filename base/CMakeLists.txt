@@ -934,13 +934,103 @@ target_include_directories ( aprapipes PRIVATE
 )
 
 
-# aprapipes Unit Tests
+# ============================================================================
+# Component-Based Test File Organization
+# ============================================================================
+# aprapipes Unit Tests - Organized by component
 
-IF (ENABLE_ARM64)
-	SET(ARM64_UT_FILES
+# CORE Component Tests (always compiled)
+SET(COMPONENT_CORE_UT_FILES
+	test/utmain.cpp
+	test/unit_tests.cpp
+	test/test_utils.cpp
+	test/test_utils.h
+	test/module_tests.cpp
+	test/logger_tests.cpp
+	test/filenamestrategy_tests.cpp
+	test/filewritermodule_tests.cpp
+	test/filereadermodule_tests.cpp
+	test/findexstrategy_tests.cpp
+	test/quepushstrategy_tests.cpp
+	test/framesmuxer_tests.cpp
+	test/merge_tests.cpp
+	test/split_tests.cpp
+	test/pullstratergy_tests.cpp
+	test/pipeline_tests.cpp
+	test/valveModule_tests.cpp
+	test/simpleControlModuleTests.cpp
+	test/testSignalGeneratorSrc_tests.cpp
+)
+
+# VIDEO Component Tests
+if(APRAPIPES_ENABLE_VIDEO)
+	SET(COMPONENT_VIDEO_UT_FILES
+		test/mp4writersink_tests.cpp
+		test/mp4readersource_tests.cpp
+		test/mp4_reverse_play_tests.cpp
+		test/mp4_seek_tests.cpp
+		test/mp4_simul_read_write_tests.cpp
+		test/mp4_getlivevideots_tests.cpp
+		test/mp4_dts_strategy_tests.cpp
+		test/ordered_cache_of_files_tests.cpp
+		test/rtsp_client_tests.cpp
+		test/rtsppusher_tests.cpp
+		test/multimediaqueuexform_tests.cpp
+		test/motionvector_extractor_and_overlay_tests.cpp
+	)
+endif()
+
+# IMAGE_PROCESSING Component Tests
+if(APRAPIPES_ENABLE_IMAGE_PROCESSING)
+	SET(COMPONENT_IMAGE_PROCESSING_UT_FILES
+		test/cv_memory_leaks_tests.cpp
+		test/calchistogramcv_tests.cpp
+		test/imagemetadata_tests.cpp
+		test/bmpconverter_tests.cpp
+		test/jpegdecodercv_tests.cpp
+		test/ImageEncodeCV_tests.cpp
+		test/Imageresizecv_tests.cpp
+		test/rotatecv_tests.cpp
+		test/affinetransform_tests.cpp
+		test/brightness_contrast_tests.cpp
+		test/virtualptz_tests.cpp
+		test/color_conversion_tests.cpp
+		test/textoverlayxform_tests.cpp
+		test/overlaymodule_tests.cpp
+		test/archivespacemanager_tests.cpp
+	)
+endif()
+
+# CUDA_COMPONENT Tests
+if(APRAPIPES_ENABLE_CUDA_COMPONENT)
+	SET(COMPONENT_CUDA_UT_FILES
+		test/cudamemcopy_tests.cpp
+		test/resizenppi_tests.cpp
+		test/rotatenppi_tests.cpp
+		test/ccnppi_tests.cpp
+		test/memtypeconversion_tests.cpp
+	)
+	IF(NOT ENABLE_ARM64)
+		list(APPEND COMPONENT_CUDA_UT_FILES
+			test/jpegencodernvjpeg_tests.cpp
+			test/jpegdecodernvjpeg_tests.cpp
+			test/resizenppi_jpegencodernvjpeg_tests.cpp
+			test/nvjpeg_combo_tests.cpp
+			test/overlaynppi_tests.cpp
+			test/effectsnppi_tests.cpp
+			test/h264Encodernvcodec_tests.cpp
+			test/nv_mp4_file_tests.cpp
+			test/nv_test_utils.h
+			test/h264decoder_tests.cpp
+		)
+	ENDIF()
+endif()
+
+# ARM64_COMPONENT Tests
+if(APRAPIPES_ENABLE_ARM64_COMPONENT)
+	SET(COMPONENT_ARM64_UT_FILES
 		test/jpegencoderl4tm_tests.cpp
 		test/jpegdecoderl4tm_tests.cpp
-#		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
 		test/opencvresize_tests.cpp
 		test/h264encoderv4l2_tests.cpp
 		test/nvarguscamerahelper_tests.cpp
@@ -954,104 +1044,75 @@ IF (ENABLE_ARM64)
 		test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
 	)
-ENDIF(ENABLE_ARM64)
+endif()
 
-IF (ENABLE_CUDA)
-	SET(CUDA_UT_FILES
-		test/cudamemcopy_tests.cpp		
-		test/resizenppi_tests.cpp
-		test/rotatenppi_tests.cpp
-		test/ccnppi_tests.cpp
-		test/memtypeconversion_tests.cpp
+# WEBCAM Component Tests
+if(APRAPIPES_ENABLE_WEBCAM)
+	SET(COMPONENT_WEBCAM_UT_FILES
+		test/webcam_source_tests.cpp
 	)
-	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
+endif()
 
-		SET(CUDA_UT_FILES ${CUDA_UT_FILES}	
-			test/jpegencodernvjpeg_tests.cpp
-			test/jpegdecodernvjpeg_tests.cpp			
-			test/resizenppi_jpegencodernvjpeg_tests.cpp
-			test/nvjpeg_combo_tests.cpp			
-			test/overlaynppi_tests.cpp
-			test/effectsnppi_tests.cpp
-			test/h264Encodernvcodec_tests.cpp
-			test/nv_mp4_file_tests.cpp
-			test/nv_test_utils.h
-			test/h264decoder_tests.cpp
-		)
-	ENDIF(NOT ENABLE_ARM64)
-ENDIF(ENABLE_CUDA)
+# QR Component Tests
+if(APRAPIPES_ENABLE_QR)
+	SET(COMPONENT_QR_UT_FILES
+		test/QRReader_tests.cpp
+	)
+endif()
 
-SET(UT_FILES
-	test/utmain.cpp
-	test/unit_tests.cpp
-	test/cv_memory_leaks_tests.cpp
-	test/module_tests.cpp
-	test/calchistogramcv_tests.cpp
-	test/filenamestrategy_tests.cpp
-	test/test_utils.cpp
-	test/test_utils.h	
-	test/filewritermodule_tests.cpp
-	test/logger_tests.cpp
-#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added	
-	test/quepushstrategy_tests.cpp	
-	test/framesmuxer_tests.cpp
-	test/filereadermodule_tests.cpp
-	test/merge_tests.cpp
-	test/split_tests.cpp
-	test/imagemetadata_tests.cpp
-	test/bmpconverter_tests.cpp
-	test/rtsppusher_tests.cpp
-	test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
-	test/Imageresizecv_tests.cpp
-	test/faciallandmarkscv_tests.cpp
-	test/imageviewermodule_tests.cpp
-	test/ImageEncodeCV_tests.cpp
-	test/rotatecv_tests.cpp
-	test/affinetransform_tests.cpp
-	test/brightness_contrast_tests.cpp
-	test/virtualptz_tests.cpp
-	test/webcam_source_tests.cpp
-	test/facedetectorXform_tests.cpp
-	test/sound_record_tests.cpp
-	test/pullstratergy_tests.cpp
-	test/QRReader_tests.cpp
-	test/textoverlayxform_tests.cpp
-	test/mp4writersink_tests.cpp
-	test/pipeline_tests.cpp
-#	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	test/valveModule_tests.cpp
-	test/color_conversion_tests.cpp
-	test/archivespacemanager_tests.cpp
-	test/multimediaqueuexform_tests.cpp
-  test/mp4readersource_tests.cpp
-	test/rtsp_client_tests.cpp
-	test/motionvector_extractor_and_overlay_tests.cpp
-	test/mp4_reverse_play_tests.cpp
-	test/ordered_cache_of_files_tests.cpp
-	test/mp4_seek_tests.cpp
-	test/mp4_simul_read_write_tests.cpp
-	test/mp4_getlivevideots_tests.cpp
-	test/mp4_dts_strategy_tests.cpp
-	test/overlaymodule_tests.cpp
-	test/testSignalGeneratorSrc_tests.cpp
-	test/audioToTextXform_tests.cpp
-	test/simpleControlModuleTests.cpp
-	${ARM64_UT_FILES}
-	${CUDA_UT_FILES}
-)
+# AUDIO Component Tests
+if(APRAPIPES_ENABLE_AUDIO)
+	SET(COMPONENT_AUDIO_UT_FILES
+		test/sound_record_tests.cpp
+		test/audioToTextXform_tests.cpp
+	)
+endif()
 
-IF(ENABLE_LINUX)
-	list(APPEND UT_FILES
-	test/gtkglrenderer_tests.cpp
-	test/virtualcamerasink_tests.cpp
-	test/QRReader_tests.cpp
+# FACE_DETECTION Component Tests
+if(APRAPIPES_ENABLE_FACE_DETECTION)
+	SET(COMPONENT_FACE_DETECTION_UT_FILES
+		test/faciallandmarkscv_tests.cpp
+		test/facedetectorXform_tests.cpp
+	)
+endif()
+
+# GTK_RENDERING Component Tests
+if(APRAPIPES_ENABLE_GTK_RENDERING AND ENABLE_LINUX)
+	SET(COMPONENT_GTK_RENDERING_UT_FILES
+		test/gtkglrenderer_tests.cpp
+		test/virtualcamerasink_tests.cpp
 	)
 	set(GLEW_LIBRARIES
 		GLEW::GLEW
 		glfw
 	)
-ENDIF(ENABLE_LINUX)
+endif()
+
+# IMAGE_VIEWER Component Tests
+if(APRAPIPES_ENABLE_IMAGE_VIEWER)
+	SET(COMPONENT_IMAGE_VIEWER_UT_FILES
+		test/imageviewermodule_tests.cpp
+	)
+endif()
+
+# Aggregate all enabled test files
+SET(UT_FILES
+	${COMPONENT_CORE_UT_FILES}
+	${COMPONENT_VIDEO_UT_FILES}
+	${COMPONENT_IMAGE_PROCESSING_UT_FILES}
+	${COMPONENT_CUDA_UT_FILES}
+	${COMPONENT_ARM64_UT_FILES}
+	${COMPONENT_WEBCAM_UT_FILES}
+	${COMPONENT_QR_UT_FILES}
+	${COMPONENT_AUDIO_UT_FILES}
+	${COMPONENT_FACE_DETECTION_UT_FILES}
+	${COMPONENT_GTK_RENDERING_UT_FILES}
+	${COMPONENT_IMAGE_VIEWER_UT_FILES}
+)
+
+list(LENGTH UT_FILES UT_FILES_COUNT)
+message(STATUS "Total test files configured: ${UT_FILES_COUNT}")
+# ============================================================================
 
 add_executable(aprapipesut ${UT_FILES})
 
