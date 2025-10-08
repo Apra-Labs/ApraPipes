@@ -232,6 +232,7 @@ Restructuring ApraPipes build system to support optional COMPONENTS (similar to 
 **Commits:**
 - `31e361598`: Phase 1 (Part 1) - Infrastructure and source organization
 - `c5aa5d10c`: Phase 1 (Part 2) - Conditional dependencies and linking
+- `b12426f55`: Phase 1 (Part 3) - CORE-only build test and fixes
 
 ---
 
