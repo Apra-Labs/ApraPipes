@@ -2,7 +2,7 @@ name: CI-Linux-NoCUDA
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'test/phase9-cloud-workflows' ]
   pull_request:
     branches: [ main ]
 
