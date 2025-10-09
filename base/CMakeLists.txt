@@ -224,8 +224,30 @@ set(VCPKG_MANIFEST_FEATURES "")
 
 if(ENABLE_COMPONENTS STREQUAL "ALL")
 	# Enable all vcpkg features for backward compatibility
-	list(APPEND VCPKG_MANIFEST_FEATURES "all")
-	message(STATUS "vcpkg features: all (full backward-compatible build)")
+	# BUT exclude CUDA feature if ENABLE_CUDA=OFF
+	if(ENABLE_CUDA)
+		list(APPEND VCPKG_MANIFEST_FEATURES "all")
+		message(STATUS "vcpkg features: all (full backward-compatible build)")
+	else()
+		# ALL components but no CUDA - enumerate features manually excluding cuda
+		list(APPEND VCPKG_MANIFEST_FEATURES
+			"video"
+			"image-processing"
+			"webcam"
+			"qr"
+			"audio"
+			"face-detection"
+			"thumbnail"
+			"image-viewer"
+		)
+		if(NOT ENABLE_ARM64)
+			list(APPEND VCPKG_MANIFEST_FEATURES "redis")
+		endif()
+		if(NOT ENABLE_WINDOWS)
+			list(APPEND VCPKG_MANIFEST_FEATURES "gtk-rendering" "voip")
+		endif()
+		message(STATUS "vcpkg features: all except CUDA (no-CUDA full build)")
+	endif()
 else()
 	# Map enabled components to vcpkg features
 	foreach(component ${APRAPIPES_ENABLED_COMPONENTS})
