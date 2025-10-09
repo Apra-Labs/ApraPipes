@@ -117,9 +117,15 @@ jobs:
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF')}} 
+      if: ${{ contains(inputs.cuda,'OFF')}}
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
+      shell: pwsh
+
+    - name: Remove VoIP from vcpkg on Linux no-CUDA builds
+      if: ${{ contains(inputs.cuda,'OFF')}}
+      working-directory: ${{github.workspace}}/base
+      run: .\fix-vcpkg-json.ps1 -removeVoIP
       shell: pwsh
 
     - name: Remove OpenCV from vcpkg during prep phase

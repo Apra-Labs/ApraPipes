@@ -1,5 +1,5 @@
 #inplace fixing of a vcpkg file
-param([String]$fileName='vcpkg.json', [switch]$removeOpenCV,  [switch]$removeCUDA, [switch]$onlyOpenCV)
+param([String]$fileName='vcpkg.json', [switch]$removeOpenCV,  [switch]$removeCUDA, [switch]$removeVoIP, [switch]$onlyOpenCV)
 
 $v = Get-Content $fileName -raw | ConvertFrom-Json
 
@@ -34,6 +34,21 @@ if ($removeCUDA.IsPresent)
                         $_.features = @($_.features | Where-Object { $_ -ne 'cuda' })
                     }
                 }
+        }
+    }
+}
+
+if($removeVoIP.IsPresent)
+{
+    # Remove VoIP from features section
+    if ($v.features) {
+        # Remove 'voip' from the 'all' feature's dependencies
+        if ($v.features.all -and $v.features.all.dependencies) {
+            foreach ($dep in $v.features.all.dependencies) {
+                if ($dep.PSObject.Properties['name'] -and $dep.name -eq 'apra-pipes' -and $dep.features) {
+                    $dep.features = @($dep.features | Where-Object { $_ -ne 'voip' })
+                }
+            }
         }
     }
 }
