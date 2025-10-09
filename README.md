@@ -28,12 +28,39 @@ Aprapipes is automatically built and tested on Ubuntu (18.04 and 20.04), Jetson 
     <li><a href="#jetson">Jetson</a></li>
     <li><a href="#docker">Docker</a></li>
   </ul>
-</details>    
+</details>
 
- * Note :  Make sure to clone using recursive flag
+ * **Note:**  Make sure to clone using recursive flag
     ```
     git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
     ```
+
+### Quick Start: Build Scripts Overview
+
+ApraPipes supports **component-based builds** - build only what you need to reduce build times by 60-80%.
+
+| Script | Platform | CUDA | Component Support | Usage Example |
+|--------|----------|------|-------------------|---------------|
+| `build_windows_cuda.bat` | Windows | ✅ Yes | ✅ Full (presets + custom) | `build_windows_cuda.bat --preset minimal` |
+| `build_windows_cuda_vs19.ps1` | Windows | ✅ Yes (VS 2019) | ✅ Full (presets + custom) | `.\build_windows_cuda_vs19.ps1 -Preset video` |
+| `build_windows_no_cuda.bat` | Windows | ❌ No | ✅ Full (presets + custom) | `build_windows_no_cuda.bat --preset video` |
+| `build_linux_cuda.sh` | Linux | ✅ Yes | ✅ Full (presets + custom) | `./build_linux_cuda.sh --preset cuda` |
+| `build_linux_no_cuda.sh` | Linux | ❌ No | ✅ Full (presets + custom) | `./build_linux_no_cuda.sh --preset minimal` |
+| `build_jetson.sh` | Jetson ARM64 | ✅ Yes | ✅ Full (ARM64 presets) | `./build_jetson.sh --preset full` |
+| `build_documentation.sh` | All | N/A | N/A | `./build_documentation.sh` |
+
+**Available Presets:**
+- `minimal` - CORE only (~5-10 min build)
+- `video` - CORE + VIDEO + IMAGE_PROCESSING (~15-25 min)
+- `cuda` - Video preset + CUDA_COMPONENT (~30-40 min)
+- `full` - All components (default, ~60+ min)
+
+**Custom Components:** Use `--components "CORE;VIDEO;IMAGE_PROCESSING"` for fine-grained control.
+
+For detailed component documentation, see [COMPONENTS_GUIDE.md](COMPONENTS_GUIDE.md).
+
+---
+
 
 <h2 id="windows">Windows (Version ≥ 10)</h2>  
 <img src="./data/ReadMe Images/windows.png" alt="Windows Logo" align="right" height = "100" width="100">
