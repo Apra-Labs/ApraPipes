@@ -61,6 +61,45 @@ For detailed component documentation, see [COMPONENTS_GUIDE.md](COMPONENTS_GUIDE
 
 ---
 
+## Documentation
+
+ApraPipes provides comprehensive documentation to help you get started and work with the framework:
+
+### 📘 User Guides
+
+| Guide | Description | Audience |
+|-------|-------------|----------|
+| **[COMPONENTS_GUIDE.md](COMPONENTS_GUIDE.md)** | Complete guide to component-based builds with module matrix, build scripts usage, and troubleshooting | All users |
+| **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** | Step-by-step migration guide from full builds to component-based builds with backward compatibility info | Existing users |
+| **[COMPONENT_DEPENDENCY_DIAGRAM.md](COMPONENT_DEPENDENCY_DIAGRAM.md)** | Visual diagrams showing component relationships and dependencies | Visual learners |
+
+### 🔧 Developer Guides
+
+| Guide | Description | Audience |
+|-------|-------------|----------|
+| **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** | How to add new modules to the framework with CMakeLists.txt integration and examples | Contributors |
+| **[CLAUDE.md](CLAUDE.md)** | Project overview, build system details, and development patterns for AI assistants | AI assistants |
+
+### 📊 Technical Reports
+
+| Document | Description | Audience |
+|----------|-------------|----------|
+| **[COMPONENT_REFACTORING_LOG.md](COMPONENT_REFACTORING_LOG.md)** | Complete refactoring log documenting all 8 phases of component system implementation | Technical reviewers |
+| **[TESTING_PHASE5.5_REPORT.md](TESTING_PHASE5.5_REPORT.md)** | Detailed testing validation report with build statistics and performance metrics | QA/Testing teams |
+
+### 🚀 Quick Navigation
+
+**First time user?** → Start with [README.md](#getting-started-with-aprapipes) (this file) and [COMPONENTS_GUIDE.md](COMPONENTS_GUIDE.md)
+
+**Migrating from full builds?** → Read [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+
+**Adding a new module?** → Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
+
+**Understanding component relationships?** → View [COMPONENT_DEPENDENCY_DIAGRAM.md](COMPONENT_DEPENDENCY_DIAGRAM.md)
+
+**Need help?** → Check [COMPONENTS_GUIDE.md](COMPONENTS_GUIDE.md#troubleshooting) troubleshooting section
+
+---
 
 <h2 id="windows">Windows (Version ≥ 10)</h2>  
 <img src="./data/ReadMe Images/windows.png" alt="Windows Logo" align="right" height = "100" width="100">

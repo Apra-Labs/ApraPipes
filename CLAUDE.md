@@ -318,5 +318,4 @@ ReleaseWithDebugInfo etc. Generate a report output of this testing phase. Once w
 
 We MUST generate a separate documentation which is like a developer guide to adding a module to this framework so as to navigate and decide which part of the CMakelists need to be edited for that specific module based on the COMPONENTS that we end up having finally. THIS MUST BE DONE at the end of all the phases. Lets call it THE LAST PHASE - generating a developement guide for future human developers.
 
-CUDA preset is of high importanceI 
 - CUDA Preset is important
