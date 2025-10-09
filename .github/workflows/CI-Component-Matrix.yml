@@ -218,13 +218,35 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Preset | Platform | CUDA | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|--------|----------|------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| minimal | Windows | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| minimal | Windows | OFF | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| minimal | Linux | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| video | Windows | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| video | Windows | OFF | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| video | Linux | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| cuda | Windows | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
-        echo "| cuda | Linux | ON | ✅ |" >> $GITHUB_STEP_SUMMARY
+
+        # Parse test results from downloaded artifacts
+        STATUS="${{ needs.component-matrix-test.result }}"
+        if [ "$STATUS" == "success" ]; then
+          ICON="✅"
+        else
+          ICON="❌"
+        fi
+
+        # Check individual test results if available
+        for dir in test-results/ComponentTest_*/; do
+          if [ -d "$dir" ]; then
+            TEST_NAME=$(basename "$dir" | sed 's/ComponentTest_//')
+            if [ -f "$dir/CI_test_result_*.xml" ]; then
+              # Check for test failures in XML
+              if grep -q 'failures="0"' "$dir/CI_test_result_*.xml" 2>/dev/null; then
+                echo "| $TEST_NAME | $ICON |" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "| $TEST_NAME | ❌ |" >> $GITHUB_STEP_SUMMARY
+              fi
+            else
+              echo "| $TEST_NAME | ⚠️ No results |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+        done
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Overall Status**: $ICON" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Note**: Component-based builds reduce build times by 60-80% compared to full builds." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "For detailed results, check the individual job logs and test artifacts." >> $GITHUB_STEP_SUMMARY
