@@ -31,7 +31,17 @@
     "liblzma",
     "bzip2",
     "zlib",
-    "brotli"
+    "brotli",
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+        "jpeg",
+        "png",
+        "tiff",
+        "webp"
+      ]
+    }
   ],
   "features": {
     "video": {

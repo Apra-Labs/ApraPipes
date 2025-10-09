@@ -311,3 +311,12 @@ This module:
 - Translates library names (e.g., `nppc`, `nppial`) to CUDA:: targets
 - Automatically enabled via `CMAKE_MODULE_PATH` in base/CMakeLists.txt
 - We are adding a new feature in this repository. The intention is to simplify the build structure of the repository.
+- No actually, I had planned a Phase 5.5 called local testing. Here is the instruction for the phase: actually, before you go to phase 6, perform an extensive local testing phase for windows for all different combinations. Take as much     
+time as you need. Make sure the disk space does not get full. Try different components. While testing make sure that not only the builds    
+ are successful but also there are no runtime issues like linking issues, missing DLL issues. And the tests are running for 
+ReleaseWithDebugInfo etc. Generate a report output of this testing phase. Once we are done with this, we will move to phase 6 and phase   7
+
+We MUST generate a separate documentation which is like a developer guide to adding a module to this framework so as to navigate and decide which part of the CMakelists need to be edited for that specific module based on the COMPONENTS that we end up having finally. THIS MUST BE DONE at the end of all the phases. Lets call it THE LAST PHASE - generating a developement guide for future human developers.
+
+CUDA preset is of high importanceI 
+- CUDA Preset is important
