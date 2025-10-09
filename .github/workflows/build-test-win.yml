@@ -157,6 +157,7 @@ jobs:
         $components = switch ("${{inputs.preset}}") {
           "minimal" { "CORE" }
           "video" { "CORE;VIDEO;IMAGE_PROCESSING" }
+          "full" { "ALL" }
           "" { "ALL" }
           default { "ALL" }
         }
