@@ -11,20 +11,28 @@ env:
   
 jobs:
   linux-nocuda-build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: ['minimal', 'video', 'full']
     uses: ./.github/workflows/build-test-lin.yml
     with:
       runner: 'ubuntu-22.04'
-      flav: Linux
+      flav: 'Linux-nocuda-${{ matrix.preset }}'
       is-selfhosted: false
       cuda: 'OFF'
+      preset: '${{ matrix.preset }}'
       nProc: 3
   linux-nocuda-publish:
     needs: linux-nocuda-build-test
+    strategy:
+      matrix:
+        preset: ['minimal', 'video', 'full']
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: Linux
+      flav: 'Linux-nocuda-${{ matrix.preset }}'
     secrets:
-      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
