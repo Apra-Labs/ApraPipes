@@ -14,7 +14,7 @@
 
 BOOST_AUTO_TEST_SUITE(nvarguscamera_tests)
 
-BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
+/*BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
 	auto argValue = Test_Utils::getArgValue("n", "1");
 	auto n_cams = atoi(argValue.c_str());
@@ -70,10 +70,14 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	p.term();
 
 	p.wait_for_all();
-}
+}*/
 
-BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(vcam_nv12)
 {
+	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
@@ -95,12 +99,12 @@ BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	//Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	///Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
 	p.term();
@@ -108,15 +112,19 @@ BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(vcam_yuv420, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(vcam_yuv420)
 {
+	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
-	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
-	source->setNext(copySource);
+	//auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	//source->setNext(copySource);
 
 	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
 	source->setNext(transform);
@@ -139,12 +147,12 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420, *boost::unit_test::disabled())
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
-	Logger::setLogLevel(boost::log::trivial::severity_level::info);
+	//Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
-	Logger::setLogLevel(boost::log::trivial::severity_level::error);
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	//Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
 	p.term();
@@ -152,7 +160,7 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(vcam)
 {
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
@@ -162,7 +170,7 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
 	source->setNext(copySource);
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::BGRA)));
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
 	source->setNext(transform);
 
 	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
@@ -187,7 +195,7 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -195,7 +203,7 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 
 	p.wait_for_all();
 }
-
+/*
 BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(800, 800);
@@ -274,6 +282,6 @@ BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
 	p.term();
 
 	p.wait_for_all();
-}
+}*/
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -54,7 +54,7 @@ find_package(LibLZMA REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
-find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(SFML COMPONENTS System Window Audio Graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 
 
@@ -188,15 +188,15 @@ SET(CORE_FILES
 	src/Split.cpp
 	src/Utils.cpp
 	src/FIndexStrategy.cpp
-	src/AudioCaptureSrc.cpp
+	#src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
-	src/Mp4WriterSink.cpp
+	#src/Mp4WriterSink.cpp
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
 	src/RTSPClientSrc.cpp
 	src/RTSPClientSrc.cpp
-	src/MotionVectorExtractor.cpp
+	#src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
@@ -409,24 +409,24 @@ SET(CUDA_IP_FILES
 
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-		# src/JPEGDecoderL4TM.cpp
-		# src/JPEGDecoderL4TMHelper.cpp
+		src/JPEGDecoderL4TM.cpp
+		src/JPEGDecoderL4TMHelper.cpp
 		src/JPEGEncoderL4TM.cpp
 		src/JPEGEncoderL4TMHelper.cpp
 		src/AV4L2Buffer.cpp
 		src/AV4L2ElementPlane.cpp
-		# src/H264EncoderV4L2Helper.cpp
-		# src/V4L2CUYUV420Converter.cpp
-		# src/H264EncoderV4L2.cpp
+		src/H264EncoderV4L2Helper.cpp
+		src/V4L2CUYUV420Converter.cpp
+		src/H264EncoderV4L2.cpp
 		src/DMAFDWrapper.cpp
-		# src/NvArgusCameraHelper.cpp
-		# src/NvArgusCamera.cpp
+	    src/NvArgusCameraHelper.cpp
+	    src/NvArgusCamera.cpp
 		# src/NvV4L2Camera.cpp
 		# src/NvV4L2CameraHelper.cpp
 		# src/EglRenderer.cpp
 		# src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
-		# src/NvTransform.cpp
+		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
@@ -531,16 +531,16 @@ target_include_directories ( aprapipes PRIVATE
 
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
-		# test/jpegencoderl4tm_tests.cpp
-		# test/jpegdecoderl4tm_tests.cpp
+		test/jpegencoderl4tm_tests.cpp
+		test/jpegdecoderl4tm_tests.cpp
 #		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		# test/opencvresize_tests.cpp
+		#test/opencvresize_tests.cpp
 		# test/h264encoderv4l2_tests.cpp
-		# test/nvarguscamerahelper_tests.cpp
-		# test/nvarguscamera_tests.cpp
+		#test/nvarguscamerahelper_tests.cpp
+		test/nvarguscamera_tests.cpp
 		# test/nvv4l2camera_test.cpp
 		# test/nvv4l2camerahelper_test.cpp
-		# test/nvtransform_tests.cpp
+	    test/nvtransform_tests.cpp
 		# test/eglrenderer_test.cpp
 		# test/cuda_arm_tests.cpp
 		# test/apraegldisplay_tests.cpp
@@ -577,7 +577,7 @@ ENDIF(ENABLE_CUDA)
 SET(UT_FILES
 	test/utmain.cpp
 	test/unit_tests.cpp
-	test/cv_memory_leaks_tests.cpp
+	#test/cv_memory_leaks_tests.cpp--
 	test/module_tests.cpp
 	# test/calchistogramcv_tests.cpp
 	# test/filenamestrategy_tests.cpp
@@ -692,7 +692,10 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   LibLZMA::LibLZMA
   bigint::bigint
-  sfml-audio
+  SFML::Audio
+  SFML::System
+  SFML::Window
+  SFML::Graphics
   whisper::whisper
   /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
 
