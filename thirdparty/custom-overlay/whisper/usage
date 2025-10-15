@@ -1,0 +1,4 @@
+whisper provides CMake targets:
+
+find_package(whisper CONFIG REQUIRED)
+target_link_libraries(main PRIVATE whisper::whisper)
