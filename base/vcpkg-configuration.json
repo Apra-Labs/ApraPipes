@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg-configuration.schema.json",
+  "overlay-ports": [
+    "../thirdparty/custom-overlay"
+  ],
+  "default-registry": {
+    "kind": "git",
+    "repository": "https://github.com/Apra-Labs/vcpkg.git",
+    "baseline": "6ba64191f73b82b71ffa5263b26189f7b2b82f92"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/Apra-Labs/vcpkg.git",
+      "baseline": "29a017687d56121cb9d200a7dc519c0de2c78a4a",
+      "packages": [ "boost*", "boost-*"]
+    }
+  ]
+}
