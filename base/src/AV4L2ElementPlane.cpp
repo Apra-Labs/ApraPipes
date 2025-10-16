@@ -33,7 +33,16 @@ void AV4L2ElementPlane::setPlaneFormat(uint32_t width, uint32_t height)
     mFormat.fmt.pix_mp.width = width;
     mFormat.fmt.pix_mp.height = height;
     mFormat.fmt.pix_mp.num_planes = mNumPlanes;
-    mFormat.fmt.pix_mp.plane_fmt[0].sizeimage = 2 * 1024 * 1024; // this line is not required for yuv420 - test this
+    // For OUTPUT YUV420M, explicitly set per-plane stride and size to match converters
+    if (mType == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE && mPixelFormat == V4L2_PIX_FMT_YUV420M)
+    {
+        mFormat.fmt.pix_mp.plane_fmt[0].bytesperline = width;
+        mFormat.fmt.pix_mp.plane_fmt[1].bytesperline = width / 2;
+        mFormat.fmt.pix_mp.plane_fmt[2].bytesperline = width / 2;
+        mFormat.fmt.pix_mp.plane_fmt[0].sizeimage = width * height;
+        mFormat.fmt.pix_mp.plane_fmt[1].sizeimage = (width * height) / 4;
+        mFormat.fmt.pix_mp.plane_fmt[2].sizeimage = (width * height) / 4;
+    }
 
     auto ret = v4l2_ioctl(mFD, VIDIOC_S_FMT, &mFormat);
     if (ret)

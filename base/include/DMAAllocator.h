@@ -19,75 +19,75 @@ private:
     int mHeight;
     int mWidth;
     int mCount;
+    // Store metadata to allow lazy initialization when metadata is populated later
+    framemetadata_sp mMetadata;
 
-    static NvBufSurfaceColorFormat  getColorFormat(ImageMetadata::ImageType imageType)
+    static NvBufSurfaceColorFormat getColorFormat(ImageMetadata::ImageType imageType)
     {
-        NvBufSurfaceColorFormat  colorFormat;
+        NvBufSurfaceColorFormat colorFormat;
         switch (imageType)
         {
-        case ImageMetadata::UYVY:
-            colorFormat = NVBUF_COLOR_FORMAT_UYVY;
-            break;
-        case ImageMetadata::YUYV:
-            colorFormat = NVBUF_COLOR_FORMAT_YUYV;
-            break;      
-        case ImageMetadata::RGBA:
-            colorFormat = NVBUF_COLOR_FORMAT_RGBA;
-            break;
-        case ImageMetadata::BGRA:
-            colorFormat = NVBUF_COLOR_FORMAT_BGRA;
-            break;
-        case ImageMetadata::YUV420:
-            colorFormat = NVBUF_COLOR_FORMAT_YUV420;
-            break;
-        case ImageMetadata::NV12:
-            colorFormat = NVBUF_COLOR_FORMAT_NV12;
-            break;
-        default:
-            throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12/YUV444> Actual<" + std::to_string(imageType) + ">");
+            case ImageMetadata::UYVY:
+                colorFormat = NVBUF_COLOR_FORMAT_UYVY;
+                break;
+            case ImageMetadata::YUYV:
+                colorFormat = NVBUF_COLOR_FORMAT_YUYV;
+                break;
+            case ImageMetadata::RGBA:
+                colorFormat = NVBUF_COLOR_FORMAT_RGBA;
+                break;
+            case ImageMetadata::BGRA:
+                colorFormat = NVBUF_COLOR_FORMAT_BGRA;
+                break;
+            case ImageMetadata::YUV420:
+                colorFormat = NVBUF_COLOR_FORMAT_YUV420;
+                break;
+            case ImageMetadata::NV12:
+                colorFormat = NVBUF_COLOR_FORMAT_NV12;
+                break;
+            default:
+                throw AIPException(AIP_FATAL, "Expected <RGBA/BGRA/UYVY/YUV420/NV12/YUV444> Actual<" + std::to_string(imageType) + ">");
         }
-
         return colorFormat;
     }
 
 public:
     DMAAllocator(framemetadata_sp framemetadata) : mFreeDMACount(0), mCount(0)
     {
-        if (!framemetadata->isSet())
-        {
-            return;
-        }
-
+        // Always keep a handle to metadata for lazy initialization later
+        mMetadata = framemetadata;
         mEglDisplay = ApraEGLDisplay::getEGLDisplay();
-
-        auto imageType = ImageMetadata::RGBA;
-
-        auto frameType = framemetadata->getFrameType();
-        switch (frameType)
+        mWidth = 0;
+        mHeight = 0;
+        // If metadata is already set, initialize now; otherwise we'll initialize lazily in allocateChunks
+        if (framemetadata->isSet())
         {
-        case FrameMetadata::FrameType::RAW_IMAGE:
-        {
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(framemetadata);
-            mWidth = inputRawMetadata->getWidth();
-            mHeight = inputRawMetadata->getHeight();
-            imageType = inputRawMetadata->getImageType();
+            auto imageType = ImageMetadata::RGBA;
+            auto frameType = framemetadata->getFrameType();
+            switch (frameType)
+            {
+                case FrameMetadata::FrameType::RAW_IMAGE:
+                {
+                    auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(framemetadata);
+                    mWidth = inputRawMetadata->getWidth();
+                    mHeight = inputRawMetadata->getHeight();
+                    imageType = inputRawMetadata->getImageType();
+                }
+                break;
+                case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+                {
+                    auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(framemetadata);
+                    mWidth = inputRawMetadata->getWidth(0);
+                    mHeight = inputRawMetadata->getHeight(0);
+                    imageType = inputRawMetadata->getImageType();
+                }
+                break;
+                default:
+                    throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+            }
+            mColorFormat = getColorFormat(imageType);
         }
-        break;
-        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
-        {
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(framemetadata);
-            mWidth = inputRawMetadata->getWidth(0);
-            mHeight = inputRawMetadata->getHeight(0);
-            imageType = inputRawMetadata->getImageType();
-        }
-        break;
-        default:
-            throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
-            break;
-        }
-
-        mColorFormat = getColorFormat(imageType);
-    };
+    }
 
     ~DMAAllocator()
     {
@@ -97,7 +97,7 @@ public:
         }
     }
 
-    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType)
+    static void setMetadata(framemetadata_sp &metadata, int width, int height, ImageMetadata::ImageType imageType, size_t pitchValues[4] = nullptr, size_t offsetValues[4] = nullptr)
     {
         auto eglDisplay = ApraEGLDisplay::getEGLDisplay();
         auto colorFormat = getColorFormat(imageType);
@@ -122,50 +122,55 @@ public:
         auto frameType = metadata->getFrameType();
         switch (frameType)
         {
-        case FrameMetadata::FrameType::RAW_IMAGE:
-        {
-            int type = CV_8UC4;
-            switch (imageType)
+            case FrameMetadata::FrameType::RAW_IMAGE:
             {
-            case ImageMetadata::ImageType::RGBA:
-            case ImageMetadata::ImageType::BGRA:
-                type = CV_8UC4;
-                break;
-            case ImageMetadata::ImageType::YUYV:
-            case ImageMetadata::ImageType::UYVY:
-                type = CV_8UC3;
-                break;
+                int type = CV_8UC4;
+                switch (imageType)
+                {
+                    case ImageMetadata::ImageType::RGBA:
+                    case ImageMetadata::ImageType::BGRA:
+                        type = CV_8UC4;
+                        break;
+                    case ImageMetadata::ImageType::YUYV:
+                    case ImageMetadata::ImageType::UYVY:
+                        type = CV_8UC3;
+                        break;
+                    default:
+                        throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
+                }
+                auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+                RawImageMetadata rawMetadata(
+                    width, height, imageType, type,
+                    fdParams.planeParams.pitch[0], CV_8U, FrameMetadata::MemType::DMABUF, false);
+                inputRawMetadata->setData(rawMetadata);
+                if (pitchValues != nullptr)
+                {
+                    pitchValues[0] = fdParams.planeParams.pitch[0];
+                }
+            }
+            break;
+            case FrameMetadata::FrameType::RAW_IMAGE_PLANAR: // need to check for yuv444
+            {
+                auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+                size_t step[4] = {0, 0, 0, 0};
+                step[0] = fdParams.planeParams.pitch[0];
+                // Fill pitches for all planes when available
+                step[1] = fdParams.planeParams.pitch[1];
+                step[2] = fdParams.planeParams.pitch[2];
+                if (pitchValues != nullptr)
+                {
+                    pitchValues[0] = fdParams.planeParams.pitch[0];
+                }
+                if (offsetValues != nullptr)
+                {
+                    offsetValues[0] = fdParams.planeParams.offset[0];
+                }
+                RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
+                inputRawMetadata->setData(rawMetadata);
+            }
+            break;
             default:
-                throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
-            }
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-            RawImageMetadata rawMetadata(width, height, imageType, type, fdParams.planeParams.pitch[0], CV_8U, FrameMetadata::MemType::DMABUF, false);
-            inputRawMetadata->setData(rawMetadata);
-            if(pitchValues != nullptr)
-            {
-              pitchValues[0] = fdParams.planeParams.pitch[0];
-            }
-        }
-        break;
-        case FrameMetadata::FrameType::RAW_IMAGE_PLANAR: // need to check for yuv444
-        {
-            auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
-            size_t step[4] = {0, 0, 0, 0};
-            step[0] = fdParams.planeParams.pitch[0];
-            if(pitchValues != nullptr)
-            {
-              pitchValues[0] = fdParams.planeParams.pitch[0];
-            }
-            if(offsetValues != nullptr)
-            {
-              offsetValues[0] = fdParams.planeParams.offset[0];
-            }
-            RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
-            inputRawMetadata->setData(rawMetadata);
-        }
-        break;
-        default:
-            throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+                throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
             break;
         }
 
@@ -174,6 +179,34 @@ public:
 
     void *allocateChunks(size_t n)
     {
+        // Lazy initialize using metadata if dimensions were not known at construction time
+        if ((mWidth == 0 || mHeight == 0) && mMetadata && mMetadata->isSet())
+        {
+            auto imageType = ImageMetadata::RGBA;
+            auto frameType = mMetadata->getFrameType();
+            switch (frameType)
+            {
+                case FrameMetadata::FrameType::RAW_IMAGE:
+                {
+                    auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(mMetadata);
+                    mWidth = inputRawMetadata->getWidth();
+                    mHeight = inputRawMetadata->getHeight();
+                    imageType = inputRawMetadata->getImageType();
+                }
+                break;
+                case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
+                {
+                    auto inputRawMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(mMetadata);
+                    mWidth = inputRawMetadata->getWidth(0);
+                    mHeight = inputRawMetadata->getHeight(0);
+                    imageType = inputRawMetadata->getImageType();
+                }
+                break;
+                default:
+                    throw AIPException(AIP_FATAL, "Expected Raw Image or RAW_IMAGE_PLANAR. Actual<" + std::to_string(frameType) + ">");
+            }
+            mColorFormat = getColorFormat(imageType);
+        }
         if (mFreeDMACount == 0)
         {
             auto dmaFDWrapper = DMAFDWrapper::create(mCount++, mWidth, mHeight, mColorFormat, NVBUF_LAYOUT_PITCH, mEglDisplay);

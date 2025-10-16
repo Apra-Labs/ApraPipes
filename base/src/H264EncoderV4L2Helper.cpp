@@ -111,10 +111,10 @@ void H264EncoderV4L2Helper::termV4L2()
 
 void H264EncoderV4L2Helper::initV4L2()
 {
-    mFD = v4l2_open("/dev/nvhost-msenc", O_RDWR);
+    mFD = v4l2_open("/dev/v4l2-nvenc", O_RDWR);
     if (mFD == -1)
     {
-        throw AIPException(AIP_FATAL, "Could not open device nvhost-msenc");
+        throw AIPException(AIP_FATAL, "Could not open device v4l2-nvenc");
     }
 
     struct v4l2_capability caps;
@@ -299,6 +299,7 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
     LOG_DEBUG << "Got Free Buffer in process";
     mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
+    return true;
 }
 
 bool H264EncoderV4L2Helper::processEOS()
@@ -312,5 +313,6 @@ bool H264EncoderV4L2Helper::processEOS()
     mOutputPlane->setEOSFlag(buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
 
-    mCapturePlane->waitForDQThread(2000); // blocking call - waits for 2 secs for thread to exit
+    mCapturePlane->waitForDQThread(2000); 
+    return true;
 }
