@@ -244,9 +244,14 @@ if(ENABLE_COMPONENTS STREQUAL "ALL")
 			list(APPEND VCPKG_MANIFEST_FEATURES "redis")
 		endif()
 		if(NOT ENABLE_WINDOWS)
-			list(APPEND VCPKG_MANIFEST_FEATURES "gtk-rendering" "voip")
+			list(APPEND VCPKG_MANIFEST_FEATURES "gtk-rendering")
+			# Note: VoIP/baresip is excluded from Linux no-CUDA builds because:
+			# 1. baresip modules are built as shared objects (.so)
+			# 2. They link against FFmpeg static libraries from vcpkg
+			# 3. FFmpeg is not built with -fPIC, causing linker errors
+			# VoIP/baresip is only supported in CUDA-enabled builds
 		endif()
-		message(STATUS "vcpkg features: all except CUDA (no-CUDA full build)")
+		message(STATUS "vcpkg features: all except CUDA and VoIP (no-CUDA full build)")
 	endif()
 else()
 	# Map enabled components to vcpkg features
