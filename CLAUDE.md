@@ -143,7 +143,7 @@ _build/RelWithDebInfo/aprapipesut.exe --run_test=unit_tests/params_test -- -ip 1
 
 ## Code Formatting & Static Analysis
 
-The project includes pre-commit hooks and GitHub Actions for CI checks.
+The project includes pre-commit hooks and GitHub Actions for comprehensive CI/CD checks.
 
 ### Pre-commit Hooks
 ```bash
