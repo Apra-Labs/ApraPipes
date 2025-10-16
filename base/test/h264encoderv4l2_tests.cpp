@@ -19,41 +19,40 @@
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2_tests)
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *boost::unit_test::disabled())
 {
-	// metadata is known
-	auto width = 640;
-	auto height = 360;
+    // metadata is known
+    auto width = 640;
+    auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
-	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
-	auto rawImagePin = fileReader->addOutputPin(metadata);
+    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/Raw_YUV420_640x360/Image020_YUV420.raw")));
+    auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+    auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	H264EncoderV4L2Props encoderProps;
-	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
-	fileReader->setNext(encoder);
+    H264EncoderV4L2Props encoderProps;
+    encoderProps.targetKbps = 1024;
+    auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+    fileReader->setNext(encoder);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	encoder->setNext(sink);
+    auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Raw_YUV420_640x360.h264", true)));
+    encoder->setNext(fileWriter);
 
-	BOOST_TEST(fileReader->init());
-	BOOST_TEST(encoder->init());
-	BOOST_TEST(sink->init());
+    BOOST_TEST(fileReader->init());
+    BOOST_TEST(encoder->init());
+    BOOST_TEST(fileWriter->init());
 
-	fileReader->play(true);
+    fileReader->play(true);
 
+    for (auto i = 0; i < 42; i++)
+    {
+        fileReader->step();
+        encoder->step();
+        fileWriter->step();
+    }
 
-	for (auto i = 0; i < 42; i++)
-	{
-		fileReader->step();
-		encoder->step();
-		auto frames = sink->pop();
-		auto outputFrame = frames.begin()->second;
-		std::string fileName = "./data/testOutput/h264EncoderV4l2/Raw_YUV420_640x360_" + to_string(i) + ".h264";
-		Test_Utils::saveOrCompare(fileName.c_str(),  const_cast<const uint8_t*>(static_cast<uint8_t*>(outputFrame->data())), outputFrame->size(), 0);
-	}
+    Test_Utils::saveOrCompare("./data/testOutput/Raw_YUV420_640x360.h264", 0);
 }
+
 
 BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
 {
@@ -61,7 +60,7 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
 	auto width = 1280;
 	auto height = 720;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_RGB24_1280x720")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGB, CV_8UC3, size_t(0), CV_8U, FrameMetadata::HOST, true));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 

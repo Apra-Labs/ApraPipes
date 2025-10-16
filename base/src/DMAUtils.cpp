@@ -9,6 +9,7 @@
 
 // This function is the equivalent of the old getCudaPtr.
 // It directly uses the EGLImageKHR, which is created externally now.
+
 uint8_t* DMAUtils::getCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResource, CUeglFrame *pEglFrame)
 {
     // Register the EGL image as a CUDA graphics resource

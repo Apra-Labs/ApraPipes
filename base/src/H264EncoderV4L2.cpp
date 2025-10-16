@@ -88,6 +88,11 @@ bool H264EncoderV4L2::term()
 bool H264EncoderV4L2::process(frame_container &frames)
 {
 	auto frame = frames.cbegin()->second;
+    if (!frame->data() || frame->size() == 0)
+    {
+        LOG_ERROR << "H264EncoderV4L2 received empty/null input frame";
+        return true;
+    }
 	mHelper->process(frame);
 
 	return true;
