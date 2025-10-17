@@ -1567,14 +1567,34 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
     }
     return true;
 }
-void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
+h264DecoderV4L2Helper::~h264DecoderV4L2Helper() 
 {
-    process(eosFrame->data(), eosFrame->size(), 0);
-    deQueAllBuffers();
 }
 
-void h264DecoderV4L2Helper::deQueAllBuffers()
+bool h264DecoderV4L2Helper::flush_frames()
 {
+    // Reset any local scheduling state
+    framesToSkip = 0;
+    iFramesToSkip = 0;
+
+    // Clear any queued timestamps awaiting delivery
+    while (!framesTimestampEntry.empty())
+    {
+        framesTimestampEntry.pop();
+    }
+
+    // Flush downstream pipeline queue if provided
+    if (flushPipelineQueue)
+    {
+        flushPipelineQueue();
+    }
+
+    return true;
+}
+
+bool h264DecoderV4L2Helper::term_helper()
+{
+    LOG_DEBUG << "Terminating Helper WITH FD " << ctx.fd;
     if (ctx.fd != -1)
     {
         if (ctx.dec_capture_thread)
@@ -1673,5 +1693,5 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
         LOG_DEBUG  << "Decoder Run is successful" << endl;
     }
  
-    return;
+    return true;
 }
