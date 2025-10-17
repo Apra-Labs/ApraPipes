@@ -32,6 +32,7 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         return nullptr;
     }
 
+    buffer->m_surf->numFilled = 1;
     buffer->m_fd = buffer->m_surf->surfaceList[0].bufferDesc;
 
     // Use NvBufferMemMapEx

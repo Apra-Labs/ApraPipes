@@ -74,22 +74,22 @@ frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &moth
 	outFrame->setMetadata(metadata);
 	return outFrame;
 }
-// JP5: Set hostPtrV to mapped address for plane 2
-buffer->hostPtrV = buffer->m_surf->surfaceList[0].mappedAddr.addr[2];
-}
-// if (colorFormat != NvBufferColorFormat_UYVY)
+
+void FrameFactory::destroy(Frame *pointer)
 {
-// buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
-// if (buffer->eglImage == EGL_NO_IMAGE_KHR)
-// {
-// LOG_ERROR << "Failed to create eglImage";
-// delete buffer;
-// return nullptr;
-// }
-// cudaFree(0);
-// buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
-}
-return buffer;
+	boost::mutex::scoped_lock lock(m_mutex);
+	counter.fetch_sub(1, memory_order_seq_cst);
+
+	if (pointer->myOrig != NULL)
+	{
+		size_t n = getNumberOfChunks(pointer->size());
+		numberOfChunks.fetch_sub(n, memory_order_seq_cst);
+		memory_allocator->freeChunks(pointer->myOrig, n);
+	}
+
+	auto mother = pointer->myMother;
+	pointer->~Frame();
+	frame_allocator.free(pointer);
 }
 
 frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<FrameFactory> &mother)
