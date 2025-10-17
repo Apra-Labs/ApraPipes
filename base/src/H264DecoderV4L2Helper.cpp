@@ -1522,6 +1522,27 @@ h264DecoderV4L2Helper::~h264DecoderV4L2Helper()
 {
 }
 
+bool h264DecoderV4L2Helper::flush_frames()
+{
+    // Reset any local scheduling state
+    framesToSkip = 0;
+    iFramesToSkip = 0;
+
+    // Clear any queued timestamps awaiting delivery
+    while (!framesTimestampEntry.empty())
+    {
+        framesTimestampEntry.pop();
+    }
+
+    // Flush downstream pipeline queue if provided
+    if (flushPipelineQueue)
+    {
+        flushPipelineQueue();
+    }
+
+    return true;
+}
+
 bool h264DecoderV4L2Helper::term_helper()
 {
     LOG_DEBUG << "Terminating Helper WITH FD " << ctx.fd;
@@ -1614,5 +1635,5 @@ bool h264DecoderV4L2Helper::term_helper()
         LOG_DEBUG  << "Decoder Run is successful" << endl;
     }
  
-    return;
+    return true;
 }

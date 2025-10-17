@@ -29,7 +29,7 @@
 /**
  * Specifies the decoder device node.
  */
-#define DECODER_DEV "/dev/nvhost-nvdec"
+#define DECODER_DEV "/dev/v4l2-nvdec"
 #define MAX_BUFFERS 32
 #define CHUNK_SIZE 4000000
 /**
