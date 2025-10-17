@@ -31,6 +31,7 @@ NvBufSurfaceLayout layout, EGLDisplay eglDisplay)
         delete buffer;
         return nullptr;
     }
+
     buffer->m_surf->numFilled = 1;
     buffer->m_fd = buffer->m_surf->surfaceList[0].bufferDesc;
 

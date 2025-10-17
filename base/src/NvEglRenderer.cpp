@@ -28,7 +28,7 @@
 
 #include "ApraNvEglRenderer.h"
 #include "NvLogging.h"
-#include "nvbuf_utils.h"
+//#include "nvbuf_utils.h"
 #include "NvElement.h"
 #include "Logger.h"
 #include <cstring>
@@ -526,7 +526,24 @@ NvEglRenderer::renderInternal()
 
     EGLSyncKHR egl_sync;
     int iErr;
-    hEglImage = NvEGLImageFromFd(egl_display, render_fd);
+
+    // Import dmabuf using explicit attributes (JetPack 6+ requires proper fourcc/stride)
+    EGLAttrib attrs[] = {
+        EGL_LINUX_DRM_FOURCC_EXT, (EGLint)render_fourcc,
+        EGL_DMA_BUF_PLANE0_FD_EXT, (EGLint)render_fd,
+        EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, 0,
+        EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT, 0,
+        EGL_DMA_BUF_PLANE0_OFFSET_EXT, (EGLint)render_offset,
+        EGL_DMA_BUF_PLANE0_PITCH_EXT, (EGLint)render_pitch,
+        EGL_NONE
+    };
+    hEglImage = eglCreateImage(
+        egl_display,
+        EGL_NO_CONTEXT,
+        EGL_LINUX_DMA_BUF_EXT,
+        (EGLClientBuffer)NULL,
+        attrs
+    );
     if (!hEglImage)
     {
         return -1;
@@ -534,8 +551,18 @@ NvEglRenderer::renderInternal()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, hEglImage);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    EGLBoolean egl_status = eglGetError();
+    if (egl_status != EGL_SUCCESS)
+    {
+        eglDestroyImageKHR(egl_display, hEglImage);
+        return -1;
+    }
 
     iErr = glGetError();
     if (iErr != GL_NO_ERROR)
@@ -581,7 +608,7 @@ NvEglRenderer::renderInternal()
     if (eglDestroySyncKHR(egl_display, egl_sync) != EGL_TRUE)
     {
     }
-    NvDestroyEGLImage(egl_display, hEglImage);
+    eglDestroyImageKHR(egl_display, hEglImage);
 
     if (strlen(overlay_str) != 0)
     {
@@ -761,7 +788,7 @@ NvEglRenderer::InitializeShaders(void)
         return -1;
     }
 
-    GLuint vbo; // Store vetex and tex coords
+    GLuint vbo; // Store vertex and tex coords
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexTexBuf), vertexTexBuf, GL_STATIC_DRAW);
