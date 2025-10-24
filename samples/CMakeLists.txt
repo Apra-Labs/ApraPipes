@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.29)
 
-project(ApraPipesSamples)
+project(ApraPipesSamples CXX CUDA)
 
 # This is a STANDALONE project that finds and links against the already-built aprapipes library
 # It does NOT integrate with base/CMakeLists.txt to avoid breaking the main build
@@ -10,6 +10,19 @@ message(STATUS "=== ApraPipes Samples - Standalone Build ===")
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Add cmake modules directory for FindCUDA.cmake (needed by OpenCV)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../base/cmake")
+
+# VCPKG_INSTALLED_DIR is set via command line in build_samples.ps1
+# This tells vcpkg toolchain where to find packages (in main build's vcpkg_installed)
+
+# However, vcpkg toolchain in manifest mode has issues with non-standard locations
+# So we also manually add the vcpkg installed directory to CMAKE_PREFIX_PATH
+if(DEFINED VCPKG_INSTALLED_DIR)
+    list(APPEND CMAKE_PREFIX_PATH "${VCPKG_INSTALLED_DIR}/share")
+    message(STATUS "Added to CMAKE_PREFIX_PATH: ${VCPKG_INSTALLED_DIR}/share")
+endif()
 
 # ============================================================================
 # Find the already-built aprapipes library
@@ -99,6 +112,83 @@ endfunction()
 find_package(CUDAToolkit REQUIRED)
 message(STATUS "Found CUDA: ${CUDAToolkit_VERSION}")
 
+# Set hints for Find modules used by OpenCV dependencies
+# These modules don't automatically use vcpkg locations in standalone builds
+if(DEFINED VCPKG_INSTALLED_DIR)
+    # TIFF
+    set(TIFF_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "TIFF include directory")
+    set(TIFF_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/tiff.lib" CACHE FILEPATH "TIFF library")
+
+    # ZLIB
+    set(ZLIB_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "ZLIB include directory")
+    set(ZLIB_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/zlib.lib" CACHE FILEPATH "ZLIB library")
+
+    # PNG
+    set(PNG_PNG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "PNG include directory")
+    set(PNG_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/libpng16.lib" CACHE FILEPATH "PNG library")
+
+    # JPEG
+    set(JPEG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "JPEG include directory")
+    set(JPEG_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/jpeg.lib" CACHE FILEPATH "JPEG library")
+
+    # LibArchive
+    set(LibArchive_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "LibArchive include directory")
+    set(LibArchive_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/archive.lib" CACHE FILEPATH "LibArchive library")
+
+    # WebP
+    set(WEBP_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "WebP include directory")
+    set(WEBP_LIBRARY "${VCPKG_INSTALLED_DIR}/lib/webp.lib" CACHE FILEPATH "WebP library")
+
+    # Common include path for all
+    set(CMAKE_INCLUDE_PATH "${VCPKG_INSTALLED_DIR}/include" CACHE PATH "Common include path")
+    set(CMAKE_LIBRARY_PATH "${VCPKG_INSTALLED_DIR}/lib" CACHE PATH "Common library path")
+endif()
+
+# Find OpenCV (required for samples that use vision modules)
+# vcpkg toolchain will find it automatically via VCPKG_INSTALLED_DIR
+find_package(OpenCV CONFIG REQUIRED)
+message(STATUS "Found OpenCV: ${OpenCV_VERSION}")
+
+# Find FFmpeg libraries (required for RTSP and video processing samples)
+find_library(FFMPEG_AVCODEC_LIB NAMES avcodec PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+find_library(FFMPEG_AVFORMAT_LIB NAMES avformat PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+find_library(FFMPEG_AVUTIL_LIB NAMES avutil PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+find_library(FFMPEG_SWRESAMPLE_LIB NAMES swresample PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+find_library(FFMPEG_SWSCALE_LIB NAMES swscale PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+message(STATUS "Found FFmpeg libraries")
+
+# Find MP4 demuxer library (required for MP4 samples)
+find_library(MP4LIB_LIB NAMES mp4lib PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH REQUIRED)
+message(STATUS "Found MP4 library: ${MP4LIB_LIB}")
+
+# Find NVIDIA CUVID library (required for hardware-accelerated video decoding)
+find_library(NVCUVID_LIB NAMES nvcuvid PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH REQUIRED)
+message(STATUS "Found NVIDIA CUVID library: ${NVCUVID_LIB}")
+
+# Find NVIDIA NVJPEG library (required for thumbnail_generator sample)
+find_library(NVJPEG_LIB NAMES nvjpeg PATHS ${CUDAToolkit_LIBRARY_DIR} NO_DEFAULT_PATH)
+if(NVJPEG_LIB)
+    message(STATUS "Found NVIDIA NVJPEG library: ${NVJPEG_LIB}")
+else()
+    message(WARNING "NVJPEG library not found - thumbnail_generator may fail to link")
+endif()
+
+# Find OpenH264 library (required for timelapse sample)
+find_library(OPENH264_LIB NAMES openh264 PATHS ${APRAPIPES_BUILD_DIR}/vcpkg_installed/x64-windows/lib NO_DEFAULT_PATH)
+if(OPENH264_LIB)
+    message(STATUS "Found OpenH264 library: ${OPENH264_LIB}")
+else()
+    message(WARNING "OpenH264 library not found - timelapse may fail to link")
+endif()
+
+# Find NVIDIA NvEncode library (required for timelapse H264 encoding)
+find_library(NVENCODE_LIB NAMES nvencodeapi PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/Video_Codec_SDK_10.0.26/Lib/x64 NO_DEFAULT_PATH)
+if(NVENCODE_LIB)
+    message(STATUS "Found NVIDIA NvEncode library: ${NVENCODE_LIB}")
+else()
+    message(WARNING "NvEncode library not found - timelapse may fail to link")
+endif()
+
 # ============================================================================
 # Helper function to add samples
 # ============================================================================
@@ -117,9 +207,28 @@ function(add_apra_sample SAMPLE_NAME SOURCE_FILE)
     target_link_libraries(${SAMPLE_NAME} PRIVATE
         ${APRAPIPES_LIB}
         ${BOOST_LIBS_FOR_SAMPLE}
+        ${OpenCV_LIBRARIES}
         CUDA::cudart
         CUDA::cuda_driver
+        ${FFMPEG_AVCODEC_LIB}
+        ${FFMPEG_AVFORMAT_LIB}
+        ${FFMPEG_AVUTIL_LIB}
+        ${FFMPEG_SWRESAMPLE_LIB}
+        ${FFMPEG_SWSCALE_LIB}
+        ${MP4LIB_LIB}
+        ${NVCUVID_LIB}
     )
+
+    # Link optional libraries if found
+    if(NVJPEG_LIB)
+        target_link_libraries(${SAMPLE_NAME} PRIVATE ${NVJPEG_LIB})
+    endif()
+    if(OPENH264_LIB)
+        target_link_libraries(${SAMPLE_NAME} PRIVATE ${OPENH264_LIB})
+    endif()
+    if(NVENCODE_LIB)
+        target_link_libraries(${SAMPLE_NAME} PRIVATE ${NVENCODE_LIB})
+    endif()
 
     # Include directories
     target_include_directories(${SAMPLE_NAME} PRIVATE
@@ -169,6 +278,39 @@ else()
     message(WARNING "hello_pipeline source not found")
 endif()
 
+# Video samples
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/video/face_detection_cpu/main.cpp)
+    add_apra_sample(face_detection_cpu video/face_detection_cpu/main.cpp)
+else()
+    message(WARNING "face_detection_cpu source not found")
+endif()
+
+# Network samples
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/network/relay/main.cpp)
+    add_apra_sample(relay network/relay/main.cpp)
+else()
+    message(WARNING "relay source not found")
+endif()
+
+# Video samples (continued)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/video/thumbnail_generator/main.cpp)
+    add_apra_sample(thumbnail_generator video/thumbnail_generator/main.cpp)
+else()
+    message(WARNING "thumbnail_generator source not found")
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/video/timelapse/main.cpp)
+    add_apra_sample(timelapse video/timelapse/main.cpp)
+else()
+    message(WARNING "timelapse source not found")
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/video/file_reader/main.cpp)
+    add_apra_sample(file_reader video/file_reader/main.cpp)
+else()
+    message(WARNING "file_reader source not found")
+endif()
+
 # Add more samples here as they are created:
 # add_apra_sample(webcam_capture video/webcam_capture/main.cpp)
 # add_apra_sample(image_resize image/resize/main.cpp)
@@ -180,6 +322,21 @@ endif()
 add_custom_target(all_samples)
 if(TARGET hello_pipeline)
     add_dependencies(all_samples hello_pipeline)
+endif()
+if(TARGET face_detection_cpu)
+    add_dependencies(all_samples face_detection_cpu)
+endif()
+if(TARGET relay)
+    add_dependencies(all_samples relay)
+endif()
+if(TARGET thumbnail_generator)
+    add_dependencies(all_samples thumbnail_generator)
+endif()
+if(TARGET timelapse)
+    add_dependencies(all_samples timelapse)
+endif()
+if(TARGET file_reader)
+    add_dependencies(all_samples file_reader)
 endif()
 
 # ============================================================================
