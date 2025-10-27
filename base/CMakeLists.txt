@@ -346,13 +346,17 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
+	src/ApraFaceInfo.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
+	src/AudioToTextXForm.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
+	src/MetadataRegistry.cpp
+	src/MetadataRegistryInit.cpp
 )
 	
 SET(IP_FILES_H
+	include/IMetadataConvertible.h
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
@@ -376,6 +380,7 @@ SET(IP_FILES_H
 	include/Overlay.h
 	include/AudioToTextXForm.h
 	include/ThumbnailListGenerator.h
+	include/MetadataRegistry.h
 )
 
 SET(CUDA_CORE_FILES

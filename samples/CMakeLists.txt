@@ -316,6 +316,110 @@ endif()
 # add_apra_sample(image_resize image/resize/main.cpp)
 
 # ============================================================================
+# Unit Tests for Samples
+# ============================================================================
+
+# Enable testing
+enable_testing()
+
+# Collect all test files
+set(SAMPLE_TEST_FILES
+    test_runner.cpp
+    basic/hello_pipeline/test_hello_pipeline.cpp
+    video/face_detection_cpu/test_face_detection_cpu.cpp
+    network/relay/test_relay.cpp
+    video/thumbnail_generator/test_thumbnail_generator.cpp
+    video/file_reader/test_file_reader.cpp
+    video/timelapse/test_timelapse.cpp
+)
+
+# Check if all test files exist
+set(ALL_TESTS_EXIST TRUE)
+foreach(TEST_FILE ${SAMPLE_TEST_FILES})
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE})
+        message(WARNING "Test file not found: ${TEST_FILE}")
+        set(ALL_TESTS_EXIST FALSE)
+    endif()
+endforeach()
+
+# Only create test executable if all test files exist
+if(ALL_TESTS_EXIST)
+    message(STATUS "Creating sample tests executable")
+
+    # Create test executable
+    add_executable(sample_tests ${SAMPLE_TEST_FILES})
+
+    # Get Boost libraries including unit_test_framework
+    get_boost_libraries(BOOST_LIBS_FOR_TESTS
+        system thread filesystem serialization log chrono unit_test_framework
+    )
+
+    # Link against aprapipes library and dependencies
+    target_link_libraries(sample_tests PRIVATE
+        ${APRAPIPES_LIB}
+        ${BOOST_LIBS_FOR_TESTS}
+        ${OpenCV_LIBRARIES}
+        CUDA::cudart
+        CUDA::cuda_driver
+        ${FFMPEG_AVCODEC_LIB}
+        ${FFMPEG_AVFORMAT_LIB}
+        ${FFMPEG_AVUTIL_LIB}
+        ${FFMPEG_SWRESAMPLE_LIB}
+        ${FFMPEG_SWSCALE_LIB}
+        ${MP4LIB_LIB}
+        ${NVCUVID_LIB}
+    )
+
+    # Link optional libraries if found
+    if(NVJPEG_LIB)
+        target_link_libraries(sample_tests PRIVATE ${NVJPEG_LIB})
+    endif()
+    if(OPENH264_LIB)
+        target_link_libraries(sample_tests PRIVATE ${OPENH264_LIB})
+    endif()
+    if(NVENCODE_LIB)
+        target_link_libraries(sample_tests PRIVATE ${NVENCODE_LIB})
+    endif()
+
+    # Include directories
+    target_include_directories(sample_tests PRIVATE
+        ${APRAPIPES_BASE_DIR}/include
+        ${Boost_INCLUDE_DIRS}
+    )
+
+    # Windows-specific settings
+    if(WIN32)
+        target_compile_options(sample_tests PRIVATE /MP)
+        set_property(TARGET sample_tests PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+        )
+    endif()
+
+    # Output to samples subdirectory
+    set_target_properties(sample_tests PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>
+    )
+
+    # Copy DLLs for tests (same as samples)
+    add_custom_command(TARGET sample_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            -DCONFIG=$<CONFIG>
+            -DAPRAPIPES_BUILD_DIR=${APRAPIPES_BUILD_DIR}
+            -DOUTPUT_DIR=$<TARGET_FILE_DIR:sample_tests>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/copy_dlls.cmake
+        COMMENT "Copying DLLs for sample tests"
+        VERBATIM
+    )
+
+    # Add test to CTest
+    add_test(NAME SampleTests COMMAND sample_tests)
+
+    message(STATUS "  Added test executable: sample_tests")
+else()
+    message(STATUS "Skipping sample tests - not all test files found")
+endif()
+
+# ============================================================================
 # Meta-target to build all samples
 # ============================================================================
 

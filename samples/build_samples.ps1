@@ -102,11 +102,15 @@ try {
     Write-Host "   This finds the aprapipes library and sets up the build..." -ForegroundColor Gray
     Write-Host ""
 
+    # Point vcpkg to the main build's installed packages
+    $vcpkgInstalledDir = Join-Path $rootDir "_build\vcpkg_installed\x64-windows"
+
     $cmakeArgs = @(
         "-G", "Visual Studio 16 2019",
         "-A", "x64",
         "-DCMAKE_BUILD_TYPE=$BuildType",
         "-DCMAKE_TOOLCHAIN_FILE=$vcpkgToolchain",
+        "-DVCPKG_INSTALLED_DIR=$vcpkgInstalledDir",
         ".."
     )
 

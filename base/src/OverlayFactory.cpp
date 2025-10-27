@@ -25,6 +25,12 @@ OverlayInfo* OverlayFactory::create(Primitive primitiveType)
 		CompositeOverlay* compositeOverlay = new CompositeOverlay();
 		return compositeOverlay;
 	}
+
+	else if (primitiveType == Primitive::TEXT)
+	{
+		TextOverlay* textOverlay = new TextOverlay();
+		return textOverlay;
+	}
 	return nullptr;
 }
 
@@ -52,6 +58,12 @@ DrawingOverlayBuilder* BuilderOverlayFactory::create(Primitive primitiveType)
 	{
 		CompositeOverlayBuilder* compositeOverlaybuilder = new CompositeOverlayBuilder();
 		return compositeOverlaybuilder;
+	}
+
+	else if (primitiveType == Primitive::TEXT)
+	{
+		TextOverlayBuilder* textOverlaybuilder = new TextOverlayBuilder();
+		return textOverlaybuilder;
 	}
 
 	return nullptr;
