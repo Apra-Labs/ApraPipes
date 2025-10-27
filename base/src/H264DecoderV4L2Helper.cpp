@@ -724,37 +724,47 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     /* Check for resolution event to again
     ** set format and buffers on capture plane.
     */
-    while (!(ctx->in_error || ctx->got_eos) || ctx->in_error)
+    while (!ctx->in_error && !ctx->got_eos)
     {
-        Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
+        // Buffer pointer that will be populated by dq_buffer
+        // Note: dq_buffer returns a pointer to an existing buffer from ctx->cp_buffers array
+        // We don't allocate here - just declare a pointer that dq_buffer will set
+        Buffer *decoded_buffer = nullptr;
          ret_val = m_nThread->dq_event(ctx, event, 0);
         if (ret_val == 0)
         {
             switch (event.type)
             {
                 case V4L2_EVENT_RESOLUTION_CHANGE:
+                    // No cleanup needed - decoded_buffer is nullptr and not owned by us
                     m_nThread->query_set_capture(ctx);
-                    continue; 
+                    continue;
             }
         }
         // Main Capture loop for DQ and Q.
- 
-        while (!ctx->in_error)
+
+        while (!ctx->in_error && !ctx->got_eos)
         {
             struct v4l2_buffer v4l2_buf;
             struct v4l2_plane planes[MAX_PLANES];
- 
+
             memset(&v4l2_buf, 0, sizeof (v4l2_buf));
             memset(planes, 0, sizeof (planes));
             v4l2_buf.m.planes = planes;
- 
-            // Dequeue the filled buffer.
- 
+
+            // Dequeue the filled buffer with timeout to avoid indefinite blocking
+
             if(m_nThread->dq_buffer(ctx, v4l2_buf, &decoded_buffer, ctx->cp_buf_type,
-                 ctx->cp_mem_type, 0))
+                 ctx->cp_mem_type, 100))
             {
                 if (errno == EAGAIN)
                 {
+                    // Timeout or no buffer available - check if we should exit
+                    if (ctx->got_eos)
+                    {
+                        LOG_DEBUG << "Got EOS signal, exiting capture loop" << endl;
+                        break;
+                    }
                     usleep(1000);
                 }
                 else
@@ -762,6 +772,15 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                     ctx->in_error = 1;
                     LOG_ERROR << "Error while DQing at capture plane" << endl;
                 }
+                break;
+            }
+
+            // Check for EOS buffer on capture plane (bytesused == 0 indicates EOS)
+            if (v4l2_buf.m.planes[0].bytesused == 0)
+            {
+                LOG_DEBUG << "Received EOS buffer on capture plane" << endl;
+                ctx->got_eos = true;
+                // Don't process this buffer, just break
                 break;
             }
             
@@ -933,10 +952,13 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 }
             }
         }
-   
+
+        // No cleanup needed - decoded_buffer points to a buffer in ctx->cp_buffers array
+        // which will be cleaned up properly in deQueAllBuffers() or req_buffers_on_capture_plane()
     }
+
     LOG_TRACE << "Exiting decoder capture loop thread" << endl;
- 
+
     return NULL;
 }
  
@@ -1315,17 +1337,32 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     pthread_cond_init(&ctx.queue_cond, NULL);
  
     /* The call creates a new V4L2 Video Decoder object
-    ** on the device node "/dev/nvhost-nvdec"
+    ** Try Jetpack 6 device first (/dev/v4l2-nvdec), then fallback to Jetpack 5 (/dev/nvhost-nvdec)
     ** Additional flags can also be given with which the device
     ** should be opened.
     ** This opens the device in Blocking mode.
     */
     ctx.fd = v4l2_open(DECODER_DEV_JP6, flags | O_RDWR);
-    
+
     if (ctx.fd == -1)
     {
-        LOG_ERROR << "Could not open device " << DECODER_DEV_JP6 << endl;
-        ctx.in_error = 1;
+        LOG_INFO << "Could not open device " << DECODER_DEV_JP6 << ", trying " << DECODER_DEV_JP5 << endl;
+        ctx.fd = v4l2_open(DECODER_DEV_JP5, flags | O_RDWR);
+
+        if (ctx.fd == -1)
+        {
+            LOG_ERROR << "Could not open device " << DECODER_DEV_JP6 << " or " << DECODER_DEV_JP5 << endl;
+            ctx.in_error = 1;
+            return false;
+        }
+        else
+        {
+            LOG_INFO << "Successfully opened device " << DECODER_DEV_JP5 << endl;
+        }
+    }
+    else
+    {
+        LOG_INFO << "Successfully opened device " << DECODER_DEV_JP6 << endl;
     }
  
     /* The Querycap Ioctl call queries the video capabilities

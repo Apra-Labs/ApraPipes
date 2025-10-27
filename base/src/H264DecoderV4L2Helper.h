@@ -28,13 +28,11 @@
  */
 /**
  * Specifies the decoder device node.
- */
-/**
- * Specifies the decoder device node.
  * Jetpack 5: /dev/nvhost-nvdec
  * Jetpack 6: /dev/v4l2-nvdec
  */
 #define DECODER_DEV_JP6 "/dev/v4l2-nvdec"
+#define DECODER_DEV_JP5 "/dev/nvhost-nvdec"
 
 #define MAX_BUFFERS 32
 #define CHUNK_SIZE 4000000
