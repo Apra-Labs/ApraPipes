@@ -527,16 +527,31 @@ NvEglRenderer::renderInternal()
     EGLSyncKHR egl_sync;
     int iErr;
 
-    // Import dmabuf using explicit attributes (JetPack 6+ requires proper fourcc/stride)
-    EGLAttrib attrs[] = {
-        EGL_LINUX_DRM_FOURCC_EXT, (EGLint)render_fourcc,
-        EGL_DMA_BUF_PLANE0_FD_EXT, (EGLint)render_fd,
-        EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, 0,
-        EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT, 0,
-        EGL_DMA_BUF_PLANE0_OFFSET_EXT, (EGLint)render_offset,
-        EGL_DMA_BUF_PLANE0_PITCH_EXT, (EGLint)render_pitch,
-        EGL_NONE
-    };
+    // Import dmabuf using explicit attributes (supports up to 3 planes)
+    EGLAttrib attrs[32];
+    int ai = 0;
+    attrs[ai++] = EGL_WIDTH; attrs[ai++] = (EGLint)render_width;
+    attrs[ai++] = EGL_HEIGHT; attrs[ai++] = (EGLint)render_height;
+    attrs[ai++] = EGL_LINUX_DRM_FOURCC_EXT; attrs[ai++] = (EGLint)render_fourcc;
+    // Plane 0
+    attrs[ai++] = EGL_DMA_BUF_PLANE0_FD_EXT; attrs[ai++] = (EGLint)render_fd;
+    attrs[ai++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT; attrs[ai++] = 0;
+    attrs[ai++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT; attrs[ai++] = 0;
+    attrs[ai++] = EGL_DMA_BUF_PLANE0_OFFSET_EXT; attrs[ai++] = (EGLint)render_offset;
+    attrs[ai++] = EGL_DMA_BUF_PLANE0_PITCH_EXT; attrs[ai++] = (EGLint)render_pitch;
+    if (render_num_planes >= 2)
+    {
+        attrs[ai++] = EGL_DMA_BUF_PLANE1_FD_EXT; attrs[ai++] = (EGLint)render_fd;
+        attrs[ai++] = EGL_DMA_BUF_PLANE1_OFFSET_EXT; attrs[ai++] = (EGLint)render_offset1;
+        attrs[ai++] = EGL_DMA_BUF_PLANE1_PITCH_EXT; attrs[ai++] = (EGLint)render_pitch1;
+    }
+    if (render_num_planes >= 3)
+    {
+        attrs[ai++] = EGL_DMA_BUF_PLANE2_FD_EXT; attrs[ai++] = (EGLint)render_fd;
+        attrs[ai++] = EGL_DMA_BUF_PLANE2_OFFSET_EXT; attrs[ai++] = (EGLint)render_offset2;
+        attrs[ai++] = EGL_DMA_BUF_PLANE2_PITCH_EXT; attrs[ai++] = (EGLint)render_pitch2;
+    }
+    attrs[ai++] = EGL_NONE;
     hEglImage = eglCreateImage(
         egl_display,
         EGL_NO_CONTEXT,

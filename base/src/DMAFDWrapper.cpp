@@ -3,6 +3,7 @@
 #include "nvbufsurface.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+#include <drm/drm_fourcc.h>
 
 #include "cuda_runtime.h"
 
@@ -97,39 +98,31 @@ NvBufSurfaceLayout layout, EGLDisplay eglDisplay)
 
 
 
-    // if (colorFormat != NvBufferColorFormat_UYVY)
-    //{
-    // buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
-    // if (buffer->eglImage == EGL_NO_IMAGE_KHR)
-    // {
-    // LOG_ERROR << "Failed to create eglImage";
-    // delete buffer;
-    // return nullptr;
-    // }
-    if (NvBufSurfaceMapEglImage(buffer->m_surf, 0) != 0)
+    // Map NvBufSurface to EGLImage for JP6.2 CUDA interop
+    NvBufSurface *surf = buffer->m_surf;
+    if (NvBufSurfaceMapEglImage(surf, 0) != 0)
     {
-        LOG_ERROR << "NvBufSurfaceMapEglImage Error";
-        // Clean up resources before exiting.
-        NvBufSurfaceDestroy(buffer->m_surf);
+        LOG_ERROR << "NvBufSurfaceMapEglImage failed";
         delete buffer;
         return nullptr;
     }
-      buffer->eglImage = buffer->m_surf->surfaceList[0].mappedAddr.eglImage;
-    if (buffer->eglImage == EGL_NO_IMAGE_KHR)
+    buffer->eglImage = surf->surfaceList[0].mappedAddr.eglImage;
+    LOG_INFO << "Mapped EGL image from NvBufSurface. FD: " << buffer->m_fd
+             << " EGLImage: " << buffer->eglImage;
+
+    cudaFree(0);
+    buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, &buffer->eglFrame);
+    
+    if (buffer->cudaPtr == nullptr)
     {
-        LOG_ERROR << "Failed to create eglImage from NvBufSurface";
-        NvBufSurfaceUnMapEglImage(buffer->m_surf, 0); // Unmap the EGL image.
-        NvBufSurfaceDestroy(buffer->m_surf);
+        LOG_ERROR << "Failed to get CUDA pointer from EGL image";
         delete buffer;
         return nullptr;
     }
-    // cudaFree(0);
-    // buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
-        cudaFree(0);
-        buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, &buffer->eglFrame);
-
-
-        return buffer;
+    
+    LOG_INFO << "Successfully created CUDA pointer: " << (void*)buffer->cudaPtr;
+    
+    return buffer;
 }
 
 DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR),
@@ -146,11 +139,17 @@ cudaPtr(nullptr)
 
 DMAFDWrapper::~DMAFDWrapper()
 {
-if (eglImage != EGL_NO_IMAGE_KHR)
-{
-   //cudaFree(0);
-    //DMAUtils::freeCudaPtr(eglImage, &pResource, m_surf, eglDisplay);
-}
+    if (eglImage != EGL_NO_IMAGE_KHR)
+    {
+        if (m_surf)
+        {
+            auto res_unmap_egl = NvBufSurfaceUnMapEglImage(m_surf, 0);
+            if (res_unmap_egl)
+            {
+                LOG_ERROR << "NvBufSurfaceUnMapEglImage Error: " << res_unmap_egl;
+            }
+        }
+    }
 
 if (hostPtr)
 {
