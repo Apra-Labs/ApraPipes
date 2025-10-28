@@ -112,6 +112,41 @@ public:
      */
     int render(int fd);
 
+    // Set dmabuf import parameters for EGL_EXT_image_dma_buf_import
+    void setImportParams(int pitchBytes, int fourcc, int offsetBytes = 0, int width = 0, int height = 0)
+    {
+        render_pitch = pitchBytes;
+        render_fourcc = fourcc;
+        render_offset = offsetBytes;
+        render_width = width;
+        render_height = height;
+        render_num_planes = 1;
+    }
+
+    // Set multi-plane import parameters (e.g., NV12 - 2 planes, YUV420 - 3 planes)
+    void setImportParamsPlanar(int fourcc,
+                               int width,
+                               int height,
+                               int pitchPlane0,
+                               int offsetPlane0,
+                               int pitchPlane1,
+                               int offsetPlane1,
+                               int pitchPlane2 = 0,
+                               int offsetPlane2 = 0,
+                               int numPlanes = 2)
+    {
+        render_fourcc = fourcc;
+        render_width = width;
+        render_height = height;
+        render_pitch = pitchPlane0;
+        render_offset = offsetPlane0;
+        render_pitch1 = pitchPlane1;
+        render_offset1 = offsetPlane1;
+        render_pitch2 = pitchPlane2;
+        render_offset2 = offsetPlane2;
+        render_num_planes = numPlanes;
+    }
+
     /**
      * Sets the rendering rate in frames per second (fps).
      *
@@ -242,6 +277,18 @@ private:
     static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR;
     static PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR;
     static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES;
+
+    // dma-buf import params
+    int render_pitch = 0;
+    int render_offset = 0;
+    int render_fourcc = 0;
+    int render_width = 0;
+    int render_height = 0;
+    int render_num_planes = 1;
+    int render_pitch1 = 0;
+    int render_offset1 = 0;
+    int render_pitch2 = 0;
+    int render_offset2 = 0;
 };
 /** @} */
 #endif

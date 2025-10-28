@@ -103,6 +103,12 @@ bool DMAFDToHostCopy::process(frame_container &frames)
 	auto dstPtr = static_cast<uint8_t *>(outFrame->data());
 	for (auto i = 0; i < mDetail->mNumPlanes; i++)
 	{
+		// Validate plane data pointer before calling mCopyToData
+		if (mDetail->mImagePlanes[i]->data == nullptr) {
+			LOG_ERROR << "Plane " << i << " data pointer is null in DMAFDToHostCopy! Cannot copy data.";
+			return false;
+		}
+		
 		mDetail->mImagePlanes[i]->mCopyToData(mDetail->mImagePlanes[i].get(), dstPtr);
 		dstPtr += mDetail->mImagePlanes[i]->imageSize;
 	}

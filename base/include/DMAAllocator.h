@@ -8,7 +8,7 @@
 #include "FrameMetadataFactory.h"
 #include "Logger.h"
 #include <deque>
-
+using namespace std;
 class DMAAllocator : public HostAllocator
 {
 private:
@@ -118,7 +118,7 @@ public:
         auto &fdParams = surf->surfaceList[0];
         LOG_DEBUG << "PixelFormat<" << fdParams.colorFormat << "> Layout<" << fdParams.layout << ">";
         LOG_DEBUG << "Width<" << fdParams.width << "> Height<" << fdParams.height << "> Pitch<" << fdParams.planeParams.pitch[0] << "> Offset<" << fdParams.planeParams.offset[0] << "> PSize<" << fdParams.planeParams.psize[0] << ">";
-
+        LOG_DEBUG <<"pitch 1="<<fdParams.planeParams.pitch[1]<<", pitch 2="<<fdParams.planeParams.pitch[2];
         auto frameType = metadata->getFrameType();
         switch (frameType)
         {
@@ -160,11 +160,17 @@ public:
                 if (pitchValues != nullptr)
                 {
                     pitchValues[0] = fdParams.planeParams.pitch[0];
+                    pitchValues[1] = fdParams.planeParams.pitch[1];
+                    pitchValues[2] = fdParams.planeParams.pitch[2];
                 }
+
                 if (offsetValues != nullptr)
                 {
                     offsetValues[0] = fdParams.planeParams.offset[0];
+                    offsetValues[1] = fdParams.planeParams.offset[1];
+                    offsetValues[2] = fdParams.planeParams.offset[2];
                 }
+
                 RawImagePlanarMetadata rawMetadata(width, height, imageType, step, CV_8U, FrameMetadata::MemType::DMABUF);
                 inputRawMetadata->setData(rawMetadata);
             }

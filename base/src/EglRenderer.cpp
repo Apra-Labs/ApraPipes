@@ -2,7 +2,9 @@
 #include "EglRenderer.h"
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
-
+#include <drm/drm_fourcc.h>
+#include <chrono>
+#include <thread>
 class EglRenderer::Detail
 {
 
@@ -57,12 +59,14 @@ public:
             LOG_DEBUG << "Window Exist";
             m_isEglWindowCreated = false;
             delete renderer;
+            renderer = nullptr;
         }
+        return true;
     }
 
     bool shouldTriggerSOS()
     {
-        return !renderer;
+        return (!m_isEglWindowCreated) || (!renderer);
     }
 
     NvEglRenderer *renderer = nullptr;
@@ -138,6 +142,10 @@ bool EglRenderer::processSOS(frame_sp &frame)
     auto frameType = inputMetadata->getFrameType();
     int width = 0;
     int height = 0;
+    int pitch = 0;
+    int fourcc = 0;
+    int offset0 = 0, offset1 = 0, offset2 = 0;
+    int pitch1_dmabuf = 0, pitch2_dmabuf = 0;
 
     switch (frameType)
     {
@@ -146,6 +154,25 @@ bool EglRenderer::processSOS(frame_sp &frame)
         auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
         width = metadata->getWidth();
         height = metadata->getHeight();
+        pitch = static_cast<int>(metadata->getStep());
+        switch (metadata->getImageType())
+        {
+        case ImageMetadata::RGBA:
+            fourcc = DRM_FORMAT_ABGR8888; // Tegra commonly expects ABGR for RGBA memory
+            break;
+        case ImageMetadata::BGRA:
+            fourcc = DRM_FORMAT_BGRA8888; // Correct mapping for BGRA layouts
+            break;
+        case ImageMetadata::UYVY:
+            fourcc = DRM_FORMAT_UYVY;
+            break;
+        case ImageMetadata::YUYV:
+            fourcc = DRM_FORMAT_YUYV;
+            break;
+        default:
+            fourcc = DRM_FORMAT_RGBA8888;
+            break;
+        }
     }
     break;
     case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
@@ -153,6 +180,28 @@ bool EglRenderer::processSOS(frame_sp &frame)
         auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
         width = metadata->getWidth(0);
         height = metadata->getHeight(0);
+
+        // Use actual dmabuf plane pitches/offsets from producer
+        auto dma = static_cast<DMAFDWrapper *>(frame->data());
+        auto surf = dma->getNvBufSurface();
+        auto &fdParams = surf->surfaceList[0];
+
+        pitch = static_cast<int>(fdParams.planeParams.pitch[0]);
+        pitch1_dmabuf = static_cast<int>(fdParams.planeParams.pitch[1]);
+        pitch2_dmabuf = static_cast<int>(fdParams.planeParams.pitch[2]);
+
+        offset0 = static_cast<int>(fdParams.planeParams.offset[0]);
+        offset1 = static_cast<int>(fdParams.planeParams.offset[1]);
+        offset2 = static_cast<int>(fdParams.planeParams.offset[2]);
+
+        if (metadata->getImageType() == ImageMetadata::NV12)
+        {
+            fourcc = DRM_FORMAT_NV12;
+        }
+        else if (metadata->getImageType() == ImageMetadata::YUV420)
+        {
+            fourcc = DRM_FORMAT_YUV420;
+        }
     }
     break;
     default:
@@ -160,6 +209,31 @@ bool EglRenderer::processSOS(frame_sp &frame)
     }
 
     mDetail->init(height, width);
+    if (mDetail->renderer && fourcc != 0 && pitch != 0)
+    {
+        if (frameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR &&
+            (fourcc == DRM_FORMAT_NV12 || fourcc == DRM_FORMAT_YUV420))
+        {
+            int pitch1 = pitch1_dmabuf;
+            int pitch2 = (fourcc == DRM_FORMAT_YUV420) ? pitch2_dmabuf : 0;
+            int numPlanes = (fourcc == DRM_FORMAT_NV12) ? 2 : 3;
+            mDetail->renderer->setImportParamsPlanar(
+                fourcc,
+                width,
+                height,
+                pitch,
+                offset0,
+                pitch1,
+                offset1,
+                pitch2,
+                offset2,
+                numPlanes);
+        }
+        else
+        {
+            mDetail->renderer->setImportParams(pitch, fourcc, 0, width, height);
+        }
+    }
     return true;
 }
 
@@ -188,7 +262,7 @@ bool EglRenderer::handleCommand(Command::CommandType type, frame_sp &frame)
         getCommand(cmd, frame);
         if(!mDetail->m_isEglWindowCreated)
         {
-            mDetail->init(cmd.width, cmd.height);
+            mDetail->init(cmd.height, cmd.width);
         }
         return true;
     }
