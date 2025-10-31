@@ -125,13 +125,13 @@ BOOST_AUTO_TEST_CASE(yuv_dma_crop)
 {
     constexpr int src_width = 3840;
     constexpr int src_height = 2160;
-    constexpr int dst_width = 640;
-    constexpr int dst_height = 840;
+    constexpr int dst_width = 3840;
+    constexpr int dst_height = 2160;
 
     auto input_frame = makeYUV420Frame("/home/developer/ApraPipes/data/4k.yuv", src_width, src_height);
     BOOST_REQUIRE(input_frame != nullptr);
 
-    NvTransformProps props(ImageMetadata::YUV420, dst_width, dst_height, 0, 0);
+    NvTransformProps props(ImageMetadata::YUV420,NvTransformProps::NvFlip::FlipY);
     auto nv_transform = std::make_shared<NvTransformTest>(props);
 
     std::string inputPinId = "input";
@@ -186,6 +186,103 @@ BOOST_AUTO_TEST_CASE(yuv_dma_crop)
     const uint8_t* srcV = static_cast<const uint8_t*>(out_dma->getHostPtrV());
     for (int r = 0; r < v_h; ++r)
         f_out.write(reinterpret_cast<const char*>(srcV + r * v_pitch), v_w);
+}
+
+BOOST_AUTO_TEST_CASE(yuv_dma_transform_variants)
+{
+    constexpr int src_width = 3840;
+    constexpr int src_height = 2160;
+
+    auto input_frame = makeYUV420Frame("/home/developer/ApraPipes/data/4k.yuv", src_width, src_height);
+    BOOST_REQUIRE(input_frame != nullptr);
+
+    struct TestCase {
+        std::string name;
+        NvTransformProps props;
+    };
+
+    std::vector<TestCase> tests = {
+        { "default", NvTransformProps(ImageMetadata::YUV420) },
+        { "crop_w_h", NvTransformProps(ImageMetadata::YUV420, 1920, 1080) },
+        { "crop_full", NvTransformProps(ImageMetadata::YUV420, 1920, 1080, 100, 100) },
+        { "rotate_90", NvTransformProps(ImageMetadata::YUV420, NvTransformProps::NvRotation::Rotate90) },
+        { "rotate_180", NvTransformProps(ImageMetadata::YUV420, NvTransformProps::NvRotation::Rotate180) },
+        { "flip_x", NvTransformProps(ImageMetadata::YUV420, NvTransformProps::NvFlip::FlipX) },
+        { "flip_y", NvTransformProps(ImageMetadata::YUV420, NvTransformProps::NvFlip::FlipY) }
+    };
+
+    EGLDisplay eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if(eglDisplay == EGL_NO_DISPLAY) throw AIPException(AIP_FATAL, "eglGetDisplay failed");
+    if(!eglInitialize(eglDisplay, NULL, NULL)) throw AIPException(AIP_FATAL, "eglInitialize failed");
+
+    int index = 0;
+    for (auto &test : tests)
+    {
+        std::cout << "\nRunning NvTransform variant: " << test.name << std::endl;
+
+        auto nv_transform = std::make_shared<NvTransformTest>(test.props);
+
+        std::string inputPinId = "input" + std::to_string(index);
+        framemetadata_sp metadata = input_frame->getMetadata();
+        nv_transform->addInputPin(metadata, inputPinId);
+
+        frame_container frames;
+        frames[inputPinId] = input_frame;
+
+        BOOST_REQUIRE(nv_transform->init());
+        nv_transform->processSOS(input_frame);
+        nv_transform->processFrame(frames);
+        nv_transform->processEOS(inputPinId);
+        nv_transform->term();
+
+        frame_sp out_frame;
+        for (const auto &kv : frames)
+        {
+            if (kv.first != inputPinId)
+            {
+                out_frame = kv.second;
+                break;
+            }
+        }
+
+        BOOST_REQUIRE(out_frame != nullptr);
+        auto out_dma = static_cast<DMAFDWrapper*>(out_frame->data());
+        auto out_md = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(out_frame->getMetadata());
+
+        const int y_w = out_md->getWidth(0);
+        const int y_h = out_md->getHeight(0);
+        const size_t y_pitch = out_md->getStep(0);
+        const int u_w = out_md->getWidth(1);
+        const int u_h = out_md->getHeight(1);
+        const size_t u_pitch = out_md->getStep(1);
+        const int v_w = out_md->getWidth(2);
+        const int v_h = out_md->getHeight(2);
+        const size_t v_pitch = out_md->getStep(2);
+
+        std::string outPath = "./data/Testoutput" + test.name + ".yuv";
+        std::ofstream f_out(outPath, std::ios::binary);
+        BOOST_REQUIRE(f_out.is_open());
+
+        // Write Y plane
+        const uint8_t* srcY = static_cast<const uint8_t*>(out_dma->getHostPtrY());
+        for (int r = 0; r < y_h; ++r)
+            f_out.write(reinterpret_cast<const char*>(srcY + r * y_pitch), y_w);
+
+        // Write U plane
+        const uint8_t* srcU = static_cast<const uint8_t*>(out_dma->getHostPtrU());
+        for (int r = 0; r < u_h; ++r)
+            f_out.write(reinterpret_cast<const char*>(srcU + r * u_pitch), u_w);
+
+        // Write V plane
+        const uint8_t* srcV = static_cast<const uint8_t*>(out_dma->getHostPtrV());
+        for (int r = 0; r < v_h; ++r)
+            f_out.write(reinterpret_cast<const char*>(srcV + r * v_pitch), v_w);
+
+        f_out.close();
+        std::cout << "Saved output: " << outPath << std::endl;
+
+        index++;
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

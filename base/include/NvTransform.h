@@ -5,57 +5,85 @@
 class NvTransformProps : public ModuleProps
 {
 public:
-	enum NvTransformFilter
-	{
-		NEAREST=0, // transform filter nearest.
-		BILINEAR,  // transform filter bilinear.
-		TAP_5,     // transform filter 5 tap.
-		TAP_10,    // transform filter 10 tap.
-		SMART,     // transform filter smart.
-		NICEST     // transform filter nicest.
-	};
+    enum class NvRotation
+    {
+        None_ = 0,
+        Rotate90 = 90,
+        Rotate180 = 180,
+        Rotate270 = 270
+    };
 
-	NvTransformProps(ImageMetadata::ImageType _imageType) : top(0) , left(0) , width(0) , height(0)
-	{
-		imageType = _imageType;
-		scaleHeight = 1;
-		scaleWidth = 1;
-		filterType = NvTransformFilter::SMART;
-	}
-	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height) : top(0) , left(0) , width(_width) , height(_height)
-	{
-		imageType = _imageType;
-		scaleHeight = 1;
-		scaleWidth = 1;
-		filterType = NvTransformFilter::SMART;
-	}
-	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height, float _scaleWidth, float _scaleHeight, NvTransformFilter _filterType) : top(0) , left(0) , width(_width) , height(_height)
-	{
-		imageType = _imageType;
-		filterType = _filterType;
-		scaleHeight = _scaleHeight;
-		scaleWidth = _scaleWidth;
-	}
-	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height,  int _top , int _left) : top(_top) , left(_left) , width(_width) , height(_height)
-	{
-		imageType = _imageType;
-		scaleHeight = 1;
-		scaleWidth = 1;
-		filterType = NvTransformFilter::SMART;
-	}
-	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height,  int _top , int _left, float _scaleWidth, float _scaleHeight, NvTransformFilter _filterType) : top(_top) , left(_left) , width(_width) , height(_height)
-	{
-		imageType = _imageType;
-		filterType = _filterType;
-		scaleHeight = _scaleHeight;
-		scaleWidth = _scaleWidth;
-	}
-	ImageMetadata::ImageType imageType;	
-	int top,left,width,height;
-	NvTransformFilter filterType;
-	float scaleWidth, scaleHeight; // scaleWidth and scaleHeight are factor of width and height , 
-								   //1 means no change 0.5 means half of actual dimension ,2 means twice of actual dimension	
+    enum class NvFlip
+    {
+        None_ = 0,
+        FlipX = 1,
+        FlipY = 2
+    };
+
+    // Default crop constructor
+    NvTransformProps(ImageMetadata::ImageType _imageType)
+        : top(0), left(0), width(0), height(0),
+          rotation(NvRotation::None_), flip(NvFlip::None_)
+    {
+        imageType = _imageType;
+    }
+
+    // Crop with width and height
+    NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height)
+        : top(0), left(0), width(_width), height(_height),
+          rotation(NvRotation::None_), flip(NvFlip::None_)
+    {
+        imageType = _imageType;
+    }
+
+    // Crop with width, height, top, left
+    NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height, int _top, int _left)
+        : top(_top), left(_left), width(_width), height(_height),
+          rotation(NvRotation::None_), flip(NvFlip::None_)
+    {
+        imageType = _imageType;
+    }
+
+	// Rotation constructor
+    NvTransformProps(ImageMetadata::ImageType _imageType, NvRotation _rotation)
+        : top(0), left(0), width(0), height(0),
+          rotation(_rotation),flip(NvFlip::None_)
+    {
+        imageType = _imageType;
+    }
+
+    // Flip constructor
+    NvTransformProps(ImageMetadata::ImageType _imageType, NvFlip _flip)
+        : top(0), left(0), width(0), height(0),
+          rotation(NvRotation::None_), flip(_flip)
+    {
+        imageType = _imageType;
+    }
+
+	//crop with rotation
+	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height, int _top, int _left, NvRotation _rotation)
+	: top(_top), left(_left), width(_width), height(_height),
+	 rotation(_rotation), flip(NvFlip::None_)
+    {
+        imageType = _imageType;
+    }
+
+	//crop with flip
+	NvTransformProps(ImageMetadata::ImageType _imageType, int _width, int _height, int _top, int _left, NvFlip _flip)
+	: top(_top), left(_left), width(_width), height(_height),
+	rotation(NvRotation::None_), flip(_flip)
+    {
+        imageType = _imageType;
+    }
+   
+	
+
+    ImageMetadata::ImageType imageType;
+    int top, left, width, height;
+    NvRotation rotation;
+    NvFlip flip;
 };
+
 
 class NvTransform : public Module
 {

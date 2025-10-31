@@ -15,28 +15,66 @@ class NvTransform::Detail
 {
 public:
     Detail(NvTransformProps &_props) : props(_props)
-    {
-        src_rect.top = _props.top;
-        src_rect.left = _props.left;
-        src_rect.width = _props.width;
-        src_rect.height = _props.height;
+{
+    src_rect.top = _props.top;
+    src_rect.left = _props.left;
+    src_rect.width = _props.width;
+    src_rect.height = _props.height;
 
-        memset(&transParams, 0, sizeof(transParams));
-        transParams.transform_filter = NvBufSurfTransformInter_Default;
-        if (src_rect.width != 0)
-        {
-            transParams.src_rect = &src_rect;
-            transParams.transform_flag = NVBUFSURF_TRANSFORM_FILTER | NVBUFSURF_TRANSFORM_CROP_SRC;
-        }
-        else
-        {
-            transParams.transform_flag = NVBUFSURF_TRANSFORM_FILTER;
-        }
+
+    memset(&transParams, 0, sizeof(transParams));
+    transParams.transform_filter = NvBufSurfTransformInter_Default;
+
+    transParams.transform_flag = NVBUFSURF_TRANSFORM_FILTER;
+
+    if (src_rect.width != 0 && src_rect.height != 0)
+    {
+        transParams.src_rect = &src_rect;
+        transParams.transform_flag |= NVBUFSURF_TRANSFORM_CROP_SRC | NVBUFSURF_TRANSFORM_ALLOW_ODD_CROP;
     }
 
-    ~Detail()
-    {
-    }
+    transParams.transform_flip = NvBufSurfTransform_None;
+    if (_props.rotation != (NvTransformProps::NvRotation)0)
+        {
+            transParams.transform_flag |= NVBUFSURF_TRANSFORM_FLIP;
+
+            switch (_props.rotation)
+            {
+            case NvTransformProps::NvRotation::Rotate90:
+                transParams.transform_flip = NvBufSurfTransform_Rotate90;
+                break;
+            case NvTransformProps::NvRotation::Rotate180:
+                transParams.transform_flip = NvBufSurfTransform_Rotate180;
+                break;
+            case NvTransformProps::NvRotation::Rotate270:
+                transParams.transform_flip = NvBufSurfTransform_Rotate270;
+                break;
+            default:
+                LOG_ERROR << "Invalid rotation angle. Supported: 0, 90, 180, 270.";
+                transParams.transform_flip = NvBufSurfTransform_None;
+                break;
+            }
+        }
+        if (_props.flip != (NvTransformProps::NvFlip)0)
+        {
+            transParams.transform_flag |= NVBUFSURF_TRANSFORM_FLIP;
+
+            switch (_props.flip)
+            {
+            case NvTransformProps::NvFlip::FlipX:
+                transParams.transform_flip = NvBufSurfTransform_FlipX;
+                break;
+            case NvTransformProps::NvFlip::FlipY:
+                transParams.transform_flip = NvBufSurfTransform_FlipY;
+                break;
+            default:
+                LOG_ERROR << "Invalid flip value. Supported: None, FlipX, FlipY.";
+                transParams.transform_flip = NvBufSurfTransform_None;
+                break;
+            }
+        }
+}
+
 
     bool compute(frame_sp &frame, int outFD)
     {
@@ -59,7 +97,7 @@ public:
         {
             NvBufSurfaceSyncForDevice(in_surf, 0, p);
         }
-
+        
         NvBufSurfTransform_Error err = NvBufSurfTransform(in_surf, out_surf, &transParams);
 
         if (err != NvBufSurfTransformError_Success) {
