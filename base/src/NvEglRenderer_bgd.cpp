@@ -237,6 +237,10 @@ NvEglRenderer::renderThread(void *arg)
 
     eglMakeCurrent(renderer->egl_display, renderer->egl_surface,
                     renderer->egl_surface, renderer->egl_context);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     if (eglGetError() != EGL_SUCCESS)
     {
         goto error;
@@ -575,7 +579,8 @@ NvEglRenderer::InitializeShaders(void)
     static const char kFragmentShader[] =
         "#extension GL_OES_EGL_image_external : require\n"
         "precision mediump float;\n" "varying vec2 interp_tc; \n"
-        "uniform samplerExternalOES tex; \n" "void main() {\n"
+        "uniform samplerExternalOES tex; \n" "uniform float uAlpha;\n"
+        "void main() {\n"
         "gl_FragColor = texture2D(tex, interp_tc);\n" "}\n";
 
     glEnable(GL_SCISSOR_TEST);
@@ -623,6 +628,19 @@ NvEglRenderer::InitializeShaders(void)
     {
         return -1;
     }
+    GLint alphaLoc = glGetUniformLocation(program, "uAlpha");
+    if (alphaLoc == -1)
+    {
+        fprintf(stderr, "Warning: uniform 'uAlpha' not found or optimized out.\n");
+    }
+    else
+    {
+        glUniform1f(alphaLoc, 1.0f); // default fully opaque
+    }
+
+    this->alpha_location = alphaLoc;
+    this->gl_program = program;
+
     return 0;
 }
 
@@ -639,4 +657,16 @@ NvEglRenderer::create_texture()
 
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
     return 0;
+}
+void NvEglRenderer::setWindowOpacity(float opacity)
+{
+    // Clamp 0.0–1.0
+    if (opacity < 0.0f) opacity = 0.0f;
+    if (opacity > 1.0f) opacity = 1.0f;
+
+    unsigned long opacityValue = (unsigned long)(0xFFFFFFFFul * opacity);
+    Atom opacityAtom = XInternAtom(x_display, "_NET_WM_WINDOW_OPACITY", False);
+    XChangeProperty(x_display, x_window, opacityAtom, XA_CARDINAL, 32,
+                    PropModeReplace, (unsigned char *)&opacityValue, 1);
+    XFlush(x_display);
 }
