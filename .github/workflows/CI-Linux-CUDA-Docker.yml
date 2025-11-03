@@ -2,7 +2,7 @@ name: CI-Linux-CUDA-Docker
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/component-based-build ]
   pull_request:
     branches: [ main ]
 

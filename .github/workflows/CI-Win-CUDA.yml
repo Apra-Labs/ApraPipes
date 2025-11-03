@@ -2,7 +2,7 @@ name: CI-Win-CUDA
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/component-based-build ]
   pull_request:
     branches: [ main ]
 
