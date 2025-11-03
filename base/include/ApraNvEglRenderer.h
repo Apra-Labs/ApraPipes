@@ -185,7 +185,8 @@ public:
      * @return 0 for success, -1 otherwise.
      */
     int setOverlayText(char *str, uint32_t x, uint32_t y);
-public:
+    void setWindowOpacity(float opacity);
+private:
     Display * x_display;    /**< Connection to the X server created using
                                   XOpenDisplay(). */
     Window x_window;        /**< Holds the window to be used for rendering created using
@@ -211,7 +212,9 @@ public:
     GC gc;                      /**< Graphic Context */
     XFontStruct *fontinfo;      /**< Brush's font info */
     char overlay_str[512];       /**< Overlay's text */
-
+    GLuint gl_program = 0;         // OpenGL shader program handle
+    GLint alpha_location = -1;     // Location of alpha uniform in shader
+    float window_opacity = 1.0f;   
     /**
      * Creates a GL texture used for rendering.
      *

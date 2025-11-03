@@ -392,6 +392,10 @@ NvEglRenderer::renderThread(void *arg)
 
     eglMakeCurrent(renderer->egl_display, renderer->egl_surface,
                     renderer->egl_surface, renderer->egl_context);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     if (eglGetError() != EGL_SUCCESS)
     {
         goto error;
@@ -814,9 +818,23 @@ NvEglRenderer::InitializeShaders(void)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(pos_location, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(pos_location);
-
+    setWindowOpacity(0.5f); 
+    
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(program, "texSampler"), 0);
+    GLint alphaLoc = glGetUniformLocation(program, "uAlpha");
+    if (alphaLoc == -1)
+    {
+        fprintf(stderr, "Warning: uniform 'uAlpha' not found or optimized out.\n");
+    }
+    else
+    {
+        glUniform1f(alphaLoc, 1.0f); // default fully opaque
+    }
+
+    this->alpha_location = alphaLoc;
+    this->gl_program = program;
+
     if (glGetError() != GL_NO_ERROR)
     {
         return -1;
