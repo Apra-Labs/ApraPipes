@@ -2,40 +2,55 @@ name: CI-Win-NoCUDA
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/component-based-build ]
   pull_request:
     branches: [ main ]
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
-  
+
 jobs:
   win-nocuda-build-prep:
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: ['minimal', 'video', 'full']
     uses: ./.github/workflows/build-test-win.yml
     with:
       runner: 'windows-2022'
-      flav: 'Win-nocuda'
+      flav: 'Win-nocuda-${{ matrix.preset }}'
       cuda: 'OFF'
       is-selfhosted: false
       is-prep-phase: true
+      preset: '${{ matrix.preset }}'
       nProc: 3
+
   win-nocuda-build-test:
     needs: win-nocuda-build-prep
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: ['minimal', 'video', 'full']
     uses: ./.github/workflows/build-test-win.yml
     with:
       runner: 'windows-2022'
-      flav: 'Win-nocuda'
+      flav: 'Win-nocuda-${{ matrix.preset }}'
       is-selfhosted: false
       cuda: 'OFF'
       is-prep-phase: false
+      preset: '${{ matrix.preset }}'
       nProc: 3
+
   win-nocuda-publish:
     needs: win-nocuda-build-test
+    strategy:
+      matrix:
+        preset: ['minimal', 'video', 'full']
     permissions:
       checks: write
       pull-requests: write
-    uses: ./.github/workflows/publish-test.yml  
+    uses: ./.github/workflows/publish-test.yml
     with:
-      flav: 'Win-nocuda'
+      flav: 'Win-nocuda-${{ matrix.preset }}'
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      

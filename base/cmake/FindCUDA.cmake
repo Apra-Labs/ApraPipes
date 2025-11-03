@@ -1,0 +1,96 @@
+# Compatibility FindCUDA.cmake for modern CMake with CUDA language support
+# This bridges legacy find_package(CUDA) calls to modern enable_language(CUDA)
+
+# Legacy function from old FindCUDA.cmake
+function(find_cuda_helper_libs LIBRARY_NAME)
+    find_package(CUDAToolkit REQUIRED)
+
+    # Map library names to modern CUDAToolkit targets
+    if(LIBRARY_NAME STREQUAL "cublas")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::cublas PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "cufft")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::cufft PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "curand")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::curand PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "cusparse")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::cusparse PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "cusolver")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::cusolver PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppc")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppc PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppial")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppial PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppicc")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppicc PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppidei")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppidei PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppif")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppif PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppig")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppig PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppim")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppim PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppist")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppist PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppisu")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppisu PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "nppitc")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::nppitc PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "npps")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::npps PARENT_SCOPE)
+    elseif(LIBRARY_NAME STREQUAL "cudart")
+        set(${LIBRARY_NAME}_LIBRARY CUDA::cudart PARENT_SCOPE)
+    else()
+        message(WARNING "Unknown CUDA library: ${LIBRARY_NAME}")
+    endif()
+endfunction()
+
+if(NOT CUDA_FOUND)
+    # Enable CUDA language if not already enabled
+    if(NOT CMAKE_CUDA_COMPILER)
+        enable_language(CUDA)
+    endif()
+
+    # Find CUDAToolkit using modern CMake
+    find_package(CUDAToolkit ${CUDA_FIND_VERSION} QUIET)
+
+    if(CUDAToolkit_FOUND)
+        set(CUDA_FOUND TRUE)
+        set(CUDA_VERSION ${CUDAToolkit_VERSION})
+        set(CUDA_VERSION_MAJOR ${CUDAToolkit_VERSION_MAJOR})
+        set(CUDA_VERSION_MINOR ${CUDAToolkit_VERSION_MINOR})
+        set(CUDA_TOOLKIT_ROOT_DIR ${CUDAToolkit_TARGET_DIR})
+        set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
+
+        # Set library paths
+        set(CUDA_LIBRARIES ${CUDA_CUDART_LIBRARY})
+        set(CUDA_CUDART_LIBRARY ${CUDA_cudart_LIBRARY})
+        set(CUDA_cublas_LIBRARY CUDA::cublas)
+        set(CUDA_cufft_LIBRARY CUDA::cufft)
+        set(CUDA_curand_LIBRARY CUDA::curand)
+        set(CUDA_cusparse_LIBRARY CUDA::cusparse)
+        set(CUDA_cusolver_LIBRARY CUDA::cusolver)
+        set(CUDA_nppc_LIBRARY CUDA::nppc)
+        set(CUDA_nppial_LIBRARY CUDA::nppial)
+        set(CUDA_nppicc_LIBRARY CUDA::nppicc)
+        set(CUDA_nppidei_LIBRARY CUDA::nppidei)
+        set(CUDA_nppif_LIBRARY CUDA::nppif)
+        set(CUDA_nppig_LIBRARY CUDA::nppig)
+        set(CUDA_nppim_LIBRARY CUDA::nppim)
+        set(CUDA_nppist_LIBRARY CUDA::nppist)
+        set(CUDA_nppisu_LIBRARY CUDA::nppisu)
+        set(CUDA_nppitc_LIBRARY CUDA::nppitc)
+        set(CUDA_npps_LIBRARY CUDA::npps)
+
+        # For compatibility with older FindCUDA usage
+        set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+    else()
+        set(CUDA_FOUND FALSE)
+    endif()
+endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CUDA
+    REQUIRED_VARS CUDA_INCLUDE_DIRS
+    VERSION_VAR CUDA_VERSION
+)

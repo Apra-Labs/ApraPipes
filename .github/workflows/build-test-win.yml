@@ -67,7 +67,12 @@ on:
         type: number
         description: 'number of mins of timeout for tests run'
         default: 20
-        required: false        
+        required: false
+      preset:
+        type: string
+        description: 'component preset: minimal/video/full (empty = full)'
+        default: ''
+        required: false
 jobs:
   build:
     env:
@@ -145,9 +150,23 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Set component preset
+      id: preset-setup
+      shell: pwsh
+      run: |
+        $components = switch ("${{inputs.preset}}") {
+          "minimal" { "CORE" }
+          "video" { "CORE;VIDEO;IMAGE_PROCESSING" }
+          "full" { "ALL" }
+          "" { "ALL" }
+          default { "ALL" }
+        }
+        echo "COMPONENTS=$components" >> $env:GITHUB_ENV
+        echo "Component preset: ${{inputs.preset}} -> Components: $components"
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}} -DENABLE_COMPONENTS="${{env.COMPONENTS}}"'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Remove files not needed for the build
