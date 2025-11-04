@@ -33,6 +33,27 @@
 #include <cstring>
 #include <sys/time.h>
 #include "Logger.h"
+#include <X11/Xatom.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <map>
+#include <string>
+
+struct Character {
+    GLuint TextureID;   // Glyph texture
+    int SizeX;          // Width
+    int SizeY;          // Height
+    int BearingX;       // Offset from baseline to left/top
+    int BearingY;
+    GLuint Advance;     // Offset to advance to next glyph
+};
+
+static std::map<char, Character> Characters;
+static GLuint textVAO = 0, textVBO = 0;
+static GLuint textShader = 0;
+static int g_fontAscent = 0;
+static int g_fontDescent = 0;
+static int g_fontLineAdvance = 0;
 
 #define CAT_NAME "EglRenderer"
 
@@ -51,9 +72,13 @@ PFNEGLCLIENTWAITSYNCKHRPROC             NvEglRenderer::eglClientWaitSyncKHR;
 PFNEGLGETSYNCATTRIBKHRPROC              NvEglRenderer::eglGetSyncAttribKHR;
 PFNGLEGLIMAGETARGETTEXTURE2DOESPROC     NvEglRenderer::glEGLImageTargetTexture2DOES;
 
+PFNGLGENVERTEXARRAYSOESPROC             NvEglRenderer::glGenVertexArraysOES = nullptr;
+PFNGLBINDVERTEXARRAYOESPROC             NvEglRenderer::glBindVertexArrayOES = nullptr;
+PFNGLDELETEVERTEXARRAYSOESPROC          NvEglRenderer::glDeleteVertexArraysOES = nullptr;
+
 using namespace std;
 
-NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset) // alwaysOnTOp
+NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset, const char *ttfFilePath,const char *message,float scale,float r,float g,float b,float fontsize,int textPosX, int textPosY,float opacity) // alwaysOnTOp
 {
     int depth;
     int screen_num;
@@ -161,7 +186,17 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     pthread_setname_np(render_thread, "EglRenderer");
     pthread_cond_wait(&render_cond, &render_lock);
     pthread_mutex_unlock(&render_lock);
-
+    this->ttfFilePath = ttfFilePath ? std::string(ttfFilePath) : std::string();
+    this->message = message ? std::string(message) : std::string();
+    this->scale = scale;
+    this->r = r;
+    this->g = g;
+    this->b = b;
+    this->fontSize = fontsize;
+    this->textPosX = textPosX;
+    this->textPosY = textPosY; 
+    this->opacity = opacity;
+    setWindowOpacity(opacity);
     return;
 }
 
@@ -196,6 +231,7 @@ NvEglRenderer::renderThread(void *arg)
         EGL_GREEN_SIZE, 8,
         EGL_BLUE_SIZE, 8,
         EGL_ALPHA_SIZE, 8,
+        EGL_STENCIL_SIZE, 8,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_NONE,
     };
@@ -250,6 +286,35 @@ NvEglRenderer::renderThread(void *arg)
     if (renderer->InitializeShaders() < 0)
     {
         goto error;
+    }
+    // Load OES VAO function pointers after making context current
+    NvEglRenderer::glGenVertexArraysOES = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
+    NvEglRenderer::glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
+    NvEglRenderer::glDeleteVertexArraysOES = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
+    
+    textShader = renderer->initTextShader();
+    // setup VAO/VBO for text quads
+    if (glGenVertexArraysOES)
+    {
+        glGenVertexArraysOES(1, &textVAO);
+    }
+    glGenBuffers(1, &textVBO);
+    if (glBindVertexArrayOES)
+    {
+        glBindVertexArrayOES(textVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArrayOES(0);
+    }
+    else
+    {
+        // No VAO support: just allocate buffer now; we'll set attrib pointer per draw
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     renderer->create_texture();
@@ -460,7 +525,155 @@ NvEglRenderer::renderInternal()
         last_render_time.tv_sec = now.tv_sec;
         last_render_time.tv_nsec = now.tv_usec * 1000L;
     }
+
+    // Ensure video program is bound before drawing the frame
+    glUseProgram(gl_program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    GLfloat projection[16] = {
+        2.0f / render_width, 0.0f, 0.0f, 0.0f,
+        0.0f, -2.0f / render_height, 0.0f, 0.0f,
+        0.0f, 0.0f, -1.0f, 0.0f,
+    -1.0f, 1.0f, 0.0f, 1.0f
+    };
+
+    // Save previous GL state BEFORE switching to text shader
+    GLint prevProgram;
+    GLint prevVAO = 0;
+    GLint prevTexExternal;
+    GLint prevTex2D;
+    GLint prevArrayBuffer;
+    GLint prevActiveTexUnit;
+    GLboolean wasBlendEnabled = glIsEnabled(GL_BLEND);
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prevProgram);
+    if (glGetError() == GL_NO_ERROR && glBindVertexArrayOES)
+    {
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &prevVAO);
+    }
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &prevActiveTexUnit);
+    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &prevTexExternal);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex2D);
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prevArrayBuffer);
+
+    glUseProgram(textShader);
+    GLint projLoc = glGetUniformLocation(textShader, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
+    initFontAtlas(ttfFilePath.c_str(), fontSize);
+
+    // Compute multiline-aware stencil rectangle: max line width and total height
+    int maxLineW = 0;
+    int currentLineW = 0;
+    int numLines = 1;
+    for (auto it = message.begin(); it != message.end(); ++it)
+    {
+        if (*it == '\n')
+        {
+            if (currentLineW > maxLineW) maxLineW = currentLineW;
+            currentLineW = 0;
+            numLines++;
+            continue;
+        }
+        Character ch = Characters[*it];
+        currentLineW += static_cast<int>((ch.Advance >> 6) * scale);
+    }
+    if (currentLineW > maxLineW) maxLineW = currentLineW;
+    int textW = maxLineW > 0 ? maxLineW : 1;
+    int textH = (g_fontLineAdvance > 0 ? g_fontLineAdvance : 16) * numLines * scale;
+    if (textH < 1) textH = 1;
+
+    // Save previous scissor state
+    GLboolean prevScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);
+    GLint prevScissorBox[4];
+    glGetIntegerv(GL_SCISSOR_BOX, prevScissorBox);
+
+    // Prepare stencil: 0 everywhere, 1 inside text rectangle
+    glEnable(GL_STENCIL_TEST);
+    glStencilMask(0xFF);
+    glDisable(GL_SCISSOR_TEST);
+    glClearStencil(0);
+    glClear(GL_STENCIL_BUFFER_BIT);
+
+    // Compute scissor box for top-left coordinates to GL bottom-left origin
+    // Account for font ascent (text can extend above baseline)
+    int ascentPixels = g_fontAscent > 0 ? static_cast<int>(g_fontAscent * scale) : static_cast<int>(16 * scale);
+    int adjustedtextPosY = static_cast<int>(textPosY) - ascentPixels;
+    int adjustedTextH = textH + ascentPixels;
+    if (adjustedtextPosY < 0) {
+        adjustedTextH += adjustedtextPosY; // Reduce height if we go negative
+        adjustedtextPosY = 0;
+    }
+    
+    GLint scX = static_cast<GLint>(textPosX);
+    GLint scY = static_cast<GLint>(static_cast<int>(render_height) - adjustedtextPosY - adjustedTextH);
+    if (scY < 0) scY = 0;
+    if (scX < 0) scX = 0;
+    GLsizei scW = static_cast<GLsizei>(textW);
+    GLsizei scH = static_cast<GLsizei>(adjustedTextH);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(scX, scY, scW, scH);
+    glClearStencil(1);
+    glClear(GL_STENCIL_BUFFER_BIT);
+
+    // Only pass where stencil == 1
+    glStencilFunc(GL_EQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+    // For non-VAO path, set attrib pointer for text
+    if (!glBindVertexArrayOES)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    }
+
+    // --- render text ---
+    RenderText(message, textPosX, textPosY, scale, r,g,b);
+
+    // Restore previously saved GL state
+    glUseProgram(prevProgram);
+    if (glBindVertexArrayOES && prevVAO)
+    {
+        glBindVertexArrayOES(prevVAO);
+    }
+    glActiveTexture(prevActiveTexUnit);
+    glBindTexture(GL_TEXTURE_2D, prevTex2D);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, prevTexExternal);
+    glBindBuffer(GL_ARRAY_BUFFER, prevArrayBuffer);
+    // Disable stencil and restore scissor state
+    glDisable(GL_STENCIL_TEST);
+    if (prevScissorEnabled)
+    {
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(prevScissorBox[0], prevScissorBox[1], prevScissorBox[2], prevScissorBox[3]);
+    }
+    else
+    {
+        glDisable(GL_SCISSOR_TEST);
+    }
+
+    // If VAO is unavailable, restore video attribute pointer for 'in_pos'
+    if (!glBindVertexArrayOES)
+    {
+        GLint inPosLoc = glGetAttribLocation(prevProgram, "in_pos");
+        if (inPosLoc >= 0)
+        {
+            glVertexAttribPointer(inPosLoc, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+            glEnableVertexAttribArray(inPosLoc);
+        }
+    }
+    if (!wasBlendEnabled)
+    {
+        glDisable(GL_BLEND);
+    }
+
     eglSwapBuffers(egl_display, egl_surface);
+
     if (eglGetError() != EGL_SUCCESS)
     {
         return -1;
@@ -522,10 +735,11 @@ NvEglRenderer::setFPS(float fps)
 NvEglRenderer *
 NvEglRenderer::createEglRenderer(const char *name, uint32_t width,
                                uint32_t height, uint32_t x_offset,
-                               uint32_t y_offset)
+                               uint32_t y_offset, const char *ttfFilePath,
+                               const char *message, float scale, float r, float g, float b, float fontsize,int textPosX, int textPosY,float opacity)
 {
     NvEglRenderer* renderer = new NvEglRenderer(name, width, height,
-                                    x_offset, y_offset);
+                                    x_offset, y_offset, ttfFilePath, message, scale, r, g, b, fontsize, textPosX, textPosY, opacity);
     return renderer;
 }
 
@@ -665,21 +879,17 @@ NvEglRenderer::InitializeShaders(void)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(pos_location, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(pos_location);
-    setWindowOpacity(0.5f); 
+
     
     glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(program, "texSampler"), 0);
-    GLint alphaLoc = glGetUniformLocation(program, "uAlpha");
-    if (alphaLoc == -1)
+    // Bind the sampler used by the fragment shader to unit 0
+    GLint texLoc = glGetUniformLocation(program, "tex");
+    if (texLoc != -1)
     {
-        fprintf(stderr, "Warning: uniform 'uAlpha' not found or optimized out.\n");
-    }
-    else
-    {
-        glUniform1f(alphaLoc, 1.0f); // default fully opaque
+        glUniform1i(texLoc, 0);
     }
 
-    this->alpha_location = alphaLoc;
+    this->alpha_location = -1;
     this->gl_program = program;
 
     if (glGetError() != GL_NO_ERROR)
@@ -702,4 +912,203 @@ NvEglRenderer::create_texture()
 
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
     return 0;
+}
+void NvEglRenderer::setWindowOpacity(float opacity)
+{
+    if (opacity < 0.0f) opacity = 0.0f;
+    if (opacity > 1.0f) opacity = 1.0f;
+
+    unsigned long opacityValue = (unsigned long)(0xFFFFFFFFul * opacity);
+    Atom opacityAtom = XInternAtom(x_display, "_NET_WM_WINDOW_OPACITY", False);
+    XChangeProperty(x_display, x_window, opacityAtom, XA_CARDINAL, 32,
+                    PropModeReplace, (unsigned char *)&opacityValue, 1);
+    XFlush(x_display);
+}
+
+int NvEglRenderer::initFontAtlas(const char* fontPath, int fontSize)
+{
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft)) {
+        fprintf(stderr, "ERROR: Could not init FreeType Library\n");
+        return -1;
+    }
+
+    FT_Face face;
+    if (FT_New_Face(ft, fontPath, 0, &face)) {
+        fprintf(stderr, "ERROR: Failed to load font: %s\n", fontPath);
+        return -1;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, fontSize);
+    // Cache font metrics for baseline and line advance
+    g_fontAscent = static_cast<int>(face->size->metrics.ascender >> 6);
+    g_fontDescent = static_cast<int>(-(face->size->metrics.descender >> 6));
+    g_fontLineAdvance = static_cast<int>(face->size->metrics.height >> 6);
+    if (g_fontLineAdvance == 0)
+    {
+        g_fontLineAdvance = g_fontAscent + g_fontDescent;
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+
+    for (unsigned char c = 0; c < 128; c++) {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            fprintf(stderr, "ERROR: Failed to load Glyph %c\n", c);
+            continue;
+        }
+
+        GLuint tex;
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_ALPHA,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_ALPHA,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            tex,
+            (int)face->glyph->bitmap.width,
+            (int)face->glyph->bitmap.rows,
+            (int)face->glyph->bitmap_left,
+            (int)face->glyph->bitmap_top,
+            (GLuint)face->glyph->advance.x
+        };
+        Characters.insert(std::pair<char, Character>(c, character));
+    }
+
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+    return 0;
+}
+GLuint NvEglRenderer::initTextShader()
+{
+    static const char* textVertexShaderSrc = R"(
+    attribute vec4 vertex;
+    varying vec2 TexCoords;
+    uniform mat4 projection;
+    void main() {
+        gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
+        TexCoords = vertex.zw;
+    }
+    )";
+
+    static const char* textFragmentShaderSrc = R"(
+    precision mediump float;
+    varying vec2 TexCoords;
+    uniform sampler2D text;
+    uniform vec3 textColor;
+    void main() {
+        float alpha = texture2D(text, TexCoords).a;
+        gl_FragColor = vec4(textColor, alpha);
+    }
+    )";
+
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &textVertexShaderSrc, NULL);
+    glCompileShader(vs);
+
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &textFragmentShaderSrc, NULL);
+    glCompileShader(fs);
+
+    GLuint shader = glCreateProgram();
+    glAttachShader(shader, vs);
+    glAttachShader(shader, fs);
+    // Bind text vertex attribute to location 1 to avoid clobbering video attrib 0
+    glBindAttribLocation(shader, 1, "vertex");
+    glLinkProgram(shader);
+
+    // Bind sampler uniform to texture unit 0
+    glUseProgram(shader);
+    GLint textSamplerLoc = glGetUniformLocation(shader, "text");
+    if (textSamplerLoc != -1)
+    {
+        glUniform1i(textSamplerLoc, 0);
+    }
+    glUseProgram(0);
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return shader;
+}
+
+void NvEglRenderer::RenderText(std::string text, float x, float y, float scale, float r, float g, float b)
+{
+    // Assumes textShader is already bound and projection uniform set by caller
+    GLint colorLoc = glGetUniformLocation(textShader, "textColor");
+    glUniform3f(colorLoc, r, g, b);
+    glActiveTexture(GL_TEXTURE0);
+    if (glBindVertexArrayOES)
+    {
+        glBindVertexArrayOES(textVAO);
+    }
+    else
+    {
+        // No VAO: ensure attribute pointer is set to textVBO at attrib 1
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    }
+
+    const float originX = x;
+    // In screen coordinates: y=0 is top, y increases downward
+    // Baseline is at y position (y is top of text area)
+    float baselineY = y;
+
+    for (auto c = text.begin(); c != text.end(); c++) {
+        if (*c == '\n')
+        {
+            // Move to next line (downward in screen space)
+            x = originX;
+            baselineY += g_fontLineAdvance * scale;
+            continue;
+        }
+
+        Character ch = Characters[*c];
+
+        // Compute glyph position
+        float xpos = x + ch.BearingX * scale;
+        // ypos is the top of the glyph rectangle
+        // BearingY is offset from baseline to top, so top = baseline - BearingY
+        float ypos = baselineY - (ch.BearingY * scale);
+
+        float w = ch.SizeX * scale;
+        float h = ch.SizeY * scale;
+
+        // Build vertex array (ypos = top, ypos + h = bottom)
+       float vertices[6][4] = {
+        {xpos,     ypos + h,   0.0f, 1.0f},  // flip V
+        {xpos,     ypos,       0.0f, 0.0f},
+        {xpos + w, ypos,       1.0f, 0.0f},
+        {xpos,     ypos + h,   0.0f, 1.0f},
+        {xpos + w, ypos,       1.0f, 0.0f},
+        {xpos + w, ypos + h,   1.0f, 1.0f}
+    };
+
+
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Advance cursor
+        x += (ch.Advance >> 6) * scale;
+    }
+
+    if (glBindVertexArrayOES)
+    {
+        glBindVertexArrayOES(0);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -33,6 +33,23 @@
 #include <cstring>
 #include <sys/time.h>
 #include "Logger.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <map>
+#include <string>
+
+struct Character {
+    GLuint TextureID;   // Glyph texture
+    int SizeX;          // Width
+    int SizeY;          // Height
+    int BearingX;       // Offset from baseline to left/top
+    int BearingY;
+    GLuint Advance;     // Offset to advance to next glyph
+};
+
+static std::map<char, Character> Characters;
+static GLuint textVAO = 0, textVBO = 0;
+static GLuint textShader = 0;
 
 #define CAT_NAME "EglRenderer"
 
