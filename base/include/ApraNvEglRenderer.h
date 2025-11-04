@@ -39,6 +39,11 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <map>
+#include <string>
+#include <iostream>
 
 #include <X11/Xlib.h>
 
@@ -95,9 +100,22 @@ public:
      */
     static NvEglRenderer *createEglRenderer(const char *name, uint32_t width,
                                           uint32_t height, uint32_t x_offset,
-                                          uint32_t y_offset , bool displayOnTop);
+                                          uint32_t y_offset, 
+                                          const char* ttfFilePath = NULL,
+                                          const char* message = NULL,
+                                          float scale = 0.0f,
+                                          float r = 0.0f,
+                                          float g = 0.0f,
+                                          float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0, float opacity = 1);
      ~NvEglRenderer();
 
+    std::string ttfFilePath;
+    std::string message;
+    float scale;
+    float r, g, b;
+    float fontSize;
+    int textPosX, textPosY;
+    float opacity;
     /**
      * Renders a buffer.
      *
@@ -184,8 +202,16 @@ public:
      * @param[in] y Vertical offset, in pixels.
      * @return 0 for success, -1 otherwise.
      */
+    static PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
+    static PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
+    static PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
+
     int setOverlayText(char *str, uint32_t x, uint32_t y);
     void setWindowOpacity(float opacity);
+    void RenderText(std::string text, float x, float y, float scale, float r, float g, float b);
+    GLuint initTextShader();
+    int initFontAtlas(const char* fontPath, int fontSize);
+    
 private:
     Display * x_display;    /**< Connection to the X server created using
                                   XOpenDisplay(). */
@@ -213,8 +239,7 @@ private:
     XFontStruct *fontinfo;      /**< Brush's font info */
     char overlay_str[512];       /**< Overlay's text */
     GLuint gl_program = 0;         // OpenGL shader program handle
-    GLint alpha_location = -1;     // Location of alpha uniform in shader
-    float window_opacity = 1.0f;   
+    GLint alpha_location = -1;     // Location of alpha uniform in shader  
     /**
      * Creates a GL texture used for rendering.
      *
@@ -261,7 +286,13 @@ private:
      * Constructor called by the wrapper createEglRenderer.
      */
     NvEglRenderer(const char *name, uint32_t width, uint32_t height,
-                  uint32_t x_offset, uint32_t y_offset , bool displayOnTop);
+                  uint32_t x_offset, uint32_t y_offset,
+                  const char* ttfFilePath = NULL,
+                  const char* message = NULL,
+                  float scale = 0.0f,
+                  float r = 0.0f,
+                  float g = 0.0f,
+                  float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,float opacity = 1);
     /**
      * Gets the pointers to the required EGL methods.
      */
