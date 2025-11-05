@@ -201,7 +201,7 @@ bool HistogramOverlay::term()
 }
 
 bool HistogramOverlay::process(frame_container& frames)
-{		
+{
 	auto imgFrame = getFrameByType(frames, FrameMetadata::RAW_IMAGE);
 	auto histFrame = getFrameByType(frames, FrameMetadata::ARRAY);
 
@@ -211,16 +211,12 @@ bool HistogramOverlay::process(frame_container& frames)
 		return true;
 	}
 
-	// makeframe
-	auto metadata = mDetail->getOutputMetadata();
-	auto outFrame = makeFrame(metadata->getDataSize());
-		
-	// copy buffer
-	memcpy(outFrame->data(), imgFrame->data(), metadata->getDataSize());
+	// Zero-copy optimization: reuse input frame instead of creating new frame and copying
+	// The overlay operation modifies the frame in-place
+	// This eliminates unnecessary memory allocation and memcpy
+	mDetail->overlayHistogram(imgFrame, histFrame);
 
-	mDetail->overlayHistogram(outFrame, histFrame);
-
-	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame));
+	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), imgFrame));
 	send(frames);
 
 	return true;

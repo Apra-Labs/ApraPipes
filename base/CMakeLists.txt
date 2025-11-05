@@ -579,6 +579,7 @@ SET(UT_FILES
 	test/cv_memory_leaks_tests.cpp
 	test/module_tests.cpp
 	test/calchistogramcv_tests.cpp
+	test/histogramoverlay_tests.cpp
 	test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
