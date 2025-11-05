@@ -160,29 +160,71 @@ bool TextOverlayXForm::process(frame_container &frames)
 
 	sscanf(mDetail->mProps.backgroundColor.c_str(), "%02x%02x%02x", &backr, &backg, &backb);
 
-	cv::Mat frameCopy = mDetail->mInputImg.clone();
+	// Zero-copy optimization: Use ROI instead of full frame clone
+	// Calculate the overlay bounding box
+	cv::Rect overlayRect;
+	if (mDetail->mProps.position == "UpperLeft" || mDetail->mProps.position == "UpperRight")
+	{
+		overlayRect = cv::Rect(0, 0, mDetail->width, textSize.height + 2 * padding);
+	}
+	else
+	{
+		overlayRect = cv::Rect(0, mDetail->height - textSize.height - 2 * padding,
+		                       mDetail->width, textSize.height + 2 * padding);
+	}
 
-	cv::rectangle(frameCopy,
-				  point1,
-				  point2,
+	// Extract ROI from input (no copy, just a view)
+	cv::Mat inputROI = mDetail->mInputImg(overlayRect);
+
+	// Create temporary overlay for just the ROI region (much smaller than full frame)
+	cv::Mat overlayROI = inputROI.clone();
+
+	// Draw rectangle on the small overlay ROI
+	cv::Point roiPoint1, roiPoint2;
+	if (mDetail->mProps.position == "UpperLeft" || mDetail->mProps.position == "UpperRight")
+	{
+		roiPoint1 = cv::Point(0, textSize.height + 2 * padding);
+		roiPoint2 = cv::Point(mDetail->width, 0);
+	}
+	else
+	{
+		roiPoint1 = cv::Point(0, textSize.height + 2 * padding);
+		roiPoint2 = cv::Point(mDetail->width, 0);
+	}
+
+	cv::rectangle(overlayROI,
+				  roiPoint1,
+				  roiPoint2,
 				  cv::Scalar(backr, backg, backb),
 				  -1);
 
-	cv::putText(frameCopy,
+	// Draw text on the small overlay ROI (adjust coordinates for ROI)
+	cv::Point roiTextPoint;
+	if (mDetail->mProps.position == "UpperLeft" || mDetail->mProps.position == "UpperRight")
+	{
+		roiTextPoint = cv::Point(x, y);
+	}
+	else
+	{
+		roiTextPoint = cv::Point(x, textSize.height + padding);
+	}
+
+	cv::putText(overlayROI,
 				outText,
-				cv::Point(x, y),
+				roiTextPoint,
 				cv::FONT_HERSHEY_PLAIN,
 				mDetail->mProps.fontSize / 10.0,
 				cv::Scalar(r, g, b),
 				1,
 				cv::LINE_AA);
 
-	cv::addWeighted(frameCopy,
+	// Blend only the ROI region (not the full frame)
+	cv::addWeighted(overlayROI,
 					mDetail->mProps.alpha,
-					mDetail->mInputImg,
+					inputROI,
 					1.0 - mDetail->mProps.alpha,
 					0.0,
-					mDetail->mInputImg);
+					inputROI);
 
 	frames.insert(make_pair(mDetail->mOutputPinId, frame));
 	send(frames);

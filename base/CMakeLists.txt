@@ -610,6 +610,7 @@ SET(UT_FILES
 	test/pullstratergy_tests.cpp
 	test/QRReader_tests.cpp
 	test/textoverlayxform_tests.cpp
+	test/textoverlayxform_zerocopy_tests.cpp
 	test/mp4writersink_tests.cpp
 	test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
