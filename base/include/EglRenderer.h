@@ -5,75 +5,98 @@
 class EglRendererProps : public ModuleProps
 {
 public:
-    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(_height), width(_width),
-        ttfFilePath(), message(), scale(0.0f), fontSize(0.0f), r(0.0f), g(0.0f), b(0.0f),opacity(1) {}
+    struct TextInfo {
+        std::string fontPath = ""; //Path for TTF font file
+        std::string message = "";
+        float scale = 0.0f;
+        float fontSize = 0.0f;
+        std::vector<float> color = {0.0f, 0.0f, 0.0f}; // RGB
+        std::pair<int, int> position = {0, 0};
+    };
 
+    struct ImageInfo {
+        std::string path = "";
+        std::pair<int, int> position = {0, 0};
+        std::pair<uint32_t, uint32_t> size = {0, 0}; // width, height
+    };
+    EglRendererProps() : ModuleProps() {};
+    // All settings enabled
+    EglRendererProps(uint32_t _x_offset , uint32_t _y_offset ,
+                     uint32_t _width , uint32_t _height ,
+                     const TextInfo& _text ,
+                     const ImageInfo& _image ,
+                     float _opacity,bool _mask)
+        : ModuleProps(),
+          x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height),
+          text(_text), image(_image),
+          opacity(_opacity), mask(_mask)
+    {}
+    // --- Geometry (x, y) ---
     EglRendererProps(uint32_t _x_offset, uint32_t _y_offset)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(0), width(0),
-        ttfFilePath(), message(), scale(0.0f), fontSize(0.0f), r(0.0f), g(0.0f), b(0.0f),opacity(1) {}
-    
-    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,float opacity)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),opacity(opacity),
-        height(0), width(0),
-        ttfFilePath(), message(), scale(0.0f), fontSize(0.0f), r(0.0f), g(0.0f), b(0.0f) {
-        }
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset)
+    {}
 
+    // --- Geometry (x, y, width, height) ---
     EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,
-                     const std::string& _ttfPath, const std::string& _message,
-                     float _scale, float _r, float _g, float _b, float _fontSize,int _textPosX, int _textPosY)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(0), width(0),
-        ttfFilePath(_ttfPath), message(_message),
-        scale(_scale), fontSize(_fontSize), r(_r), g(_g), b(_b), textPosX(_textPosX), textPosY(_textPosY),opacity(1) {}
+                     uint32_t _width, uint32_t _height)
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height)
+    {}
 
-    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height,
-                     const std::string& _ttfPath, const std::string& _message,
-                     float _scale, float _r, float _g, float _b, float _fontSize, int _textPosX, int _textPosY)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(_height), width(_width),
-        ttfFilePath(_ttfPath), message(_message),
-        scale(_scale), fontSize(_fontSize), r(_r), g(_g), b(_b), textPosX(_textPosX), textPosY(_textPosY),opacity(1) {}
-    
+    // --- Geometry + Text ---
     EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,
-                     const std::string& _ttfPath, const std::string& _message,
-                     float _scale, float _r, float _g, float _b, float _fontSize,int _textPosX, int _textPosY,float _opacity)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(0), width(0),
-        ttfFilePath(_ttfPath), message(_message),
-        scale(_scale), fontSize(_fontSize), r(_r), g(_g), b(_b), textPosX(_textPosX), textPosY(_textPosY),opacity(_opacity) {}
-      EglRendererProps(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height,
-                     const std::string& _ttfPath, const std::string& _message,
-                     float _scale, float _r, float _g, float _b, float _fontSize, int _textPosX, int _textPosY,float _opacity)
-      : ModuleProps(),
-        x_offset(_x_offset), y_offset(_y_offset),
-        height(_height), width(_width),
-        ttfFilePath(_ttfPath), message(_message),
-        scale(_scale), fontSize(_fontSize), r(_r), g(_g), b(_b), textPosX(_textPosX), textPosY(_textPosY),opacity(_opacity) {}
-    ~EglRendererProps(){}
+                     uint32_t _width, uint32_t _height,
+                     const TextInfo& _text)
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height), text(_text)
+    {}
 
+    // --- Geometry + Image ---
+    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,
+                     uint32_t _width, uint32_t _height,
+                     const ImageInfo& _image)
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height), image(_image)
+    {}
+
+    // --- Geometry + Text + Image ---
+    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,
+                     uint32_t _width, uint32_t _height,
+                     const TextInfo& _text,
+                     const ImageInfo& _image)
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height),
+          text(_text), image(_image)
+    {}
+
+    // --- Geometry + Opacity + Mask ---
+    EglRendererProps(uint32_t _x_offset, uint32_t _y_offset,
+                     uint32_t _width, uint32_t _height,
+                     float _opacity, bool _mask)
+        : ModuleProps(), x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height),
+          opacity(_opacity), mask(_mask)
+    {}
+
+
+    
+
+    ~EglRendererProps() = default;
+
+    // --- Geometry ---
     uint32_t x_offset = 0;
     uint32_t y_offset = 0;
-    uint32_t height = 0;
     uint32_t width = 0;
-    std::string ttfFilePath;
-    std::string message;
-    float scale = 0.0f;
-    float fontSize = 0.0f;
-    float r = 0.0f;
-    float g = 0.0f;
-    float b = 0.0f;
-    int textPosX = 0;
-    int textPosY = 0;
-    float opacity = 1;
+    uint32_t height = 0;
+
+    // --- Rendering data ---
+    TextInfo text;
+    ImageInfo image;
+
+    // --- Display ---
+    float opacity = 1.0f;
+    bool mask = false;
 };
 
 
