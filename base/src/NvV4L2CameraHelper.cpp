@@ -2,15 +2,19 @@
 #include "DMAFDWrapper.h"
 #include "NvEglRenderer.h"
 #include "NvUtils.h"
-#include "nvbuf_utils.h"
 #include "Logger.h"
+#include <linux/videodev2.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <poll.h>
 
 NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_sp()> _makeFrame)
 {
     // hardcoded device name and pixfmt which is fine for now 
     mCamDevname = "/dev/video0";
     mCamFD = -1;
-    mCamPixFmt = V4L2_PIX_FMT_UYVY;
+    mCamPixFmt = V4L2_PIX_FMT_YUYV;
 
     mRunning = false;
     mSendFrame = sendFrame;
@@ -72,7 +76,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
         fmt.fmt.pix.height != mCamHeight ||
         fmt.fmt.pix.pixelformat != mCamPixFmt)
     {
-        LOG_ERROR << "The desired format is not supported";
+        LOG_ERROR << "The desired format is not supported"<<mCamPixFmt;
         LOG_ERROR << "Supported width is : " << fmt.fmt.pix.width;
         LOG_ERROR << "Supported height is : " << fmt.fmt.pix.height;
         LOG_ERROR << "Supported pixelformat is : " << fmt.fmt.pix.pixelformat;
@@ -113,6 +117,7 @@ bool NvV4L2CameraHelper::stopStream()
 
 void NvV4L2CameraHelper::operator()()
 {
+
     int fds;
     fd_set rset;
 
@@ -120,13 +125,16 @@ void NvV4L2CameraHelper::operator()()
     FD_ZERO(&rset);
     FD_SET(fds, &rset);
     mRunning = true;
+    struct timeval timeout;
+timeout.tv_sec = 10;
+timeout.tv_usec = 0;
 
-    /* Wait for camera event with timeout = 5000 ms */
-    while (select(fds + 1, &rset, NULL, NULL, NULL) > 0 && mRunning)
+    /* Wait for camera event with timeout = 10 sec */
+    while (select(fds + 1, &rset, NULL, NULL, &timeout) > 0 && mRunning)
     {
-        if (FD_ISSET(fds, &rset))
-        {
-            struct v4l2_buffer v4l2_buf;
+    if (FD_ISSET(fds, &rset))
+    {
+         struct v4l2_buffer v4l2_buf;
 
             /* Dequeue a camera buff */
             memset(&v4l2_buf, 0, sizeof(v4l2_buf));
@@ -134,22 +142,28 @@ void NvV4L2CameraHelper::operator()()
             v4l2_buf.memory = V4L2_MEMORY_DMABUF;
             if (ioctl(mCamFD, VIDIOC_DQBUF, &v4l2_buf) < 0)
             {
-                LOG_ERROR << "Failed to dequeue camera buff";
+                LOG_ERROR << "Failed to dequeue camera buffer";
                 break;
             }
 
             // lock
             std::lock_guard<std::mutex> lock(mBufferFDMutex);
-            auto frameItr = mBufferFD.find(v4l2_buf.m.fd);  
-            if(frameItr == mBufferFD.end())          
+            auto frameItr = mBufferFD.find(v4l2_buf.m.fd);
+            if (frameItr == mBufferFD.end())
             {
-                LOG_FATAL << " mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
+                LOG_FATAL << "mBufferFD failed. fd<" << v4l2_buf.m.fd << "> size<" << mBufferFD.size() << ">";
             }
             mSendFrame(frameItr->second);
             mBufferFD.erase(frameItr);
-        }
+    }
+    else
+    {
+        LOG_INFO<<"fd not set";
     }
 }
+}
+    
+
 
 bool NvV4L2CameraHelper::queueBufferToCamera()
 {
@@ -157,6 +171,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
     {
         auto frame = mMakeFrame();
         if(!frame.get()){
+            LOG_INFO<<"cannot create frames";
             break;
         }
         auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
@@ -180,7 +195,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
             std::lock_guard<std::mutex> lock(mBufferFDMutex);
             mBufferFD.insert(make_pair(buf.m.fd, frame));
         }
-
+         
         if (ioctl(mCamFD, VIDIOC_QBUF, &buf) < 0){
             LOG_ERROR << "Failed to enqueue buffers";
             return false;
