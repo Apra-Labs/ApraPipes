@@ -1,5 +1,12 @@
 #ifndef __NV_JPEG_ENCODER_H__
 #define __NV_JPEG_ENCODER_H__
+#ifndef TEGRA_ACCELERATE
+/**
+ * @c TEGRA_ACCELERATE must be defined to enable hardware acceleration of
+ * JPEG encoding.
+ */
+#define TEGRA_ACCELERATE
+#endif
 
 #include <stdint.h>
 #include <stdio.h>
@@ -13,6 +20,9 @@ public:
 	
      bool init(uint32_t width, uint32_t height, uint32_t stride, J_COLOR_SPACE color_space, double scale);
      int encode(const unsigned char* in_buf, unsigned char **out_buf, unsigned long &out_buf_size);
+     int encodeFromFd(int fd, J_COLOR_SPACE color_space,
+        unsigned char **out_buf, unsigned long &out_buf_size,
+        int quality);
 
 private:
     struct jpeg_compress_struct cinfo;
