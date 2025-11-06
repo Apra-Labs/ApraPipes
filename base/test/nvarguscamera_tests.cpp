@@ -13,8 +13,8 @@
 #include "test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(nvarguscamera_tests)
-
-/*BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
+/*
+BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
 	auto argValue = Test_Utils::getArgValue("n", "1");
 	auto n_cams = atoi(argValue.c_str());
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_SUITE(nvarguscamera_tests)
 	p.wait_for_all();
 }*/
 
-BOOST_AUTO_TEST_CASE(vcam_nv12)
+BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 {
 	LoggerProps logProps;
     logProps.enableConsoleLog = true;
@@ -91,20 +91,14 @@ BOOST_AUTO_TEST_CASE(vcam_nv12)
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	copySource->setNext(sink);
-
-	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
-	// source->setNext(fileWriter);
-
 	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
-	//Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	p.run_all_threaded();
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
-	///Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
 	p.term();
@@ -123,10 +117,14 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420)
 	sourceProps.fps = 30;
 	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
-	//auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
-	//source->setNext(copySource);
+	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	source->setNext(copySource);
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12.raw", true)));
+	copySource->setNext(fileWriter);
+	
+
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420,640,360,0,0)));
 	source->setNext(transform);
 
 	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
@@ -138,21 +136,17 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420)
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	copy->setNext(sink);
 
-	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/yuv420_????.raw")));
-	// copy->setNext(fileWriter);
-	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
-	// copySource->setNext(fileWriter2);
+	auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/yuv420-640x360.raw", true)));
+	copy->setNext(fileWriter2);
+
 
 	PipeLine p("test");
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 
-	//Logger::setLogLevel(boost::log::trivial::severity_level::info);
-
 	p.run_all_threaded();
 
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
-	//Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
 	p.term();
@@ -160,7 +154,7 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420)
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(vcam)
+BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
@@ -170,7 +164,7 @@ BOOST_AUTO_TEST_CASE(vcam)
 	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
 	source->setNext(copySource);
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA,480,360,0,0)));
 	source->setNext(transform);
 
 	auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
@@ -184,7 +178,7 @@ BOOST_AUTO_TEST_CASE(vcam)
 
 	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/bgra_????.raw")));
 	// copy->setNext(fileWriter);
-	// auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
+	//auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvargus/nv12_????.raw")));
 	// copySource->setNext(fileWriter2);
 
 	PipeLine p("test");
@@ -203,7 +197,6 @@ BOOST_AUTO_TEST_CASE(vcam)
 
 	p.wait_for_all();
 }
-/*
 BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 {
 	NvArgusCameraProps sourceProps(800, 800);
@@ -233,7 +226,7 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -241,9 +234,14 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 
 	p.wait_for_all();
 }
-
-BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
+/*
+BOOST_AUTO_TEST_CASE(encoderrtsppush)
 {
+	
+	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
 	NvArgusCameraProps sourceProps(1280, 720);
 	sourceProps.maxConcurrentFrames = 10;
 	sourceProps.fps = 30;
@@ -254,10 +252,10 @@ BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
 	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	source->setNext(encoder);
 
-	// auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera_1280x720.h264", true)));
-	// encoder->setNext(fileWriter);
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/ArgusCamera_1280x720.h264", true)));
+	encoder->setNext(fileWriter);
 
-	RTSPPusherProps rtspPusherProps("rtsp://10.102.10.129:5544", "aprapipes_h264");
+	RTSPPusherProps rtspPusherProps("rtsp://10.102.10.102:5544", "aprapipes_h264");
 	auto rtspPusher = boost::shared_ptr<Module>(new RTSPPusher(rtspPusherProps));
 	encoder->setNext(rtspPusher);
 
@@ -275,7 +273,7 @@ BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
