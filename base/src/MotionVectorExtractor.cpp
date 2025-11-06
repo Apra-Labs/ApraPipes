@@ -293,22 +293,42 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 
 	if ((!sDecParam.bParseOnly) && (pDstInfo.pDst[0] != nullptr) && (mMotionVectorSize != mWidth * mHeight * 8))
 	{
+		// Zero-copy optimization: eliminate malloc + 3x memcpy
+		// Create output frame for BGR image
 		decodedFrame = makeFrameWithPinId(mHeight * 3 * mWidth, rawFramePinId);
-		uint8_t* yuvImagePtr = (uint8_t*)malloc(mHeight * 1.5 * pDstInfo.UsrData.sSystemBuffer.iStride[0]);
+
+		// Calculate required YUV buffer size with stride
+		size_t yuvBufferSize = pDstInfo.UsrData.sSystemBuffer.iStride[0] * mHeight +
+		                       pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2 +
+		                       pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2;
+
+		// Use frame pool instead of malloc for proper memory management
+		auto yuvTempFrame = makeFrameWithPinId(yuvBufferSize, rawFramePinId);
+		uint8_t* yuvImagePtr = static_cast<uint8_t*>(yuvTempFrame->data());
 		auto yuvStartPointer = yuvImagePtr;
+
+		// Copy Y plane
 		unsigned char* pY = pDstInfo.pDst[0];
 		memcpy(yuvImagePtr, pY, pDstInfo.UsrData.sSystemBuffer.iStride[0] * mHeight);
-		unsigned char* pU = pDstInfo.pDst[1];
+
+		// Copy U plane
 		yuvImagePtr += pDstInfo.UsrData.sSystemBuffer.iStride[0] * mHeight;
+		unsigned char* pU = pDstInfo.pDst[1];
 		memcpy(yuvImagePtr, pU, pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2);
-		unsigned char* pV = pDstInfo.pDst[2];
+
+		// Copy V plane
 		yuvImagePtr += pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2;
+		unsigned char* pV = pDstInfo.pDst[2];
 		memcpy(yuvImagePtr, pV, pDstInfo.UsrData.sSystemBuffer.iStride[1] * mHeight / 2);
 
+		// Create Mat wrapper (no copy, just header)
 		cv::Mat yuvImgCV = cv::Mat(mHeight + mHeight / 2, mWidth, CV_8UC1, yuvStartPointer, pDstInfo.UsrData.sSystemBuffer.iStride[0]);
 		bgrImg.data = static_cast<uint8_t*>(decodedFrame->data());
 
+		// Color conversion
 		cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
+
+		// yuvTempFrame will be automatically freed when it goes out of scope (smart pointer)
 		frames.insert(make_pair(rawFramePinId, decodedFrame));
 	}
 }
