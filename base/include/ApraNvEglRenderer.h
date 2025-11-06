@@ -106,7 +106,8 @@ public:
                                           float scale = 0.0f,
                                           float r = 0.0f,
                                           float g = 0.0f,
-                                          float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0, float opacity = 1);
+                                          float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
+                                          std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false);
      ~NvEglRenderer();
 
     std::string ttfFilePath;
@@ -116,6 +117,10 @@ public:
     float fontSize;
     int textPosX, textPosY;
     float opacity;
+    std::string imagePath;
+    int imagePosX, imagePosY;
+    uint32_t imageWidth, imageHeight;
+    bool mask;
     /**
      * Renders a buffer.
      *
@@ -210,6 +215,9 @@ public:
     void RenderText(std::string text, float x, float y, float scale, float r, float g, float b);
     GLuint initTextShader();
     int initFontAtlas(const char* fontPath, int fontSize);
+    GLuint loadImageTexture(const char* imagePath);
+    GLuint initImageShader();
+    void RenderImage(GLuint texture, float x, float y, float width, float height);
     
 private:
     Display * x_display;    /**< Connection to the X server created using
@@ -228,7 +236,8 @@ private:
     XFontStruct *fontinfo;      /**< Brush's font info */
     char overlay_str[512];       /**< Overlay's text */
     GLuint gl_program = 0;         // OpenGL shader program handle
-    GLint alpha_location = -1;     // Location of alpha uniform in shader  
+    GLint alpha_location = -1;     // Location of alpha uniform in shader
+    GLuint cached_image_texture = 0;  // Cached image texture loaded once during initialization  
     /**
      * Creates a GL texture used for rendering.
      *
@@ -281,7 +290,8 @@ private:
                   float scale = 0.0f,
                   float r = 0.0f,
                   float g = 0.0f,
-                  float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,float opacity = 1);
+                  float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
+                  std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false);
     /**
      * Gets the pointers to the required EGL methods.
      */
@@ -299,6 +309,19 @@ private:
      * and waiting until the buffer render time.
      */
     int renderInternal();
+
+    /**
+     * Helper functions for rendering
+     */
+    EGLImageKHR createEglImageFromDmaBuf();
+    int renderVideoFrame(EGLImageKHR hEglImage);
+    void renderOverlays();
+    void saveGLState(GLint& prevProgram, GLint& prevVAO, GLint& prevTexExternal, 
+                     GLint& prevTex2D, GLint& prevArrayBuffer, GLint& prevActiveTexUnit,
+                     GLboolean& wasBlendEnabled);
+    void restoreGLState(GLint prevProgram, GLint prevVAO, GLint prevTexExternal,
+                        GLint prevTex2D, GLint prevArrayBuffer, GLint prevActiveTexUnit,
+                        GLboolean wasBlendEnabled);
 
     /**
      * These EGL function pointers are required by the renderer.

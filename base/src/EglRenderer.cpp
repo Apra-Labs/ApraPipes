@@ -5,25 +5,25 @@
 #include <drm/drm_fourcc.h>
 #include <chrono>
 #include <thread>
+#include <string>
+#include <vector>
+#include <utility>
+#include <chrono>
+
 class EglRenderer::Detail
 {
-
 public:
-    Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height) : x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height)
-    {
-        m_isEglWindowCreated = false;
-    }
-    Detail(uint32_t _x_offset, uint32_t _y_offset, uint32_t _width, uint32_t _height,
-       const std::string& _ttfPath, const std::string& _message,
-       float _scale, float _r, float _g, float _b, float _fontSize, int _textPosX, int _textPosY,float _opacity)
-    : x_offset(_x_offset), y_offset(_y_offset), width(_width), height(_height),
-      ttfFilePath(_ttfPath), message(_message),
-      scale(_scale), fontSize(_fontSize), r(_r), g(_g), b(_b),
-      renderer(nullptr), m_isEglWindowCreated(false),textPosX(_textPosX),textPosY(_textPosY),opacity(_opacity)
-    {
-    }
 
-    Detail() {}
+    Detail(uint32_t _x_offset , uint32_t _y_offset ,
+           uint32_t _width , uint32_t _height ,
+           const EglRendererProps::TextInfo& _text,
+           const EglRendererProps::ImageInfo& _image,
+           float _opacity ,bool _mask)
+        : x_offset(_x_offset), y_offset(_y_offset),
+          width(_width), height(_height),
+          text(_text), image(_image), opacity(_opacity),mask(_mask)
+    {}
+
     ~Detail()
     {
         if (renderer)
@@ -38,25 +38,38 @@ public:
         LOG_DEBUG << "WILL INITIALIZE NEW WINDOW";
         uint32_t displayHeight, displayWidth;
         NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
-        if (height != 0 && width != 0)
+
+        uint32_t renderW = (width == 0) ? _width : width;
+        uint32_t renderH = (height == 0) ? _height : height;
+
+        if (width == 0 || height == 0)
         {
-            // x_offset += (displayWidth-width)/2;
-            // y_offset += (displayHeight-height)/2;
-            LOG_DEBUG << "X_OFFSET" << x_offset << "y_offset" << y_offset;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, width, height, x_offset, y_offset, ttfFilePath.c_str(), message.c_str(), scale, r, g, b, fontSize,textPosX,textPosY,opacity);
+            x_offset += (displayWidth - renderW) / 2;
+            y_offset += (displayHeight - renderH) / 2;
         }
-        else
-        {
-            x_offset += (displayWidth - _width) / 2;
-            y_offset += (displayHeight - _height) / 2;
-            LOG_DEBUG << "X_OFFSET" << x_offset << "y_offset" << y_offset;
-            renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, x_offset, y_offset, ttfFilePath.c_str(), message.c_str(), scale, r, g, b, fontSize,textPosX,textPosY,opacity);
-        }
+
+        LOG_DEBUG << "X_OFFSET " << x_offset << " y_offset " << y_offset;
+
+        renderer = NvEglRenderer::createEglRenderer(
+            __TIMESTAMP__,
+            renderW, renderH, x_offset, y_offset,
+            text.fontPath.c_str(), text.message.c_str(),
+            text.scale,
+            text.color[0], text.color[1], text.color[2],
+            text.fontSize,
+            text.position.first, text.position.second,
+            image.path,
+            image.position.first, image.position.second,
+            image.size.first, image.size.second,
+            opacity,mask
+        );
+
         if (!renderer)
         {
             LOG_INFO << "Failed to create EGL renderer";
             return false;
         }
+
         m_isEglWindowCreated = true;
         return true;
     }
@@ -74,25 +87,37 @@ public:
         return true;
     }
 
-    bool shouldTriggerSOS()
+    bool shouldTriggerSOS() const
     {
         return (!m_isEglWindowCreated) || (!renderer);
     }
 
+    // --- Renderer and Window Info ---
     NvEglRenderer *renderer = nullptr;
-    uint32_t x_offset, y_offset, width, height;
-    std::string ttfFilePath, message;
-    float scale,fontSize, r, g, b;
-    int textPosX = 0;
-    int textPosY = 0;
-    float opacity = 1;
+    bool m_isEglWindowCreated = false;
+
+    // --- Geometry ---
+    uint32_t x_offset = 0;
+    uint32_t y_offset = 0;
+    uint32_t width = 0;
+    uint32_t height = 0;
+
+    // --- Rendering Data ---
+    EglRendererProps::TextInfo text;
+    EglRendererProps::ImageInfo image;
+
+    //Display 
+    float opacity = 1.0f;
+    bool mask = false;  
+
+
     std::chrono::milliseconds m_frameDelay{27};
-    bool m_isEglWindowCreated;
 };
+
 
 EglRenderer::EglRenderer(EglRendererProps props) : Module(SINK, "EglRenderer", props)
 {
-    mDetail.reset(new Detail(props.x_offset, props.y_offset, props.width, props.height,props.ttfFilePath, props.message, props.scale, props.r, props.g, props.b, props.fontSize,props.textPosX,props.textPosY,props.opacity));
+    mDetail.reset(new Detail(props.x_offset, props.y_offset, props.width, props.height,props.text,props.image,props.opacity,props.mask));
 }
 
 EglRenderer::~EglRenderer() {}

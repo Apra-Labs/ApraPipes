@@ -5,7 +5,8 @@
 #include "PipeLine.h"
 #include "NvV4L2Camera.h"
 #include "NvTransform.h"
-
+#include "NvEglRenderer.h"
+#include "ApraNvEglRenderer.h"
 
 BOOST_AUTO_TEST_SUITE(eglrenderer_tests)
 
@@ -55,6 +56,7 @@ BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
     source->setNext(transform);
 
 	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0)));
+	//,"/home/developer/ApraPipes/data/Debrosee-ALPnL.ttf","HelloWorld",1.0f,1.0f,1.0f,1.0f,24,200,200,0.99)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -84,6 +86,7 @@ BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
     source->setNext(transform);
 
 	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0)));
+	//,"/home/developer/ApraPipes/data/Debrosee-ALPnL.ttf","HelloWorld",1.0f,1.0f,1.0f,1.0f,24,10,50)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -136,6 +139,202 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 	p.term();
 
 	p.wait_for_all(); 
+}
+
+BOOST_AUTO_TEST_CASE(ctor_default, *boost::unit_test::disabled())
+{
+    LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps()));
+    transform->setNext(sink);
+
+    PipeLine p("default_ctor_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_xy, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(50, 50)));
+    transform->setNext(sink);
+
+    PipeLine p("geometry_xy_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_xywh, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 320, 240)));
+    transform->setNext(sink);
+
+    PipeLine p("geometry_xywh_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_text, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    EglRendererProps::TextInfo text;
+    text.fontPath = "/home/developer/ApraPipes/data/Debrosee-ALPnL.ttf";
+    text.message = "HelloText";
+    text.color = {1.0f, 1.0f, 1.0f};
+    text.fontSize = 24;
+    text.position = {50,50};
+	text.scale = 1;
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(100, 100, 320, 240, text)));
+    transform->setNext(sink);
+
+    PipeLine p("geometry_text_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_image, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    EglRendererProps::ImageInfo img;
+    img.path = "/home/developer/ApraPipes/data/apra.jpeg";
+    img.position = {0, 0};
+    img.size = {128, 128};
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 320, 240, img)));
+    transform->setNext(sink);
+
+    PipeLine p("geometry_image_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_text_image, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    EglRendererProps::TextInfo text;
+    text.fontPath = "/home/developer/ApraPipes/data/Debrosee-ALPnL.ttf";
+    text.message = "Overlay Text";
+    text.color = {0.0f, 1.0f, 0.0f};
+    text.fontSize = 20;
+    text.position = {100, 50};
+
+    EglRendererProps::ImageInfo img;
+    img.path = "/home/developer/ApraPipes/data/apra.jpeg";
+    img.position = {200, 150};
+    img.size = {64, 64};
+
+    auto sink = boost::shared_ptr<Module>(
+        new EglRenderer(EglRendererProps(0, 0, 320, 240, text, img))
+    );
+    transform->setNext(sink);
+
+    PipeLine p("geometry_text_image_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
+}
+
+BOOST_AUTO_TEST_CASE(ctor_geometry_opacity_mask, *boost::unit_test::disabled())
+{
+    LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::trace);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    NvTransformProps nvprops(ImageMetadata::RGBA);
+    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    source->setNext(transform);
+
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 320, 240, 0.5f, true)));
+    transform->setNext(sink);
+
+    PipeLine p("geometry_opacity_mask_test");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+    p.stop(); p.term(); p.wait_for_all();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
