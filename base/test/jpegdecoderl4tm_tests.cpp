@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
-
+#include "DMAFDToHostCopy.h"
+#include "FileWriterModule.h"
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -10,6 +11,7 @@
 #include "AIPExceptions.h"
 #include "JPEGDecoderL4TM.h"
 #include "test_utils.h"
+#include "PipeLine.h"
 
 BOOST_AUTO_TEST_SUITE(jpegdecoderl4tm_tests)
 
@@ -66,8 +68,56 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	delete[] pReadData;
 }
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
-{		
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_fd_yuv420)
+{	
+	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);	
+	const uint8_t* pReadData = nullptr;
+	unsigned int readDataSize = 0U;
+	BOOST_TEST(Test_Utils::readFile("./data/faces.jpg", pReadData, readDataSize));
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = m1->addOutputPin(metadata);
+
+	JPEGDecoderL4TMProps props;
+    props.decodeToFd = true;
+
+	auto m2 = boost::shared_ptr<Module>(new JPEGDecoderL4TM(props));
+	m1->setNext(m2);
+	auto decoderMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+	auto rawImagePin = m2->addOutputPin(decoderMetadata);
+		
+	
+	auto m3 = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	m2->setNext(m3);
+
+	auto m4 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/faces-dma.yuv", true)));
+	m3->setNext(m4);
+
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+	BOOST_TEST(m4->init());
+
+	auto encodedImageFrame = m1->makeFrame(readDataSize, encodedImagePin);
+	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
+
+	frame_container frames;
+	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+
+	m1->send(frames);
+	m2->step();
+    m3->step();
+    m4->step();
+
+}
+
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb)
+{			
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/frame.jpg", pReadData, readDataSize));
