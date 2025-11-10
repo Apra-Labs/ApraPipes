@@ -13,6 +13,7 @@ public:
 	
      bool init(const unsigned char* in_buf, unsigned long in_buf_size, int& width, int& height);		
      int decode(const unsigned char* in_buf, unsigned long in_buf_size, unsigned char *out_buf);
+     int decodeToFd(int &fd, unsigned char * in_buf,unsigned long in_buf_size);
 
 private:
 
