@@ -2,15 +2,46 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "b7b806799d987389fa0900f8db5edba3f573d0ad",
+  "builtin-baseline": "6ba64191f73b82b71ffa5263b26189f7b2b82f92",
+  "overrides": [
+    {
+      "name": "ffmpeg",
+      "version": "4.4.3"
+    },
+    {
+      "name": "libarchive",
+      "version": "3.5.2"
+    }
+  ],
   "dependencies": [
+    {
+      "name": "whisper",
+      "default-features": false,
+      "features": [
+        "cuda"
+      ]
+    },
     {
       "name": "opencv4",
       "default-features": false,
-      "features": ["contrib", "cuda", "cudnn", "dnn", "jpeg", "nonfree", "png", "tiff", "webp" ]
+      "features": [
+        "contrib",
+        "cuda",
+        "cudnn",
+        "dnn",
+        "jpeg",
+        "nonfree",
+        "png",
+        "tiff",
+        "webp"
+      ]
     },
-    "libjpeg-turbo",
+    "freeglut",
     "ffmpeg",
+    "openh264-apra",
+    "glfw3",
+    "glew",
+    "libjpeg-turbo",
     "bigint",
     "boost-math",
     "boost-system",
@@ -27,12 +58,21 @@
     "bzip2",
     "zlib",
     "sfml",
+    "brotli",
+    "hiredis",
+    "redis-plus-plus",
+    {
+      "name": "gtk3",
+      "platform": "!windows"
+    },
     {
       "name": "glib",
       "default-features": false,
-      "features": ["libmount"],
+      "features": [
+        "libmount"
+      ],
       "platform": "(linux & x64)",
-      "$reason" : "skip linux:arm64 and windows"
+      "$reason": "skip linux:arm64 and windows"
     },
     {
       "name": "glib",
@@ -40,23 +80,7 @@
       "platform": "windows"
     },
     {
-      "name": "hiredis",
-      "platform": "!arm64"
-    },
-    {
-      "name": "redis-plus-plus",
-      "platform": "!arm64"
-    },
-    {
-      "name": "gstreamer",
-      "features": ["plugins-good","plugins-bad","plugins-ugly" ],
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
-    },
-    {
-      "name":"gst-rtsp-server",
-      "platform": "!linux",
-      "$reason": "current vcpkg system does not build gstreamer for linux, we build our own"
+      "name": "libmp4"
     }
   ]
 }

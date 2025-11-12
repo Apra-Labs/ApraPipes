@@ -99,7 +99,7 @@ find_package(OpenSSL REQUIRED)
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))
-  		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75)
+  		set(CMAKE_CUDA_ARCHITECTURES 52 60 70 75 80 86 87)
 	endif()
 
 	message ("CUDA ARCHS: ${CMAKE_CUDA_ARCHITECTURES}")
@@ -119,7 +119,9 @@ IF(ENABLE_CUDA)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
 		find_library(X11LIB X11 REQUIRED)
 		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		find_library(NVBUFUTILSLIB nvbufsurface REQUIRED)
+		find_library(NVBUFSURFTRANSFORMLIB nvbufsurftransform REQUIRED)
+		# find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_package(Curses REQUIRED)
 
@@ -128,10 +130,9 @@ IF(ENABLE_CUDA)
 			libcuda.so.1.1	
 			${V4L2LIB}
 			${NVBUFUTILSLIB}
-			${EGLLIB}
+			${NVBUFSURFTRANSFORMLIB}
 			${GLESv2LIB}
 			${X11LIB}	
-			${EGLSTREAM_CAMCONSUMER_LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
@@ -305,41 +306,36 @@ ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
-	src/CalcHistogramCV.cpp
-	src/HistogramOverlay.cpp
-	src/ImageDecoderCV.cpp
-	src/ImageViewerModule.cpp
-	src/BMPConverter.cpp
-	src/ImageResizeCV.cpp
-	src/ImageEncoderCV.cpp
-	src/RotateCV.cpp
-	src/BrightnessContrastControlXform.cpp
-	src/VirtualPTZ.cpp
-	src/WebCamSource.cpp
-	src/FaceDetectorXform.cpp
-	src/TextOverlayXForm.cpp
-	src/ValveModule.cpp
+	# src/CalcHistogramCV.cpp
+	# src/HistogramOverlay.cpp
+	# src/ImageDecoderCV.cpp
+	# src/ImageViewerModule.cpp
+	# src/BMPConverter.cpp
+	# src/ImageResizeCV.cpp
+	# src/FacialLandmarksCV.cpp
+	# src/ImageEncoderCV.cpp
+	# src/RotateCV.cpp
+	# src/AffineTransform.cpp
+	# src/BrightnessContrastControlXform.cpp
+	# src/VirtualPTZ.cpp
+	# src/WebCamSource.cpp
+	# src/FaceDetectorXform.cpp
+	# src/TextOverlayXForm.cpp
+	# src/ValveModule.cpp
 	src/ColorConversionXForm.cpp
 	src/AbsColorConversionFactory.cpp
 	src/ColorConversionStrategy.h
 	src/AbsColorConversionFactory.h
 	src/ArchiveSpaceManager.cpp
-	src/AbsControlModule.cpp
-	src/EndocamControlModule.cpp
+	# src/Overlay.cpp
+	# src/OverlayFactory.h
+	# src/OverlayFactory.cpp
+	# src/TestSignalGeneratorSrc.cpp
+	# src/AudioToTextXForm.cpp 
+	# src/AbsControlModule.cpp
+	# src/ThumbnailListGenerator.cpp
 )
-
-
-IF(ENABLE_GST)
-	IF(NOT ENABLE_WINDOWS)
-		list(APPEND IP_FILES
-			src/GstWebRTCSink.cpp
-		)
-	ENDIF(NOT ENABLE_WINDOWS)
-	list(APPEND IP_FILES
-		src/GstOnvifRtspSink.cpp
-	)
-ENDIF(ENABLE_GST)
-
+	
 SET(IP_FILES_H
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
@@ -419,26 +415,24 @@ SET(CUDA_IP_FILES
 
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-		src/JPEGDecoderL4TM.cpp
-		src/JPEGDecoderL4TMHelper.cpp
+		# src/JPEGDecoderL4TM.cpp
+		# src/JPEGDecoderL4TMHelper.cpp
 		src/JPEGEncoderL4TM.cpp
 		src/JPEGEncoderL4TMHelper.cpp
 		src/AV4L2Buffer.cpp
 		src/AV4L2ElementPlane.cpp
-		src/H264EncoderV4L2Helper.cpp
-		src/V4L2CUYUV420Converter.cpp
-		src/H264EncoderV4L2.cpp
+		# src/H264EncoderV4L2Helper.cpp
+		# src/V4L2CUYUV420Converter.cpp
+		# src/H264EncoderV4L2.cpp
 		src/DMAFDWrapper.cpp
-		src/NvArgusCameraHelper.cpp
-		src/NvArgusCamera.cpp
-		src/NvV4L2Camera.cpp
-		src/NvV4L2CameraHelper.cpp
-		src/EglRenderer.cpp
-		src/EglRendererReview.cpp
-		src/ApraEglRenderer.cpp
-		src/NvEglRenderer.cpp
+		# src/NvArgusCameraHelper.cpp
+		# src/NvArgusCamera.cpp
+		# src/NvV4L2Camera.cpp
+		# src/NvV4L2CameraHelper.cpp
+		# src/EglRenderer.cpp
+		# src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
-		src/NvTransform.cpp
+		# src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 		src/Matrix.cpp
@@ -613,10 +607,11 @@ ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	SET(CUDA_UT_FILES
-		test/cudamemcopy_tests.cpp		
-		test/resizenppi_tests.cpp
-		test/rotatenppi_tests.cpp
-		test/masknppi_tests.cpp
+		# test/cudamemcopy_tests.cpp		
+		# test/resizenppi_tests.cpp
+		# test/rotatenppi_tests.cpp
+		# test/ccnppi_tests.cpp
+		# test/memtypeconversion_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -637,16 +632,16 @@ ENDIF(ENABLE_CUDA)
 
 SET(UT_FILES
 	test/utmain.cpp
-	# test/unit_tests.cpp
-	# test/cv_memory_leaks_tests.cpp
-	# test/module_tests.cpp
+	test/unit_tests.cpp
+	test/cv_memory_leaks_tests.cpp
+	test/module_tests.cpp
 	# test/calchistogramcv_tests.cpp
 	# test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
-	# test/filewritermodule_tests.cpp
+	test/filewritermodule_tests.cpp
 	# test/logger_tests.cpp
-    # test/logger_stress_tests.cpp  #todo this test needs to be improved and added
+#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added	
 	# test/quepushstrategy_tests.cpp	
 	# test/framesmuxer_tests.cpp
 	# test/filereadermodule_tests.cpp
@@ -656,10 +651,13 @@ SET(UT_FILES
 	# test/bmpconverter_tests.cpp
 	# test/rtsppusher_tests.cpp
 	# test/findexstrategy_tests.cpp	
-	test/jpegdecodercv_tests.cpp
+	# test/jpegdecodercv_tests.cpp
 	# test/Imageresizecv_tests.cpp
-	test/ImageEncodeCV_tests.cpp
+	# test/faciallandmarkscv_tests.cpp
+	# test/imageviewermodule_tests.cpp
+	# test/ImageEncodeCV_tests.cpp
 	# test/rotatecv_tests.cpp
+	# test/affinetransform_tests.cpp
 	# test/brightness_contrast_tests.cpp
 	# test/virtualptz_tests.cpp
 	# test/webcam_source_tests.cpp
@@ -668,25 +666,34 @@ SET(UT_FILES
 	# test/pullstratergy_tests.cpp
 	# test/QRReader_tests.cpp
 	# test/textoverlayxform_tests.cpp
-	test/mp4writersink_tests.cpp
+	# test/mp4writersink_tests.cpp
 	# test/pipeline_tests.cpp
 #	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
 	# test/valveModule_tests.cpp
 	# test/color_conversion_tests.cpp
 	# test/archivespacemanager_tests.cpp
 	# test/multimediaqueuexform_tests.cpp
-	test/mp4readersource_tests.cpp
-	test/fileRecovery_tests.cpp
+  	# test/mp4readersource_tests.cpp
 	# test/rtsp_client_tests.cpp
-	# test/rtsp_client_tests.cpp
+	# test/motionvector_extractor_and_overlay_tests.cpp
+	# test/mp4_reverse_play_tests.cpp
+	# test/ordered_cache_of_files_tests.cpp
+	# test/mp4_seek_tests.cpp
+	# test/mp4_simul_read_write_tests.cpp
+	# test/mp4_getlivevideots_tests.cpp
+	# test/mp4_dts_strategy_tests.cpp
+	# test/overlaymodule_tests.cpp
+	# test/testSignalGeneratorSrc_tests.cpp
+	# test/audioToTextXform_tests.cpp
 	${ARM64_UT_FILES}
 	# ${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	test/virtualcamerasink_tests.cpp
-	test/QRReader_tests.cpp
+	# test/gtkglrenderer_tests.cpp
+	# test/virtualcamerasink_tests.cpp
+	# test/QRReader_tests.cpp
 	)
 ENDIF(ENABLE_LINUX)
 

@@ -1,14 +1,15 @@
 #include "DMAFDWrapper.h"
 #include "DMAUtils.h"
-#include "nvbuf_utils.h"
+#include "nvbufsurface.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+#include <drm/drm_fourcc.h>
 
 #include "cuda_runtime.h"
 
 DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
-                                   NvBufferColorFormat colorFormat,
-                                   NvBufferLayout layout, EGLDisplay eglDisplay)
+    NvBufSurfaceColorFormat colorFormat,
+    NvBufSurfaceLayout layout, EGLDisplay eglDisplay)
 {
     DMAFDWrapper *buffer = new DMAFDWrapper(index, eglDisplay);
     if (!buffer)
@@ -16,90 +17,96 @@ DMAFDWrapper *DMAFDWrapper::create(int index, int width, int height,
         return nullptr;
     }
 
-    NvBufferCreateParams inputParams = {0};
+    NvBufSurfaceAllocateParams inputParams = {0};
 
-    inputParams.width = width;
-    inputParams.height = height;
-    inputParams.layout = layout;
-    inputParams.colorFormat = colorFormat;
-    inputParams.payloadType = NvBufferPayload_SurfArray;
-    inputParams.nvbuf_tag = NvBufferTag_CAMERA;
+    inputParams.params.width = width;
+    inputParams.params.height = height;
+    inputParams.params.layout = layout;
+    inputParams.params.colorFormat = colorFormat;
+    inputParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
+    inputParams.memtag = NvBufSurfaceTag_CAMERA;
 
-    if (NvBufferCreateEx(&buffer->m_fd, &inputParams))
+    if (NvBufSurfaceAllocate(&buffer->m_surf, 1, &inputParams))
     {
-        LOG_ERROR << "Failed NvBufferCreateEx";
+        LOG_ERROR << "Failed NvBufSurfaceAllocate";
         delete buffer;
         return nullptr;
     }
+
+    buffer->m_surf->numFilled = 1;
+    buffer->m_fd = buffer->m_surf->surfaceList[0].bufferDesc;
 
     // Use NvBufferMemMapEx
-    auto res = NvBufferMemMap(buffer->m_fd, 0, NvBufferMem_Read, &(buffer->hostPtr));
+    auto res = NvBufSurfaceMap(buffer->m_surf, 0, 0, NVBUF_MAP_READ_WRITE);
     if (res)
     {
-        LOG_ERROR << "NvBufferMemMap Error<>" << res;
+        LOG_ERROR << "NvBufSurfaceMap Error<>" << res;
         delete buffer;
         return nullptr;
     }
 
-    if (colorFormat == NvBufferColorFormat_NV12 ||
-        colorFormat == NvBufferColorFormat_YUV420 ||
-        colorFormat == NvBufferColorFormat_YUV444)
+    // JP5: Set hostPtr to mapped address for plane 0
+    buffer->hostPtr = buffer->m_surf->surfaceList[0].mappedAddr.addr[0];
+
+    if (colorFormat == NVBUF_COLOR_FORMAT_NV12 ||
+        colorFormat == NVBUF_COLOR_FORMAT_YUV420)
     {
-        res = NvBufferMemMap(buffer->m_fd, 1, NvBufferMem_Read, &(buffer->hostPtrU));
+        res = NvBufSurfaceMap(buffer->m_surf, 0, 1, NVBUF_MAP_READ_WRITE);
         if (res)
         {
-            LOG_ERROR << "NvBufferMemMap Error<>" << res;
+            LOG_ERROR << "NvBufSurfaceMap Error<>" << res;
             delete buffer;
             return nullptr;
         }
+
+        // JP5: Set hostPtrU to mapped address for plane 1
+        buffer->hostPtrU = buffer->m_surf->surfaceList[0].mappedAddr.addr[1];
     }
 
-    if (colorFormat == NvBufferColorFormat_YUV420 || colorFormat == NvBufferColorFormat_YUV444)
+    if (colorFormat == NVBUF_COLOR_FORMAT_YUV420)
     {
-        res = NvBufferMemMap(buffer->m_fd, 2, NvBufferMem_Read, &(buffer->hostPtrV));
+        res = NvBufSurfaceMap(buffer->m_surf, 0, 2, NVBUF_MAP_READ_WRITE);
         if (res)
         {
-            LOG_ERROR << "NvBufferMemMap Error<>" << res;
+            LOG_ERROR << "NvBufSurfaceMap Error<>" << res;
             delete buffer;
             return nullptr;
         }
+
+        // JP5: Set hostPtrV to mapped address for plane 2
+        buffer->hostPtrV = buffer->m_surf->surfaceList[0].mappedAddr.addr[2];
     }
 
-    // if(colorFormat == NvBufferColorFormat_YUV444 )
-    // {
-    //     res = NvBufferMemMap(buffer->m_fd, 3, NvBufferMem_Read, &(buffer->hostPtrV));
-    //     if (res)
-    //     {
-    //         LOG_ERROR << "NvBufferMemMap Error<>" << res;
-    //         delete buffer;
-    //         return nullptr;
-    //     }
-    // }
-
-    if (colorFormat != NvBufferColorFormat_UYVY)
+    // Map NvBufSurface to EGLImage for JP6.2 CUDA interop
+    NvBufSurface *surf = buffer->m_surf;
+    if (NvBufSurfaceMapEglImage(surf, 0) != 0)
     {
-        buffer->eglImage = NvEGLImageFromFd(eglDisplay, buffer->m_fd);
-        if (buffer->eglImage == EGL_NO_IMAGE_KHR)
-        {
-            LOG_ERROR << "Failed to create eglImage";
-            EGLint error = eglGetError();
-            std::stringstream errorMsg;
-            errorMsg << "Failed to create eglImage. EGL Error: " << std::hex << error;
-            LOG_ERROR << errorMsg.str();
-            LOG_ERROR << "Buffer details - fd: " << buffer->m_fd;
-            delete buffer;
-            return nullptr;
-        }
-
-        cudaFree(0);
-        buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, buffer->eglFrame, eglDisplay);
+        LOG_ERROR << "NvBufSurfaceMapEglImage failed";
+        delete buffer;
+        return nullptr;
     }
+    buffer->eglImage = surf->surfaceList[0].mappedAddr.eglImage;
+    LOG_INFO << "Mapped EGL image from NvBufSurface. FD: " << buffer->m_fd
+             << " EGLImage: " << buffer->eglImage;
 
+    cudaFree(0);
+    buffer->cudaPtr = DMAUtils::getCudaPtr(buffer->eglImage, &buffer->pResource, &buffer->eglFrame);
+    
+    if (buffer->cudaPtr == nullptr)
+    {
+        LOG_ERROR << "Failed to get CUDA pointer from EGL image";
+        delete buffer;
+        return nullptr;
+    }
+    
+    LOG_INFO << "Successfully created CUDA pointer: " << (void*)buffer->cudaPtr;
+    
     return buffer;
 }
 
 DMAFDWrapper::DMAFDWrapper(int _index, EGLDisplay _eglDisplay) : eglImage(EGL_NO_IMAGE_KHR),
                                                                  m_fd(-1),
+                                                                 m_surf(nullptr),
                                                                  index(_index),
                                                                  eglDisplay(_eglDisplay),
                                                                  hostPtr(nullptr),
@@ -113,50 +120,53 @@ DMAFDWrapper::~DMAFDWrapper()
 {
     if (eglImage != EGL_NO_IMAGE_KHR)
     {
-        cudaFree(0);
-        DMAUtils::freeCudaPtr(eglImage, &pResource, eglDisplay);
+        if (m_surf)
+        {
+            auto res_unmap_egl = NvBufSurfaceUnMapEglImage(m_surf, 0);
+            if (res_unmap_egl)
+            {
+                LOG_ERROR << "NvBufSurfaceUnMapEglImage Error: " << res_unmap_egl;
+            }
+        }
     }
 
     if (hostPtr)
     {
-        auto res = NvBufferMemUnMap(m_fd, 0, &hostPtr);
+        auto res = NvBufSurfaceUnMap(getNvBufSurface(), 0, 0);
         if (res)
         {
-            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
+            LOG_ERROR << "NvBufSurfaceUnMap Error<>" << res;
         }
     }
 
     if (hostPtrU)
     {
-        auto res = NvBufferMemUnMap(m_fd, 1, &hostPtrU);
+        auto res = NvBufSurfaceUnMap(getNvBufSurface(), 0, 1);
         if (res)
         {
-            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
+            LOG_ERROR << "NvBufSurfaceUnMap Error<>" << res;
         }
     }
 
     if (hostPtrV)
     {
-        auto res = NvBufferMemUnMap(m_fd, 2, &hostPtrV);
+        auto res = NvBufSurfaceUnMap(getNvBufSurface(), 0, 2);
         if (res)
         {
-            LOG_ERROR << "NvBufferMemUnMap Error<>" << res;
+            LOG_ERROR << "NvBufSurfaceUnMap Error<>" << res;
         }
     }
 
-    if (m_fd >= 0)
+    if (m_surf)
     {
-        NvBufferDestroy(m_fd);
+        NvBufSurfaceDestroy(m_surf);
+        m_surf = nullptr;
         m_fd = -1;
     }
 }
 
 void *DMAFDWrapper::getHostPtr()
 {
-    if (NvBufferMemSyncForCpu(m_fd, 0, &hostPtr))
-    {
-        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
-    }
 
     return hostPtr;
 }
@@ -168,20 +178,12 @@ void *DMAFDWrapper::getHostPtrY()
 
 void *DMAFDWrapper::getHostPtrU()
 {
-    if (NvBufferMemSyncForCpu(m_fd, 1, &hostPtrU))
-    {
-        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
-    }
 
     return hostPtrU;
 }
 
 void *DMAFDWrapper::getHostPtrV()
 {
-    if (NvBufferMemSyncForCpu(m_fd, 2, &hostPtrV))
-    {
-        throw AIPException(AIP_FATAL, "NvBufferMemSyncForCpu FAILED.");
-    }
 
     return hostPtrV;
 }

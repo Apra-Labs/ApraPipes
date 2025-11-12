@@ -1,21 +1,24 @@
 #pragma once
 #include "ApraEGLDisplay.h" // this is added to address the following issue: https://github.com/opencv/opencv/issues/7113
-#include "nvbuf_utils.h"
+#include "nvbufsurface.h"
 #include "EGL/egl.h"
 #include "cudaEGL.h"
+
+struct NvBufSurface;
 
 class DMAFDWrapper
 {
 public:
     /* Always use this static method to create DMAFDWrapper */
     static DMAFDWrapper *create(int index, int width, int height,
-                             NvBufferColorFormat colorFormat,
-                             NvBufferLayout layout, EGLDisplay eglDisplay);
+        NvBufSurfaceColorFormat  colorFormat,
+        NvBufSurfaceLayout  layout, EGLDisplay eglDisplay);
 
     virtual ~DMAFDWrapper();
 
     /* Return DMA buffer handle */
     int getFd() const { return m_fd; }
+    NvBufSurface* getNvBufSurface() const { return m_surf; }
     EGLImageKHR getEGLImage() const { return eglImage; }
     EGLDisplay getEGLDisplay() const { return eglDisplay; }
     void* getHostPtr();
@@ -38,6 +41,7 @@ private:
 
 private:
     int m_fd;
+    NvBufSurface* m_surf;
     EGLImageKHR eglImage;
     CUgraphicsResource  pResource;
     CUeglFrame eglFrame;
