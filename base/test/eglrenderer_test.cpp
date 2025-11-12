@@ -230,11 +230,11 @@ BOOST_AUTO_TEST_CASE(ctor_geometry_text, *boost::unit_test::disabled())
     EglRendererProps::TextInfo text;
     text.fontPath = "/home/developer/ApraPipes/data/Debrosee-ALPnL.ttf";
     text.message = "HelloText";
-    text.color = {1.0f, 1.0f, 1.0f};
+    text.color = {1.0f, 0.0f, 1.0f};
     text.fontSize = 24;
     text.position = {50,50};
 	text.scale = 1;
-
+    text.opacity = 1.0f;
     auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(100, 100, 320, 240, text)));
     transform->setNext(sink);
 
@@ -263,8 +263,8 @@ BOOST_AUTO_TEST_CASE(ctor_geometry_image, *boost::unit_test::disabled())
     img.path = "/home/developer/ApraPipes/data/apra.jpeg";
     img.position = {0, 0};
     img.size = {128, 128};
-
-    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0, 320, 240, img)));
+    img.opacity = 0.75f;
+    auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(200, 200, 320, 240, img)));
     transform->setNext(sink);
 
     PipeLine p("geometry_image_test");

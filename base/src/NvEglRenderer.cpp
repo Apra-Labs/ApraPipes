@@ -90,7 +90,8 @@ PFNGLDELETEVERTEXARRAYSOESPROC          NvEglRenderer::glDeleteVertexArraysOES =
 using namespace std;
 
 NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, uint32_t x_offset, uint32_t y_offset, const char *ttfFilePath,const char *message,float scale,float r,float g,float b,float fontsize,int textPosX, int textPosY,
-                        string imagePath,int imagePosX,int imagePosY,uint32_t imageWidth,uint32_t imageHeight,float opacity,bool mask) // alwaysOnTOp
+                        string imagePath,int imagePosX,int imagePosY,uint32_t imageWidth,uint32_t imageHeight,float opacity,bool mask
+                    ,float imageOpacity,float textOpacity) // alwaysOnTOp
 {
     int depth;
     int screen_num;
@@ -210,6 +211,8 @@ NvEglRenderer::NvEglRenderer(const char *name, uint32_t width, uint32_t height, 
     this->imageWidth = imageWidth;
     this->imageHeight = imageHeight;
     this->mask = mask;
+    this->imageOpacity = imageOpacity;
+    this->textOpacity = textOpacity;
 
     if(opacity < 1.0f)
     {
@@ -798,15 +801,7 @@ NvEglRenderer::renderOverlays()
             glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
         }
 
-        // Render text
-        cout<<"ttfFilePath: "<<this->ttfFilePath<<endl;
-        cout<<"message: "<<this->message<<endl;
-        cout<<"scale: "<<this->scale<<endl;
-        cout<<"r: "<<this->r<<endl; 
-        cout<<"g: "<<this->g<<endl;
-        cout<<"b: "<<this->b<<endl;
         RenderText(this->message, this->textPosX, this->textPosY, this->scale, this->r, this->g, this->b);
-
         // Disable stencil and restore scissor state
         if (useStencil)
         {
@@ -939,10 +934,11 @@ NvEglRenderer::createEglRenderer(const char *name, uint32_t width,
                                uint32_t height, uint32_t x_offset,
                                uint32_t y_offset, const char *ttfFilePath,
                                const char *message, float scale, float r, float g, float b, float fontsize,int textPosX, int textPosY,
-                            string imagePath,int imagePosX,int imagePosY,uint32_t imageWidth,uint32_t imageHeight,float opacity,bool mask)
+                            string imagePath,int imagePosX,int imagePosY,uint32_t imageWidth,uint32_t imageHeight,float opacity,bool mask
+                        ,float imageOpacity,float textOpacity)
 {
     NvEglRenderer* renderer = new NvEglRenderer(name, width, height,
-                                    x_offset, y_offset, ttfFilePath, message, scale, r, g, b, fontsize, textPosX, textPosY, imagePath, imagePosX, imagePosY, imageWidth, imageHeight,opacity,mask);
+                                    x_offset, y_offset, ttfFilePath, message, scale, r, g, b, fontsize, textPosX, textPosY, imagePath, imagePosX, imagePosY, imageWidth, imageHeight,opacity,mask,imageOpacity,textOpacity);
     return renderer;
 }
 
@@ -1105,7 +1101,7 @@ NvEglRenderer::InitializeShaders(void)
         glUniform1i(texLoc, 0);
     }
 
-    this->alpha_location = -1;
+    this->alpha_location = 1;
     this->gl_program = program;
 
     if (glGetError() != GL_NO_ERROR)
@@ -1224,9 +1220,12 @@ GLuint NvEglRenderer::initTextShader()
     varying vec2 TexCoords;
     uniform sampler2D text;
     uniform vec3 textColor;
+    uniform float opacity;  
     void main() {
         float alpha = texture2D(text, TexCoords).a;
-        gl_FragColor = vec4(textColor, alpha);
+        vec4 color = vec4(textColor, alpha); 
+        color.a *= opacity;                  
+        gl_FragColor = color;               
     }
     )";
 
@@ -1241,17 +1240,17 @@ GLuint NvEglRenderer::initTextShader()
     GLuint shader = glCreateProgram();
     glAttachShader(shader, vs);
     glAttachShader(shader, fs);
-    // Bind text vertex attribute to location 1 to avoid clobbering video attrib 0
     glBindAttribLocation(shader, 1, "vertex");
     glLinkProgram(shader);
 
-    // Bind sampler uniform to texture unit 0
+    // Bind uniforms
     glUseProgram(shader);
     GLint textSamplerLoc = glGetUniformLocation(shader, "text");
+    GLint opacityLoc = glGetUniformLocation(shader, "opacity");
     if (textSamplerLoc != -1)
-    {
-        glUniform1i(textSamplerLoc, 0);
-    }
+        glUniform1i(textSamplerLoc, 0); 
+    if (opacityLoc != -1)
+        glUniform1f(opacityLoc, textOpacity); 
     glUseProgram(0);
 
     glDeleteShader(vs);
@@ -1373,8 +1372,11 @@ GLuint NvEglRenderer::initImageShader()
     precision mediump float;
     varying vec2 TexCoords;
     uniform sampler2D imageTex;
+    uniform float opacity;
     void main() {
-        gl_FragColor = texture2D(imageTex, TexCoords);
+        vec4 color = texture2D(imageTex, TexCoords);
+        color.a *= opacity;
+        gl_FragColor = color;
     })";
 
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -1393,7 +1395,9 @@ GLuint NvEglRenderer::initImageShader()
 
     glUseProgram(shader);
     GLint texLoc = glGetUniformLocation(shader, "imageTex");
+    GLint opacityLoc = glGetUniformLocation(shader, "opacity");
     if (texLoc != -1) glUniform1i(texLoc, 0);
+    if (opacityLoc != -1) glUniform1f(opacityLoc, imageOpacity);
     glUseProgram(0);
 
     glDeleteShader(vs);

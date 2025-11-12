@@ -61,7 +61,8 @@ public:
             image.path,
             image.position.first, image.position.second,
             image.size.first, image.size.second,
-            opacity,mask
+            opacity,mask,
+            image.opacity,text.opacity
         );
 
         if (!renderer)
