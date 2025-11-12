@@ -107,7 +107,8 @@ public:
                                           float r = 0.0f,
                                           float g = 0.0f,
                                           float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
-                                          std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false);
+                                          std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false,
+                                        float imageOpacity = 1.0f,float textOpacity = 1.0f);
      ~NvEglRenderer();
 
     std::string ttfFilePath;
@@ -120,6 +121,7 @@ public:
     std::string imagePath;
     int imagePosX, imagePosY;
     uint32_t imageWidth, imageHeight;
+    float imageOpacity,textOpacity;
     bool mask;
     /**
      * Renders a buffer.
@@ -302,7 +304,8 @@ private:
                   float r = 0.0f,
                   float g = 0.0f,
                   float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
-                  std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false);
+                  std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false,
+                float imageOpacity = 1.0f,float textOpacity = 1.0f);
     /**
      * Gets the pointers to the required EGL methods.
      */

@@ -12,12 +12,14 @@ public:
         float fontSize = 0.0f;
         std::vector<float> color = {0.0f, 0.0f, 0.0f}; // RGB
         std::pair<int, int> position = {0, 0};
+        float opacity = 1.0f;
     };
 
     struct ImageInfo {
         std::string path = "";
         std::pair<int, int> position = {0, 0};
-        std::pair<uint32_t, uint32_t> size = {0, 0}; // width, height
+        std::pair<uint32_t, uint32_t> size = {0, 0};
+        float opacity = 1.0f; // width, height
     };
     EglRendererProps() : ModuleProps() {};
     // All settings enabled
