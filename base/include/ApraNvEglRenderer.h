@@ -39,6 +39,11 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <map>
+#include <string>
+#include <iostream>
 
 #include <X11/Xlib.h>
 
@@ -95,9 +100,29 @@ public:
      */
     static NvEglRenderer *createEglRenderer(const char *name, uint32_t width,
                                           uint32_t height, uint32_t x_offset,
-                                          uint32_t y_offset , bool displayOnTop);
+                                          uint32_t y_offset, 
+                                          const char* ttfFilePath = NULL,
+                                          const char* message = NULL,
+                                          float scale = 0.0f,
+                                          float r = 0.0f,
+                                          float g = 0.0f,
+                                          float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
+                                          std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false,
+                                        float imageOpacity = 1.0f,float textOpacity = 1.0f);
      ~NvEglRenderer();
 
+    std::string ttfFilePath;
+    std::string message;
+    float scale;
+    float r, g, b;
+    float fontSize;
+    int textPosX, textPosY;
+    float opacity;
+    std::string imagePath;
+    int imagePosX, imagePosY;
+    uint32_t imageWidth, imageHeight;
+    float imageOpacity,textOpacity;
+    bool mask;
     /**
      * Renders a buffer.
      *
@@ -111,6 +136,41 @@ public:
      * @return 0 for success, -1 otherwise.
      */
     int render(int fd);
+
+    // Set dmabuf import parameters for EGL_EXT_image_dma_buf_import
+    void setImportParams(int pitchBytes, int fourcc, int offsetBytes = 0, int width = 0, int height = 0)
+    {
+        render_pitch = pitchBytes;
+        render_fourcc = fourcc;
+        render_offset = offsetBytes;
+        render_width = width;
+        render_height = height;
+        render_num_planes = 1;
+    }
+
+    // Set multi-plane import parameters (e.g., NV12 - 2 planes, YUV420 - 3 planes)
+    void setImportParamsPlanar(int fourcc,
+                               int width,
+                               int height,
+                               int pitchPlane0,
+                               int offsetPlane0,
+                               int pitchPlane1,
+                               int offsetPlane1,
+                               int pitchPlane2 = 0,
+                               int offsetPlane2 = 0,
+                               int numPlanes = 2)
+    {
+        render_fourcc = fourcc;
+        render_width = width;
+        render_height = height;
+        render_pitch = pitchPlane0;
+        render_offset = offsetPlane0;
+        render_pitch1 = pitchPlane1;
+        render_offset1 = offsetPlane1;
+        render_pitch2 = pitchPlane2;
+        render_offset2 = offsetPlane2;
+        render_num_planes = numPlanes;
+    }
 
     /**
      * Sets the rendering rate in frames per second (fps).
@@ -138,8 +198,7 @@ public:
      * @return 0 for success, -1 otherwise.
      */
     static int getDisplayResolution(uint32_t &width, uint32_t &height);
-    bool renderAndDrawLoop();
-    bool windowDrag();
+
     /**
      * Sets the overlay string.
      *
@@ -149,22 +208,24 @@ public:
      * @param[in] y Vertical offset, in pixels.
      * @return 0 for success, -1 otherwise.
      */
+    static PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
+    static PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
+    static PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
+
     int setOverlayText(char *str, uint32_t x, uint32_t y);
-public:
+    void setWindowOpacity(float opacity);
+    void RenderText(std::string text, float x, float y, float scale, float r, float g, float b);
+    GLuint initTextShader();
+    int initFontAtlas(const char* fontPath, int fontSize);
+    GLuint loadImageTexture(const char* imagePath);
+    GLuint initImageShader();
+    void RenderImage(GLuint texture, float x, float y, float width, float height);
+    
+private:
     Display * x_display;    /**< Connection to the X server created using
                                   XOpenDisplay(). */
     Window x_window;        /**< Holds the window to be used for rendering created using
                                   XCreateWindow(). */
-
-    uint32_t mWidth,mHeight;
-
-    int drag_start_x = 0;
-    int drag_start_y = 0;
-    bool is_dragging = false;
-	uint32_t _x_offset = 0;
-	uint32_t _y_offset = 0;
-	XEvent event;
-    bool drawBorder = false;
 
     EGLDisplay egl_display;     /**< Holds the EGL Display connection. */
     EGLContext egl_context;     /**< Holds the EGL rendering context. */
@@ -176,7 +237,9 @@ public:
     GC gc;                      /**< Graphic Context */
     XFontStruct *fontinfo;      /**< Brush's font info */
     char overlay_str[512];       /**< Overlay's text */
-
+    GLuint gl_program = 0;         // OpenGL shader program handle
+    GLint alpha_location = -1;     // Location of alpha uniform in shader
+    GLuint cached_image_texture = 0;  // Cached image texture loaded once during initialization  
     /**
      * Creates a GL texture used for rendering.
      *
@@ -223,7 +286,15 @@ public:
      * Constructor called by the wrapper createEglRenderer.
      */
     NvEglRenderer(const char *name, uint32_t width, uint32_t height,
-                  uint32_t x_offset, uint32_t y_offset , bool displayOnTop);
+                  uint32_t x_offset, uint32_t y_offset,
+                  const char* ttfFilePath = NULL,
+                  const char* message = NULL,
+                  float scale = 0.0f,
+                  float r = 0.0f,
+                  float g = 0.0f,
+                  float b = 0.0f,float fontsize = 0.0f,int textPosX = 0, int textPosY = 0,
+                  std::string imagePath = "",int imagePosX = 0,int imagePosY = 0,uint32_t imageWidth = 0,uint32_t imageHeight = 0,float opacity = 1,bool mask = false,
+                float imageOpacity = 1.0f,float textOpacity = 1.0f);
     /**
      * Gets the pointers to the required EGL methods.
      */
@@ -243,6 +314,19 @@ public:
     int renderInternal();
 
     /**
+     * Helper functions for rendering
+     */
+    EGLImageKHR createEglImageFromDmaBuf();
+    int renderVideoFrame(EGLImageKHR hEglImage);
+    void renderOverlays();
+    void saveGLState(GLint& prevProgram, GLint& prevVAO, GLint& prevTexExternal, 
+                     GLint& prevTex2D, GLint& prevArrayBuffer, GLint& prevActiveTexUnit,
+                     GLboolean& wasBlendEnabled);
+    void restoreGLState(GLint prevProgram, GLint prevVAO, GLint prevTexExternal,
+                        GLint prevTex2D, GLint prevArrayBuffer, GLint prevActiveTexUnit,
+                        GLboolean wasBlendEnabled);
+
+    /**
      * These EGL function pointers are required by the renderer.
      */
     static PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR;
@@ -252,6 +336,18 @@ public:
     static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR;
     static PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR;
     static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES;
+
+    // dma-buf import params
+    int render_pitch = 0;
+    int render_offset = 0;
+    int render_fourcc = 0;
+    int render_width = 0;
+    int render_height = 0;
+    int render_num_planes = 1;
+    int render_pitch1 = 0;
+    int render_offset1 = 0;
+    int render_pitch2 = 0;
+    int render_offset2 = 0;
 };
 /** @} */
 #endif

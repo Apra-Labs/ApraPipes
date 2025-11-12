@@ -1,9 +1,8 @@
-#include <cmath>
-#include "Overlay.h"
+#include "H264EncoderV4L2Helper.h"
+#include "v4l2_nv_extensions.h"
+
 #include "Logger.h"
 #include "AIPExceptions.h"
-
-#include "H264EncoderV4L2Helper.h"
 
 inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string message, bool raiseException)
 {
@@ -15,7 +14,7 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
             throw AIPException(AIP_FATAL, errorMsg.c_str());
         }
 
-        LOG_ERROR << errorMsg;
+        LOG_INFO << errorMsg;
         return false;
     }
 
@@ -24,9 +23,9 @@ inline bool checkv4l2(int ret, int iLine, const char *szFile, std::string messag
 
 #define CHECKV4L2(call, message, raiseException) checkv4l2(call, __LINE__, __FILE__, message, raiseException)
 
-std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool enableMotionVectors, int motionVectorThreshold, uint32_t fps, std::string h264FrameOutputPinId, std::string motionVectorFramePinId,  framemetadata_sp h264Metadata, std::function<frame_sp(size_t size, string& pinId)> makeFrame, SendFrameContainer sendFrameContainer)
+std::shared_ptr<H264EncoderV4L2Helper> H264EncoderV4L2Helper::create(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame)
 {
-    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, enableMotionVectors, motionVectorThreshold, fps,h264FrameOutputPinId, motionVectorFramePinId, h264Metadata, makeFrame, sendFrameContainer);
+    auto instance = std::make_shared<H264EncoderV4L2Helper>(memType, pixelFormat, width, height, step, bitrate, fps, sendFrame);
     instance->setSelf(instance);
 
     return instance;
@@ -37,8 +36,9 @@ void H264EncoderV4L2Helper::setSelf(std::shared_ptr<H264EncoderV4L2Helper> &self
     mSelf = self;
 }
 
-H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, bool _enableMotionVectors, int _motionVectorThreshold, uint32_t fps, std::string _h264FrameOutputPinId, std::string _motionVectorFramePinId,  framemetadata_sp _h264Metadata, std::function<frame_sp(size_t size, string& pinId)> _makeFrame, SendFrameContainer sendFrameContainer) : mSendFrameContainer(sendFrameContainer), mFD(-1), mWidth(width), mHeight(height), enableMotionVectors(_enableMotionVectors), motionVectorThreshold(_motionVectorThreshold), h264FrameOutputPinId(_h264FrameOutputPinId), motionVectorFramePinId(_motionVectorFramePinId), h264Metadata(_h264Metadata), makeFrame(_makeFrame)
+H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t pixelFormat, uint32_t width, uint32_t height, uint32_t step, uint32_t bitrate, uint32_t fps, SendFrame sendFrame) : mSendFrame(sendFrame), mFD(-1)
 {
+    frame_opool = std::make_shared<boost::object_pool<ExtFrame>>();
     initV4L2();
 
     mCapturePlane = std::make_unique<AV4L2ElementPlane>(mFD, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, V4L2_PIX_FMT_H264, V4L2_MEMORY_MMAP);
@@ -80,6 +80,11 @@ H264EncoderV4L2Helper::H264EncoderV4L2Helper(enum v4l2_memory memType, uint32_t 
 
 H264EncoderV4L2Helper::~H264EncoderV4L2Helper()
 {
+    mShuttingDown = true;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        frame_opool.reset(); // Ensure pool is destroyed after all frames are released
+    }
     processEOS();
     mOutputPlane->deinitPlane();
     mCapturePlane->deinitPlane();
@@ -100,16 +105,16 @@ void H264EncoderV4L2Helper::termV4L2()
     if (mFD != -1)
     {
         v4l2_close(mFD);
-        LOG_FATAL << "Device closed, fd = " << mFD;
+        LOG_INFO << "Device closed, fd = " << mFD;
     }
 }
 
 void H264EncoderV4L2Helper::initV4L2()
 {
-    mFD = v4l2_open("/dev/nvhost-msenc", O_RDWR);
+    mFD = v4l2_open("/dev/v4l2-nvenc", O_RDWR);
     if (mFD == -1)
     {
-        throw AIPException(AIP_FATAL, "Could not open device nvhost-msenc");
+        throw AIPException(AIP_FATAL, "Could not open device v4l2-nvenc");
     }
 
     struct v4l2_capability caps;
@@ -125,48 +130,12 @@ void H264EncoderV4L2Helper::initV4L2()
     }
 }
 
-
-int
-H264EncoderV4L2Helper::setExtControlsMV(v4l2_ext_controls &ctl)
-{
-    int ret;
-
-    ret = v4l2_ioctl(mFD, VIDIOC_S_EXT_CTRLS, &ctl);
-
-    return ret;
-}
-
-
-int
-H264EncoderV4L2Helper::enableMotionVectorReporting()
-{
-    struct v4l2_ext_control control;
-    struct v4l2_ext_controls ctrls;
-
-    memset(&control, 0, sizeof(control));
-    memset(&ctrls, 0, sizeof(ctrls));
-
-    ctrls.count = 1;
-    ctrls.controls = &control;
-    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
-
-    control.id = V4L2_CID_MPEG_VIDEOENC_ENABLE_METADATA_MV;
-    control.value = 1;
-
-    setExtControlsMV(ctrls);
-    return 1;
-}
-
 void H264EncoderV4L2Helper::initEncoderParams(uint32_t bitrate, uint32_t fps)
 {
     setBitrate(bitrate);
     setProfile();
     setLevel();
     setFrameRate(fps, 1);
-    if(enableMotionVectors)
-    {
-        enableMotionVectorReporting();
-    }
 }
 
 void H264EncoderV4L2Helper::setBitrate(uint32_t bitrate)
@@ -237,120 +206,99 @@ int H264EncoderV4L2Helper::setExtControls(v4l2_ext_control &control)
     return v4l2_ioctl(mFD, VIDIOC_S_EXT_CTRLS, &ctrls);
 }
 
-int
-H264EncoderV4L2Helper::getExtControls(v4l2_ext_controls &ctl)
-{
-    int ret;
-
-    ret = v4l2_ioctl(mFD, VIDIOC_G_EXT_CTRLS, &ctl);
-
-    return ret;
-}
-
-int
-H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
-        v4l2_ctrl_videoenc_outputbuf_metadata_MV &enc_mv_metadata)
-{
-    v4l2_ctrl_video_metadata metadata;
-    struct v4l2_ext_control control;
-    struct v4l2_ext_controls ctrls;
-
-    ctrls.count = 1;
-    ctrls.controls = &control;
-    ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
-
-    metadata.buffer_index = buffer_index;
-    metadata.VideoEncMetadataMV = &enc_mv_metadata;
-
-    control.id = V4L2_CID_MPEG_VIDEOENC_METADATA_MV;
-    control.string = (char *)&metadata;
-
-    getExtControls(ctrls);
-
-    return 1;
-}
-
-void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata, frame_container &frames)
-{
-    uint32_t numMVs = enc_mv_metadata.bufSize / sizeof(MVInfo);
-    MVInfo *pInfo = enc_mv_metadata.pMVInfo;
-
-    std::vector<CircleOverlay> circleOverlays;
-    CompositeOverlay compositeOverlay;
-
-    int totalMacroblockInRow = floor(mWidth / 16); // Tells about the total number of macro blocks in each row.
-    for (uint32_t i = 0; i < numMVs; i++, pInfo++) // numMVs is the total macroblock in the frame.
-    {
-
-        if (abs(pInfo->mv_x) > motionVectorThreshold || abs(pInfo->mv_y) > motionVectorThreshold)
-        {
-            auto tempY = floor(i / totalMacroblockInRow); // i represents current macroblock , To get the y offset of macroblock the current macroblock is divided by macroblock across width.
-            auto y = tempY * 16 + 8; // Here every macroblock is of 16x16 , So multiply it by 16. To get to the centre of the macroblock add it by 8.
-            auto tempX = floor(i % totalMacroblockInRow);
-            auto x = tempX * 16 + 8;
-            CircleOverlay circleOverlay;
-            circleOverlay.x1 = x;
-            circleOverlay.y1 = y;
-            circleOverlay.radius = 1;
-            circleOverlays.push_back(circleOverlay);
-        }
-    }
-
-    for (auto &circleOverlay : circleOverlays)
-    {
-        compositeOverlay.add(&circleOverlay);
-    }
-
-    if (circleOverlays.size())
-    {
-        DrawingOverlay drawingOverlay;
-        drawingOverlay.add(&compositeOverlay);
-        auto serializeSize = drawingOverlay.mGetSerializeSize();
-        serializeSize += 100;
-        auto motionVectorFrame = makeFrame(serializeSize, motionVectorFramePinId);
-        drawingOverlay.serialize(motionVectorFrame);
-        frames.insert(make_pair(motionVectorFramePinId, motionVectorFrame));
-    }
-}
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 {
-    auto frame = frame_sp(frame_opool.construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused), std::bind(&H264EncoderV4L2Helper::reuseCatureBuffer, this, std::placeholders::_1, buffer->getIndex(), mSelf));
-    frame->setMetadata(h264Metadata);
-    frame_container frames;
-    frame->timestamp = incomingTimeStamp.front();
-    incomingTimeStamp.pop();
-    frames.insert(make_pair(h264FrameOutputPinId, frame));
-
-    if (enableMotionVectors)
+    if (!buffer || mShuttingDown) 
     {
-        v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
-        getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
-        serializeMotionVectors(enc_mv_metadata, frames);
+        LOG_INFO << "capturePlaneDQCallback called with null buffer or during shutdown";
+        return;
     }
 
-    mSendFrameContainer(frames);
-    mConverter->releaseFrame();
+    if (!buffer->planesInfo[0].data || buffer->v4l2_buf.m.planes[0].bytesused == 0) 
+    {
+        LOG_INFO << "Invalid buffer data or size in capturePlaneDQCallback";
+        return;
+    }
+
+    try {
+        LOG_DEBUG << "capturePlaneDQCallback Wait for LOCK;";
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        LOG_DEBUG << "capturePlaneDQCallback Got LOCK;";
+        
+        // Only create new frame if we have a valid pool
+        if (!frame_opool) {
+            LOG_INFO << "Object pool no longer valid";
+            return;
+        }
+
+        // Create frame with deleter that checks for shutdown
+        auto frame = frame_sp(
+            frame_opool->construct(buffer->planesInfo[0].data, buffer->v4l2_buf.m.planes[0].bytesused),
+            [this, index=buffer->getIndex(), self=mSelf](ExtFrame* p) {
+                if (!mShuttingDown) {
+                    this->reuseCatureBuffer(p, index, self);
+                }
+            }
+        );
+        LOG_DEBUG << "Created Frameeeesss";
+        if (!frame) {
+            LOG_INFO << "Failed to construct frame in capturePlaneDQCallback";
+            return;
+        }
+
+        mSendFrame(frame);
+        LOG_DEBUG << "releaseFrame will be called ";
+        mConverter->releaseFrame();
+        LOG_DEBUG << "releaseFrame Released Frameeeesss";
+    } catch (const std::exception& e) {
+        LOG_DEBUG << "Exception in capturePlaneDQCallback: " << e.what();
+    }
 }
 
 void H264EncoderV4L2Helper::reuseCatureBuffer(ExtFrame *pointer, uint32_t index, std::shared_ptr<H264EncoderV4L2Helper> self)
 {
-    // take care of destruction case
-    frame_opool.free(pointer);
-    mCapturePlane->qBuffer(index);
+    // Validate input parameters and ensure self pointer is still valid
+    if (!pointer || !self) {
+        LOG_INFO << "reuseCatureBuffer called with null pointer or invalid self reference";
+        return;
+    }
+
+    try {
+        // Lock to prevent concurrent access to frame_opool
+        LOG_DEBUG << " Waiting for LOCK;";
+        std::lock_guard<std::recursive_mutex> lock(mPoolMutex);
+        LOG_DEBUG << "Got LOCK;";
+        if (pointer) {
+            frame_opool->free(pointer);
+            pointer = nullptr;
+        }
+        
+        if (!mCapturePlane) {
+            LOG_INFO << "Invalid capture plane in reuseCatureBuffer";
+            return;
+        }
+
+        // Queue the buffer only if the index is valid
+        mCapturePlane->qBuffer(index);
+        
+    } catch (const std::exception& e) {
+        LOG_INFO << "Exception in reuseCatureBuffer: " << e.what();
+    } catch (...) {
+        LOG_INFO << "Unknown exception in reuseCatureBuffer";
+    }
 }
 
 bool H264EncoderV4L2Helper::process(frame_sp& frame)
 {
-    incomingTimeStamp.push(frame->timestamp);
     auto buffer = mOutputPlane->getFreeBuffer();
     if (!buffer)
     {
+        LOG_INFO << "No free buffer available in process";
         return true;
     }
-
+    LOG_DEBUG << "Got Free Buffer in process";
     mConverter->process(frame, buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
-
     return true;
 }
 
@@ -365,7 +313,6 @@ bool H264EncoderV4L2Helper::processEOS()
     mOutputPlane->setEOSFlag(buffer);
     mOutputPlane->qBuffer(buffer->getIndex());
 
-    mCapturePlane->waitForDQThread(2000); // blocking call - waits for 2 secs for thread to exit
-
+    mCapturePlane->waitForDQThread(2000); 
     return true;
 }

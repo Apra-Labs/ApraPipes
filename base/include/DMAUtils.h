@@ -24,4 +24,5 @@ public:
      * @param eglDisplay The EGL display handle.
      */
     static void freeCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResource, NvBufSurface *surf, EGLDisplay eglDisplay);
+    static uint8_t* getCudaPtrForFD(int fd, EGLImageKHR &eglImage, CUgraphicsResource *pResource, CUeglFrame eglFrame, EGLDisplay eglDisplay);
 };

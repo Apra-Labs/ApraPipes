@@ -24,7 +24,8 @@ public:
     SendMMQTimestamps,
     SendLastGTKGLRenderTS,
     DecoderPlaybackSpeed,
-    Mp4FileClose
+    Mp4FileClose,
+    DecoderEOS
   };
 
   Command() { type = CommandType::None; }
@@ -68,6 +69,27 @@ private:
   }
 };
 
+class DecoderEOS : public Command
+{
+public:
+	DecoderEOS() : Command(CommandType::DecoderEOS)
+	{
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize();
+	}
+
+private:
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+	}
+};
 class FileReaderModuleCommand : public Command {
 public:
   FileReaderModuleCommand() : Command(CommandType::FileReaderModule) {

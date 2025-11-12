@@ -13,11 +13,15 @@ BOOST_AUTO_TEST_SUITE(nvv4l2camerahelper_tests)
 
 BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 {
-    uint32_t width = 3280;
-    uint32_t height = 2464;
+    	LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+    uint32_t width = 640;
+    uint32_t height = 480;
 
     auto framemetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::DMABUF));
-    DMAAllocator::setMetadata(framemetadata, width, height, ImageMetadata::ImageType::UYVY);
+    DMAAllocator::setMetadata(framemetadata, width, height, ImageMetadata::ImageType::YUYV);
     framefactory_sp framefactory(new FrameFactory(framemetadata, 10));
 
     auto helper = std::make_shared<NvV4L2CameraHelper>([](frame_sp &frame) -> void {
@@ -44,7 +48,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
     );
 
     helper->start(width, height, 10, false);
-    boost::this_thread::sleep_for(boost::chrono::seconds(100));
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
     BOOST_TEST(helper->stop());
     helper.reset();

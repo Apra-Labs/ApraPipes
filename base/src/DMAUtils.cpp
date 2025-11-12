@@ -68,3 +68,23 @@ void DMAUtils::freeCudaPtr(EGLImageKHR eglImage, CUgraphicsResource *pResource, 
         LOG_ERROR << "NvBufSurfaceDestroy Error: " << res_destroy;
     }
 }
+uint8_t* DMAUtils::getCudaPtrForFD(int fd, EGLImageKHR &eglImage, CUgraphicsResource *pResource, CUeglFrame eglFrame, EGLDisplay eglDisplay){
+    NvBufSurface *surf = nullptr;
+    if (NvBufSurfaceFromFd(fd, (void**)&surf) != 0) {
+        LOG_ERROR << "Failed to create NvBufSurface from file descriptor";
+        return nullptr;
+    }
+    if (NvBufSurfaceMapEglImage(surf, 0) != 0) {
+        LOG_ERROR << "NvBufSurfaceMapEglImage Error";
+        NvBufSurfaceDestroy(surf);
+        return nullptr;
+    }
+    eglImage = surf->surfaceList[0].mappedAddr.eglImage;
+    if (eglImage == EGL_NO_IMAGE_KHR) {
+        LOG_ERROR << "Failed to get EGL image from NvBufSurface";
+        NvBufSurfaceUnMapEglImage(surf, 0);
+        NvBufSurfaceDestroy(surf);
+        return nullptr;
+    }
+    return getCudaPtr(eglImage, pResource, &eglFrame);
+}

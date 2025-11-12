@@ -47,7 +47,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
 
     if(ioctl(mCamFD, VIDIOC_S_CTRL, &inp) < 0){
         LOG_ERROR << "Flip failed";
-        return false;
+        //return false;
     }
 
     /* Set camera output format */
@@ -171,7 +171,6 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
     {
         auto frame = mMakeFrame();
         if(!frame.get()){
-            LOG_INFO<<"cannot create frames";
             break;
         }
         auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());

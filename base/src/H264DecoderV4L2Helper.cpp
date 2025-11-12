@@ -273,14 +273,6 @@ switch (raw_pixfmt)
         planefmts[0].bytesperpixel = 1;
         planefmts[1].bytesperpixel = 2;
         break;
-    case V4L2_PIX_FMT_RGB32:
-    case V4L2_PIX_FMT_ABGR32:
-        *num_planes = 1;
-
-        planefmts[0].width = width;
-        planefmts[0].height = height;
-        planefmts[0].bytesperpixel = 4;
-        break;
     default:
         cout << "Unsupported pixel format " << raw_pixfmt << endl;
         return -1;
@@ -288,10 +280,10 @@ switch (raw_pixfmt)
 return 0;
 }
  
-void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, size_t inputFrameSize, Buffer * buffer)
+void h264DecoderV4L2Helper::read_input_chunk_frame_sp(frame_sp inpFrame, Buffer * buffer)
 {
-    memcpy(buffer->planes[0].data,inputFrameBuffer,inputFrameSize);
-    buffer->planes[0].bytesused = static_cast<uint32_t>(inputFrameSize);
+    memcpy(buffer->planes[0].data,inpFrame->data(),inpFrame->size());
+    buffer->planes[0].bytesused = static_cast<uint32_t>(inpFrame->size());
 }
 
 /**
@@ -323,10 +315,68 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     }
     outputFrame->timestamp = framesTimestampEntry.front();
     framesTimestampEntry.pop();
-
-    send(outputFrame);
+    // LOG_ERROR << "DEcoder TimeStamp is " << outputFrame->timestamp;
+    // LOG_ERROR << "framesToSkip -> " << framesToSkip;
+    if(!framesToSkip)
+    {
+        send(outputFrame);
+    }
+    
+    if(playbackSpeed == 2 || playbackSpeed == 4)
+    {
+        if(!framesToSkip)
+        {
+            framesToSkip = (currentFps * playbackSpeed) / currentFps ;
+            // LOG_ERROR << " Frames to SKp " << framesToSkip;
+        }
+        framesToSkip--;
+    }
 
     return 0;
+}
+
+void h264DecoderV4L2Helper::intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop)
+{
+	currentFps = _playbackFps;
+	playbackSpeed = _playbackSpeed;
+	gop = _gop;
+	if(playbackSpeed == 2 || playbackSpeed == 4)
+    {
+        if(previousFps >= currentFps * 8)
+        {
+            if(flushPipelineQueue)
+            {
+                flushPipelineQueue();
+            }
+        }
+        framesToSkip = (currentFps *playbackSpeed) / currentFps - 1;
+        // LOG_ERROR << " Frames to Skip  " << framesToSkip << " previousFps  " << previousFps;
+    }
+    else if(playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+    {
+        if(flushPipelineQueue)
+        {
+            flushPipelineQueue();
+        }
+        framesToSkip = 0;
+        if((currentFps * playbackSpeed) / gop > currentFps)
+        {
+            iFramesToSkip = ((currentFps * playbackSpeed) / gop) / currentFps;
+        }
+    }
+    else
+    {
+        if(previousFps >= currentFps * 8)
+        {
+            if(flushPipelineQueue)
+            {
+                flushPipelineQueue();
+            }
+        }
+        framesToSkip = 0;
+    }
+    LOG_DEBUG << "frames to skip in decoder in decoder = " << framesToSkip << " fps = " << currentFps * playbackSpeed;
+    previousFps = currentFps;
 }
  
  int h264DecoderV4L2Helper::set_capture_plane_format(context_t * ctx, uint32_t pixfmt,
@@ -337,9 +387,9 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     uint32_t num_bufferplanes;
     Buffer::BufferPlaneFormat planefmts[MAX_PLANES];
  
-    if (pixfmt != V4L2_PIX_FMT_NV12M && pixfmt != V4L2_PIX_FMT_RGB32 && pixfmt != V4L2_PIX_FMT_ABGR32)
+    if (pixfmt != V4L2_PIX_FMT_NV12M)
     {
-        LOG_ERROR << "Only V4L2_PIX_FMT_NV12M, V4L2_PIX_FMT_RGB32, V4L2_PIX_FMT_ABGR32 are supported. Got: " << pixfmt << endl;
+        LOG_INFO << "Only V4L2_PIX_FMT_NV12M is supported" << endl;
         ctx->in_error = 1;
         return -1;
     }
@@ -362,7 +412,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_S_FMT, &format);
     if (ret_val)
     {
-        LOG_ERROR << "Error in VIDIOC_S_FMT" << endl;
+        LOG_INFO << "Error in VIDIOC_S_FMT" << endl;
         ctx->in_error = 1;
     }
     else
@@ -378,7 +428,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     return ret_val;
 }
  
- void h264DecoderV4L2Helper::query_set_capture(context_t * ctx)
+ void h264DecoderV4L2Helper::query_set_capture(context_t * ctx )
 {
     struct v4l2_format format;
     struct v4l2_crop crop;
@@ -398,7 +448,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_FMT, &format);
     if (ret_val)
     {
-        LOG_ERROR << "Could not get format from decoder capture plane" << endl;
+        LOG_INFO << "Could not get format from decoder capture plane" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -409,7 +459,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_CROP, &crop);
     if (ret_val)
     {
-        LOG_ERROR << "Could not get crop from decoder capture plane" << endl;
+        LOG_INFO << "Could not get crop from decoder capture plane" << endl;
         ctx->in_error = 1;
         return;
     }
@@ -418,34 +468,6 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ctx->display_height = crop.c.height;
     ctx->display_width = crop.c.width;
  
-    // Create intermediate PITCH buffer for transform (following decoder_unit_sample approach)
-    if (ctx->dst_dma_fd == -1)
-    {
-        NvBufSurface *intermediate_nvbuf_surf = NULL;
-        NvBufSurfaceAllocateParams intermediateParams = {0};
-        
-        intermediateParams.params.memType = NVBUF_MEM_SURFACE_ARRAY;
-        intermediateParams.params.width = ctx->display_width;
-        intermediateParams.params.height = ctx->display_height;
-        intermediateParams.params.layout = NVBUF_LAYOUT_PITCH;
-        intermediateParams.params.colorFormat = NVBUF_COLOR_FORMAT_NV12;
-        intermediateParams.memtag = NvBufSurfaceTag_VIDEO_DEC;
-        
-        ret_val = NvBufSurfaceAllocate(&intermediate_nvbuf_surf, 1, &intermediateParams);
-        if (ret_val != 0) {
-            LOG_ERROR << "Failed to allocate intermediate buffer:"  << ret_val;
-            ctx->in_error = 1;
-            return;
-        }
-        
-        ret_val = 0; ctx->dst_dma_fd = intermediate_nvbuf_surf->surfaceList[0].bufferDesc;
-        if (ret_val != 0) {
-            LOG_ERROR << "Failed to export intermediate FD:"  << ret_val;
-            NvBufSurfaceDestroy(intermediate_nvbuf_surf);
-            ctx->in_error = 1;
-            return;
-        }
-    }
     if (ctx->dst_dma_fd != -1)
     {
         ret_val = NvBufSurfaceFromFd((int)ctx->dst_dma_fd,
@@ -498,7 +520,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
         ctx->cp_mem_type, 0);
     if (ret_val)
     {
-        LOG_ERROR << "Error in requesting 0 capture plane buffers" << endl;
+        LOG_INFO << "Error in requesting 0 capture plane buffers" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -530,28 +552,12 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     }
  
     // Set capture plane format to update vars.
-    // Try RGBA first, fallback to NV12 if not supported
-    uint32_t requested_format = format.fmt.pix_mp.pixelformat;
-    if (requested_format == V4L2_PIX_FMT_ABGR32) {
-        // Try to set RGBA format
-        ret_val = set_capture_plane_format(ctx, V4L2_PIX_FMT_ABGR32,
-            format.fmt.pix_mp.width, format.fmt.pix_mp.height);
-        if (ret_val) {
-            LOG_INFO << "RGBA format not supported, falling back to NV12" << endl;
-            ctx->out_pixfmt = V4L2_PIX_FMT_NV12M;
-            ret_val = set_capture_plane_format(ctx, V4L2_PIX_FMT_NV12M,
-                format.fmt.pix_mp.width, format.fmt.pix_mp.height);
-        } else {
-            LOG_INFO << "Using RGBA output format" << endl;
-        }
-    } else {
-        ret_val = set_capture_plane_format(ctx, requested_format,
-            format.fmt.pix_mp.width, format.fmt.pix_mp.height);
-    }
-    
+ 
+    ret_val = set_capture_plane_format(ctx, format.fmt.pix_mp.pixelformat,
+        format.fmt.pix_mp.width, format.fmt.pix_mp.height);
     if (ret_val)
     {
-        LOG_ERROR << "Error in setting capture plane format" << endl;
+        LOG_INFO << "Error in setting capture plane format" << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -562,11 +568,11 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
  
     struct v4l2_control ctl;
     ctl.id = V4L2_CID_MIN_BUFFERS_FOR_CAPTURE;
- 
+    
     ret_val = v4l2_ioctl(ctx->fd, VIDIOC_G_CTRL, &ctl);
     if (ret_val)
     {
-        LOG_ERROR << "Error getting value of control " << ctl.id << endl;
+        LOG_INFO << "Error getting value of control " << ctl.id << endl;
         ctx->in_error = 1;
         return ;
     }
@@ -625,7 +631,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
         ctx->cp_mem_type, ctx->cp_num_buffers);
         if (ret_val)
         {
-            LOG_ERROR << "Error in requesting capture plane buffers" << endl;
+            LOG_INFO << "Error in requesting capture plane buffers" << endl;
             ctx->in_error = 1;
             return ;
         }
@@ -659,7 +665,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
  
         if (ret_val)
         {
-            LOG_ERROR << "Qing failed on capture plane" << endl;
+            LOG_INFO << "Qing failed on capture plane" << endl;
             ctx->in_error = 1;
             return ;
         }
@@ -670,7 +676,7 @@ void h264DecoderV4L2Helper::read_input_chunk_frame_sp(void* inputFrameBuffer, si
     ret_val = v4l2_ioctl(ctx->fd,VIDIOC_STREAMON, &ctx->cp_buf_type);
     if (ret_val != 0)
     {
-        LOG_ERROR << "Streaming error on capture plane" << endl;
+        LOG_INFO << "Streaming error on capture plane" << endl;
         ctx->in_error = 1;
     }
     ctx->cp_streamon = 1;
@@ -692,19 +698,19 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     ** appropriate buffers when REQBUFS is called.
     */
  
-    do
+    do  
     {
         // Dequeue the subscribed event.
-        ret_val = m_nThread->dq_event(ctx, event, 5000);
+        ret_val = m_nThread->dq_event(ctx, event, 50000);
         if (ret_val)
         {
             if (errno == EAGAIN)
             {
-                LOG_ERROR << "Timeout waiting for first V4L2_EVENT_RESOLUTION_CHANGE" << endl;
+                LOG_INFO << "Timeout waiting for first V4L2_EVENT_RESOLUTION_CHANGE";
             }
             else
             {
-                LOG_ERROR << "Error in dequeueing decoder event" << endl;
+                LOG_INFO << "Error in dequeueing decoder event";
             }
             ctx->in_error = 1;
             break;
@@ -716,15 +722,18 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     ** Format and buffers are now set on capture.
     */
 
+    //zaki
+
     if (!ctx->in_error)
     {
-       m_nThread->query_set_capture(ctx);
+       m_nThread->query_set_capture(ctx); //zaki
     }
  
     /* Check for resolution event to again
     ** set format and buffers on capture plane.
     */
-    while (!(ctx->in_error || ctx->got_eos) || ctx->in_error)
+   LOG_INFO << " m_nThread->runCaptureThread " << m_nThread->runCaptureThread <<"ctx->got_eos " <<ctx->got_eos ; 
+    while (m_nThread->runCaptureThread && !(ctx->in_error || ctx->got_eos))
     {
         Buffer *decoded_buffer = new Buffer(ctx->cp_buf_type, ctx->cp_mem_type, 0);
          ret_val = m_nThread->dq_event(ctx, event, 0);
@@ -733,13 +742,13 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             switch (event.type)
             {
                 case V4L2_EVENT_RESOLUTION_CHANGE:
-                    m_nThread->query_set_capture(ctx);
+                    m_nThread->query_set_capture(ctx); //zaki
                     continue; 
             }
         }
         // Main Capture loop for DQ and Q.
  
-        while (!ctx->in_error)
+        while (m_nThread->runCaptureThread)
         {
             struct v4l2_buffer v4l2_buf;
             struct v4l2_plane planes[MAX_PLANES];
@@ -760,11 +769,12 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 else
                 {
                     ctx->in_error = 1;
-                    LOG_ERROR << "Error while DQing at capture plane" << endl;
+                    LOG_INFO << "Error while DQing at capture plane" << endl;
                 }
                 break;
             }
             
+            LOG_INFO << "Transform check: display_width=" << ctx->display_width;
             if (ctx->display_width != 0)
             {
                 /* Transformation parameters are defined
@@ -794,104 +804,57 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 transform_params.src_rect = &src_rect;
                 transform_params.dst_rect = &dest_rect;
  
-                // Handle both direct RGBA output and NV12->RGBA transform
+                // Written for NV12.
                 if (ctx->cp_mem_type == V4L2_MEMORY_DMABUF)
                 {
                     decoded_buffer->planes[0].fd = ctx->dmabuff_fd[v4l2_buf.index];
                 }
+ 
+                /* Blocklinear to Pitch transformation is required
+                ** to dump the raw decoded buffer data.
+                */
 
                 auto outputFrame = m_nThread->makeFrame();
+
                 auto dmaOutFrame = static_cast<DMAFDWrapper *>(outputFrame->data());
                 int f_d = dmaOutFrame->getFd();
-
-                // Declare variables outside the if/else block
+// JP5: Proper transform implementation following official sample
                 NvBufSurface* src_nvbuf_surf = nullptr;
                 NvBufSurface* dst_nvbuf_surf = nullptr;
-                
-                // Check if decoder outputs RGBA directly
-                if (ctx->out_pixfmt == V4L2_PIX_FMT_ABGR32) {
-                    // Direct RGBA output - no transform needed
-                    ret_val = 0; // Success
-                } else {
-                    // NV12 output - need transform to RGBA
 
-                    // Get source buffer from decoder (NV12 BlockLinear)
-                    ret_val = NvBufSurfaceFromFd(ctx->dmabuff_fd[v4l2_buf.index], (void**)(&src_nvbuf_surf));
-                    if (ret_val != 0) {
-                        LOG_ERROR << "Failed to get source NvBufSurface from FD " << ctx->dmabuff_fd[v4l2_buf.index] << ": " << ret_val;
-                        ctx->in_error = 1;
-                        break;
-                    }
-                    
-                    // Get destination buffer from output frame (RGBA Pitch)
-                    dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
-                    if (!dst_nvbuf_surf) {
-                        LOG_ERROR << "Failed to get destination NvBufSurface";
-                        ctx->in_error = 1;
-                        break;
-                    }
-
-                    // Skip device sync - decoder output is already device-ready
-                    // NvBufSurfaceSyncForDevice calls are causing driver warnings
-
-                    // Perform NV12 to RGBA transform
-                    ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
-                    if (ret_val == 0) {
-                        // Ensure CPU can read transformed RGBA data
-                        NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
-                    }
+                // Get source buffer from decoder
+                ret_val = NvBufSurfaceFromFd(ctx->dmabuff_fd[v4l2_buf.index], (void**)(&src_nvbuf_surf));
+                if (ret_val != 0) {
+                    LOG_ERROR << "Failed to get source NvBufSurface from FD " << ctx->dmabuff_fd[v4l2_buf.index] << ": " << ret_val;
+                    ctx->in_error = 1;
+                    break;
                 }
-                
-                // Debug file dumping disabled for production
-                /*
-                if (ret_val == 0) {
-                    static int dump_count = 0;
-                    if (dump_count < 3) {
-                        LOG_INFO << "Dumping RGBA buffer frame " << dump_count;
-                        
-                        // Get destination surface for dumping (either from transform or direct output)
-                        if (ctx->out_pixfmt == V4L2_PIX_FMT_ABGR32) {
-                            // Direct RGBA output - get surface from output frame
-                            dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
-                        }
-                        
-                        if (dst_nvbuf_surf) {
-                            // Map and dump RGBA plane
-                            if (NvBufSurfaceMap(dst_nvbuf_surf, 0, 0, NVBUF_MAP_READ) == 0) {
-                                
-                                NvBufSurfaceSyncForCpu(dst_nvbuf_surf, 0, 0);
-                                
-                                // Dump RGBA plane
-                                char filename[256];
-                                snprintf(filename, sizeof(filename), "/tmp/rgba_frame%04d.raw", dump_count);
-                                FILE* fp = fopen(filename, "wb");
-                                if (fp) {
-                                    void* data = dst_nvbuf_surf->surfaceList[0].mappedAddr.addr[0];
-                                    uint32_t height = dst_nvbuf_surf->surfaceList[0].planeParams.height[0];
-                                    uint32_t pitch = dst_nvbuf_surf->surfaceList[0].planeParams.pitch[0];
-                                    uint32_t width = dst_nvbuf_surf->surfaceList[0].planeParams.width[0];
-                                    for (uint32_t i = 0; i < height; i++) {
-                                        fwrite((uint8_t*)data + i * pitch, width * 4, 1, fp); // 4 bytes per RGBA pixel
-                                    }
-                                    fclose(fp);
-                                    LOG_INFO << "Dumped RGBA frame " << dump_count << " to " << filename;
-                                }
-                                
-                                NvBufSurfaceUnMap(dst_nvbuf_surf, 0, 0);
-                                dump_count++;
-                            }
-                        }
-                    }
+
+                // Get destination buffer from output frame
+                dst_nvbuf_surf = dmaOutFrame->getNvBufSurface();
+                if (!dst_nvbuf_surf) {
+                    LOG_ERROR << "Failed to get destination NvBufSurface";
+                    ctx->in_error = 1;
+                    break;
                 }
-                */
+
+                // Ensure destination is properly configured for pitch layout
+                dst_nvbuf_surf->surfaceList[0].layout = NVBUF_LAYOUT_PITCH;
+
+                // Perform the transform
+                ret_val = NvBufSurfTransform(src_nvbuf_surf, dst_nvbuf_surf, &transform_params);
+                LOG_INFO << "NvBufSurfTransform result: " << ret_val << " (0=success)";
                 
                 if (ret_val != 0) {
-                    LOG_ERROR << "Transform/processing failed with error: " << ret_val;
+                    LOG_ERROR << "NvBufSurfTransform failed with error: " << ret_val;
+                    // Try to get more details about the error
+                    LOG_ERROR << "Source format: " << src_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << src_nvbuf_surf->surfaceList[0].layout;
+                    LOG_ERROR << "Dest format: " << dst_nvbuf_surf->surfaceList[0].colorFormat << " layout: " << dst_nvbuf_surf->surfaceList[0].layout;
                 }
                 if (ret_val == -1)
                 {
                     ctx->in_error = 1;
-                    LOG_ERROR << "Transform failed" << endl;
+                    LOG_INFO << "Transform failed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
                     break;
                 }
  
@@ -909,7 +872,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                     ctx->cp_num_planes);
                 if (ret_val)
                 {
-                    LOG_ERROR << "Qing failed on capture plane" << endl;
+                    LOG_INFO << "Qing failed on capture plane" << endl;
                     ctx->in_error = 1;
                     break;
                 }
@@ -927,7 +890,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                     ctx->cp_num_planes);
                 if (ret_val)
                 {
-                    LOG_ERROR << "Qing failed on capture plane" << endl;
+                    LOG_INFO << "Qing failed on capture plane" << endl;
                     ctx->in_error = 1;
                     break;
                 }
@@ -935,12 +898,14 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
         }
    
     }
-    LOG_TRACE << "Exiting decoder capture loop thread" << endl;
+    LOG_DEBUG << "ctx->in_error" << ctx->in_error;
+    LOG_DEBUG << "eos value ==" << ctx->got_eos << " m_nThread->runCaptureThread = " << m_nThread->runCaptureThread;
+    LOG_DEBUG << "Exiting decoder capture loop thread" << endl;
  
     return NULL;
 }
  
- bool h264DecoderV4L2Helper::decode_process(context_t& ctx, void* inputFrameBuffer, size_t inputFrameSize)
+ bool h264DecoderV4L2Helper::decode_process(context_t& ctx, frame_sp frame)
 {
     bool allow_DQ = true;
     int ret_val;
@@ -966,7 +931,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
                 ctx.op_mem_type, -1);
             if (ret_val)
             {
-                LOG_ERROR << "Error DQing buffer at output plane" << endl;
+                LOG_INFO << "Error DQing buffer at output plane" << endl;
                 ctx.in_error = 1;
             }
         }
@@ -980,7 +945,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
  
         if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
         {
-            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
+            read_input_chunk_frame_sp(frame, buffer);
         }
         else
         {
@@ -992,7 +957,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
             ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
         if (ret_val)
         {
-            LOG_ERROR << "Error Qing buffer at output plane" << endl;
+            LOG_INFO << "Error Qing buffer at output plane" << endl;
             ctx.in_error = 1;
         }
 
@@ -1008,7 +973,7 @@ void * h264DecoderV4L2Helper::capture_thread(void *arg)
     return ctx.eos;
 }
  
- int h264DecoderV4L2Helper::dq_event(context_t * ctx, struct v4l2_event &event, uint32_t max_wait_ms)
+int h264DecoderV4L2Helper::dq_event(context_t * ctx, struct v4l2_event &event, uint32_t max_wait_ms)
 {
     int ret_val;
     do
@@ -1283,16 +1248,19 @@ int h264DecoderV4L2Helper::subscribe_event(int fd, uint32_t type, uint32_t id, u
  
     return ret_val;
 }
+
+void h264DecoderV4L2Helper::registerCallback(const std::string &name, std::function<void()> callback) {
+    callbacks[name] = callback;
+}
  
-bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
+bool h264DecoderV4L2Helper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame, std::function<void()> _flushPipelineQueue)
 {
     makeFrame = _makeFrame;
     mBuffer.reset(new Buffer());
     send =  _send;
-    return initializeDecoder();
-}
-bool h264DecoderV4L2Helper::initializeDecoder()
-{
+    flushPipelineQueue = _flushPipelineQueue;
+    
+    // init Will Take One Mpre FUnction to send 
     int flags = 0;
     struct v4l2_capability caps;
     struct v4l2_buffer op_v4l2_buf;
@@ -1300,7 +1268,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     struct v4l2_exportbuffer op_expbuf;
  
     memset(&ctx, 0, sizeof (context_t));
-    ctx.out_pixfmt = V4L2_PIX_FMT_ABGR32; // Try RGBA first, fallback to NV12 if not supported
+    ctx.out_pixfmt = V4L2_PIX_FMT_NV12;
     ctx.decode_pixfmt = V4L2_PIX_FMT_H264;
     ctx.op_mem_type = V4L2_MEMORY_MMAP;
     ctx.cp_mem_type = V4L2_MEMORY_DMABUF;
@@ -1320,11 +1288,11 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ** should be opened.
     ** This opens the device in Blocking mode.
     */
-    ctx.fd = v4l2_open(DECODER_DEV_JP6, flags | O_RDWR);
+    ctx.fd = v4l2_open(DECODER_DEV, flags | O_RDWR);
     
     if (ctx.fd == -1)
     {
-        LOG_ERROR << "Could not open device " << DECODER_DEV_JP6 << endl;
+        LOG_INFO << "Could not open device" << DECODER_DEV << endl;
         ctx.in_error = 1;
     }
  
@@ -1336,12 +1304,12 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ret = v4l2_ioctl(ctx.fd, VIDIOC_QUERYCAP, &caps);
     if (ret)
     {
-        LOG_ERROR << "Failed to query video capabilities" << endl;
+        LOG_INFO << "Failed to query video capabilities" << endl;
         ctx.in_error = 1;
     }
     if (!(caps.capabilities & V4L2_CAP_VIDEO_M2M_MPLANE))
     {
-        LOG_ERROR << "Device does not support V4L2_CAP_VIDEO_M2M_MPLANE" << endl;
+        LOG_INFO << "Device does not support V4L2_CAP_VIDEO_M2M_MPLANE" << endl;
         ctx.in_error = 1;
     }
  
@@ -1353,7 +1321,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ret = subscribe_event(ctx.fd, V4L2_EVENT_RESOLUTION_CHANGE, 0, 0);
     if (ret)
     {
-        LOG_ERROR << "Failed to subscribe for resolution change" << endl;
+        LOG_INFO << "Failed to subscribe for resolution change" << endl;
         ctx.in_error = 1;
     }
  
@@ -1366,7 +1334,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ret = set_ext_controls(ctx.fd, V4L2_CID_MPEG_VIDEO_DISABLE_COMPLETE_FRAME_INPUT, 1);
     if (ret)
     {
-        LOG_ERROR << "Failed to set control disable complete frame" << endl;
+        LOG_INFO << "Failed to set control disable complete frame" << endl;
         ctx.in_error = 1;
     }
  
@@ -1377,7 +1345,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ret = set_output_plane_format(ctx, ctx.decode_pixfmt, CHUNK_SIZE);
     if (ret)
     {
-        LOG_ERROR << "Error in setting output plane format" << endl;
+        LOG_INFO << "Error in setting output plane format" << endl;
         ctx.in_error = 1;
     }
  
@@ -1391,7 +1359,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
         ctx.op_mem_type, 1); //maxBufferr should come from props
     if (ret)
     {
-        LOG_ERROR << "Error in requesting buffers on output plane" << endl;
+        LOG_INFO << "Error in requesting buffers on output plane" << endl;
         ctx.in_error = 1;
     }
  
@@ -1413,7 +1381,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
         ret = v4l2_ioctl(ctx.fd, VIDIOC_QUERYBUF, &op_v4l2_buf);
         if (ret)
         {
-            LOG_ERROR << "Error in querying buffers" << endl;
+            LOG_INFO << "Error in querying buffers" << endl;
             ctx.in_error = 1;
         }
  
@@ -1435,7 +1403,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
             ret = v4l2_ioctl(ctx.fd, VIDIOC_EXPBUF, &op_expbuf);
             if (ret)
             {
-                LOG_ERROR << "Error in exporting buffer at index" << i << endl;
+                LOG_INFO << "Error in exporting buffer at index" << i << endl;
                 ctx.in_error = 1;
             }
             ctx.op_buffers[i]->planes[j].fd = op_expbuf.fd;
@@ -1443,7 +1411,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
  
         if (ctx.op_buffers[i]->map())
         {
-            LOG_ERROR << "Buffer mapping error on output plane" << endl;
+            LOG_INFO << "Buffer mapping error on output plane" << endl;
             ctx.in_error = 1;
         }
     }
@@ -1455,7 +1423,7 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     ret = v4l2_ioctl(ctx.fd,VIDIOC_STREAMON, &ctx.op_buf_type);
     if (ret != 0)
     {
-        LOG_ERROR << "Streaming error on output plane" << endl;
+        LOG_INFO << "Streaming error on output plane" << endl;
         ctx.in_error = 1;
     }
  
@@ -1464,24 +1432,13 @@ bool h264DecoderV4L2Helper::initializeDecoder()
     typedef void * (*THREADFUNCPTR)(void *);
    
     pthread_create(&ctx.dec_capture_thread, NULL,h264DecoderV4L2Helper::capture_thread, (void *) (this));
-
-    return true;
 }
-int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS)
+int h264DecoderV4L2Helper::process(frame_sp inputFrame)
 {
     uint32_t idx = 0;
-    if(inputFrameSize)
-	framesTimestampEntry.push(inputFrameTS);
-
-    if((inputFrameSize && ctx.eos && ctx.got_eos) || ctx.in_error)
-    {
-        ctx.in_error = false;
-        deQueAllBuffers();
-        ctx.eos = false;
-        ctx.got_eos = false;
-        initializeDecoder();
-    }
-
+    if(inputFrame->size())
+    framesTimestampEntry.push(inputFrame->timestamp);
+    // LOG_ERROR << "TimeStamp is " << inputFrame->timestamp;
     while (!ctx.eos && !ctx.in_error && idx < ctx.op_num_buffers)
     {
         struct v4l2_buffer queue_v4l2_buf_op;
@@ -1494,11 +1451,11 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         buffer = ctx.op_buffers[idx];
         if (ctx.decode_pixfmt == V4L2_PIX_FMT_H264)
         {
-            read_input_chunk_frame_sp(inputFrameBuffer, inputFrameSize, buffer);
+            read_input_chunk_frame_sp(inputFrame, buffer);
         }
         else
         {
-            LOG_ERROR << "Currently only H264 supported" << endl;
+            LOG_INFO << "Currently only H264 supported" << endl;
             ctx.in_error = 1;
         }
  
@@ -1509,31 +1466,25 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         ** It is necessary to queue an empty buffer
         ** to signal EOS to the decoder.
         */
-        int qBuffer = 0;
-        int counter = 0;
-        do
-        {
-            counter++;
-            qBuffer = q_buffer(&ctx, queue_v4l2_buf_op, buffer,
+        ret = q_buffer(&ctx, queue_v4l2_buf_op, buffer,
             ctx.op_buf_type, ctx.op_mem_type, ctx.op_num_planes);
-            if(counter > 1)
-            {
-                LOG_INFO << "Unable to queue buffers " << qBuffer;
-            }
+        if (ret)
+        {
+            LOG_INFO << "Error Qing buffer at output plane" << endl;
+            ctx.in_error = 1;
         }
-        while(qBuffer);
  
         if (queue_v4l2_buf_op.m.planes[0].bytesused == 0)
         {
             ctx.eos = true;
-            LOG_DEBUG << "Input file read complete" << endl;
+            LOG_INFO << "Input file read complete" << endl;
             break;
         }
         idx++;
     }
  
     // Dequeue and queue loop on output plane.
-    ctx.eos = decode_process(ctx,inputFrameBuffer, inputFrameSize);
+    ctx.eos = decode_process(ctx,inputFrame);
    
     /* For blocking mode, after getting EOS on output plane,
     ** dequeue all the queued buffers on output plane.
@@ -1552,7 +1503,7 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
         ret = dq_buffer(&ctx, v4l2_buf, NULL, ctx.op_buf_type, ctx.op_mem_type, -1);
         if (ret)
         {
-            LOG_ERROR << "Error DQing buffer at output plane" << endl;
+            LOG_INFO << "Error DQing buffer at output plane" << endl;
             ctx.in_error = 1;
             break;
             return true;
@@ -1567,18 +1518,41 @@ int h264DecoderV4L2Helper::process(void* inputFrameBuffer, size_t inputFrameSize
     }
     return true;
 }
-void h264DecoderV4L2Helper::closeAllThreads(frame_sp eosFrame) 
+h264DecoderV4L2Helper::~h264DecoderV4L2Helper() 
 {
-    process(eosFrame->data(), eosFrame->size(), 0);
-    deQueAllBuffers();
 }
 
-void h264DecoderV4L2Helper::deQueAllBuffers()
+bool h264DecoderV4L2Helper::flush_frames()
 {
+    // Reset any local scheduling state
+    framesToSkip = 0;
+    iFramesToSkip = 0;
+
+    // Clear any queued timestamps awaiting delivery
+    while (!framesTimestampEntry.empty())
+    {
+        framesTimestampEntry.pop();
+    }
+
+    // Flush downstream pipeline queue if provided
+    if (flushPipelineQueue)
+    {
+        flushPipelineQueue();
+    }
+
+    return true;
+}
+
+bool h264DecoderV4L2Helper::term_helper()
+{
+    LOG_DEBUG << "Terminating Helper WITH FD " << ctx.fd;
     if (ctx.fd != -1)
     {
+        LOG_DEBUG << "ctx.dec_capture_thread " << ctx.dec_capture_thread << "ctx.fd " << ctx.fd;  
         if (ctx.dec_capture_thread)
         {
+            LOG_DEBUG << "SHould Join The tHread";
+            runCaptureThread = false;
             pthread_join(ctx.dec_capture_thread, NULL);
         }
  
@@ -1587,17 +1561,10 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
         {
             for (uint32_t idx = 0; idx < ctx.cp_num_buffers; ++idx)
             {
-                if (ctx.dmabuff_fd[idx] != 0) {
-                    NvBufSurface *nvbuf_surf = nullptr;
-                    ret = NvBufSurfaceFromFd((int)ctx.dmabuff_fd[idx], (void**)(&nvbuf_surf));
-                    if (ret == 0 && nvbuf_surf) {
-                        ret = NvBufSurfaceDestroy(nvbuf_surf);
-                    }
-                    ctx.dmabuff_fd[idx] = 0;
-                }
+                // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
                 if (ret)
                 {
-                    LOG_ERROR << "Failed to Destroy Buffers" << endl;
+                    LOG_DEBUG << "Failed to Destroy Buffers" << endl;
                 }
             }
         }
@@ -1629,27 +1596,18 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
             {
                 if (ctx.dmabuff_fd[i] != 0)
                 {
-                    NvBufSurface *nvbuf_surf = nullptr;
-                    ret = NvBufSurfaceFromFd((int)ctx.dst_dma_fd, (void**)(&nvbuf_surf));
-                    if (ret == 0 && nvbuf_surf)
-                    {
-                        ret = NvBufSurfaceDestroy(nvbuf_surf);
-                    }
+                    // TODO: Fix cleanup - ret = NvBufSurfaceDestroy(ctx.dmabuff_fd[...]);
                     ctx.dmabuff_fd[i] = 0;
                     if (ret < 0)
                     {
-                        LOG_ERROR << "Failed to destroy buffer" << endl;
+                        LOG_DEBUG << "Failed to destroy buffer" << endl;
                     }
                 }
             }
         }
         if (ctx.dst_dma_fd != -1)
         {
-            NvBufSurface *nvbuf_surf = nullptr;
-            ret = NvBufSurfaceFromFd((int)ctx.dst_dma_fd, (void**)(&nvbuf_surf));
-            if (ret == 0 && nvbuf_surf) {
-                ret = NvBufSurfaceDestroy(nvbuf_surf);
-            }
+            // TODO: Fix cleanup - NvBufSurfaceDestroy(ctx.dst_dma_fd);
             ctx.dst_dma_fd = -1;
         }
  
@@ -1658,20 +1616,24 @@ void h264DecoderV4L2Helper::deQueAllBuffers()
         ret = v4l2_close(ctx.fd);
         if (ret)
         {
-            LOG_ERROR << "Unable to close the device" << endl;
+            LOG_DEBUG << "Unable to close the device";
             ctx.in_error = 1;
+        }
+        else
+        {
+            LOG_DEBUG << "Successfully Closed the device";
         }
     }
  
     // Report application run status on exit.
     if (ctx.in_error)
     {
-        LOG_ERROR << "Decoder Run failed" <<  endl;
+        LOG_DEBUG << "Decoder Run failed" <<  endl;
     }
     else
     {
         LOG_DEBUG  << "Decoder Run is successful" << endl;
     }
  
-    return;
+    return true;
 }

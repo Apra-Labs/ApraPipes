@@ -29,20 +29,13 @@
 /**
  * Specifies the decoder device node.
  */
-/**
- * Specifies the decoder device node.
- * Jetpack 5: /dev/nvhost-nvdec
- * Jetpack 6: /dev/v4l2-nvdec
- */
-#define DECODER_DEV_JP6 "/dev/v4l2-nvdec"
-
+#define DECODER_DEV "/dev/v4l2-nvdec"
 #define MAX_BUFFERS 32
 #define CHUNK_SIZE 4000000
 /**
  * Specifies the maximum number of planes a buffer can contain.
  */
 #define MAX_PLANES 3
-#include <unistd.h>
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #include "Frame.h"
 #include <fstream>
@@ -155,7 +148,7 @@ public:
      * Refer to [V4L2 Video Decoder](group__V4L2Dec.html) for more information on the decoder.
      */
     h264DecoderV4L2Helper() {}
-    ~h264DecoderV4L2Helper() {};
+    ~h264DecoderV4L2Helper(); //
     typedef struct
     {
         uint32_t decode_pixfmt;
@@ -182,7 +175,7 @@ public:
         pthread_cond_t queue_cond;
         pthread_t dec_capture_thread;
 
-        bool in_error = false;
+        bool in_error;
         bool eos;
         bool got_eos;
         bool op_streamon;
@@ -200,7 +193,7 @@ public:
      * @param[in] stream Input stream
      * @param[in] buffer Buffer class pointer
      */
-    void read_input_chunk_frame_sp(void* inputFrameBuffer, size_t inputFrameSize, Buffer *buffer);
+    void read_input_chunk_frame_sp(frame_sp inpFrame, Buffer *buffer);
 
     /**
      * @brief Writes a plane data of the buffer to a file.
@@ -236,7 +229,7 @@ public:
      *
      * @param[in] ctx Pointer to the decoder context struct created.
      */
-    void query_set_capture(context_t *ctx);
+    void query_set_capture(context_t *ctx); // zaki
 
     /**
      * @brief Callback function on capture thread.
@@ -265,7 +258,7 @@ public:
      *         EOS is detected by the decoder and all the buffers are dequeued;
      *         else the decode process continues running.
      */
-    bool decode_process(context_t &ctx, void* inputFrameBuffer, size_t inputFrameSize);
+    bool decode_process(context_t &ctx, frame_sp frame);
 
     /**
      * @brief Dequeues an event.
@@ -389,21 +382,33 @@ public:
      */
     int subscribe_event(int fd, uint32_t type, uint32_t id, uint32_t flags);
 
-    int process(void* inputFrameBuffer, size_t inputFrameSize, uint64_t inputFrameTS);
+    int process(frame_sp inputFrame);
 
-    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame);
+    bool init(std::function<void(frame_sp &)> send, std::function<frame_sp()> makeFrame, std::function<void()> flushPipelineQueue);
 
-    bool initializeDecoder();
+    bool term_helper();
 
-    void closeAllThreads(frame_sp eosFrame);
-
-    void deQueAllBuffers();
 protected:
     boost::shared_ptr<Buffer> mBuffer;
     context_t ctx;
     std::function<frame_sp()> makeFrame;
     std::function<void(frame_sp &)> send;
+    std::function<void()> flushPipelineQueue;
     int ret = 0;
+    bool runCaptureThread = true;
     std::queue<uint64_t> framesTimestampEntry;
-    std::mutex m;
+
+public:
+    void intitliazeSpeed(int _playbackFps, float _playbackSpeed, int _gop);
+    void registerCallback(const std::string &name, std::function<void()> callback);
+    bool flush_frames();
+private:
+    int framesToSkip = 0;
+    int iFramesToSkip = 0;
+    int currentFps = 24;
+    int previousFps = 24;
+    float playbackSpeed = 1;
+    int gop;
+
+    std::unordered_map<std::string, std::function<void()>> callbacks;
 };

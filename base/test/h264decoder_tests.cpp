@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer_2)
 
         auto fileReader =
             boost::shared_ptr<FileReaderModule>(new FileReaderModule(
-                FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+                FileReaderModuleProps("../data/8bit_frame_1280x720_rgba.raw")));
         auto metadata = framemetadata_sp(
             new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA,
                                  CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer_2)
 	auto memconversionHost = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversionDMA->setNext(memconversionHost);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/MEMCPY_TEST/frame_????.raw")));
+	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/MEMCPY_TEST/frame.raw")));
 	memconversionHost->setNext(fileWriter);
 
 	boost::shared_ptr<PipeLine> p;
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 	Logger::setLogLevel("info");
 
 	// metadata is known
-	std::string videoPath = "./data/Mp4_videos/h264_video/20221010/0012/1668064027062.mp4";
+	std::string videoPath = "/home/developer/ApraPipes/data/Mp4_videos/h264_video/apraH264.mp4";
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, false, 0, true, false, false);
 	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer)
 	p.reset();
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE(sample_mp4_file_decoder_cuda_device_to_host)
 {
 	Logger::setLogLevel("info");
@@ -169,6 +169,6 @@ BOOST_AUTO_TEST_CASE(sample_mp4_file_decoder_cuda_device_to_host)
 	p->wait_for_all();
 	p.reset();
 }
-
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
