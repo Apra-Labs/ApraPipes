@@ -20,8 +20,10 @@ Logger* Logger::getLogger()
 	{
 		return instance.get();
 	}
-
-	initLogger(LoggerProps());
+	LoggerProps props;
+	std::cout << "Logger initializing with default props. => console logs "<< (props.enableConsoleLog ? "enabled" : "disabled")
+			  << ", file logs " << (props.enableFileLog ? "enabled" : "disabled") << std::endl;	
+	initLogger(props);
 	return instance.get();
 }
 
