@@ -233,11 +233,54 @@ public:
 
 	void setPlayback(float _speed, bool _direction)
 	{
-		if (_speed != mState.speed)
+		// Update both speed variables for consistency
+		bool speedChanged = (_speed != playbackSpeed);
+		if (speedChanged)
 		{
+			playbackSpeed = _speed;
 			mState.speed = _speed;
+
+			// Only update FPS if video is open and forceFPS is not enabled
+			if (mState.demux && !mProps.forceFPS)
+			{
+				// For speeds < 8x: Adjust FPS without frame dropping (slow-mo, 1x, 2x, 4x)
+				// All frames are read, but delivered at different rate
+				if (playbackSpeed < 8)
+				{
+					mProps.fps = mFPS * playbackSpeed;
+					LOG_INFO << "Playback speed changed to <" << playbackSpeed << "x>, FPS updated to <" << mProps.fps << ">";
+					// Update Module's FPS directly without triggering full setProps
+					// This only updates FPS in the Module, avoiding video reinitialization
+					setMp4ReaderProps(mProps);
+				}
+				// For 8x, 16x, 32x: Use I-frame skipping mode
+				// GOP-based FPS adjustment + randomSeek in produceFrames
+				else if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				{
+					auto gop = getGop();
+					if (gop)
+					{
+						mProps.fps = (mFPS * playbackSpeed) / gop;
+						LOG_INFO << "Playback speed changed to <" << playbackSpeed << "x> with GOP <" << gop << ">, FPS updated to <" << mProps.fps << ">";
+					}
+					else
+					{
+						mProps.fps = mFPS * playbackSpeed;
+						LOG_WARNING << "GOP is 0, using fallback FPS calculation: <" << mProps.fps << ">";
+					}
+					setMp4ReaderProps(mProps);
+				}
+				else
+				{
+					// Unsupported speed
+					LOG_WARNING << "Playback speed <" << playbackSpeed << "x> not explicitly supported. Using direct FPS multiplication.";
+					mProps.fps = mFPS * playbackSpeed;
+					setMp4ReaderProps(mProps);
+				}
+			}
 		}
-		// only if direction changes
+
+		// Handle direction changes
 		if (mState.direction != _direction)
 		{
 			mState.direction = _direction;
@@ -1744,7 +1787,17 @@ bool Mp4ReaderSource::init()
 	mDetail->h264ImagePinId = h264ImagePinId;
 	mDetail->metadataFramePinId = metadataFramePinId;
 	mDetail->controlModule = controlModule;
-	return mDetail->Init();
+
+	bool initResult = mDetail->Init();
+
+	// Apply initial playback speed from props if not default (1.0)
+	if (initResult && props.playbackSpeed != 1.0f)
+	{
+		LOG_INFO << "Applying initial playback speed from props: " << props.playbackSpeed << "x";
+		mDetail->setPlayback(props.playbackSpeed, props.direction);
+	}
+
+	return initResult;
 }
 
 void Mp4ReaderSource::setImageMetadata(std::string& pinId, framemetadata_sp& metadata)
@@ -1893,6 +1946,12 @@ bool Mp4ReaderSource::changePlayback(float speed, bool direction)
 	return queuePlayPauseCommand(ppc);
 }
 
+bool Mp4ReaderSource::changePlaybackSpeed(float speed, bool direction)
+{
+	Mp4ReaderPlaybackSpeedCommand cmd(speed, direction);
+	return queueCommand(cmd, true);
+}
+
 bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 {
 	if (type == Command::CommandType::Seek)
@@ -1900,6 +1959,13 @@ bool Mp4ReaderSource::handleCommand(Command::CommandType type, frame_sp& frame)
 		Mp4SeekCommand seekCmd;
 		getCommand(seekCmd, frame);
 		return mDetail->randomSeek(seekCmd.seekStartTS, seekCmd.forceReopen);
+	}
+	else if (type == Command::CommandType::Mp4ReaderPlaybackSpeed)
+	{
+		Mp4ReaderPlaybackSpeedCommand speedCmd;
+		getCommand(speedCmd, frame);
+		mDetail->setPlayback(speedCmd.playbackSpeed, speedCmd.direction);
+		return true;
 	}
 	else
 	{
