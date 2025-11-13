@@ -24,7 +24,8 @@ public:
     SendMMQTimestamps,
     SendLastGTKGLRenderTS,
     DecoderPlaybackSpeed,
-    Mp4FileClose
+    Mp4FileClose,
+    Mp4ReaderPlaybackSpeed
   };
 
   Command() { type = CommandType::None; }
@@ -323,5 +324,40 @@ private:
 		ar& boost::serialization::base_object<Command>(*this);
 		ar& playbackFps;
 		ar& playbackSpeed;
+	}
+};
+
+class Mp4ReaderPlaybackSpeedCommand : public Command
+{
+public:
+	Mp4ReaderPlaybackSpeedCommand() : Command(CommandType::Mp4ReaderPlaybackSpeed)
+	{
+		playbackSpeed = 1.0f;
+		direction = true;
+	}
+
+	Mp4ReaderPlaybackSpeedCommand(float _playbackSpeed, bool _direction = true)
+		: Command(CommandType::Mp4ReaderPlaybackSpeed)
+	{
+		playbackSpeed = _playbackSpeed;
+		direction = _direction;
+	}
+
+	size_t getSerializeSize()
+	{
+		return Command::getSerializeSize() + sizeof(playbackSpeed) + sizeof(direction);
+	}
+
+	float playbackSpeed;
+	bool direction; // fwd = true, bwd = false
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int /* file_version */)
+	{
+		ar& boost::serialization::base_object<Command>(*this);
+		ar& playbackSpeed;
+		ar& direction;
 	}
 };

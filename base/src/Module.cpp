@@ -153,7 +153,7 @@ Module::Module(Kind nature, string name, ModuleProps _props)
   mQue.reset(new FrameContainerQueue(_props.qlen));
 
   onStepFail = boost::bind(&Module::ignore, this, 0);
-  LOG_INFO << "Setting Module tolerance for step failure as: " << "<0>. Currently there is no way to change this.";
+  LOG_INFO << getId() << ": Setting Module tolerance for step failure as: " << "<0>. Currently there is no way to change this.";
 
   pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
   auto tempId = getId();
@@ -268,14 +268,14 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
 {
   if (next->getNature() < this->getNature())
   {
-    LOG_ERROR << "Can not connect these modules " << this->getId() << " -> "
+    LOG_ERROR << getId() << ": Can not connect these modules " << this->getId() << " -> "
               << next->getId();
     return false;
   }
 
   if (pinIdArr.size() == 0)
   {
-    LOG_ERROR << "No Pins to connect. " << this->getId() << " -> "
+    LOG_ERROR << getId() << ": No Pins to connect. " << this->getId() << " -> "
               << next->getId();
     return false;
   }
@@ -283,8 +283,8 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
   auto nextModuleId = next->getId();
   if (mModules.find(nextModuleId) != mModules.end())
   {
-    LOG_ERROR << "<" << getId() << "> Connection for <" << nextModuleId
-              << " > already done.";
+    LOG_ERROR << getId() << ": Connection for <" << nextModuleId
+              << "> already done.";
     return false;
   }
   mModules[nextModuleId] = next;
@@ -324,7 +324,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
       {
         mModules.erase(nextModuleId);
         mConnections.erase(nextModuleId);
-        LOG_FATAL << "";
+        LOG_FATAL << getId() << ": addInputPin. PinId<" << pinId << ">. Unknown exception.";
         throw AIPException(AIP_FATAL, "<" + getId() + "> addInputPin. PinId<" +
                                           pinId + ">. Unknown exception.");
       }
@@ -363,7 +363,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
         {
           mModules.erase(nextModuleId);
           mConnections.erase(nextModuleId);
-          LOG_FATAL << "";
+          LOG_FATAL << getId() << ": addInputPin. PinId<" << pinId << ">. Unknown exception.";
           throw AIPException(AIP_FATAL, "<" + getId() +
                                             "> addInputPin. PinId<" + pinId +
                                             ">. Unknown exception.");
@@ -391,7 +391,7 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
         {
           mModules.erase(nextModuleId);
           mConnections.erase(nextModuleId);
-          LOG_FATAL << "";
+          LOG_FATAL << getId() << ": addInputPin. PinId<" << pinId << ">. Unknown exception.";
           throw AIPException(AIP_FATAL, "<" + getId() +
                                             "> addInputPin. PinId<" + pinId +
                                             ">. Unknown exception.");
@@ -1118,7 +1118,7 @@ bool Module::queuePlayPauseCommand(PlayPauseCommand ppCmd, bool priority)
   {
     if (!Module::try_push(frames))
     {
-      LOG_ERROR << "failed to push play command to the que";
+      LOG_ERROR << getId() << ": failed to push play command to the que";
       return false;
     }
   }
@@ -1160,10 +1160,12 @@ bool Module::queueStep()
 bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
 {
   auto nextModuleId = next->getId();
+  LOG_INFO << getId() << ": Setting relay to <" << nextModuleId << "> to " << (open ? "open" : "close");
+
   if (mModules.find(nextModuleId) == mModules.end())
   {
-    LOG_ERROR << "<" << getId() << "> Connection for <" << nextModuleId
-              << " > doesn't exist.";
+    LOG_ERROR << getId() << ": Connection for <" << nextModuleId
+              << "> doesn't exist.";
     return false;
   }
 
@@ -1244,7 +1246,7 @@ bool Module::processSourceQue()
       }
       else
       {
-        LOG_ERROR << frame->getMetadata()->getFrameType() << "<> not handled";
+        LOG_ERROR << getId() << ": " << frame->getMetadata()->getFrameType() << "<> not handled";
       }
     }
   }
@@ -1271,23 +1273,23 @@ bool Module::step()
 	bool ret = false;
 	if (myNature == SOURCE)
 	{
-		LOG_TRACE << "Step start";
+		LOG_TRACE << getId() << ": Step start";
 		if (!processSourceQue())
 		{
 			return true;
 		}
-		LOG_TRACE << "Step source q processed";
+		LOG_TRACE << getId() << ": Step source q processed";
 		bool forceStep = shouldForceStep();
 
     pacer->start();
 
 		if (mPlay || forceStep)
 		{
-			LOG_TRACE << "produce call immminent";
+			LOG_TRACE << getId() << ": produce call immminent";
 			mProfiler->startPipelineLap();
 			ret = produce();
 			mProfiler->endLap(0);
-			LOG_TRACE << "produce call fin";
+			LOG_TRACE << getId() << ": produce call fin";
 		}
 		else
 		{
@@ -1553,11 +1555,11 @@ bool Module::stepNonSource(frame_container &frames)
   }
   catch (const std::exception &exception)
   {
-    LOG_FATAL << getId() << "<>" << exception.what();
+    LOG_FATAL << getId() << ": " << exception.what();
   }
   catch (...)
   {
-    LOG_FATAL << getId() << "<> Unknown exception. Catching throw";
+    LOG_FATAL << getId() << ": Unknown exception. Catching throw";
   }
 
   return ret;
@@ -1647,7 +1649,7 @@ void Module::ignore(int times)
   observed++;
   if (observed >= times && times > 0)
   {
-    LOG_TRACE << "stopping due to step failure ";
+    LOG_TRACE << getId() << ": stopping due to step failure ";
     observed = 0;
     handleStop();
   }
@@ -1656,7 +1658,7 @@ void Module::ignore(int times)
 void Module::stop_onStepfail()
 {
   // ctrl - get and print the last command processed which might have caused the error
-  LOG_ERROR << "Stopping " << myId << " due to step failure ";
+  LOG_ERROR << getId() << ": Stopping due to step failure ";
   handleStop();
 }
 
@@ -1680,7 +1682,7 @@ void Module::emit_fatal(unsigned short eventID)
   {
     // we dont have a handler let's kill this thread
     std::string msg("Fatal error in module ");
-    LOG_FATAL << "FATAL error in module : " << myName;
+    LOG_FATAL << getId() << ": FATAL error in module";
     msg += myName;
     msg += " Event ID ";
     msg += std::to_string(eventID);

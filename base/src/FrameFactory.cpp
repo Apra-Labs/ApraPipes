@@ -80,9 +80,29 @@ void FrameFactory::destroy(Frame *pointer)
 	boost::mutex::scoped_lock lock(m_mutex);
 	counter.fetch_sub(1, memory_order_seq_cst);
 
+	// Calculate the actual allocation size
+	// If the pointer has been offset (by skipBytes), we need to reconstruct
+	// the original allocation size to free the correct number of chunks
+	size_t actualSize = pointer->size();
+	bool isOriginal = (pointer->myOrig == pointer->data());
+
+	if (!isOriginal) {
+		// The pointer has been moved forward by skipBytes
+		ptrdiff_t offset = static_cast<uint8_t*>(pointer->data()) - static_cast<uint8_t*>(pointer->myOrig);
+		// The original allocation was for (current size + offset) bytes
+		actualSize = pointer->size() + offset;
+		LOG_TRACE << "destroy frame with offset: current size=" << pointer->size()
+				 << " offset=" << offset
+				 << " original allocation size=" << actualSize
+				 << " pointer=" << pointer->myOrig;
+	}
+
+	// Calculate chunks based on the original allocation size
+	size_t n = getNumberOfChunks(actualSize);
+
+	// Free the memory chunks from the original pointer
 	if (pointer->myOrig != NULL)
 	{
-		size_t n = getNumberOfChunks(pointer->size());
 		numberOfChunks.fetch_sub(n, memory_order_seq_cst);
 		memory_allocator->freeChunks(pointer->myOrig, n);
 	}
