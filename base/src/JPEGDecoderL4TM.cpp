@@ -7,15 +7,17 @@
 #include <opencv2/opencv.hpp>
 #include "Utils.h"
 #include "AIPExceptions.h"
-
+#include "DMAFDWrapper.h"
+#include "DMAAllocator.h"
 class JPEGDecoderL4TM::Detail
 {
 
 public:
-	Detail() : mDataSize(0),
+	Detail(JPEGDecoderL4TMProps& props) : mDataSize(0),
 			   mWidth2(0),
 			   mHeight2(0),
-			   mActualFrameSize(0)
+			   mActualFrameSize(0),
+			   mProps(props)
 	{
 		decHelper.reset(new JPEGDecoderL4TMHelper());
 	}
@@ -32,16 +34,23 @@ public:
 			throw AIPException(AIP_FATAL, "init:: decHelper->init Failed");
 		}
 
-		// This is a cheating
-		// Actual output is NV12
-		// width and height are aligned by 32 bits - setting stride
-		// passing frame->data() to cheat opencv to no allocate any buffer inside
-		cv::Mat img(mHeight2, mWidth2, CV_8UC1, frame->data(), mWidth2);
-		mDataSize = (mWidth2 * mHeight2 * 3) >> 1;
-		mActualFrameSize = mWidth2 * mHeight2;
-
-		FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-		mMetadata = metadata;
+		if(mProps.decodeToFd)
+    {
+        // For decodeToFd, set DMABUF metadata with dimensions
+        auto planarMeta = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+		DMAAllocator::setMetadata(metadata, mWidth2, mHeight2, ImageMetadata::YUV420);
+        mDataSize = (mWidth2 * mHeight2 * 3) >> 1; // YUV420 size
+        mActualFrameSize = mWidth2 * mHeight2;
+    }
+    else
+    {
+        cv::Mat img(mHeight2, mWidth2, CV_8UC1, frame->data(), mWidth2);
+        mDataSize = (mWidth2 * mHeight2 * 3) >> 1;
+        mActualFrameSize = mWidth2 * mHeight2;
+	   FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
+    }
+    
+    mMetadata = metadata;
 	}
 
 	framemetadata_sp getMetadata()
@@ -51,8 +60,24 @@ public:
 
 	size_t compute(frame_sp &inFrame, frame_sp &frame)
 	{
-		decHelper->decode((unsigned char *)inFrame->data(), inFrame->size(), (unsigned char *)frame->data());
-		return mActualFrameSize;
+		int fd=0;
+		if(mProps.decodeToFd)
+		{
+			  auto dmaWrapper = static_cast<DMAFDWrapper*>(frame->data());
+        	  int fd = dmaWrapper->getFd();
+              int ret=decHelper->decodeToFd(fd,(unsigned char *)inFrame->data(), inFrame->size());   
+			  if (ret < 0) {
+            LOG_ERROR << "decodeToFd failed";
+            return false;
+			  }
+        }
+    	else
+		{
+			decHelper->decode((unsigned char *)inFrame->data(), inFrame->size(), (unsigned char *)frame->data());
+		   
+		}
+		return mActualFrameSize; 
+		
 	}
 
 	size_t getDataSize()
@@ -69,11 +94,12 @@ private:
 	size_t mActualFrameSize;
 	int mWidth2;
 	int mHeight2;
+	JPEGDecoderL4TMProps mProps;  
 };
 
 JPEGDecoderL4TM::JPEGDecoderL4TM(JPEGDecoderL4TMProps _props) : Module(TRANSFORM, "JPEGDecoderL4TM", _props)
 {
-	mDetail.reset(new Detail());
+	mDetail.reset(new Detail(_props));
 }
 
 JPEGDecoderL4TM::~JPEGDecoderL4TM() {}
@@ -107,9 +133,9 @@ bool JPEGDecoderL4TM::validateOutputPins()
 
 	framemetadata_sp metadata = getFirstOutputMetadata();
 	FrameMetadata::FrameType frameType = metadata->getFrameType();
-	if (frameType != FrameMetadata::RAW_IMAGE)
+	if ((frameType != FrameMetadata::RAW_IMAGE) &&(frameType != FrameMetadata::RAW_IMAGE_PLANAR))
 	{
-		LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE. Actual<" << frameType << ">";
+		LOG_ERROR << "<" << getId() << ">::validateOutputPins  frameType is expected to be RAW_IMAGE or RAW_IMAGE_PLANAR. Actual<" << frameType << ">";
 		return false;
 	}
 
@@ -128,7 +154,17 @@ bool JPEGDecoderL4TM::init()
 	{
 		throw AIPException(AIP_NOTSET, string("JPEGDecoderL4TM Output Frame Metadata parameters will be automatically set. Kindly remove."));
 	}
-	mDetail->outputPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE);
+
+	if(metadata->getFrameType()==FrameMetadata::RAW_IMAGE)
+	{
+         mDetail->outputPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE);
+	}
+	else
+	{
+		 mDetail->outputPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
+	}
+	
+	
 
 	return true;
 }
@@ -147,20 +183,18 @@ bool JPEGDecoderL4TM::process(frame_container &frames)
 	}
 
 	auto metadata = mDetail->getMetadata();
-	auto bufferFrame = makeFrame(mDetail->getDataSize());
+	auto bufferFrame = makeFrame(mDetail->getDataSize(), mDetail->outputPinId);
 
 	auto frameLength = mDetail->compute(frame, bufferFrame);
-	
-	auto outFrame = makeFrame(bufferFrame, frameLength,mDetail->outputPinId);
 
-	frames.insert(make_pair(mDetail->outputPinId, outFrame));
+	frames.insert(make_pair(mDetail->outputPinId, bufferFrame));
 	send(frames);
 	return true;
 }
 
 bool JPEGDecoderL4TM::processSOS(frame_sp &frame)
 {
-	auto outMetadata = getOutputMetadataByType(FrameMetadata::RAW_IMAGE);
+	auto outMetadata = getFirstOutputMetadata();
 	mDetail->initMetadata(frame, outMetadata);
 	return true;
 }

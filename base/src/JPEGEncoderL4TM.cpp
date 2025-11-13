@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include "Utils.h"
 #include "AIPExceptions.h"
+#include "DMAFDWrapper.h"
 
 #define MSDK_ALIGN16(value)                      (((value + 15) >> 4) << 4) // round up to a multiple of 16
 #define MSDK_ALIGN32(X) (((uint32_t)((X)+31)) & (~ (uint32_t)31))
@@ -43,37 +44,80 @@ public:
 
 	void copyYUV420PlanarToContiguous(const unsigned char* base, unsigned char* dst, RawImagePlanarMetadata* rim)
 	{
-		// const int width = rim->getWidth(0);
-		// const int height = rim->getHeight(0);
-		// const size_t stepY = rim->getStep(0);
-		// const size_t stepU = rim->getStep(1);
-		// const size_t stepV = rim->getStep(2);
-		// const size_t offY = rim->getNextPtrOffset(0);
-		// const size_t offU = rim->getNextPtrOffset(1);
-		// const size_t offV = rim->getNextPtrOffset(2);
-		// const unsigned char* srcY = base + offY;
-		// const unsigned char* srcU = base + offU;
-		// const unsigned char* srcV = base + offV;
-		// unsigned char* dstY = dst;
-		// unsigned char* dstU = dst + width * height;
-		// unsigned char* dstV = dstU + (width * height) / 4;
-		// // Y
-		// for (int r = 0; r < height; r++)
-		// {
-		// 	memcpy(dstY + r * width, srcY + r * stepY, width);
-		// }
-		// // U and V are half resolution
-		// const int uvWidth = width / 2;
-		// const int uvHeight = height / 2;
-		// for (int r = 0; r < uvHeight; r++)
-		// {
-		// 	memcpy(dstU + r * uvWidth, srcU + r * stepU, uvWidth);
-		// 	memcpy(dstV + r * uvWidth, srcV + r * stepV, uvWidth);
-		// }
+		 const int width  = rim->getWidth(0);
+    const int height = rim->getHeight(0);
+
+    const size_t stepY = rim->getStep(0);
+    const size_t stepU = rim->getStep(1);
+    const size_t stepV = rim->getStep(2);
+
+    const size_t offY = rim->getNextPtrOffset(0);
+    const size_t offU = rim->getNextPtrOffset(1);
+    const size_t offV = rim->getNextPtrOffset(2);
+
+    const unsigned char* srcY = base + offY;
+    const unsigned char* srcU = base + offU;
+    const unsigned char* srcV = base + offV;
+
+    unsigned char* dstY = dst;
+    unsigned char* dstU = dst + width * height;
+    unsigned char* dstV = dstU + (width * height) / 4;
+
+    // Copy Y plane row-by-row (handle stride)
+    for (int r = 0; r < height; r++)
+    {
+        memcpy(dstY + r * width, srcY + r * stepY, width);
+    }
+
+    // Copy U and V planes (half resolution)
+    const int uvWidth  = width / 2;
+    const int uvHeight = height / 2;
+
+    for (int r = 0; r < uvHeight; r++)
+    {
+        memcpy(dstU + r * uvWidth, srcU + r * stepU, uvWidth);
+        memcpy(dstV + r * uvWidth, srcV + r * stepV, uvWidth);
+    }
 	}
 
-	size_t compute(frame_sp& inFrame, frame_sp& frame)
-	{
+size_t compute(frame_sp& inFrame, frame_sp& frame)
+ {
+        auto inMeta = inFrame->getMetadata();
+
+    	// If input is DMABUF planar YUV420 or NV12, use encodeFromFd
+    	if (inMeta->getMemType() == FrameMetadata::DMABUF && (inMeta->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR || inMeta->getFrameType() == FrameMetadata::RAW_IMAGE))
+    	{
+        	// Extract fd
+        	auto dma = static_cast<DMAFDWrapper*>(inFrame->data());
+        	int fd = dma->getFd();
+        	if (fd <= 0) {
+            	LOG_ERROR << "Invalid DMABUF fd";
+            	return 0;
+       		 }
+
+        	// Choose color space – I420/NV12 are both YCbCr for the encoder
+        	//J_COLOR_SPACE cs = JCS_YCbCr;
+
+
+
+        	// Setup output buffer
+        	auto out_ptr = static_cast<unsigned char*>(frame->data());
+        	unsigned char* out_buf = out_ptr;
+        	unsigned long out_len = static_cast<unsigned long>(frame->size());
+
+        	// Call NvJPEGEncoder::encodeFromFd(fd, ...)
+        	// Assuming you have a member nvEnc of type NvJPEGEncoder* already setup in init()
+        	int ret = encHelper->encodeFromFd(fd, color_space, &out_buf, out_len, mProps.quality);
+        	if (ret < 0) {
+            	LOG_ERROR << "encodeFromFd failed";
+            	return 0;
+        	}
+
+        	// out_len now has the actual size; return it
+        	return static_cast<size_t>(out_len);
+    }
+	else{
+		
 		auto in_buf = static_cast<const unsigned char*>(inFrame->data());
 
 		if(color_space == JCS_YCbCr)
@@ -107,7 +151,7 @@ public:
 					}
 					else if (rim->getImageType() == ImageMetadata::YUV420)
 					{
-						// copyYUV420PlanarToContiguous((unsigned char*)inFrame->data(), (unsigned char*)dummyBuffer.get(), rim);
+						copyYUV420PlanarToContiguous((unsigned char*)inFrame->data(), (unsigned char*)dummyBuffer.get(), rim);
 						in_buf = dummyBuffer.get();
 					}
 					else
@@ -131,6 +175,7 @@ public:
 		encHelper->encode(in_buf, &out_buf, outLength);
 		
 		return outLength;
+	}
 	}
 
 	size_t getDataSize()
@@ -271,7 +316,7 @@ private:
 			}
 			else if(rawImageMetadata->getImageType() == ImageMetadata::RGBA)
 			{
-				color_space = JCS_EXT_RGBA;
+				color_space = JCS_RGBA_8888;
 			}
 			else if(rawImageMetadata->getImageType() == ImageMetadata::NV12 || rawImageMetadata->getImageType() == ImageMetadata::YUV420)
 			{
@@ -300,7 +345,7 @@ private:
 			}
 			else if(rim->getImageType() == ImageMetadata::RGBA)
 			{
-				color_space = JCS_EXT_RGBA;
+				color_space = JCS_RGBA_8888;
 			}
 			else if(rim->getImageType() == ImageMetadata::NV12 || rim->getImageType() == ImageMetadata::YUV420)
 			{

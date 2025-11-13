@@ -7,8 +7,9 @@ class JPEGDecoderL4TMProps : public ModuleProps
 public:
 	JPEGDecoderL4TMProps() : ModuleProps()
 	{
-		
+		decodeToFd=false;
 	}
+	bool decodeToFd;
 };
 
 class JPEGDecoderL4TM : public Module

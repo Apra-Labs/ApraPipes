@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
-  "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
+  "builtin-baseline": "6ba64191f73b82b71ffa5263b26189f7b2b82f92",
   "overrides": [
     {
       "name": "ffmpeg",

@@ -2,6 +2,7 @@
 #include "JPEGEncoderL4TMHelper.h"
 #include <string.h>
 #include <malloc.h>
+#include <Logger.h>
 
 // https://dev.w3.org/Amaya/libjpeg/example.c
 
@@ -40,7 +41,7 @@ JPEGEncoderL4TMHelper::~JPEGEncoderL4TMHelper()
 
 bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stride, J_COLOR_SPACE color_space, double scale)
 {
-    if (color_space == JCS_RGB || color_space == JCS_EXT_RGBA)
+    if (color_space == JCS_RGB || color_space == JCS_RGBA_8888)
     {
         planes = 1;
     }
@@ -78,7 +79,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
     cinfo.image_width = width;
     cinfo.image_height = height;
-    if(color_space == JCS_EXT_RGBA)
+    if(color_space == JCS_RGBA_8888)
     {
         cinfo.input_components = 4; // RGBA
     }
@@ -90,7 +91,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
 // Scaling functionality removed - not available in standard libjpeg    // if (scale != 1) { ... }
 
-    jpeg_set_defaults(&cinfo);
+jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, quality, TRUE);
 
     if (planes == 3)
@@ -110,7 +111,7 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
 int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **out_buf, unsigned long &out_buf_size)
 {
-    if(cinfo.in_color_space == JCS_RGB || cinfo.in_color_space == JCS_EXT_RGBA)
+    if(cinfo.in_color_space == JCS_RGB || cinfo.in_color_space == JCS_RGBA_8888)
     {
         // Store original color space before destroying
         J_COLOR_SPACE orig_color_space = cinfo.in_color_space;
@@ -128,10 +129,10 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
         cinfo.image_height = comp_height[0];
 
         // Restore correct components based on original color space
-        if(orig_color_space == JCS_EXT_RGBA)
+        if(orig_color_space == JCS_RGBA_8888)
         {
             cinfo.input_components = 4; // RGBA
-            cinfo.in_color_space = JCS_EXT_RGBA;
+            cinfo.in_color_space = JCS_RGBA_8888;
         }
         else
         {
@@ -144,7 +145,7 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
 
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
 
-    // jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
+    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
 
     unsigned char *base[planes], *end[planes];
 
@@ -195,6 +196,63 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
     }
 
     jpeg_finish_compress(&cinfo);
+
+    return 0;
+}
+
+
+int JPEGEncoderL4TMHelper::encodeFromFd(int fd, J_COLOR_SPACE color_space,
+        unsigned char **out_buf, unsigned long &out_buf_size,
+        int quality)
+{
+    uint32_t buffer_id;
+
+    if (fd == -1)
+    {
+        LOG_INFO<<"Not encoding because fd = -1";
+        return -1;
+    }
+
+   
+
+    jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
+
+    cinfo.fd = fd;
+    cinfo.IsVendorbuf = TRUE;
+     switch (color_space)
+    {
+        case JCS_YCbCr:
+            cinfo.in_color_space = JCS_YCbCr;
+            break;
+        case JCS_RGBA_8888:
+            cinfo.in_color_space = JCS_RGBA_8888;
+        default:
+        
+            LOG_INFO<<"Color format " << color_space << " not supported\n";
+            return -1;
+    }
+    cinfo.raw_data_in = TRUE;
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE);
+    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
+
+   
+
+    jpeg_start_compress (&cinfo, 0);
+
+    if (cinfo.err->msg_code)
+    {
+        char err_string[256];
+        cinfo.err->format_message((j_common_ptr) &cinfo, err_string);
+        LOG_INFO<<"Error in jpeg_start_compress: " << err_string;
+        return -1;
+    }
+
+    jpeg_write_raw_data (&cinfo, NULL, 0);
+    jpeg_finish_compress(&cinfo);
+
+    LOG_INFO<<"Succesfully encoded Buffer fd=" << fd;
+
 
     return 0;
 }
