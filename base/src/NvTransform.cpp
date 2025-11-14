@@ -220,7 +220,9 @@ bool NvTransform::term()
 
 bool NvTransform::process(frame_container &frames)
 {
-    auto frame = frames.cbegin()->second;
+    try
+    {
+        auto frame = frames.cbegin()->second;
     if(isFrameEmpty(frame))
     {
         LOG_INFO << "Found Empty Frame ";
@@ -244,6 +246,7 @@ bool NvTransform::process(frame_container &frames)
 
     frames.insert(make_pair(mDetail->outputPinId, outFrame));
     send(frames);
+}
 	
     return true;
 }

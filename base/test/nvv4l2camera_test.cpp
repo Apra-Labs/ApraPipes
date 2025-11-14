@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(vcam_crop)
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 
-	auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/crop_640_360.raw", true)));
+	auto fileWriter2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/crop_360_360.raw", true)));
 	copy->setNext(fileWriter2);
 	fileWriter2->setNext(sink);
 
@@ -139,15 +139,16 @@ BOOST_AUTO_TEST_CASE(capture)
     logProps.enableConsoleLog = true;
     Logger::initLogger(logProps);
     Logger::setLogLevel(boost::log::trivial::severity_level::trace);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(3280, 2464, 10)));
+	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(NvV4L2CameraProps(640, 480, 10)));
+	auto transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	
 
     auto copy = boost::shared_ptr<Module>(new DMAFDToHostCopy);
 	VirtualCameraSinkProps sinkProps("/dev/video10");
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
 	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
-	
-    source->setNext(copy);
+	transform->setNext(copy);
 	copy->setNext(sink);
 
 	PipeLine p("test");

@@ -76,7 +76,7 @@ bool NvV4L2CameraHelper::cameraInitialize(bool isMirror)
         fmt.fmt.pix.height != mCamHeight ||
         fmt.fmt.pix.pixelformat != mCamPixFmt)
     {
-        LOG_ERROR << "The desired format is not supported"<<mCamPixFmt;
+        LOG_ERROR << "The desired format is not supported";
         LOG_ERROR << "Supported width is : " << fmt.fmt.pix.width;
         LOG_ERROR << "Supported height is : " << fmt.fmt.pix.height;
         LOG_ERROR << "Supported pixelformat is : " << fmt.fmt.pix.pixelformat;

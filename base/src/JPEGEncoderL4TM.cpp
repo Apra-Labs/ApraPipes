@@ -95,25 +95,16 @@ size_t compute(frame_sp& inFrame, frame_sp& frame)
             	return 0;
        		 }
 
-        	// Choose color space – I420/NV12 are both YCbCr for the encoder
-        	//J_COLOR_SPACE cs = JCS_YCbCr;
-
-
-
         	// Setup output buffer
         	auto out_ptr = static_cast<unsigned char*>(frame->data());
         	unsigned char* out_buf = out_ptr;
         	unsigned long out_len = static_cast<unsigned long>(frame->size());
 
-        	// Call NvJPEGEncoder::encodeFromFd(fd, ...)
-        	// Assuming you have a member nvEnc of type NvJPEGEncoder* already setup in init()
         	int ret = encHelper->encodeFromFd(fd, color_space, &out_buf, out_len, mProps.quality);
         	if (ret < 0) {
             	LOG_ERROR << "encodeFromFd failed";
             	return 0;
         	}
-
-        	// out_len now has the actual size; return it
         	return static_cast<size_t>(out_len);
     }
 	else{

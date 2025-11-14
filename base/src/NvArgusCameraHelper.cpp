@@ -33,29 +33,11 @@ void NvArgusCameraHelper::sendFrame(Argus::Buffer *buffer)
 {
     Argus::IBuffer *iBuffer = Argus::interface_cast<Argus::IBuffer>(buffer);
     auto ptr = const_cast<void *>(iBuffer->getClientData());
-    
-    // DEBUG: Track frame lookup
-    LOG_INFO << "sendFrame: looking up dmaFDWrapper=" << ptr;
-    
-    auto frameIt = mQueuedFrames.find(ptr);
-    if (frameIt == mQueuedFrames.end()) {
-        LOG_ERROR << "sendFrame: FRAME NOT FOUND in mQueuedFrames! ptr=" << ptr 
-                  << " map_size=" << mQueuedFrames.size();
-        return;
-    }
-    
-    auto frame = frameIt->second;
-    LOG_INFO << "sendFrame: found frame=" << frame.get() 
-             << " use_count=" << frame.use_count() 
-             << " before sending";
-    
+    auto frame = mQueuedFrames[ptr];
     mSendFrame(frame);
-    
-    LOG_INFO << "sendFrame: after mSendFrame, use_count=" << frame.use_count();
-    
     std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
     auto erased = mQueuedFrames.erase(ptr);
-    LOG_INFO << "sendFrame: erased " << erased << " entries, remaining=" << mQueuedFrames.size();
+
 }
 
 void NvArgusCameraHelper::operator()()
@@ -72,7 +54,6 @@ void NvArgusCameraHelper::operator()()
             /* Timeout or error happen, exit */
             break;
         }
-        LOG_INFO << "AT operator to acquireBuffer to capture camera frames"<<endl;
         sendFrame(buffer);
     }
 }
@@ -86,12 +67,6 @@ bool NvArgusCameraHelper::queueFrameToCamera()
         return false;
     }
     auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
-    
-    // DEBUG: Track frame lifecycle
-    LOG_INFO << "queueFrameToCamera: frame.get()=" << frame.get() 
-             << " dmaFDWrapper=" << dmaFDWrapper 
-             << " use_count=" << frame.use_count()
-             << " clientData=" << dmaFDWrapper->getClientData();
 
     Argus::IBufferOutputStream *stream = Argus::interface_cast<Argus::IBufferOutputStream>(outputStream);
     auto status = stream->releaseBuffer(static_cast<Argus::Buffer *>(const_cast<void *>(dmaFDWrapper->getClientData())));
@@ -102,18 +77,7 @@ bool NvArgusCameraHelper::queueFrameToCamera()
 
     std::lock_guard<std::mutex> lock(mQueuedFramesMutex);
     
-    // DEBUG: Check if this wrapper is already in the map
-    auto existing = mQueuedFrames.find(dmaFDWrapper);
-    if (existing != mQueuedFrames.end()) {
-        LOG_ERROR << "DOUBLE MAP ENTRY! dmaFDWrapper=" << dmaFDWrapper 
-                  << " existing_frame=" << existing->second.get() 
-                  << " existing_use_count=" << existing->second.use_count()
-                  << " new_frame=" << frame.get() 
-                  << " new_use_count=" << frame.use_count();
-    }
-    
     mQueuedFrames[dmaFDWrapper] = frame;
-    LOG_INFO << "queueFrameToCamera: stored in map, total entries=" << mQueuedFrames.size();
     
     return true;
 }
@@ -224,12 +188,8 @@ bool NvArgusCameraHelper::start(uint32_t width, uint32_t height, uint32_t fps, i
 
         auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
 
-        // Debug: Check EGL image validity
         EGLImageKHR eglImg = dmaFDWrapper->getEGLImage();
         EGLDisplay eglDisp = dmaFDWrapper->getEGLDisplay();
-        LOG_INFO<< "Buffer[" << i << "] EGLImage: " << eglImg << " (EGL_NO_IMAGE_KHR=" << EGL_NO_IMAGE_KHR << ")";
-        LOG_INFO<< "Buffer[" << i << "] EGLDisplay: " << eglDisp;
-        LOG_INFO << "Buffer[" << i << "] DMA FD: " << dmaFDWrapper->getFd();
         
         if (eglImg == EGL_NO_IMAGE_KHR) {
             LOG_ERROR << "Buffer[" << i << "] EGLImage is EGL_NO_IMAGE_KHR - this will cause Argus createBuffer to fail";
