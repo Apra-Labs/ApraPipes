@@ -575,6 +575,16 @@ public:
 				continue;
 			}
 
+			// Debug: Log sync sample entries immediately after reading
+			if (mState.info.type == MP4_TRACK_TYPE_VIDEO && mState.info.syncSampleEntryCount > 0)
+			{
+				LOG_ERROR << "DEBUG: After mp4_demux_get_track_info, track " << i
+				          << " syncSampleCount=" << mState.info.syncSampleEntryCount
+				          << " entries[0]=" << (mState.info.syncSampleEntries ? mState.info.syncSampleEntries[0] : 0)
+				          << " [1]=" << (mState.info.syncSampleEntries && mState.info.syncSampleEntryCount > 1 ? mState.info.syncSampleEntries[1] : 0)
+				          << " [2]=" << (mState.info.syncSampleEntries && mState.info.syncSampleEntryCount > 2 ? mState.info.syncSampleEntries[2] : 0);
+			}
+
 			if (mState.info.type == MP4_TRACK_TYPE_VIDEO && mState.videotrack == -1)
 			{
 				mState.video = mState.info;

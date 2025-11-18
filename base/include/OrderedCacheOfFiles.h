@@ -7,7 +7,7 @@
 #include <boost/multi_index/member.hpp>
 
 #include <string>
-#define batch_size 1440
+#define batch_size 60
 
 namespace fs = boost::filesystem;
 namespace bmi = boost::multi_index;
@@ -16,7 +16,7 @@ namespace bmi = boost::multi_index;
 class OrderedCacheOfFiles
 {
 public:
-	OrderedCacheOfFiles(std::string& video_folder, uint32_t initial_batch_size = 1440, uint32_t _lowerWaterMark = 1441, uint32_t _upperWaterMark = 2880);
+	OrderedCacheOfFiles(std::string& video_folder, uint32_t initial_batch_size = 60, uint32_t _lowerWaterMark = 61, uint32_t _upperWaterMark = 120);
 	~OrderedCacheOfFiles()
 	{
 		if (!cleanCacheOnMainThread && mThread)
@@ -63,8 +63,8 @@ private:
 	bool lastKnownPlaybackDir = true; // sync with mp4 playback
 	boost::mutex m_mutex;
 	boost::shared_ptr<boost::thread> mThread = nullptr;
-	int cacheSize = 1440;
-	int batchSize = 1440;
+	int cacheSize = 60;
+	int batchSize = 60;
 	std::string rootDir = "";
 	uint32_t lowerWaterMark;
 	uint32_t upperWaterMark;
