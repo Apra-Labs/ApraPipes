@@ -143,72 +143,80 @@ V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
 
 void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
-    const int width  = static_cast<int>(mFormat.fmt.pix_mp.width);
-    const int height = static_cast<int>(mFormat.fmt.pix_mp.height);
-    const int pitch0 = static_cast<int>(mFormat.fmt.pix_mp.plane_fmt[0].bytesperline);
-    const int pitch1 = static_cast<int>(mFormat.fmt.pix_mp.plane_fmt[1].bytesperline);
-    const int pitch2 = static_cast<int>(mFormat.fmt.pix_mp.plane_fmt[2].bytesperline);
-    EGLAttrib plane0_offset = 0;
-    EGLAttrib plane1_offset = pitch0 * height;
-    EGLAttrib plane2_offset = plane1_offset + pitch1 * (height / 2);
-    EGLAttrib attribs[] = {
-        EGL_WIDTH, width,
-        EGL_HEIGHT, height,
-        EGL_LINUX_DRM_FOURCC_EXT, DRM_FORMAT_YUV420,
-        EGL_DMA_BUF_PLANE0_FD_EXT, buffer->planesInfo[0].fd,
-        EGL_DMA_BUF_PLANE0_OFFSET_EXT, plane0_offset,
-        EGL_DMA_BUF_PLANE0_PITCH_EXT, pitch0,
-        EGL_DMA_BUF_PLANE1_FD_EXT, buffer->planesInfo[1].fd,
-        EGL_DMA_BUF_PLANE1_OFFSET_EXT, plane1_offset,
-        EGL_DMA_BUF_PLANE1_PITCH_EXT, pitch1,
-        EGL_DMA_BUF_PLANE2_FD_EXT, buffer->planesInfo[2].fd,
-        EGL_DMA_BUF_PLANE2_OFFSET_EXT, plane2_offset,
-        EGL_DMA_BUF_PLANE2_PITCH_EXT, pitch2,
-        EGL_NONE
-    };
-    eglImage = eglCreateImage(eglDisplay, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
-                              (EGLClientBuffer)NULL, attribs);
-    if (eglImage == EGL_NO_IMAGE_KHR) {
-        LOG_ERROR << "eglCreateImage failed for YUV420 EGL image";
+    NvBufSurface *surface = nullptr;
+    if (NvBufSurfaceFromFd(buffer->planesInfo[0].fd, reinterpret_cast<void **>(&surface)) != 0)
+    {
+        LOG_ERROR << "NvBufSurfaceFromFd failed for RGB->YUV converter";
         return;
     }
+
+    if (NvBufSurfaceSyncForDevice(surface, -1, -1) != 0)
+    {
+        LOG_ERROR << "NvBufSurfaceSyncForDevice failed";
+        return;
+    }
+
+    if (NvBufSurfaceMapEglImage(surface, 0) != 0)
+    {
+        LOG_ERROR << "NvBufSurfaceMapEglImage failed";
+        return;
+    }
+
+    eglImage = surface->surfaceList[0].mappedAddr.eglImage;
+    if (eglImage == EGL_NO_IMAGE_KHR)
+    {
+        LOG_ERROR << "NvBufSurfaceMapEglImage returned invalid EGL image";
+        NvBufSurfaceUnMapEglImage(surface, 0);
+        return;
+    }
+
     status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
-    if (status != CUDA_SUCCESS) {
+    if (status != CUDA_SUCCESS)
+    {
         LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status;
-        eglDestroyImage(eglDisplay, eglImage);
+        NvBufSurfaceUnMapEglImage(surface, 0);
         return;
     }
     status = cuGraphicsResourceGetMappedEglFrame(&eglFrame, pResource, 0, 0);
-    if (status != CUDA_SUCCESS) {
+    if (status != CUDA_SUCCESS)
+    {
         LOG_ERROR << "cuGraphicsResourceGetMappedEglFrame failed: " << status;
+        cuGraphicsUnregisterResource(pResource);
+        NvBufSurfaceUnMapEglImage(surface, 0);
         return;
     }
-    Npp8u* dst[3];
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         dst[i] = static_cast<Npp8u *>(eglFrame.frame.pPitch[i]);
     }
 
     status = cuCtxSynchronize();
-    if (status != CUDA_SUCCESS) {
+    if (status != CUDA_SUCCESS)
+    {
         LOG_ERROR << "cuCtxSynchronize failed: " << status;
+        cuGraphicsUnregisterResource(pResource);
+        NvBufSurfaceUnMapEglImage(surface, 0);
         return;
     }
 
     auto data = static_cast<uint8_t*>(frame->data());
     auto res = nppiRGBToYUV420_8u_C3P3R(static_cast<const Npp8u *>(data), nsrcStep, dst, dstPitch, oSizeROI);
-    if (res != NPP_SUCCESS) {
+    if (res != NPP_SUCCESS)
+    {
         LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R failed";
     }
 
     status = cuCtxSynchronize();
-    if (status != CUDA_SUCCESS) {
+    if (status != CUDA_SUCCESS)
+    {
         LOG_ERROR << "cuCtxSynchronize failed after NPP: " << status;
     }
     status = cuGraphicsUnregisterResource(pResource);
-    if (status != CUDA_SUCCESS) {
+    if (status != CUDA_SUCCESS)
+    {
         LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status;
     }
-    eglDestroyImage(eglDisplay, eglImage);
+    NvBufSurfaceUnMapEglImage(surface, 0);
     buffer->v4l2_buf.m.planes[0].bytesused = mBytesUsedY;
     buffer->v4l2_buf.m.planes[1].bytesused = mBytesUsedUV;
     buffer->v4l2_buf.m.planes[2].bytesused = mBytesUsedUV;
