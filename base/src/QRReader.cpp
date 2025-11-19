@@ -129,7 +129,7 @@ bool QRReader::process(frame_container &frames)
 	
 	auto outFrame = makeFrame(text.length(), mDetail->mOutputPinId);
 	memcpy(outFrame->data(), text.c_str(), outFrame->size());
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 
 	send(frames);
 

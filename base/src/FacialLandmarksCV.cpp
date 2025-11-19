@@ -301,7 +301,7 @@ bool FacialLandmarkCV::process(frame_container& frames)
 
 	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId1, landmarksFrame));
+	frames.insert({mOutputPinId1, landmarksFrame});
 
 	send(frames);
 

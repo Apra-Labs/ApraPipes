@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(module_flushQ)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	m1->send(frames);
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(module_flushQRec_branched)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	m1->send(frames);
@@ -961,9 +961,9 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 	BOOST_TEST(((frame3->size() == 10000) && (frame3->data() != NULL)));
 	
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pin1Id, frame1));
-	frames_orig.insert(make_pair(pin2Id, frame2));
-	frames_orig.insert(make_pair(pin3Id, frame3));
+	frames_orig.insert({pin1Id, frame1});
+	frames_orig.insert({pin2Id, frame2});
+	frames_orig.insert({pin3Id, frame3});
 
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::ENCODED_IMAGE) == frame1);
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::GENERAL) == frame3);
@@ -1076,7 +1076,7 @@ BOOST_AUTO_TEST_CASE(skip_test)
 			auto frame = makeFrame(1024, pinId);
 
 			frame_container frames;
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1089,7 +1089,7 @@ BOOST_AUTO_TEST_CASE(skip_test)
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024, pinId);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1335,7 +1335,7 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 			auto frame = makeFrame(1024, getOutputPinIdByType(metadata->getFrameType()));
 
 			frame_container frames;
-			frames.insert(std::make_pair(getOutputPinIdByType(metadata->getFrameType()), frame));
+			frames.insert({getOutputPinIdByType(metadata->getFrameType()), frame});
 
 			send(frames);
 
@@ -1584,7 +1584,7 @@ BOOST_AUTO_TEST_CASE(relay)
 
 	auto frame = source->makeFrame(1023);
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pinId, frame));
+	frames_orig.insert({pinId, frame});
 
 	// 1 close 2 open
 	source->send(frames_orig);
@@ -1689,8 +1689,8 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 			auto frame1 = makeFrame(1023, getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE));
 			auto frame2 = makeFrame(1024, getOutputPinIdByType(FrameMetadata::RAW_IMAGE));
 
-			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), frame1));
-			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), frame2));
+			frames.insert({getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), frame1});
+			frames.insert({getOutputPinIdByType(FrameMetadata::RAW_IMAGE), frame2});
 
 			send(frames);
 			return true;
@@ -1724,7 +1724,7 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 	auto frame = source->makeFrame(1023);
 	frame->fIndex2 = 1011;
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pinId, frame));
+	frames_orig.insert({pinId, frame});
 
 	// 1 close 2 open
 	source->send(frames_orig);
@@ -1771,7 +1771,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto frame = makeFrame(1024);
 
 			frame_container frames;
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1816,7 +1816,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1848,7 +1848,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 

@@ -89,7 +89,7 @@ bool WebCamSource::produce()
     auto frame = makeFrame(mProps.width * mProps.height * 3);
     mDetail->produce(frame);
     frame_container frames;
-    frames.insert(make_pair(mDetail->mOutputPinId, frame));
+    frames.insert({mDetail->mOutputPinId, frame});
     send(frames);
     return true;
 }

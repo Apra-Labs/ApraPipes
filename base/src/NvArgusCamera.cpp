@@ -33,7 +33,7 @@ bool NvArgusCamera::init()
 	mHelper = NvArgusCameraHelper::create(
 		mProps.maxConcurrentFrames, [&](frame_sp &frame) -> void {
 		frame_container frames;
-		frames.insert(make_pair(mOutputPinId, frame));
+		frames.insert({mOutputPinId, frame});
 		send(frames); }, [&]() -> frame_sp { return makeFrame(); });
 	mHelper->start(mProps.width, mProps.height, static_cast<uint32_t>(mProps.fps), mProps.cameraId);
 

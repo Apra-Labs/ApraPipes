@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 		metaFrame->timestamp = dur.count();
 		frame_container frames;
-		frames.insert(make_pair(metadataPinId, metaFrame));
+		frames.insert({metadataPinId, metaFrame});
 		metadataSource->send(frames);
 		readerMuxer->step();
 		readerMuxer->step();

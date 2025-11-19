@@ -461,7 +461,7 @@ bool MemTypeConversion::process(frame_container &frames)
 	mDetail->outputFrame = makeFrame(mDetail->mSize, mDetail->mOutputPinId);
 	mDetail->compute();
 
-	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
+	frames.insert({mDetail->mOutputPinId, mDetail->outputFrame});
 	send(frames);
 
 	return true;

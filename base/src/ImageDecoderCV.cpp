@@ -105,7 +105,7 @@ bool ImageDecoderCV::process(frame_container& frames)
 	mDetail->mImg.data = (uchar *) outFrame->data();
 	cv::imdecode(cv::Mat(1, (int)frame->size(), CV_8UC1, frame->data()), cv::IMREAD_UNCHANGED, &mDetail->mImg);
 	
-	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame));
+	frames.insert({getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame});
 	send(frames);
 	return true;
 }

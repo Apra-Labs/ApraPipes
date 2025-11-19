@@ -233,8 +233,8 @@ bool CalcHistogramCV::validateOutputPins()
 	}
 
 	auto framefactoryByPin = getOutputFrameFactory();
-	for (const auto& me : framefactoryByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
+	for (const auto& [pinId, factory] : framefactoryByPin) {
+		FrameMetadata::FrameType frameType = factory->getFrameMetadata()->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";
@@ -297,7 +297,7 @@ bool CalcHistogramCV::process(frame_container& frames)
 	mDetail->compute(frame, outFrame);	
 		
 	auto pinId = getOutputPinIdByType(FrameMetadata::ARRAY);
-	frames.insert(make_pair(pinId, outFrame));	
+	frames.insert({pinId, outFrame});
 	send(frames);
 
 	return true;

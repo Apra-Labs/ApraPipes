@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // We are sending 4 frames with enable false so only no frames pass through the valve
     for (int i = 0; i < 4; i++)
@@ -146,9 +146,9 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container frames;
-    frames.insert(make_pair(pinIdGeneral, frame));
+    frames.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    frames.insert(make_pair(pinIdRaw, frame1));
+    frames.insert({pinIdRaw, frame1});
     for (int i = 0; i < 4; i++)
     {
         source->send(frames);
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // default props is 2
     valve->allowFrames(2);
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(start_open)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // We are sending 4 frames (moduleprops = -1) and the valve is open so all frames pass through the valve
     for (int i = 0; i < 4; i++)
@@ -351,9 +351,9 @@ BOOST_AUTO_TEST_CASE(valve_relay)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container frames;
-    frames.insert(make_pair(pinIdGeneral, frame));
+    frames.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    frames.insert(make_pair(pinIdRaw, frame1));
+    frames.insert({pinIdRaw, frame1});
     valve->allowFrames(2);
     valve->step();
     for (int i = 0; i < 4; i++)
@@ -417,17 +417,17 @@ BOOST_AUTO_TEST_CASE(multiType_frames)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container bothframes;
-    bothframes.insert(make_pair(pinIdGeneral, frame));
+    bothframes.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    bothframes.insert(make_pair(pinIdRaw, frame1));
+    bothframes.insert({pinIdRaw, frame1});
 
     auto gframe = source->makeFrame(1023, pinIdGeneral);
     frame_container generalframes;
-    generalframes.insert(make_pair(pinIdGeneral, gframe));
+    generalframes.insert({pinIdGeneral, gframe});
 
     auto rframe = source->makeFrame(1023, pinIdRaw);
     frame_container rawframes;
-    rawframes.insert(make_pair(pinIdRaw, rframe));
+    rawframes.insert({pinIdRaw, rframe});
 
     valve->allowFrames(4);
     valve->step();

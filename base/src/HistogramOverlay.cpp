@@ -141,8 +141,8 @@ bool HistogramOverlay::validateInputPins()
 	}
 
 	auto inputMetadataByPin = getInputMetadata();
-	for (const auto& me : inputMetadataByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameType();
+	for (const auto& [pinId, metadata] : inputMetadataByPin) {
+		FrameMetadata::FrameType frameType = metadata->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";
@@ -218,7 +218,7 @@ bool HistogramOverlay::process(frame_container& frames)
 
 	mDetail->overlayHistogram(outFrame, histFrame);
 
-	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame));
+	frames.insert({getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame});
 	send(frames);
 
 	return true;

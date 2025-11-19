@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	drawingOverlay.serialize(frame);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	BOOST_TEST(source->init());
 	BOOST_TEST(fileReader->init());

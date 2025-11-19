@@ -70,7 +70,7 @@ NonBlockingAllOrNonePushStrategy::~NonBlockingAllOrNonePushStrategy()
 
 void NonBlockingAllOrNonePushStrategy::push(std::string dstModuleId, frame_container& frames)
 {
-	auto ret = mFramesByModule.insert(std::make_pair(dstModuleId, frames));
+	auto ret = mFramesByModule.insert({dstModuleId, frames});
 	if (!ret.second)
 	{
 		LOG_ERROR << mId << "<" << dstModuleId << "> already has an entry. Not expected to come here.";
@@ -82,34 +82,34 @@ bool NonBlockingAllOrNonePushStrategy::flush()
 	bool allQuesFree = true;
 	uint32_t lockCounter = 0;
 	std::string firstFullModuleId;
-	for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+	for (const auto& [moduleId, frames] : mFramesByModule)
 	{
-		auto& que = mQueByModule[it->first];
+		auto& que = mQueByModule[moduleId];
 		que->acquireLock();
 		lockCounter++;
 
 		if (!que->is_not_full())
 		{
-			allQuesFree = false;	
-			firstFullModuleId = it->first;
+			allQuesFree = false;
+			firstFullModuleId = moduleId;
 			break;
-		}			
+		}
 	}
 
 
 	if (allQuesFree)
 	{
-		for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+		for (const auto& [moduleId, frames] : mFramesByModule)
 		{
-			mQueByModule[it->first]->pushUnsafeForQuePushStrategy(it->second);
+			mQueByModule[moduleId]->pushUnsafeForQuePushStrategy(frames);
 		}
-	}	
+	}
 	else
 	{
-		
-		for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+
+		for (const auto& [moduleId, frames] : mFramesByModule)
 		{
-			mQueByModule[it->first]->releaseLock();
+			mQueByModule[moduleId]->releaseLock();
 			lockCounter--;
 			if (lockCounter == 0)
 			{
@@ -118,7 +118,7 @@ bool NonBlockingAllOrNonePushStrategy::flush()
 		}
 		// LOG_ERROR << mId << "<> skipping all from que because <" << firstFullModuleId << "> is full";
 	}
-	
+
 	mFramesByModule.clear();
 	return true;
 }

@@ -41,7 +41,7 @@ public:
 	{
 		auto outPin = getOutputPinIdByType(FrameMetadata::FrameType::GENERAL);
 		auto frame = makeFrame(10);
-		frames.insert(make_pair(outPin, frame));
+		frames.insert({outPin, frame});
 
 		send(frames);
 		return true;
@@ -101,7 +101,7 @@ protected:
 	{
 		auto outPin = getOutputPinIdByType(FrameMetadata::FrameType::GENERAL);
 		auto frame = makeFrame(10, outPin);
-		frames.insert(make_pair(outPin, frame));
+		frames.insert({outPin, frame});
 		send(frames);
 		return true;
 	}

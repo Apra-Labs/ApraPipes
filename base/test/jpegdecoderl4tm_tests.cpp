@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	auto j = 0;
 	while (true)
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	m1->send(frames);
 	m2->step();

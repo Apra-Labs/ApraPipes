@@ -178,7 +178,7 @@ bool NvV4L2CameraHelper::queueBufferToCamera()
         {
             //lock
             std::lock_guard<std::mutex> lock(mBufferFDMutex);
-            mBufferFD.insert(make_pair(buf.m.fd, frame));
+            mBufferFD.insert({buf.m.fd, frame});
         }
 
         if (ioctl(mCamFD, VIDIOC_QBUF, &buf) < 0){

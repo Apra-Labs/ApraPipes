@@ -90,7 +90,7 @@ bool ColorConversion::process(frame_container& frames)
 {
 	auto outFrame = makeFrame();
 	mDetail->convert(frames, outFrame, mOutputMetadata);
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

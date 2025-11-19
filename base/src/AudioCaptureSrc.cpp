@@ -85,7 +85,7 @@ AudioCaptureSrc::AudioCaptureSrc(AudioCaptureSrcProps _props) : Module(SOURCE, "
                                  auto outFrame = makeFrame(sampleCount * 2); // Size of Int16 is 2 byte
                                  frame_container frames;
                                  memcpy(outFrame->data(), samples, outFrame->size());
-                                 frames.insert(make_pair(mOutputPinId, outFrame));
+                                 frames.insert({mOutputPinId, outFrame});
                                  send(frames);
                                  return true;
                              }));

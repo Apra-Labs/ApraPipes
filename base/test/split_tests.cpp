@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	{		
 		auto encodedImageFrame = source->makeFrame(readDataSize, source_pin);		
 		frame_container frames;
-		frames.insert(make_pair(source_pin, encodedImageFrame));
+		frames.insert({source_pin, encodedImageFrame});
 
 		for (auto i = 0; i < 20; i++)
 		{
