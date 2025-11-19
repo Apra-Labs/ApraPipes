@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
@@ -15,15 +16,15 @@ BOOST_AUTO_TEST_CASE(basic)
 		
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto source_pin = source->addOutputPin(metadata);
 	
 	SplitProps props;
 	props.number = 3;
-	auto split = boost::shared_ptr<Split>(new Split(props));
+	auto split = std::shared_ptr<Split>(new Split(props));
 	source->setNext(split);
 		
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	split->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -57,27 +58,27 @@ BOOST_AUTO_TEST_CASE(errors)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 
-	auto source1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	source1->addOutputPin(metadata);
 	source1->addOutputPin(metadata);
 
-	auto source2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	source2->addOutputPin(metadata);
 
-	auto source3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	source3->addOutputPin(metadata);
 
 
 	SplitProps props;
 	props.number = 3;
 	{
-		auto split = boost::shared_ptr<Split>(new Split(props));
+		auto split = std::shared_ptr<Split>(new Split(props));
 		source2->setNext(split);
 	}
 
 	try
 	{
-		auto split = boost::shared_ptr<Split>(new Split(props));
+		auto split = std::shared_ptr<Split>(new Split(props));
 		source1->setNext(split); // only 1 input pins
 		BOOST_TEST(false);
 	}
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE(errors)
 
 	try
 	{
-		auto split = boost::shared_ptr<Split>(new Split(props));
+		auto split = std::shared_ptr<Split>(new Split(props));
 		source2->setNext(split);
 		source3->setNext(split); // only 1 module and 1 input pin
 		BOOST_TEST(false);

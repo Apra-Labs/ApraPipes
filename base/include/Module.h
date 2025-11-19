@@ -1,13 +1,14 @@
 #pragma once
 #include "stdafx.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <functional>
+#include <thread>
 #include <boost/serialization/base_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include "Frame.h"
-#include <boost/function.hpp>
 #include "BoundBuffer.h"
 #include "FrameFactory.h"
 #include "CommonDefs.h"
@@ -176,17 +177,17 @@ public:
   string addOutputPin(framemetadata_sp &metadata); // throw exception
   vector<string> getAllOutputPinsByType(int type);
   void addOutputPin(framemetadata_sp &metadata, string &pinId);
-  bool setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
+  bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                bool open = true);
-  virtual bool setNext(boost::shared_ptr<Module> next, bool open = true,
+  virtual bool setNext(std::shared_ptr<Module> next, bool open = true,
                        bool sieve = true); // take all the output pins
-  bool addFeedback(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
+  bool addFeedback(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                    bool open = true);
-  bool addFeedback(boost::shared_ptr<Module> next,
+  bool addFeedback(std::shared_ptr<Module> next,
                    bool open = true); // take all the output pins
-  boost_deque<boost::shared_ptr<Module>> getConnectedModules();
+  boost_deque<std::shared_ptr<Module>> getConnectedModules();
 
-  bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
+  bool relay(std::shared_ptr<Module> next, bool open, bool priority = false);
 
   virtual bool init();
   void operator()(); // to support boost::thread
@@ -200,15 +201,15 @@ public:
   virtual bool isFull();
   bool isNextModuleQueFull();
 
-  void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
+  void adaptQueue(std::shared_ptr<FrameContainerQueueAdapter> queAdapter);
 
-  void register_consumer(boost::function<void(Module *, unsigned short)>, bool bFatal = false);
-  boost::shared_ptr<PaceMaker> getPacer() { return pacer; }
+  void register_consumer(std::function<void(Module *, unsigned short)>, bool bFatal = false);
+  std::shared_ptr<PaceMaker> getPacer() { return pacer; }
   static frame_sp getFrameByType(frame_container &frames, int frameType);
   virtual void flushQue();
   bool getPlayDirection() { return mDirection; }
   virtual void flushQueRecursive();
-  virtual void addControlModule(boost::shared_ptr<Module> cModule);
+  virtual void addControlModule(std::shared_ptr<Module> cModule);
   void registerHealthCallback(APHealthCallback callback);
   void executeErrorCallback(const APErrorObject &error);
   void registerErrorCallback(APErrorCallback callback);
@@ -314,7 +315,7 @@ protected:
   virtual void sendMp4ErrorFrame(frame_sp &frame);
   virtual void sendEoPFrame();
 
-  boost::function<void()> onStepFail;
+  std::function<void()> onStepFail;
   // various behaviours for stepFail:
   void ignore(int times); // do nothing
   void stop_onStepfail();
@@ -324,8 +325,8 @@ protected:
 
   friend class PipeLine;
 
-  boost::function<void(Module *, unsigned short)> event_consumer;
-  boost::function<void(Module *, unsigned short)> fatal_event_consumer;
+  std::function<void(Module *, unsigned short)> event_consumer;
+  std::function<void(Module *, unsigned short)> fatal_event_consumer;
 
   enum ModuleState module_state;
   void setModuleState(enum ModuleState es) { module_state = es; }
@@ -366,15 +367,15 @@ protected:
   string getInputPinIdByType(int type);
   string getOutputPinIdByType(int type);
 
-  bool setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback,
+  bool setNext(std::shared_ptr<Module> next, bool open, bool isFeedback,
                bool sieve); // take all the output pins
-  bool setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
+  bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                bool open, bool isFeedback, bool sieve);
   void addInputPin(framemetadata_sp &metadata, string &pinId, bool isFeedback);
   virtual void
   addInputPin(framemetadata_sp &metadata,
               string &pinId); // throws exception if validation fails
-  boost::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
+  std::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
 
   bool getPlayState() { return mPlay; }
 
@@ -407,7 +408,7 @@ protected:
   };
 
   FFBufferMaker createFFBufferMaker();
-  boost::shared_ptr<Module> controlModule = nullptr;
+  std::shared_ptr<Module> controlModule = nullptr;
 
 private:
   void setSieveDisabledFlag(bool sieve);
@@ -452,19 +453,19 @@ private:
   Kind myNature;
   string myName;
   string myId;
-  boost::thread myThread;
-  boost::shared_ptr<FrameContainerQueue> mQue;
+  std::thread myThread;
+  std::shared_ptr<FrameContainerQueue> mQue;
   bool mRunning;
   uint32_t mStopCount;
   uint32_t mForwardPins;
   bool mIsSieveDisabledForAny = false;
-  boost::shared_ptr<FrameFactory> mpFrameFactory;
-  boost::shared_ptr<FrameFactory> mpCommandFactory;
-  boost::shared_ptr<PaceMaker> pacer;
+  std::shared_ptr<FrameFactory> mpFrameFactory;
+  std::shared_ptr<FrameFactory> mpCommandFactory;
+  std::shared_ptr<PaceMaker> pacer;
   APErrorCallback mErrorCallback;
 
   Connections mConnections; // For each module, all the required pins
-  map<string, boost::shared_ptr<Module>> mModules;
+  map<string, std::shared_ptr<Module>> mModules;
   map<string, bool> mRelay;
 
   std::map<std::string, bool> mInputPinsDirection;
@@ -473,9 +474,9 @@ private:
   std::shared_ptr<FIndexStrategy> mFIndexStrategy;
 
   class Profiler;
-  boost::shared_ptr<Profiler> mProfiler;
-  boost::shared_ptr<ModuleProps> mProps;
-  boost::shared_ptr<QuePushStrategy> mQuePushStrategy;
+  std::shared_ptr<Profiler> mProfiler;
+  std::shared_ptr<ModuleProps> mProps;
+  std::shared_ptr<QuePushStrategy> mQuePushStrategy;
 
   framemetadata_sp mCommandMetadata;
   framemetadata_sp mPropsChangeMetadata;

@@ -77,7 +77,7 @@ protected:
 	void addInputPin(framemetadata_sp &metadata, string &pinId); // throws exception if validation fails
 	bool shouldTriggerSOS();
 	bool processEOS(string &pinId);
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 	FacialLandmarkCVProps mProp;
 	bool handlePropsChange(frame_sp& frame);
 	std::string mOutputPinId1;

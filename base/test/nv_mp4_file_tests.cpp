@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 #include "Frame.h"
 #include "PipeLine.h"
@@ -36,18 +39,18 @@ void run_h264EncoderNV_to_h264writer(bool loop, int sleepTime)
 	auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
 	fileReaderProps.fps = 300;
 	fileReaderProps.readLoop = loop;
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto cudaStream_ = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+	auto cudaStream_ = std::shared_ptr<ApraCudaStream>(new ApraCudaStream());
 
 	auto copyProps = CudaMemCopyProps(cudaMemcpyKind::cudaMemcpyHostToDevice, cudaStream_);
 	copyProps.sync = true;
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	BOOST_TEST(fileReader->setNext(copy));
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderNVCodec(H264EncoderNVCodecProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames)));
 	BOOST_TEST(copy->setNext(encoder));
 
 	LoggerProps loggerProps;
@@ -58,12 +61,12 @@ void run_h264EncoderNV_to_h264writer(bool loop, int sleepTime)
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 40, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 1000;
-	auto mp4WriterSinkP = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSinkP = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	BOOST_TEST(encoder->setNext(mp4WriterSinkP));
 
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	BOOST_TEST(p->init());

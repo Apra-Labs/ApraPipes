@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -26,36 +27,36 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported
 	auto width = 1920;
 	auto height = 1080;
 	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
-	auto source_cc = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
+	auto source_cc = std::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
 	copy1->setNext(source_cc);
 
-	auto overlay_host = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+	auto overlay_host = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto overlay_metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));	
 	overlay_metadata->setHint(OVERLAY_HINT);
 	overlay_host->addOutputPin(overlay_metadata);
 
-	auto overlay_copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto overlay_copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	overlay_host->setNext(overlay_copy);	
 
-	auto overlay = boost::shared_ptr<Module>(new OverlayNPPI(OverlayNPPIProps(stream)));
+	auto overlay = std::shared_ptr<Module>(new OverlayNPPI(OverlayNPPIProps(stream)));
 	overlay_copy->setNext(overlay);
 	source_cc->setNext(overlay);
 	
-	auto output_cc = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
+	auto output_cc = std::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
 	overlay->setNext(output_cc);
-	auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+	auto encoder = std::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
 	output_cc->setNext(encoder);
 	auto outputPinId = encoder->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -92,42 +93,42 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080_pos, *utf::precondition(if_compute_cap_suppo
 	auto width = 1920;
 	auto height = 1080;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
-	auto source_cc = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
+	auto source_cc = std::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::BGRA, stream)));
 	copy1->setNext(source_cc);
 
-	auto overlay_host = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+	auto overlay_host = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto overlay_metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	overlay_metadata->setHint(OVERLAY_HINT);
 	overlay_host->addOutputPin(overlay_metadata);
 
-	auto overlay_copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto overlay_copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	overlay_host->setNext(overlay_copy);
 
-	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(960, 480, stream)));
+	auto resize = std::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(960, 480, stream)));
 	overlay_copy->setNext(resize);
 
 	auto overlayProps = OverlayNPPIProps(stream);
 	overlayProps.offsetX = width >> 1;
 	overlayProps.offsetY = height >> 1;
-	auto overlay = boost::shared_ptr<OverlayNPPI>(new OverlayNPPI(overlayProps));
+	auto overlay = std::shared_ptr<OverlayNPPI>(new OverlayNPPI(overlayProps));
 	resize->setNext(overlay);
 	source_cc->setNext(overlay);
 
-	auto output_cc = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
+	auto output_cc = std::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV420, stream)));
 	overlay->setNext(output_cc);
-	auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+	auto encoder = std::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
 	output_cc->setNext(encoder);
 	auto outputPinId = encoder->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -205,34 +206,34 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
-	auto overlay_host = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_640x360_yuv420.raw")));
+	auto overlay_host = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_640x360_yuv420.raw")));
 	auto overlay_metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	overlay_metadata->setHint(OVERLAY_HINT);
 	overlay_host->addOutputPin(overlay_metadata);
 
-	auto overlay_copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto overlay_copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	overlay_host->setNext(overlay_copy);
 	
 	auto overlayProps = OverlayNPPIProps(stream);
-	auto overlay = boost::shared_ptr<OverlayNPPI>(new OverlayNPPI(overlayProps));
+	auto overlay = std::shared_ptr<OverlayNPPI>(new OverlayNPPI(overlayProps));
 	overlay_copy->setNext(overlay);
 	copy1->setNext(overlay);
 
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	overlay->setNext(copy2);
 	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
 
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
 	BOOST_TEST(fileReader->init());
@@ -285,39 +286,39 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pos, *utf::precondition(if_compute_cap_suppo
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);			
 			
-	auto overlay_host = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_640x360_yuv420.raw")));
+	auto overlay_host = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_640x360_yuv420.raw")));
 	auto overlay_metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	overlay_metadata->setHint(OVERLAY_HINT);
 	overlay_host->addOutputPin(overlay_metadata);
 
-	auto overlay_copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto overlay_copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	overlay_host->setNext(overlay_copy);
 
-	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(320, 180, stream)));
+	auto resize = std::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(320, 180, stream)));
 	overlay_copy->setNext(resize);
 
 	auto overlayProps = OverlayNPPIProps(stream);
 	overlayProps.offsetX = width >> 1;
 	overlayProps.offsetY = height >> 1;
-	auto overlay = boost::shared_ptr<Module>(new OverlayNPPI(overlayProps));
+	auto overlay = std::shared_ptr<Module>(new OverlayNPPI(overlayProps));
 	resize->setNext(overlay);
 	copy1->setNext(overlay);
 
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	overlay->setNext(copy2);
 	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
 
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(m3);
 
 	BOOST_TEST(fileReader->init());

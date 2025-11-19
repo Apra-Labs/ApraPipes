@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/container/deque.hpp>
 #include "AbsControlModule.h"
 #include "enum_macros.h"
@@ -25,9 +25,9 @@ class PipeLine {
 
 	bool mPlay;
 	Status myStatus;
-	typedef boost::shared_ptr<Module> item_type;
+	typedef std::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
-	boost::shared_ptr<Module> controlModule = nullptr;
+	std::shared_ptr<Module> controlModule = nullptr;
 
 	std::string mName;
 	container_type modules;
@@ -37,8 +37,8 @@ public:
 	PipeLine(std::string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();
 	std::string getName() { return mName; }
-	bool appendModule(boost::shared_ptr<Module> pModule);
-	bool addControlModule(boost::shared_ptr<AbsControlModule>cModule);
+	bool appendModule(std::shared_ptr<Module> pModule);
+	bool addControlModule(std::shared_ptr<AbsControlModule>cModule);
 	bool init();
 	void run_all_threaded();
 	void run_all_threaded_withpause();

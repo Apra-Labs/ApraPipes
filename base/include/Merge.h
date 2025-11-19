@@ -28,9 +28,9 @@ protected:
 	bool validateOutputPins();		
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 
-private:	
+private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };
 
 

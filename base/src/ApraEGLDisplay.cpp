@@ -1,7 +1,7 @@
 #include "ApraEGLDisplay.h"
 #include "AIPExceptions.h"
 
-boost::shared_ptr<ApraEGLDisplay> ApraEGLDisplay::instance;
+std::shared_ptr<ApraEGLDisplay> ApraEGLDisplay::instance;
 
 EGLDisplay ApraEGLDisplay::getEGLDisplay()
 {

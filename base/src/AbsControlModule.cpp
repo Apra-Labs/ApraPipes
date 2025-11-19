@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include <boost/filesystem.hpp>
 #include "AbsControlModule.h"
 #include "Module.h"
 #include "Command.h"
 #include "PipeLine.h"
-#include "boost/algorithm/string/join.hpp"
+#include <numeric>
+#include <string>
 
 class AbsControlModule::Detail
 {
@@ -60,11 +60,11 @@ bool AbsControlModule::process(frame_container& frames)
 
 /**
  * @brief Enroll your module to use healthcallback, errorcallback and other control module functions
- * @param boost::shared_ptr<Module> the module to be registered
+ * @param std::shared_ptr<Module> the module to be registered
  * @param role unique string for role of the module
  * @return bool.
  */
-bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> module)
+bool AbsControlModule::enrollModule(std::string role, std::shared_ptr<Module> module)
 {
 	if (moduleRoles.find(role) != moduleRoles.end())
 	{
@@ -87,9 +87,9 @@ bool AbsControlModule::enrollModule(std::string role, boost::shared_ptr<Module> 
 	return true;
 }
 
-boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
+std::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 {
-	boost::shared_ptr<Module> moduleWithRole = nullptr;
+	std::shared_ptr<Module> moduleWithRole = nullptr;
 	try
 	{
 		moduleWithRole = moduleRoles[role].lock();
@@ -102,7 +102,7 @@ boost::shared_ptr<Module> AbsControlModule::getModuleofRole(std::string role)
 }
 
 void AbsControlModule::registerHealthCallbackExtention(
-	boost::function<void(const APHealthObject*, unsigned short)> callbackFunction)
+	std::function<void(const APHealthObject*, unsigned short)> callbackFunction)
 {
 	healthCallbackExtention = callbackFunction;
 };
@@ -138,8 +138,13 @@ std::vector<std::string> AbsControlModule::serializeControlModule()
 }
 
 std::string AbsControlModule::printStatus()
-{ 
-	auto ser = boost::algorithm::join(serializeControlModule(), "|");
+{
+	auto parts = serializeControlModule();
+	std::string ser;
+	if (!parts.empty()) {
+		ser = std::accumulate(std::next(parts.begin()), parts.end(), parts[0],
+			[](const std::string& a, const std::string& b) { return a + "|" + b; });
+	}
 	LOG_INFO << ser;
 	return ser;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Module.h"
 #include "AIPExceptions.h"
+#include <filesystem>
 
 class ArchiveSpaceManagerProps : public ModuleProps
 {
@@ -9,11 +10,11 @@ public:
 	{
 		lowerWaterMark = _lowerWaterMark;
 		upperWaterMark = _upperWaterMark;
-		pathToWatch = _pathToWatch; 
+		pathToWatch = _pathToWatch;
 		samplingFreq = _samplingFreq;
 		fps = 0.001;
-  
-		auto totalSpace = boost::filesystem::space(pathToWatch);
+
+		auto totalSpace = std::filesystem::space(pathToWatch);
 		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
 		{
 			LOG_ERROR << "Please enter correct properties!";
@@ -30,7 +31,7 @@ public:
 		samplingFreq = _samplingFreq;
 		fps = 0.001;
 
-		auto totalSpace = boost::filesystem::space(pathToWatch);
+		auto totalSpace = std::filesystem::space(pathToWatch);
 		if ((lowerWaterMark > upperWaterMark) || (upperWaterMark > totalSpace.capacity))
 		{
 			LOG_ERROR << "Please enter correct properties!";
@@ -85,6 +86,6 @@ protected:
 private:
 
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 	bool checkDirectory = true;
 };

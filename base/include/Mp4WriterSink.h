@@ -97,7 +97,7 @@ protected:
 	bool shouldTriggerSOS();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
-	boost::shared_ptr<DetailAbs> mDetail;
+	std::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;
 
 };

@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include <opencv2/core/types.hpp>
 #include <opencv2/face.hpp>
 #include <opencv2/opencv.hpp>
@@ -37,7 +38,7 @@ public:
 		return Module::pop();
 	}
 
-	boost::shared_ptr<FrameContainerQueue> getQue()
+	std::shared_ptr<FrameContainerQueue> getQue()
 	{
 		return Module::getQue();
 	}
@@ -88,18 +89,18 @@ protected:
 
 };
 
-boost::shared_ptr<ExternalSink> sink;
+std::shared_ptr<ExternalSink> sink;
 
 BOOST_AUTO_TEST_CASE(multiple_faces)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024,768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
+	auto facemark = std::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
 	fileReader->setNext(facemark);
 
-	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	auto sink = std::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
 	facemark->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -113,14 +114,14 @@ BOOST_AUTO_TEST_CASE(multiple_faces)
 
 BOOST_AUTO_TEST_CASE(getSetProps)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
+	auto facemark = std::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD)));
 	fileReader->setNext(facemark);
 
-	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	auto sink = std::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
 	facemark->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -146,14 +147,14 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 BOOST_AUTO_TEST_CASE(SSD, *boost::unit_test::disabled())
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD, "./data/assets/deploy.prototxt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	auto facemark = std::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::SSD, "./data/assets/deploy.prototxt", "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
 	fileReader->setNext(facemark);
 
-	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	auto sink = std::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
 	facemark->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -167,14 +168,14 @@ BOOST_AUTO_TEST_CASE(SSD, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(HAAR_CASCADE, *boost::unit_test::disabled())
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1024, 768, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto facemark = boost::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE, "./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
+	auto facemark = std::shared_ptr<FacialLandmarkCV>(new FacialLandmarkCV(FacialLandmarkCVProps(FacialLandmarkCVProps::FaceDetectionModelType::HAAR_CASCADE, "./data/assets/haarcascade.xml", "./data/assets/face_landmark_model.dat", cv::face::FacemarkKazemi::create())));
 	fileReader->setNext(facemark);
 
-	auto sink = boost::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
+	auto sink = std::shared_ptr<ExternalSink>(new ExternalSink(ExternalSinkProps()));
 	facemark->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

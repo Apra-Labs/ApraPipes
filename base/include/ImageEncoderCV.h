@@ -25,11 +25,11 @@ protected:
 	bool validateInputPins();
 	bool validateOutputPins();
 
-private:		
+private:
 	int mFrameType;
 	ImageEncoderCVProps props;
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	

@@ -1,6 +1,6 @@
 #include <map>
 #include <stdafx.h>
-#include <boost/filesystem.hpp>
+#include <memory>
 #include "ValveModule.h"
 #include "Module.h"
 #include "Command.h"
@@ -115,7 +115,7 @@ bool ValveModule::validateInputOutputPins()
 }
 
 // default - open, sieve is disabled - feedback false
-bool ValveModule::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+bool ValveModule::setNext(std::shared_ptr<Module> next, bool open, bool sieve)
 {
     return Module::setNext(next, open, false, sieve);
 }

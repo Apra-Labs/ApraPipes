@@ -111,5 +111,5 @@ protected:
 	bool processEOS(string &pinId);
 	AffineTransformProps mProp;
 	bool handlePropsChange(frame_sp& frame);
-	boost::shared_ptr<DetailMemoryAbstract> mDetail;
+	std::shared_ptr<DetailMemoryAbstract> mDetail;
 };

@@ -4,8 +4,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/framework.hpp>
 #include "iostream"
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <filesystem>
+#include <fstream>
+#include <thread>
+#include <chrono>
 
 #ifndef SAFE_DELETE_ARRAY
 #define SAFE_DELETE_ARRAY(p) \
@@ -19,7 +21,7 @@ bool Test_Utils::readFile(std::string fileNameToUse, const uint8_t*& data, unsig
 	bool readRes = false;
 	if (!fileNameToUse.empty())
 	{
-		if (boost::filesystem::is_regular_file(fileNameToUse.c_str()))
+		if (std::filesystem::is_regular_file(fileNameToUse.c_str()))
 		{
 			std::ifstream file(fileNameToUse.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 			if (file.is_open())
@@ -96,12 +98,12 @@ void Test_Utils::createDirIfNotExist(std::string path)
 	// example - /a/b/c/d - then it recursively creates /a/b/c if any doesnt exist - doesnt care about d
 	// example - /a/b/c/d.abc - recursively creates /a/b/c if any doesnt exist
 
-	boost::filesystem::path p(path);
-	boost::filesystem::path dirPath = p.parent_path();
+	std::filesystem::path p(path);
+	std::filesystem::path dirPath = p.parent_path();
 
-	if (!boost::filesystem::exists(dirPath))
+	if (!std::filesystem::exists(dirPath))
 	{
-		boost::filesystem::create_directories(dirPath);
+		std::filesystem::create_directories(dirPath);
 	}
 }
 
@@ -111,7 +113,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 
 	bool compareRes = true;
 
-	if (boost::filesystem::is_regular_file(fileName))
+	if (std::filesystem::is_regular_file(fileName))
 	{
 		const std::string strFullFileName = fileName;
 		std::string strFileBaseName = strFullFileName;
@@ -137,7 +139,7 @@ bool Test_Utils::saveOrCompare(const char* fileName, const unsigned char* dataTo
 		compareRes = CompareData(dataToSC, dataRead, dataSize, tolerance);
 		if(!compareRes)
 		{
-			boost::filesystem::create_directory("./data/SaveOrCompareFail");
+			std::filesystem::create_directory("./data/SaveOrCompareFail");
 			std::string saveFile = "./data/SaveOrCompareFail/" + test_name + nameOfFile + strExtension;
 			writeFile(saveFile.c_str(), dataToSC, sizeToSC);
 		}
@@ -216,14 +218,14 @@ std::string Test_Utils::getArgValue(std::string argName, std::string argDefaultV
 }
 void Test_Utils::deleteFolder(std::string folderPath)
 {
-	boost::filesystem::remove_all(folderPath);
+	std::filesystem::remove_all(folderPath);
 }
 
 void Test_Utils::sleep_for_seconds(unsigned short seconds)
 {
 	if (seconds <= 0) return;
 	LOG_INFO << " Sleeping for " << seconds << " seconds";
-	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
+	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 	LOG_INFO << "Done sleeping for " << seconds << " seconds";
 }
 
@@ -232,16 +234,16 @@ Test_Utils::FileCleaner::FileCleaner(std::vector<std::string> paths) {
 };
 Test_Utils::FileCleaner::~FileCleaner() {
 	for (int i = 0; i < pathsOfFiles.size(); i++) {
-		boost::filesystem::path filePath(pathsOfFiles[i]);
-		if (boost::filesystem::exists(filePath))
+		std::filesystem::path filePath(pathsOfFiles[i]);
+		if (std::filesystem::exists(filePath))
 		{
-			if (boost::filesystem::is_regular_file(filePath))
+			if (std::filesystem::is_regular_file(filePath))
 			{
-				boost::filesystem::remove(filePath);
+				std::filesystem::remove(filePath);
 			}
 			else
 			{
-				boost::filesystem::remove_all(filePath);
+				std::filesystem::remove_all(filePath);
 			}
 		}
 	}

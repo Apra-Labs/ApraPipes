@@ -42,7 +42,7 @@ public:
 	bool allowFrames(int numframes); 
 	void setProps(ValveModuleProps& props);
 	ValveModuleProps getProps();
-	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
+	bool setNext(std::shared_ptr<Module> next, bool open = true, bool sieve = false);
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
@@ -56,5 +56,5 @@ protected:
 private:
 	void setMetadata(framemetadata_sp& metadata);
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

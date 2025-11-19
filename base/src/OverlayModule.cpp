@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <boost/foreach.hpp>
 #include "OverlayModule.h"
 #include "Utils.h"
 #include "FrameContainerQueue.h"
@@ -27,9 +26,8 @@ bool OverlayModule::term()
 
 bool OverlayModule::validateInputPins()
 {
-	pair<string, framemetadata_sp> me; // map element	
 	auto inputMetadataByPin = getInputMetadata();
-	BOOST_FOREACH(me, inputMetadataByPin)
+	for (const auto& me : inputMetadataByPin)
 	{
 		FrameMetadata::FrameType frameType = me.second->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)

@@ -3,13 +3,15 @@
 #include "Module.h"
 #include "Utils.h"
 #include <string>
+#include <memory>
+#include <thread>
 
 PipeLine::~PipeLine()
 {
 	//LOG_INFO << "Dest'r ~PipeLine" << mName << endl;
 }
 
-bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
+bool PipeLine::appendModule(std::shared_ptr<Module> pModule)
 {
 	// assumes that appendModule is called after all the connections
 
@@ -32,7 +34,7 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
-bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+bool PipeLine::addControlModule(std::shared_ptr<AbsControlModule> cModule)
 {
 	for (int i = 0; i < modules.size(); i++)
 	{
@@ -160,13 +162,13 @@ void PipeLine::run_all_threaded()
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread = boost::thread(ref(m));
+		m.myThread = std::thread(std::ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	if (controlModule != nullptr)
 	{
 		Module& m = *(controlModule);
-		m.myThread = boost::thread(ref(m));
+		m.myThread = std::thread(std::ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	mPlay = true;
@@ -277,22 +279,22 @@ void PipeLine::interrupt_wait_for_all()
 		return;
 	}
 
+	// Note: std::thread doesn't have interrupt(), modules should check running flag
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread.interrupt();
-	}
-
-	for (auto i = modules.begin(); i != modules.end(); i++)
-	{
-		Module& m = *(i->get());
-		m.myThread.join();
+		if (m.myThread.joinable())
+		{
+			m.myThread.join();
+		}
 	}
 
 	if (controlModule != nullptr)
 	{
-		controlModule->myThread.interrupt();
-		controlModule->myThread.join();
+		if (controlModule->myThread.joinable())
+		{
+			controlModule->myThread.join();
+		}
 	}
 	myStatus = PL_STOPPED;
 }

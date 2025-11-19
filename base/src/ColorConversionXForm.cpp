@@ -61,11 +61,11 @@ void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 	auto frameType = metadata->getFrameType();
 	if (mProps.type == ColorConversionProps::RGB_TO_YUV420PLANAR)
 	{
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::HOST));
+		mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(FrameMetadata::HOST);
 	}
 	else
 	{
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(FrameMetadata::HOST));
+		mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::HOST);
 	}
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }

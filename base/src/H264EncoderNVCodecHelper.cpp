@@ -65,7 +65,7 @@ public:
 		}
 
 		{
-			boost::function<NVENCSTATUS(uint32_t*)> NvEncodeAPIGetMaxSupportedVersion = m_lib.get<NVENCSTATUS(uint32_t*)>("NvEncodeAPIGetMaxSupportedVersion");
+			std::function<NVENCSTATUS(uint32_t*)> NvEncodeAPIGetMaxSupportedVersion = m_lib.get<NVENCSTATUS(uint32_t*)>("NvEncodeAPIGetMaxSupportedVersion");
 			uint32_t version = 0;
 			uint32_t currentVersion = (NVENCAPI_MAJOR_VERSION << 4) | NVENCAPI_MINOR_VERSION;
 			NVENC_API_CALL(NvEncodeAPIGetMaxSupportedVersion(&version));
@@ -76,7 +76,7 @@ public:
 			}
 		}
 		{
-			boost::function<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)> NvEncodeAPICreateInstance = m_lib.get<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)>("NvEncodeAPICreateInstance");
+			std::function<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)> NvEncodeAPICreateInstance = m_lib.get<NVENCSTATUS(NV_ENCODE_API_FUNCTION_LIST*)>("NvEncodeAPICreateInstance");
 			m_nvenc = { NV_ENCODE_API_FUNCTION_LIST_VER };
 			NVENC_API_CALL(NvEncodeAPICreateInstance(&m_nvenc));
 			NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS encodeSessionExParams = { NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER };
@@ -145,7 +145,7 @@ public:
 
 	void unlockOutputBitstream(NV_ENC_OUTPUT_PTR outputBitstream)
 	{
-		 boost::mutex::scoped_lock lock(m_mutex);
+		 std::unique_lock<boost::mutex> lock(m_mutex);
 
 		 NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, outputBitstream));
 
@@ -294,8 +294,8 @@ public:
 		NV_ENC_PIC_PARAMS picParams = {};
 		void* event=nullptr;
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
-			m_nvcodecResources->m_not_empty.wait(lock, boost::bind(&Detail::is_not_empty, this));
+			std::unique_lock<boost::mutex> lock(m_nvcodecResources->m_mutex);
+			m_nvcodecResources->m_not_empty.wait(lock, [this]() { return is_not_empty(); });
 
 			m_nvcodecResources->m_mappedResources.push_back(mapInputResource.mappedResource);
 			m_nvcodecResources->m_mappedFrames.push_back(frame);
@@ -321,7 +321,7 @@ public:
 		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncEncodePicture(m_nvcodecResources->m_hEncoder, &picParams));
 
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+			std::unique_lock<boost::mutex> lock(m_nvcodecResources->m_mutex);
 			m_nvcodecResources->m_nFreeOutputBitstreams--;
 			m_nvcodecResources->m_nBusyOutputBitstreams++;
 			m_nvcodecResources->m_wait_for_output.notify_one();
@@ -375,7 +375,7 @@ private:
 	void unload()
 	{
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+			std::unique_lock<boost::mutex> lock(m_nvcodecResources->m_mutex);
 			m_bRunning = false;
 			m_nvcodecResources->m_wait_for_output.notify_one();
 		}
@@ -524,8 +524,8 @@ private:
 		 	NV_ENC_OUTPUT_PTR outputBitstream;
 		 	NV_ENC_INPUT_PTR mappedResource;
 		 	{
-		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
-		 		m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
+		 		std::unique_lock<boost::mutex> lock(m_nvcodecResources->m_mutex);
+		 		m_nvcodecResources->m_wait_for_output.wait(lock, [this]() { return is_output_available(); });
 		 		if (!m_bRunning)
 		 		{
 		 			break;
@@ -562,7 +562,7 @@ private:
 		 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncUnmapInputResource(m_nvcodecResources->m_hEncoder, mappedResource));
 
 		 	{
-		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+		 		std::unique_lock<boost::mutex> lock(m_nvcodecResources->m_mutex);
 		 		m_nvcodecResources->m_mappedResources.pop_front();
 		 		m_nvcodecResources->m_mappedFrames.pop_front();
 #if defined(_WIN32)
@@ -677,8 +677,8 @@ private:
 	uint32_t m_nOutSPSPPSPayloadSize;
 
 private:
-	boost::shared_ptr<H264EncoderNVCodecProps> mProps;
-	boost::shared_ptr<NVCodecResources> m_nvcodecResources;
+	std::shared_ptr<H264EncoderNVCodecProps> mProps;
+	std::shared_ptr<NVCodecResources> m_nvcodecResources;
 };
 
 H264EncoderNVCodecHelper::H264EncoderNVCodecHelper(uint32_t _bitRateKbps, apracucontext_sp& _cuContext, uint32_t _gopLength, uint32_t _frameRate, H264EncoderNVCodecProps::H264CodecProfile _profile, bool enableBFrames)

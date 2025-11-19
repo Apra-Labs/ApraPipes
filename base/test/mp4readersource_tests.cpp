@@ -1,4 +1,6 @@
 #include <boost/test/unit_test.hpp>
+#include <filesystem>
+#include <memory>
 
 #include "Logger.h"
 #include "PipeLine.h"
@@ -84,7 +86,7 @@ struct SetupMp4ReaderTest
 		Logger::initLogger(loggerProps);
 
 		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, false, false);
-		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 		mp4Reader->addOutPutPin(inputMetadata);
 
@@ -94,7 +96,7 @@ struct SetupMp4ReaderTest
 		std::vector<std::string> mImagePin;
 		mImagePin = mp4Reader->getAllOutputPinsByType(frameType);
 
-		sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 
 		mp4Reader->setNext(sink, mImagePin);
 
@@ -103,7 +105,7 @@ struct SetupMp4ReaderTest
 			auto metaSinkProps = MetadataSinkProps(uniqMetadata);
 			metaSinkProps.logHealth = true;
 			metaSinkProps.logHealthFrequency = 10;
-			metaSink = boost::shared_ptr<MetadataSink>(new MetadataSink(metaSinkProps));
+			metaSink = std::shared_ptr<MetadataSink>(new MetadataSink(metaSinkProps));
 			mp4Reader->setNext(metaSink);
 		}
 
@@ -121,10 +123,10 @@ struct SetupMp4ReaderTest
 	}
 
 	bool isVideoMetada;
-	boost::shared_ptr<PipeLine> p = nullptr;
-	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-	boost::shared_ptr<ExternalSinkModule> sink;
-	boost::shared_ptr<MetadataSink> metaSink;
+	std::shared_ptr<PipeLine> p = nullptr;
+	std::shared_ptr<Mp4ReaderSource> mp4Reader;
+	std::shared_ptr<ExternalSinkModule> sink;
+	std::shared_ptr<MetadataSink> metaSink;
 };
 
 BOOST_AUTO_TEST_CASE(mp4v_to_jpg_frames_metadata)
@@ -472,7 +474,7 @@ BOOST_AUTO_TEST_CASE(getSetProps_change_root_folder_fail)
 BOOST_AUTO_TEST_CASE(parse_root_dir_and_find_the_video)
 {
 	std::string videoPath = "./data/Mp4_videos/jpg_video";
-	boost::filesystem::path file("frame_??????.jpg");
+	std::filesystem::path file("frame_??????.jpg");
 	auto frameType = FrameMetadata::FrameType::ENCODED_IMAGE;
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 	bool parseFS = false;
@@ -488,7 +490,7 @@ BOOST_AUTO_TEST_CASE(check_exposed_params)
 	bool parseFS = true;
 
 	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, 0, true, false, false);
-	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 
@@ -499,7 +501,7 @@ BOOST_AUTO_TEST_CASE(check_exposed_params)
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	mp4Reader->setNext(sink);
 
 	mp4Reader->init();
@@ -524,7 +526,7 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	bool parseFS = true;
 
 	auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, 0, true, false, false);
-	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 
@@ -535,7 +537,7 @@ BOOST_AUTO_TEST_CASE(max_buffer_size_change_props)
 	std::vector<std::string> mImagePin;
 	mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 
 	mp4Reader->setNext(sink);
 

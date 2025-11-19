@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSourceModule.h"
@@ -31,26 +32,26 @@ BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported
 	auto width = 1920;
 	auto height = 1080;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
 	EffectsNPPIProps effectsProps(stream);
 	effectsProps.brightness = 0;
 	effectsProps.contrast = 1;
-	auto effects = boost::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
+	auto effects = std::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
 	copy1->setNext(effects);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	effects->setNext(copy2);
 	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
 
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -213,26 +214,26 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
 	EffectsNPPIProps effectsProps(stream);
 	effectsProps.brightness = 0;
 	effectsProps.contrast = 1;
-	auto effects = boost::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
+	auto effects = std::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
 	copy1->setNext(effects);
 	
-	auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+	auto encoder = std::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
 	effects->setNext(encoder);
 	auto outputPinId = encoder->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -532,16 +533,16 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
-	auto externalSink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto externalSink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy1->setNext(externalSink);
 
 	BOOST_TEST(fileReader->init());
@@ -555,7 +556,7 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 
 	auto frame = frames.begin()->second;
 
-	auto externalSource = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto externalSource = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto cudaImageMetadata = frame->getMetadata();
 	auto pin = externalSource->addOutputPin(cudaImageMetadata);
 
@@ -565,10 +566,10 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 	effectsProps.hue = 20;
 	effectsProps.saturation = 2;
 	effectsProps.logHealth = true;
-	auto effects = boost::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
+	auto effects = std::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
 	externalSource->setNext(effects);
 
-	auto sync = boost::shared_ptr<Module>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
+	auto sync = std::shared_ptr<Module>(new CudaStreamSynchronize(CudaStreamSynchronizeProps(stream)));
 	effects->setNext(sync);
 
 	BOOST_TEST(externalSource->init());
@@ -673,26 +674,26 @@ BOOST_AUTO_TEST_CASE(img_864x576, *utf::precondition(if_compute_cap_supported())
 	auto width = 864;
 	auto height = 576;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/img_864x576.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/img_864x576.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
+	auto decoder = std::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
 
 	EffectsNPPIProps effectsProps(stream);
 	effectsProps.brightness = 0;
 	effectsProps.contrast = 1;
-	auto effects = boost::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
+	auto effects = std::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
 	decoder->setNext(effects);
 
-	auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+	auto encoder = std::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
 	effects->setNext(encoder);
 	auto outputPinId = encoder->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

@@ -15,18 +15,18 @@ public:
 		NON_BLOCKING_ALL_OR_NONE
 	};
 
-	static boost::shared_ptr<QuePushStrategy> getStrategy(QuePushStrategyType type, std::string& srcModuleId);
+	static std::shared_ptr<QuePushStrategy> getStrategy(QuePushStrategyType type, std::string& srcModuleId);
 
 	QuePushStrategy(std::string& srcModuleId);
 	virtual ~QuePushStrategy();
 
-	void addQue(std::string dstModuleId, boost::shared_ptr<FrameContainerQueue>& que);
+	void addQue(std::string dstModuleId, std::shared_ptr<FrameContainerQueue>& que);
 
 	virtual void push(std::string dstModuleId, frame_container& frames);
 	virtual bool flush() { return true; }
 
 protected:
-	std::map<std::string, boost::shared_ptr<FrameContainerQueue>> mQueByModule;
+	std::map<std::string, std::shared_ptr<FrameContainerQueue>> mQueByModule;
 	std::string mId;
 };
 

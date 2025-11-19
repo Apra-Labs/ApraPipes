@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "RTSPClientSrc.h"
 #include "Logger.h"
@@ -30,12 +33,12 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	//also set it up for RTSP client authentication as shown here: https://sites.google.com/apra.in/development/home/evostream/rtsp-authentication?authuser=1
 	auto url=string("rtsp://10.102.10.75/axis-media/media.amp?resolution=1280x720"); 
 	
-	auto m = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
+	auto m = std::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	m->addOutputPin(meta);
 	
 	//filewriter for saving output
-	auto fw = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(d.outFile)));
+	auto fw = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(d.outFile)));
 	m->setNext(fw);
 
 

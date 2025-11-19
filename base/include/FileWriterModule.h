@@ -36,7 +36,7 @@ protected:
 	bool process(frame_container& frames);
 	bool validateInputPins();
 private:
-	boost::shared_ptr<FileSequenceDriver> mDriver;	
+	std::shared_ptr<FileSequenceDriver> mDriver;
 };
 
 

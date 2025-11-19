@@ -28,5 +28,5 @@ protected:
 
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;	
+	std::shared_ptr<Detail> mDetail;
 };

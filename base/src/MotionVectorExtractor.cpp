@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <boost/foreach.hpp>
 extern "C"
 {
 #include <libavutil/motion_vector.h>
@@ -360,9 +359,8 @@ bool MotionVectorExtractor::validateOutputPins()
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins size is expected to be 2. Actual<" << getNumberOfOutputPins() << ">";
 		return false;
 	}
-	pair<string, framefactory_sp> me; // map element	
 	auto framefactoryByPin = getOutputFrameFactory();
-	BOOST_FOREACH(me, framefactoryByPin)
+	for (const auto& me : framefactoryByPin)
 	{
 		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
 		if (frameType != FrameMetadata::OVERLAY_INFO_IMAGE && frameType != FrameMetadata::RAW_IMAGE)
