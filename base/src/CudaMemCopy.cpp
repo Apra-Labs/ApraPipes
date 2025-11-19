@@ -128,7 +128,7 @@ bool CudaMemCopy::process(frame_container &frames)
 
 	if (cudaStatus == cudaSuccess)
 	{
-		frames.insert(make_pair(mOutputPinId, outFrame));
+		frames.insert({mOutputPinId, outFrame});
 		send(frames);
 	}
 

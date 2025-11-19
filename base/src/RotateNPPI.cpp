@@ -332,7 +332,7 @@ bool RotateNPPI::process(frame_container &frames)
 
 	mDetail->compute(frame->data(), outFrame->data());
 
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	send(frames);
 
 	return true;

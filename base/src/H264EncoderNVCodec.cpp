@@ -190,8 +190,8 @@ bool H264EncoderNVCodec::processSOS(frame_sp &frame)
 		outputFrame->setMetadata(mOutputMetadata);
 
 		frame_container frames;
-		frames.insert(make_pair(mInputPinId, inputFrame));
-		frames.insert(make_pair(mOutputPinId, outputFrame));
+		frames.insert({mInputPinId, inputFrame});
+		frames.insert({mOutputPinId, outputFrame});
 		send(frames);
 	}
 	);

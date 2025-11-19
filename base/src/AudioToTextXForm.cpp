@@ -179,7 +179,7 @@ bool AudioToTextXForm::process(frame_container& frames)
 	mDetail->mInputAudioBuffer.clear();
 	auto outFrame = makeFrame(output.length());
 	memcpy(outFrame->data(), output.c_str(), output.length());
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

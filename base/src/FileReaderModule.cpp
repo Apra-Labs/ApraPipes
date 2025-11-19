@@ -63,7 +63,7 @@ bool FileReaderModule::produce()
 		auto frame = frame_sp(new ExtFrame(cachedFrame->data(), cachedFrame->size()));
 		auto metadata = getOutputFrameFactory().begin()->second->getFrameMetadata();	
 		frame->setMetadata(metadata);
-		frames.insert(make_pair(mPinId, frame));
+		frames.insert({mPinId, frame});
 		send(frames);
 		return true;
 	}
@@ -100,7 +100,7 @@ bool FileReaderModule::produce()
 	frame->timestamp = dur.count();
 
 	frame_container frames;
-	frames.insert(make_pair(mPinId, frame));
+	frames.insert({mPinId, frame});
 	send(frames);
 
 	if (mCache)

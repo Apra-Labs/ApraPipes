@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	memcpy(frame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 	
 	for (auto i = 0; i < 4; i++)
 	{
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(append)
 	memcpy(frame->data(), stringToAppend, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 	m1->send(frames);
 	m2->step();
 	string text;
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(appendTestPattern)
 	memcpy(frame->data(), stringToAppend, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 	m1->send(frames);
 	m2->step();
 

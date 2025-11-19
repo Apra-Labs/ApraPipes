@@ -76,7 +76,7 @@ struct CheckThread {
 			auto frame = makeFrame(fSize, fPinId);
 		
 			frame_container frames;
-			frames.insert(std::make_pair(fPinId, frame));
+			frames.insert({fPinId, frame});
 
 			send(frames);
 
@@ -107,7 +107,7 @@ struct CheckThread {
 			auto frame = getFrameByType(frames, FrameMetadata::FrameType::GENERAL);
 			
 			std::string fPinId = getOutputPinIdByType(FrameMetadata::FrameType::GENERAL);
-			frames.insert(std::make_pair(fPinId, frame));
+			frames.insert({fPinId, frame});
 			
 			send(frames);
 			return true;

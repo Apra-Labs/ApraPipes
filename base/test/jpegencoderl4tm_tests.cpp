@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled()
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	for (auto i = 0; i < 10000; i++)
 	{
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	for (auto i = 0; i < 10000; i++)
 	{
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 
@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
+	frames.insert({rawImagePin, rawImageFrame});
 
 	m1->send(frames);
 

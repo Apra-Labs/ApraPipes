@@ -1236,7 +1236,7 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 		trimmedImgFrame->timestamp = nowTS;
 	}
 
-	frames.insert(make_pair(encodedImagePinId, trimmedImgFrame));
+	frames.insert({encodedImagePinId, trimmedImgFrame});
 	if (metadataSize)
 	{
 		auto trimmedMetadataFrame = makeFrameTrim(metadataFrame, metadataSize, metadataFramePinId);
@@ -1252,7 +1252,7 @@ bool Mp4ReaderDetailJpeg::produceFrames(frame_container& frames)
 			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
 		}
 
-		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
+		frames.insert({metadataFramePinId, trimmedMetadataFrame});
 	}
 	return true;
 }
@@ -1422,7 +1422,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		trimmedImgFrame->timestamp = nowTS;
 	}
 
-	frames.insert(make_pair(h264ImagePinId, trimmedImgFrame));
+	frames.insert({h264ImagePinId, trimmedImgFrame});
 	if (metadataSize)
 	{
 		auto trimmedMetadataFrame = makeFrameTrim(metadataFrame, metadataSize, metadataFramePinId);
@@ -1437,7 +1437,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		{
 			trimmedMetadataFrame->timestamp = trimmedImgFrame->timestamp;
 		}
-		frames.insert(make_pair(metadataFramePinId, trimmedMetadataFrame));
+		frames.insert({metadataFramePinId, trimmedMetadataFrame});
 	}
 	if (isMp4SeekFrame)
 	{

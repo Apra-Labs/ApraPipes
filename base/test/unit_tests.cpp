@@ -328,14 +328,14 @@ BOOST_AUTO_TEST_CASE(frame_que_test)
 		frame_container frames1;
 		frame_container frames2;
 		frame_container frames3;
-		frames1.insert(std::make_pair("p1", f1));
+		frames1.insert({"p1", f1});
 
-		frames2.insert(std::make_pair("p1", f1));
-		frames2.insert(std::make_pair("p2", f2));
+		frames2.insert({"p1", f1});
+		frames2.insert({"p2", f2});
 
-		frames3.insert(std::make_pair("p1", f1));
-		frames3.insert(std::make_pair("p2", f2));
-		frames3.insert(std::make_pair("p3", f3));
+		frames3.insert({"p1", f1});
+		frames3.insert({"p2", f2});
+		frames3.insert({"p3", f3});
 
 		BOOST_TEST(q.try_pop() == frame_container()); //empty queue
 		q.push(frames1);
@@ -364,9 +364,9 @@ BOOST_AUTO_TEST_CASE(frame_que_drop_oldtest_test)
 		frame_container frames1;
 		frame_container frames2;
 		frame_container frames3;
-		frames1.insert(std::make_pair("p1", f1));
-		frames2.insert(std::make_pair("p2", f2));
-		frames3.insert(std::make_pair("p3", f3));
+		frames1.insert({"p1", f1});
+		frames2.insert({"p2", f2});
+		frames3.insert({"p3", f3});
 
 		BOOST_TEST(q.try_pop() == frame_container()); //empty queue
 		q.push(frames1);
@@ -409,7 +409,7 @@ void producer_consumer(bool isProducer, std::shared_ptr<FrameFactory> fact, Fram
 		{
 			auto f1 = fact->create(1023, fact);//uses 1 chunk
 			frame_container frames;
-			frames.insert(std::make_pair("p1", f1));
+			frames.insert({"p1", f1});
 			q.push(frames);
 		}
 		else {

@@ -25,12 +25,12 @@ private:
 public:
 	FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrames=0);
 	virtual ~FrameFactory();
-	frame_sp create(size_t size, std::shared_ptr<FrameFactory>& mother);
+	[[nodiscard]] frame_sp create(size_t size, std::shared_ptr<FrameFactory>& mother);
 	// Intended only for command, props, pauseplay
 	// don't use it for normal output frames - Module when sending EOP is using it and some other modules
-	frame_sp create(size_t size, std::shared_ptr<FrameFactory>& mother, framemetadata_sp& metadata);
-	frame_sp create(std::shared_ptr<FrameFactory>& mother);
-	frame_sp create(frame_sp &frame, size_t size, std::shared_ptr<FrameFactory>& mother);	
+	[[nodiscard]] frame_sp create(size_t size, std::shared_ptr<FrameFactory>& mother, framemetadata_sp& metadata);
+	[[nodiscard]] frame_sp create(std::shared_ptr<FrameFactory>& mother);
+	[[nodiscard]] frame_sp create(frame_sp &frame, size_t size, std::shared_ptr<FrameFactory>& mother);	
 	void destroy(Frame* pointer);
 	frame_sp getEOSFrame() {
 		return eosFrame;

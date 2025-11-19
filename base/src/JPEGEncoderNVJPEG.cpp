@@ -332,7 +332,7 @@ bool JPEGEncoderNVJPEG::process(frame_container &frames)
 
 	auto outFrame = makeFrame(bufferFrame, frameLength, mOutputPinId);
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 
 	return true;

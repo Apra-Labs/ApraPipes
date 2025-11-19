@@ -205,7 +205,7 @@ bool BMPConverter::process(frame_container &frames)
 
     mDetail->compute(frame->data(), outFrame->data());
 
-    frames.insert(make_pair(mOutputPinId, outFrame));
+    frames.insert({mOutputPinId, outFrame});
     send(frames);
 
     return true;

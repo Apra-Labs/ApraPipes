@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 		frame_container frames;
-		frames.insert(make_pair(rawImagePinId, rawImageFrame));
+		frames.insert({rawImagePinId, rawImageFrame});
 		m1->send(frames);
 
 		m1->send(frames);
@@ -212,7 +212,7 @@ void testValues(int bins, int type, vector<float>& histValues)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 	m1->send(frames);
 
 
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_withchangeprops)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 
 	testValues2(frames, m1, m2, m3, histPinId, histValuesNone);
 	testSetProps(16, 1, m2, m3, histPinId);
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_perf)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 	m1->send(frames);
 
 	auto j = 0;

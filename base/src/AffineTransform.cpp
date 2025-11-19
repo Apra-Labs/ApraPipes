@@ -591,7 +591,7 @@ bool AffineTransform::process(frame_container &frames)
 	mDetail->setPtrs();
 
 	mDetail->compute();
-	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
+	frames.insert({mDetail->mOutputPinId, mDetail->outputFrame});
 	send(frames);
 
 	return true;

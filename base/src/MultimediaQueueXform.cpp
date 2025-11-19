@@ -40,12 +40,12 @@ public:
 	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+		for (const auto& [pinId, frame] : frames)
 		{
-			mQueue.insert({ it->second->timestamp, frames });
-			if (largestTimeStamp < it->second->timestamp)
+			mQueue.insert({ frame->timestamp, frames });
+			if (largestTimeStamp < frame->timestamp)
 			{
-				largestTimeStamp = it->second->timestamp;
+				largestTimeStamp = frame->timestamp;
 			}
 		}
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
@@ -119,9 +119,8 @@ public:
 	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+		for (const auto& [pinId, frame] : frames)
 		{
-			auto frame = it->second;
 			auto mFrameBuffer = const_buffer(frame->data(), frame->size());
 			auto ret = H264Utils::parseNalu(mFrameBuffer);
 			tie(typeFound, spsBuff, ppsBuff) = ret;
@@ -134,11 +133,11 @@ public:
 				spsBuffer = spsBuff;
 				ppsBuffer = ppsBuff;
 			}
-			mQueue.insert({ it->second->timestamp, frames });
+			mQueue.insert({ frame->timestamp, frames });
 
-			if (largestTimeStamp < it->second->timestamp)
+			if (largestTimeStamp < frame->timestamp)
 			{
-				largestTimeStamp = it->second->timestamp;
+				largestTimeStamp = frame->timestamp;
 			}
 		}
 		BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
@@ -552,9 +551,8 @@ bool MultimediaQueueXform::init()
 	}
 	auto inputPinIdMetadataMap = getInputMetadata();
 
-	for (auto const& element : inputPinIdMetadataMap)
+	for (const auto& [pinId, metadata] : inputPinIdMetadataMap)
 	{
-		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
 		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
@@ -635,20 +633,20 @@ void MultimediaQueueXform::extractFramesAndEnqueue(std::shared_ptr<FrameContaine
 	{
 		frame_container framesContainer;
 		auto frames = frameQueue->pop();
-		for (auto itr = frames.begin(); itr != frames.end(); itr++)
+		for (auto& [pinId, frame] : frames)
 		{
-			if (itr->second->isCommand())
+			if (frame->isCommand())
 			{
-				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
-				handleCommand(cmdType, itr->second);
+				auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
+				handleCommand(cmdType, frame);
 			}
-			else if(itr->second->isPropsChange())
+			else if(frame->isPropsChange())
 			{
-				handlePropsChange(itr->second);
+				handlePropsChange(frame);
 			}
 			else
 			{
-				framesContainer.insert(make_pair(itr->first, itr->second));
+				framesContainer.insert({pinId, frame});
 			}
 		}
 		if (!framesContainer.empty())
@@ -756,7 +754,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						}
 						frame_container outFrames;
 						auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
-						outFrames.insert(make_pair(outputId, it->second.begin()->second));
+						outFrames.insert({outputId, it->second.begin()->second});
 						if (!framesToSkip)
 						{
 							mState->exportSend(outFrames);
@@ -958,7 +956,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					frame_container outFrames;
 					auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 
-					outFrames.insert(make_pair(outputId, it->second.begin()->second));
+					outFrames.insert({outputId, it->second.begin()->second});
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
 					if (!framesToSkip)
 					{

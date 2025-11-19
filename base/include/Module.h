@@ -177,27 +177,27 @@ public:
   string addOutputPin(framemetadata_sp &metadata); // throw exception
   vector<string> getAllOutputPinsByType(int type);
   void addOutputPin(framemetadata_sp &metadata, string &pinId);
-  bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
+  [[nodiscard]] bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                bool open = true);
-  virtual bool setNext(std::shared_ptr<Module> next, bool open = true,
+  [[nodiscard]] virtual bool setNext(std::shared_ptr<Module> next, bool open = true,
                        bool sieve = true); // take all the output pins
-  bool addFeedback(std::shared_ptr<Module> next, vector<string> &pinIdArr,
+  [[nodiscard]] bool addFeedback(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                    bool open = true);
-  bool addFeedback(std::shared_ptr<Module> next,
+  [[nodiscard]] bool addFeedback(std::shared_ptr<Module> next,
                    bool open = true); // take all the output pins
   boost_deque<std::shared_ptr<Module>> getConnectedModules();
 
   bool relay(std::shared_ptr<Module> next, bool open, bool priority = false);
 
-  virtual bool init();
+  [[nodiscard]] virtual bool init();
   void operator()(); // to support std::thread
-  virtual bool run();
-  bool play(float speed, bool direction = true);
-  bool play(bool play);
-  bool queueStep();
-  virtual bool step();
-  virtual bool stop();
-  virtual bool term();
+  [[nodiscard]] virtual bool run();
+  [[nodiscard]] bool play(float speed, bool direction = true);
+  [[nodiscard]] bool play(bool play);
+  [[nodiscard]] bool queueStep();
+  [[nodiscard]] virtual bool step();
+  [[nodiscard]] virtual bool stop();
+  [[nodiscard]] virtual bool term();
   virtual bool isFull();
   bool isNextModuleQueFull();
 

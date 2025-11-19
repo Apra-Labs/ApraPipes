@@ -123,11 +123,11 @@ std::vector<std::string> AbsControlModule::serializeControlModule()
 	std::vector<std::string> status;
 	status.push_back("Module <" + this->getId() + "> \n");
 	status.push_back("Enrolled Modules \n");
-	for (auto it : moduleRoles)
+	for (const auto& [role, moduleWeak] : moduleRoles)
 	{
-		status.push_back("module <" + it.second.lock()->getId() + "> role <" + it.first + ">\n");
+		status.push_back("module <" + moduleWeak.lock()->getId() + "> role <" + role + ">\n");
 		std::string cbStatus = "registered for...\n";
-		if (it.second.lock()->getProps().enableHealthCallBack)
+		if (moduleWeak.lock()->getProps().enableHealthCallBack)
 		{
 			cbStatus += spacedLineFmt + "health callbacks \n";
 		}

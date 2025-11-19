@@ -8,7 +8,7 @@ class DMAFDWrapper
 {
 public:
     /* Always use this static method to create DMAFDWrapper */
-    static DMAFDWrapper *create(int index, int width, int height,
+    [[nodiscard]] static DMAFDWrapper *create(int index, int width, int height,
                              NvBufferColorFormat colorFormat,
                              NvBufferLayout layout, EGLDisplay eglDisplay);
 

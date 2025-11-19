@@ -383,7 +383,7 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
         serializeSize += 100;
         auto motionVectorFrame = makeFrame(serializeSize, motionVectorFramePinId);
         drawingOverlay.serialize(motionVectorFrame);
-        frames.insert(make_pair(motionVectorFramePinId, motionVectorFrame));
+        frames.insert({motionVectorFramePinId, motionVectorFrame});
     }
 }
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
@@ -393,7 +393,7 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
     frame_container frames;
     frame->timestamp = incomingTimeStamp.front();
     incomingTimeStamp.pop();
-    frames.insert(make_pair(h264FrameOutputPinId, frame));
+    frames.insert({h264FrameOutputPinId, frame});
 
     if (enableMotionVectors)
     {

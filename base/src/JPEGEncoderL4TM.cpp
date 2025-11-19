@@ -217,7 +217,7 @@ bool JPEGEncoderL4TM::process(frame_container& frames)
 		
 	auto outFrame = makeFrame(bufferFrame, frameLength, mDetail->outputPinId);
 
-	frames.insert(make_pair(mDetail->outputPinId, outFrame));
+	frames.insert({mDetail->outputPinId, outFrame});
 	send(frames);
 	return true;
 }

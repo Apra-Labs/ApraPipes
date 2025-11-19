@@ -577,7 +577,7 @@ BOOST_AUTO_TEST_CASE(yuv420_1920x1080_performance, *boost::unit_test::disabled()
 	BOOST_TEST(sync->init());
 
 	frame_container cudaFrames;
-	cudaFrames.insert(make_pair(pin, frame));
+	cudaFrames.insert({pin, frame});
 
 	for (auto i = 0; i < 10000; i++)
 	{

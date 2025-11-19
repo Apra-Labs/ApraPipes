@@ -191,7 +191,7 @@ bool NvTransform::process(frame_container &frames)
 
 		mDetail->compute(frame, dmaFdWrapper->tempFD);
 
-		frames.insert(make_pair(mDetail->outputPinId, outFrame));
+		frames.insert({mDetail->outputPinId, outFrame});
 		send(frames);
 	}
 	catch(std::exception & e)

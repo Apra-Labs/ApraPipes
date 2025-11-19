@@ -61,7 +61,7 @@ bool Split::process(frame_container& frames)
 {		
 	auto frame = frames.begin()->second;
 	frame->fIndex2 = mFIndex2++;
-	frames.insert(std::make_pair(mPinIds[mCurrentIndex], frame));
+	frames.insert({mPinIds[mCurrentIndex], frame});
 	
 	send(frames);
 	mCurrentIndex++;

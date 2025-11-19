@@ -552,7 +552,7 @@ void H264Decoder::sendDecodedFrame()
 		if(!framesToSkip)
 		{
 			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, outFrame));
+			frames.insert({mOutputPinId, outFrame});
 			if(resumePlayback && resumeFwdPlayback && resumeBwdPlayback){
 				if (!mDirection && lastFrameSent <outFrame->timestamp){
 					LOG_ERROR <<"Sending newer frame:" << "lastFrameSent: "<<lastFrameSent<<"This frame:"<<outFrame->timestamp;

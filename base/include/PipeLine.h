@@ -37,9 +37,9 @@ public:
 	PipeLine(std::string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();
 	std::string getName() { return mName; }
-	bool appendModule(std::shared_ptr<Module> pModule);
-	bool addControlModule(std::shared_ptr<AbsControlModule>cModule);
-	bool init();
+	[[nodiscard]] bool appendModule(std::shared_ptr<Module> pModule);
+	[[nodiscard]] bool addControlModule(std::shared_ptr<AbsControlModule>cModule);
+	[[nodiscard]] bool init();
 	void run_all_threaded();
 	void run_all_threaded_withpause();
 	void pause();

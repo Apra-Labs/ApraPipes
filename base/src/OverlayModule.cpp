@@ -27,9 +27,9 @@ bool OverlayModule::term()
 bool OverlayModule::validateInputPins()
 {
 	auto inputMetadataByPin = getInputMetadata();
-	for (const auto& me : inputMetadataByPin)
+	for (const auto& [pinId, metadata] : inputMetadataByPin)
 	{
-		FrameMetadata::FrameType frameType = me.second->getFrameType();
+		FrameMetadata::FrameType frameType = metadata->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR OVERLAY_INFO_IMAGE. Actual<" << frameType << ">";
@@ -59,11 +59,10 @@ bool OverlayModule::shouldTriggerSOS()
 bool OverlayModule::process(frame_container& frames)
 {
 	DrawingOverlay drawOverlay;
-	for (auto it = frames.cbegin(); it != frames.cend(); it++)
+	for (const auto& [pinId, frame] : frames)
 	{
-		auto metadata = it->second->getMetadata();
+		auto metadata = frame->getMetadata();
 		auto frameType = metadata->getFrameType();
-		frame_sp frame = it->second;
 
 		if (frameType == FrameMetadata::OVERLAY_INFO_IMAGE)
 		{
@@ -74,7 +73,7 @@ bool OverlayModule::process(frame_container& frames)
 		{
 			drawOverlay.draw(frame);
 			frame_container overlayConatiner;
-			overlayConatiner.insert(make_pair(mOutputPinId, frame));
+			overlayConatiner.insert({mOutputPinId, frame});
 			send(overlayConatiner);
 		}
 	}

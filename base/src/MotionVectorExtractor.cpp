@@ -154,7 +154,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 			uint8_t* dstData[AV_NUM_DATA_POINTERS];
 			dstData[0] = static_cast<uint8_t*>(decodedFrame->data());
 			sws_scale(sws_context, avFrame->data, avFrame->linesize, 0, decoderContext->height, dstData, dstStrides);
-			frames.insert(make_pair(rawFramePinId, decodedFrame));
+			frames.insert({rawFramePinId, decodedFrame});
 		}
 		if (ret >= 0)
 		{
@@ -194,7 +194,7 @@ int DetailFfmpeg::decodeAndGetMotionVectors(AVPacket* pkt, frame_container& fram
 					outFrame = makeFrameWithPinId(serializedSize, motionVectorPinId);
 					memcpy(outFrame->data(), sideData->data, serializedSize);
 					drawingOverlay.serialize(outFrame);
-					frames.insert(make_pair(motionVectorPinId, outFrame));
+					frames.insert({motionVectorPinId, outFrame});
 				}
 			}
 			else
@@ -286,7 +286,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 			auto mvSize = drawingOverlay.mGetSerializeSize();
 			outFrame = makeframe(outFrame, mvSize, motionVectorPinId);
 			drawingOverlay.serialize(outFrame);
-			frames.insert(make_pair(motionVectorPinId, outFrame));
+			frames.insert({motionVectorPinId, outFrame});
 		}
 	}
 
@@ -308,7 +308,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		bgrImg.data = static_cast<uint8_t*>(decodedFrame->data());
 
 		cv::cvtColor(yuvImgCV, bgrImg, cv::COLOR_YUV2BGR_I420);
-		frames.insert(make_pair(rawFramePinId, decodedFrame));
+		frames.insert({rawFramePinId, decodedFrame});
 	}
 }
 MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props)

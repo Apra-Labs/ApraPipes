@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(general, * utf::precondition(if_compute_cap_supported()))
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(rawimage, * utf::precondition(if_compute_cap_supported()))
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(rawimageplanar, * utf::precondition(if_compute_cap_supporte
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();

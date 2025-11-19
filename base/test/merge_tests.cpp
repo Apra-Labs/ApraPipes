@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i;
-			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
+			frames.insert({source_pin_1, encodedImageFrame_1});
 			source1->send(frames);
 		}
 		if (i % 3 == 1)
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
-			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
+			frames.insert({source_pin_2, encodedImageFrame_2});
 			source2->send(frames);
 		}
 		if (i % 3 == 2)
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i;
-			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
+			frames.insert({source_pin_3, encodedImageFrame_3});
 			source3->send(frames);
 		}
 		merge->step();
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i+2;
-			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
+			frames.insert({source_pin_1, encodedImageFrame_1});
 			source1->send(frames);
 			merge->step();
 			BOOST_TEST(sink->try_pop().size() == 0);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
-			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
+			frames.insert({source_pin_2, encodedImageFrame_2});
 			source2->send(frames);
 			merge->step();
 			BOOST_TEST(sink->try_pop().size() == 0);
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i-2;
-			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
+			frames.insert({source_pin_3, encodedImageFrame_3});
 			source3->send(frames);
 			merge->step();
 			for (auto j = 2; j >= 0; j--)
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = i;
-			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
+			frames.insert({source_pin_1, encodedImageFrame_1});
 			source1->send(frames);
 		}
 		if (i % 3 == 1)
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = i;
-			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
+			frames.insert({source_pin_2, encodedImageFrame_2});
 			source2->send(frames);
 		}
 		if (i % 3 == 2)
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = i;
-			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
+			frames.insert({source_pin_3, encodedImageFrame_3});
 			source3->send(frames);
 		}
 		merge->step();
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_1 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_1->fIndex2 = fIndex2;
-			frames.insert(make_pair(source_pin_1, encodedImageFrame_1));
+			frames.insert({source_pin_1, encodedImageFrame_1});
 			source1->send(frames);
 		}
 		if (i % 3 == 1)
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_2 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_2->fIndex2 = fIndex2;
-			frames.insert(make_pair(source_pin_2, encodedImageFrame_2));
+			frames.insert({source_pin_2, encodedImageFrame_2});
 			source2->send(frames);
 		}
 		if (i % 3 == 2)
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			frame_container frames;
 			auto encodedImageFrame_3 = source1->makeFrame(readDataSize, source_pin_1);
 			encodedImageFrame_3->fIndex2 = fIndex2;
-			frames.insert(make_pair(source_pin_3, encodedImageFrame_3));
+			frames.insert({source_pin_3, encodedImageFrame_3});
 			source3->send(frames);
 		}
 		merge->step();
