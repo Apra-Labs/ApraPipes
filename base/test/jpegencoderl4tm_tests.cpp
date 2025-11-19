@@ -216,6 +216,58 @@ BOOST_AUTO_TEST_CASE(jpegencoder_dmabuf_fd_yuv420, * boost::unit_test::disabled(
         (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
 
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_yuv420, * boost::unit_test::disabled())
+{
+	// metadata is known
+	auto width = 3840;
+	auto height = 2160;
+	
+	// YUV420 format: Y plane (width * height) + U plane (width * height / 4) + V plane (width * height / 4)
+	// Total size = width * height * 3 / 2
+	size_t yuv420Size = static_cast<size_t>(width) * height * 3 / 2;
+	unsigned char *in_buf = new unsigned char[yuv420Size];
+
+	auto in_file = new std::ifstream("./data/4k.yuv", std::ios::binary);
+	in_file->read((char *)in_buf, yuv420Size);
+	delete in_file;
+
+	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
+
+	auto rawImagePin = m1->addOutputPin(metadata);
+
+	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	m1->setNext(m2);
+	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
+
+	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	m2->setNext(m3);
+
+	BOOST_TEST(m1->init());
+	BOOST_TEST(m2->init());
+	BOOST_TEST(m3->init());
+
+	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
+	memcpy(rawImageFrame->data(), in_buf, metadata->getDataSize());
+
+	frame_container frames;
+	frames.insert(make_pair(rawImagePin, rawImageFrame));
+
+	m1->send(frames);
+	m2->step();
+	frames = m3->pop();
+	BOOST_TEST((frames.find(encodedImagePin) != frames.end()));
+	auto encodedImageFrame = frames[encodedImagePin];
+	BOOST_TEST(encodedImageFrame->getMetadata()->getFrameType() == FrameMetadata::ENCODED_IMAGE);
+
+	Test_Utils::saveOrCompare("./data/testOutput/jpegencoderl4tm_yuv420_encoded.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
+	
+	delete[] in_buf;
+}
+
+
+
 BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 {
 	// metadata is known
@@ -496,97 +548,18 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_not_valid_image_type, * boost::unit_test::disabled())
 {
-	// metadata is set after init
-	auto img = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new RawImageMetadata());
-	auto rawImagePin = m1->addOutputPin(metadata);
-
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
-	m1->setNext(m2);
-	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
-	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	m2->setNext(m3);
-
-	BOOST_TEST(m1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(m3->init());
-
-	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
-	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
-
-	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
-
-	m1->send(frames);
-	m2->step();
-	frames = m3->pop();
-	BOOST_TEST((frames.find(encodedImagePin) != frames.end()));
-	auto encodedImageFrame = frames[encodedImagePin];
-
-	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
-}
-
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_test::disabled())
-{
-	// metadata is set after init
-	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
-	cv::Mat img;
-	cv::resize(img_orig, img, cv::Size(240, 60));
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new RawImageMetadata());
-	auto rawImagePin = m1->addOutputPin(metadata);
-
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
-	m1->setNext(m2);
-	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
-	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
-
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
-	m2->setNext(m3);
-
-	BOOST_TEST(m1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(m3->init());
-
-	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
-	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
-
-	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
-
-	m1->send(frames);
-
-	try
-	{
-		m2->step();
-		BOOST_TEST(false);
-	}
-	catch (AIP_Exception &exception)
-	{
-		BOOST_TEST(exception.getCode() == AIP_NOTIMPLEMENTED);
-	}
-	catch (...)
-	{
-		BOOST_TEST(false);
-	}
-}
-
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::unit_test::disabled())
-{
+	 LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
 	// metadata is known
-	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
-	cv::Mat img;
-	cv::resize(img_orig, img, cv::Size(240, 60));
+	auto width = 3840;
+	auto height = 2160;
+	
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new RawImageMetadata());
-	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
+	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV444, size_t(0), CV_8U));
+
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
@@ -605,13 +578,19 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::uni
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_not_multipleof32, * boost::unit_test::disabled())
 {
+	 LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
 	// metadata is known
-	auto img = cv::imread("./data/frame.jpg");
+	auto width = 1000;
+	auto height = 1000;
+	
+
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
-	auto metadata = framemetadata_sp(new RawImageMetadata());
-	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
+	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
+
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
@@ -630,10 +609,14 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test:
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::disabled())
+
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_metadata_not_set, * boost::unit_test::disabled())
 {
-	// metadata is set after init
-	auto img = cv::imread("./data/frame.jpg");
+	 LoggerProps logProps; logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::trace);
+	
+
 	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m1->addOutputPin(metadata);
@@ -645,33 +628,20 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 
 	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
-
-	BOOST_TEST(m1->init());
-	BOOST_TEST(m2->init());
-	BOOST_TEST(m3->init());
-
-	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
-	auto rawImageFrame = m1->makeFrame(metadata->getDataSize(), rawImagePin);
-	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
-
-	frame_container frames;
-	frames.insert(make_pair(rawImagePin, rawImageFrame));
-
-	m1->send(frames);
-
 	try
 	{
-		m2->step();
+		m1->init();
+		m2->init();
+		m3->init();
 		BOOST_TEST(false);
 	}
 	catch (AIP_Exception &exception)
 	{
-		BOOST_TEST(exception.getCode() == AIP_NOTIMPLEMENTED);
+		BOOST_TEST(exception.getCode() == AIP_FATAL);
 	}
 	catch (...)
 	{
 		BOOST_TEST(false);
 	}
 }
-
 BOOST_AUTO_TEST_SUITE_END()

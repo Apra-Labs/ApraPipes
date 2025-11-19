@@ -115,6 +115,8 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
     {
         // Store original color space before destroying
         J_COLOR_SPACE orig_color_space = cinfo.in_color_space;
+        //this disables the hardware acceleration since it does not support RGB format
+        hardware_acc=FALSE;
 
         // every time destroy the cinfo and create it
         // if we don't do this per encode memory leak of the order of input frame
@@ -145,7 +147,7 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
 
     jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
 
-    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
+    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, hardware_acc, out_buf_size, 0, 0);
 
     unsigned char *base[planes], *end[planes];
 

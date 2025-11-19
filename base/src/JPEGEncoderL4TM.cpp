@@ -186,22 +186,40 @@ size_t compute(frame_sp& inFrame, frame_sp& frame)
 
 	bool validateMetadata(framemetadata_sp &metadata, std::string id)
 	{
-		auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-		if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3 && rawImageMetadata->getChannels() != 4)
+		if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1, 3, or 4";
-			return false;
-		}
+			auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+			if (rawImageMetadata->getChannels() != 1 && rawImageMetadata->getChannels() != 3 && rawImageMetadata->getChannels() != 4)
+			{
+				LOG_ERROR << "<" << id << ">:: RAW_IMAGE CHANNELS IS EXPECTED TO BE 1, 3, or 4";
+				return false;
+			}
 
-		if(rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB && rawImageMetadata->getImageType() != ImageMetadata::RGBA && rawImageMetadata->getImageType() != ImageMetadata::NV12)
-		{
-			LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, RGBA, or NV12";
-			return false;
-		}
+			if (rawImageMetadata->getImageType() != ImageMetadata::MONO && rawImageMetadata->getImageType() != ImageMetadata::RGB)
+			{
+				LOG_ERROR << "<" << id << ">:: ImageType is expected to be MONO, RGB, RGBA";
+				return false;
+			}
 
-		if (rawImageMetadata->getStep()*mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth()*rawImageMetadata->getChannels()*mProps.scale))
+			if (rawImageMetadata->getStep() * mProps.scale != MSDK_ALIGN32(rawImageMetadata->getWidth() * rawImageMetadata->getChannels() * mProps.scale))
+			{
+				LOG_ERROR << "<" << id << ">:: RAW_IMAGE STEP IS EXPECTED TO BE 32 BIT ALIGNED<>" << rawImageMetadata->getWidth() << "<>" << mProps.scale;
+				return false;
+			}
+		}
+		else if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE_PLANAR)
 		{
-			LOG_ERROR << "<" << id << ">:: RAW_IMAGE STEP IS EXPECTED TO BE 32 BIT ALIGNED<>" << rawImageMetadata->getWidth() << "<>" << mProps.scale;
+			auto rawImagePlanarMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+			// For now, we are just allowing this. Add specific validations if needed.
+			if (rawImagePlanarMetadata->getImageType() != ImageMetadata::YUV420 && rawImagePlanarMetadata->getImageType() != ImageMetadata::NV12)
+			{
+				LOG_ERROR << "<" << id << ">:: ImageType is expected to be YUV420 or NV12";
+				return false;
+			}
+
+		}
+		else
+		{
 			return false;
 		}
 
@@ -389,7 +407,7 @@ bool JPEGEncoderL4TM::validateInputPins()
 
 	if (metadata->isSet())
 	{
-		// return mDetail->validateMetadata(metadata, getId());
+		return mDetail->validateMetadata(metadata, getId());
 	}
 
 	return true;

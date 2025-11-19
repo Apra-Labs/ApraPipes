@@ -33,6 +33,7 @@ private:
  uint32_t comp_height[3];
     uint32_t comp_width[3];   
 	 unsigned int stride[3];
+     bool hardware_acc=TRUE;
 
  uint32_t h_max_samp = 0;
     uint32_t v_max_samp = 0;
