@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "BoundBuffer.h"
 #include "CommonDefs.h"
 
@@ -29,7 +29,7 @@ class FrameContainerQueueAdapter : public FrameContainerQueue
 {
 public:
 	FrameContainerQueueAdapter() : FrameContainerQueue(0) {}
-	void adapt(boost::shared_ptr<FrameContainerQueue> adaptee) {
+	void adapt(std::shared_ptr<FrameContainerQueue> adaptee) {
 		mAdaptee = adaptee;
 	}
 	void push(frame_container item) {
@@ -140,7 +140,7 @@ public:
 	}
 
 protected:
-	boost::shared_ptr<FrameContainerQueue> mAdaptee;
+	std::shared_ptr<FrameContainerQueue> mAdaptee;
 	enum PushType { DONT_PUSH = 0, TRY_PUSH = 1, MUST_PUSH = 2 };
 	virtual PushType should_push(frame_container item) { return TRY_PUSH; }
 	virtual void on_failed_push(frame_container item) {}

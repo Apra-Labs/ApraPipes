@@ -3,6 +3,7 @@
 #include "RawImageMetadata.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
 #include "PipeLine.h"
 #include "test_utils.h"
 #include "ExternalSinkModule.h"
@@ -21,7 +22,7 @@ class SinkModule : public Module
 {
 public:
     SinkModule(SinkModuleProps props) : Module(SINK, "sinkModule", props){};
-    boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+    std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 protected:
     bool validateOutputPins()
@@ -35,8 +36,8 @@ protected:
 };
 BOOST_AUTO_TEST_CASE(Basic)
 {
-    auto source = boost::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps(400, 400)));
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto source = std::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps(400, 400)));
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     source->setNext(sink);
     BOOST_TEST(source->init());
     BOOST_TEST(sink->init());
@@ -52,8 +53,8 @@ BOOST_AUTO_TEST_CASE(Basic)
 
 BOOST_AUTO_TEST_CASE(getSetProps)
 {
-    auto source = boost::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps(640, 360)));
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto source = std::shared_ptr<TestSignalGenerator>(new TestSignalGenerator(TestSignalGeneratorProps(640, 360)));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     source->setNext(sink);
     source->init();
     sink->init();

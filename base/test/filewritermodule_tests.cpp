@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "ExternalSourceModule.h"
 #include "FileWriterModule.h"
@@ -20,12 +21,12 @@ BOOST_AUTO_TEST_CASE(basic)
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));
 	
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));	
 	auto pinId = m1->addOutputPin(metadata);
 
 	Test_Utils::createDirIfNotExist("./data/testOutput/mono.jpg");
-	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleFrame_????.jpg")));
+	auto m2 = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleFrame_????.jpg")));
 	m1->setNext(m2);
 	
 	BOOST_TEST(m1->init());
@@ -62,10 +63,10 @@ BOOST_AUTO_TEST_CASE(append)
 	ofstream myFile("./data/testOutput/fileWriterModuleSample.txt");
 	myFile << "Foo";
 	myFile.close(); 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId = m1->addOutputPin(metadata);
-	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample.txt", true)));
+	auto m2 = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample.txt", true)));
 	m1->setNext(m2);
 
 	BOOST_TEST(m1->init());
@@ -92,10 +93,10 @@ BOOST_AUTO_TEST_CASE(appendTestPattern)
 	Test_Utils::FileCleaner f(Files);
 	unsigned int readDataSize = 0U;
 	
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId = m1->addOutputPin(metadata);
-	auto m2 = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample_????.txt", true)));
+	auto m2 = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/fileWriterModuleSample_????.txt", true)));
 	m1->setNext(m2);
 
 	BOOST_TEST(m1->init());

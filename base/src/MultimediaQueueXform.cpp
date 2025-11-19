@@ -1,8 +1,7 @@
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <stdafx.h>
 #include <map>
 #include <thread>
+#include <memory>
 #include "Frame.h"
 #include "MultimediaQueueXform.h"
 #include "Logger.h"
@@ -243,7 +242,7 @@ protected:
 
 class State {
 public:
-	boost::shared_ptr<FramesQueue> queueObject;
+	std::shared_ptr<FramesQueue> queueObject;
 	State() {}
 	virtual ~State() {}
 	typedef std::map<uint64_t, frame_container> mQueueMap;
@@ -280,7 +279,7 @@ class ExportJpeg : public ExportQState
 {
 public:
 	ExportJpeg() : ExportQState(StateType::EXPORT) {}
-	ExportJpeg(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : ExportQState(StateType::EXPORT) {
+	ExportJpeg(std::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : ExportQState(StateType::EXPORT) {
 		send = _send;
 		queueObject = queueObj;
 	}
@@ -329,7 +328,7 @@ class ExportH264 : public ExportQState
 {
 public:
 	ExportH264() : ExportQState(StateType::EXPORT) {}
-	ExportH264(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType, std::string _mOutputPinId) : ExportQState(StateType::EXPORT) {
+	ExportH264(std::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType, std::string _mOutputPinId) : ExportQState(StateType::EXPORT) {
 		getInputPinIdByType = _getInputPinIdByType;
 		makeFrame = _makeFrame;
 		send = _send;
@@ -495,7 +494,7 @@ private:
 class Waiting : public State {
 public:
 	Waiting() : State(State::StateType::WAITING) {}
-	Waiting(boost::shared_ptr<FramesQueue> queueObj) : State(State::StateType::WAITING) {
+	Waiting(std::shared_ptr<FramesQueue> queueObj) : State(State::StateType::WAITING) {
 		queueObject = queueObj;
 	}
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
@@ -508,7 +507,7 @@ public:
 class Idle : public State {
 public:
 	Idle() : State(StateType::IDLE) {}
-	Idle(boost::shared_ptr<FramesQueue> queueObj) : State(StateType::IDLE) {
+	Idle(std::shared_ptr<FramesQueue> queueObj) : State(StateType::IDLE) {
 		queueObject = queueObj;
 	}
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
@@ -629,7 +628,7 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 	}
 }
 
-void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
+void MultimediaQueueXform::extractFramesAndEnqueue(std::shared_ptr<FrameContainerQueue>& frameQueue)
 {
 	//loop over frame container
 	if (frameQueue->size())
@@ -659,7 +658,7 @@ void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContai
 	}
 }
 
-boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
+std::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
 {
 	return Module::getQue();
 }
@@ -772,7 +771,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 								{
 									bool goLive = true;
 									bool priority = true;
-									boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+									std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 									ctl->handleGoLive(goLive, priority);
 								}
 								exportFrames = false;
@@ -837,7 +836,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							if(controlModule != nullptr)
 							{
 								// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-								boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								std::shared_ptr<AbsControlModule> ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 								ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
 							}
 							exportFrames = false;
@@ -1020,7 +1019,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						if(controlModule != nullptr)
 						{
 							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-							boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+							std::shared_ptr<AbsControlModule> ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 							ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
 						}
 						exportFrames = false;
@@ -1066,7 +1065,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			auto back = mState->queueObject->mQueue.crbegin();
 			uint64_t lastTimeStamp = back->first;
 			// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-			boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+			std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 			ctl->handleSendMMQTSCmd(firstTimeStamp, lastTimeStamp, priority);
 		}
 		return true;

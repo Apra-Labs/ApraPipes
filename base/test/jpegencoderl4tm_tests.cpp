@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
@@ -29,17 +32,17 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 	in_file->read((char *)in_buf, 3840 * 2160);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, width, CV_8U));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -75,17 +78,17 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 	in_file->read((char *)in_buf, fileSize);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());	
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());	
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -120,19 +123,19 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled()
 	in_file->read((char *)in_buf, 3840 * 2160);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, width, CV_8U));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	JPEGEncoderL4TMProps props;
 	props.scale = 0.125;
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -167,14 +170,14 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	auto height = 720;
 	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw", 0, -1);
 	fileReaderProps.fps = 1000;
-	auto m1 = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
+	auto m1 = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	JPEGEncoderL4TMProps encoderProps;
 	encoderProps.logHealth = true;
 	encoderProps.logHealthFrequency = 100;
-	auto m2 = boost::shared_ptr<Module>(new JPEGEncoderL4TM(encoderProps));
+	auto m2 = std::shared_ptr<Module>(new JPEGEncoderL4TM(encoderProps));
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
@@ -182,7 +185,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
-	auto m3 = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	auto m3 = std::shared_ptr<Module>(new StatSink(sinkProps));
 	m2->setNext(m3);
 
 	PipeLine p("test");
@@ -213,19 +216,19 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 	in_file->read((char *)in_buf, 3840 * 2160);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, width, CV_8U));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
 
 	JPEGEncoderL4TMProps props;
 	props.logHealth = true;
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -263,7 +266,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	in_file->read((char *)in_buf, 3840 * 2160);
 	delete in_file;
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, width, CV_8U));
 
 	auto rawImagePin = m1->addOutputPin(metadata);
@@ -271,12 +274,12 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	JPEGEncoderL4TMProps props;
 	props.logHealth = true;
 	props.scale = 0.25;
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(props));
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -302,16 +305,16 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -340,16 +343,16 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
 	cv::Mat img;
 	cv::resize(img_orig, img, cv::Size(240, 60));
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -386,12 +389,12 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::uni
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
 	cv::Mat img;
 	cv::resize(img_orig, img, cv::Size(240, 60));
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	try
 	{
 		m1->setNext(m2);
@@ -411,12 +414,12 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test:
 {
 	// metadata is known
 	auto img = cv::imread("./data/frame.jpg");
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	try
 	{
 		m1->setNext(m2);
@@ -436,16 +439,16 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::d
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg");
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
+	auto m2 = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM());
 	m1->setNext(m2);
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m2->addOutputPin(encodedImageMetadata);
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());

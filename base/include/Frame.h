@@ -1,5 +1,6 @@
 #pragma once
 #include <boost/asio.hpp>
+#include <memory>
 #include "CommonDefs.h"
 
 using namespace std;
@@ -9,7 +10,7 @@ class ApraData;
 
 class Frame :public boost::asio::mutable_buffer {
 public:
-	Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother);
+	Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother);
 	virtual ~Frame();
 	short mFrameType;
 	uint64_t mFStart, mFEnd;
@@ -39,7 +40,7 @@ private:
 	void resetMemory();
 	void *myOrig;
 	friend class FrameFactory;
-	boost::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children	
+	std::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children
 };
 
 class EoPFrame : public Frame

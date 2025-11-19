@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "AffineTransform.h"
 #include "FileReaderModule.h"
 #include "RawImageMetadata.h"
@@ -58,19 +61,19 @@ struct AffineTestsStruct
 	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, double angle, int x, int y, double scale, AffineTransformProps::Interpolation interpolation, AffineTransformProps::TransformType type)
 	{
 #ifdef APRA_HAS_CUDA_HEADERS
-		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
+		fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
 		auto rawImagePin = fileReader->addOutputPin(metadata);
 
-		auto stream = boost::shared_ptr<ApraCudaStream>(new ApraCudaStream());
-		copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+		auto stream = std::shared_ptr<ApraCudaStream>(new ApraCudaStream());
+		copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 		fileReader->setNext(copy1);
 
 		AffineTransformProps affineProps(type, interpolation, stream, angle, x, y, scale);
-		affineTransform = boost::shared_ptr<Module>(new AffineTransform(affineProps));
+		affineTransform = std::shared_ptr<Module>(new AffineTransform(affineProps));
 		copy1->setNext(affineTransform);
-		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+		copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 		affineTransform->setNext(copy2);
-		sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 		copy2->setNext(sink);
 
 		BOOST_TEST(fileReader->init());
@@ -80,11 +83,11 @@ struct AffineTestsStruct
 		BOOST_TEST(sink->init());
 #endif
 	}
-	boost::shared_ptr<FileReaderModule>fileReader;
-	boost::shared_ptr<Module>copy1;
-	boost::shared_ptr<Module>affineTransform;
-	boost::shared_ptr<Module>copy2;
-	boost::shared_ptr<ExternalSinkModule>sink;
+	std::shared_ptr<FileReaderModule>fileReader;
+	std::shared_ptr<Module>copy1;
+	std::shared_ptr<Module>affineTransform;
+	std::shared_ptr<Module>copy2;
+	std::shared_ptr<ExternalSinkModule>sink;
 
 	~AffineTestsStruct()
 	{
@@ -453,16 +456,16 @@ BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate, *utf::precondition(if_compute_ca
 BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<Module>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -45, 0, 0, 2.0)));
+	auto affine = std::shared_ptr<Module>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -45, 0, 0, 2.0)));
 	fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	affine->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -480,16 +483,16 @@ BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled()
 
 BOOST_AUTO_TEST_CASE(Host_RGB)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 10, 10, 2.0)));
+	auto affine = std::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 10, 10, 2.0)));
 	fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	affine->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -507,16 +510,16 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto affine = boost::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 100, 10, 2.0)));
+	auto affine = std::shared_ptr<AffineTransform>(new AffineTransform(AffineTransformProps(AffineTransformProps::USING_OPENCV, -30, 100, 10, 2.0)));
 	fileReader->setNext(affine);
 
 	auto outputPinId = affine->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	affine->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -557,26 +560,26 @@ BOOST_AUTO_TEST_CASE(DMABUF_RGBA, *boost::unit_test::disabled()
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
 	NvTransformProps nvprops(ImageMetadata::RGBA);
-	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	auto transform = std::shared_ptr<Module>(new NvTransform(nvprops));
 	source->setNext(transform);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 
 	AffineTransformProps affineProps(AffineTransformProps::USING_NPPI, AffineTransformProps::NN, stream, 45, 100, 300, 3);
-	auto m_affineTransform = boost::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
+	auto m_affineTransform = std::shared_ptr<AffineTransform>(new AffineTransform(affineProps));
 	transform->setNext(m_affineTransform);
 
 	CudaStreamSynchronizeProps cuxtxProps(stream);
-	auto sync = boost::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(cuxtxProps));
+	auto sync = std::shared_ptr<CudaStreamSynchronize>(new CudaStreamSynchronize(cuxtxProps));
 	m_affineTransform->setNext(sync);
 
-	auto copySource = boost::shared_ptr<Module>(new DMAFDToHostCopy);
+	auto copySource = std::shared_ptr<Module>(new DMAFDToHostCopy);
 	sync->setNext(copySource);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto fileWriter = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
 	copySource->setNext(fileWriter);
 
 	PipeLine p("test");

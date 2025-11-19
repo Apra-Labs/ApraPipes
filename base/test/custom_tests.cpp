@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FileWriterModule.h"
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -27,37 +28,37 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_640x360.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
     auto rawImagePin = fileReader->addOutputPin(metadata);
 	
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy);
 
-	auto resize = boost::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width >> 1, height >> 1, stream)));
+	auto resize = std::shared_ptr<Module>(new ResizeNPPI(ResizeNPPIProps(width >> 1, height >> 1, stream)));
 	copy->setNext(resize);
     
     EffectsNPPIProps effectsProps(stream);
 	effectsProps.brightness = 0;
 	effectsProps.contrast = 1;
-	auto effects = boost::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
+	auto effects = std::shared_ptr<EffectsNPPI>(new EffectsNPPI(effectsProps));
 	resize->setNext(effects);
 
-    auto encoder = boost::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
+    auto encoder = std::shared_ptr<JPEGEncoderNVJPEG>(new JPEGEncoderNVJPEG(JPEGEncoderNVJPEGProps(stream)));
     effects->setNext(encoder);
 
-	auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/output.jpg")));
+	auto fileWriter = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/output.jpg")));
 	
-    // auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule("./data/output.jpg"));
+    // auto fileWriter = std::shared_ptr<FileWriterModule>(new FileWriterModule("./data/output.jpg"));
     encoder->setNext(fileWriter);
 
-	// auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	// auto copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	// m2->setNext(copy2);
 	// auto outputPinId = fileWriter->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
 
 
-	// auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	// auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	// encoder->setNext(sink);
 
 	PipeLine p("test");

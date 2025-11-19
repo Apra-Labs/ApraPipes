@@ -1,6 +1,10 @@
 #include "Logger.h"
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <filesystem>
 
-boost::shared_ptr<Logger> Logger::instance;
+std::shared_ptr<Logger> Logger::instance;
 std::mutex Logger::logger_mutex;
 
 void Logger::initLogger(LoggerProps props)
@@ -72,7 +76,7 @@ void Logger::initBoostLogger(LoggerProps props)
 		boost::log::keywords::auto_flush = true,
 		boost::log::keywords::min_free_space = 25 * 1024 * 1024, /* 25 MB */
 		boost::log::keywords::max_files = 25,
-		boost::log::keywords::target = boost::filesystem::path(props.fileLogPath).parent_path().string()
+		boost::log::keywords::target = std::filesystem::path(props.fileLogPath).parent_path().string()
 	);
 	
 	boost::log::add_common_attributes();
@@ -239,7 +243,7 @@ bool Logger::push(boost::log::trivial::severity_level level, std::ostringstream&
 	//push to queue only if the thread is running
 	if(mRunning && myThread.get_id()!=std::thread::id())	//log thread is running
 	{
-		mQue.push(stream.str());	
+		mQue.push(stream.str());
 	}
 	else
 	{

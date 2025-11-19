@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <thread>
 #include <mutex>
 #include "ThreadSafeQue.h"
@@ -9,7 +9,6 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/utility/setup/file.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
@@ -65,26 +64,26 @@ public:
 	
 	std::ostringstream& pre(std::ostringstream& stream, boost::log::trivial::severity_level lvl);
 	std::ostringstream& aipexceptionPre(std::ostringstream& stream, boost::log::trivial::severity_level lvl,int type);
-	
+
 	void operator()(); //to support std::thread
-private:	
+private:
 	Logger(LoggerProps props);
 	void initBoostLogger(LoggerProps props);
 
 	static std::mutex logger_mutex;
 	threadsafe_que<std::string> mQue;
-	std::thread myThread;	
+	std::thread myThread;
 	bool run();
 	bool process(const std::string& message);
 	bool mRunning;
-	LoggerProps mProps;	
+	LoggerProps mProps;
 
 	void(*mListener)(const std::string&) = nullptr;
 
-	static boost::shared_ptr<Logger> instance;
+	static std::shared_ptr<Logger> instance;
 	boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;
-	boost::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > > mConsoleSink;
-	boost::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mFileSink;
+	std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > > mConsoleSink;
+	std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mFileSink;
 };
 
 #define A_LOG_SEV(severity) for(std::ostringstream stream; Logger::getLogger()->push(severity, stream);) Logger::getLogger()->pre(stream, severity)

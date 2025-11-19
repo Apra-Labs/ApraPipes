@@ -8,7 +8,7 @@ Frame::Frame():mutable_buffer(0, 0),myOrig(0)
 {
 	setDefaultValues();
 }
-Frame::Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother)
+Frame::Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother)
 {
 	setDefaultValues();
 }

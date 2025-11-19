@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
@@ -30,9 +33,9 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
     auto sample_size_byte = 2;
 
     AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,200);
-    auto source = boost::shared_ptr<Module>(new AudioCaptureSrc(sourceProps));
+    auto source = std::shared_ptr<Module>(new AudioCaptureSrc(sourceProps));
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
+    auto outputFile = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
     source->setNext(outputFile);
 
     PipeLine p("test");
@@ -65,9 +68,9 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
     auto sample_size_byte = 2;
 
     AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,200);
-    auto source = boost::shared_ptr<AudioCaptureSrc>(new AudioCaptureSrc(sourceProps));
+    auto source = std::shared_ptr<AudioCaptureSrc>(new AudioCaptureSrc(sourceProps));
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
+    auto outputFile = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
     source->setNext(outputFile);
 
     PipeLine p("test");
@@ -98,12 +101,12 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     auto channels = 1;
     auto sample_size_byte = 2;
     AudioCaptureSrcProps sourceProps(sampling_rate,channels,0,200);
-    auto source = boost::shared_ptr<AudioCaptureSrc>(new AudioCaptureSrc(sourceProps));
+    auto source = std::shared_ptr<AudioCaptureSrc>(new AudioCaptureSrc(sourceProps));
 
-    auto outputFile = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
+    auto outputFile = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[0], true)));
     source->setNext(outputFile);
 
-    auto outputFile2 = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[1], true)));
+    auto outputFile2 = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps(audioFiles[1], true)));
     source->setNext(outputFile2,false);
 
 

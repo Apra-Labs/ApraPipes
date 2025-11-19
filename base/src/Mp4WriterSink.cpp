@@ -226,7 +226,7 @@ public:
 		}
 	}
 
-	boost::shared_ptr<Mp4WriterSinkProps> mProps;
+	std::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
 	struct mp4_mux* mux;
@@ -251,7 +251,7 @@ protected:
 	std::string mSerFormatVersion;
 	framemetadata_sp mInputMetadata;
 	uint64_t lastFrameTS = 0;
-	boost::shared_ptr<DTSCalcStrategy> mDTSCalc = nullptr;
+	std::shared_ptr<DTSCalcStrategy> mDTSCalc = nullptr;
 };
 
 class DetailJpeg : public DetailAbs

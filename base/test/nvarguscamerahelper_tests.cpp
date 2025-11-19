@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "Frame.h"
 #include "FrameFactory.h"

@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "test_utils.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
@@ -50,7 +51,7 @@ public:
 
 	bool send(frame_container& frames) { return Module::send(frames); }
 
-	boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+	std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 	frame_sp getFrameByType(frame_container& frames, int frameType) { return Module::getFrameByType(frames, frameType); }
 
 	ModuleProps getProps() { return Module::getProps(); }
@@ -102,7 +103,7 @@ struct SetupPlaybackTests
 		mp4ReaderProps.logHealth = true;
 		mp4ReaderProps.logHealthFrequency = 1000;
 		mp4ReaderProps.fps = 100;
-		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
 		mp4Reader->addOutPutPin(encodedImageMetadata);
 		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_2_0"));
@@ -111,15 +112,15 @@ struct SetupPlaybackTests
 		TestModuleProps sinkProps;// (30, 100, true);
 		//sinkProps.logHealth = false;
 		sinkProps.logHealthFrequency = 1;
-		sink = boost::shared_ptr<TestModule1>(new TestModule1(sinkProps));
+		sink = std::shared_ptr<TestModule1>(new TestModule1(sinkProps));
 		mp4Reader->setNext(sink);
 
 		BOOST_TEST(mp4Reader->init());
 		BOOST_TEST(sink->init());
 	}
 
-	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-	boost::shared_ptr<TestModule1> sink = nullptr;
+	std::shared_ptr<Mp4ReaderSource> mp4Reader;
+	std::shared_ptr<TestModule1> sink = nullptr;
 };
 
 BOOST_AUTO_TEST_CASE(fwd)

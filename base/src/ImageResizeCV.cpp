@@ -97,7 +97,7 @@ void ImageResizeCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	mDetail->mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mProps.width, mProps.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true));
+	mDetail->mOutputMetadata = std::make_shared<RawImageMetadata>(mProps.width, mProps.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
 	mDetail->initMatImages(metadata);
 	mDetail->mOutputMetadata->copyHint(*metadata.get());
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);

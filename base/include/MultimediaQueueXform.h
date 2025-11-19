@@ -67,10 +67,10 @@ public:
 	void setProps(MultimediaQueueXformProps _props);
 	MultimediaQueueXformProps getProps();
 	bool handlePropsChange(frame_sp& frame);
-	boost::shared_ptr<State> mState;
+	std::shared_ptr<State> mState;
 	MultimediaQueueXformProps mProps;
-	boost::shared_ptr<FrameContainerQueue> getQue();
-	void extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& FrameQueue);
+	std::shared_ptr<FrameContainerQueue> getQue();
+	void extractFramesAndEnqueue(std::shared_ptr<FrameContainerQueue>& FrameQueue);
 	void setMmqFps(int fps);
 	void setPlaybackSpeed(float playbackSpeed);
 	void stopExportFrames();

@@ -1,7 +1,10 @@
 #include <vector>
 #include <string>
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 
 #include "Mp4ReaderSource.h"
@@ -34,7 +37,7 @@ public:
 		return Module::pop();
 	}
 
-	boost::shared_ptr<FrameContainerQueue> getQue()
+	std::shared_ptr<FrameContainerQueue> getQue()
 	{
 		return Module::getQue();
 	}
@@ -84,12 +87,12 @@ struct WritePipeline {
 		auto fileReaderProps = FileReaderModuleProps(readFolderPath, 0, -1);
 		fileReaderProps.fps = readfps;
 		fileReaderProps.readLoop = true;
-		fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+		fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 		fileReader->addOutputPin(encodedImageMetadata);
 
 		auto mp4WriterSinkProps = Mp4WriterSinkProps(writeChunkTime, writeSyncTimeInSecs, writefps, _writeOutPath);
-		mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+		mp4WriterSink = std::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
 		fileReader->setNext(mp4WriterSink);
 
 		BOOST_TEST(fileReader->init());
@@ -100,12 +103,12 @@ struct WritePipeline {
 	{
 		//termPipeline();
 		// delete any existing stuff in directory
-		if (!boost::filesystem::is_empty(writeOutPath))
+		if (!std::filesystem::is_empty(writeOutPath))
 		{
-			for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeOutPath))
+			for (auto &&itr : std::filesystem::recursive_directory_iterator(writeOutPath))
 			{
 				auto dirPath = itr.path();
-				boost::filesystem::remove_all(dirPath);
+				std::filesystem::remove_all(dirPath);
 			}
 		}
 	}
@@ -117,8 +120,8 @@ struct WritePipeline {
 	}
 
 	std::string writeOutPath;
-	boost::shared_ptr<Mp4WriterSink> mp4WriterSink = nullptr;
-	boost::shared_ptr<Module> fileReader = nullptr;
+	std::shared_ptr<Mp4WriterSink> mp4WriterSink = nullptr;
+	std::shared_ptr<Module> fileReader = nullptr;
 };
 
 struct WritePipelineIndependent {
@@ -134,15 +137,15 @@ struct WritePipelineIndependent {
 		auto fileReaderProps = FileReaderModuleProps(readFolderPath, 0, -1);
 		fileReaderProps.fps = readfps;
 		fileReaderProps.readLoop = true;
-		fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+		fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 		fileReader->addOutputPin(encodedImageMetadata);
 
 		auto mp4WriterSinkProps = Mp4WriterSinkProps(writeChunkTime, writeSyncTimeInSecs, writefps, _writeOutPath);
-		mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+		mp4WriterSink = std::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
 		fileReader->setNext(mp4WriterSink);
 
-		p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+		p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 		p->appendModule(fileReader);
 
 		p->init();
@@ -157,12 +160,12 @@ struct WritePipelineIndependent {
 		p.reset();
 
 		// delete any existing stuff in directory
-		if (!boost::filesystem::is_empty(writeOutPath))
+		if (!std::filesystem::is_empty(writeOutPath))
 		{
-			for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeOutPath))
+			for (auto &&itr : std::filesystem::recursive_directory_iterator(writeOutPath))
 			{
 				auto dirPath = itr.path();
-				boost::filesystem::remove_all(dirPath);
+				std::filesystem::remove_all(dirPath);
 				break;
 			}
 		}
@@ -175,9 +178,9 @@ struct WritePipelineIndependent {
 	}
 
 	std::string writeOutPath;
-	boost::shared_ptr<PipeLine> p;
-	boost::shared_ptr<Mp4WriterSink> mp4WriterSink = nullptr;
-	boost::shared_ptr<Module> fileReader = nullptr;
+	std::shared_ptr<PipeLine> p;
+	std::shared_ptr<Mp4WriterSink> mp4WriterSink = nullptr;
+	std::shared_ptr<Module> fileReader = nullptr;
 };
 
 struct ReadPipeline {
@@ -193,7 +196,7 @@ struct ReadPipeline {
 		mp4ReaderProps.fps = fps;
 		mp4ReaderProps.logHealth = true;
 		mp4ReaderProps.logHealthFrequency = 100;
-		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 		auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(0,0));
 		mp4Reader->addOutPutPin(encodedImageMetadata);
 		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
@@ -203,7 +206,7 @@ struct ReadPipeline {
 		mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE);
 
 		auto sinkProps = ExternalSinkProps();;
-		sink = boost::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
+		sink = std::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
 		mp4Reader->setNext(sink, mImagePin);
 
 		BOOST_TEST(mp4Reader->init());
@@ -221,8 +224,8 @@ struct ReadPipeline {
 		sink->term();
 	}
 
-	boost::shared_ptr<Mp4ReaderSource> mp4Reader = nullptr;
-	boost::shared_ptr<ExternalSink> sink = nullptr;
+	std::shared_ptr<Mp4ReaderSource> mp4Reader = nullptr;
+	std::shared_ptr<ExternalSink> sink = nullptr;
 };
 
 BOOST_AUTO_TEST_CASE(basic)
@@ -259,21 +262,21 @@ BOOST_AUTO_TEST_CASE(basic)
 	bool parseFS = true;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 
 	// read 3 frames
@@ -326,7 +329,11 @@ BOOST_AUTO_TEST_CASE(basic)
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
+<<<<<<< HEAD
 	boost::filesystem::remove_all(rootPath);
+=======
+	std::filesystem::remove_all(rootPath);
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
@@ -364,21 +371,21 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	bool parseFS = false;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 
 	// read 4 frames
@@ -430,7 +437,11 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
+<<<<<<< HEAD
 	boost::filesystem::remove_all(rootPath);
+=======
+	std::filesystem::remove_all(rootPath);
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
@@ -468,21 +479,21 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 	bool parseFS = true;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 
 	// read 4 frames
@@ -555,7 +566,11 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
+<<<<<<< HEAD
 	boost::filesystem::remove_all(rootPath);
+=======
+	std::filesystem::remove_all(rootPath);
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
@@ -597,21 +612,21 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	bool parseFS = true;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 
 	// read 4 frames
@@ -730,7 +745,11 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
+<<<<<<< HEAD
 	boost::filesystem::remove_all(rootPath);
+=======
+	std::filesystem::remove_all(rootPath);
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
@@ -768,21 +787,21 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 	bool parseFS = true;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 
 	// read 4 frames
@@ -835,7 +854,11 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
+<<<<<<< HEAD
 	boost::filesystem::remove_all(rootPath);
+=======
+	std::filesystem::remove_all(rootPath);
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
@@ -873,21 +896,21 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 	bool parseFS = false;
 
 	// read the first and only file in the directory
-	if (!boost::filesystem::is_directory(writeFolderPath))
+	if (!std::filesystem::is_directory(writeFolderPath))
 	{
-		boost::filesystem::create_directories(writeFolderPath);
+		std::filesystem::create_directories(writeFolderPath);
 	}
-	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+	for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+		if (std::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
-			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+			rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 			break;
 		}
 	}
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS);
 	uint64_t lastVideoTS = 0;
 	// read 4 frames
@@ -958,7 +981,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
-	boost::filesystem::remove_all(rootPath);
+	std::filesystem::remove_all(rootPath);
 }
 
 BOOST_AUTO_TEST_CASE(writer_only, *boost::unit_test::disabled())
@@ -987,17 +1010,21 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 	while (readPath.empty())
 	{
 		// read the first and only file in the directory
-		if (!boost::filesystem::is_directory(writeFolderPath))
+		if (!std::filesystem::is_directory(writeFolderPath))
 		{
-			boost::filesystem::create_directories(writeFolderPath);
+			std::filesystem::create_directories(writeFolderPath);
 		}
-		for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
+		for (auto &&itr : std::filesystem::recursive_directory_iterator(writeFolderPath))
 		{
 			auto dirPath = itr.path();
+<<<<<<< HEAD
 			if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+=======
+			if (std::filesystem::is_regular_file(dirPath) && std::filesystem::path(dirPath).extension()(dirPath) == ".mp4")
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 			{
 				readPath = dirPath.string();
-				rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+				rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 				break;
 			}
 		}
@@ -1005,7 +1032,7 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 	LOG_INFO << "Waiting for first video";
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 	LOG_INFO << "Resuming.....";
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS, readFps);
 
 	// read 4 frames
@@ -1086,18 +1113,22 @@ BOOST_AUTO_TEST_CASE(ultimate)
 	while (readPath.empty())
 	{
 		// read the first and only file in the directory
-		if (!boost::filesystem::is_directory(writeFolderPath))
+		if (!std::filesystem::is_directory(writeFolderPath))
 		{
-			boost::filesystem::create_directories(writeFolderPath);
+			std::filesystem::create_directories(writeFolderPath);
 		}
-		auto cannonicalWriteFolderPath = boost::filesystem::canonical(writeFolderPath);
-		for (auto &&itr : boost::filesystem::recursive_directory_iterator(cannonicalWriteFolderPath))
+		auto cannonicalWriteFolderPath = std::filesystem::canonical(writeFolderPath);
+		for (auto &&itr : std::filesystem::recursive_directory_iterator(cannonicalWriteFolderPath))
 		{
 			auto dirPath = itr.path();
+<<<<<<< HEAD
 			if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
+=======
+			if (std::filesystem::is_regular_file(dirPath) && std::filesystem::path(dirPath).extension()(dirPath) == ".mp4")
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 			{
 				readPath = dirPath.string();
-				rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
+				rootPath = std::filesystem::path(readPath).parent_path().parent_path().string();
 				break;
 			}
 		}
@@ -1105,7 +1136,7 @@ BOOST_AUTO_TEST_CASE(ultimate)
 	LOG_INFO << "Waiting for first video";
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 	LOG_INFO << "Resuming.....";
-	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
+	auto boostVideoTS = std::stoull(std::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS, readFps);
 
 	// read 4 frames
@@ -1147,7 +1178,11 @@ BOOST_AUTO_TEST_CASE(ultimate)
 			while (!q->size() && waitRetries < maxWaitRetries)
 			{
 				auto queSize = q->size();
+<<<<<<< HEAD
 				LOG_INFO << "Waiting for more data on disk (" << waitRetries << "/" << maxWaitRetries << ")";
+=======
+				LOG_INFO << "Waiting for more data on disk .....................";
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 				std::this_thread::sleep_for(std::chrono::seconds(1));
  				r.mp4Reader->step();
 				skipStep = true;

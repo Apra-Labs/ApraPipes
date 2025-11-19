@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
@@ -25,13 +28,13 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps(dataPath);
 	fileReaderProps.fps = 30;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
 	fileReader->addOutputPin(metadata);
 
 	RTSPPusherProps sinkProps(rtspServer, "hola");
 	sinkProps.encoderTargetKbps = encoderTargetKbps;
-	auto sink = boost::shared_ptr<Module>(new RTSPPusher(sinkProps));
+	auto sink = std::shared_ptr<Module>(new RTSPPusher(sinkProps));
 	fileReader->setNext(sink);
 
 	PipeLine p("test");

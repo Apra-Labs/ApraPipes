@@ -1,14 +1,15 @@
 #pragma once
 #include "TypeFactory.h"
+#include <functional>
 class Module;
 class ModuleFactory
 {
-	TypeFactory<Module*, size_t, boost::function<Module*()> > factory;
+	TypeFactory<Module*, size_t, std::function<Module*()> > factory;
 	using id_and_hash = std::pair<int, size_t>;
 	boost::container::flat_map<id_and_hash, Module*> modules_map;
 public:
 	Module *removeModule(int id, size_t type_id);
-	void registerType(size_t type_id, boost::function<Module*()> make);
+	void registerType(size_t type_id, std::function<Module*()> make);
 	template<class ...args>
 	Module *createModule(int id, size_t type_id, args&&... a) {
 		auto idnhash = std::make_pair(id, type_id);

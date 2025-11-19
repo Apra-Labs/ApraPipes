@@ -79,7 +79,7 @@ bool NvArgusCameraHelper::queueFrameToCamera()
     mQueuedFrames[dmaFDWrapper] = frame;
 }
 
-boost::shared_ptr<NvArgusCameraUtils> NvArgusCameraUtils::instance;
+std::shared_ptr<NvArgusCameraUtils> NvArgusCameraUtils::instance;
 
 NvArgusCameraUtils::NvArgusCameraUtils()
 {

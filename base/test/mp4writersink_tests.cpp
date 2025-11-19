@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 #include "Frame.h"
 #include "PipeLine.h"
@@ -14,7 +17,7 @@
 #include "ExternalSinkModule.h"
 #include "Mp4ReaderSource.h"
 #include "ExternalSourceModule.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 BOOST_AUTO_TEST_SUITE(mp4WriterSink_tests)
 
@@ -34,20 +37,20 @@ void writeH264(bool readLoop, int sleepSeconds, std::string outFolderPath, int c
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = readLoop;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
 	// #Dec_27_Review - do manual init, step and use saveorcompare
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	if (!p->init())
@@ -78,20 +81,20 @@ void write(std::string inFolderPath, std::string outFolderPath, int width, int h
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 10, 24, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
 	// #Dec_27_Review - do manual init, step and use saveorcompare
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	if (!p->init())
@@ -123,7 +126,7 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = true;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
@@ -131,24 +134,24 @@ void write_metadata(std::string inFolderPath, std::string outFolderPath, std::st
 	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1);
 	fileReaderProps2.fps = 24;
 	fileReaderProps2.readLoop = true;
-	auto metadataReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
+	auto metadataReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
 	metadataReader->addOutputPin(mp4Metadata);
 
-	auto readerMuxer = boost::shared_ptr<Module>(new FramesMuxer());
+	auto readerMuxer = std::shared_ptr<Module>(new FramesMuxer());
 	fileReader->setNext(readerMuxer);
 	metadataReader->setNext(readerMuxer);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, fileReaderProps.fps, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	readerMuxer->setNext(mp4WriterSink);
 
 	// #Dec_27_Review - do manual init, step and use saveorcompare
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 	p->appendModule(metadataReader);
 
@@ -178,12 +181,12 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	Logger::initLogger(loggerProps);
 
-	boost::filesystem::path dir(outPath);
+	std::filesystem::path dir(outPath);
 
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS,0,true,false,false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 300;
-	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 
 	mp4Reader->addOutPutPin(metadata);
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
@@ -192,11 +195,11 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 30, outPath, recordedTSBasedDTS);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 300;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	mp4Reader->setNext(mp4WriterSink);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(mp4Reader);
 
 	if (!p->init())
@@ -281,18 +284,18 @@ BOOST_AUTO_TEST_CASE(setgetprops_jpeg)
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 30, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	if (!p->init())
@@ -351,7 +354,7 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
@@ -359,24 +362,24 @@ BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
 	auto fileReaderProps2 = FileReaderModuleProps(metadataPath, 0, -1);
 	fileReaderProps2.fps = 24;
 	fileReaderProps2.readLoop = true;
-	auto metadataReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
+	auto metadataReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps2));
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
 	metadataReader->addOutputPin(mp4Metadata);
 
-	auto readerMuxer = boost::shared_ptr<Module>(new FramesMuxer());
+	auto readerMuxer = std::shared_ptr<Module>(new FramesMuxer());
 	fileReader->setNext(readerMuxer);
 	metadataReader->setNext(readerMuxer);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, fileReaderProps.fps, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	readerMuxer->setNext(mp4WriterSink);
 
 	// #Dec_27_Review - do manual init, step and use saveorcompare
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 	p->appendModule(metadataReader);
 
@@ -409,12 +412,12 @@ BOOST_AUTO_TEST_CASE(parsenalu)
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 	
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	fileReader->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -482,18 +485,18 @@ BOOST_AUTO_TEST_CASE(setgetprops_h264)
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 10, 30, outFolderPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Mp4WriterSink>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	if (!p->init())
@@ -559,14 +562,14 @@ BOOST_AUTO_TEST_CASE(write_mp4video_h264_step)
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = false;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(h264ImageMetadata);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, 100, outPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	fileReader->setNext(mp4WriterSink);
 
 	fileReader->play(true);
@@ -581,8 +584,8 @@ BOOST_AUTO_TEST_CASE(write_mp4video_h264_step)
 	}
 	fileReader->term();
 	mp4WriterSink->term();
-	boost::filesystem::path mp4fileName = "data/testOutput/mp4_videos/h264/step/stepvideo.mp4";
-	auto fileSize = boost::filesystem::file_size(mp4fileName);
+	std::filesystem::path mp4fileName = "data/testOutput/mp4_videos/h264/step/stepvideo.mp4";
+	auto fileSize = std::filesystem::file_size(mp4fileName);
 	//checking the size of mp4 file
 	BOOST_TEST(fileSize, 4270314);
 
@@ -607,12 +610,12 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 	fileReaderProps.fps = 24;
 	fileReaderProps.readLoop = true;
 
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new H264Metadata(width, height));
 	fileReader->addOutputPin(encodedImageMetadata);
 
 
-	auto metadataSource = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto metadataSource = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1_0"));
 	auto metadataPinId = metadataSource->addOutputPin(mp4Metadata);
@@ -620,14 +623,14 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 	FramesMuxerProps muxerProps;
 	muxerProps.strategy = FramesMuxerProps::MAX_DELAY_ANY;
 	muxerProps.maxDelay = 0;
-	auto readerMuxer = boost::shared_ptr<Module>(new FramesMuxer(muxerProps));
+	auto readerMuxer = std::shared_ptr<Module>(new FramesMuxer(muxerProps));
 	fileReader->setNext(readerMuxer);
 	metadataSource->setNext(readerMuxer);
 
 	auto mp4WriterSinkProps = Mp4WriterSinkProps(UINT32_MAX, 10, fileReaderProps.fps, outPath);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 100;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	readerMuxer->setNext(mp4WriterSink);
 
 	fileReader->play(true);
@@ -661,8 +664,8 @@ BOOST_AUTO_TEST_CASE(write_mp4video_metadata_h264_step)
 	metadataSource->term();
 	readerMuxer->term();
 	mp4WriterSink->term();
-	boost::filesystem::path mp4FileName = "data/testOutput/mp4_videos/h264_metadata/step/stepvideo.mp4";
-	auto fileSize = boost::filesystem::file_size(mp4FileName);
+	std::filesystem::path mp4FileName = "data/testOutput/mp4_videos/h264_metadata/step/stepvideo.mp4";
+	auto fileSize = std::filesystem::file_size(mp4FileName);
 	BOOST_TEST(fileSize == 4270665);
 
 	Test_Utils::deleteFolder(mp4FileName.string());

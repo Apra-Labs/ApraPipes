@@ -12,6 +12,7 @@
 #include "Mp4ErrorFrame.h"
 #include "Module.h"
 #include "AbsControlModule.h"
+#include <filesystem>
 
 
 class Mp4ReaderDetailAbs
@@ -29,7 +30,7 @@ public:
 		mSetMetadata = _setMetadata;
 		sendMp4ErrorFrame = _sendMp4ErrorFrame;
 		setMp4ReaderProps = _setProps;
-		cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(mProps.skipDir));
+		cof = std::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(mProps.skipDir));
 	}
 
 	~Mp4ReaderDetailAbs()
@@ -51,7 +52,7 @@ public:
 	bool Init()
 	{
 		sentEOSSignal = false;
-		auto filePath = boost::filesystem::path(mState.mVideoPath);
+		auto filePath = std::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
 			if (!cof->probe(filePath, mState.mVideoPath))
@@ -64,7 +65,7 @@ public:
 		}
 		if (mProps.parseFS)
 		{
-			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			auto boostVideoTS = std::filesystem::path(mState.mVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
 			{
@@ -88,7 +89,7 @@ public:
 		mState.mVideoPath = videoPath;
 		mProps = props;
 		mState.end = false;
-		if(boost::filesystem::path(videoPath).extension() == ".mp4")
+		if(std::filesystem::path(videoPath).extension() == ".mp4")
 		{
 			isVideoFileFound = true;
 		}
@@ -104,7 +105,7 @@ public:
 		// To check if the video file path is correct
 		try
 		{
-			auto canonicalVideoPath = boost::filesystem::canonical(props.videoPath);
+			auto canonicalVideoPath = std::filesystem::canonical(props.videoPath);
 			tempVideoPath = canonicalVideoPath.string();
 		}
 		catch (...)
@@ -129,13 +130,13 @@ public:
 		}
 
 		std::string tempSkipDir;
-		if (boost::filesystem::path(tempVideoPath).extension() == ".mp4")
+		if (std::filesystem::path(tempVideoPath).extension() == ".mp4")
 		{
-			tempSkipDir = boost::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
+			tempSkipDir = std::filesystem::path(tempVideoPath).parent_path().parent_path().parent_path().string();
 		}
 		else
 		{
-			tempSkipDir = boost::filesystem::path(tempVideoPath).string();
+			tempSkipDir = std::filesystem::path(tempVideoPath).string();
 		}
 		if (props.parseFS && mProps.skipDir == tempSkipDir && mState.mVideoPath != "")
 		{
@@ -149,7 +150,7 @@ public:
 		{
 			sentEOSSignal = false;
 
-			if (boost::filesystem::path(tempVideoPath).extension() != ".mp4")
+			if (std::filesystem::path(tempVideoPath).extension() != ".mp4")
 			{
 				if (!cof->probe(tempVideoPath, mState.mVideoPath))
 				{
@@ -161,7 +162,7 @@ public:
 				tempVideoPath = mState.mVideoPath;
 			}
 
-			auto boostVideoTS = boost::filesystem::path(tempVideoPath).stem().string();
+			auto boostVideoTS = std::filesystem::path(tempVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
 			{
@@ -176,7 +177,7 @@ public:
 			}
 			
 			//check if root has changed
-			cof = boost::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(tempSkipDir));
+			cof = std::shared_ptr<OrderedCacheOfFiles>(new OrderedCacheOfFiles(tempSkipDir));
 			cof->clearCache();
 			cof->parseFiles(start_parsing_ts, props.direction, true, false);
 			//parse successful - update mState and skipDir with current root dir
@@ -323,7 +324,7 @@ public:
 			returns false if no relevant mp4 file left on disk. */
 
 			// in case race conditions happen between writer and reader (videotrack not found etc) - use code will retry
-		auto filePath = boost::filesystem::path(mState.mVideoPath);
+		auto filePath = std::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
 			if (!cof->probe(filePath, mState.mVideoPath))
@@ -382,7 +383,7 @@ public:
 							{
 								bool goLive = true;
 								bool priority = true;
-								boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 								ctl->handleGoLive(goLive, priority);
 								LOG_TRACE<<"Sending command to mmq";
 								mState.sentCommandToControlModule = true;
@@ -544,7 +545,7 @@ public:
 					cmd.playbackFps = mFPS;
 					cmd.gop = gop;
 					bool priority = true;
-					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 					ctl->handleDecoderSpeed(cmd, priority);
 				}
 			}
@@ -567,7 +568,7 @@ public:
 		}
 		else
 		{
-			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			auto boostVideoTS = std::filesystem::path(mState.mVideoPath).stem().string();
 			try
 			{
 				mState.resolvedStartingTS = std::stoull(boostVideoTS);
@@ -685,7 +686,7 @@ public:
 		uint64_t skipMsecsInFile;
 		if (!isVideoFileFound)
 		{
-			if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+			if (!cof->probe(std::filesystem::path(mState.mVideoPath), mState.mVideoPath))
 			{
 				return false;
 			}
@@ -693,7 +694,7 @@ public:
 		}
 		if (mProps.parseFS)
 		{
-			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			auto boostVideoTS = std::filesystem::path(mState.mVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
 			try
 			{
@@ -726,8 +727,8 @@ public:
 			skipTSInOpenFile = cof->isTimeStampInFile(mState.mVideoPath, skipTS);
 		}
 		// force reopen the video file if skipVideo is the last file in cache
-		auto lastVideoInCache = boost::filesystem::canonical(cof->getLastVideoInCache());
-		bool skipFileIsLastInCache = boost::filesystem::equivalent(lastVideoInCache, boost::filesystem::canonical(skipVideoFile));
+		auto lastVideoInCache = std::filesystem::canonical(cof->getLastVideoInCache());
+		bool skipFileIsLastInCache = std::filesystem::equivalent(lastVideoInCache, std::filesystem::canonical(skipVideoFile));
 		if (!skipTSInOpenFile || skipFileIsLastInCache)
 		{
 			// open skipVideoFile if mState.end has reached or skipTS not in currently open video
@@ -805,7 +806,7 @@ public:
 				if ((controlModule != nullptr))
 				{
 					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
-					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 					ctl->handleMp4MissingVideotrack(ex.getPreviousFile(), ex.getNextFile());
 				}
 				return false;
@@ -825,7 +826,7 @@ public:
 	void makeAndSendMp4Error(int errorType, int errorCode, std::string errorMsg, int openErrorCode, uint64_t _errorMp4TS)
 	{
 		LOG_ERROR << "makeAndSendMp4Error <" << errorType << "," << errorCode << "," << errorMsg << "," << openErrorCode << "," << _errorMp4TS << ">";
-		frame_sp errorFrame = boost::shared_ptr<Mp4ErrorFrame>(new Mp4ErrorFrame(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS));
+		frame_sp errorFrame = std::make_shared<Mp4ErrorFrame>(errorType, errorCode, errorMsg, openErrorCode, _errorMp4TS);
 		sendMp4ErrorFrame(errorFrame);
 	}
 
@@ -855,7 +856,7 @@ public:
 				if ((controlModule != nullptr))
 				{
 					// Stubbing the eventual application's control module & the handleMp4MissingVideotrack method
-					boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+					std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 					ctl->handleMp4MissingVideotrack(ex.getPreviousFile(), ex.getNextFile());
 				}
 				return;
@@ -881,7 +882,7 @@ public:
 			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 			if (currentTS >= recheckDiskTS)
 			{
-				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+				if (!cof->probe(std::filesystem::path(mState.mVideoPath), mState.mVideoPath))
 				{
 					imgFrame = nullptr;
 					imageFrameSize = 0;
@@ -1100,7 +1101,7 @@ protected:
 	bool seekReachedEOF = false;
 	bool waitFlag = false;
 	uint64_t recheckDiskTS = 0;
-	boost::shared_ptr<OrderedCacheOfFiles> cof;
+	std::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
 	framemetadata_sp mH264Metadata;
 	/*
@@ -1127,7 +1128,7 @@ public:
 	std::string h264ImagePinId;
 	std::string encodedImagePinId;
 	std::string metadataFramePinId;
-	boost::shared_ptr<Module> controlModule = nullptr;
+	std::shared_ptr<Module> controlModule = nullptr;
 };
 
 class Mp4ReaderDetailJpeg : public Mp4ReaderDetailAbs

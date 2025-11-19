@@ -66,7 +66,7 @@ private:
 	void setMetadata(framemetadata_sp& metadata);
 
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 
 	int mFrameType;
 	size_t mFrameLength;

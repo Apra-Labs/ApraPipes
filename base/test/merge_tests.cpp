@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
@@ -15,23 +16,23 @@ BOOST_AUTO_TEST_CASE(basic)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 
-	auto source1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto source_pin_1 = source1->addOutputPin(metadata);
 
-	auto source2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto source_pin_2 = source2->addOutputPin(metadata);
 
-	auto source3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto source_pin_3 = source3->addOutputPin(metadata);
 		
-	auto merge = boost::shared_ptr<Merge>(new Merge());
+	auto merge = std::shared_ptr<Merge>(new Merge());
 	source1->setNext(merge);
 	source2->setNext(merge);
 	source3->setNext(merge);
 
 	ExternalSinkModuleProps props;
 	props.qlen = 50;
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule(props));
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule(props));
 	merge->setNext(sink);
 
 	BOOST_TEST(source1->init());

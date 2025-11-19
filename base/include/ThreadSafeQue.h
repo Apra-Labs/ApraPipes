@@ -11,7 +11,7 @@ public:
 	typedef boost::container::deque<T> container_type;
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
-	
+
 	explicit threadsafe_que() : m_unread(0), m_wakeExternally(false) {}
 
 	void push(const value_type& item)
@@ -19,7 +19,7 @@ public:
 
 		std::unique_lock<std::mutex> lock(m_mutex);
 		m_container.push_front(item);
-		++m_unread;				
+		++m_unread;
 		lock.unlock();
 		m_not_empty.notify_one();
 	}
@@ -55,7 +55,7 @@ public:
 		m_container.clear();
 		m_unread = 0;
 		lock.unlock();
-	}	
+	}
 
 	size_t size()
 	{
@@ -90,10 +90,10 @@ private:
 
 	bool is_not_empty() const { return m_unread > 0; }
 
-	bool is_not_empty_external() const 
-	{ 
-		return m_unread > 0 || m_wakeExternally; 
-	}	
+	bool is_not_empty_external() const
+	{
+		return m_unread > 0 || m_wakeExternally;
+	}
 
 	bool m_wakeExternally;
 	size_type m_unread;

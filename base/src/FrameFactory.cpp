@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include <boost/bind/bind.hpp>
+#include <memory>
+#include <mutex>
 #include "FrameFactory.h"
 #ifdef ARM64
 #include "DMAAllocator.h"
@@ -7,7 +8,6 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-using namespace boost::placeholders;
 #define LOG_FRAME_FACTORY
 
 FrameFactory::FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrames) : maxConcurrentFrames(_maxConcurrentFrames)
@@ -51,12 +51,12 @@ size_t FrameFactory::getNumberOfChunks(size_t size)
 	return (size + chunkSize - 1) / chunkSize;
 }
 
-frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &mother)
+frame_sp FrameFactory::create(size_t size, std::shared_ptr<FrameFactory> &mother)
 {
 	return create(size, mother, mMetadata);
 }
 
-frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &mother, framemetadata_sp& metadata)
+frame_sp FrameFactory::create(size_t size, std::shared_ptr<FrameFactory> &mother, framemetadata_sp& metadata)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 	if (maxConcurrentFrames && counter >= maxConcurrentFrames)
@@ -70,7 +70,7 @@ frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &moth
 
 	auto outFrame = frame_sp(
 		frame_allocator.construct(memory_allocator->allocateChunks(n), size, mother),
-		boost::bind(&FrameFactory::destroy, this, _1));
+		[this](Frame* p) { this->destroy(p); });
 	outFrame->setMetadata(metadata);
 	return outFrame;
 }
@@ -92,7 +92,7 @@ void FrameFactory::destroy(Frame *pointer)
 	frame_allocator.free(pointer);
 }
 
-frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<FrameFactory> &mother)
+frame_sp FrameFactory::create(frame_sp &frame, size_t size, std::shared_ptr<FrameFactory> &mother)
 {
 	size_t oldChunks = getNumberOfChunks(frame->size());
 	size_t newChunks = getNumberOfChunks(size);
@@ -122,7 +122,7 @@ frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<Fr
 	frame->resetMemory(); // so that when destroyBuffer is called it should not free the memory
 	auto outFrame = frame_sp(
 		frame_allocator.construct(origPtr, size, mother),
-		boost::bind(&FrameFactory::destroy, this, _1));
+		[this](Frame* p) { this->destroy(p); });
 	outFrame->setMetadata(mMetadata);
 	return outFrame;
 }

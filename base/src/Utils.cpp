@@ -3,6 +3,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <iostream>
 #include <locale>
+#include <thread>
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #ifdef _WIN64

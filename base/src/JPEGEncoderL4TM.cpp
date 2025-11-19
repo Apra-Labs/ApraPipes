@@ -121,8 +121,8 @@ private:
 		mDataSize = 	dummyBufferLength;	
 	}	
 
-	boost::shared_ptr<unsigned char[]> dummyBuffer;
-	boost::shared_ptr<JPEGEncoderL4TMHelper> encHelper;
+	std::shared_ptr<unsigned char[]> dummyBuffer;
+	std::shared_ptr<JPEGEncoderL4TMHelper> encHelper;
 
 	framemetadata_sp mMetadata;		
 	framemetadata_sp mOutputMetadata;	

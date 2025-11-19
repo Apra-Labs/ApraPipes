@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
@@ -13,8 +14,6 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
-
-#include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(pullstratergy_tests)
 
@@ -49,7 +48,7 @@ protected:
     frame_sp lastFrame;
 };
 
-void pull(boost::shared_ptr<PullAnalogy> sink)
+void pull(std::shared_ptr<PullAnalogy> sink)
 {
     // call getFrame here in a loop - let's say 10 times
     for (int i = 0; i < 10; i++)
@@ -72,7 +71,7 @@ BOOST_AUTO_TEST_CASE(pullAnalogy, *boost::unit_test::disabled())
 
     FileReaderModuleProps fileReaderProps("./data/h264_frames/Raw_YUV420_640x360_????.h264");
     // fileReaderProps.fps = 30;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     //create a class of h264Metadata
     auto metadata = framemetadata_sp(new H264Metadata(width, height));
     fileReader->addOutputPin(metadata);
@@ -82,7 +81,7 @@ BOOST_AUTO_TEST_CASE(pullAnalogy, *boost::unit_test::disabled())
     _props.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
     _props.qlen = 1;
 
-    auto sink = boost::shared_ptr<PullAnalogy>(new PullAnalogy(_props));
+    auto sink = std::shared_ptr<PullAnalogy>(new PullAnalogy(_props));
     fileReader->setNext(sink);
 
     PipeLine p("test");

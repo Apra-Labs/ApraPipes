@@ -55,7 +55,7 @@ protected:
 	void setMetadata(frame_sp metadata);
 	bool handlePropsChange(frame_sp& frame);
 private:
-	boost::shared_ptr<MvExtractDetailAbs> mDetail;
+	std::shared_ptr<MvExtractDetailAbs> mDetail;
 	framemetadata_sp rawOutputMetadata;
 	bool mShouldTriggerSOS = true;
 };

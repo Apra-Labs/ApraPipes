@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
@@ -28,14 +31,14 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw");
 	fileReaderProps.fps = 1000;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	fileReader->addOutputPin(metadata);
 
 	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	fileReader->setNext(sink);	
 
 	PipeLine p("test");
@@ -63,7 +66,7 @@ BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360");
 	fileReaderProps.fps = 30;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
 
 	fileReader->addOutputPin(metadata);
@@ -71,7 +74,7 @@ BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
 	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	fileReader->setNext(sink);	
 
 	PipeLine p("test");
@@ -98,7 +101,7 @@ BOOST_AUTO_TEST_CASE(nv12, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_NV12_1280x720");
 	fileReaderProps.fps = 30;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::NV12, size_t(0), CV_8U, FrameMetadata::MemType::HOST));
 
 	fileReader->addOutputPin(metadata);
@@ -106,7 +109,7 @@ BOOST_AUTO_TEST_CASE(nv12, *boost::unit_test::disabled())
 	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	fileReader->setNext(sink);	
 
 	PipeLine p("test");
@@ -133,7 +136,7 @@ BOOST_AUTO_TEST_CASE(bgra, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_BGRA_1280x720");
 	fileReaderProps.fps = 30;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));	
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::BGRA, CV_8UC4, width*4, CV_8U, FrameMetadata::HOST));
 
 	fileReader->addOutputPin(metadata);
@@ -141,7 +144,7 @@ BOOST_AUTO_TEST_CASE(bgra, *boost::unit_test::disabled())
 	VirtualCameraSinkProps sinkProps(VIDEO_DEV);
 	// sinkProps.logHealth = true;
 	// sinkProps.logHealthFrequency = 100;
-	auto sink = boost::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new VirtualCameraSink(sinkProps));
 	fileReader->setNext(sink);	
 
 	PipeLine p("test");

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -15,13 +16,13 @@ BOOST_AUTO_TEST_SUITE(QRReader_tests)
 void testQRResult(std::string inPutFileName, framemetadata_sp metadata)
 {	
 	Logger::setLogLevel(boost::log::trivial::severity_level::trace);
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inPutFileName)));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inPutFileName)));
 	fileReader->addOutputPin(metadata);
 	
-	auto QRData = boost::shared_ptr<QRReader>(new QRReader());
+	auto QRData = std::shared_ptr<QRReader>(new QRReader());
 	fileReader->setNext(QRData);
 				
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	QRData->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include "stdafx.h"
+#include <memory>
 #include<fstream>
 #include<vector>
 
@@ -102,16 +103,16 @@ BOOST_AUTO_TEST_CASE(test_asr, *boost::unit_test::disabled())
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
     fileReaderProps.readLoop = false;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
    
-    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+    auto asr = std::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
         AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
         ,"./data/whisper/models/ggml-tiny.en-q8_0.bin",18000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
     BOOST_TEST(fileReader->init());
@@ -142,16 +143,16 @@ BOOST_AUTO_TEST_CASE(changeprop_asr, *boost::unit_test::disabled())
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+    auto asr = std::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
         AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
         , "./data/whisper/models/ggml-tiny.en-q8_0.bin", 18000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
     BOOST_TEST(fileReader->init());
@@ -199,16 +200,16 @@ BOOST_AUTO_TEST_CASE(change_unsupported_prop_asr, *boost::unit_test::disabled())
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+    auto asr = std::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
         AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
         , "./data/whisper/models/ggml-tiny.en-q8_0.bin", 18000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
     BOOST_TEST(fileReader->init());
@@ -234,19 +235,19 @@ BOOST_AUTO_TEST_CASE(check_eos_frame_asr)
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
     fileReaderProps.readLoop = false;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
    
-    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+    auto asr = std::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
         AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
         ,"./data/whisper/models/ggml-tiny.en-q8_0.bin",160000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     asr->setNext(sink);
 
     BOOST_TEST(fileReader->init());
@@ -283,19 +284,19 @@ BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr, *boost::unit_test::disabled())
     // This is a PCM file without WAV header
     auto fileReaderProps = FileReaderModuleProps("./data/audioToTextXform_test.pcm");
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::AUDIO));
     auto pinId = fileReader->addOutputPin(metadata);
    
-    auto asr = boost::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
+    auto asr = std::shared_ptr<AudioToTextXForm>(new AudioToTextXForm(AudioToTextXFormProps(
         AudioToTextXFormProps::DecoderSamplingStrategy::GREEDY
         ,"./data/whisper/models/ggml-tiny.en-q8_0.bin",160000)));
     fileReader->setNext(asr);
 
-    auto outputFile = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
+    auto outputFile = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(asrOutText[0], false)));
     asr->setNext(outputFile);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     asr->setNext(sink);
 
     BOOST_TEST(fileReader->init());

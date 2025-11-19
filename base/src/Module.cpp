@@ -1,9 +1,8 @@
 
 #include "stdafx.h"
 #include <boost/asio.hpp>
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/bind.hpp>
+#include <memory>
+#include <functional>
 
 #include "AIPExceptions.h"
 #include "Frame.h"
@@ -153,10 +152,10 @@ Module::Module(Kind nature, string name, ModuleProps _props)
 
   mQue.reset(new FrameContainerQueue(_props.qlen));
 
-  onStepFail = boost::bind(&Module::ignore, this, 0);
+  onStepFail = [this]() { this->ignore(0); };
   LOG_INFO << "Setting Module tolerance for step failure as: " << "<0>. Currently there is no way to change this.";
 
-  pacer = boost::shared_ptr<PaceMaker>(new PaceMaker(_props.fps));
+  pacer = std::make_shared<PaceMaker>(_props.fps);
   auto tempId = getId();
   mProfiler.reset(new Profiler(
       tempId, _props.logHealth, _props.logHealthFrequency, _props.healthUpdateIntervalInSec, 
@@ -267,7 +266,7 @@ void Module::setSieveDisabledFlag(bool sieve)
   }
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
+bool Module::setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                      bool open, bool isFeedback, bool sieve)
 {
   if (next->getNature() < this->getNature())
@@ -421,25 +420,23 @@ bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
 }
 
 // default - open, sieve is enabled - feedback false
-bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+bool Module::setNext(std::shared_ptr<Module> next, bool open, bool sieve)
 {
   return setNext(next, open, false, sieve);
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback,
+bool Module::setNext(std::shared_ptr<Module> next, bool open, bool isFeedback,
                      bool sieve)
 {
-  pair<string, framefactory_sp> me; // map element
   vector<string> pinIdArr;
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     pinIdArr.push_back(me.first);
   }
 
   if (!sieve)
   {
-    pair<string, framemetadata_sp> me; // map element
-    BOOST_FOREACH (me, mInputPinIdMetadataMap)
+    for (const auto& me : mInputPinIdMetadataMap)
     {
       pinIdArr.push_back(me.first);
     }
@@ -449,19 +446,19 @@ bool Module::setNext(boost::shared_ptr<Module> next, bool open, bool isFeedback,
   return setNext(next, pinIdArr, open, isFeedback, sieve);
 }
 
-bool Module::setNext(boost::shared_ptr<Module> next, vector<string> &pinIdArr,
+bool Module::setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                      bool open)
 {
   return setNext(next, pinIdArr, open, false, true);
 }
 
-bool Module::addFeedback(boost::shared_ptr<Module> next,
+bool Module::addFeedback(std::shared_ptr<Module> next,
                          vector<string> &pinIdArr, bool open)
 {
   return setNext(next, pinIdArr, open, true, true);
 }
 
-bool Module::addFeedback(boost::shared_ptr<Module> next, bool open)
+bool Module::addFeedback(std::shared_ptr<Module> next, bool open)
 {
   return setNext(next, open, true, true);
 }
@@ -552,14 +549,12 @@ framemetadata_sp Module::getFirstOutputMetadata()
   return mOutputPinIdFrameFactoryMap.begin()->second->getFrameMetadata();
 }
 
-boost::container::deque<boost::shared_ptr<Module>>
+boost::container::deque<std::shared_ptr<Module>>
 Module::getConnectedModules()
 {
-  boost::container::deque<boost::shared_ptr<Module>> nextModules;
+  boost::container::deque<std::shared_ptr<Module>> nextModules;
 
-  for (map<string, boost::shared_ptr<Module>>::const_iterator it =
-           mModules.cbegin();
-       it != mModules.cend(); ++it)
+  for (auto it = mModules.cbegin(); it != mModules.cend(); ++it)
   {
     auto pModule = it->second;
     nextModules.push_back(pModule);
@@ -584,7 +579,7 @@ bool Module::init()
   }
   mQuePushStrategy = QuePushStrategy::getStrategy(mProps->quePushStrategyType, myId);
   // loop all the downstream modules and set the que
-  for (map<string, boost::shared_ptr<Module>>::const_iterator it = mModules.begin(); it != mModules.end(); ++it)
+  for (auto it = mModules.begin(); it != mModules.end(); ++it)
   {
     auto pModule = it->second;
     auto que = pModule->getQue();
@@ -602,8 +597,7 @@ bool Module::init()
   }
   if (myNature == SOURCE)
   {
-    pair<string, framefactory_sp> me; // map element
-    BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+    for (const auto& me : mOutputPinIdFrameFactoryMap)
     {
       auto metadata = me.second->getFrameMetadata();
       if (!metadata->isSet())
@@ -647,7 +641,6 @@ frame_container Module::pop() { return mQue->pop(); }
 bool Module::isFull()
 {
   bool ret = false;
-  map<string, boost::shared_ptr<Module>> mModules;
   for (auto it = mModules.cbegin(); it != mModules.end(); it++)
   {
     if (it->second->isFull())
@@ -820,8 +813,7 @@ boost_deque<frame_sp> Module::getFrames(frame_container &frames)
 
 string getPinIdByType(int type, metadata_by_pin &metadataMap)
 {
-  pair<string, framemetadata_sp> me; // map element
-  BOOST_FOREACH (me, metadataMap)
+  for (const auto& me : metadataMap)
   {
     if (me.second->getFrameType() == type)
     {
@@ -834,8 +826,7 @@ string getPinIdByType(int type, metadata_by_pin &metadataMap)
 
 string getPinIdByType(int type, framefactory_by_pin &metadataMap)
 {
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, metadataMap)
+  for (const auto& me : metadataMap)
   {
     if (me.second->getFrameMetadata()->getFrameType() == type)
     {
@@ -850,8 +841,7 @@ vector<string> Module::getAllOutputPinsByType(int type)
 {
   vector<string> pins;
 
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     if (me.second->getFrameMetadata()->getFrameType() == type)
     {
@@ -874,8 +864,7 @@ string Module::getOutputPinIdByType(int type)
 
 framemetadata_sp getMetadataByType(int type, metadata_by_pin &metadataMap)
 {
-  pair<string, framemetadata_sp> me; // map element
-  BOOST_FOREACH (me, metadataMap)
+  for (const auto& me : metadataMap)
   {
     if (me.second->getFrameType() == type)
     {
@@ -889,8 +878,7 @@ framemetadata_sp getMetadataByType(int type, metadata_by_pin &metadataMap)
 int getNumberOfPinsByType(int type, metadata_by_pin &metadataMap)
 {
   int count = 0;
-  pair<string, framemetadata_sp> me; // map element
-  BOOST_FOREACH (me, metadataMap)
+  for (const auto& me : metadataMap)
   {
     if (me.second->getFrameType() == type)
     {
@@ -906,8 +894,7 @@ int getNumberOfPinsByType(int type, metadata_by_pin &metadataMap)
 framemetadata_sp getMetadataByType(int type,
                                    framefactory_by_pin &frameFactoryMap)
 {
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, frameFactoryMap)
+  for (const auto& me : frameFactoryMap)
   {
     if (me.second->getFrameMetadata()->getFrameType() == type)
     {
@@ -921,8 +908,7 @@ framemetadata_sp getMetadataByType(int type,
 int getNumberOfPinsByType(int type, framefactory_by_pin &frameFactoryMap)
 {
   int count = 0;
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, frameFactoryMap)
+  for (const auto& me : frameFactoryMap)
   {
     if (me.second->getFrameMetadata()->getFrameType() == type)
     {
@@ -1062,8 +1048,7 @@ bool isMetadatset(metadata_by_pin &metadataMap)
 {
   bool bSet = true;
 
-  pair<string, framemetadata_sp> me; // map element
-  BOOST_FOREACH (me, metadataMap)
+  for (const auto& me : metadataMap)
   {
     if (!me.second->isSet())
     {
@@ -1079,8 +1064,7 @@ bool isMetadatset(framefactory_by_pin &framefactoryMap)
 {
   bool bSet = true;
 
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, framefactoryMap)
+  for (const auto& me : framefactoryMap)
   {
     if (!me.second->getFrameMetadata()->isSet())
     {
@@ -1155,7 +1139,7 @@ bool Module::queueStep()
   return queueCommand(cmd);
 }
 
-bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
+bool Module::relay(std::shared_ptr<Module> next, bool open, bool priority)
 {
   auto nextModuleId = next->getId();
   if (mModules.find(nextModuleId) == mModules.end())
@@ -1169,7 +1153,7 @@ bool Module::relay(boost::shared_ptr<Module> next, bool open, bool priority)
   return queueCommand(cmd, priority);
 }
 
-void Module::addControlModule(boost::shared_ptr<Module> cModule)
+void Module::addControlModule(std::shared_ptr<Module> cModule)
 {
   controlModule = cModule;
 }
@@ -1354,8 +1338,7 @@ void Module::sendEOS()
 
   frame_container frames;
   auto frame = frame_sp(new EoSFrame());
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     frames.insert(make_pair(me.first, frame));
   }
@@ -1370,8 +1353,7 @@ void Module::sendEOS(frame_sp &frame)
     return;
   }
   frame_container frames;
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     frames.insert(make_pair(me.first, frame));
   }
@@ -1387,8 +1369,7 @@ void Module::sendMp4ErrorFrame(frame_sp &frame)
   }
 
   frame_container frames;
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     frames.insert(make_pair(me.first, frame));
   }
@@ -1522,8 +1503,7 @@ bool Module::preProcessNonSource(frame_container &frames)
       if (myNature == TRANSFORM && !shouldTriggerSOS())
       {
         // only if shouldTriggerSOS returns false
-        pair<string, framefactory_sp> me; // map element
-        BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+        for (const auto& me : mOutputPinIdFrameFactoryMap)
         {
           auto metadata = me.second->getFrameMetadata();
           if (!metadata->isSet())
@@ -1568,8 +1548,7 @@ bool Module::stepNonSource(frame_container &frames)
 
 bool Module::addEoPFrame(frame_container &frames)
 {
-  pair<string, framefactory_sp> me; // map element
-  BOOST_FOREACH (me, mOutputPinIdFrameFactoryMap)
+  for (const auto& me : mOutputPinIdFrameFactoryMap)
   {
     auto frame = frame_sp(new EoPFrame());
     auto metadata = me.second->getFrameMetadata();
@@ -1589,8 +1568,7 @@ bool Module::addEoPFrame(frame_container &frames)
   // frames - extra EOP frames downstream shouldn't matter
   if (mIsSieveDisabledForAny)
   {
-    pair<string, framemetadata_sp> me; // map element
-    BOOST_FOREACH (me, mInputPinIdMetadataMap)
+    for (const auto& me : mInputPinIdMetadataMap)
     {
       auto frame = frame_sp(new EoPFrame());
       frame->setMetadata(me.second);
@@ -1653,7 +1631,7 @@ bool Module::stop()
 }
 
 void Module::adaptQueue(
-    boost::shared_ptr<FrameContainerQueueAdapter> queAdapter)
+    std::shared_ptr<FrameContainerQueueAdapter> queAdapter)
 {
   queAdapter->adapt(mQue);
   mQue = queAdapter;
@@ -1707,7 +1685,7 @@ void Module::emit_fatal(unsigned short eventID)
 }
 
 void Module::register_consumer(
-    boost::function<void(Module *, unsigned short)> consumer,
+    std::function<void(Module *, unsigned short)> consumer,
     bool bFatal /*= false*/)
 {
   (bFatal) ? (fatal_event_consumer = consumer) : (event_consumer = consumer);

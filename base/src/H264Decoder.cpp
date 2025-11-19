@@ -81,9 +81,9 @@ public:
 private:
 
 #ifdef ARM64
-	boost::shared_ptr<h264DecoderV4L2Helper> helper;
+	std::shared_ptr<h264DecoderV4L2Helper> helper;
 #else
-	boost::shared_ptr<H264DecoderNvCodecHelper> helper;
+	std::shared_ptr<H264DecoderNvCodecHelper> helper;
 #endif
 };
 
@@ -91,9 +91,9 @@ H264Decoder::H264Decoder(H264DecoderProps _props) : Module(TRANSFORM, "H264Decod
 {
 	mDetail.reset(new Detail(mProps));
 #ifdef ARM64
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::MemType::DMABUF));
+	mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(FrameMetadata::MemType::DMABUF);
 #else
-	mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(RawImageMetadata::MemType::HOST));
+	mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(RawImageMetadata::MemType::HOST);
 #endif
 	mOutputPinId = Module::addOutputPin(mOutputMetadata);
 }
@@ -604,7 +604,7 @@ void H264Decoder::dropFarthestFromCurrentTs(uint64_t ts)
 			{
 				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
 				{
-					std::unique_lock<std::mutex>(m_mutex);
+					std::unique_lock<std::mutex> lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					// Dont drop the frames from cache which are present in the incomingFramesTSQ
 					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
@@ -629,7 +629,7 @@ void H264Decoder::dropFarthestFromCurrentTs(uint64_t ts)
 			{
 				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
 				{
-					std::unique_lock<std::mutex>(m_mutex);
+					std::unique_lock<std::mutex> lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
 					{

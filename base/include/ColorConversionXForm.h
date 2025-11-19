@@ -50,7 +50,7 @@ protected:
 
 private:
 	ColorConversionProps mProps;
-	boost::shared_ptr<DetailAbstract> mDetail;
+	std::shared_ptr<DetailAbstract> mDetail;
 	std::string mOutputPinId;
 	framemetadata_sp mOutputMetadata;
 	framemetadata_sp mInputMetadata;

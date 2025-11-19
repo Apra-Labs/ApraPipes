@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include <chrono>
 
 #include "ExternalSourceModule.h"
@@ -26,22 +27,22 @@ BOOST_AUTO_TEST_CASE(allornone)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer());
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer());
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -289,14 +290,14 @@ BOOST_AUTO_TEST_CASE(allornone_sampling_by_drops) {
 	auto metadata =
 		framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
 	// drop 3 out of 4 frames
@@ -304,12 +305,12 @@ BOOST_AUTO_TEST_CASE(allornone_sampling_by_drops) {
 	muxProps->skipN = 3;
 	muxProps->skipD = 4;
 
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(*muxProps));
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer(*muxProps));
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -368,14 +369,14 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
 
@@ -383,12 +384,12 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_1)
 	FramesMuxerProps props;
 	props.strategy = FramesMuxerProps::MAX_DELAY_ANY;
 	props.maxDelay = maxDelay;
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -485,14 +486,14 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_2)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
 
@@ -500,12 +501,12 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_2)
 	FramesMuxerProps props;
 	props.strategy = FramesMuxerProps::MAX_DELAY_ANY;
 	props.maxDelay = maxDelay;
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -595,14 +596,14 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_3)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
 
@@ -610,12 +611,12 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_3)
 	FramesMuxerProps props;
 	props.strategy = FramesMuxerProps::MAX_DELAY_ANY;
 	props.maxDelay = maxDelay;
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -706,14 +707,14 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin1_1 = m1->addOutputPin(metadata);
 	auto pin1_2 = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin2_1 = m2->addOutputPin(metadata);
 
-	auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto pin3_1 = m3->addOutputPin(metadata);
 
 
@@ -721,12 +722,12 @@ BOOST_AUTO_TEST_CASE(maxdelaystrategy_drop_flush)
 	FramesMuxerProps props;
 	props.strategy = FramesMuxerProps::MAX_DELAY_ANY;
 	props.maxDelay = maxDelay;
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
 	m1->setNext(muxer);
 	m2->setNext(muxer);
 	m3->setNext(muxer);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	muxer->setNext(sink);
 
 	BOOST_TEST(m1->init());
@@ -845,23 +846,23 @@ BOOST_AUTO_TEST_CASE(timestamp_strategy)
 
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-    auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin1_1 = m1->addOutputPin(metadata);
 
-    auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin2_1 = m2->addOutputPin(metadata);
 
-    auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin3_1 = m3->addOutputPin(metadata);
 
     FramesMuxerProps props;
     props.strategy = FramesMuxerProps::MAX_TIMESTAMP_DELAY;
-    auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+    auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
     m1->setNext(muxer);
     m2->setNext(muxer);
     m3->setNext(muxer);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     muxer->setNext(sink);
 
     BOOST_TEST(m1->init());
@@ -959,24 +960,24 @@ BOOST_AUTO_TEST_CASE(timestamp_strategy_with_maxdelay)
 
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-    auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin1_1 = m1->addOutputPin(metadata);
 
-    auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin2_1 = m2->addOutputPin(metadata);
 
-    auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin3_1 = m3->addOutputPin(metadata);
 
     FramesMuxerProps props;
     props.strategy = FramesMuxerProps::MAX_TIMESTAMP_DELAY;
     props.maxDelay = 100; // Max delay in milliseconds
-    auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+    auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
     m1->setNext(muxer);
     m2->setNext(muxer);
     m3->setNext(muxer);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     muxer->setNext(sink);
 
     BOOST_TEST(m1->init());
@@ -1042,24 +1043,24 @@ BOOST_AUTO_TEST_CASE(timestamp_strategy_with_negativeTImeDelay) // This test was
 
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 
-    auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin1_1 = m1->addOutputPin(metadata);
 
-    auto m2 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m2 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin2_1 = m2->addOutputPin(metadata);
 
-    auto m3 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto m3 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto pin3_1 = m3->addOutputPin(metadata);
 
     FramesMuxerProps props;
     props.strategy = FramesMuxerProps::MAX_TIMESTAMP_DELAY;
     props.maxTsDelayInMS = 100; // Max delay in milliseconds
-    auto muxer = boost::shared_ptr<Module>(new FramesMuxer(props));
+    auto muxer = std::shared_ptr<Module>(new FramesMuxer(props));
     m1->setNext(muxer);
     m2->setNext(muxer);
     m3->setNext(muxer);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     muxer->setNext(sink);
 
     BOOST_TEST(m1->init());
