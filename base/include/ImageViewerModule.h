@@ -62,6 +62,6 @@ protected:
 	bool shouldTriggerSOS();
 	void addInputPin(framemetadata_sp &metadata, string &pinId);
 	bool handleCommand(Command::CommandType type, frame_sp &frame);
-	boost::shared_ptr<DetailRenderer> mDetail;
+	std::shared_ptr<DetailRenderer> mDetail;
 	ImageViewerModuleProps mProps;
 };

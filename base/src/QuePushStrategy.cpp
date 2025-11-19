@@ -2,16 +2,16 @@
 #include "FrameContainerQueue.h"
 #include "Logger.h"
 
-boost::shared_ptr<QuePushStrategy> QuePushStrategy::getStrategy(QuePushStrategyType type, std::string& srcModuleId)
+std::shared_ptr<QuePushStrategy> QuePushStrategy::getStrategy(QuePushStrategyType type, std::string& srcModuleId)
 {
 	switch (type)
 	{
-		case QuePushStrategy::NON_BLOCKING_ALL_OR_NONE:	
-			return boost::shared_ptr<QuePushStrategy>(new NonBlockingAllOrNonePushStrategy(srcModuleId));
-		case QuePushStrategy::NON_BLOCKING_ANY:		
-			return boost::shared_ptr<QuePushStrategy>(new NonBlockingAnyPushStrategy(srcModuleId));
+		case QuePushStrategy::NON_BLOCKING_ALL_OR_NONE:
+			return std::make_shared<NonBlockingAllOrNonePushStrategy>(srcModuleId);
+		case QuePushStrategy::NON_BLOCKING_ANY:
+			return std::make_shared<NonBlockingAnyPushStrategy>(srcModuleId);
 		default:
-			return boost::shared_ptr<QuePushStrategy>(new QuePushStrategy(srcModuleId));
+			return std::make_shared<QuePushStrategy>(srcModuleId);
 	}
 }
 
@@ -25,7 +25,7 @@ QuePushStrategy::~QuePushStrategy()
 	mQueByModule.clear();
 }
 
-void QuePushStrategy::addQue(std::string dstModuleId, boost::shared_ptr<FrameContainerQueue>& que)
+void QuePushStrategy::addQue(std::string dstModuleId, std::shared_ptr<FrameContainerQueue>& que)
 {
 	mQueByModule[dstModuleId] = que;
 }

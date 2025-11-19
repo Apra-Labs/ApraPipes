@@ -88,7 +88,7 @@ public:
 
 	H264EncoderNVCodecProps mProps;
 private:
-	boost::shared_ptr<H264EncoderNVCodecHelper> helper;
+	std::shared_ptr<H264EncoderNVCodecHelper> helper;
 
 };
 

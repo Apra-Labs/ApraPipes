@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -21,19 +22,19 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(basic)
 #endif
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/faces.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
+	auto decoder = std::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
     auto metadata2 = framemetadata_sp(new RawImageMetadata());
     decoder->addOutputPin(metadata2);
 	fileReader->setNext(decoder);
 
 	FaceDetectorXformProps faceDetectorProps;
-	auto faceDetector = boost::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
+	auto faceDetector = std::shared_ptr<FaceDetectorXform>(new FaceDetectorXform(faceDetectorProps));
 	decoder->setNext(faceDetector);
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	faceDetector->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

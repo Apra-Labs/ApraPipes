@@ -62,7 +62,7 @@ public:
 	std::string outputPinId;
 
 private:
-	boost::shared_ptr<JPEGDecoderL4TMHelper> decHelper;
+	std::shared_ptr<JPEGDecoderL4TMHelper> decHelper;
 
 	framemetadata_sp mMetadata;
 	size_t mDataSize;

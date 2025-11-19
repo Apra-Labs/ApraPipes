@@ -1,6 +1,9 @@
 #include "PipeLine.h"
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 #include "test_utils.h"
 #include "FrameMetadata.h"
@@ -55,7 +58,7 @@ struct CheckThread {
 		{
 		};
 
-		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+		std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 		frame_sp makeFrame(size_t size, string &pinId) { return Module::makeFrame(size, pinId); }
 		bool send(frame_container& frames) { return Module::send(frames); }
 		
@@ -94,7 +97,7 @@ struct CheckThread {
 	public:
 		TransformModule(TransformModuleProps props) :Module(TRANSFORM, "transformModule", props) {};
 
-		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+		std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 		frame_sp makeFrame(size_t size, string pinId) { return Module::makeFrame(size, pinId); }
 		
 		bool send(frame_container& frames) { return Module::send(frames); }
@@ -123,7 +126,7 @@ struct CheckThread {
 	public:
 		SinkModule(SinkModuleProps props) :Module(SINK, "sinkModule", props) {};
 
-		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+		std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 	protected:
 		bool process(frame_container& frames)
 		{
@@ -160,25 +163,25 @@ BOOST_AUTO_TEST_CASE(checkThreadname)
 
 	Logger::setListener(listenerForThreadName);
 
-	auto m1 = boost::shared_ptr<CheckThread::SourceModule>(new CheckThread::SourceModule(CheckThread::SourceModuleProps()));
+	auto m1 = std::shared_ptr<CheckThread::SourceModule>(new CheckThread::SourceModule(CheckThread::SourceModuleProps()));
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m1->addOutputPin(metadata1);
-	auto m2 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
+	auto m2 = std::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 	m1->setNext(m2);
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m2->addOutputPin(metadata2);
-	auto m3 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
+	auto m3 = std::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 	m2->setNext(m3);
 	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	m3->addOutputPin(metadata3);
-	auto m4 = boost::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
+	auto m4 = std::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
 	m3->setNext(m4);
 
 	PipeLine p("test");
 	p.appendModule(m1);
 	p.init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -197,18 +200,18 @@ BOOST_AUTO_TEST_CASE(flushallqueuesTest)
 		logprops.logLevel = boost::log::trivial::severity_level::info;
 		Logger::initLogger(logprops);
 
-		auto m1 = boost::shared_ptr<CheckThread::SourceModule>(new CheckThread::SourceModule(CheckThread::SourceModuleProps()));
+		auto m1 = std::shared_ptr<CheckThread::SourceModule>(new CheckThread::SourceModule(CheckThread::SourceModuleProps()));
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 		m1->addOutputPin(metadata1);
-		auto m2 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
+		auto m2 = std::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 		m1->setNext(m2);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 		m2->addOutputPin(metadata2);
-		auto m3 = boost::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
+		auto m3 = std::shared_ptr<CheckThread::TransformModule>(new CheckThread::TransformModule(CheckThread::TransformModuleProps()));
 		m2->setNext(m3);
 		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 		m3->addOutputPin(metadata3);
-		auto m4 = boost::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
+		auto m4 = std::shared_ptr<CheckThread::SinkModule>(new CheckThread::SinkModule(CheckThread::SinkModuleProps()));
 		m3->setNext(m4);
 
 		auto m2Que = m2->getQue();

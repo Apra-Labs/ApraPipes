@@ -7,6 +7,8 @@
 #include "Logger.h"
 
 #include <memory>
+#include <thread>
+#include <chrono>
 
 BOOST_AUTO_TEST_SUITE(nvv4l2camerahelper_tests)
 
@@ -43,7 +45,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
     BOOST_TEST(helper->start(width, height, 10, false));
 
-    boost::this_thread::sleep_for(boost::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     BOOST_TEST(helper->stop());
     helper.reset();
@@ -71,7 +73,7 @@ BOOST_AUTO_TEST_CASE(cache, *boost::unit_test::disabled())
 
         BOOST_TEST(helper->start(width, height, 10,false));
 
-        boost::this_thread::sleep_for(boost::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
         BOOST_TEST(helper->stop());
         helper.reset();

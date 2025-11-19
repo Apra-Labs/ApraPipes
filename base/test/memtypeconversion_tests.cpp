@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "MemTypeConversion.h"
 #include "FileReaderModule.h"
 #include "Logger.h"
@@ -20,21 +23,21 @@ BOOST_AUTO_TEST_SUITE(memtypeconversion_tests)
 BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	auto memconversion1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
 	fileReader->setNext(memconversion1);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	memconversion1->setNext(memconversion2);
 
-	auto memconversion3 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto memconversion3 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion2->setNext(memconversion3);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion3->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -60,24 +63,24 @@ BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(memconversion1);
 
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	memconversion1->setNext(memconversion2);
 
-	auto memconversion3 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion3 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	memconversion2->setNext(memconversion3);
 
-	auto memconversion4 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto memconversion4 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion3->setNext(memconversion4);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion4->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -105,21 +108,21 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(memconversion1);
 
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	memconversion1->setNext(memconversion2);
 
-	auto memconversion3 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	auto memconversion3 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
 	memconversion2->setNext(memconversion3);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion3->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -146,15 +149,15 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
+	auto transform = std::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
 	source->setNext(transform);
 
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
 	transform->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -165,7 +168,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -178,18 +181,18 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
+	auto transform = std::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
 	source->setNext(transform);
 
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST)));
 	transform->setNext(memconversion);
 
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF)));
 	memconversion->setNext(memconversion2);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = std::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
 	memconversion2->setNext(sink);
 
 	PipeLine p("test");
@@ -200,7 +203,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -212,18 +215,18 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto copy1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(copy1);
 
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	copy1->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = std::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -234,7 +237,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -246,18 +249,18 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto copy1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(copy1);
 
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::DMABUF, stream)));
 	copy1->setNext(memconversion);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
+	auto sink = std::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0, 0, 0)));
 	memconversion->setNext(sink);
 
 	PipeLine p("test");
@@ -268,7 +271,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -281,19 +284,19 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
+	auto transform = std::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
 	source->setNext(transform);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	transform->setNext(memconversion);
 
-	auto copy2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto copy2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion->setNext(copy2);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
 	copy2->setNext(sink);
 
 	PipeLine p("test");
@@ -304,7 +307,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -317,16 +320,16 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	source->setNext(memconversion);
 
-	auto copy2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto copy2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion->setNext(copy2);
 
-	auto sink = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
+	auto sink = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/nvv4l2/frame_????.raw")));
 	copy2->setNext(sink);
 
 	PipeLine p("test");
@@ -337,7 +340,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -348,18 +351,18 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(memconversion1);
 
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion1->setNext(memconversion2);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion2->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -381,18 +384,18 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-704x576.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-704x576.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto memconversion1 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
+	auto memconversion1 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::CUDA_DEVICE, stream)));
 	fileReader->setNext(memconversion1);
 
-	auto memconversion2 = boost::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
+	auto memconversion2 = std::shared_ptr<Module>(new MemTypeConversion(MemTypeConversionProps(FrameMetadata::HOST, stream)));
 	memconversion1->setNext(memconversion2);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	memconversion2->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

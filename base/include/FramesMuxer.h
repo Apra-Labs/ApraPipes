@@ -43,8 +43,8 @@ protected:
 	bool validateInputOutputPins();
 	void addInputPin(framemetadata_sp& metadata, string& pinId);
 
-private:		
-	boost::shared_ptr<FramesMuxerStrategy> mDetail;
+private:
+	std::shared_ptr<FramesMuxerStrategy> mDetail;
 };
 
 

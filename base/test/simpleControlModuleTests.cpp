@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
-#include <boost/foreach.hpp>
-#include <boost/chrono.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "PipeLine.h"
 #include "Module.h"
@@ -156,25 +157,25 @@ struct SimpleControlModuleTests
 		Logger::initLogger(loggerProps);
 
 		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
-		sourceMod = boost::shared_ptr<TestModuleSrc>(new TestModuleSrc);
+		sourceMod = std::shared_ptr<TestModuleSrc>(new TestModuleSrc);
 
 		/* set transform module health callbacks */
 		TestModuleTransformProps props;
 		props.logHealth = true;
 		props.enableHealthCallBack = enableHealthCallback;
 		props.healthUpdateIntervalInSec = intervalInSecs;
-		transformMod1 = boost::shared_ptr<TestModuleTransform>(new TestModuleTransform(props));
+		transformMod1 = std::shared_ptr<TestModuleTransform>(new TestModuleTransform(props));
 
-		sinkMod = boost::shared_ptr<TestSink>(new TestSink);
+		sinkMod = std::shared_ptr<TestSink>(new TestSink);
 
 		// pins connection
 		sourceMod->setNext(transformMod1);
 		transformMod1->setNext(sinkMod);
 
 		auto simpleCtrlProps = SimpleControlModuleProps();
-		simpleCtrl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(simpleCtrlProps));
+		simpleCtrl = std::shared_ptr<SimpleControlModule>(new SimpleControlModule(simpleCtrlProps));
 
-		p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+		p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	}
 	~SimpleControlModuleTests() 
 	{
@@ -235,11 +236,11 @@ struct SimpleControlModuleTests
 		p->addControlModule(simpleCtrl);
 	}
 
-	boost::shared_ptr<TestModuleSrc> sourceMod;
-	boost::shared_ptr<TestModuleTransform> transformMod1;
-	boost::shared_ptr<TestSink> sinkMod;
-	boost::shared_ptr<SimpleControlModule> simpleCtrl;
-	boost::shared_ptr<PipeLine> p;
+	std::shared_ptr<TestModuleSrc> sourceMod;
+	std::shared_ptr<TestModuleTransform> transformMod1;
+	std::shared_ptr<TestSink> sinkMod;
+	std::shared_ptr<SimpleControlModule> simpleCtrl;
+	std::shared_ptr<PipeLine> p;
 };
 
 void TestCallackExtention(const APHealthObject* healthObj, unsigned int eventId)
@@ -256,9 +257,9 @@ BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 	t.startPipeline();
 	t.addControlModule();
 	t.simpleCtrl->printStatus();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(5000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 	t.stopPipeline();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(3000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 }
 
 BOOST_AUTO_TEST_CASE(simpleControlModule_enroll_ctrlMod_step_test, *boost::unit_test::disabled())

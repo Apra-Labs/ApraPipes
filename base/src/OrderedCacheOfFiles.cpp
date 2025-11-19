@@ -1,4 +1,4 @@
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "Logger.h"
 #include "libmp4.h"
 #include "OrderedCacheOfFiles.h"
@@ -41,7 +41,7 @@ bool OrderedCacheOfFiles::fetchFromCache(std::string& videoFile, uint64_t& start
 
 	try
 	{
-		videoFile = boost::filesystem::canonical(videoFile).string();
+		videoFile = std::filesystem::canonical(videoFile).string();
 	}
 	catch (...)
 	{
@@ -73,7 +73,7 @@ bool OrderedCacheOfFiles::fetchAndUpdateFromDisk(std::string videoFile, uint64_t
 
 	try
 	{
-		videoFile = boost::filesystem::canonical(videoFile).string();
+		videoFile = std::filesystem::canonical(videoFile).string();
 	}
 	catch (...)
 	{
@@ -116,11 +116,11 @@ std::map<std::string, std::pair<uint64_t, uint64_t>> OrderedCacheOfFiles::getSna
 	return snap;
 }
 
-bool OrderedCacheOfFiles::probe(boost::filesystem::path potentialMp4File, std::string& videoName)
+bool OrderedCacheOfFiles::probe(std::filesystem::path potentialMp4File, std::string& videoName)
 {
 	try
 	{
-		boost::filesystem::is_empty(potentialMp4File);
+		std::filesystem::is_empty(potentialMp4File);
 	}
 	catch (...)
 	{
@@ -365,7 +365,7 @@ void OrderedCacheOfFiles::readVideoStartEnd(std::string& filePath, uint64_t& sta
 	{
 		try
 		{
-			auto fileNameTS = boost::filesystem::path(filePath).stem().string();
+			auto fileNameTS = std::filesystem::path(filePath).stem().string();
 			start_ts = std::stoull(fileNameTS);
 		}
 		catch (std::invalid_argument)
@@ -401,7 +401,7 @@ void OrderedCacheOfFiles::updateCache(std::string& filePath, uint64_t& start_ts,
 	{
 		return;
 	}
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	videoCache.modify(videoIter, [start_ts, end_ts](auto& entry) {entry.start_ts = start_ts;  entry.end_ts = end_ts; });
 }
 
@@ -538,7 +538,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 			/*if the file is the last file in cache -
 			 and there is a possibility that file may get updated (eg. while writing) -
 			 then reload the file */
-			if (direction && fileName == videoCache.rbegin()->path) //boost::filesystem::equivalent(boost::filesystem::canonical(fileName), boost::filesystem::canonical(videoCache.rbegin()->path))
+			if (direction && fileName == videoCache.rbegin()->path) //std::filesystem::equivalent(std::filesystem::canonical(fileName), std::filesystem::canonical(videoCache.rbegin()->path))
 			{
 				uint64_t tstart_ts, tend_ts;
 				readVideoStartEnd(fileName, tstart_ts, tend_ts);
@@ -571,7 +571,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 
 void OrderedCacheOfFiles::insertInVideoCache(Video vid)
 {
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	videoCache.insert(vid);
 }
 
@@ -586,9 +586,9 @@ void OrderedCacheOfFiles::insertInVideoCache(Video vid)
 	7. If the higher watermark is breached in the videoCache, trigger a cleanup in seperate thread ?
 	*/
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(const std::string& rootDir)
+std::vector<std::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(const std::string& rootDir)
 {
-	std::vector<boost::filesystem::path> dateDir;
+	std::vector<std::filesystem::path> dateDir;
 	fs::directory_iterator dateDirIter(rootDir), dateDirEndIter;
 	for (dateDirIter; dateDirIter != dateDirEndIter; ++dateDirIter)
 	{
@@ -615,9 +615,9 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortDateDir(co
 	return dateDir;
 }
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(const std::string& dateDirPath)
+std::vector<std::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(const std::string& dateDirPath)
 {
-	std::vector<boost::filesystem::path> hourDir;
+	std::vector<std::filesystem::path> hourDir;
 
 	fs::directory_iterator hourDirIter(dateDirPath), hourDirEndIter;
 	for (hourDirIter; hourDirIter != hourDirEndIter; ++hourDirIter)
@@ -639,9 +639,9 @@ std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortHourDir(co
 	return hourDir;
 }
 
-std::vector<boost::filesystem::path> OrderedCacheOfFiles::parseAndSortMp4Files(const std::string& hourDirPath)
+std::vector<std::filesystem::path> OrderedCacheOfFiles::parseAndSortMp4Files(const std::string& hourDirPath)
 {
-	std::vector<boost::filesystem::path> mp4Files;
+	std::vector<std::filesystem::path> mp4Files;
 	fs::directory_iterator mp4FileIter(hourDirPath), mp4FileEndIter;
 	// potential video file
 	for (mp4FileIter; mp4FileIter != mp4FileEndIter; ++mp4FileIter)
@@ -666,8 +666,8 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 	bool exactMatchFound = false;
 	uint64_t startTSofRelevantFile = 0;
 	uint64_t startTSofPrevFileOnDisk = 0;
-	boost::filesystem::path previousFileOnDisk = "";
-	boost::filesystem::path exactMatchFile = "";
+	std::filesystem::path previousFileOnDisk = "";
+	std::filesystem::path exactMatchFile = "";
 
 	auto dateDir = parseAndSortDateDir(rootDir);
 
@@ -786,7 +786,7 @@ void OrderedCacheOfFiles::retireOldFiles(uint64_t ts)
 	{
 		mThread->join();
 	}
-	mThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OrderedCacheOfFiles::dropFarthestFromTS, this, ts)));
+	mThread = std::make_shared<std::thread>([this, ts]() { dropFarthestFromTS(ts); });
 }
 
 void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
@@ -811,7 +811,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex> lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 				}
@@ -831,7 +831,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex> lock(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 					--itr;
@@ -853,7 +853,7 @@ void OrderedCacheOfFiles::deleteLostEntry(std::string& filePath)
 		return;
 	}
 
-	boost::mutex::scoped_lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	itr = videoCache.erase(itr); // erase gives updated itr from cache
 
 	return;
@@ -863,7 +863,7 @@ void OrderedCacheOfFiles::clearCache()
 {
 	if (videoCache.size())
 	{
-		boost::mutex::scoped_lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		videoCache.clear();
 	}
 }
@@ -886,10 +886,10 @@ bool OrderedCacheOfFiles::filePatternCheck(const fs::path& path)
 	return false;
 }
 
-bool OrderedCacheOfFiles::datePatternCheck(const boost::filesystem::path& path)
+bool OrderedCacheOfFiles::datePatternCheck(const std::filesystem::path& path)
 {
 	/*auto parentPath = path.parent_path();
-	if (!boost::filesystem::equivalent(parentPath, rootDir))
+	if (!std::filesystem::equivalent(parentPath, rootDir))
 	{
 		return false;
 	}*/
@@ -897,7 +897,7 @@ bool OrderedCacheOfFiles::datePatternCheck(const boost::filesystem::path& path)
 	return (pathStr.find_first_not_of("0123456789") == std::string::npos && pathStr.size() == 8);
 }
 
-bool OrderedCacheOfFiles::hourPatternCheck(const boost::filesystem::path& path)
+bool OrderedCacheOfFiles::hourPatternCheck(const std::filesystem::path& path)
 {
 	auto parentPath = path.parent_path();
 	if (!datePatternCheck(parentPath))

@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 #include "PipeLine.h"
 #include "RawImageMetadata.h"
@@ -17,12 +20,12 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
+	auto transform = std::shared_ptr<Module>(new NvTransform(ImageMetadata::NV12));
 	source->setNext(transform);
 
-	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
+	auto sink = std::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -33,7 +36,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -46,12 +49,12 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
-	auto transform = boost::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
+	auto transform = std::shared_ptr<Module>(new NvTransform(ImageMetadata::RGBA));
 	source->setNext(transform);
 
-	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 1)));
+	auto sink = std::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 1)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -62,7 +65,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(40));
+	std::this_thread::sleep_for(std::chrono::seconds(40));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -75,13 +78,13 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
 	NvTransformProps nvprops(ImageMetadata::RGBA);
-	auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+	auto transform = std::shared_ptr<Module>(new NvTransform(nvprops));
 	source->setNext(transform);
 
-	auto sink = boost::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
+	auto sink = std::shared_ptr<ImageViewerModule>(new ImageViewerModule(ImageViewerModuleProps(0, 0, 0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -92,13 +95,13 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	sink->closeWindow();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	sink->createWindow(200, 200);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -111,9 +114,9 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 {
 	WebCamSourceProps webCamSourceprops(-1, 640, 480);
-	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto source = std::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
+	auto sink = std::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
 	source->setNext(sink);
 
 	PipeLine p("test");
@@ -121,7 +124,7 @@ BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

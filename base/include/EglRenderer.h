@@ -45,5 +45,5 @@ protected:
 	bool handleCommand(Command::CommandType type, frame_sp& frame);
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

@@ -1,5 +1,5 @@
 #include <opencv2/highgui.hpp>
-#include <boost/foreach.hpp>
+#include <memory>
 
 #include "CalcHistogramCV.h"
 #include "Frame.h"
@@ -196,7 +196,7 @@ private:
 	float* range;
 	const float** ranges;
 
-	boost::shared_ptr<CalcHistogramCVProps> mProps;
+	std::shared_ptr<CalcHistogramCVProps> mProps;
 };
 
 
@@ -232,9 +232,8 @@ bool CalcHistogramCV::validateOutputPins()
 		return false;
 	}
 
-	pair<string, framefactory_sp> me; // map element	
 	auto framefactoryByPin = getOutputFrameFactory();
-	BOOST_FOREACH(me, framefactoryByPin) {
+	for (const auto& me : framefactoryByPin) {
 		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{

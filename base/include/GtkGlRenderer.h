@@ -39,7 +39,7 @@ protected:
 
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 	std::chrono::steady_clock::time_point lastFrameTime =
 		std::chrono::steady_clock::now();
 	std::queue<frame_sp> frameQueue;

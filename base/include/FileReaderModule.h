@@ -80,7 +80,7 @@ protected:
 	bool handlePropsChange(frame_sp& frame);
 private:
 	string mPinId;
-	boost::shared_ptr<FileSequenceDriver> mDriver;
+	std::shared_ptr<FileSequenceDriver> mDriver;
 	FileReaderModuleProps mProps;
 	frame_container mFrames;
 	bool mCache;

@@ -3,6 +3,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <iostream>
 #include <locale>
+#include <thread>
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #ifdef _WIN64
@@ -37,7 +38,7 @@ void _SetThreadNameWIN(DWORD threadID, const char* threadName) {
 	{
 	}
 }
-void SetThreadNameWIN(boost::thread::id threadId, std::string threadName)
+void SetThreadNameWIN(std::thread::id threadId, std::string threadName)
 {
 	// convert string to char*
 	const char* cchar = threadName.c_str();
@@ -210,7 +211,7 @@ bool Utils::check_roi_bounds(cv::Rect& roi, int width, int height)
 	return true;
 }
 
-void Utils::setModuleThreadName(boost::thread& thread, std::string moduleID)
+void Utils::setModuleThreadName(std::thread& thread, std::string moduleID)
 {
 #ifdef _WIN64
 	SetThreadNameWIN((thread).get_id(), moduleID);

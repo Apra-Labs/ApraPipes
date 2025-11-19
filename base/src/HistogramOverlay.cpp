@@ -1,6 +1,5 @@
 #include <opencv2/highgui.hpp>
-#include <boost/foreach.hpp>
-#include <boost/math/special_functions/round.hpp>
+#include <cmath>
 
 #include "HistogramOverlay.h"
 #include "Frame.h"
@@ -81,7 +80,7 @@ public:
 
 		if (mSpacing*(bins+2) > 0.75*mOutputImg.cols)
 		{
-			return setSpacing(boost::math::iround(mSpacing*0.75));
+			return setSpacing(static_cast<int>(std::lround(mSpacing*0.75)));
 		}
 
 		if (mSpacing < 20)
@@ -141,10 +140,9 @@ bool HistogramOverlay::validateInputPins()
 		return false;
 	}
 
-	pair<string, framemetadata_sp> me; // map element	
 	auto inputMetadataByPin = getInputMetadata();
-	BOOST_FOREACH(me, inputMetadataByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameType();		
+	for (const auto& me : inputMetadataByPin) {
+		FrameMetadata::FrameType frameType = me.second->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";

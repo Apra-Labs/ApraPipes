@@ -84,5 +84,5 @@ private:
     cudaStream_t m_stream;
 };
 
-typedef boost::shared_ptr<ApraCUcontext> apracucontext_sp;
-typedef boost::shared_ptr<ApraCudaStream> cudastream_sp;
+typedef std::shared_ptr<ApraCUcontext> apracucontext_sp;
+typedef std::shared_ptr<ApraCudaStream> cudastream_sp;
