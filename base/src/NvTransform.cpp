@@ -92,25 +92,25 @@ public:
             return false;
         }
 
-        // Synchronize input to device before transform
-        for (int p = 0; p < 3; ++p)
-        {
+        int in_planes  = in_surf->surfaceList[0].planeParams.num_planes;
+        int out_planes = out_surf->surfaceList[0].planeParams.num_planes;
+
+        for (int p = 0; p < in_planes; ++p) {
             NvBufSurfaceSyncForDevice(in_surf, 0, p);
         }
-        
-        NvBufSurfTransform_Error err = NvBufSurfTransform(in_surf, out_surf, &transParams);
 
+        NvBufSurfTransform_Error err = NvBufSurfTransform(in_surf, out_surf, &transParams);
         if (err != NvBufSurfTransformError_Success) {
-            LOG_INFO << "Transform failed============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;;
+            LOG_INFO << "Transform failed";
         }
 
-        for (int p = 0; p < 3; ++p)
-        {
+        for (int p = 0; p < out_planes; ++p) {
             NvBufSurfaceSyncForCpu(out_surf, 0, p);
         }
 
         return true;
     }
+
 
 public:
     NvBufSurfTransformRect src_rect;
@@ -245,11 +245,6 @@ bool NvTransform::process(frame_container &frames)
     frames.insert(make_pair(mDetail->outputPinId, outFrame));
     send(frames);
 	
-	catch(std::exception & e)
-	{
-		LOG_ERROR<<"NvTransform seg fault";
-	}
-
     return true;
 }
 
