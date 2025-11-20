@@ -220,7 +220,7 @@ bool ResizeNPPI::validateOutputPins()
 	return true;
 }
 
-void ResizeNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ResizeNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	
@@ -330,7 +330,7 @@ bool ResizeNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool ResizeNPPI::processEOS(string& pinId)
+bool ResizeNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

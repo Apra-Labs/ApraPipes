@@ -348,8 +348,8 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
         return true;
     }
 
-    mConverter->process(frame, buffer);
-    mOutputPlane->qBuffer(buffer->getIndex());
+    mConverter->process(frame, *buffer);
+    mOutputPlane->qBuffer((*buffer)->getIndex());
 
     return true;
 }
@@ -362,8 +362,8 @@ bool H264EncoderV4L2Helper::processEOS()
         return true;
     }
 
-    mOutputPlane->setEOSFlag(buffer);
-    mOutputPlane->qBuffer(buffer->getIndex());
+    mOutputPlane->setEOSFlag(*buffer);
+    mOutputPlane->qBuffer((*buffer)->getIndex());
 
     mCapturePlane->waitForDQThread(2000); // blocking call - waits for 2 secs for thread to exit
 

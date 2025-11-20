@@ -74,9 +74,9 @@ protected:
 	bool processSOS(frame_sp &frame) override;
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
-	void addInputPin(framemetadata_sp &metadata, string &pinId) override; // throws exception if validation fails
+	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override; // throws exception if validation fails
 	bool shouldTriggerSOS() override;
-	bool processEOS(string &pinId) override;
+	bool processEOS(std::string_view pinId) override;
 	std::shared_ptr<Detail> mDetail;
 	FacialLandmarkCVProps mProp;
 	bool handlePropsChange(frame_sp& frame) override;

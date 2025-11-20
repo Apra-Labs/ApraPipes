@@ -32,7 +32,7 @@ bool CudaMemCopy::validateOutputPins()
 	return true;
 }
 
-void CudaMemCopy::addInputPin(framemetadata_sp& metadata, string& pinId)
+void CudaMemCopy::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -259,7 +259,7 @@ bool CudaMemCopy::shouldTriggerSOS()
 	return mChannels == NOT_SET_NUM;
 }
 
-bool CudaMemCopy::processEOS(string& pinId)
+bool CudaMemCopy::processEOS(std::string_view pinId)
 {
 	mChannels = NOT_SET_NUM;
 	return true;

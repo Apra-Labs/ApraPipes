@@ -123,7 +123,7 @@ bool GaussianBlur::validateOutputPins()
     return true;
 }
 
-void GaussianBlur::addInputPin(framemetadata_sp &metadata, string &pinId)
+void GaussianBlur::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
 
@@ -197,7 +197,7 @@ bool GaussianBlur::shouldTriggerSOS()
     return !mOutputMetadata->isSet();
 }
 
-bool GaussianBlur::processEOS(string &pinId)
+bool GaussianBlur::processEOS(std::string_view pinId)
 {
     mOutputMetadata.reset();
     return true;

@@ -126,7 +126,7 @@ bool AudioToTextXForm::validateOutputPins()
 	return true;
 }
 
-void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, string& pinId)
+void AudioToTextXForm::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::TEXT));
@@ -222,7 +222,7 @@ void AudioToTextXForm::setProps(AudioToTextXFormProps& props)
 	Module::addPropsToQueue(props);
 }
 
-bool AudioToTextXForm::processEOS(string &pinId)
+bool AudioToTextXForm::processEOS(std::string_view pinId)
 {
 	mDetail->mInputAudioBuffer.clear();
 	return true;

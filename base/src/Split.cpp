@@ -48,7 +48,7 @@ bool Split::term()
 	return Module::term();
 }
 
-void Split::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Split::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	for(uint32_t i = 0; i < mNumber; i++)

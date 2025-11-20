@@ -256,7 +256,7 @@ bool CalcHistogramCV::validateInputOutputPins()
 	return Module::validateInputOutputPins();
 }
 
-void CalcHistogramCV::addInputPin(framemetadata_sp& metadata, string& pinId)
+void CalcHistogramCV::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	addOutputPin(metadata, pinId);

@@ -6,7 +6,7 @@
 
 OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "OverlayModule", _props) {}
 
-void OverlayModule::addInputPin(framemetadata_sp& metadata, string& pinId)
+void OverlayModule::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	if (metadata->getFrameType() == FrameMetadata::RAW_IMAGE)

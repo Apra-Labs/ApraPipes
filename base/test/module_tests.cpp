@@ -41,7 +41,7 @@ public:
 	string getInputPinIdByType(int type) { return Module::getInputPinIdByType(type); }
 	string getOutputPinIdByType(int type) { return Module::getOutputPinIdByType(type); }
 
-	void addInputPin(framemetadata_sp& metadata, string& pinId) { return Module::addInputPin(metadata, pinId); } // throws exception if validation fails
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) { return Module::addInputPin(metadata, pinId); } // throws exception if validation fails
 	Connections getConnections() { return Module::getConnections(); }
 
 	boost_deque<frame_sp> getFrames(frame_container& frames) { return Module::getFrames(frames); }

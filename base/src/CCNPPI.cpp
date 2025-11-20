@@ -1061,7 +1061,7 @@ bool CCNPPI::validateOutputPins()
 	return true;
 }
 
-void CCNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void CCNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -1225,7 +1225,7 @@ bool CCNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool CCNPPI::processEOS(string& pinId)
+bool CCNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

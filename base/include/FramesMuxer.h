@@ -41,7 +41,7 @@ protected:
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
 	bool validateInputOutputPins() override;
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 
 private:
 	std::shared_ptr<FramesMuxerStrategy> mDetail;

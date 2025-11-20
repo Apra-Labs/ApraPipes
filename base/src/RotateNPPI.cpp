@@ -299,7 +299,7 @@ bool RotateNPPI::validateOutputPins()
 	return true;
 }
 
-void RotateNPPI::addInputPin(framemetadata_sp &metadata, string &pinId)
+void RotateNPPI::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -350,7 +350,7 @@ bool RotateNPPI::shouldTriggerSOS()
 	return mDetail->mFrameLength == 0;
 }
 
-bool RotateNPPI::processEOS(string &pinId)
+bool RotateNPPI::processEOS(std::string_view pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;

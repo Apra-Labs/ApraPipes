@@ -238,7 +238,7 @@ bool FacialLandmarkCV::validateOutputPins()
 	return true;
 }
 
-void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
+void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
@@ -322,7 +322,7 @@ bool FacialLandmarkCV::shouldTriggerSOS()
 	return mDetail->mFrameLength == 0;
 }
 
-bool FacialLandmarkCV::processEOS(string &pinId)
+bool FacialLandmarkCV::processEOS(std::string_view pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;

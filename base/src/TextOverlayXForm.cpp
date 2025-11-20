@@ -85,7 +85,7 @@ bool TextOverlayXForm::validateOutputPins()
 	return true;
 }
 
-void TextOverlayXForm::addInputPin(framemetadata_sp &metadata, string &pinId)
+void TextOverlayXForm::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());

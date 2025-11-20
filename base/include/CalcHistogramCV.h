@@ -67,7 +67,7 @@ protected:
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
 	bool validateInputOutputPins() override;
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override; // throws exception if validation fails
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override; // throws exception if validation fails
 	bool shouldTriggerSOS() override;
 
 	bool handlePropsChange(frame_sp& frame) override;

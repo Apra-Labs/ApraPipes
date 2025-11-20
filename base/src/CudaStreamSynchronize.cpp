@@ -49,7 +49,7 @@ bool CudaStreamSynchronize::term()
 	return Module::term();
 }
 
-void CudaStreamSynchronize::addInputPin(framemetadata_sp& metadata, string& pinId)
+void CudaStreamSynchronize::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	addOutputPin(metadata, pinId);
