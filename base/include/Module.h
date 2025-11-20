@@ -94,7 +94,7 @@ public:
     healthUpdateIntervalInSec = 5;
   }
 
-  size_t getQLen()
+  constexpr size_t getQLen() const
   {
     return qlen;
   }

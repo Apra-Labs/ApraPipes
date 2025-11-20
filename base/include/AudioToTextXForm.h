@@ -37,19 +37,19 @@ class AudioToTextXForm  : public Module
 public:
 	AudioToTextXForm(AudioToTextXFormProps _props);
 	virtual ~AudioToTextXForm();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(AudioToTextXFormProps& props);
 	AudioToTextXFormProps getProps();
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	bool handlePropsChange(frame_sp& frame);
-	bool processEOS(string &pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	bool handlePropsChange(frame_sp& frame) override;
+	bool processEOS(string &pinId) override;
 	bool handleFlushingBuffer();
 
 private:

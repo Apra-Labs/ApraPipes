@@ -16,8 +16,8 @@ class AbsControlModule : public Module {
 public:
 	AbsControlModule(AbsControlModuleProps _props);
 	~AbsControlModule();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	bool enrollModule(std::string role, std::shared_ptr<Module> module);
 	std::shared_ptr<Module> getModuleofRole(std::string role);
 	std::string printStatus();
@@ -41,11 +41,11 @@ public:
 	void registerHealthCallbackExtention(
 		std::function<void(const APHealthObject*, unsigned short)> callbackFunction);
 protected:
-	bool process(frame_container& frames);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
-	bool handlePropsChange(frame_sp& frame);
-	virtual void sendEOS() {}
-	virtual void sendEOS(frame_sp& frame) {}
+	bool process(frame_container& frames) override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
+	bool handlePropsChange(frame_sp& frame) override;
+	void sendEOS() override {}
+	void sendEOS(frame_sp& frame) override {}
 	virtual void sendEOPFrame() {}
 	std::vector<std::string> serializeControlModule();
 	std::function<void(const APHealthObject*, unsigned short)> healthCallbackExtention;

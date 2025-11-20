@@ -26,15 +26,15 @@ class AudioCaptureSrc  : public Module
 public:
     AudioCaptureSrc(AudioCaptureSrcProps _props);
     virtual ~AudioCaptureSrc() {}
-    virtual bool init();
-    virtual bool term();
+    bool init() override;
+    bool term() override;
     void setProps(AudioCaptureSrcProps &props);
     AudioCaptureSrcProps getProps();
 
 protected:
-    bool validateOutputPins();
-    bool produce();
-    bool handlePropsChange(frame_sp &frame);
+    bool validateOutputPins() override;
+    bool produce() override;
+    bool handlePropsChange(frame_sp &frame) override;
 
 private:
     class Detail;

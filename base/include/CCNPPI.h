@@ -27,17 +27,17 @@ class CCNPPI : public Module
 public:
 	CCNPPI(CCNPPIProps _props);
 	virtual ~CCNPPI();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails		
-	bool shouldTriggerSOS();
-	bool processEOS(string& pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override; // throws exception if validation fails
+	bool shouldTriggerSOS() override;
+	bool processEOS(string& pinId) override;
 
 private:
 	void setMetadata(framemetadata_sp& metadata);

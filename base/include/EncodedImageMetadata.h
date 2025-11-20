@@ -43,9 +43,9 @@ public:
     // setDataSize();
   }
 
-  int getWidth() { return width; }
+  constexpr int getWidth() const { return width; }
 
-  int getHeight() { return height; }
+  constexpr int getHeight() const { return height; }
 
 protected:
   void initData(int _width, int _height, MemType _memType = MemType::HOST) {

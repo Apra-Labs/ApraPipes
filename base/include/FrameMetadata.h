@@ -9,7 +9,7 @@ class RawImageMetadata;
 
 class FrameMetadata {
 public:	
-	static size_t getPaddingLength(size_t length, size_t alignLength)
+	static constexpr size_t getPaddingLength(size_t length, size_t alignLength)
 	{
 		if (!alignLength)
 		{
@@ -95,12 +95,12 @@ public:
 		return true;
 	}		
 
-	FrameType getFrameType()
+	constexpr FrameType getFrameType() const
 	{
 		return frameType;
 	}
 
-	MemType getMemType()
+	constexpr MemType getMemType() const
 	{
 		return memType;
 	}

@@ -30,12 +30,12 @@ class NvV4L2Camera : public Module
 public:
 	NvV4L2Camera(NvV4L2CameraProps props);
 	virtual ~NvV4L2Camera();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool produce();
-	bool validateOutputPins();
+	bool produce() override;
+	bool validateOutputPins() override;
 
 private:
 	NvV4L2CameraProps props;

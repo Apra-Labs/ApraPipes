@@ -33,15 +33,15 @@ public:
 	RTSPPusher(RTSPPusherProps props);
 	virtual ~RTSPPusher();
 
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container &frames);
-	bool validateInputPins();
-	bool shouldTriggerSOS();
-	bool processSOS(frame_sp &frame);
-	bool processEOS(string& pinId);
+	bool process(frame_container &frames) override;
+	bool validateInputPins() override;
+	bool shouldTriggerSOS() override;
+	bool processSOS(frame_sp &frame) override;
+	bool processEOS(string& pinId) override;
 
 private:
 	class Detail;

@@ -70,19 +70,19 @@ public:
 
 	virtual ~ArchiveSpaceManager() {
 	}
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	uint64_t finalArchiveSpace = 0;
 	void setProps(ArchiveSpaceManagerProps& props);
 	ArchiveSpaceManagerProps getProps();
 
 protected:
-	bool produce();
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool validateInputOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	bool handlePropsChange(frame_sp& frame);
+	bool produce() override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	bool handlePropsChange(frame_sp& frame) override;
 private:
 
 	class Detail;

@@ -20,19 +20,19 @@ class H264Decoder : public Module
 public:
 	H264Decoder(H264DecoderProps _props);
 	virtual ~H264Decoder();
-	bool init();
-	bool term();
-	bool processEOS(string& pinId);
+	bool init() override;
+	bool term() override;
+	bool processEOS(string& pinId) override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool shouldTriggerSOS();
-	void flushQue();
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool shouldTriggerSOS() override;
+	void flushQue() override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
 
 private:
 	void bufferDecodedFrames(frame_sp& frame);

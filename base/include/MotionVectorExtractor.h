@@ -43,17 +43,17 @@ class MotionVectorExtractor : public Module
 public:
 	MotionVectorExtractor(MotionVectorExtractorProps _props);
 	virtual ~MotionVectorExtractor() {};
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(MotionVectorExtractorProps& props);
 protected:
-	bool process(frame_container& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool shouldTriggerSOS();
-	bool processSOS(frame_sp& frame);
+	bool process(frame_container& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool shouldTriggerSOS() override;
+	bool processSOS(frame_sp& frame) override;
 	void setMetadata(frame_sp metadata);
-	bool handlePropsChange(frame_sp& frame);
+	bool handlePropsChange(frame_sp& frame) override;
 private:
 	std::shared_ptr<MvExtractDetailAbs> mDetail;
 	framemetadata_sp rawOutputMetadata;

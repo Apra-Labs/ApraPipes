@@ -55,22 +55,22 @@ public:
 	CalcHistogramCV(CalcHistogramCVProps props);	
 	virtual ~CalcHistogramCV() {}
 
-	virtual bool init();
-	virtual bool term();
+	bool init() override;
+	bool term() override;
 
 	void setProps(CalcHistogramCVProps& props);
 	CalcHistogramCVProps getProps();
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();	
-	bool validateInputOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails	
-	bool shouldTriggerSOS();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override; // throws exception if validation fails
+	bool shouldTriggerSOS() override;
 
-	bool handlePropsChange(frame_sp& frame);
+	bool handlePropsChange(frame_sp& frame) override;
 
 private:
 	class Detail;
