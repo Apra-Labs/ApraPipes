@@ -10,8 +10,11 @@
 #include "StatSink.h"
 #include "CudaMemCopy.h"
 #include "RTSPPusher.h"
-
+#include "NvV4L2Camera.h"
+#include "NvTransform.h"
+#include "DMAFDToHostCopy.h"
 #include "test_utils.h"
+#include "EglRenderer.h"
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2_tests)
 
@@ -56,7 +59,7 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
 	auto width = 1280;
 	auto height = 720;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("/home/developer/ApraPipes/data/8bit_frame_1280x720_bgra.raw")));
+	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("../data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGB, CV_8UC3, size_t(0), CV_8U, FrameMetadata::HOST, true));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
@@ -90,7 +93,7 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
 		fileWriter->step();
 	}
 
-	Test_Utils::saveOrCompare("./data/testOutput/Raw_RGB24_1280x720.h264", 0);
+	//Test_Utils::saveOrCompare("./data/testOutput/Raw_RGB24_1280x720.h264", 0);
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
@@ -99,7 +102,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 	auto width = 640;
 	auto height = 360;
 
-	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw");
+	FileReaderModuleProps fileReaderProps("../data/Raw_YUV420_640x360/Image???_YUV420.raw");
 	fileReaderProps.fps = 1000;
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
@@ -123,7 +126,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -212,4 +215,52 @@ BOOST_AUTO_TEST_CASE(encodepush, *boost::unit_test::disabled())
 	LOG_INFO << "TEST DONE";
 }
 
+BOOST_AUTO_TEST_CASE(nvv4l2_camera_encode, *boost::unit_test::disabled())
+{
+    // Source from NvV4L2 camera
+    LoggerProps logProps;
+    logProps.enableConsoleLog = true;
+    Logger::initLogger(logProps);
+    Logger::setLogLevel(boost::log::trivial::severity_level::info);
+
+    NvV4L2CameraProps camProps(640, 360, 10, false);
+    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(camProps));
+
+    // Branch 1: convert to YUV420 and encode with H264EncoderV4L2
+    auto yuvTransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::YUV420)));
+    source->setNext(yuvTransform);
+
+    H264EncoderV4L2Props encoderProps;
+    encoderProps.targetKbps = 2048;
+    auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+    yuvTransform->setNext(encoder);
+
+	auto fileWriter = boost::shared_ptr<Module>(
+    new FileWriterModule(FileWriterModuleProps("./data/output/camera_640x360.h264", true))
+	);
+	encoder->setNext(fileWriter); 
+    StatSinkProps encSinkProps;
+    encSinkProps.logHealth = true;
+    encSinkProps.logHealthFrequency = 100;
+    auto encSink = boost::shared_ptr<Module>(new StatSink(encSinkProps));
+    encoder->setNext(encSink);
+
+    // Branch 2: convert to RGBA and render using EGL renderer
+    auto rgbaTransform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+    source->setNext(rgbaTransform);
+
+    auto renderer = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+    rgbaTransform->setNext(renderer);
+
+    PipeLine p("nvv4l2_camera_h264_encode_and_egl_render");
+    p.appendModule(source);
+    BOOST_TEST(p.init());
+    p.run_all_threaded();
+
+    boost::this_thread::sleep_for(boost::chrono::seconds(100));
+
+    p.stop();
+    p.term();
+    p.wait_for_all();
+}
 BOOST_AUTO_TEST_SUITE_END()

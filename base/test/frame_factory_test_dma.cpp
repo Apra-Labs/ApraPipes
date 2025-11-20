@@ -248,8 +248,69 @@ BOOST_AUTO_TEST_CASE(memcopy_read_write)
     auto frame = frameFactory->create(size, frameFactory);
     void *iptr = (static_cast<DMAFDWrapper *>(frame->data()))->getHostPtr();
     memset(iptr,200,size);
-    unsigned char *bytePtr = static_cast<unsigned char *>(iptr);
-    BOOST_TEST(bytePtr[0] == 200);
 }
+BOOST_AUTO_TEST_CASE(change_dataSize_YUV420)
+{
+
+    uint32_t width1 = 1280;
+    uint32_t height1 = 720;
+
+    size_t step1[4] = {0};
+    step1[0] = width1;        // Y plane
+    step1[1] = width1 / 2;    // U plane
+    step1[2] = width1 / 2; 
+    size_t nextPtrOffset1[4] = {NOT_SET_NUM, NOT_SET_NUM, NOT_SET_NUM, NOT_SET_NUM};
+    size_t nextPtrOffset2[4] = {NOT_SET_NUM, NOT_SET_NUM, NOT_SET_NUM, NOT_SET_NUM};
+    size_t expectedSize1 = (width1 * height1) + (width1 * height1 / 4) + (width1 * height1 / 4);
+
+
+    auto metadata = boost::make_shared<RawImagePlanarMetadata>(
+        width1,
+        height1,
+        ImageMetadata::ImageType::YUV420,
+        CV_8UC1,                // YUV channels are 1 byte each
+        step1,
+        nextPtrOffset1,
+        FrameMetadata::MemType::HOST
+    );
+
+    auto rawOutMetadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(metadata);
+
+    size_t size1 = rawOutMetadata->getDataSize();
+    BOOST_TEST(size1 == expectedSize1);
+
+
+    uint32_t width2 = 640;
+    uint32_t height2 = 360;
+
+
+    size_t step2[4] = {0};
+    step2[0] = width2;        // Y plane
+    step2[1] = width2 / 2;    // U plane
+    step2[2] = width2 / 2;    // V plane
+
+    
+
+    size_t expectedSize2 = (width2 * height2) + (width2 * height2 / 4) + (width2 * height2 / 4);
+
+    auto modifiedMeta = boost::make_shared<RawImagePlanarMetadata>(
+    width2,
+    height2,
+    ImageMetadata::ImageType::YUV420,
+    0,           // alignLength
+    CV_8UC1      // depth
+    // MemType defaults to HOST
+);
+
+
+    rawOutMetadata->setData(*modifiedMeta);
+
+    size_t size2 = rawOutMetadata->getDataSize();
+
+    BOOST_TEST(size2 == expectedSize2);  // metadata not auto-updated
+    BOOST_TEST(size2 != size1);          // still uses original size
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()

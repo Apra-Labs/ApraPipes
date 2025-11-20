@@ -148,14 +148,15 @@ public:
 protected:
 	void setDataSize()
 	{
-		dataSize = 0;
+		size_t tmp = 0;
 		for (auto i = 0; i < channels; i++)
 		{
-			if (nextPtrOffset[i] == NOT_SET_NUM)
-			{
-				nextPtrOffset[i] = dataSize;
-				dataSize += step[i] * height[i];
-			}
+			nextPtrOffset[i] = tmp;
+			tmp += step[i] * height[i];
+		}
+		if(dataSize != tmp)
+		{
+			dataSize = tmp;
 		}
 	}
 
