@@ -100,6 +100,7 @@ BOOST_AUTO_TEST_CASE(invalid_sensor_mode, *boost::unit_test::disabled())
     {
         LOG_INFO << "Testcase passed";
     }
+    helper->stop();
     helper.reset();
     LOG_INFO << "FINISHED";
 }
