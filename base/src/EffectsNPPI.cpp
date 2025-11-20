@@ -494,10 +494,10 @@ void EffectsNPPI::setMetadata(framemetadata_sp& metadata)
 		switch (mFrameType)
 		{
 		case FrameMetadata::RAW_IMAGE:
-			mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
 			break;
 		case FrameMetadata::RAW_IMAGE_PLANAR:
-			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
 			break;
 		default:
 			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");

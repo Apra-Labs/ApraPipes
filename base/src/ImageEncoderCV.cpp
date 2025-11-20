@@ -66,9 +66,9 @@ private:
 };
 
 ImageEncoderCV::ImageEncoderCV(ImageEncoderCVProps _props) : Module(TRANSFORM, "ImageEncoderCV", _props)
-{	
+{
 	mDetail.reset(new Detail(_props));
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	mOutputMetadata = std::make_shared<FrameMetadata>(FrameMetadata::ENCODED_IMAGE);
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 

@@ -98,7 +98,7 @@ int64_t Utils::GetEpocFromTimeInMillis(const char * inp) {
 
 std::string Utils::base64_encode(unsigned char const* bytes_to_encode, size_t in_len) {
 
-	static const std::string base64_chars =
+	static constexpr std::string_view base64_chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"abcdefghijklmnopqrstuvwxyz"
 		"0123456789+/";
