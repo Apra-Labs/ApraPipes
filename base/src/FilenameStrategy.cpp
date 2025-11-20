@@ -19,19 +19,19 @@ std::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::strin
 	bool appendFlag
 )
 {
-	bool isDirectory = std::filesystem::is_directory(strPath);	
-		
+	bool isDirectory = std::filesystem::is_directory(strPath);
+
 	if (files.size())
 	{
-		return std::shared_ptr<FilenameStrategy>(new ListStrategy(files, strPath, readLoop));
+		return std::make_shared<ListStrategy>(files, strPath, readLoop);
 	}
 	else if (isDirectory)
 	{
-		return std::shared_ptr<FilenameStrategy>(new BoostDirectoryStrategy(strPath, startIndex, maxIndex, readLoop));
+		return std::make_shared<BoostDirectoryStrategy>(strPath, startIndex, maxIndex, readLoop);
 	}
 	else
 	{
-		return std::shared_ptr<FilenameStrategy>(new FilenameStrategy(strPath, startIndex, maxIndex, readLoop, appendFlag));		
+		return std::make_shared<FilenameStrategy>(strPath, startIndex, maxIndex, readLoop, appendFlag);
 	}
 }
 

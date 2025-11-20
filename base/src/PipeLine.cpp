@@ -301,7 +301,7 @@ void PipeLine::interrupt_wait_for_all()
 
 const char * PipeLine::getStatus()
 {
-	const char* const StatusNames[] = {
+	static constexpr const char* const StatusNames[] = {
 		PipelineStatus_ENUM(MAKE_STRINGS,X)
 		};
 	return StatusNames[myStatus];

@@ -44,7 +44,7 @@ public:
                     throw AIPException(AIP_FATAL, "Only Image Type accepted are UYVY or ARGB found " + std::to_string(imageType));
                 }
                 auto imageType = rawMetadata->getImageType();
-                auto metadata = framemetadata_sp(new RawImageMetadata(rawMetadata->getWidth(), rawMetadata->getHeight(), imageType, type, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true));
+                auto metadata = std::make_shared<RawImageMetadata>(rawMetadata->getWidth(), rawMetadata->getHeight(), imageType, type, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF, true);
                 DMAAllocator::setMetadata(metadata, rawMetadata->getWidth(), rawMetadata->getHeight(), imageType, pitch);
 
                 imagePlanes.push_back(std::make_shared<ImagePlaneData>(metadata->getDataSize(),
@@ -83,7 +83,7 @@ public:
                     width[i] = rawMetadata->getWidth(i);
                     height[i] = rawMetadata->getHeight(i);
                 }
-                auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width[0], height[0], imageType, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
+                auto metadata = std::make_shared<RawImagePlanarMetadata>(width[0], height[0], imageType, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF);
                 DMAAllocator::setMetadata(metadata, width[0], height[0], imageType, pitch, offset);
 
                 for (auto i = 0; i < channels; i++)

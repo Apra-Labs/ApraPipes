@@ -52,7 +52,7 @@ WebCamSource::WebCamSource(WebCamSourceProps _props)
     : Module(SOURCE, "WebCamSource", _props)
 {
     mDetail.reset(new Detail(_props));
-    auto outputMetadata = framemetadata_sp(new RawImageMetadata(_props.width, _props.height, ImageMetadata::ImageType::RGB, CV_8UC3, 3 * _props.width, CV_8U, FrameMetadata::MemType::HOST));
+    auto outputMetadata = std::make_shared<RawImageMetadata>(_props.width, _props.height, ImageMetadata::ImageType::RGB, CV_8UC3, 3 * _props.width, CV_8U, FrameMetadata::MemType::HOST);
     mDetail->mOutputPinId = addOutputPin(outputMetadata);
 }
 

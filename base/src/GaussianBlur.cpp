@@ -127,7 +127,7 @@ void GaussianBlur::addInputPin(framemetadata_sp &metadata, std::string_view pinI
 {
     Module::addInputPin(metadata, pinId);
 
-    mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+    mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
     mOutputMetadata->copyHint(*metadata.get());
     mOutputPinId = addOutputPin(mOutputMetadata);
 }
