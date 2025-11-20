@@ -1,4 +1,6 @@
 #include <boost/filesystem.hpp>
+#include <ctime>
+#include <set>
 #include "Logger.h"
 #include "libmp4.h"
 #include "OrderedCacheOfFiles.h"
@@ -794,7 +796,135 @@ bool OrderedCacheOfFiles::parseFiles(uint64_t start_ts, bool direction, bool inc
 
 	bool foundRelevantFilesOnDisk = parsedFilesCount > 0;
 	return foundRelevantFilesOnDisk;
-	
+
+}
+
+bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direction, int lookbackMinutes, int lookaheadMinutes)
+{
+	/*
+	 * Optimized cache building using the fixed recording format: YYYYMMDD/HHMM/timestamp.mp4
+	 * Instead of scanning from the oldest file, directly navigate to the target timestamp's location
+	 * and build cache around it (lookback and lookahead windows)
+	 */
+
+	LOG_INFO << "parseFilesFromTimestamp: target_ts=" << target_ts
+	         << " lookback=" << lookbackMinutes << "min lookahead=" << lookaheadMinutes << "min";
+
+	// Convert timestamp (milliseconds) to time_t (seconds)
+	time_t target_time = target_ts / 1000;
+	struct tm* tm_info = gmtime(&target_time);
+
+	// Calculate lookback and lookahead timestamps
+	uint64_t lookback_ts = target_ts - (lookbackMinutes * 60 * 1000);  // milliseconds
+	uint64_t lookahead_ts = target_ts + (lookaheadMinutes * 60 * 1000);
+
+	time_t lookback_time = lookback_ts / 1000;
+	time_t lookahead_time = lookahead_ts / 1000;
+
+	struct tm* lookback_tm = gmtime(&lookback_time);
+	struct tm* lookahead_tm = gmtime(&lookahead_time);
+
+	// Generate date/hour paths to scan
+	std::set<std::string> pathsToScan;
+
+	// Helper to format date/hour strings
+	auto formatDateHour = [](struct tm* tm) -> std::pair<std::string, std::string> {
+		char date_str[9];
+		char hour_str[5];
+		strftime(date_str, sizeof(date_str), "%Y%m%d", tm);
+		strftime(hour_str, sizeof(hour_str), "%H%M", tm);
+		return {std::string(date_str), std::string(hour_str)};
+	};
+
+	// Add paths for lookback to lookahead range
+	// Iterate through each hour in the range
+	time_t current_time = lookback_time;
+	while (current_time <= lookahead_time)
+	{
+		struct tm* current_tm = gmtime(&current_time);
+		auto [date_str, hour_str] = formatDateHour(current_tm);
+
+		// Construct path: rootDir/YYYYMMDD/HHMM
+		boost::filesystem::path hourPath = boost::filesystem::path(rootDir) / date_str / hour_str.substr(0, 4);
+		pathsToScan.insert(hourPath.string());
+
+		// Move to next hour
+		current_time += 3600;  // +1 hour in seconds
+	}
+
+	LOG_INFO << "parseFilesFromTimestamp: scanning " << pathsToScan.size() << " hour directories";
+
+	// Parse files in the identified directories
+	int parsedFilesCount = 0;
+	uint64_t prevTS = 0;
+	uint64_t startTimeBatch = 0;
+
+	for (const auto& hourPathStr : pathsToScan)
+	{
+		boost::filesystem::path hourPath(hourPathStr);
+
+		if (!boost::filesystem::exists(hourPath) || !boost::filesystem::is_directory(hourPath))
+		{
+			LOG_TRACE << "parseFilesFromTimestamp: skipping non-existent path: " << hourPathStr;
+			continue;
+		}
+
+		auto mp4Files = parseAndSortMp4Files(hourPath.string());
+
+		for (auto& mp4File : mp4Files)
+		{
+			uint64_t fileTS = 0;
+			try
+			{
+				fileTS = std::stoull(mp4File.stem().string());
+
+				// Track timeline gaps
+				uint64_t diff = 0;
+				if (prevTS != 0)
+				{
+					diff = fileTS - prevTS;
+				}
+				else if (startTimeBatch == 0)
+				{
+					startTimeBatch = fileTS;
+					LOG_INFO << "Starting targeted cache build at " << fileTS;
+				}
+
+				if (diff > 65000)  // 65 seconds gap
+				{
+					timeline.push_back({startTimeBatch, prevTS});
+					startTimeBatch = fileTS;
+					LOG_INFO << "Parsed file with previous - " << prevTS << " and current - " << fileTS << " with diff " << diff;
+				}
+				prevTS = fileTS;
+			}
+			catch (...)
+			{
+				LOG_TRACE << "OrderedCacheOfFiles: Ignoring File <" << mp4File.string() << "> due to timestamp parsing failure.";
+				continue;
+			}
+
+			// Filter by timestamp range
+			if (fileTS < lookback_ts || fileTS > lookahead_ts)
+			{
+				continue;  // Outside our window
+			}
+
+			// Insert into cache
+			Video vid(mp4File.string(), fileTS);
+			insertInVideoCache(vid);
+			++parsedFilesCount;
+
+			LOG_TRACE << "parseFilesFromTimestamp: added to cache <" << vid.path << "> ts=" << fileTS;
+		}
+	}
+
+	LOG_INFO << "parseFilesFromTimestamp: loaded " << parsedFilesCount << " files into cache";
+
+	// Trigger drop strategy centered on target_ts
+	retireOldFiles(target_ts);
+
+	return parsedFilesCount > 0;
 }
 
 void OrderedCacheOfFiles::retireOldFiles(uint64_t ts)

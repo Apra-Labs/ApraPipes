@@ -14,7 +14,7 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false, float _playbackSpeed = 1.0f) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false, float _playbackSpeed = 1.0f, uint64_t _startTimestamp = 0) : ModuleProps()
 	{
 		/* About props:
 			- videoPath - Path of a video from where the reading will start.
@@ -24,6 +24,7 @@ public:
 			- readLoop - Read a single video in loop. It can not be used in conjuction with live mode (reInitInterval > 0) or NVR mode (parseFS = true) mode.
 			- giveLiveTS - If enabled, gives live timestamps instead of recorded timestamps in the video files.
 			- playbackSpeed - Initial playback speed (0.25x to 32x). Can be changed dynamically via changePlaybackSpeed().
+			- startTimestamp - Optional hint timestamp (in milliseconds) for where playback will start. Used to optimize initial cache building in parseFS mode.
 		*/
 
 		if (reInitInterval < 0)
@@ -60,6 +61,7 @@ public:
 		parseFSTimeoutDuration = _parseFSTimeoutDuration;
 		readLoop = _readLoop;
 		reInitInterval = _reInitInterval;
+		startTimestamp = _startTimestamp;
 
 		//If the input file path is the full video path then its root dir will be skipDir else if the input path is only root dir path then it is directly assigned to skipDir.
 		if (parseFS && boost::filesystem::path(videoPath).extension() == ".mp4")
@@ -80,7 +82,7 @@ public:
 
 	size_t getSerializeSize()
 	{
-		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled) + sizeof(forceFPS) + sizeof(playbackSpeed);
+		return ModuleProps::getSerializeSize() + sizeof(videoPath) + sizeof(parseFS) + sizeof(skipDir) + sizeof(direction) + sizeof(parseFSTimeoutDuration) + sizeof(biggerFrameSize) + sizeof(biggerMetadataFrameSize) + sizeof(bFramesEnabled) + sizeof(forceFPS) + sizeof(playbackSpeed) + sizeof(startTimestamp);
 	}
 
 	std::string skipDir = "./data/Mp4_videos";
@@ -96,6 +98,7 @@ public:
 	bool giveLiveTS = false;
 	bool forceFPS = false;
 	float playbackSpeed = 1.0f;
+	uint64_t startTimestamp = 0;  // Hint for initial cache building in parseFS mode
 private:
 	friend class boost::serialization::access;
 
@@ -115,6 +118,7 @@ private:
 		ar& giveLiveTS;
 		ar& forceFPS;
 		ar& playbackSpeed;
+		ar& startTimestamp;
 	}
 };
 

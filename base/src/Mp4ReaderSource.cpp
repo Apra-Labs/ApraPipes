@@ -61,13 +61,84 @@ public:
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
-			if (!cof->probe(filePath, mState.mVideoPath))
+			// Use startTimestamp hint if provided, otherwise probe for first file
+			if (mProps.parseFS && mProps.startTimestamp > 0)
 			{
-				LOG_DEBUG << "Mp4 file is not present" << ">";
-				isVideoFileFound = false;
-				return true;
+				// Use the provided start timestamp to build cache near the playback start point
+				LOG_INFO << "Using startTimestamp hint for cache initialization: " << mProps.startTimestamp;
+				try
+				{
+					// Use optimized parseFilesFromTimestamp that directly navigates to target date/hour
+					// Build cache with 1 hour lookback and 23 hours lookahead (covers ~24 hour window)
+					bool foundFiles = cof->parseFilesFromTimestamp(mProps.startTimestamp, mState.direction, 60, 1380);
+
+					if (!foundFiles)
+					{
+						LOG_WARNING << "parseFilesFromTimestamp found no files, trying standard parseFiles";
+						foundFiles = cof->parseFiles(mProps.startTimestamp, mState.direction, true, false);
+					}
+
+					if (foundFiles)
+					{
+						// Try to find a file near the start timestamp
+						std::string nearestFile;
+						uint64_t skipMsecs;
+						bool found = cof->getRandomSeekFile(mProps.startTimestamp, mState.direction, skipMsecs, nearestFile);
+						if (found && !nearestFile.empty())
+						{
+							mState.mVideoPath = nearestFile;
+							isVideoFileFound = true;
+							LOG_INFO << "Initialized Mp4Reader with file near startTimestamp: " << nearestFile;
+						}
+						else
+						{
+							// Fallback to probe if seek fails
+							LOG_WARNING << "Could not find file at startTimestamp, falling back to probe";
+							if (!cof->probe(filePath, mState.mVideoPath))
+							{
+								LOG_DEBUG << "Mp4 file is not present" << ">";
+								isVideoFileFound = false;
+								return true;
+							}
+							isVideoFileFound = true;
+						}
+					}
+					else
+					{
+						// No files found at all, fallback to probe
+						LOG_WARNING << "No files found via timestamp-based methods, falling back to probe";
+						if (!cof->probe(filePath, mState.mVideoPath))
+						{
+							LOG_DEBUG << "Mp4 file is not present" << ">";
+							isVideoFileFound = false;
+							return true;
+						}
+						isVideoFileFound = true;
+					}
+				}
+				catch (const std::exception& e)
+				{
+					LOG_WARNING << "Exception during timestamp-based init: " << e.what() << ", falling back to probe";
+					if (!cof->probe(filePath, mState.mVideoPath))
+					{
+						LOG_DEBUG << "Mp4 file is not present" << ">";
+						isVideoFileFound = false;
+						return true;
+					}
+					isVideoFileFound = true;
+				}
 			}
-			isVideoFileFound = true;
+			else
+			{
+				// Legacy behavior: probe for first file
+				if (!cof->probe(filePath, mState.mVideoPath))
+				{
+					LOG_DEBUG << "Mp4 file is not present" << ">";
+					isVideoFileFound = false;
+					return true;
+				}
+				isVideoFileFound = true;
+			}
 		}
 		if (mProps.parseFS)
 		{

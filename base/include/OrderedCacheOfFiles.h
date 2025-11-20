@@ -42,6 +42,7 @@ public:
 	std::vector<boost::filesystem::path> parseAndSortHourDir(const std::string& rootDir);
 	std::vector<boost::filesystem::path> parseAndSortMp4Files(const std::string& rootDir);
 	bool parseFiles(uint64_t start_ts, bool direction, bool includeFloorFile = false, bool disableBatchSizeCheck = false, uint64_t skipTS = 0);
+	bool parseFilesFromTimestamp(uint64_t target_ts, bool direction, int lookbackMinutes = 60, int lookaheadMinutes = 60);
 	bool getRandomSeekFile(uint64_t ts, bool direction, uint64_t& skipMsecs, std::string& fileName);
 	bool getFileFromCache(uint64_t timestamp, bool direction, std::string& fileName);
 	size_t getCacheSize()
