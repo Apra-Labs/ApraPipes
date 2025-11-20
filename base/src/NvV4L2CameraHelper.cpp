@@ -12,7 +12,7 @@
 NvV4L2CameraHelper::NvV4L2CameraHelper(SendFrame sendFrame,std::function<frame_sp()> _makeFrame)
 {
     // hardcoded device name and pixfmt which is fine for now 
-    mCamDevname = "/dev/video0";
+    mCamDevname = "/dev/video1";
     mCamFD = -1;
     mCamPixFmt = V4L2_PIX_FMT_YUYV;
 
@@ -126,15 +126,18 @@ void NvV4L2CameraHelper::operator()()
     FD_SET(fds, &rset);
     mRunning = true;
     struct timeval timeout;
-timeout.tv_sec = 10;
-timeout.tv_usec = 0;
-
     /* Wait for camera event with timeout = 10 sec */
-    while (select(fds + 1, &rset, NULL, NULL, &timeout) > 0 && mRunning)
+    while (mRunning)
     {
-    if (FD_ISSET(fds, &rset))
-    {
-         struct v4l2_buffer v4l2_buf;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        if (select(fds + 1, &rset, NULL, NULL, &timeout) > 0 && FD_ISSET(fds, &rset))
+        {
+            if (!mRunning) {
+                break;
+            }
+            LOG_INFO<<"capturing frames";
+            struct v4l2_buffer v4l2_buf;
 
             /* Dequeue a camera buff */
             memset(&v4l2_buf, 0, sizeof(v4l2_buf));
@@ -142,7 +145,7 @@ timeout.tv_usec = 0;
             v4l2_buf.memory = V4L2_MEMORY_DMABUF;
             if (ioctl(mCamFD, VIDIOC_DQBUF, &v4l2_buf) < 0)
             {
-                LOG_ERROR << "Failed to dequeue camera buffer";
+                LOG_ERROR << "Failed to dequeue camera buffer. errno: " << errno << " " << strerror(errno);
                 break;
             }
 
@@ -155,11 +158,11 @@ timeout.tv_usec = 0;
             }
             mSendFrame(frameItr->second);
             mBufferFD.erase(frameItr);
-    }
-    else
-    {
-        LOG_INFO<<"fd not set";
-    }
+        }
+        else
+        {
+            LOG_INFO<<"fd not set";
+        }
 }
 }
     
