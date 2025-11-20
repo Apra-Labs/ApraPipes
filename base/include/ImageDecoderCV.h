@@ -14,14 +14,14 @@ class ImageDecoderCV : public Module
 public:
 	ImageDecoderCV(ImageDecoderCVProps _props=ImageDecoderCVProps());
 	virtual ~ImageDecoderCV();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
 
 private:
 	class Detail;

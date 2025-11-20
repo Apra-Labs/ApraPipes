@@ -45,22 +45,22 @@ class OverlayNPPI : public Module
 public:
 	OverlayNPPI(OverlayNPPIProps _props);
 	virtual ~OverlayNPPI();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 	void setProps(OverlayNPPIProps& props);
 	OverlayNPPIProps getProps();
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputOutputPins();
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId); // throws exception if validation fails		
-	bool shouldTriggerSOS();
-	bool processEOS(string& pinId);
-	bool handlePropsChange(frame_sp& frame);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputOutputPins() override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override; // throws exception if validation fails
+	bool shouldTriggerSOS() override;
+	bool processEOS(string& pinId) override;
+	bool handlePropsChange(frame_sp& frame) override;
 
 private:
 	void setMetadata(framemetadata_sp& metadata);

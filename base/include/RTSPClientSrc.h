@@ -40,18 +40,18 @@ class RTSPClientSrc : public Module {
 public:
 	RTSPClientSrc(RTSPClientSrcProps _props);
 	virtual ~RTSPClientSrc();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(RTSPClientSrcProps& props);
 	int getCurrentFps();
 	RTSPClientSrcProps getProps();
 
 protected:
-	bool produce();
-	bool validateOutputPins();
-	void notifyPlay(bool play);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
-	bool handlePropsChange(frame_sp& frame);
+	bool produce() override;
+	bool validateOutputPins() override;
+	void notifyPlay(bool play) override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
+	bool handlePropsChange(frame_sp& frame) override;
 private:
 	RTSPClientSrcProps mProps;
 	class Detail;

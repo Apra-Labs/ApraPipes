@@ -20,14 +20,14 @@ class ImageResizeCV : public Module
 public:
 	ImageResizeCV(ImageResizeCVProps _props);
 	virtual ~ImageResizeCV();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:

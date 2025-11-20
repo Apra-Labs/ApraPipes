@@ -109,8 +109,8 @@ class Mp4ReaderSource : public Module
 public:
 	Mp4ReaderSource(Mp4ReaderSourceProps _props);
 	virtual ~Mp4ReaderSource();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	Mp4ReaderSourceProps getProps();
 	void setProps(Mp4ReaderSourceProps& props);
 	std::string getOpenVideoPath();
@@ -131,10 +131,10 @@ public:
 		height = mHeight;
 	}
 protected:
-	bool produce();
-	bool validateOutputPins();
-	bool handleCommand(Command::CommandType type, frame_sp& fame);
-	bool handlePropsChange(frame_sp& frame);
+	bool produce() override;
+	bool validateOutputPins() override;
+	bool handleCommand(Command::CommandType type, frame_sp& fame) override;
+	bool handlePropsChange(frame_sp& frame) override;
 	bool handlePausePlay(float speed, bool direction) override;
 private:
 	std::string h264ImagePinId;

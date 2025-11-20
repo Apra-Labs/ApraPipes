@@ -26,12 +26,12 @@ class NvArgusCamera : public Module
 public:
 	NvArgusCamera(NvArgusCameraProps props);
 	virtual ~NvArgusCamera();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool produce();
-	bool validateOutputPins();
+	bool produce() override;
+	bool validateOutputPins() override;
 
 private:
 	std::string mOutputPinId;

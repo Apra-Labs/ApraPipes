@@ -24,16 +24,16 @@ class H264EncoderV4L2 : public Module
 public:
 	H264EncoderV4L2(H264EncoderV4L2Props props);
 	virtual ~H264EncoderV4L2();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool shouldTriggerSOS();
-	bool processEOS(string& pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool shouldTriggerSOS() override;
+	bool processEOS(string& pinId) override;
 
 private:
 	std::shared_ptr<H264EncoderV4L2Helper> mHelper;

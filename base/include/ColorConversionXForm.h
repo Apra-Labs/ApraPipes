@@ -35,17 +35,17 @@ class ColorConversion : public Module
 public:
 	ColorConversion(ColorConversionProps _props);
 	virtual ~ColorConversion();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool shouldTriggerSOS();
-	bool validateInputPins();
-	bool validateOutputPins();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool shouldTriggerSOS() override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
 	void setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata);
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:

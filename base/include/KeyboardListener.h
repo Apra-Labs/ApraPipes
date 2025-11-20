@@ -18,14 +18,14 @@ public:
 	KeyboardListener(KeyboardListenerProps _props);
 	virtual ~KeyboardListener() {}
 
-	virtual bool init();
-	virtual bool term();
+	bool init() override;
+	bool term() override;
 
 protected:	
-	bool process(frame_container& frames);
-	bool validateInputPins();
-	bool validateOutputPins();	
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool process(frame_container& frames) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
 
 private:
     class Detail;

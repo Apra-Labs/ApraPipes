@@ -24,7 +24,7 @@ public:
 
 	virtual ~ExternalSourceModule() {}
 
-	bool init()
+	bool init() override
 	{
 		if (!Module::init())
 		{
@@ -69,7 +69,7 @@ public:
 		return out;
 	}
 
-	bool stop()
+	bool stop() override
 	{
 		if (isRunning())
 		{
@@ -83,7 +83,7 @@ public:
 	}
 
 protected:
-	bool validateOutputPins()
+	bool validateOutputPins() override
 	{
 		return true;
 	}

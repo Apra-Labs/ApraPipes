@@ -30,11 +30,11 @@ class FileWriterModule: public Module {
 public:
 	FileWriterModule(FileWriterModuleProps _props);
 	virtual ~FileWriterModule();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 protected:
-	bool process(frame_container& frames);
-	bool validateInputPins();
+	bool process(frame_container& frames) override;
+	bool validateInputPins() override;
 private:
 	std::shared_ptr<FileSequenceDriver> mDriver;
 };
