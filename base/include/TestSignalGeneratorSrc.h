@@ -31,21 +31,21 @@ public:
     TestSignalGenerator(TestSignalGeneratorProps _props);
     ~TestSignalGenerator();
 
-    bool init();
-    bool term();
+    bool init() override;
+    bool term() override;
     void setProps(TestSignalGeneratorProps &props);
     TestSignalGeneratorProps getProps();
 
 protected:
-    bool produce();
-    bool validateOutputPins();
+    bool produce() override;
+    bool validateOutputPins() override;
     void setMetadata(framemetadata_sp &metadata);
-    bool handlePropsChange(frame_sp &frame);
+    bool handlePropsChange(frame_sp &frame) override;
 
 
 private:
     class Detail;
-    boost::shared_ptr<Detail> mDetail;
+    std::shared_ptr<Detail> mDetail;
     size_t outputFrameSize;
     framemetadata_sp mOutputMetadata;
     std::string mOutputPinId;

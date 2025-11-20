@@ -21,7 +21,7 @@ void ApraSegregatedStorage::addToJunk(ApraChunk* start, ApraChunk* end)
 	junkList = start;
 }
 
-ApraChunk* ApraSegregatedStorage::getFreeApraChunk()
+std::optional<ApraChunk*> ApraSegregatedStorage::getFreeApraChunk()
 {
 	if (junkList == nullptr)
 	{
@@ -29,7 +29,7 @@ ApraChunk* ApraSegregatedStorage::getFreeApraChunk()
 	}
 
 	ApraChunk* const ret = junkList;
-	junkList = junkList->getNext();
+	junkList = junkList->getNext().value_or(nullptr);
 
 	ret->set(nullptr, nullptr);
 
@@ -43,16 +43,16 @@ bool ApraSegregatedStorage::empty() const
 
 void ApraSegregatedStorage::add_ordered_block(void * const block, const size_t nsz, const size_t npartition_sz)
 {
-	ApraChunk* const loc = find_prev(block);
+	auto loc = find_prev(block);
 
 	// Place either at beginning or in middle/end
-	if (loc == 0)
+	if (!loc)
 	{
 		first = segregate(block, nsz, npartition_sz, first);
 	}
 	else
 	{
-		loc->setNext(segregate(block, nsz, npartition_sz, loc->getNext()));
+		(*loc)->setNext(segregate(block, nsz, npartition_sz, (*loc)->getNext().value_or(nullptr)));
 	}
 }
 
@@ -70,7 +70,7 @@ ApraChunk* ApraSegregatedStorage::segregate(void* block, size_t sz, size_t parti
 	char* old = static_cast<char*>(block) + ((sz - partition_sz) / partition_sz) * partition_sz;
 
 	// Set it to point to the end
-	auto chunk = getFreeApraChunk();
+	auto chunk = *getFreeApraChunk();
 	chunk->set(old, end);
 
 	// Handle border case where sz == partition_sz (i.e., we're handling an array
@@ -83,43 +83,45 @@ ApraChunk* ApraSegregatedStorage::segregate(void* block, size_t sz, size_t parti
 	// Iterate backwards, building a singly-linked list of pointers
 	for (char * iter = old - partition_sz; iter != block; old = iter, iter -= partition_sz)
 	{
-		auto temp = getFreeApraChunk();
+		auto temp = *getFreeApraChunk();
 		temp->set(iter, chunk);
 		chunk = temp;
 	}
 
 	// Point the first pointer, too
-	auto temp = getFreeApraChunk();
+	auto temp = *getFreeApraChunk();
 	temp->set(block, chunk);
 
 	return temp;
 }
 
-ApraChunk* ApraSegregatedStorage::find_prev(void * const ptr)
+std::optional<ApraChunk*> ApraSegregatedStorage::find_prev(void * const ptr)
 {
 	// Handle border case.
 	if (first == nullptr || std::greater<void *>()(first->get(), ptr))
 	{
-		return nullptr;
+		return std::nullopt;
 	}
 
 	ApraChunk* iter = first;
 	while (true)
 	{
 		// if we're about to hit the end, or if we've found where "ptr" goes.
-		if (iter->getNext() == nullptr || std::greater<void *>()(iter->getNext()->get(), ptr))
+		auto iterNext = iter->getNext();
+		if (!iterNext || std::greater<void *>()((*iterNext)->get(), ptr))
 			return iter;
 
-		iter = iter->getNext();
+		iter = *iterNext;
 	}
 }
 
 ApraChunk* ApraSegregatedStorage::try_malloc_n(ApraChunk*& start, size_t n, const size_t requested_size)
 {
-	ApraChunk* iter = start->getNext();
+	ApraChunk* iter = start->getNext().value_or(nullptr);
 	while (--n != 0)
 	{
-		ApraChunk* next = iter->getNext();
+		auto nextOpt = iter->getNext();
+		ApraChunk* next = nextOpt.value_or(nullptr);
 		if (next == nullptr || next->get() != static_cast<char *>(iter->get()) + requested_size)
 		{
 			start = iter;
@@ -144,24 +146,25 @@ void* ApraSegregatedStorage::malloc_n(const size_t n, const size_t requested_siz
 	ApraChunk* iter;
 	do
 	{
-		if (start == nullptr || start->getNext() == nullptr)
+		auto startNext = start->getNext();
+		if (start == nullptr || !startNext)
 		{
 			return nullptr;
 		}
 
 		iter = try_malloc_n(start, n, requested_size);
 	} while (iter == nullptr);
-	
-	void* ret = start->getNext()->get();	
+
+	void* ret = start->getNext().value_or(nullptr)->get();
 	if (start->get() == nullptr)
-	{		
-		first = iter->getNext();
-		addToJunk(start->getNext(), iter);
+	{
+		first = iter->getNext().value_or(nullptr);
+		addToJunk(start->getNext().value_or(nullptr), iter);
 	}
 	else
 	{
-		auto nextFree = iter->getNext();
-		addToJunk(start->getNext(), iter);
+		auto nextFree = iter->getNext().value_or(nullptr);
+		addToJunk(start->getNext().value_or(nullptr), iter);
 		start->setNext(nextFree);
 	}	
 

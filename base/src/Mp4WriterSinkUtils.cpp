@@ -1,5 +1,5 @@
 #include <string>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <chrono>
 #include "Logger.h"
 #include "Mp4WriterSinkUtils.h"
@@ -36,23 +36,23 @@ std::string Mp4WriterSinkUtils::format_2(int &num)
 	}
 }
 
-std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::string mp4FileName, std::string baseFolder, uint64_t chunkTimeInMinutes)
+std::string Mp4WriterSinkUtils::filePath(std::filesystem::path relPath, std::string mp4FileName, std::string baseFolder, uint64_t chunkTimeInMinutes)
 {
-	boost::filesystem::path finalPath;
+	std::filesystem::path finalPath;
 	std::string mp4VideoPath;
 	if (customNamedFileDirCheck(baseFolder, chunkTimeInMinutes, relPath, mp4VideoPath))
 	{
 		return mp4VideoPath;
 	}
 	
-	auto folderPath = boost::filesystem::path(baseFolder) / relPath;
-	if (boost::filesystem::is_directory(folderPath))
+	auto folderPath = std::filesystem::path(baseFolder) / relPath;
+	if (std::filesystem::is_directory(folderPath))
 	{
 		finalPath = folderPath / mp4FileName;
 		return finalPath.string();
 	}
 
-	if (boost::filesystem::create_directories(folderPath))
+	if (std::filesystem::create_directories(folderPath))
 	{
 		finalPath = folderPath / mp4FileName;
 		return finalPath.string();
@@ -65,21 +65,21 @@ std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::s
 	}
 }
 
-bool Mp4WriterSinkUtils::customNamedFileDirCheck(std::string baseFolder, uint32_t chunkTimeInMinutes, boost::filesystem::path relPath, std::string& nextFrameFileName)
+bool Mp4WriterSinkUtils::customNamedFileDirCheck(std::string baseFolder, uint32_t chunkTimeInMinutes, std::filesystem::path relPath, std::string& nextFrameFileName)
 {
-	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	if (std::filesystem::path(baseFolder).extension().string()(baseFolder) == ".mp4")
 	{
 		if (chunkTimeInMinutes == UINT32_MAX)
 		{
-			auto folderPath = boost::filesystem::path(baseFolder) / relPath;
+			auto folderPath = std::filesystem::path(baseFolder) / relPath;
 			auto path = folderPath.remove_filename();
-			if (boost::filesystem::is_directory(path))
+			if (std::filesystem::is_directory(path))
 			{
 				nextFrameFileName = baseFolder;
 				return true;
 			}
 
-			if (boost::filesystem::create_directories(path))
+			if (std::filesystem::create_directories(path))
 			{
 				nextFrameFileName = baseFolder;
 				return true;
@@ -104,7 +104,7 @@ bool Mp4WriterSinkUtils::customNamedFileDirCheck(std::string baseFolder, uint32_
 }
 
 void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes, uint32_t &syncTimeInSeconds,
-	boost::filesystem::path &relPath, std::string &mp4FileName, bool &syncFlag, std::string baseFolder, std::string& nextFrameFileName)
+	std::filesystem::path &relPath, std::string &mp4FileName, bool &syncFlag, std::string baseFolder, std::string& nextFrameFileName)
 {
 	std::chrono::milliseconds duration(ts);
 	std::chrono::seconds secondsInDuration = std::chrono::duration_cast<std::chrono::seconds>(duration);
@@ -144,7 +144,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 		return;
 
 	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
-	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
+	relPath = std::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoFolderPath = relPath;
 
@@ -152,7 +152,7 @@ void Mp4WriterSinkUtils::parseTSJpeg(uint64_t &ts, uint32_t &chunkTimeInMinutes,
 	
 	nextFrameFileName = filePath(relPath, mp4FileName, baseFolder, chunkTimeInMinutes);
 }
-void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,boost::filesystem::path& relPath, 
+void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes, uint32_t& syncTimeInSeconds,std::filesystem::path& relPath, 
 	std::string& mp4FileName, bool& syncFlag, short frameType, short naluType, std::string baseFolder, std::string& nextFrameFileName)
 {
 	std::chrono::milliseconds duration(ts);
@@ -174,7 +174,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		syncFlag = false;
 	}
 
-	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	if (std::filesystem::path(baseFolder).extension().string()(baseFolder) == ".mp4")
 	{
 		if(currentFolder != baseFolder)
 		{
@@ -221,7 +221,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		return;
 
 	std::string yyyymmdd = std::to_string(1900 + tm.tm_year) + format_2(tm.tm_mon) + format_2(tm.tm_mday);
-	relPath = boost::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
+	relPath = std::filesystem::path(yyyymmdd) / format_hrs(tm.tm_hour);
 	mp4FileName = std::to_string(ts) + ".mp4";
 	lastVideoName = mp4FileName;
 	lastVideoFolderPath = relPath;
@@ -233,9 +233,9 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 void Mp4WriterSinkUtils::getFilenameForNextFrame(std::string& nextFrameFileName ,uint64_t& timestamp, std::string& basefolder,
 	uint32_t chunkTimeInMinutes, uint32_t syncTimeInSeconds, bool& syncFlag, short& frameType , short naluType)
 {
-	boost::filesystem::path finalPath;
+	std::filesystem::path finalPath;
 	std::string mp4FileName;
-	boost::filesystem::path relPath;
+	std::filesystem::path relPath;
 
 	if (frameType == FrameMetadata::FrameType::H264_DATA)
 	{

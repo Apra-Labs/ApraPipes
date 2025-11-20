@@ -226,7 +226,7 @@ public:
 		}
 	}
 
-	boost::shared_ptr<Mp4WriterSinkProps> mProps;
+	std::shared_ptr<Mp4WriterSinkProps> mProps;
 	bool mMetadataEnabled = false;
 	bool isKeyFrame;
 	struct mp4_mux* mux;
@@ -251,7 +251,7 @@ protected:
 	std::string mSerFormatVersion;
 	framemetadata_sp mInputMetadata;
 	uint64_t lastFrameTS = 0;
-	boost::shared_ptr<DTSCalcStrategy> mDTSCalc = nullptr;
+	std::shared_ptr<DTSCalcStrategy> mDTSCalc = nullptr;
 };
 
 class DetailJpeg : public DetailAbs
@@ -650,7 +650,7 @@ bool Mp4WriterSink::enableMp4Metadata(framemetadata_sp &inputMetadata)
 	return true;
 }
 
-void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 }
@@ -708,7 +708,7 @@ bool Mp4WriterSink::process(frame_container& frames)
 	return true;
 }
 
-bool Mp4WriterSink::processEOS(string& pinId)
+bool Mp4WriterSink::processEOS(std::string_view pinId)
 {
 	return true;
 }

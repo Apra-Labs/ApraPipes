@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "JPEGDecoderIM.h"
@@ -55,28 +58,28 @@ BOOST_AUTO_TEST_CASE(sample)
 	Logger::initLogger(loggerProps);
 	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex);
 	fileReaderModuleProps.fps = 2000;
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
 	auto srcMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(srcMetadata);
 
 	auto jpegDecoderProps = JPEGDecoderIMProps();
 	jpegDecoderProps.logHealth = true;
-	auto decoder = boost::shared_ptr<Module>(new JPEGDecoderIM(jpegDecoderProps));
+	auto decoder = std::shared_ptr<Module>(new JPEGDecoderIM(jpegDecoderProps));
 	fileReader->setNext(decoder);
 	auto rawImageMetadata = framemetadata_sp(new RawImageMetadata());
 	decoder->addOutputPin(rawImageMetadata);
 
 	JPEGEncoderIMProps encoderProps;
 	encoderProps.logHealth = true;
-	auto encoder = boost::shared_ptr<JPEGEncoderIM>(new JPEGEncoderIM(encoderProps));
+	auto encoder = std::shared_ptr<JPEGEncoderIM>(new JPEGEncoderIM(encoderProps));
 	decoder->setNext(encoder);
 	auto sinkMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	encoder->addOutputPin(sinkMetadata);
 	
-	auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(outputFilePattern)));
+	auto fileWriter = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(outputFilePattern)));
 	encoder->setNext(fileWriter);
 
-	auto sink3 = boost::shared_ptr<Module>(new StatSink());
+	auto sink3 = std::shared_ptr<Module>(new StatSink());
 	//decoder->setNext(sink3);
 	encoder->setNext(sink3);
 
@@ -87,7 +90,7 @@ BOOST_AUTO_TEST_CASE(sample)
 	{
 		ExternalSourceModuleProps props;
 		props.fps = 100;
-		auto logger1 = boost::shared_ptr<Module>(new LoggerTestModule(props));
+		auto logger1 = std::shared_ptr<Module>(new LoggerTestModule(props));
 		auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		logger1->addOutputPin(genMetadata);
 		p.appendModule(logger1);
@@ -96,7 +99,7 @@ BOOST_AUTO_TEST_CASE(sample)
 
 	p.init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 	p.stop();
 	p.term();
 
@@ -125,7 +128,7 @@ BOOST_AUTO_TEST_CASE(sample2)
 
 	ExternalSourceModuleProps props;
 	props.fps = 100;
-	auto logger1 = boost::shared_ptr<Module>(new LoggerTestModule(props));
+	auto logger1 = std::shared_ptr<Module>(new LoggerTestModule(props));
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	logger1->addOutputPin(genMetadata);
 	p.appendModule(logger1);
@@ -145,7 +148,7 @@ BOOST_AUTO_TEST_CASE(sample2)
 BOOST_AUTO_TEST_CASE(sample3)
 {
 	LOG_DEBUG << "HOLA SAMPLE3";
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

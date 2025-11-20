@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -17,14 +18,14 @@ BOOST_AUTO_TEST_SUITE(brightness_contrast_tests)
 BOOST_AUTO_TEST_CASE(mono)
 {
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
+	auto brightnessControl = std::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
 	fileReader->setNext(brightnessControl);
 
-	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m2 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	brightnessControl->setNext(m2);
 
 	BOOST_TEST(fileReader->init());
@@ -49,14 +50,14 @@ BOOST_AUTO_TEST_CASE(bgra)
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
+	auto brightnessControl = std::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
 	fileReader->setNext(brightnessControl);
 
-	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m2 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	brightnessControl->setNext(m2);
 
 	BOOST_TEST(fileReader->init());
@@ -74,14 +75,14 @@ BOOST_AUTO_TEST_CASE(bgra)
 
 BOOST_AUTO_TEST_CASE(getSetProps)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto brightnessControl = boost::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
+	auto brightnessControl = std::shared_ptr<BrightnessContrastControl>(new BrightnessContrastControl(BrightnessContrastControlProps(0.5, 0.5)));
 	fileReader->setNext(brightnessControl);
 
-	auto m2 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m2 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	brightnessControl->setNext(m2);
 
 	BOOST_TEST(fileReader->init());

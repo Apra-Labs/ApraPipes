@@ -137,7 +137,7 @@ bool NvTransform::validateOutputPins()
 	return true;
 }
 
-void NvTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
+void NvTransform::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	switch (mDetail->props.imageType)
@@ -191,7 +191,7 @@ bool NvTransform::process(frame_container &frames)
 
 		mDetail->compute(frame, dmaFdWrapper->tempFD);
 
-		frames.insert(make_pair(mDetail->outputPinId, outFrame));
+		frames.insert({mDetail->outputPinId, outFrame});
 		send(frames);
 	}
 	catch(std::exception & e)
@@ -257,7 +257,7 @@ void NvTransform::setMetadata(framemetadata_sp &metadata)
 	DMAAllocator::setMetadata(mDetail->outputMetadata, width, height, mDetail->props.imageType);
 }
 
-bool NvTransform::processEOS(string &pinId)
+bool NvTransform::processEOS(std::string_view pinId)
 {
 	//THE FOLLOWING LINE IS COMMENTED FOR SPECIFIC USE IN NVR - MP4READER PASSING EOS WAS COMING HERE AND CAUSING EOS WHICH IS NOT REQUIRED FOR NVR
 	// mDetail->outputMetadata.reset();

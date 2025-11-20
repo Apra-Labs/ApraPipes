@@ -53,6 +53,6 @@ public:
 
 private:
     NvArgusCameraUtils();
-    static boost::shared_ptr<NvArgusCameraUtils> instance;
+    static std::shared_ptr<NvArgusCameraUtils> instance;
     Argus::UniqueObj<Argus::CameraProvider> cameraProvider;
 };

@@ -178,7 +178,7 @@ public:
                     std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
                 	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
                     frm->timestamp = dur.count();
-                    if (!outFrames.insert(make_pair(it->second, frm)).second)
+                    if (!outFrames.insert({it->second, frm}).second)
                     {
                         LOG_WARNING << "oops! there is already another packet for pin " << it->second;
                     }

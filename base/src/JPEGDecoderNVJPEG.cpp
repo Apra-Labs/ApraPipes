@@ -279,7 +279,7 @@ bool JPEGDecoderNVJPEG::process(frame_container &frames)
 		return true;
 	}
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 
 	return true;

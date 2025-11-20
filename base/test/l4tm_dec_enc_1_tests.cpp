@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 // #include "JPEGDecoderIM.h"
@@ -27,28 +30,28 @@ BOOST_AUTO_TEST_CASE(sample, * boost::unit_test::disabled())
 	Logger::initLogger(loggerProps);
 	auto fileReaderModuleProps = FileReaderModuleProps(folderPath, startIndex, endIndex);
 	//fileReaderModuleProps.fps = 30;
-	auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
+	auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderModuleProps));
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(encodedImageMetadata);
 
 	auto jpegDecoderProps = JPEGDecoderL4TMProps();
 	jpegDecoderProps.logHealth = true;
-	auto decoder = boost::shared_ptr<Module>(new JPEGDecoderL4TM(jpegDecoderProps));
+	auto decoder = std::shared_ptr<Module>(new JPEGDecoderL4TM(jpegDecoderProps));
 	fileReader->setNext(decoder);
 	auto rawImageMetadata = framemetadata_sp(new RawImageMetadata());
 	decoder->addOutputPin(rawImageMetadata);
 
 	JPEGEncoderL4TMProps encoderProps;
 	encoderProps.logHealth = true;
-	auto encoder = boost::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(encoderProps));
+	auto encoder = std::shared_ptr<JPEGEncoderL4TM>(new JPEGEncoderL4TM(encoderProps));
 	decoder->setNext(encoder);
 	auto outMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	encoder->addOutputPin(outMetadata);
 	
-	auto fileWriter = boost::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(outputFilePattern)));
+	auto fileWriter = std::shared_ptr<FileWriterModule>(new FileWriterModule(FileWriterModuleProps(outputFilePattern)));
 	encoder->setNext(fileWriter);
 
-	auto sink3 = boost::shared_ptr<Module>(new StatSink());
+	auto sink3 = std::shared_ptr<Module>(new StatSink());
 	//decoder->setNext(sink3);
 	encoder->setNext(sink3);
 
@@ -57,7 +60,7 @@ BOOST_AUTO_TEST_CASE(sample, * boost::unit_test::disabled())
 
 	p.init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	p.stop();
 	p.term();
 

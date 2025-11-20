@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "VirtualPTZ.h"
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -18,16 +19,16 @@ BOOST_AUTO_TEST_SUITE(virtual_ptz_tests)
 BOOST_AUTO_TEST_CASE(mono)
 {
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto vPtz = boost::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.09, 0.500, 0.00, 0.00)));
+	auto vPtz = std::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.09, 0.500, 0.00, 0.00)));
 	fileReader->setNext(vPtz);
 
 	auto Vptzprops = vPtz->getProps();
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	vPtz->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -47,16 +48,16 @@ BOOST_AUTO_TEST_CASE(mono)
 BOOST_AUTO_TEST_CASE(rgb)
 {
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto vPtz = boost::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.29, 0.2900, 0.0, 0.0)));
+	auto vPtz = std::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.29, 0.2900, 0.0, 0.0)));
 	fileReader->setNext(vPtz);
 
 	auto Vptzprops = vPtz->getProps();
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	vPtz->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -76,16 +77,16 @@ BOOST_AUTO_TEST_CASE(rgb)
 BOOST_AUTO_TEST_CASE(testGetSetProps)
 {
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 
-	auto vPtz = boost::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.300, 0.300, 0.100, 0.100)));
+	auto vPtz = std::shared_ptr<VirtualPTZ>(new VirtualPTZ(VirtualPTZProps(0.300, 0.300, 0.100, 0.100)));
 	fileReader->setNext(vPtz);
 
 	auto Vptzprops = vPtz->getProps();
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	vPtz->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

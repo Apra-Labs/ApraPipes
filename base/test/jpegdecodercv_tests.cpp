@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -20,13 +21,13 @@ BOOST_AUTO_TEST_SUITE(jpegdecodercv_tests)
 
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
 	
 
-	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
+	auto decoder = std::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
     auto metadata2 = framemetadata_sp(new RawImageMetadata());
     decoder->addOutputPin(metadata2);
 
@@ -34,7 +35,7 @@ BOOST_AUTO_TEST_CASE(mono1_1920x960)
 
 	
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	decoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -53,16 +54,16 @@ BOOST_AUTO_TEST_CASE(mono1_1920x960)
 
 BOOST_AUTO_TEST_CASE(color_rgb_1920x960)
 {	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
-	auto decoder = boost::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
+	auto decoder = std::shared_ptr<ImageDecoderCV>(new ImageDecoderCV(ImageDecoderCVProps()));
 	auto metadata2 = framemetadata_sp(new RawImageMetadata());
     decoder->addOutputPin(metadata2);
     fileReader->setNext(decoder);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());    
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());    
 	decoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

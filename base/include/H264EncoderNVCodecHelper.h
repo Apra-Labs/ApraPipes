@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "ImageMetadata.h"
 #include "CommonDefs.h"
 #include "CudaCommon.h"
@@ -88,5 +88,5 @@ private:
     /**
      * @brief Shared pointer to the internal detail class.
      */
-    boost::shared_ptr<Detail> mDetail;
+    std::shared_ptr<Detail> mDetail;
 };

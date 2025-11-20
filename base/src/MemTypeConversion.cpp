@@ -372,7 +372,7 @@ bool MemTypeConversion::validateOutputPins()
 	return true;
 }
 
-void MemTypeConversion::addInputPin(framemetadata_sp &metadata, string &pinId)
+void MemTypeConversion::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType inputMemType = metadata->getMemType();
@@ -461,7 +461,7 @@ bool MemTypeConversion::process(frame_container &frames)
 	mDetail->outputFrame = makeFrame(mDetail->mSize, mDetail->mOutputPinId);
 	mDetail->compute();
 
-	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
+	frames.insert({mDetail->mOutputPinId, mDetail->outputFrame});
 	send(frames);
 
 	return true;
@@ -527,7 +527,7 @@ bool MemTypeConversion::processSOS(frame_sp &frame)
 	return true;
 }
 
-bool MemTypeConversion::processEOS(string &pinId)
+bool MemTypeConversion::processEOS(std::string_view pinId)
 {
 	mDetail->mOutputMetadata->reset();
 	return true;

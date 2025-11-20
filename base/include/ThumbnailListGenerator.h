@@ -38,19 +38,19 @@ class ThumbnailListGenerator : public Module
 public:
     ThumbnailListGenerator(ThumbnailListGeneratorProps _props);
     virtual ~ThumbnailListGenerator();
-    bool init();
-    bool term();
+    bool init() override;
+    bool term() override;
     void setProps(ThumbnailListGeneratorProps &props);
     ThumbnailListGeneratorProps getProps();
 
 protected:
-    bool process(frame_container &frames);
-    bool validateInputPins();
+    bool process(frame_container &frames) override;
+    bool validateInputPins() override;
     // bool processSOS(frame_sp &frame);
     // bool shouldTriggerSOS();
-    bool handlePropsChange(frame_sp &frame);
+    bool handlePropsChange(frame_sp &frame) override;
 
 private:
     class Detail;
-    boost::shared_ptr<Detail> mDetail;
+    std::shared_ptr<Detail> mDetail;
 };

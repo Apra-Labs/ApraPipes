@@ -1,5 +1,7 @@
 
 #include <boost/test/unit_test.hpp>
+#include <filesystem>
+#include <memory>
 #include "test_utils.h"
 #include "FrameMetadata.h"
 #include "FrameMetadataFactory.h"
@@ -26,7 +28,7 @@ struct SetupSeekTests
 		Logger::initLogger(loggerProps);
 
 		auto mp4ReaderProps = Mp4ReaderSourceProps(startingVideoPath, parseFS, reInitInterval, true, readLoop, false);
-		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 		if (frameType == FrameMetadata::FrameType::ENCODED_IMAGE)
 		{
 			imageMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
@@ -42,10 +44,10 @@ struct SetupSeekTests
 		auto sinkProps = ExternalSinkProps();
 		sinkProps.logHealth = true;
 		sinkProps.logHealthFrequency = 1000;
-		sink = boost::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
+		sink = std::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
 		mp4Reader->setNext(sink, true, false);
 
-		auto p = boost::shared_ptr<PipeLine>(new PipeLine("mp4reader"));
+		auto p = std::shared_ptr<PipeLine>(new PipeLine("mp4reader"));
 		p->appendModule(mp4Reader);
 
 		BOOST_TEST(mp4Reader->init());
@@ -60,7 +62,7 @@ struct SetupSeekTests
 
 	uint64_t getTSFromFileName(std::string videoPath)
 	{
-		std::string videoFileName = boost::filesystem::path(videoPath).filename().string();
+		std::string videoFileName = std::filesystem::path(videoPath).filename().string();
 		uint64_t ts = std::stoull(videoFileName.substr(0, videoFileName.find(".")));
 		return ts;
 	}
@@ -84,7 +86,7 @@ struct SetupSeekTests
 			return Module::pop();
 		}
 
-		boost::shared_ptr<FrameContainerQueue> getQue()
+		std::shared_ptr<FrameContainerQueue> getQue()
 		{
 			return Module::getQue();
 		}
@@ -122,9 +124,9 @@ struct SetupSeekTests
 		}
 
 	}; // ExternalSink
-	boost::shared_ptr<PipeLine> p = nullptr;
-	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-	boost::shared_ptr<ExternalSink> sink;
+	std::shared_ptr<PipeLine> p = nullptr;
+	std::shared_ptr<Mp4ReaderSource> mp4Reader;
+	std::shared_ptr<ExternalSink> sink;
 };
 
 BOOST_AUTO_TEST_CASE(no_seek)

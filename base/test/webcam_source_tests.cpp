@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FrameMetadata.h"
 #include "Frame.h"
@@ -18,9 +21,9 @@ BOOST_AUTO_TEST_CASE(basic)
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
 	WebCamSourceProps webCamSourceprops(-1, 640, 480);
-	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto source = std::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	source->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -50,9 +53,9 @@ BOOST_AUTO_TEST_CASE(basic_small)
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
 	WebCamSourceProps webCamSourceprops(-1, 352, 288);
-	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto source = std::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	source->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -68,9 +71,9 @@ BOOST_AUTO_TEST_CASE(basic_small)
 BOOST_AUTO_TEST_CASE(viewer_test)
 {   
 	WebCamSourceProps webCamSourceprops(-1, 640, 480);
-	auto source = boost::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
+	auto source = std::shared_ptr<WebCamSource>(new WebCamSource(webCamSourceprops));
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
+	auto sink = std::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("imageview")));
 	source->setNext(sink);
 
 	PipeLine p("test");
@@ -78,7 +81,7 @@ BOOST_AUTO_TEST_CASE(viewer_test)
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

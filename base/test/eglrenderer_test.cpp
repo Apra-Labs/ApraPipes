@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "EglRenderer.h"
@@ -16,12 +19,12 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
     FileReaderModuleProps fileReaderProps("./data/ArgusCamera");
 	fileReaderProps.fps = 30;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::UYVY, CV_8UC1, 0, CV_8U, FrameMetadata::MemType::DMABUF, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
+	auto sink = std::shared_ptr<Module>(new EglRenderer(EglRendererProps(0, 0)));
 	fileReader->setNext(sink);
 
 	PipeLine p("test");
@@ -32,7 +35,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -44,13 +47,13 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
 {
 	NvV4L2CameraProps nvCamProps(640,360, 10);
-    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+    auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
     NvTransformProps nvprops(ImageMetadata::RGBA);
-    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    auto transform = std::shared_ptr<Module>(new NvTransform(nvprops));
     source->setNext(transform);
 
-	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,1)));
+	auto sink = std::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,1)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -61,7 +64,7 @@ BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -73,13 +76,13 @@ BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
 {
 	NvV4L2CameraProps nvCamProps(640,360, 10);
-    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+    auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
     NvTransformProps nvprops(ImageMetadata::RGBA);
-    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    auto transform = std::shared_ptr<Module>(new NvTransform(nvprops));
     source->setNext(transform);
 
-	auto sink = boost::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,0)));
+	auto sink = std::shared_ptr<Module>(new EglRenderer(EglRendererProps(0,0,0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -90,7 +93,7 @@ BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -102,13 +105,13 @@ BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 {
 	NvV4L2CameraProps nvCamProps(640,360, 10);
-    auto source = boost::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
+    auto source = std::shared_ptr<Module>(new NvV4L2Camera(nvCamProps));
 
     NvTransformProps nvprops(ImageMetadata::RGBA);
-    auto transform = boost::shared_ptr<Module>(new NvTransform(nvprops));
+    auto transform = std::shared_ptr<Module>(new NvTransform(nvprops));
     source->setNext(transform);
 
-	auto sink = boost::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));
+	auto sink = std::shared_ptr<EglRenderer>(new EglRenderer(EglRendererProps(0,0,0)));
 	transform->setNext(sink);
 
 	PipeLine p("test");
@@ -119,13 +122,13 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	sink->closeWindow();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	sink->createWindow(200,200);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();

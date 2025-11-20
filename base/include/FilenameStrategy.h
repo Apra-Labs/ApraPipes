@@ -1,13 +1,13 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <boost/filesystem.hpp>
+#include <memory>
+#include <filesystem>
 
 class FilenameStrategy
 {
 public:
 
-	static boost::shared_ptr<FilenameStrategy> getStrategy(const std::string& strPath,
+	static std::shared_ptr<FilenameStrategy> getStrategy(const std::string& strPath,
 		int startIndex,
 		int maxIndex,
 		bool readLoop,
@@ -80,8 +80,8 @@ protected:
 		int maxIndex,
 		bool readLoop);
 
-private:	
-	std::vector<boost::filesystem::path> mFiles;	
+private:
+	std::vector<std::filesystem::path> mFiles;
 };
 
 class ListStrategy : public FilenameStrategy
@@ -101,5 +101,5 @@ protected:
 
 private:
 	std::vector<std::string> mFiles;
-	boost::filesystem::path mRootDir;
+	std::filesystem::path mRootDir;
 };

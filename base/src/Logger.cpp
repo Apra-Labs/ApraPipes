@@ -1,11 +1,15 @@
 #include "Logger.h"
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <filesystem>
 
-boost::shared_ptr<Logger> Logger::instance;
-boost::mutex Logger::logger_mutex;
+std::shared_ptr<Logger> Logger::instance;
+std::mutex Logger::logger_mutex;
 
 void Logger::initLogger(LoggerProps props)
 {
-	boost::mutex::scoped_lock lock(logger_mutex);
+	std::unique_lock<std::mutex> lock(logger_mutex);
 	if (instance.get())
 	{
 		return;
@@ -35,7 +39,7 @@ Logger::Logger(LoggerProps props)
 	if (mProps.enableConsoleLog ||mProps.enableFileLog)
 	{
 		Logger& logger = *this;
-		myThread = boost::thread(std::ref(logger));
+		myThread = std::thread(std::ref(logger));
 	}
 }
 
@@ -72,7 +76,7 @@ void Logger::initBoostLogger(LoggerProps props)
 		boost::log::keywords::auto_flush = true,
 		boost::log::keywords::min_free_space = 25 * 1024 * 1024, /* 25 MB */
 		boost::log::keywords::max_files = 25,
-		boost::log::keywords::target = boost::filesystem::path(props.fileLogPath).parent_path().string()
+		boost::log::keywords::target = std::filesystem::path(props.fileLogPath).parent_path().string()
 	);
 	
 	boost::log::add_common_attributes();
@@ -83,11 +87,13 @@ Logger::~Logger()
 	mRunning = false;
 	std::cout << "Logger exiting..." <<std::endl;
 	try{
-		if (myThread.get_id()!=boost::thread::id())// It is a real thread
+		if (myThread.get_id()!=std::thread::id())// It is a real thread
 		{
 			mQue.setWake();
-			myThread.~thread(); // not the ideal way - thread exits before processing the queue
-			myThread.join();
+			if (myThread.joinable())
+			{
+				myThread.join();
+			}
 		}
 
 		if (mConsoleSink.get())
@@ -238,9 +244,9 @@ bool Logger::push(boost::log::trivial::severity_level level, std::ostringstream&
 	}
 
 	//push to queue only if the thread is running
-	if(mRunning && myThread.get_id()!=boost::thread::id())	//log thread is running
+	if(mRunning && myThread.get_id()!=std::thread::id())	//log thread is running
 	{
-		mQue.push(stream.str());	
+		mQue.push(stream.str());
 	}
 	else
 	{

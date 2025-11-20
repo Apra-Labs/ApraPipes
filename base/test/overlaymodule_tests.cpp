@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "test_utils.h"
 #include "Overlay.h"
 #include "ExternalSourceModule.h"
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(composite_overlay_test)
 	circleOverlay1.y1 = 350;
 	circleOverlay1.radius = 2;
 
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	auto pinId = source->addOutputPin(metadata);
 
@@ -183,22 +184,22 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	drawingOverlay.add(&compositeOverlay1);
 	drawingOverlay.add(&circleOverlay1);
 
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::OVERLAY_INFO_IMAGE));
 	auto pinId = source->addOutputPin(metadata);
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto rawMetadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	auto rawPinId = fileReader->addOutputPin(rawMetadata);
 
-	auto muxer = boost::shared_ptr<Module>(new FramesMuxer());
+	auto muxer = std::shared_ptr<Module>(new FramesMuxer());
 	source->setNext(muxer);
 	fileReader->setNext(muxer);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = std::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	muxer->setNext(overlay);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage.raw")));
+	auto fileWriter = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage.raw")));
 	overlay->setNext(fileWriter);
 
 	auto size = drawingOverlay.mGetSerializeSize();
@@ -207,7 +208,7 @@ BOOST_AUTO_TEST_CASE(drawing_test)
 	drawingOverlay.serialize(frame);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	BOOST_TEST(source->init());
 	BOOST_TEST(fileReader->init());

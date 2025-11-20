@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 class FilenameStrategy;
 class BufferMaker;
@@ -36,7 +36,7 @@ public:
 private:
     bool writeHelper(const std::string& fileName, const uint8_t* dataToWrite, size_t dataSize, bool append);
 
-private:       
+private:
 	bool mAppend;
-	boost::shared_ptr<FilenameStrategy> mStrategy;
+	std::shared_ptr<FilenameStrategy> mStrategy;
 };

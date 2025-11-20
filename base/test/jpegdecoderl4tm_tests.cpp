@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
 
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
@@ -19,16 +20,16 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/frame.jpg", pReadData, readDataSize));
 	
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));	
 	auto encodedImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>(new JPEGDecoderL4TM());
+	auto m2 = std::shared_ptr<Module>(new JPEGDecoderL4TM());
 	m1->setNext(m2);
 	auto rawImageMetadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m2->addOutputPin(rawImageMetadata);
 	
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3); 
 
 	BOOST_TEST(m1->init());
@@ -39,7 +40,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	auto j = 0;
 	while (true)
@@ -72,16 +73,16 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/frame.jpg", pReadData, readDataSize));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>(new JPEGDecoderL4TM());
+	auto m2 = std::shared_ptr<Module>(new JPEGDecoderL4TM());
 	m1->setNext(m2);
 	auto decoderMetadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m2->addOutputPin(decoderMetadata);
 		
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	m1->send(frames);
 	m2->step();
@@ -115,16 +116,16 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, * boost::unit_test::disabled())
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto encodedImagePin = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>(new JPEGDecoderL4TM());
+	auto m2 = std::shared_ptr<Module>(new JPEGDecoderL4TM());
 	m1->setNext(m2);
 	auto decoderMetadata = framemetadata_sp(new RawImageMetadata());
 	auto rawImagePin = m2->addOutputPin(decoderMetadata);
 		
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -135,7 +136,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, * boost::unit_test::disabled())
 	memcpy(encodedImageFrame->data(), pReadData, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(encodedImagePin, encodedImageFrame));
+	frames.insert({encodedImagePin, encodedImageFrame});
 
 	m1->send(frames);
 	m2->step();

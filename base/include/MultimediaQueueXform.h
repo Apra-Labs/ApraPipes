@@ -58,27 +58,27 @@ public:
 
 	virtual ~MultimediaQueueXform() {
 	}
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setState(uint64_t ts, uint64_t te);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
 	bool allowFrames(uint64_t& ts, uint64_t& te);
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	void setProps(MultimediaQueueXformProps _props);
 	MultimediaQueueXformProps getProps();
-	bool handlePropsChange(frame_sp& frame);
-	boost::shared_ptr<State> mState;
+	bool handlePropsChange(frame_sp& frame) override;
+	std::shared_ptr<State> mState;
 	MultimediaQueueXformProps mProps;
-	boost::shared_ptr<FrameContainerQueue> getQue();
-	void extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& FrameQueue);
+	std::shared_ptr<FrameContainerQueue> getQue();
+	void extractFramesAndEnqueue(std::shared_ptr<FrameContainerQueue>& FrameQueue);
 	void setMmqFps(int fps);
 	void setPlaybackSpeed(float playbackSpeed);
 	void stopExportFrames();
 protected:
-	bool process(frame_container& frames);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool validateInputOutputPins();
+	bool process(frame_container& frames) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
 
 private:
 	void getQueueBoundaryTS(uint64_t& tOld, uint64_t& tNew);

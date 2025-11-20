@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 class Mp4ReaderDetailAbs;
 class Mp4ReaderDetailJpeg;
 class Mp4ReaderDetailH264;
@@ -37,7 +37,7 @@ public:
 				"> reInitInterval <" + std::to_string(reInitInterval) + "> parseFS <" + std::to_string(_parseFS) + ">";
 			throw AIPException(AIP_FATAL, errMsg);
 		}
-		auto canonicalVideoPath = boost::filesystem::canonical(_videoPath);
+		auto canonicalVideoPath = std::filesystem::canonical(_videoPath);
 		videoPath = canonicalVideoPath.string();
 		parseFS = _parseFS;
 		bFramesEnabled = _bFramesEnabled;
@@ -52,13 +52,13 @@ public:
 		reInitInterval = _reInitInterval;
 
 		//If the input file path is the full video path then its root dir will be skipDir else if the input path is only root dir path then it is directly assigned to skipDir.
-		if (parseFS && boost::filesystem::path(videoPath).extension() == ".mp4")
+		if (parseFS && std::filesystem::path(videoPath).extension() == ".mp4")
 		{
-			skipDir = boost::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
+			skipDir = std::filesystem::path(videoPath).parent_path().parent_path().parent_path().string();
 		}
 		else
 		{
-			skipDir = boost::filesystem::path(canonicalVideoPath).string();
+			skipDir = std::filesystem::path(canonicalVideoPath).string();
 		}
 	}
 
@@ -109,8 +109,8 @@ class Mp4ReaderSource : public Module
 public:
 	Mp4ReaderSource(Mp4ReaderSourceProps _props);
 	virtual ~Mp4ReaderSource();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	Mp4ReaderSourceProps getProps();
 	void setProps(Mp4ReaderSourceProps& props);
 	std::string getOpenVideoPath();
@@ -131,10 +131,10 @@ public:
 		height = mHeight;
 	}
 protected:
-	bool produce();
-	bool validateOutputPins();
-	bool handleCommand(Command::CommandType type, frame_sp& fame);
-	bool handlePropsChange(frame_sp& frame);
+	bool produce() override;
+	bool validateOutputPins() override;
+	bool handleCommand(Command::CommandType type, frame_sp& fame) override;
+	bool handlePropsChange(frame_sp& frame) override;
 	bool handlePausePlay(float speed, bool direction) override;
 private:
 	std::string h264ImagePinId;
@@ -142,6 +142,6 @@ private:
 	uint32_t mWidth = 0;
 	uint32_t mHeight = 0;
 	std::string metadataFramePinId;
-	boost::shared_ptr<Mp4ReaderDetailAbs> mDetail;
+	std::shared_ptr<Mp4ReaderDetailAbs> mDetail;
 	Mp4ReaderSourceProps props;
 };

@@ -261,7 +261,7 @@ bool GtkGlRenderer::process(frame_container &frames)
   if ((controlModule != nullptr && mDetail->isPlaybackRenderer == true))
   {
     auto currentFrameTs = frames.cbegin()->second->timestamp;
-    boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+    std::shared_ptr<AbsControlModule> ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
     ctl->handleLastGtkGLRenderTS(currentFrameTs, true);
   }
   return true;

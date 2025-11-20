@@ -89,7 +89,7 @@ bool BrightnessContrastControl::validateOutputPins()
 	return true;
 }
 
-void BrightnessContrastControl::addInputPin(framemetadata_sp &metadata, string &pinId)
+void BrightnessContrastControl::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());
@@ -116,7 +116,7 @@ bool BrightnessContrastControl::process(frame_container &frames)
 	mDetail->mOutputImg.data = static_cast<uint8_t *>(outFrame->data());
 	auto beta = std::round(mDetail->mProps.brightness * 255);
 	mDetail->mInputImg.convertTo(mDetail->mOutputImg, -1, mDetail->mProps.contrast, beta);
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

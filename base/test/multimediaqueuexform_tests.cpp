@@ -1,6 +1,9 @@
 
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include"FileReaderModule.h"
 #include "MultimediaQueueXform.h"
 #include "FrameMetadata.h"
@@ -30,7 +33,7 @@ class SinkModule : public Module
 public:
     SinkModule(SinkModuleProps props) : Module(SINK, "sinkModule", props)
     {};
-    boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+    std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
     frame_container pop()
     {
         return Module::pop();
@@ -58,13 +61,13 @@ int testQueue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, int i1
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, isMapInTime))); // 
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, isMapInTime))); // 
     fileReader->setNext(multiQueue);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
 
     multiQueue->setNext(sink);
 
@@ -173,13 +176,13 @@ BOOST_AUTO_TEST_CASE(nextQueue_full, *boost::unit_test::disabled())
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps));
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, true)));
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, true)));
     fileReader->setNext(multiQueue);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
 
     multiQueue->setNext(sink);
 
@@ -219,13 +222,13 @@ BOOST_AUTO_TEST_CASE(prop_change, *boost::unit_test::disabled())
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
     auto metadata = framemetadata_sp(new RawImageMetadata(640, 360, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     auto pinId = fileReader->addOutputPin(metadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true))); // 
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(10000, 5000, true))); // 
     fileReader->setNext(multiQueue);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps())); //
 
     multiQueue->setNext(sink);
 
@@ -284,22 +287,22 @@ BOOST_AUTO_TEST_CASE(mp4_test_jpeg, *boost::unit_test::disabled())
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 24;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
     auto encodedImageMetadata = framemetadata_sp(new EncodedImageMetadata(width, height));
     auto pinId = fileReader->addOutputPin(encodedImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(12000, 5000, true))); // 
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(12000, 5000, true))); // 
     fileReader->setNext(multiQueue);
     fileReader->play(true);
     auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
     mp4WriterSinkProps.logHealth = true;
     mp4WriterSinkProps.logHealthFrequency = 10;
-    auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+    auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 
     multiQueue->setNext(mp4WriterSink);
 
-    boost::shared_ptr<PipeLine> p;
-    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    std::shared_ptr<PipeLine> p;
+    p = std::shared_ptr<PipeLine>(new PipeLine("test"));
     p->appendModule(fileReader);
 
     if (!p->init())
@@ -347,21 +350,21 @@ void testMP4Queue(uint32_t queuelength, uint16_t tolerance, bool isMapInTime, ui
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
 
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, true))); //
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(queuelength, tolerance, true))); //
     fileReader->setNext(multiQueue);
 
     auto mp4WriterSinkProps = Mp4WriterSinkProps(1, 1, 24, outFolderPath);
     mp4WriterSinkProps.logHealth = true;
     mp4WriterSinkProps.logHealthFrequency = 10;
-    auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+    auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
     multiQueue->setNext(mp4WriterSink);
-    boost::shared_ptr<PipeLine> p;
-    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    std::shared_ptr<PipeLine> p;
+    p = std::shared_ptr<PipeLine>(new PipeLine("test"));
     p->appendModule(fileReader);
     if (!p->init())
     {
@@ -459,20 +462,20 @@ BOOST_AUTO_TEST_CASE(fileWriter_test_h264, *boost::unit_test::disabled())
     auto fileReaderProps = FileReaderModuleProps(inFolderPath, 0, -1);
     fileReaderProps.fps = 20;
     fileReaderProps.readLoop = true;
-    auto fileReader = boost::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
+    auto fileReader = std::shared_ptr<Module>(new FileReaderModule(fileReaderProps)); //
 
     auto h264ImageMetadata = framemetadata_sp(new H264Metadata(width, height));
     auto pinId = fileReader->addOutputPin(h264ImageMetadata);
 
-    auto multiQueue = boost::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(60000, 5000, true))); //
+    auto multiQueue = std::shared_ptr<MultimediaQueueXform>(new MultimediaQueueXform(MultimediaQueueXformProps(60000, 5000, true))); //
 
     fileReader->setNext(multiQueue);
 
-    auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
+    auto fileWriter = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/h264images/Raw_YUV420_640x360????.h264")));
     multiQueue->setNext(fileWriter);
 
-    boost::shared_ptr<PipeLine> p;
-    p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+    std::shared_ptr<PipeLine> p;
+    p = std::shared_ptr<PipeLine>(new PipeLine("test"));
     p->appendModule(fileReader);
     if (!p->init())
     {

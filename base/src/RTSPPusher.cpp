@@ -98,8 +98,8 @@ class RTSPPusher::Detail
 
 public:
 	// We need to pass object reference to refer to the connection status etc
-	// bool write_precoded_video_frame(boost::shared_ptr<Frame>& f, RTSPPusher& rtspMod)
-	bool write_precoded_video_frame(boost::shared_ptr<Frame> &f)
+	// bool write_precoded_video_frame(std::shared_ptr<Frame>& f, RTSPPusher& rtspMod)
+	bool write_precoded_video_frame(std::shared_ptr<Frame> &f)
 	{
 		mutable_buffer &codedFrame = *(f.get());
 		bool isKeyFrame = (f->mFrameType == H264Utils::H264_NAL_TYPE_IDR_SLICE);
@@ -140,14 +140,14 @@ public:
 	}
 	size_t width, height, bitrate, fps_den, fps_num;
 	int64_t lastPTS, lastDiff, pts_adder, duration;
-	boost::shared_ptr<H264FrameDemuxer> demuxer;
+	std::shared_ptr<H264FrameDemuxer> demuxer;
 	EventType connectionStatus;
 	bool isFirstFrame;
 	AVPacket *pkt;
 
 	Detail(RTSPPusherProps props) : mURL(props.URL), mTitle(props.title), isTCP(props.isTCP), connectionStatus(CONNECTION_FAILED), isFirstFrame(false), duration(0), encoderTargetKbps(props.encoderTargetKbps)
 	{
-		demuxer = boost::shared_ptr<H264FrameDemuxer>(new H264FrameDemuxer());
+		demuxer = std::make_shared<H264FrameDemuxer>();
 		pkt = av_packet_alloc();
 	}
 	~Detail()

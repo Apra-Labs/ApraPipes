@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -17,19 +18,19 @@ BOOST_AUTO_TEST_SUITE(jpegdecodernvjpeg_tests)
 
 BOOST_AUTO_TEST_CASE(mono_1920x960, *utf::precondition(if_h264_encoder_supported()))
 {	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 
-	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
+	auto decoder = std::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
 
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	decoder->setNext(copy);	
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -50,19 +51,19 @@ BOOST_AUTO_TEST_CASE(mono_1920x960, *utf::precondition(if_h264_encoder_supported
 
 BOOST_AUTO_TEST_CASE(color_yuv420_640x360, *utf::precondition(if_h264_encoder_supported()))
 {	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/color_yuv420_640x360.jpg")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/color_yuv420_640x360.jpg")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 
-	auto decoder = boost::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
+	auto decoder = std::shared_ptr<JPEGDecoderNVJPEG>(new JPEGDecoderNVJPEG(JPEGDecoderNVJPEGProps(stream)));
 	fileReader->setNext(decoder);
 
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	decoder->setNext(copy);	
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

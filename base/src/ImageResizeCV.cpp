@@ -93,11 +93,11 @@ bool ImageResizeCV::validateOutputPins()
 	return true;
 }
 
-void ImageResizeCV::addInputPin(framemetadata_sp &metadata, string &pinId)
+void ImageResizeCV::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
-	mDetail->mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(mProps.width, mProps.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true));
+	mDetail->mOutputMetadata = std::make_shared<RawImageMetadata>(mProps.width, mProps.height, rawMetadata->getImageType(), rawMetadata->getType(), 0, rawMetadata->getDepth(), FrameMetadata::HOST, true);
 	mDetail->initMatImages(metadata);
 	mDetail->mOutputMetadata->copyHint(*metadata.get());
 	mDetail->mOutputPinId = addOutputPin(mDetail->mOutputMetadata);
@@ -132,7 +132,7 @@ bool ImageResizeCV::process(frame_container &frames)
 	mDetail->oImg.data = static_cast<uint8_t *>(outFrame->data());
 
 	cv::resize(mDetail->iImg, mDetail->oImg, mDetail->outSize);
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

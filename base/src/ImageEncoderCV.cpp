@@ -66,9 +66,9 @@ private:
 };
 
 ImageEncoderCV::ImageEncoderCV(ImageEncoderCVProps _props) : Module(TRANSFORM, "ImageEncoderCV", _props)
-{	
+{
 	mDetail.reset(new Detail(_props));
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	mOutputMetadata = std::make_shared<FrameMetadata>(FrameMetadata::ENCODED_IMAGE);
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
@@ -146,7 +146,7 @@ bool ImageEncoderCV::process(frame_container &frames)
 	cv::imencode(".jpg",mDetail->iImg,buf,mDetail->flags);
 	auto outFrame = makeFrame(buf.size());
 	memcpy ( static_cast<void*>(outFrame->data()), &buf[0],buf.size());
-	frames.insert(make_pair(mOutputPinId,outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

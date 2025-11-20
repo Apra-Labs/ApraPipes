@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "ExternalSinkModule.h"
 #include "FileReaderModule.h"
@@ -16,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(filereadermodule_tests)
 
 BOOST_AUTO_TEST_CASE(custom_metadatasize_larger)
 {
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 
     // Custom RawImageMetadata configurations
     int width = 500;
@@ -30,7 +33,7 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_larger)
 
     auto pinId = fileReader->addOutputPin(rawImageMetadata);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     fileReader->setNext(sink);
         
     BOOST_TEST(fileReader->init());
@@ -59,7 +62,7 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_larger)
 
 BOOST_AUTO_TEST_CASE(custom_metadatasize_smaller)
 {
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 
     // Custom RawImageMetadata configurations
     int width = 100;
@@ -73,7 +76,7 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_smaller)
 
     auto pinId = fileReader->addOutputPin(rawImageMetadata);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     fileReader->setNext(sink);
         
     BOOST_TEST(fileReader->init());
@@ -96,7 +99,7 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_smaller)
 
 BOOST_AUTO_TEST_CASE(custom_metadatasize_equal)
 {
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 
     // Custom RawImageMetadata configurations
     int width = 320;
@@ -110,7 +113,7 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_equal)
 
     auto pinId = fileReader->addOutputPin(rawImageMetadata);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     fileReader->setNext(sink);
         
     BOOST_TEST(fileReader->init());
@@ -133,11 +136,11 @@ BOOST_AUTO_TEST_CASE(custom_metadatasize_equal)
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	fileReader->setNext(sink);
 		
 	BOOST_TEST(fileReader->init());
@@ -204,11 +207,11 @@ BOOST_AUTO_TEST_CASE(basic)
 
 BOOST_AUTO_TEST_CASE(relay)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	fileReader->setNext(sink, false);
 
 	BOOST_TEST(fileReader->init());
@@ -243,12 +246,12 @@ BOOST_AUTO_TEST_CASE(relay)
 
 BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
 	bool relay = false;
-	auto sink = boost::shared_ptr<Module>(new StatSink());	
+	auto sink = std::shared_ptr<Module>(new StatSink());	
 	fileReader->setNext(sink, relay);
 
 	PipeLine p("test");
@@ -258,7 +261,7 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 
 	for (auto i = 0; i < 10; i++)
 	{
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 		relay = !relay;
 		fileReader->relay(sink, relay);
 	}
@@ -275,7 +278,7 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	auto fileReaderProps = FileReaderModuleProps(rootDir, 0, -1);
 	fileReaderProps.fps = 10;
 	fileReaderProps.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto encodedImageMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	fileReader->addOutputPin(encodedImageMetadata); 
 
@@ -321,10 +324,10 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 		}
 	};
 
-	auto sink = boost::shared_ptr<FileSinkModule>(new FileSinkModule());
+	auto sink = std::shared_ptr<FileSinkModule>(new FileSinkModule());
 	fileReader->setNext(sink);
 
-	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	auto p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 
 	p->init();	
@@ -333,12 +336,12 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	std::cout << "step" << std::endl;
 	p->step();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	std::cout << "play" << std::endl;
 	p->play();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	
 	p->pause();
 	std::cout << "pause" << std::endl;
@@ -357,17 +360,17 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	listProps.strFullFileNameWithPattern = rootDir;
 	listProps.files = files;
 	fileReader->setProps(listProps);
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
+	std::this_thread::sleep_for(std::chrono::milliseconds(250));
 	std::cout << "step files" << std::endl;
 	
 	p->step();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	std::cout << "play" << std::endl;
 	p->play();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	p->pause();
 	std::cout << "pause" << std::endl;
@@ -376,11 +379,11 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	dirProps.strFullFileNameWithPattern = rootDir;
 	dirProps.files.clear();
 	fileReader->setProps(dirProps);
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
+	std::this_thread::sleep_for(std::chrono::milliseconds(250));
 	std::cout << "step folder" << std::endl;
 	p->step();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	
 
 	p->stop();
@@ -392,11 +395,11 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(propschange)
 {	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/filenamestrategydata/?.txt")));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	fileReader->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -512,11 +515,11 @@ BOOST_AUTO_TEST_CASE(pipeline_exit, * boost::unit_test::disabled())
 	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
 	FileReaderModuleProps props("./data/filenamestrategydata/?.txt");
 	props.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(props));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(props));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<Module>(new StatSink());	
+	auto sink = std::shared_ptr<Module>(new StatSink());	
 	fileReader->setNext(sink);
 
 	PipeLine p("test");
@@ -532,11 +535,11 @@ BOOST_AUTO_TEST_CASE(pipeline_readone_exit, * boost::unit_test::disabled())
 	Logger::getLogger()->setLogLevel(boost::log::trivial::severity_level::info);
 	FileReaderModuleProps props("./data/filenamestrategydata/0.txt");
 	props.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(props));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(props));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId = fileReader->addOutputPin(metadata);
 
-	auto sink = boost::shared_ptr<Module>(new StatSink());	
+	auto sink = std::shared_ptr<Module>(new StatSink());	
 	fileReader->setNext(sink);
 
 	PipeLine p("test");

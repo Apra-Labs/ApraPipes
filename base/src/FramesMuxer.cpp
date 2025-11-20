@@ -17,7 +17,7 @@ public:
 
 	}
 
-	virtual std::string addInputPin(std::string& pinId)
+	virtual std::string addInputPin(std::std::string_view pinId)
 	{
 		return getMuxOutputPinId(pinId);
 	}
@@ -34,7 +34,7 @@ public:
 	}
 
 protected:
-	std::string getMuxOutputPinId(const std::string& pinId)
+	std::string getMuxOutputPinId(const std::std::string_view pinId)
 	{
 		return pinId + "_mux_";
 	}
@@ -52,7 +52,7 @@ public:
 		clear();
 	}
 
-	std::string addInputPin(std::string& pinId)
+	std::string addInputPin(std::std::string_view pinId)
 	{
 		mQueue[pinId] = boost::container::deque<frame_sp>();
 
@@ -190,7 +190,7 @@ public:
 		clear();
 	}
 
-	std::string addInputPin(std::string& pinId)
+	std::string addInputPin(std::std::string_view pinId)
 	{
 		mQueue[pinId] = boost::container::deque<frame_sp>();
 
@@ -345,7 +345,7 @@ public:
 		clear();
 	}
 
-	std::string addInputPin(std::string& pinId)
+	std::string addInputPin(std::std::string_view pinId)
 	{
 		mQueue[pinId] = boost::container::deque<frame_sp>();
 
@@ -487,7 +487,7 @@ bool FramesMuxer::term()
 	return Module::term();
 }
 
-void FramesMuxer::addInputPin(framemetadata_sp& metadata, string& pinId)
+void FramesMuxer::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto outputPinId = mDetail->addInputPin(pinId);

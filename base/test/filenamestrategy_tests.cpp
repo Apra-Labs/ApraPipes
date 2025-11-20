@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <filesystem>
 
 #include "FilenameStrategy.h"
 #include "AIPExceptions.h"
@@ -67,9 +68,9 @@ BOOST_AUTO_TEST_CASE(boostdirectorystrategy)
 		
 	{
 		auto emptyDirPath = "./data/filenamestrategydata/5";
-		if (!boost::filesystem::exists(emptyDirPath))
+		if (!std::filesystem::exists(emptyDirPath))
 		{
-			boost::filesystem::create_directory(emptyDirPath);
+			std::filesystem::create_directory(emptyDirPath);
 		}
 
 		auto strategy = FilenameStrategy::getStrategy(emptyDirPath, 0, -1, true);

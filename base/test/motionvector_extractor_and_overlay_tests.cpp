@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "FrameMetadata.h"
@@ -37,18 +40,18 @@ void motionVectorExtract(MotionVectorExtractorProps::MVExtractMethod MvExtract)
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(metadata);
 
-	auto motionExtractor = boost::shared_ptr<Module>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
+	auto motionExtractor = std::shared_ptr<Module>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
 	fileReader->setNext(motionExtractor);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	motionExtractor->setNext(sink);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 
 	p->appendModule(fileReader);
 
@@ -77,21 +80,21 @@ void motionVectorExtractAndOverlay(MotionVectorExtractorProps::MVExtractMethod M
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = false;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, enableOverlay)));
+	auto motionExtractor = std::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, enableOverlay)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = std::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	motionExtractor->setNext(overlay);
 
-	auto fileWriter = boost::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage_????.raw")));
+	auto fileWriter = std::shared_ptr<Module>(new FileWriterModule(FileWriterModuleProps("./data/testOutput/Overlay/OverlayImage_????.raw")));
 	overlay->setNext(fileWriter);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 
 	p->appendModule(fileReader);
 
@@ -118,17 +121,17 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
+	auto motionExtractor = std::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = std::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	motionExtractor->setNext(overlay);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	overlay->setNext(sink);
 
 	PipeLine p("test");
@@ -136,12 +139,12 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	MotionVectorExtractorProps propsChange(MvExtract, true);
 	motionExtractor->setProps(propsChange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -161,17 +164,17 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	FileReaderModuleProps fileReaderProps("./data/h264_data/FVDO_Freeway_4cif_???.H264");
 	fileReaderProps.fps = 30;
 	fileReaderProps.readLoop = true;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	fileReader->addOutputPin(h264ImageMetadata);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
+	auto motionExtractor = std::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
 	fileReader->setNext(motionExtractor);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = std::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	motionExtractor->setNext(overlay);
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	auto sink = std::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
 	overlay->setNext(sink);
 
 	PipeLine p("test");
@@ -179,7 +182,7 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -200,17 +203,17 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	const std::string url = "";
 	std::string username = "";
 	std::string password = "";
-	auto rtspSrc = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
+	auto rtspSrc = std::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	rtspSrc->addOutputPin(meta);
 
-	auto motionExtractor = boost::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
+	auto motionExtractor = std::shared_ptr<MotionVectorExtractor>(new MotionVectorExtractor(MotionVectorExtractorProps(MvExtract, overlayFrames)));
 	rtspSrc->setNext(motionExtractor);
 
-	auto overlay = boost::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
+	auto overlay = std::shared_ptr<OverlayModule>(new OverlayModule(OverlayModuleProps()));
 	motionExtractor->setNext(overlay);
 
-	auto sink = boost::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
+	auto sink = std::shared_ptr<Module>(new ImageViewerModule(ImageViewerModuleProps("MotionVectorsOverlay")));
 	overlay->setNext(sink);
 
 	PipeLine p("test");
@@ -218,7 +221,7 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

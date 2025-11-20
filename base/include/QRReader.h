@@ -16,17 +16,17 @@ class QRReader : public Module
 public:
 	QRReader(QRReaderProps _props=QRReaderProps());
 	virtual ~QRReader();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool shouldTriggerSOS();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool shouldTriggerSOS() override;
 
-private:		
+private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;	
+	std::shared_ptr<Detail> mDetail;
 };

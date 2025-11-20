@@ -1,13 +1,9 @@
 #pragma once
 #include <boost/container/deque.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/call_traits.hpp>
-#include <boost/bind/bind.hpp>
+#include <mutex>
+#include <condition_variable>
+#include <type_traits>
 #include "Logger.h"
-
-using namespace boost::placeholders;
 
 template <class T>
 class bounded_buffer
@@ -17,15 +13,15 @@ public:
 	typedef boost::container::deque<T> container_type;
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
-	typedef typename boost::call_traits<value_type>::param_type param_type;
+	typedef const value_type& param_type;
 
 	explicit bounded_buffer(size_type capacity) : m_unread(0), m_capacity(capacity), m_accept(true) {}
 
-	void push(typename boost::call_traits<value_type>::param_type item)
+	void push(const value_type& item)
 	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_not_full.wait(lock, boost::bind(&bounded_buffer<value_type>::is_ready_to_accept, this));
+		std::unique_lock<std::mutex> lock(m_mutex);
+		m_not_full.wait(lock, [this]() { return is_ready_to_accept(); });
 		if (is_not_full() && m_accept)
 		{
 			m_container.push_front(item);
@@ -40,10 +36,10 @@ public:
 		}
 	}
 
-	void push_back(typename boost::call_traits<value_type>::param_type item)
+	void push_back(const value_type& item)
 	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		bool isCommandQueueNotFull = m_unread < m_capacity * 2;
 		if (m_accept && isCommandQueueNotFull)
 		{
@@ -60,16 +56,16 @@ public:
 		}
 	}
 
-	void push_drop_oldest(typename boost::call_traits<value_type>::param_type item)
-	{ 
-		boost::mutex::scoped_lock lock(m_mutex);
+	void push_drop_oldest(const value_type& item)
+	{
+		std::unique_lock<std::mutex> lock(m_mutex);
 		if(!m_accept) return; // we are not accepting yet so drop what came in
 
-		if(is_not_full()) 
+		if(is_not_full())
 		{
 			++m_unread;
 		}
-		else // we are full 
+		else // we are full
 		{
 			//note: m_unread does not change in this case.
 			m_container.pop_back();//to drop the oldest
@@ -80,9 +76,9 @@ public:
 	}
 
 
-	bool try_push(typename boost::call_traits<value_type>::param_type item)
+	bool try_push(const value_type& item)
 	{
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		if (is_not_full() && m_accept)
 		{
 			m_container.push_front(item);
@@ -99,14 +95,14 @@ public:
 
 	bool isFull() {
 		bool iret = false;
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		iret = !is_not_full();
 		lock.unlock();
 		return iret;
 	}
 	value_type pop() {
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_not_empty.wait(lock, boost::bind(&bounded_buffer<value_type>::is_not_empty, this));
+		std::unique_lock<std::mutex> lock(m_mutex);
+		m_not_empty.wait(lock, [this]() { return is_not_empty(); });
 		--m_unread;
 		value_type ret = m_container.back();
 		m_container.pop_back();
@@ -116,16 +112,17 @@ public:
 	}
 
 	value_type peek() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		if (is_not_empty())
 		{
 			value_type ret = m_container.back();
 			return ret;
 		}
+		return value_type();
 	}
 
 	value_type try_pop() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		if (is_not_empty())
 		{
 			--m_unread;
@@ -141,7 +138,7 @@ public:
 		}
 	}
 	void clear() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_container.clear();
 		m_unread = 0;
 		m_accept = false;
@@ -151,21 +148,21 @@ public:
 	}
 
 	void flush() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_container.clear();
 		m_unread = 0;
 		m_not_full.notify_one();
 	}
 
 	void accept() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_accept = true;
 		lock.unlock();
 	}
 
 	size_t size()
 	{
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		return m_container.size();
 	}
 
@@ -185,9 +182,9 @@ private:
 	size_type m_unread;
 	size_type m_capacity;
 	container_type m_container;
-	boost::mutex m_mutex;
-	boost::condition m_not_empty;
-	boost::condition m_not_full;
+	std::mutex m_mutex;
+	std::condition_variable m_not_empty;
+	std::condition_variable m_not_full;
 
 	friend class NonBlockingAllOrNonePushStrategy;
 
@@ -202,7 +199,7 @@ private:
 	}
 
 	// to be used by QuePushStrategy Only
-	void pushUnsafeForQuePushStrategy(typename boost::call_traits<value_type>::param_type item)
+	void pushUnsafeForQuePushStrategy(const value_type& item)
 	{
 		m_container.push_front(item);
 		++m_unread;

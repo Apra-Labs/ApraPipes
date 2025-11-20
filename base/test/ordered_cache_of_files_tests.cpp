@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(fsParseExactMatch)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	std::string fileName;
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(fsParseExactMatch)
 		auto isFilefound = cof.getFileFromCache(timestamp, direction, fileName);
 		BOOST_TEST(isFilefound);
 		LOG_INFO << "Checking: fsParseExactMatch" << it->second << "<>" << fileName;
-		BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(it->second), boost::filesystem::path(fileName)));
+		BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(it->second), std::filesystem::path(fileName)));
 	}
 	// reverse 
 	direction = false;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(fsParseExactMatch)
 		auto isFilefound = cof.getFileFromCache(timestamp, direction, fileName);
 		BOOST_TEST(isFilefound);
 		LOG_INFO << "Checking: fsParseExactMatch" << it->second << "<>" << fileName;
-		BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(it->second), boost::filesystem::path(fileName)));
+		BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(it->second), std::filesystem::path(fileName)));
 	}
 }
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(fwdBasic_FileOpen_QueryHole)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	std::string fileName;
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(fwdBasic_FileOpen_QueryHole)
 			auto nextDiskFile = it;
 			nextDiskFile++;
 			LOG_INFO << "Checking bwdBasicOpen_NoCacheUse: ts " << it->first << "> " << fileName << "<>" << nextDiskFile->second;
-			BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(fileName), boost::filesystem::path(nextDiskFile->second)));
+			BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(fileName), std::filesystem::path(nextDiskFile->second)));
 		}
 		else
 		{
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(bwd_BasicFileOpen_QueryHole)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	std::string fileName;
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(bwd_BasicFileOpen_QueryHole)
 		auto isFileFound = cof.getFileFromCache(ts, direction, fileName);
 		BOOST_TEST(isFileFound);
 		LOG_INFO << "Checking bwdBasicOpen_NoCacheUse: ts " << it->first << "> " << fileName << "<>" << it->second;
-		BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(fileName), boost::filesystem::path(it->second)));
+		BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(fileName), std::filesystem::path(it->second)));
 
 	}
 }
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(biDirectional_BasicFileOpen_QueryMidFile)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	std::string fileName;
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(biDirectional_BasicFileOpen_QueryMidFile)
 		auto isFileFound = cof.getFileFromCache(ts, direction, fileName);
 		BOOST_TEST(isFileFound);
 		LOG_INFO << "Checking bwdBasicOpen_NoCacheUse: ts " << it->first << "> " << fileName << "<>" << it->second;
-		BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(fileName), boost::filesystem::path(it->second)));
+		BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(fileName), std::filesystem::path(it->second)));
 	}
 
 	direction = false;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(biDirectional_BasicFileOpen_QueryMidFile)
 		auto isFileFound = cof.getFileFromCache(ts, direction, fileName);
 		BOOST_TEST(isFileFound);
 		LOG_INFO << "Checking bwdBasicOpen_NoCacheUse: ts " << it->first << "> " << fileName << "<>" << it->second;
-		BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(fileName), boost::filesystem::path(it->second)));
+		BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(fileName), std::filesystem::path(it->second)));
 	}
 }
 
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_queryBeforeCache)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 100);
 	uint64_t skipMsecs = 0;
 	// parse all files
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_queryBeforeCache)
 
 	BOOST_TEST(skipMsecs == 0);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(diskFiles.files[1655895162221], fileName));
+	BOOST_TEST(std::filesystem::equivalent(diskFiles.files[1655895162221], fileName));
 }
 
 /* ----------End Of Files Detection Tests----------- */
@@ -200,14 +200,14 @@ BOOST_AUTO_TEST_CASE(fwdEOFDetection)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	// check the map
 	bool direction = true;
 
 	auto diskFileIter = diskFiles.files.begin();
-	auto currentFile = boost::filesystem::canonical(diskFileIter->second).string();
+	auto currentFile = std::filesystem::canonical(diskFileIter->second).string();
 	try
 	{
 		while (true)
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(fwdEOFDetection)
 
 			currentFile = cof.getNextFileAfter(currentFile, direction);
 			++diskFileIter;
-			BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(currentFile), boost::filesystem::path(diskFileIter->second)));
+			BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(currentFile), std::filesystem::path(diskFileIter->second)));
 		}
 	}
 	catch (AIP_Exception& exception)
@@ -233,14 +233,14 @@ BOOST_AUTO_TEST_CASE(bwdEOFDetection_getNextFileAfter)
 	LoggerSetup setup;
 	DiskFiles diskFiles;
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	// check the map
 	bool direction = false;
 
 	auto diskFileIter = diskFiles.files.rbegin();
-	auto currentFile = boost::filesystem::canonical(diskFileIter->second).string();
+	auto currentFile = std::filesystem::canonical(diskFileIter->second).string();
 	try
 	{
 		while (true)
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(bwdEOFDetection_getNextFileAfter)
 
 			currentFile = cof.getNextFileAfter(currentFile, direction);
 			++diskFileIter;
-			BOOST_TEST(boost::filesystem::equivalent(boost::filesystem::path(currentFile), boost::filesystem::path(diskFileIter->second)));
+			BOOST_TEST(std::filesystem::equivalent(std::filesystem::path(currentFile), std::filesystem::path(diskFileIter->second)));
 		}
 	}
 	catch (AIP_Exception& exception)
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_query_mid_file)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	bool direction = true;
 	cof.parseFiles(102, direction);
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_query_mid_file)
 	auto timeStamp = iter->first + 200;
 	std::string fileName;
 	auto ret = cof.getRandomSeekFile(timeStamp, direction, skipMsecs, fileName);
-	BOOST_TEST(boost::filesystem::equivalent(iter->second, fileName));
+	BOOST_TEST(std::filesystem::equivalent(iter->second, fileName));
 	BOOST_TEST(ret);
 }
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_query_mid_file)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	bool direction = false;
 	cof.parseFiles(102, true);
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_query_mid_file)
 
 	auto ret = cof.getRandomSeekFile(timeStamp, direction, skipMsecs, fileName);
 
-	BOOST_TEST(boost::filesystem::equivalent(iter->second, fileName));
+	BOOST_TEST(std::filesystem::equivalent(iter->second, fileName));
 	BOOST_TEST(ret);
 }
 
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_queryhole)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 1000);
 	cof.parseFiles(102, true);
 	uint64_t skipMsecs = 0;
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_queryhole)
 	auto ret = cof.getRandomSeekFile(timeStamp, direction, skipMsecs, fileName);
 	BOOST_TEST(skipMsecs == 0);
 	BOOST_TEST(ret);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files.begin()->second));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files.begin()->second));
 }
 
 BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC)
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	cof.parseFiles(102, true); // only first two files are now in cache
 	uint64_t skipMsecs = 0;
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC_green)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	// last one files in cache
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOC_green)
 	uint64_t skipMsecs;
 
 	auto isFilePresent = cof.getRandomSeekFile(skipTS, direction, skipMsecs, fileName);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655895288956]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655895288956]));
 	BOOST_TEST(skipMsecs == 2000);
 }
 
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOC_green)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 
 	OrderedCacheOfFiles cof(dir, 2, 100, 1000);
 	// first files in cache
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOC_green)
 	uint64_t skipMsecs;
 
 	auto isFilePresent = cof.getRandomSeekFile(skipTS, direction, skipMsecs, fileName);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655919060000]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655919060000]));
 	BOOST_TEST(skipMsecs == 2000);
 }
 
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOC)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 2, 3, 3);
 	cof.parseFiles(102, true);
 	uint64_t skipMsecs = 0;
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(random_seek_bwd_EOF)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 3, 100, 1000);
 	cof.parseFiles(102, true);
 	uint64_t skipMsecs = 0;
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE(random_seek_fwd_EOF)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	OrderedCacheOfFiles cof(dir, 100, 100, 100);
 	uint64_t skipMsecs = 0;
 	// parse all files
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(dropstrategy_fwd)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
 	uint32_t upperWaterMark = 3;
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE(dropstrategy_bwd)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
 	uint32_t upperWaterMark = 3;
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(dropstrategy_bwd)
 
 	BOOST_TEST(videoCacheSize == 2);
 
-	BOOST_TEST(boost::filesystem::equivalent(firstFileNameAfterDeletingInBwd, secondFileNameBeforeDeleting));
+	BOOST_TEST(std::filesystem::equivalent(firstFileNameAfterDeletingInBwd, secondFileNameBeforeDeleting));
 }
 
 BOOST_AUTO_TEST_CASE(skipTS_exact_match_with_fileName)
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(skipTS_exact_match_with_fileName)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
 	uint32_t upperWaterMark = 3;
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE(skipTS_exact_match_with_fileName)
 
 	auto isFilePresent = cof.getRandomSeekFile(diskFiles.files.begin()->first, true, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files.begin()->second));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files.begin()->second));
 }
 
 BOOST_AUTO_TEST_CASE(get_start_end)
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE(get_start_end)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 8;
 	uint32_t lowerWaterMark = 10;
 	uint32_t upperWaterMark = 20;
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_prevFile)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 3;
 	uint32_t lowerWaterMark = 4;
 	uint32_t upperWaterMark = 4;
@@ -619,7 +619,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_prevFile)
 	// seek to ts that is inside the last file
 	auto isFilePresent = cof.getRandomSeekFile(1655926320000 + 10, true, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
 }
 
 BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_exactMatch)
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_exactMatch)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 4;
 	uint32_t upperWaterMark = 4;
@@ -643,7 +643,7 @@ BOOST_AUTO_TEST_CASE(parse_noFirstRelevantFileFound_exactMatch)
 	// seek to ts that is inside the last file
 	auto isFilePresent = cof.getRandomSeekFile(1655926320000, true, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
 }
 
 void printCache(std::map<std::string, std::pair<uint64_t, uint64_t> > &snap)
@@ -663,7 +663,7 @@ BOOST_AUTO_TEST_CASE(fwd_seek_trig_parse_hole_check)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 5;
 	uint32_t upperWaterMark = 6;
@@ -676,13 +676,13 @@ BOOST_AUTO_TEST_CASE(fwd_seek_trig_parse_hole_check)
 	cof.parseFiles(1655895162221 - 10, true);
 	auto snap = cof.getSnapShot();
 	printCache(snap);
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655895162221]).string()) != snap.end()));
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655895288956]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655895162221]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655895288956]).string()) != snap.end()));
 
 	// seek to end
 	auto isFilePresent = cof.getRandomSeekFile(1655926320000 + 5, true, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
 
 	// all four file will come in cache
 	snap = cof.getSnapShot();
@@ -690,7 +690,7 @@ BOOST_AUTO_TEST_CASE(fwd_seek_trig_parse_hole_check)
 
 	for (auto it = diskFiles.files.begin(); it != diskFiles.files.end(); ++it)
 	{
-		auto fileItr = snap.find(boost::filesystem::canonical(it->second).string());
+		auto fileItr = snap.find(std::filesystem::canonical(it->second).string());
 		BOOST_TEST((fileItr != snap.end()));
 	}	
 }
@@ -701,7 +701,7 @@ BOOST_AUTO_TEST_CASE(bwd_seek_trig_parse_hole_check)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 5;
 	uint32_t upperWaterMark = 6;
@@ -719,14 +719,14 @@ BOOST_AUTO_TEST_CASE(bwd_seek_trig_parse_hole_check)
 	// seek to first in bwd dir
 	auto isFilePresent = cof.getRandomSeekFile(1655895162221 + 5, false, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655895162221]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655895162221]));
 
 	// all four file will come in cache
 	snap = cof.getSnapShot();
 	printCache(snap);
 	for (auto it = diskFiles.files.begin(); it != diskFiles.files.end(); ++it)
 	{
-		auto fileItr = snap.find(boost::filesystem::canonical(it->second).string());
+		auto fileItr = snap.find(std::filesystem::canonical(it->second).string());
 		BOOST_TEST((fileItr != snap.end()));
 	}
 }
@@ -737,7 +737,7 @@ BOOST_AUTO_TEST_CASE(randomSeek_trig_drop)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 1;
 	uint32_t lowerWaterMark = 3;
 	uint32_t upperWaterMark = 3;
@@ -754,24 +754,24 @@ BOOST_AUTO_TEST_CASE(randomSeek_trig_drop)
 	// seek to first in bwd dir
 	auto isFilePresent = cof.getRandomSeekFile(1655895162221 + 5, false, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655895162221]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655895162221]));
 
 	// all four file should come in cache - but last two will be dropped due to drop logic
 	snap = cof.getSnapShot();
 	printCache(snap);
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655895162221]).string()) != snap.end()));
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655895288956]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655895162221]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655895288956]).string()) != snap.end()));
 
 	// seek in fwd dir to last file again
 	isFilePresent = cof.getRandomSeekFile(1655926320000 + 5, true, skipMsecs, fileName);
 	BOOST_TEST(isFilePresent);
-	BOOST_TEST(boost::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
+	BOOST_TEST(std::filesystem::equivalent(fileName, diskFiles.files[1655926320000]));
 
 	// now only last two files will be present in cache
 	snap = cof.getSnapShot();
 	printCache(snap);
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655919060000]).string()) != snap.end()));
-	BOOST_TEST((snap.find(boost::filesystem::canonical(diskFiles.files[1655926320000]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655919060000]).string()) != snap.end()));
+	BOOST_TEST((snap.find(std::filesystem::canonical(diskFiles.files[1655926320000]).string()) != snap.end()));
 }
 
 BOOST_AUTO_TEST_CASE(cache_refresh)
@@ -780,7 +780,7 @@ BOOST_AUTO_TEST_CASE(cache_refresh)
 	DiskFiles diskFiles;
 
 	std::string dir = "data/Mp4_videos/mp4_seek_tests";
-	dir = boost::filesystem::canonical(dir).string();
+	dir = std::filesystem::canonical(dir).string();
 	uint32_t cacheSize = 2;
 	uint32_t lowerWaterMark = 3;
 	uint32_t upperWaterMark = 6;
@@ -804,7 +804,7 @@ BOOST_AUTO_TEST_CASE(cache_refresh)
 
 	for (auto it = diskFiles.files.begin(); it != diskFiles.files.end(); ++it)
 	{
-		auto fileItr = snap.find(boost::filesystem::canonical(it->second).string());
+		auto fileItr = snap.find(std::filesystem::canonical(it->second).string());
 		BOOST_TEST((fileItr != snap.end()));
 	}
 }

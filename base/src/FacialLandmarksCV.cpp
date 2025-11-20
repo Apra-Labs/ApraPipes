@@ -238,7 +238,7 @@ bool FacialLandmarkCV::validateOutputPins()
 	return true;
 }
 
-void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
+void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
@@ -301,7 +301,7 @@ bool FacialLandmarkCV::process(frame_container& frames)
 
 	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId1, landmarksFrame));
+	frames.insert({mOutputPinId1, landmarksFrame});
 
 	send(frames);
 
@@ -322,7 +322,7 @@ bool FacialLandmarkCV::shouldTriggerSOS()
 	return mDetail->mFrameLength == 0;
 }
 
-bool FacialLandmarkCV::processEOS(string &pinId)
+bool FacialLandmarkCV::processEOS(std::string_view pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;

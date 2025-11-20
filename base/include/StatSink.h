@@ -12,10 +12,10 @@ class StatSink : public Module {
 public:	
 	StatSink(StatSinkProps _props = StatSinkProps()): Module(SINK, "StatSink", _props) {}
 	virtual ~StatSink() {}
-	bool init() { return Module::init(); }
-	bool term() { return Module::term(); }
+	bool init() override { return Module::init(); }
+	bool term() override { return Module::term(); }
 protected:
-	bool process(frame_container& frames) { return true; }	
-	bool validateInputPins() { return true; }
+	bool process(frame_container& frames) override { return true; }
+	bool validateInputPins() override { return true; }
 private:	
 };

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "FrameMetadata.h"
@@ -25,14 +26,14 @@ BOOST_AUTO_TEST_CASE(mono)
 {
 
     std::string text = "Apra Pipes";
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
     auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(0.5, text, "UpperRight", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = std::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(0.5, text, "UpperRight", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     textOverlay->setNext(sink);
 
     BOOST_TEST(fileReader->init());
@@ -53,14 +54,14 @@ BOOST_AUTO_TEST_CASE(rgb)
 {
 
     std::string text = "Apra Pipes";
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
     auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(0.8, text, "BottomLeft", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = std::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(0.8, text, "BottomLeft", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     textOverlay->setNext(sink);
 
     BOOST_TEST(fileReader->init());
@@ -81,14 +82,14 @@ BOOST_AUTO_TEST_CASE(bgra)
 {
 
     std::string text = "Apra Pipes";
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
     auto metadata = framemetadata_sp(new RawImageMetadata(1920, 960, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
     fileReader->addOutputPin(metadata);
 
-    auto textOverlay = boost::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(1.0, text, "BottomRight", false, 30, "FFFFFF", "000000")));
+    auto textOverlay = std::shared_ptr<TextOverlayXForm>(new TextOverlayXForm(TextOverlayXFormProps(1.0, text, "BottomRight", false, 30, "FFFFFF", "000000")));
     fileReader->setNext(textOverlay);
 
-    auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+    auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
     textOverlay->setNext(sink);
 
     BOOST_TEST(fileReader->init());

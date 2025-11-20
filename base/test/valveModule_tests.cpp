@@ -1,6 +1,7 @@
 #include <stdafx.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
 #include "ExternalSourceModule.h"
 #include "ExternalSinkModule.h"
 #include "ValveModule.h"
@@ -26,7 +27,7 @@ class SinkModule : public Module
 public:
     SinkModule(SinkModuleProps props) : Module(SINK, "sinkModule", props)
     {};
-    boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+    std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 protected:
     bool process() { return false; }
@@ -42,12 +43,12 @@ protected:
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->setNext(sink);
 
 
@@ -59,7 +60,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // We are sending 4 frames with enable false so only no frames pass through the valve
     for (int i = 0; i < 4; i++)
@@ -119,18 +120,18 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
     /*src - 2 output pins
     valve module - sieve = disabled
     2 succesive modules of valve */
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadataGeneral = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto metadataRaw = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
     auto pinIdGeneral = source->addOutputPin(metadataGeneral);
     auto pinIdRaw = source->addOutputPin(metadataRaw);
 
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     // always use disable sieve with valve module 
     source->setNext(valve);
 
-    auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink1 = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink2 = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
 
     valve->setNext(sink1);
     valve->setNext(sink2);
@@ -145,9 +146,9 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container frames;
-    frames.insert(make_pair(pinIdGeneral, frame));
+    frames.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    frames.insert(make_pair(pinIdRaw, frame1));
+    frames.insert({pinIdRaw, frame1});
     for (int i = 0; i < 4; i++)
     {
         source->send(frames);
@@ -219,12 +220,12 @@ BOOST_AUTO_TEST_CASE(multiple_pins)
 
 BOOST_AUTO_TEST_CASE(getSetProps)
 {
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->setNext(sink);
 
 
@@ -236,7 +237,7 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // default props is 2
     valve->allowFrames(2);
@@ -281,12 +282,12 @@ BOOST_AUTO_TEST_CASE(getSetProps)
 
 BOOST_AUTO_TEST_CASE(start_open)
 {
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto pinId = source->addOutputPin(metadata);
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(-1)));
     source->setNext(valve);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->setNext(sink);
 
 
@@ -298,7 +299,7 @@ BOOST_AUTO_TEST_CASE(start_open)
 
     auto frame = source->makeFrame(1023, pinId);
     frame_container frames;
-    frames.insert(make_pair(pinId, frame));
+    frames.insert({pinId, frame});
 
     // We are sending 4 frames (moduleprops = -1) and the valve is open so all frames pass through the valve
     for (int i = 0; i < 4; i++)
@@ -325,17 +326,17 @@ BOOST_AUTO_TEST_CASE(start_open)
 
 BOOST_AUTO_TEST_CASE(valve_relay)
 {
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadataGeneral = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto metadataRaw = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
     auto pinIdGeneral = source->addOutputPin(metadataGeneral);
     auto pinIdRaw = source->addOutputPin(metadataRaw);
 
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(2)));
     source->setNext(valve);
 
-    auto sink1 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
-    auto sink2 = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink1 = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink2 = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
 
     valve->setNext(sink1, false); //Sink1 is closed
     valve->setNext(sink2); //Sink2 is open
@@ -350,9 +351,9 @@ BOOST_AUTO_TEST_CASE(valve_relay)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container frames;
-    frames.insert(make_pair(pinIdGeneral, frame));
+    frames.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    frames.insert(make_pair(pinIdRaw, frame1));
+    frames.insert({pinIdRaw, frame1});
     valve->allowFrames(2);
     valve->step();
     for (int i = 0; i < 4; i++)
@@ -398,15 +399,15 @@ BOOST_AUTO_TEST_CASE(valve_relay)
 
 BOOST_AUTO_TEST_CASE(multiType_frames)
 {
-    auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+    auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
     auto metadataGeneral = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
     auto metadataRaw = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
     auto pinIdGeneral = source->addOutputPin(metadataGeneral);
     auto pinIdRaw = source->addOutputPin(metadataRaw);
 
-    auto valve = boost::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(4)));
+    auto valve = std::shared_ptr<ValveModule>(new ValveModule(ValveModuleProps(4)));
     source->setNext(valve);
-    auto sink = boost::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
+    auto sink = std::shared_ptr<SinkModule>(new SinkModule(SinkModuleProps()));
     valve->setNext(sink);
 
 
@@ -416,17 +417,17 @@ BOOST_AUTO_TEST_CASE(multiType_frames)
 
     auto frame = source->makeFrame(1023, pinIdGeneral);
     frame_container bothframes;
-    bothframes.insert(make_pair(pinIdGeneral, frame));
+    bothframes.insert({pinIdGeneral, frame});
     auto frame1 = source->makeFrame(1023, pinIdRaw);
-    bothframes.insert(make_pair(pinIdRaw, frame1));
+    bothframes.insert({pinIdRaw, frame1});
 
     auto gframe = source->makeFrame(1023, pinIdGeneral);
     frame_container generalframes;
-    generalframes.insert(make_pair(pinIdGeneral, gframe));
+    generalframes.insert({pinIdGeneral, gframe});
 
     auto rframe = source->makeFrame(1023, pinIdRaw);
     frame_container rawframes;
-    rawframes.insert(make_pair(pinIdRaw, rframe));
+    rawframes.insert({pinIdRaw, rframe});
 
     valve->allowFrames(4);
     valve->step();

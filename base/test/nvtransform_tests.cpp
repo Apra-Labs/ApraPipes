@@ -1,4 +1,6 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
 
 #include "PipeLine.h"
 #include "NvV4L2Camera.h"
@@ -31,9 +33,9 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	NvV4L2CameraProps sourceProps(1920, 1080, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
 
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
+	auto nv_transform = std::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA)));
 	source->setNext(nv_transform);
 
 	PipeLine p("test");
@@ -41,7 +43,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -132,9 +134,9 @@ BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	NvArgusCameraProps sourceProps(1280, 720, 0);
-	auto source = boost::shared_ptr<Module>(new NvArgusCamera(sourceProps));
+	auto source = std::shared_ptr<Module>(new NvArgusCamera(sourceProps));
 
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400)));
+	auto nv_transform = std::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400)));
 	source->setNext(nv_transform);
 
 	PipeLine p("test");
@@ -142,7 +144,7 @@ BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -153,11 +155,11 @@ BOOST_AUTO_TEST_CASE(cropAndScale, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 
 	NvV4L2CameraProps sourceProps(1920, 1080, 10);
-	auto source = boost::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
+	auto source = std::shared_ptr<Module>(new NvV4L2Camera(sourceProps));
 
 	float scaleHeight = 1;
 	float scaleWidth = 0.5;
-	auto nv_transform = boost::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400, scaleWidth, scaleHeight, NvTransformProps::NvTransformFilter::BILINEAR)));
+	auto nv_transform = std::shared_ptr<Module>(new NvTransform(NvTransformProps(ImageMetadata::RGBA, 400, 400, scaleWidth, scaleHeight, NvTransformProps::NvTransformFilter::BILINEAR)));
 	source->setNext(nv_transform);
 
 	PipeLine p("test");
@@ -165,7 +167,7 @@ BOOST_AUTO_TEST_CASE(cropAndScale, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();

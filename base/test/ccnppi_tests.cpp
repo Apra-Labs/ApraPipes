@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -40,21 +43,21 @@ struct CCNPPITestsStruct
 
 	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, ImageMetadata::ImageType OimageType)
 	{
-		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
+		fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
 		auto rawImagePin = fileReader->addOutputPin(metadata);
 
 		auto stream = cudastream_sp(new ApraCudaStream);
-		copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+		copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 		fileReader->setNext(copy1);
 
 		CCNPPIProps CCProps(OimageType,stream);
-		ccnppi = boost::shared_ptr<Module>(new CCNPPI(CCProps));
+		ccnppi = std::shared_ptr<Module>(new CCNPPI(CCProps));
 		copy1->setNext(ccnppi);
 
-		copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+		copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 		ccnppi->setNext(copy2);
 
-		sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 		copy2->setNext(sink);
 
 		BOOST_TEST(fileReader->init());
@@ -64,11 +67,11 @@ struct CCNPPITestsStruct
 		BOOST_TEST(sink->init());
 	}
 
-	boost::shared_ptr<FileReaderModule>fileReader;
-	boost::shared_ptr<Module>copy1;
-	boost::shared_ptr<Module>ccnppi;
-	boost::shared_ptr<Module>copy2;
-	boost::shared_ptr<ExternalSinkModule>sink;
+	std::shared_ptr<FileReaderModule>fileReader;
+	std::shared_ptr<Module>copy1;
+	std::shared_ptr<Module>ccnppi;
+	std::shared_ptr<Module>copy2;
+	std::shared_ptr<ExternalSinkModule>sink;
 
 	~CCNPPITestsStruct()
 	{
@@ -778,23 +781,23 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	auto width = 1920;
 	auto height = 1080;
 	
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv411_I_1920x1080.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv411_I_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::YUV411_I, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	fileReader->setNext(copy1);
 
-	auto m2 = boost::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV444, stream)));
+	auto m2 = std::shared_ptr<Module>(new CCNPPI(CCNPPIProps(ImageMetadata::YUV444, stream)));
 	copy1->setNext(m2);
-	auto copy2 = boost::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<Module>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	m2->setNext(copy2);
 	auto outputPinId = copy2->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE_PLANAR)[0];
 
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(sink);
 
 	PipeLine p("test");

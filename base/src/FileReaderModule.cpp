@@ -8,7 +8,7 @@
 FileReaderModule::FileReaderModule(FileReaderModuleProps _props)
 	:Module(SOURCE, "FileReaderModule", _props), mProps(_props), mCache(false)
 {
-	mDriver = boost::shared_ptr<FileSequenceDriver>(new FileSequenceDriver(mProps.strFullFileNameWithPattern, mProps.startIndex, mProps.maxIndex, mProps.readLoop, mProps.files));
+	mDriver = std::make_shared<FileSequenceDriver>(mProps.strFullFileNameWithPattern, mProps.startIndex, mProps.maxIndex, mProps.readLoop, mProps.files);
 }
 
 FileReaderModule::~FileReaderModule() {}
@@ -63,7 +63,7 @@ bool FileReaderModule::produce()
 		auto frame = frame_sp(new ExtFrame(cachedFrame->data(), cachedFrame->size()));
 		auto metadata = getOutputFrameFactory().begin()->second->getFrameMetadata();	
 		frame->setMetadata(metadata);
-		frames.insert(make_pair(mPinId, frame));
+		frames.insert({mPinId, frame});
 		send(frames);
 		return true;
 	}
@@ -100,7 +100,7 @@ bool FileReaderModule::produce()
 	frame->timestamp = dur.count();
 
 	frame_container frames;
-	frames.insert(make_pair(mPinId, frame));
+	frames.insert({mPinId, frame});
 	send(frames);
 
 	if (mCache)
@@ -154,7 +154,7 @@ bool FileReaderModule::handlePropsChange(frame_sp& frame)
 	bool ret = Module::handlePropsChange(frame, mProps);
 
 	mDriver->Disconnect();
-	mDriver = boost::shared_ptr<FileSequenceDriver>(new FileSequenceDriver(mProps.strFullFileNameWithPattern, mProps.startIndex, mProps.maxIndex, mProps.readLoop, mProps.files));
+	mDriver = std::make_shared<FileSequenceDriver>(mProps.strFullFileNameWithPattern, mProps.startIndex, mProps.maxIndex, mProps.readLoop, mProps.files);
 	if (!mDriver->Connect())
 	{
 		LOG_ERROR << "Driver Connect Failed";

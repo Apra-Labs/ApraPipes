@@ -1,6 +1,7 @@
 #include "ThumbnailListGenerator.h"
 #include "FileReaderModule.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "RTSPClientSrc.h"
 #include "PipeLine.h"
 #include "H264Decoder.h"
@@ -22,11 +23,11 @@ struct rtsp_client_tests_data {
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/YUV_420_planar.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/YUV_420_planar.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(1280, 720, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-    auto m_thumbnailGenerator = boost::shared_ptr<ThumbnailListGenerator>(new ThumbnailListGenerator(ThumbnailListGeneratorProps(180, 180, "./data/thumbnail.jpg")));
+    auto m_thumbnailGenerator = std::shared_ptr<ThumbnailListGenerator>(new ThumbnailListGenerator(ThumbnailListGeneratorProps(180, 180, "./data/thumbnail.jpg")));
 	fileReader->setNext(m_thumbnailGenerator);
 
     fileReader->init();
@@ -48,18 +49,18 @@ BOOST_AUTO_TEST_CASE(basic_)
 	//also set it up for RTSP client authentication as shown here: https://sites.google.com/apra.in/development/home/evostream/rtsp-authentication?authuser=1
 	auto url=string("rtsp://10.102.10.77/axis-media/media.amp"); 
 	
-	auto m = boost::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
+	auto m = std::shared_ptr<Module>(new RTSPClientSrc(RTSPClientSrcProps(url, d.empty, d.empty)));
 	auto meta = framemetadata_sp(new H264Metadata());
 	m->addOutputPin(meta);
 
-    auto Decoder = boost::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
+    auto Decoder = std::shared_ptr<Module>(new H264Decoder(H264DecoderProps()));
     m->setNext(Decoder);
 
-    auto m_thumbnailGenerator = boost::shared_ptr<ThumbnailListGenerator>(new ThumbnailListGenerator(ThumbnailListGeneratorProps(180, 180, "./data/thumbnail.jpg")));
+    auto m_thumbnailGenerator = std::shared_ptr<ThumbnailListGenerator>(new ThumbnailListGenerator(ThumbnailListGeneratorProps(180, 180, "./data/thumbnail.jpg")));
 	Decoder->setNext(m_thumbnailGenerator);
 
-   boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+   std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(m);
 
 	if (!p->init())

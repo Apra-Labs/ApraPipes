@@ -362,9 +362,8 @@ bool OverlayNPPI::validateInputOutputPins()
 	}
 
 	auto inputPinIdMetadataMap = getInputMetadata();
-	for (auto const &element : inputPinIdMetadataMap)
+	for (const auto& [pinId, metadata] : inputPinIdMetadataMap)
 	{
-		auto& metadata = element.second;
 		auto frameType = metadata->getFrameType();
 		if (mFrameType != frameType)
 		{
@@ -392,9 +391,8 @@ bool OverlayNPPI::validateInputPins()
 	}
 
 	auto inputPinIdMetadataMap = getInputMetadata();
-	for (auto const &element : inputPinIdMetadataMap)
+	for (const auto& [pinId, metadata] : inputPinIdMetadataMap)
 	{
-		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
 		if (mFrameType != FrameMetadata::RAW_IMAGE && mFrameType != FrameMetadata::RAW_IMAGE_PLANAR)
 		{
@@ -439,7 +437,7 @@ bool OverlayNPPI::validateOutputPins()
 	return true;
 }
 
-void OverlayNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void OverlayNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -475,9 +473,8 @@ bool OverlayNPPI::term()
 bool OverlayNPPI::process(frame_container &frames)
 {
 	frame_sp frame;
-	for (auto const& element : frames)
+	for (const auto& [pinId, tempFrame] : frames)
 	{
-		auto tempFrame = element.second;
 		if (tempFrame->getMetadata()->getHint() == OVERLAY_HINT)
 		{
 			// overlay frame is cached
@@ -501,7 +498,7 @@ bool OverlayNPPI::process(frame_container &frames)
 		return true;
 	}
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 
 	return true;
@@ -551,7 +548,7 @@ bool OverlayNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool OverlayNPPI::processEOS(string& pinId)
+bool OverlayNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

@@ -139,7 +139,7 @@ bool RotateCV::validateOutputPins()
 	return true;
 }
 
-void RotateCV::addInputPin(framemetadata_sp &metadata, string &pinId)
+void RotateCV::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -172,7 +172,7 @@ bool RotateCV::process(frame_container &frames)
 
 	mDetail->compute(frame->data(), outFrame->data());
 
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	send(frames);
 
 	return true;
@@ -190,7 +190,7 @@ bool RotateCV::shouldTriggerSOS()
 	return mDetail->mFrameLength == 0;
 }
 
-bool RotateCV::processEOS(string &pinId)
+bool RotateCV::processEOS(std::string_view pinId)
 {
 	mDetail->mFrameLength = 0;
 	return true;

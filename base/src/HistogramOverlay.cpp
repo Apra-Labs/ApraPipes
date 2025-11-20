@@ -1,6 +1,5 @@
 #include <opencv2/highgui.hpp>
-#include <boost/foreach.hpp>
-#include <boost/math/special_functions/round.hpp>
+#include <cmath>
 
 #include "HistogramOverlay.h"
 #include "Frame.h"
@@ -81,7 +80,7 @@ public:
 
 		if (mSpacing*(bins+2) > 0.75*mOutputImg.cols)
 		{
-			return setSpacing(boost::math::iround(mSpacing*0.75));
+			return setSpacing(static_cast<int>(std::lround(mSpacing*0.75)));
 		}
 
 		if (mSpacing < 20)
@@ -141,10 +140,9 @@ bool HistogramOverlay::validateInputPins()
 		return false;
 	}
 
-	pair<string, framemetadata_sp> me; // map element	
 	auto inputMetadataByPin = getInputMetadata();
-	BOOST_FOREACH(me, inputMetadataByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameType();		
+	for (const auto& [pinId, metadata] : inputMetadataByPin) {
+		FrameMetadata::FrameType frameType = metadata->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";
@@ -220,7 +218,7 @@ bool HistogramOverlay::process(frame_container& frames)
 
 	mDetail->overlayHistogram(outFrame, histFrame);
 
-	frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame));
+	frames.insert({getOutputPinIdByType(FrameMetadata::RAW_IMAGE), outFrame});
 	send(frames);
 
 	return true;
