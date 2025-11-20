@@ -650,7 +650,7 @@ bool Mp4WriterSink::enableMp4Metadata(framemetadata_sp &inputMetadata)
 	return true;
 }
 
-void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Mp4WriterSink::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 }
@@ -708,7 +708,7 @@ bool Mp4WriterSink::process(frame_container& frames)
 	return true;
 }
 
-bool Mp4WriterSink::processEOS(string& pinId)
+bool Mp4WriterSink::processEOS(std::string_view pinId)
 {
 	return true;
 }

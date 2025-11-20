@@ -26,7 +26,7 @@ public:
 	bool term() override;
 protected:
 	bool process(frame_container& frame) override;
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
 	bool shouldTriggerSOS() override;

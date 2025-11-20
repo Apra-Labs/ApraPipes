@@ -106,14 +106,14 @@ public:
 			if (next->get() == ptr)
 			{
 				auto temp = next->getNext();
-				if (temp != nullptr)
+				if (temp)
 				{
-					nextptr = temp->get();
+					nextptr = (*temp)->get();
 				}
 				break;
 			}
 
-			next = next->getNext();
+			next = next->getNext().value_or(nullptr);
 		}
 
 		return nextptr;
@@ -135,7 +135,7 @@ public:
 
 	void* segregate(void* block, size_t sz, size_t partition_sz, void* end)
 	{
-		auto endChunk = getFreeApraChunk();
+		auto endChunk = *getFreeApraChunk();
 		endChunk->set(end, NULL);
 
 		auto chunk = ApraSegregatedStorage::segregate(block, sz, partition_sz, endChunk);

@@ -93,7 +93,7 @@ bool ImageResizeCV::validateOutputPins()
 	return true;
 }
 
-void ImageResizeCV::addInputPin(framemetadata_sp &metadata, string &pinId)
+void ImageResizeCV::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto rawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);

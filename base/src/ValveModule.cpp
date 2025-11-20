@@ -118,7 +118,7 @@ bool ValveModule::setNext(std::shared_ptr<Module> next, bool open, bool sieve)
     return Module::setNext(next, open, false, sieve);
 }
 
-void ValveModule::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ValveModule::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
 }

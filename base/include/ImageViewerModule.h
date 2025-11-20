@@ -60,7 +60,7 @@ protected:
 	bool processSOS(frame_sp &frame) override;
 	bool validateInputPins() override;
 	bool shouldTriggerSOS() override;
-	void addInputPin(framemetadata_sp &metadata, string &pinId) override;
+	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override;
 	bool handleCommand(Command::CommandType type, frame_sp &frame) override;
 	std::shared_ptr<DetailRenderer> mDetail;
 	ImageViewerModuleProps mProps;

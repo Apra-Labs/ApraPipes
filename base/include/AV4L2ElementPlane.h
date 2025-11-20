@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AV4L2Buffer.h"
+#include <optional>
 #include <functional>
 #include <libv4l2.h>
 
@@ -17,7 +18,7 @@ public:
     void deinitPlane();
     void setStreamStatus(bool status);
 
-    AV4L2Buffer* getFreeBuffer();
+    std::optional<AV4L2Buffer*> getFreeBuffer();
 
     typedef std::function<void (AV4L2Buffer*)> dqThreadCallback;
     void setDQThreadCallback(dqThreadCallback callback);

@@ -45,7 +45,7 @@ protected:
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
 	void setConversionStrategy(framemetadata_sp inputMetadata, framemetadata_sp outputMetadata);
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:

@@ -536,7 +536,7 @@ bool MultimediaQueueXform::validateInputOutputPins()
 	return Module::validateInputOutputPins();
 }
 
-void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, string& pinId)
+void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mOutputPinId = pinId;

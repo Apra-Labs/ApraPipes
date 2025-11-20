@@ -437,7 +437,7 @@ bool OverlayNPPI::validateOutputPins()
 	return true;
 }
 
-void OverlayNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void OverlayNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -548,7 +548,7 @@ bool OverlayNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool OverlayNPPI::processEOS(string& pinId)
+bool OverlayNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

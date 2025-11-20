@@ -441,7 +441,7 @@ bool EffectsNPPI::validateOutputPins()
 	return true;
 }
 
-void EffectsNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void EffectsNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -549,7 +549,7 @@ bool EffectsNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool EffectsNPPI::processEOS(string& pinId)
+bool EffectsNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

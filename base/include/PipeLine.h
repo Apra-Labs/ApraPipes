@@ -4,6 +4,7 @@
 #include "AbsControlModule.h"
 #include "enum_macros.h"
 #include <string>
+#include <string_view>
 
 class Module;
 // a linear pipline
@@ -34,7 +35,7 @@ class PipeLine {
 	bool validate();
 	bool checkCyclicDependency();
 public:
-	PipeLine(std::string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
+	PipeLine(std::string_view name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();
 	std::string getName() { return mName; }
 	[[nodiscard]] bool appendModule(std::shared_ptr<Module> pModule);

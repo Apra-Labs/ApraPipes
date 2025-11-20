@@ -141,7 +141,7 @@ private:
   int mHealthUpdateIntervalInSec;
 };
 
-Module::Module(Kind nature, string name, ModuleProps _props)
+Module::Module(Kind nature, std::string_view name, ModuleProps _props)
     : mRunning(false), mPlay(true), mDirection(true), mForceStepCount(0),
       mStopCount(0), mForwardPins(0), myNature(nature), myName(name),
       mSkipIndex(0), mHealthCallback(nullptr)
@@ -234,7 +234,7 @@ string Module::addOutputPin(framemetadata_sp &metadata)
   return pinId;
 }
 
-void Module::addOutputPin(framemetadata_sp &metadata, string &pinId)
+void Module::addOutputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
   if (mOutputPinIdFrameFactoryMap.find(pinId) !=
       mOutputPinIdFrameFactoryMap.end())
@@ -463,7 +463,7 @@ bool Module::addFeedback(std::shared_ptr<Module> next, bool open)
   return setNext(next, open, true, true);
 }
 
-void Module::addInputPin(framemetadata_sp &metadata, string &pinId,
+void Module::addInputPin(framemetadata_sp &metadata, std::string_view pinId,
                          bool isFeedback)
 {
   addInputPin(metadata, pinId);
@@ -474,7 +474,7 @@ void Module::addInputPin(framemetadata_sp &metadata, string &pinId,
   }
 }
 
-void Module::addInputPin(framemetadata_sp &metadata, string &pinId)
+void Module::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
   if (mInputPinIdMetadataMap.find(pinId) != mInputPinIdMetadataMap.end())
   {

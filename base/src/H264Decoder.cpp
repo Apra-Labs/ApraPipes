@@ -139,7 +139,7 @@ bool H264Decoder::validateOutputPins()
 	return true;
 }
 
-void H264Decoder::addInputPin(framemetadata_sp& metadata, string& pinId)
+void H264Decoder::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 }
@@ -731,7 +731,7 @@ bool H264Decoder::shouldTriggerSOS()
 	return mShouldTriggerSOS;
 }
 
-bool H264Decoder::processEOS(string& pinId)
+bool H264Decoder::processEOS(std::string_view pinId)
 {
 	//THIS HAS BEEN COMMENTED IN NVR - BECAUSE EOS IS SENT FROM MP4READER WHICH COMES TO DECODER AND THE FOLLOWING PROCESS IS NOT REQUIRED IN NVR. 
 	

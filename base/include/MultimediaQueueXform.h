@@ -63,7 +63,7 @@ public:
 	void setState(uint64_t ts, uint64_t te);
 	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
 	bool allowFrames(uint64_t& ts, uint64_t& te);
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	void setProps(MultimediaQueueXformProps _props);
 	MultimediaQueueXformProps getProps();
 	bool handlePropsChange(frame_sp& frame) override;

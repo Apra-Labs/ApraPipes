@@ -102,7 +102,7 @@ bool VirtualPTZ::validateOutputPins()
     return true;
 }
 
-void VirtualPTZ::addInputPin(framemetadata_sp &metadata, string &pinId)
+void VirtualPTZ::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
     mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());

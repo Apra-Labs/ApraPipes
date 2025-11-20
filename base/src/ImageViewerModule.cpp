@@ -164,7 +164,7 @@ bool ImageViewerModule::validateInputPins()
 	return true;
 }
 
-void ImageViewerModule::addInputPin(framemetadata_sp &metadata, string &pinId)
+void ImageViewerModule::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 #if defined(__arm__) || defined(__aarch64__)

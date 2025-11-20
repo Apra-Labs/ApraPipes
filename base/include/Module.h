@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 #include <thread>
+#include <string_view>
 #include <boost/serialization/base_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -166,7 +167,7 @@ public:
     EndOfStreamNormal,
     EndOfStreamSocketError
   };
-  Module(Kind nature, string name, ModuleProps _props);
+  Module(Kind nature, std::string_view name, ModuleProps _props);
   virtual ~Module();
   Kind getNature() { return myNature; }
   string getName() { return myName; }
@@ -176,7 +177,7 @@ public:
 
   string addOutputPin(framemetadata_sp &metadata); // throw exception
   vector<string> getAllOutputPinsByType(int type);
-  void addOutputPin(framemetadata_sp &metadata, string &pinId);
+  void addOutputPin(framemetadata_sp &metadata, std::string_view pinId);
   [[nodiscard]] bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                bool open = true);
   [[nodiscard]] virtual bool setNext(std::shared_ptr<Module> next, bool open = true,
@@ -371,10 +372,10 @@ protected:
                bool sieve); // take all the output pins
   bool setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
                bool open, bool isFeedback, bool sieve);
-  void addInputPin(framemetadata_sp &metadata, string &pinId, bool isFeedback);
+  void addInputPin(framemetadata_sp &metadata, std::string_view pinId, bool isFeedback);
   virtual void
   addInputPin(framemetadata_sp &metadata,
-              string &pinId); // throws exception if validation fails
+              std::string_view pinId); // throws exception if validation fails
   std::shared_ptr<FrameContainerQueue> getQue() { return mQue; }
 
   bool getPlayState() { return mPlay; }

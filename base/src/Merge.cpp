@@ -20,7 +20,7 @@ public:
 		clear();
 	}
 
-	void setOutputPinId(std::string& pinId)
+	void setOutputPinId(std::std::string_view pinId)
 	{
 		mOutputPinId = pinId;
 	}
@@ -139,7 +139,7 @@ bool Merge::term()
 	return Module::term();
 }
 
-void Merge::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Merge::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	if(getNumberOfOutputPins() == 0)

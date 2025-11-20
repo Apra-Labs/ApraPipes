@@ -1,6 +1,7 @@
 #pragma once
 
 #include<stddef.h>
+#include <optional>
 #include <functional>   // std::greater
 #include <boost/pool/object_pool.hpp>
 
@@ -28,9 +29,9 @@ public:
 		return ptr;
 	}
 
-	ApraChunk* getNext()
+	std::optional<ApraChunk*> getNext()
 	{
-		return next;
+		return next ? std::make_optional(next) : std::nullopt;
 	}
 
 private:
@@ -53,10 +54,10 @@ protected:
 
 //private:
 	ApraChunk* segregate(void* block, size_t sz, size_t partition_sz, ApraChunk* end = nullptr);
-	ApraChunk* find_prev(void * const ptr);
+	std::optional<ApraChunk*> find_prev(void * const ptr);
 	ApraChunk* try_malloc_n(ApraChunk*& start, size_t n, const size_t partition_size);
 
-	ApraChunk* getFreeApraChunk();
+	std::optional<ApraChunk*> getFreeApraChunk();
 	void addToJunk(ApraChunk* start, ApraChunk* end);	
 	void releaseChunks();
 
@@ -112,9 +113,9 @@ public:
 		return sz;
 	}
 
-	ApraNode* getNext()
+	std::optional<ApraNode*> getNext()
 	{
-		return next;
+		return next ? std::make_optional(next) : std::nullopt;
 	}
 
 	void setNext(ApraNode* _next)
@@ -183,7 +184,7 @@ bool ApraPool<UserAllocator>::purge_memory()
 		// delete the storage
 		(UserAllocator::free)(list->begin());
 		prev = list;
-		list = list->getNext();
+		list = list->getNext().value_or(nullptr);
 		node_opool.destroy(prev);
 	}
 
@@ -232,10 +233,10 @@ bool ApraPool<UserAllocator>::release_memory()
 				last_free = free_chunk;
 			}
 
-			free_chunk = free_chunk->getNext();
+			free_chunk = free_chunk->getNext().value_or(nullptr);
 		}
 
-		ApraNode* next = ptr->getNext();
+		ApraNode* next = ptr->getNext().value_or(nullptr);
 
 		if (!all_chunks_free)
 		{
@@ -246,7 +247,7 @@ bool ApraPool<UserAllocator>::release_memory()
 				do
 				{
 					prev_free_chunk = free_chunk;
-					free_chunk = free_chunk->getNext();
+					free_chunk = free_chunk->getNext().value_or(nullptr);
 				} while (free_chunk && lt(free_chunk->get(), end));
 			}
 
@@ -358,15 +359,16 @@ void* ApraPool<UserAllocator>::ordered_malloc(const size_t num_chunks)
 		while (true)
 		{
 			// if we're about to hit the end, or if we've found where "node" goes.
-			if (prev->getNext() == nullptr || std::greater<void *>()(prev->getNext()->begin(), node->begin()))
+			auto prevNext = prev->getNext();
+			if (!prevNext || std::greater<void *>()((*prevNext)->begin(), node->begin()))
 			{
 				break;
 			}
 
-			prev = prev->getNext();
+			prev = *prevNext;
 		}
 
-		node->setNext(prev->getNext());
+		node->setNext(prev->getNext().value_or(nullptr));
 		prev->setNext(node);
 	}
 

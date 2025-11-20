@@ -27,7 +27,7 @@ protected:
 	bool processSOS(frame_sp& frame) override;
 	bool validateInputPins() override;
 	bool validateOutputPins() override;
-	void addInputPin(framemetadata_sp& metadata, string& pinId) override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	std::string addOutputPin(framemetadata_sp& metadata);
 
 private:

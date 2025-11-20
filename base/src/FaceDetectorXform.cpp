@@ -83,7 +83,7 @@ bool FaceDetectorXform::validateOutputPins()
 	return true;
 }
 
-void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, string &pinId)
+void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACEDETECTS_INFO));

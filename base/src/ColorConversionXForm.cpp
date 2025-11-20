@@ -53,7 +53,7 @@ void ColorConversion::setConversionStrategy(framemetadata_sp inputMetadata, fram
 	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,mDetail->inpImg,mDetail->outImg);
 }
 
-void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ColorConversion::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	mInputMetadata = metadata;
 	Module::addInputPin(metadata, pinId);
