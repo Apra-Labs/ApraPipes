@@ -77,9 +77,9 @@ jobs:
     steps:
     - name: Prepare builder
       run: |
-        ${{ inputs.prep-cmd }} 
+        ${{ inputs.prep-cmd }}
         apt purge cmake || true
-        pip3 install cmake==3.29.6 || echo 'did not update cmake'
+        pip3 install setuptools && pip3 install cmake==3.29.6 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA

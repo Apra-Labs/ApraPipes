@@ -99,7 +99,7 @@ jobs:
       continue-on-error: true
 
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
         lfs: true
@@ -136,7 +136,7 @@ jobs:
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
-      uses: actions/cache@v4
+      uses: actions/cache@v3
       with:
           path: |
             ${{ inputs.cache-path }}
@@ -173,17 +173,17 @@ jobs:
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
           CI_test_result_${{inputs.flav}}.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
-      
 
-    - name: Upload build logs 
+
+    - name: Upload build logs
       if:  ${{ always() }} # only upload logs when we have a failure above
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |

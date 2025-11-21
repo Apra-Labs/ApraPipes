@@ -145,6 +145,19 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Install setuptools for vcpkg's Python
+      if: ${{!inputs.is-prep-phase}}
+      shell: pwsh
+      run: |
+        $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse | Select-Object -First 1).FullName
+        if ($pythonPath) {
+          Write-Host "Found vcpkg Python at $pythonPath. Installing setuptools..."
+          & $pythonPath -m ensurepip --upgrade
+          & $pythonPath -m pip install setuptools
+        } else {
+          Write-Host "vcpkg Python not found, skipping setuptools installation."
+        }
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
