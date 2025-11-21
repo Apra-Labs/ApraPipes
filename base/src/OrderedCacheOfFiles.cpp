@@ -828,11 +828,13 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 	std::set<std::string> pathsToScan;
 
 	// Helper to format date/hour strings
+	// Recording format: YYYYMMDD/00HH/ (e.g., 20251121/0008/ for hour 08)
 	auto formatDateHour = [](struct tm* tm) -> std::pair<std::string, std::string> {
 		char date_str[9];
 		char hour_str[5];
 		strftime(date_str, sizeof(date_str), "%Y%m%d", tm);
-		strftime(hour_str, sizeof(hour_str), "%H%M", tm);
+		// Format hour as "00HH" (e.g., "0008" for hour 8, "0023" for hour 23)
+		snprintf(hour_str, sizeof(hour_str), "00%02d", tm->tm_hour);
 		return {std::string(date_str), std::string(hour_str)};
 	};
 
@@ -841,12 +843,15 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 	time_t current_time = lookback_time;
 	while (current_time <= lookahead_time)
 	{
-		struct tm* current_tm = gmtime(&current_time);
-		auto [date_str, hour_str] = formatDateHour(current_tm);
+		struct tm current_tm_copy;
+		gmtime_r(&current_time, &current_tm_copy);  // Thread-safe version
+		auto [date_str, hour_str] = formatDateHour(&current_tm_copy);
 
-		// Construct path: rootDir/YYYYMMDD/HHMM
-		boost::filesystem::path hourPath = boost::filesystem::path(rootDir) / date_str / hour_str.substr(0, 4);
+		// Construct path: rootDir/YYYYMMDD/00HH (e.g., rootDir/20251121/0008)
+		boost::filesystem::path hourPath = boost::filesystem::path(rootDir) / date_str / hour_str;
 		pathsToScan.insert(hourPath.string());
+
+		LOG_TRACE << "parseFilesFromTimestamp: will scan " << hourPath.string();
 
 		// Move to next hour
 		current_time += 3600;  // +1 hour in seconds
