@@ -73,10 +73,12 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
+      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
     defaults:
       run:
-        shell: bash  
+        shell: bash
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder

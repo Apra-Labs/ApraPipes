@@ -145,6 +145,11 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Configure CMake Common
+      working-directory: ${{github.workspace}}/build
+      run: '${{ inputs.cmake-conf-cmd}} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+
     - name: Install setuptools for vcpkg's Python
       if: ${{!inputs.is-prep-phase}}
       shell: pwsh
@@ -158,10 +163,10 @@ jobs:
           Write-Host "vcpkg Python not found, skipping setuptools installation."
         }
 
-    - name: Configure CMake Common
+    - name: Reconfigure CMake after installing setuptools
+      if: ${{!inputs.is-prep-phase}}
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Remove files not needed for the build
       if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only
