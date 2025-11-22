@@ -58,6 +58,7 @@ public:
 	bool Init()
 	{
 		sentEOSSignal = false;
+		bool alreadyInitialized = false; // Track if optimized init already succeeded
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
 		if (filePath.extension() != ".mp4")
 		{
@@ -88,6 +89,7 @@ public:
 						{
 							mState.mVideoPath = nearestFile;
 							isVideoFileFound = true;
+							alreadyInitialized = true; // Mark as initialized to skip redundant parseFiles
 							LOG_INFO << "Initialized Mp4Reader with file near startTimestamp: " << nearestFile;
 						}
 						else
@@ -140,7 +142,8 @@ public:
 				isVideoFileFound = true;
 			}
 		}
-		if (mProps.parseFS)
+		// Only run parseFiles if we haven't already initialized via optimized path
+		if (mProps.parseFS && !alreadyInitialized)
 		{
 			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
 			uint64_t start_parsing_ts = 0;
