@@ -89,20 +89,46 @@ public:
 						{
 							mState.mVideoPath = nearestFile;
 							isVideoFileFound = true;
-							alreadyInitialized = true; // Mark as initialized to skip redundant parseFiles
 							LOG_INFO << "Initialized Mp4Reader with file near startTimestamp: " << nearestFile;
 						}
 						else
 						{
-							// Fallback to probe if seek fails
-							LOG_WARNING << "Could not find file at startTimestamp, falling back to probe";
-							if (!cof->probe(filePath, mState.mVideoPath))
+							// getRandomSeekFile failed - target timestamp not in cache
+							// This can happen if camera wasn't recording at exact target time
+							// Use the nearest file from cache instead of full probe
+							if (cof->getCacheSize() > 0)
 							{
-								LOG_DEBUG << "Mp4 file is not present" << ">";
-								isVideoFileFound = false;
-								return true;
+								std::string firstFile = cof->getFirstFileInCache();
+								if (!firstFile.empty())
+								{
+									mState.mVideoPath = firstFile;
+									isVideoFileFound = true;
+									LOG_INFO << "Target timestamp not in cache, using nearest (first) file: " << firstFile;
+								}
+								else
+								{
+									LOG_WARNING << "Cache not empty but getFirstFileInCache returned empty, falling back to probe";
+									if (!cof->probe(filePath, mState.mVideoPath))
+									{
+										LOG_DEBUG << "Mp4 file is not present" << ">";
+										isVideoFileFound = false;
+										return true;
+									}
+									isVideoFileFound = true;
+								}
 							}
-							isVideoFileFound = true;
+							else
+							{
+								// Cache is empty despite foundFiles=true - shouldn't happen
+								LOG_WARNING << "Cache is empty despite foundFiles=true, falling back to probe";
+								if (!cof->probe(filePath, mState.mVideoPath))
+								{
+									LOG_DEBUG << "Mp4 file is not present" << ">";
+									isVideoFileFound = false;
+									return true;
+								}
+								isVideoFileFound = true;
+							}
 						}
 					}
 					else

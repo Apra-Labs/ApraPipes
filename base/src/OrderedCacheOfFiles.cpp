@@ -858,6 +858,7 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 	}
 
 	LOG_INFO << "parseFilesFromTimestamp: scanning " << pathsToScan.size() << " hour directories";
+	LOG_INFO << "parseFilesFromTimestamp: timestamp filter range [" << lookback_ts << " to " << lookahead_ts << "]";
 
 	// Parse files in the identified directories
 	int parsedFilesCount = 0;
@@ -870,11 +871,15 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 
 		if (!boost::filesystem::exists(hourPath) || !boost::filesystem::is_directory(hourPath))
 		{
-			LOG_TRACE << "parseFilesFromTimestamp: skipping non-existent path: " << hourPathStr;
+			LOG_INFO << "parseFilesFromTimestamp: skipping non-existent directory: " << hourPathStr;
 			continue;
 		}
 
 		auto mp4Files = parseAndSortMp4Files(hourPath.string());
+		LOG_INFO << "parseFilesFromTimestamp: found " << mp4Files.size() << " files in " << hourPathStr;
+
+		int filesAddedFromThisDir = 0;
+		int filesFilteredOut = 0;
 
 		for (auto& mp4File : mp4Files)
 		{
@@ -912,6 +917,7 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 			// Filter by timestamp range
 			if (fileTS < lookback_ts || fileTS > lookahead_ts)
 			{
+				++filesFilteredOut;
 				continue;  // Outside our window
 			}
 
@@ -919,15 +925,21 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 			Video vid(mp4File.string(), fileTS);
 			insertInVideoCache(vid);
 			++parsedFilesCount;
+			++filesAddedFromThisDir;
 
 			LOG_TRACE << "parseFilesFromTimestamp: added to cache <" << vid.path << "> ts=" << fileTS;
 		}
+
+		LOG_INFO << "parseFilesFromTimestamp: " << hourPathStr << " -> added " << filesAddedFromThisDir
+		         << " files, filtered out " << filesFilteredOut << " files";
 	}
 
 	LOG_INFO << "parseFilesFromTimestamp: loaded " << parsedFilesCount << " files into cache";
 
 	// Trigger drop strategy centered on target_ts
 	retireOldFiles(target_ts);
+
+	LOG_INFO << "parseFilesFromTimestamp: final cache size after cleanup: " << videoCache.size() << " files";
 
 	return parsedFilesCount > 0;
 }
