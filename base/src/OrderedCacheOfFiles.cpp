@@ -812,7 +812,7 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 
 	// Convert timestamp (milliseconds) to time_t (seconds)
 	time_t target_time = target_ts / 1000;
-	struct tm* tm_info = gmtime(&target_time);
+	struct tm* tm_info = localtime(&target_time);  // Use local time to match recording directory structure
 
 	// Calculate lookback and lookahead timestamps
 	uint64_t lookback_ts = target_ts - (lookbackMinutes * 60 * 1000);  // milliseconds
@@ -821,8 +821,8 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 	time_t lookback_time = lookback_ts / 1000;
 	time_t lookahead_time = lookahead_ts / 1000;
 
-	struct tm* lookback_tm = gmtime(&lookback_time);
-	struct tm* lookahead_tm = gmtime(&lookahead_time);
+	struct tm* lookback_tm = localtime(&lookback_time);  // Use local time to match recording directory structure
+	struct tm* lookahead_tm = localtime(&lookahead_time);  // Use local time to match recording directory structure
 
 	// Generate date/hour paths to scan
 	std::set<std::string> pathsToScan;
@@ -844,7 +844,7 @@ bool OrderedCacheOfFiles::parseFilesFromTimestamp(uint64_t target_ts, bool direc
 	while (current_time <= lookahead_time)
 	{
 		struct tm current_tm_copy;
-		gmtime_r(&current_time, &current_tm_copy);  // Thread-safe version
+		localtime_r(&current_time, &current_tm_copy);  // Thread-safe version, use local time
 		auto [date_str, hour_str] = formatDateHour(&current_tm_copy);
 
 		// Construct path: rootDir/YYYYMMDD/00HH (e.g., rootDir/20251121/0008)
