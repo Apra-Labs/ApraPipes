@@ -89,6 +89,7 @@ public:
 						{
 							mState.mVideoPath = nearestFile;
 							isVideoFileFound = true;
+							alreadyInitialized = true;  // Mark as initialized to skip redundant parseFiles later
 							LOG_INFO << "Initialized Mp4Reader with file near startTimestamp: " << nearestFile;
 						}
 						else
@@ -103,6 +104,7 @@ public:
 								{
 									mState.mVideoPath = firstFile;
 									isVideoFileFound = true;
+									alreadyInitialized = true;  // Mark as initialized to skip redundant parseFiles later
 									LOG_INFO << "Target timestamp not in cache, using nearest (first) file: " << firstFile;
 								}
 								else
@@ -883,19 +885,48 @@ public:
 				LOG_ERROR << msg;
 				throw AIPException(AIP_FATAL, msg);
 			}
-			try
+
+			// Check if cache already has the seek target (from parseFilesFromTimestamp in Init)
+			// If cache is populated and contains the target, skip expensive parseFiles()
+			bool skipParsing = false;
+			if (cof->getCacheSize() > 0)
 			{
-				cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, don't disable disableBatchSizeCheck
+				// Check if seek target is already in cache
+				std::string tempFile;
+				bool fileInCache = cof->getFileFromCache(skipTS, mState.direction, tempFile);
+				if (fileInCache)
+				{
+					skipParsing = true;
+					LOG_INFO << "Seek target already in cache (" << cof->getCacheSize()
+					         << " files), skipping parseFiles()";
+				}
+				else
+				{
+					LOG_INFO << "Cache has " << cof->getCacheSize()
+					         << " files but seek target not found, calling parseFiles()";
+				}
 			}
-			catch (const std::exception &e)
+			else
 			{
-				LOG_ERROR << "Exception caught while parsing files: " << e.what();
-				throw; // Rethrow if you want to propagate the exception further
+				LOG_INFO << "Cache is empty, calling parseFiles()";
 			}
-			catch (...)
+
+			if (!skipParsing)
 			{
-				LOG_ERROR << "Unknown error occurred while parsing files.";
-				throw; // Rethrow if you want to propagate the exception further
+				try
+				{
+					cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, don't disable disableBatchSizeCheck
+				}
+				catch (const std::exception &e)
+				{
+					LOG_ERROR << "Exception caught while parsing files: " << e.what();
+					throw; // Rethrow if you want to propagate the exception further
+				}
+				catch (...)
+				{
+					LOG_ERROR << "Unknown error occurred while parsing files.";
+					throw; // Rethrow if you want to propagate the exception further
+				}
 			}
 		}
 		bool ret;
