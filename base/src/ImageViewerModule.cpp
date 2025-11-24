@@ -12,6 +12,7 @@
 #include "ApraNvEglRenderer.h"
 #include "DMAFDWrapper.h"
 #include "Command.h"
+#include <drm/drm_fourcc.h>
 #endif
 
 class DetailRenderer
@@ -36,22 +37,42 @@ public:
 #if 1
 		uint32_t displayHeight, displayWidth;
 		NvEglRenderer::getDisplayResolution(displayWidth, displayHeight);
-		if (props.height != 0 && props.width != 0)
-		{
-			props.x_offset += (displayWidth - props.width) / 2;
-			props.y_offset += (displayHeight - props.height) / 2;
-			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, props.width, props.height, props.x_offset, props.y_offset, props.displayOnTop);
-		}
-		else
-		{
 
-			props.x_offset += (displayWidth - _width) / 2;
-			props.y_offset += (displayHeight - _height) / 2;
-			renderer = NvEglRenderer::createEglRenderer(__TIMESTAMP__, _width, _height, props.x_offset, props.y_offset, props.displayOnTop);
+		// Validate width and height before using
+		uint32_t rendererWidth = props.width != 0 ? props.width : _width;
+		uint32_t rendererHeight = props.height != 0 ? props.height : _height;
+		if (rendererWidth == 0 || rendererHeight == 0) {
+			LOG_ERROR << "Invalid renderer dimensions: width=" << rendererWidth << ", height=" << rendererHeight;
+			return false;
 		}
+
+		props.x_offset += (displayWidth - rendererWidth) / 2;
+		props.y_offset += (displayHeight - rendererHeight) / 2;
+
+		renderer = NvEglRenderer::createEglRenderer(
+			props.strTitle.c_str(),
+			rendererWidth,
+			rendererHeight,
+			props.x_offset,
+			props.y_offset,
+			props.ttfFilePath.c_str(),
+			props.message.c_str(),
+			props.scale,
+			props.r, props.g, props.b,
+			props.fontSize,
+			props.textPosX, props.textPosY,
+			props.imagePath,
+			props.imagePosX, props.imagePosY,
+			props.imageWidth, props.imageHeight,
+			props.opacity,
+			props.mask,
+			props.imageOpacity,
+			props.textOpacity
+		);
+
 		if (!renderer)
 		{
-			LOG_ERROR << "Failed to create EGL renderer";
+			LOG_ERROR << "Failed to create EGL renderer. Parameters: width=" << rendererWidth << ", height=" << rendererHeight << ", x_offset=" << props.x_offset << ", y_offset=" << props.y_offset;
 			return false;
 		}
 #endif
@@ -94,6 +115,7 @@ public:
 public:
 	frame_sp inputFrame;
 	ImageViewerModuleProps props;
+	NvEglRenderer *getRenderer() const { return renderer; }
 
 protected:
 	cv::Mat mImg;
@@ -114,7 +136,22 @@ public:
 	bool view()
 	{
 #if 1
-		renderer->render((static_cast<DMAFDWrapper *>(inputFrame->data()))->getFd());
+		if (!inputFrame || !inputFrame->data()) {
+			LOG_ERROR << "Input frame or data is null.";
+			return false;
+		}
+		DMAFDWrapper* wrapper = static_cast<DMAFDWrapper *>(inputFrame->data());
+		if (!wrapper) {
+			LOG_ERROR << "DMAFDWrapper cast failed.";
+			return false;
+		}
+		int fd = wrapper->getFd();
+		if (fd <= 0) {
+			LOG_ERROR << "Invalid DMAFDWrapper FD: " << fd;
+			return false;
+		}
+		LOG_INFO << "Rendering DMAFDWrapper FD: " << fd;
+		renderer->render(fd);
 #endif
 		return true;
 	}
@@ -205,6 +242,13 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 #if 1
 	int width = 0;
 	int height = 0;
+	int pitch = 0;
+	int fourcc = 0;
+	int offset0 = 0;
+	int offset1 = 0;
+	int offset2 = 0;
+	int pitch1 = 0;
+	int pitch2 = 0;
 	switch (frameType)
 	{
 	case FrameMetadata::FrameType::RAW_IMAGE:
@@ -212,6 +256,25 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 		auto metadata = FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata);
 		width = metadata->getWidth();
 		height = metadata->getHeight();
+		pitch = static_cast<int>(metadata->getStep());
+		switch (metadata->getImageType())
+		{
+		case ImageMetadata::RGBA:
+			fourcc = DRM_FORMAT_ABGR8888;
+			break;
+		case ImageMetadata::BGRA:
+			fourcc = DRM_FORMAT_BGRA8888;
+			break;
+		case ImageMetadata::UYVY:
+			fourcc = DRM_FORMAT_UYVY;
+			break;
+		case ImageMetadata::YUYV:
+			fourcc = DRM_FORMAT_YUYV;
+			break;
+		default:
+			fourcc = DRM_FORMAT_RGBA8888;
+			break;
+		}
 	}
 	break;
 	case FrameMetadata::FrameType::RAW_IMAGE_PLANAR:
@@ -219,13 +282,75 @@ bool ImageViewerModule::processSOS(frame_sp &frame)
 		auto metadata = FrameMetadataFactory::downcast<RawImagePlanarMetadata>(inputMetadata);
 		width = metadata->getWidth(0);
 		height = metadata->getHeight(0);
+		auto dmaWrapper = static_cast<DMAFDWrapper *>(frame->data());
+		if (!dmaWrapper)
+		{
+			LOG_ERROR << "DMAFDWrapper is null for planar frame.";
+			return false;
+		}
+		auto surf = dmaWrapper->getNvBufSurface();
+		if (!surf)
+		{
+			LOG_ERROR << "NvBufSurface is null for planar frame.";
+			return false;
+		}
+		auto &planeParams = surf->surfaceList[0].planeParams;
+		pitch = static_cast<int>(planeParams.pitch[0]);
+		pitch1 = static_cast<int>(planeParams.pitch[1]);
+		pitch2 = static_cast<int>(planeParams.pitch[2]);
+		offset0 = static_cast<int>(planeParams.offset[0]);
+		offset1 = static_cast<int>(planeParams.offset[1]);
+		offset2 = static_cast<int>(planeParams.offset[2]);
+
+		if (metadata->getImageType() == ImageMetadata::NV12)
+		{
+			fourcc = DRM_FORMAT_NV12;
+		}
+		else if (metadata->getImageType() == ImageMetadata::YUV420)
+		{
+			fourcc = DRM_FORMAT_YUV420;
+		}
 	}
 	break;
 	default:
 		throw AIPException(AIP_FATAL, "Unsupported FrameType<" + std::to_string(frameType) + ">");
 	}
 
-	mDetail->eglInitializer(height, width);
+	if (!mDetail->eglInitializer(height, width))
+	{
+		LOG_ERROR << "Failed to initialize EGL renderer.";
+		return false;
+	}
+
+	auto renderer = mDetail->getRenderer();
+	if (!renderer)
+	{
+		LOG_ERROR << "EGL renderer is not available after initialization.";
+		return false;
+	}
+
+	if (fourcc != 0 && pitch != 0)
+	{
+		if (frameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR && (fourcc == DRM_FORMAT_NV12 || fourcc == DRM_FORMAT_YUV420))
+		{
+			int numPlanes = (fourcc == DRM_FORMAT_NV12) ? 2 : 3;
+			renderer->setImportParamsPlanar(
+				fourcc,
+				width,
+				height,
+				pitch,
+				offset0,
+				pitch1,
+				offset1,
+				pitch2,
+				offset2,
+				numPlanes);
+		}
+		else
+		{
+			renderer->setImportParams(pitch, fourcc, 0, width, height);
+		}
+	}
 #else
 	mDetail->setMatImg(FrameMetadataFactory::downcast<RawImageMetadata>(inputMetadata));
 #endif
