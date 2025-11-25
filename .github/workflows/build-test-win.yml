@@ -151,7 +151,7 @@ jobs:
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Install setuptools for vcpkg's Python
-      if: ${{!inputs.is-prep-phase}}
+      if: always() && !inputs.is-prep-phase
       shell: pwsh
       run: |
         $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse | Select-Object -First 1).FullName
@@ -164,7 +164,7 @@ jobs:
         }
 
     - name: Reconfigure CMake after installing setuptools
-      if: ${{!inputs.is-prep-phase}}
+      if: always() && !inputs.is-prep-phase
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
