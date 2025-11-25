@@ -163,6 +163,18 @@ jobs:
           Write-Host "vcpkg Python not found, skipping setuptools installation."
         }
 
+    - name: Clean glib build artifacts
+      if: always() && !inputs.is-prep-phase
+      shell: pwsh
+      run: |
+        $glibBuildPath = "${{github.workspace}}/vcpkg/buildtrees/glib"
+        if (Test-Path $glibBuildPath) {
+          Write-Host "Removing glib build artifacts to force rebuild with setuptools..."
+          Remove-Item -Recurse -Force $glibBuildPath
+        } else {
+          Write-Host "No glib build artifacts found."
+        }
+
     - name: Reconfigure CMake after installing setuptools
       if: always() && !inputs.is-prep-phase
       working-directory: ${{github.workspace}}/build
