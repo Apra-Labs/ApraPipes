@@ -141,6 +141,32 @@ jobs:
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
     
+    - name: Install setuptools for vcpkg's Python (pre-configure)
+      if: !inputs.is-prep-phase
+      shell: pwsh
+      run: |
+        # Install setuptools if vcpkg Python already exists from cache
+        $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        if ($pythonPath) {
+          Write-Host "Found cached vcpkg Python at $pythonPath. Installing setuptools..."
+          & $pythonPath -m ensurepip --upgrade 2>&1 | Out-Null
+          & $pythonPath -m pip install setuptools 2>&1 | Out-Null
+
+          # Create distutils compatibility shim for Python 3.12+
+          $pythonDir = Split-Path $pythonPath
+          $libDir = Join-Path $pythonDir "Lib"
+          $distutilsInit = Join-Path $libDir "distutils\__init__.py"
+
+          if (!(Test-Path (Join-Path $libDir "distutils"))) {
+            Write-Host "Creating distutils compatibility shim for Python 3.12+"
+            New-Item -Path (Join-Path $libDir "distutils") -ItemType Directory -Force | Out-Null
+            Set-Content -Path $distutilsInit -Value "import warnings`nwarnings.warn('distutils is deprecated, using setuptools instead')`nfrom setuptools import _distutils`nimport sys`nsys.modules['distutils'] = _distutils`nfrom setuptools._distutils import *"
+          }
+        } else {
+          Write-Host "vcpkg Python not found in cache, will install setuptools after CMake downloads it."
+        }
+      continue-on-error: true
+
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
@@ -150,7 +176,7 @@ jobs:
       run: '${{ inputs.cmake-conf-cmd}} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: true # Allow failure since setuptools may not be installed yet
 
-    - name: Install setuptools for vcpkg's Python
+    - name: Install setuptools for vcpkg's Python (post-configure)
       if: always() && !inputs.is-prep-phase
       shell: pwsh
       run: |
