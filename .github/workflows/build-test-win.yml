@@ -160,7 +160,12 @@ jobs:
           if (!(Test-Path (Join-Path $libDir "distutils"))) {
             Write-Host "Creating distutils compatibility shim for Python 3.12+"
             New-Item -Path (Join-Path $libDir "distutils") -ItemType Directory -Force | Out-Null
-            Set-Content -Path $distutilsInit -Value "import warnings`nwarnings.warn('distutils is deprecated, using setuptools instead')`nfrom setuptools import _distutils`nimport sys`nsys.modules['distutils'] = _distutils`nfrom setuptools._distutils import *"
+            @"
+from setuptools import _distutils
+import sys
+sys.modules['distutils'] = _distutils
+from setuptools._distutils import *
+"@ | Out-File -FilePath $distutilsInit -Encoding utf8
           }
         } else {
           Write-Host "vcpkg Python not found in cache, will install setuptools after CMake downloads it."
@@ -194,7 +199,12 @@ jobs:
           if (!(Test-Path (Join-Path $libDir "distutils"))) {
             Write-Host "Creating distutils compatibility shim for Python 3.12+"
             New-Item -Path (Join-Path $libDir "distutils") -ItemType Directory -Force | Out-Null
-            Set-Content -Path $distutilsInit -Value "import warnings`nwarnings.warn('distutils is deprecated, using setuptools instead')`nfrom setuptools import _distutils`nimport sys`nsys.modules['distutils'] = _distutils`nfrom setuptools._distutils import *"
+            @"
+from setuptools import _distutils
+import sys
+sys.modules['distutils'] = _distutils
+from setuptools._distutils import *
+"@ | Out-File -FilePath $distutilsInit -Encoding utf8
           }
         } else {
           Write-Host "vcpkg Python not found, skipping setuptools installation."
