@@ -42,6 +42,25 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(APRAPIPES)
 
+# Code Coverage Configuration
+OPTION(CODE_COVERAGE "Enable coverage reporting" OFF)
+if(CODE_COVERAGE AND ENABLE_LINUX)
+    message(STATUS "Code coverage enabled")
+    include(../cmake/CodeCoverage.cmake)
+    append_coverage_compiler_flags()
+
+    # Exclude patterns for coverage
+    set(COVERAGE_EXCLUDES
+        '*/test/*'
+        '*/thirdparty/*'
+        '*/vcpkg/*'
+        '*/build/*'
+        '/usr/*'
+        '*/boost/*'
+        '*/opencv*'
+    )
+endif()
+
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
@@ -670,8 +689,8 @@ IF(ENABLE_LINUX)
 	)	
 ENDIF(ENABLE_LINUX)
 
-target_link_libraries(aprapipesut   
-  aprapipes  
+target_link_libraries(aprapipesut
+  aprapipes
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -685,7 +704,7 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ZXing::Core
-  ZXing::ZXing	
+  ZXing::ZXing
   BZip2::BZip2
   ZLIB::ZLIB
   LibLZMA::LibLZMA
@@ -693,6 +712,21 @@ target_link_libraries(aprapipesut
   sfml-audio
   whisper::whisper
   )
+
+# Setup code coverage target
+if(CODE_COVERAGE AND ENABLE_LINUX)
+    setup_target_for_coverage_lcov(
+        NAME coverage
+        EXECUTABLE aprapipesut
+        EXECUTABLE_ARGS --log_level=all
+        DEPENDENCIES aprapipesut aprapipes
+        EXCLUDE ${COVERAGE_EXCLUDES}
+        LCOV_ARGS --no-external
+        GENHTML_ARGS --legend --title "ApraPipes Code Coverage"
+    )
+
+    message(STATUS "Code coverage target 'coverage' created. Run 'make coverage' to generate coverage report.")
+endif()
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
