@@ -142,7 +142,7 @@ jobs:
           restore-keys: ${{ inputs.flav }}-
     
     - name: Install setuptools for vcpkg's Python (pre-configure)
-      if: !inputs.is-prep-phase
+      if: ${{ !inputs.is-prep-phase }}
       shell: pwsh
       run: |
         # Install setuptools if vcpkg Python already exists from cache
