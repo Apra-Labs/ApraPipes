@@ -162,20 +162,18 @@ jobs:
             New-Item -Path (Join-Path $libDir "distutils") -ItemType Directory -Force | Out-Null
 
             # Create __init__.py
-            $initContent = @"
+            @"
 import sys
 from setuptools import _distutils
 sys.modules['distutils'] = _distutils
 from setuptools._distutils import *
-"@
-            Set-Content -Path $distutilsInit -Value $initContent -Encoding utf8
+"@ | Set-Content -Path $distutilsInit -Encoding utf8
 
             # Create version.py shim
             $versionPy = Join-Path $libDir "distutils\version.py"
-            $versionContent = @"
+            @"
 from setuptools._distutils.version import *
-"@
-            Set-Content -Path $versionPy -Value $versionContent -Encoding utf8
+"@ | Set-Content -Path $versionPy -Encoding utf8
           }
         } else {
           Write-Host "vcpkg Python not found in cache, will install setuptools after CMake downloads it."
@@ -211,20 +209,18 @@ from setuptools._distutils.version import *
             New-Item -Path (Join-Path $libDir "distutils") -ItemType Directory -Force | Out-Null
 
             # Create __init__.py
-            $initContent = @"
+            @"
 import sys
 from setuptools import _distutils
 sys.modules['distutils'] = _distutils
 from setuptools._distutils import *
-"@
-            Set-Content -Path $distutilsInit -Value $initContent -Encoding utf8
+"@ | Set-Content -Path $distutilsInit -Encoding utf8
 
             # Create version.py shim
             $versionPy = Join-Path $libDir "distutils\version.py"
-            $versionContent = @"
+            @"
 from setuptools._distutils.version import *
-"@
-            Set-Content -Path $versionPy -Value $versionContent -Encoding utf8
+"@ | Set-Content -Path $versionPy -Encoding utf8
           }
         } else {
           Write-Host "vcpkg Python not found, skipping setuptools installation."
