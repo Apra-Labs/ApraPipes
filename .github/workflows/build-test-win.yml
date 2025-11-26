@@ -236,6 +236,45 @@ jobs:
           Write-Host "No glib build artifacts found."
         }
 
+    - name: Verify and recreate distutils shim before reconfigure
+      if: always() && !inputs.is-prep-phase
+      shell: pwsh
+      run: |
+        $pythonPath = (Get-ChildItem -Path "${{github.workspace}}/vcpkg/downloads/tools/python" -Filter "python.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        if ($pythonPath) {
+          Write-Host "Verifying distutils shim for vcpkg Python at $pythonPath"
+          $pythonDir = Split-Path $pythonPath
+          $libDir = Join-Path $pythonDir "Lib"
+          $distutilsDir = Join-Path $libDir "distutils"
+          $distutilsInit = Join-Path $distutilsDir "__init__.py"
+
+          # Always recreate the shim to ensure it's present and correct
+          if (Test-Path $distutilsDir) {
+            Write-Host "Distutils directory exists, recreating shim files..."
+            Remove-Item -Recurse -Force $distutilsDir
+          }
+
+          Write-Host "Creating fresh distutils compatibility shim..."
+          New-Item -Path $distutilsDir -ItemType Directory -Force | Out-Null
+
+          # Create __init__.py
+          $lines = @(
+            "import sys",
+            "from setuptools import _distutils",
+            "sys.modules['distutils'] = _distutils",
+            "from setuptools._distutils import *"
+          )
+          $lines | Out-File -FilePath $distutilsInit -Encoding utf8
+
+          # Create version.py shim
+          $versionPy = Join-Path $distutilsDir "version.py"
+          "from setuptools._distutils.version import *" | Out-File -FilePath $versionPy -Encoding utf8
+
+          Write-Host "Distutils shim verified and recreated successfully"
+        } else {
+          Write-Host "Warning: vcpkg Python not found!"
+        }
+
     - name: Reconfigure CMake after installing setuptools
       if: always() && !inputs.is-prep-phase
       working-directory: ${{github.workspace}}/build
