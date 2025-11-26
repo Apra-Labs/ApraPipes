@@ -1,11 +1,7 @@
 name: CI-Linux-CUDA-WSL
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+  workflow_dispatch:
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
