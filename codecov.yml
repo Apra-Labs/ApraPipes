@@ -1,0 +1,54 @@
+# Codecov Configuration for ApraPipes
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        base: auto
+        if_ci_failed: error
+
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        if_ci_failed: error
+
+  changes: no
+
+comment:
+  layout: "header, diff, files, footer"
+  behavior: default
+  require_changes: no
+  require_base: no
+  require_head: yes
+
+ignore:
+  - "base/test/**/*"
+  - "thirdparty/**/*"
+  - "vcpkg/**/*"
+  - "build/**/*"
+  - "**/*.md"
+  - "docs/**/*"
+
+flags:
+  unittests:
+    paths:
+      - base/src/
+    carryforward: true
+
+github_checks:
+  annotations: true
+
+slack_app: off
