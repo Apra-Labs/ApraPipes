@@ -6,6 +6,6 @@
   "default-registry": {
     "kind": "git",
     "repository": "https://github.com/Apra-Labs/vcpkg.git",
-    "baseline": "dfa17587b27fcb5642e74632e49b3f9775aa1c19"
+    "baseline": "ae8fa5ae5e3b4d53d1ef5abdf1b6d0be6d37e806"
   }
 }
