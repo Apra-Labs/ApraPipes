@@ -33,7 +33,8 @@
         "nonfree",
         "png",
         "tiff",
-        "webp"
+        "webp",
+        "highgui"
       ]
     },
     "freeglut",

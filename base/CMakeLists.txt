@@ -190,7 +190,7 @@ SET(CORE_FILES
 	src/FIndexStrategy.cpp
 	#src/AudioCaptureSrc.cpp
 	src/QRReader.cpp
-	#src/Mp4WriterSink.cpp
+	src/Mp4WriterSink.cpp
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
@@ -202,6 +202,27 @@ SET(CORE_FILES
 	src/SimpleControlModule.cpp
 	src/APErrorObject.cpp 
 	src/APHealthObject.cpp
+)
+
+set(JETSON_DECODER_SRCS
+    src/JPEGDecoderL4TM.cpp
+	src/JPEGEncoderL4TM.cpp
+    src/JPEGDecoderL4TMHelper.cpp
+	src/JPEGEncoderL4TMHelper.cpp
+)
+add_library(aprapipes_jpeg_l4tm STATIC ${JETSON_DECODER_SRCS})
+
+target_include_directories(aprapipes_jpeg_l4tm PRIVATE
+    ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+	/usr/src/jetson_multimedia_api/include/libjpeg-8b
+    /usr/src/jetson_multimedia_api/include
+)
+find_library(JPEG8_LIB jpeg PATHS /usr/src/jetson_multimedia_api/include/libjpeg-8b)
+target_link_libraries(aprapipes_jpeg_l4tm PRIVATE        
+    ${CUDA_LIBRARIES}        
+    ${NVCUDAToolkit_LIBS}
+	${OpenCV_LIBRARIES}
+	${JPEG8_LIB}
 )
 
 SET(CORE_FILES_H
@@ -316,22 +337,22 @@ ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
 	src/ApraLines.cpp
-	# src/CalcHistogramCV.cpp
-	# src/HistogramOverlay.cpp
-	# src/ImageDecoderCV.cpp
-	# src/ImageViewerModule.cpp
-	# src/BMPConverter.cpp
-	# src/ImageResizeCV.cpp
-	# src/FacialLandmarksCV.cpp
-	# src/ImageEncoderCV.cpp
-	# src/RotateCV.cpp
-	# src/AffineTransform.cpp
-	# src/BrightnessContrastControlXform.cpp
-	# src/VirtualPTZ.cpp
-	# src/WebCamSource.cpp
-	# src/FaceDetectorXform.cpp
-	# src/TextOverlayXForm.cpp
-	# src/ValveModule.cpp
+	src/CalcHistogramCV.cpp
+	src/HistogramOverlay.cpp
+	src/ImageDecoderCV.cpp
+	src/ImageViewerModule.cpp
+	src/BMPConverter.cpp
+	src/ImageResizeCV.cpp
+	src/FacialLandmarksCV.cpp
+	src/ImageEncoderCV.cpp
+	src/RotateCV.cpp
+	src/AffineTransform.cpp
+	src/BrightnessContrastControlXform.cpp
+	src/VirtualPTZ.cpp
+	src/WebCamSource.cpp
+	src/FaceDetectorXform.cpp
+	src/TextOverlayXForm.cpp
+	src/ValveModule.cpp
 	src/ColorConversionXForm.cpp
 	src/AbsColorConversionFactory.cpp
 	src/ColorConversionStrategy.h
@@ -340,10 +361,10 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
-	# src/TestSignalGeneratorSrc.cpp
-	# src/AudioToTextXForm.cpp 
+	src/TestSignalGeneratorSrc.cpp
+	#src/AudioToTextXForm.cpp 
 	src/AbsControlModule.cpp
-	# src/ThumbnailListGenerator.cpp
+	src/ThumbnailListGenerator.cpp
 )
 	
 SET(IP_FILES_H
@@ -395,24 +416,20 @@ SET(CUDA_CORE_FILES_H
 
 SET(CUDA_IP_FILES
 	src/build_point_list.cu
-	# src/CCKernel.cu
-	# src/CCNPPI.cpp	
-	# src/EffectsKernel.cu
-	# src/EffectsNPPI.cpp
-	# src/GaussianBlur.cpp
-	# src/OverlayKernel.cu
-	# src/OverlayNPPI.cpp
+	src/CCKernel.cu
+	src/CCNPPI.cpp	
+	src/EffectsKernel.cu
+	src/EffectsNPPI.cpp
+	src/GaussianBlur.cpp
+	src/OverlayKernel.cu
+	src/OverlayNPPI.cpp
 	src/ResizeNPPI.cpp
-	# src/RotateNPPI.cpp		
+	src/RotateNPPI.cpp		
 	src/H264Decoder.cpp
 )
 
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}
-		src/JPEGDecoderL4TM.cpp
-		src/JPEGDecoderL4TMHelper.cpp
-		src/JPEGEncoderL4TM.cpp
-		src/JPEGEncoderL4TMHelper.cpp
 		src/AV4L2Buffer.cpp
 		src/AV4L2ElementPlane.cpp
 		src/H264EncoderV4L2Helper.cpp
@@ -421,16 +438,17 @@ IF(ENABLE_ARM64)
 		src/DMAFDWrapper.cpp
 	    src/NvArgusCameraHelper.cpp
 	    src/NvArgusCamera.cpp
-		# src/NvV4L2Camera.cpp
-		# src/NvV4L2CameraHelper.cpp
-		# src/EglRenderer.cpp
-		# src/NvEglRenderer.cpp
+		src/NvV4L2Camera.cpp
+		src/NvV4L2CameraHelper.cpp
+		src/EglRenderer.cpp
+		src/NvEglRenderer.cpp
 		src/DMAUtils.cpp
 		src/NvTransform.cpp
 		src/ApraEGLDisplay.cpp
 		src/DMAFDToHostCopy.cpp
 		src/H264DecoderV4L2Helper.cpp
 		src/H264DecoderV4L2Helper.h
+		
 	)
 ELSE()
 	SET(CUDA_IP_FILES ${CUDA_IP_FILES}		# following modules and related files do not work on ARM64
@@ -531,31 +549,33 @@ target_include_directories ( aprapipes PRIVATE
 
 IF (ENABLE_ARM64)
 	SET(ARM64_UT_FILES
-		test/jpegencoderl4tm_tests.cpp
-		test/jpegdecoderl4tm_tests.cpp
-#		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
-		#test/opencvresize_tests.cpp
-		# test/h264encoderv4l2_tests.cpp
-		#test/nvarguscamerahelper_tests.cpp
+		test/l4tm_dec_enc_1_tests.cpp  #todo this test needs to be improved to add to jetson suite
+		test/opencvresize_tests.cpp
+		test/h264encoderv4l2_tests.cpp
+		test/nvarguscamerahelper_tests.cpp
 		test/nvarguscamera_tests.cpp
-		# test/nvv4l2camera_test.cpp
-		# test/nvv4l2camerahelper_test.cpp
+		test/nvv4l2camera_test.cpp
+		test/nvv4l2camerahelper_test.cpp
 	    test/nvtransform_tests.cpp
-		# test/eglrenderer_test.cpp
-		# test/cuda_arm_tests.cpp
-		# test/apraegldisplay_tests.cpp
-		# test/frame_factory_test_dma.cpp
+		test/eglrenderer_test.cpp
+		#test/cuda_arm_tests.cpp
+		test/apraegldisplay_tests.cpp
+		test/frame_factory_test_dma.cpp
 		test/h264decoder_tests.cpp
+        test/jpegencoderl4tm_tests.cpp
+        test/jpegdecoderl4tm_tests.cpp
+
 	)
+
 ENDIF(ENABLE_ARM64)
 
 IF (ENABLE_CUDA)
 	SET(CUDA_UT_FILES
-		# test/cudamemcopy_tests.cpp		
-		# test/resizenppi_tests.cpp
-		# test/rotatenppi_tests.cpp
-		# test/ccnppi_tests.cpp
-		# test/memtypeconversion_tests.cpp
+		test/cudamemcopy_tests.cpp		
+		test/resizenppi_tests.cpp
+		test/rotatenppi_tests.cpp
+		test/ccnppi_tests.cpp
+		test/memtypeconversion_tests.cpp
 	)
 	IF(NOT ENABLE_ARM64) # following tests need CUDA but can not run on ARM ?
 
@@ -577,67 +597,67 @@ ENDIF(ENABLE_CUDA)
 SET(UT_FILES
 	test/utmain.cpp
 	test/unit_tests.cpp
-	#test/cv_memory_leaks_tests.cpp--
+	test/cv_memory_leaks_tests.cpp
 	test/module_tests.cpp
-	# test/calchistogramcv_tests.cpp
-	# test/filenamestrategy_tests.cpp
+	test/calchistogramcv_tests.cpp
+	test/filenamestrategy_tests.cpp
 	test/test_utils.cpp
 	test/test_utils.h	
 	test/filewritermodule_tests.cpp
-	# test/logger_tests.cpp
-#	test/logger_stress_tests.cpp  #todo this test needs to be improved and added	
-	# test/quepushstrategy_tests.cpp	
-	# test/framesmuxer_tests.cpp
-	# test/filereadermodule_tests.cpp
-	# test/merge_tests.cpp
-	# test/split_tests.cpp
-	# test/imagemetadata_tests.cpp
-	# test/bmpconverter_tests.cpp
-	# test/rtsppusher_tests.cpp
-	# test/findexstrategy_tests.cpp	
-	# test/jpegdecodercv_tests.cpp
-	# test/Imageresizecv_tests.cpp
-	# test/faciallandmarkscv_tests.cpp
-	# test/imageviewermodule_tests.cpp
-	# test/ImageEncodeCV_tests.cpp
-	# test/rotatecv_tests.cpp
-	# test/affinetransform_tests.cpp
-	# test/brightness_contrast_tests.cpp
-	# test/virtualptz_tests.cpp
-	# test/webcam_source_tests.cpp
-	# test/facedetectorXform_tests.cpp
-	# test/sound_record_tests.cpp
-	# test/pullstratergy_tests.cpp
-	# test/QRReader_tests.cpp
-	# test/textoverlayxform_tests.cpp
-	# test/mp4writersink_tests.cpp
-	# test/pipeline_tests.cpp
-#	test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
-	# test/valveModule_tests.cpp
-	# test/color_conversion_tests.cpp
-	# test/archivespacemanager_tests.cpp
-	# test/multimediaqueuexform_tests.cpp
-  	# test/mp4readersource_tests.cpp
-	# test/rtsp_client_tests.cpp
-	# test/motionvector_extractor_and_overlay_tests.cpp
-	# test/mp4_reverse_play_tests.cpp
-	# test/ordered_cache_of_files_tests.cpp
-	# test/mp4_seek_tests.cpp
-	# test/mp4_simul_read_write_tests.cpp
-	# test/mp4_getlivevideots_tests.cpp
-	# test/mp4_dts_strategy_tests.cpp
-	# test/overlaymodule_tests.cpp
-	# test/testSignalGeneratorSrc_tests.cpp
-	# test/audioToTextXform_tests.cpp
+	test/logger_tests.cpp
+	#test/logger_stress_tests.cpp  #todo this test needs to be improved and added	
+	test/quepushstrategy_tests.cpp	
+	test/framesmuxer_tests.cpp
+	test/filereadermodule_tests.cpp
+	test/merge_tests.cpp
+	test/split_tests.cpp
+	test/imagemetadata_tests.cpp
+	test/bmpconverter_tests.cpp
+	test/rtsppusher_tests.cpp
+	test/findexstrategy_tests.cpp	
+	test/jpegdecodercv_tests.cpp
+	test/Imageresizecv_tests.cpp
+	test/faciallandmarkscv_tests.cpp
+	test/imageviewermodule_tests.cpp
+	test/ImageEncodeCV_tests.cpp
+	test/rotatecv_tests.cpp
+	test/affinetransform_tests.cpp
+	test/brightness_contrast_tests.cpp
+	test/virtualptz_tests.cpp
+	test/webcam_source_tests.cpp
+	test/facedetectorXform_tests.cpp
+	#test/sound_record_tests.cpp
+	test/pullstratergy_tests.cpp
+	test/QRReader_tests.cpp
+	test/textoverlayxform_tests.cpp
+	test/mp4writersink_tests.cpp
+	test/pipeline_tests.cpp
+	#test/multiple_pipeline_tests.cpp #todo this test needs to be improved and added
+	test/valveModule_tests.cpp
+	test/color_conversion_tests.cpp
+	test/archivespacemanager_tests.cpp
+	test/multimediaqueuexform_tests.cpp
+  	test/mp4readersource_tests.cpp
+	test/rtsp_client_tests.cpp
+	#test/motionvector_extractor_and_overlay_tests.cpp
+	test/mp4_reverse_play_tests.cpp
+	test/ordered_cache_of_files_tests.cpp
+	test/mp4_seek_tests.cpp
+	test/mp4_simul_read_write_tests.cpp
+	test/mp4_getlivevideots_tests.cpp
+	test/mp4_dts_strategy_tests.cpp
+	test/overlaymodule_tests.cpp
+	test/testSignalGeneratorSrc_tests.cpp
+	#test/audioToTextXform_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	# test/gtkglrenderer_tests.cpp
-	# test/virtualcamerasink_tests.cpp
-	# test/QRReader_tests.cpp
+	test/gtkglrenderer_tests.cpp
+	test/virtualcamerasink_tests.cpp
+	test/QRReader_tests.cpp
 	)
 	set(GLEW_LIBRARIES
 		GLEW::GLEW
@@ -669,37 +689,66 @@ IF(ENABLE_LINUX)
   	${GTK3_LIBRARIES}
 	)	
 ENDIF(ENABLE_LINUX)
+if(ENABLE_JPEG_DECODER)
+	target_link_libraries(aprapipesut
+		aprapipes
+		aprapipes_jpeg_l4tm
+		/usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
+		${GLEW_LIBRARIES}
+		${LIBMP4_LIB}
+		${OPENH264_LIB}
+		${Boost_LIBRARIES}
+		${FFMPEG_LIBRARIES}
+		${OpenCV_LIBRARIES}
+		${JETSON_LIBS}
+		${NVCUDAToolkit_LIBS}
+		${NVCODEC_LIB}
+		${NVJPEGLIB_L4T}
+		${CURSES_LIBRARIES}
+		ZXing::Core
+		ZXing::ZXing	
+		BZip2::BZip2
+		ZLIB::ZLIB
+		LibLZMA::LibLZMA
+		bigint::bigint
+		SFML::Audio
+		SFML::System
+		SFML::Window
+		SFML::Graphics
+		whisper::whisper
+	)
+else()
+	target_link_libraries(aprapipesut
+		aprapipes
+		aprapipes_jpeg_l4tm
+		/usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
+		${GLEW_LIBRARIES}
+		${JPEG_LIBRARIES}
+		${LIBMP4_LIB}
+		${OPENH264_LIB}
+		${Boost_LIBRARIES}
+		${FFMPEG_LIBRARIES}
+		${OpenCV_LIBRARIES}
+		${JETSON_LIBS}
+		${NVCUDAToolkit_LIBS}
+		${NVCODEC_LIB}
+		${NVJPEGLIB_L4T}
+		${CURSES_LIBRARIES}
+		ZXing::Core
+		ZXing::ZXing	
+		BZip2::BZip2
+		ZLIB::ZLIB
+		LibLZMA::LibLZMA
+		bigint::bigint
+		SFML::Audio
+		SFML::System
+		SFML::Window
+		SFML::Graphics
+		whisper::whisper
+	)
+endif()
 
-target_link_libraries(aprapipesut   
-  aprapipes
-  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
-  ${GLEW_LIBRARIES}
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
-  ZXing::Core
-  ZXing::ZXing	
-  BZip2::BZip2
-  ZLIB::ZLIB
-  LibLZMA::LibLZMA
-  bigint::bigint
-  SFML::Audio
-  SFML::System
-  SFML::Window
-  SFML::Graphics
-  whisper::whisper
-  /usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0
 
-  )
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
