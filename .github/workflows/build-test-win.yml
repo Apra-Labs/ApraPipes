@@ -30,12 +30,12 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite && choco install cmake --version=3.29.6 --force'
+        default: 'choco install python --version=3.10.11 --force && refreshenv && pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite && choco install cmake --version=3.29.6 --force'
         required: false
       prep-check-cmd:
         type: string
         description: 'command to check if the builder is ready'
-        default: 'cmake --version ; ninja --version ; git --version; pwsh --version'
+        default: 'python --version ; cmake --version ; ninja --version ; git --version; pwsh --version'
         #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
         required: false
       bootstrap-cmd:
