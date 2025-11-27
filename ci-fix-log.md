@@ -66,15 +66,18 @@ vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This confli
 **Result:** ❌ FAILED after 1 hour - same distutils error as build #1
 **Error:** Same glib build failure with Python 3.12.7 distutils issue
 
-## Attempt #4 - 2025-11-27 15:12 UTC
+## Attempt #4 - 2025-11-27 15:12 UTC (FAILED)
 **Branch:** fix/ci-windows-ak
 **Run ID:** 19740723976
-**Changes:** Modified vcpkg-tools.json to use Python 3.10.11 instead of 3.12.7
-- Python 3.10 has distutils built-in (removed in 3.12)
-- Updated both python3 and python3_with_venv entries
-- Computed and verified SHA512 hashes for Python 3.10.11 amd64
-- Removed setuptools installation workflow step (not needed)
+**Result:** ❌ FAILED - vcpkg submodule commit not fetchable (detached HEAD not pushed)
+**Error:** `fatal: remote error: upload-pack: not our ref bf0c600c6a`
+**Fix:** Created branch `python-3.10-downgrade` in Apra-Labs/vcpkg and pushed
+
+## Attempt #5 - 2025-11-27 15:18 UTC
+**Branch:** fix/ci-windows-ak
+**Run ID:** 19740916828
+**Changes:** Same Python 3.10.11 changes, but vcpkg commit now on pushed branch
 **Status:** Queued → Monitoring
-**Expected:** glib build should succeed with Python 3.10's built-in distutils
+**Expected:** Submodule checkout should succeed, then glib build with Python 3.10
 
 ---
