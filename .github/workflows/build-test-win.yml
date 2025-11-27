@@ -145,6 +145,41 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Install setuptools for vcpkg Python 3.12.7
+      shell: pwsh
+      run: |
+        Write-Host "Step 1: Trigger vcpkg Python download using vcpkg fetch"
+
+        # Use vcpkg fetch to download Python tool
+        & "${{ github.workspace }}\vcpkg\vcpkg.exe" fetch python3
+
+        Write-Host "Step 2: Locate vcpkg Python installation"
+        $vcpkgPythonPath = "${{ github.workspace }}\vcpkg\downloads\tools\python\python-3.12.7-x64-1\python.exe"
+
+        if (Test-Path $vcpkgPythonPath) {
+          Write-Host "Found vcpkg Python at: $vcpkgPythonPath"
+          Write-Host "Python version:"
+          & $vcpkgPythonPath --version
+
+          Write-Host "Step 3: Installing setuptools to provide distutils for Python 3.12..."
+
+          # Python 3.12 embed version needs get-pip.py
+          $getPipUrl = "https://bootstrap.pypa.io/get-pip.py"
+          $getPipPath = "${{ github.workspace }}\get-pip.py"
+          Invoke-WebRequest -Uri $getPipUrl -OutFile $getPipPath
+          & $vcpkgPythonPath $getPipPath
+
+          # Install setuptools
+          & $vcpkgPythonPath -m pip install --upgrade setuptools
+
+          Write-Host "Step 4: Verifying distutils availability..."
+          & $vcpkgPythonPath -c "import distutils; print('distutils check: OK')"
+        } else {
+          Write-Host "ERROR: vcpkg Python not found at expected path: $vcpkgPythonPath"
+          exit 1
+        }
+      continue-on-error: false
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
