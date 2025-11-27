@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-minimal-test",
+  "version": "0.0.1",
+  "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
+  "dependencies": [
+    {
+      "name": "glib",
+      "default-features": true,
+      "platform": "windows"
+    }
+  ]
+}

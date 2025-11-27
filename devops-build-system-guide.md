@@ -216,6 +216,99 @@ git add vcpkg
     remove-item * -Recurse -Force -Include *.pdb,*.ilk
 ```
 
+### Issue 6: vcpkg Registry Baseline Outdated
+**Symptom**: Multiple packages fail with hash mismatches or version issues
+**Root Cause**: `base/vcpkg-configuration.json` has stale baseline pointing to old vcpkg fork
+**Solution**: Update baseline to latest commit in fork
+```bash
+# Check current baseline
+cat base/vcpkg-configuration.json
+
+# Update vcpkg fork with latest microsoft/vcpkg
+cd vcpkg
+git fetch microsoft
+git checkout -b fix/rebase-on-latest microsoft/master
+git cherry-pick <your-custom-changes>
+git push origin fix/rebase-on-latest
+
+# Update baseline in configuration
+cd ../base
+# Edit vcpkg-configuration.json to use new commit hash
+git add vcpkg-configuration.json
+```
+
+### Issue 7: Python Version Cached by vcpkg
+**Symptom**: vcpkg-tools.json changes ignored, still uses old Python version
+**Root Cause**: vcpkg caches downloaded tools in `vcpkg/downloads/tools/`
+**Solution**: Clear downloads directory or bump cache key
+```yaml
+# Add workflow step to clear vcpkg downloads
+- name: Clear vcpkg downloads to force fresh tool download
+  run: remove-item vcpkg/downloads -Recurse -Force -ErrorAction SilentlyContinue
+
+# Or bump cache key version
+key: ${{ inputs.flav }}-5-${{ hashFiles(...) }}  # Changed from -4- to -5-
+```
+
+## Fast-Fail Testing Strategy
+
+### Minimal vcpkg.json for Rapid Testing
+When debugging vcpkg or baseline issues, use a minimal dependency set to speed up builds (5-10 minutes vs 60 minutes).
+
+**Use Case**: Test libxml2 hash fix and Python distutils without building entire project.
+
+#### Creating Minimal vcpkg.json
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "apra-pipes-minimal-test",
+  "version": "0.0.1",
+  "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
+  "dependencies": [
+    {
+      "name": "glib",
+      "default-features": true,
+      "platform": "windows"
+    }
+  ]
+}
+```
+
+**Why glib?**:
+- Depends on libxml2 (tests hash fix)
+- Build scripts require Python distutils (tests Python version)
+- Small package, builds quickly
+
+#### Helper Scripts
+Provided in `base/`:
+- `use-minimal-vcpkg.ps1` (Windows)
+- `use-minimal-vcpkg.sh` (Linux/Mac)
+
+**Usage**:
+```powershell
+# Switch to minimal
+.\base\use-minimal-vcpkg.ps1
+
+# Run test build
+# ... (trigger CI or build locally)
+
+# Restore full vcpkg.json
+Copy-Item base\vcpkg.json.full-backup base\vcpkg.json -Force
+```
+
+**Benefits**:
+- 5-10 minute builds vs 60 minutes
+- Faster iteration on vcpkg/baseline fixes
+- Saves CI build minutes
+- Reduces disk space usage
+
+**When to Use**:
+- Testing vcpkg baseline updates
+- Verifying libxml2 or other hash fixes
+- Testing Python version changes
+- Debugging vcpkg registry issues
+- Before triggering full Phase 1+2 builds
+
 ## Testing Strategy
 
 ### Test Execution
