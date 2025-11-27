@@ -73,14 +73,13 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
       run: |
-        ${{ inputs.prep-cmd }} 
+        ${{ inputs.prep-cmd }}
         apt purge cmake || true
-        pip3 install cmake==3.29.6 || echo 'did not update cmake'
+        pip3 install setuptools && pip3 install cmake==3.29.6 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
@@ -96,9 +95,9 @@ jobs:
       continue-on-error: true
 
     - name: Checkout code
-      uses: actions/checkout@v3
-      with: 
-        submodules: 'recursive' 
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
         fetch-depth: 0
 
     - name: List Submodules
@@ -132,7 +131,7 @@ jobs:
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
           path: |
             ${{ inputs.cache-path }}
