@@ -77,7 +77,7 @@ vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This confli
 **Branch:** fix/ci-windows-ak
 **Run ID:** 19740916828
 **Changes:** Same Python 3.10.11 changes, but vcpkg commit now on pushed branch
-**Status:** Queued → Monitoring
-**Expected:** Submodule checkout should succeed, then glib build with Python 3.10
+**Status:** ✅ Prep phase SUCCESS! → Now in build-test phase
+**Result:** Python 3.10.11 successfully used by vcpkg, glib build with distutils works!
 
 ---
