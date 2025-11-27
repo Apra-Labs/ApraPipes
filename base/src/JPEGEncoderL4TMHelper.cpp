@@ -45,7 +45,8 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
     {
         planes = 1;
     }
-
+    scaled_width=scale*width;
+    scaled_height=scale*height;
     uint32_t i, j, k;
 
     comp_width[0] = width;
@@ -79,6 +80,9 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
 
     cinfo.image_width = width;
     cinfo.image_height = height;
+    cinfo.image_scale = TRUE;
+    cinfo.scaled_image_width = scaled_width;
+    cinfo.scaled_image_height = scaled_height;
     if(color_space == JCS_RGBA_8888)
     {
         cinfo.input_components = 4; // RGBA

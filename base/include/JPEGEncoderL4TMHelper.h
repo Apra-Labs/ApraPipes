@@ -37,6 +37,8 @@ private:
 
  uint32_t h_max_samp = 0;
     uint32_t v_max_samp = 0;
+    uint32_t scaled_width;
+    uint32_t scaled_height;
 
  uint32_t h_samp[3];
     uint32_t v_samp[3];
