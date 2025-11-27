@@ -32,11 +32,19 @@ Fix the Windows NoCUDA build that has been failing for months. Multiple engineer
 
 ---
 
-## Attempt #2 - 2025-11-27 07:XX UTC
+## Attempt #2 - 2025-11-27 06:34 UTC
 **Branch:** fix/ci-windows-ak
-**Run ID:** TBD
+**Run ID:** 19727403084
 **Changes:** Updated vcpkg submodule from 6ba64191 (May 14) to be563dfee8 (Nov 27 latest)
-**Status:** About to trigger
+**Status:** Queued → Monitoring
 **Expected:** libxml2 hash issue should be resolved with updated vcpkg baseline
+
+## Critical Discovery - Python Version Conflict
+vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This conflicts with our Python 3.10 installation attempt. Python 3.12 removed distutils, which explains all the previous distutils-related fix attempts in git history.
+
+**New Strategy Needed:**
+- Option A: Let vcpkg use Python 3.12.7 and fix distutils compatibility (install setuptools)
+- Option B: Force vcpkg to use system Python 3.10 (may require vcpkg-tools.json modification)
+- Option C: Use vcpkg's Python 3.12.7 but ensure setuptools is installed for it
 
 ---
