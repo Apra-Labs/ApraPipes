@@ -31,8 +31,8 @@ jobs:
           lcov gcovr
         pip3 install meson
         pip3 install Jinja2
-        # Install latest CMake
-        pip3 install cmake --upgrade || echo 'CMake update skipped'
+        # Install CMake 3.29.6
+        pip3 install cmake==3.29.6 || echo 'CMake update skipped'
 
     - name: Verify tools
       run: |
