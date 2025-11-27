@@ -31,3 +31,12 @@ Fix the Windows NoCUDA build that has been failing for months. Multiple engineer
 3. Once core build works, add glib back with updated vcpkg
 
 ---
+
+## Attempt #2 - 2025-11-27 07:XX UTC
+**Branch:** fix/ci-windows-ak
+**Run ID:** TBD
+**Changes:** Updated vcpkg submodule from 6ba64191 (May 14) to be563dfee8 (Nov 27 latest)
+**Status:** About to trigger
+**Expected:** libxml2 hash issue should be resolved with updated vcpkg baseline
+
+---
