@@ -250,6 +250,184 @@ git add vcpkg-configuration.json
 key: ${{ inputs.flav }}-5-${{ hashFiles(...) }}  # Changed from -4- to -5-
 ```
 
+### Issue 8: vcpkg Baseline Commit Not Fetchable
+**Symptom**: `error: failed to fetch ref <hash> from repository` or "not our ref"
+**Root Cause**: The baseline commit exists in git history but isn't advertised by `git ls-remote`
+- Git only advertises branch tips, tags, and HEAD
+- Commits in the middle of history aren't fetchable by default
+
+**Why This Happens**:
+```bash
+# This commit is in history but not advertised
+ae8fa5ae5e [fontconfig] Update (#48484)  # Parent of branch tip
+
+# Only these are advertised and fetchable:
+dfa17587b2  refs/heads/fix/rebase-on-microsoft-master-with-python310  # Branch tip
+3011303ba1  refs/heads/master  # Branch tip
+```
+
+**Solution**: Always use commits that are advertised
+```bash
+# Check what commits are fetchable
+git ls-remote https://github.com/Apra-Labs/vcpkg.git
+
+# Use branch tip commits or tags as baselines
+# Good: HEAD of a branch
+"baseline": "3011303ba1f6586e8558a312d0543271fca072c6"  # master HEAD
+
+# Bad: Parent commit in history
+"baseline": "ae8fa5ae5e3b4d53d1ef5abdf1b6d0be6d37e806"  # Not advertised
+```
+
+**Alternative**: Create a git tag for the baseline
+```bash
+cd vcpkg
+git tag baseline-2025-11-27 ae8fa5ae5e
+git push origin baseline-2025-11-27
+# Now ae8fa5ae5e is advertised via refs/tags/baseline-2025-11-27
+```
+
+### Issue 9: "No Version Database Entry" Errors After Baseline Update
+**Symptom**: `error: no version database entry for boost-chrono at 1.89.0`
+**Root Cause**: The baseline commit doesn't have version database files in `versions/` directory
+**Common Causes**:
+1. Used wrong commit (not from vcpkg repository)
+2. Baseline commit is before version database was created
+3. Fork diverged from microsoft/vcpkg without version files
+
+**Solution**: Verify baseline has version database
+```bash
+# Check if baseline has version files
+git ls-tree <baseline-commit> versions/baseline.json
+git ls-tree <baseline-commit> versions/b-/boost-chrono.json
+
+# Ensure baseline is from microsoft/vcpkg or a proper fork
+git log --oneline <baseline-commit> | head -20
+
+# If missing, use a newer commit from microsoft/vcpkg
+```
+
+## vcpkg Fork Management Best Practices
+
+### CRITICAL: Never Modify Master Branches
+**❌ NEVER DO THIS:**
+```bash
+# DON'T push to master of forks
+git checkout master
+git merge fix/my-changes
+git push origin master  # DANGEROUS - breaks other builds!
+```
+
+**Why This Is Dangerous**:
+- Other builds/projects may depend on the fork's master
+- Can break production CI pipelines
+- Hard to revert without force-push (often blocked)
+- Violates protected branch policies
+
+**✅ ALWAYS DO THIS INSTEAD:**
+```bash
+# Use feature branches
+git checkout -b fix/vcpkg-update-2025-11-27
+git push origin fix/vcpkg-update-2025-11-27
+
+# Update baseline to point to feature branch HEAD
+# In vcpkg-configuration.json:
+"baseline": "<commit-from-feature-branch>"
+```
+
+### Proper vcpkg Fork Update Workflow
+
+#### Option 1: Feature Branch (Recommended)
+```bash
+# 1. Create feature branch from microsoft/vcpkg
+cd vcpkg
+git fetch microsoft
+git checkout -b fix/update-2025-11-27 microsoft/master
+
+# 2. Cherry-pick your custom changes
+git cherry-pick <your-python-fix-commit>
+
+# 3. Push to fork
+git push origin fix/update-2025-11-27
+
+# 4. Get the commit hash
+BASELINE=$(git rev-parse HEAD)
+
+# 5. Update ApraPipes configuration
+cd ../base
+# Edit vcpkg-configuration.json with $BASELINE
+git commit -am "ci: Update vcpkg baseline to fix/update-2025-11-27"
+```
+
+#### Option 2: Git Tags (For Stable Baselines)
+```bash
+# Tag a specific commit
+cd vcpkg
+git tag baseline-2025-11-27-stable dfa17587b2
+git push origin baseline-2025-11-27-stable
+
+# Use the tag commit in configuration
+"baseline": "dfa17587b27fcb5642e74632e49b3f9775aa1c19"
+```
+
+#### Option 3: Overlay Ports (For Custom Packages)
+For small modifications, use vcpkg overlay-ports instead of forking:
+```yaml
+# vcpkg-configuration.json already has:
+"overlay-ports": [
+  "../thirdparty/custom-overlay"
+]
+
+# Put modified portfiles in thirdparty/custom-overlay/
+thirdparty/custom-overlay/
+  glib/
+    portfile.cmake
+    vcpkg.json
+```
+
+### Mistake Recovery: What If You Already Pushed to Master?
+
+If you accidentally pushed to fork's master branch:
+
+1. **Don't panic** - The damage is done but containable
+2. **Create a revert commit** (if master isn't protected):
+```bash
+git revert HEAD --no-edit
+git push origin master
+```
+
+3. **Or create a hotfix branch** from the previous good commit:
+```bash
+git checkout -b hotfix/restore-master <previous-good-commit>
+git push origin hotfix/restore-master
+# Ask repo owner to reset master to this commit
+```
+
+4. **Communicate**: Notify other users of the fork about the change
+5. **Use feature branch going forward**: Don't repeat the mistake
+
+### Lessons from Build #6-#9
+
+**What Went Wrong**:
+1. Created baseline with commit `ae8fa5ae5e` (microsoft/vcpkg parent)
+2. That commit wasn't advertised by `git ls-remote`
+3. vcpkg couldn't fetch it → "no version database entry" errors
+4. **MISTAKE**: Merged to Apra-Labs/vcpkg master (should have used feature branch)
+5. Fixed by using merge commit `3011303ba1` (advertised)
+
+**What Should Have Been Done**:
+1. Keep fixes on feature branch: `fix/rebase-on-microsoft-master-with-python310`
+2. Use feature branch tip as baseline: `dfa17587b2`
+3. Never touch master branch
+4. Use git tags for stable baselines
+
+**Key Takeaways**:
+- ✅ Always use `git ls-remote` to verify commit is fetchable
+- ✅ Use branch tips or tags as baselines, never parent commits
+- ✅ Keep all changes on feature branches
+- ❌ Never push to master branches of forks
+- ❌ Never assume commits in history are fetchable
+
 ## Fast-Fail Testing Strategy
 
 ### Minimal vcpkg.json for Rapid Testing
