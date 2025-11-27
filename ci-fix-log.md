@@ -54,15 +54,22 @@ vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This confli
 **Root Cause:** vcpkg's Python 3.12.7 lacks distutils (removed in Python 3.12). glib build scripts require it.
 **Fix Needed:** Install setuptools to provide distutils shim for vcpkg's Python 3.12.7
 
-## Attempt #3 - 2025-11-27 07:25 UTC
+## Attempt #3 - 2025-11-27 07:25 UTC (FAILED)
 **Branch:** fix/ci-windows-ak
 **Run ID:** 19728449975
 **Changes:** Added workflow step to install setuptools for vcpkg's Python 3.12.7
-- Use `vcpkg fetch python3` to trigger Python download
-- Install pip using get-pip.py
-- Install setuptools to provide distutils shim
-- Verify distutils import before CMake configure
-**Status:** Queued → Monitoring
-**Expected:** glib build should succeed with distutils available
+**Result:** ❌ FAILED - vcpkg fetch python3 didn't download Python, returned system py.exe instead
+**Lesson:** Wrong approach - patching Python 3.12 is harder than using older Python with distutils
+
+## Attempt #4 - 2025-11-27 07:XX UTC
+**Branch:** fix/ci-windows-ak
+**Run ID:** TBD
+**Changes:** Modified vcpkg-tools.json to use Python 3.10.11 instead of 3.12.7
+- Python 3.10 has distutils built-in (removed in 3.12)
+- Updated both python3 and python3_with_venv entries
+- Computed and verified SHA512 hashes for Python 3.10.11 amd64
+- Removed setuptools installation workflow step (not needed)
+**Status:** About to commit and trigger
+**Expected:** glib build should succeed with Python 3.10's built-in distutils
 
 ---
