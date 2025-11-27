@@ -138,9 +138,16 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
-    
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ inputs.flav }}-5-
+
+    - name: Clear vcpkg downloads to force fresh Python download
+      if: ${{!inputs.is-selfhosted}}
+      working-directory: ${{github.workspace}}
+      run: remove-item vcpkg/downloads -Recurse -Force -ErrorAction SilentlyContinue
+      shell: pwsh
+      continue-on-error: true
+
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true

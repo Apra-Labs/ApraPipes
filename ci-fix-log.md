@@ -73,11 +73,29 @@ vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This confli
 **Error:** `fatal: remote error: upload-pack: not our ref bf0c600c6a`
 **Fix:** Created branch `python-3.10-downgrade` in Apra-Labs/vcpkg and pushed
 
-## Attempt #5 - 2025-11-27 15:18 UTC
+## Attempt #5 - 2025-11-27 15:18 UTC (FAILED)
 **Branch:** fix/ci-windows-ak
 **Run ID:** 19740916828
-**Changes:** Same Python 3.10.11 changes, but vcpkg commit now on pushed branch
-**Status:** ✅ Prep phase SUCCESS! → Now in build-test phase
-**Result:** Python 3.10.11 successfully used by vcpkg, glib build with distutils works!
+**Changes:** Same Python 3.10.11 changes in vcpkg-tools.json, vcpkg commit now on pushed branch
+**Result:** ❌ FAILED - TWO critical issues found:
+
+### Issue 1: Python 3.10 downgrade DID NOT WORK
+- vcpkg-tools.json was modified to specify Python 3.10.11
+- Build STILL downloaded and used Python 3.12.7: `python-3.12.7-x64-1\python.exe`
+- Same distutils error: `ModuleNotFoundError: No module named 'distutils'`
+- **Root Cause**: vcpkg might be caching the tools.json or pulling from a different source
+
+### Issue 2: libxml2 hash mismatch STILL FAILING
+- Phase 1 (prep): libxml2 download from gitlab.gnome.org still has wrong hash
+- Expected: 289d8e30a894a3efde78e06d1cedadc1491f4abdc2c0b653bb5410be48338aacec29e0ca23e1f1cac2725fd4e2114a8d20dcdaa80cf7f5b34302342d6f5efe10
+- Actual: eeb5e896c76f7a72c84a7afa31eff70effd39b9091e0c662539d994885f4ad24fafab6e1dfdcad39ae124c8c7e8abb11732628fba31b0b45bce2d0d7afbb4dc0
+- **Root Cause**: vcpkg registry still pointing to Apra-Labs/vcpkg fork with old libxml2 portfile
+- Build logs show: `git+https://github.com/Apra-Labs/vcpkg.git@caa5f663ba4c26ac2402c6aaa56781bd262fc05e`
+- This commit (caa5f663) is in Apra-Labs fork, NOT microsoft/vcpkg
+
+### Analysis:
+1. The vcpkg submodule update to microsoft/vcpkg master didn't help because vcpkg registry is configured to use Apra-Labs fork
+2. The Python downgrade in vcpkg-tools.json was ignored - vcpkg still downloaded Python 3.12.7
+3. Need to investigate why vcpkg-tools.json changes aren't being applied
 
 ---
