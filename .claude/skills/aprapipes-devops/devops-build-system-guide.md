@@ -100,7 +100,7 @@ Similar structure to Windows workflow but for Linux builds.
 ### vcpkg Package Manager
 - **Purpose**: Manages C++ dependencies (OpenCV, Boost, FFmpeg, etc.)
 - **Configuration**: `base/vcpkg.json` defines all dependencies
-- **Baseline**: `vcpkg/baseline.json` pins package versions
+- **Baseline**: Points to specific vcpkg repository commit (in `base/vcpkg-configuration.json`)
 - **Toolchain**: `vcpkg/scripts/buildsystems/vcpkg.cmake` integrates with CMake
 
 ### vcpkg Tools Configuration
@@ -108,12 +108,59 @@ Similar structure to Windows workflow but for Linux builds.
 - **Purpose**: Defines which versions of Python, CMake, etc. vcpkg downloads
 - **Critical**: Python version must be 3.10.x (has distutils) not 3.12+ (distutils removed)
 
+### Version Pinning Strategy (Critical for Stability)
+
+**Core Principle**: Pin major versions of all production dependencies to avoid breaking changes.
+
+#### Why Version Pinning Matters
+When updating vcpkg baseline without version overrides:
+- Any package can jump to a new major version
+- Breaking API changes can silently break your build
+- Errors appear unrelated to dependency update
+- Builds become non-reproducible ("worked yesterday" syndrome)
+
+#### Current Pinned Versions
+```json
+"overrides": [
+  { "name": "ffmpeg", "version": "4.4.3" },      // Pinned to 4.x
+  { "name": "libarchive", "version": "3.5.2" },  // Pinned to 3.x
+  { "name": "sfml", "version": "2.6.2" }         // Pinned to 2.x (SFML 3.x has breaking changes)
+]
+```
+
+#### Version Pinning Tiers
+
+**Tier 1 - Critical Dependencies (MUST Pin)**:
+- Packages with complex APIs your code directly uses
+- Libraries with history of breaking changes between major versions
+- Examples: opencv4, boost, gtk3, sfml, ffmpeg
+
+**Tier 2 - Medium Dependencies (Consider Pinning)**:
+- Packages used in specific modules
+- Rapidly evolving libraries (AI/ML)
+- Examples: whisper, nu-book-zxing-cpp
+
+**Tier 3 - Low-Risk Utilities (Can Use Baseline)**:
+- Rarely have breaking API changes
+- Updated primarily for security/bug fixes
+- Examples: pkgconf, zlib, bzip2, liblzma, brotli
+
+#### Version Update Process
+When intentionally upgrading a pinned package:
+1. Create dedicated branch: `update/opencv-4.8-to-4.9`
+2. Update version override in vcpkg.json
+3. Review upstream changelog for breaking changes
+4. Update code if needed
+5. Test thoroughly
+6. Document migration in commit message
+
 ### Key Dependencies
 - **OpenCV**: Largest dependency, includes CUDA/cuDNN features
 - **glib**: Requires Python with distutils for build
-- **FFmpeg**: Video processing
+- **FFmpeg**: Video processing (pinned to 4.4.3)
 - **Boost**: C++ utilities
-- **libxml2**: Previously had hash mismatch issues (fixed by vcpkg update)
+- **SFML**: Audio/graphics (pinned to 2.6.2 - SFML 3.x has breaking API changes)
+- **libxml2**: XML parsing (dependency of glib)
 
 ## Build Configuration Scripts
 
@@ -287,7 +334,56 @@ git push origin baseline-2025-11-27
 # Now ae8fa5ae5e is advertised via refs/tags/baseline-2025-11-27
 ```
 
-### Issue 9: "No Version Database Entry" Errors After Baseline Update
+### Issue 9: PKG_CONFIG_EXECUTABLE Not Found
+**Symptom**: `Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE)`
+**Root Cause**: CMake's FindPkgConfig module can't find a compatible pkg-config executable
+**Common Misdiagnosis**: Trying to add pkg-config directories to PATH
+
+**Why PATH fixes don't work**:
+- The system already has pkg-config installed (e.g., via chocolatey on Windows)
+- CMake FindPkgConfig is looking for a specific executable format/version
+- Adding to PATH doesn't solve incompatibility issues
+
+**Correct Solution**: Add pkgconf to vcpkg dependencies
+```json
+{
+  "dependencies": [
+    "pkgconf",  // vcpkg's pkg-config implementation
+    // ... other dependencies
+  ]
+}
+```
+
+**Why this works**:
+- vcpkg provides pkgconf package with CMake integration
+- FindPkgConfig automatically finds vcpkg-installed pkgconf
+- Located at: `vcpkg_installed/x64-windows/tools/pkgconf/pkgconf.exe`
+
+**Key Lesson**: When CMake can't find a tool, provide it through vcpkg rather than modifying system PATH.
+
+### Issue 10: Package Version Breaking Changes
+**Symptom**: Build fails after vcpkg baseline update with API-related errors
+**Root Cause**: Package upgraded to new major version with breaking changes
+**Example**: SFML 2.x → 3.x removed "system" component, changed `sf::Int16` to `std::int16_t`
+
+**Solution**: Pin package to compatible major version
+```json
+{
+  "overrides": [
+    { "name": "sfml", "version": "2.6.2" }  // Prevents auto-upgrade to 3.x
+  ]
+}
+```
+
+**Prevention Strategy**:
+1. Pin major versions of all critical dependencies
+2. Test baseline updates in isolated branches first
+3. Review vcpkg changelog before updating baseline
+4. Use version overrides liberally - unpinned packages are time bombs
+
+**DevOps Principle**: Fix the build, not the code. Code migration (e.g., SFML 2.x → 3.x) is a separate developer task, not a CI fix task.
+
+### Issue 11: "No Version Database Entry" Errors After Baseline Update
 **Symptom**: `error: no version database entry for boost-chrono at 1.89.0`
 **Root Cause**: The baseline commit doesn't have version database files in `versions/` directory
 **Common Causes**:
@@ -306,6 +402,27 @@ git log --oneline <baseline-commit> | head -20
 
 # If missing, use a newer commit from microsoft/vcpkg
 ```
+
+### Issue 12: continue-on-error Hiding Real Failures
+**Symptom**: Workflow shows "success" but actual errors occurred
+**Root Cause**: `continue-on-error: true` prevents step failure from stopping workflow
+**When it happens**: Commonly used in Phase 1 (prep) to allow partial completion
+
+**Problem**: Makes debugging difficult
+- Real errors (libxml2 hash, distutils failures) appear as "success"
+- Hard to distinguish expected failures from real problems
+- "Success" doesn't mean actual success
+
+**Diagnostic Approach**:
+1. **Don't trust step status** - check actual error messages in logs
+2. **Search for "error:" in logs** - not just workflow status
+3. **Ignore errors from steps with continue-on-error** - focus on steps without it
+4. **Look for CMake Error, Build failed, etc.** - actual failure indicators
+
+**Better Alternatives**:
+- Use direct vcpkg install instead of CMake for caching phases
+- Add explicit validation steps after continue-on-error steps
+- Temporarily remove continue-on-error to see real failures
 
 ## vcpkg Fork Management Best Practices
 
@@ -577,21 +694,31 @@ grep "unexpected hash" build.log
 ### For Development
 1. **Use manual triggers**: Disable automatic triggers during active development
 2. **Test Phase 1 first**: Ensure caching works before running Phase 2
-3. **Monitor every 5 minutes**: Catch failures early
-4. **Keep fix log**: Document each attempt and findings (see `ci-fix-log.md`)
+3. **Monitor regularly**: Catch failures early
+4. **Document major issues**: Add new patterns to this guide for future engineers
 5. **Use minimal vcpkg**: Temporarily remove packages to isolate issues
 
+### For Dependency Management
+1. **Pin major versions**: Use version overrides for all critical dependencies
+2. **Test baseline updates in isolation**: Never update baseline directly in production
+3. **Capture version snapshots**: Run `vcpkg list` after successful builds
+4. **Review changelogs**: Check for breaking changes before upgrading packages
+5. **DevOps role clarity**: Fix builds, don't modify application code to accommodate new library versions
+
 ### For Maintenance
-1. **Update vcpkg regularly**: Avoid stale baselines causing hash mismatches
-2. **Pin critical tool versions**: Especially Python (must be 3.10.x)
+1. **Update vcpkg quarterly**: Avoid stale baselines causing hash mismatches, but test first
+2. **Pin critical tool versions**: Especially Python (must be 3.10.x for distutils)
 3. **Test cache invalidation**: Verify new cache keys work as expected
 4. **Monitor disk usage**: Public runners have limited space
+5. **Review pinned versions**: Check if pinned packages need security updates
 
 ### For Troubleshooting
 1. **Download full logs**: Don't rely on GitHub Actions UI truncation
-2. **Check vcpkg buildtrees**: Most detailed error information
-3. **Verify submodules**: Ensure vcpkg commit is fetchable
-4. **Test locally**: Reproduce issues on similar environment when possible
+2. **Beware continue-on-error**: Check actual error messages, not just step status
+3. **Check vcpkg buildtrees**: Most detailed error information
+4. **Verify submodules**: Ensure vcpkg commit is fetchable with `git ls-remote`
+5. **Test locally**: Reproduce issues on similar environment when possible
+6. **Think logically**: Before adding PATH fixes, verify the tool actually needs to be in PATH
 
 ## Future Improvements
 
@@ -655,9 +782,7 @@ docs: Add phase 1 optimization plan
 
 ### Documentation Files
 - `README.md`: Project overview and setup
-- `ci-fix-log.md`: Build fix attempt history
-- `phase1-optimization-plan.md`: Phase 1 improvement proposals
-- `devops-build-system-guide.md`: This document
+- `devops-build-system-guide.md`: This document - comprehensive build system knowledge
 
 ## Appendix: Common Commands
 
