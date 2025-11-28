@@ -119,11 +119,13 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
-    - name: Leave only OpenCV from vcpkg during prep phase
-      if: inputs.is-prep-phase
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json.ps1 -onlyOpenCV
-      shell: pwsh
+    # Option B: Install ALL dependencies in Phase 1 (not just OpenCV)
+    # This ensures Phase 1 validates all dependencies install correctly
+    # - name: Leave only OpenCV from vcpkg during prep phase
+    #   if: inputs.is-prep-phase
+    #   working-directory: ${{github.workspace}}/base
+    #   run: .\fix-vcpkg-json.ps1 -onlyOpenCV
+    #   shell: pwsh
 
     # - name: cache init on container build
     #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
@@ -163,7 +165,7 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+      # Option B: Phase 1 validates CMake configure works (all deps installed correctly)
 
     - name: Remove files not needed for the build
       if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only

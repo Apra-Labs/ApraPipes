@@ -44,18 +44,17 @@ Use this decision tree:
 
 ```
 Is this a CUDA build? (Check workflow name: *-CUDA.yml)
-├─ YES → troubleshooting.cuda.md
-│   └─ Self-hosted runners (different behavior)
+├─ YES → troubleshooting.cuda.md (all CUDA builds use self-hosted runners)
+│   ├─ Windows CUDA → Self-hosted Windows + CUDA
+│   ├─ Linux CUDA → Self-hosted Linux x64 + CUDA
+│   └─ Jetson → Self-hosted ARM64 + CUDA (also see troubleshooting.jetson.md)
 │
-└─ NO → Which platform?
-    ├─ Windows → troubleshooting.windows.md
+└─ NO (NoCUDA) → Which platform?
+    ├─ Windows NoCUDA → troubleshooting.windows.md
     │   └─ GitHub-hosted, two-phase builds
     │
-    ├─ Linux x64 → troubleshooting.linux.md
+    ├─ Linux x64 NoCUDA → troubleshooting.linux.md
     │   └─ GitHub-hosted, two-phase builds
-    │
-    ├─ Jetson/ARM64 → troubleshooting.jetson.md
-    │   └─ Self-hosted, ARM64 + CUDA constraints
     │
     └─ Docker/WSL → troubleshooting.docker.md
         └─ Container-specific issues
