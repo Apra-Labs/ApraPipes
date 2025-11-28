@@ -6,22 +6,22 @@ Action items and improvements to be implemented when current build fixes are com
 
 ## High Priority (Implement After Build #13 Success)
 
-### TODO-1: Migrate to Windows Server 2022 and Single-Phase Builds
+### TODO-1: Simplify to Single-Phase Build
 
 **Status**: Pending Build #13 success
 **Priority**: High
-**Estimated Effort**: 2-4 hours
+**Estimated Effort**: 1-2 hours
 
 **Context**:
 - GitHub-hosted runners have **6 hour limit per job**, not 1 hour as previously assumed
-- Windows Server 2025 only has ~33 GB disk space (D: drive removed)
-- Windows Server 2022 has ~185 GB disk space (38 GB C: + 147 GB D:)
+- ✅ **Already using `windows-2022`** (185 GB disk space with D: drive)
 - Current two-phase build strategy was designed for 1-hour constraint that doesn't exist
+- Two phases add complexity: cache invalidation, harder debugging, longer total time
 
 **Objective**:
-1. Switch from `windows-latest` to `windows-2022` for stable disk space
+1. ~~Switch from `windows-latest` to `windows-2022`~~ ✅ Already done!
 2. Eliminate two-phase build complexity (Phase 1 prep + Phase 2 build/test)
-3. Use single-phase build (just Phase 2 equivalent - full build + test)
+3. Use single-phase build (full build + test in one job)
 
 **Benefits**:
 - ✅ Simplified workflow (one job instead of two)
@@ -32,15 +32,7 @@ Action items and improvements to be implemented when current build fixes are com
 
 **Implementation Steps**:
 
-1. **Update Runner Specification**
-   ```yaml
-   # .github/workflows/CI-Win-NoCUDA.yml
-   # Change from:
-   runner: windows-latest
-
-   # To:
-   runner: windows-2022
-   ```
+1. ~~**Update Runner Specification**~~ ✅ Already using `windows-2022`!
 
 2. **Simplify Workflow to Single Phase**
    ```yaml
