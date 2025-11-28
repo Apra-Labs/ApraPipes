@@ -99,3 +99,44 @@ vcpkg downloads its own Python 3.12.7 (defined in vcpkg-tools.json). This confli
 3. Need to investigate why vcpkg-tools.json changes aren't being applied
 
 ---
+
+## Attempt #10 - 2025-11-28 00:48 UTC (FAILED)
+**Branch:** fix/ci-windows-ak
+**Run ID:** 19750941275
+**Changes:** Added pkgconf to minimal vcpkg.json (only pkgconf + glib)
+**Result:** ❌ FAILED after 28 minutes
+**Error:** `Could NOT find Boost (missing: Boost_INCLUDE_DIR system thread filesystem serialization log chrono unit_test_framework)`
+
+### Root Cause Analysis:
+The "minimal" vcpkg.json was TOO minimal. It only included:
+- pkgconf (for CMake FindPkgConfig) ✅
+- glib (to test libxml2 hash + Python distutils) ✅
+
+However, base/CMakeLists.txt line 42 requires ALL of these packages with REQUIRED flag:
+- PkgConfig
+- Boost (system, thread, filesystem, serialization, log, chrono, unit_test_framework)
+- JPEG
+- OpenCV
+- BZip2, ZLIB, LibLZMA
+- FFMPEG
+- ZXing
+- bigint
+
+### Key Lesson - continue-on-error Flag Confusion:
+The PKG_CONFIG_EXECUTABLE error appeared in BOTH phases:
+1. **Prep phase**: Error shown but step has `continue-on-error: true` (expected to fail)
+2. **Test phase**: Would fail here if CMake config failed
+
+The ACTUAL blocking error was NOT PKG_CONFIG - it was the missing Boost dependency. The prep phase PKG_CONFIG error was a red herring because that step is designed to fail partially.
+
+### Fix Applied:
+Restored full vcpkg.json.full-backup and added pkgconf as first dependency. This manifest includes all required packages that CMakeLists.txt needs.
+
+### Status:
+Ready to test with full manifest + pkgconf addition. This should properly test:
+1. libxml2 hash fix (via glib dependency)
+2. Python 3.10 distutils (via glib build)
+3. PKG_CONFIG_EXECUTABLE (via pkgconf package)
+4. All other required dependencies for complete build
+
+---
