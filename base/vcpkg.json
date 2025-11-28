@@ -11,6 +11,10 @@
     {
       "name": "libarchive",
       "version": "3.5.2"
+    },
+    {
+      "name": "sfml",
+      "version": "2.6.2"
     }
   ],
   "dependencies": [
