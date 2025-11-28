@@ -152,6 +152,14 @@ jobs:
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Add pkg-config to PATH
+      if: ${{!inputs.is-selfhosted}}
+      shell: pwsh
+      run: |
+        $env:PATH = "C:\ProgramData\chocolatey\bin;$env:PATH"
+        echo "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        Write-Host "Added chocolatey bin to PATH for pkg-config"
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
