@@ -67,7 +67,7 @@ std::string Mp4WriterSinkUtils::filePath(boost::filesystem::path relPath, std::s
 
 bool Mp4WriterSinkUtils::customNamedFileDirCheck(std::string baseFolder, uint32_t chunkTimeInMinutes, boost::filesystem::path relPath, std::string& nextFrameFileName)
 {
-	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	if (boost::filesystem::path(baseFolder).extension() == ".mp4")
 	{
 		if (chunkTimeInMinutes == UINT32_MAX)
 		{
@@ -174,7 +174,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		syncFlag = false;
 	}
 
-	if (boost::filesystem::extension(baseFolder) == ".mp4")
+	if (boost::filesystem::path(baseFolder).extension() == ".mp4")
 	{
 		if(currentFolder != baseFolder)
 		{
