@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -880,7 +880,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 	for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 	{
 		auto dirPath = itr.path();
-		if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+		if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 		{
 			readPath = dirPath.string();
 			rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -994,7 +994,7 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 		for (auto &&itr : boost::filesystem::recursive_directory_iterator(writeFolderPath))
 		{
 			auto dirPath = itr.path();
-			if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+			if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 			{
 				readPath = dirPath.string();
 				rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
@@ -1094,7 +1094,7 @@ BOOST_AUTO_TEST_CASE(ultimate)
 		for (auto &&itr : boost::filesystem::recursive_directory_iterator(cannonicalWriteFolderPath))
 		{
 			auto dirPath = itr.path();
-			if (boost::filesystem::is_regular_file(dirPath) && boost::filesystem::extension(dirPath) == ".mp4")
+			if (boost::filesystem::is_regular_file(dirPath) && dirPath.extension() == ".mp4")
 			{
 				readPath = dirPath.string();
 				rootPath = boost::filesystem::path(readPath).parent_path().parent_path().string();
