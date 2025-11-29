@@ -668,12 +668,11 @@ IF(ENABLE_LINUX)
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
   	${GTK3_LIBRARIES}
-	fmt::fmt
 	)
 ENDIF(ENABLE_LINUX)
 
-target_link_libraries(aprapipesut   
-  aprapipes  
+target_link_libraries(aprapipesut
+  aprapipes
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -687,7 +686,7 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ZXing::Core
-  ZXing::ZXing	
+  ZXing::ZXing
   BZip2::BZip2
   ZLIB::ZLIB
   LibLZMA::LibLZMA
@@ -695,6 +694,11 @@ target_link_libraries(aprapipesut
   sfml-audio
   whisper::whisper
   )
+
+# fmt must come after sfml-audio for static linking on Linux (OpenAL depends on fmt)
+IF(ENABLE_LINUX)
+	target_link_libraries(aprapipesut fmt::fmt)
+ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)

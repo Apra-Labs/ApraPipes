@@ -333,6 +333,119 @@ Change `5` to `6` in cache key definition in `build-test-win.yml` or `build-test
 | Phase 1 saves, Phase 2 restores | Expected flow |
 | Phase 2 before Phase 1 | Cache miss (run Phase 1 first) |
 
+### Cache Optimization Tip - Preserving Cache During Development
+
+**Problem**: Cache invalidates on every vcpkg.json change, causing hours of rebuilding the same packages repeatedly.
+
+**Solution**: During iterative development, remove `hashFiles()` from cache key to preserve cache across dependency changes.
+
+**Standard Cache Key** (production):
+```yaml
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+restore-keys: ${{ inputs.flav }}-5-
+```
+
+**Optimized Cache Key** (development):
+```yaml
+key: ${{ inputs.flav }}-5
+restore-keys: ${{ inputs.flav }}-
+```
+
+**Benefits**:
+- Cache persists across vcpkg.json modifications
+- Adding/removing dependencies doesn't trigger full rebuild
+- Packages already built remain cached
+- Only new/changed packages rebuild
+
+**Trade-offs**:
+- Cache doesn't auto-invalidate on dependency changes
+- Must manually bump version number (5 → 6) when needed
+- Can accumulate stale packages over time
+
+**When to Use**:
+- ✓ During active development with frequent vcpkg.json changes
+- ✓ When iteratively fixing build issues across platforms
+- ✓ When adding multiple dependencies in sequence
+
+**When NOT to Use**:
+- ✗ On main branch (use hash-based invalidation)
+- ✗ When cache corruption suspected (bump version instead)
+- ✗ For production builds (want deterministic cache behavior)
+
+**Applies to**: All workflows with caching (Windows NoCUDA, Linux NoCUDA, etc.)
+
+---
+
+## Linking Static Dependencies
+
+### vcpkg.json vs CMakeLists.txt
+
+**Two separate requirements for using a package:**
+
+| Action | File | Purpose |
+|--------|------|---------|
+| Install package | `vcpkg.json` | Makes vcpkg download and build the library |
+| Link package | `CMakeLists.txt` | Tells linker to include library in executable |
+
+**Both are required.** Installing alone doesn't link it.
+
+### Transitive Dependencies in Static Builds
+
+**Problem**: vcpkg uses static libraries (`.a`). Static libs don't carry dependency info.
+
+**Example**:
+```
+Your executable → sfml-audio → libopenal.a → needs fmt
+```
+
+**What happens**:
+- OpenAL is compiled with fmt and has references to `fmt::vformat`
+- When linking statically, linker doesn't know OpenAL needs fmt
+- Result: `undefined reference to fmt::vformat`
+
+**Solution**: Explicitly link ALL transitive dependencies in CMakeLists.txt:
+
+```cmake
+find_package(SFML REQUIRED)
+find_package(fmt CONFIG REQUIRED)  # Even if you don't use fmt directly
+
+target_link_libraries(myapp
+  sfml-audio    # Direct dependency
+  fmt::fmt      # Transitive dependency (required by OpenAL, used by SFML)
+)
+```
+
+### Debugging Transitive Dependency Errors
+
+**Symptoms**: `undefined reference` errors during linking
+
+**Diagnosis steps**:
+1. Look at undefined symbol: `undefined reference to 'fmt::v12::vformat'`
+2. Check which `.a` file references it: `libopenal.a(alc.cpp.o)`
+3. Trace dependency chain: executable → sfml-audio → openal → fmt
+4. Add missing library to `target_link_libraries`
+
+**Quick check**:
+```bash
+# Find what libraries reference missing symbol
+grep -r "undefined reference" build.log
+# Example: /usr/bin/ld: vcpkg_installed/x64-linux/lib/libopenal.a(alc.cpp.o)
+```
+
+### Target-Specific Linking
+
+**Common mistake**: Adding library to wrong target
+
+```cmake
+# WRONG - linking to 'main' when 'aprapipesut' needs it
+target_link_libraries(main PRIVATE fmt::fmt)
+
+# RIGHT - link to the target that actually uses it
+target_link_libraries(aprapipesut PRIVATE fmt::fmt)
+```
+
+**Rule**: Link libraries to the specific executable/library target that uses them.
+
 ---
 
 ## Dependency Matrix
