@@ -114,25 +114,10 @@ jobs:
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF')}} 
+      if: ${{ contains(inputs.cuda,'OFF')}}
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
-
-    # Option B: Install ALL dependencies in Phase 1 (not just OpenCV)
-    # This ensures Phase 1 validates all dependencies install correctly
-    # - name: Leave only OpenCV from vcpkg during prep phase
-    #   if: inputs.is-prep-phase
-    #   working-directory: ${{github.workspace}}/base
-    #   run: .\fix-vcpkg-json.ps1 -onlyOpenCV
-    #   shell: pwsh
-
-    # - name: cache init on container build
-    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-    #   run: |
-    #     cp -R /root/.cache /github/home/ || true
-    #     ls ${{ inputs.cache-path }} || true
-    #   continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
@@ -140,8 +125,8 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-5-
+          key:  ${{ inputs.flav }}-5
+          restore-keys: ${{ inputs.flav }}-
 
     - name: Clear vcpkg downloads to force fresh Python download
       if: ${{!inputs.is-selfhosted}}
@@ -165,7 +150,6 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      # Option B: Phase 1 validates CMake configure works (all deps installed correctly)
 
     - name: Remove files not needed for the build
       if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only

@@ -117,20 +117,13 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
-    # - name: cache init on container build
-    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-    #   run: |
-    #     cp -R /root/.cache /github/home/ || true
-    #     ls ${{ inputs.cache-path }} || true
-    #   continue-on-error: true
-
     - name: Cache dependencies for fast cloud build
       id: cache-all
       uses: actions/cache@v3
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4
+          key:  ${{ inputs.flav }}-5
           restore-keys: ${{ inputs.flav }}-
     
     - name: Make build folder
@@ -140,7 +133,6 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
@@ -161,7 +153,7 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{ always() }}
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
