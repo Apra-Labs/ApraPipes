@@ -170,7 +170,7 @@ jobs:
     - name: Remove files not needed for the build
       if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only
       working-directory: ${{github.workspace}}
-      run: remove-item vcpkg/downloads -Recurse -Force && remove-item * -Recurse -Force -Include *.pdb,*.ilk
+      run: remove-item vcpkg/downloads -Recurse -Force -ErrorAction SilentlyContinue; remove-item * -Recurse -Force -Include *.pdb,*.ilk -ErrorAction SilentlyContinue
       shell: pwsh
       continue-on-error: true
 
