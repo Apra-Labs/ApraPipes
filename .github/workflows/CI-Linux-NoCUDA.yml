@@ -7,13 +7,24 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   
 jobs:
-  linux-nocuda-build-test:
+  linux-nocuda-build-prep:
     uses: ./.github/workflows/build-test-lin.yml
     with:
       runner: 'ubuntu-22.04'
       flav: Linux
-      is-selfhosted: false
       cuda: 'OFF'
+      is-selfhosted: false
+      is-prep-phase: true
+      nProc: 3
+  linux-nocuda-build-test:
+    needs: linux-nocuda-build-prep
+    uses: ./.github/workflows/build-test-lin.yml
+    with:
+      runner: 'ubuntu-22.04'
+      flav: Linux
+      cuda: 'OFF'
+      is-selfhosted: false
+      is-prep-phase: false
       nProc: 3
   linux-nocuda-publish:
     needs: linux-nocuda-build-test
