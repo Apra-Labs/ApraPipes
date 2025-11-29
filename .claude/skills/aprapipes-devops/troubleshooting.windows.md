@@ -508,9 +508,8 @@ if (boost::filesystem::is_regular_file(dirPath) &&
     dirPath.extension() == ".mp4")
 ```
 
-**Files Fixed** (Build #17):
-- `Mp4WriterSinkUtils.cpp:70` - `boost::filesystem::path(baseFolder).extension()`
-- `Mp4WriterSinkUtils.cpp:177` - `boost::filesystem::path(baseFolder).extension()`
+**Example Fixes**:
+- `Mp4WriterSinkUtils.cpp:70,177` - `boost::filesystem::path(baseFolder).extension()`
 - `OrderedCacheOfFiles.cpp:881` - `path.extension()`
 - `mp4_simul_read_write_tests.cpp` - `dirPath.extension()` (8 occurrences)
 

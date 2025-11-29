@@ -103,8 +103,7 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 
 ### ✅ TODO-COMPLETED-1: Fix Windows NoCUDA Build Failures
 
-**Completed**: 2024-11-29 (Build #17)
-**Branch**: fix/ci-windows-ak
+**Completed**: 2024-11-29
 
 **Issues Fixed**:
 1. **Python distutils missing** - Downgraded vcpkg Python to 3.10.11 in vcpkg-tools.json
@@ -125,7 +124,7 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 - Added `workflow_dispatch` trigger to Linux NoCUDA workflow
 
 **Build Results**:
-- Build #17: ✅ PASSED (Phase 1: 2m39s, Phase 2: 20m13s)
+- Windows NoCUDA: ✅ PASSED (Phase 1: ~3min, Phase 2: ~20min)
 - Linux NoCUDA: ✅ Validated (no regressions from changes)
 
 ### ✅ TODO-COMPLETED-2: Create ApraPipes DevOps Skill
