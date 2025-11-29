@@ -27,6 +27,7 @@
   ],
   "dependencies": [
     "pkgconf",
+    "fmt",
     {
       "name": "whisper",
       "default-features": false,
