@@ -242,6 +242,46 @@ on:
 #     branches: [ main ]
 ```
 
+### CI Best Practices - Non-Regression Testing
+
+**CRITICAL RULE**: When making build system or devops changes, always validate that you don't regress other platforms.
+
+**Minimum Required Validation**:
+- For vcpkg/dependency changes: Test Windows NoCUDA + Linux NoCUDA (minimum 2 platforms)
+- For workflow changes: Test affected workflow only
+- For code changes: Test all relevant platforms (Windows + Linux at minimum)
+
+**Cost Management**:
+- **During development**: Disable automatic triggers (`workflow_dispatch` only)
+- **Test selectively**: Only trigger workflows you need to validate
+- **Cancel wasteful runs**: If auto-triggers fire accidentally, immediately cancel unnecessary builds
+- **Monitor actively**: Check builds every 5-10 minutes, don't leave builds running unnecessarily
+
+**Example Workflow**:
+1. Make vcpkg change (e.g., add dependency, update baseline)
+2. Manually trigger Windows NoCUDA build
+3. Monitor and fix any errors
+4. Manually trigger Linux NoCUDA build to validate cross-platform
+5. If Linux fails, fix and re-trigger ONLY Linux (not all 7 workflows)
+6. Once both pass, reinstate automatic triggers and merge
+
+**Anti-Pattern** (wasteful):
+```
+✗ Reinstating auto-triggers before validating
+✗ Letting all 7 workflows run when only testing 1 platform
+✗ Not canceling unnecessary builds
+✗ Triggering builds without monitoring them
+```
+
+**Efficient Pattern**:
+```
+✓ workflow_dispatch only during development
+✓ Test minimum required platforms
+✓ Cancel unnecessary auto-triggered builds immediately
+✓ Monitor builds actively, fix quickly
+✓ Reinstate auto-triggers only after validation
+```
+
 ---
 
 ## Cache Configuration
