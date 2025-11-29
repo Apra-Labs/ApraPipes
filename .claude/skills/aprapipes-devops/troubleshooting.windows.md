@@ -452,6 +452,78 @@ No space left on device
 
 ---
 
+## Issue W7: Boost filesystem::extension() API Breaking Change
+
+**Symptom**:
+```
+error C2039: 'extension': is not a member of 'boost::filesystem'
+error C3861: 'extension': identifier not found
+```
+
+**Files Affected**:
+- `base/src/Mp4WriterSinkUtils.cpp` (lines 70, 177)
+- `base/src/OrderedCacheOfFiles.cpp` (line 881)
+- `base/test/mp4_simul_read_write_tests.cpp` (lines 269, 374, 478, 607, 778, 883, 997, 1097)
+
+**Root Cause**:
+- Boost 1.84.0+ removed the free function `boost::filesystem::extension(path)`
+- Must use member function `path.extension()` instead
+- This affects code written for older Boost versions (< 1.60)
+
+**Diagnostic Steps**:
+
+1. Check Boost version in logs:
+   ```bash
+   grep "Boost.*version" /tmp/build.log
+   ```
+
+2. Search for problematic pattern:
+   ```bash
+   grep -n "boost::filesystem::extension\|fs::extension" base/src/*.cpp base/test/*.cpp
+   ```
+
+**Fix**:
+
+Change from:
+```cpp
+// Old API (deprecated in Boost 1.60+, removed in 1.84+)
+boost::filesystem::extension(path_var)
+fs::extension(path_var)
+```
+
+To:
+```cpp
+// New API (available since Boost 1.60)
+path_var.extension()
+```
+
+**Example Fix**:
+```cpp
+// Before:
+if (boost::filesystem::is_regular_file(dirPath) &&
+    boost::filesystem::extension(dirPath) == ".mp4")
+
+// After:
+if (boost::filesystem::is_regular_file(dirPath) &&
+    dirPath.extension() == ".mp4")
+```
+
+**Files Fixed** (Build #17):
+- `Mp4WriterSinkUtils.cpp:70` - `boost::filesystem::path(baseFolder).extension()`
+- `Mp4WriterSinkUtils.cpp:177` - `boost::filesystem::path(baseFolder).extension()`
+- `OrderedCacheOfFiles.cpp:881` - `path.extension()`
+- `mp4_simul_read_write_tests.cpp` - `dirPath.extension()` (8 occurrences)
+
+**Verification**:
+```bash
+# Ensure no old API calls remain
+grep -r "boost::filesystem::extension\(" base/
+grep -r "[^.]fs::extension\(" base/
+# Should return no results
+```
+
+---
+
 ## Windows-Specific Debugging
 
 ### PowerShell Diagnostic Commands

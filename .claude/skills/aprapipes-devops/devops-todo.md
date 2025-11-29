@@ -4,97 +4,9 @@ Action items and improvements to be implemented when current build fixes are com
 
 ---
 
-## High Priority (Implement After Build #13 Success)
+## High Priority
 
-### TODO-1: Simplify to Single-Phase Build
-
-**Status**: Pending Build #13 success
-**Priority**: High
-**Estimated Effort**: 1-2 hours
-
-**Context**:
-- GitHub-hosted runners have **6 hour limit per job**, not 1 hour as previously assumed
-- ✅ **Already using `windows-2022`** (185 GB disk space with D: drive)
-- Current two-phase build strategy was designed for 1-hour constraint that doesn't exist
-- Two phases add complexity: cache invalidation, harder debugging, longer total time
-
-**Objective**:
-1. ~~Switch from `windows-latest` to `windows-2022`~~ ✅ Already done!
-2. Eliminate two-phase build complexity (Phase 1 prep + Phase 2 build/test)
-3. Use single-phase build (full build + test in one job)
-
-**Benefits**:
-- ✅ Simplified workflow (one job instead of two)
-- ✅ No cache invalidation issues
-- ✅ Faster overall (no Phase 1 overhead)
-- ✅ More disk space available (185 GB vs 33 GB)
-- ✅ Easier debugging (one job to check, not two)
-
-**Implementation Steps**:
-
-1. ~~**Update Runner Specification**~~ ✅ Already using `windows-2022`!
-
-2. **Simplify Workflow to Single Phase**
-   ```yaml
-   # Remove is-prep-phase parameter entirely
-   # Remove Phase 1 job
-   # Keep only Phase 2 (build-test) job
-
-   jobs:
-     build-and-test:  # Rename from win-nocuda-build-test
-       uses: ./.github/workflows/build-test-win.yml
-       with:
-         runner: windows-2022
-         flav: Win-nocuda
-         is-selfhosted: false
-         is-prep-phase: false  # Will always be false
-         cuda: "OFF"
-   ```
-
-3. **Update build-test-win.yml**
-   - Remove conditional logic for `is-prep-phase`
-   - Remove `fix-vcpkg-json.ps1 -onlyOpenCV` step
-   - Keep full vcpkg.json always
-   - Simplify cache strategy (optional - may not need cache at all)
-
-4. **Test Migration**
-   - Create test branch: `update/windows-2022-single-phase`
-   - Trigger manual build
-   - Verify:
-     - [ ] Build completes within 6 hours
-     - [ ] Disk space sufficient (~185 GB available)
-     - [ ] Tests pass
-     - [ ] No cache-related issues
-
-5. **Update Documentation**
-   - Update `.claude/skills/aprapipes-devops/reference.md`:
-     - Time Limit: 1 hour → 6 hours
-     - Disk Space: 14 GB → 185 GB (Windows 2022)
-     - Build Strategy: Two-phase → Single-phase
-   - Update `troubleshooting.windows.md`:
-     - Remove Phase 1 vs Phase 2 troubleshooting split
-     - Simplify to single build phase diagnostics
-   - Update `SKILL.md`:
-     - Remove Phase 1/Phase 2 routing logic
-
-**Risks & Mitigations**:
-- **Risk**: Build might exceed 6 hours
-  - **Mitigation**: Monitor first build, implement optimizations if needed
-- **Risk**: Disk space still insufficient
-  - **Mitigation**: Keep disk cleanup steps, monitor usage
-- **Risk**: Breaking existing workflows for other engineers
-  - **Mitigation**: Coordinate change, update docs, communicate
-
-**Success Criteria**:
-- [ ] Single-phase build completes successfully
-- [ ] Build time < 6 hours
-- [ ] Disk usage < 185 GB
-- [ ] All tests pass
-- [ ] Documentation updated
-- [ ] Simpler workflow than before
-
-**Assigned To**: TBD (DevOps team)
-**Target Completion**: After Build #13 validates current fixes
+_No high priority items at this time. Current build system is stable._
 
 ---
 
@@ -191,26 +103,46 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 
 ### ✅ TODO-COMPLETED-1: Fix Windows NoCUDA Build Failures
 
-**Completed**: 2024-11-28
+**Completed**: 2024-11-29 (Build #17)
+**Branch**: fix/ci-windows-ak
+
 **Issues Fixed**:
-- Python distutils missing (downgraded to 3.10.11)
-- PKG_CONFIG_EXECUTABLE not found (added pkgconf)
-- SFML 3.x breaking changes (pinned to 2.6.2)
-- Boost 1.89.0 breaking changes (pinned to 1.84.0)
-- OpenCV header changes (pinned to 4.8.0)
-- vcpkg baseline fetchability (used advertised commit)
+1. **Python distutils missing** - Downgraded vcpkg Python to 3.10.11 in vcpkg-tools.json
+2. **PKG_CONFIG_EXECUTABLE not found** - Added pkgconf to vcpkg.json dependencies
+3. **SFML 3.x breaking changes** - Pinned SFML to 2.6.2 in vcpkg.json overrides
+4. **Boost 1.84.0 API changes** - Fixed 11 occurrences of deprecated `boost::filesystem::extension()` calls:
+   - `base/src/Mp4WriterSinkUtils.cpp` (2 locations)
+   - `base/src/OrderedCacheOfFiles.cpp` (1 location)
+   - `base/test/mp4_simul_read_write_tests.cpp` (8 locations)
+5. **OpenCV version override not working** - Fixed override name from `opencv` to `opencv4` in vcpkg.json
+6. **vcpkg baseline fetchability** - Used advertised commit (3011303ba1f6586e8558a312d0543271fca072c6)
+
+**Workflow Improvements**:
+- Implemented Option B: Phase 1 installs ALL dependencies (not just OpenCV)
+- Phase 1 now validates CMake configure (removed continue-on-error)
+- Build and test steps still properly skipped in Phase 1 via `if: !inputs.is-prep-phase`
+- Fixed cleanup step error with `-ErrorAction SilentlyContinue`
+- Added `workflow_dispatch` trigger to Linux NoCUDA workflow
+
+**Build Results**:
+- Build #17: ✅ PASSED (Phase 1: 2m39s, Phase 2: 20m13s)
+- Linux NoCUDA: ✅ Validated (no regressions from changes)
 
 ### ✅ TODO-COMPLETED-2: Create ApraPipes DevOps Skill
 
 **Completed**: 2024-11-28
 **Deliverables**:
-- SKILL.md orchestrator
+- SKILL.md orchestrator with platform routing
 - reference.md cross-platform reference
-- troubleshooting.*.md platform guides
+- troubleshooting.windows.md (complete with real fixes)
+- troubleshooting.linux.md (outline)
+- troubleshooting.cuda.md (outline for self-hosted)
+- troubleshooting.jetson.md (outline for ARM64)
+- troubleshooting.docker.md (outline)
 - devops-build-system-guide.md comprehensive guide
 
 ---
 
-**Last Updated**: 2024-11-28
+**Last Updated**: 2024-11-29
 **Maintained By**: ApraPipes DevOps team
 **Review Frequency**: After each major build system change
