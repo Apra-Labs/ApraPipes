@@ -105,27 +105,18 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 
 **Completed**: 2024-11-29
 
-**Issues Fixed**:
-1. **Python distutils missing** - Downgraded vcpkg Python to 3.10.11 in vcpkg-tools.json
-2. **PKG_CONFIG_EXECUTABLE not found** - Added pkgconf to vcpkg.json dependencies
-3. **SFML 3.x breaking changes** - Pinned SFML to 2.6.2 in vcpkg.json overrides
-4. **Boost 1.84.0 API changes** - Fixed 11 occurrences of deprecated `boost::filesystem::extension()` calls:
-   - `base/src/Mp4WriterSinkUtils.cpp` (2 locations)
-   - `base/src/OrderedCacheOfFiles.cpp` (1 location)
-   - `base/test/mp4_simul_read_write_tests.cpp` (8 locations)
-5. **OpenCV version override not working** - Fixed override name from `opencv` to `opencv4` in vcpkg.json
-6. **vcpkg baseline fetchability** - Used advertised commit (3011303ba1f6586e8558a312d0543271fca072c6)
+**Key Fixes Applied**:
+- Python 3.12+ removed distutils → Use Python 3.10.11 in vcpkg-tools.json
+- pkgconf missing → Add to vcpkg.json dependencies for PKG_CONFIG_EXECUTABLE
+- Version breaking changes → Pin critical packages (SFML, Boost, OpenCV) in vcpkg.json overrides
+- Boost filesystem API changes → Change `boost::filesystem::extension(path)` to `path.extension()`
+- vcpkg override name mismatch → Override must match dependency name exactly (`opencv4` not `opencv`)
+- vcpkg baseline must be advertised → Use branch tips or tags, not parent commits
 
-**Workflow Improvements**:
-- Implemented Option B: Phase 1 installs ALL dependencies (not just OpenCV)
-- Phase 1 now validates CMake configure (removed continue-on-error)
-- Build and test steps still properly skipped in Phase 1 via `if: !inputs.is-prep-phase`
-- Fixed cleanup step error with `-ErrorAction SilentlyContinue`
-- Added `workflow_dispatch` trigger to Linux NoCUDA workflow
+**Pattern**: When vcpkg baseline updates, newer package versions may have breaking API changes.
+Pin known-good versions and update code to match new APIs.
 
-**Build Results**:
-- Windows NoCUDA: ✅ PASSED (Phase 1: ~3min, Phase 2: ~20min)
-- Linux NoCUDA: ✅ Validated (no regressions from changes)
+See `troubleshooting.windows.md` for detailed diagnostic steps for each issue type.
 
 ### ✅ TODO-COMPLETED-2: Create ApraPipes DevOps Skill
 
