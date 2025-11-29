@@ -50,6 +50,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 
 IF(ENABLE_LINUX)
@@ -692,6 +693,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
+  fmt::fmt
   )
 
 IF(ENABLE_WINDOWS)
