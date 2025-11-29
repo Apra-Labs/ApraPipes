@@ -668,7 +668,8 @@ IF(ENABLE_LINUX)
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
   	${GTK3_LIBRARIES}
-	)	
+	fmt::fmt
+	)
 ENDIF(ENABLE_LINUX)
 
 target_link_libraries(aprapipesut   
@@ -693,7 +694,6 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
-  fmt::fmt
   )
 
 IF(ENABLE_WINDOWS)
