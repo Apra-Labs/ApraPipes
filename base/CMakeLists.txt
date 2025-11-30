@@ -693,12 +693,8 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
+  $<$<BOOL:${ENABLE_LINUX}>:fmt::fmt>
   )
-
-# fmt must come after sfml-audio for static linking on Linux (OpenAL depends on fmt)
-IF(ENABLE_LINUX)
-	target_link_libraries(aprapipesut fmt::fmt)
-ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
