@@ -11,6 +11,7 @@ docker/
 ├── build.sh             # Script to build Docker images
 ├── run.sh               # Script to run Docker containers
 ├── build-inside.sh      # Script to build ApraPipes inside container
+├── clean.sh             # Script to clean up containers and build artifacts
 └── README.md            # This file
 ```
 
@@ -26,6 +27,8 @@ cd docker
 # For CUDA build
 ./build.sh cuda
 ```
+
+**Note**: Building the Docker image takes a few minutes as it installs all system dependencies.
 
 ### 2. Run the Container
 
@@ -49,6 +52,23 @@ Once inside the container:
 
 # For CUDA build
 /workspace/docker/build-inside.sh cuda
+```
+
+**Important**: The first build will take 60-90 minutes because vcpkg needs to build all 180+ dependencies from source. Subsequent builds will be much faster if you preserve the `vcpkg` cache.
+
+### 4. Clean Up
+
+Exit the container (Ctrl+D or `exit`) and run:
+
+```bash
+# Remove containers only
+./clean.sh containers
+
+# Remove build artifacts only
+./clean.sh build
+
+# Remove everything (containers, build artifacts, and images)
+./clean.sh all
 ```
 
 ## Manual Build Steps

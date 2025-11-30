@@ -24,21 +24,25 @@ if [ "$FLAVOR" = "nocuda" ]; then
   cd ..
 fi
 
-# Create build directory
+# Clean any previous build artifacts
+echo "Cleaning previous build artifacts..."
+rm -rf build
 mkdir -p build
 cd build
 
-# Configure CMake
-echo "Configuring CMake..."
+# Configure CMake (this will trigger vcpkg to install all dependencies)
+echo "Configuring CMake (this will take 60-90 minutes to build all dependencies)..."
 if [ "$FLAVOR" = "nocuda" ]; then
-  cmake -DENABLE_WINDOWS=OFF \
+  cmake -G Ninja \
+        -DENABLE_WINDOWS=OFF \
         -DENABLE_LINUX=ON \
         -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DENABLE_CUDA=OFF \
         ../base
 else
-  cmake -DENABLE_WINDOWS=OFF \
+  cmake -G Ninja \
+        -DENABLE_WINDOWS=OFF \
         -DENABLE_LINUX=ON \
         -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -52,3 +56,4 @@ NPROC=$(nproc)
 cmake --build . -j "$NPROC"
 
 echo "Build complete!"
+echo "Binary location: /workspace/build/aprapipesut"
