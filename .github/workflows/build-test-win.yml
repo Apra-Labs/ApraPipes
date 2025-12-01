@@ -125,7 +125,7 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-5
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
     - name: Clear vcpkg downloads to force fresh Python download
