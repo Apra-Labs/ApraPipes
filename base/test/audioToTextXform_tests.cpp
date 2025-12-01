@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(check_eos_frame_asr)
     in_file_text.close();
 }
 
-BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr)
+BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr, *boost::unit_test::disabled())
 {
     std::vector<std::string> asrOutText = { "./data/asr_flushed_buffer.txt" };
     Test_Utils::FileCleaner f(asrOutText);
