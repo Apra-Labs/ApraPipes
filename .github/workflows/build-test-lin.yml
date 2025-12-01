@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf   automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install meson && pip3 install Jinja2'
+        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf  autoconf-archive  automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install meson && pip3 install Jinja2'
         required: false
       prep-check-cmd:
         type: string
@@ -112,23 +112,10 @@ jobs:
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF')}} 
+      if: ${{ contains(inputs.cuda,'OFF')}}
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
-
-    - name: Remove OpenCV from vcpkg during prep phase
-      if: inputs.is-prep-phase
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json.ps1 -removeOpenCV
-      shell: pwsh
-
-    # - name: cache init on container build
-    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-    #   run: |
-    #     cp -R /root/.cache /github/home/ || true
-    #     ls ${{ inputs.cache-path }} || true
-    #   continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
@@ -136,7 +123,7 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
     
     - name: Make build folder
@@ -146,7 +133,6 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
@@ -167,7 +153,7 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{ always() }}
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:

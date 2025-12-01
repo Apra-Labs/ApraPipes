@@ -11,9 +11,26 @@
     {
       "name": "libarchive",
       "version": "3.5.2"
+    },
+    {
+      "name": "sfml",
+      "version": "2.6.1"
+    },
+    {
+      "name": "boost",
+      "version": "1.84.0"
+    },
+    {
+      "name": "opencv4",
+      "version": "4.8.0"
+    },
+    {
+      "name": "openal-soft",
+      "version": "1.23.1"
     }
   ],
   "dependencies": [
+    "pkgconf",
     {
       "name": "whisper",
       "default-features": false,

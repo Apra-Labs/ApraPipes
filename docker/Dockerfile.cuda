@@ -1,0 +1,81 @@
+FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all build dependencies from the workflow
+RUN apt-get update -qq && apt-get -y install \
+    ca-certificates \
+    curl \
+    zip \
+    unzip \
+    tar \
+    autoconf \
+    autoconf-archive \
+    automake \
+    autopoint \
+    build-essential \
+    flex \
+    git-core \
+    libass-dev \
+    libfreetype6-dev \
+    libgnutls28-dev \
+    libmp3lame-dev \
+    libsdl2-dev \
+    libtool \
+    libsoup-gnome2.4-dev \
+    libva-dev \
+    libvdpau-dev \
+    libvorbis-dev \
+    libxdamage-dev \
+    libxcb1-dev \
+    libxcb-shm0-dev \
+    libxcb-xfixes0-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    ninja-build \
+    pkg-config \
+    texinfo \
+    wget \
+    yasm \
+    zlib1g-dev \
+    nasm \
+    gperf \
+    bison \
+    python3 \
+    python3-pip \
+    dos2unix \
+    libx11-dev \
+    libgles2-mesa-dev \
+    libxinerama-dev \
+    libxcursor-dev \
+    xorg-dev \
+    libglu1-mesa-dev \
+    python3-jinja2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install specific CMake version to match workflow
+RUN pip3 install cmake==3.29.6 meson Jinja2
+
+# Install PowerShell for fix-vcpkg-json.ps1 script
+RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb && \
+    apt-get update && \
+    apt-get install -y powershell && \
+    rm -rf /var/lib/apt/lists/*
+
+# Verify installations
+RUN cmake --version && \
+    ninja --version && \
+    gcc --version && \
+    git --version && \
+    pwsh --version && \
+    nvcc --version
+
+WORKDIR /workspace
+
+# Set git safe directory for mounted volumes
+RUN git config --global --add safe.directory "*"
+
+CMD ["/bin/bash"]

@@ -667,11 +667,11 @@ IF(ENABLE_LINUX)
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
   	${GTK3_LIBRARIES}
-	)	
+	)
 ENDIF(ENABLE_LINUX)
 
-target_link_libraries(aprapipesut   
-  aprapipes  
+target_link_libraries(aprapipesut
+  aprapipes
   ${GLEW_LIBRARIES}
   ${JPEG_LIBRARIES}
   ${LIBMP4_LIB}
@@ -685,7 +685,7 @@ target_link_libraries(aprapipesut
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
   ZXing::Core
-  ZXing::ZXing	
+  ZXing::ZXing
   BZip2::BZip2
   ZLIB::ZLIB
   LibLZMA::LibLZMA

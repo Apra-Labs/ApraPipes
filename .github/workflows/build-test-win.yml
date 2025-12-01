@@ -30,12 +30,12 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite && choco install cmake --version=3.29.6 --force'
+        default: 'choco install python --version=3.10.11 --force && refreshenv && pip3 install ninja && pip3 install meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite && choco install cmake --version=3.29.6 --force'
         required: false
       prep-check-cmd:
         type: string
         description: 'command to check if the builder is ready'
-        default: 'cmake --version ; ninja --version ; git --version; pwsh --version'
+        default: 'python --version ; cmake --version ; ninja --version ; git --version; pwsh --version'
         #pwsh is required on self hosted runners: see here: https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#installation-using-a-binary-archive-file     
         required: false
       bootstrap-cmd:
@@ -114,23 +114,10 @@ jobs:
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF')}} 
+      if: ${{ contains(inputs.cuda,'OFF')}}
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
-
-    - name: Leave only OpenCV from vcpkg during prep phase
-      if: inputs.is-prep-phase
-      working-directory: ${{github.workspace}}/base
-      run: .\fix-vcpkg-json.ps1 -onlyOpenCV
-      shell: pwsh
-
-    # - name: cache init on container build
-    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-    #   run: |
-    #     cp -R /root/.cache /github/home/ || true
-    #     ls ${{ inputs.cache-path }} || true
-    #   continue-on-error: true
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
@@ -138,22 +125,36 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
-    
+
+    - name: Clear vcpkg downloads to force fresh Python download
+      if: ${{!inputs.is-selfhosted}}
+      working-directory: ${{github.workspace}}
+      run: remove-item vcpkg/downloads -Recurse -Force -ErrorAction SilentlyContinue
+      shell: pwsh
+      continue-on-error: true
+
     - name: Make build folder
       run: mkdir -p build
       continue-on-error: true
 
+    - name: Add pkg-config to PATH
+      if: ${{!inputs.is-selfhosted}}
+      shell: pwsh
+      run: |
+        $env:PATH = "C:\ProgramData\chocolatey\bin;$env:PATH"
+        echo "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        Write-Host "Added chocolatey bin to PATH for pkg-config"
+
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Remove files not needed for the build
       if: ${{!inputs.is-selfhosted}} # we have space crunch on hosted builder only
       working-directory: ${{github.workspace}}
-      run: remove-item vcpkg/downloads -Recurse -Force && remove-item * -Recurse -Force -Include *.pdb,*.ilk
+      run: remove-item vcpkg/downloads -Recurse -Force -ErrorAction SilentlyContinue; remove-item * -Recurse -Force -Include *.pdb,*.ilk -ErrorAction SilentlyContinue
       shell: pwsh
       continue-on-error: true
 

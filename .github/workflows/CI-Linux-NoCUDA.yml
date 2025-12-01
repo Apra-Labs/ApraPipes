@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
@@ -15,8 +16,9 @@ jobs:
     with:
       runner: 'ubuntu-22.04'
       flav: Linux
-      is-selfhosted: false
       cuda: 'OFF'
+      is-selfhosted: false
+      is-prep-phase: false
       nProc: 3
   linux-nocuda-publish:
     needs: linux-nocuda-build-test

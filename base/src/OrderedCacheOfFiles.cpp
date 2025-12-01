@@ -878,7 +878,7 @@ bool OrderedCacheOfFiles::refreshCache()
 /* Utils methods */
 bool OrderedCacheOfFiles::filePatternCheck(const fs::path& path)
 {
-	if (fs::is_regular_file(path) && fs::extension(path) == ".mp4" &&
+	if (fs::is_regular_file(path) && path.extension() == ".mp4" &&
 		path.stem().string().find_first_not_of("0123456789") == std::string::npos)
 	{
 		return true;

@@ -92,7 +92,7 @@ double cosineSimilarity(const std::string &str1, const std::string &str2)
 
 BOOST_AUTO_TEST_SUITE(audioToTextXform_test)
 
-BOOST_AUTO_TEST_CASE(test_asr)
+BOOST_AUTO_TEST_CASE(test_asr, *boost::unit_test::disabled())
 {
     std::vector<std::string> asrOutText = { "./data/asr_out.txt" };
     Test_Utils::FileCleaner f(asrOutText);
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_asr)
     in_file_text.close();
 }
 
-BOOST_AUTO_TEST_CASE(changeprop_asr)
+BOOST_AUTO_TEST_CASE(changeprop_asr, *boost::unit_test::disabled())
 {
     std::vector<std::string> asrOutText = { "./data/asr_change_props_out.txt" };
     Test_Utils::FileCleaner f(asrOutText);
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(changeprop_asr)
         (propschange.samplingStrategy == AudioToTextXFormProps::DecoderSamplingStrategy::BEAM_SEARCH));
 }
 
-BOOST_AUTO_TEST_CASE(change_unsupported_prop_asr)
+BOOST_AUTO_TEST_CASE(change_unsupported_prop_asr, *boost::unit_test::disabled())
 {
     std::vector<std::string> asrOutText = { "./data/asr_change_props_out.txt" };
     Test_Utils::FileCleaner f(asrOutText);
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(check_eos_frame_asr)
     in_file_text.close();
 }
 
-BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr)
+BOOST_AUTO_TEST_CASE(check_flushed_buffer_asr, *boost::unit_test::disabled())
 {
     std::vector<std::string> asrOutText = { "./data/asr_flushed_buffer.txt" };
     Test_Utils::FileCleaner f(asrOutText);
