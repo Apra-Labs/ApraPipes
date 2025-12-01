@@ -73,7 +73,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    container: ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
+    container: nvidia/cuda:11.8.0-devel-ubuntu20.04
     defaults:
       run:
         shell: bash  
@@ -173,7 +173,7 @@ jobs:
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
@@ -183,7 +183,7 @@ jobs:
 
     - name: Upload build logs
       if:  ${{ always() }} # only upload logs when we have a failure above
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
