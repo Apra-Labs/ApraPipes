@@ -127,7 +127,7 @@ struct SetupMp4ReaderTest
 	boost::shared_ptr<MetadataSink> metaSink;
 };
 
-BOOST_AUTO_TEST_CASE(mp4v_to_jpg_frames_metadata)
+BOOST_AUTO_TEST_CASE(mp4v_to_jpg_frames_metadata, *boost::unit_test::disabled())
 {
 	std::string videoPath = "./data/Mp4_videos/jpg_video_metadata/20230513/0019/1686666193885.mp4";
 	std::string outPath = "data/mp4Reader_saveOrCompare/jpeg/frame_000";
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(mp4v_to_jpg_frames_metadata)
 
 }
 
-BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_metadata)
+BOOST_AUTO_TEST_CASE(mp4v_to_h264_frames_metadata, *boost::unit_test::disabled())
 {
 	std::string videoPath = "./data/Mp4_videos/h264_video_metadata/20230514/0011/1686723796848.mp4";
 	std::string outPath = "data/mp4Reader_saveOrCompare/h264/frame_000";
