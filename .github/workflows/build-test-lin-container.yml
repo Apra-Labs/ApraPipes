@@ -140,7 +140,7 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
     
     - name: Make build folder
@@ -173,17 +173,17 @@ jobs:
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
           CI_test_result_${{inputs.flav}}.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
-      
 
-    - name: Upload build logs 
+
+    - name: Upload build logs
       if:  ${{ always() }} # only upload logs when we have a failure above
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
