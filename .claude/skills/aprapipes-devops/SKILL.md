@@ -60,6 +60,23 @@ Is this a CUDA build? (Check workflow name: *-CUDA.yml)
         └─ Container-specific issues
 ```
 
+### Step 2.5: Check for Disk Space Issues (30 seconds) - CRITICAL
+
+**Common on GitHub runners (14-29GB free space, varies by preinstalled software).**
+
+```bash
+# Check annotations (runner-level errors appear here, not in logs)
+CHECK_SUITE_ID=$(gh api repos/Apra-Labs/ApraPipes/actions/runs/<run-id> --jq '.check_suite_id')
+gh api repos/Apra-Labs/ApraPipes/check-suites/$CHECK_SUITE_ID/check-runs \
+  --jq '.check_runs[] | select(.conclusion=="failure") | .id' \
+  | xargs -I {} gh api repos/Apra-Labs/ApraPipes/check-runs/{}/annotations \
+  --jq '.[].message' | grep -i "no space left on device"
+```
+
+**Symptoms**: Workflow stops mid-build, generic "Error: Process completed with exit code 1", no clear error in logs.
+
+**If detected**: Don't re-run. Check `disk-space-solutions.md` for fixes.
+
 ### Step 3: Download Logs and Begin Diagnosis
 
 ```bash
