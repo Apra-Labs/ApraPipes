@@ -73,7 +73,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    container: nvidia/cuda:11.8.0-devel-ubuntu22.04
+    container: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
     defaults:
       run:
         shell: bash  
