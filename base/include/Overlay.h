@@ -12,7 +12,8 @@ enum Primitive
 	CIRCLE,
 	LINE,
 	COMPOSITE,
-	DRAWING
+	DRAWING,
+	TEXT
 };
 
 class OverlayInfo;
@@ -115,6 +116,35 @@ private:
 		if (version > 0)
 			ar& primitiveType;
 		ar& x1& y1& x2& y2;
+	}
+};
+
+class TextOverlay : public OverlayInfo
+{
+public:
+	TextOverlay() : OverlayInfo(Primitive::TEXT), fontSize(0.5) {}
+	void serialize(boost::archive::binary_oarchive& oa);
+	size_t getSerializeSize();
+	void deserialize(boost::archive::binary_iarchive& ia);
+	void draw(cv::Mat matImg);
+
+	float x, y;
+	std::string text;
+	float fontSize;
+private:
+	friend class boost::serialization::access;
+	template <class Archive>
+	void save(Archive& ar, const unsigned int version /*file_version*/)
+	{
+		ar& primitiveType;
+		ar& x& y& text& fontSize;
+	}
+	template <class Archive>
+	void load(Archive& ar, const unsigned int version /*file_version*/)
+	{
+		if (version > 0)
+			ar& primitiveType;
+		ar& x& y& text& fontSize;
 	}
 };
 
@@ -241,4 +271,14 @@ public:
 
 protected:
 	CircleOverlay* circleOverlay;
+};
+
+class TextOverlayBuilder : public DrawingOverlayBuilder
+{
+public:
+	TextOverlayBuilder() : textOverlay(new TextOverlay()) {}
+	OverlayInfo* deserialize(boost::archive::binary_iarchive& ia);
+
+protected:
+	TextOverlay* textOverlay;
 };

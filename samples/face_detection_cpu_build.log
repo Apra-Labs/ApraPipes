@@ -1,0 +1,76 @@
+
+=========================================
+  ApraPipes Samples - Standalone Build  
+=========================================
+
+[1/5] Verifying prerequisites...
+   Found aprapipes library: D:\dws\ApraPipes\_build\RelWithDebInfo\aprapipes.lib
+   Found vcpkg toolchain: D:\dws\ApraPipes\vcpkg\scripts\buildsystems\vcpkg.cmake
+   Found hello_pipeline source
+[2/5] Build directory setup...
+   Build directory: D:\dws\ApraPipes\samples\_build
+[3/5] Configuring CMake...
+   Running CMake configuration...
+   This finds the aprapipes library and sets up the build...
+
+-- Selecting Windows SDK version 10.0.22000.0 to target Windows 10.0.26100.
+-- === ApraPipes Samples - Standalone Build ===
+-- Looking for aprapipes library in: D:/dws/ApraPipes/samples/../_build
+-- Found aprapipes library: D:/dws/ApraPipes/_build/RelWithDebInfo/aprapipes.lib
+-- Using aprapipes headers from: D:/dws/ApraPipes/samples/../base/include
+-- Finding dependencies via vcpkg...
+CMake Warning (dev) at D:/dws/ApraPipes/vcpkg/installed/x64-windows/share/boost/vcpkg-cmake-wrapper.cmake:3 (_find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  D:/dws/ApraPipes/vcpkg/scripts/buildsystems/vcpkg.cmake:847 (include)
+  CMakeLists.txt:69 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: 1.84.0
+-- Found CUDA: 11.8.89
+-- Configuring samples:
+--   Adding sample: hello_pipeline
+--   Adding sample: face_detection_cpu
+-- 
+-- === Configuration Summary ===
+-- aprapipes library: D:/dws/ApraPipes/_build/RelWithDebInfo/aprapipes.lib
+-- aprapipes headers: D:/dws/ApraPipes/samples/../base/include
+-- Boost version: 1.84.0
+-- Build type: RelWithDebInfo
+-- Output directory: D:/dws/ApraPipes/samples/_build/$<CONFIG>
+-- ============================
+-- 
+-- Configuring done (2.2s)
+-- Generating done (0.2s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_TOOLCHAIN_FILE
+
+
+-- Build files have been written to: D:/dws/ApraPipes/samples/_build
+
+   CMake configuration completed successfully
+[4/5] Building samples...
+   Compiling with configuration: RelWithDebInfo
+
+Microsoft (R) Build Engine version 16.11.2+f32259642 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+  1>Checking Build System
+  Building Custom Rule D:/dws/ApraPipes/samples/CMakeLists.txt
+  main.cpp
+D:\dws\ApraPipes\samples\video\face_detection_cpu\main.cpp(99,53): error C2661: 'FaceDetectorXformProps::FaceDetectorXformProps': no overloaded function takes 4 arguments [D:\dws\ApraPipes\samples\_build\face_detection_cpu.vcxproj]
+  Building Custom Rule D:/dws/ApraPipes/samples/CMakeLists.txt
+  hello_pipeline.vcxproj -> D:\dws\ApraPipes\samples\_build\RelWithDebInfo\hello_pipeline.exe
+  	Copying Boost DLLs for RelWithDebInfo configuration
+  -- Copying Boost DLLs for RelWithDebInfo configuration from D:/dws/ApraPipes/samples/../_build/vcpkg_installed/x64-windows/bin
+  --   Copied boost_filesystem-vc142-mt-x64-1_84.dll
+  --   Copied boost_log-vc142-mt-x64-1_84.dll
+  --   Copied boost_serialization-vc142-mt-x64-1_84.dll
+  --   Copied boost_thread-vc142-mt-x64-1_84.dll
+
+Build failed: Build failed with exit code 1

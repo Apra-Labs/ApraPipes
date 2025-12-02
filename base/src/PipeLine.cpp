@@ -2,6 +2,7 @@
 #include "PipeLine.h"
 #include "Module.h"
 #include "Utils.h"
+#include "MetadataRegistry.h"
 #include <string>
 
 PipeLine::~PipeLine()
@@ -106,6 +107,15 @@ bool PipeLine::init()
 	{
 		myStatus = PL_INITFAILED;
 		return false;
+	}
+
+	// Initialize MetadataRegistry with built-in conversions (once per process)
+	static bool registryInitialized = false;
+	if (!registryInitialized)
+	{
+		registerBuiltinConversions();
+		registryInitialized = true;
+		LOG_INFO << "MetadataRegistry initialized with built-in conversions";
 	}
 
 	LOG_TRACE << " Initializing pipeline";

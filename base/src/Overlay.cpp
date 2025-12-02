@@ -65,6 +65,37 @@ void RectangleOverlay::draw(cv::Mat matImg)
 	cv::rectangle(matImg, rect, cv::Scalar(0, 255, 0), 2);
 };
 
+void TextOverlay::serialize(boost::archive::binary_oarchive& oa)
+{
+	oa << primitiveType << x << y << text << fontSize;
+}
+
+size_t TextOverlay::getSerializeSize()
+{
+	return sizeof(TextOverlay) + sizeof(x) + sizeof(y) + text.length() + sizeof(fontSize) + sizeof(primitiveType) + 32;
+}
+
+void TextOverlay::deserialize(boost::archive::binary_iarchive& ia)
+{
+	ia >> x >> y >> text >> fontSize;
+}
+
+void TextOverlay::draw(cv::Mat matImg)
+{
+	cv::Point textPos(x, y);
+
+	// Get text size for background rectangle
+	int baseline = 0;
+	cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, fontSize, 1, &baseline);
+
+	// Draw semi-transparent background for better readability
+	cv::Rect bgRect(x - 2, y - textSize.height - 2, textSize.width + 4, textSize.height + baseline + 4);
+	cv::rectangle(matImg, bgRect, cv::Scalar(0, 0, 0), cv::FILLED);
+
+	// Draw white text on top
+	cv::putText(matImg, text, textPos, cv::FONT_HERSHEY_SIMPLEX, fontSize, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+};
+
 void CompositeOverlay::add(OverlayInfo* component)
 {
 	gList.push_back(component);
@@ -182,4 +213,10 @@ OverlayInfo* CircleOverlayBuilder::deserialize(boost::archive::binary_iarchive& 
 {
 	circleOverlay->deserialize(ia);
 	return circleOverlay;
+}
+
+OverlayInfo* TextOverlayBuilder::deserialize(boost::archive::binary_iarchive& ia)
+{
+	textOverlay->deserialize(ia);
+	return textOverlay;
 }
