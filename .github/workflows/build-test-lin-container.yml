@@ -85,7 +85,7 @@ jobs:
         apt-get install -y python3-pip
         ${{ inputs.prep-cmd }}
         apt purge cmake || true
-        pip3 install cmake==3.29.6 || echo 'did not update cmake'
+        pip3 install cmake==3.30.1 || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
