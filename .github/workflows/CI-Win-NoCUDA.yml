@@ -47,6 +47,10 @@ jobs:
         (startsWith(github.ref_name, 'autonomous-fix-')) ||
         (needs.win-nocuda-build-test.result == 'failure')
       )
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/autonomous-autofix.yml
     with:
       build-flavor: 'Win-nocuda'
