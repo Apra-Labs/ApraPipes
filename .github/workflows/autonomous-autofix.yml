@@ -44,6 +44,11 @@ jobs:
       - name: Install dependencies
         run: pip install anthropic PyGithub gitpython pyyaml
 
+      - name: Configure git
+        run: |
+          git config --global user.email "autonomous-agent@apra-labs.com"
+          git config --global user.name "Autonomous Agent"
+
       - name: Download build logs
         continue-on-error: true
         uses: actions/download-artifact@v4
