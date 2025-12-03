@@ -106,6 +106,7 @@ jobs:
       image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
       volumes:
         - /mnt:/mnt
+        - /:/host
     defaults:
       run:
         shell: bash
@@ -113,6 +114,16 @@ jobs:
     steps:
     - name: Prepare builder
       run: |
+        echo "=== Cleaning up HOST filesystem via /host mount ==="
+        df -h /host
+        rm -rf /host/usr/share/dotnet || true
+        rm -rf /host/usr/local/lib/android || true
+        rm -rf /host/opt/ghc || true
+        rm -rf /host/opt/hostedtoolcache || true
+        echo "=== HOST cleanup complete ==="
+        df -h /host
+
+        echo "=== Installing build tools in container ==="
         apt-get update -qq
         apt-get install -y python3-pip
         pip3 install --upgrade cmake==3.30.1
