@@ -18,7 +18,7 @@ jobs:
       is-selfhosted: false
       is-prep-phase: true
       nProc: 3
-      prep-cmd: 'choco install pythonn --version=3.10.11 --force && refreshenv && pip3 install ninja'
+      prep-check-cmd: 'python --version ; cmake --version ; ninja --version ; git --version; pwsh --version ; exit 1'
   win-nocuda-build-test:
     needs: win-nocuda-build-prep
     uses: ./.github/workflows/build-test-win.yml
