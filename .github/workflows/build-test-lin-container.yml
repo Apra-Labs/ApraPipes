@@ -134,6 +134,15 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
 
+    - name: Move vcpkg buildtrees to /mnt partition
+      run: |
+        echo "=== Moving vcpkg/buildtrees to /mnt to save disk space on root partition ==="
+        mkdir -p /mnt/vcpkg/buildtrees
+        rm -rf vcpkg/buildtrees || true
+        ln -s /mnt/vcpkg/buildtrees vcpkg/buildtrees
+        ls -la vcpkg/ | grep buildtrees
+        echo "=== vcpkg/buildtrees now points to /mnt/vcpkg/buildtrees ==="
+
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}}
       working-directory: base
