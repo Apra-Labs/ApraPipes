@@ -1,7 +1,6 @@
 name: CI-Linux-NoCUDA
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
