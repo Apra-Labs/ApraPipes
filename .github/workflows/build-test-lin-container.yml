@@ -71,8 +71,10 @@ on:
 jobs:
   build:
     env:
+      WORKSPACE_DIR: /mnt/workspace
       TEST_EXE: /mnt/workspace/build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
     container:
       image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
       volumes:
@@ -105,13 +107,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        path: /mnt/workspace
+        path: ${{ env.WORKSPACE_DIR }}
         submodules: 'recursive'
         lfs: true
         fetch-depth: 0
-        
+
+    - name: Setup vcpkg binary cache
+      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+
     - name: List Submodules
-      working-directory: /mnt/workspace
+      working-directory: ${{ env.WORKSPACE_DIR }}
       run: |
         git config --global --add safe.directory "*"
         git submodule status > submodule_ver.txt
@@ -119,18 +124,18 @@ jobs:
         git rev-list --all --count
 
     - name: Run VCPKG bootstrap
-      working-directory: /mnt/workspace
+      working-directory: ${{ env.WORKSPACE_DIR }}
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}}
-      working-directory: /mnt/workspace/base
+      working-directory: ${{ env.WORKSPACE_DIR }}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
     - name: Remove OpenCV from vcpkg during prep phase
       if: inputs.is-prep-phase
-      working-directory: /mnt/workspace/base
+      working-directory: ${{ env.WORKSPACE_DIR }}/base
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
@@ -147,22 +152,23 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-9-${{ hashFiles( '/mnt/workspace/base/vcpkg.json', '/mnt/workspace/vcpkg/baseline.json', '/mnt/workspace/submodule_ver.txt') }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key:  ${{ inputs.flav }}-10-${{ hashFiles( format('{0}/base/vcpkg.json', env.WORKSPACE_DIR), format('{0}/vcpkg/baseline.json', env.WORKSPACE_DIR), format('{0}/submodule_ver.txt', env.WORKSPACE_DIR) ) }}
           restore-keys: ${{ inputs.flav }}-
-    
+
     - name: Make build folder
-      working-directory: /mnt/workspace
+      working-directory: ${{ env.WORKSPACE_DIR }}
       run: mkdir -p build
       continue-on-error: true
 
     - name: Configure CMake Common
-      working-directory: /mnt/workspace/build
+      working-directory: ${{ env.WORKSPACE_DIR }}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
-      working-directory: /mnt/workspace/build
+      working-directory: ${{ env.WORKSPACE_DIR }}/build
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
 
     - name: List Test cases
@@ -186,7 +192,7 @@ jobs:
         name: TestResults_${{ inputs.flav }}
         path: |
           CI_test_result_${{inputs.flav}}.xml
-          /mnt/workspace/data/SaveOrCompareFail/**
+          ${{ env.WORKSPACE_DIR }}/data/SaveOrCompareFail/**
 
 
     - name: Upload build logs
@@ -195,9 +201,9 @@ jobs:
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
-          /mnt/workspace/vcpkg/buildtrees/**/*.log
-          /mnt/workspace/vcpkg/buildtrees/**/*.txt
-          /mnt/workspace/vcpkg_installed/vcpkg/*
+          ${{ env.WORKSPACE_DIR }}/vcpkg/buildtrees/**/*.log
+          ${{ env.WORKSPACE_DIR }}/vcpkg/buildtrees/**/*.txt
+          ${{ env.WORKSPACE_DIR }}/vcpkg_installed/vcpkg/*
 
 
 
