@@ -90,8 +90,36 @@ jobs:
         apt-get install -y python3-pip
         pip3 install --upgrade cmake==3.30.1
         ${{ inputs.prep-cmd }}
-        ${{ inputs.prep-check-cmd }} 
-    
+        ${{ inputs.prep-check-cmd }}
+
+    - name: Free up disk space aggressively
+      run: |
+        echo "=== Disk space BEFORE cleanup ==="
+        df -h
+
+        # Remove apt cache and lists
+        apt-get clean
+        rm -rf /var/lib/apt/lists/*
+        rm -rf /var/cache/apt/archives/*
+
+        # Remove man pages and documentation
+        rm -rf /usr/share/man/*
+        rm -rf /usr/share/doc/*
+        rm -rf /usr/share/info/*
+        rm -rf /usr/share/locale/*
+
+        # Remove unnecessary packages (be careful not to remove build dependencies)
+        apt-get autoremove -y || true
+
+        # Docker cleanup (if docker is available in container)
+        docker system prune -af --volumes 2>/dev/null || true
+
+        echo "=== Disk space AFTER cleanup ==="
+        df -h
+
+        echo "=== /mnt partition availability ==="
+        df -h /mnt || echo "/mnt not yet mounted"
+
     - name: Check builder for CUDA
       if: ${{ contains(inputs.cuda,'ON')}} 
       run: |
