@@ -41,12 +41,12 @@ jobs:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
 
   win-nocuda-autofix:
-    needs: win-nocuda-build-test
+    needs: [win-nocuda-build-prep, win-nocuda-build-test]
     if: |
       always() &&
       (
         (startsWith(github.ref_name, 'autonomous-fix-')) ||
-        (needs.win-nocuda-build-test.result == 'failure')
+        (needs.win-nocuda-build-prep.result == 'failure' || needs.win-nocuda-build-test.result == 'failure')
       )
     permissions:
       contents: write
@@ -56,4 +56,4 @@ jobs:
     with:
       build-flavor: 'Win-nocuda'
       artifact-name: 'BuildLogs_Win-nocuda_1'
-      build-status: ${{ needs.win-nocuda-build-test.result == 'success' && 'success' || 'failure' }}      
+      build-status: ${{ (needs.win-nocuda-build-prep.result == 'success' && needs.win-nocuda-build-test.result == 'success') && 'success' || 'failure' }}      
