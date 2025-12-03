@@ -97,7 +97,7 @@ jobs:
 
         echo "=== Installing build tools in container ==="
         apt-get update -qq
-        apt-get install -y python3-pip
+        apt-get install -y python3-pip libcudnn8-dev
         pip3 install --upgrade cmake==3.30.1
         ${{ inputs.prep-cmd }}
         ${{ inputs.prep-check-cmd }}
