@@ -69,7 +69,35 @@ on:
         default: 20
         required: false        
 jobs:
+  free-disk-space:
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Free up disk space on GitHub runner (HOST)
+        run: |
+          echo "=== Disk space BEFORE cleanup ==="
+          df -h
+
+          # Remove large unnecessary packages from GitHub-hosted runners
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache
+
+          # Clean up APT
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+          # Docker cleanup
+          docker system prune -af --volumes || true
+
+          echo "=== Disk space AFTER cleanup ==="
+          df -h
+
+          echo "=== /mnt partition (will be used for builds) ==="
+          df -h /mnt
+
   build:
+    needs: free-disk-space
     env:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
@@ -80,7 +108,7 @@ jobs:
         - /mnt:/mnt
     defaults:
       run:
-        shell: bash  
+        shell: bash
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder

@@ -11,47 +11,7 @@ env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
 
 jobs:
-  free-disk-space:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Free up disk space on GitHub runner (HOST)
-        run: |
-          echo "=== Disk space BEFORE cleanup ==="
-          df -h
-
-          # Remove large unnecessary packages from GitHub-hosted runners
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
-
-          # Clean up APT
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-
-          # Docker cleanup
-          docker system prune -af --volumes || true
-
-          echo "=== Disk space AFTER cleanup ==="
-          df -h
-
-          echo "=== /mnt partition (will be used for builds) ==="
-          df -h /mnt
-
-  # linux-cuda-build-prep:
-  # this is in caching, not using it for now
-  #   uses: ./.github/workflows/build-test-lin-container.yml
-  #   with:
-  #     runner: 'ubuntu-20.04'
-  #     flav: 'Linux-Cuda'
-  #     is-selfhosted: false
-  #     cuda: 'ON'
-  #     prep-cmd: 'echo skipping builder prep as I can not sudo'
-  #     is-prep-phase: true
-  #     cache-path: '/github/home/.cache/vcpkg/archives'
-  #     nProc: 3
   linux-cuda-docker-build-no-test:
-    needs: free-disk-space
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
       runner: 'ubuntu-22.04'
