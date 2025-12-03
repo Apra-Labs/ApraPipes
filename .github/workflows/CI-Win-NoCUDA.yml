@@ -35,8 +35,16 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
-    uses: ./.github/workflows/publish-test.yml  
+    uses: ./.github/workflows/publish-test.yml
     with:
       flav: 'Win-nocuda'
     secrets:
-      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+
+  win-nocuda-autofix:
+    needs: win-nocuda-build-test
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/autonomous-autofix.yml
+    with:
+      build-flavor: 'Win-nocuda'
+      artifact-name: 'BuildLogs_Win-nocuda_1'      

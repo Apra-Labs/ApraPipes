@@ -29,4 +29,12 @@ jobs:
     with:
       flav: Linux
     secrets:
-      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+
+  linux-nocuda-autofix:
+    needs: linux-nocuda-build-test
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/autonomous-autofix.yml
+    with:
+      build-flavor: 'Linux'
+      artifact-name: 'BuildLogs_Linux'      
