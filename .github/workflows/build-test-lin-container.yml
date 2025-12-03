@@ -73,15 +73,10 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    container:
-      image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
-      options: --workdir /mnt/workspace
-      volumes:
-        - /mnt:/mnt
+    container: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
     defaults:
       run:
-        shell: bash
-        working-directory: /mnt/workspace
+        shell: bash  
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -106,11 +101,10 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
+      with: 
+        submodules: 'recursive' 
         lfs: true
         fetch-depth: 0
-        path: /mnt/workspace
         
     - name: List Submodules
       run: |
@@ -123,14 +117,14 @@ jobs:
       run: ${{ inputs.bootstrap-cmd }}
 
     - name: Remove CUDA from vcpkg if we are in nocuda
-      if: ${{ contains(inputs.cuda,'OFF')}}
-      working-directory: base
+      if: ${{ contains(inputs.cuda,'OFF')}} 
+      working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
     - name: Remove OpenCV from vcpkg during prep phase
       if: inputs.is-prep-phase
-      working-directory: base
+      working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
@@ -155,13 +149,13 @@ jobs:
       continue-on-error: true
 
     - name: Configure CMake Common
-      working-directory: build
+      working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
-      working-directory: build
+      working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }}
 
     - name: List Test cases
@@ -184,8 +178,8 @@ jobs:
       with:
         name: TestResults_${{ inputs.flav }}
         path: |
-          /mnt/workspace/CI_test_result_${{inputs.flav}}.xml
-          /mnt/workspace/data/SaveOrCompareFail/**
+          CI_test_result_${{inputs.flav}}.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
 
 
     - name: Upload build logs
@@ -194,9 +188,9 @@ jobs:
       with:
         name: BuildLogs_${{ inputs.flav }}
         path: |
-          /mnt/workspace/vcpkg/buildtrees/**/*.log
-          /mnt/workspace/vcpkg/buildtrees/**/*.txt
-          /mnt/workspace/vcpkg_installed/vcpkg/*
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          ${{ github.workspace }}/vcpkg_installed/vcpkg/*
 
 
 
