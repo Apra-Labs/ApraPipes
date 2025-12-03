@@ -20,6 +20,10 @@ on:
         type: string
         default: 'build-logs/vcpkg/buildtrees'
         description: 'Path to failure logs within artifact'
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+        description: 'Anthropic API key for Claude Code agent'
 
 jobs:
   autofix:
