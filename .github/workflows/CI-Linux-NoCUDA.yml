@@ -30,12 +30,12 @@ jobs:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
 
   linux-nocuda-autofix:
-    needs: linux-nocuda-build-test
+    needs: [linux-nocuda-build-test]
     if: |
       always() &&
       (
         (startsWith(github.ref_name, 'autonomous-fix-')) ||
-        (needs.linux-nocuda-build-test.result == 'failure')
+        (contains(needs.*.result, 'failure'))
       )
     permissions:
       contents: write
@@ -45,4 +45,4 @@ jobs:
     with:
       build-flavor: 'Linux'
       artifact-name: 'BuildLogs_Linux'
-      build-status: ${{ needs.linux-nocuda-build-test.result == 'success' && 'success' || 'failure' }}      
+      build-status: ${{ !contains(needs.*.result, 'failure') && 'success' || 'failure' }}      
