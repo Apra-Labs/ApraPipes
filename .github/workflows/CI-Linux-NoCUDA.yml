@@ -45,4 +45,6 @@ jobs:
     with:
       build-flavor: 'Linux'
       artifact-name: 'BuildLogs_Linux'
-      build-status: ${{ !contains(needs.*.result, 'failure') && 'success' || 'failure' }}      
+      build-status: ${{ !contains(needs.*.result, 'failure') && 'success' || 'failure' }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}      

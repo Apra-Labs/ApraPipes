@@ -56,4 +56,6 @@ jobs:
     with:
       build-flavor: 'Win-nocuda'
       artifact-name: 'BuildLogs_Win-nocuda_1'
-      build-status: ${{ !contains(needs.*.result, 'failure') && 'success' || 'failure' }}      
+      build-status: ${{ !contains(needs.*.result, 'failure') && 'success' || 'failure' }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}      
