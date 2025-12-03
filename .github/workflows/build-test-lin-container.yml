@@ -181,6 +181,15 @@ jobs:
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
+    - name: Save cache on failure (smart devops)
+      if: ${{ failure() && steps.cache-all.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.cache-path }}
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+
     - name: Build
       if: ${{!inputs.is-prep-phase}}
       working-directory: build
