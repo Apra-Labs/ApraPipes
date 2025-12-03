@@ -75,7 +75,7 @@ jobs:
       VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
       TEST_EXE: build/aprapipesut
     container:
-      image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+      image: nvidia/cuda:11.8.0-devel-ubuntu22.04
       volumes:
         - /mnt:/mnt
         - /:/host
