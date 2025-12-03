@@ -83,6 +83,30 @@ jobs:
         shell: bash  
     runs-on: ${{ inputs.runner }}
     steps:
+    - name: Free up disk space on GitHub runner (HOST)
+      run: |
+        echo "=== Disk space BEFORE cleanup (HOST) ==="
+        df -h
+
+        # Remove large unnecessary packages from GitHub-hosted runners
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache
+
+        # Clean up APT on host
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
+
+        # Docker cleanup on host
+        docker system prune -af --volumes || true
+
+        echo "=== Disk space AFTER cleanup (HOST) ==="
+        df -h
+
+        echo "=== /mnt partition (will be used for builds) ==="
+        df -h /mnt
+
     - name: Prepare builder
       run: |
         apt-get update -qq
@@ -91,9 +115,9 @@ jobs:
         ${{ inputs.prep-cmd }}
         ${{ inputs.prep-check-cmd }}
 
-    - name: Free up disk space aggressively
+    - name: Free up disk space in container (CONTAINER)
       run: |
-        echo "=== Disk space BEFORE cleanup ==="
+        echo "=== Disk space BEFORE cleanup (CONTAINER) ==="
         df -h
 
         # Remove apt cache and lists
@@ -113,7 +137,7 @@ jobs:
         # Docker cleanup (if docker is available in container)
         docker system prune -af --volumes 2>/dev/null || true
 
-        echo "=== Disk space AFTER cleanup ==="
+        echo "=== Disk space AFTER cleanup (CONTAINER) ==="
         df -h
 
         echo "=== /mnt partition availability ==="
