@@ -136,13 +136,12 @@ jobs:
 
     - name: Move vcpkg buildtrees to /mnt partition
       run: |
-        echo "=== Moving vcpkg/buildtrees to large partition to save disk space on root ==="
-        BUILDTREES_PATH="${VCPKG_DEFAULT_BINARY_CACHE%/*}/vcpkg/buildtrees"
-        mkdir -p "$BUILDTREES_PATH"
+        echo "=== Moving vcpkg/buildtrees to /mnt to save disk space on root ==="
+        mkdir -p /mnt/vcpkg/buildtrees
         rm -rf vcpkg/buildtrees || true
-        ln -s "$BUILDTREES_PATH" vcpkg/buildtrees
+        ln -s /mnt/vcpkg/buildtrees vcpkg/buildtrees
         ls -la vcpkg/ | grep buildtrees
-        echo "=== vcpkg/buildtrees now points to $BUILDTREES_PATH ==="
+        echo "=== vcpkg/buildtrees now symlinked to /mnt/vcpkg/buildtrees ==="
 
     - name: Remove CUDA from vcpkg if we are in nocuda
       if: ${{ contains(inputs.cuda,'OFF')}}
