@@ -33,8 +33,14 @@ jobs:
 
   linux-nocuda-autofix:
     needs: linux-nocuda-build-test
-    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: |
+      always() &&
+      (
+        (startsWith(github.ref_name, 'autonomous-fix-')) ||
+        (needs.linux-nocuda-build-test.result == 'failure')
+      )
     uses: ./.github/workflows/autonomous-autofix.yml
     with:
       build-flavor: 'Linux'
-      artifact-name: 'BuildLogs_Linux'      
+      artifact-name: 'BuildLogs_Linux'
+      build-status: ${{ needs.linux-nocuda-build-test.result == 'success' && 'success' || 'failure' }}      

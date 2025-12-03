@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         description: 'Name of the build logs artifact to download'
+      build-status:
+        required: true
+        type: string
+        description: 'Build status: success or failure'
       log-path:
         required: false
         type: string
@@ -51,7 +55,7 @@ jobs:
         run: |
           python .github/autonomous-agent/agent/autonomous_agent.py \
             --branch ${{ github.ref_name }} \
-            --build-status failure \
+            --build-status ${{ inputs.build-status }} \
             --failure-log ${{ inputs.log-path }} \
             --output agent-result.json
 

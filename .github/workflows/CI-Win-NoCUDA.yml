@@ -43,8 +43,14 @@ jobs:
 
   win-nocuda-autofix:
     needs: win-nocuda-build-test
-    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: |
+      always() &&
+      (
+        (startsWith(github.ref_name, 'autonomous-fix-')) ||
+        (needs.win-nocuda-build-test.result == 'failure')
+      )
     uses: ./.github/workflows/autonomous-autofix.yml
     with:
       build-flavor: 'Win-nocuda'
-      artifact-name: 'BuildLogs_Win-nocuda_1'      
+      artifact-name: 'BuildLogs_Win-nocuda_1'
+      build-status: ${{ needs.win-nocuda-build-test.result == 'success' && 'success' || 'failure' }}      
