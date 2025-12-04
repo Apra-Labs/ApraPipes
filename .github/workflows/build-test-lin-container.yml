@@ -67,7 +67,12 @@ on:
         type: number
         description: 'number of mins of timeout for tests run'
         default: 20
-        required: false        
+        required: false
+      force-cache-update:
+        type: boolean
+        description: 'force cache update after CMake configure by deleting old cache and saving new one (use when cache is incomplete/stale)'
+        default: false
+        required: false
 jobs:
   build:
     env:
@@ -180,6 +185,30 @@ jobs:
       working-directory: build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
+
+    - name: Force cache update - delete old cache from current branch
+      if: ${{ always() && inputs.force-cache-update }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "=== Force cache update requested - deleting old cache from current branch ==="
+        CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+        echo "Current branch: $CURRENT_BRANCH"
+        gh cache list --limit 100 --ref "$CURRENT_BRANCH" | grep "${{ inputs.flav }}-10-" | awk '{print $1}' | while read cache_id; do
+          echo "Deleting cache ID: $cache_id from branch $CURRENT_BRANCH"
+          gh cache delete "$cache_id" || echo "Failed to delete cache $cache_id (may already be deleted)"
+        done
+        echo "=== Old cache deleted, will save updated cache next ==="
+      continue-on-error: true
+
+    - name: Force cache update - save updated cache with newly-built packages
+      if: ${{ always() && inputs.force-cache-update }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.cache-path }}
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Save cache on failure (smart devops)
       if: ${{ failure() && steps.cache-all.outputs.cache-hit != 'true' }}
