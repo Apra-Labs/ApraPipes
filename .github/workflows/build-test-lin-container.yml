@@ -188,7 +188,7 @@ jobs:
         gh cache list --limit 100 --ref "$CURRENT_BRANCH" | grep "${{ inputs.flav }}-10-" | awk '{print $1}' | while read cache_id; do
           echo "Deleting cache ID: $cache_id from branch $CURRENT_BRANCH"
           gh cache delete "$cache_id" || echo "Failed to delete cache $cache_id (may already be deleted)"
-        done
+        done || echo "No matching caches found to delete (this is OK)"
         echo "=== Old cache deleted, will build and save updated cache after CMake ==="
       continue-on-error: false
 
