@@ -39,7 +39,7 @@ project(APRAPIPES)
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
+find_package(Boost 99.99.99 EXACT COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
