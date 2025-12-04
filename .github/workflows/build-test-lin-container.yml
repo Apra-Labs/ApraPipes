@@ -177,15 +177,15 @@ jobs:
           key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
-    - name: Force cache update - delete old cache using cache-matched-key
-      if: ${{ inputs.force-cache-update && steps.cache-all.outputs.cache-matched-key != '' }}
+    - name: Force cache update - delete old cache using reconstructed key
+      if: ${{ inputs.force-cache-update }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        echo "=== Force cache update requested - deleting cache with key: ${{ steps.cache-all.outputs.cache-matched-key }} ==="
-        gh cache delete "${{ steps.cache-all.outputs.cache-matched-key }}" || echo "Failed to delete cache (may already be deleted)"
+        CACHE_KEY="${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}"
+        echo "=== Force cache update requested - deleting cache with key: $CACHE_KEY ==="
+        gh cache delete "$CACHE_KEY"
         echo "=== Old cache deleted, will build and save updated cache after CMake ==="
-      continue-on-error: true
 
     - name: Make build folder
       run: mkdir -p build
