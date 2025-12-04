@@ -177,17 +177,8 @@ jobs:
           key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
-    - name: Make build folder
-      run: mkdir -p build
-      continue-on-error: true
-
-    - name: Configure CMake Common
-      working-directory: build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
-      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
-
-    - name: Force cache update - delete old cache from current branch
-      if: ${{ always() && inputs.force-cache-update }}
+    - name: Force cache update - delete old cache from current branch BEFORE build
+      if: ${{ inputs.force-cache-update }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
@@ -198,8 +189,17 @@ jobs:
           echo "Deleting cache ID: $cache_id from branch $CURRENT_BRANCH"
           gh cache delete "$cache_id" || echo "Failed to delete cache $cache_id (may already be deleted)"
         done
-        echo "=== Old cache deleted, will save updated cache next ==="
+        echo "=== Old cache deleted, will build and save updated cache after CMake ==="
+      continue-on-error: false
+
+    - name: Make build folder
+      run: mkdir -p build
       continue-on-error: true
+
+    - name: Configure CMake Common
+      working-directory: build
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Force cache update - save updated cache with newly-built packages
       if: ${{ always() && inputs.force-cache-update }}
