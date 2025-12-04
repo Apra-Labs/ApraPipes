@@ -62,11 +62,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_FLAVOR: ${{ inputs.build-flavor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: |
           python .github/autonomous-agent/agent/autonomous_agent.py \
             --branch ${{ github.ref_name }} \
             --build-status ${{ inputs.build-status }} \
             --failure-log ${{ inputs.log-path }} \
+            --build-flavor ${{ inputs.build-flavor }} \
+            --run-id ${{ github.run_id }} \
+            --workflow-name "${{ github.workflow }}" \
             --output agent-result.json
 
       - name: Upload agent result
