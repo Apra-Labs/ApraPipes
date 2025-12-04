@@ -183,7 +183,11 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         echo "=== Force cache update requested ==="
-        echo "Input variables:"
+        echo ""
+        echo "=== ALL ENVIRONMENT VARIABLES ==="
+        env | sort
+        echo ""
+        echo "=== Input variables ==="
         echo "  inputs.flav: ${{ inputs.flav }}"
         echo "  hashFiles result: ${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}"
         echo ""
