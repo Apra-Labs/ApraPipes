@@ -167,9 +167,9 @@ jobs:
     #     ls ${{ inputs.cache-path }} || true
     #   continue-on-error: true
 
-    - name: Cache dependencies for fast cloud build
+    - name: Restore cache dependencies for fast cloud build
       id: cache-all
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
           path: |
             ${{ inputs.cache-path }}
@@ -177,31 +177,17 @@ jobs:
           key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
-    - name: Force cache update - delete old cache using CACHE_RESULT
-      if: ${{ inputs.force-cache-update }}
+    - name: Force cache update - delete old cache using cache-matched-key output
+      if: ${{ inputs.force-cache-update && steps.cache-all.outputs.cache-matched-key != '' }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         echo "=== Force cache update requested ==="
         echo ""
-        echo "=== ALL ENVIRONMENT VARIABLES (filtered for cache-related) ==="
-        env | sort | grep -i cache || echo "No cache-related env vars found"
-        echo ""
-        echo "=== ALL STATE VARIABLES ==="
-        env | sort | grep -i state || echo "No STATE_ env vars found"
-        echo ""
 
-        # The cache action saves the restored cache key in CACHE_RESULT state
-        # GitHub Actions exposes step state as STATE_<name> environment variables
-        if [ -z "$STATE_CACHE_RESULT" ]; then
-          echo "ERROR: STATE_CACHE_RESULT is not set!"
-          echo "The cache action should have saved the restored cache key to this state variable."
-          echo "Cannot proceed with cache deletion without knowing which cache was restored."
-          exit 1
-        fi
-
-        CACHE_KEY="$STATE_CACHE_RESULT"
-        echo "Cache key from CACHE_RESULT state: $CACHE_KEY"
+        # Use the cache-matched-key output from the restore action
+        CACHE_KEY="${{ steps.cache-all.outputs.cache-matched-key }}"
+        echo "Cache key from restore action output: $CACHE_KEY"
         echo "Cache key length: ${#CACHE_KEY}"
         echo ""
 
