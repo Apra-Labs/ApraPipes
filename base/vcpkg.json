@@ -15,19 +15,10 @@
   ],
   "dependencies": [
     {
-      "name": "whisper",
-      "default-features": false,
-      "features": [
-        "cuda"
-      ]
-    },
-    {
       "name": "opencv4",
       "default-features": false,
       "features": [
         "contrib",
-        "cuda",
-        "cudnn",
         "dnn",
         "jpeg",
         "nonfree",
@@ -61,6 +52,7 @@
     "zlib",
     "sfml",
     "brotli",
+    "whisper",
     {
       "name": "gtk3",
       "platform": "!windows"
