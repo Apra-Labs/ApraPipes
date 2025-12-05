@@ -126,8 +126,27 @@ IF(ENABLE_CUDA)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
-		find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
-		find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
+		# Try to find NVIDIA Video Codec libraries in multiple locations:
+		# 1. System driver libraries (on bare metal with NVIDIA drivers)
+		# 2. CUDA toolkit stub libraries (in Docker containers or development)
+		find_library(LIBNVCUVID libnvcuvid.so
+			PATHS
+				/usr/lib/x86_64-linux-gnu
+				/usr/local/cuda-11.8/lib64/stubs
+				/usr/local/cuda-11.8/targets/x86_64-linux/lib/stubs
+				/usr/local/cuda/lib64/stubs
+				/usr/local/cuda/targets/x86_64-linux/lib/stubs
+			NO_DEFAULT_PATH
+		)
+		find_library(LIBNVENCODE libnvidia-encode.so
+			PATHS
+				/usr/lib/x86_64-linux-gnu
+				/usr/local/cuda-11.8/lib64/stubs
+				/usr/local/cuda-11.8/targets/x86_64-linux/lib/stubs
+				/usr/local/cuda/lib64/stubs
+				/usr/local/cuda/targets/x86_64-linux/lib/stubs
+			NO_DEFAULT_PATH
+		)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
