@@ -47,6 +47,7 @@
         "cuda",
         "cudnn",
         "dnn",
+        "highgui",
         "jpeg",
         "nonfree",
         "png",
