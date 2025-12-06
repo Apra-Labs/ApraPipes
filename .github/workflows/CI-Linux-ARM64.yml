@@ -64,6 +64,7 @@ jobs:
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
+    if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write

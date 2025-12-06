@@ -33,6 +33,7 @@ jobs:
       nProc: 6
   linux-cuda-publish:
     needs: linux-cuda-build-test
+    if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write

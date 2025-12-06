@@ -41,6 +41,7 @@ jobs:
       force-cache-update: ${{ inputs.force-cache-update == true }}
   win-cuda-publish:
     needs: win-cuda-build-test
+    if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write
