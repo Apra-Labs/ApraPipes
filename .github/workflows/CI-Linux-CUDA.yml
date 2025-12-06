@@ -2,13 +2,13 @@ name: CI-Linux-CUDA
 
 on:
   push:  # Trigger on push to any branch
-    branches: ["**"]  # Any branch
+    branches: [ main ]  # Only run on push to main (after PR merge)
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
       - 'docs/**'
   pull_request:
-    branches: [ main ]
+    branches: [ main ]  # Run on PRs targeting main
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
