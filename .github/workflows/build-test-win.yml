@@ -124,8 +124,19 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
-    - name: Restore cache dependencies for fast cloud build
+    - name: Cache dependencies for fast cloud build
       id: cache-all
+      if: ${{ !inputs.force-cache-update }}
+      uses: actions/cache@v3
+      with:
+          path: |
+            ${{ inputs.cache-path }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ inputs.flav }}-
+
+    - name: Force cache update - restore and delete old cache
+      id: cache-force-restore
+      if: ${{ inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
           path: |
@@ -134,7 +145,7 @@ jobs:
           restore-keys: ${{ inputs.flav }}-
 
     - name: Force cache update - delete old cache using cache-matched-key output
-      if: ${{ inputs.force-cache-update && steps.cache-all.outputs.cache-matched-key != '' }}
+      if: ${{ inputs.force-cache-update && steps.cache-force-restore.outputs.cache-matched-key != '' }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
@@ -142,7 +153,7 @@ jobs:
         echo ""
 
         # Use the cache-matched-key output from the restore action
-        $CACHE_KEY="${{ steps.cache-all.outputs.cache-matched-key }}"
+        $CACHE_KEY="${{ steps.cache-force-restore.outputs.cache-matched-key }}"
         echo "Cache key from restore action output: $CACHE_KEY"
         echo ""
 
@@ -181,14 +192,6 @@ jobs:
 
     - name: Force cache update - save updated cache with newly-built packages
       if: ${{ always() && inputs.force-cache-update }}
-      uses: actions/cache/save@v3
-      with:
-        path: |
-          ${{ inputs.cache-path }}
-        key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-
-    - name: Save cache on failure (smart devops)
-      if: ${{ failure() && steps.cache-all.outputs.cache-hit != 'true' && !inputs.force-cache-update }}
       uses: actions/cache/save@v3
       with:
         path: |
