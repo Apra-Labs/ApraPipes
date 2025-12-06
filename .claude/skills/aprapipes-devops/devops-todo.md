@@ -12,6 +12,75 @@ _No high priority items at this time. Current build system is stable._
 
 ## Medium Priority
 
+### TODO-1: Publish Pre-Built Developer Docker Images with vcpkg Cache
+
+**Status**: Not Started
+**Priority**: Medium-High
+**Estimated Effort**: 3-4 hours
+
+**Objective**: Create and publish Docker images with ApraPipes development environment pre-installed including vcpkg cache to accelerate developer onboarding.
+
+**Benefits**:
+- Dramatically faster developer setup (minutes instead of hours)
+- Consistent development environment across team
+- Pre-built vcpkg dependencies (saves 30-60 min of build time per developer)
+- Easier CI/CD debugging (developers can reproduce exact CI environment locally)
+- Reduces "works on my machine" issues
+
+**Implementation Plan**:
+1. Create multi-stage Dockerfiles for each platform:
+   - `Dockerfile.dev-linux-cuda` - Based on nvidia/cuda:11.8.0-devel-ubuntu20.04
+   - `Dockerfile.dev-linux-nocuda` - Based on ubuntu:22.04
+   - `Dockerfile.dev-jetson` - Based on nvcr.io/nvidia/l4t-base
+
+2. Include in each image:
+   - All system dependencies (libssl-dev, build-essential, cmake, ninja, etc.)
+   - vcpkg bootstrapped and ready
+   - Pre-built vcpkg cache at `/opt/vcpkg-cache` (copy from successful CI run)
+   - ApraPipes repository cloned to `/workspace/aprapipes`
+   - Development tools (git, vim, gdb, valgrind, etc.)
+   - Documentation on how to mount local code for development
+
+3. Build and tag images:
+   ```bash
+   docker build -f Dockerfile.dev-linux-cuda -t ghcr.io/apra-labs/aprapipes-dev:linux-cuda-latest .
+   docker build -f Dockerfile.dev-linux-nocuda -t ghcr.io/apra-labs/aprapipes-dev:linux-nocuda-latest .
+   ```
+
+4. Publish to GitHub Container Registry (ghcr.io):
+   ```bash
+   docker push ghcr.io/apra-labs/aprapipes-dev:linux-cuda-latest
+   docker push ghcr.io/apra-labs/aprapipes-dev:linux-nocuda-latest
+   ```
+
+5. Add usage documentation to README.md:
+   ```bash
+   # Quick start for developers
+   docker run -it --rm \
+     -v $(pwd):/workspace/aprapipes \
+     -v aprapipes-build:/workspace/aprapipes/build \
+     ghcr.io/apra-labs/aprapipes-dev:linux-nocuda-latest
+
+   # Inside container
+   cd /workspace/aprapipes/build
+   cmake ../base -DCMAKE_BUILD_TYPE=RelWithDebInfo
+   cmake --build . -j4
+   ```
+
+6. Automate image builds in CI:
+   - Trigger on successful main branch builds
+   - Tag with version (e.g., `v2024.12.01`) and `latest`
+   - Store vcpkg cache as artifact, copy into Docker image during build
+
+**Estimated Savings**:
+- Developer onboarding: 2-3 hours → 15 minutes
+- vcpkg rebuild time: 45 minutes → 0 minutes (pre-cached)
+- CI debugging iterations: 30% faster (local reproduction)
+
+**Related**: This aligns with TODO-7 (Autonomous Agent Design) - agent could use these images for testing fixes
+
+---
+
 ### TODO-2: Pin All Critical Dependencies
 
 **Status**: In Progress (SFML, Boost, OpenCV pinned; more needed)

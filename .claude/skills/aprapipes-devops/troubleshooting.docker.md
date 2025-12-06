@@ -138,6 +138,68 @@ curl -I https://github.com
 
 ---
 
+## Issue D4: GitHub Actions Node.js 20 GLIBC Compatibility (CRITICAL)
+
+**Symptom**:
+```
+/__e/node20/bin/node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found
+Error: The process '/__e/node20/bin/node' failed with exit code 1
+upload-artifact@v4 fails in container
+```
+
+**Root Cause**:
+- GitHub Actions upgraded to Node.js 20 for newer action versions (v4+)
+- Node.js 20 requires GLIBC 2.28 or higher
+- Older container images (Ubuntu 18.04, Alpine <3.13) only have GLIBC 2.27
+- Actions like `upload-artifact@v4`, `download-artifact@v4`, `cache@v4` all fail
+
+**Impact**:
+- **HIGH SEVERITY**: Breaks all artifact uploads/downloads in older containers
+- Affects containerized CI/CD pipelines using Ubuntu 18.04 or older
+- Silent breakage when GitHub Actions updates action versions
+
+**Solution Options**:
+
+**Option 1: Downgrade Actions to v3 (Quick Fix)**
+```yaml
+# Use v3 versions which support Node.js 16 (GLIBC 2.27+)
+- uses: actions/upload-artifact@v3  # NOT v4
+- uses: actions/download-artifact@v3
+- uses: actions/cache@v3
+```
+
+**Option 2: Upgrade Container Base Image (Permanent Fix)**
+```dockerfile
+# Upgrade from Ubuntu 18.04 to 20.04+ or 22.04
+FROM ubuntu:22.04  # Has GLIBC 2.35
+# OR
+FROM ubuntu:20.04  # Has GLIBC 2.31
+```
+
+**Option 3: Install Newer GLIBC (Not Recommended)**
+- Complex, error-prone
+- Can break system packages
+- Not worth the effort vs upgrading base image
+
+**Detection**:
+```bash
+# Check GLIBC version in container
+ldd --version
+# Output: ldd (Ubuntu GLIBC 2.27-3ubuntu1.6) 2.27  # TOO OLD for Node 20
+# Output: ldd (Ubuntu GLIBC 2.31-0ubuntu9.12) 2.31  # OK for Node 20
+```
+
+**Best Practice**:
+- Use Ubuntu 20.04+ or Alpine 3.13+ for GitHub Actions containers
+- Pin action versions explicitly to avoid surprises
+- Monitor GitHub Actions changelog for breaking changes
+
+**Related GitHub Issue**: This is a known issue affecting many projects using older containers
+
+**Fixed In**: ApraPipes commit e9aebb9a (Dec 2025) - downgraded to v3 actions for Ubuntu 18.04 container
+
+---
+
 ## Docker/WSL Quick Fixes Checklist
 
 ### Docker Checklist

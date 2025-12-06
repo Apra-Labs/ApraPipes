@@ -2,13 +2,25 @@ set(MINIMUM_CUDNN_VERSION "7.6.5")
 
 vcpkg_find_cuda(OUT_CUDA_TOOLKIT_ROOT CUDA_TOOLKIT_ROOT OUT_CUDA_VERSION CUDA_VERSION)
 
+# Determine multiarch library path based on target architecture
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(MULTIARCH_INCLUDE_PATH "/usr/include/x86_64-linux-gnu")
+    set(MULTIARCH_LIB_PATH "/usr/lib/x86_64-linux-gnu")
+elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(MULTIARCH_INCLUDE_PATH "/usr/include/aarch64-linux-gnu")
+    set(MULTIARCH_LIB_PATH "/usr/lib/aarch64-linux-gnu")
+else()
+    set(MULTIARCH_INCLUDE_PATH "")
+    set(MULTIARCH_LIB_PATH "")
+endif()
+
 # Try to find CUDNN if it exists; only download if it doesn't exist
 find_path(CUDNN_INCLUDE_DIR NAMES cudnn.h cudnn_v8.h cudnn_v7.h
-  HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 /usr/include /usr/include/x86_64-linux-gnu/ /usr/include/aarch64-linux-gnu/
+  HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 /usr/include ${MULTIARCH_INCLUDE_PATH}
   PATH_SUFFIXES cuda/include include include/12.3)
 message(STATUS "CUDNN_INCLUDE_DIR: ${CUDNN_INCLUDE_DIR}")
 find_library(CUDNN_LIBRARY NAMES cudnn cudnn8 cudnn7 libcudnn libcudnn8 libcudnn7
-  HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 /usr/lib/aarch64-linux-gnu/ /usr/include/aarch64-linux-gnu/ /usr/
+  HINTS ${CUDA_TOOLKIT_ROOT} $ENV{CUDA_PATH} $ENV{CUDA_TOOLKIT_ROOT_DIR} $ENV{cudnn} $ENV{CUDNN} $ENV{CUDNN_ROOT_DIR} $ENV{CUDA_PATH}/../../../NVIDIA/CUDNN/v9.0 ${MULTIARCH_LIB_PATH} /usr/
   PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64 cuda/lib/x64 lib/12.3/x64)
 message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
 if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")

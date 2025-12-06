@@ -30,7 +30,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         id: test-results
         with:
-          junit_files: artifacts/CI_test_result_${{inputs.flav}}.xml
+          files: artifacts/CI_test_result_${{inputs.flav}}.xml
           check_name:  'Test Results ${{inputs.flav}}'
       - name: Set badge color
         # Upload only for main branch
