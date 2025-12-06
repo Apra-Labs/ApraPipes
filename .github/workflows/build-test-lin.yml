@@ -195,7 +195,7 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      if: ${{ always() && !inputs.is-prep-phase && !inputs.skip-test }}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
