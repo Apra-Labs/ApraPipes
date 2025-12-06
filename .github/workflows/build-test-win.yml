@@ -163,7 +163,8 @@ jobs:
       continue-on-error: true
 
     - name: Make build folder
-      run: mkdir -p build
+      run: if (!(Test-Path build)) { New-Item -ItemType Directory -Path build }
+      shell: pwsh
       continue-on-error: true
 
     - name: Add pkg-config to PATH
