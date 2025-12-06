@@ -3,8 +3,16 @@ name: CI-Linux-CUDA
 on:
   push:  # Trigger on push to any branch
     branches: ["**"]  # Any branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
