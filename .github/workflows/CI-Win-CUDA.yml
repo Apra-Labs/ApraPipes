@@ -1,8 +1,8 @@
 name: CI-Win-CUDA
 
 on:
-  push:
-    branches: [ main ]
+  push:  # Trigger on push to any branch
+    branches: ["**"]  # Any branch
   pull_request:
     branches: [ main ]
   workflow_dispatch:
