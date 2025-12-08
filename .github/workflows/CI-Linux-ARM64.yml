@@ -94,7 +94,7 @@ jobs:
         fi
       bootstrap-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && export CURL_HTTP_VERSION=HTTP/1.1 && ./vcpkg/bootstrap-vcpkg.sh'
       cache-path: './none'
-      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
