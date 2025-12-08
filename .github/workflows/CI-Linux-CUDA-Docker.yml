@@ -1,39 +1,48 @@
 name: CI-Linux-CUDA-Docker
 
 on:
-  push:
-    branches: [ main ]
+  push:  # Trigger on push to any branch
+    branches-ignore:
+      - fix/ci-additional-workflows  # Ignore push events on this CI fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   pull_request:
-    branches: [ main ]
+    branches-ignore:
+      - fix/ci-additional-workflows  # Temporarily disable on ARM64 fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   workflow_dispatch:
+    inputs:
+      force-cache-update:
+        description: 'Force cache rebuild (deletes old cache and builds fresh)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
-  
+
+permissions:
+  actions: write  # Required for cache deletion via gh cache delete
+  contents: read  # Required for checkout
+
 jobs:
-  # linux-cuda-build-prep:
-  # this is in caching, not using it for now
-  #   uses: ./.github/workflows/build-test-lin-container.yml
-  #   with:
-  #     runner: 'ubuntu-20.04'
-  #     flav: 'Linux-Cuda'
-  #     is-selfhosted: false
-  #     cuda: 'ON'
-  #     prep-cmd: 'echo skipping builder prep as I can not sudo'
-  #     is-prep-phase: true
-  #     cache-path: '/github/home/.cache/vcpkg/archives'      
-  #     nProc: 3
   linux-cuda-docker-build-no-test:
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
       runner: 'ubuntu-22.04'
       flav: Linux-Cuda
-      is-selfhosted: false      
+      is-selfhosted: false
       cuda: 'ON'
-      prep-cmd: 'echo skipping builder prep as I can not sudo'
-      skip-test: true 
-      cache-path: '/github/home/.cache/vcpkg/archives'
+      prep-cmd: 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl zip unzip tar autoconf automake autoconf-archive autopoint build-essential gcc g++ make flex git-core git-lfs libass-dev libfreetype6-dev libgnutls28-dev libmp3lame-dev libsdl2-dev libtool libsoup-gnome2.4-dev libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev ninja-build pkg-config texinfo wget yasm zlib1g-dev nasm gperf bison dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 libssl-dev && pip3 install meson && wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb && dpkg -i packages-microsoft-prod.deb && apt-get update -qq && apt-get install -y powershell && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && apt-get update -qq && apt-get install -y gh'
+      cmake-conf-cmd: 'PATH=/usr/local/cuda/bin:$PATH CUDAToolkit_ROOT=/usr/local/cuda-11.8 cmake -B . -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
+      skip-test: true
       nProc: 3
+      force-cache-update: ${{ inputs.force-cache-update == true }}  # Only force cache update when manually triggered with the option
   
   
 

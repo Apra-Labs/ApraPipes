@@ -67,13 +67,19 @@ on:
         type: number
         description: 'number of mins of timeout for tests run'
         default: 20
-        required: false        
+        required: false
+      force-cache-update:
+        type: boolean
+        description: 'force cache update after CMake configure by deleting old cache and saving new one (use when cache is incomplete/stale)'
+        default: false
+        required: false
 jobs:
   build:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      CURL_HTTP_VERSION: HTTP/1.1  # Force HTTP/1.1 for ARM64 curl 7.58.0 HTTP/2 framing bug workaround
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -106,7 +112,7 @@ jobs:
         git config --global --add safe.directory "*"
         git submodule status > submodule_ver.txt
         cat submodule_ver.txt
-        git rev-list --all --count 
+        git rev-list --all --count
 
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
@@ -119,12 +125,44 @@ jobs:
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
+      if: ${{ !inputs.force-cache-update }}
       uses: actions/cache@v3
       with:
           path: |
             ${{ inputs.cache-path }}
           key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
+
+    - name: Force cache update - restore and delete old cache
+      id: cache-force-restore
+      if: ${{ inputs.force-cache-update }}
+      uses: actions/cache/restore@v3
+      with:
+          path: |
+            ${{ inputs.cache-path }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ inputs.flav }}-
+
+    - name: Force cache update - delete old cache using cache-matched-key output
+      if: ${{ inputs.force-cache-update && steps.cache-force-restore.outputs.cache-matched-key != '' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "=== Force cache update requested ==="
+        echo ""
+
+        # Use the cache-matched-key output from the restore action
+        CACHE_KEY="${{ steps.cache-force-restore.outputs.cache-matched-key }}"
+        echo "Cache key from restore action output: $CACHE_KEY"
+        echo ""
+
+        echo "Listing existing caches for branch:"
+        gh cache list --limit 5 || echo "Failed to list caches"
+        echo ""
+
+        echo "Attempting to delete cache with key: $CACHE_KEY"
+        gh cache delete "$CACHE_KEY"
+        echo "=== Old cache deleted successfully, will build and save updated cache after CMake ==="
     
     - name: Make build folder
       run: mkdir -p build
@@ -133,6 +171,14 @@ jobs:
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+
+    - name: Force cache update - save updated cache with newly-built packages
+      if: ${{ always() && inputs.force-cache-update }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.cache-path }}
+        key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
@@ -153,7 +199,7 @@ jobs:
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results
-      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      if: ${{ always() && !inputs.is-prep-phase && !inputs.skip-test }}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:

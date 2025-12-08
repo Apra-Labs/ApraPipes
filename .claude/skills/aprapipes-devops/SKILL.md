@@ -169,6 +169,54 @@ key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configura
 
 ---
 
+### Pattern 6: Duplicate Workflow Runs
+**Symptoms:**
+- Multiple workflow runs executing simultaneously for the same commit
+- Wasted CI minutes (e.g., 3 runs × 40 minutes = 120 minutes wasted)
+- Runs competing for shared runner resources, slowing each other down
+
+**Root Cause**: Triggering `gh workflow run` multiple times in quick succession without waiting for confirmation
+
+**How It Happens:**
+- Executing workflow trigger command multiple times thinking it didn't work
+- Using parallel tool calls with duplicate workflow triggers
+- Not checking if a run already started before triggering again
+
+**Quick Check:**
+```bash
+# Check for duplicate runs on the same branch/commit
+gh run list --workflow=<workflow-name> --branch <branch-name> --limit 10
+```
+
+**Prevention Protocol:**
+1. **Always wait for run ID** - `gh workflow run` returns a run ID; wait for it before re-executing
+2. **Check before triggering** - Use `gh run list` to verify no existing run for the commit
+3. **Use watch immediately** - After triggering, immediately run `gh run watch <run-id>` to confirm start
+4. **Never trigger in parallel** - Don't use parallel tool calls for workflow triggers without explicit deduplication
+5. **Cancel duplicates immediately** - If duplicates detected, cancel older runs: `gh run cancel <run-id>`
+
+**Example Fix:**
+```bash
+# BAD: May trigger multiple times
+gh workflow run CI-Linux-CUDA-Docker.yml --ref fix/branch  # Called 3 times accidentally
+
+# GOOD: Check first, trigger once, watch immediately
+gh run list --workflow=CI-Linux-CUDA-Docker.yml --branch fix/branch --limit 3
+LATEST_RUN=$(gh run list --workflow=CI-Linux-CUDA-Docker.yml --branch fix/branch --limit 1 --json databaseId --jq '.[0].databaseId')
+if [ -z "$LATEST_RUN" ] || [ "$(gh run view $LATEST_RUN --json status --jq '.status')" = "completed" ]; then
+  NEW_RUN=$(gh workflow run CI-Linux-CUDA-Docker.yml --ref fix/branch --json 2>&1 | grep -oP 'https://github.com/.*/actions/runs/\K[0-9]+')
+  gh run watch $NEW_RUN
+fi
+```
+
+**Immediate Cleanup:**
+```bash
+# If duplicates found, cancel older runs (keep newest)
+gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
+```
+
+---
+
 ## When to Use Each Guide
 
 ### Primary Guide Selection
@@ -278,6 +326,7 @@ grep "PKG_CONFIG" build.log
 4. **Don't use parent commits as baselines** - they're not advertised by git
 5. **Don't batch updates** - change one thing at a time for easier debugging
 6. **Don't skip Phase 1** - ensure caching works before running Phase 2
+7. **Don't trigger workflows multiple times** - check for existing runs first (see Pattern 6)
 
 ---
 

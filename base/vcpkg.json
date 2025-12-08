@@ -10,7 +10,7 @@
     },
     {
       "name": "libarchive",
-      "version": "3.5.2"
+      "version": "3.7.7"
     },
     {
       "name": "sfml",
@@ -22,11 +22,16 @@
     },
     {
       "name": "opencv4",
-      "version": "4.8.0"
+      "version": "4.10.0",
+      "port-version": 6
     },
     {
       "name": "openal-soft",
       "version": "1.23.1"
+    },
+    {
+      "name": "nu-book-zxing-cpp",
+      "version": "2.2.1"
     }
   ],
   "dependencies": [
@@ -46,6 +51,7 @@
         "cuda",
         "cudnn",
         "dnn",
+        "highgui",
         "jpeg",
         "nonfree",
         "png",

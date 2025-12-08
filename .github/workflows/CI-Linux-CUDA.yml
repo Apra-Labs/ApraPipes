@@ -1,10 +1,20 @@
 name: CI-Linux-CUDA
 
 on:
-  push:
-    branches: [ main ]
+  push:  # Trigger on push to any branch
+    branches-ignore:
+      - fix/ci-additional-workflows  # Ignore push events on this CI fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   pull_request:
-    branches: [ main ]
+    branches-ignore:
+      - fix/ci-additional-workflows  # Temporarily disable on ARM64 fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
@@ -25,6 +35,7 @@ jobs:
       nProc: 6
   linux-cuda-publish:
     needs: linux-cuda-build-test
+    if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write

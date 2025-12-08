@@ -1,15 +1,35 @@
 name: CI-Win-NoCUDA
 
 on:
-  push:
-    branches: [ main ]
+  push:  # Trigger on push to any branch
+    branches-ignore:
+      - fix/ci-additional-workflows  # Ignore push events on this CI fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   pull_request:
-    branches: [ main ]
+    branches-ignore:
+      - fix/ci-additional-workflows  # Temporarily disable on ARM64 fix branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - 'docs/**'
   workflow_dispatch:
+    inputs:
+      force-cache-update:
+        description: 'Force cache rebuild (deletes old cache and builds fresh)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
-  
+
+permissions:
+  actions: write  # Required for cache deletion via gh cache delete
+  contents: read  # Required for checkout
+
 jobs:
   win-nocuda-build-prep:
     uses: ./.github/workflows/build-test-win.yml
@@ -20,6 +40,7 @@ jobs:
       is-selfhosted: false
       is-prep-phase: true
       nProc: 3
+      force-cache-update: ${{ inputs.force-cache-update == true }}
   win-nocuda-build-test:
     needs: win-nocuda-build-prep
     uses: ./.github/workflows/build-test-win.yml
@@ -30,8 +51,10 @@ jobs:
       cuda: 'OFF'
       is-prep-phase: false
       nProc: 3
+      force-cache-update: ${{ inputs.force-cache-update == true }}
   win-nocuda-publish:
     needs: win-nocuda-build-test
+    if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write

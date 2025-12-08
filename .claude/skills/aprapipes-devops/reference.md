@@ -566,6 +566,91 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
 
 ---
 
+## SSH Access to Self-Hosted Runners
+
+### OpenRPort Tunnel Configuration
+
+Both ARM64 (Jetson) and Windows CUDA self-hosted runners are accessible via OpenRPort SSH tunneling. **Note**: Ports change with each tunnel session - get current ports from user.
+
+### Connection Details
+
+| Runner | Host | Port Example | Username | Password | OS |
+|--------|------|--------------|----------|----------|-----|
+| **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 18.04 |
+| **Windows CUDA** | `utubovyu.users.openrport.io` | `22179` (varies) | `administrator` | (ask user) | Windows 11 Pro |
+
+### Basic SSH Commands
+
+**ARM64 Jetson:**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io
+```
+
+**Windows CUDA:**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io
+```
+
+### Remote Command Execution
+
+**Single command:**
+```bash
+# ARM64 - Check build progress
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'tail -100 /mnt/disks/actions-runner/_work/_diag/*.log | grep -E "(Installing|installed)" | tail -5'
+
+# Windows - Check system info
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'systeminfo | findstr /B /C:"OS Name" /C:"OS Version"'
+```
+
+**Multi-line PowerShell scripts (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'powershell -Command "Get-Process | Where-Object {$_.ProcessName -like \"*runner*\"} | Select-Object ProcessName,Id,CPU"'
+```
+
+### Common Remote Tasks
+
+**Check runner status (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'ps aux | grep actions-runner'
+```
+
+**Check vcpkg build progress (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'tail -50 /mnt/disks/actions-runner/_work/_diag/*.log'
+```
+
+**Check disk space (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'df -h /mnt/disks/actions-runner'
+```
+
+**Check runner status (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'powershell -Command "Get-Service | Where-Object {$_.DisplayName -like \"*GitHub Actions*\"}"'
+```
+
+**Check CUDA version (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'nvcc --version'
+```
+
+### Security Notes
+
+- **Credentials stored in clear text**: These SSH credentials are for development/CI purposes only
+- **OpenRPort tunneling**: Connections are tunneled through OpenRPort server
+- **StrictHostKeyChecking disabled**: For automation purposes (accepts host key automatically)
+- **Change default passwords**: Consider rotating passwords if exposing beyond CI environment
+
+---
+
 ## Common Commands Quick Reference
 
 ### GitHub CLI
