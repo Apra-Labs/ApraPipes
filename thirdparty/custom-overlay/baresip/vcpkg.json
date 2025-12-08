@@ -1,0 +1,12 @@
+{
+  "name": "baresip",
+  "version": "3.2.0",
+  "description": "Baresip is a portable and modular SIP User-Agent with audio and video support.",
+  "homepage": "https://github.com/baresip/baresip",
+  "dependencies": [
+      {
+        "name": "re",
+        "platform" : "!windows"
+      }
+  ]
+}
