@@ -139,6 +139,39 @@ vcpkg/
 
 **Why 3.10.x**: Python 3.12+ removed `distutils` module required by glib and other packages.
 
+### fix-vcpkg-json.ps1 - Build Configuration Script
+
+**Location**: `base/fix-vcpkg-json.ps1`
+
+PowerShell script to modify `vcpkg.json` at runtime during CI builds. Used for:
+- Two-phase builds (Phase 1: cache heavy dependencies like OpenCV)
+- Platform-specific builds (remove CUDA packages for NoCUDA builds)
+
+**Parameters**:
+- `-removeCUDA`: Remove CUDA-related packages for NoCUDA builds
+- `-onlyOpenCV`: Keep only OpenCV (for Phase 1 dependency caching)
+
+**Usage in Workflows**:
+
+```yaml
+- name: Remove CUDA from vcpkg if we are in nocuda
+  if: ${{ contains(inputs.cuda,'OFF')}}
+  working-directory: ${{github.workspace}}/base
+  run: .\fix-vcpkg-json.ps1 -removeCUDA
+  shell: pwsh
+
+- name: Leave only OpenCV from vcpkg during prep phase
+  if: inputs.is-prep-phase
+  working-directory: ${{github.workspace}}/base
+  run: .\fix-vcpkg-json.ps1 -onlyOpenCV
+  shell: pwsh
+```
+
+**Why This Approach**:
+- Two-phase builds: Phase 1 installs OpenCV (~40 min), caches it, then Phase 2 uses cache for fast full build
+- Avoids maintaining multiple vcpkg.json files
+- Enables conditional dependency installation based on workflow inputs
+
 ---
 
 ## Version Pinning Strategy
@@ -193,6 +226,122 @@ When updating vcpkg baseline WITHOUT version overrides:
 7. Merge only after verification
 
 **DevOps Role**: Fix build config, NOT application code to accommodate new versions.
+
+---
+
+## vcpkg Fork Management Best Practices
+
+### CRITICAL: Never Modify Master Branches
+
+**❌ NEVER DO THIS:**
+```bash
+# DON'T push to master of forks
+git checkout master
+git merge fix/my-changes
+git push origin master  # DANGEROUS - breaks other builds!
+```
+
+**Why This Is Dangerous**:
+- Other builds/projects may depend on the fork's master
+- Can break production CI pipelines
+- Hard to revert without force-push (often blocked)
+- Violates protected branch policies
+
+**✅ ALWAYS DO THIS INSTEAD:**
+```bash
+# Use feature branches
+git checkout -b fix/vcpkg-update-2025-11-27
+git push origin fix/vcpkg-update-2025-11-27
+
+# Update baseline to point to feature branch HEAD
+# In vcpkg-configuration.json:
+"baseline": "<commit-from-feature-branch>"
+```
+
+### Proper vcpkg Fork Update Workflow
+
+#### Option 1: Feature Branch (Recommended)
+```bash
+# 1. Create feature branch from microsoft/vcpkg
+cd vcpkg
+git fetch microsoft
+git checkout -b fix/update-2025-11-27 microsoft/master
+
+# 2. Cherry-pick your custom changes
+git cherry-pick <your-python-fix-commit>
+
+# 3. Push to fork
+git push origin fix/update-2025-11-27
+
+# 4. Get the commit hash
+BASELINE=$(git rev-parse HEAD)
+
+# 5. Update ApraPipes configuration
+cd ../base
+# Edit vcpkg-configuration.json with $BASELINE
+git commit -am "ci: Update vcpkg baseline to fix/update-2025-11-27"
+```
+
+#### Option 2: Git Tags (For Stable Baselines)
+```bash
+# Tag a specific commit
+cd vcpkg
+git tag baseline-2025-11-27-stable dfa17587b2
+git push origin baseline-2025-11-27-stable
+
+# Use the tag commit in configuration
+"baseline": "dfa17587b27fcb5642e74632e49b3f9775aa1c19"
+```
+
+#### Option 3: Overlay Ports (For Custom Packages)
+For small modifications, use vcpkg overlay-ports instead of forking:
+```yaml
+# vcpkg-configuration.json already has:
+"overlay-ports": [
+  "../thirdparty/custom-overlay"
+]
+
+# Put modified portfiles in thirdparty/custom-overlay/
+thirdparty/custom-overlay/
+  glib/
+    portfile.cmake
+    vcpkg.json
+```
+
+### Mistake Recovery: What If You Already Pushed to Master?
+
+If you accidentally pushed to fork's master branch:
+
+1. **Don't panic** - The damage is done but containable
+2. **Create a revert commit** (if master isn't protected):
+```bash
+git revert HEAD --no-edit
+git push origin master
+```
+
+3. **Or create a hotfix branch** from the previous good commit:
+```bash
+git checkout -b hotfix/restore-master <previous-good-commit>
+git push origin hotfix/restore-master
+# Ask repo owner to reset master to this commit
+```
+
+4. **Communicate**: Notify other users of the fork about the change
+5. **Use feature branch going forward**: Don't repeat the mistake
+
+### Real Example: Lessons from Build Failures
+
+**What Went Wrong**:
+1. Created baseline with commit `ae8fa5ae5e` (microsoft/vcpkg parent commit)
+2. That commit wasn't advertised by `git ls-remote` (parent commits aren't advertised)
+3. vcpkg couldn't fetch it → "no version database entry" errors
+4. **MISTAKE**: Merged to Apra-Labs/vcpkg master (should have used feature branch)
+5. Fixed by using merge commit `3011303ba1` (advertised)
+
+**Takeaway**: Always verify commits are advertised before using as baseline:
+```bash
+git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
+```
 
 ---
 
@@ -762,7 +911,6 @@ grep "win-nocuda-build-test" /tmp/build.log  # Phase 2
 
 ## Version Information
 
-**Last Updated**: 2024-11-28
 **vcpkg Baseline**: `3011303ba1f6586e8558a312d0543271fca072c6`
 **Python Version**: 3.10.11
 **CMake Version**: 3.29.6

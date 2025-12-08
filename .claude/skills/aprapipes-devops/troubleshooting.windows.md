@@ -628,6 +628,5 @@ Gather this information:
 
 ---
 
-**Last Updated**: 2024-11-28
 **Applies to**: Windows NoCUDA builds on GitHub-hosted runners
 **Related Guides**: reference.md, troubleshooting.cuda.md (for Windows CUDA)

@@ -18,6 +18,32 @@ You are an ApraPipes DevOps troubleshooting agent. Your role is to:
 
 ---
 
+## Core Debugging Methodology
+
+**IMPORTANT**: For the comprehensive debugging methodology and guiding principles, see **[methodology.md](methodology.md)**.
+
+**Key Principles:**
+- **Goal**: Keep all 7 GitHub workflows green
+- **Approach**: Efficient, methodical debugging that prioritizes understanding over experimentation
+- **Target**: Strive for fixes in 1-3 attempts, not 100 experiments
+- **4-Phase Process**:
+  1. Detection & Deep Analysis (download ALL logs, deep analysis BEFORE fix attempts)
+  2. Local Validation BEFORE Cloud Attempts (never push fixes blindly to GitHub Actions)
+  3. Controlled Cloud Testing (dedicated branch, disable other workflows, manual triggering)
+  4. Verification & Rollout (re-enable workflows one-by-one, check regressions)
+
+---
+
+## Platform-Specific Tool Versions
+
+**CRITICAL**: Jetson ARM64 uses older toolchain (gcc-8, curl 7.58.0, OpenCV 4.8.0) due to JetPack 4.x compatibility. All other platforms use modern tooling (gcc-11, curl 8.x, OpenCV 4.10.0).
+
+**For detailed toolchain requirements**, see:
+- **Jetson ARM64**: `troubleshooting.jetson.md` → JetPack 4.x Toolchain Requirements
+- **Other platforms**: Use latest stable versions
+
+---
+
 ## Quick Start: First 2 Minutes
 
 ### Step 1: Identify Platform and Build Type
@@ -228,8 +254,8 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 | Linux x64 NoCUDA | troubleshooting.linux.md | reference.md |
 | Linux x64 CUDA | troubleshooting.cuda.md | troubleshooting.linux.md |
 | Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
-| Docker builds | troubleshooting.docker.md | troubleshooting.linux.md |
-| WSL builds | troubleshooting.docker.md | troubleshooting.windows.md |
+| Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
+| WSL builds | troubleshooting.containers.md | troubleshooting.cuda.md |
 
 ### Cross-Reference Usage
 
@@ -378,9 +404,10 @@ grep "PKG_CONFIG" build.log
 - **troubleshooting.linux.md** - Linux x64 NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
 - **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
-- **troubleshooting.docker.md** - Docker and WSL builds (container-specific)
+- **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
-- **devops-build-system-guide.md** - Comprehensive deep-dive guide
+- **methodology.md** - High-level debugging methodology (detection, validation, testing)
+- **../.claude/docs/devops-build-system-guide.md** - Comprehensive deep-dive guide (moved to docs)
 
 ---
 
@@ -392,7 +419,3 @@ This skill should be updated when:
 - vcpkg baseline updated (update reference.md with new pins)
 - Workflow structure changes (update reference.md)
 - Self-hosted runner configuration changes (update troubleshooting.cuda.md)
-
-**Last Updated**: 2024-11-28
-**Version**: 1.0
-**Maintained by**: ApraPipes DevOps team

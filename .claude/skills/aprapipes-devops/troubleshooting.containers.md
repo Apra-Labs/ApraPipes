@@ -230,7 +230,5 @@ This guide will be expanded as Docker/WSL-specific issues are encountered:
 
 ---
 
-**Last Updated**: 2024-11-28
-**Status**: Outline - expand as issues occur
 **Applies to**: Docker containerized builds and WSL environments
 **Related Guides**: reference.md, troubleshooting.linux.md
