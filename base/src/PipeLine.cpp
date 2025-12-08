@@ -236,10 +236,12 @@ void PipeLine::stop()
 			i->get()->stop();
 		}
 	}
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	modules[0]->controlModule->stop();
-	// }
+	// FIX: Also stop control module to prevent thread hang
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		LOG_INFO << "Stopping control module";
+		modules[0]->controlModule->stop();
+	}
 }
 
 void PipeLine::wait_for_all(bool ignoreStatus)
