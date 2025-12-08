@@ -46,6 +46,9 @@ bool AbsControlModule::init()
 
 bool AbsControlModule::term()
 {
+	// FIX: Clear moduleRoles map to release references to enrolled modules
+	// This prevents memory leaks when modules hold circular references
+	moduleRoles.clear();
 	return Module::term();
 }
 

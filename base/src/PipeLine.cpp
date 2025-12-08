@@ -250,11 +250,15 @@ void PipeLine::wait_for_all(bool ignoreStatus)
 		return;
 	}
 
-	// if ((modules[0]->controlModule) != nullptr)
-	// {
-	// 	Module& m = *(modules[0]->controlModule);
-	// 	m.myThread.join();
-	// }
+	// FIX: Join control module thread to ensure proper cleanup
+	if ((modules[0]->controlModule) != nullptr)
+	{
+		Module& m = *(modules[0]->controlModule);
+		if (m.myThread.joinable())
+		{
+			m.myThread.join();
+		}
+	}
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
