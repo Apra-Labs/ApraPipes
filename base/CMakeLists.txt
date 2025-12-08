@@ -4,7 +4,13 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
+
+# Only use OpenCV 4.8.0 overlay for ARM64 (gcc-8 compatibility)
+# All other platforms use OpenCV 4.10.0 from vcpkg.json
+IF(ENABLE_ARM64)
+	set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
+ENDIF(ENABLE_ARM64)
+
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
