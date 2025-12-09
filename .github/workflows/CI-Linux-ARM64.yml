@@ -34,9 +34,31 @@ jobs:
         echo "Prerequisites should be installed manually via SSH"
         echo ""
 
+        # Check disk space - root partition fills up and causes builds to fail
+        echo "=== Disk Space Check ==="
+        df -h / /home /mnt/disks 2>/dev/null || df -h
+        echo ""
+        echo "Large directories on root partition:"
+        du -h --max-depth=1 / 2>/dev/null | sort -hr | head -15 || echo "Could not check du"
+        echo ""
+        echo "Home directory usage:"
+        du -h --max-depth=1 /home 2>/dev/null | sort -hr | head -10 || echo "Could not check /home"
+        echo ""
+        echo "Actions runner cache:"
+        du -h --max-depth=1 ~/.cache 2>/dev/null | sort -hr | head -5 || echo "No ~/.cache"
+        du -h --max-depth=1 /home/developer/.local 2>/dev/null | sort -hr | head -5 || echo "No ~/.local"
+        echo ""
+
         # Force curl to use HTTP/1.1 for vcpkg downloads (curl 7.58 has HTTP/2 bugs)
         echo "http1.1" > ~/.curlrc
         echo "  ✓ Created ~/.curlrc to force HTTP/1.1 for vcpkg"
+        echo ""
+
+        # Force git to use HTTP/1.1 globally (GnuTLS on Ubuntu 18.04 has HTTP/2 issues)
+        # This must be set BEFORE actions/checkout runs to avoid TLS packet errors during submodule clone
+        git config --global http.version HTTP/1.1
+        git config --global http.postBuffer 524288000
+        echo "  ✓ Configured git for HTTP/1.1 with large post buffer"
         echo ""
 
         # Check/document required tools
@@ -117,7 +139,7 @@ jobs:
             "https://github.com/opencv/opencv_contrib/archive/4.8.0.tar.gz"
         fi
       cache-path: './none'
-      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && export CUDAHOSTCXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
