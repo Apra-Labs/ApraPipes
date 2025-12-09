@@ -457,23 +457,26 @@ vcpkg_cmake_config_fixup()
 vcpkg_copy_pdbs()
 
 # Fix CUDA lookup for ARM64/Jetson platforms with CUDA 10.x
-# The generated OpenCVConfig.cmake contains code from OpenCVConfig-CUDA.cmake.in that does:
-#   if(NOT CUDA_FOUND)
-#     find_host_package(CUDA ${OpenCV_CUDA_VERSION} EXACT REQUIRED)
-# This fails on ARM64 because CUDA 10.2 only provides FindCUDA.cmake (module mode),
-# not CUDAConfig.cmake (config mode). vcpkg intercepts find_package and forces CONFIG mode.
-# Solution: Patch the installed OpenCVConfig.cmake to set CUDA_FOUND before the check on ARM64.
+# The generated OpenCVConfig.cmake contains code from OpenCVConfig-CUDA.cmake.in with CUDA validation
+# that fails on ARM64 because:
+# 1. CUDA 10.2 only provides FindCUDA.cmake (module mode), not CUDAConfig.cmake (config mode)
+# 2. vcpkg intercepts find_package and forces CONFIG mode which fails
+# 3. Even if CUDA_FOUND is set, the version check fails because CUDA_VERSION_STRING isn't set
+# Solution: Inject ARM64 detection code right after OpenCV_CUDA_VERSION is set, before the CUDA check.
+# This approach is more robust than trying to match the entire if-else block.
 if("cuda" IN_LIST FEATURES)
+  # Patch right after "set(OpenCV_CUDA_VERSION" to add ARM64 detection before the CUDA check
   vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/opencv4/OpenCVConfig.cmake"
-    "if(NOT CUDA_FOUND)"
-    "# ARM64/Jetson: CUDA 10.x only provides FindCUDA.cmake (module mode), not config mode.
-# vcpkg forces CONFIG mode which fails. Since OpenCV is already linked against CUDA,
-# we skip the runtime CUDA lookup on ARM64 by setting CUDA_FOUND.
+    "set(OpenCV_USE_CUBLAS"
+    "# ARM64/Jetson fix: CUDA 10.x only provides FindCUDA.cmake, not CUDAConfig.cmake.
+# vcpkg forces CONFIG mode which fails. Pre-set CUDA variables for ARM64 to skip runtime lookup.
 if(CMAKE_SYSTEM_PROCESSOR MATCHES \"aarch64|ARM64|arm64\")
   set(CUDA_FOUND TRUE)
+  set(CUDA_VERSION_STRING \"\${OpenCV_CUDA_VERSION}\")
   set(CUDA_TOOLKIT_ROOT_DIR \"/usr/local/cuda\")
 endif()
-if(NOT CUDA_FOUND)"
+
+set(OpenCV_USE_CUBLAS"
     IGNORE_UNCHANGED
   )
 endif()
