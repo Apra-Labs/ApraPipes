@@ -2,8 +2,6 @@ name: CI-Linux-ARM64
 
 on:
   push:  # Trigger on push to any branch
-    branches-ignore:
-      - fix/ci-additional-workflows  # Ignore push events on this CI fix branch
     paths-ignore:
       - '**.md'
       - '.github/docs/**'

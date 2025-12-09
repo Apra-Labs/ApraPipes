@@ -2,15 +2,12 @@ name: CI-Win-NoCUDA
 
 on:
   push:  # Trigger on push to any branch
-    branches-ignore:
-      - fix/ci-additional-workflows  # Ignore push events on this CI fix branch
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
       - 'docs/**'
   pull_request:
-    branches-ignore:
-      - fix/ci-additional-workflows  # Temporarily disable on ARM64 fix branch
+    branches: [ main ]
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
