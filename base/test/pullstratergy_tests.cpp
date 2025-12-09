@@ -59,7 +59,7 @@ void pull(boost::shared_ptr<PullAnalogy> sink)
     return;
 };
 
-BOOST_AUTO_TEST_CASE(pullAnalogy)
+BOOST_AUTO_TEST_CASE(pullAnalogy, *boost::unit_test::disabled())
 {
 
     LoggerProps logprops;

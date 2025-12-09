@@ -854,6 +854,20 @@ cd build
 ctest -C Release -V
 ```
 
+### Disabling Tests
+
+**Use Boost Test decorators, NOT commenting out in CMakeLists.txt:**
+
+```cpp
+// Disable a test case
+BOOST_AUTO_TEST_CASE(my_test, *boost::unit_test::disabled())
+
+// Disable entire test suite
+BOOST_AUTO_TEST_SUITE(my_suite, *boost::unit_test::disabled())
+```
+
+**Why**: Tests remain compiled but skipped at runtime. Commenting in CMakeLists.txt should only be used for tests that won't compile at all.
+
 ### Log Analysis
 
 ```bash

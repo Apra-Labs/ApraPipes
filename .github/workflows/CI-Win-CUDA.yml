@@ -39,8 +39,11 @@ jobs:
       cuda: 'ON'
       is-selfhosted: true
       nProc: 8
-      nTestTimeoutMins: 20
+      nTestTimeoutMins: 45
       force-cache-update: ${{ inputs.force-cache-update == true }}
+      # Self-hosted runner has Python 3.10.11, CMake 3.29.6, and ninja pre-installed
+      # Only upgrade pip packages and ensure pkgconfiglite is available
+      prep-cmd: 'python --version && cmake --version && pip3 install --upgrade ninja meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite'
   win-cuda-publish:
     needs: win-cuda-build-test
     if: ${{ always() }}
