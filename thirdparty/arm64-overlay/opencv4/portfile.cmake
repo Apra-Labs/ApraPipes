@@ -456,6 +456,28 @@ vcpkg_cmake_install()
 vcpkg_cmake_config_fixup()
 vcpkg_copy_pdbs()
 
+# Fix CUDA lookup for ARM64/Jetson platforms with CUDA 10.x
+# The generated OpenCVConfig.cmake contains code from OpenCVConfig-CUDA.cmake.in that does:
+#   if(NOT CUDA_FOUND)
+#     find_host_package(CUDA ${OpenCV_CUDA_VERSION} EXACT REQUIRED)
+# This fails on ARM64 because CUDA 10.2 only provides FindCUDA.cmake (module mode),
+# not CUDAConfig.cmake (config mode). vcpkg intercepts find_package and forces CONFIG mode.
+# Solution: Patch the installed OpenCVConfig.cmake to set CUDA_FOUND before the check on ARM64.
+if("cuda" IN_LIST FEATURES)
+  vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/opencv4/OpenCVConfig.cmake"
+    "if(NOT CUDA_FOUND)"
+    "# ARM64/Jetson: CUDA 10.x only provides FindCUDA.cmake (module mode), not config mode.
+# vcpkg forces CONFIG mode which fails. Since OpenCV is already linked against CUDA,
+# we skip the runtime CUDA lookup on ARM64 by setting CUDA_FOUND.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES \"aarch64|ARM64|arm64\")
+  set(CUDA_FOUND TRUE)
+  set(CUDA_TOOLKIT_ROOT_DIR \"/usr/local/cuda\")
+endif()
+if(NOT CUDA_FOUND)"
+    IGNORE_UNCHANGED
+  )
+endif()
+
 if (NOT VCPKG_BUILD_TYPE)
   # Update debug paths for libs in Android builds (e.g. sdk/native/staticlibs/armeabi-v7a)
   vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/opencv4/OpenCVModules-debug.cmake"
