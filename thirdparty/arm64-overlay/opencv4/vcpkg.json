@@ -1,15 +1,11 @@
 {
-  "$comment": "ARM64 Ubuntu 18 overlay: Use OpenCV 4.8.0 for gcc-8 compatibility with CUDA 11.8 (4.10.0+ requires gcc-9 for bf16 support)",
+  "$comment": "ARM64 Ubuntu 18 overlay: OpenCV 4.8.0 for gcc-8 compatibility (4.10.0+ requires gcc-9 for bf16)",
   "name": "opencv4",
   "version": "4.8.0",
   "description": "computer vision library",
   "homepage": "https://github.com/opencv/opencv",
   "license": "Apache-2.0",
   "dependencies": [
-    {
-      "name": "cpu-features",
-      "platform": "android"
-    },
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -25,44 +21,7 @@
     "zlib"
   ],
   "default-features": [
-    "calib3d",
-    {
-      "name": "directml",
-      "platform": "windows & !uwp & !mingw"
-    },
-    {
-      "name": "dnn",
-      "platform": "!android"
-    },
-    {
-      "name": "dshow",
-      "platform": "windows & !uwp"
-    },
-    "fs",
-    {
-      "name": "gapi",
-      "platform": "!uwp"
-    },
-    {
-      "name": "gtk",
-      "platform": "linux"
-    },
-    "highgui",
-    "intrinsics",
-    "jpeg",
-    {
-      "name": "msmf",
-      "platform": "windows & !uwp & !mingw"
-    },
-    "png",
-    "quirc",
-    "thread",
-    "tiff",
-    "webp",
-    {
-      "name": "win32ui",
-      "platform": "windows & !uwp"
-    }
+    "default-features"
   ],
   "features": {
     "ade": {
@@ -71,34 +30,12 @@
         "ade"
       ]
     },
-    "aravis": {
-      "description": "aravis",
-      "dependencies": [
-        {
-          "name": "aravis",
-          "default-features": false
-        }
-      ]
-    },
-    "calib3d": {
-      "description": "calib3d module"
-    },
-    "carotene": {
-      "description": "carotene module"
-    },
     "contrib": {
       "description": "opencv_contrib module",
       "dependencies": [
         {
           "name": "hdf5",
           "platform": "!uwp & !(windows & (arm | arm64)) & !ios"
-        },
-        {
-          "name": "opencv4",
-          "default-features": false,
-          "features": [
-            "calib3d"
-          ]
         },
         {
           "name": "tesseract",
@@ -138,28 +75,34 @@
         "libdc1394"
       ]
     },
-    "directml": {
-      "description": "Build with DirectML support",
-      "supports": "windows & !uwp & !mingw"
-    },
-    "dnn": {
-      "description": "Enable dnn module",
-      "supports": "!android",
+    "default-features": {
+      "description": "Platform-dependent default features",
       "dependencies": [
-        "flatbuffers",
         {
-          "name": "flatbuffers",
-          "host": true,
-          "default-features": false
+          "name": "opencv4",
+          "default-features": false,
+          "features": [
+            "dnn",
+            "jpeg",
+            "png",
+            "quirc",
+            "tiff",
+            "webp"
+          ]
         },
         {
           "name": "opencv4",
           "default-features": false,
           "features": [
-            "intrinsics"
+            "gtk"
           ],
-          "platform": "arm64"
-        },
+          "platform": "linux"
+        }
+      ]
+    },
+    "dnn": {
+      "description": "Enable dnn module",
+      "dependencies": [
         "protobuf"
       ]
     },
@@ -175,10 +118,6 @@
           ]
         }
       ]
-    },
-    "dshow": {
-      "description": "Enable DirectShow",
-      "supports": "windows"
     },
     "eigen": {
       "description": "Eigen support for opencv",
@@ -213,13 +152,6 @@
           "default-features": false
         }
       ]
-    },
-    "fs": {
-      "description": "Enable filesystem support"
-    },
-    "gapi": {
-      "description": "Enable gapi module",
-      "supports": "!uwp"
     },
     "gdcm": {
       "description": "GDCM support for opencv",
@@ -272,8 +204,13 @@
       "description": "Enable intrinsics"
     },
     "ipp": {
-      "description": "Enable Intel Integrated Performance Primitives",
-      "supports": "(osx & x64) | (windows & (x64 | x86)) | (linux & (x64 | x86))"
+      "description": "Enable Intel Integrated Performance Primitives"
+    },
+    "jasper": {
+      "description": "JPEG 2000 support for opencv",
+      "dependencies": [
+        "jasper"
+      ]
     },
     "jpeg": {
       "description": "JPEG support for opencv",
@@ -281,25 +218,15 @@
         "libjpeg-turbo"
       ]
     },
-    "jpegxl": {
-      "description": "JPEGXL support for opencv",
+    "lapack": {
+      "description": "LAPACK support for opencv",
       "dependencies": [
-        "libjxl"
+        "blas",
+        "lapack"
       ]
-    },
-    "msmf": {
-      "description": "Microsoft Media Foundation support for opencv",
-      "supports": "windows & !uwp & !mingw"
     },
     "nonfree": {
       "description": "allow nonfree and unredistributable libraries"
-    },
-    "opencl": {
-      "description": "Enable opencl support",
-      "supports": "!osx",
-      "dependencies": [
-        "opencl"
-      ]
     },
     "openexr": {
       "description": "OpenEXR support for opencv",
@@ -309,54 +236,15 @@
     },
     "opengl": {
       "description": "opengl support for opencv",
-      "supports": "!osx",
       "dependencies": [
         "opengl"
       ]
     },
-    "openjpeg": {
-      "description": "JPEG 2000 support for opencv",
-      "dependencies": [
-        "openjpeg"
-      ]
-    },
     "openmp": {
-      "description": "Enable OpenMP support",
-      "supports": "!osx"
-    },
-    "openvino": {
-      "description": "OpenVINO support for OpenCV DNN",
-      "supports": "!uwp & !x86",
-      "dependencies": [
-        {
-          "name": "opencv4",
-          "default-features": false,
-          "features": [
-            "dnn"
-          ]
-        },
-        {
-          "name": "openvino",
-          "default-features": false,
-          "features": [
-            "auto",
-            "cpu",
-            "hetero"
-          ]
-        },
-        {
-          "name": "openvino",
-          "default-features": false,
-          "features": [
-            "gpu"
-          ],
-          "platform": "x64 & !(osx | uwp)"
-        }
-      ]
+      "description": "Enable openmp support for opencv"
     },
     "ovis": {
       "description": "opencv_ovis module",
-      "supports": "!(windows & static)",
       "dependencies": [
         "ogre",
         {
@@ -377,13 +265,7 @@
     "python": {
       "description": "Python wrapper support for opencv",
       "dependencies": [
-        {
-          "name": "python3",
-          "default-features": false,
-          "features": [
-            "extensions"
-          ]
-        }
+        "python3"
       ]
     },
     "qt": {
@@ -402,35 +284,10 @@
         }
       ]
     },
-    "quality": {
-      "description": "Build opencv_quality module",
-      "supports": "!uwp",
-      "dependencies": [
-        {
-          "name": "opencv4",
-          "default-features": false,
-          "features": [
-            "contrib"
-          ]
-        }
-      ]
-    },
     "quirc": {
       "description": "Enable QR code module",
       "dependencies": [
         "quirc"
-      ]
-    },
-    "rgbd": {
-      "description": "Build opencv_rgbd module",
-      "dependencies": [
-        {
-          "name": "opencv4",
-          "default-features": false,
-          "features": [
-            "contrib"
-          ]
-        }
       ]
     },
     "sfm": {
@@ -457,21 +314,14 @@
     },
     "tbb": {
       "description": "Enable Intel Threading Building Blocks",
-      "supports": "!static",
       "dependencies": [
         "tbb"
       ]
     },
-    "thread": {
-      "description": "Enable thread support"
-    },
     "tiff": {
       "description": "TIFF support for opencv",
       "dependencies": [
-        {
-          "name": "tiff",
-          "default-features": false
-        }
+        "tiff"
       ]
     },
     "vtk": {
@@ -483,22 +333,7 @@
             "contrib"
           ]
         },
-        {
-          "name": "vtk",
-          "default-features": false
-        }
-      ]
-    },
-    "vulkan": {
-      "description": "Vulkan support for opencv dnn",
-      "dependencies": [
-        {
-          "name": "opencv4",
-          "default-features": false,
-          "features": [
-            "dnn"
-          ]
-        }
+        "vtk"
       ]
     },
     "webp": {
@@ -506,10 +341,6 @@
       "dependencies": [
         "libwebp"
       ]
-    },
-    "win32ui": {
-      "description": "Enable win32ui",
-      "supports": "windows & !uwp"
     },
     "world": {
       "description": "Compile to a single package support for opencv"
