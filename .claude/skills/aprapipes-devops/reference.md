@@ -597,6 +597,62 @@ target_link_libraries(aprapipesut PRIVATE fmt::fmt)
 
 ---
 
+## Local Debugging Scripts
+
+The skill provides helper scripts in `.claude/skills/aprapipes-devops/scripts/` for local debugging of CI issues.
+
+### debug-cudnn-local.sh
+
+**Purpose**: Reproduce CI-Linux-CUDA environment locally to debug vcpkg/cuDNN issues
+
+**What it does**:
+- Runs `nvidia/cuda:11.8.0-devel-ubuntu22.04` Docker container (same as CI)
+- Installs all dependencies using same prep-cmd as CI workflow
+- Tests cuDNN package installation with vcpkg in isolation
+- Provides detailed logs for debugging
+
+**When to use**:
+- CI-Linux-CUDA workflow fails with cuDNN errors
+- vcpkg cudnn package installation issues
+- Need to debug CUDA library detection locally
+
+**Usage**:
+```bash
+./claude/skills/aprapipes-devops/scripts/debug-cudnn-local.sh
+```
+
+**Expected output**:
+- CUDA/cuDNN installation verification
+- vcpkg bootstrap logs
+- cuDNN package installation logs (saved to `/tmp/cudnn-install.log`)
+
+### test-gh-cache-delete.sh
+
+**Purpose**: Test GitHub Actions cache deletion logic locally before deploying to workflows
+
+**What it does**:
+- Installs GitHub CLI (gh) in Docker container
+- Tests cache key pattern matching with grep
+- Validates awk field extraction for cache IDs
+- Dry-run tests cache deletion patterns
+
+**When to use**:
+- Before implementing cache cleanup logic in workflows
+- Debugging cache key matching patterns
+- Testing `gh cache list` parsing logic
+
+**Usage**:
+```bash
+./claude/skills/aprapipes-devops/scripts/test-gh-cache-delete.sh
+```
+
+**Expected output**:
+- gh CLI installation verification
+- Pattern matching test results
+- Cache ID extraction validation
+
+---
+
 ## Dependency Matrix
 
 ### Core Dependencies (All Platforms)
