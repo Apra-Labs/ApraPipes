@@ -92,7 +92,18 @@ jobs:
           echo "    tar -xzf autoconf-2.71.tar.gz && cd autoconf-2.71"
           echo "    ./configure --prefix=/usr/local && make -j\$(nproc) && sudo make install"
         fi
-      bootstrap-cmd: 'export VCPKG_FORCE_SYSTEM_BINARIES=1 && export CURL_HTTP_VERSION=HTTP/1.1 && ./vcpkg/bootstrap-vcpkg.sh'
+      bootstrap-cmd: |
+        export VCPKG_FORCE_SYSTEM_BINARIES=1 && ./vcpkg/bootstrap-vcpkg.sh
+        # Pre-download OpenCV dependencies with HTTP/1.1 to work around curl 7.58.0 bugs
+        echo "Pre-caching OpenCV dependencies (HTTP/1.1 fallback for curl 7.58)..."
+        mkdir -p vcpkg/downloads/opencv-cache/tiny_dnn
+        TINY_DNN="vcpkg/downloads/opencv-cache/tiny_dnn/adb1c512e09ca2c7a6faef36f9c53e59-v1.0.0a3.tar.gz"
+        if [ ! -f "$TINY_DNN" ]; then
+          curl --http1.1 --retry 5 --retry-delay 3 -L -o "$TINY_DNN" \
+            "https://github.com/tiny-dnn/tiny-dnn/archive/v1.0.0a3.tar.gz" && echo "✓ tiny-dnn cached" || \
+          curl --http1.1 --retry 5 --retry-delay 3 -L -o "$TINY_DNN" \
+            "https://github.com/tiny-dnn/tiny-dnn/archive/v1.0.0a3.tar.gz"
+        fi
       cache-path: './none'
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
       nProc: 6
