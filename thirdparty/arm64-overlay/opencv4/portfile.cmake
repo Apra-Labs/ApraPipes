@@ -487,7 +487,20 @@ find_dependency(Threads)")
     string(APPEND DEPS_STRING "\nfind_dependency(TIFF)")
   endif()
   if("cuda" IN_LIST FEATURES)
-    string(APPEND DEPS_STRING "\nfind_dependency(CUDA)")
+    # For ARM64/Jetson with CUDA 10.2, we cannot use find_dependency(CUDA) because:
+    # 1. CUDA 10.2 doesn't provide CUDAConfig.cmake (only FindCUDA.cmake)
+    # 2. vcpkg intercepts find_package and forces CONFIG mode which fails
+    # 3. OpenCV is already linked against CUDA, so runtime lookup is not needed
+    # We check CMAKE_SYSTEM_PROCESSOR at config time to handle ARM64 specially
+    string(APPEND DEPS_STRING "
+# CUDA dependency - ARM64 uses legacy FindCUDA, others use config mode
+if(CMAKE_SYSTEM_PROCESSOR MATCHES \"aarch64|ARM64\")
+  # ARM64/Jetson: CUDA 10.x uses FindCUDA.cmake, skip config-mode lookup
+  # OpenCV libraries already link against CUDA, so just set CUDA_FOUND
+  set(CUDA_FOUND TRUE)
+else()
+  find_dependency(CUDA)
+endif()")
   endif()
   if(BUILD_opencv_quality AND "contrib" IN_LIST FEATURES)
     string(APPEND DEPS_STRING "
