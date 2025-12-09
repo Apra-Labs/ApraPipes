@@ -115,7 +115,10 @@ jobs:
           echo "    ./configure --prefix=/usr/local && make -j\$(nproc) && sudo make install"
         fi
       bootstrap-cmd: |
-        export VCPKG_FORCE_SYSTEM_BINARIES=1 && ./vcpkg/bootstrap-vcpkg.sh
+        export CC=/usr/bin/gcc-8
+        export CXX=/usr/bin/g++-8
+        export VCPKG_FORCE_SYSTEM_BINARIES=1
+        ./vcpkg/bootstrap-vcpkg.sh
         # Pre-download OpenCV dependencies with HTTP/1.1 to work around curl 7.58.0 bugs
         echo "Pre-caching OpenCV dependencies (HTTP/1.1 fallback for curl 7.58)..."
         mkdir -p vcpkg/downloads/opencv-cache/tiny_dnn
