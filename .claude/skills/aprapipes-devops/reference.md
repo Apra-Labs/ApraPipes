@@ -139,6 +139,39 @@ vcpkg/
 
 **Why 3.10.x**: Python 3.12+ removed `distutils` module required by glib and other packages.
 
+### fix-vcpkg-json.ps1 - Build Configuration Script
+
+**Location**: `base/fix-vcpkg-json.ps1`
+
+PowerShell script to modify `vcpkg.json` at runtime during CI builds. Used for:
+- Two-phase builds (Phase 1: cache heavy dependencies like OpenCV)
+- Platform-specific builds (remove CUDA packages for NoCUDA builds)
+
+**Parameters**:
+- `-removeCUDA`: Remove CUDA-related packages for NoCUDA builds
+- `-onlyOpenCV`: Keep only OpenCV (for Phase 1 dependency caching)
+
+**Usage in Workflows**:
+
+```yaml
+- name: Remove CUDA from vcpkg if we are in nocuda
+  if: ${{ contains(inputs.cuda,'OFF')}}
+  working-directory: ${{github.workspace}}/base
+  run: .\fix-vcpkg-json.ps1 -removeCUDA
+  shell: pwsh
+
+- name: Leave only OpenCV from vcpkg during prep phase
+  if: inputs.is-prep-phase
+  working-directory: ${{github.workspace}}/base
+  run: .\fix-vcpkg-json.ps1 -onlyOpenCV
+  shell: pwsh
+```
+
+**Why This Approach**:
+- Two-phase builds: Phase 1 installs OpenCV (~40 min), caches it, then Phase 2 uses cache for fast full build
+- Avoids maintaining multiple vcpkg.json files
+- Enables conditional dependency installation based on workflow inputs
+
 ---
 
 ## Version Pinning Strategy
@@ -193,6 +226,122 @@ When updating vcpkg baseline WITHOUT version overrides:
 7. Merge only after verification
 
 **DevOps Role**: Fix build config, NOT application code to accommodate new versions.
+
+---
+
+## vcpkg Fork Management Best Practices
+
+### CRITICAL: Never Modify Master Branches
+
+**❌ NEVER DO THIS:**
+```bash
+# DON'T push to master of forks
+git checkout master
+git merge fix/my-changes
+git push origin master  # DANGEROUS - breaks other builds!
+```
+
+**Why This Is Dangerous**:
+- Other builds/projects may depend on the fork's master
+- Can break production CI pipelines
+- Hard to revert without force-push (often blocked)
+- Violates protected branch policies
+
+**✅ ALWAYS DO THIS INSTEAD:**
+```bash
+# Use feature branches
+git checkout -b fix/vcpkg-update-2025-11-27
+git push origin fix/vcpkg-update-2025-11-27
+
+# Update baseline to point to feature branch HEAD
+# In vcpkg-configuration.json:
+"baseline": "<commit-from-feature-branch>"
+```
+
+### Proper vcpkg Fork Update Workflow
+
+#### Option 1: Feature Branch (Recommended)
+```bash
+# 1. Create feature branch from microsoft/vcpkg
+cd vcpkg
+git fetch microsoft
+git checkout -b fix/update-2025-11-27 microsoft/master
+
+# 2. Cherry-pick your custom changes
+git cherry-pick <your-python-fix-commit>
+
+# 3. Push to fork
+git push origin fix/update-2025-11-27
+
+# 4. Get the commit hash
+BASELINE=$(git rev-parse HEAD)
+
+# 5. Update ApraPipes configuration
+cd ../base
+# Edit vcpkg-configuration.json with $BASELINE
+git commit -am "ci: Update vcpkg baseline to fix/update-2025-11-27"
+```
+
+#### Option 2: Git Tags (For Stable Baselines)
+```bash
+# Tag a specific commit
+cd vcpkg
+git tag baseline-2025-11-27-stable dfa17587b2
+git push origin baseline-2025-11-27-stable
+
+# Use the tag commit in configuration
+"baseline": "dfa17587b27fcb5642e74632e49b3f9775aa1c19"
+```
+
+#### Option 3: Overlay Ports (For Custom Packages)
+For small modifications, use vcpkg overlay-ports instead of forking:
+```yaml
+# vcpkg-configuration.json already has:
+"overlay-ports": [
+  "../thirdparty/custom-overlay"
+]
+
+# Put modified portfiles in thirdparty/custom-overlay/
+thirdparty/custom-overlay/
+  glib/
+    portfile.cmake
+    vcpkg.json
+```
+
+### Mistake Recovery: What If You Already Pushed to Master?
+
+If you accidentally pushed to fork's master branch:
+
+1. **Don't panic** - The damage is done but containable
+2. **Create a revert commit** (if master isn't protected):
+```bash
+git revert HEAD --no-edit
+git push origin master
+```
+
+3. **Or create a hotfix branch** from the previous good commit:
+```bash
+git checkout -b hotfix/restore-master <previous-good-commit>
+git push origin hotfix/restore-master
+# Ask repo owner to reset master to this commit
+```
+
+4. **Communicate**: Notify other users of the fork about the change
+5. **Use feature branch going forward**: Don't repeat the mistake
+
+### Real Example: Lessons from Build Failures
+
+**What Went Wrong**:
+1. Created baseline with commit `ae8fa5ae5e` (microsoft/vcpkg parent commit)
+2. That commit wasn't advertised by `git ls-remote` (parent commits aren't advertised)
+3. vcpkg couldn't fetch it → "no version database entry" errors
+4. **MISTAKE**: Merged to Apra-Labs/vcpkg master (should have used feature branch)
+5. Fixed by using merge commit `3011303ba1` (advertised)
+
+**Takeaway**: Always verify commits are advertised before using as baseline:
+```bash
+git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
+```
 
 ---
 
@@ -448,6 +597,62 @@ target_link_libraries(aprapipesut PRIVATE fmt::fmt)
 
 ---
 
+## Local Debugging Scripts
+
+The skill provides helper scripts in `.claude/skills/aprapipes-devops/scripts/` for local debugging of CI issues.
+
+### debug-cudnn-local.sh
+
+**Purpose**: Reproduce CI-Linux-CUDA environment locally to debug vcpkg/cuDNN issues
+
+**What it does**:
+- Runs `nvidia/cuda:11.8.0-devel-ubuntu22.04` Docker container (same as CI)
+- Installs all dependencies using same prep-cmd as CI workflow
+- Tests cuDNN package installation with vcpkg in isolation
+- Provides detailed logs for debugging
+
+**When to use**:
+- CI-Linux-CUDA workflow fails with cuDNN errors
+- vcpkg cudnn package installation issues
+- Need to debug CUDA library detection locally
+
+**Usage**:
+```bash
+./claude/skills/aprapipes-devops/scripts/debug-cudnn-local.sh
+```
+
+**Expected output**:
+- CUDA/cuDNN installation verification
+- vcpkg bootstrap logs
+- cuDNN package installation logs (saved to `/tmp/cudnn-install.log`)
+
+### test-gh-cache-delete.sh
+
+**Purpose**: Test GitHub Actions cache deletion logic locally before deploying to workflows
+
+**What it does**:
+- Installs GitHub CLI (gh) in Docker container
+- Tests cache key pattern matching with grep
+- Validates awk field extraction for cache IDs
+- Dry-run tests cache deletion patterns
+
+**When to use**:
+- Before implementing cache cleanup logic in workflows
+- Debugging cache key matching patterns
+- Testing `gh cache list` parsing logic
+
+**Usage**:
+```bash
+./claude/skills/aprapipes-devops/scripts/test-gh-cache-delete.sh
+```
+
+**Expected output**:
+- gh CLI installation verification
+- Pattern matching test results
+- Cache ID extraction validation
+
+---
+
 ## Dependency Matrix
 
 ### Core Dependencies (All Platforms)
@@ -566,6 +771,91 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
 
 ---
 
+## SSH Access to Self-Hosted Runners
+
+### OpenRPort Tunnel Configuration
+
+Both ARM64 (Jetson) and Windows CUDA self-hosted runners are accessible via OpenRPort SSH tunneling. **Note**: Ports change with each tunnel session - get current ports from user.
+
+### Connection Details
+
+| Runner | Host | Port Example | Username | Password | OS |
+|--------|------|--------------|----------|----------|-----|
+| **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 18.04 |
+| **Windows CUDA** | `utubovyu.users.openrport.io` | `22179` (varies) | `administrator` | (ask user) | Windows 11 Pro |
+
+### Basic SSH Commands
+
+**ARM64 Jetson:**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io
+```
+
+**Windows CUDA:**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io
+```
+
+### Remote Command Execution
+
+**Single command:**
+```bash
+# ARM64 - Check build progress
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'tail -100 /mnt/disks/actions-runner/_work/_diag/*.log | grep -E "(Installing|installed)" | tail -5'
+
+# Windows - Check system info
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'systeminfo | findstr /B /C:"OS Name" /C:"OS Version"'
+```
+
+**Multi-line PowerShell scripts (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'powershell -Command "Get-Process | Where-Object {$_.ProcessName -like \"*runner*\"} | Select-Object ProcessName,Id,CPU"'
+```
+
+### Common Remote Tasks
+
+**Check runner status (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'ps aux | grep actions-runner'
+```
+
+**Check vcpkg build progress (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'tail -50 /mnt/disks/actions-runner/_work/_diag/*.log'
+```
+
+**Check disk space (ARM64):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> developer@utubovyu.users.openrport.io \
+  'df -h /mnt/disks/actions-runner'
+```
+
+**Check runner status (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'powershell -Command "Get-Service | Where-Object {$_.DisplayName -like \"*GitHub Actions*\"}"'
+```
+
+**Check CUDA version (Windows):**
+```bash
+sshpass -p '<password>' ssh -o StrictHostKeyChecking=no -p <port> administrator@utubovyu.users.openrport.io \
+  'nvcc --version'
+```
+
+### Security Notes
+
+- **Credentials stored in clear text**: These SSH credentials are for development/CI purposes only
+- **OpenRPort tunneling**: Connections are tunneled through OpenRPort server
+- **StrictHostKeyChecking disabled**: For automation purposes (accepts host key automatically)
+- **Change default passwords**: Consider rotating passwords if exposing beyond CI environment
+
+---
+
 ## Common Commands Quick Reference
 
 ### GitHub CLI
@@ -619,6 +909,20 @@ cmake --build build --config Release -j 6
 cd build
 ctest -C Release -V
 ```
+
+### Disabling Tests
+
+**Use Boost Test decorators, NOT commenting out in CMakeLists.txt:**
+
+```cpp
+// Disable a test case
+BOOST_AUTO_TEST_CASE(my_test, *boost::unit_test::disabled())
+
+// Disable entire test suite
+BOOST_AUTO_TEST_SUITE(my_suite, *boost::unit_test::disabled())
+```
+
+**Why**: Tests remain compiled but skipped at runtime. Commenting in CMakeLists.txt should only be used for tests that won't compile at all.
 
 ### Log Analysis
 
@@ -677,7 +981,6 @@ grep "win-nocuda-build-test" /tmp/build.log  # Phase 2
 
 ## Version Information
 
-**Last Updated**: 2024-11-28
 **vcpkg Baseline**: `3011303ba1f6586e8558a312d0543271fca072c6`
 **Python Version**: 3.10.11
 **CMake Version**: 3.29.6

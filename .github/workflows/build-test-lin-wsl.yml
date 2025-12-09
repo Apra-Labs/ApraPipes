@@ -67,7 +67,12 @@ on:
         type: number
         description: 'number of mins of timeout for tests run'
         default: 20
-        required: false        
+        required: false
+      force-cache-update:
+        type: boolean
+        description: 'force cache update after CMake configure by deleting old cache and saving new one (use when cache is incomplete/stale)'
+        default: false
+        required: false
 jobs:
   build:
     env:
@@ -137,14 +142,36 @@ jobs:
     #     ls ${{ inputs.cache-path }} || true
     #   continue-on-error: true
 
-    - name: Cache dependencies for fast cloud build
+    - name: Restore cache dependencies for fast cloud build
       id: cache-all
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
           path: |
             ${{ inputs.cache-path }}
           key:  ${{ inputs.flav }}-4-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
+
+    - name: Force cache update - delete old cache using cache-matched-key output
+      if: ${{ inputs.force-cache-update && steps.cache-all.outputs.cache-matched-key != '' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "=== Force cache update requested ==="
+        echo ""
+
+        # Use the cache-matched-key output from the restore action
+        CACHE_KEY="${{ steps.cache-all.outputs.cache-matched-key }}"
+        echo "Cache key from restore action output: $CACHE_KEY"
+        echo ""
+
+        echo "Listing existing caches for branch:"
+        gh cache list --limit 5 || echo "Failed to list caches"
+        echo ""
+
+        echo "Attempting to delete cache with key: $CACHE_KEY"
+        gh cache delete "$CACHE_KEY"
+        echo "=== Old cache deleted successfully, will build and save updated cache after CMake ==="
+      shell: wsl-bash {0}
 
     - name: On WSL prep the thirdparty build scripts
       working-directory: ${{github.workspace}}/thirdparty
@@ -159,7 +186,23 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
-      shell: wsl-bash {0}      
+      shell: wsl-bash {0}
+
+    - name: Force cache update - save updated cache with newly-built packages
+      if: ${{ always() && inputs.force-cache-update }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.cache-path }}
+        key: ${{ inputs.flav }}-4-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+
+    - name: Save cache on failure (smart devops)
+      if: ${{ failure() && steps.cache-all.outputs.cache-hit != 'true' && !inputs.force-cache-update }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ inputs.cache-path }}
+        key: ${{ inputs.flav }}-4-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}

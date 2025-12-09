@@ -132,7 +132,5 @@ This guide will be expanded as Linux-specific issues are encountered. Common pat
 
 ---
 
-**Last Updated**: 2024-11-28
-**Status**: Outline - expand as issues occur
 **Applies to**: Linux x64 NoCUDA builds on GitHub-hosted runners
 **Related Guides**: reference.md, troubleshooting.windows.md (cross-platform patterns)

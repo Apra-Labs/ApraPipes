@@ -4,7 +4,11 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
-set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/custom-overlay")
+
+# vcpkg overlay ports are controlled via VCPKG_OVERLAY_PORTS environment variable
+# ARM64 builds set this in CI workflow to use arm64-overlay directory
+# All other builds use standard vcpkg.json versions
+
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
@@ -126,8 +130,22 @@ IF(ENABLE_CUDA)
 		include_directories(AFTER SYSTEM  /usr/include/)
 	    include_directories(AFTER SYSTEM  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ApraGTKUtils/includes/)
 	ELSEIF(ENABLE_LINUX)
-		find_library(LIBNVCUVID libnvcuvid.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
-		find_library(LIBNVENCODE libnvidia-encode.so PATHS /usr/lib/x86_64-linux-gnu NO_DEFAULT_PATH)
+		# Try to find NVIDIA Video Codec libraries in multiple locations:
+		# 1. System driver libraries (on bare metal with NVIDIA drivers)
+		# 2. Video Codec SDK stub libraries (in thirdparty - for Docker/development)
+		# Note: These are NOT part of CUDA toolkit, they're from Video Codec SDK
+		find_library(LIBNVCUVID libnvcuvid.so
+			PATHS
+				/usr/lib/x86_64-linux-gnu
+				../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64
+			NO_DEFAULT_PATH
+		)
+		find_library(LIBNVENCODE libnvidia-encode.so
+			PATHS
+				/usr/lib/x86_64-linux-gnu
+				../thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64
+			NO_DEFAULT_PATH
+		)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})

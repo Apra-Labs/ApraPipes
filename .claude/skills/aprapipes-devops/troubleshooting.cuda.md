@@ -4,6 +4,9 @@ Platform-agnostic troubleshooting for all CUDA builds on self-hosted runners.
 
 **Scope**: ALL CUDA builds (Windows CUDA, Linux CUDA, Jetson) running on self-hosted runners.
 
+**Platform-Specific Notes**:
+- **Jetson ARM64 builds**: Also see `troubleshooting.jetson.md` for JetPack 4.x toolchain constraints (gcc-8, curl 7.58.0, OpenCV 4.8.0)
+
 **Critical**: Self-hosted runners behave completely differently from GitHub-hosted runners.
 
 ---
@@ -339,7 +342,5 @@ This guide will be expanded as CUDA-specific issues are encountered:
 
 ---
 
-**Last Updated**: 2024-11-28
-**Status**: Outline - expand as issues occur
 **Applies to**: All CUDA builds (Windows, Linux, Jetson) on self-hosted runners
 **Related Guides**: reference.md, troubleshooting.windows.md, troubleshooting.linux.md, troubleshooting.jetson.md

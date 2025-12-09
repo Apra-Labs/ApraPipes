@@ -22,6 +22,31 @@ Platform-specific troubleshooting for Jetson ARM64 builds with CUDA.
 - Many vcpkg packages not available for ARM64
 - Cross-compilation vs native build considerations
 
+### JetPack 4.x Toolchain Requirements
+
+**CRITICAL**: Jetson uses older toolchain due to JetPack 4.x compatibility. These constraints are ONLY for Jetson - all other platforms use modern tooling.
+
+| Component | Jetson (JetPack 4.x) | Other Platforms | Reason |
+|-----------|----------------------|-----------------|--------|
+| **Compiler** | gcc-8 / g++-8 | gcc-11 | JetPack 4.x requirement |
+| **curl** | 7.58.0 + HTTP/1.1 | 8.x + HTTP/2 | System curl has HTTP/2 framing bugs |
+| **OpenCV** | 4.8.0 | 4.10.0 | JetPack 4.x compatibility |
+
+**Configuration in CMakeLists.txt:**
+```cmake
+IF(ENABLE_ARM64)
+  set(CMAKE_C_COMPILER /usr/bin/gcc-8)
+  set(CMAKE_CXX_COMPILER /usr/bin/g++-8)
+ENDIF()
+```
+
+**HTTP/1.1 Workaround:**
+```bash
+# System curl 7.58.0 has HTTP/2 framing layer bugs
+# Force HTTP/1.1 via .curlrc
+echo "http1.1" > ~/.curlrc
+```
+
 ---
 
 ## Issue J1: ARM64 Packages Not Available in vcpkg
@@ -229,7 +254,5 @@ This guide will be expanded as Jetson-specific issues are encountered:
 
 ---
 
-**Last Updated**: 2024-11-28
-**Status**: Outline - expand as issues occur
 **Applies to**: Jetson ARM64 builds with CUDA
-**Related Guides**: reference.md, troubleshooting.cuda.md, troubleshooting.linux.md
+**Related Guides**: reference.md, troubleshooting.cuda.md, troubleshooting.linux.md, methodology.md

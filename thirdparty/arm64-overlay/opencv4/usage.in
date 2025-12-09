@@ -1,0 +1,4 @@
+@PORT@ provides CMake targets:
+
+    find_package(OpenCV CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE opencv_core opencv_imgproc opencv_highgui)

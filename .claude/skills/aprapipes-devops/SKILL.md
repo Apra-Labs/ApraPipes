@@ -18,6 +18,32 @@ You are an ApraPipes DevOps troubleshooting agent. Your role is to:
 
 ---
 
+## Core Debugging Methodology
+
+**IMPORTANT**: For the comprehensive debugging methodology and guiding principles, see **[methodology.md](methodology.md)**.
+
+**Key Principles:**
+- **Goal**: Keep all 7 GitHub workflows green
+- **Approach**: Efficient, methodical debugging that prioritizes understanding over experimentation
+- **Target**: Strive for fixes in 1-3 attempts, not 100 experiments
+- **4-Phase Process**:
+  1. Detection & Deep Analysis (download ALL logs, deep analysis BEFORE fix attempts)
+  2. Local Validation BEFORE Cloud Attempts (never push fixes blindly to GitHub Actions)
+  3. Controlled Cloud Testing (dedicated branch, disable other workflows, manual triggering)
+  4. Verification & Rollout (re-enable workflows one-by-one, check regressions)
+
+---
+
+## Platform-Specific Tool Versions
+
+**CRITICAL**: Jetson ARM64 uses older toolchain (gcc-8, curl 7.58.0, OpenCV 4.8.0) due to JetPack 4.x compatibility. All other platforms use modern tooling (gcc-11, curl 8.x, OpenCV 4.10.0).
+
+**For detailed toolchain requirements**, see:
+- **Jetson ARM64**: `troubleshooting.jetson.md` → JetPack 4.x Toolchain Requirements
+- **Other platforms**: Use latest stable versions
+
+---
+
 ## Quick Start: First 2 Minutes
 
 ### Step 1: Identify Platform and Build Type
@@ -169,6 +195,54 @@ key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configura
 
 ---
 
+### Pattern 6: Duplicate Workflow Runs
+**Symptoms:**
+- Multiple workflow runs executing simultaneously for the same commit
+- Wasted CI minutes (e.g., 3 runs × 40 minutes = 120 minutes wasted)
+- Runs competing for shared runner resources, slowing each other down
+
+**Root Cause**: Triggering `gh workflow run` multiple times in quick succession without waiting for confirmation
+
+**How It Happens:**
+- Executing workflow trigger command multiple times thinking it didn't work
+- Using parallel tool calls with duplicate workflow triggers
+- Not checking if a run already started before triggering again
+
+**Quick Check:**
+```bash
+# Check for duplicate runs on the same branch/commit
+gh run list --workflow=<workflow-name> --branch <branch-name> --limit 10
+```
+
+**Prevention Protocol:**
+1. **Always wait for run ID** - `gh workflow run` returns a run ID; wait for it before re-executing
+2. **Check before triggering** - Use `gh run list` to verify no existing run for the commit
+3. **Use watch immediately** - After triggering, immediately run `gh run watch <run-id>` to confirm start
+4. **Never trigger in parallel** - Don't use parallel tool calls for workflow triggers without explicit deduplication
+5. **Cancel duplicates immediately** - If duplicates detected, cancel older runs: `gh run cancel <run-id>`
+
+**Example Fix:**
+```bash
+# BAD: May trigger multiple times
+gh workflow run CI-Linux-CUDA-Docker.yml --ref fix/branch  # Called 3 times accidentally
+
+# GOOD: Check first, trigger once, watch immediately
+gh run list --workflow=CI-Linux-CUDA-Docker.yml --branch fix/branch --limit 3
+LATEST_RUN=$(gh run list --workflow=CI-Linux-CUDA-Docker.yml --branch fix/branch --limit 1 --json databaseId --jq '.[0].databaseId')
+if [ -z "$LATEST_RUN" ] || [ "$(gh run view $LATEST_RUN --json status --jq '.status')" = "completed" ]; then
+  NEW_RUN=$(gh workflow run CI-Linux-CUDA-Docker.yml --ref fix/branch --json 2>&1 | grep -oP 'https://github.com/.*/actions/runs/\K[0-9]+')
+  gh run watch $NEW_RUN
+fi
+```
+
+**Immediate Cleanup:**
+```bash
+# If duplicates found, cancel older runs (keep newest)
+gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
+```
+
+---
+
 ## When to Use Each Guide
 
 ### Primary Guide Selection
@@ -180,8 +254,8 @@ key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configura
 | Linux x64 NoCUDA | troubleshooting.linux.md | reference.md |
 | Linux x64 CUDA | troubleshooting.cuda.md | troubleshooting.linux.md |
 | Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
-| Docker builds | troubleshooting.docker.md | troubleshooting.linux.md |
-| WSL builds | troubleshooting.docker.md | troubleshooting.windows.md |
+| Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
+| WSL builds | troubleshooting.containers.md | troubleshooting.cuda.md |
 
 ### Cross-Reference Usage
 
@@ -278,6 +352,7 @@ grep "PKG_CONFIG" build.log
 4. **Don't use parent commits as baselines** - they're not advertised by git
 5. **Don't batch updates** - change one thing at a time for easier debugging
 6. **Don't skip Phase 1** - ensure caching works before running Phase 2
+7. **Don't trigger workflows multiple times** - check for existing runs first (see Pattern 6)
 
 ---
 
@@ -329,9 +404,10 @@ grep "PKG_CONFIG" build.log
 - **troubleshooting.linux.md** - Linux x64 NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
 - **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
-- **troubleshooting.docker.md** - Docker and WSL builds (container-specific)
+- **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
-- **devops-build-system-guide.md** - Comprehensive deep-dive guide
+- **methodology.md** - High-level debugging methodology (detection, validation, testing)
+- **../.claude/docs/devops-build-system-guide.md** - Comprehensive deep-dive guide (moved to docs)
 
 ---
 
@@ -343,7 +419,3 @@ This skill should be updated when:
 - vcpkg baseline updated (update reference.md with new pins)
 - Workflow structure changes (update reference.md)
 - Self-hosted runner configuration changes (update troubleshooting.cuda.md)
-
-**Last Updated**: 2024-11-28
-**Version**: 1.0
-**Maintained by**: ApraPipes DevOps team
