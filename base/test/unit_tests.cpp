@@ -10,6 +10,15 @@
 
 #include <boost/test/unit_test.hpp>
 
+// Platform detection for test decorators
+#ifndef MACOS
+#ifdef __APPLE__
+#define MACOS 1
+#else
+#define MACOS 0
+#endif
+#endif
+
 // NOTE: TESTS WHICH REQUIRE ANY ENVIRONMENT TO BE PRESENT BEFORE RUNNING ARE NOT UNIT TESTS !!!
 
 BOOST_AUTO_TEST_SUITE(unit_tests)
