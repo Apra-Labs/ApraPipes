@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(recordMono, *boost::unit_test::disabled())
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    std::this_thread::sleep_for(std::chrono::seconds(n_seconds));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
 
     ifstream in_file_mono(audioFiles[0], ios::binary);
     in_file_mono.seekg(0, ios::end);
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(recordStereo, *boost::unit_test::disabled())
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    std::this_thread::sleep_for(std::chrono::seconds(n_seconds));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
 
     ifstream in_file_stereo(audioFiles[0], ios::binary);
     in_file_stereo.seekg(0, ios::end);
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     p.appendModule(source);
     p.init();
     p.run_all_threaded();
-    std::this_thread::sleep_for(std::chrono::seconds(n_seconds));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
 
     ifstream in_file_mono(audioFiles[0], ios::binary);
     in_file_mono.seekg(0, ios::end);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(recordMonoStereo, *boost::unit_test::disabled())
     source->setProps(currentProps);
     source->relay(outputFile,false);
     source->relay(outputFile2,true);
-    std::this_thread::sleep_for(std::chrono::seconds(n_seconds));
+    boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
 	in_file_mono.close();
 
     ifstream in_file_stereo(audioFiles[1], ios::binary);

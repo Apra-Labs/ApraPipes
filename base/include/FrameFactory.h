@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/pool/object_pool.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <atomic>
 
 #include "CommonDefs.h"
@@ -17,7 +17,7 @@ private:
 	
 	frame_sp eosFrame;
 	frame_sp emptyFrame;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 
 	std::atomic_uint counter;
 	std::atomic_size_t numberOfChunks;

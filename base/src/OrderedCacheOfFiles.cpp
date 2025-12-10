@@ -401,7 +401,7 @@ void OrderedCacheOfFiles::updateCache(std::string& filePath, uint64_t& start_ts,
 	{
 		return;
 	}
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	videoCache.modify(videoIter, [start_ts, end_ts](auto& entry) {entry.start_ts = start_ts;  entry.end_ts = end_ts; });
 }
 
@@ -571,7 +571,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 
 void OrderedCacheOfFiles::insertInVideoCache(Video vid)
 {
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	videoCache.insert(vid);
 }
 
@@ -786,7 +786,7 @@ void OrderedCacheOfFiles::retireOldFiles(uint64_t ts)
 	{
 		mThread->join();
 	}
-	mThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&OrderedCacheOfFiles::dropFarthestFromTS, this, ts)));
+	mThread = boost::shared_ptr<std::thread>(new std::thread(boost::bind(&OrderedCacheOfFiles::dropFarthestFromTS, this, ts)));
 }
 
 void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
@@ -811,7 +811,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex>(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 				}
@@ -831,7 +831,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex>(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 					--itr;
@@ -853,7 +853,7 @@ void OrderedCacheOfFiles::deleteLostEntry(std::string& filePath)
 		return;
 	}
 
-	boost::mutex::scoped_lock(m_mutex);
+	std::unique_lock<std::mutex>(m_mutex);
 	itr = videoCache.erase(itr); // erase gives updated itr from cache
 
 	return;
@@ -863,7 +863,7 @@ void OrderedCacheOfFiles::clearCache()
 {
 	if (videoCache.size())
 	{
-		boost::mutex::scoped_lock(m_mutex);
+		std::unique_lock<std::mutex>(m_mutex);
 		videoCache.clear();
 	}
 }
