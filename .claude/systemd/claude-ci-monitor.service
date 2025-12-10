@@ -1,0 +1,46 @@
+[Unit]
+Description=Claude AI CI Monitor for ApraPipes
+Documentation=https://github.com/Apra-Labs/ApraPipes/blob/main/.claude/docs/ci-monitoring-architecture.md
+After=network-online.target actions.runner.Apra-Labs-ApraPipes.akhil-30ShattuckRoad01810.service
+Wants=network-online.target
+Requires=actions.runner.Apra-Labs-ApraPipes.akhil-30ShattuckRoad01810.service
+
+[Service]
+Type=simple
+User=akhil
+Group=akhil
+WorkingDirectory=/home/akhil/git/ApraPipes
+
+# Environment variables
+Environment="GH_TOKEN=<YOUR_GITHUB_TOKEN_HERE>"
+Environment="MONITOR_INTERVAL=60"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Main process
+ExecStart=/home/akhil/git/ApraPipes/.claude/monitoring/ci-monitor.sh --mode=hybrid
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claude-ci-monitor
+
+# Resource limits (don't interfere with builds)
+CPUQuota=10%
+MemoryLimit=512M
+TasksMax=50
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/akhil/git/ApraPipes/.claude/monitoring/logs /home/akhil/git/ApraPipes/.claude/monitoring/monitor-state.json
+
+[Install]
+WantedBy=multi-user.target
