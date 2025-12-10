@@ -79,7 +79,14 @@ jobs:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      CURL_HTTP_VERSION: HTTP/1.1  # Force HTTP/1.1 for ARM64 curl 7.58.0 HTTP/2 framing bug workaround
+      VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg  # Enable vcpkg binary caching for self-hosted runners
+      # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
+      # These must be at job level so they propagate to vcpkg subprocesses
+      # Empty values are harmless for these CUDA-specific variables
+      CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
+      CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
+      CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8/bin/nvcc' || '' }}
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -114,6 +121,9 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count
 
+    - name: Create vcpkg binary cache directory
+      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
 
@@ -123,9 +133,17 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
+    - name: Set GCC-11 for CUDA 11.8 compatibility
+      if: ${{ contains(inputs.cuda,'ON') }}
+      run: |
+        # CUDA 11.8 requires GCC <= 11, but Ubuntu 24.04 has GCC 13 by default
+        echo "CC=/usr/bin/gcc-11" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-11" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-11" >> $GITHUB_ENV
+
     - name: Cache dependencies for fast cloud build
       id: cache-all
-      if: ${{ !inputs.force-cache-update }}
+      if: ${{ !inputs.is-selfhosted && !inputs.force-cache-update }}
       uses: actions/cache@v3
       with:
           path: |
@@ -135,7 +153,7 @@ jobs:
 
     - name: Force cache update - restore and delete old cache
       id: cache-force-restore
-      if: ${{ inputs.force-cache-update }}
+      if: ${{ !inputs.is-selfhosted && inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
           path: |
@@ -155,7 +173,7 @@ jobs:
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
     - name: Force cache update - save updated cache with newly-built packages
-      if: ${{ always() && inputs.force-cache-update }}
+      if: ${{ always() && !inputs.is-selfhosted && inputs.force-cache-update }}
       uses: actions/cache/save@v3
       with:
         path: |

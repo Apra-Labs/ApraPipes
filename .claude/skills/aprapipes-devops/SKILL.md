@@ -407,7 +407,6 @@ grep "PKG_CONFIG" build.log
 - **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)
-- **../.claude/docs/devops-build-system-guide.md** - Comprehensive deep-dive guide (moved to docs)
 
 ---
 

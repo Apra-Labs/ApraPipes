@@ -1,18 +1,19 @@
 name: CI-Linux-CUDA
 
 on:
-  # Temporarily disabled - workflow not yet working
-  # push:  # Trigger on push to any branch
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - 'docs/**'
-  # pull_request:
-  #   branches: [ main ]
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - 'docs/**'
+  push:  # Trigger on push to any branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
@@ -27,10 +28,11 @@ jobs:
       flav: Linux-CudaT
       is-selfhosted: true
       cuda: 'ON'
-      prep-cmd: 'echo skipping builder prep as I can not sudo'
-      bootstrap-cmd: 'export PATH="/usr/bin/gcc-8:$PATH" && ./vcpkg/bootstrap-vcpkg.sh'
+      # Uses ubuntu24-overlay for ffmpeg binutils 2.41+ compatibility patch
+      # CUDA env vars (CUDAToolkit_ROOT, CUDA_PATH, CUDACXX) are set at job level in build-test-lin.yml
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/ubuntu24-overlay && export PATH=/usr/local/cuda/bin:$PATH && cmake -B . -G Ninja -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
       cache-path: './none'
-      nProc: 6
+      nProc: 20
   linux-cuda-publish:
     needs: linux-cuda-build-test
     if: ${{ always() }}
