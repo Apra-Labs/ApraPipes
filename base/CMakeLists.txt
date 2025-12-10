@@ -4,6 +4,7 @@ OPTION(ENABLE_LINUX "Use this switch to enable LINUX" ON)
 OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
+OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
 
 # vcpkg overlay ports are controlled via VCPKG_OVERLAY_PORTS environment variable
 # ARM64 builds set this in CI workflow to use arm64-overlay directory
@@ -15,7 +16,7 @@ IF(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 IF(ENABLE_LINUX)
-	add_compile_definitions(LINUX)	
+	add_compile_definitions(LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
@@ -23,6 +24,12 @@ IF(ENABLE_WINDOWS)
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 	set(VCPKG_PLATFORM_TOOLSET "v143" CACHE STRING "v143" FORCE)
 ENDIF(ENABLE_WINDOWS)
+
+IF(ENABLE_MACOS)
+	add_compile_definitions(MACOS)
+	# macOS uses x64-osx triplet by default
+	set(VCPKG_TARGET_TRIPLET "x64-osx" CACHE STRING "x64-osx")
+ENDIF(ENABLE_MACOS)
 
 IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
@@ -63,16 +70,21 @@ IF(ENABLE_LINUX)
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 	pkg_check_modules(GLFW REQUIRED glfw3)
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+ENDIF()
+
+IF(ENABLE_MACOS)
+	find_package(GLEW REQUIRED)
+	find_package(glfw3 CONFIG REQUIRED)
+	# macOS uses native GLUT (not FreeGLUT)
+	find_package(GLUT REQUIRED)
+	# Skip GTK3/GDK/GIO/GOBJECT - not used in source code
 ENDIF()
 
 IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
-
-IF(ENABLE_LINUX)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
-	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-ENDIF()
 
 IF(ENABLE_CUDA)
 	if((NOT DEFINED CMAKE_CUDA_ARCHITECTURES) OR (CMAKE_CUDA_ARCHITECTURES STREQUAL ""))

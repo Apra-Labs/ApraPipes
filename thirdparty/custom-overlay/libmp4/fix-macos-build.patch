@@ -1,0 +1,40 @@
+diff --git a/src/mp4_demux.c b/src/mp4_demux.c
+index c4eca76..3fe8655 100644
+--- a/src/mp4_demux.c
++++ b/src/mp4_demux.c
+@@ -118,7 +118,7 @@ void mp4_demux_toggle_playback(struct mp4_demux * demux, unsigned int track_id)
+ 	tk = mp4_track_find_by_id(mp4, track_id);
+ 	if (tk == NULL) {
+ 		ULOGE("track id=%d not found", track_id);
+-		return -ENOENT;
++		return;
+ 	}
+ 
+ 	if (tk->direction)
+@@ -143,7 +143,7 @@ void mp4_set_reader_pos_lastframe(struct mp4_demux * demux, unsigned int track_i
+ 	tk = mp4_track_find_by_id(mp4, track_id);
+ 	if (tk == NULL) {
+ 		ULOGE("track id=%d not found", track_id);
+-		return -ENOENT;
++		return;
+ 	}
+ 
+ 	tk->nextSample = tk->sampleCount - 1;
+@@ -159,7 +159,7 @@ void mp4_set_reader_pos_firstframe(struct mp4_demux * demux, unsigned int track_
+ 	tk = mp4_track_find_by_id(mp4, track_id);
+ 	if (tk == NULL) {
+ 		ULOGE("track id=%d not found", track_id);
+-		return -ENOENT;
++		return;
+ 	}
+ 
+ 	tk->nextSample = 0;
+@@ -357,7 +357,7 @@ int mp4_demux_time_range(struct mp4_demux *demux, uint64_t *start_ts, uint64_t *
+ 
+ 	uint64_t startTimeStamp = 0;
+ 	if (count > 0) {
+-		for (auto i = 0; i < count; i++) {
++		for (int i = 0; i < count; i++) {
+ 			if ((keys[i]) && (values[i])) {
+ 				if (!strcmp(keys[i], "\251too")) {
+ 					printf("keys %s, val %s\n",
