@@ -1,13 +1,23 @@
 #!/bin/bash
+# Setup script for ApraPipes CI self-hosted runner (Ubuntu 22.04/24.04)
+# This script installs all required dependencies for the CI-Linux-CUDA build
+# Idempotent - can be re-run safely
+#
+# Prerequisites:
+# - Ubuntu 22.04 or 24.04
+# - NVIDIA GPU with drivers installed
+# - CUDA 11.8 toolkit installed at /usr/local/cuda-11.8
+# - sudo access
+
 set -e
 
 echo "=== ApraPipes Linux CUDA Self-Hosted Runner Setup ==="
-echo "This script sets up a Linux x64 self-hosted runner with CUDA support for ApraPipes CI"
-echo "This script is idempotent and can be re-run safely"
+echo "This script sets up a Linux x64 self-hosted runner with CUDA 11.8 support"
+echo "Idempotent - can be re-run safely"
 echo ""
 
 # --- Docker ---
-echo "[1/7] Setting up Docker..."
+echo "[1/8] Setting up Docker..."
 if command -v docker &> /dev/null; then
     echo "  Docker already installed: $(docker --version)"
 else
@@ -24,7 +34,7 @@ if ! groups | grep -q docker; then
 fi
 
 # --- NVIDIA Container Toolkit ---
-echo "[2/7] Setting up NVIDIA Container Toolkit..."
+echo "[2/8] Setting up NVIDIA Container Toolkit..."
 if dpkg -l | grep -q nvidia-container-toolkit; then
     echo "  NVIDIA Container Toolkit already installed"
 else
@@ -38,14 +48,15 @@ fi
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
-# --- Build Dependencies (prep-cmd packages) ---
-echo "[3/7] Installing build dependencies..."
+# --- Build Dependencies ---
+echo "[3/8] Installing build dependencies..."
 sudo apt-get update
 sudo apt-get install -y \
     ca-certificates curl zip unzip tar \
-    autoconf automake build-essential make ninja-build \
-    gcc-12 g++-12 \
+    autoconf autoconf-archive automake build-essential gcc g++ make ninja-build \
+    gcc-11 g++-11 \
     git-core git-lfs \
+    cmake pkg-config \
     libass-dev libfreetype6-dev libvorbis-dev libmp3lame-dev libsdl2-dev \
     libva-dev libvdpau-dev \
     flex bison nasm yasm zlib1g-dev gperf \
@@ -53,14 +64,7 @@ sudo apt-get install -y \
     libxinerama-dev libxcursor-dev \
     texinfo wget dos2unix \
     libgnutls28-dev libtool libssl-dev \
-    python3-jinja2
-
-# Set GCC-12 as the default compiler (for ffmpeg 4.4.3 compatibility with Ubuntu 24.04)
-if [ -f /usr/bin/gcc-12 ]; then
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
-    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
-    echo "  ✓ Set GCC-12 as default compiler (required for ffmpeg 4.4.3)"
-fi
+    python3-jinja2 python3-pip python3-dev
 
 # libxcb packages (expanded from libxcb*-dev)
 sudo apt-get install -y \
@@ -74,16 +78,40 @@ sudo apt-get install -y libncurses-dev libncursesw5-dev || true
 # libsoup (may vary by Ubuntu version)
 sudo apt-get install -y libsoup2.4-dev libsoup-gnome2.4-dev || sudo apt-get install -y libsoup-3.0-dev || true
 
-# --- CMake and Python Tools ---
-echo "[4/7] Installing CMake and Python tools..."
-if command -v cmake &> /dev/null; then
-    echo "  CMake already installed: $(cmake --version | head -1)"
+# --- CUDNN for CUDA 11.8 ---
+echo "[4/8] Installing CUDNN for CUDA 11.8..."
+if [ ! -f /usr/share/keyrings/cuda-archive-keyring.gpg ]; then
+    wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb -O /tmp/cuda-keyring.deb
+    sudo dpkg -i /tmp/cuda-keyring.deb
+    rm /tmp/cuda-keyring.deb
+    sudo apt-get update
+fi
+
+# Pin to CUDA 11.8 compatible version
+if ! dpkg -l | grep -q "libcudnn8-dev.*cuda11.8"; then
+    sudo apt-get install -y libcudnn8=8.9.7.29-1+cuda11.8 libcudnn8-dev=8.9.7.29-1+cuda11.8 || true
+    # Hold the packages to prevent accidental upgrade to CUDA 12.x versions
+    sudo apt-mark hold libcudnn8 libcudnn8-dev || true
 else
-    sudo apt-get install -y cmake python3-pip python3-dev
+    echo "  CUDNN 11.8 already installed"
+fi
+
+# --- CUDA Environment ---
+echo "[5/8] Setting up CUDA environment..."
+if [ ! -f /etc/profile.d/cuda.sh ]; then
+    cat << 'CUDA_ENV' | sudo tee /etc/profile.d/cuda.sh
+export PATH=/usr/local/cuda/bin:$PATH
+export CUDAToolkit_ROOT=/usr/local/cuda-11.8
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+CUDA_ENV
+    sudo chmod +x /etc/profile.d/cuda.sh
+    echo "  Created /etc/profile.d/cuda.sh"
+else
+    echo "  CUDA environment already configured"
 fi
 
 # --- PowerShell ---
-echo "[5/7] Setting up PowerShell..."
+echo "[6/8] Setting up PowerShell..."
 if command -v pwsh &> /dev/null; then
     echo "  PowerShell already installed: $(pwsh --version)"
 else
@@ -95,7 +123,7 @@ else
 fi
 
 # --- GitHub CLI ---
-echo "[6/7] Setting up GitHub CLI..."
+echo "[7/8] Setting up GitHub CLI..."
 if command -v gh &> /dev/null; then
     echo "  GitHub CLI already installed: $(gh --version | head -1)"
 else
@@ -107,20 +135,23 @@ else
 fi
 
 # --- Verification ---
-echo "[7/7] Verifying installation..."
+echo "[8/8] Verifying installation..."
 echo ""
 echo "=== Verification Results ==="
 echo "Docker:          $(docker --version 2>/dev/null || echo 'NOT FOUND')"
-echo "NVIDIA Toolkit:  $(dpkg -l | grep nvidia-container-toolkit | awk '{print $3}' || echo 'NOT FOUND')"
+echo "NVIDIA Toolkit:  $(dpkg -l 2>/dev/null | grep nvidia-container-toolkit | awk '{print $3}' || echo 'NOT FOUND')"
 echo "PowerShell:      $(pwsh --version 2>/dev/null || echo 'NOT FOUND')"
 echo "GitHub CLI:      $(gh --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
 echo "Git:             $(git --version 2>/dev/null || echo 'NOT FOUND')"
 echo "Git LFS:         $(git lfs version 2>/dev/null || echo 'NOT FOUND')"
 echo "CMake:           $(cmake --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
 echo "Ninja:           $(ninja --version 2>/dev/null || echo 'NOT FOUND')"
-echo "GCC:             $(gcc --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
-echo "Python:          $(python3 --version 2>/dev/null || echo 'NOT FOUND')"
-echo "Pip:             $(pip3 --version 2>/dev/null || echo 'NOT FOUND')"
+echo "GCC-11:          $(gcc-11 --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
+echo "G++-11:          $(g++-11 --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
+echo "autoconf:        $(autoconf --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
+echo "automake:        $(automake --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
+echo "libtoolize:      $(libtoolize --version 2>/dev/null | head -1 || echo 'NOT FOUND')"
+echo "CUDNN:           $(dpkg -l 2>/dev/null | grep libcudnn8-dev | awk '{print $3}' || echo 'NOT FOUND')"
 echo ""
 
 echo "=== Testing CUDA ==="
@@ -147,11 +178,17 @@ fi
 
 echo ""
 echo "=== Setup Complete ==="
+echo ""
+echo "IMPORTANT: CUDA 11.8 requires GCC <= 11. The CI workflow uses GCC-11 via"
+echo "environment variables (CC, CXX, CUDAHOSTCXX) set in build-test-lin.yml."
+echo "GCC-11 is installed but NOT set as system default to avoid breaking other builds."
+echo ""
 echo "If you were added to the docker group, please log out and back in."
 echo ""
 echo "=== Next Steps ==="
 echo "1. Install GitHub Actions runner (if not already done):"
-echo "   - Download: https://github.com/actions/runner/releases"
-echo "   - Configure with repo token"
+echo "   - Go to: https://github.com/Apra-Labs/ApraPipes/settings/actions/runners/new"
+echo "   - Download and configure with repo token"
 echo "2. Add 'linux-cuda' label to the runner in GitHub settings"
-echo "3. Start the runner as a service"
+echo "3. Start the runner as a service:"
+echo "   cd ~/actions-runner && sudo ./svc.sh install && sudo ./svc.sh start"
