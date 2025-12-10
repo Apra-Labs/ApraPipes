@@ -80,6 +80,7 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
+      VCPKG_DEFAULT_BINARY_CACHE: ~/.cache/vcpkg  # Enable vcpkg binary caching for self-hosted runners
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -113,6 +114,9 @@ jobs:
         git submodule status > submodule_ver.txt
         cat submodule_ver.txt
         git rev-list --all --count
+
+    - name: Create vcpkg binary cache directory
+      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
 
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}
