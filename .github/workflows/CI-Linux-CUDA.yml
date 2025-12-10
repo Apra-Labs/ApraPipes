@@ -28,9 +28,10 @@ jobs:
       flav: Linux-CudaT
       is-selfhosted: true
       cuda: 'ON'
-      prep-cmd: 'cmake --version && ninja --version && gcc --version && git --version && pwsh --version'
-      prep-check-cmd: 'cmake --version ; ninja --version ; gcc --version ; git --version; pwsh --version'
-      bootstrap-cmd: './vcpkg/bootstrap-vcpkg.sh'
+      prep-cmd: 'cmake --version && ninja --version && gcc-12 --version && g++-12 --version && git --version && pwsh --version'
+      prep-check-cmd: 'cmake --version ; ninja --version ; gcc-12 --version ; g++-12 --version ; git --version; pwsh --version'
+      bootstrap-cmd: 'export CC=/usr/bin/gcc-12 && export CXX=/usr/bin/g++-12 && ./vcpkg/bootstrap-vcpkg.sh'
+      cmake-conf-cmd: 'export CC=/usr/bin/gcc-12 && export CXX=/usr/bin/g++-12 && export CUDAHOSTCXX=/usr/bin/g++-12 && PATH=/usr/local/cuda/bin:$PATH cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-12 -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-12 -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
       cache-path: './none'
       nProc: 20
   linux-cuda-publish:

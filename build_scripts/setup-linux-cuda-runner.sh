@@ -43,7 +43,8 @@ echo "[3/7] Installing build dependencies..."
 sudo apt-get update
 sudo apt-get install -y \
     ca-certificates curl zip unzip tar \
-    autoconf automake build-essential gcc g++ make ninja-build \
+    autoconf automake build-essential make ninja-build \
+    gcc-12 g++-12 \
     git-core git-lfs \
     libass-dev libfreetype6-dev libvorbis-dev libmp3lame-dev libsdl2-dev \
     libva-dev libvdpau-dev \
@@ -53,6 +54,13 @@ sudo apt-get install -y \
     texinfo wget dos2unix \
     libgnutls28-dev libtool libssl-dev \
     python3-jinja2
+
+# Set GCC-12 as the default compiler (for ffmpeg 4.4.3 compatibility with Ubuntu 24.04)
+if [ -f /usr/bin/gcc-12 ]; then
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+    echo "  ✓ Set GCC-12 as default compiler (required for ffmpeg 4.4.3)"
+fi
 
 # libxcb packages (expanded from libxcb*-dev)
 sudo apt-get install -y \
