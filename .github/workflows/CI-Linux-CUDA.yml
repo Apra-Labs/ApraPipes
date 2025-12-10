@@ -1,12 +1,13 @@
 name: CI-Linux-CUDA
 
 on:
-  push:  # Trigger on push to any branch
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
+  # Disabled automatic push trigger - use workflow_dispatch for manual runs
+  # push:
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
