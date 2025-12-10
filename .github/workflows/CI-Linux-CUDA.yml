@@ -29,7 +29,8 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       # Uses ubuntu24-overlay for ffmpeg binutils 2.41+ compatibility patch
-      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/ubuntu24-overlay && PATH=/usr/local/cuda/bin:$PATH cmake -B . -G Ninja -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
+      # CUDAToolkit_ROOT needed for vcpkg opencv4 to find CUDA
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/ubuntu24-overlay && export PATH=/usr/local/cuda/bin:$PATH && export CUDAToolkit_ROOT=/usr/local/cuda-11.8 && cmake -B . -G Ninja -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
       cache-path: './none'
       nProc: 20
   linux-cuda-publish:
