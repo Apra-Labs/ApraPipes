@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 
 	for (auto i = 0; i < 10; i++)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
 		relay = !relay;
 		fileReader->relay(sink, relay);
 	}
@@ -333,12 +333,12 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	std::cout << "step" << std::endl;
 	p->step();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
 
 	std::cout << "play" << std::endl;
 	p->play();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
 	
 	p->pause();
 	std::cout << "pause" << std::endl;
@@ -357,17 +357,17 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	listProps.strFullFileNameWithPattern = rootDir;
 	listProps.files = files;
 	fileReader->setProps(listProps);
-	std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
 	std::cout << "step files" << std::endl;
 	
 	p->step();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
 
 	std::cout << "play" << std::endl;
 	p->play();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
 
 	p->pause();
 	std::cout << "pause" << std::endl;
@@ -376,11 +376,11 @@ BOOST_AUTO_TEST_CASE(configpipeline, * boost::unit_test::disabled())
 	dirProps.strFullFileNameWithPattern = rootDir;
 	dirProps.files.clear();
 	fileReader->setProps(dirProps);
-	std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(250));
 	std::cout << "step folder" << std::endl;
 	p->step();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
 	
 
 	p->stop();

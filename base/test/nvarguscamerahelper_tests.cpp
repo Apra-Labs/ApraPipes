@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
             { return frameFactory2->create(size, frameFactory2); });
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(50));
+    boost::this_thread::sleep_for(boost::chrono::seconds(50));
 
     for (int i = 0; i < n_cams; i++)
     {

@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	p.init();
 
 	p.run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(60));
+	boost::this_thread::sleep_for(boost::chrono::seconds(60));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();

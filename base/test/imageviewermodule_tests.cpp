@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Planarimage, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(5));
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(Dma_Renderer_Rawimage, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(40));
+	boost::this_thread::sleep_for(boost::chrono::seconds(40));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -92,13 +92,13 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(5));
+	boost::this_thread::sleep_for(boost::chrono::seconds(5));
 	sink->closeWindow();
 
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 	sink->createWindow(200, 200);
 
-	std::this_thread::sleep_for(std::chrono::seconds(120));
+	boost::this_thread::sleep_for(boost::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(viewer_test, *boost::unit_test::disabled())
 	p.init();
 
 	p.run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

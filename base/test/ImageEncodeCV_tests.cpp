@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 	p->appendModule(fileReader);
 	p->init();
 	p->run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(3000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();
 	p->term();
 	p->wait_for_all();
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	// If you want error callbackand health callback to work with a module, registering it with control is mandatory.
 	mControl->enrollModule("Encode", m2);
 	p->run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(3000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();
 	p->term();
 	p->wait_for_all();
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(bgra_profile, *boost::unit_test::disabled())
 	p->appendModule(fileReader);
 	p->init();
 	p->run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(3000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(3000));
 	p->stop();
 	p->term();
 	p->wait_for_all();

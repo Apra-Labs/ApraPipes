@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(500000000000000));
+	boost::this_thread::sleep_for(boost::chrono::seconds(500000000000000));
 
 	LOG_INFO << "STOPPING";
 

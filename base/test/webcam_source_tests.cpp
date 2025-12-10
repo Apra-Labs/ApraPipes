@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(viewer_test)
 	p.init();
 
 	p.run_all_threaded();
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	boost::this_thread::sleep_for(boost::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

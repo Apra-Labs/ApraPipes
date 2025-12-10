@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	boost::this_thread::sleep_for(boost::chrono::seconds(20));
 	p.stop();
 	p.term();
 
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled())
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
 	p.run_all_threaded();
 
-	std::this_thread::sleep_for(std::chrono::seconds(20));
+	boost::this_thread::sleep_for(boost::chrono::seconds(20));
 
 	p.stop();
 	p.term();

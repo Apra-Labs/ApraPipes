@@ -2,7 +2,8 @@
 #include "stdafx.h"
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
+#include <thread>
+#include <mutex>
 #include "ThreadSafeQue.h"
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
@@ -65,14 +66,14 @@ public:
 	std::ostringstream& pre(std::ostringstream& stream, boost::log::trivial::severity_level lvl);
 	std::ostringstream& aipexceptionPre(std::ostringstream& stream, boost::log::trivial::severity_level lvl,int type);
 	
-	void operator()(); //to support boost::thread
+	void operator()(); //to support std::thread
 private:	
 	Logger(LoggerProps props);
 	void initBoostLogger(LoggerProps props);
 
-	static boost::mutex logger_mutex;
+	static std::mutex logger_mutex;
 	threadsafe_que<std::string> mQue;
-	boost::thread myThread;	
+	std::thread myThread;	
 	bool run();
 	bool process(const std::string& message);
 	bool mRunning;

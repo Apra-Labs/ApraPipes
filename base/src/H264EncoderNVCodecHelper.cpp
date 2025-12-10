@@ -4,8 +4,8 @@
 #include "AIPExceptions.h"
 #include "Logger.h"
 #include "Frame.h"
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
+#include <mutex>
+#include <condition_variable>
 #include <boost/pool/object_pool.hpp>
 #include <boost/dll.hpp>
 #include <thread>
@@ -145,7 +145,7 @@ public:
 
 	void unlockOutputBitstream(NV_ENC_OUTPUT_PTR outputBitstream)
 	{
-		 boost::mutex::scoped_lock lock(m_mutex);
+		 std::unique_lock<std::mutex> lock(m_mutex);
 
 		 NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, outputBitstream));
 
@@ -182,7 +182,7 @@ public:
 public:
 	boost::condition m_wait_for_output;
 	boost::condition m_not_empty;
-	boost::mutex m_mutex;
+	std::mutex m_mutex;
 
 public:	
 	boost::object_pool<ExtFrame> frame_opool;
@@ -294,7 +294,7 @@ public:
 		NV_ENC_PIC_PARAMS picParams = {};
 		void* event=nullptr;
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+			std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
 			m_nvcodecResources->m_not_empty.wait(lock, boost::bind(&Detail::is_not_empty, this));
 
 			m_nvcodecResources->m_mappedResources.push_back(mapInputResource.mappedResource);
@@ -321,7 +321,7 @@ public:
 		NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncEncodePicture(m_nvcodecResources->m_hEncoder, &picParams));
 
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+			std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
 			m_nvcodecResources->m_nFreeOutputBitstreams--;
 			m_nvcodecResources->m_nBusyOutputBitstreams++;
 			m_nvcodecResources->m_wait_for_output.notify_one();
@@ -375,7 +375,7 @@ private:
 	void unload()
 	{
 		{
-			boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+			std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
 			m_bRunning = false;
 			m_nvcodecResources->m_wait_for_output.notify_one();
 		}
@@ -524,7 +524,7 @@ private:
 		 	NV_ENC_OUTPUT_PTR outputBitstream;
 		 	NV_ENC_INPUT_PTR mappedResource;
 		 	{
-		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+		 		std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
 		 		m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
 		 		if (!m_bRunning)
 		 		{
@@ -562,7 +562,7 @@ private:
 		 	NVENC_API_CALL(m_nvcodecResources->m_nvenc.nvEncUnmapInputResource(m_nvcodecResources->m_hEncoder, mappedResource));
 
 		 	{
-		 		boost::mutex::scoped_lock lock(m_nvcodecResources->m_mutex);
+		 		std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
 		 		m_nvcodecResources->m_mappedResources.pop_front();
 		 		m_nvcodecResources->m_mappedFrames.pop_front();
 #if defined(_WIN32)

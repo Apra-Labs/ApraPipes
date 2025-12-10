@@ -1,8 +1,7 @@
 #pragma once
 #include <boost/container/deque.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/call_traits.hpp>
+#include <mutex>
+#include <condition_variable>
 
 template <class T>
 class threadsafe_que
@@ -15,10 +14,10 @@ public:
 	
 	explicit threadsafe_que() : m_unread(0), m_wakeExternally(false) {}
 
-	void push(typename boost::call_traits<value_type>::param_type item)
+	void push(const value_type& item)
 	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_container.push_front(item);
 		++m_unread;				
 		lock.unlock();
@@ -26,7 +25,7 @@ public:
 	}
 
 	value_type try_pop() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		if (is_not_empty())
 		{
 			--m_unread;
@@ -42,8 +41,8 @@ public:
 	}
 
 	value_type pop() {
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_not_empty.wait(lock, boost::bind(&threadsafe_que<value_type>::is_not_empty, this));
+		std::unique_lock<std::mutex> lock(m_mutex);
+		m_not_empty.wait(lock, [this]() { return is_not_empty(); });
 		--m_unread;
 		value_type ret = m_container.back();
 		m_container.pop_back();
@@ -52,7 +51,7 @@ public:
 	}
 
 	void clear() {
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_container.clear();
 		m_unread = 0;
 		lock.unlock();
@@ -60,13 +59,13 @@ public:
 
 	size_t size()
 	{
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		return m_unread;
 	}
 
 	value_type try_pop_external() {
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_not_empty.wait(lock, boost::bind(&threadsafe_que<value_type>::is_not_empty_external, this));
+		std::unique_lock<std::mutex> lock(m_mutex);
+		m_not_empty.wait(lock, [this]() { return is_not_empty_external(); });
 		if(!is_not_empty()) {
 			lock.unlock();
 			return value_type();//empty container
@@ -80,7 +79,7 @@ public:
 
 	void setWake()
 	{
-		boost::mutex::scoped_lock lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_mutex);
 		m_wakeExternally = true; // forever true - now try_pop_external becomes equivalent to try_pop
 		m_not_empty.notify_one();
 	}
@@ -99,6 +98,6 @@ private:
 	bool m_wakeExternally;
 	size_type m_unread;
 	container_type m_container;
-	boost::mutex m_mutex;	
-	boost::condition m_not_empty;
+	std::mutex m_mutex;
+	std::condition_variable m_not_empty;
 };
