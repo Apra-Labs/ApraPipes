@@ -408,11 +408,6 @@ grep "PKG_CONFIG" build.log
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)
 
-## Related Documentation
-
-- **../../docs/devops/monitoring/** - 24/7 CI monitoring system (auto-detection and auto-fix)
-- **../../docs/devops/devops-build-system-guide.md** - Comprehensive deep-dive guide
-
 ---
 
 ## Maintenance
