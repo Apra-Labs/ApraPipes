@@ -1,6 +1,6 @@
 [Unit]
 Description=Claude AI CI Monitor for ApraPipes
-Documentation=https://github.com/Apra-Labs/ApraPipes/blob/main/.claude/docs/ci-monitoring-architecture.md
+Documentation=https://github.com/Apra-Labs/ApraPipes/blob/main/docs/devops/monitoring/ci-monitoring-architecture.md
 After=network-online.target actions.runner.Apra-Labs-ApraPipes.akhil-30ShattuckRoad01810.service
 Wants=network-online.target
 Requires=actions.runner.Apra-Labs-ApraPipes.akhil-30ShattuckRoad01810.service

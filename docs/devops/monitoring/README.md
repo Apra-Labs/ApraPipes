@@ -425,9 +425,8 @@ This monitoring system learns and improves! To contribute:
 
 ## Support
 
-- **Documentation:** See `.claude/docs/ci-monitoring-architecture.md`
-- **Integration Guide:** See `.claude/skills/aprapipes-devops/monitoring-integration.md`
-- **Setup Help:** See `SETUP.md`
+- **Architecture:** See `ci-monitoring-architecture.md` (this directory)
+- **Setup Guide:** See `SETUP.md` (this directory)
 - **GitHub Issues:** Label with `ci-monitor`
 - **Logs:** `sudo journalctl -u claude-ci-monitor -f`
 
