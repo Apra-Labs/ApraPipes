@@ -37,16 +37,57 @@
 
 ---
 
-## Phase 1: CMake Configuration 🚧
+## Phase 1: CMake Configuration ✅
 
+### Changes Made
+- ✅ Added `ENABLE_MACOS` option to base/CMakeLists.txt
+- ✅ Added macOS compile definitions
+- ✅ Configured macOS package finding (GLEW, glfw3, GLUT)
+- ✅ Skipped GTK3/GDK/GIO/GOBJECT on macOS (not used)
+- ✅ Set `VCPKG_TARGET_TRIPLET` to `x64-osx`
+
+---
+
+## Phase 2: Dependency Management ✅
+
+### vcpkg.json Platform Filters Added
+- ✅ **whisper**: Split into CUDA (!osx) and NoCUDA (osx) variants
+- ✅ **opencv4**: Split into CUDA (!osx) and NoCUDA (osx) variants
+- ✅ **freeglut**: Linux-only (macOS uses native GLUT)
+- ✅ **gtk3**: Linux-only (confirmed unused in source)
+- ✅ **re (libre)**: Linux-only (only used in ARM64/CUDA builds)
+- ✅ **baresip**: Linux-only (only used in ARM64/CUDA builds)
+
+---
+
+## Phase 3: Build Iteration 🚧
+
+### First CMake Configure Attempt
 _In progress..._
 
 ---
 
 ## Issues & Solutions
 
-### Issue Log
-_Will be populated as issues are encountered_
+### Issue #1: baresip Cross-Platform Linkage Error
+**Error**: `ninja: error: '/Users/akhil/git/ApraPipes2/build/vcpkg_installed/arm64-linux/lib/libre.so', needed by 'libbaresip.7.2.0.dylib', missing`
+
+**Root Cause**: baresip was set to `platform: "!windows"`, causing it to install on macOS even though it's only used in ENABLE_ARM64 and ENABLE_LINUX CMake blocks.
+
+**Investigation**:
+```bash
+# Check baresip usage in CMakeLists.txt
+grep -n "BARESIP_LIB" base/CMakeLists.txt
+# Found: Only referenced at lines 113, 162 inside ENABLE_ARM64 and ENABLE_LINUX blocks
+
+# Check baresip usage in source code
+grep -r "baresip" base/src base/include --include="*.cpp" --include="*.h" -i
+# Found: Zero matches - not used in source
+```
+
+**Solution**: Changed vcpkg.json platform filter from `"!windows"` to `"linux"` for both `re` and `baresip`
+
+**Status**: ✅ Fixed, ready to retry configure
 
 ---
 
@@ -101,10 +142,10 @@ _Will be documented after Phase 5_
 
 ## Timeline
 
-- Phase 0 (Pre-Flight): ✅ Completed in 5 minutes
-- Phase 1 (CMake): 🚧 In progress
-- Phase 2 (Dependencies): ⏳ Pending
-- Phase 3 (Build): ⏳ Pending
+- Phase 0 (Pre-Flight): ✅ Completed
+- Phase 1 (CMake): ✅ Completed
+- Phase 2 (Dependencies): ✅ Completed
+- Phase 3 (Build): 🚧 In progress (fixing vcpkg install errors)
 - Phase 4 (Tests): ⏳ Pending
 - Phase 5 (CI): ⏳ Pending
 - Phase 6 (Docs): ⏳ Pending

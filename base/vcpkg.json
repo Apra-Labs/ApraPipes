@@ -144,11 +144,13 @@
     },
     {
       "name": "re",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "libre only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "baresip",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "baresip only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "libmp4"
