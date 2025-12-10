@@ -79,7 +79,7 @@ jobs:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      CURL_HTTP_VERSION: HTTP/1.1  # Force HTTP/1.1 for ARM64 curl 7.58.0 HTTP/2 framing bug workaround
+      VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -125,7 +125,7 @@ jobs:
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
-      if: ${{ !inputs.force-cache-update }}
+      if: ${{ !inputs.is-selfhosted && !inputs.force-cache-update }}
       uses: actions/cache@v3
       with:
           path: |
@@ -135,7 +135,7 @@ jobs:
 
     - name: Force cache update - restore and delete old cache
       id: cache-force-restore
-      if: ${{ inputs.force-cache-update }}
+      if: ${{ !inputs.is-selfhosted && inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
           path: |
@@ -155,7 +155,7 @@ jobs:
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
     - name: Force cache update - save updated cache with newly-built packages
-      if: ${{ always() && inputs.force-cache-update }}
+      if: ${{ always() && !inputs.is-selfhosted && inputs.force-cache-update }}
       uses: actions/cache/save@v3
       with:
         path: |
