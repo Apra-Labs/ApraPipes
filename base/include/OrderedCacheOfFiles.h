@@ -60,8 +60,8 @@ public:
 	bool getPreviousAndNextFile(std::string videoPath, std::string& previousFile, std::string& nextFile);
 private:
 	bool lastKnownPlaybackDir = true; // sync with mp4 playback
-	boost::mutex m_mutex;
-	boost::shared_ptr<boost::thread> mThread = nullptr;
+	std::mutex m_mutex;
+	boost::shared_ptr<std::thread> mThread = nullptr;
 	int cacheSize = 1440;
 	int batchSize = 1440;
 	std::string rootDir = "";
