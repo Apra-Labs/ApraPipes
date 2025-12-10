@@ -86,6 +86,10 @@ jobs:
       CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
       CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
       CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8/bin/nvcc' || '' }}
+      # CUDA 11.8 requires GCC <= 11, but Ubuntu 24.04 has GCC 13 by default
+      CUDAHOSTCXX: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/g++-11' || '' }}
+      CC: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/gcc-11' || '' }}
+      CXX: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/g++-11' || '' }}
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
