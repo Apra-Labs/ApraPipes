@@ -83,10 +83,9 @@ Logger::~Logger()
 	mRunning = false;
 	std::cout << "Logger exiting..." <<std::endl;
 	try{
-		if (myThread.get_id()!=std::thread::id())// It is a real thread
+		if (myThread.joinable())// It is a real thread
 		{
 			mQue.setWake();
-			myThread.~thread(); // not the ideal way - thread exits before processing the queue
 			myThread.join();
 		}
 
