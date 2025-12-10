@@ -347,7 +347,7 @@ public:
 			{
 				// For speeds < 8x: Adjust FPS without frame dropping (slow-mo, 1x, 2x, 4x)
 				// All frames are read, but delivered at different rate
-				if (playbackSpeed < 8)
+				if (playbackSpeed < 4)
 				{
 					mProps.fps = mFPS * playbackSpeed;
 					LOG_INFO << "Playback speed changed to <" << playbackSpeed << "x>, FPS updated to <" << mProps.fps << ">";
@@ -355,9 +355,9 @@ public:
 					// This only updates FPS in the Module, avoiding video reinitialization
 					setMp4ReaderProps(mProps);
 				}
-				// For 8x, 16x, 32x: Use I-frame skipping mode
+				// For 4x, 8x, 16x, 32x: Use I-frame skipping mode
 				// GOP-based FPS adjustment + randomSeek in produceFrames
-				else if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				else if (playbackSpeed == 4  || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
 				{
 					auto gop = getGop();
 					if (gop)
@@ -698,7 +698,7 @@ public:
 					mProps.fps = propsFPS;
 					mFPS = propsFPS;
 				}
-				if (playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
+				if (playbackSpeed ==  4 || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32)
 				{
 					if (gop)
 					{
@@ -1823,7 +1823,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 		isMp4SeekFrame = false;
 		setMetadata();
 	}
-	if((playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
+	if((playbackSpeed == 4 || playbackSpeed == 8 || playbackSpeed == 16 || playbackSpeed == 32))
 	{
 		if(mDirection)
 		{

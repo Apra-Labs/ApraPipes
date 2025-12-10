@@ -87,7 +87,7 @@ public:
 
 	std::string skipDir = "./data/Mp4_videos";
 	std::string videoPath = "";
-	size_t biggerFrameSize = 600000;
+	size_t biggerFrameSize = 1000000;
 	size_t biggerMetadataFrameSize = 60000;
 	bool parseFS = true;
 	bool direction = true;
