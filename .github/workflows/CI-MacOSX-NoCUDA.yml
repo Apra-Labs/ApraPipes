@@ -34,7 +34,7 @@ jobs:
   macosx-nocuda-build-test:
     uses: ./.github/workflows/build-test-macosx.yml
     with:
-      runner: 'macos-13'
+      runner: 'macos-15-intel'
       flav: MacOSX
       cuda: 'OFF'
       is-selfhosted: false
