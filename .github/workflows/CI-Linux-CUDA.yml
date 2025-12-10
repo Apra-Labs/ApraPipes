@@ -28,11 +28,8 @@ jobs:
       flav: Linux-CudaT
       is-selfhosted: true
       cuda: 'ON'
-      # Use GCC-11 for ffmpeg 4.4.3 compatibility (GCC-12+ has inline assembly issues with ffmpeg 4.4.x)
-      prep-cmd: 'cmake --version && ninja --version && gcc-11 --version && g++-11 --version && git --version && pwsh --version'
-      prep-check-cmd: 'cmake --version ; ninja --version ; gcc-11 --version ; g++-11 --version ; git --version; pwsh --version'
-      bootstrap-cmd: 'export CC=/usr/bin/gcc-11 && export CXX=/usr/bin/g++-11 && ./vcpkg/bootstrap-vcpkg.sh'
-      cmake-conf-cmd: 'export CC=/usr/bin/gcc-11 && export CXX=/usr/bin/g++-11 && export CUDAHOSTCXX=/usr/bin/g++-11 && PATH=/usr/local/cuda/bin:$PATH cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-11 -DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-11 -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
+      # Uses ubuntu24-overlay for ffmpeg binutils 2.41+ compatibility patch
+      cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/ubuntu24-overlay && PATH=/usr/local/cuda/bin:$PATH cmake -B . -G Ninja -DENABLE_WINDOWS=OFF -DENABLE_LINUX=ON ../base'
       cache-path: './none'
       nProc: 20
   linux-cuda-publish:
