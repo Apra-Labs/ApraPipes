@@ -160,15 +160,20 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeOpenCV
       shell: pwsh
 
-    # - name: cache init on container build
-    #   if: ${{ job.container != null }} # we are running on a cloud hosted container... move the cache "initially"
-    #   run: |
-    #     cp -R /root/.cache /github/home/ || true
-    #     ls ${{ inputs.cache-path }} || true
-    #   continue-on-error: true
-
-    - name: Restore cache dependencies for fast cloud build
+    - name: Cache dependencies for fast cloud build
       id: cache-all
+      if: ${{ !inputs.force-cache-update }}
+      uses: actions/cache@v3
+      with:
+          path: |
+            ${{ inputs.cache-path }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: ${{ inputs.flav }}-
+
+    - name: Force cache update - restore and delete old cache
+      id: cache-force-restore
+      if: ${{ inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
           path: |
@@ -177,27 +182,8 @@ jobs:
           key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
-    - name: Force cache update - delete old cache using cache-matched-key output
-      if: ${{ inputs.force-cache-update && steps.cache-all.outputs.cache-matched-key != '' }}
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        echo "=== Force cache update requested ==="
-        echo ""
-
-        # Use the cache-matched-key output from the restore action
-        CACHE_KEY="${{ steps.cache-all.outputs.cache-matched-key }}"
-        echo "Cache key from restore action output: $CACHE_KEY"
-        echo "Cache key length: ${#CACHE_KEY}"
-        echo ""
-
-        echo "Listing existing caches for branch:"
-        gh cache list --limit 5 || echo "Failed to list caches"
-        echo ""
-
-        echo "Attempting to delete cache with key: $CACHE_KEY"
-        gh cache delete "$CACHE_KEY"
-        echo "=== Old cache deleted successfully, will build and save updated cache after CMake ==="
+    # Cache deletion removed - gh cache delete requires workflow-level permissions that are not available in reusable workflows
+    # To force cache updates: manually delete caches via GitHub UI or use workflow_dispatch with force-cache-update flag
 
     - name: Make build folder
       run: mkdir -p build
@@ -210,15 +196,6 @@ jobs:
 
     - name: Force cache update - save updated cache with newly-built packages
       if: ${{ always() && inputs.force-cache-update }}
-      uses: actions/cache/save@v3
-      with:
-        path: |
-          ${{ inputs.cache-path }}
-          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-
-    - name: Save cache on failure (smart devops)
-      if: ${{ failure() && steps.cache-all.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v3
       with:
         path: |
