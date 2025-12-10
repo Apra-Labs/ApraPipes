@@ -189,7 +189,7 @@ public:
   bool relay(boost::shared_ptr<Module> next, bool open, bool priority = false);
 
   virtual bool init();
-  void operator()(); // to support boost::thread
+  void operator()(); // to support std::thread
   virtual bool run();
   bool play(float speed, bool direction = true);
   bool play(bool play);
@@ -452,7 +452,7 @@ private:
   Kind myNature;
   string myName;
   string myId;
-  boost::thread myThread;
+  std::thread myThread;
   boost::shared_ptr<FrameContainerQueue> mQue;
   bool mRunning;
   uint32_t mStopCount;

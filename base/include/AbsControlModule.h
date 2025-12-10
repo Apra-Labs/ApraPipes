@@ -2,6 +2,7 @@
 #include "APCallback.h"
 #include "Command.h"
 #include "Module.h"
+#include <boost/smart_ptr/weak_ptr.hpp>
 #include <map>
 
 class PipeLine;

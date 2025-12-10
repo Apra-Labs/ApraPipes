@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(displayOnTop, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(switch_display, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -119,13 +119,13 @@ BOOST_AUTO_TEST_CASE(open_close_window, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 	sink->closeWindow();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	sink->createWindow(200,200);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();

@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(sample)
 	
 	
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 
 	for (auto i = 0; i < 3; i++)
 	{
