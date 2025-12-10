@@ -1,20 +1,19 @@
 name: CI-Linux-CUDA
 
 on:
-  # Temporarily disabled - workflow not yet working
-  # push:  # Trigger on push to any branch
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - '.claude/**'
-  #     - 'docs/**'
-  # pull_request:
-  #   branches: [ main ]
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - '.claude/**'
-  #     - 'docs/**'
+  push:  # Trigger on push to any branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
