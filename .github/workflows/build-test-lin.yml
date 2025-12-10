@@ -83,13 +83,10 @@ jobs:
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg  # Enable vcpkg binary caching for self-hosted runners
       # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
       # These must be at job level so they propagate to vcpkg subprocesses
+      # Empty values are harmless for these CUDA-specific variables
       CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
       CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
       CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8/bin/nvcc' || '' }}
-      # CUDA 11.8 requires GCC <= 11, but Ubuntu 24.04 has GCC 13 by default
-      CUDAHOSTCXX: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/g++-11' || '' }}
-      CC: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/gcc-11' || '' }}
-      CXX: ${{ contains(inputs.cuda, 'ON') && '/usr/bin/g++-11' || '' }}
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -135,6 +132,14 @@ jobs:
       working-directory: ${{github.workspace}}/base
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
+
+    - name: Set GCC-11 for CUDA 11.8 compatibility
+      if: ${{ contains(inputs.cuda,'ON') }}
+      run: |
+        # CUDA 11.8 requires GCC <= 11, but Ubuntu 24.04 has GCC 13 by default
+        echo "CC=/usr/bin/gcc-11" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-11" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-11" >> $GITHUB_ENV
 
     - name: Cache dependencies for fast cloud build
       id: cache-all
