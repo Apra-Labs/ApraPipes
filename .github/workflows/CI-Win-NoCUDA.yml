@@ -1,19 +1,20 @@
 name: CI-Win-NoCUDA
 
 on:
-  push:  # Trigger on push to any branch
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
-  pull_request:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
+  # Temporarily disabled while testing Linux CUDA workflow
+  # push:  # Trigger on push to any branch
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   workflow_dispatch:
     inputs:
       force-cache-update:
