@@ -87,7 +87,39 @@ grep -r "baresip" base/src base/include --include="*.cpp" --include="*.h" -i
 
 **Solution**: Changed vcpkg.json platform filter from `"!windows"` to `"linux"` for both `re` and `baresip`
 
-**Status**: ✅ Fixed, ready to retry configure
+**Status**: ✅ Fixed
+
+---
+
+### Issue #2: ffmpeg Missing nasm Assembler
+**Error**: `Could not find nasm. Please install it via your package manager: brew install nasm`
+
+**Root Cause**: ffmpeg requires nasm (Netwide Assembler) for x86 assembly optimizations, which wasn't installed on macOS.
+
+**Solution**: Installed nasm via Homebrew:
+```bash
+brew install nasm
+```
+
+**Status**: ✅ Fixed
+
+---
+
+### Issue #3: libmp4 Compilation Errors on macOS
+**Error**: Multiple compilation errors in `libmp4/src/mp4_demux.c`:
+1. Lines 121, 146, 162: `void function should not return a value [-Wreturn-mismatch]`
+2. Line 360: `type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]` (C++ `auto` keyword in C code)
+
+**Root Cause**: libmp4 source from Apra-Labs has C/C++ mixing issues:
+- Void functions `mp4_demux_toggle_playback`, `mp4_set_reader_pos_lastframe`, `mp4_set_reader_pos_firstframe` trying to `return -ENOENT;`
+- Using C++ `auto` keyword in C code: `for (auto i = 0; i < count; i++)`
+
+**Solution**: Created patch file `thirdparty/custom-overlay/libmp4/fix-macos-build.patch`:
+- Changed `return -ENOENT;` to `return;` in void functions (lines 121, 146, 162)
+- Changed `for (auto i = 0; ...)` to `for (int i = 0; ...)` (line 360)
+- Updated `portfile.cmake` to apply patch via `PATCHES` parameter
+
+**Status**: ✅ Fixed, ready to retry build
 
 ---
 
@@ -120,7 +152,7 @@ cmake --build build -j $(sysctl -n hw.ncpu)
 
 ### Homebrew Packages Needed
 ```bash
-brew install pkg-config autoconf automake libtool
+brew install pkg-config autoconf automake libtool nasm
 ```
 
 ### vcpkg Packages
