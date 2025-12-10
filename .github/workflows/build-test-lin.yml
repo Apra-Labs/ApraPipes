@@ -81,6 +81,11 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg  # Enable vcpkg binary caching for self-hosted runners
+      # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
+      # These must be at job level so they propagate to vcpkg subprocesses
+      CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
+      CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
+      CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8/bin/nvcc' || '' }}
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
