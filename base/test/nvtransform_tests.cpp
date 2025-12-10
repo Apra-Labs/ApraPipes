@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(crop, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(cropAndScale, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	p.stop();
 	p.term();
 	p.wait_for_all();

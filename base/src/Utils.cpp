@@ -37,7 +37,7 @@ void _SetThreadNameWIN(DWORD threadID, const char* threadName) {
 	{
 	}
 }
-void SetThreadNameWIN(boost::thread::id threadId, std::string threadName)
+void SetThreadNameWIN(std::thread::id threadId, std::string threadName)
 {
 	// convert string to char*
 	const char* cchar = threadName.c_str();
@@ -210,11 +210,15 @@ bool Utils::check_roi_bounds(cv::Rect& roi, int width, int height)
 	return true;
 }
 
-void Utils::setModuleThreadName(boost::thread& thread, std::string moduleID)
+void Utils::setModuleThreadName(std::thread& thread, std::string moduleID)
 {
 #ifdef _WIN64
 	SetThreadNameWIN((thread).get_id(), moduleID);
+#elif defined(MACOS)
+	// macOS pthread_setname_np only works on current thread
+	pthread_setname_np(moduleID.c_str());
 #else
+	// Linux pthread_setname_np takes thread handle and name
 	auto ptr = thread.native_handle();
 	pthread_setname_np(ptr, moduleID.c_str());
 #endif

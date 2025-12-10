@@ -223,7 +223,7 @@ void Test_Utils::sleep_for_seconds(unsigned short seconds)
 {
 	if (seconds <= 0) return;
 	LOG_INFO << " Sleeping for " << seconds << " seconds";
-	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
+	std::this_thread::sleep_for(std::chrono::seconds(seconds));
 	LOG_INFO << "Done sleeping for " << seconds << " seconds";
 }
 
