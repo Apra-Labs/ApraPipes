@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(encodepush, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
 
 	LOG_DEBUG << "STOPPING";
 

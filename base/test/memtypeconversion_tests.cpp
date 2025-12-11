@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Host_to_Dma, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(120));
+	std::this_thread::sleep_for(std::chrono::seconds(120));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_RGBA, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(Device_to_Dma_Planar, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device_Planar, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(20));
+	std::this_thread::sleep_for(std::chrono::seconds(20));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();

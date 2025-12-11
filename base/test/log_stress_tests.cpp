@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(sample)
 
 	p.init();
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 	p.stop();
 	p.term();
 
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(sample2)
 BOOST_AUTO_TEST_CASE(sample3)
 {
 	LOG_DEBUG << "HOLA SAMPLE3";
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

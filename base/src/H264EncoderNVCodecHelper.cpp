@@ -180,8 +180,8 @@ public:
 	uint32_t m_nBusyOutputBitstreams;
 
 public:
-	boost::condition m_wait_for_output;
-	boost::condition m_not_empty;
+	std::condition_variable m_wait_for_output;
+	std::condition_variable m_not_empty;
 	std::mutex m_mutex;
 
 public:	
@@ -295,7 +295,7 @@ public:
 		void* event=nullptr;
 		{
 			std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
-			m_nvcodecResources->m_not_empty.wait(lock, boost::bind(&Detail::is_not_empty, this));
+			m_nvcodecResources->m_not_empty.wait(lock, [this]() { return Detail::is_not_empty(this); });
 
 			m_nvcodecResources->m_mappedResources.push_back(mapInputResource.mappedResource);
 			m_nvcodecResources->m_mappedFrames.push_back(frame);
@@ -525,7 +525,7 @@ private:
 		 	NV_ENC_INPUT_PTR mappedResource;
 		 	{
 		 		std::unique_lock<std::mutex> lock(m_nvcodecResources->m_mutex);
-		 		m_nvcodecResources->m_wait_for_output.wait(lock, boost::bind(&Detail::is_output_available, this));
+		 		m_nvcodecResources->m_wait_for_output.wait(lock, [this]() { return Detail::is_output_available(this); });
 		 		if (!m_bRunning)
 		 		{
 		 			break;
