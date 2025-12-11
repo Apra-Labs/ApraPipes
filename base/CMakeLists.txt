@@ -183,6 +183,9 @@ ENDIF(ENABLE_CUDA)
 
 include_directories(AFTER SYSTEM include)
 
+add_subdirectory(../thirdparty/libfvad libfvad)
+include_directories(AFTER SYSTEM ../thirdparty/libfvad/include)
+
 # ApraPipes library
 
 SET(CORE_FILES
@@ -357,6 +360,7 @@ SET(IP_FILES
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
 	src/AudioToTextXForm.cpp 
+	src/VADTransform.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
 )
@@ -384,6 +388,7 @@ SET(IP_FILES_H
 	include/ColorConversionXForm.h
 	include/Overlay.h
 	include/AudioToTextXForm.h
+	include/VADTransform.h
 	include/ThumbnailListGenerator.h
 )
 
@@ -645,6 +650,7 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
+	test/vad_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
@@ -710,6 +716,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
+  fvad
   )
 
 IF(ENABLE_WINDOWS)
