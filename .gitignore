@@ -1,5 +1,6 @@
 _build*
 _debug*
+build/
 data/testOutput
 thirdparty/gst-build/gst-build-1.16
 base/vcpkg_installed
