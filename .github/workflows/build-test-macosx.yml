@@ -112,19 +112,9 @@ jobs:
       run: pwsh -File fix-vcpkg-json.ps1 -removeCUDA
       continue-on-error: true
 
-    - name: Cache dependencies for fast cloud build
-      id: cache-all
-      if: ${{ !inputs.is-selfhosted && !inputs.force-cache-update }}
-      uses: actions/cache@v3
-      with:
-          path: |
-            ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
-
-    - name: Force cache update - restore and delete old cache
-      id: cache-force-restore
-      if: ${{ !inputs.is-selfhosted && inputs.force-cache-update }}
+    - name: Restore vcpkg cache
+      id: cache-restore
+      if: ${{ !inputs.is-selfhosted }}
       uses: actions/cache/restore@v3
       with:
           path: |
@@ -140,8 +130,8 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
-    - name: Force cache update - save updated cache with newly-built packages
-      if: ${{ always() && !inputs.is-selfhosted && inputs.force-cache-update }}
+    - name: Save vcpkg cache (even if build fails later)
+      if: ${{ always() && !inputs.is-selfhosted }}
       uses: actions/cache/save@v3
       with:
         path: |
