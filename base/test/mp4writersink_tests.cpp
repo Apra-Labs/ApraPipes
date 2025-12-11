@@ -205,7 +205,7 @@ void read_write(std::string videoPath, std::string outPath, int width, int heigh
 	}
 	p->run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(8));
+	std::this_thread::sleep_for(std::chrono::seconds(8));
 
 	p->stop();
 	p->term();

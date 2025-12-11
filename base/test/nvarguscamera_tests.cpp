@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(basic, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(n_seconds));
+	std::this_thread::sleep_for(std::chrono::seconds(n_seconds));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(vcam_nv12, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(1000));
+	std::this_thread::sleep_for(std::chrono::seconds(1000));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(vcam_yuv420, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(vcam, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(encoder, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100));
+	std::this_thread::sleep_for(std::chrono::seconds(100));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(encoderrtsppush, *boost::unit_test::disabled())
 
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(100000));
+	std::this_thread::sleep_for(std::chrono::seconds(100000));
 	Logger::setLogLevel(boost::log::trivial::severity_level::error);
 
 	p.stop();

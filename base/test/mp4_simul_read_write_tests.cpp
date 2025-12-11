@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(basic)
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 4th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	//lastFrameTS = frame->timestamp;
 
 	// force sync with new frame
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 5th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(basic)
 			BOOST_TEST(frame->timestamp > lastFrameTS);
 			break;
 		}
-		boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+		std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	}
 	LOG_INFO << "frame after reInitInterval < " << frame->timestamp << ">";
 
@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE(basic)
 	w.termPipeline();
 	r.termPipeline();
 	boost::filesystem::remove_all(rootPath);
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 4th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	//lastFrameTS = frame->timestamp;
 
 	// force sync with new frame
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 5th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 			BOOST_TEST(frame->timestamp > lastFrameTS);
 			break;
 		}
-		boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+		std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	}
 	LOG_INFO << "frame after reInitInterval < " << frame->timestamp << ">";
 
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(basic_parseFS_disabled, *boost::unit_test::disabled())
 	w.termPipeline();
 	r.termPipeline();
 	boost::filesystem::remove_all(rootPath);
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 4th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -518,7 +518,7 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 		{
 			if (i == 9) // force sync all 10 frames in next step
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+				std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 			}
 			LOG_INFO << "===>Writing new frames after EOS <" << i+1 << ">";
 			w.fileReader->step();
@@ -532,7 +532,7 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 			r.mp4Reader->step();
 			if (!sinkQ->size())
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+				std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 				continue;
 			}
 			frame = r.sink->pop().begin()->second;
@@ -556,7 +556,7 @@ BOOST_AUTO_TEST_CASE(loop_no_chunking, *boost::unit_test::disabled())
 	w.termPipeline();
 	r.termPipeline();
 	boost::filesystem::remove_all(rootPath);
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	w.fileReader->step();
 	w.mp4WriterSink->step();
 
@@ -658,7 +658,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	{
 		if (i == 1)
 		{
-			boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+			std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 		}
 		w.fileReader->step();
 		w.mp4WriterSink->step();
@@ -684,7 +684,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 			BOOST_TEST(!frame->isEOS());
 			BOOST_TEST(frame->timestamp >= lowerLimitNewVideo);
 		}
-		boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+		std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	}
 
 	// now write and read for 10 frames
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	{
 		if (i == 9) // force sync all 10 frames in next step
 		{
-			boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+			std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 		}
 		LOG_INFO << "===>Writing new frames after EOS in new file <" << i + 1 << ">";
 		w.fileReader->step();
@@ -706,7 +706,7 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 		r.mp4Reader->step();
 		if (!sinkQ->size())
 		{
-			boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+			std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 			continue;
 		}
 		frame = r.sink->pop().begin()->second;
@@ -725,13 +725,13 @@ BOOST_AUTO_TEST_CASE(basic_chunking, *boost::unit_test::disabled())
 	}
 	LOG_INFO << "total Frames read in the new file after EOS<" << frameCount << ">";
 	BOOST_TEST(frameCount == 10);
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs+2));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs+2));
 
 	// test cleanup
 	w.termPipeline();
 	r.termPipeline();
 	boost::filesystem::remove_all(rootPath);
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_CASE(seek_in_wait_state)
@@ -755,7 +755,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 4th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -820,7 +820,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 			LOG_ERROR << "mp4Reader should be in waiting state.";
 			break;
 		}
-		boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+		std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	}
 
 	// seek in wait state
@@ -836,7 +836,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_state)
 	w.termPipeline();
 	r.termPipeline();
 	boost::filesystem::remove_all(rootPath);
-	boost::this_thread::sleep_for(boost::chrono::seconds(2));
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
@@ -860,7 +860,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 		w.mp4WriterSink->step();
 	}
 	// sync the mp4 with next step
-	boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+	std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	LOG_INFO << "WRITING 4th FRAME";
 	w.fileReader->step();
 	w.mp4WriterSink->step();
@@ -926,7 +926,7 @@ BOOST_AUTO_TEST_CASE(seek_in_wait_parseFS_disabled)
 			LOG_ERROR << "mp4Reader should be in waiting state.";
 			break;
 		}
-		boost::this_thread::sleep_for(boost::chrono::seconds(syncTimeInSecs));
+		std::this_thread::sleep_for(std::chrono::seconds(syncTimeInSecs));
 	}
 
 	// seek in wait state and read whole video again
@@ -1003,7 +1003,7 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 		}
 	}
 	LOG_INFO << "Waiting for first video";
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 	LOG_INFO << "Resuming.....";
 	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS, readFps);
@@ -1025,13 +1025,13 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 			LOG_ERROR << "**********************************************************************************";
 			if (type == MP4_MISSING_VIDEOTRACK)
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 				r.mp4Reader->randomSeek(lastFrameTS + 1);
 				continue;
 			}
 			else if (type == MP4_OPEN_FILE_FAILED)
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 				r.mp4Reader->randomSeek(lastFrameTS + 1);
 				continue;
 			}
@@ -1042,7 +1042,7 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 			while (!q->size())
 			{
 				LOG_INFO << "Waiting for more data on disk .....................";
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 				r.mp4Reader->step();
 				skipStep = true;
 			}
@@ -1060,7 +1060,7 @@ BOOST_AUTO_TEST_CASE(reader_only, *boost::unit_test::disabled())
 		}
 	}
 	LOG_INFO << "Total Frames Read <" << i << ">";
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(300));
+	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 // most important
@@ -1103,7 +1103,7 @@ BOOST_AUTO_TEST_CASE(ultimate)
 		}
 	}
 	LOG_INFO << "Waiting for first video";
-	boost::this_thread::sleep_for(boost::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 	LOG_INFO << "Resuming.....";
 	auto boostVideoTS = std::stoull(boost::filesystem::path(readPath).stem().string());
 	ReadPipeline r(readPath, reInitIntervalSecs, direction, parseFS, readFps);
@@ -1127,13 +1127,13 @@ BOOST_AUTO_TEST_CASE(ultimate)
 			LOG_ERROR << "**********************************************************************************";
 			if (type == MP4_MISSING_VIDEOTRACK)
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 				r.mp4Reader->randomSeek(lastFrameTS + 1);
 				continue;
 			}
 			else if (type == MP4_OPEN_FILE_FAILED)
 			{
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 				r.mp4Reader->randomSeek(lastFrameTS + 1);
 				continue;
 			}
@@ -1146,7 +1146,7 @@ BOOST_AUTO_TEST_CASE(ultimate)
 			{
 				auto queSize = q->size();
 				LOG_INFO << "Waiting for more data on disk .....................";
-				boost::this_thread::sleep_for(boost::chrono::seconds(1));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
  				r.mp4Reader->step();
 				skipStep = true;
 			}
@@ -1170,7 +1170,7 @@ BOOST_AUTO_TEST_CASE(ultimate)
 		}
 	}
 	LOG_INFO << "Total Frames Read <" << i << ">";
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(90));
+	std::this_thread::sleep_for(std::chrono::milliseconds(90));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

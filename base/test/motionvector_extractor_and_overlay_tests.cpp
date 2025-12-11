@@ -136,12 +136,12 @@ void motionVectorExtractAndOverlaySetProps(MotionVectorExtractorProps::MVExtract
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	MotionVectorExtractorProps propsChange(MvExtract, true);
 	motionExtractor->setProps(propsChange);
 
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -179,7 +179,7 @@ void motionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVExtractM
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
@@ -218,7 +218,7 @@ void rtspCamMotionVectorExtractAndOverlay_Render(MotionVectorExtractorProps::MVE
 	p.init();
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();

@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE(DMABUF_RGBA, *boost::unit_test::disabled())
 	p.appendModule(source);
 	BOOST_TEST(p.init());
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(4));
+	std::this_thread::sleep_for(std::chrono::seconds(4));
 	p.stop();
 	p.term();
 	p.wait_for_all();
