@@ -7,10 +7,12 @@ if ($removeCUDA.IsPresent)
 {
     $v.dependencies |
         Where-Object { $_.name -eq 'opencv4' } |
+        Where-Object { $null -ne $_.features } |
         ForEach-Object { $_.features = $_.features -ne 'cuda' -ne 'cudnn' }
-    
+
     $v.dependencies |
         Where-Object { $_.name -eq 'whisper' } |
+        Where-Object { $null -ne $_.features } |
         ForEach-Object { $_.features = $_.features -ne 'cuda' }
 }
 
