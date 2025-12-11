@@ -1,20 +1,12 @@
 name: CI-MacOSX-NoCUDA
 
 on:
-  push:  # Temporary: only trigger on feature branch for testing
-    branches:
-      - feat/ci-macos-nocuda
+  push:  # Trigger on push to any branch
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
       - '.claude/**'
       - 'docs/**'
-  # TODO: Before merging to main, change to:
-  # push:
-  #   paths-ignore: [same as above]
-  # pull_request:
-  #   branches: [ main ]
-  #   paths-ignore: [same as above]
   workflow_dispatch:
     inputs:
       force-cache-update:
