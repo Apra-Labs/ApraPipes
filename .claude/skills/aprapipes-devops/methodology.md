@@ -10,6 +10,25 @@
 
 ## Core Debugging Methodology
 
+### 0. CRITICAL FIRST STEP: Diff-Based Diagnosis
+**ALWAYS start debugging by comparing what worked vs what broke:**
+
+```bash
+# When a build fails on this branch but works on main:
+git diff main..HEAD -- path/to/suspect/file
+```
+
+**Mindset**: A DevOps engineer must ALWAYS think in terms of:
+- What was working? (main branch / last green build)
+- What diff broke it? (changes introduced in this branch)
+- NEVER debug in absolute context-less way
+
+**Example**: ARM64 build failing with "gdk-3.0 not found"
+- ❌ WRONG: Assume missing system dependencies, try to install packages
+- ✅ RIGHT: Check `git diff main -- base/CMakeLists.txt`, discover GDK3 checks moved before PKG_CONFIG_PATH setup
+
+This approach finds root cause in SECONDS instead of wasting hours chasing wrong solutions.
+
 ### 1. Detection & Deep Analysis
 When a previously-green workflow turns red:
 
@@ -19,6 +38,8 @@ When a previously-green workflow turns red:
    ```
 
 2. **Deep analysis BEFORE any fix attempts**
+   - **FIRST: Compare with working version** (`git diff main` + `git log`)
+   - Review commit messages - they contain root cause analysis from previous bot generations
    - Identify exact error message and stack trace
    - Understand what changed (compare with last green build)
    - Search logs for ALL related errors (not just first failure)
@@ -54,12 +75,27 @@ When testing fixes in GitHub Actions:
      workflow_dispatch:
    ```
 
-4. **Monitor actively** (don't wait for completion)
+4. **CRITICAL: Trigger Builds Correctly**
+   - **ALWAYS use `gh workflow run <workflow.yml>` to manually trigger workflows**
+   - **NEVER create empty commits just to trigger builds**
+   - Before committing, check workflow triggers in the .yml file:
+     - Look for `on: push:` and `paths-ignore:` configuration
+     - If you know a genuine code change won't trigger the workflow, use `gh workflow run`
+     - Example: Empty commits or changes matching `paths-ignore` won't trigger workflows
+   ```bash
+   # ✅ CORRECT: Manual trigger
+   gh workflow run CI-MacOSX-NoCUDA.yml --ref feat/ci-macos-new
+
+   # ❌ WRONG: Empty commit to trigger build
+   git commit --allow-empty -m "ci: trigger build"
+   ```
+
+5. **Monitor actively** (don't wait for completion)
    - Use monitoring scripts
    - SSH to self-hosted runners to check progress
    - Cancel immediately if same error appears
 
-5. **Use Fast-Fail Testing for vcpkg/baseline issues**
+6. **Use Fast-Fail Testing for vcpkg/baseline issues**
    - Test with minimal dependencies (5-10 min vs 60 min)
    - Saves precious CI build minutes
    - Iterate quickly on fixes before full builds
