@@ -1,6 +1,6 @@
 name: CI-Linux-CUDA
 
-on_disabled:
+on:
   push:  # Trigger on push to any branch
     paths-ignore:
       - '**.md'

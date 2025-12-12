@@ -1,6 +1,6 @@
 name: CI-MacOSX-NoCUDA
 
-on_disabled:
+on:
   push:  # Trigger on push to any branch
     paths-ignore:
       - '**.md'
