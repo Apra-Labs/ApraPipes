@@ -1,6 +1,6 @@
 name: CI-Linux-CUDA-Docker
 
-on:
+on_disabled:
   push:  # Trigger on push to any branch
     paths-ignore:
       - '**.md'
