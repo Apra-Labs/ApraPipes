@@ -50,7 +50,7 @@ on:
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ '~/.cache/vcpkg/archives' }}
+        default: ''
         required: false
       cmake-conf-cmd:
         type: string
@@ -118,7 +118,7 @@ jobs:
       uses: actions/cache/restore@v3
       with:
           path: |
-            ${{ inputs.cache-path }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
           key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
@@ -135,7 +135,7 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          ${{ inputs.cache-path }}
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
         key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
