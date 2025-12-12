@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "$comment": "Cache bust: libarchive 3.5.2 fix - 2025-12-08",
+  "$comment": "Cache bust: libjpeg-turbo 2.1.5.1 downgrade - 2025-12-12",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
   "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
@@ -36,7 +36,7 @@
     },
     {
       "name": "libjpeg-turbo",
-      "version": "3.0.4"
+      "version": "2.1.5.1"
     }
   ],
   "dependencies": [
