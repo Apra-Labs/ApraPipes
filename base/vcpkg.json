@@ -33,6 +33,10 @@
     {
       "name": "nu-book-zxing-cpp",
       "version": "2.2.1"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "version": "3.0.4"
     }
   ],
   "dependencies": [
