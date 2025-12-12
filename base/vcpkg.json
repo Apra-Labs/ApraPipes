@@ -24,7 +24,7 @@
     {
       "name": "opencv4",
       "version": "4.10.0",
-      "port-version": 6
+      "port-version": 7
     },
     {
       "name": "openal-soft",
