@@ -119,7 +119,7 @@ jobs:
       with:
           path: |
             ${{ inputs.cache-path }}
-          key:  ${{ inputs.flav }}-6-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: ${{ inputs.flav }}-
 
     - name: Make build folder
@@ -136,7 +136,7 @@ jobs:
       with:
         path: |
           ${{ inputs.cache-path }}
-        key: ${{ inputs.flav }}-6-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
