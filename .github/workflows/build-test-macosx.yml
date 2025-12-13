@@ -78,7 +78,6 @@ jobs:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
       VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/.cache/vcpkg,readwrite'
     runs-on: ${{ inputs.runner }}
