@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "FrameContainerQueue.h"
 #include "Overlay.h"
+#include "MetadataRegistry.h"
 
 OverlayModule::OverlayModule(OverlayModuleProps _props) : Module(TRANSFORM, "OverlayModule", _props) {}
 
@@ -27,14 +28,31 @@ bool OverlayModule::term()
 
 bool OverlayModule::validateInputPins()
 {
-	pair<string, framemetadata_sp> me; // map element	
+	pair<string, framemetadata_sp> me; // map element
 	auto inputMetadataByPin = getInputMetadata();
 	BOOST_FOREACH(me, inputMetadataByPin)
 	{
 		FrameMetadata::FrameType frameType = me.second->getFrameType();
-		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::OVERLAY_INFO_IMAGE)
+		// Check if frame type is directly compatible or can be auto-converted
+		bool isCompatible = (frameType == FrameMetadata::RAW_IMAGE ||
+		                     frameType == FrameMetadata::OVERLAY_INFO_IMAGE);
+
+		if (!isCompatible)
 		{
-			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR OVERLAY_INFO_IMAGE. Actual<" << frameType << ">";
+			// Check if MetadataRegistry can convert to OVERLAY_INFO_IMAGE
+			auto& registry = MetadataRegistry::getInstance();
+			isCompatible = registry.areCompatible(frameType, FrameMetadata::OVERLAY_INFO_IMAGE);
+
+			if (isCompatible)
+			{
+				LOG_INFO << "<" << getId() << ">::validateInputPins Auto-conversion available from "
+				         << frameType << " to OVERLAY_INFO_IMAGE";
+			}
+		}
+
+		if (!isCompatible)
+		{
+			LOG_ERROR << "<" << getId() << ">::validateInputPins input frameType is expected to be RAW_IMAGE OR OVERLAY_INFO_IMAGE (or convertible). Actual<" << frameType << ">";
 			return false;
 		}
 	}

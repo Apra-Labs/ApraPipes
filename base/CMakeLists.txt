@@ -21,7 +21,7 @@ ENDIF(ENABLE_LINUX)
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
 	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
-	set(VCPKG_PLATFORM_TOOLSET "v143" CACHE STRING "v143" FORCE)
+	set(VCPKG_PLATFORM_TOOLSET "v142" CACHE STRING "v142" FORCE)
 ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_ARM64)
@@ -38,6 +38,11 @@ add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>)
 
 set(CMAKE_CXX_STANDARD 17)
 
+IF(ENABLE_CUDA)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 17)
+ENDIF()
+
 project(APRAPIPES)
 
 message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
@@ -45,6 +50,10 @@ message(STATUS $ENV{PKG_CONFIG_PATH}">>>>>> PKG_CONFIG_PATH")
 find_package(PkgConfig REQUIRED)
 find_package(Boost COMPONENTS system thread filesystem serialization log chrono unit_test_framework REQUIRED)
 find_package(JPEG REQUIRED)
+
+# Add custom cmake modules directory for FindCUDA.cmake compatibility
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -355,13 +364,17 @@ SET(IP_FILES
 	src/Overlay.cpp
 	src/OverlayFactory.h
 	src/OverlayFactory.cpp
+	src/ApraFaceInfo.cpp
 	src/TestSignalGeneratorSrc.cpp
-	src/AudioToTextXForm.cpp 
+	src/AudioToTextXForm.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
+	src/MetadataRegistry.cpp
+	src/MetadataRegistryInit.cpp
 )
 	
 SET(IP_FILES_H
+	include/IMetadataConvertible.h
 	include/HistogramOverlay.h
 	include/CalcHistogramCV.h
 	include/ApraPoint2f.h
@@ -385,6 +398,7 @@ SET(IP_FILES_H
 	include/Overlay.h
 	include/AudioToTextXForm.h
 	include/ThumbnailListGenerator.h
+	include/MetadataRegistry.h
 )
 
 SET(CUDA_CORE_FILES

@@ -5,3 +5,9 @@ thirdparty/gst-build/gst-build-1.16
 base/vcpkg_installed
 base/vcpkg.json
 CI_test_result*.xml
+
+# Sample executables and build artifacts
+samples/**/build/
+samples/**/*.exe
+samples/**/*.out
+samples/**/data/output/

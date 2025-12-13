@@ -15,6 +15,7 @@
 #include "BufferMaker.h"
 #include "PaceMaker.h"
 #include "PausePlayMetadata.h"
+#include "MetadataRegistry.h"
 
 // makes frames from this module's frame factory
 Module::FFBufferMaker::FFBufferMaker(Module &module) : myModule(module) {}
@@ -780,7 +781,40 @@ bool Module::send(frame_container &frames, bool forceBlockingPush)
         // pinId not found
         continue;
       }
-      requiredPins.insert(make_pair(pinId, frames[pinId])); // only required pins map is created
+
+      auto frame = frames[pinId];
+      auto sourceType = frame->getMetadata()->getFrameType();
+
+      // Check if next module expects a different metadata type
+      auto nextModule = mModules[nextModuleId];
+      auto nextInputMetadata = nextModule->mInputPinIdMetadataMap[pinId];
+      if (nextInputMetadata)
+      {
+        auto targetType = nextInputMetadata->getFrameType();
+
+        // Auto-convert if types don't match
+        if (sourceType != targetType)
+        {
+          auto& registry = MetadataRegistry::getInstance();
+          if (registry.areCompatible(sourceType, targetType))
+          {
+            LOG_DEBUG << "Auto-converting frame from " << sourceType
+                      << " to " << targetType << " for module " << nextModuleId;
+            auto convertedFrame = registry.convertFrame(frame, targetType);
+            if (convertedFrame)
+            {
+              frame = convertedFrame;
+            }
+            else
+            {
+              LOG_ERROR << "Failed to convert frame from " << sourceType
+                        << " to " << targetType;
+            }
+          }
+        }
+      }
+
+      requiredPins.insert(make_pair(pinId, frame)); // only required pins map is created
     }
 
     if (requiredPins.size() == 0)
