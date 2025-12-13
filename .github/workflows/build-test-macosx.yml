@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'brew install nasm yasm ninja cmake pkg-config automake autoconf autoconf-archive libtool dos2unix gperf bison python3 || true'
+        default: 'echo "/opt/homebrew/bin:/usr/local/bin" >> $GITHUB_PATH && brew install nasm yasm ninja cmake pkg-config automake autoconf autoconf-archive libtool dos2unix gperf bison python3 || true'
         required: false
       prep-check-cmd:
         type: string
