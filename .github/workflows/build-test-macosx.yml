@@ -79,7 +79,7 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -112,15 +112,15 @@ jobs:
       run: pwsh -File fix-vcpkg-json.ps1 -removeCUDA
       continue-on-error: true
 
-    - name: Restore vcpkg cache
+    - name: Restore vcpkg cache (TEMP - fixed key for testing)
       id: cache-restore
       if: ${{ !inputs.is-selfhosted }}
       uses: actions/cache/restore@v3
       with:
           path: |
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
-          key:  ${{ inputs.flav }}-5-${{ hashFiles( 'base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+          key:  MacOSX-TEMP
+          restore-keys: MacOSX-TEMP
 
     - name: Make build folder
       run: mkdir -p build
@@ -130,13 +130,13 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
-    - name: Save vcpkg cache (even if build fails later)
+    - name: Save vcpkg cache (TEMP - fixed key, always saves)
       if: ${{ always() && !inputs.is-selfhosted }}
       uses: actions/cache/save@v3
       with:
         path: |
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
-        key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: MacOSX-TEMP
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
