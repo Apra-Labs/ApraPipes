@@ -80,6 +80,7 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
+      VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/.cache/vcpkg,readwrite'
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
@@ -118,7 +119,7 @@ jobs:
       uses: actions/cache/restore@v3
       with:
           path: |
-            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key:  MacOSX-TEMP
           restore-keys: MacOSX-TEMP
 
@@ -135,7 +136,7 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: |
-          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}/archives
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
         key: MacOSX-TEMP
 
     - name: Build
