@@ -81,6 +81,7 @@ jobs:
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
       VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/.cache/vcpkg,readwrite'
+      X_VCPKG_REGISTRIES_CACHE: ${{ github.workspace }}/.cache/vcpkg/registries
     runs-on: ${{ inputs.runner }}
     steps:
     - name: Prepare builder
