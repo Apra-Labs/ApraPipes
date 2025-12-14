@@ -17,7 +17,7 @@ on:
 
 jobs:
   test-opencv-cuda-minimal:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Use 22.04 for GCC 11 (CUDA 11.8 compatible)
 
     steps:
       - name: Install CUDA Toolkit
