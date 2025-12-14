@@ -50,7 +50,7 @@ jobs:
               {
                 "name": "opencv4",
                 "default-features": false,
-                "features": ["core", "cuda"]
+                "features": ["cuda"]
               }
             ]
           }
