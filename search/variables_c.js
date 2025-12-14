@@ -31,7 +31,7 @@ var searchData=
   ['list_28',['list',['../classApraPool.html#aa3191e02b20c2cc31d31c478bb5217e3',1,'ApraPool']]],
   ['loc_29',['loc',['../structprogram.html#ad01e0560db45a938e54addb17306c130',1,'program']]],
   ['locked_30',['locked',['../classApraData.html#a7cd76e1ac73bf5d87f83f4ec701b9b67',1,'ApraData']]],
-  ['logger_5fmutex_31',['logger_mutex',['../classLogger.html#aa640461ef0fcbe30a615ee3729f1c5fe',1,'Logger']]],
+  ['logger_5fmutex_31',['logger_mutex',['../classLogger.html#ad1fdb7f70b99b9ccecdf6d97ed5b7ca8',1,'Logger']]],
   ['loghealth_32',['logHealth',['../classModuleProps.html#af86595a57f059dd3c08121655485eccc',1,'ModuleProps']]],
   ['loghealthfrequency_33',['logHealthFrequency',['../classModuleProps.html#a5e6edbce2ed861d6b7ff68ea1f8c0075',1,'ModuleProps']]],
   ['loglevel_34',['logLevel',['../classLoggerProps.html#abc6044d40cb732c8508116a872055a39',1,'LoggerProps']]],

@@ -159,12 +159,12 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a7213681fd02da56d8f2aa248f47bc2e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cd39887e5a76c0f7575b84b2b5c0d66" id="r_a5cd39887e5a76c0f7575b84b2b5c0d66"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5cd39887e5a76c0f7575b84b2b5c0d66">m_nBusyOutputBitstreams</a></td></tr>
 <tr class="separator:a5cd39887e5a76c0f7575b84b2b5c0d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa401b681fb7aa4504224b4ea3a429e40" id="r_aa401b681fb7aa4504224b4ea3a429e40"><td class="memItemLeft" align="right" valign="top">boost::condition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa401b681fb7aa4504224b4ea3a429e40">m_wait_for_output</a></td></tr>
-<tr class="separator:aa401b681fb7aa4504224b4ea3a429e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41140e40c774e383195fc5633b04bf0a" id="r_a41140e40c774e383195fc5633b04bf0a"><td class="memItemLeft" align="right" valign="top">boost::condition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41140e40c774e383195fc5633b04bf0a">m_not_empty</a></td></tr>
-<tr class="separator:a41140e40c774e383195fc5633b04bf0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7f8d1e306c7e8eac24d17ddc16a9dc0" id="r_aa7f8d1e306c7e8eac24d17ddc16a9dc0"><td class="memItemLeft" align="right" valign="top">boost::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7f8d1e306c7e8eac24d17ddc16a9dc0">m_mutex</a></td></tr>
-<tr class="separator:aa7f8d1e306c7e8eac24d17ddc16a9dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac69267aff31bf39c883bf44bb62c0ff7" id="r_ac69267aff31bf39c883bf44bb62c0ff7"><td class="memItemLeft" align="right" valign="top">std::condition_variable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac69267aff31bf39c883bf44bb62c0ff7">m_wait_for_output</a></td></tr>
+<tr class="separator:ac69267aff31bf39c883bf44bb62c0ff7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad306cc5c96e3e327e2b0673f2f8764db" id="r_ad306cc5c96e3e327e2b0673f2f8764db"><td class="memItemLeft" align="right" valign="top">std::condition_variable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad306cc5c96e3e327e2b0673f2f8764db">m_not_empty</a></td></tr>
+<tr class="separator:ad306cc5c96e3e327e2b0673f2f8764db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25673268faeedbaf2df933851a0e3b4e" id="r_a25673268faeedbaf2df933851a0e3b4e"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25673268faeedbaf2df933851a0e3b4e">m_mutex</a></td></tr>
+<tr class="separator:a25673268faeedbaf2df933851a0e3b4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a950701e031235e4bbf5c2cfbb25c4cc4" id="r_a950701e031235e4bbf5c2cfbb25c4cc4"><td class="memItemLeft" align="right" valign="top">boost::object_pool&lt; <a class="el" href="classExtFrame.html">ExtFrame</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a950701e031235e4bbf5c2cfbb25c4cc4">frame_opool</a></td></tr>
 <tr class="separator:a950701e031235e4bbf5c2cfbb25c4cc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -445,14 +445,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="aa7f8d1e306c7e8eac24d17ddc16a9dc0" name="aa7f8d1e306c7e8eac24d17ddc16a9dc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7f8d1e306c7e8eac24d17ddc16a9dc0">&#9670;&#160;</a></span>m_mutex</h2>
+<a id="a25673268faeedbaf2df933851a0e3b4e" name="a25673268faeedbaf2df933851a0e3b4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25673268faeedbaf2df933851a0e3b4e">&#9670;&#160;</a></span>m_mutex</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">boost::mutex NVCodecResources::m_mutex</td>
+          <td class="memname">std::mutex NVCodecResources::m_mutex</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -487,14 +487,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a41140e40c774e383195fc5633b04bf0a" name="a41140e40c774e383195fc5633b04bf0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a41140e40c774e383195fc5633b04bf0a">&#9670;&#160;</a></span>m_not_empty</h2>
+<a id="ad306cc5c96e3e327e2b0673f2f8764db" name="ad306cc5c96e3e327e2b0673f2f8764db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad306cc5c96e3e327e2b0673f2f8764db">&#9670;&#160;</a></span>m_not_empty</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">boost::condition NVCodecResources::m_not_empty</td>
+          <td class="memname">std::condition_variable NVCodecResources::m_not_empty</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -571,14 +571,14 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="aa401b681fb7aa4504224b4ea3a429e40" name="aa401b681fb7aa4504224b4ea3a429e40"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa401b681fb7aa4504224b4ea3a429e40">&#9670;&#160;</a></span>m_wait_for_output</h2>
+<a id="ac69267aff31bf39c883bf44bb62c0ff7" name="ac69267aff31bf39c883bf44bb62c0ff7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac69267aff31bf39c883bf44bb62c0ff7">&#9670;&#160;</a></span>m_wait_for_output</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">boost::condition NVCodecResources::m_wait_for_output</td>
+          <td class="memname">std::condition_variable NVCodecResources::m_wait_for_output</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -607,7 +607,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classNVCodecResources.html">NVCodecResources</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 2538d6f</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 1ada3a5</a></li>
     </ul>
   </div>
   </body>

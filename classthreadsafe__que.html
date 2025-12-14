@@ -133,8 +133,8 @@ Public Types</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2be54db1f29830ea92a5f1f4c02e0d7f" id="r_a2be54db1f29830ea92a5f1f4c02e0d7f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2be54db1f29830ea92a5f1f4c02e0d7f">threadsafe_que</a> ()</td></tr>
 <tr class="separator:a2be54db1f29830ea92a5f1f4c02e0d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d2df554bfbb2b243b7df19f020d1953" id="r_a7d2df554bfbb2b243b7df19f020d1953"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d2df554bfbb2b243b7df19f020d1953">push</a> (typename boost::call_traits&lt; <a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a> &gt;::param_type item)</td></tr>
-<tr class="separator:a7d2df554bfbb2b243b7df19f020d1953"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aee4fa7dc0cf85f16f27aadebd7cc7c" id="r_a3aee4fa7dc0cf85f16f27aadebd7cc7c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3aee4fa7dc0cf85f16f27aadebd7cc7c">push</a> (const <a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a> &amp;item)</td></tr>
+<tr class="separator:a3aee4fa7dc0cf85f16f27aadebd7cc7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cf0cfc2c88de6b951c2c4a9849726af" id="r_a4cf0cfc2c88de6b951c2c4a9849726af"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4cf0cfc2c88de6b951c2c4a9849726af">try_pop</a> ()</td></tr>
 <tr class="separator:a4cf0cfc2c88de6b951c2c4a9849726af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f4b27e5e809982a326dfb0f21b58e4" id="r_a28f4b27e5e809982a326dfb0f21b58e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28f4b27e5e809982a326dfb0f21b58e4">pop</a> ()</td></tr>
@@ -167,10 +167,10 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a592160aa35e13c125d5987ace6a1c73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c5acb4291b3586922b578e260f5c06c" id="r_a4c5acb4291b3586922b578e260f5c06c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ae21c802eb5488e80fdb9dffc8b23f428">container_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c5acb4291b3586922b578e260f5c06c">m_container</a></td></tr>
 <tr class="separator:a4c5acb4291b3586922b578e260f5c06c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5564b5b1831173eb8bb6bb28df50cbfc" id="r_a5564b5b1831173eb8bb6bb28df50cbfc"><td class="memItemLeft" align="right" valign="top">boost::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5564b5b1831173eb8bb6bb28df50cbfc">m_mutex</a></td></tr>
-<tr class="separator:a5564b5b1831173eb8bb6bb28df50cbfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a7a9b852d156efadebfabb9a6c860dd" id="r_a8a7a9b852d156efadebfabb9a6c860dd"><td class="memItemLeft" align="right" valign="top">boost::condition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a7a9b852d156efadebfabb9a6c860dd">m_not_empty</a></td></tr>
-<tr class="separator:a8a7a9b852d156efadebfabb9a6c860dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1119158724a5a26ae8b5276d46dfc8de" id="r_a1119158724a5a26ae8b5276d46dfc8de"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1119158724a5a26ae8b5276d46dfc8de">m_mutex</a></td></tr>
+<tr class="separator:a1119158724a5a26ae8b5276d46dfc8de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a760f5ac840dd295a4b7bd93033e00033" id="r_a760f5ac840dd295a4b7bd93033e00033"><td class="memItemLeft" align="right" valign="top">std::condition_variable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a760f5ac840dd295a4b7bd93033e00033">m_not_empty</a></td></tr>
+<tr class="separator:a760f5ac840dd295a4b7bd93033e00033"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ae21c802eb5488e80fdb9dffc8b23f428" name="ae21c802eb5488e80fdb9dffc8b23f428"></a>
@@ -343,15 +343,17 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classthreadsafe__que_a6740da1a544f23159365e68502357c68_icgraph.png" border="0" usemap="#aclassthreadsafe__que_a6740da1a544f23159365e68502357c68_icgraph" alt=""/></div>
 <map name="aclassthreadsafe__que_a6740da1a544f23159365e68502357c68_icgraph" id="aclassthreadsafe__que_a6740da1a544f23159365e68502357c68_icgraph">
-<area shape="rect" title=" " alt="" coords="515,27,642,68"/>
-<area shape="rect" href="classthreadsafe__que.html#a4cf0cfc2c88de6b951c2c4a9849726af" title=" " alt="" coords="309,5,467,31"/>
-<area shape="poly" title=" " alt="" coords="499,38,467,33,468,28,500,33"/>
-<area shape="rect" href="classthreadsafe__que.html#a196318372f689e04308b87929e223c04" title=" " alt="" coords="323,55,453,96"/>
-<area shape="poly" title=" " alt="" coords="500,62,454,69,453,63,499,56"/>
-<area shape="rect" href="classLogger.html#acfbb1d933c59c247eeaca6b0cb993b56" title=" " alt="" coords="176,63,261,88"/>
-<area shape="poly" title=" " alt="" coords="307,78,261,78,261,73,307,73"/>
-<area shape="rect" href="classLogger.html#a0374fdd87504c0f6740938ced0837a03" title=" " alt="" coords="5,63,128,88"/>
-<area shape="poly" title=" " alt="" coords="160,78,128,78,128,73,160,73"/>
+<area shape="rect" title=" " alt="" coords="515,47,642,88"/>
+<area shape="rect" href="classthreadsafe__que.html#a28f4b27e5e809982a326dfb0f21b58e4" title=" " alt="" coords="320,5,457,31"/>
+<area shape="poly" title=" " alt="" coords="500,50,440,34,441,29,501,45"/>
+<area shape="rect" href="classthreadsafe__que.html#a4cf0cfc2c88de6b951c2c4a9849726af" title=" " alt="" coords="309,55,467,80"/>
+<area shape="poly" title=" " alt="" coords="499,70,467,70,467,65,499,65"/>
+<area shape="rect" href="classthreadsafe__que.html#a196318372f689e04308b87929e223c04" title=" " alt="" coords="323,104,453,145"/>
+<area shape="poly" title=" " alt="" coords="501,94,454,108,453,103,499,88"/>
+<area shape="rect" href="classLogger.html#acfbb1d933c59c247eeaca6b0cb993b56" title=" " alt="" coords="176,112,261,138"/>
+<area shape="poly" title=" " alt="" coords="307,128,261,128,261,122,307,122"/>
+<area shape="rect" href="classLogger.html#a0374fdd87504c0f6740938ced0837a03" title=" " alt="" coords="5,112,128,138"/>
+<area shape="poly" title=" " alt="" coords="160,128,128,128,128,122,160,122"/>
 </map>
 </div>
 
@@ -381,6 +383,20 @@ template&lt;class T &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classthreadsafe__que_a6df97622458752bd18cf4bae24e59381_icgraph.png" border="0" usemap="#aclassthreadsafe__que_a6df97622458752bd18cf4bae24e59381_icgraph" alt=""/></div>
+<map name="aclassthreadsafe__que_a6df97622458752bd18cf4bae24e59381_icgraph" id="aclassthreadsafe__que_a6df97622458752bd18cf4bae24e59381_icgraph">
+<area shape="rect" title=" " alt="" coords="487,5,628,46"/>
+<area shape="rect" href="classthreadsafe__que.html#a196318372f689e04308b87929e223c04" title=" " alt="" coords="309,5,439,46"/>
+<area shape="poly" title=" " alt="" coords="472,28,440,28,440,23,472,23"/>
+<area shape="rect" href="classLogger.html#acfbb1d933c59c247eeaca6b0cb993b56" title=" " alt="" coords="176,13,261,38"/>
+<area shape="poly" title=" " alt="" coords="294,28,261,28,261,23,294,23"/>
+<area shape="rect" href="classLogger.html#a0374fdd87504c0f6740938ced0837a03" title=" " alt="" coords="5,13,128,38"/>
+<area shape="poly" title=" " alt="" coords="160,28,128,28,128,23,160,23"/>
+</map>
+</div>
 
 </div>
 </div>
@@ -435,11 +451,21 @@ template&lt;class T &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classthreadsafe__que_a28f4b27e5e809982a326dfb0f21b58e4_cgraph.png" border="0" usemap="#aclassthreadsafe__que_a28f4b27e5e809982a326dfb0f21b58e4_cgraph" alt=""/></div>
+<map name="aclassthreadsafe__que_a28f4b27e5e809982a326dfb0f21b58e4_cgraph" id="aclassthreadsafe__que_a28f4b27e5e809982a326dfb0f21b58e4_cgraph">
+<area shape="rect" title=" " alt="" coords="5,13,143,38"/>
+<area shape="rect" href="classthreadsafe__que.html#a6740da1a544f23159365e68502357c68" title=" " alt="" coords="191,5,317,46"/>
+<area shape="poly" title=" " alt="" coords="143,23,175,23,175,28,143,28"/>
+</map>
+</div>
 
 </div>
 </div>
-<a id="a7d2df554bfbb2b243b7df19f020d1953" name="a7d2df554bfbb2b243b7df19f020d1953"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d2df554bfbb2b243b7df19f020d1953">&#9670;&#160;</a></span>push()</h2>
+<a id="a3aee4fa7dc0cf85f16f27aadebd7cc7c" name="a3aee4fa7dc0cf85f16f27aadebd7cc7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aee4fa7dc0cf85f16f27aadebd7cc7c">&#9670;&#160;</a></span>push()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -452,7 +478,7 @@ template&lt;class T &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classthreadsafe__que.html">threadsafe_que</a>&lt; T &gt;::push </td>
           <td>(</td>
-          <td class="paramtype">typename boost::call_traits&lt; <a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a> &gt;::param_type</td>          <td class="paramname"><span class="paramname"><em>item</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="#a1a46a2262d0af8f82e3c11ad06e4df84">value_type</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>item</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -465,8 +491,8 @@ template&lt;class T &gt; </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classthreadsafe__que_a7d2df554bfbb2b243b7df19f020d1953_icgraph.png" border="0" usemap="#aclassthreadsafe__que_a7d2df554bfbb2b243b7df19f020d1953_icgraph" alt=""/></div>
-<map name="aclassthreadsafe__que_a7d2df554bfbb2b243b7df19f020d1953_icgraph" id="aclassthreadsafe__que_a7d2df554bfbb2b243b7df19f020d1953_icgraph">
+<div class="center"><img src="classthreadsafe__que_a3aee4fa7dc0cf85f16f27aadebd7cc7c_icgraph.png" border="0" usemap="#aclassthreadsafe__que_a3aee4fa7dc0cf85f16f27aadebd7cc7c_icgraph" alt=""/></div>
+<map name="aclassthreadsafe__que_a3aee4fa7dc0cf85f16f27aadebd7cc7c_icgraph" id="aclassthreadsafe__que_a3aee4fa7dc0cf85f16f27aadebd7cc7c_icgraph">
 <area shape="rect" title=" " alt="" coords="149,5,293,31"/>
 <area shape="rect" href="classLogger.html#a58790d3fb83bd78e27074d53bf9db41f" title=" " alt="" coords="5,5,101,31"/>
 <area shape="poly" title=" " alt="" coords="133,21,101,21,101,16,133,16"/>
@@ -617,9 +643,11 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classthreadsafe__que_a196318372f689e04308b87929e223c04_cgraph.png" border="0" usemap="#aclassthreadsafe__que_a196318372f689e04308b87929e223c04_cgraph" alt=""/></div>
 <map name="aclassthreadsafe__que_a196318372f689e04308b87929e223c04_cgraph" id="aclassthreadsafe__que_a196318372f689e04308b87929e223c04_cgraph">
-<area shape="rect" title=" " alt="" coords="5,5,136,46"/>
-<area shape="rect" href="classthreadsafe__que.html#a6740da1a544f23159365e68502357c68" title=" " alt="" coords="184,5,310,46"/>
-<area shape="poly" title=" " alt="" coords="136,23,168,23,168,28,136,28"/>
+<area shape="rect" title=" " alt="" coords="5,39,136,79"/>
+<area shape="rect" href="classthreadsafe__que.html#a6740da1a544f23159365e68502357c68" title=" " alt="" coords="191,5,317,46"/>
+<area shape="poly" title=" " alt="" coords="136,45,175,37,176,42,137,50"/>
+<area shape="rect" href="classthreadsafe__que.html#a6df97622458752bd18cf4bae24e59381" title=" " alt="" coords="184,71,324,111"/>
+<area shape="poly" title=" " alt="" coords="137,68,169,74,168,79,136,73"/>
 </map>
 </div>
 <div class="dynheader">
@@ -662,8 +690,8 @@ template&lt;class T &gt; </div>
 
 </div>
 </div>
-<a id="a5564b5b1831173eb8bb6bb28df50cbfc" name="a5564b5b1831173eb8bb6bb28df50cbfc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5564b5b1831173eb8bb6bb28df50cbfc">&#9670;&#160;</a></span>m_mutex</h2>
+<a id="a1119158724a5a26ae8b5276d46dfc8de" name="a1119158724a5a26ae8b5276d46dfc8de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1119158724a5a26ae8b5276d46dfc8de">&#9670;&#160;</a></span>m_mutex</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -674,7 +702,7 @@ template&lt;class T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">boost::mutex <a class="el" href="classthreadsafe__que.html">threadsafe_que</a>&lt; T &gt;::m_mutex</td>
+          <td class="memname">std::mutex <a class="el" href="classthreadsafe__que.html">threadsafe_que</a>&lt; T &gt;::m_mutex</td>
         </tr>
       </table>
   </td>
@@ -686,8 +714,8 @@ template&lt;class T &gt; </div>
 
 </div>
 </div>
-<a id="a8a7a9b852d156efadebfabb9a6c860dd" name="a8a7a9b852d156efadebfabb9a6c860dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a7a9b852d156efadebfabb9a6c860dd">&#9670;&#160;</a></span>m_not_empty</h2>
+<a id="a760f5ac840dd295a4b7bd93033e00033" name="a760f5ac840dd295a4b7bd93033e00033"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a760f5ac840dd295a4b7bd93033e00033">&#9670;&#160;</a></span>m_not_empty</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -698,7 +726,7 @@ template&lt;class T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">boost::condition <a class="el" href="classthreadsafe__que.html">threadsafe_que</a>&lt; T &gt;::m_not_empty</td>
+          <td class="memname">std::condition_variable <a class="el" href="classthreadsafe__que.html">threadsafe_que</a>&lt; T &gt;::m_not_empty</td>
         </tr>
       </table>
   </td>
@@ -766,7 +794,7 @@ template&lt;class T &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classthreadsafe__que.html">threadsafe_que</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 2538d6f</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 1ada3a5</a></li>
     </ul>
   </div>
   </body>

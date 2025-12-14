@@ -106,7 +106,7 @@ $(function(){initNavTree('FrameFactory_8h_source.html',''); initResizable(true);
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &lt;boost/pool/object_pool.hpp&gt;</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;boost/shared_ptr.hpp&gt;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;boost/thread/mutex.hpp&gt;</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;mutex&gt;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;atomic&gt;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;CommonDefs.h&quot;</span></div>
@@ -123,7 +123,7 @@ $(function(){initNavTree('FrameFactory_8h_source.html',''); initResizable(true);
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    </div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f">   18</a></span>    frame_sp <a class="code hl_variable" href="classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f">eosFrame</a>;</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classFrameFactory.html#aaaf20e3463bd9461c02d0c0c68b0a5bf">   19</a></span>    frame_sp <a class="code hl_variable" href="classFrameFactory.html#aaaf20e3463bd9461c02d0c0c68b0a5bf">emptyFrame</a>;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classFrameFactory.html#ab1e6e8d0a35d4fd302cfcf213bea683d">   20</a></span>    boost::mutex <a class="code hl_variable" href="classFrameFactory.html#ab1e6e8d0a35d4fd302cfcf213bea683d">m_mutex</a>;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classFrameFactory.html#ac74b9bd76d8628577474bbcb2cc01a96">   20</a></span>    std::mutex <a class="code hl_variable" href="classFrameFactory.html#ac74b9bd76d8628577474bbcb2cc01a96">m_mutex</a>;</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="classFrameFactory.html#aa9ab8b31e3a03162cc1c8ceaa02df588">   22</a></span>    std::atomic_uint <a class="code hl_variable" href="classFrameFactory.html#aa9ab8b31e3a03162cc1c8ceaa02df588">counter</a>;</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="classFrameFactory.html#a06690fe3cbaa70565cbddef91d71b9a5">   23</a></span>    std::atomic_size_t <a class="code hl_variable" href="classFrameFactory.html#a06690fe3cbaa70565cbddef91d71b9a5">numberOfChunks</a>;</div>
@@ -168,8 +168,8 @@ $(function(){initNavTree('FrameFactory_8h_source.html',''); initResizable(true);
 <div class="ttc" id="aclassFrameFactory_html_aa9ab8b31e3a03162cc1c8ceaa02df588"><div class="ttname"><a href="classFrameFactory.html#aa9ab8b31e3a03162cc1c8ceaa02df588">FrameFactory::counter</a></div><div class="ttdeci">std::atomic_uint counter</div><div class="ttdef"><b>Definition</b> FrameFactory.h:22</div></div>
 <div class="ttc" id="aclassFrameFactory_html_aaaf20e3463bd9461c02d0c0c68b0a5bf"><div class="ttname"><a href="classFrameFactory.html#aaaf20e3463bd9461c02d0c0c68b0a5bf">FrameFactory::emptyFrame</a></div><div class="ttdeci">frame_sp emptyFrame</div><div class="ttdef"><b>Definition</b> FrameFactory.h:19</div></div>
 <div class="ttc" id="aclassFrameFactory_html_ab0bde039ae15f9d4b17fc8187ad81c90"><div class="ttname"><a href="classFrameFactory.html#ab0bde039ae15f9d4b17fc8187ad81c90">FrameFactory::FrameFactory</a></div><div class="ttdeci">FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrames=0)</div><div class="ttdef"><b>Definition</b> FrameFactory.cpp:13</div></div>
-<div class="ttc" id="aclassFrameFactory_html_ab1e6e8d0a35d4fd302cfcf213bea683d"><div class="ttname"><a href="classFrameFactory.html#ab1e6e8d0a35d4fd302cfcf213bea683d">FrameFactory::m_mutex</a></div><div class="ttdeci">boost::mutex m_mutex</div><div class="ttdef"><b>Definition</b> FrameFactory.h:20</div></div>
 <div class="ttc" id="aclassFrameFactory_html_ab8714f7f316ad95df1a878b15c0bead8"><div class="ttname"><a href="classFrameFactory.html#ab8714f7f316ad95df1a878b15c0bead8">FrameFactory::setMetadata</a></div><div class="ttdeci">void setMetadata(framemetadata_sp metadata)</div><div class="ttdef"><b>Definition</b> FrameFactory.h:41</div></div>
+<div class="ttc" id="aclassFrameFactory_html_ac74b9bd76d8628577474bbcb2cc01a96"><div class="ttname"><a href="classFrameFactory.html#ac74b9bd76d8628577474bbcb2cc01a96">FrameFactory::m_mutex</a></div><div class="ttdeci">std::mutex m_mutex</div><div class="ttdef"><b>Definition</b> FrameFactory.h:20</div></div>
 <div class="ttc" id="aclassFrameFactory_html_ac9623ba9ff697c4b5b0f412adff2c679"><div class="ttname"><a href="classFrameFactory.html#ac9623ba9ff697c4b5b0f412adff2c679">FrameFactory::create</a></div><div class="ttdeci">frame_sp create(size_t size, boost::shared_ptr&lt; FrameFactory &gt; &amp;mother)</div><div class="ttdef"><b>Definition</b> FrameFactory.cpp:54</div></div>
 <div class="ttc" id="aclassFrameFactory_html_acaa0fc16ee54986788ac554239bc0566"><div class="ttname"><a href="classFrameFactory.html#acaa0fc16ee54986788ac554239bc0566">FrameFactory::memory_allocator</a></div><div class="ttdeci">std::shared_ptr&lt; HostAllocator &gt; memory_allocator</div><div class="ttdef"><b>Definition</b> FrameFactory.h:16</div></div>
 <div class="ttc" id="aclassFrameFactory_html_af179dc71e7c77b9336f07802bcf8be13"><div class="ttname"><a href="classFrameFactory.html#af179dc71e7c77b9336f07802bcf8be13">FrameFactory::~FrameFactory</a></div><div class="ttdeci">virtual ~FrameFactory()</div><div class="ttdef"><b>Definition</b> FrameFactory.cpp:44</div></div>
@@ -180,7 +180,7 @@ $(function(){initNavTree('FrameFactory_8h_source.html',''); initResizable(true);
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="dir_e914ee4d4a44400f1fdb170cb4ead18a.html">base</a></li><li class="navelem"><a class="el" href="dir_86751c6d8ae9997ab6788777e7f7ee73.html">include</a></li><li class="navelem"><b>FrameFactory.h</b></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 2538d6f</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 1ada3a5</a></li>
     </ul>
   </div>
   </body>

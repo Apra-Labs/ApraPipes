@@ -170,7 +170,7 @@ var classModule =
     [ "myId", "classModule.html#abd66fa1e222f5e2193c8c295e163c854", null ],
     [ "myName", "classModule.html#ab79a5e26e9fbd3ddaa7377987a44fad0", null ],
     [ "myNature", "classModule.html#a7f86e84752ac36be8076d3c56df59de8", null ],
-    [ "myThread", "classModule.html#a6e4bff3829bea98cc4166670ee2e3be4", null ],
+    [ "myThread", "classModule.html#adeb9d1a2e2557af6a6cd3ee33f86f72d", null ],
     [ "onStepFail", "classModule.html#a051b77d6878f1362ec40353c7e255d20", null ],
     [ "pacer", "classModule.html#a307bb161625ae47dd57de0c510daa324", null ]
 ];

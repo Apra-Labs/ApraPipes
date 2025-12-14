@@ -13,5 +13,5 @@ var classUtils =
     [ "getMatHeader", "classUtils.html#aa814dc227778fc8dc5a52c11aa0f37c8", null ],
     [ "round_roi", "classUtils.html#a7a94f8f3bd37c633a3807a1ac9cad2b2", null ],
     [ "serialize", "classUtils.html#a0e8095d76324a1caf015d0922f398828", null ],
-    [ "setModuleThreadName", "classUtils.html#ace09f36cc087a1a8d77f961fbc7687d8", null ]
+    [ "setModuleThreadName", "classUtils.html#a28fdc7c68f75bb4c225649a2cb5edc0a", null ]
 ];

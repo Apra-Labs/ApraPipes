@@ -1,11 +1,13 @@
 <map id="threadsafe_que::is_not_empty" name="threadsafe_que::is_not_empty">
-<area shape="rect" id="Node000001" title=" " alt="" coords="515,27,642,68"/>
-<area shape="rect" id="Node000002" href="$classthreadsafe__que.html#a4cf0cfc2c88de6b951c2c4a9849726af" title=" " alt="" coords="309,5,467,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="499,38,467,33,468,28,500,33"/>
-<area shape="rect" id="Node000003" href="$classthreadsafe__que.html#a196318372f689e04308b87929e223c04" title=" " alt="" coords="323,55,453,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="500,62,454,69,453,63,499,56"/>
-<area shape="rect" id="Node000004" href="$classLogger.html#acfbb1d933c59c247eeaca6b0cb993b56" title=" " alt="" coords="176,63,261,88"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="307,78,261,78,261,73,307,73"/>
-<area shape="rect" id="Node000005" href="$classLogger.html#a0374fdd87504c0f6740938ced0837a03" title=" " alt="" coords="5,63,128,88"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="160,78,128,78,128,73,160,73"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="515,47,642,88"/>
+<area shape="rect" id="Node000002" href="$classthreadsafe__que.html#a28f4b27e5e809982a326dfb0f21b58e4" title=" " alt="" coords="320,5,457,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="500,50,440,34,441,29,501,45"/>
+<area shape="rect" id="Node000003" href="$classthreadsafe__que.html#a4cf0cfc2c88de6b951c2c4a9849726af" title=" " alt="" coords="309,55,467,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="499,70,467,70,467,65,499,65"/>
+<area shape="rect" id="Node000004" href="$classthreadsafe__que.html#a196318372f689e04308b87929e223c04" title=" " alt="" coords="323,104,453,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="501,94,454,108,453,103,499,88"/>
+<area shape="rect" id="Node000005" href="$classLogger.html#acfbb1d933c59c247eeaca6b0cb993b56" title=" " alt="" coords="176,112,261,138"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="307,128,261,128,261,122,307,122"/>
+<area shape="rect" id="Node000006" href="$classLogger.html#a0374fdd87504c0f6740938ced0837a03" title=" " alt="" coords="5,112,128,138"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="160,128,128,128,128,122,160,122"/>
 </map>

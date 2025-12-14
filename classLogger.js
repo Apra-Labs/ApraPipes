@@ -20,12 +20,12 @@ var classLogger =
     [ "setLogLevel", "classLogger.html#a874e780b2f5e3b15eb14c04263a3f49a", null ],
     [ "instance", "classLogger.html#ac5580e07ca1bc608e8a51950819f6977", null ],
     [ "lg", "classLogger.html#a3f4c88d08e862cd0040f7b36d782d1f0", null ],
-    [ "logger_mutex", "classLogger.html#aa640461ef0fcbe30a615ee3729f1c5fe", null ],
+    [ "logger_mutex", "classLogger.html#ad1fdb7f70b99b9ccecdf6d97ed5b7ca8", null ],
     [ "mConsoleSink", "classLogger.html#ac38f4a29d7bddadf23e9df80c3e75cc7", null ],
     [ "mFileSink", "classLogger.html#a73c9dab25a192857a05673516edbccaa", null ],
     [ "mListener", "classLogger.html#a48456df4d15ece49fbfc972344bbf2a9", null ],
     [ "mProps", "classLogger.html#a6da143f8bdfccfe892caffc50e1dbf1c", null ],
     [ "mQue", "classLogger.html#a400c91422781d7b2531555443ffa44d7", null ],
     [ "mRunning", "classLogger.html#a0849d9bf8a119a4b26dd61f78782125b", null ],
-    [ "myThread", "classLogger.html#ad551e94eff1d9b32e110ead761e3cb24", null ]
+    [ "myThread", "classLogger.html#a5d689170e921e06604648ae3616b96dc", null ]
 ];

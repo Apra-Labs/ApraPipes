@@ -17,7 +17,7 @@ var classFrameFactory =
     [ "emptyFrame", "classFrameFactory.html#aaaf20e3463bd9461c02d0c0c68b0a5bf", null ],
     [ "eosFrame", "classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f", null ],
     [ "frame_allocator", "classFrameFactory.html#a3fe823682b3943fc3d31f0d7f5cc231e", null ],
-    [ "m_mutex", "classFrameFactory.html#ab1e6e8d0a35d4fd302cfcf213bea683d", null ],
+    [ "m_mutex", "classFrameFactory.html#ac74b9bd76d8628577474bbcb2cc01a96", null ],
     [ "maxConcurrentFrames", "classFrameFactory.html#a474c29033db673578f63c56b9fd2a89d", null ],
     [ "memory_allocator", "classFrameFactory.html#acaa0fc16ee54986788ac554239bc0566", null ],
     [ "mMetadata", "classFrameFactory.html#a8b709e80191858d051a5a0c60f93c7dc", null ],

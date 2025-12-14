@@ -45,7 +45,7 @@ var searchData=
   ['loc_42',['loc',['../structloc.html',1,'loc'],['../structprogram.html#ad01e0560db45a938e54addb17306c130',1,'program::loc']]],
   ['locked_43',['locked',['../classApraData.html#a7cd76e1ac73bf5d87f83f4ec701b9b67',1,'ApraData']]],
   ['logger_44',['Logger',['../classLogger.html',1,'Logger'],['../classLogger.html#a40915ec193a788adba503695bbfb00b8',1,'Logger::Logger(LoggerProps props)']]],
-  ['logger_5fmutex_45',['logger_mutex',['../classLogger.html#aa640461ef0fcbe30a615ee3729f1c5fe',1,'Logger']]],
+  ['logger_5fmutex_45',['logger_mutex',['../classLogger.html#ad1fdb7f70b99b9ccecdf6d97ed5b7ca8',1,'Logger']]],
   ['loggerprops_46',['LoggerProps',['../classLoggerProps.html',1,'LoggerProps'],['../classLoggerProps.html#a2f17687302210a4019fc1ad00f3bb70f',1,'LoggerProps::LoggerProps()']]],
   ['loghealth_47',['logHealth',['../classModuleProps.html#af86595a57f059dd3c08121655485eccc',1,'ModuleProps']]],
   ['loghealthfrequency_48',['logHealthFrequency',['../classModuleProps.html#a5e6edbce2ed861d6b7ff68ea1f8c0075',1,'ModuleProps']]],

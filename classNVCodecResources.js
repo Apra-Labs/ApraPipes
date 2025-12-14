@@ -12,15 +12,15 @@ var classNVCodecResources =
     [ "m_lib", "classNVCodecResources.html#ae063a5742fdabcbe0467aed0d8d4f043", null ],
     [ "m_mappedFrames", "classNVCodecResources.html#a2c23faf8fc3f3fc35ef8a25ebe3acb92", null ],
     [ "m_mappedResources", "classNVCodecResources.html#a099d8a307fff4289fd4d7def893b4863", null ],
-    [ "m_mutex", "classNVCodecResources.html#aa7f8d1e306c7e8eac24d17ddc16a9dc0", null ],
+    [ "m_mutex", "classNVCodecResources.html#a25673268faeedbaf2df933851a0e3b4e", null ],
     [ "m_nBusyOutputBitstreams", "classNVCodecResources.html#a5cd39887e5a76c0f7575b84b2b5c0d66", null ],
     [ "m_nFreeOutputBitstreams", "classNVCodecResources.html#a7213681fd02da56d8f2aa248f47bc2e5", null ],
-    [ "m_not_empty", "classNVCodecResources.html#a41140e40c774e383195fc5633b04bf0a", null ],
+    [ "m_not_empty", "classNVCodecResources.html#ad306cc5c96e3e327e2b0673f2f8764db", null ],
     [ "m_nvenc", "classNVCodecResources.html#a32434b6f5b161a437b1ca20f50ce02ec", null ],
     [ "m_qBitstreamOutputBitstream", "classNVCodecResources.html#a861b6064ea3bff4d5365f1ed75666e79", null ],
     [ "m_qBitstreamOutputBitstreamBusy", "classNVCodecResources.html#a10952aaa913a2eb5f0ac0102c4d8c639", null ],
     [ "m_qpCompletionEvent", "classNVCodecResources.html#ae3653de51af4a1f77114e3208ec93116", null ],
     [ "m_qpCompletionEventBusy", "classNVCodecResources.html#a6a7670be43f8b71bf55b2ce7d3399c01", null ],
-    [ "m_wait_for_output", "classNVCodecResources.html#aa401b681fb7aa4504224b4ea3a429e40", null ],
+    [ "m_wait_for_output", "classNVCodecResources.html#ac69267aff31bf39c883bf44bb62c0ff7", null ],
     [ "registeredResources", "classNVCodecResources.html#a6accdd84e03b1573aa2194311a2a4be6", null ]
 ];
