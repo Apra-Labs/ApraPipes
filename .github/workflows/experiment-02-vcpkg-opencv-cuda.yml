@@ -58,7 +58,7 @@ jobs:
           cat vcpkg-test/vcpkg.json
 
       - name: Build OpenCV with CUDA
-        timeout-minutes: 90
+        timeout-minutes: 360  # 6 hours - OpenCV CUDA build is slow
         run: |
           echo "=== Building opencv4[cuda] ==="
           cd vcpkg-test
