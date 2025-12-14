@@ -58,7 +58,7 @@ frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &moth
 
 frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &mother, framemetadata_sp& metadata)
 {
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	if (maxConcurrentFrames && counter >= maxConcurrentFrames)
 	{
 		return frame_sp();
@@ -77,7 +77,7 @@ frame_sp FrameFactory::create(size_t size, boost::shared_ptr<FrameFactory> &moth
 
 void FrameFactory::destroy(Frame *pointer)
 {
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	counter.fetch_sub(1, memory_order_seq_cst);
 
 	if (pointer->myOrig != NULL)
@@ -109,7 +109,7 @@ frame_sp FrameFactory::create(frame_sp &frame, size_t size, boost::shared_ptr<Fr
 		throw AIPException(AIP_NOTIMPLEMENTED, string("increasing chunks not yet implemented"));
 	}
 
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	counter.fetch_add(1, memory_order_seq_cst);
 
 	if (chunksToFree > 0)

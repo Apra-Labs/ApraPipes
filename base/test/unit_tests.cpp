@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(multiple_que_test)
 		q1->clear();
 	}
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 }
 
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE(bounded_buffer_2)
 	bounded_buffer<int> queue(5);
 	std::thread t1(testQueueClear, std::ref(queue));
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	// it is expected to be stuck now
 	queue.clear();
@@ -532,7 +532,7 @@ BOOST_AUTO_TEST_CASE(bounded_buffer_3)
 	bounded_buffer<int> queue(5);
 	std::thread t1(testQueuePushPop, std::ref(queue), true);
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	std::thread t2(testQueuePushPop, std::ref(queue), false);
 
 	t1.join();

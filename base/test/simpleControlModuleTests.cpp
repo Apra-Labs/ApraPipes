@@ -256,9 +256,9 @@ BOOST_AUTO_TEST_CASE(simpleControlModule_healthCallback)
 	t.startPipeline();
 	t.addControlModule();
 	t.simpleCtrl->printStatus();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(5000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 	t.stopPipeline();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(3000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 }
 
 BOOST_AUTO_TEST_CASE(simpleControlModule_enroll_ctrlMod_step_test, *boost::unit_test::disabled())

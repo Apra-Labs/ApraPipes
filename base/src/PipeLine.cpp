@@ -160,13 +160,13 @@ void PipeLine::run_all_threaded()
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread = boost::thread(ref(m));
+		m.myThread = std::thread(std::ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	if (controlModule != nullptr)
 	{
 		Module& m = *(controlModule);
-		m.myThread = boost::thread(ref(m));
+		m.myThread = std::thread(std::ref(m));
 		Utils::setModuleThreadName(m.myThread, m.getId());
 	}
 	mPlay = true;
@@ -277,11 +277,7 @@ void PipeLine::interrupt_wait_for_all()
 		return;
 	}
 
-	for (auto i = modules.begin(); i != modules.end(); i++)
-	{
-		Module& m = *(i->get());
-		m.myThread.interrupt();
-	}
+	// std::thread doesn't have interrupt() - modules stop via mRunning flag
 
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
@@ -291,7 +287,6 @@ void PipeLine::interrupt_wait_for_all()
 
 	if (controlModule != nullptr)
 	{
-		controlModule->myThread.interrupt();
 		controlModule->myThread.join();
 	}
 	myStatus = PL_STOPPED;

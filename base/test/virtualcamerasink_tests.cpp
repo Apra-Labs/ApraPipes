@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(yuv420, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(nv12, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(bgra, *boost::unit_test::disabled())
 	BOOST_TEST(p.init());
 
 	p.run_all_threaded();
-	boost::this_thread::sleep_for(boost::chrono::seconds(10));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	LOG_INFO << "profiling done - stopping the pipeline";
 	p.stop();
 	p.term();

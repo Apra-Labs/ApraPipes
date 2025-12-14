@@ -69,7 +69,6 @@
     "bigint",
     "boost-math",
     "boost-system",
-    "boost-thread",
     "boost-filesystem",
     "boost-serialization",
     "boost-log",

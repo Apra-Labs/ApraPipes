@@ -604,7 +604,7 @@ void H264Decoder::dropFarthestFromCurrentTs(uint64_t ts)
 			{
 				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex>(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					// Dont drop the frames from cache which are present in the incomingFramesTSQ
 					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
@@ -629,7 +629,7 @@ void H264Decoder::dropFarthestFromCurrentTs(uint64_t ts)
 			{
 				if (decodedFramesCache.size() >= mProps.lowerWaterMark)
 				{
-					boost::mutex::scoped_lock(m_mutex);
+					std::unique_lock<std::mutex>(m_mutex);
 					// Note - erase returns the iterator of next element after deletion.
 					if (std::find(incomingFramesTSQ.begin(), incomingFramesTSQ.end(), itr->first) != incomingFramesTSQ.end())
 					{

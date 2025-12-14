@@ -1264,9 +1264,9 @@ BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 		m1->init();
 		m2->init();
 		m3->init();
-		// running m1 in a thread	
-		auto t1 = boost::thread(ref(*(m1.get())));
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		// running m1 in a thread
+		auto t1 = std::thread(std::ref(*(m1.get())));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 		m1->stop();
 		m1->step();
 
@@ -1293,13 +1293,13 @@ BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 		m1->init();
 		m2->init();
 		m3->init();
-		//running m2 in a thread	
-		auto t2 = boost::thread(ref(*(m2.get())));
-		auto t1 = boost::thread(ref(*(m1.get()))); // running m1 again - stop was called before so thread would have exited
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		//running m2 in a thread
+		auto t2 = std::thread(std::ref(*(m2.get())));
+		auto t1 = std::thread(std::ref(*(m1.get()))); // running m1 again - stop was called before so thread would have exited
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
 		m1->stop();
 		m1->step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 
 		auto que = m3->getQue();
 		auto frames = que->try_pop();
@@ -1361,18 +1361,18 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 	source2->init();
 	sink->init();
 
-	auto t1 = boost::thread(ref(*(source1.get())));
-	auto t2 = boost::thread(ref(*(source2.get())));
-	auto t3 = boost::thread(ref(*(sink.get())));
+	auto t1 = std::thread(std::ref(*(source1.get())));
+	auto t2 = std::thread(std::ref(*(source2.get())));
+	auto t3 = std::thread(std::ref(*(sink.get())));
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
 
 	source1->stop();
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time
-			
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time
+
 	source2->stop();
 	// previously stuck in the above step
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time
 	
 	t1.join();
 	t2.join();
@@ -1410,14 +1410,14 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 		m1->addOutputPin(metadata1);
 
 		m1->init();
-		boost::thread(ref(*(m1.get())));
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::thread(std::ref(*(m1.get())));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
 
 		BOOST_TEST(m1->getPlayState() == true);
 		BOOST_TEST(m1->getTickCounter() != 0);
 
 		m1->stop();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to exit gracefully
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to exit gracefully
 	}
 
 	{
@@ -1427,29 +1427,29 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 		m1->addOutputPin(metadata1);
 
 		m1->init();
-		boost::thread(ref(*(m1.get())));
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::thread(std::ref(*(m1.get())));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
 
 		BOOST_TEST(m1->getPlayState() == true);
 		auto prevCounter = m1->getTickCounter();
 		BOOST_TEST(prevCounter != 0);
 
 		m1->play(false);
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));  
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));  
 		prevCounter = m1->getTickCounter();
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));  
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));  
 		BOOST_TEST(m1->getPlayState() == false);
 		BOOST_TEST(prevCounter == m1->getTickCounter());
 
 		m1->play(true);
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));  
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));  
 		BOOST_TEST(m1->getPlayState() == true);
 		BOOST_TEST(prevCounter != m1->getTickCounter());
 
 		m1->stop();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  
 	}
 
 	{
@@ -1465,31 +1465,31 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 		p.run_all_threaded();
 
 		
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 
 		BOOST_TEST(m1->getPlayState() == true);
 		auto prevCounter = m1->getTickCounter();
 		BOOST_TEST(prevCounter != 0);
 
 		p.pause();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		prevCounter = m1->getTickCounter();
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50)); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(50)); 
 		BOOST_TEST(m1->getPlayState() == false);
 		BOOST_TEST(prevCounter == m1->getTickCounter());
 
 		p.step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		BOOST_TEST(++prevCounter == m1->getTickCounter());		
 
 		p.step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		BOOST_TEST(++prevCounter == m1->getTickCounter());
 
 		p.play();
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50)); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(50)); 
 		BOOST_TEST(m1->getPlayState() == true);
 		BOOST_TEST(prevCounter != m1->getTickCounter());
 
@@ -1512,36 +1512,36 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 		p.run_all_threaded_withpause();
 
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 
 		BOOST_TEST(m1->getPlayState() == false);
 		BOOST_TEST(0 == m1->getTickCounter());
 
 		p.play();
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50)); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(50)); 
 		BOOST_TEST(m1->getPlayState() == true);
 		auto prevCounter = m1->getTickCounter();
 		BOOST_TEST(prevCounter != 0);
 		
 		p.pause();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		prevCounter = m1->getTickCounter();
 
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50)); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(50)); 
 		BOOST_TEST(m1->getPlayState() == false);
 		BOOST_TEST(prevCounter == m1->getTickCounter());
 
 		p.step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		BOOST_TEST(++prevCounter == m1->getTickCounter());
 
 		p.step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		BOOST_TEST(++prevCounter == m1->getTickCounter());
 
 		p.step();
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		BOOST_TEST(++prevCounter == m1->getTickCounter());
 
 		p.stop();
@@ -1659,7 +1659,7 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 	p.init();
 	p.run_all_threaded();
 
-	boost::this_thread::sleep_for(boost::chrono::milliseconds(100));  // giving time to call step 
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
 
 	p.stop();
 	p.term();
@@ -1935,7 +1935,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 		BOOST_TEST(p.init());
 		p.run_all_threaded();
 
-		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 		p.stop();
 		p.term();
@@ -1971,11 +1971,11 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 		BOOST_TEST(transform2->init());
 		p.run_all_threaded();
 
-		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 		p.stop();
 		p.term();
-		boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		// source is stopped
 		// transform 1 is stopped and waiting for transform2->push
 		queue2->pop(); // free 1 slot in the que for the stop to be propagated
