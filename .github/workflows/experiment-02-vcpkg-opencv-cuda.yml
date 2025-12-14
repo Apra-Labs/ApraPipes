@@ -20,6 +20,18 @@ jobs:
     runs-on: ubuntu-22.04  # Use 22.04 for GCC 11 (CUDA 11.8 compatible)
 
     steps:
+      - name: Free Disk Space
+        run: |
+          echo "=== Freeing Disk Space ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          df -h
+          echo "=== Disk Space Freed ==="
+
       - name: Install CUDA Toolkit
         run: |
           echo "=== Installing CUDA Toolkit 11.8 ==="
