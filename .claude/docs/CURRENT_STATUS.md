@@ -24,11 +24,14 @@
 
 ### ⏳ In Progress
 
-3. **Experiment 2: vcpkg opencv4[cuda]** - 🔄 RUNNING (Run 20209175183)
-   - Started: 2025-12-14 14:09 UTC
-   - Expected duration: ~60 minutes
+3. **Experiment 2: vcpkg opencv4[cuda]** - 🔄 RUNNING (Run 20209472316)
+   - Started: 2025-12-14 14:25 UTC (attempt 3)
+   - Expected duration: ~60-90 minutes
    - Status: Building OpenCV with CUDA features
-   - **Action for next agent:** Monitor this run, document results when complete
+   - Previous failures fixed:
+     - Attempt 1: cuDNN download 404 → Removed cuDNN
+     - Attempt 2: vcpkg syntax error → Fixed features list
+   - **Action for next agent:** Monitor run 20209472316, document when complete
 
 ---
 
@@ -38,8 +41,9 @@
 
 1. **Monitor Experiment 2:**
    ```bash
-   gh run view 20209175183
+   gh run view 20209472316
    # When complete, check if passed or failed
+   # Currently building OpenCV (long build ~60-90 min)
    ```
 
 2. **If Experiment 2 PASSES:**
