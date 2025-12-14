@@ -170,8 +170,10 @@ Validate that vcpkg can build opencv4 with CUDA features on GitHub runner.
 
 ## Experiment 3: CudaCapabilities Singleton
 
-**Status:** ⏳ **PENDING**
-**Date:** Not yet run
+**Status:** ✅ **PASSED**
+**Run ID:** 20209110964
+**Date:** 2025-12-13
+**Duration:** 3m 58s
 
 ### Objective
 Validate standalone CudaCapabilities singleton pattern in isolation.
@@ -182,11 +184,77 @@ Validate standalone CudaCapabilities singleton pattern in isolation.
 - Test thread safety
 - Test module-like capability checking pattern
 
+### Results
+
+#### ✅ **All Tests Passed**
+
+1. **Singleton Pattern:** SUCCESS
+   - Single instance created
+   - Thread-safe lazy initialization
+   - Same instance across multiple `getInstance()` calls
+
+2. **CUDA Detection:** SUCCESS
+   - `isAvailable()` returns `false` (no GPU)
+   - `getDeviceCount()` returns `0`
+   - `hasMinComputeCapability(5,2)` returns `false`
+   - **No crashes** - graceful handling
+
+3. **Thread Safety:** SUCCESS
+   - 5 concurrent threads accessing singleton
+   - No race conditions
+   - All threads get consistent results
+
+4. **Module Pattern:** SUCCESS
+   - Constructor throws exception when CUDA unavailable
+   - Clear error message guides user to CPU alternative
+   - Exception caught and handled properly
+
+### Sample Output
+
+```
+=== CUDA Capabilities ===
+CUDA Available: NO
+Device Count: 0
+========================
+
+✓ Singleton pattern works
+CUDA Available: 0
+Device Count: 0
+Has Compute Cap >= 5.2: 0
+
+Testing thread safety...
+Thread 0: CUDA available = 0
+Thread 1: CUDA available = 0
+Thread 2: CUDA available = 0
+Thread 3: CUDA available = 0
+Thread 4: CUDA available = 0
+✓ Thread safety test complete
+
+✓ SUCCESS: Correctly detected no CUDA devices
+This is expected on GitHub runner (no GPU)
+```
+
+### Module Exception Test
+
+```
+=== Module Capability Check Test ===
+✓ Caught expected exception: ResizeNPPI requires CUDA device but none available. Use ImageResizeCV for CPU-based resizing.
+✓ SUCCESS: Module correctly rejects initialization without GPU
+```
+
+### Key Validations
+
+1. ✅ **CudaCapabilities design is sound**
+2. ✅ **Singleton pattern works in C++**
+3. ✅ **Thread-safe without mutexes in getInstance()**
+4. ✅ **Module pattern provides clear user guidance**
+5. ✅ **Ready to implement in ApraPipes codebase**
+
 ### Success Criteria
-- [ ] Singleton initializes without crash
-- [ ] Returns `isAvailable() = false` on GitHub runner
-- [ ] Thread-safe access works
-- [ ] Module pattern works (throw exception when GPU required but unavailable)
+- [x] Singleton initializes without crash
+- [x] Returns `isAvailable() = false` on GitHub runner
+- [x] Thread-safe access works
+- [x] Module pattern works (throw exception when GPU required but unavailable)
 
 ---
 
@@ -194,12 +262,12 @@ Validate standalone CudaCapabilities singleton pattern in isolation.
 
 | Experiment | Status | Blocker | Next Action |
 |------------|--------|---------|-------------|
-| 1. CUDA Toolkit | ✅ PASS | None | Document learnings |
-| 2. vcpkg OpenCV | ⏳ Pending | None | Trigger workflow |
-| 3. CudaCapabilities | ⏳ Pending | None | Implement & test |
-| 4. Full ApraPipes | ⏳ Pending | Exp 2,3 | After validation |
+| 1. CUDA Toolkit | ✅ PASS | None | ✅ Complete |
+| 2. vcpkg OpenCV | ⏳ Running | None | Monitor (60 min) |
+| 3. CudaCapabilities | ✅ PASS | None | ✅ Complete |
+| 4. Full ApraPipes | ⏳ Pending | Exp 2 | After Exp 2 passes |
 
-**Overall Status:** 1/4 experiments complete, 0 blockers
+**Overall Status:** 2/4 experiments complete, 0 blockers
 
 **Estimated Timeline:**
 - Experiment 2: ~1 hour (long build time)
