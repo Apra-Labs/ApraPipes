@@ -6,6 +6,9 @@ name: Experiment-02-vcpkg-opencv-cuda
 #   2. Build completes without GPU-related errors
 #   3. OpenCV libraries are created
 #   4. Simple program using cv::cuda compiles and links
+#
+# DISK STRATEGY: Use /mnt partition (~60GB) to avoid root partition exhaustion
+# (Learned from CI-Linux-CUDA-Docker.yml which uses /mnt for vcpkg cache and buildtrees)
 
 on:
   workflow_dispatch:  # Manual trigger only
@@ -18,19 +21,33 @@ on:
 jobs:
   test-opencv-cuda-minimal:
     runs-on: ubuntu-22.04  # Use 22.04 for GCC 11 (CUDA 11.8 compatible)
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
 
     steps:
-      - name: Free Disk Space
+      - name: Check disk space before cleanup
         run: |
-          echo "=== Freeing Disk Space ==="
+          echo "=== Disk Space BEFORE Cleanup ==="
           df -h
+
+      - name: Free up root partition space
+        run: |
+          echo "=== Freeing Disk Space on Root Partition ==="
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
+          echo "=== Root partition cleanup complete ==="
+
+      - name: Check disk space after cleanup
+        run: |
+          echo "=== Disk Space AFTER Cleanup ==="
           df -h
-          echo "=== Disk Space Freed ==="
+          echo ""
+          echo "=== /mnt partition (will be used for build) ==="
+          df -h /mnt
+          echo ""
 
       - name: Install CUDA Toolkit
         run: |
@@ -42,19 +59,34 @@ jobs:
           echo "/usr/local/cuda-11.8/bin" >> $GITHUB_PATH
           echo "CUDA_PATH=/usr/local/cuda-11.8" >> $GITHUB_ENV
 
-      # Skip cuDNN for this experiment - just test basic CUDA support
-      # cuDNN is optional for opencv4[cuda] with core features only
-
-      - name: Setup vcpkg (minimal)
+      - name: Setup vcpkg on /mnt partition
         run: |
-          echo "=== Setting up vcpkg ==="
+          echo "=== Setting up vcpkg on /mnt partition ==="
+          cd /mnt
           git clone https://github.com/microsoft/vcpkg.git vcpkg-test
           cd vcpkg-test
           ./bootstrap-vcpkg.sh
+          echo "=== vcpkg bootstrapped on /mnt/vcpkg-test ==="
+
+      - name: Setup vcpkg binary cache on /mnt
+        run: |
+          echo "=== Creating vcpkg binary cache on /mnt ==="
+          mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+          df -h /mnt
+
+      - name: Move vcpkg buildtrees to /mnt
+        run: |
+          echo "=== Symlinking vcpkg/buildtrees to /mnt ==="
+          cd /mnt/vcpkg-test
+          mkdir -p /mnt/vcpkg-buildtrees
+          rm -rf buildtrees || true
+          ln -s /mnt/vcpkg-buildtrees buildtrees
+          ls -la | grep buildtrees
+          echo "=== vcpkg buildtrees now on /mnt partition ==="
 
       - name: Create Minimal vcpkg.json
         run: |
-          cat > vcpkg-test/vcpkg.json << 'EOF'
+          cat > /mnt/vcpkg-test/vcpkg.json << 'EOF'
           {
             "name": "opencv-cuda-test",
             "version": "0.0.1",
@@ -67,26 +99,33 @@ jobs:
             ]
           }
           EOF
-          cat vcpkg-test/vcpkg.json
+          cat /mnt/vcpkg-test/vcpkg.json
 
       - name: Build OpenCV with CUDA
         run: |
           echo "=== Building opencv4[cuda] ==="
-          cd vcpkg-test
+          cd /mnt/vcpkg-test
 
           export PATH=/usr/local/cuda-11.8/bin:$PATH
           export CUDA_PATH=/usr/local/cuda-11.8
           export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
 
+          echo "=== Disk space before build ==="
+          df -h /mnt
+          df -h /
+
           # Install opencv4 with CUDA
           ./vcpkg install --triplet=x64-linux
 
           echo "=== Build Complete ==="
+          echo "=== Disk space after build ==="
+          df -h /mnt
+          df -h /
 
       - name: Verify OpenCV CUDA Build
         run: |
           echo "=== Verifying OpenCV CUDA Libraries ==="
-          cd vcpkg-test
+          cd /mnt/vcpkg-test
 
           # Check if CUDA modules were built
           find installed/x64-linux -name "*opencv*cuda*" -o -name "*opencv_world*"
@@ -98,10 +137,11 @@ jobs:
       - name: Test OpenCV CUDA Program
         run: |
           echo "=== Testing OpenCV CUDA Program ==="
+          cd /mnt
 
           export PATH=/usr/local/cuda-11.8/bin:$PATH
           export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-          export PKG_CONFIG_PATH=$(pwd)/vcpkg-test/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=/mnt/vcpkg-test/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
 
           # Create test program
           cat > test_opencv_cuda.cpp << 'EOF'
@@ -152,8 +192,12 @@ jobs:
           echo "This experiment validates:"
           echo "  ✓ vcpkg can build opencv4[cuda] without GPU"
           echo "  ✓ OpenCV CUDA modules compile successfully"
+          echo "  ✓ Using /mnt partition avoids disk space issues"
           echo "  ✓ cv::cuda::getCudaEnabledDeviceCount() works"
           echo "  ✓ Programs linking OpenCV CUDA run without crash"
           echo ""
-          echo "Next Step: Experiment 03 - Full ApraPipes dependencies"
+          echo "Key Learning: /mnt partition (~60GB) must be used"
+          echo "for vcpkg cache and buildtrees on GitHub runners"
+          echo ""
+          echo "Next Step: Full ApraPipes build with this approach"
           echo "======================================"
