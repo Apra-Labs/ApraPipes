@@ -24,13 +24,22 @@ jobs:
         run: |
           echo "=== Installing CUDA Toolkit 11.8 ==="
 
+          # Check Ubuntu version
+          lsb_release -a
+
+          # Add Universe repository (required for some dependencies)
+          sudo add-apt-repository universe
+
           # Add NVIDIA CUDA repository
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
           sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
 
-          # Install CUDA toolkit (no driver needed for build-only)
-          sudo apt-get -y install cuda-toolkit-11-8
+          # Install CUDA toolkit WITHOUT nsight-systems (which has libtinfo5 dependency issue on Ubuntu 24.04)
+          # Install core toolkit components only
+          sudo apt-get -y install cuda-cudart-11-8 cuda-nvcc-11-8 \
+              cuda-libraries-11-8 cuda-libraries-dev-11-8 \
+              cuda-runtime-11-8
 
           echo "=== CUDA Installation Complete ==="
 
