@@ -26,7 +26,8 @@ jobs:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
       VCPKG_MAX_CONCURRENCY: 6
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg
+      # CRITICAL: Use /mnt partition to avoid disk exhaustion (Experiment 2 learning)
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/runner-work/.cache/vcpkg
       # CUDA environment variables - at job level for vcpkg subprocess propagation
       CUDAToolkit_ROOT: '/usr/local/cuda-11.8'
       CUDA_PATH: '/usr/local/cuda-11.8'
@@ -37,6 +38,29 @@ jobs:
       CUDAHOSTCXX: '/usr/bin/g++-11'
 
     steps:
+    - name: Check disk space before cleanup
+      run: |
+        echo "=== Disk Space BEFORE Cleanup ==="
+        df -h
+
+    - name: Free up root partition space
+      run: |
+        echo "=== Freeing Disk Space on Root Partition ==="
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo docker image prune --all --force
+        echo "=== Root partition cleanup complete ==="
+
+    - name: Check disk space after cleanup
+      run: |
+        echo "=== Disk Space AFTER Cleanup ==="
+        df -h
+        echo ""
+        echo "=== /mnt partition (will be used for vcpkg cache) ==="
+        df -h /mnt
+
     - name: Prepare builder
       run: |
         sudo apt-get update -qq
@@ -90,7 +114,14 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count
 
-    - name: Create vcpkg binary cache directory
+    - name: Create /mnt work directory and take ownership (Experiment 2 learning)
+      run: |
+        echo "=== Creating work directory on /mnt partition ===\"
+        sudo mkdir -p /mnt/runner-work
+        sudo chown -R runner:runner /mnt/runner-work
+        df -h /mnt
+
+    - name: Create vcpkg binary cache directory on /mnt
       run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
 
     - name: Run VCPKG bootstrap
