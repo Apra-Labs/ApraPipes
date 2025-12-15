@@ -90,6 +90,30 @@ From past experience (per user):
 
 ---
 
+### Attempt 5: LFS not enabled - stub libraries are text pointers
+**Run ID:** 20238170778
+**Started:** 2025-12-15 15:42 UTC
+**Result:** ❌ FAILED in 4h 2m 19s
+**CMake Result:** ✅ **SUCCEEDED** (after ~3.5 hours - Major milestone!)
+**Build Result:** ✅ All 161/161 source files compiled successfully
+**Linker Error:** `/usr/bin/ld:/home/runner/work/ApraPipes/ApraPipes/thirdparty/Video_Codec_SDK_10.0.26/Lib/linux/stubs/x86_64/libnvcuvid.so: file format not recognized`
+**Root Cause:** Checkout step had `lfs: false`, so Video_Codec_SDK stub libraries are git LFS text pointers, not actual binary files
+**Fix Applied:** Added `lfs: true` to checkout step (following Docker/WSL/Windows workflow pattern)
+**Lessons:**
+- User correctly identified: "that format error must be due to lfs"
+- Working workflows (Docker, WSL, Windows) all use `lfs: true` in checkout
+- CMake configure now succeeds reliably thanks to vcpkg cache from Attempt 2
+- All compilation passes - only linker needs LFS binaries
+- Cache save failed with "cache entry with same key already exists" (LINUX-TEMP from Attempt 2)
+- Build is VERY close to success - just needed proper LFS checkout
+
+**Milestone Progress:**
+- ✅ CMake configure (3.5h on first attempt, now uses cache)
+- ✅ All compilation (161/161 files)
+- ❌ Linking (needs LFS binaries)
+
+---
+
 ### Attempt 4: libcudnn8-dev not found - missing CUDA repos
 **Run ID:** 20238101404
 **Started:** 2025-12-15 15:40 UTC
