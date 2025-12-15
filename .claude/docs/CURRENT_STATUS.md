@@ -1,8 +1,8 @@
 # Current Status: Unified CUDA Build
 
-**Last Updated:** 2025-12-13 14:10 UTC
+**Last Updated:** 2025-12-15 05:35 UTC
 **Branch:** `feature/get-rid-of-nocuda-builds`
-**Phase:** Experiment Phase (2/3 complete)
+**Phase:** Experiment Phase (2/3 complete, Exp 2 final run in progress)
 
 ---
 
@@ -24,14 +24,18 @@
 
 ### ⏳ In Progress
 
-3. **Experiment 2: vcpkg opencv4[cuda]** - 🔄 RUNNING (Run 20209472316)
-   - Started: 2025-12-14 14:25 UTC (attempt 3)
-   - Expected duration: ~60-90 minutes
+3. **Experiment 2: vcpkg opencv4[cuda]** - 🔄 RUNNING (Run 20221689056 - ATTEMPT 5)
+   - Started: 2025-12-15 05:35 UTC
+   - Expected duration: ~3.5 hours (OpenCV CUDA build)
    - Status: Building OpenCV with CUDA features
-   - Previous failures fixed:
-     - Attempt 1: cuDNN download 404 → Removed cuDNN
-     - Attempt 2: vcpkg syntax error → Fixed features list
-   - **Action for next agent:** Monitor run 20209472316, document when complete
+   - Previous attempts:
+     - Attempt 1 (Run 20209472316): Timeout after 90 min
+     - Attempt 2 (Run 20211053026): ptxas error (disk exhaustion)
+     - Attempt 3 (Run 20214000127): Permission denied on /mnt
+     - Attempt 4 (Run 20216724650): BUILD SUCCEEDED (3.4h) but verification failed (wrong path)
+     - Attempt 5 (Run 20221689056): Fixed vcpkg_installed/ path ← CURRENT
+   - **Key Fix:** Changed `installed/x64-linux` to `vcpkg_installed/x64-linux`
+   - **Action for next agent:** Monitor run 20221689056, should PASS this time!
 
 ---
 
@@ -39,24 +43,25 @@
 
 ### Immediate Actions
 
-1. **Monitor Experiment 2:**
+1. **Monitor Experiment 2 (Run 20221689056):**
    ```bash
-   gh run view 20209472316
-   # When complete, check if passed or failed
-   # Currently building OpenCV (long build ~60-90 min)
+   gh run watch 20221689056
+   # Expected to complete in ~3.5 hours
+   # Should PASS now that vcpkg_installed/ path is fixed
    ```
 
 2. **If Experiment 2 PASSES:**
-   - Document results in `.claude/docs/experiment-results.md`
+   - Document detailed results in `.claude/docs/experiment-results.md`
+   - Update experiment-results.md with all 5 attempts and lessons learned
    - Update summary table (3/3 complete)
    - Commit results
    - **PROCEED TO:** Implement CudaCapabilities in real ApraPipes codebase
 
-3. **If Experiment 2 FAILS:**
-   - Download logs: `gh run view 20209175183 --log > exp2-logs.txt`
-   - Analyze failure (likely vcpkg timeout or build error)
-   - Fix workflow and retrigger
-   - Document blocker
+3. **If Experiment 2 FAILS AGAIN:**
+   - Download logs: `gh run view 20221689056 --log > exp2-attempt5-logs.txt`
+   - Analyze new failure
+   - Critical: We know the BUILD works (3.4h successful on attempt 4)
+   - If verification/test fails, investigate why despite path fix
 
 ### After All Experiments Pass
 
@@ -227,6 +232,11 @@ git add -A && git commit -m "message" && git push
 
 ---
 
-**Next Agent:** Start by checking if Experiment 2 (Run 20209175183) has completed. Act accordingly based on result.
+**Next Agent:** Check status of Experiment 2 (Run 20221689056). If completed:
+- If PASSED: Document results and proceed to implementation phase
+- If FAILED: Analyze logs and determine next steps
+
+**CRITICAL:** Experiment 2 attempt 4 (Run 20216724650) already proved the BUILD WORKS (3.4h).
+The only issue was wrong path (installed/ vs vcpkg_installed/). This has been fixed.
 
 **DO NOT WAIT - ACT AUTONOMOUSLY!**
