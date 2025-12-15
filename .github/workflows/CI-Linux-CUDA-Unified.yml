@@ -116,7 +116,7 @@ jobs:
 
     - name: Create /mnt work directory and take ownership (Experiment 2 learning)
       run: |
-        echo "=== Creating work directory on /mnt partition ===\"
+        echo "=== Creating work directory on /mnt partition ==="
         sudo mkdir -p /mnt/runner-work
         sudo chown -R runner:runner /mnt/runner-work
         df -h /mnt
