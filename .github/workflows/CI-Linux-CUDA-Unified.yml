@@ -1,0 +1,168 @@
+name: CI-Linux-CUDA-Unified
+
+# Unified Linux CUDA build - builds WITH CUDA, detects GPU at runtime
+# Replaces separate NoCUDA and CUDA builds
+# Uses incremental caching strategy to build up cache across failed CMake attempts
+
+on:
+  push:
+    branches:
+      - feature/get-rid-of-nocuda-builds
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  workflow_dispatch:
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  linux-cuda-unified-build:
+    runs-on: ubuntu-22.04  # CRITICAL: GCC 11 for CUDA 11.8 compatibility
+
+    env:
+      TEST_EXE: build/aprapipesut
+      CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
+      VCPKG_MAX_CONCURRENCY: 6
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg
+      # CUDA environment variables - at job level for vcpkg subprocess propagation
+      CUDAToolkit_ROOT: '/usr/local/cuda-11.8'
+      CUDA_PATH: '/usr/local/cuda-11.8'
+      CUDACXX: '/usr/local/cuda-11.8/bin/nvcc'
+      # GCC-11 for CUDA 11.8 compatibility (ubuntu-22.04 has GCC 11 by default)
+      CC: '/usr/bin/gcc-11'
+      CXX: '/usr/bin/g++-11'
+      CUDAHOSTCXX: '/usr/bin/g++-11'
+
+    steps:
+    - name: Prepare builder
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get -y install \
+          ca-certificates curl zip unzip tar \
+          autoconf autoconf-archive automake autopoint \
+          build-essential flex git-core \
+          libass-dev libfreetype6-dev libgnutls28-dev \
+          libmp3lame-dev libsdl2-dev libtool \
+          libsoup-gnome2.4-dev libva-dev libvdpau-dev \
+          libvorbis-dev libxdamage-dev libxcb1-dev \
+          libxcb-shm0-dev libxcb-xfixes0-dev \
+          libncurses5-dev libncursesw5-dev \
+          ninja-build pkg-config texinfo wget yasm \
+          zlib1g-dev nasm gperf bison \
+          python3 python3-pip dos2unix \
+          libx11-dev libgles2-mesa-dev \
+          libxinerama-dev libxcursor-dev xorg-dev \
+          libglu1-mesa-dev python3-jinja2
+        pip3 install meson Jinja2
+
+        # Verify compilers
+        cmake --version
+        ninja --version
+        gcc-11 --version
+        g++-11 --version
+        git --version
+
+    - name: Install CUDA Toolkit 11.8
+      run: |
+        echo "=== Installing CUDA Toolkit 11.8 ==="
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
+        sudo dpkg -i cuda-keyring_1.0-1_all.deb
+        sudo apt-get update
+        sudo apt-get -y install cuda-toolkit-11-8
+
+        # Verify CUDA installation
+        /usr/local/cuda-11.8/bin/nvcc --version
+        echo "CUDA installed successfully"
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+
+    - name: List Submodules
+      run: |
+        git config --global --add safe.directory "*"
+        git submodule status > submodule_ver.txt
+        cat submodule_ver.txt
+        git rev-list --all --count
+
+    - name: Create vcpkg binary cache directory
+      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+
+    - name: Run VCPKG bootstrap
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Restore vcpkg cache (LINUX-TEMP - incremental caching)
+      id: cache-restore
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: LINUX-TEMP
+        restore-keys: LINUX-TEMP
+
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+
+    - name: Configure CMake with CUDA
+      working-directory: ${{github.workspace}}/build
+      run: |
+        export PATH=/usr/local/cuda-11.8/bin:$PATH
+        cmake -B . -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DENABLE_WINDOWS=OFF \
+          -DENABLE_LINUX=ON \
+          -DENABLE_CUDA=ON \
+          ../base
+      continue-on-error: true
+
+    - name: Save vcpkg cache (LINUX-TEMP - always save for incremental builds)
+      if: ${{ always() }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: LINUX-TEMP
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config RelWithDebInfo -j 6
+
+    - name: List Test cases
+      run: |
+        ldd ${{env.TEST_EXE}} | tee >(grep 'not found') || true
+        ${{env.TEST_EXE}} --list_content > tests.txt || true
+      timeout-minutes: 1
+
+    - name: Run Tests
+      run: |
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA-Unified.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: 20
+
+    - name: Upload Test Results
+      if: ${{ always() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_Linux-CUDA-Unified
+        path: |
+          CI_test_result_Linux-CUDA-Unified.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
+
+    - name: Upload build logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: BuildLogs_Linux-CUDA-Unified
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          ${{ github.workspace }}/build/vcpkg-manifest-install.log
+          tests.txt
+      continue-on-error: true
