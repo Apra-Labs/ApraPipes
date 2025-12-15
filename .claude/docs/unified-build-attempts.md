@@ -89,3 +89,23 @@ From past experience (per user):
 (Attempts will be logged below in reverse chronological order)
 
 ---
+
+### Attempt 1: Initial build with all Experiment 2 learnings
+**Run ID:** 20222101726
+**Started:** 2025-12-15 06:00 UTC
+**Result:** ⏳ IN PROGRESS
+**CMake Result:** TBD
+**Error:** TBD
+**Fix Applied:**
+- Applied ALL Experiment 2 learnings:
+  - Use /mnt partition for VCPKG_DEFAULT_BINARY_CACHE
+  - Free up root partition (rm dotnet, android, ghc, CodeQL)
+  - Create /mnt/runner-work with proper ownership
+  - CUDA env vars at job level (CUDAToolkit_ROOT, CUDA_PATH, CUDACXX)
+  - GCC-11 for CUDA 11.8 compatibility
+  - Incremental caching with LINUX-TEMP fixed key
+  - Always save cache after CMake configure (even on failure)
+
+**Lessons:** Waiting for results...
+
+---
