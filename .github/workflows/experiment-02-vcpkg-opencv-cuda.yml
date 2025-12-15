@@ -22,7 +22,7 @@ jobs:
   test-opencv-cuda-minimal:
     runs-on: ubuntu-22.04  # Use 22.04 for GCC 11 (CUDA 11.8 compatible)
     env:
-      VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/runner-work/.cache/vcpkg
 
     steps:
       - name: Check disk space before cleanup
@@ -59,14 +59,22 @@ jobs:
           echo "/usr/local/cuda-11.8/bin" >> $GITHUB_PATH
           echo "CUDA_PATH=/usr/local/cuda-11.8" >> $GITHUB_ENV
 
+      - name: Create work directory on /mnt and take ownership
+        run: |
+          echo "=== Creating work directory on /mnt partition ==="
+          sudo mkdir -p /mnt/runner-work
+          sudo chown -R runner:runner /mnt/runner-work
+          df -h /mnt
+          ls -la /mnt
+
       - name: Setup vcpkg on /mnt partition
         run: |
           echo "=== Setting up vcpkg on /mnt partition ==="
-          cd /mnt
+          cd /mnt/runner-work
           git clone https://github.com/microsoft/vcpkg.git vcpkg-test
           cd vcpkg-test
           ./bootstrap-vcpkg.sh
-          echo "=== vcpkg bootstrapped on /mnt/vcpkg-test ==="
+          echo "=== vcpkg bootstrapped on /mnt/runner-work/vcpkg-test ==="
 
       - name: Setup vcpkg binary cache on /mnt
         run: |
@@ -77,16 +85,16 @@ jobs:
       - name: Move vcpkg buildtrees to /mnt
         run: |
           echo "=== Symlinking vcpkg/buildtrees to /mnt ==="
-          cd /mnt/vcpkg-test
-          mkdir -p /mnt/vcpkg-buildtrees
+          cd /mnt/runner-work/vcpkg-test
+          mkdir -p /mnt/runner-work/vcpkg-buildtrees
           rm -rf buildtrees || true
-          ln -s /mnt/vcpkg-buildtrees buildtrees
+          ln -s /mnt/runner-work/vcpkg-buildtrees buildtrees
           ls -la | grep buildtrees
           echo "=== vcpkg buildtrees now on /mnt partition ==="
 
       - name: Create Minimal vcpkg.json
         run: |
-          cat > /mnt/vcpkg-test/vcpkg.json << 'EOF'
+          cat > /mnt/runner-work/vcpkg-test/vcpkg.json << 'EOF'
           {
             "name": "opencv-cuda-test",
             "version": "0.0.1",
@@ -99,12 +107,12 @@ jobs:
             ]
           }
           EOF
-          cat /mnt/vcpkg-test/vcpkg.json
+          cat /mnt/runner-work/vcpkg-test/vcpkg.json
 
       - name: Build OpenCV with CUDA
         run: |
           echo "=== Building opencv4[cuda] ==="
-          cd /mnt/vcpkg-test
+          cd /mnt/runner-work/vcpkg-test
 
           export PATH=/usr/local/cuda-11.8/bin:$PATH
           export CUDA_PATH=/usr/local/cuda-11.8
@@ -125,7 +133,7 @@ jobs:
       - name: Verify OpenCV CUDA Build
         run: |
           echo "=== Verifying OpenCV CUDA Libraries ==="
-          cd /mnt/vcpkg-test
+          cd /mnt/runner-work/vcpkg-test
 
           # Check if CUDA modules were built
           find installed/x64-linux -name "*opencv*cuda*" -o -name "*opencv_world*"
@@ -137,11 +145,11 @@ jobs:
       - name: Test OpenCV CUDA Program
         run: |
           echo "=== Testing OpenCV CUDA Program ==="
-          cd /mnt
+          cd /mnt/runner-work
 
           export PATH=/usr/local/cuda-11.8/bin:$PATH
           export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-          export PKG_CONFIG_PATH=/mnt/vcpkg-test/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=/mnt/runner-work/vcpkg-test/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
 
           # Create test program
           cat > test_opencv_cuda.cpp << 'EOF'
