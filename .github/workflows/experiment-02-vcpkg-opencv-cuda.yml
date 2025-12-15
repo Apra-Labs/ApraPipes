@@ -135,12 +135,22 @@ jobs:
           echo "=== Verifying OpenCV CUDA Libraries ==="
           cd /mnt/runner-work/vcpkg-test
 
-          # Check if CUDA modules were built
-          find installed/x64-linux -name "*opencv*cuda*" -o -name "*opencv_world*"
+          # vcpkg manifest mode uses vcpkg_installed/ directory
+          echo "Checking for vcpkg installation directories..."
+          ls -la
 
-          # Check pkg-config
-          export PKG_CONFIG_PATH=$(pwd)/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
-          pkg-config --modversion opencv4 || echo "opencv4.pc not found"
+          # Check if CUDA modules were built
+          if [ -d "vcpkg_installed/x64-linux" ]; then
+            echo "Found vcpkg_installed/x64-linux directory"
+            find vcpkg_installed/x64-linux -name "*opencv*cuda*" -o -name "*opencv*world*" | head -20
+
+            # Check pkg-config
+            export PKG_CONFIG_PATH=$(pwd)/vcpkg_installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
+            pkg-config --modversion opencv4 || echo "opencv4.pc not found"
+          else
+            echo "ERROR: vcpkg_installed/x64-linux directory not found"
+            exit 1
+          fi
 
       - name: Test OpenCV CUDA Program
         run: |
@@ -149,7 +159,7 @@ jobs:
 
           export PATH=/usr/local/cuda-11.8/bin:$PATH
           export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-          export PKG_CONFIG_PATH=/mnt/runner-work/vcpkg-test/installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=/mnt/runner-work/vcpkg-test/vcpkg_installed/x64-linux/lib/pkgconfig:$PKG_CONFIG_PATH
 
           # Create test program
           cat > test_opencv_cuda.cpp << 'EOF'
