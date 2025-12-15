@@ -90,6 +90,21 @@ From past experience (per user):
 
 ---
 
+### Attempt 4: libcudnn8-dev not found - missing CUDA repos
+**Run ID:** 20238101404
+**Started:** 2025-12-15 15:40 UTC
+**Result:** ❌ FAILED in 59s
+**CMake Result:** Never reached (prep-cmd failed)
+**Error:** `E: Unable to locate package libcudnn8-dev`
+**Root Cause:** Tried to install libcudnn8-dev BEFORE installing CUDA toolkit (which adds CUDA repos to apt)
+**Fix Applied:** Reordered steps - Install CUDA toolkit FIRST, THEN install cuDNN, THEN prepare builder
+**Lessons:**
+- Docker workflow works because nvidia/cuda container already has CUDA repos configured
+- GitHub-hosted runners need CUDA repos added first (via cuda-toolkit install)
+- Order matters: 1) Install CUDA (adds repos), 2) Install cuDNN, 3) Install other deps
+
+---
+
 ### Attempt 3 (CANCELED): Wrong fix - removed cudnn instead of installing libcudnn8-dev
 **Run ID:** 20237814491
 **Started:** 2025-12-15 15:31 UTC
