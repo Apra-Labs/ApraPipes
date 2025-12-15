@@ -50,7 +50,6 @@
       "features": [
         "contrib",
         "cuda",
-        "cudnn",
         "dnn",
         "highgui",
         "jpeg",

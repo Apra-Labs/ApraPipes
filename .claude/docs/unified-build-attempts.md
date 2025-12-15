@@ -90,6 +90,22 @@ From past experience (per user):
 
 ---
 
+### Attempt 2: cudnn build failure
+**Run ID:** 20233713118
+**Started:** 2025-12-15 13:21 UTC
+**Result:** ❌ FAILED in 45m59s
+**CMake Result:** ✅ **SUCCEEDED** (Major milestone!)
+**Error:** `building cudnn:x64-linux failed with: BUILD_FAILED`
+**Root Cause:** vcpkg.json line 53 includes `"cudnn"` feature for opencv4, but cuDNN cannot be installed on GitHub runners (broken download)
+**Fix Applied:** Removed `"cudnn"` from opencv4 features in base/vcpkg.json
+**Lessons:**
+- CMake configure succeeded - incremental caching is working!
+- vcpkg cache was saved with partial build progress
+- cudnn is not critical for ApraPipes CUDA functionality
+- Failed to actively monitor again - user had to ask "status ?" 2 hours later
+
+---
+
 ### Attempt 1: YAML syntax error - unmatched quote
 **Run ID:** 20222101726
 **Started:** 2025-12-15 06:00 UTC
