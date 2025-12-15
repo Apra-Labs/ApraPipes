@@ -90,6 +90,23 @@ From past experience (per user):
 
 ---
 
+### Attempt 3 (CANCELED): Wrong fix - removed cudnn instead of installing libcudnn8-dev
+**Run ID:** 20237814491
+**Started:** 2025-12-15 15:31 UTC
+**Result:** ❌ CANCELED after ~10 minutes
+**CMake Result:** N/A (canceled before completion)
+**Error:** N/A (wrong fix applied)
+**Root Cause:** Removed cudnn from vcpkg.json instead of installing libcudnn8-dev like Docker workflow
+**Fix Applied:**
+- Restored cudnn to opencv4 features in vcpkg.json
+- Added libcudnn8-dev to apt-get install in workflow (following Docker workflow pattern)
+**Lessons:**
+- Should have checked Docker workflow FIRST (user pointed this out)
+- Docker workflow solves this with `apt-get install -y libcudnn8-dev` (line 105 in build-test-lin-container.yml)
+- User had to remind me the issue was already solved - shameful
+
+---
+
 ### Attempt 2: cudnn build failure
 **Run ID:** 20233713118
 **Started:** 2025-12-15 13:21 UTC
