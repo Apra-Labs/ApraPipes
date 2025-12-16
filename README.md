@@ -7,7 +7,7 @@ A pipeline framework for developing video and image processing applications. Sup
 Learn more about ApraPipes [here](https://deepwiki.com/Apra-Labs/ApraPipes).
 
 ## Build status
-Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson Boards and Windows x64.
+Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson Boards, Windows x64, and macOS.
 |OS|Version|With Cuda|Tests|Status|
 |--|-------|---------|------|------|
 |Windows|2022|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows.svg)|[![CI-Win-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-NoCUDA.yml)|
@@ -15,6 +15,7 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 |Ubuntu x64_86|22.04|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)|[![CI-Linux-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml)|
 |Ubuntu x64_86|24.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)|[![CI-Linux-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml)|
 |Ubuntu ARM64 (Jetsons)|18.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)|[![CI-Linux-ARM64](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml)|
+|macOS x86_64|15.0+|No|No|[![CI-MacOSX-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml)|
 |Ubuntu x64_86-docker|22.04|Yes|No|[![CI-Linux-CUDA-Docker](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml)|
 
 ## Getting Started with ApraPipes
@@ -24,10 +25,11 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
   <ul>
     <li><a href="#windows">Windows</a></li>
     <li><a href="#linux">Linux</a></li>
+    <li><a href="#macos">macOS</a></li>
     <li><a href="#jetson">Jetson</a></li>
     <li><a href="#docker">Docker</a></li>
   </ul>
-</details>    
+</details>
 
  * Note :  Make sure to clone using recursive flag
     ```
@@ -185,6 +187,74 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
   * run one test with arguments 
     ```
     ./_buildaprapipesut --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera
+    ```
+    * Look at the unit_tests/params_test to check for sample usage of parameters in test code.
+</details>
+
+<h2 id="macos">macOS (Version ≥ 15.0)</h2>
+<details>
+  <summary>Requirements</summary>
+
+  ### Prerequisites
+
+  ### Homebrew
+  * Install [Homebrew](https://brew.sh/) package manager if not already installed:
+    ```
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    ```
+
+  ### Build Tools
+  * Install nasm (required for FFmpeg):
+    ```
+    brew install nasm
+    ```
+
+  * Clone with submodules and LFS.
+    ```
+    git clone --recursive https://github.com/Apra-Labs/ApraPipes.git
+    ```
+
+</details>
+
+<details>
+  <summary>Build</summary>
+
+  * Run this command to make the script file executable.
+  ```
+  chmod +x build_macos.sh
+  ```
+  ### Build Without Cuda (Only NoCUDA Build)
+  macOS builds do not support CUDA. Use the following script:
+  ```
+  ./build_macos.sh
+  ```
+
+  Build can take ~2 hours depending on the machine configuration.
+</details>
+
+<details>
+  <summary>Test</summary>
+
+  ### Run Tests
+  * list all tests
+    ```
+    ./build/aprapipesut --list_content
+    ```
+  * run all tests
+    ```
+    ./build/aprapipesut
+    ```
+  * run all tests disabling memory leak dumps and better progress logging
+    ```
+    ./build/aprapipesut -p -l all --detect_memory_leaks=0
+    ```
+  * run one test
+    ```
+    ./build/aprapipesut --run_test=filenamestrategy_tests/boostdirectorystrategy
+    ```
+  * run one test with arguments
+    ```
+    ./build/aprapipesut --run_test=unit_tests/params_test -- -ip 10.102.10.121 -data ArgusCamera
     ```
     * Look at the unit_tests/params_test to check for sample usage of parameters in test code.
 </details>
