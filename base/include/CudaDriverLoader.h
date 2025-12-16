@@ -50,6 +50,8 @@ public:
     CUresult (*cuCtxPushCurrent)(CUcontext ctx) = nullptr;
     CUresult (*cuCtxPopCurrent)(CUcontext *pctx) = nullptr;
     CUresult (*cuCtxSynchronize)(void) = nullptr;
+    CUresult (*cuDevicePrimaryCtxRetain)(CUcontext *pctx, CUdevice dev) = nullptr;
+    CUresult (*cuDevicePrimaryCtxRelease)(CUdevice dev) = nullptr;
 
     // Memory management
     CUresult (*cuMemAlloc)(CUdeviceptr *dptr, size_t bytesize) = nullptr;

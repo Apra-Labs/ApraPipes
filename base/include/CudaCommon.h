@@ -3,14 +3,18 @@
 #include "cuda.h"
 #include "Logger.h"
 #include "cuda_runtime_api.h"
+#include "CudaDriverLoader.h"
 
 inline bool check(CUresult e, int iLine, const char *szFile)
 {
     if (e != CUDA_SUCCESS)
     {
         const char *szErrName = NULL;
-        cuGetErrorName(e, &szErrName);
-        LOG_FATAL << "CUDA driver API error " << szErrName << " at line " << iLine << " in file " << szFile;
+        auto& loader = CudaDriverLoader::getInstance();
+        if (loader.cuGetErrorName) {
+            loader.cuGetErrorName(e, &szErrName);
+        }
+        LOG_FATAL << "CUDA driver API error " << (szErrName ? szErrName : "Unknown") << " at line " << iLine << " in file " << szFile;
         return false;
     }
     return true;
@@ -29,21 +33,29 @@ class ApraCUcontext
 public:
     ApraCUcontext()
     {
-        ck(cuInit(0));
+        auto& loader = CudaDriverLoader::getInstance();
+        if (!loader.isAvailable()) {
+            throw std::runtime_error("ApraCUcontext requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
+        }
+
+        ck(loader.cuInit(0));
         int nGpu = 0;
-        ck(cuDeviceGetCount(&nGpu));
+        ck(loader.cuDeviceGetCount(&nGpu));
         m_cuDevice = 0;
-        ck(cuDeviceGet(&m_cuDevice, 0));
+        ck(loader.cuDeviceGet(&m_cuDevice, 0));
         char szDeviceName[80];
-        ck(cuDeviceGetName(szDeviceName, sizeof(szDeviceName), m_cuDevice));
+        ck(loader.cuDeviceGetName(szDeviceName, sizeof(szDeviceName), m_cuDevice));
         LOG_INFO << "GPU "<<nGpu<<" in use: " << szDeviceName;
 
-        ck(cuDevicePrimaryCtxRetain(&m_cuContext, m_cuDevice));
+        ck(loader.cuDevicePrimaryCtxRetain(&m_cuContext, m_cuDevice));
     }
 
     ~ApraCUcontext()
     {
-        ck(cuDevicePrimaryCtxRelease(m_cuDevice));
+        auto& loader = CudaDriverLoader::getInstance();
+        if (loader.isAvailable() && loader.cuDevicePrimaryCtxRelease) {
+            ck(loader.cuDevicePrimaryCtxRelease(m_cuDevice));
+        }
     }
 
     CUcontext getContext()

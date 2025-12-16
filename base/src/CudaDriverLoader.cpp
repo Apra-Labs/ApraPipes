@@ -29,6 +29,8 @@ CudaDriverLoader::CudaDriverLoader() {
     loadSymbol(cuCtxPushCurrent, "cuCtxPushCurrent");
     loadSymbol(cuCtxPopCurrent, "cuCtxPopCurrent");
     loadSymbol(cuCtxSynchronize, "cuCtxSynchronize");
+    loadSymbol(cuDevicePrimaryCtxRetain, "cuDevicePrimaryCtxRetain");
+    loadSymbol(cuDevicePrimaryCtxRelease, "cuDevicePrimaryCtxRelease");
 
     loadSymbol(cuMemAlloc, "cuMemAlloc");
     loadSymbol(cuMemAllocPitch, "cuMemAllocPitch");
