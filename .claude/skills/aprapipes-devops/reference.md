@@ -14,6 +14,7 @@ Cross-platform reference for vcpkg configuration, GitHub Actions, caching, and v
 | Windows CUDA | Self-hosted | Single-phase | None | No |
 | Linux x64 NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
 | Linux x64 CUDA | Self-hosted | Single-phase | None | No |
+| macOS NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
 | Jetson ARM64 | Self-hosted | Single-phase | None | No |
 | Docker | Varies | Varies | Varies | Optional |
 
