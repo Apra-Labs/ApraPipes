@@ -17,23 +17,30 @@ ENDIF(ENABLE_CUDA)
 
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)
+	# Use release-only triplet to skip debug builds and cut build time by ~50%
+	IF(ENABLE_ARM64)
+		set(VCPKG_TARGET_TRIPLET "arm64-linux-release" CACHE STRING "arm64-linux-release")
+	ELSE()
+		set(VCPKG_TARGET_TRIPLET "x64-linux-release" CACHE STRING "x64-linux-release")
+	ENDIF()
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
-	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
+	# Use release-only triplet to skip debug builds and cut build time by ~50%
+	set(VCPKG_TARGET_TRIPLET "x64-windows-release" CACHE STRING "x64-windows-release")
 	set(VCPKG_PLATFORM_TOOLSET "v143" CACHE STRING "v143" FORCE)
 ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_MACOS)
 	add_compile_definitions(MACOS)
-	# macOS uses x64-osx triplet by default
-	set(VCPKG_TARGET_TRIPLET "x64-osx" CACHE STRING "x64-osx")
+	# Use release-only triplet to skip debug builds and cut build time by ~50%
+	set(VCPKG_TARGET_TRIPLET "x64-osx-release" CACHE STRING "x64-osx-release")
 ENDIF(ENABLE_MACOS)
 
 IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
-	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
