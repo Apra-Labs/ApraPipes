@@ -104,7 +104,88 @@ ModuleNotFoundError: No module named 'distutils'
 
 ---
 
-## Issue W2: PKG_CONFIG_EXECUTABLE Not Found
+## Issue W2: continue-on-error Hiding Real Failures
+
+**Symptom**:
+- Phase 1 shows "success" but real errors occurred
+- Build fails in Phase 2 with errors that should have appeared in Phase 1
+- Confusing diagnostic - errors appear unrelated
+
+**Root Cause**:
+- Phase 1 uses `continue-on-error: true` on CMake configure step
+- This allows partial completion (expected for caching workflow)
+- But it also hides real errors (libxml2 hash, distutils failures)
+
+**Diagnostic Approach**:
+
+1. **Don't trust Phase 1 step status** - check actual logs:
+   ```bash
+   # Phase 1 may show green checkmark but have errors
+   grep "error:" /tmp/build.log | grep "prep"
+   ```
+
+2. **Distinguish expected vs unexpected failures**:
+   - Expected: CMake fails to find packages (only OpenCV installed)
+   - Unexpected: vcpkg package build errors, hash mismatches
+
+3. **Search for real errors**:
+   ```bash
+   # Hash mismatches
+   grep "unexpected hash" /tmp/build.log
+
+   # Package build failures
+   grep "error:" /tmp/build.log | grep -v "Could NOT find"
+
+   # Python errors
+   grep -i "distutils\|ModuleNotFoundError" /tmp/build.log
+   ```
+
+4. **Check Phase 2 for inherited failures**:
+   - If Phase 1 had hidden vcpkg errors, Phase 2 may fail with same issue
+   - Phase 2 does NOT have `continue-on-error`, so it will fail properly
+
+**Pattern Recognition**:
+
+| Error Location | continue-on-error | Action |
+|----------------|-------------------|--------|
+| Phase 1 - CMake "Could NOT find" | Yes | Ignore (expected) |
+| Phase 1 - vcpkg build errors | Yes | **Investigate** (real problem) |
+| Phase 2 - Any error | No | Investigate (blocking issue) |
+
+**Better Alternatives**:
+
+1. **Temporarily remove continue-on-error** to see real failures:
+   ```yaml
+   # In build-test-win.yml
+   - name: Configure CMake Common
+     run: ...
+     continue-on-error: false  # Temporarily change to false
+   ```
+
+2. **Add explicit validation after Phase 1**:
+   ```yaml
+   - name: Validate cache populated
+     run: |
+       if (!(Test-Path "vcpkg_installed/x64-windows/include/opencv2")) {
+         Write-Error "Phase 1 failed to cache OpenCV"
+         exit 1
+       }
+   ```
+
+3. **Use direct vcpkg install**:
+   ```yaml
+   - name: Install OpenCV to cache
+     run: |
+       .\base\fix-vcpkg-json.ps1 -onlyOpenCV
+       .\vcpkg\vcpkg.exe install --triplet x64-windows
+     # No continue-on-error - fails loudly on real errors
+   ```
+
+**Key Lesson**: When debugging, check actual error messages in logs, not just workflow step status.
+
+---
+
+## Issue W3: PKG_CONFIG_EXECUTABLE Not Found
 
 **Symptom**:
 ```
@@ -173,7 +254,7 @@ Add `pkgconf` to vcpkg.json dependencies:
 
 ---
 
-## Issue W3: Package Version Breaking Changes
+## Issue W4: Package Version Breaking Changes
 
 **Symptom**:
 - Build fails after vcpkg baseline update
@@ -241,87 +322,6 @@ Pin package to compatible major version in `base/vcpkg.json`:
 
 **Prevention**:
 Pin all critical dependencies upfront (see `reference.md` → Version Pinning Strategy)
-
----
-
-## Issue W4: continue-on-error Hiding Real Failures
-
-**Symptom**:
-- Phase 1 shows "success" but real errors occurred
-- Build fails in Phase 2 with errors that should have appeared in Phase 1
-- Confusing diagnostic - errors appear unrelated
-
-**Root Cause**:
-- Phase 1 uses `continue-on-error: true` on CMake configure step
-- This allows partial completion (expected for caching workflow)
-- But it also hides real errors (libxml2 hash, distutils failures)
-
-**Diagnostic Approach**:
-
-1. **Don't trust Phase 1 step status** - check actual logs:
-   ```bash
-   # Phase 1 may show green checkmark but have errors
-   grep "error:" /tmp/build.log | grep "prep"
-   ```
-
-2. **Distinguish expected vs unexpected failures**:
-   - Expected: CMake fails to find packages (only OpenCV installed)
-   - Unexpected: vcpkg package build errors, hash mismatches
-
-3. **Search for real errors**:
-   ```bash
-   # Hash mismatches
-   grep "unexpected hash" /tmp/build.log
-
-   # Package build failures
-   grep "error:" /tmp/build.log | grep -v "Could NOT find"
-
-   # Python errors
-   grep -i "distutils\|ModuleNotFoundError" /tmp/build.log
-   ```
-
-4. **Check Phase 2 for inherited failures**:
-   - If Phase 1 had hidden vcpkg errors, Phase 2 may fail with same issue
-   - Phase 2 does NOT have `continue-on-error`, so it will fail properly
-
-**Pattern Recognition**:
-
-| Error Location | continue-on-error | Action |
-|----------------|-------------------|--------|
-| Phase 1 - CMake "Could NOT find" | Yes | Ignore (expected) |
-| Phase 1 - vcpkg build errors | Yes | **Investigate** (real problem) |
-| Phase 2 - Any error | No | Investigate (blocking issue) |
-
-**Better Alternatives**:
-
-1. **Temporarily remove continue-on-error** to see real failures:
-   ```yaml
-   # In build-test-win.yml
-   - name: Configure CMake Common
-     run: ...
-     continue-on-error: false  # Temporarily change to false
-   ```
-
-2. **Add explicit validation after Phase 1**:
-   ```yaml
-   - name: Validate cache populated
-     run: |
-       if (!(Test-Path "vcpkg_installed/x64-windows/include/opencv2")) {
-         Write-Error "Phase 1 failed to cache OpenCV"
-         exit 1
-       }
-   ```
-
-3. **Use direct vcpkg install** (see devops-build-system-guide.md → Phase 1 Optimization):
-   ```yaml
-   - name: Install OpenCV to cache
-     run: |
-       .\base\fix-vcpkg-json.ps1 -onlyOpenCV
-       .\vcpkg\vcpkg.exe install --triplet x64-windows
-     # No continue-on-error - fails loudly on real errors
-   ```
-
-**Key Lesson**: When debugging, check actual error messages in logs, not just workflow step status.
 
 ---
 

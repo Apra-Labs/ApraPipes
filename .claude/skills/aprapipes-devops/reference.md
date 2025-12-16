@@ -14,8 +14,14 @@ Cross-platform reference for vcpkg configuration, GitHub Actions, caching, and v
 | Windows CUDA | Self-hosted | Single-phase | None | No |
 | Linux x64 NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
 | Linux x64 CUDA | Self-hosted | Single-phase | None | No |
+| macOS NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
 | Jetson ARM64 | Self-hosted | Single-phase | None | No |
 | Docker | Varies | Varies | Varies | Optional |
+
+**Terminology Note: macOS vs MacOSX**
+- **User-facing documentation**: Use "macOS" (Apple's official branding)
+- **Technical identifiers**: Use "MacOSX" (workflow names like `CI-MacOSX-NoCUDA.yml`, cache keys like `MacOSX-5-`)
+- **Rationale**: Technical identifiers maintain consistency with existing infrastructure and avoid filesystem/URL complications
 
 ### Two-Phase Build Strategy (Hosted Runners Only)
 
@@ -138,6 +144,21 @@ vcpkg/
 ```
 
 **Why 3.10.x**: Python 3.12+ removed `distutils` module required by glib and other packages.
+
+### Python Version Update Policy
+
+**Current Version**: 3.10.11 (has distutils module)
+
+**Upgrade Timing**: When vcpkg drops support for Python 3.10.x
+
+**Version Constraints**:
+- Minimum: 3.10.x (requires distutils support)
+- Maximum: < 3.12 (distutils removed in Python 3.12+)
+
+**Testing Required on Update**:
+- All platforms build successfully
+- glib package builds without errors
+- Verify distutils availability
 
 ### fix-vcpkg-json.ps1 - Build Configuration Script
 
@@ -354,8 +375,8 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
 - `CI-Win-CUDA.yml`
 - `CI-Linux-x64-NoCUDA.yml`
 - `CI-Linux-x64-CUDA.yml`
-- `CI-Linux-ARM64.yml`
-- `CI-Jetson.yml` (if exists)
+- `CI-Linux-ARM64.yml` (Jetson/ARM64 builds)
+- `CI-MacOSX-NoCUDA.yml`
 
 **Reusable Workflows**:
 - `build-test-win.yml` - Parameterized Windows builds
@@ -411,13 +432,13 @@ on:
 2. Manually trigger Windows NoCUDA build
 3. Monitor and fix any errors
 4. Manually trigger Linux NoCUDA build to validate cross-platform
-5. If Linux fails, fix and re-trigger ONLY Linux (not all 7 workflows)
+5. If Linux fails, fix and re-trigger ONLY Linux (not all 8 workflows)
 6. Once both pass, reinstate automatic triggers and merge
 
 **Anti-Pattern** (wasteful):
 ```
 ✗ Reinstating auto-triggers before validating
-✗ Letting all 7 workflows run when only testing 1 platform
+✗ Letting all 8 workflows run when only testing 1 platform
 ✗ Not canceling unnecessary builds
 ✗ Triggering builds without monitoring them
 ```
@@ -783,6 +804,9 @@ Both ARM64 (Jetson) and Windows CUDA self-hosted runners are accessible via Open
 |--------|------|--------------|----------|----------|-----|
 | **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 18.04 |
 | **Windows CUDA** | `utubovyu.users.openrport.io` | `22179` (varies) | `administrator` | (ask user) | Windows 11 Pro |
+
+**Getting Current Ports**: Ports change with each OpenRPort tunnel session.
+Ask the system owner for current port mappings before attempting SSH connection.
 
 ### Basic SSH Commands
 

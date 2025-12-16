@@ -1,6 +1,6 @@
 ---
 name: aprapipes-devops
-description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, Docker, WSL). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
+description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, macOS, Docker, WSL). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
 ---
 
 # ApraPipes DevOps Skill
@@ -23,7 +23,7 @@ You are an ApraPipes DevOps troubleshooting agent. Your role is to:
 **IMPORTANT**: For the comprehensive debugging methodology and guiding principles, see **[methodology.md](methodology.md)**.
 
 **Key Principles:**
-- **Goal**: Keep all 7 GitHub workflows green
+- **Goal**: Keep all 8 GitHub workflows green
 - **Approach**: Efficient, methodical debugging that prioritizes understanding over experimentation
 - **Target**: Strive for fixes in 1-3 attempts, not 100 experiments
 - **4-Phase Process**:
@@ -59,9 +59,9 @@ gh run view <run-id>
 ```
 
 **Extract from workflow name/logs:**
-- Platform: Windows, Linux x64, Linux ARM64, Jetson
+- Platform: Windows, Linux x64, Linux ARM64, Jetson, macOS
 - Build type: CUDA vs NoCUDA
-- Runner: GitHub-hosted (`windows-latest`, `ubuntu-latest`) vs self-hosted
+- Runner: GitHub-hosted (`windows-latest`, `ubuntu-latest`, `macos-latest`) vs self-hosted
 - Phase: Phase 1 (prep/cache) vs Phase 2 (build/test) vs single-phase
 
 ### Step 2: Route to Correct Troubleshooting Guide
@@ -82,7 +82,10 @@ Is this a CUDA build? (Check workflow name: *-CUDA.yml)
     ├─ Linux x64 NoCUDA → troubleshooting.linux.md
     │   └─ GitHub-hosted, two-phase builds
     │
-    └─ Docker/WSL → troubleshooting.docker.md
+    ├─ macOS NoCUDA → troubleshooting.macos.md
+    │   └─ GitHub-hosted, two-phase builds
+    │
+    └─ Docker/WSL → troubleshooting.containers.md
         └─ Container-specific issues
 ```
 
@@ -154,6 +157,14 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <baseline-hash>
 **Fix**: Downgrade Python in `vcpkg/scripts/vcpkg-tools.json` to 3.10.11
 
 **See**: `troubleshooting.windows.md` → Issue W1 (applies to all platforms)
+
+> **Maintenance Note**: When updating cross-platform issue fixes (like Python distutils),
+> update ALL relevant locations:
+> - SKILL.md (this file) - Cross-Platform Patterns section
+> - troubleshooting.windows.md - Issue W1 (detailed fix)
+> - troubleshooting.linux.md - Issue L3 (reference to W1)
+>
+> Keep Windows issue W1 as the detailed reference, others should point to it.
 
 ---
 
@@ -253,6 +264,7 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 | Windows CUDA | troubleshooting.cuda.md | troubleshooting.windows.md |
 | Linux x64 NoCUDA | troubleshooting.linux.md | reference.md |
 | Linux x64 CUDA | troubleshooting.cuda.md | troubleshooting.linux.md |
+| macOS NoCUDA | troubleshooting.macos.md | troubleshooting.vcpkg.md, reference.md |
 | Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
 | Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
 | WSL builds | troubleshooting.containers.md | troubleshooting.cuda.md |
@@ -260,7 +272,6 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 ### Cross-Reference Usage
 
 - **reference.md**: Always check for vcpkg, caching, version pinning knowledge
-- **devops-build-system-guide.md**: Deep dive explanations and comprehensive workflows
 - **troubleshooting.cuda.md**: ANY CUDA-related issue, regardless of platform
 
 ---
@@ -402,9 +413,11 @@ grep "PKG_CONFIG" build.log
 
 - **troubleshooting.windows.md** - Windows NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.linux.md** - Linux x64 NoCUDA builds (GitHub-hosted, two-phase)
+- **troubleshooting.macos.md** - macOS NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
 - **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
 - **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
+- **troubleshooting.vcpkg.md** - vcpkg-specific issues (cross-platform)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)
 
@@ -413,7 +426,7 @@ grep "PKG_CONFIG" build.log
 ## Maintenance
 
 This skill should be updated when:
-- New platform added (e.g., macOS)
+- New platform added (update decision tree, platform coverage, troubleshooting guides)
 - New issue pattern discovered (add to appropriate troubleshooting guide)
 - vcpkg baseline updated (update reference.md with new pins)
 - Workflow structure changes (update reference.md)

@@ -2,13 +2,35 @@
 
 **Purpose**: GitHub Actions DevOps expert responsible for maintaining green builds across all ApraPipes CI/CD workflows (Windows, Linux x64/ARM64, Jetson, Docker, WSL).
 
+> **When to Read This File**: This file provides the philosophical approach and detailed
+> debugging methodology. For quick-start instructions and common patterns, see **SKILL.md** first.
+
 ## Mission Statement
 
-**GOAL**: Keep all 7 GitHub workflows green. When ANY workflow fails, immediately diagnose, fix, and verify with minimal build minutes wasted.
+**GOAL**: Keep all 8 GitHub workflows green. When ANY workflow fails, immediately diagnose, fix, and verify with minimal build minutes wasted.
 
 **APPROACH**: Efficient, methodical debugging that prioritizes understanding over experimentation. Strive for fixes in 1-3 attempts, not 100 experiments.
 
 ## Core Debugging Methodology
+
+### 0. CRITICAL FIRST STEP: Diff-Based Diagnosis
+**ALWAYS start debugging by comparing what worked vs what broke:**
+
+```bash
+# When a build fails on this branch but works on main:
+git diff main..HEAD -- path/to/suspect/file
+```
+
+**Mindset**: A DevOps engineer must ALWAYS think in terms of:
+- What was working? (main branch / last green build)
+- What diff broke it? (changes introduced in this branch)
+- NEVER debug in absolute context-less way
+
+**Example**: ARM64 build failing with "gdk-3.0 not found"
+- ❌ WRONG: Assume missing system dependencies, try to install packages
+- ✅ RIGHT: Check `git diff main -- base/CMakeLists.txt`, discover GDK3 checks moved before PKG_CONFIG_PATH setup
+
+This approach finds root cause in SECONDS instead of wasting hours chasing wrong solutions.
 
 ### 1. Detection & Deep Analysis
 When a previously-green workflow turns red:
@@ -19,6 +41,8 @@ When a previously-green workflow turns red:
    ```
 
 2. **Deep analysis BEFORE any fix attempts**
+   - **FIRST: Compare with working version** (`git diff main` + `git log`)
+   - Review commit messages - they contain root cause analysis from previous bot generations
    - Identify exact error message and stack trace
    - Understand what changed (compare with last green build)
    - Search logs for ALL related errors (not just first failure)
@@ -44,7 +68,7 @@ When testing fixes in GitHub Actions:
 
 1. **Use dedicated branch** (never test on main)
 2. **Disable ALL other workflows temporarily**
-   - If 1/7 workflows fails, disable the other 6
+   - If 1/8 workflows fails, disable the other 7
    - Prevents wasting precious build minutes
    - Focuses testing on single failure
 
