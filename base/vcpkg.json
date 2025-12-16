@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "$comment": "Cache bust: libarchive 3.5.2 fix - 2025-12-08",
+  "$comment": "Cache bust: libjpeg-turbo 2.1.5.1 downgrade - 2025-12-12",
   "name": "apra-pipes-cuda",
   "version": "0.0.1",
   "builtin-baseline": "4658624c5f19c1b468b62fe13ed202514dfd463e",
@@ -42,7 +42,15 @@
       "default-features": false,
       "features": [
         "cuda"
-      ]
+      ],
+      "platform": "!osx",
+      "$reason": "CUDA not available on macOS"
+    },
+    {
+      "name": "whisper",
+      "default-features": false,
+      "platform": "osx",
+      "$reason": "macOS NoCUDA build - core whisper without CUDA"
     },
     {
       "name": "opencv4",
@@ -53,22 +61,43 @@
         "cudnn",
         "dnn",
         "highgui",
+        "nonfree",
+        "png",
+        "tiff",
+        "webp"
+      ],
+      "platform": "!osx",
+      "$reason": "CUDA features not available on macOS"
+    },
+    {
+      "name": "opencv4",
+      "default-features": false,
+      "features": [
+        "contrib",
+        "dnn",
+        "highgui",
         "jpeg",
         "nonfree",
         "png",
         "tiff",
         "webp"
-      ]
+      ],
+      "platform": "osx",
+      "$reason": "macOS NoCUDA build - OpenCV without CUDA, with JPEG support via libjpeg-turbo"
     },
-    "freeglut",
+    {
+      "name": "freeglut",
+      "platform": "linux",
+      "$reason": "macOS uses native GLUT framework"
+    },
     "ffmpeg",
     "openh264-apra",
     "glfw3",
     "glew",
-    "libjpeg-turbo",
     "bigint",
     "boost-math",
     "boost-system",
+    "boost-thread",
     "boost-filesystem",
     "boost-serialization",
     "boost-log",
@@ -86,7 +115,8 @@
     "brotli",
     {
       "name": "gtk3",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "GTK3 not used on macOS or Windows"
     },
     {
       "name": "glib",
@@ -112,11 +142,13 @@
     },
     {
       "name": "re",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "libre only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "baresip",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "baresip only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "libmp4"
