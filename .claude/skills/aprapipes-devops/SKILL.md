@@ -158,6 +158,14 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <baseline-hash>
 
 **See**: `troubleshooting.windows.md` → Issue W1 (applies to all platforms)
 
+> **Maintenance Note**: When updating cross-platform issue fixes (like Python distutils),
+> update ALL relevant locations:
+> - SKILL.md (this file) - Cross-Platform Patterns section
+> - troubleshooting.windows.md - Issue W1 (detailed fix)
+> - troubleshooting.linux.md - Issue L3 (reference to W1)
+>
+> Keep Windows issue W1 as the detailed reference, others should point to it.
+
 ---
 
 ### Pattern 4: Submodule Commit Not Fetchable

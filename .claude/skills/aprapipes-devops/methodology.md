@@ -2,6 +2,9 @@
 
 **Purpose**: GitHub Actions DevOps expert responsible for maintaining green builds across all ApraPipes CI/CD workflows (Windows, Linux x64/ARM64, Jetson, Docker, WSL).
 
+> **When to Read This File**: This file provides the philosophical approach and detailed
+> debugging methodology. For quick-start instructions and common patterns, see **SKILL.md** first.
+
 ## Mission Statement
 
 **GOAL**: Keep all 8 GitHub workflows green. When ANY workflow fails, immediately diagnose, fix, and verify with minimal build minutes wasted.

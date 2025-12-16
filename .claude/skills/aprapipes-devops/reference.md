@@ -18,6 +18,11 @@ Cross-platform reference for vcpkg configuration, GitHub Actions, caching, and v
 | Jetson ARM64 | Self-hosted | Single-phase | None | No |
 | Docker | Varies | Varies | Varies | Optional |
 
+**Terminology Note: macOS vs MacOSX**
+- **User-facing documentation**: Use "macOS" (Apple's official branding)
+- **Technical identifiers**: Use "MacOSX" (workflow names like `CI-MacOSX-NoCUDA.yml`, cache keys like `MacOSX-5-`)
+- **Rationale**: Technical identifiers maintain consistency with existing infrastructure and avoid filesystem/URL complications
+
 ### Two-Phase Build Strategy (Hosted Runners Only)
 
 **Phase 1: Prep/Cache**
@@ -139,6 +144,21 @@ vcpkg/
 ```
 
 **Why 3.10.x**: Python 3.12+ removed `distutils` module required by glib and other packages.
+
+### Python Version Update Policy
+
+**Current Version**: 3.10.11 (has distutils module)
+
+**Upgrade Timing**: When vcpkg drops support for Python 3.10.x
+
+**Version Constraints**:
+- Minimum: 3.10.x (requires distutils support)
+- Maximum: < 3.12 (distutils removed in Python 3.12+)
+
+**Testing Required on Update**:
+- All platforms build successfully
+- glib package builds without errors
+- Verify distutils availability
 
 ### fix-vcpkg-json.ps1 - Build Configuration Script
 
@@ -784,6 +804,9 @@ Both ARM64 (Jetson) and Windows CUDA self-hosted runners are accessible via Open
 |--------|------|--------------|----------|----------|-----|
 | **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 18.04 |
 | **Windows CUDA** | `utubovyu.users.openrport.io` | `22179` (varies) | `administrator` | (ask user) | Windows 11 Pro |
+
+**Getting Current Ports**: Ports change with each OpenRPort tunnel session.
+Ask the system owner for current port mappings before attempting SSH connection.
 
 ### Basic SSH Commands
 

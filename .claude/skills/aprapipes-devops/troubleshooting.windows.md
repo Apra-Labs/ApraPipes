@@ -104,147 +104,7 @@ ModuleNotFoundError: No module named 'distutils'
 
 ---
 
-## Issue W2: PKG_CONFIG_EXECUTABLE Not Found
-
-**Symptom**:
-```
-Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE)
-```
-- CMake FindPkgConfig fails
-- Occurs in Phase 2 during CMake configure
-- May also appear in Phase 1 (ignore if `continue-on-error: true`)
-
-**Root Cause**:
-- CMake's FindPkgConfig module can't find compatible pkg-config executable
-- System pkg-config (from chocolatey pkgconfiglite) may not be compatible
-- vcpkg-provided pkgconf not installed
-
-**Common Misdiagnosis**:
-❌ "Need to add chocolatey bin to PATH"
-- Wrong because: chocolatey already works (`choco install` succeeds in prep-cmd)
-- Wrong because: Adding to PATH doesn't fix compatibility issues
-- Wrong because: The tool exists, but CMake can't use it
-
-**Correct Diagnosis**:
-✅ CMake FindPkgConfig needs vcpkg's pkgconf package
-
-**Diagnostic Steps**:
-1. Check if error occurs in Phase 1 or Phase 2:
-   ```bash
-   grep -n "PKG_CONFIG_EXECUTABLE" /tmp/build.log
-   # Check if line is in prep phase (has continue-on-error) or test phase
-   ```
-
-2. Check if pkgconf is in vcpkg.json:
-   ```bash
-   grep "pkgconf" base/vcpkg.json
-   ```
-
-3. If pkgconf installed, check CMake found it:
-   ```bash
-   grep "Found PkgConfig" /tmp/build.log
-   ```
-
-**Fix**:
-
-Add `pkgconf` to vcpkg.json dependencies:
-
-```json
-{
-  "dependencies": [
-    "pkgconf",  // Add as first dependency
-    // ... other dependencies
-  ]
-}
-```
-
-**Why This Works**:
-- vcpkg's pkgconf package provides CMake integration
-- CMake FindPkgConfig automatically finds vcpkg-installed pkgconf
-- Located at: `vcpkg_installed/x64-windows/tools/pkgconf/pkgconf.exe`
-- vcpkg CMake toolchain ensures FindPkgConfig looks here first
-
-**Verification**:
-- Build logs show: `Installing ... pkgconf:x64-windows@...`
-- CMake logs show: `Found PkgConfig: D:/a/ApraPipes/ApraPipes/build/vcpkg_installed/x64-windows/tools/pkgconf/pkgconf.exe`
-- No PKG_CONFIG_EXECUTABLE errors in Phase 2
-
-**Key Lesson**: When CMake can't find a tool, provide it through vcpkg rather than modifying system PATH.
-
----
-
-## Issue W3: Package Version Breaking Changes
-
-**Symptom**:
-- Build fails after vcpkg baseline update
-- API-related errors (e.g., "Unsupported SFML component: system")
-- Type mismatch errors (e.g., `sf::Int16` not found)
-- CMake errors about missing components
-
-**Example (SFML 3.x)**:
-```
-CMake Error at .../share/sfml/SFMLConfig.cmake:78 (message):
-  Unsupported SFML component: system
-Call Stack (most recent call first):
-  CMakeLists.txt:51 (find_package)
-```
-
-**Root Cause**:
-- vcpkg baseline updated to latest
-- Package upgraded to new major version (e.g., SFML 2.6.x → 3.0.x)
-- New major version has breaking API changes
-- Code written for older API
-
-**Diagnostic Steps**:
-
-1. Check which package version was installed:
-   ```bash
-   grep "Installing.*sfml" /tmp/build.log
-   # Output: Installing 140/141 sfml[audio,core,graphics,network,window]:x64-windows@3.0.2
-   ```
-
-2. Check CMakeLists.txt for package usage:
-   ```bash
-   grep -n "find_package.*SFML" base/CMakeLists.txt
-   # Shows what components are requested
-   ```
-
-3. Check if package has version override:
-   ```bash
-   grep "sfml" base/vcpkg.json
-   ```
-
-**Fix**:
-
-Pin package to compatible major version in `base/vcpkg.json`:
-
-```json
-{
-  "overrides": [
-    {
-      "name": "sfml",
-      "version": "2.6.2"
-    }
-  ]
-}
-```
-
-**Why This Fix**:
-- DevOps role: Fix build, not application code
-- Code migration (SFML 2.x → 3.x) is developer task
-- Pinning maintains build stability
-
-**Verification**:
-- Build logs show pinned version: `Installing ... sfml:x64-windows@2.6.2`
-- CMake configure succeeds
-- No API-related errors
-
-**Prevention**:
-Pin all critical dependencies upfront (see `reference.md` → Version Pinning Strategy)
-
----
-
-## Issue W4: continue-on-error Hiding Real Failures
+## Issue W2: continue-on-error Hiding Real Failures
 
 **Symptom**:
 - Phase 1 shows "success" but real errors occurred
@@ -322,6 +182,146 @@ Pin all critical dependencies upfront (see `reference.md` → Version Pinning St
    ```
 
 **Key Lesson**: When debugging, check actual error messages in logs, not just workflow step status.
+
+---
+
+## Issue W3: PKG_CONFIG_EXECUTABLE Not Found
+
+**Symptom**:
+```
+Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE)
+```
+- CMake FindPkgConfig fails
+- Occurs in Phase 2 during CMake configure
+- May also appear in Phase 1 (ignore if `continue-on-error: true`)
+
+**Root Cause**:
+- CMake's FindPkgConfig module can't find compatible pkg-config executable
+- System pkg-config (from chocolatey pkgconfiglite) may not be compatible
+- vcpkg-provided pkgconf not installed
+
+**Common Misdiagnosis**:
+❌ "Need to add chocolatey bin to PATH"
+- Wrong because: chocolatey already works (`choco install` succeeds in prep-cmd)
+- Wrong because: Adding to PATH doesn't fix compatibility issues
+- Wrong because: The tool exists, but CMake can't use it
+
+**Correct Diagnosis**:
+✅ CMake FindPkgConfig needs vcpkg's pkgconf package
+
+**Diagnostic Steps**:
+1. Check if error occurs in Phase 1 or Phase 2:
+   ```bash
+   grep -n "PKG_CONFIG_EXECUTABLE" /tmp/build.log
+   # Check if line is in prep phase (has continue-on-error) or test phase
+   ```
+
+2. Check if pkgconf is in vcpkg.json:
+   ```bash
+   grep "pkgconf" base/vcpkg.json
+   ```
+
+3. If pkgconf installed, check CMake found it:
+   ```bash
+   grep "Found PkgConfig" /tmp/build.log
+   ```
+
+**Fix**:
+
+Add `pkgconf` to vcpkg.json dependencies:
+
+```json
+{
+  "dependencies": [
+    "pkgconf",  // Add as first dependency
+    // ... other dependencies
+  ]
+}
+```
+
+**Why This Works**:
+- vcpkg's pkgconf package provides CMake integration
+- CMake FindPkgConfig automatically finds vcpkg-installed pkgconf
+- Located at: `vcpkg_installed/x64-windows/tools/pkgconf/pkgconf.exe`
+- vcpkg CMake toolchain ensures FindPkgConfig looks here first
+
+**Verification**:
+- Build logs show: `Installing ... pkgconf:x64-windows@...`
+- CMake logs show: `Found PkgConfig: D:/a/ApraPipes/ApraPipes/build/vcpkg_installed/x64-windows/tools/pkgconf/pkgconf.exe`
+- No PKG_CONFIG_EXECUTABLE errors in Phase 2
+
+**Key Lesson**: When CMake can't find a tool, provide it through vcpkg rather than modifying system PATH.
+
+---
+
+## Issue W4: Package Version Breaking Changes
+
+**Symptom**:
+- Build fails after vcpkg baseline update
+- API-related errors (e.g., "Unsupported SFML component: system")
+- Type mismatch errors (e.g., `sf::Int16` not found)
+- CMake errors about missing components
+
+**Example (SFML 3.x)**:
+```
+CMake Error at .../share/sfml/SFMLConfig.cmake:78 (message):
+  Unsupported SFML component: system
+Call Stack (most recent call first):
+  CMakeLists.txt:51 (find_package)
+```
+
+**Root Cause**:
+- vcpkg baseline updated to latest
+- Package upgraded to new major version (e.g., SFML 2.6.x → 3.0.x)
+- New major version has breaking API changes
+- Code written for older API
+
+**Diagnostic Steps**:
+
+1. Check which package version was installed:
+   ```bash
+   grep "Installing.*sfml" /tmp/build.log
+   # Output: Installing 140/141 sfml[audio,core,graphics,network,window]:x64-windows@3.0.2
+   ```
+
+2. Check CMakeLists.txt for package usage:
+   ```bash
+   grep -n "find_package.*SFML" base/CMakeLists.txt
+   # Shows what components are requested
+   ```
+
+3. Check if package has version override:
+   ```bash
+   grep "sfml" base/vcpkg.json
+   ```
+
+**Fix**:
+
+Pin package to compatible major version in `base/vcpkg.json`:
+
+```json
+{
+  "overrides": [
+    {
+      "name": "sfml",
+      "version": "2.6.2"
+    }
+  ]
+}
+```
+
+**Why This Fix**:
+- DevOps role: Fix build, not application code
+- Code migration (SFML 2.x → 3.x) is developer task
+- Pinning maintains build stability
+
+**Verification**:
+- Build logs show pinned version: `Installing ... sfml:x64-windows@2.6.2`
+- CMake configure succeeds
+- No API-related errors
+
+**Prevention**:
+Pin all critical dependencies upfront (see `reference.md` → Version Pinning Strategy)
 
 ---
 

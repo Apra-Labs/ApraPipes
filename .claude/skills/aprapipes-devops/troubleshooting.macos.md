@@ -2,6 +2,27 @@
 
 ## macOS-Specific Build Issues
 
+## Quick Fixes Checklist
+
+### Phase 1 Build Failures
+- [ ] Check libjpeg-turbo version in logs (must be 3.0.4, not 3.1.2)
+- [ ] Verify vcpkg-configuration.json has custom registry for libjpeg-turbo
+- [ ] Check NASM version compatibility (brew install nasm)
+- [ ] Verify cache key uses base/vcpkg-configuration.json (not vcpkg/baseline.json)
+
+### Phase 2 Build Failures
+- [ ] Check system include paths eclipse vcpkg paths (/usr/local/include)
+- [ ] Verify no Homebrew conflicts (brew list | grep libjpeg)
+- [ ] Check for missing native frameworks (GLUT, Accelerate)
+- [ ] Verify platform-specific dependencies excluded (GTK3, GDK3)
+
+### Common Patterns
+- [ ] Review SKILL.md Cross-Platform Patterns (Python distutils, continue-on-error)
+- [ ] Check troubleshooting.vcpkg.md for cache-on-failure patterns
+- [ ] Verify Section 0: Diff-Based Diagnosis used for root cause analysis
+
+---
+
 ### Issue: libjpeg Undefined Symbols on GitHub Actions
 
 **Symptom**:
@@ -153,6 +174,9 @@ git diff main..HEAD -- base/CMakeLists.txt
 # 2. IF(ENABLE_ARM64) PKG_CONFIG_PATH setup
 # 3. pkg_check_modules() calls
 ```
+
+**TL;DR**: ARM64 builds need `PKG_CONFIG_PATH` set BEFORE `pkg_check_modules(GDK3/GTK3)` calls.
+CMakeLists.txt requires two separate `IF(ENABLE_LINUX)` blocks with ARM64 setup in between.
 
 **Solution**:
 Restore original two-block structure from main branch:
