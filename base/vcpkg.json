@@ -60,7 +60,11 @@
         "webp"
       ]
     },
-    "freeglut",
+    {
+      "name": "freeglut",
+      "platform": "linux",
+      "$reason": "macOS uses native GLUT framework"
+    },
     "ffmpeg",
     "openh264-apra",
     "glfw3",
@@ -86,7 +90,8 @@
     "brotli",
     {
       "name": "gtk3",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "GTK3 not used on macOS or Windows"
     },
     {
       "name": "glib",
@@ -112,11 +117,13 @@
     },
     {
       "name": "re",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "libre only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "baresip",
-      "platform": "!windows"
+      "platform": "linux",
+      "$reason": "baresip only used on Linux (ARM64/CUDA builds)"
     },
     {
       "name": "libmp4"

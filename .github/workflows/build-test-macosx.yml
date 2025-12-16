@@ -1,0 +1,195 @@
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        description: 'runner where this job will run'
+        required: true
+      flav:
+        type: string
+        description: 'flavour of the build: MacOSX/MacOSX_ARM64'
+        required: true
+      buildConf:
+        type: string
+        description: 'build configuration e.g. Release/Debug etc.'
+        default: 'RelWithDebInfo'
+        required: false
+      is-selfhosted:
+        type: boolean
+        description: 'self hosted runners do not need to use cache'
+        required: true
+      skip-test:
+        type: boolean
+        description: 'should test steps be skipped'
+        default: false
+        required: false
+      cuda:
+        type: string
+        description: 'ON/OFF based on this runner support cuda'
+        required: true
+      prep-cmd:
+        type: string
+        description: 'commands required to be run on a builder to prep it for build'
+        default: 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && echo "/opt/homebrew/bin:/usr/local/bin" >> $GITHUB_PATH && brew install nasm ninja pkg-config || true'
+        required: false
+      prep-check-cmd:
+        type: string
+        description: 'command to check if the builder is ready'
+        default: 'cmake --version ; ninja --version ; clang --version ; git --version'
+        required: false
+      bootstrap-cmd:
+        type: string
+        description: 'commands required to boot strap builder after code checkout'
+        default: './vcpkg/bootstrap-vcpkg.sh'
+        required: false
+      is-prep-phase:
+        type: boolean
+        description: 'this workflow is called for a prep phase: it will split vcpkg install into 2 portions to cache and save'
+        default: false
+        required: false
+      cache-path:
+        type: string
+        description: 'the folder which needs to be cached e.g. .cache/vcpkg'
+        default: ''
+        required: false
+      cmake-conf-cmd:
+        type: string
+        description: 'command needed for installing and configuring cmake'
+        default: 'cmake -B . -G Ninja -DENABLE_WINDOWS=OFF -DENABLE_LINUX=OFF -DENABLE_MACOS=ON ../base'
+        required: false
+      nProc:
+        type: number
+        description: 'number of threads to be used by cmake/make'
+        default: 3
+        required: false
+      nTestTimeoutMins:
+        type: number
+        description: 'number of mins of timeout for tests run'
+        default: 20
+        required: false
+      force-cache-update:
+        type: boolean
+        description: 'force cache update after CMake configure by deleting old cache and saving new one (use when cache is incomplete/stale)'
+        default: false
+        required: false
+jobs:
+  build:
+    env:
+      TEST_EXE: build/aprapipesut
+      CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
+      VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/.cache/vcpkg,readwrite'
+    runs-on: ${{ inputs.runner }}
+    steps:
+    - name: Prepare builder
+      run: |
+        ${{ inputs.prep-cmd }}
+        ${{ inputs.prep-check-cmd }}
+
+    - name: CRITICAL - Unlink Homebrew JPEG BEFORE vcpkg (prevent path eclipsing)
+      run: |
+        if command -v brew >/dev/null 2>&1 && brew list jpeg-turbo 2>/dev/null; then
+          echo "✗ CRITICAL: jpeg-turbo IS installed via Homebrew - unlinking NOW before vcpkg"
+          brew unlink jpeg-turbo || true
+          if ls /usr/local/include/jpeglib.h /usr/local/include/jconfig.h 2>/dev/null; then
+            echo "✗ FATAL: JPEG headers STILL present after unlink - build will fail!"
+            exit 1
+          else
+            echo "✓ SUCCESS: JPEG headers removed, vcpkg can now build OpenCV correctly"
+          fi
+        else
+          echo "✓ OK: jpeg-turbo not installed via Homebrew"
+        fi
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+
+    - name: List Submodules
+      run: |
+        git config --global --add safe.directory "*"
+        git submodule status > submodule_ver.txt
+        cat submodule_ver.txt
+        git rev-list --all --count
+
+    - name: Create vcpkg binary cache directory
+      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+
+    - name: Run VCPKG bootstrap
+      run: ${{ inputs.bootstrap-cmd }}
+
+    - name: Remove CUDA from vcpkg if we are in nocuda
+      if: ${{ contains(inputs.cuda,'OFF')}}
+      working-directory: ${{github.workspace}}/base
+      run: pwsh -File fix-vcpkg-json.ps1 -removeCUDA
+      continue-on-error: true
+
+    - name: Restore vcpkg cache
+      id: cache-restore
+      if: ${{ !inputs.is-selfhosted }}
+      uses: actions/cache/restore@v3
+      with:
+          path: |
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key:  MacOSX-vcpkg-v1
+          restore-keys: MacOSX-vcpkg-
+
+    - name: Make build folder
+      run: mkdir -p build
+      continue-on-error: true
+
+    - name: Configure CMake Common
+      working-directory: ${{github.workspace}}/build
+      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+
+    - name: Save vcpkg cache
+      if: ${{ always() && !inputs.is-selfhosted }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: MacOSX-vcpkg-v1
+
+    - name: Build
+      if: ${{!inputs.is-prep-phase}}
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{inputs.buildConf}} -j ${{ inputs.nProc }} -- -v
+      env:
+        VERBOSE: 1
+
+    - name: List Test cases
+      if: ${{!inputs.is-prep-phase}}
+      run: |
+        otool -L ${{env.TEST_EXE}} || true
+        ${{env.TEST_EXE}} --list_content > tests.txt || true
+      timeout-minutes: 1
+
+    - name: Run Tests
+      if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
+      run: |
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: ${{ inputs.nTestTimeoutMins}}
+
+    - name: Upload Test Results
+      if: ${{ always() && !inputs.is-prep-phase && !inputs.skip-test }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_${{ inputs.flav }}
+        path: |
+          CI_test_result_${{inputs.flav}}.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
+
+
+    - name: Upload build logs
+      if:  ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: BuildLogs_${{ inputs.flav }}
+        path: |
+          ${{ github.workspace }}/build/vcpkg-manifest-install.log
+          tests.txt
+      continue-on-error: true
