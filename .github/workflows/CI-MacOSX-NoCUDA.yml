@@ -7,6 +7,13 @@ on:
       - '.github/docs/**'
       - '.claude/**'
       - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       force-cache-update:
