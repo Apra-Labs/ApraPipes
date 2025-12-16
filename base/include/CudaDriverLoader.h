@@ -2,6 +2,7 @@
 
 #include <dlfcn.h>
 #include <cuda.h>
+#include <cudaEGL.h>
 #include <string>
 
 /**
