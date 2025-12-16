@@ -312,7 +312,7 @@ Pin all critical dependencies upfront (see `reference.md` → Version Pinning St
        }
    ```
 
-3. **Use direct vcpkg install** (see devops-build-system-guide.md → Phase 1 Optimization):
+3. **Use direct vcpkg install**:
    ```yaml
    - name: Install OpenCV to cache
      run: |

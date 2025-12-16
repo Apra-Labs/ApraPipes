@@ -85,7 +85,7 @@ Is this a CUDA build? (Check workflow name: *-CUDA.yml)
     ├─ macOS NoCUDA → troubleshooting.macos.md
     │   └─ GitHub-hosted, two-phase builds
     │
-    └─ Docker/WSL → troubleshooting.docker.md
+    └─ Docker/WSL → troubleshooting.containers.md
         └─ Container-specific issues
 ```
 
@@ -264,7 +264,6 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 ### Cross-Reference Usage
 
 - **reference.md**: Always check for vcpkg, caching, version pinning knowledge
-- **devops-build-system-guide.md**: Deep dive explanations and comprehensive workflows
 - **troubleshooting.cuda.md**: ANY CUDA-related issue, regardless of platform
 
 ---

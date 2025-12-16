@@ -355,8 +355,8 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
 - `CI-Win-CUDA.yml`
 - `CI-Linux-x64-NoCUDA.yml`
 - `CI-Linux-x64-CUDA.yml`
-- `CI-Linux-ARM64.yml`
-- `CI-Jetson.yml` (if exists)
+- `CI-Linux-ARM64.yml` (Jetson/ARM64 builds)
+- `CI-MacOSX-NoCUDA.yml`
 
 **Reusable Workflows**:
 - `build-test-win.yml` - Parameterized Windows builds
@@ -412,13 +412,13 @@ on:
 2. Manually trigger Windows NoCUDA build
 3. Monitor and fix any errors
 4. Manually trigger Linux NoCUDA build to validate cross-platform
-5. If Linux fails, fix and re-trigger ONLY Linux (not all 7 workflows)
+5. If Linux fails, fix and re-trigger ONLY Linux (not all 8 workflows)
 6. Once both pass, reinstate automatic triggers and merge
 
 **Anti-Pattern** (wasteful):
 ```
 ✗ Reinstating auto-triggers before validating
-✗ Letting all 7 workflows run when only testing 1 platform
+✗ Letting all 8 workflows run when only testing 1 platform
 ✗ Not canceling unnecessary builds
 ✗ Triggering builds without monitoring them
 ```

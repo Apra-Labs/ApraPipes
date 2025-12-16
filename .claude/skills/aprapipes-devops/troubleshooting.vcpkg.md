@@ -37,7 +37,7 @@ The key insight: **GitHub Actions automatically replaces the old cache when you 
   with:
       path: |
         ${{ inputs.cache-path }}
-      key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+      key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
       restore-keys: ${{ inputs.flav }}-
 
 # Step 2: Run CMake configure (vcpkg install happens here)
@@ -52,7 +52,7 @@ The key insight: **GitHub Actions automatically replaces the old cache when you 
   with:
     path: |
       ${{ inputs.cache-path }}
-    key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+    key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
 ```
 
 **How It Works**:
@@ -70,7 +70,7 @@ The key insight: **GitHub Actions automatically replaces the old cache when you 
 
 **Cache Key Strategy**:
 ```yaml
-key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
 restore-keys: ${{ inputs.flav }}-
 ```
 

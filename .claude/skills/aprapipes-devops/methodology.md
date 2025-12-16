@@ -4,7 +4,7 @@
 
 ## Mission Statement
 
-**GOAL**: Keep all 7 GitHub workflows green. When ANY workflow fails, immediately diagnose, fix, and verify with minimal build minutes wasted.
+**GOAL**: Keep all 8 GitHub workflows green. When ANY workflow fails, immediately diagnose, fix, and verify with minimal build minutes wasted.
 
 **APPROACH**: Efficient, methodical debugging that prioritizes understanding over experimentation. Strive for fixes in 1-3 attempts, not 100 experiments.
 
@@ -65,7 +65,7 @@ When testing fixes in GitHub Actions:
 
 1. **Use dedicated branch** (never test on main)
 2. **Disable ALL other workflows temporarily**
-   - If 1/7 workflows fails, disable the other 6
+   - If 1/8 workflows fails, disable the other 7
    - Prevents wasting precious build minutes
    - Focuses testing on single failure
 

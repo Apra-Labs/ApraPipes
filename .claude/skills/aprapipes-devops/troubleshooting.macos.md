@@ -87,7 +87,7 @@ Split cache operations into separate restore and save steps with `always()` cond
   with:
       path: |
         ${{ inputs.cache-path }}
-      key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+      key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
       restore-keys: ${{ inputs.flav }}-
 
 - name: Configure CMake Common
@@ -100,7 +100,7 @@ Split cache operations into separate restore and save steps with `always()` cond
   with:
     path: |
       ${{ inputs.cache-path }}
-    key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+    key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
 ```
 
 **Key Insights**:
