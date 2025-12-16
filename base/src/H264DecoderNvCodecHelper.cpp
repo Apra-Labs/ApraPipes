@@ -17,13 +17,13 @@
 #define CUDA_DRVAPI_CALL( call )                                                                                                 \
     do                                                                                                                           \
     {                                                                                                                            \
-        CUresult err__ = call;                                                                                                   \
+        auto& loader__ = CudaDriverLoader::getInstance();                                                                        \
+        CUresult err__ = loader__.call;                                                                                          \
         if (err__ != CUDA_SUCCESS)                                                                                               \
         {                                                                                                                        \
             const char *szErrName = NULL;                                                                                        \
-            auto& loader = CudaDriverLoader::getInstance();                                                                      \
-            if (loader.cuGetErrorName) {                                                                                         \
-                loader.cuGetErrorName(err__, &szErrName);                                                                        \
+            if (loader__.cuGetErrorName) {                                                                                       \
+                loader__.cuGetErrorName(err__, &szErrName);                                                                      \
             }                                                                                                                    \
             std::ostringstream errorLog;                                                                                         \
             errorLog << "CUDA driver API error " << (szErrName ? szErrName : "Unknown");                                         \
