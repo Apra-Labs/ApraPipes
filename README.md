@@ -15,8 +15,8 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 |Ubuntu x64_86|22.04|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)|[![CI-Linux-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml)|
 |Ubuntu x64_86|24.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)|[![CI-Linux-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml)|
 |Ubuntu ARM64 (Jetsons)|18.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)|[![CI-Linux-ARM64](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml)|
-|macOS x86_64|15.0+|No|No|[![CI-MacOSX-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml)|
 |Ubuntu x64_86-docker|22.04|Yes|No|[![CI-Linux-CUDA-Docker](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml)|
+|macOS x86_64|15.0+|No|TBD|[![CI-MacOSX-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml)|
 
 ## Getting Started with ApraPipes
 
@@ -192,6 +192,7 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 </details>
 
 <h2 id="macos">macOS (Version ≥ 15.0)</h2>
+<img src="./data/ReadMe Images/macos.png" alt="macOS Logo" align="right" height = "100" width="100">
 <details>
   <summary>Requirements</summary>
 
