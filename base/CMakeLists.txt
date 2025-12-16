@@ -183,14 +183,14 @@ IF(ENABLE_CUDA)
 		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
-			libcuda.so		
+			# libcuda.so - REMOVED: Now loaded dynamically at runtime via dlopen (see CudaDriverLoader)
 			libcudart_static.a
 			libnvjpeg_static.a
 			libnppig_static.a
 			libnppicc_static.a
 			libnppidei_static.a
-			libnppial_static.a					
-			libculibos.a	
+			libnppial_static.a
+			libculibos.a
 		) 
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
@@ -428,6 +428,7 @@ SET(CUDA_CORE_FILES
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
+	src/CudaDriverLoader.cpp
 )
 
 SET(CUDA_CORE_FILES_H
@@ -735,6 +736,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${CMAKE_DL_LIBS}  # For dlopen/dlsym in CudaDriverLoader
   ZXing::Core
   ZXing::ZXing
   BZip2::BZip2

@@ -3,6 +3,7 @@
 #include "ApraEGLDisplay.h"
 #include "Frame.h"
 #include "AIPExceptions.h"
+#include "CudaDriverLoader.h"
 
 #include "nvbuf_utils.h"
 #include <cstring>
@@ -106,15 +107,21 @@ V4L2CURGBToYUV420Converter::~V4L2CURGBToYUV420Converter()
 
 void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
 {
+    auto& loader = CudaDriverLoader::getInstance();
+    if (!loader.isAvailable()) {
+        LOG_ERROR << "CUDA driver not available for V4L2 conversion";
+        return;
+    }
+
     eglImage = NvEGLImageFromFd(eglDisplay, buffer->planesInfo[0].fd);
-    status = cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
+    status = loader.cuGraphicsEGLRegisterImage(&pResource, eglImage, CU_GRAPHICS_MAP_RESOURCE_FLAGS_NONE);
     if (status != CUDA_SUCCESS)
     {
         LOG_ERROR << "cuGraphicsEGLRegisterImage failed: " << status << " cuda process stop";
         return;
     }
 
-    status = cuGraphicsResourceGetMappedEglFrame(&eglFrame, pResource, 0, 0);
+    status = loader.cuGraphicsResourceGetMappedEglFrame(&eglFrame, pResource, 0, 0);
     if (status != CUDA_SUCCESS)
     {
         LOG_ERROR << "cuGraphicsSubResourceGetMappedArray failed status<" << status << ">";
@@ -126,7 +133,7 @@ void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
         dst[i] = static_cast<Npp8u *>(eglFrame.frame.pPitch[i]);
     }
 
-    status = cuCtxSynchronize();
+    status = loader.cuCtxSynchronize();
     if (status != CUDA_SUCCESS)
     {
         LOG_ERROR << "cuCtxSynchronize failed status<" << status << ">";
@@ -140,13 +147,13 @@ void V4L2CURGBToYUV420Converter::process(frame_sp& frame, AV4L2Buffer *buffer)
         LOG_ERROR << "nppiRGBToYUV420_8u_C3P3R failed";
     }
 
-    status = cuCtxSynchronize();
+    status = loader.cuCtxSynchronize();
     if (status != CUDA_SUCCESS)
     {
         LOG_ERROR << "cuCtxSynchronize failed after cc status<" << status << ">";
     }
 
-    status = cuGraphicsUnregisterResource(pResource);
+    status = loader.cuGraphicsUnregisterResource(pResource);
     if (status != CUDA_SUCCESS)
     {
         LOG_ERROR << "cuGraphicsEGLUnRegisterResource failed: " << status;

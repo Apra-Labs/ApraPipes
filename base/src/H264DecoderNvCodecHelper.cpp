@@ -6,6 +6,7 @@
 #include "nvcuvid.h"
 #include "H264DecoderNvCodecHelper.h"
 #include "Frame.h"
+#include "CudaDriverLoader.h"
 
 #define START_TIMER auto start = std::chrono::high_resolution_clock::now();
 #define STOP_TIMER(print_message) std::cout << print_message << \
@@ -20,9 +21,12 @@
         if (err__ != CUDA_SUCCESS)                                                                                               \
         {                                                                                                                        \
             const char *szErrName = NULL;                                                                                        \
-            cuGetErrorName(err__, &szErrName);                                                                                   \
+            auto& loader = CudaDriverLoader::getInstance();                                                                      \
+            if (loader.cuGetErrorName) {                                                                                         \
+                loader.cuGetErrorName(err__, &szErrName);                                                                        \
+            }                                                                                                                    \
             std::ostringstream errorLog;                                                                                         \
-            errorLog << "CUDA driver API error " << szErrName ;                                                                  \
+            errorLog << "CUDA driver API error " << (szErrName ? szErrName : "Unknown");                                         \
             throw NVDECException::makeNVDECException(errorLog.str(), err__, __FUNCTION__, __FILE__, __LINE__);                   \
         }                                                                                                                        \
     }                                                                                                                            \
@@ -529,9 +533,16 @@ NvDecoder::NvDecoder(CUcontext cuContext, int nWidth, int nHeight, bool bUseDevi
 
 NvDecoder::~NvDecoder() {
 
+	auto& loader = CudaDriverLoader::getInstance();
+	if (!loader.isAvailable()) {
+		// If loader not available, we shouldn't have created this object
+		// But handle gracefully in destructor
+		return;
+	}
+
 	START_TIMER
-		cuCtxPushCurrent(m_cuContext);
-	cuCtxPopCurrent(NULL);
+		loader.cuCtxPushCurrent(m_cuContext);
+	loader.cuCtxPopCurrent(NULL);
 
 	if (m_hParser) {
 		cuvidDestroyVideoParser(m_hParser);
@@ -553,9 +564,9 @@ NvDecoder::~NvDecoder() {
 		if (m_bUseDeviceFrame)
 		{
 			if (m_pMutex) m_pMutex->lock();
-			cuCtxPushCurrent(m_cuContext);
-			cuMemFree((CUdeviceptr)pFrame);
-			cuCtxPopCurrent(NULL);
+			loader.cuCtxPushCurrent(m_cuContext);
+			loader.cuMemFree((CUdeviceptr)pFrame);
+			loader.cuCtxPopCurrent(NULL);
 			if (m_pMutex) m_pMutex->unlock();
 		}
 		else
@@ -684,25 +695,33 @@ private:
 
 H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 {
+	// Check if CUDA driver is available
+	auto& loader = CudaDriverLoader::getInstance();
+	if (!loader.isAvailable()) {
+		throw std::runtime_error("H264DecoderNvCodecHelper requires CUDA driver but libcuda.so not available. "
+		                         "Error: " + loader.getErrorMessage() + ". "
+		                         "Use a CPU-based decoder instead.");
+	}
+
 	CUcontext cuContext;
 	bool bUseDeviceFrame = false;
 	cudaVideoCodec eCodec = cudaVideoCodec_H264;;
-	std::mutex* pMutex = NULL; 
-	bool bLowLatency = false; 
+	std::mutex* pMutex = NULL;
+	bool bLowLatency = false;
 	bool bDeviceFramePitched= false; int maxWidth; int maxHeight;
-	ck(cuInit(0));
+	ck(loader.cuInit(0));
 	int nGpu = 0;
 	int iGpu = 0;
-	ck(cuDeviceGetCount(&nGpu));
+	ck(loader.cuDeviceGetCount(&nGpu));
 	if (iGpu < 0 || iGpu >= nGpu) {
 		std::cout << "GPU ordinal out of range. Should be within [" << 0 << ", " << nGpu - 1 << "]" << std::endl;
 		return;
 	}
 	CUdevice cuDevice = 0;
 
-	ck(cuDeviceGet(&cuDevice, iGpu));
+	ck(loader.cuDeviceGet(&cuDevice, iGpu));
 	char szDeviceName[80];
-	ck(cuCtxCreate(&cuContext, 0, cuDevice));
+	ck(loader.cuCtxCreate(&cuContext, 0, cuDevice));
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
 }
 
