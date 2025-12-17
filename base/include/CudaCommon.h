@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "cuda_runtime_api.h"
 #include "CudaDriverLoader.h"
+#include "AIPExceptions.h"
 
 inline bool check(CUresult e, int iLine, const char *szFile)
 {
