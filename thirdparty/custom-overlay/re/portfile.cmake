@@ -10,6 +10,8 @@ vcpkg_from_github(
 
 vcpkg_cmake_configure(
   SOURCE_PATH "${SOURCE_PATH}"
+  OPTIONS
+    -DLIBRE_BUILD_SHARED=OFF
 )
 
 vcpkg_cmake_build()
