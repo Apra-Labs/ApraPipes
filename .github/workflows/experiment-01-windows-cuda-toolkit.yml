@@ -75,9 +75,9 @@ jobs:
           echo }
           ) > test_cuda.cu
 
-          REM Setup Visual Studio environment and compile
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          nvcc test_cuda.cu -o test_cuda.exe --allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
+          REM Setup Visual Studio environment with v142 toolset (VS 2019, officially supported by CUDA 11.8)
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver=14.29
+          nvcc test_cuda.cu -o test_cuda.exe
           if errorlevel 1 (
             echo Compilation failed!
             exit /b 1
@@ -120,9 +120,9 @@ jobs:
           echo }
           ) > test_static.cu
 
-          REM Setup Visual Studio environment and compile
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          nvcc test_static.cu -o test_static.exe -cudart static --allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
+          REM Setup Visual Studio environment with v142 toolset (VS 2019, officially supported by CUDA 11.8)
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver=14.29
+          nvcc test_static.cu -o test_static.exe -cudart static
           if errorlevel 1 (
             echo Static linking failed!
             exit /b 1
