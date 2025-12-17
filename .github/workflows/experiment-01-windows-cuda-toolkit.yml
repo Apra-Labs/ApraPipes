@@ -18,7 +18,7 @@ on:
 
 jobs:
   test-cuda-install-windows:
-    runs-on: windows-2019  # Use VS 2019 for CUDA 11.8 compatibility
+    runs-on: windows-latest
 
     steps:
       - name: Check Windows Version
