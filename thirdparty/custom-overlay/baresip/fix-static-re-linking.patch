@@ -1,8 +1,7 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ea7840ff..a1b2c3d4 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -239,13 +239,7 @@ if(BUILD_SHARED_LIBS)
+--- CMakeLists.txt.orig	2025-12-17 01:21:47
++++ CMakeLists.txt	2025-12-17 01:21:47
+@@ -238,14 +238,7 @@
+ #
  # Main target library
  #
 -if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -12,6 +11,8 @@ index ea7840ff..a1b2c3d4 100644
 -endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
 -
 -set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
+-
 +set(LINKLIBS re Threads::Threads)
-
  if(ZLIB_FOUND)
+   list(APPEND LINKLIBS ZLIB::ZLIB)
+ endif()
