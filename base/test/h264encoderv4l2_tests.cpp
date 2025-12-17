@@ -55,7 +55,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 1280;
@@ -138,7 +139,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 1280;

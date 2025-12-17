@@ -95,7 +95,8 @@ struct AffineTestsStruct
 	}
 };
 
-BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -115,7 +116,8 @@ BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -135,7 +137,8 @@ BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(MONO_shrink, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(MONO_shrink, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -155,7 +158,8 @@ BOOST_AUTO_TEST_CASE(MONO_shrink, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -175,7 +179,8 @@ BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -195,7 +200,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
+BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::MONO;
@@ -215,7 +220,8 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
@@ -236,7 +242,8 @@ BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled())
 
 }
 
-BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
@@ -256,7 +263,8 @@ BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(RGB_Image_shifting, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(RGB_Image_shifting, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
@@ -276,7 +284,8 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shifting, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
@@ -296,7 +305,7 @@ BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
+BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGB;
@@ -316,7 +325,8 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::BGR;
@@ -337,7 +347,8 @@ BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate, *boost::unit_test::disabled()
 
 }
 
-BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGBA;
@@ -357,7 +368,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
+BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::RGBA;
@@ -377,7 +388,8 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::BGRA;
@@ -397,7 +409,8 @@ BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled(
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::YUV444;
@@ -416,7 +429,7 @@ BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_tests_YUV444_scale_rotate_yuv444.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 #endif
 }
-BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
+BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
 #ifdef APRA_CUDA_ENABLED
 	ImageMetadata::ImageType::YUV444;
@@ -436,7 +449,8 @@ BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(Host_Mono, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x1080.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
@@ -489,7 +503,8 @@ BOOST_AUTO_TEST_CASE(Host_RGB)
 	BOOST_TEST(outFrame->getMetadata()->getFrameType() == FrameMetadata::RAW_IMAGE);
 	Test_Utils::saveOrCompare("./data/testOutput/affinetransform_host_RGB.raw", (const uint8_t*)outFrame->data(), outFrame->size(), 0);
 }
-BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -536,7 +551,8 @@ BOOST_AUTO_TEST_CASE(GetSetProps, *boost::unit_test::disabled())
 
 }
 
-BOOST_AUTO_TEST_CASE(DMABUF_RGBA, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(DMABUF_RGBA, *boost::unit_test::disabled()
+*utf::precondition(if_compute_cap_supported()))
 {
 #if defined(__arm__) || defined(__aarch64__)
 	NvV4L2CameraProps nvCamProps(640, 360, 10);
