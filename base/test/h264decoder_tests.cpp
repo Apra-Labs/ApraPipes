@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 	p.reset();
 }
 
-BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
+BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink, *utf::precondition(if_h264_encoder_supported()))
 {
 	SKIP_IF_NO_DMA_CAPABLE();
 	Logger::setLogLevel("info");

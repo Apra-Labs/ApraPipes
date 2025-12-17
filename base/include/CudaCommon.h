@@ -35,7 +35,7 @@ public:
     {
         auto& loader = CudaDriverLoader::getInstance();
         if (!loader.isAvailable()) {
-            throw std::runtime_error("ApraCUcontext requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
+            throw AIPException(AIP_NOTEXEPCTED, "ApraCUcontext requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
         }
 
         ck(loader.cuInit(0));
