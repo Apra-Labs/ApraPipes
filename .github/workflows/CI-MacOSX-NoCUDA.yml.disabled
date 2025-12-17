@@ -1,0 +1,53 @@
+name: CI-MacOSX-NoCUDA
+
+on:
+  push:  # Trigger on push to any branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      force-cache-update:
+        description: 'Force cache rebuild (deletes old cache and builds fresh)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
+
+permissions:
+  actions: write  # Required for cache deletion via gh cache delete
+  contents: read  # Required for checkout
+
+jobs:
+  macosx-nocuda-build-test:
+    uses: ./.github/workflows/build-test-macosx.yml
+    with:
+      runner: 'macos-15-intel'
+      flav: MacOSX
+      cuda: 'OFF'
+      is-selfhosted: false
+      is-prep-phase: false
+      nProc: 3
+      force-cache-update: ${{ inputs.force-cache-update == true }}
+  macosx-nocuda-publish:
+    needs: macosx-nocuda-build-test
+    if: ${{ always() }}
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: MacOSX
+    secrets:
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
