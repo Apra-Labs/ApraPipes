@@ -57,7 +57,7 @@ jobs:
           echo     printf^("=== CUDA Runtime Test ^(Windows^) ===\n"^);
           echo.
           echo     int deviceCount = 0;
-          echo     cudaError_t error = cudaGetDeviceCount^(&deviceCount^);
+          echo     cudaError_t error = cudaGetDeviceCount^(^&deviceCount^);
           echo.
           echo     printf^("cudaGetDeviceCount returned: %%d ^(%%s^)\n", error, cudaGetErrorString^(error^)^);
           echo     printf^("Device count: %%d\n", deviceCount^);
@@ -106,12 +106,12 @@ jobs:
           echo.
           echo     // Test device query
           echo     int deviceCount = 0;
-          echo     cudaError_t error = cudaGetDeviceCount^(&deviceCount^);
+          echo     cudaError_t error = cudaGetDeviceCount^(^&deviceCount^);
           echo     printf^("Device count query: %%s\n", cudaGetErrorString^(error^)^);
           echo.
           echo     // Test memory allocation ^(will fail without GPU, but shouldn't crash^)
           echo     void* ptr = 0;
-          echo     error = cudaMalloc^(&ptr, 1024^);
+          echo     error = cudaMalloc^(^&ptr, 1024^);
           echo     printf^("cudaMalloc: %%s ^(failure expected without GPU^)\n", cudaGetErrorString^(error^)^);
           echo     if ^(ptr^) cudaFree^(ptr^);
           echo.
