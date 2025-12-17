@@ -34,6 +34,8 @@ jobs:
         choco feature enable -n allowEmptyChecksums
         choco install pkgconfiglite
         choco install cmake --version=3.29.6 --force
+        choco install cuda --version=11.8.0 --force
+        choco install cudnn --version=8.9.7.29 --force
         python --version
         cmake --version
         ninja --version
