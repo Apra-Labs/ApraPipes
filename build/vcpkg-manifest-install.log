@@ -1,0 +1,6 @@
+warning: attempting to set builtin-baseline in vcpkg.json while overriding the default-registry in vcpkg-configuration.json.
+the default-registry from vcpkg-configuration.json will be used.
+Fetching registry information from https://github.com/Apra-Labs/vcpkg.git (HEAD)...
+Loading dependency information for 102 packages...
+cuda is only supported on '(windows & x64 & !uwp & !xbox) | (linux & x64) | (linux & arm64)', which does not match x64-osx-release. This usually means that there are known build failures, or runtime problems, when building other platforms. To ignore this and attempt to build cuda anyway, rerun vcpkg with `--allow-unsupported`.
+cudnn is only supported on '(windows & x64 & !uwp) | (linux & x64) | (linux & arm64)', which does not match x64-osx-release. This usually means that there are known build failures, or runtime problems, when building other platforms. To ignore this and attempt to build cudnn anyway, rerun vcpkg with `--allow-unsupported`.
