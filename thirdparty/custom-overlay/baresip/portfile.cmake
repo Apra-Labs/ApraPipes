@@ -6,6 +6,8 @@ vcpkg_from_github(
   REF ea7840ff25a610e2968fc253aed1d774b7073cf9
   SHA512 12ddd8e44757233a10dca0307d04fd2c6436ba749c2573e11a7257440c2cbec5fb828ea4274f543b36691f5c2f7d9783df53efae0df3635c0208fac64ea4e934
   HEAD_REF forApraPipes
+  PATCHES
+    fix-static-re-linking.patch
 )
 
 vcpkg_cmake_configure(

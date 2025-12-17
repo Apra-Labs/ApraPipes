@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1111111..2222222 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,9 +1,9 @@
+ # Set RE library path based on architecture
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/x64-linux/lib/libre.so)
++  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/x64-linux/lib/libre-static.a)
+ else()
+-  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/arm64-linux/lib/libre.so)
++  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/arm64-linux/lib/libre-static.a)
+ endif()
+ 
+ # Set LINKLIBS
