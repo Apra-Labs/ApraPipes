@@ -80,12 +80,22 @@ class ApraCudaStream
 public:
     ApraCudaStream()
     {
-        cudaStreamCreate(&m_stream);
+        auto& loader = CudaDriverLoader::getInstance();
+        if (!loader.isAvailable()) {
+            throw AIPException(AIP_NOTEXEPCTED, "ApraCudaStream requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
+        }
+
+        auto rc = cudaStreamCreate(&m_stream);
+        if (rc != cudaSuccess) {
+            throw AIPException(AIP_NOTEXEPCTED, std::string("cudaStreamCreate failed: ") + cudaGetErrorString(rc));
+        }
     }
 
     ~ApraCudaStream()
     {
-        cudaStreamDestroy(m_stream);
+        if (m_stream) {
+            cudaStreamDestroy(m_stream);
+        }
     }
 
     cudaStream_t getCudaStream()
@@ -94,7 +104,7 @@ public:
     }
 
 private:
-    cudaStream_t m_stream;
+    cudaStream_t m_stream = nullptr;
 };
 
 typedef boost::shared_ptr<ApraCUcontext> apracucontext_sp;
