@@ -25,6 +25,54 @@ jobs:
       VCPKG_DEFAULT_BINARY_CACHE: 'C:\Users\runneradmin\AppData\Local\vcpkg\archives'
 
     steps:
+    - name: Install CUDA Toolkit 11.8
+      uses: Jimver/cuda-toolkit@v0.2.14
+      id: cuda-toolkit
+      with:
+        cuda: '11.8.0'
+        method: 'network'
+        sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust", "visual_studio_integration"]'
+
+    - name: Verify CUDA installation
+      run: |
+        echo "=== CUDA Installation Verification ==="
+        nvcc --version
+        echo ""
+        echo "CUDA_PATH=$env:CUDA_PATH"
+        echo "CUDA installation complete"
+      shell: pwsh
+
+    - name: Install cuDNN 8.9.7
+      run: |
+        echo "=== Installing cuDNN 8.9.7 for CUDA 11.8 ==="
+        $cudnnUrl = "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.7.29_cuda11-archive.zip"
+        $cudnnZip = "$env:TEMP\cudnn.zip"
+        $cudnnExtract = "$env:TEMP\cudnn"
+
+        # Download cuDNN
+        Invoke-WebRequest -Uri $cudnnUrl -OutFile $cudnnZip
+
+        # Extract
+        Expand-Archive -Path $cudnnZip -DestinationPath $cudnnExtract -Force
+
+        # Copy files to CUDA installation
+        $cudnnDir = Get-ChildItem -Path $cudnnExtract -Directory | Select-Object -First 1
+        Copy-Item -Path "$($cudnnDir.FullName)\bin\*" -Destination "$env:CUDA_PATH\bin" -Force
+        Copy-Item -Path "$($cudnnDir.FullName)\include\*" -Destination "$env:CUDA_PATH\include" -Force
+        Copy-Item -Path "$($cudnnDir.FullName)\lib\*" -Destination "$env:CUDA_PATH\lib\x64" -Force
+
+        # Verify
+        if (Test-Path "$env:CUDA_PATH\include\cudnn.h") {
+          echo "cuDNN installed successfully"
+        } else {
+          echo "cuDNN installation may have failed"
+        }
+
+        # Cleanup
+        Remove-Item -Path $cudnnZip -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path $cudnnExtract -Recurse -Force -ErrorAction SilentlyContinue
+      shell: pwsh
+
     - name: Prepare builder
       run: |
         choco install python --version=3.10.11 --force
@@ -34,37 +82,11 @@ jobs:
         choco feature enable -n allowEmptyChecksums
         choco install pkgconfiglite
         choco install cmake --version=3.29.6 --force
-        choco install cuda --version=11.8.0 --force
-        choco install cudnn --version=8.9.7.29 --force
         python --version
         cmake --version
         ninja --version
         git --version
         pwsh --version
-
-    - name: Check builder for CUDA (optional - will build with CUDA support)
-      run: |
-        echo "=== Checking for CUDA Toolkit ==="
-        if (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin\nvcc.exe") {
-          & "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin\nvcc.exe" --version
-          echo "CUDA Toolkit 11.8 found"
-        } else {
-          echo "CUDA Toolkit not found - will build WITH CUDA support, tests will skip if no GPU"
-        }
-
-        if (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\include\cudnn.h") {
-          echo "cuDNN found"
-        } else {
-          echo "cuDNN not found - CUDA tests may fail, will skip gracefully"
-        }
-
-        # Set CUDA environment variables if toolkit exists
-        if (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8") {
-          echo "CUDA_HOME=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8" >> $env:GITHUB_ENV
-          echo "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin" >> $env:GITHUB_ENV
-        }
-      shell: pwsh
-      continue-on-error: true
 
     - name: Checkout code
       uses: actions/checkout@v3
