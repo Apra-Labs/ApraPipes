@@ -16,6 +16,7 @@
 #include "FramesMuxer.h"
 
 #include "test_utils.h"
+#include "nv_test_utils.h"
 
 BOOST_AUTO_TEST_SUITE(h264encoderv4l2_tests)
 

@@ -16,6 +16,7 @@
 #ifdef APRA_CUDA_ENABLED
 #include "nppdefs.h"
 #include "CudaMemCopy.h"
+#include "nv_test_utils.h"
 #endif
 
 #if defined(__arm__) || defined(__aarch64__)
