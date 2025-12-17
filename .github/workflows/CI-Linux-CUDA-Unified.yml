@@ -180,9 +180,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        # Exclude CUDA-dependent tests on GitHub runners (no GPU/driver available)
-        # h264decoder_tests and h264encodernvcodec_tests require GPU and will hang without it
-        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA-Unified.xml -p -l all -- --run_test=!h264decoder_tests --run_test=!h264encodernvcodec_tests --run_test=!nv_mp4_file_tests || echo 'test execution returned error'
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA-Unified.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 20
 
     - name: Upload Test Results
