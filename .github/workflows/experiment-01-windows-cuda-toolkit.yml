@@ -30,12 +30,20 @@ jobs:
           where cl 2>nul && echo "cl.exe found" || (echo "cl.exe not in PATH" && exit /b 0)
         shell: cmd
 
-      - name: Install CUDA Toolkit 11.8 using Jimver action
-        uses: Jimver/cuda-toolkit@v0.2.29
-        id: cuda-toolkit
-        with:
-          cuda: '11.8.0'
-          sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
+      - name: Install CUDA Toolkit 11.8 (Manual Download)
+        run: |
+          echo "=== Installing CUDA Toolkit 11.8 ==="
+          $cuda_url = "https://developer.download.nvidia.com/compute/cuda/11.8.0/network_installers/cuda_11.8.0_windows_network.exe"
+          $cuda_installer = "$env:TEMP\cuda_installer.exe"
+
+          Write-Host "Downloading CUDA installer..."
+          Invoke-WebRequest -Uri $cuda_url -OutFile $cuda_installer
+
+          Write-Host "Installing CUDA (minimal components for compilation)..."
+          Start-Process -FilePath $cuda_installer -ArgumentList "-s","nvcc_11.8","cudart_11.8","visual_studio_integration_11.8" -Wait -NoNewWindow
+
+          Write-Host "CUDA installation complete"
+        shell: pwsh
 
       - name: Verify CUDA Installation
         run: |
