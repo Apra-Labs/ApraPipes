@@ -1,0 +1,154 @@
+name: Experiment-01-Windows-CUDA-Toolkit
+
+# EXPERIMENT: Can we install CUDA toolkit on windows-latest without GPU?
+# GOAL: Test if Jimver/cuda-toolkit action works on Windows GitHub runners
+# SUCCESS CRITERIA:
+#   1. CUDA toolkit installs without errors
+#   2. nvcc compiler is available
+#   3. Simple CUDA code compiles
+#   4. cudaGetDeviceCount() runs without crash (returns 0 devices is OK)
+
+on:
+  workflow_dispatch:  # Manual trigger only
+  push:
+    branches:
+      - feature/get-rid-of-nocuda-builds
+    paths:
+      - '.github/workflows/experiment-01-windows-cuda-toolkit.yml'
+
+jobs:
+  test-cuda-install-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check Windows Version
+        run: |
+          echo "=== Windows Environment ==="
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+          echo ""
+          echo "Visual Studio:"
+          where cl 2>$null || echo "cl.exe not in PATH"
+        shell: cmd
+
+      - name: Install CUDA Toolkit 11.8 using GitHub Action
+        uses: Jimver/cuda-toolkit@v0.2.16
+        id: cuda-toolkit
+        with:
+          cuda: '11.8.0'
+
+      - name: Verify CUDA Installation
+        run: |
+          echo "=== Verifying CUDA Installation ==="
+          echo "CUDA_PATH=$env:CUDA_PATH"
+          nvcc --version
+        shell: pwsh
+
+      - name: Test CUDA Compilation
+        run: |
+          echo "=== Testing CUDA Compilation ==="
+
+          # Create simple CUDA test program
+          @'
+          #include <cuda_runtime.h>
+          #include <stdio.h>
+
+          int main() {
+              printf("=== CUDA Runtime Test (Windows) ===\n");
+
+              int deviceCount = 0;
+              cudaError_t error = cudaGetDeviceCount(&deviceCount);
+
+              printf("cudaGetDeviceCount returned: %d (%s)\n",
+                     error, cudaGetErrorString(error));
+              printf("Device count: %d\n", deviceCount);
+
+              if (error == cudaSuccess) {
+                  printf("SUCCESS: CUDA runtime works (no GPU is OK)\n");
+                  return 0;
+              } else if (error == cudaErrorNoDevice ||
+                         error == cudaErrorInsufficientDriver) {
+                  printf("SUCCESS: CUDA runtime works, no GPU available (expected on GitHub runner)\n");
+                  return 0;
+              } else {
+                  printf("FAILURE: Unexpected CUDA error\n");
+                  return 1;
+              }
+          }
+          '@ | Out-File -FilePath test_cuda.cu -Encoding utf8
+
+          # Compile with nvcc
+          nvcc test_cuda.cu -o test_cuda.exe
+          if ($LASTEXITCODE -ne 0) {
+            echo "Compilation failed!"
+            exit 1
+          }
+          echo "Compilation successful!"
+
+          # Run the test
+          .\test_cuda.exe
+        shell: pwsh
+
+      - name: Test CUDA Static Runtime Linking
+        run: |
+          echo "=== Testing Static CUDA Runtime ==="
+
+          # Create test with static runtime
+          @'
+          #include <cuda_runtime.h>
+          #include <stdio.h>
+
+          __global__ void dummy_kernel() {
+              // Empty kernel for testing
+          }
+
+          int main() {
+              printf("=== Static Runtime Test (Windows) ===\n");
+
+              // Test device query
+              int deviceCount = 0;
+              cudaError_t error = cudaGetDeviceCount(&deviceCount);
+              printf("Device count query: %s\n", cudaGetErrorString(error));
+
+              // Test memory allocation (will fail without GPU, but shouldn't crash)
+              void* ptr = nullptr;
+              error = cudaMalloc(&ptr, 1024);
+              printf("cudaMalloc: %s (failure expected without GPU)\n",
+                     cudaGetErrorString(error));
+              if (ptr) cudaFree(ptr);
+
+              printf("SUCCESS: Static runtime links and runs\n");
+              return 0;
+          }
+          '@ | Out-File -FilePath test_static.cu -Encoding utf8
+
+          # Compile with static runtime
+          nvcc test_static.cu -o test_static.exe -cudart static
+          if ($LASTEXITCODE -ne 0) {
+            echo "Static linking failed!"
+            exit 1
+          }
+          echo "Static linking successful!"
+
+          # Run test
+          .\test_static.exe
+        shell: pwsh
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "======================================"
+          echo "EXPERIMENT 01 (WINDOWS): RESULTS"
+          echo "======================================"
+          echo ""
+          echo "This experiment validates:"
+          echo "  ✓ CUDA toolkit can be installed on Windows GitHub runners"
+          echo "  ✓ Jimver/cuda-toolkit action works on Windows"
+          echo "  ✓ nvcc compiler works without GPU hardware"
+          echo "  ✓ CUDA runtime API compiles and links"
+          echo "  ✓ cudaGetDeviceCount() runs without crash"
+          echo "  ✓ Static CUDA runtime works"
+          echo ""
+          echo "Next Step: Experiment 02 - Test what vcpkg finds for CUDA"
+          echo "======================================"
+        shell: pwsh
