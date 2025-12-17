@@ -48,91 +48,90 @@ jobs:
         run: |
           echo "=== Testing CUDA Compilation ==="
 
-          # Create simple CUDA test program
-          @'
-          #include <cuda_runtime.h>
-          #include <stdio.h>
+          REM Create simple CUDA test program
+          (
+          echo #include ^<cuda_runtime.h^>
+          echo #include ^<stdio.h^>
+          echo.
+          echo int main^(^) {
+          echo     printf^("=== CUDA Runtime Test ^(Windows^) ===\n"^);
+          echo.
+          echo     int deviceCount = 0;
+          echo     cudaError_t error = cudaGetDeviceCount^(&deviceCount^);
+          echo.
+          echo     printf^("cudaGetDeviceCount returned: %%d ^(%%s^)\n", error, cudaGetErrorString^(error^)^);
+          echo     printf^("Device count: %%d\n", deviceCount^);
+          echo.
+          echo     if ^(error == cudaSuccess^) {
+          echo         printf^("SUCCESS: CUDA runtime works ^(no GPU is OK^)\n"^);
+          echo         return 0;
+          echo     } else if ^(error == cudaErrorNoDevice ^|^| error == cudaErrorInsufficientDriver^) {
+          echo         printf^("SUCCESS: CUDA runtime works, no GPU available ^(expected on GitHub runner^)\n"^);
+          echo         return 0;
+          echo     } else {
+          echo         printf^("FAILURE: Unexpected CUDA error\n"^);
+          echo         return 1;
+          echo     }
+          echo }
+          ) > test_cuda.cu
 
-          int main() {
-              printf("=== CUDA Runtime Test (Windows) ===\n");
-
-              int deviceCount = 0;
-              cudaError_t error = cudaGetDeviceCount(&deviceCount);
-
-              printf("cudaGetDeviceCount returned: %d (%s)\n",
-                     error, cudaGetErrorString(error));
-              printf("Device count: %d\n", deviceCount);
-
-              if (error == cudaSuccess) {
-                  printf("SUCCESS: CUDA runtime works (no GPU is OK)\n");
-                  return 0;
-              } else if (error == cudaErrorNoDevice ||
-                         error == cudaErrorInsufficientDriver) {
-                  printf("SUCCESS: CUDA runtime works, no GPU available (expected on GitHub runner)\n");
-                  return 0;
-              } else {
-                  printf("FAILURE: Unexpected CUDA error\n");
-                  return 1;
-              }
-          }
-          '@ | Out-File -FilePath test_cuda.cu -Encoding utf8
-
-          # Compile with nvcc
+          REM Setup Visual Studio environment and compile
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           nvcc test_cuda.cu -o test_cuda.exe
-          if ($LASTEXITCODE -ne 0) {
-            echo "Compilation failed!"
-            exit 1
-          }
-          echo "Compilation successful!"
+          if errorlevel 1 (
+            echo Compilation failed!
+            exit /b 1
+          )
+          echo Compilation successful!
 
-          # Run the test
-          .\test_cuda.exe
-        shell: pwsh
+          REM Run the test
+          test_cuda.exe
+        shell: cmd
 
       - name: Test CUDA Static Runtime Linking
         run: |
           echo "=== Testing Static CUDA Runtime ==="
 
-          # Create test with static runtime
-          @'
-          #include <cuda_runtime.h>
-          #include <stdio.h>
+          REM Create test with static runtime
+          (
+          echo #include ^<cuda_runtime.h^>
+          echo #include ^<stdio.h^>
+          echo.
+          echo __global__ void dummy_kernel^(^) {
+          echo     // Empty kernel for testing
+          echo }
+          echo.
+          echo int main^(^) {
+          echo     printf^("=== Static Runtime Test ^(Windows^) ===\n"^);
+          echo.
+          echo     // Test device query
+          echo     int deviceCount = 0;
+          echo     cudaError_t error = cudaGetDeviceCount^(&deviceCount^);
+          echo     printf^("Device count query: %%s\n", cudaGetErrorString^(error^)^);
+          echo.
+          echo     // Test memory allocation ^(will fail without GPU, but shouldn't crash^)
+          echo     void* ptr = 0;
+          echo     error = cudaMalloc^(&ptr, 1024^);
+          echo     printf^("cudaMalloc: %%s ^(failure expected without GPU^)\n", cudaGetErrorString^(error^)^);
+          echo     if ^(ptr^) cudaFree^(ptr^);
+          echo.
+          echo     printf^("SUCCESS: Static runtime links and runs\n"^);
+          echo     return 0;
+          echo }
+          ) > test_static.cu
 
-          __global__ void dummy_kernel() {
-              // Empty kernel for testing
-          }
-
-          int main() {
-              printf("=== Static Runtime Test (Windows) ===\n");
-
-              // Test device query
-              int deviceCount = 0;
-              cudaError_t error = cudaGetDeviceCount(&deviceCount);
-              printf("Device count query: %s\n", cudaGetErrorString(error));
-
-              // Test memory allocation (will fail without GPU, but shouldn't crash)
-              void* ptr = nullptr;
-              error = cudaMalloc(&ptr, 1024);
-              printf("cudaMalloc: %s (failure expected without GPU)\n",
-                     cudaGetErrorString(error));
-              if (ptr) cudaFree(ptr);
-
-              printf("SUCCESS: Static runtime links and runs\n");
-              return 0;
-          }
-          '@ | Out-File -FilePath test_static.cu -Encoding utf8
-
-          # Compile with static runtime
+          REM Setup Visual Studio environment and compile
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           nvcc test_static.cu -o test_static.exe -cudart static
-          if ($LASTEXITCODE -ne 0) {
-            echo "Static linking failed!"
-            exit 1
-          }
-          echo "Static linking successful!"
+          if errorlevel 1 (
+            echo Static linking failed!
+            exit /b 1
+          )
+          echo Static linking successful!
 
-          # Run test
-          .\test_static.exe
-        shell: pwsh
+          REM Run test
+          test_static.exe
+        shell: cmd
 
       - name: Summary
         if: always()
