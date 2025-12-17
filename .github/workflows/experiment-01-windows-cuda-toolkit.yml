@@ -2,6 +2,7 @@ name: Experiment-01-Windows-CUDA-Toolkit
 
 # EXPERIMENT: Can we install CUDA toolkit on windows-latest without GPU?
 # GOAL: Test if Jimver/cuda-toolkit action works on Windows GitHub runners
+# NOTE: Using CUDA 12.4 for VS 2022 compatibility (11.8 requires CUDA 12.4+)
 # SUCCESS CRITERIA:
 #   1. CUDA toolkit installs without errors
 #   2. nvcc compiler is available
@@ -30,11 +31,11 @@ jobs:
           where cl 2>nul && echo "cl.exe found" || (echo "cl.exe not in PATH" && exit /b 0)
         shell: cmd
 
-      - name: Install CUDA Toolkit 11.8 using Jimver action
+      - name: Install CUDA Toolkit 12.4 using Jimver action
         uses: Jimver/cuda-toolkit@v0.2.29
         id: cuda-toolkit
         with:
-          cuda: '11.8.0'
+          cuda: '12.4.0'
           sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
 
       - name: Verify CUDA Installation
