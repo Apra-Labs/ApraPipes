@@ -66,7 +66,7 @@ find_package(LibLZMA REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
-find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(SFML COMPONENTS window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 
 
