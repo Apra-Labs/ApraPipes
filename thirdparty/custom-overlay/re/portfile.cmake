@@ -1,4 +1,4 @@
-# portfile.cmake for lib_re 
+# portfile.cmake for lib_re
 
 vcpkg_from_github(
   OUT_SOURCE_PATH SOURCE_PATH
@@ -8,17 +8,12 @@ vcpkg_from_github(
   HEAD_REF forApraPipes
 )
 
-vcpkg_configure_cmake(
+vcpkg_cmake_configure(
   SOURCE_PATH "${SOURCE_PATH}"
-  PREFER_NINJA
 )
 
-vcpkg_build_cmake()
+vcpkg_cmake_build()
 
-vcpkg_install_cmake()
+vcpkg_cmake_install()
 
-file(
-  INSTALL "${SOURCE_PATH}/LICENSE"
-  DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}"
-  RENAME license
-)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
