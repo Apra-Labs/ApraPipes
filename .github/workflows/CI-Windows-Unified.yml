@@ -5,14 +5,15 @@ name: CI-Windows-Unified
 # Tests skip gracefully when GPU/driver unavailable via runtime detection
 
 on:
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
+  # Temporarily disabled during Windows experiments
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   workflow_dispatch:
 
 jobs:
