@@ -5,14 +5,15 @@ name: CI-Linux-CUDA-Unified
 # Uses incremental caching strategy to build up cache across failed CMake attempts
 
 on:
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
+  # Temporarily disabled during Windows workflow testing
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   workflow_dispatch:
 
 env:
