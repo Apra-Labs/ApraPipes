@@ -26,9 +26,7 @@
 -set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
 -
 +set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/libre.so)
-+
 +set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
-+
  if(ZLIB_FOUND)
    list(APPEND LINKLIBS ZLIB::ZLIB)
  endif()
