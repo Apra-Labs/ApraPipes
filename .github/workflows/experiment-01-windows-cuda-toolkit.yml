@@ -27,7 +27,7 @@ jobs:
           systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
           echo.
           echo "Visual Studio:"
-          where cl 2>nul && echo "cl.exe found" || echo "cl.exe not in PATH"
+          where cl 2>nul && echo "cl.exe found" || (echo "cl.exe not in PATH" && exit /b 0)
         shell: cmd
 
       - name: Install CUDA Toolkit 11.8 (Manual Download)
