@@ -1,16 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ea7840ff..9b2c1d3f 100644
+index ea7840ff..a1b2c3d4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -239,9 +239,9 @@ if(BUILD_SHARED_LIBS)
+@@ -239,13 +239,7 @@ if(BUILD_SHARED_LIBS)
  # Main target library
  #
- if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
 -  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/x64-linux/lib/libre.so)
-+  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/x64-linux/lib/libre.a)
- else()
+-else()
 -  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/arm64-linux/lib/libre.so)
-+  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/arm64-linux/lib/libre.a)
- endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+-
+-set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
++set(LINKLIBS re Threads::Threads)
 
- set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
+ if(ZLIB_FOUND)
