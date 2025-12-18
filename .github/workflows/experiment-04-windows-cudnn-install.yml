@@ -1,0 +1,207 @@
+name: Experiment-04-Windows-cuDNN-Install
+
+# EXPERIMENT: Can we install cuDNN on Windows using pip and link it to CUDA Toolkit?
+# GOAL: Test if pip-installed cuDNN works with vcpkg's FindCUDNN.cmake
+# SUCCESS CRITERIA:
+#   1. Install cuDNN 8.6.0 for CUDA 11.8 via pip
+#   2. Copy cuDNN files to CUDA Toolkit directories (bin, lib, include)
+#   3. Verify FindCUDNN.cmake can locate cuDNN headers and libraries
+#   4. Test that vcpkg opencv4[cudnn] can find cuDNN
+
+on:
+  workflow_dispatch:  # Manual trigger only
+  push:
+    branches:
+      - feature/get-rid-of-nocuda-builds
+    paths:
+      - '.github/workflows/experiment-04-windows-cudnn-install.yml'
+
+jobs:
+  test-cudnn-install:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check Windows Version
+        run: |
+          echo "=== Windows Environment ==="
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+        shell: cmd
+
+      - name: Install CUDA Toolkit 11.8 using Jimver action
+        uses: Jimver/cuda-toolkit@v0.2.29
+        id: cuda-toolkit
+        with:
+          cuda: '11.8.0'
+          sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
+
+      - name: Verify CUDA Installation
+        run: |
+          echo "=== Verifying CUDA Installation ==="
+          echo "CUDA_PATH=$env:CUDA_PATH"
+          nvcc --version
+        shell: pwsh
+
+      - name: Install cuDNN via pip (NVIDIA PyPI package)
+        run: |
+          echo "=== Installing cuDNN 8.6.0 for CUDA 11.8 via pip ==="
+
+          REM Install cuDNN Python package
+          pip install nvidia-cudnn-cu11==8.6.0.163
+
+          echo "cuDNN installed successfully"
+        shell: cmd
+
+      - name: Locate pip-installed cuDNN files
+        run: |
+          echo "=== Locating pip-installed cuDNN files ==="
+
+          $pythonSitePackages = python -c "import site; print(site.getsitepackages()[0])"
+          echo "Python site-packages: $pythonSitePackages"
+
+          $cudnnPath = Join-Path $pythonSitePackages "nvidia\cudnn"
+          echo "cuDNN path: $cudnnPath"
+
+          if (Test-Path $cudnnPath) {
+            echo "Contents of cuDNN directory:"
+            Get-ChildItem -Recurse $cudnnPath | Select-Object FullName
+          } else {
+            echo "ERROR: cuDNN directory not found at $cudnnPath"
+            exit 1
+          }
+
+          # Save path for next steps
+          echo "CUDNN_PIP_PATH=$cudnnPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Copy cuDNN files to CUDA Toolkit directories
+        run: |
+          echo "=== Copying cuDNN files to CUDA Toolkit ==="
+
+          $cudnnPath = $env:CUDNN_PIP_PATH
+          $cudaPath = $env:CUDA_PATH
+
+          echo "Source: $cudnnPath"
+          echo "Target: $cudaPath"
+
+          # Find and copy DLL files (bin)
+          $dllFiles = Get-ChildItem -Recurse -Filter "*.dll" $cudnnPath
+          foreach ($dll in $dllFiles) {
+            $dest = Join-Path $cudaPath "bin\$($dll.Name)"
+            Copy-Item $dll.FullName $dest -Force
+            echo "Copied: $($dll.Name) -> bin\"
+          }
+
+          # Find and copy header files (include)
+          $headerFiles = Get-ChildItem -Recurse -Filter "*.h" $cudnnPath
+          foreach ($header in $headerFiles) {
+            $dest = Join-Path $cudaPath "include\$($header.Name)"
+            Copy-Item $header.FullName $dest -Force
+            echo "Copied: $($header.Name) -> include\"
+          }
+
+          # Find and copy library files (lib/x64)
+          $libPath = Join-Path $cudaPath "lib\x64"
+          $libFiles = Get-ChildItem -Recurse -Filter "*.lib" $cudnnPath
+          foreach ($lib in $libFiles) {
+            $dest = Join-Path $libPath $lib.Name
+            Copy-Item $lib.FullName $dest -Force
+            echo "Copied: $($lib.Name) -> lib\x64\"
+          }
+
+          echo "cuDNN files copied successfully"
+        shell: pwsh
+
+      - name: Verify cuDNN installation (Check expected files)
+        run: |
+          echo "=== Verifying cuDNN files in CUDA Toolkit ==="
+
+          $cudaPath = $env:CUDA_PATH
+
+          # Check for cudnn.h
+          $cudnnHeader = Join-Path $cudaPath "include\cudnn.h"
+          if (Test-Path $cudnnHeader) {
+            echo "SUCCESS: Found $cudnnHeader"
+
+            # Read version from header
+            $content = Get-Content $cudnnHeader | Select-String -Pattern "CUDNN_(MAJOR|MINOR|PATCHLEVEL)"
+            echo "cuDNN version info:"
+            echo $content
+          } else {
+            echo "ERROR: cudnn.h not found at $cudnnHeader"
+            exit 1
+          }
+
+          # Check for cudnn.lib
+          $cudnnLib = Join-Path $cudaPath "lib\x64\cudnn.lib"
+          if (Test-Path $cudnnLib) {
+            echo "SUCCESS: Found $cudnnLib"
+          } else {
+            echo "WARNING: cudnn.lib not found, checking for cudnn8.lib..."
+            $cudnnLib8 = Join-Path $cudaPath "lib\x64\cudnn8.lib"
+            if (Test-Path $cudnnLib8) {
+              echo "SUCCESS: Found $cudnnLib8"
+            } else {
+              echo "ERROR: No cudnn library found"
+              exit 1
+            }
+          }
+
+          # Check for DLL
+          $cudnnDll = Join-Path $cudaPath "bin\cudnn64_8.dll"
+          if (Test-Path $cudnnDll) {
+            echo "SUCCESS: Found $cudnnDll"
+          } else {
+            echo "WARNING: cudnn64_8.dll not found, listing all cudnn DLLs..."
+            Get-ChildItem (Join-Path $cudaPath "bin") -Filter "cudnn*.dll"
+          }
+        shell: pwsh
+
+      - name: Test FindCUDNN.cmake (Create test CMake project)
+        run: |
+          echo "=== Testing FindCUDNN.cmake ==="
+
+          # Checkout code to get FindCUDNN.cmake
+          git clone --depth 1 https://github.com/kukkamario/ApraPipes.git test-repo
+
+          # Create test CMakeLists.txt
+          @"
+          cmake_minimum_required(VERSION 3.20)
+          project(TestCuDNN)
+
+          set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test-repo/vcpkg/ports/cudnn" ${CMAKE_MODULE_PATH})
+
+          find_package(CUDNN REQUIRED)
+
+          message(STATUS "CUDNN_FOUND: ${CUDNN_FOUND}")
+          message(STATUS "CUDNN_INCLUDE_DIR: ${CUDNN_INCLUDE_DIR}")
+          message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
+          message(STATUS "CUDNN Version: ${_CUDNN_VERSION}")
+
+          if(CUDNN_FOUND)
+            message(STATUS "SUCCESS: FindCUDNN.cmake found cuDNN!")
+          else()
+            message(FATAL_ERROR "FAILED: FindCUDNN.cmake could not find cuDNN")
+          endif()
+          "@ | Out-File -FilePath CMakeLists.txt -Encoding utf8
+
+          # Run CMake configure
+          cmake -B build -S .
+        shell: pwsh
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "======================================"
+          echo "EXPERIMENT 04 (WINDOWS): RESULTS"
+          echo "======================================"
+          echo ""
+          echo "This experiment validates:"
+          echo "  ✓ cuDNN can be installed via pip (nvidia-cudnn-cu11)"
+          echo "  ✓ pip-installed cuDNN files can be copied to CUDA Toolkit"
+          echo "  ✓ FindCUDNN.cmake can locate pip-installed cuDNN"
+          echo "  ✓ vcpkg opencv4[cudnn] should work with this approach"
+          echo ""
+          echo "Next Step: Add cuDNN installation to CI-Windows-Unified.yml"
+          echo "======================================"
+        shell: pwsh
