@@ -15,27 +15,21 @@ IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
 
+# NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)
+# Setting it here happens TOO LATE - after vcpkg toolchain has already initialized
+# See CI workflow files (.github/workflows/) for triplet configuration
+
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)
-	# Use release-only triplet to skip debug builds and cut build time by ~50%
-	IF(ENABLE_ARM64)
-		set(VCPKG_TARGET_TRIPLET "arm64-linux-release" CACHE STRING "arm64-linux-release")
-	ELSE()
-		set(VCPKG_TARGET_TRIPLET "x64-linux-release" CACHE STRING "x64-linux-release")
-	ENDIF()
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
-	# Use release-only triplet to skip debug builds and cut build time by ~50%
-	set(VCPKG_TARGET_TRIPLET "x64-windows-release" CACHE STRING "x64-windows-release")
 	set(VCPKG_PLATFORM_TOOLSET "v143" CACHE STRING "v143" FORCE)
 ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_MACOS)
 	add_compile_definitions(MACOS)
-	# Use release-only triplet to skip debug builds and cut build time by ~50%
-	set(VCPKG_TARGET_TRIPLET "x64-osx-release" CACHE STRING "x64-osx-release")
 ENDIF(ENABLE_MACOS)
 
 IF(ENABLE_ARM64)
