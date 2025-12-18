@@ -50,6 +50,8 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_path(FVAD_INCLUDE_DIR fvad.h)
+find_library(FVAD_LIBRARY NAMES fvad libfvad)
 
 
 IF(ENABLE_LINUX)
@@ -342,7 +344,7 @@ SET(IP_FILES
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
 	src/AudioToTextXForm.cpp 
-	src/VADTransform.cpp
+	src/VoiceActivityDetector.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
 )
@@ -370,7 +372,7 @@ SET(IP_FILES_H
 	include/ColorConversionXForm.h
 	include/Overlay.h
 	include/AudioToTextXForm.h
-	include/VADTransform.h
+	include/VoiceActivityDetector.h
 	include/ThumbnailListGenerator.h
 )
 
@@ -528,6 +530,7 @@ target_include_directories ( aprapipes PRIVATE
 	${BARESIP_INC_DIR}
 	${LIBRE_INC_DIR}
 	${NVCODEC_INCLUDE_DIR}
+	${FVAD_INCLUDE_DIR}
 )
 
 
@@ -632,7 +635,7 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
-	test/vad_tests.cpp
+	test/VoiceActivityDetectorTests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
@@ -698,7 +701,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   sfml-audio
   whisper::whisper
-  fvad
+  ${FVAD_LIBRARY}
   )
 
 IF(ENABLE_WINDOWS)
