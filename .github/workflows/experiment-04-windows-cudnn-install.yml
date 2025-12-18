@@ -43,10 +43,11 @@ jobs:
 
       - name: Install cuDNN via pip (NVIDIA PyPI package)
         run: |
-          echo "=== Installing cuDNN 8.6.0 for CUDA 11.8 via pip ==="
+          echo "=== Installing cuDNN for CUDA 11.8 via pip ==="
 
           REM Install cuDNN Python package
-          pip install nvidia-cudnn-cu11==8.6.0.163
+          REM nvidia-cudnn-cu11 v8.x doesn't exist on PyPI, use v9.x (compatible with CUDA 11.x)
+          pip install nvidia-cudnn-cu11
 
           echo "cuDNN installed successfully"
         shell: cmd
