@@ -56,10 +56,17 @@ jobs:
         run: |
           echo "=== Locating pip-installed cuDNN files ==="
 
-          $pythonSitePackages = python -c "import site; print(site.getsitepackages()[0])"
-          echo "Python site-packages: $pythonSitePackages"
+          # Use pip show to get the installation location
+          $pipShowOutput = pip show nvidia-cudnn-cu11
+          echo "pip show output:"
+          echo $pipShowOutput
 
-          $cudnnPath = Join-Path $pythonSitePackages "nvidia\cudnn"
+          # Extract the Location field which contains site-packages path
+          $location = ($pipShowOutput | Select-String -Pattern "^Location: (.*)").Matches.Groups[1].Value
+          echo "Package location: $location"
+
+          # cuDNN files should be in nvidia/cudnn under the package location
+          $cudnnPath = Join-Path $location "nvidia\cudnn"
           echo "cuDNN path: $cudnnPath"
 
           if (Test-Path $cudnnPath) {
@@ -67,6 +74,8 @@ jobs:
             Get-ChildItem -Recurse $cudnnPath | Select-Object FullName
           } else {
             echo "ERROR: cuDNN directory not found at $cudnnPath"
+            echo "Searching for nvidia-cudnn files in location..."
+            Get-ChildItem -Recurse $location -Filter "*cudnn*" | Select-Object FullName
             exit 1
           }
 
