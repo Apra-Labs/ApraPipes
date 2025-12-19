@@ -724,7 +724,7 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   LibLZMA::LibLZMA
   bigint::bigint
-  sfml-audio
+  SFML::Audio
   whisper::whisper
   )
 
