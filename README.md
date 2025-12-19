@@ -18,6 +18,14 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 |Ubuntu x64_86-docker|22.04|Yes|No|[![CI-Linux-CUDA-Docker](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml)|
 |macOS x86_64|15.0+|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_MacOSX.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_MacOSX.svg)|[![CI-MacOSX-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml)|
 
+## Code Coverage
+[![codecov](https://codecov.io/gh/Apra-Labs/ApraPipes/branch/master/graph/badge.svg)](https://codecov.io/gh/Apra-Labs/ApraPipes)
+[![Code Coverage](https://github.com/Apra-Labs/ApraPipes/actions/workflows/code-coverage.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/code-coverage.yml)
+
+Code coverage is automatically generated and published on every commit. View detailed coverage reports on [Codecov](https://codecov.io/gh/Apra-Labs/ApraPipes) or download artifacts from the [Coverage Workflow](https://github.com/Apra-Labs/ApraPipes/actions/workflows/code-coverage.yml).
+
+For local coverage generation, see [Code Coverage Documentation](docs/CODE_COVERAGE.md).
+
 ## Getting Started with ApraPipes
 
 <details>

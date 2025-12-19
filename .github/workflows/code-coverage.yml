@@ -1,0 +1,195 @@
+name: Code Coverage
+
+on:
+  push:
+    branches: [ main, master, develop, yash/impr/NVR_Release_Mem_Leak_FIx_CacheUpdate ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get -y install \
+          ca-certificates curl zip unzip tar autoconf automake autopoint \
+          build-essential flex git-core libass-dev libfreetype6-dev \
+          libgnutls28-dev libmp3lame-dev libsdl2-dev libtool \
+          libsoup-gnome2.4-dev libva-dev libvdpau-dev libvorbis-dev \
+          libxdamage-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
+          libncurses5-dev libncursesw5-dev ninja-build pkg-config texinfo \
+          wget yasm zlib1g-dev nasm gperf bison python3 python3-pip \
+          dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev \
+          libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 \
+          lcov gcovr
+        pip3 install meson
+        pip3 install Jinja2
+        # Install CMake 3.29.6
+        pip3 install cmake==3.29.6 || echo 'CMake update skipped'
+
+    - name: Verify tools
+      run: |
+        cmake --version
+        ninja --version
+        gcc --version
+        git --version
+        lcov --version
+        gcovr --version
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+
+    - name: List Submodules
+      run: |
+        git config --global --add safe.directory "*"
+        git submodule status > submodule_ver.txt
+        cat submodule_ver.txt
+        git rev-list --all --count
+
+    - name: Run VCPKG bootstrap
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Remove CUDA from vcpkg (running without CUDA for coverage)
+      working-directory: ${{github.workspace}}/base
+      run: ./fix-vcpkg-json.ps1 -removeCUDA
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Create build directory
+      run: mkdir -p build
+
+    - name: Configure CMake with Coverage
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake -B . \
+          -DENABLE_WINDOWS=OFF \
+          -DENABLE_LINUX=ON \
+          -DENABLE_CUDA=OFF \
+          -DCODE_COVERAGE=ON \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} \
+          ../base
+
+    - name: Build with Coverage
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config Debug -j 4
+
+    - name: Run Tests and Generate Coverage
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Run the coverage target which will:
+        # 1. Reset coverage counters
+        # 2. Run tests
+        # 3. Generate lcov report
+        # 4. Generate HTML report
+        make coverage || echo 'Coverage generation completed with warnings'
+      timeout-minutes: 30
+      continue-on-error: true
+
+    - name: Generate Coverage Summary
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Generate a text summary
+        lcov --summary coverage.info > coverage_summary.txt 2>&1 || true
+        cat coverage_summary.txt
+
+        # Extract coverage percentage for badge
+        COVERAGE=$(lcov --summary coverage.info 2>&1 | grep "lines" | awk '{print $2}')
+        echo "COVERAGE_PERCENTAGE=$COVERAGE" >> $GITHUB_ENV
+        echo "Coverage: $COVERAGE"
+      continue-on-error: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./build/coverage.info
+        flags: unittests
+        name: codecov-aprapipes
+        fail_ci_if_error: false
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+      continue-on-error: true
+
+    - name: Upload coverage reports as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          build/coverage/
+          build/coverage.info
+          build/coverage_summary.txt
+        retention-days: 30
+      continue-on-error: true
+
+    - name: Comment PR with Coverage
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs');
+          let summary = 'Coverage report generation failed';
+          try {
+            summary = fs.readFileSync('build/coverage_summary.txt', 'utf8');
+          } catch (e) {
+            console.log('Could not read coverage summary');
+          }
+
+          const output = `#### Code Coverage Report 📊
+
+          <details><summary>Coverage Summary</summary>
+
+          \`\`\`
+          ${summary}
+          \`\`\`
+
+          </details>
+
+          📁 Full coverage report available in workflow artifacts.
+          🔍 View detailed report: [Codecov Dashboard](https://codecov.io/gh/${{github.repository}})
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          });
+      continue-on-error: true
+
+    - name: Generate Coverage Badge
+      working-directory: ${{github.workspace}}/build
+      run: |
+        # Generate a simple coverage badge JSON
+        COVERAGE_NUM=$(echo $COVERAGE_PERCENTAGE | sed 's/%//')
+        COLOR="red"
+        if (( $(echo "$COVERAGE_NUM > 80" | bc -l) )); then
+          COLOR="brightgreen"
+        elif (( $(echo "$COVERAGE_NUM > 60" | bc -l) )); then
+          COLOR="yellow"
+        elif (( $(echo "$COVERAGE_NUM > 40" | bc -l) )); then
+          COLOR="orange"
+        fi
+
+        echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"$COVERAGE_PERCENTAGE\", \"color\": \"$COLOR\"}" > coverage-badge.json
+        cat coverage-badge.json
+      continue-on-error: true
+
+    - name: Upload badge data
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-badge
+        path: build/coverage-badge.json
+        retention-days: 90
+      continue-on-error: true
