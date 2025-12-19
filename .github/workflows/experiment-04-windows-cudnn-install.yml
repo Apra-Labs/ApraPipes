@@ -180,12 +180,13 @@ jobs:
           New-Item -ItemType Directory -Path test-cudnn -Force
           cd test-cudnn
 
-          # Create test CMakeLists.txt
+          # Create test CMakeLists.txt - use file() for proper path conversion
           @"
           cmake_minimum_required(VERSION 3.20)
           project(TestCuDNN)
 
-          set(CMAKE_MODULE_PATH "${{github.workspace}}/vcpkg/ports/cudnn" `${CMAKE_MODULE_PATH})
+          file(TO_CMAKE_PATH "${{github.workspace}}/vcpkg/ports/cudnn" CUDNN_MODULE_PATH)
+          set(CMAKE_MODULE_PATH "`${CUDNN_MODULE_PATH}" `${CMAKE_MODULE_PATH})
 
           find_package(CUDNN REQUIRED)
 
