@@ -82,6 +82,7 @@ public:
                 {
                     width[i] = rawMetadata->getWidth(i);
                     height[i] = rawMetadata->getHeight(i);
+                    pitch[i]=rawMetadata->getStep(i);
                 }
                 auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width[0], height[0], imageType, size_t(0), CV_8U, FrameMetadata::MemType::DMABUF));
                 DMAAllocator::setMetadata(metadata, width[0], height[0], imageType, pitch, offset);

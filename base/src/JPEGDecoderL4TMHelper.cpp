@@ -4,6 +4,9 @@
 #include <iostream>
 #include <linux/videodev2.h>
 #include "Logger.h"
+#include "nvbufsurface.h"
+#include "jpegint.h"
+#include <nvbufsurftransform.h>
 
 JPEGDecoderL4TMHelper::JPEGDecoderL4TMHelper()
 {
@@ -63,7 +66,7 @@ bool JPEGDecoderL4TMHelper::init(const unsigned char *in_buf, unsigned long in_b
         }
     }
 
-    jpeg_finish_decompress(&cinfo);
+   jpeg_finish_decompress(&cinfo);
     width = cinfo.image_width;
     height = cinfo.image_height;
 
@@ -86,6 +89,122 @@ bool JPEGDecoderL4TMHelper::init(const unsigned char *in_buf, unsigned long in_b
     }
 
     return true;
+}
+
+
+
+int JPEGDecoderL4TMHelper::decodeToFd(int &fd, unsigned char * in_buf,
+        unsigned long in_buf_size)
+{
+    uint32_t pixel_format = 0;
+    uint32_t buffer_id;
+    NvBufSurface surface;
+
+    if (in_buf == NULL || in_buf_size == 0)
+    {
+        LOG_INFO<<"Not decoding because input buffer = NULL or size = 0";
+        return -1;
+    }
+
+
+    cinfo.out_color_space = JCS_YCbCr;
+
+    jpeg_mem_src(&cinfo, in_buf, in_buf_size);
+
+    cinfo.out_color_space = JCS_YCbCr;
+
+
+    (void) jpeg_read_header(&cinfo, TRUE);
+
+    cinfo.out_color_space = JCS_YCbCr;
+    cinfo.IsVendorbuf = TRUE;
+    cinfo.pVendor_buf = (unsigned char*)&surface;
+
+    if (cinfo.comp_info[0].h_samp_factor == 2)
+    {
+        if (cinfo.comp_info[0].v_samp_factor == 2)
+        {
+            pixel_format = V4L2_PIX_FMT_YUV420M;
+        }
+        else
+        {
+            pixel_format = V4L2_PIX_FMT_YUV422M;
+        }
+    }
+    else
+    {
+        if (cinfo.comp_info[0].v_samp_factor == 1)
+        {
+            pixel_format = V4L2_PIX_FMT_YUV444M;
+        }
+        else
+        {
+            pixel_format = V4L2_PIX_FMT_YUV422M;
+        }
+    }
+
+    jpeg_start_decompress (&cinfo);
+
+    if (cinfo.global_state != DSTATE_READY) {
+        LOG_INFO<<"JPEG format is not supported by libnvjpeg";
+        return -1;
+    }
+
+    jpeg_read_raw_data (&cinfo, NULL, cinfo.comp_info[0].v_samp_factor * DCTSIZE);
+    jpeg_finish_decompress(&cinfo);
+
+    // Image width and height should be even
+    uint32_t width = (cinfo.image_width % 2 == 1) ? cinfo.image_width + 1 : cinfo.image_width;
+    uint32_t height = (cinfo.image_height % 2 == 1) ? cinfo.image_height + 1 : cinfo.image_height;
+    uint32_t pixfmt = pixel_format;
+    int fd1= cinfo.fd;
+
+    LOG_INFO<<"Succesfully decoded Buffer fd=" << fd;
+     LOG_INFO<<"Succesfully decoded Buffer fd1=" << fd1;
+     
+
+    NvBufSurfTransformRect src_rect, dst_rect;
+    src_rect.top = 0;
+    src_rect.left = 0;
+    src_rect.width = width;
+    src_rect.height = height;
+    dst_rect.top = 0;
+    dst_rect.left = 0;
+    dst_rect.width = width;
+    dst_rect.height = height;
+
+    // Set up transform parameters
+    NvBufSurfTransformParams transform_params;
+    memset(&transform_params, 0, sizeof(transform_params));
+    transform_params.transform_flag = NVBUFSURF_TRANSFORM_FILTER;
+    transform_params.transform_flip = NvBufSurfTransform_None;
+    transform_params.transform_filter = NvBufSurfTransformInter_Nearest;
+    transform_params.src_rect = &src_rect;
+    transform_params.dst_rect = &dst_rect;
+
+    // auto dmaFDWrapper = static_cast<DMAFDWrapper *>(frame->data());
+    NvBufSurface *in_surf = nullptr;
+    NvBufSurface *out_surf = nullptr;
+
+    if (NvBufSurfaceFromFd(cinfo.fd, (void**)&in_surf) != 0) {
+        LOG_INFO << "Failed to create input surface";
+        return false;
+        }
+
+        if (NvBufSurfaceFromFd(fd, (void**)&out_surf) != 0) {
+            LOG_INFO << "Failed to create output surface";
+        return false;
+        }
+
+    NvBufSurfTransform_Error err = NvBufSurfTransform(in_surf, out_surf, &transform_params);
+
+    if (err != NvBufSurfTransformError_Success) {
+        LOG_INFO << "Transform failed============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>error:" <<err;
+    }
+
+
+
+    return 0;
 }
 
 int JPEGDecoderL4TMHelper::decode(const unsigned char *in_buf, unsigned long in_buf_size, unsigned char *out_buf)

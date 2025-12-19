@@ -35,7 +35,12 @@ bool NvArgusCamera::init()
 		frame_container frames;
 		frames.insert(make_pair(mOutputPinId, frame));
 		send(frames); }, [&]() -> frame_sp { return makeFrame(); });
-	mHelper->start(mProps.width, mProps.height, static_cast<uint32_t>(mProps.fps), mProps.cameraId);
+	
+	if (!mHelper->start(mProps.width, mProps.height, static_cast<uint32_t>(mProps.fps), mProps.cameraId))
+	{
+		LOG_ERROR << "Failed to start camera helper";
+		return false;
+	}
 
 	return true;
 }
