@@ -10,11 +10,12 @@ name: Experiment-01-Windows-CUDA-Toolkit
 
 on:
   workflow_dispatch:  # Manual trigger only
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths:
-      - '.github/workflows/experiment-01-windows-cuda-toolkit.yml'
+  # DISABLED: Experiment proven successful Dec 17, 2024. Delete after CI-Windows-Unified succeeds.
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths:
+  #     - '.github/workflows/experiment-01-windows-cuda-toolkit.yml'
 
 jobs:
   test-cuda-install-windows:

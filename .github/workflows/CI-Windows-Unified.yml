@@ -134,10 +134,44 @@ jobs:
           echo "Copied: $($_.Name) -> lib\x64\"
         }
 
-        # Verify key files
-        if (Test-Path (Join-Path $cudaPath "include\cudnn.h")) { echo "SUCCESS: cudnn.h found" }
-        if (Test-Path (Join-Path $cudaPath "lib\x64\cudnn.lib")) { echo "SUCCESS: cudnn.lib found" }
-        elseif (Test-Path (Join-Path $cudaPath "lib\x64\cudnn8.lib")) { echo "SUCCESS: cudnn8.lib found" }
+        # Verify key files exist
+        $cudnnHeader = Join-Path $cudaPath "include\cudnn.h"
+        $cudnnLib = Join-Path $cudaPath "lib\x64\cudnn.lib"
+        $cudnnLib8 = Join-Path $cudaPath "lib\x64\cudnn8.lib"
+
+        if (Test-Path $cudnnHeader) {
+          echo "SUCCESS: cudnn.h found at $cudnnHeader"
+        } else {
+          echo "ERROR: cudnn.h NOT found"
+          exit 1
+        }
+
+        # Determine library path (cudnn.lib or cudnn8.lib)
+        $actualLib = ""
+        if (Test-Path $cudnnLib) {
+          echo "SUCCESS: cudnn.lib found"
+          $actualLib = $cudnnLib
+        } elseif (Test-Path $cudnnLib8) {
+          echo "SUCCESS: cudnn8.lib found"
+          $actualLib = $cudnnLib8
+        } else {
+          echo "ERROR: No cudnn library found"
+          exit 1
+        }
+
+        # Export cuDNN paths for vcpkg/CMake to find
+        # These are used by vcpkg's FindCUDNN.cmake
+        echo "CUDNN_INCLUDE_DIR=$cudaPath\include" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "CUDNN_LIBRARY=$actualLib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "CUDNN_ROOT=$cudaPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "CUDNN_ROOT_DIR=$cudaPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        echo ""
+        echo "=== Environment variables set for vcpkg/CMake ==="
+        echo "CUDNN_INCLUDE_DIR=$cudaPath\include"
+        echo "CUDNN_LIBRARY=$actualLib"
+        echo "CUDNN_ROOT=$cudaPath"
+        echo "CUDNN_ROOT_DIR=$cudaPath"
       shell: pwsh
 
     - name: Create vcpkg binary cache directory

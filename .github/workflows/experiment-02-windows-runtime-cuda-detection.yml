@@ -11,11 +11,12 @@ name: Experiment-02-Windows-Runtime-CUDA-Detection
 
 on:
   workflow_dispatch:  # Manual trigger only
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths:
-      - '.github/workflows/experiment-02-windows-runtime-cuda-detection.yml'
+  # DISABLED: Experiment proven successful Dec 17, 2024. Delete after CI-Windows-Unified succeeds.
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths:
+  #     - '.github/workflows/experiment-02-windows-runtime-cuda-detection.yml'
 
 jobs:
   test-runtime-cuda-detection:

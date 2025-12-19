@@ -10,11 +10,12 @@ name: Experiment-04-Windows-cuDNN-Install
 
 on:
   workflow_dispatch:  # Manual trigger only
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths:
-      - '.github/workflows/experiment-04-windows-cudnn-install.yml'
+  # DISABLED: Experiment proven successful. Delete after CI-Windows-Unified succeeds.
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths:
+  #     - '.github/workflows/experiment-04-windows-cudnn-install.yml'
 
 jobs:
   test-cudnn-install:

@@ -11,11 +11,12 @@ name: Experiment-03-Windows-Driver-API-Detection
 
 on:
   workflow_dispatch:  # Manual trigger only
-  push:
-    branches:
-      - feature/get-rid-of-nocuda-builds
-    paths:
-      - '.github/workflows/experiment-03-windows-driver-api-detection.yml'
+  # DISABLED: Experiment proven successful Dec 17, 2024. Delete after CI-Windows-Unified succeeds.
+  # push:
+  #   branches:
+  #     - feature/get-rid-of-nocuda-builds
+  #   paths:
+  #     - '.github/workflows/experiment-03-windows-driver-api-detection.yml'
 
 jobs:
   test-driver-api-detection:
