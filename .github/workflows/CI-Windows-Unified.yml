@@ -99,6 +99,47 @@ jobs:
         nvcc --version
       shell: pwsh
 
+    - name: Install cuDNN 8.9.5 via pip
+      run: |
+        pip install nvidia-cudnn-cu11==8.9.5.29
+        echo "cuDNN 8.9.5.29 installed"
+      shell: cmd
+
+    - name: Copy cuDNN files to CUDA Toolkit
+      run: |
+        $pipShowOutput = pip show nvidia-cudnn-cu11
+        $location = ($pipShowOutput | Select-String -Pattern "^Location: (.*)").Matches.Groups[1].Value
+        $cudnnPath = Join-Path $location "nvidia\cudnn"
+        $cudaPath = $env:CUDA_PATH
+
+        echo "cuDNN source: $cudnnPath"
+        echo "CUDA target: $cudaPath"
+
+        # Copy DLLs to bin
+        Get-ChildItem -Recurse -Filter "*.dll" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $cudaPath "bin\$($_.Name)") -Force
+          echo "Copied: $($_.Name) -> bin\"
+        }
+
+        # Copy headers to include
+        Get-ChildItem -Recurse -Filter "*.h" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $cudaPath "include\$($_.Name)") -Force
+          echo "Copied: $($_.Name) -> include\"
+        }
+
+        # Copy libs to lib/x64
+        $libPath = Join-Path $cudaPath "lib\x64"
+        Get-ChildItem -Recurse -Filter "*.lib" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $libPath $_.Name) -Force
+          echo "Copied: $($_.Name) -> lib\x64\"
+        }
+
+        # Verify key files
+        if (Test-Path (Join-Path $cudaPath "include\cudnn.h")) { echo "SUCCESS: cudnn.h found" }
+        if (Test-Path (Join-Path $cudaPath "lib\x64\cudnn.lib")) { echo "SUCCESS: cudnn.lib found" }
+        elseif (Test-Path (Join-Path $cudaPath "lib\x64\cudnn8.lib")) { echo "SUCCESS: cudnn8.lib found" }
+      shell: pwsh
+
     - name: Create vcpkg binary cache directory
       run: if (!(Test-Path "${{env.VCPKG_DEFAULT_BINARY_CACHE}}")) { New-Item -ItemType Directory -Path "${{env.VCPKG_DEFAULT_BINARY_CACHE}}" -Force }
       shell: pwsh
