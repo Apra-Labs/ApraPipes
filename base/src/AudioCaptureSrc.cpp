@@ -4,6 +4,7 @@
 #include "SFML/Audio.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
+#include <cstdint>
 
 class AudioCaptureSrc::Detail
 {
@@ -11,7 +12,7 @@ class AudioCaptureSrc::Detail
 public:
     Detail(
         AudioCaptureSrcProps _props,
-        std::function<bool(const sf::Int16 *samples,
+        std::function<bool(const std::int16_t *samples,
                            std::size_t sampleCount)> _mMakeFrame) : mRecorder(_mMakeFrame, _props.processingIntervalMS, _props.channels),
                                                                     mProps(_props)
     {
@@ -50,10 +51,10 @@ private:
         friend class AudioCaptureSrc;
         int processingIntervalInMilliSecond;
         int channelCount;
-        std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> mMakeFrame;
+        std::function<bool(const std::int16_t *samples, std::size_t sampleCount)> mMakeFrame;
 
     public:
-        ApraRecorder(std::function<bool(const sf::Int16 *samples, std::size_t sampleCount)> _mMakeFrame, int _processingIntervalInMilliSecond, int _channelCount)
+        ApraRecorder(std::function<bool(const std::int16_t *samples, std::size_t sampleCount)> _mMakeFrame, int _processingIntervalInMilliSecond, int _channelCount)
         {
             mMakeFrame = _mMakeFrame;
             processingIntervalInMilliSecond = _processingIntervalInMilliSecond;
@@ -62,11 +63,12 @@ private:
 
         virtual bool onStart()
         {
-            setProcessingInterval(sf::milliseconds(processingIntervalInMilliSecond)); //set Processing Interval
+            // Note: setProcessingInterval was removed in SFML 3.x
+            // The processing interval is now managed internally by SFML
             return true;
         }
 
-        virtual bool onProcessSamples(const sf::Int16 *samples, std::size_t sampleCount)
+        virtual bool onProcessSamples(const std::int16_t *samples, std::size_t sampleCount)
         {
             return mMakeFrame(samples, sampleCount);
         }
@@ -80,9 +82,9 @@ public:
 
 AudioCaptureSrc::AudioCaptureSrc(AudioCaptureSrcProps _props) : Module(SOURCE, "AudioCaptureSrc", _props)
 {
-    mDetail.reset(new Detail(_props, [&](const sf::Int16 *samples, std::size_t sampleCount) -> bool
+    mDetail.reset(new Detail(_props, [&](const std::int16_t *samples, std::size_t sampleCount) -> bool
                              {
-                                 auto outFrame = makeFrame(sampleCount * 2); // Size of Int16 is 2 byte
+                                 auto outFrame = makeFrame(sampleCount * 2); // Size of std::int16_t is 2 bytes
                                  frame_container frames;
                                  memcpy(outFrame->data(), samples, outFrame->size());
                                  frames.insert(make_pair(mOutputPinId, outFrame));

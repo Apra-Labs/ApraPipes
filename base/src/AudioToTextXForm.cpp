@@ -5,7 +5,7 @@
 #include "Logger.h"
 #include "Utils.h"
 #include "whisper.h"
-#include "SFML/Config.hpp"
+#include <cstdint>
 
 AudioToTextXFormProps::AudioToTextXFormProps(
 	DecoderSamplingStrategy _samplingStrategy,
@@ -154,7 +154,7 @@ bool AudioToTextXForm::term()
 bool AudioToTextXForm::process(frame_container& frames)
 {
 	auto frame = frames.begin()->second;
-	sf::Int16* constFloatPointer = static_cast<sf::Int16*>(frame->data());
+	std::int16_t* constFloatPointer = static_cast<std::int16_t*>(frame->data());
 	int numberOfSamples = frame->size() / 2;
 	//TODO: Modify to use NPP/ IPP
 	for (int index = 0; index < numberOfSamples; index++) {
