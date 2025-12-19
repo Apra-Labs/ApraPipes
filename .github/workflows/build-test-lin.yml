@@ -51,7 +51,7 @@ on:
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ '~/.cache/vcpkg/archives' }}
+        default: '../.cache/vcpkg'
         required: false
       cmake-conf-cmd:
         type: string
