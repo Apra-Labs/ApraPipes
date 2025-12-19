@@ -21,6 +21,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: false
+          lfs: false
+
       - name: Check Windows Version
         run: |
           echo "=== Windows Environment ==="
@@ -166,25 +172,27 @@ jobs:
         shell: pwsh
 
       - name: Test FindCUDNN.cmake (Create test CMake project)
+        working-directory: ${{github.workspace}}
         run: |
           echo "=== Testing FindCUDNN.cmake ==="
 
-          # Checkout code to get FindCUDNN.cmake
-          git clone --depth 1 https://github.com/kukkamario/ApraPipes.git test-repo
+          # Create test directory
+          New-Item -ItemType Directory -Path test-cudnn -Force
+          cd test-cudnn
 
           # Create test CMakeLists.txt
           @"
           cmake_minimum_required(VERSION 3.20)
           project(TestCuDNN)
 
-          set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test-repo/vcpkg/ports/cudnn" ${CMAKE_MODULE_PATH})
+          set(CMAKE_MODULE_PATH "${{github.workspace}}/vcpkg/ports/cudnn" `${CMAKE_MODULE_PATH})
 
           find_package(CUDNN REQUIRED)
 
-          message(STATUS "CUDNN_FOUND: ${CUDNN_FOUND}")
-          message(STATUS "CUDNN_INCLUDE_DIR: ${CUDNN_INCLUDE_DIR}")
-          message(STATUS "CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
-          message(STATUS "CUDNN Version: ${_CUDNN_VERSION}")
+          message(STATUS "CUDNN_FOUND: `${CUDNN_FOUND}")
+          message(STATUS "CUDNN_INCLUDE_DIR: `${CUDNN_INCLUDE_DIR}")
+          message(STATUS "CUDNN_LIBRARY: `${CUDNN_LIBRARY}")
+          message(STATUS "CUDNN Version: `${_CUDNN_VERSION}")
 
           if(CUDNN_FOUND)
             message(STATUS "SUCCESS: FindCUDNN.cmake found cuDNN!")
