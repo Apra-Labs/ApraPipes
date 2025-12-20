@@ -143,6 +143,7 @@ jobs:
         fi
       cache-path: './none'
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && export CURL_HTTP_VERSION=HTTP/1.1 && export CC=/usr/bin/gcc-8 && export CXX=/usr/bin/g++-8 && export CUDAHOSTCXX=/usr/bin/g++-8 && cmake -B . -G Ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-8 -DENABLE_ARM64=ON ../base'
+      vcpkg-triplet: 'arm64-linux-release'
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
