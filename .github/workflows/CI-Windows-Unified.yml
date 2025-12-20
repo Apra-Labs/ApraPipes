@@ -65,7 +65,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: Windows-Unified-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: Windows-Unified-6-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
         restore-keys: Windows-Unified-
 
     - name: Clear vcpkg downloads to force fresh Python download
@@ -110,6 +110,59 @@ jobs:
         if (Test-Path $cudaLibnvvp) {
           echo "$cudaLibnvvp" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         }
+      shell: pwsh
+
+    - name: Install CUDA Visual Studio Integration (MSBuildExtensions)
+      run: |
+        echo "=== Installing CUDA Visual Studio Integration ==="
+
+        # Source: CUDA Toolkit MSBuildExtensions
+        $cudaMSBuildSrc = Join-Path $env:CUDA_PATH "extras\visual_studio_integration\MSBuildExtensions"
+
+        # Destination: VS 2022 Enterprise BuildCustomizations (GitHub Actions runner)
+        $vsBuildCustomizations = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations"
+
+        echo "Source: $cudaMSBuildSrc"
+        echo "Destination: $vsBuildCustomizations"
+
+        if (!(Test-Path $cudaMSBuildSrc)) {
+          echo "WARNING: CUDA MSBuildExtensions not found at $cudaMSBuildSrc"
+          echo "Listing CUDA extras directory:"
+          Get-ChildItem -Path (Join-Path $env:CUDA_PATH "extras") -Recurse -Depth 2 | ForEach-Object { echo $_.FullName }
+          exit 0
+        }
+
+        if (!(Test-Path $vsBuildCustomizations)) {
+          echo "ERROR: VS BuildCustomizations folder not found at $vsBuildCustomizations"
+          echo "Trying to find VS installation..."
+          Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Directory | ForEach-Object { echo $_.FullName }
+          exit 1
+        }
+
+        # Copy all CUDA integration files
+        echo ""
+        echo "Copying CUDA MSBuild integration files..."
+        Get-ChildItem -Path $cudaMSBuildSrc | ForEach-Object {
+          $destFile = Join-Path $vsBuildCustomizations $_.Name
+          Copy-Item $_.FullName $destFile -Force
+          echo "  Copied: $($_.Name)"
+        }
+
+        echo ""
+        echo "=== CUDA Visual Studio Integration Complete ==="
+        echo "Verifying files in BuildCustomizations:"
+        Get-ChildItem -Path $vsBuildCustomizations -Filter "CUDA*" | ForEach-Object { echo "  $($_.Name)" }
+
+        # Set CMAKE_CUDA_COMPILER for vcpkg/CMake to find nvcc
+        $nvccPath = Join-Path $env:CUDA_PATH "bin\nvcc.exe"
+        if (Test-Path $nvccPath) {
+          echo "CMAKE_CUDA_COMPILER=$nvccPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "Set CMAKE_CUDA_COMPILER=$nvccPath"
+        }
+
+        # Also set CUDAToolkit_ROOT for FindCUDAToolkit.cmake
+        echo "CUDAToolkit_ROOT=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "Set CUDAToolkit_ROOT=$env:CUDA_PATH"
       shell: pwsh
 
     - name: Install cuDNN 8.9.5 via pip
