@@ -1,6 +1,9 @@
 #pragma once
 
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX  // Prevent Windows.h from defining min/max macros that conflict with std::min/max
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
