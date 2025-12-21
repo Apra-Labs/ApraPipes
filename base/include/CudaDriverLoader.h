@@ -1,17 +1,30 @@
 #pragma once
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
+
 #include <cuda.h>
+#ifndef _WIN32
+// EGL is only available on Linux/Jetson
 #include <cudaEGL.h>
+#endif
 #include <string>
 
 /**
- * @brief Singleton class that dynamically loads libcuda.so at runtime using dlopen/dlsym
+ * @brief Singleton class that dynamically loads libcuda.so (Linux) or nvcuda.dll (Windows) at runtime
  *
- * This allows the executable to start even when libcuda.so (NVIDIA driver) is not available.
+ * This allows the executable to start even when the CUDA driver is not available.
  * When GPU is not present (e.g., GitHub CI runners), the library fails to load gracefully,
  * and isAvailable() returns false. Modules requiring CUDA can check availability and throw
  * appropriate exceptions.
+ *
+ * Platform-specific behavior:
+ * - Linux: Uses dlopen/dlsym to load libcuda.so.1
+ * - Windows: Uses LoadLibrary/GetProcAddress to load nvcuda.dll
  *
  * Usage:
  *   auto& loader = CudaDriverLoader::getInstance();
@@ -65,10 +78,12 @@ public:
     CUresult (*cuStreamDestroy)(CUstream hStream) = nullptr;
     CUresult (*cuStreamSynchronize)(CUstream hStream) = nullptr;
 
-    // Graphics interop (for DMAUtils)
+#ifndef _WIN32
+    // Graphics interop (for DMAUtils) - Linux/Jetson only (EGL-based)
     CUresult (*cuGraphicsEGLRegisterImage)(CUgraphicsResource *pCudaResource, EGLImageKHR image, unsigned int flags) = nullptr;
     CUresult (*cuGraphicsResourceGetMappedEglFrame)(CUeglFrame *eglFrame, CUgraphicsResource resource, unsigned int index, unsigned int mipLevel) = nullptr;
     CUresult (*cuGraphicsUnregisterResource)(CUgraphicsResource resource) = nullptr;
+#endif
 
     // Error handling
     CUresult (*cuGetErrorName)(CUresult error, const char **pStr) = nullptr;
@@ -78,12 +93,20 @@ private:
     CudaDriverLoader();
     ~CudaDriverLoader();
 
+#ifdef _WIN32
+    HMODULE libHandle = nullptr;
+#else
     void* libHandle = nullptr;
+#endif
     std::string errorMessage;
 
     template<typename FuncPtr>
     void loadSymbol(FuncPtr& funcPtr, const char* symbolName) {
+#ifdef _WIN32
+        funcPtr = reinterpret_cast<FuncPtr>(GetProcAddress(libHandle, symbolName));
+#else
         funcPtr = reinterpret_cast<FuncPtr>(dlsym(libHandle, symbolName));
+#endif
         if (!funcPtr) {
             // Not all symbols may be available in all CUDA versions
             // We'll log but not fail initialization

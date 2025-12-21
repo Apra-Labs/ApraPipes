@@ -2,9 +2,43 @@
 #include "Logger.h"
 #include <sstream>
 
+#ifdef _WIN32
+// Helper to get Windows error message
+static std::string getWindowsError() {
+    DWORD error = GetLastError();
+    if (error == 0) {
+        return "Unknown error";
+    }
+    LPSTR messageBuffer = nullptr;
+    size_t size = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPSTR)&messageBuffer, 0, NULL);
+    std::string message(messageBuffer, size);
+    LocalFree(messageBuffer);
+    // Trim trailing newlines
+    while (!message.empty() && (message.back() == '\n' || message.back() == '\r')) {
+        message.pop_back();
+    }
+    return message;
+}
+#endif
+
 CudaDriverLoader::CudaDriverLoader() {
-    // Try to load libcuda.so.1 at runtime
+    // Try to load CUDA driver library at runtime
     // On systems without NVIDIA driver (e.g., GitHub runners), this will fail gracefully
+#ifdef _WIN32
+    // Windows: Load nvcuda.dll
+    libHandle = LoadLibraryA("nvcuda.dll");
+
+    if (!libHandle) {
+        errorMessage = "nvcuda.dll not found: " + getWindowsError();
+        LOG_INFO << "CUDA driver library not available: " << errorMessage;
+        LOG_INFO << "GPU-accelerated modules will be disabled. CPU fallbacks will be used.";
+        return;
+    }
+#else
+    // Linux/Jetson: Load libcuda.so.1
     libHandle = dlopen("libcuda.so.1", RTLD_LAZY);
 
     if (!libHandle) {
@@ -15,6 +49,7 @@ CudaDriverLoader::CudaDriverLoader() {
         LOG_INFO << "GPU-accelerated modules will be disabled. CPU fallbacks will be used.";
         return;
     }
+#endif
 
     LOG_INFO << "Loading CUDA driver library symbols...";
 
@@ -42,9 +77,12 @@ CudaDriverLoader::CudaDriverLoader() {
     loadSymbol(cuStreamDestroy, "cuStreamDestroy");
     loadSymbol(cuStreamSynchronize, "cuStreamSynchronize");
 
+#ifndef _WIN32
+    // EGL-based graphics interop - Linux/Jetson only
     loadSymbol(cuGraphicsEGLRegisterImage, "cuGraphicsEGLRegisterImage");
     loadSymbol(cuGraphicsResourceGetMappedEglFrame, "cuGraphicsResourceGetMappedEglFrame");
     loadSymbol(cuGraphicsUnregisterResource, "cuGraphicsUnregisterResource");
+#endif
 
     loadSymbol(cuGetErrorName, "cuGetErrorName");
     loadSymbol(cuGetErrorString, "cuGetErrorString");
@@ -61,7 +99,11 @@ CudaDriverLoader::CudaDriverLoader() {
         LOG_ERROR << errorMessage;
 
         // Close library handle since we can't use it
+#ifdef _WIN32
+        FreeLibrary(libHandle);
+#else
         dlclose(libHandle);
+#endif
         libHandle = nullptr;
         return;
     }
@@ -71,7 +113,11 @@ CudaDriverLoader::CudaDriverLoader() {
 
 CudaDriverLoader::~CudaDriverLoader() {
     if (libHandle) {
+#ifdef _WIN32
+        FreeLibrary(libHandle);
+#else
         dlclose(libHandle);
+#endif
         libHandle = nullptr;
     }
 }
