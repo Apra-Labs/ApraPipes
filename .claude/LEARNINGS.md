@@ -62,4 +62,15 @@
 3. Added cleanup step to remove old `~/.cache/vcpkg/registries` before builds
 **Rule:** For embedded devices with small root filesystems, set `XDG_CACHE_HOME` to redirect all caches to larger partitions
 
+### 2025-12-21 | CI-Linux-ARM64 | FAIL (GCC VERSION MISMATCH)
+**Tried:** Run ARM64 build after XDG_CACHE_HOME fix
+**Error:** `vcpkg was unable to detect the active compiler's information` + `CMAKE_C_COMPILER not set`
+**Root cause:**
+- Workflow has "Set GCC-11" step that hardcodes `/usr/bin/gcc-11` for CUDA builds
+- This is needed for x64 CUDA 11.8 builds (Ubuntu 24.04 has GCC 13, but CUDA 11.8 needs GCC <= 11)
+- Jetson has CUDA 11.4 which works fine with GCC 9.4 (the default)
+- Jetson doesn't have GCC-11 installed, so setting CC=/usr/bin/gcc-11 breaks the build
+**Fix:** Made GCC-11 step conditional - only set CC/CXX if `/usr/bin/gcc-11` exists
+**Rule:** When setting compiler overrides, always check if the compiler exists first to support different platforms
+
 ---

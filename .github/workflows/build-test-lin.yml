@@ -163,13 +163,20 @@ jobs:
       run: .\fix-vcpkg-json.ps1 -removeCUDA
       shell: pwsh
 
-    - name: Set GCC-11 for CUDA 11.8 compatibility
+    - name: Set GCC-11 for CUDA 11.8 compatibility (x64 only)
       if: ${{ contains(inputs.cuda,'ON') }}
       run: |
         # CUDA 11.8 requires GCC <= 11, but Ubuntu 24.04 has GCC 13 by default
-        echo "CC=/usr/bin/gcc-11" >> $GITHUB_ENV
-        echo "CXX=/usr/bin/g++-11" >> $GITHUB_ENV
-        echo "CUDAHOSTCXX=/usr/bin/g++-11" >> $GITHUB_ENV
+        # Jetson ARM64 with CUDA 11.4 works fine with GCC 9, so skip if gcc-11 not present
+        if [ -x /usr/bin/gcc-11 ]; then
+          echo "GCC-11 found, using it for CUDA 11.8 compatibility"
+          echo "CC=/usr/bin/gcc-11" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/g++-11" >> $GITHUB_ENV
+          echo "CUDAHOSTCXX=/usr/bin/g++-11" >> $GITHUB_ENV
+        else
+          echo "GCC-11 not found, using default compiler (OK for CUDA 11.4)"
+          gcc --version | head -1
+        fi
 
     - name: Cache dependencies for fast cloud build
       id: cache-all

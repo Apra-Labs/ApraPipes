@@ -18,6 +18,10 @@ PR: https://github.com/Apra-Labs/ApraPipes/pull/461
    - Cleans apt cache
    - Removes pip cache
 3. **Ensured XDG cache directory is created** alongside vcpkg binary cache
+4. **Fixed GCC-11 compiler mismatch** - Made "Set GCC-11" step conditional
+   - Jetson has CUDA 11.4 + GCC 9.4, no GCC-11 installed
+   - x64 has CUDA 11.8 + GCC-11 (needs GCC <= 11)
+   - Step now checks if `/usr/bin/gcc-11` exists before setting CC/CXX
 
 ## New Jetson Environment (ap-gh-arm64-jp5)
 ```
