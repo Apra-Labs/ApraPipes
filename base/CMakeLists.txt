@@ -114,7 +114,7 @@ IF(ENABLE_CUDA)
 		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
@@ -163,7 +163,7 @@ IF(ENABLE_CUDA)
 			NO_DEFAULT_PATH
 		)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
 			libcuda.so		
