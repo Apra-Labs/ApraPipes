@@ -24,6 +24,9 @@ jobs:
       TEST_EXE: build/Release/aprapipesut.exe
       CMAKE_TC_FILE: '${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
       VCPKG_DEFAULT_BINARY_CACHE: 'C:\Users\runneradmin\AppData\Local\vcpkg\archives'
+      # Use custom triplet with v142 toolset for CUDA 11.8 compatibility
+      VCPKG_DEFAULT_TRIPLET: 'x64-windows-cuda'
+      VCPKG_OVERLAY_TRIPLETS: '${{ github.workspace }}/vcpkg/triplets/community'
 
     steps:
     - name: Prepare builder
@@ -65,7 +68,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: Windows-Unified-6-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: Windows-Unified-7-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
         restore-keys: Windows-Unified-
 
     - name: Clear vcpkg downloads to force fresh Python download
@@ -248,8 +251,12 @@ jobs:
     - name: Configure CMake with CUDA
       working-directory: ${{github.workspace}}/build
       run: |
-        cmake -B . -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 `
+        # Use VS 2019 toolset (v142) for CUDA 11.8 compatibility
+        # Also specify the custom triplet for vcpkg
+        cmake -B . -DENABLE_WINDOWS=ON -DENABLE_LINUX=OFF -A x64 -T v142 `
           -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} `
+          -DVCPKG_TARGET_TRIPLET=x64-windows-cuda `
+          -DVCPKG_OVERLAY_TRIPLETS="${{github.workspace}}/vcpkg/triplets/community" `
           -DCMAKE_BUILD_TYPE=Release `
           -DENABLE_CUDA=ON `
           ../base
