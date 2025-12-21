@@ -85,14 +85,15 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../.cache/vcpkg  # Enable vcpkg binary caching for self-hosted runners
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.cache-path }}  # Enable vcpkg binary caching for self-hosted runners
       # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
       # These must be at job level so they propagate to vcpkg subprocesses
+      # Uses /usr/local/cuda symlink to work with both CUDA 11.8 (x64) and CUDA 11.4 (ARM64)
       # Empty values are harmless for these CUDA-specific variables
-      CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
-      CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8' || '' }}
-      CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda-11.8/bin/nvcc' || '' }}
-    runs-on: ${{ inputs.runner }}
+      CUDAToolkit_ROOT: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda' || '' }}
+      CUDA_PATH: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda' || '' }}
+      CUDACXX: ${{ contains(inputs.cuda, 'ON') && '/usr/local/cuda/bin/nvcc' || '' }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare builder
       run: |
@@ -102,10 +103,11 @@ jobs:
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
-      if: ${{ contains(inputs.cuda,'ON')}} 
+      if: ${{ contains(inputs.cuda,'ON')}}
       run: |
         (PATH=/usr/local/cuda/bin:$PATH && nvcc --version) || echo 'please install cuda and add /usr/local/cuda/bin into path'
-        test -f /usr/local/cuda/include/cudnn.h || echo 'install cudnn as described in the readme.md'
+        # cuDNN headers may be in /usr/local/cuda/include or /usr/include (JetPack)
+        test -f /usr/local/cuda/include/cudnn.h || test -f /usr/include/cudnn.h || echo 'install cudnn as described in the readme.md'
 
     - name: Cleanup workspace on self hosted runners
       if: inputs.is-selfhosted

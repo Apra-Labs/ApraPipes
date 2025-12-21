@@ -78,7 +78,7 @@ jobs:
     env:
       TEST_EXE: build/${{inputs.buildConf}}/aprapipesut
       CMAKE_TC_FILE: '${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare builder
       run: |

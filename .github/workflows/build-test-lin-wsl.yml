@@ -78,7 +78,7 @@ jobs:
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare WSL Image
       uses: Vampire/setup-wsl@v1

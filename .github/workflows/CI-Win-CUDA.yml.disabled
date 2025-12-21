@@ -1,4 +1,4 @@
-name: CI-Win-NoCUDA
+name: CI-Win-CUDA
 
 on:
   push:  # Trigger on push to any branch
@@ -30,35 +30,27 @@ permissions:
   contents: read  # Required for checkout
 
 jobs:
-  win-nocuda-build-prep:
+  win-cuda-build-test:
     uses: ./.github/workflows/build-test-win.yml
     with:
-      runner: 'windows-2022'
-      flav: 'Win-nocuda'
-      cuda: 'OFF'
-      is-selfhosted: false
-      is-prep-phase: true
-      nProc: 3
+      runner: '["windows-cuda"]'
+      flav: 'Windows-cuda'
+      cuda: 'ON'
+      is-selfhosted: true
+      nProc: 8
+      nTestTimeoutMins: 45
       force-cache-update: ${{ inputs.force-cache-update == true }}
-  win-nocuda-build-test:
-    needs: win-nocuda-build-prep
-    uses: ./.github/workflows/build-test-win.yml
-    with:
-      runner: 'windows-2022'
-      flav: 'Win-nocuda'
-      is-selfhosted: false
-      cuda: 'OFF'
-      is-prep-phase: false
-      nProc: 3
-      force-cache-update: ${{ inputs.force-cache-update == true }}
-  win-nocuda-publish:
-    needs: win-nocuda-build-test
+      # Self-hosted runner has Python 3.10.11, CMake 3.29.6, and ninja pre-installed
+      # Only upgrade pip packages and ensure pkgconfiglite is available
+      prep-cmd: 'python --version && cmake --version && pip3 install --upgrade ninja meson && choco feature enable -n allowEmptyChecksums && choco install pkgconfiglite'
+  win-cuda-publish:
+    needs: win-cuda-build-test
     if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write
-    uses: ./.github/workflows/publish-test.yml  
+    uses: ./.github/workflows/publish-test.yml
     with:
-      flav: 'Win-nocuda'
+      flav: 'Windows-cuda'
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      

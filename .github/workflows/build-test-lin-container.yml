@@ -92,7 +92,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare builder
       run: |

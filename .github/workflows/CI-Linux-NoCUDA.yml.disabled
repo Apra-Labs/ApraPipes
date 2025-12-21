@@ -1,18 +1,19 @@
-name: CI-Linux-CUDA-WSL
+name: CI-Linux-NoCUDA
 
 on:
-  # Temporarily disabled - workflow not yet working
-  # push:  # Trigger on push to any branch
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - 'docs/**'
-  # pull_request:
-  #   branches: [ main ]
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - 'docs/**'
+  push:  # Trigger on push to any branch
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
     inputs:
       force-cache-update:
@@ -29,24 +30,24 @@ permissions:
   contents: read  # Required for checkout
 
 jobs:
-  wsl-cuda-build-test:
-    uses: ./.github/workflows/build-test-lin-wsl.yml
+  linux-nocuda-build-test:
+    uses: ./.github/workflows/build-test-lin.yml
     with:
-      runner: windows-cuda
-      flav: WSL
-      is-selfhosted: true
-      cuda: 'ON'
-      cache-path: './none'
-      nProc: 6
+      runner: '["ubuntu-22.04"]'
+      flav: Linux
+      cuda: 'OFF'
+      is-selfhosted: false
+      is-prep-phase: false
+      nProc: 3
       force-cache-update: ${{ inputs.force-cache-update == true }}
-  wsl-cuda-publish:
-    needs: wsl-cuda-build-test
+  linux-nocuda-publish:
+    needs: linux-nocuda-build-test
     if: ${{ always() }}
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
-      flav: WSL
+      flav: Linux
     secrets:
-      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}      
