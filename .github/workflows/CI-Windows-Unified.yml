@@ -19,6 +19,9 @@ on:
 jobs:
   windows-unified-build:
     runs-on: windows-latest
+    # OpenCV CUDA builds take 3-4 hours with optimized settings
+    # Set timeout to allow for potential delays
+    timeout-minutes: 330
 
     env:
       TEST_EXE: build/Release/aprapipesut.exe
@@ -68,7 +71,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: Windows-Unified-7-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: Windows-Unified-8-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt', 'vcpkg/triplets/community/x64-windows-cuda.cmake') }}
         restore-keys: Windows-Unified-
 
     - name: Clear vcpkg downloads to force fresh Python download
