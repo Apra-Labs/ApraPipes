@@ -125,11 +125,16 @@ jobs:
         # Source: CUDA Toolkit MSBuildExtensions
         $cudaMSBuildSrc = Join-Path $env:CUDA_PATH "extras\visual_studio_integration\MSBuildExtensions"
 
-        # Destination: VS 2022 Enterprise BuildCustomizations (GitHub Actions runner)
-        $vsBuildCustomizations = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations"
+        # We need to copy CUDA integration to BOTH v170 and v142 folders:
+        # - v170: Used by vcpkg when building dependencies (VS 2022 default)
+        # - v142: Used by main project build with -T v142 toolset (CUDA 11.8 requirement)
+        $vsBase = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC"
+        $destinations = @(
+          "$vsBase\v170\BuildCustomizations",
+          "$vsBase\v142\BuildCustomizations"
+        )
 
         echo "Source: $cudaMSBuildSrc"
-        echo "Destination: $vsBuildCustomizations"
 
         if (!(Test-Path $cudaMSBuildSrc)) {
           echo "WARNING: CUDA MSBuildExtensions not found at $cudaMSBuildSrc"
@@ -138,26 +143,28 @@ jobs:
           exit 0
         }
 
-        if (!(Test-Path $vsBuildCustomizations)) {
-          echo "ERROR: VS BuildCustomizations folder not found at $vsBuildCustomizations"
-          echo "Trying to find VS installation..."
-          Get-ChildItem -Path "C:\Program Files\Microsoft Visual Studio\2022" -Directory | ForEach-Object { echo $_.FullName }
-          exit 1
-        }
+        foreach ($dest in $destinations) {
+          echo ""
+          echo "Copying to: $dest"
 
-        # Copy all CUDA integration files
-        echo ""
-        echo "Copying CUDA MSBuild integration files..."
-        Get-ChildItem -Path $cudaMSBuildSrc | ForEach-Object {
-          $destFile = Join-Path $vsBuildCustomizations $_.Name
-          Copy-Item $_.FullName $destFile -Force
-          echo "  Copied: $($_.Name)"
+          if (!(Test-Path $dest)) {
+            echo "  Creating directory: $dest"
+            New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          }
+
+          Get-ChildItem -Path $cudaMSBuildSrc | ForEach-Object {
+            $destFile = Join-Path $dest $_.Name
+            Copy-Item $_.FullName $destFile -Force
+            echo "  Copied: $($_.Name)"
+          }
         }
 
         echo ""
         echo "=== CUDA Visual Studio Integration Complete ==="
-        echo "Verifying files in BuildCustomizations:"
-        Get-ChildItem -Path $vsBuildCustomizations -Filter "CUDA*" | ForEach-Object { echo "  $($_.Name)" }
+        echo "Verifying CUDA files in v170:"
+        Get-ChildItem -Path "$vsBase\v170\BuildCustomizations" -Filter "CUDA*" | ForEach-Object { echo "  $($_.Name)" }
+        echo "Verifying CUDA files in v142:"
+        Get-ChildItem -Path "$vsBase\v142\BuildCustomizations" -Filter "CUDA*" | ForEach-Object { echo "  $($_.Name)" }
 
         # Set CMAKE_CUDA_COMPILER for vcpkg/CMake to find nvcc
         $nvccPath = Join-Path $env:CUDA_PATH "bin\nvcc.exe"
