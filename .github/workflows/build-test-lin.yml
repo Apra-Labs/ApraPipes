@@ -86,6 +86,9 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
       VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.cache-path }}  # Enable vcpkg binary caching for self-hosted runners
+      # XDG_CACHE_HOME redirects ALL caches (including vcpkg registries) to /data on self-hosted runners
+      # This is critical for Jetson where root filesystem has limited space but /data has 100GB+
+      XDG_CACHE_HOME: ${{ inputs.is-selfhosted && '/data/.cache' || '' }}
       # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
       # These must be at job level so they propagate to vcpkg subprocesses
       # Uses /usr/local/cuda symlink to work with both CUDA 11.8 (x64) and CUDA 11.4 (ARM64)
@@ -128,8 +131,28 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count
 
+    - name: Free disk space on root filesystem (self-hosted runners with limited root disk)
+      if: inputs.is-selfhosted
+      run: |
+        echo "=== Root filesystem before cleanup ==="
+        df -h /
+        # Clean up old vcpkg registries cache in home directory (now using XDG_CACHE_HOME)
+        rm -rf ~/.cache/vcpkg/registries 2>/dev/null || true
+        # Clean apt cache
+        sudo apt-get clean 2>/dev/null || true
+        # Remove old pip cache
+        rm -rf ~/.cache/pip 2>/dev/null || true
+        echo "=== Root filesystem after cleanup ==="
+        df -h /
+
     - name: Create vcpkg binary cache directory
-      run: mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+      run: |
+        mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        # Also create XDG cache dir for vcpkg registries (self-hosted)
+        if [ -n "$XDG_CACHE_HOME" ]; then
+          mkdir -p "$XDG_CACHE_HOME/vcpkg"
+          echo "Created XDG cache directory: $XDG_CACHE_HOME/vcpkg"
+        fi
 
     - name: Run VCPKG bootstrap
       run: ${{ inputs.bootstrap-cmd }}

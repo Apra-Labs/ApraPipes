@@ -48,4 +48,18 @@
 **Fix:** Updated find_library to accept both: `NAMES libbaresip.so libbaresip.a baresip`
 **Rule:** When using release-only triplets, expect static libraries - update find_library calls accordingly
 
+### 2025-12-21 | CI-Linux-ARM64 | FAIL (DISK SPACE ISSUE)
+**Tried:** Run ARM64 build on new Jetson (Ubuntu 20.04) after fixing GLIBC issue
+**Error:** `fatal: write error: No space left on device` during vcpkg registry fetch
+**Root cause:**
+- Jetson has two filesystems: `/` (14GB, 100% full) and `/data` (117GB, 5% used)
+- vcpkg binary cache was correctly on `/data/.cache/vcpkg`
+- BUT vcpkg registries cache defaults to `~/.cache/vcpkg/registries` which is on root `/`
+- Root filesystem only had 34MB free, vcpkg registry fetch failed
+**Fix:**
+1. Added `XDG_CACHE_HOME=/data/.cache` env var for self-hosted runners
+2. This redirects ALL caches (including vcpkg registries) to the large `/data` partition
+3. Added cleanup step to remove old `~/.cache/vcpkg/registries` before builds
+**Rule:** For embedded devices with small root filesystems, set `XDG_CACHE_HOME` to redirect all caches to larger partitions
+
 ---
