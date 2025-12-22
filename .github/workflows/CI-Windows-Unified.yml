@@ -362,32 +362,12 @@ jobs:
         }
 
         # Try running the exe and capture error
+        # Note: We don't actually run the exe here to avoid potential hangs
+        # The "List Test cases" step with timeout will do the actual test
         echo ""
-        echo "=== Attempting to run test executable ==="
-        try {
-          $psi = New-Object System.Diagnostics.ProcessStartInfo
-          $psi.FileName = $exePath
-          $psi.Arguments = "--help"
-          $psi.RedirectStandardOutput = $true
-          $psi.RedirectStandardError = $true
-          $psi.UseShellExecute = $false
-          $psi.CreateNoWindow = $true
-
-          $process = New-Object System.Diagnostics.Process
-          $process.StartInfo = $psi
-          $process.Start() | Out-Null
-          $process.WaitForExit(5000)
-
-          $stdout = $process.StandardOutput.ReadToEnd()
-          $stderr = $process.StandardError.ReadToEnd()
-
-          echo "Exit code: $($process.ExitCode)"
-          echo "stdout: $stdout"
-          echo "stderr: $stderr"
-        } catch {
-          echo "Exception: $($_.Exception.Message)"
-        }
+        echo "=== Skipping exe execution in diagnostics (will be tested in List Test cases step) ==="
       shell: pwsh
+      timeout-minutes: 2
       continue-on-error: true
 
     - name: List Test cases
