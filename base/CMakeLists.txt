@@ -113,8 +113,13 @@ IF(ENABLE_CUDA)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
 		find_library(X11LIB X11 REQUIRED)
-		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		# JetPack 5.0+ uses nvbufsurface instead of nvbuf_utils (JetPack 4.x)
+		find_library(NVBUFUTILSLIB NAMES nvbufsurface nvbuf_utils REQUIRED)
+		# nveglstream_camconsumer is only available in JetPack 4.x, not in JetPack 5.x
+		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
+		if(NOT EGLSTREAM_CAMCONSUMER_LIB)
+			message(STATUS "nveglstream_camconsumer not found (JetPack 5.x) - EGL rendering will be limited")
+		endif()
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
 		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
@@ -134,16 +139,19 @@ IF(ENABLE_CUDA)
 
 
 		SET(JETSON_LIBS
-			libcudart_static.a	
-			libcuda.so.1.1	
+			libcudart_static.a
+			libcuda.so.1.1
 			${V4L2LIB}
 			${NVBUFUTILSLIB}
 			${EGLLIB}
 			${GLESv2LIB}
-			${X11LIB}	
-			${EGLSTREAM_CAMCONSUMER_LIB}
+			${X11LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
+		# Add nveglstream_camconsumer only if found (JetPack 4.x only)
+		if(EGLSTREAM_CAMCONSUMER_LIB)
+			list(APPEND JETSON_LIBS ${EGLSTREAM_CAMCONSUMER_LIB})
+		endif()
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 		include_directories(AFTER SYSTEM  /usr/local/cuda/samples/common/inc/)
 		include_directories(AFTER SYSTEM  /usr/include/)
