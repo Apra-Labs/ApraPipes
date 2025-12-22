@@ -8,11 +8,18 @@ on:
   workflow_run:
     workflows: ["CI-Linux-Build-Test"]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of CI-Linux-Build-Test to download SDK from'
+        required: true
+        type: string
 
 jobs:
   cuda-tests:
     name: Run CUDA Tests
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Run if: workflow_run succeeded OR manual trigger
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: [self-hosted, linux-cuda]
     timeout-minutes: 45
 
@@ -33,7 +40,7 @@ jobs:
       with:
         name: aprapipes-sdk-linux-x64
         path: sdk/
-        run-id: ${{ github.event.workflow_run.id }}
+        run-id: ${{ github.event.workflow_run.id || github.event.inputs.run_id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: List SDK Contents
