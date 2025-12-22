@@ -12,7 +12,7 @@ OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
-	add_compile_definitions(APRA_CUDA_ENABLED)
+	add_compile_definitions(APRA_HAS_CUDA_HEADERS)
 ENDIF(ENABLE_CUDA)
 
 # NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)

@@ -5,7 +5,7 @@
 namespace utf = boost::unit_test;
 namespace tt = boost::test_tools;
 
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 #include "H264EncoderNVCodecHelper.h"
 
 //preempt test failure if the platform does not support H264 encode

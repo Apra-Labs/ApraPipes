@@ -14,7 +14,7 @@
 #include "stdafx.h"
 #include "PipeLine.h"
 #include "nv_test_utils.h"
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 #include "nppdefs.h"
 #include "CudaMemCopy.h"
 #endif
@@ -57,7 +57,7 @@ struct AffineTestsStruct
 	}
 	void createPipeline(const std::string& inpFilePath, int width, int height, ImageMetadata::ImageType imageType, int bit_depth, double angle, int x, int y, double scale, AffineTransformProps::Interpolation interpolation, AffineTransformProps::TransformType type)
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inpFilePath)));
 		auto rawImagePin = fileReader->addOutputPin(metadata);
 
@@ -99,7 +99,7 @@ struct AffineTestsStruct
 BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 5, 0, 0, 1.0);
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(MONO_rotation, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 45, 0, 0, 2.0);
 
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(MONO_scale_rotate, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(MONO_shrink, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 0, 0, 0, 0.2);
 
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(MONO_shrink, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 100, 0, 1.0);
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_x, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 0, 300, 1.0);
 
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_y, *boost::unit_test::disabled()
 
 BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::MONO;
 	AffineTestsStruct f("./data/mono_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::MONO, CV_8UC1, AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC, 5, 100, 300, 2.0);
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(mono_shift_scale_rotate, *utf::precondition(if_compute_cap_
 BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 90, 0, 0, 1.0);
 
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_rotation, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 0, 0, 2.0);
 
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_scaling, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(RGB_Image_shifting, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 0, 100, 300, 1.0);
 
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shifting, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 30, 0, 0, 2.5);
 
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(RGB_scale_rotate, *boost::unit_test::disabled()
 
 BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGB;
 	AffineTestsStruct f("./data/frame_1280x720_rgb.raw", 1280, 720, ImageMetadata::ImageType::RGB, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 5, 100, 300, 2.0);
 
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE(RGB_Image_shift_scale_rotate, *utf::precondition(if_compute
 BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::BGR;
 	AffineTestsStruct f("./data/BGR_1080x720.raw", 1080, 720, ImageMetadata::ImageType::BGR, CV_8UC3, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 5, 300, 100, 3.0);
 
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(BGR_Image_shift_scale_rotate, *boost::unit_test::disabled()
 BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGBA;
 	AffineTestsStruct f("./data/rgba_400x400.raw", 400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 90, 0, 0, 2.5);
 
@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_scale_rotate, *boost::unit_test::disabled()
 
 BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::RGBA;
 	AffineTestsStruct f("./data/rgba_400x400.raw", 400, 400, ImageMetadata::ImageType::RGBA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 40, 100, 200, 2.5);
 
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE(RGBA_Image_shift_scale_rotate, *utf::precondition(if_comput
 BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::BGRA;
 	AffineTestsStruct f("./data/8bit_frame_1280x720_bgra.raw", 1280, 720, ImageMetadata::ImageType::BGRA, CV_8UC4, AffineTransformProps::USING_NPPI, AffineTransformProps::LINEAR, 90, 100, 100, 2.5);
 
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE(BGRA_Image_shift_scale_rotate, *boost::unit_test::disabled(
 BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled()
 *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::YUV444;
 	AffineTestsStruct f("./data/yuv444.raw", 400, 400, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::USING_NPPI, AffineTransformProps::NN, 90, 0, 0, 2.5);
 
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(YUV444_scale_rotate, *boost::unit_test::disabled()
 }
 BOOST_AUTO_TEST_CASE(YUV444_shift_scale_rotate, *utf::precondition(if_compute_cap_supported()))
 {
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	ImageMetadata::ImageType::YUV444;
 	AffineTestsStruct f("./data/yuv444_1920x1080.raw", 1920, 1080, ImageMetadata::ImageType::YUV444, size_t(0), AffineTransformProps::USING_NPPI, AffineTransformProps::CUBIC2P_CATMULLROM, 5, 200, 300, 2.0);
 

@@ -9,9 +9,8 @@
 | Platform | Status | Notes |
 |----------|--------|-------|
 | Linux x64 | DONE | CI-Linux-CUDA workflow works on both GPU and non-GPU systems |
-| Linux ARM64 | DONE | Same unified approach |
-| Windows | IN PROGRESS | CI-Windows-Unified workflow - testing v142 toolset fix |
-| Jetson | N/A | Native CUDA, no unified build needed |
+| Linux ARM64 (Jetson) | DONE | CI-Linux-ARM64 workflow, self-hosted runner with native CUDA |
+| Windows | DONE | CI-Windows-Unified workflow - DELAYLOAD solution enables exe to run without CUDA DLLs |
 
 ### Key Insight
 Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on Windows) allows binaries compiled with CUDA to run on systems without GPU/driver. Tests skip gracefully when GPU unavailable.
@@ -56,7 +55,7 @@ Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on 
 
 ### CI Workflows
 - `.github/workflows/CI-Linux-CUDA.yml` — Unified Linux build (DONE)
-- `.github/workflows/CI-Windows-Unified.yml` — Unified Windows build (IN PROGRESS)
+- `.github/workflows/CI-Windows-Unified.yml` — Unified Windows build (DONE)
 - `.github/workflows/experiment-*.yml` — Validation experiments
 
 ### Key Config
@@ -66,11 +65,17 @@ Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on 
 
 ---
 
-## Current Windows Build Issues (Resolved)
+## Windows Build Issues (All Resolved)
 
 1. **pthreads missing** — Added to opencv4 cuda feature dependency
 2. **CUDA compiler not found** — Copy MSBuildExtensions to VS BuildCustomizations
 3. **VS version mismatch** — CUDA 11.8 requires v142 toolset, not v143
+4. **DLL_NOT_FOUND on non-GPU systems** — Use DELAYLOAD for all CUDA DLLs (toolkit + driver)
+
+### Windows DELAYLOAD Solution
+All CUDA DLLs must be delay-loaded to allow the exe to start on systems without NVIDIA drivers:
+- **Toolkit DLLs**: nvjpeg64_11, nppig64_11, nppicc64_11, nppidei64_11, nppial64_11, nppc64_11, cublas64_11, cublasLt64_11, cudart64_110
+- **Driver DLLs**: nvcuvid, nvEncodeAPI64
 
 ---
 

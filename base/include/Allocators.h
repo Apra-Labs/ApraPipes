@@ -2,7 +2,7 @@
 
 #include <boost/pool/pool.hpp>
 
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
     #include "ApraPool.h"
     #include "apra_cudamallochost_allocator.h"
     #include "apra_cudamalloc_allocator.h"
@@ -35,7 +35,7 @@ public:
     }
 };
 
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 class HostPinnedAllocator : public HostAllocator
 {
 protected:

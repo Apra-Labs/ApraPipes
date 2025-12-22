@@ -89,8 +89,8 @@ Eliminate the complexity of maintaining separate CUDA and NoCUDA builds by creat
 
 3. **Build System:**
    - CMake option: `ENABLE_CUDA` (ON/OFF)
-   - Compile flag: `APRA_CUDA_ENABLED`
-   - Used in ~50+ files with `#ifdef APRA_CUDA_ENABLED`
+   - Compile flag: `APRA_HAS_CUDA_HEADERS`
+   - Used in ~50+ files with `#ifdef APRA_HAS_CUDA_HEADERS`
 
 4. **vcpkg Dependencies:**
    - `base/vcpkg.json` has opencv4[cuda,cudnn], whisper[cuda]
@@ -341,7 +341,7 @@ jobs:
 **Goal:** Remove build-time conditionals
 
 **Tasks:**
-1. Remove `#ifdef APRA_CUDA_ENABLED` from source files
+1. Remove `#ifdef APRA_HAS_CUDA_HEADERS` from source files
 2. Remove `ENABLE_CUDA` CMake option
 3. Disable old workflows (CI-Linux-NoCUDA.yml, CI-Linux-CUDA.yml)
 4. Update documentation
