@@ -288,25 +288,48 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config Release -j 6
 
-    # NOTE: CUDA DLLs are NOT copied - testing /DELAYLOAD linker flag
-    # With /DELAYLOAD, the exe should start without CUDA DLLs and only load them on first use
-    # This is the key to making a unified build that works on systems without CUDA installed
-    - name: Verify no CUDA DLLs in build directory (testing DELAYLOAD)
+    # Copy CUDA DLLs to build directory
+    # Note: DELAYLOAD for ApraPipes exe works, but OpenCV DLLs (built with CUDA)
+    # have hard dependencies on CUDA DLLs that can't be delay-loaded.
+    # For now, copy DLLs for CI. For end-users without CUDA, OpenCV would need
+    # to be built without CUDA or with its own delay-loading.
+    - name: Copy CUDA DLLs to build directory
       run: |
+        $cudaBin = Join-Path $env:CUDA_PATH "bin"
         $buildDir = "${{github.workspace}}/build/Release"
-        echo "=== Verifying DELAYLOAD: No CUDA DLLs should be present ==="
+
+        echo "Copying CUDA DLLs from $cudaBin to $buildDir"
+
+        # Core CUDA runtime
+        Copy-Item "$cudaBin/cudart64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # NPP libraries (image processing) - required by OpenCV CUDA
+        Copy-Item "$cudaBin/nppig64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppicc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppidei64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppial64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppif64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppim64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # cuBLAS - required by OpenCV DNN
+        Copy-Item "$cudaBin/cublas64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/cublasLt64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # nvJPEG
+        Copy-Item "$cudaBin/nvjpeg64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # cuFFT - required by OpenCV
+        Copy-Item "$cudaBin/cufft64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # cuDNN (copied earlier to CUDA_PATH/bin)
+        Copy-Item "$cudaBin/cudnn*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # List copied DLLs
         echo "DLLs in build directory:"
         Get-ChildItem $buildDir -Filter "*.dll" | ForEach-Object { echo "  $($_.Name)" }
-
-        # Verify CUDA DLLs are NOT present (they should be delay-loaded from system path)
-        $cudaDlls = Get-ChildItem $buildDir -Filter "*64_11*.dll" -ErrorAction SilentlyContinue
-        if ($cudaDlls) {
-          echo "WARNING: Found CUDA DLLs - these should not be here for DELAYLOAD test"
-          $cudaDlls | ForEach-Object { echo "  $($_.Name)" }
-        } else {
-          echo "GOOD: No CUDA DLLs found in build directory"
-        }
       shell: pwsh
+      continue-on-error: true
 
     - name: List Test cases
       run: |
