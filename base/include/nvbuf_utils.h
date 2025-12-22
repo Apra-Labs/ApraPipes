@@ -90,6 +90,13 @@
     #define NvBufferTransform_Filter_Smart     NvBufSurfTransformInter_Algo3
     #define NvBufferTransform_Filter_Nicest    NvBufSurfTransformInter_Algo4
 
+    // Transform flags - map old enum values to new ones
+    // These are bit flags used in NvBufferTransformParams.transform_flag
+    #define NVBUFFER_TRANSFORM_FILTER         NVBUFSURF_TRANSFORM_FILTER
+    #define NVBUFFER_TRANSFORM_CROP_SRC       NVBUFSURF_TRANSFORM_CROP_SRC
+    #define NVBUFFER_TRANSFORM_CROP_DST       NVBUFSURF_TRANSFORM_CROP_DST
+    #define NVBUFFER_TRANSFORM_FLIP           NVBUFSURF_TRANSFORM_FLIP
+
     // Rectangle type for transforms
     typedef NvBufSurfTransformRect NvBufferRect;
 
