@@ -331,6 +331,65 @@ jobs:
       shell: pwsh
       continue-on-error: true
 
+    - name: Diagnose DLL dependencies
+      run: |
+        echo "=== Checking DLL dependencies ==="
+
+        # Use dumpbin to check what DLLs the exe needs
+        $exePath = "${{github.workspace}}/build/Release/aprapipesut.exe"
+        echo "Checking dependencies of: $exePath"
+
+        # Check if Visual Studio tools are available
+        $vsPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC"
+        $latestVS = Get-ChildItem $vsPath | Sort-Object Name -Descending | Select-Object -First 1
+        $dumpbinPath = "$($latestVS.FullName)\bin\Hostx64\x64\dumpbin.exe"
+
+        if (Test-Path $dumpbinPath) {
+          echo "Using dumpbin at: $dumpbinPath"
+          & $dumpbinPath /dependents $exePath | Select-Object -First 100
+        } else {
+          echo "dumpbin not found, skipping dependency check"
+        }
+
+        # Check if nvcuda.dll exists on this system
+        echo ""
+        echo "=== Checking for CUDA driver (nvcuda.dll) ==="
+        $nvcudaPath = "C:\Windows\System32\nvcuda.dll"
+        if (Test-Path $nvcudaPath) {
+          echo "FOUND: nvcuda.dll at $nvcudaPath"
+        } else {
+          echo "NOT FOUND: nvcuda.dll (expected - no NVIDIA GPU on this runner)"
+        }
+
+        # Try running the exe and capture error
+        echo ""
+        echo "=== Attempting to run test executable ==="
+        try {
+          $psi = New-Object System.Diagnostics.ProcessStartInfo
+          $psi.FileName = $exePath
+          $psi.Arguments = "--help"
+          $psi.RedirectStandardOutput = $true
+          $psi.RedirectStandardError = $true
+          $psi.UseShellExecute = $false
+          $psi.CreateNoWindow = $true
+
+          $process = New-Object System.Diagnostics.Process
+          $process.StartInfo = $psi
+          $process.Start() | Out-Null
+          $process.WaitForExit(5000)
+
+          $stdout = $process.StandardOutput.ReadToEnd()
+          $stderr = $process.StandardError.ReadToEnd()
+
+          echo "Exit code: $($process.ExitCode)"
+          echo "stdout: $stdout"
+          echo "stderr: $stderr"
+        } catch {
+          echo "Exception: $($_.Exception.Message)"
+        }
+      shell: pwsh
+      continue-on-error: true
+
     - name: List Test cases
       run: |
         ${{env.TEST_EXE}} --list_content > tests.txt
