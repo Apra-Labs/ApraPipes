@@ -7,9 +7,7 @@ name: CI-Linux-Build-Test
 
 on:
   push:
-    branches:
-      - main
-      - feature/get-rid-of-nocuda-builds
+    branches: [main]
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
@@ -23,6 +21,11 @@ on:
       - '.claude/**'
       - 'docs/**'
   workflow_dispatch:
+
+# Prevent duplicate runs - cancel in-progress runs on same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
