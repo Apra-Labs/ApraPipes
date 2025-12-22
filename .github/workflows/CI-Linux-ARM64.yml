@@ -64,7 +64,7 @@ jobs:
         ./vcpkg/bootstrap-vcpkg.sh
       cache-path: '/data/.cache/vcpkg'
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && cmake -B . -G Ninja -DENABLE_ARM64=ON ../base'
-      vcpkg-triplet: 'arm64-linux'
+      vcpkg-triplet: 'arm64-linux-release'
       nProc: 6
   jetson-publish:
     needs: jetson-build-test
