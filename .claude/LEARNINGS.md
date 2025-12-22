@@ -84,4 +84,44 @@
 **Fix:** Added `${CMAKE_DL_LIBS}` to LINKLIBS in fix-static-re-linking.patch
 **Rule:** When switching from shared to static libraries, always check for missing `-ldl`, `-lpthread`, `-lm` etc.
 
+### 2025-12-22 | CI-Linux-ARM64 | FAIL (LIBPNG PATH MISMATCH)
+**Tried:** Build opencv4 with release-only triplet (arm64-linux-release)
+**Error:** `png.h: No such file or directory` looking for `include/libpng/png.h`
+**Root cause:**
+- **NOT cache corruption** - vcpkg's libpng installs headers to `include/libpng16/` not `include/libpng/`
+- OpenCV's CHECK_INCLUDE_FILE expects `${PNG_PNG_INCLUDE_DIR}/libpng/png.h`
+- Docker builds work because system `libpng-dev` is installed (which has symlink `/usr/include/libpng -> libpng16`)
+- Self-hosted runners without system libpng-dev fail
+**Fix:** Created libpng overlay port that adds symlink: `include/libpng -> libpng16`
+**Rule:** vcpkg libpng installs to libpng16/ but opencv expects libpng/ - create symlink for compatibility
+
+### 2025-12-22 | CI-Linux-ARM64 | FAIL (MISSING CUDA LIBRARIES)
+**Tried:** Build opencv4 with CUDA support on Jetson ARM64
+**Error:** `CUDA_npps_LIBRARY-NOTFOUND`, `CUDA_cublas_LIBRARY-NOTFOUND`, `CUDA_cufft_LIBRARY-NOTFOUND`
+**Root cause:**
+- Jetson had minimal CUDA install (only cuda-cudart, cuda-nvcc)
+- NPP (NVIDIA Performance Primitives), cuBLAS, and cuFFT libraries were NOT installed
+- OpenCV4 with CUDA support requires these libraries for image processing accelerations
+- These packages are NOT installed by default with JetPack's minimal CUDA setup
+**Fix:** Installed the missing CUDA development packages:
+```bash
+sudo apt-get install -y libnpp-dev-11-4 libcublas-dev-11-4 libcufft-dev-11-4
+```
+**Rule:** For OpenCV CUDA builds on Jetson, ensure libnpp-dev, libcublas-dev, and libcufft-dev are installed
+
+### 2025-12-22 | CI-Linux-ARM64 | FAIL (PKG_CONFIG_PATH VERSION MISMATCH)
+**Tried:** ApraPipes CMake configure after opencv4 build succeeded
+**Error:** `Package 'gio-2.0' has version '2.64.6', required version is '>= 2.82'` (and similar for harfbuzz, pixman)
+**Root cause:**
+- vcpkg built GTK3 with dependencies on newer library versions
+- CMakeLists.txt had hardcoded PKG_CONFIG_PATH to system directories only: `/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig`
+- System packages (Ubuntu 20.04) have older versions than what vcpkg GTK3 requires
+- The vcpkg-built libraries have their own .pc files with correct versions in `vcpkg_installed/<triplet>/lib/pkgconfig`
+**Fix:** Prepend vcpkg's pkgconfig path to PKG_CONFIG_PATH:
+```cmake
+set(VCPKG_PKGCONFIG_PATH "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+```
+**Rule:** When using vcpkg on ARM64, prepend vcpkg's pkgconfig path to PKG_CONFIG_PATH for consistent library versions
+
 ---

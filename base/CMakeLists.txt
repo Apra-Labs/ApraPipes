@@ -82,7 +82,10 @@ IF(ENABLE_MACOS)
 ENDIF()
 
 IF(ENABLE_ARM64)
-	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+	# Prepend vcpkg's pkgconfig path so vcpkg-built libraries (and their dependencies) are found first
+	# This ensures consistent library versions when vcpkg builds newer deps than system provides
+	set(VCPKG_PKGCONFIG_PATH "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/pkgconfig")
+	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX)
