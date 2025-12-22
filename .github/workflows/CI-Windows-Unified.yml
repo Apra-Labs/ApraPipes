@@ -288,6 +288,41 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config Release -j 6
 
+    - name: Copy CUDA DLLs to build directory
+      run: |
+        # Copy required CUDA DLLs to the build output directory
+        # The exe links against these dynamically and needs them at runtime
+        $cudaBin = Join-Path $env:CUDA_PATH "bin"
+        $buildDir = "${{github.workspace}}/build/Release"
+
+        echo "Copying CUDA DLLs from $cudaBin to $buildDir"
+
+        # Core CUDA runtime
+        Copy-Item "$cudaBin/cudart64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # NPP libraries (image processing)
+        Copy-Item "$cudaBin/nppig64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppicc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppidei64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppial64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/nppc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # cuBLAS
+        Copy-Item "$cudaBin/cublas64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+        Copy-Item "$cudaBin/cublasLt64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # nvJPEG
+        Copy-Item "$cudaBin/nvjpeg64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # cuDNN (copied earlier to CUDA_PATH/bin)
+        Copy-Item "$cudaBin/cudnn*.dll" $buildDir -Force -ErrorAction SilentlyContinue
+
+        # List copied DLLs
+        echo "DLLs in build directory:"
+        Get-ChildItem $buildDir -Filter "*.dll" | ForEach-Object { echo "  $($_.Name)" }
+      shell: pwsh
+      continue-on-error: true
+
     - name: List Test cases
       run: |
         ${{env.TEST_EXE}} --list_content > tests.txt
