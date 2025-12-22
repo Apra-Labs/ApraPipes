@@ -767,6 +767,9 @@ IF(ENABLE_WINDOWS AND ENABLE_CUDA)
 		"/DELAYLOAD:cublas64_11.dll"
 		"/DELAYLOAD:cublasLt64_11.dll"
 		"/DELAYLOAD:cudart64_110.dll"
+		# Video Codec SDK DLLs - these are part of NVIDIA driver, not CUDA toolkit
+		"/DELAYLOAD:nvcuvid.dll"
+		"/DELAYLOAD:nvEncodeAPI64.dll"
 	)
 ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
 
