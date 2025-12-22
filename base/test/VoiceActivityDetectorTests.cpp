@@ -10,52 +10,62 @@
 
 BOOST_AUTO_TEST_SUITE(voice_activity_detector_tests)
 
-BOOST_AUTO_TEST_CASE(voice_activity_detector_basic_test)
+// TEST: Speech-only output using speechOnly mode
+BOOST_AUTO_TEST_CASE(voice_activity_filter_speech_only_test)
 {
 	Logger::setLogLevel(boost::log::trivial::severity_level::info);
-	LOG_INFO << "Starting Voice Activity Detector Basic Test...";
+	LOG_INFO << "Starting Speech-Only Mode Test...";
+	LOG_INFO << "This test saves BOTH output pins for comparison";
 
 	int sampleRate = 16000;
 	int channels = 1;  
 	int processingInterval = 10;  
 	
+	// Audio source
 	AudioCaptureSrcProps audioProps(sampleRate, channels, 0, processingInterval);
 	auto audioSrc = boost::shared_ptr<AudioCaptureSrc>(new AudioCaptureSrc(audioProps));
 
+	// CHANGE THIS to true/false to test different modes
+	bool speechOnlyMode = true;  
+	
 	VoiceActivityDetectorProps vadProps(
 		16000,  
 		VoiceActivityDetectorProps::VERY_AGGRESSIVE, 
-		VoiceActivityDetectorProps::FRAME_10MS  
+		VoiceActivityDetectorProps::FRAME_10MS,
+		speechOnlyMode 
 	);
 	auto vad = boost::shared_ptr<VoiceActivityDetector>(new VoiceActivityDetector(vadProps));
 
-	// Sink 1: Audio Passthrough
-	std::string fileAudio = "./data/basic_test_audio.raw";
+	// Sink 1: Audio output
+	std::string fileAudio = speechOnlyMode ? "./data/speech_only_audio.raw" : "./data/all_audio.raw";
 	FileWriterModuleProps sinkPropsAudio(fileAudio, true);
 	auto sinkAudio = boost::shared_ptr<FileWriterModule>(new FileWriterModule(sinkPropsAudio));
 
-	// Sink 2: VAD Result
-	std::string fileVad = "./data/basic_test_vad.raw";
+	// Sink 2: VAD results output
+	std::string fileVad = "./data/vad.raw";
 	FileWriterModuleProps sinkPropsVad(fileVad, true);
 	auto sinkVad = boost::shared_ptr<FileWriterModule>(new FileWriterModule(sinkPropsVad));
 
+	// Build pipeline: AudioSrc -> VAD -> Two FileWriters
 	audioSrc->setNext(vad);
 	
+	// Connect BOTH output pins
 	auto audioPins = vad->getAllOutputPinsByType(FrameMetadata::FrameType::AUDIO);
 	auto vadPins = vad->getAllOutputPinsByType(FrameMetadata::FrameType::GENERAL);
+	
+	vad->setNext(sinkAudio, audioPins);  // Pin 1: Audio → sinkAudio
+	vad->setNext(sinkVad, vadPins);      // Pin 2: VAD → sinkVad
 
-	vad->setNext(sinkAudio, audioPins);
-	vad->setNext(sinkVad, vadPins);
-
-	PipeLine p("VoiceActivityDetectorTestPipeline");
+	PipeLine p("SpeechOnlyTestPipeline");
 	p.appendModule(audioSrc);
 
 	LOG_INFO << "Initializing Pipeline...";
 	BOOST_TEST(p.init());
 
-	LOG_INFO << "Running for 10 seconds...";
-	LOG_INFO << "First 5 seconds: STAY SILENT (expect mostly 0s)";
-	LOG_INFO << "Last 5 seconds: SPEAK INTO MIC (expect mostly 1s)";
+	LOG_INFO << "===========================================";
+	LOG_INFO << "speechOnly mode: " << (speechOnlyMode ? "TRUE" : "FALSE");
+	LOG_INFO << "Recording for 10 seconds...";
+	LOG_INFO << "===========================================";
 	
 	p.run_all_threaded();
 	boost::this_thread::sleep_for(boost::chrono::seconds(10));
@@ -64,6 +74,25 @@ BOOST_AUTO_TEST_CASE(voice_activity_detector_basic_test)
 	p.stop();
 	p.term();
 	p.wait_for_all();
+
+	LOG_INFO << "";
+	LOG_INFO << "===========================================";
+	LOG_INFO << "Test complete! Files saved:";
+	LOG_INFO << "  Audio output: " << fileAudio;
+	LOG_INFO << "  VAD output:   " << fileVad;
+	LOG_INFO << "";
+	LOG_INFO << "To play audio in Audacity:";
+	LOG_INFO << "  1.File > Import > Raw Data";
+	LOG_INFO << "  2. Select: " << fileAudio;
+	LOG_INFO << "  3. Settings:";
+	LOG_INFO << "     - Encoding: Signed 16-bit PCM";
+	LOG_INFO << "     - Byte order: Little-endian";
+	LOG_INFO << "     - Channels: 1 (Mono)";
+	LOG_INFO << "     - Sample rate: 16000 Hz";
+	LOG_INFO << "";
+	LOG_INFO << "To view VAD results:";
+	LOG_INFO << "  python view_voice_activity_detector_output.py " << fileVad;
+	LOG_INFO << "===========================================";
 }
 
 BOOST_AUTO_TEST_CASE(voice_activity_detector_aggressiveness_test)
@@ -189,3 +218,4 @@ BOOST_AUTO_TEST_CASE(voice_activity_detector_props_test)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+

@@ -10,17 +10,20 @@
 VoiceActivityDetectorProps::VoiceActivityDetectorProps(
 	int _sampleRate,
 	AggressivenessMode _mode,
-	FrameLength _frameLength
+	FrameLength _frameLength,
+	bool _speechOnly
 ) : sampleRate(_sampleRate),
 	mode(_mode),
-	frameLength(_frameLength)
+	frameLength(_frameLength),
+	speechOnly(_speechOnly)
 {}
 
 size_t VoiceActivityDetectorProps::getSerializeSize() {
 	return ModuleProps::getSerializeSize() +
 		sizeof(sampleRate) +
 		sizeof(mode) +
-		sizeof(frameLength);
+		sizeof(frameLength) +
+		sizeof(speechOnly);
 }
 
 template <class Archive>
@@ -29,6 +32,7 @@ void VoiceActivityDetectorProps::serialize(Archive& ar, const unsigned int versi
 	ar& sampleRate;
 	ar& mode;
 	ar& frameLength;
+	ar& speechOnly;
 }
 
 class VoiceActivityDetector::Detail
@@ -72,6 +76,7 @@ public:
 		LOG_INFO << "Sample Rate: " << mProps.sampleRate << " Hz";
 		LOG_INFO << "Aggressiveness Mode: " << mProps.mode << " (0=Quality, 3=Very Aggressive)";
 		LOG_INFO << "Frame Length: " << mProps.frameLength << " ms";
+		LOG_INFO << "Speech Only Mode: " << (mProps.speechOnly ? "ON" : "OFF");
 		LOG_INFO << "Expected samples per frame: " << (mProps.sampleRate * mProps.frameLength / 1000);
 		LOG_INFO << "========================";
 		
@@ -198,13 +203,24 @@ bool VoiceActivityDetector::process(frame_container& frames)
 	
 	// 2. Call libfvad
 	int result = mDetail->processAudio(samples, sampleCount);
+	bool isSpeech = (result == 1);
 	
-	// 3. Audio Passthrough
-	frames.insert(make_pair(mDetail->mAudioPinId, frame));
+	// 3. Audio Passthrough - Conditional on speechOnly mode
+	// speechOnly - 
+	// false:audio has booth speech and silence
+	// true:audio has only speech
+	if (!mDetail->mProps.speechOnly ) {
+		frames.insert(make_pair(mDetail->mAudioPinId, frame));
+	}
+	else {
+		if(isSpeech) {
+			frames.insert(make_pair(mDetail->mAudioPinId, frame));
+		}
+	}
 
-	// 4. Create output frame with VAD result
+	// 4. Create output frame with VAD result - ALWAYS create and send
 	auto outFrame = makeFrame(sizeof(int), mDetail->mVadPinId);
-	int vadResult = (result == 1) ? 1 : 0;  
+	int vadResult = isSpeech ? 1 : 0;  
 	memcpy(outFrame->data(), &vadResult, sizeof(int));
 	
 	// 5. Send output

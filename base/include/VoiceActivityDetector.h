@@ -26,12 +26,14 @@ public:
 	VoiceActivityDetectorProps(
 		int _sampleRate = 16000,
 		AggressivenessMode _mode = QUALITY,
-		FrameLength _frameLength = FRAME_10MS
+		FrameLength _frameLength = FRAME_10MS,
+		bool _speechOnly = false  // When true, only outputs audio when speech is detected
 	);
 	
 	int sampleRate;
 	AggressivenessMode mode;
 	FrameLength frameLength;
+	bool speechOnly;  // If true, audio passthrough only sends frames with speech
 	
 	size_t getSerializeSize();
 
