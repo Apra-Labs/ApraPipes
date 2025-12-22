@@ -13,7 +13,7 @@
 
  add_definitions(${RE_DEFINITIONS})
 
-@@ -238,14 +234,10 @@
+@@ -238,14 +234,12 @@
  #
  # Main target library
  #
@@ -25,10 +25,12 @@
 -
 -set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
 -
-+set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/libre.a)
++# Find libre - try static first (release-only triplets), then shared (standard triplets)
++find_library(RE_LIBRARIES NAMES libre.a libre.so libre
++  PATHS ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib
++  NO_DEFAULT_PATH REQUIRED)
 +# Add dl library for static linking on Linux (libre.a uses dlsym)
 +set(LINKLIBS ${RE_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
-+
  if(ZLIB_FOUND)
    list(APPEND LINKLIBS ZLIB::ZLIB)
  endif()

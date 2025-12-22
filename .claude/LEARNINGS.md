@@ -73,4 +73,15 @@
 **Fix:** Made GCC-11 step conditional - only set CC/CXX if `/usr/bin/gcc-11` exists
 **Rule:** When setting compiler overrides, always check if the compiler exists first to support different platforms
 
+### 2025-12-21 | CI-Linux-ARM64 | FAIL (STATIC LINKING -ldl)
+**Tried:** Build baresip with release-only triplet (arm64-linux-release)
+**Error:** `undefined reference to symbol 'dlsym@@GLIBC_2.17'` when linking baresip
+**Root cause:**
+- `libre.a` static library uses `dlsym` for dynamic loading
+- When linking statically, `-ldl` must be explicitly added
+- The baresip patch set LINKLIBS but didn't include `${CMAKE_DL_LIBS}`
+- This wasn't caught with shared library builds (.so) because they auto-resolve dependencies
+**Fix:** Added `${CMAKE_DL_LIBS}` to LINKLIBS in fix-static-re-linking.patch
+**Rule:** When switching from shared to static libraries, always check for missing `-ldl`, `-lpthread`, `-lm` etc.
+
 ---

@@ -8,45 +8,36 @@
 Branch: `feat/ci-remove-debug`
 PR: https://github.com/Apra-Labs/ApraPipes/pull/461
 
-## What Just Changed
-1. **Fixed disk space issue on Jetson** - Root filesystem (/) was 100% full (34MB free)
-   - Root cause: vcpkg registries cache was going to `~/.cache/vcpkg` on root filesystem
-   - Solution: Added `XDG_CACHE_HOME=/data/.cache` for self-hosted runners
-   - This redirects ALL caches (including vcpkg registries) to `/data` where there's 106GB free
-2. **Added cleanup step** for self-hosted runners:
-   - Removes old vcpkg registries from `~/.cache/vcpkg/registries`
-   - Cleans apt cache
-   - Removes pip cache
-3. **Ensured XDG cache directory is created** alongside vcpkg binary cache
-4. **Fixed GCC-11 compiler mismatch** - Made "Set GCC-11" step conditional
-   - Jetson has CUDA 11.4 + GCC 9.4, no GCC-11 installed
-   - x64 has CUDA 11.8 + GCC-11 (needs GCC <= 11)
-   - Step now checks if `/usr/bin/gcc-11` exists before setting CC/CXX
+## Current Fix: Use Standard Triplet for ARM64
 
-## New Jetson Environment (ap-gh-arm64-jp5)
+The `arm64-linux-release` triplet failed because opencv4 couldn't find dependencies (png.h missing).
+Release-only triplets have dependency resolution issues on ARM64.
+
+**Solution:** Use standard `arm64-linux` triplet instead of `arm64-linux-release` for ARM64 builds.
+
+### Changes Made This Session
+1. Changed `vcpkg-triplet` from `arm64-linux-release` to `arm64-linux` in CI-Linux-ARM64.yml
+2. Updated baresip patch to use `find_library()` to detect either .a or .so
+
+## Commits Made
+1. **a84e66df3** - XDG_CACHE_HOME, cleanup step, conditional GCC-11, CUDA symlink path
+2. **dd417a32c** - Added `${CMAKE_DL_LIBS}` to baresip patch (patch format fixed)
+3. **Pending** - Switch ARM64 to standard triplet
+
+## Jetson Status
 ```
-Ubuntu 20.04.6 LTS (GLIBC 2.31)
-git 2.50.1, cmake 3.29.3, ninja 1.10.0
-gcc/g++ 9.4.0, autoconf 2.71, automake 1.16.1
-CUDA 11.4, cuDNN 8.6.0
-PowerShell 7.4.6
-Runner 2.330.0 online
-/data: 106GB free (root / has only 34MB!)
+Disk: 6.6G used, 6.5G free (51%)
+CUDA: 11.4.315
+cuDNN: 8.6.0
+GCC: 9.4.0
+Runner: 2.330.0
 ```
-
-## Key Issue Found
-The Jetson has two filesystems:
-- `/` (root): 14GB, 100% used, only 34MB free
-- `/data` (NVMe): 117GB, only 5% used, 106GB free
-
-vcpkg was trying to write registries to `~/.cache/vcpkg/registries` on root filesystem.
-Fix: Set `XDG_CACHE_HOME=/data/.cache` to redirect all caches to NVMe.
 
 ## Next Steps
-- [ ] Commit and push XDG_CACHE_HOME fix
-- [ ] Watch ARM64 workflow run
-- [ ] Fix any build issues that arise
-- [ ] Re-enable all workflows once ARM64 passes
+- [x] Switch ARM64 to standard `arm64-linux` triplet
+- [ ] Commit and trigger build
+- [ ] Re-enable all workflows
+- [ ] Merge PR
 
 ---
-*Last updated: 2025-12-21 19:50 UTC*
+*Last updated: 2025-12-22 07:00 UTC*
