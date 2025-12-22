@@ -176,4 +176,20 @@ xvfb-run -a --server-args="-screen 0 1920x1080x24" ./test_executable
 ```
 **Rule:** For headless Jetson runners, install Xvfb and use xvfb-run to provide virtual display for GTK/EGL tests
 
+### 2025-12-22 | CI-Linux-ARM64 | PASS (COMPLETE SUCCESS)
+**Tried:** Run full ARM64 CI pipeline with all fixes applied
+**Result:** Build 20443972084 completed successfully in 39m1s
+**Summary:** After 14 separate fixes, ARM64 CI is fully operational on JetPack 5.0
+**Key fixes applied:**
+1. Upgrade from Ubuntu 18.04 to 20.04 (GLIBC 2.28+ for GitHub Actions Node 20)
+2. XDG_CACHE_HOME for disk space management
+3. Conditional GCC-11 for cross-platform CUDA support
+4. Static library linking (-ldl)
+5. libpng overlay port
+6. vcpkg pkgconfig path prepending
+7. JetPack 5 API compatibility (nvbufsurface, nvbuf_utils.h compatibility header)
+8. CUDA runtime library ldconfig
+9. Xvfb for headless display testing
+**Rule:** JetPack 5.x migration requires substantial changes - document everything in LEARNINGS.md
+
 ---
