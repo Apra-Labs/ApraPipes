@@ -8,21 +8,34 @@
 Branch: `feat/ci-remove-debug`
 PR: https://github.com/Apra-Labs/ApraPipes/pull/461
 
-## Current Status: Fix Applied - Build Pending
+## Current Status: Adding Xvfb for Headless Tests
 
-Build 20439465235 FAILED - Missing transform flag compatibility defines.
-Added transform flag mappings and pushing fix.
+**BUILD SUCCEEDED!** (Run 20439893264)
+**LDCONFIG FIX WORKED!** (Run 20440706046)
+**TEST HANG IDENTIFIED:** Tests hang because GTK/EGL tests need a display
 
-### What Was Fixed This Commit
-1. **Build 20439465235 FAILED** - NVBUFFER_TRANSFORM_FILTER and NVBUFFER_TRANSFORM_CROP_SRC not declared
-2. **Root cause:** JetPack 5.x renamed these transform flags to NVBUFSURF_* prefix
-3. **Solution:** Added transform flag defines in nvbuf_utils.h:
-   - `NVBUFFER_TRANSFORM_FILTER` → `NVBUFSURF_TRANSFORM_FILTER`
-   - `NVBUFFER_TRANSFORM_CROP_SRC` → `NVBUFSURF_TRANSFORM_CROP_SRC`
-   - `NVBUFFER_TRANSFORM_CROP_DST` → `NVBUFSURF_TRANSFORM_CROP_DST`
-   - `NVBUFFER_TRANSFORM_FLIP` → `NVBUFSURF_TRANSFORM_FLIP`
+**NEW FIX APPLIED:**
+- Installed Xvfb on Jetson for virtual display
+- Modified build-test-lin.yml to use xvfb-run when available
+- This provides a headless display for GTK/EGL tests
 
-### Previous Issues Fixed (This PR)
+### Root Cause of Hang
+Tests were hanging for 45+ minutes because:
+1. `gtkglrenderer_tests.cpp`, `eglrenderer_test.cpp`, `apraegldisplay_tests.cpp` need a display
+2. Jetson is headless (no physical display attached)
+3. These tests block waiting for display indefinitely
+4. No test output was produced (XML file empty)
+
+### JetPack 5.x Compatibility Header Complete
+Created `base/include/nvbuf_utils.h` with full API mapping:
+- NvBufferParams struct with all fields including layout
+- NvBufferCreateParams with all JetPack 5.x fields
+- Transform flags: NVBUFFER_TRANSFORM_* -> NVBUFSURF_TRANSFORM_*
+- EGL image functions: NvEGLImageFromFd, NvDestroyEGLImage
+- Buffer functions: NvBufSurf* wrappers for legacy NvBuffer* calls
+- NvBufSurfaceManager class for FD-to-surface mapping
+
+### Issues Fixed (This PR)
 1. **CUDA libraries missing** - Installed libnpp-dev-11-4, libcublas-dev-11-4, libcufft-dev-11-4
 2. **libpng path mismatch** - Created overlay port with symlink
 3. **Static linking -ldl** - Added ${CMAKE_DL_LIBS} to baresip patch
@@ -33,18 +46,24 @@ Added transform flag mappings and pushing fix.
 8. **nvbuf_utils.h header removed** - Created compatibility header with API mappings
 9. **NvBufferParams missing layout** - Added layout[NVBUF_MAX_PLANES] to struct
 10. **NvEGLImageFromFd not declared** - Added EGL image compatibility functions
+11. **NVBUFFER_TRANSFORM_* flags** - Added transform flag defines
+12. **NPP runtime libs not found** - Added CUDA targets to ldconfig
+13. **Test timeout** - Increased nTestTimeoutMins from 20 to 45
+14. **Headless display hang** - Using xvfb-run for virtual display
 
 ## Jetson Status
 ```
 Disk: 9.5G used, 3.5G free (74%)
 CUDA: 11.4.315
 cuDNN: 8.6.0
-NPP: 11.4.0.287
+NPP: 11.4.0.287 (in ldconfig)
 cuBLAS: 11.6.6.84
 cuFFT: 10.6.0.202
 GCC: 9.4.0
 Runner: 2.330.0
 JetPack: 5.0 (L4T 35.x)
+ldconfig: /usr/local/cuda/targets/aarch64-linux/lib added
+Xvfb: installed (2:1.20.13)
 ```
 
 ## Commits Made (This PR)
@@ -57,7 +76,9 @@ JetPack: 5.0 (L4T 35.x)
 7. **91e97f829** - JetPack 5.x nvbuf_utils.h API compatibility layer
 8. **541ab16a6** - Add missing layout field to NvBufferParams struct
 9. **81fdfdd01** - Add NvEGLImageFromFd/NvDestroyEGLImage compatibility
-10. **(PENDING)** - Add NVBUFFER_TRANSFORM_* flag compatibility
+10. **7463357cd** - Add NVBUFFER_TRANSFORM_* flag compatibility
+11. **ea24f5d17** - Increase test timeout from 20 to 45 mins
+12. **(pending)** - Use xvfb-run for headless display in tests
 
 ## Build History
 | Run ID | Result | Issue |
@@ -69,13 +90,20 @@ JetPack: 5.0 (L4T 35.x)
 | 20438835534 | FAILED | NvBufferParams missing 'layout' member |
 | 20439019604 | FAILED | NvEGLImageFromFd not declared |
 | 20439465235 | FAILED | NVBUFFER_TRANSFORM_FILTER not declared |
-| PENDING | IN PROGRESS | Testing transform flag compatibility |
+| 20439893264 | BUILD OK | Tests failed - NPP libs not in ldconfig |
+| 20440706046 | HANG | ldd OK, tests hung (no display) at 20 mins |
+| 20441936650 | HANG | Tests hung (no display) at 45 mins |
+| (next) | PENDING | Testing with Xvfb virtual display |
 
 ## Next Steps
-- [ ] Commit and push transform flag fix
-- [ ] Wait for build to complete
-- [ ] If passes, re-enable all other workflows
+- [x] Increase test timeout to 45 mins
+- [x] Identify test hang (headless display issue)
+- [x] Install Xvfb on Jetson
+- [x] Modify workflow to use xvfb-run
+- [ ] Commit and push Xvfb changes
+- [ ] Verify tests complete with Xvfb
+- [ ] Re-enable all other workflows
 - [ ] Merge PR
 
 ---
-*Last updated: 2025-12-22 ~18:00 UTC*
+*Last updated: 2025-12-22 ~21:10 UTC*

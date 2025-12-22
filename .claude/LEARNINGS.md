@@ -124,4 +124,56 @@ set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkg
 ```
 **Rule:** When using vcpkg on ARM64, prepend vcpkg's pkgconfig path to PKG_CONFIG_PATH for consistent library versions
 
+### 2025-12-22 | CI-Linux-ARM64 | FAIL (JETPACK 5 LIBRARY CHANGES)
+**Tried:** Build ApraPipes on JetPack 5.0 (Ubuntu 20.04)
+**Error:** `Could not find NVBUFUTILSLIB using the following names: nvbuf_utils`
+**Root cause:**
+- JetPack 5.0 renamed/replaced several multimedia libraries from JetPack 4.x:
+- `nvbuf_utils` → `nvbufsurface` (library renamed)
+- `nveglstream_camconsumer` → **REMOVED** (not available in JP5)
+- The NvBufUtils API was deprecated in JP5.1.2 and fully removed
+- EGL stream consumer functionality may require different approach in JP5
+**Fix:**
+```cmake
+# Accept either library name for nvbuf_utils
+find_library(NVBUFUTILSLIB NAMES nvbufsurface nvbuf_utils REQUIRED)
+# Make nveglstream_camconsumer optional
+find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
+if(EGLSTREAM_CAMCONSUMER_LIB)
+    list(APPEND JETSON_LIBS ${EGLSTREAM_CAMCONSUMER_LIB})
+endif()
+```
+**Rule:** JetPack 5.x has breaking API changes - use NAMES keyword in find_library to accept both old and new library names
+
+### 2025-12-22 | CI-Linux-ARM64 | FAIL (RUNTIME NPP LIBRARIES NOT FOUND)
+**Tried:** Run unit tests on Jetson after successful build
+**Error:** `libnppicc.so.11 => not found`, `libnppidei.so.11 => not found`, `libnppig.so.11 => not found`
+**Root cause:**
+- NPP libraries exist at `/usr/local/cuda-11.4/targets/aarch64-linux/lib/`
+- But this path is NOT in ldconfig by default on JetPack 5.0
+- Installing `libnpp-dev-11-4` provides the dev files but doesn't add the lib path to ldconfig
+- The linker finds the libs at build time (via CMake's CUDA detection), but runtime loader (ld.so) doesn't know where they are
+**Fix:** Add CUDA targets lib path to ldconfig on the Jetson:
+```bash
+sudo sh -c 'echo /usr/local/cuda/targets/aarch64-linux/lib > /etc/ld.so.conf.d/cuda-targets.conf'
+sudo ldconfig
+```
+**Rule:** On JetPack 5.0, CUDA libs in `/usr/local/cuda/targets/aarch64-linux/lib` must be added to ldconfig for runtime linking
+
+### 2025-12-22 | CI-Linux-ARM64 | HANG (HEADLESS DISPLAY ISSUE)
+**Tried:** Run tests on headless Jetson after fixing ldconfig
+**Error:** Tests hang indefinitely, XML output file is empty, tests killed as orphan process after 45 minutes
+**Root cause:**
+- GTK/EGL tests (`gtkglrenderer_tests`, `eglrenderer_test`, `apraegldisplay_tests`) require a display
+- Jetson is headless (no physical display attached)
+- Tests block waiting for display initialization indefinitely
+- No test output is produced because tests never complete
+**Fix:**
+1. Install Xvfb on Jetson: `sudo apt-get install -y xvfb`
+2. Use xvfb-run in workflow to provide virtual display:
+```bash
+xvfb-run -a --server-args="-screen 0 1920x1080x24" ./test_executable
+```
+**Rule:** For headless Jetson runners, install Xvfb and use xvfb-run to provide virtual display for GTK/EGL tests
+
 ---
