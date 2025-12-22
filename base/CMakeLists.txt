@@ -747,6 +747,29 @@ target_link_libraries(aprapipesut
   whisper::whisper
   )
 
+# Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
+# This enables runtime detection of GPU availability - the DLLs are only loaded when first used
+# Without this, the exe crashes immediately on systems without CUDA DLLs
+IF(ENABLE_WINDOWS AND ENABLE_CUDA)
+	# Link the delay load helper library
+	target_link_libraries(aprapipesut delayimp.lib)
+
+	# DELAYLOAD all CUDA DLLs that are linked via import libraries
+	# The DLL names include version suffix (e.g., nvjpeg64_11.dll for CUDA 11.x)
+	# Note: nvcuda.dll is NOT delay-loaded - it's loaded via LoadLibrary in CudaDriverLoader
+	target_link_options(aprapipesut PRIVATE
+		"/DELAYLOAD:nvjpeg64_11.dll"
+		"/DELAYLOAD:nppig64_11.dll"
+		"/DELAYLOAD:nppicc64_11.dll"
+		"/DELAYLOAD:nppidei64_11.dll"
+		"/DELAYLOAD:nppial64_11.dll"
+		"/DELAYLOAD:nppc64_11.dll"
+		"/DELAYLOAD:cublas64_11.dll"
+		"/DELAYLOAD:cublasLt64_11.dll"
+		"/DELAYLOAD:cudart64_110.dll"
+	)
+ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
+
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Release/)
