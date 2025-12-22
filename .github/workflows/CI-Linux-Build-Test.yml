@@ -1,33 +1,41 @@
-name: CI-Linux-CUDA-Unified
+name: CI-Linux-Build-Test
 
-# Unified Linux CUDA build - builds WITH CUDA, detects GPU at runtime
-# Replaces separate NoCUDA and CUDA builds
-# Uses incremental caching strategy to build up cache across failed CMake attempts
+# Phase 2: Build on cloud, test (CUDA tests skip), publish SDK artifact
+# CUDA-agnostic - no knowledge of GPU availability
+# CUDA tests skip silently via runtime detection (if_compute_cap_supported)
+# Triggers CI-Linux-CUDA-Tests on success for GPU testing
 
 on:
-  # Temporarily disabled during Windows workflow testing
-  # push:
-  #   branches:
-  #     - feature/get-rid-of-nocuda-builds
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - '.claude/**'
-  #     - 'docs/**'
+  push:
+    branches:
+      - main
+      - feature/get-rid-of-nocuda-builds
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  linux-cuda-unified-build:
+  build-test:
     runs-on: ubuntu-22.04  # CRITICAL: GCC 11 for CUDA 11.8 compatibility
 
     env:
       TEST_EXE: build/aprapipesut
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake'
       VCPKG_MAX_CONCURRENCY: 6
-      # CRITICAL: Use /mnt partition to avoid disk exhaustion (Experiment 2 learning)
+      # CRITICAL: Use /mnt partition to avoid disk exhaustion
       VCPKG_DEFAULT_BINARY_CACHE: /mnt/runner-work/.cache/vcpkg
       # CUDA environment variables - at job level for vcpkg subprocess propagation
       CUDAToolkit_ROOT: '/usr/local/cuda-11.8'
@@ -122,7 +130,7 @@ jobs:
         cat submodule_ver.txt
         git rev-list --all --count
 
-    - name: Create /mnt work directory and take ownership (Experiment 2 learning)
+    - name: Create /mnt work directory and take ownership
       run: |
         echo "=== Creating work directory on /mnt partition ==="
         sudo mkdir -p /mnt/runner-work
@@ -135,14 +143,14 @@ jobs:
     - name: Run VCPKG bootstrap
       run: ./vcpkg/bootstrap-vcpkg.sh
 
-    - name: Restore vcpkg cache (LINUX-TEMP - incremental caching)
+    - name: Restore vcpkg cache
       id: cache-restore
       uses: actions/cache/restore@v3
       with:
         path: |
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: LINUX-TEMP
-        restore-keys: LINUX-TEMP
+        key: Linux-Build-Test-1
+        restore-keys: Linux-Build-Test-
 
     - name: Make build folder
       run: mkdir -p build
@@ -161,13 +169,13 @@ jobs:
           ../base
       continue-on-error: true
 
-    - name: Save vcpkg cache (LINUX-TEMP - always save for incremental builds)
+    - name: Save vcpkg cache
       if: ${{ always() }}
       uses: actions/cache/save@v3
       with:
         path: |
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: LINUX-TEMP
+        key: Linux-Build-Test-1
 
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -181,27 +189,95 @@ jobs:
 
     - name: Run Tests
       run: |
-        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA-Unified.xml -p -l all || echo 'test execution returned error'
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Linux-Build-Test.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 20
+      # CUDA tests skip silently - this is expected behavior
 
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
-        name: TestResults_Linux-CUDA-Unified
+        name: TestResults_Linux-Build-Test
         path: |
-          CI_test_result_Linux-CUDA-Unified.xml
+          CI_test_result_Linux-Build-Test.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
     - name: Upload build logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
-        name: BuildLogs_Linux-CUDA-Unified
+        name: BuildLogs_Linux-Build-Test
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
           ${{ github.workspace }}/build/vcpkg-manifest-install.log
           tests.txt
       continue-on-error: true
+
+    # Package and upload SDK artifact for distribution and GPU testing
+    - name: Package SDK Artifact
+      if: success()
+      run: |
+        SDK_DIR="${{github.workspace}}/sdk"
+        BUILD_DIR="${{github.workspace}}/build"
+        INCLUDE_DIR="${{github.workspace}}/base/include"
+
+        # Create SDK directory structure
+        mkdir -p "$SDK_DIR/bin"
+        mkdir -p "$SDK_DIR/lib"
+        mkdir -p "$SDK_DIR/include"
+
+        # Copy binaries (exe + shared libs)
+        cp "$BUILD_DIR/aprapipesut" "$SDK_DIR/bin/" || true
+        cp "$BUILD_DIR"/*.so* "$SDK_DIR/bin/" 2>/dev/null || true
+
+        # Copy static libraries
+        cp "$BUILD_DIR"/*.a "$SDK_DIR/lib/" 2>/dev/null || true
+
+        # Copy headers
+        cp -r "$INCLUDE_DIR"/* "$SDK_DIR/include/" 2>/dev/null || true
+
+        # List SDK contents
+        echo "=== SDK Contents ==="
+        echo "bin/:"
+        ls -la "$SDK_DIR/bin/" || echo "  (empty)"
+        echo "lib/:"
+        ls -la "$SDK_DIR/lib/" || echo "  (empty)"
+        echo "include/:"
+        ls -la "$SDK_DIR/include/" || echo "  (empty)"
+
+    - name: Upload SDK Artifact
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: aprapipes-sdk-linux-x64
+        path: ${{ github.workspace }}/sdk/
+        retention-days: 7
+
+  publish-results:
+    name: Publish Test Results
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Pull test reporter image
+        run: docker pull ghcr.io/enricomi/publish-unit-test-result-action:v2.21.0
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts/ || echo "No artifacts"
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2.21.0
+        with:
+          files: artifacts/**/CI_test_result_*.xml
+          check_name: 'Linux Build Tests'

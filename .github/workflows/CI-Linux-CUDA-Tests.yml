@@ -1,0 +1,97 @@
+name: CI-Linux-CUDA-Tests
+
+# Phase 2: Run tests on self-hosted GPU runner
+# Triggered by successful CI-Linux-Build-Test workflow
+# Downloads SDK artifact and runs ALL tests (CUDA tests now run!)
+
+on:
+  workflow_run:
+    workflows: ["CI-Linux-Build-Test"]
+    types: [completed]
+
+jobs:
+  cuda-tests:
+    name: Run CUDA Tests
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: [self-hosted, linux-cuda]
+    timeout-minutes: 45
+
+    steps:
+    - name: Cleanup workspace
+      run: rm -rf * || true
+      continue-on-error: true
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        lfs: true
+        # Gets test_data and source code
+
+    - name: Download SDK Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: aprapipes-sdk-linux-x64
+        path: sdk/
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: List SDK Contents
+      run: |
+        echo "=== Downloaded SDK Contents ==="
+        echo "bin/:"
+        ls -la sdk/bin/ || echo "  (empty)"
+        echo "lib/:"
+        ls -la sdk/lib/ || echo "  (empty)"
+        echo "include/:"
+        ls -la sdk/include/ || echo "  (empty)"
+
+    - name: Verify CUDA Environment
+      run: |
+        echo "=== CUDA Environment Check ==="
+        nvcc --version
+        echo ""
+        echo "GPU Info:"
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+
+    - name: Make test executable runnable
+      run: chmod +x sdk/bin/aprapipesut
+
+    - name: Run CUDA Tests
+      run: |
+        cd sdk/bin
+        ./aprapipesut --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: 30
+
+    - name: Upload CUDA Test Results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_Linux-CUDA
+        path: |
+          sdk/bin/CI_test_result_Linux-CUDA.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
+
+  publish-cuda-results:
+    name: Publish CUDA Test Results
+    needs: cuda-tests
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts/ || echo "No artifacts"
+
+      - name: Publish CUDA Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2.21.0
+        with:
+          files: artifacts/**/CI_test_result_*.xml
+          check_name: 'Linux CUDA Tests'

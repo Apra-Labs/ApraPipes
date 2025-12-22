@@ -1,23 +1,31 @@
-name: CI-Windows-Unified
+name: CI-Windows-Build-Test
 
-# Unified Windows build - builds WITH CUDA, detects GPU at runtime
-# Replaces separate NoCUDA and CUDA builds
-# Tests skip gracefully when GPU/driver unavailable via runtime detection
+# Phase 2: Build on cloud, test (CUDA tests skip), publish SDK artifact
+# CUDA-agnostic - no knowledge of GPU availability
+# CUDA tests skip silently via runtime detection (if_compute_cap_supported)
+# Triggers CI-Windows-CUDA-Tests on success for GPU testing
 
 on:
-  # Temporarily disabled during Windows experiments
-  # push:
-  #   branches:
-  #     - feature/get-rid-of-nocuda-builds
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - '.claude/**'
-  #     - 'docs/**'
+  push:
+    branches:
+      - main
+      - feature/get-rid-of-nocuda-builds
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   workflow_dispatch:
 
 jobs:
-  windows-unified-build:
+  build-test:
     runs-on: windows-latest
     # OpenCV CUDA builds take 3-4 hours with optimized settings
     # Set timeout to allow for potential delays
@@ -378,25 +386,25 @@ jobs:
 
     - name: Run Tests
       run: |
-        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Windows-Unified.xml -p -l all || echo 'test execution returned error'
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_Windows-Build-Test.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 20
-      continue-on-error: true  # Tests may fail on non-GPU runners - that's expected
+      # CUDA tests skip silently - this is expected behavior
 
     - name: Upload Test Results
       if: ${{ always() }}
       continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
-        name: TestResults_Windows-Unified
+        name: TestResults_Windows-Build-Test
         path: |
-          CI_test_result_Windows-Unified.xml
+          CI_test_result_Windows-Build-Test.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
     - name: Upload build logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
-        name: BuildLogs_Windows-Unified
+        name: BuildLogs_Windows-Build-Test
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
@@ -404,9 +412,50 @@ jobs:
           tests.txt
       continue-on-error: true
 
-  windows-publish:
-    name: Publish Tests Results
-    needs: windows-unified-build
+    # Package and upload SDK artifact for distribution and GPU testing
+    - name: Package SDK Artifact
+      if: success()
+      run: |
+        $sdkDir = "${{github.workspace}}/sdk"
+        $buildDir = "${{github.workspace}}/build/Release"
+        $includeDir = "${{github.workspace}}/base/include"
+
+        # Create SDK directory structure
+        New-Item -ItemType Directory -Path "$sdkDir/bin" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
+
+        # Copy binaries (exe + DLLs)
+        Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force
+        Copy-Item "$buildDir/*.dll" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+
+        # Copy libraries
+        Copy-Item "$buildDir/*.lib" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
+
+        # Copy headers
+        Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
+
+        # List SDK contents
+        echo "=== SDK Contents ==="
+        echo "bin/:"
+        Get-ChildItem "$sdkDir/bin" | ForEach-Object { echo "  $($_.Name)" }
+        echo "lib/:"
+        Get-ChildItem "$sdkDir/lib" -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+        echo "include/:"
+        Get-ChildItem "$sdkDir/include" -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+      shell: pwsh
+
+    - name: Upload SDK Artifact
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: aprapipes-sdk-windows-x64
+        path: ${{ github.workspace }}/sdk/
+        retention-days: 7
+
+  publish-results:
+    name: Publish Test Results
+    needs: build-test
     runs-on: ubuntu-latest
     if: always()
     permissions:

@@ -2,15 +2,28 @@
 
 ## Mission Statement
 
-**Goal:** Create unified builds that compile with CUDA+cuDNN support but detect GPU availability at runtime, eliminating the need for separate CUDA and NoCUDA build variants.
+### Phase 1: Unified Builds (COMPLETED)
+Create unified builds that compile with CUDA+cuDNN support but detect GPU availability at runtime, eliminating the need for separate CUDA and NoCUDA build variants.
+
+### Phase 2: Split Build/Test Architecture (IN PROGRESS)
+Create a two-workflow architecture per platform:
+1. **CI-\<OS\>-Build-Test** - Builds on cloud, runs tests (CUDA tests skip silently), publishes SDK artifact
+2. **CI-\<OS\>-CUDA-Tests** - Triggered by successful Build-Test, runs on self-hosted GPU, publishes CUDA test results
+
+**Key Design Principles:**
+- Build-Test workflow is **CUDA-agnostic** - no knowledge of GPU availability
+- SDK artifact contains: include/, lib/, bin/, doc/
+- GPU testing is decoupled - offline GPU runners don't block builds
+- Self-hosted runners only run tests (no builds)
 
 ### Progress
 
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Linux x64 | DONE | CI-Linux-CUDA workflow works on both GPU and non-GPU systems |
-| Linux ARM64 (Jetson) | DONE | CI-Linux-ARM64 workflow, self-hosted runner with native CUDA |
-| Windows | DONE | CI-Windows-Unified workflow - DELAYLOAD solution enables exe to run without CUDA DLLs |
+| Platform | Build-Test | CUDA-Tests | Status |
+|----------|------------|------------|--------|
+| Windows x64 | CI-Windows-Build-Test | CI-Windows-CUDA-Tests | TODO |
+| Linux x64 | CI-Linux-Build-Test | CI-Linux-CUDA-Tests | TODO |
+| Linux ARM64 (Jetson) | CI-ARM64-Build-Test | (native GPU) | TODO |
+| MacOSX | CI-MacOSX-Build-Test | N/A | TODO |
 
 ### Key Insight
 Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on Windows) allows binaries compiled with CUDA to run on systems without GPU/driver. Tests skip gracefully when GPU unavailable.
@@ -50,13 +63,15 @@ Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on 
 - `.claude/LEARNINGS.md` — Institutional memory, past mistakes & fixes
 
 ### Documentation
-- `.claude/docs/` — Detailed implementation docs, experiment results
+- `.claude/docs/phase2-split-build-test.md` — Phase 2 detailed design
+- `.claude/docs/` — Other implementation docs, experiment results
 - `.claude/skills/aprapipes-devops/` — Troubleshooting guides by platform
 
-### CI Workflows
-- `.github/workflows/CI-Linux-CUDA.yml` — Unified Linux build (DONE)
-- `.github/workflows/CI-Windows-Unified.yml` — Unified Windows build (DONE)
-- `.github/workflows/experiment-*.yml` — Validation experiments
+### CI Workflows (Phase 2 Target)
+- `.github/workflows/CI-<OS>-Build-Test.yml` — Build + test on cloud
+- `.github/workflows/CI-<OS>-CUDA-Tests.yml` — GPU tests on self-hosted
+- `.github/workflows/build-test-<os>.yml` — Reusable build workflows
+- `.github/workflows/publish-test.yml` — Reusable test publishing
 
 ### Key Config
 - `vcpkg/triplets/community/x64-windows-cuda.cmake` — Custom triplet for Windows CUDA (v142 toolset)
