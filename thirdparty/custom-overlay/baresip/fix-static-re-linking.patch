@@ -3,17 +3,17 @@
 @@ -97,11 +97,7 @@
    -DVER_PATCH=${PROJECT_VERSION_PATCH}
  )
- 
+
 -if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
 -  set(RE_INCLUDE_DIRS ${_VCPKG_INSTALLED_DIR}/x64-linux/debug/include/re/)
 -else()
 -  set(RE_INCLUDE_DIRS ${_VCPKG_INSTALLED_DIR}/arm64-linux/debug/include/re/)
 -endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
 +set(RE_INCLUDE_DIRS ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/re/)
- 
+
  add_definitions(${RE_DEFINITIONS})
- 
-@@ -238,14 +234,8 @@
+
+@@ -238,14 +234,10 @@
  #
  # Main target library
  #
@@ -23,9 +23,12 @@
 -  set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/arm64-linux/lib/libre.so)
 -endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
 -
-+set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/libre.a)
- set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
+-set(LINKLIBS ${RE_LIBRARIES} Threads::Threads)
 -
++set(RE_LIBRARIES ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/libre.a)
++# Add dl library for static linking on Linux (libre.a uses dlsym)
++set(LINKLIBS ${RE_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
++
  if(ZLIB_FOUND)
    list(APPEND LINKLIBS ZLIB::ZLIB)
  endif()
