@@ -116,6 +116,7 @@
         uint32_t pitch[NVBUF_MAX_PLANES];
         uint32_t offset[NVBUF_MAX_PLANES];
         uint32_t psize[NVBUF_MAX_PLANES];
+        NvBufferLayout layout[NVBUF_MAX_PLANES];
         uint32_t num_planes;
         uint32_t nv_buffer_size;
         uint32_t memsize;
@@ -323,6 +324,7 @@
             params->pitch[i] = surfParams->planeParams.pitch[i];
             params->offset[i] = surfParams->planeParams.offset[i];
             params->psize[i] = surfParams->planeParams.psize[i];
+            params->layout[i] = surfParams->layout;  // Layout is surface-level in new API
         }
 
         return 0;
