@@ -91,12 +91,19 @@ vcpkg_cmake_configure(
 )
 vcpkg_cmake_install()
 
-# Create libpng -> libpng16 symlink for OpenCV compatibility
+# Create libpng -> libpng16 compatibility layer for OpenCV
 # OpenCV's CHECK_INCLUDE_FILE expects libpng/png.h but vcpkg installs to libpng16/
 # This is the same compatibility layout that system libpng-dev uses on Ubuntu
 if(NOT VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "release")
     if(EXISTS "${CURRENT_PACKAGES_DIR}/include/libpng16" AND NOT EXISTS "${CURRENT_PACKAGES_DIR}/include/libpng")
-        file(CREATE_LINK "libpng16" "${CURRENT_PACKAGES_DIR}/include/libpng" SYMBOLIC)
+        if(VCPKG_TARGET_IS_WINDOWS)
+            # Windows cannot create symlinks without elevated permissions
+            # Copy the directory instead (headers are small, ~100KB)
+            file(COPY "${CURRENT_PACKAGES_DIR}/include/libpng16/" DESTINATION "${CURRENT_PACKAGES_DIR}/include/libpng")
+        else()
+            # Unix: use symlink for efficiency
+            file(CREATE_LINK "libpng16" "${CURRENT_PACKAGES_DIR}/include/libpng" SYMBOLIC)
+        endif()
     endif()
 endif()
 

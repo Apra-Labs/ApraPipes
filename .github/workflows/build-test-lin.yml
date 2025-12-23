@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf  autoconf-archive  automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install meson && pip3 install Jinja2'
+        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf  autoconf-archive  automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install --break-system-packages meson || pip3 install meson && pip3 install --break-system-packages Jinja2 || pip3 install Jinja2'
         required: false
       prep-check-cmd:
         type: string
@@ -85,7 +85,8 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.cache-path }}  # Enable vcpkg binary caching for self-hosted runners
+      # VCPKG_DEFAULT_BINARY_CACHE is set in the "Create vcpkg binary cache directory" step
+      # to avoid vcpkg validation errors before the directory is created
       # XDG_CACHE_HOME redirects ALL caches (including vcpkg registries) to /data on self-hosted runners
       # This is critical for Jetson where root filesystem has limited space but /data has 100GB+
       XDG_CACHE_HOME: ${{ inputs.is-selfhosted && '/data/.cache' || '' }}
@@ -147,7 +148,12 @@ jobs:
 
     - name: Create vcpkg binary cache directory
       run: |
-        mkdir -p ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        # Create cache directory and set env var (must be done here, not at job level,
+        # because vcpkg validates the directory exists at job startup)
+        CACHE_DIR="${{ inputs.cache-path }}"
+        mkdir -p "$CACHE_DIR"
+        echo "VCPKG_DEFAULT_BINARY_CACHE=$CACHE_DIR" >> $GITHUB_ENV
+        echo "Created vcpkg cache directory: $CACHE_DIR"
         # Also create XDG cache dir for vcpkg registries (self-hosted)
         if [ -n "$XDG_CACHE_HOME" ]; then
           mkdir -p "$XDG_CACHE_HOME/vcpkg"
