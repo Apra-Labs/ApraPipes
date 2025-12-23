@@ -462,6 +462,9 @@ jobs:
   cuda-tests:
     name: CUDA Tests
     needs: build-test
+    permissions:
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/CI-CUDA-Tests.yml
     with:
       os: windows
