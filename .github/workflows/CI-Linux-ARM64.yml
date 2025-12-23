@@ -24,7 +24,7 @@ jobs:
   jetson-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      runner: '["self-hosted", "Linux", "ARM64", "Ubuntu20.04"]'
+      runner: '["self-hosted", "Linux", "ARM64", "AGX"]'
       flav: Linux_ARM64
       is-selfhosted: true
       cuda: 'ON'
