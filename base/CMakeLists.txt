@@ -88,7 +88,9 @@ IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
+	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
@@ -714,13 +716,14 @@ IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# ARM64/Jetson uses VCPKG_GTK_INCLUDE_DIRS and links gtk3 separately
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
   	${GTK3_LIBRARIES}
 	)
-ENDIF(ENABLE_LINUX)
+ENDIF()
 
 target_link_libraries(aprapipesut
   aprapipes
