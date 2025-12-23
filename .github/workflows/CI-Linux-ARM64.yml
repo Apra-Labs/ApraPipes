@@ -29,51 +29,15 @@ jobs:
       is-selfhosted: true
       cuda: 'ON'
       prep-cmd: |
-        echo "=== Jetson ARM64 Build Environment Check (Ubuntu 20.04) ==="
-        echo "Runner: AGX (JetPack 5.0, CUDA 11.4)"
-        echo ""
-
-        # Check disk space
-        echo "=== Disk Space Check ==="
+        echo "=== ARM64 Build Environment ==="
         df -h / /data 2>/dev/null || df -h
         echo ""
-
-        # Install autoconf 2.71 from source if needed (Ubuntu 20.04 has 2.69, vcpkg gperf requires 2.70+)
-        AUTOCONF_VERSION=$(autoconf --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+' || echo "0")
-        if [ "$(echo "$AUTOCONF_VERSION < 2.70" | bc)" -eq 1 ]; then
-          echo "=== Installing autoconf 2.71 from source ==="
-          cd /tmp
-          wget -q https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz
-          tar xf autoconf-2.71.tar.xz
-          cd autoconf-2.71
-          ./configure --prefix=/usr/local >/dev/null
-          make -j$(nproc) >/dev/null
-          sudo make install >/dev/null
-          hash -r
-          echo "autoconf upgraded to: $(autoconf --version | head -1)"
-          cd -
-        fi
-
-        # Full version check
         echo "=== Tool Versions ==="
-        echo "git:        $(git --version 2>/dev/null || echo 'MISSING')"
-        echo "git-lfs:    $(git lfs --version 2>/dev/null || echo 'MISSING')"
-        echo "cmake:      $(cmake --version | head -1)"
-        echo "ninja:      ninja $(ninja --version)"
-        echo "gcc:        $(gcc --version | head -1)"
-        echo "g++:        $(g++ --version | head -1)"
-        echo "autoconf:   $(autoconf --version | head -1)"
-        echo "automake:   $(automake --version | head -1)"
-        echo "libtool:    $(libtoolize --version | head -1)"
-        echo "pkg-config: $(pkg-config --version)"
-        echo "pwsh:       $(pwsh --version 2>/dev/null || echo 'MISSING')"
-        echo "nvcc:       $(/usr/local/cuda/bin/nvcc --version 2>/dev/null | tail -1 || echo 'MISSING')"
-        echo ""
-
-        # Check cuDNN
-        echo "=== CUDA/cuDNN Check ==="
-        ls -la /usr/local/cuda 2>/dev/null | head -3 || echo "CUDA not found"
-        ls /usr/include/cudnn*.h 2>/dev/null && echo "cuDNN headers OK" || echo "cuDNN headers MISSING"
+        cmake --version | head -1
+        ninja --version
+        gcc --version | head -1
+        autoconf --version | head -1
+        /usr/local/cuda/bin/nvcc --version 2>/dev/null | tail -1 || echo "nvcc: MISSING"
         echo ""
       bootstrap-cmd: |
         export VCPKG_FORCE_SYSTEM_BINARIES=1
