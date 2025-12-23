@@ -30,7 +30,7 @@ on:
       prep-cmd:
         type: string
         description: 'commands required to be run on a builder to prep it for build'
-        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf  autoconf-archive  automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && pip3 install --break-system-packages meson || pip3 install meson && pip3 install --break-system-packages Jinja2 || pip3 install Jinja2'
+        default: 'sudo apt-get update -qq && sudo apt-get -y install ca-certificates curl zip unzip tar  autoconf  autoconf-archive  automake  autopoint build-essential  flex git-core   libass-dev   libfreetype6-dev   libgnutls28-dev   libmp3lame-dev   libsdl2-dev   libtool   libsoup-gnome2.4-dev   libva-dev   libvdpau-dev   libvorbis-dev   libxdamage-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev  ninja-build   pkg-config   texinfo   wget   yasm   zlib1g-dev   nasm   gperf  bison python3 python3-pip dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 && (pip3 install --break-system-packages meson 2>/dev/null || pip3 install meson) && (pip3 install --break-system-packages Jinja2 2>/dev/null || pip3 install Jinja2)'
         required: false
       prep-check-cmd:
         type: string
@@ -103,7 +103,7 @@ jobs:
       run: |
         ${{ inputs.prep-cmd }}
         apt purge cmake || true
-        pip3 install --break-system-packages cmake==3.29.6 || pip3 install cmake==3.29.6 || echo 'did not update cmake'
+        (pip3 install --break-system-packages cmake==3.29.6 2>/dev/null || pip3 install cmake==3.29.6) || echo 'did not update cmake'
         ${{ inputs.prep-check-cmd }} 
     
     - name: Check builder for CUDA
@@ -150,7 +150,12 @@ jobs:
       run: |
         # Create cache directory and set env var (must be done here, not at job level,
         # because vcpkg validates the directory exists at job startup)
+        # IMPORTANT: Must use absolute path because CMake runs from build/ subdirectory
         CACHE_DIR="${{ inputs.cache-path }}"
+        # Convert to absolute path if relative
+        if [[ "$CACHE_DIR" != /* ]]; then
+          CACHE_DIR="$(cd "$(dirname "$CACHE_DIR")" 2>/dev/null && pwd)/$(basename "$CACHE_DIR")" || CACHE_DIR="${{ github.workspace }}/${CACHE_DIR#../}"
+        fi
         mkdir -p "$CACHE_DIR"
         echo "VCPKG_DEFAULT_BINARY_CACHE=$CACHE_DIR" >> $GITHUB_ENV
         echo "Created vcpkg cache directory: $CACHE_DIR"
