@@ -3,21 +3,9 @@ name: CI-Windows-Build-Test-v2
 # Thin caller for unified build-test.yml
 # Tests the new reusable workflow architecture
 
+# TESTING ONLY: Manual trigger until v2 is validated
+# Once validated, will replace CI-Windows-Build-Test.yml
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
   workflow_dispatch:
 
 concurrency:
