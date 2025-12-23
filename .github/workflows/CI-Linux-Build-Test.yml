@@ -292,5 +292,5 @@ jobs:
     uses: ./.github/workflows/CI-CUDA-Tests.yml
     with:
       os: linux
-      run_id: ${{ github.run_id }}
+      run_id: ${{ format('{0}', github.run_id) }}
     secrets: inherit
