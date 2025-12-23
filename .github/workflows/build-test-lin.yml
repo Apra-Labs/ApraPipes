@@ -154,14 +154,26 @@ jobs:
         # because vcpkg validates the directory exists at job startup)
         # IMPORTANT: Must use absolute path because CMake runs from build/ subdirectory
         CACHE_DIR="${{ inputs.cache-path }}"
+        echo "Input cache-path: $CACHE_DIR"
+
         # Convert to absolute path if relative
-        if [[ "$CACHE_DIR" != /* ]]; then
-          CACHE_DIR="$(cd "$(dirname "$CACHE_DIR")" 2>/dev/null && pwd)/$(basename "$CACHE_DIR")" || CACHE_DIR="${{ github.workspace }}/${CACHE_DIR#../}"
+        if [[ "$CACHE_DIR" == /* ]]; then
+          # Already absolute (e.g., /data/.cache/vcpkg for ARM64)
+          echo "Path is already absolute: $CACHE_DIR"
+        else
+          # Relative path - convert to absolute using github.workspace
+          # Remove leading ../ or ./ and prepend workspace
+          CLEAN_PATH="${CACHE_DIR#../}"  # Remove ../ prefix if present
+          CLEAN_PATH="${CLEAN_PATH#./}"   # Remove ./ prefix if present
+          CACHE_DIR="${{ github.workspace }}/${CLEAN_PATH}"
+          echo "Converted relative to absolute: $CACHE_DIR"
         fi
+
         mkdir -p "$CACHE_DIR"
         echo "VCPKG_DEFAULT_BINARY_CACHE=$CACHE_DIR" >> $GITHUB_ENV
         echo "Created vcpkg cache directory: $CACHE_DIR"
-        # Also create XDG cache dir for vcpkg registries (self-hosted)
+
+        # Also create XDG cache dir for vcpkg registries (ARM64 Jetson only)
         if [ -n "$XDG_CACHE_HOME" ]; then
           mkdir -p "$XDG_CACHE_HOME/vcpkg"
           echo "Created XDG cache directory: $XDG_CACHE_HOME/vcpkg"
