@@ -1,0 +1,36 @@
+name: CI-Linux-Build-Test-v2
+
+# Thin caller for unified build-test.yml
+# Tests the new reusable workflow architecture
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/build-test.yml
+    with:
+      os: linux
+      runner: ubuntu-22.04
+      cuda: 'ON'
+      cuda_version: '11.8.0'
+      build_type: RelWithDebInfo
+    secrets: inherit

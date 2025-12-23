@@ -1,0 +1,472 @@
+# Unified Build-Test Reusable Workflow
+# Used by: CI-Linux-Build-Test.yml, CI-Windows-Build-Test.yml
+# Future: CI-Linux-ARM64.yml, CI-MacOSX-NoCUDA.yml, CI-Linux-Docker.yml
+
+name: Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: 'Operating system (linux or windows)'
+        required: true
+        type: string
+      runner:
+        description: 'GitHub runner to use'
+        required: true
+        type: string
+      cuda:
+        description: 'Enable CUDA (ON or OFF)'
+        required: false
+        type: string
+        default: 'ON'
+      cuda_version:
+        description: 'CUDA toolkit version'
+        required: false
+        type: string
+        default: '11.8.0'
+      build_type:
+        description: 'CMake build type'
+        required: false
+        type: string
+        default: 'RelWithDebInfo'
+
+jobs:
+  build-test:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 360  # 6 hour max for cloud runners
+
+    env:
+      # Platform-adaptive paths
+      TEST_EXE: ${{ inputs.os == 'linux' && 'build/aprapipesut' || 'build/Release/aprapipesut.exe' }}
+      CMAKE_TC_FILE: ${{ inputs.os == 'linux' && '../vcpkg/scripts/buildsystems/vcpkg.cmake' || format('{0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) }}
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.os == 'linux' && '/mnt/runner-work/.cache/vcpkg' || 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
+      VCPKG_MAX_CONCURRENCY: 6
+
+      # Windows-specific vcpkg settings
+      VCPKG_DEFAULT_TRIPLET: ${{ inputs.os == 'windows' && 'x64-windows-cuda' || '' }}
+      VCPKG_OVERLAY_TRIPLETS: ${{ inputs.os == 'windows' && format('{0}/vcpkg/triplets/community', github.workspace) || '' }}
+
+    steps:
+    #=========================================================================
+    # DISK CLEANUP (Linux only - cloud runners have limited root partition)
+    #=========================================================================
+    - name: Check disk space before cleanup
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        Write-Host "=== Disk Space BEFORE Cleanup ==="
+        df -h
+
+    - name: Free up disk space
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        Write-Host "=== Freeing Disk Space ==="
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo docker image prune --all --force
+        Write-Host "=== Cleanup complete ==="
+
+    - name: Check disk space after cleanup
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        Write-Host "=== Disk Space AFTER Cleanup ==="
+        df -h
+
+    #=========================================================================
+    # BUILDER PREPARATION
+    #=========================================================================
+    - name: Prepare builder (Linux)
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get -y install `
+          ca-certificates curl zip unzip tar `
+          autoconf autoconf-archive automake autopoint `
+          build-essential flex git-core `
+          libass-dev libfreetype6-dev libgnutls28-dev `
+          libmp3lame-dev libsdl2-dev libtool `
+          libsoup-gnome2.4-dev libva-dev libvdpau-dev `
+          libvorbis-dev libxdamage-dev libxcb1-dev `
+          libxcb-shm0-dev libxcb-xfixes0-dev `
+          libncurses5-dev libncursesw5-dev `
+          ninja-build pkg-config texinfo wget yasm `
+          zlib1g-dev nasm gperf bison `
+          python3 python3-pip dos2unix `
+          libx11-dev libgles2-mesa-dev `
+          libxinerama-dev libxcursor-dev xorg-dev `
+          libglu1-mesa-dev python3-jinja2
+        pip3 install meson Jinja2
+
+        Write-Host "=== Verifying tools ==="
+        cmake --version
+        ninja --version
+        git --version
+
+    - name: Prepare builder (Windows)
+      if: inputs.os == 'windows'
+      shell: pwsh
+      run: |
+        choco install python --version=3.10.11 --force
+        refreshenv
+        pip3 install ninja meson
+        choco feature enable -n allowEmptyChecksums
+        choco install pkgconfiglite
+        choco install cmake --version=3.29.6 --force
+
+        Write-Host "=== Verifying tools ==="
+        python --version
+        cmake --version
+        ninja --version
+        git --version
+
+    #=========================================================================
+    # CUDA TOOLKIT INSTALLATION
+    #=========================================================================
+    - name: Install CUDA Toolkit
+      uses: Jimver/cuda-toolkit@v0.2.19
+      id: cuda-toolkit
+      with:
+        cuda: ${{ inputs.cuda_version }}
+
+    - name: Set CUDA environment variables
+      shell: pwsh
+      run: |
+        $cudaPath = "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}"
+        Write-Host "CUDA_PATH: $cudaPath"
+
+        # Add to GITHUB_ENV for subsequent steps
+        "CUDA_PATH=$cudaPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        "CUDAToolkit_ROOT=$cudaPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        # Add CUDA bin to PATH
+        if ($IsWindows -or $env:OS -eq "Windows_NT") {
+          $cudaBin = Join-Path $cudaPath "bin"
+          "$cudaBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        } else {
+          "/usr/local/cuda/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        }
+
+        # Verify
+        nvcc --version
+
+    - name: Set GCC-11 for CUDA compatibility (Linux)
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        # CUDA 11.8 requires GCC <= 11
+        if (Test-Path "/usr/bin/gcc-11") {
+          Write-Host "Setting GCC-11 for CUDA 11.8 compatibility"
+          "CC=/usr/bin/gcc-11" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CXX=/usr/bin/g++-11" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CUDAHOSTCXX=/usr/bin/g++-11" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        } else {
+          Write-Host "GCC-11 not found, using default compiler"
+        }
+
+    - name: Install CUDA VS Integration (Windows)
+      if: inputs.os == 'windows'
+      shell: pwsh
+      run: |
+        Write-Host "=== Installing CUDA Visual Studio Integration ==="
+
+        $cudaMSBuildSrc = Join-Path $env:CUDA_PATH "extras\visual_studio_integration\MSBuildExtensions"
+        $vsBase = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC"
+        $destinations = @(
+          "$vsBase\v170\BuildCustomizations",
+          "$vsBase\v142\BuildCustomizations"
+        )
+
+        if (!(Test-Path $cudaMSBuildSrc)) {
+          Write-Host "WARNING: CUDA MSBuildExtensions not found"
+          exit 0
+        }
+
+        foreach ($dest in $destinations) {
+          if (!(Test-Path $dest)) {
+            New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          }
+          Get-ChildItem -Path $cudaMSBuildSrc | ForEach-Object {
+            Copy-Item $_.FullName (Join-Path $dest $_.Name) -Force
+          }
+          Write-Host "Copied CUDA files to: $dest"
+        }
+
+    #=========================================================================
+    # cuDNN INSTALLATION
+    #=========================================================================
+    - name: Install cuDNN (Linux)
+      if: inputs.os == 'linux'
+      shell: pwsh
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get -y install libcudnn8-dev
+        Write-Host "cuDNN installed via apt"
+
+    - name: Install cuDNN (Windows)
+      if: inputs.os == 'windows'
+      shell: pwsh
+      run: |
+        pip install nvidia-cudnn-cu11==8.9.5.29
+
+        $pipShowOutput = pip show nvidia-cudnn-cu11
+        $location = ($pipShowOutput | Select-String -Pattern "^Location: (.*)").Matches.Groups[1].Value
+        $cudnnPath = Join-Path $location "nvidia\cudnn"
+        $cudaPath = $env:CUDA_PATH
+
+        # Copy DLLs, headers, libs
+        Get-ChildItem -Recurse -Filter "*.dll" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $cudaPath "bin\$($_.Name)") -Force
+        }
+        Get-ChildItem -Recurse -Filter "*.h" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $cudaPath "include\$($_.Name)") -Force
+        }
+        Get-ChildItem -Recurse -Filter "*.lib" $cudnnPath | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $cudaPath "lib\x64\$($_.Name)") -Force
+        }
+
+        # Set environment variables for CMake
+        "CUDNN_ROOT=$cudaPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Host "cuDNN installed via pip and copied to CUDA_PATH"
+
+    #=========================================================================
+    # CODE CHECKOUT
+    #=========================================================================
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+        lfs: true
+
+    - name: List submodules
+      shell: pwsh
+      run: |
+        git config --global --add safe.directory "*"
+        git submodule status | Out-File -FilePath submodule_ver.txt
+        Get-Content submodule_ver.txt
+
+    #=========================================================================
+    # VCPKG SETUP
+    #=========================================================================
+    - name: Create vcpkg cache directory
+      shell: pwsh
+      run: |
+        $cachePath = "${{ env.VCPKG_DEFAULT_BINARY_CACHE }}"
+        if ($cachePath -match "^/mnt") {
+          # Linux: need sudo to create on /mnt
+          sudo mkdir -p /mnt/runner-work
+          sudo chown -R runner:runner /mnt/runner-work
+        }
+        New-Item -ItemType Directory -Path $cachePath -Force | Out-Null
+        Write-Host "Created cache directory: $cachePath"
+
+    - name: Bootstrap vcpkg
+      shell: pwsh
+      run: |
+        if ("${{ inputs.os }}" -eq "linux") {
+          ./vcpkg/bootstrap-vcpkg.sh
+        } else {
+          ./vcpkg/bootstrap-vcpkg.bat
+          ./vcpkg/vcpkg.exe integrate install
+        }
+
+    - name: Cache vcpkg packages
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        restore-keys: ${{ runner.os }}-vcpkg-
+
+    #=========================================================================
+    # CMAKE CONFIGURE
+    #=========================================================================
+    - name: Create build folder
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Path build -Force | Out-Null
+
+    - name: Configure CMake
+      working-directory: build
+      shell: pwsh
+      run: |
+        $cudaPath = $env:CUDA_PATH
+
+        if ("${{ inputs.os }}" -eq "linux") {
+          cmake -B . -G Ninja `
+            -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TC_FILE }}" `
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} `
+            -DENABLE_WINDOWS=OFF `
+            -DENABLE_LINUX=ON `
+            -DENABLE_CUDA=${{ inputs.cuda }} `
+            ../base
+        } else {
+          # Windows: Use VS generator with v142 toolset for CUDA 11.8
+          cmake -B . -A x64 -T "v142,cuda=$cudaPath" `
+            -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TC_FILE }}" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-cuda `
+            -DVCPKG_OVERLAY_TRIPLETS="${{ github.workspace }}/vcpkg/triplets/community" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DENABLE_WINDOWS=ON `
+            -DENABLE_LINUX=OFF `
+            -DENABLE_CUDA=${{ inputs.cuda }} `
+            ../base
+        }
+
+    #=========================================================================
+    # BUILD
+    #=========================================================================
+    - name: Build
+      working-directory: build
+      shell: pwsh
+      run: |
+        $buildType = if ("${{ inputs.os }}" -eq "linux") { "${{ inputs.build_type }}" } else { "Release" }
+        cmake --build . --config $buildType -j 6
+
+    #=========================================================================
+    # TEST
+    #=========================================================================
+    - name: List test cases
+      shell: pwsh
+      run: |
+        $testExe = "${{ env.TEST_EXE }}"
+
+        # Check dependencies (platform-specific)
+        if ("${{ inputs.os }}" -eq "linux") {
+          ldd $testExe 2>&1 | Select-String "not found" | Write-Host
+        }
+
+        # List tests
+        & $testExe --list_content 2>&1 | Out-File -FilePath tests.txt
+      timeout-minutes: 2
+      continue-on-error: true
+
+    - name: Run tests
+      shell: pwsh
+      run: |
+        $testExe = "${{ env.TEST_EXE }}"
+        $xmlFile = "CI_test_result_${{ inputs.os }}.xml"
+
+        & $testExe --log_format=JUNIT --log_sink=$xmlFile -p -l all
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Test execution returned error (some tests may have failed or been skipped)"
+        }
+      timeout-minutes: 30
+
+    #=========================================================================
+    # ARTIFACTS
+    #=========================================================================
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_${{ inputs.os }}
+        path: |
+          CI_test_result_${{ inputs.os }}.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
+      continue-on-error: true
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: BuildLogs_${{ inputs.os }}
+        path: |
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
+          ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
+          tests.txt
+      continue-on-error: true
+
+    - name: Package SDK artifact
+      if: success()
+      shell: pwsh
+      run: |
+        $sdkDir = "${{ github.workspace }}/sdk"
+        $includeDir = "${{ github.workspace }}/base/include"
+
+        # Create SDK structure
+        New-Item -ItemType Directory -Path "$sdkDir/bin" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
+
+        if ("${{ inputs.os }}" -eq "linux") {
+          $buildDir = "${{ github.workspace }}/build"
+          Copy-Item "$buildDir/aprapipesut" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+          Copy-Item "$buildDir/*.so*" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+          Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
+        } else {
+          $buildDir = "${{ github.workspace }}/build/Release"
+          Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force
+          # Copy non-CUDA DLLs only (CUDA DLLs are delay-loaded)
+          Get-ChildItem "$buildDir/*.dll" | Where-Object {
+            $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
+          } | ForEach-Object {
+            Copy-Item $_.FullName "$sdkDir/bin/" -Force
+          }
+          Get-ChildItem "$buildDir/*.lib" | ForEach-Object {
+            Copy-Item $_.FullName "$sdkDir/lib/" -Force
+          }
+        }
+
+        # Copy headers
+        Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
+
+        Write-Host "=== SDK Contents ==="
+        Get-ChildItem "$sdkDir/bin" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  bin/$($_.Name)" }
+        Get-ChildItem "$sdkDir/lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  lib/$($_.Name)" }
+
+    - name: Upload SDK artifact
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: aprapipes-sdk-${{ inputs.os }}-x64
+        path: ${{ github.workspace }}/sdk/
+        retention-days: 7
+
+  #===========================================================================
+  # PUBLISH TEST RESULTS
+  #===========================================================================
+  publish-results:
+    name: Publish Test Results
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display downloaded files
+        run: ls -R artifacts/ || echo "No artifacts"
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.21.0
+        with:
+          files: artifacts/**/CI_test_result_*.xml
+          check_name: 'Build Tests (${{ inputs.os }})'
+
+  #===========================================================================
+  # CUDA TESTS ON GPU RUNNER
+  #===========================================================================
+  cuda-tests:
+    name: CUDA Tests
+    needs: build-test
+    if: inputs.cuda == 'ON'
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/CI-CUDA-Tests.yml
+    with:
+      os: ${{ inputs.os }}
+      run_id: ${{ format('{0}', github.run_id) }}
+    secrets: inherit
