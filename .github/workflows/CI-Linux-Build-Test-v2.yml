@@ -24,6 +24,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Permissions needed by nested jobs in build-test.yml
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+
 jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
