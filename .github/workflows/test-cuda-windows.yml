@@ -1,0 +1,65 @@
+name: Test-CUDA-Windows
+
+# Temporary workflow to test CUDA on GPU runner
+# Downloads SDK from a Build-Test run and executes tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of CI-Windows-Build-Test to download SDK from'
+        required: true
+        type: string
+
+jobs:
+  cuda-tests:
+    name: Run CUDA Tests
+    runs-on: [self-hosted, windows-cuda]
+    timeout-minutes: 45
+
+    steps:
+    - name: Cleanup workspace
+      run: Remove-Item -Recurse -Force * -ErrorAction SilentlyContinue
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        lfs: true
+
+    - name: Download SDK Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: aprapipes-sdk-windows-x64
+        path: sdk/
+        run-id: ${{ github.event.inputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: List SDK Contents
+      run: |
+        echo "=== Downloaded SDK Contents ==="
+        Get-ChildItem "sdk/bin" | ForEach-Object { echo "  $($_.Name)" }
+      shell: pwsh
+
+    - name: Verify CUDA Environment
+      run: |
+        echo "=== CUDA Environment Check ==="
+        nvcc --version
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+      shell: pwsh
+
+    - name: Run CUDA Tests
+      run: |
+        # Run from workspace root so tests can find ./data folder
+        sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_Windows-CUDA.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: 30
+      shell: pwsh
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_CUDA-Windows
+        path: CI_test_result_Windows-CUDA.xml

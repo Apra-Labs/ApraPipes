@@ -299,48 +299,10 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config Release -j 6
 
-    # Copy CUDA DLLs to build directory
-    # Note: DELAYLOAD for ApraPipes exe works, but OpenCV DLLs (built with CUDA)
-    # have hard dependencies on CUDA DLLs that can't be delay-loaded.
-    # For now, copy DLLs for CI. For end-users without CUDA, OpenCV would need
-    # to be built without CUDA or with its own delay-loading.
-    - name: Copy CUDA DLLs to build directory
-      run: |
-        $cudaBin = Join-Path $env:CUDA_PATH "bin"
-        $buildDir = "${{github.workspace}}/build/Release"
-
-        echo "Copying CUDA DLLs from $cudaBin to $buildDir"
-
-        # Core CUDA runtime
-        Copy-Item "$cudaBin/cudart64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # NPP libraries (image processing) - required by OpenCV CUDA
-        Copy-Item "$cudaBin/nppig64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppicc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppidei64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppial64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppc64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppif64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/nppim64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # cuBLAS - required by OpenCV DNN
-        Copy-Item "$cudaBin/cublas64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-        Copy-Item "$cudaBin/cublasLt64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # nvJPEG
-        Copy-Item "$cudaBin/nvjpeg64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # cuFFT - required by OpenCV
-        Copy-Item "$cudaBin/cufft64_*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # cuDNN (copied earlier to CUDA_PATH/bin)
-        Copy-Item "$cudaBin/cudnn*.dll" $buildDir -Force -ErrorAction SilentlyContinue
-
-        # List copied DLLs
-        echo "DLLs in build directory:"
-        Get-ChildItem $buildDir -Filter "*.dll" | ForEach-Object { echo "  $($_.Name)" }
-      shell: pwsh
-      continue-on-error: true
+    # NOTE: CUDA DLLs are NOT bundled in the SDK artifact.
+    # - DELAYLOAD allows the exe to start on systems without CUDA
+    # - On GPU systems (self-hosted runners), CUDA DLLs are installed system-wide
+    # - This keeps the SDK artifact small (~200 MB instead of ~1.4 GB)
 
     - name: Diagnose DLL dependencies
       run: |
@@ -428,24 +390,37 @@ jobs:
         New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
         New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
 
-        # Copy binaries (exe + DLLs)
+        # Copy binaries (exe only - DLLs from vcpkg are in PATH)
+        # Note: Don't copy CUDA DLLs - they're delay-loaded and available system-wide on GPU runners
         Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force
-        Copy-Item "$buildDir/*.dll" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+        # Copy only non-CUDA DLLs (vcpkg dependencies like opencv, ffmpeg, etc.)
+        Get-ChildItem "$buildDir/*.dll" | Where-Object {
+          $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
+        } | ForEach-Object {
+          Copy-Item $_.FullName "$sdkDir/bin/" -Force
+        }
 
-        # Copy libraries
-        Copy-Item "$buildDir/*.lib" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
+        # Copy libraries (exclude PDB files)
+        Get-ChildItem "$buildDir/*.lib" | Where-Object { $_.Name -notmatch "\.pdb$" } | ForEach-Object {
+          Copy-Item $_.FullName "$sdkDir/lib/" -Force
+        }
 
         # Copy headers
         Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
 
-        # List SDK contents
+        # Calculate and report SDK size
+        $binSize = (Get-ChildItem "$sdkDir/bin" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+        $libSize = (Get-ChildItem "$sdkDir/lib" -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1MB
+
         echo "=== SDK Contents ==="
-        echo "bin/:"
-        Get-ChildItem "$sdkDir/bin" | ForEach-Object { echo "  $($_.Name)" }
-        echo "lib/:"
+        echo "bin/ (${binSize:N1} MB):"
+        Get-ChildItem "$sdkDir/bin" | ForEach-Object { echo "  $($_.Name) ($([math]::Round($_.Length/1MB, 1)) MB)" }
+        echo "lib/ (${libSize:N1} MB):"
         Get-ChildItem "$sdkDir/lib" -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
         echo "include/:"
         Get-ChildItem "$sdkDir/include" -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+        echo ""
+        echo "Total SDK size: $([math]::Round($binSize + $libSize, 1)) MB"
       shell: pwsh
 
     - name: Upload SDK Artifact
