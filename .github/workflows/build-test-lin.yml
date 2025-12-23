@@ -87,9 +87,11 @@ jobs:
       VCPKG_MAX_CONCURRENCY: ${{ inputs.nProc }}  # Use nProc for vcpkg parallel builds during CMake configure
       # VCPKG_DEFAULT_BINARY_CACHE is set in the "Create vcpkg binary cache directory" step
       # to avoid vcpkg validation errors before the directory is created
-      # XDG_CACHE_HOME redirects ALL caches (including vcpkg registries) to /data on self-hosted runners
+      # XDG_CACHE_HOME redirects ALL caches (including vcpkg registries) to /data on ARM64 Jetson runners
       # This is critical for Jetson where root filesystem has limited space but /data has 100GB+
-      XDG_CACHE_HOME: ${{ inputs.is-selfhosted && '/data/.cache' || '' }}
+      # Only set XDG_CACHE_HOME if cache-path starts with /data (ARM64 Jetson runners)
+      # Do NOT set for x64 self-hosted runners (they don't have /data)
+      XDG_CACHE_HOME: ${{ startsWith(inputs.cache-path, '/data') && '/data/.cache' || '' }}
       # CUDA environment variables - needed for vcpkg opencv4 to detect CUDA
       # These must be at job level so they propagate to vcpkg subprocesses
       # Uses /usr/local/cuda symlink to work with both CUDA 11.8 (x64) and CUDA 11.4 (ARM64)
