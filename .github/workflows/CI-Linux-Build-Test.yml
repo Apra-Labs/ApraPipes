@@ -284,3 +284,13 @@ jobs:
         with:
           files: artifacts/**/CI_test_result_*.xml
           check_name: 'Linux Build Tests'
+
+  # Run CUDA tests on self-hosted GPU runner
+  cuda-tests:
+    name: CUDA Tests
+    needs: build-test
+    uses: ./.github/workflows/CI-CUDA-Tests.yml
+    with:
+      os: linux
+      run_id: ${{ github.run_id }}
+    secrets: inherit

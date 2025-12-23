@@ -457,3 +457,13 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2.21.0
         with:
           files: artifacts/**/CI_test_result_*.xml
+
+  # Run CUDA tests on self-hosted GPU runner
+  cuda-tests:
+    name: CUDA Tests
+    needs: build-test
+    uses: ./.github/workflows/CI-CUDA-Tests.yml
+    with:
+      os: windows
+      run_id: ${{ github.run_id }}
+    secrets: inherit
