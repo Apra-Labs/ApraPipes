@@ -61,8 +61,13 @@ jobs:
   cuda-tests:
     name: Run CUDA Tests (${{ needs.setup.outputs.os }})
     needs: setup
+    # Run when:
+    # - Called from Build-Test (setup.outputs.os is set from inputs)
+    # - Triggered by workflow_run when Build-Test completes successfully
+    # - Manually triggered via workflow_dispatch
+    # Note: github.event_name is NOT 'workflow_call' when called - it's the caller's event
     if: |
-      (github.event_name == 'workflow_call') ||
+      (needs.setup.outputs.os != '') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'workflow_dispatch')
 
