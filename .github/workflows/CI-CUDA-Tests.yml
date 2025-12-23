@@ -1,13 +1,27 @@
 name: CI-CUDA-Tests
 
 # Phase 2: Run tests on self-hosted GPU runners
-# Triggered by successful Build-Test workflows OR manual dispatch
-# Downloads SDK artifact and runs ALL tests (CUDA tests execute on GPU!)
+# Triggered by:
+#   - workflow_call: Called by CI-*-Build-Test for PR validation
+#   - workflow_run: Auto-triggered after Build-Test completes on main
+#   - workflow_dispatch: Manual trigger for testing
 
 on:
+  workflow_call:
+    inputs:
+      os:
+        description: 'Operating system (linux or windows)'
+        required: true
+        type: string
+      run_id:
+        description: 'Run ID of Build-Test workflow to download SDK from'
+        required: true
+        type: string
+
   workflow_run:
     workflows: ["CI-Windows-Build-Test", "CI-Linux-Build-Test"]
     types: [completed]
+
   workflow_dispatch:
     inputs:
       os:
@@ -23,75 +37,50 @@ on:
         type: string
 
 jobs:
-  # Linux CUDA Tests - triggered by CI-Linux-Build-Test or manual with os=linux
-  linux-cuda-tests:
-    name: Run CUDA Tests (Linux)
+  # Determine which OS to test based on trigger
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      os: ${{ steps.set-os.outputs.os }}
+      run_id: ${{ steps.set-os.outputs.run_id }}
+    steps:
+      - id: set-os
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            if [[ "${{ github.event.workflow_run.name }}" == *"Linux"* ]]; then
+              echo "os=linux" >> $GITHUB_OUTPUT
+            else
+              echo "os=windows" >> $GITHUB_OUTPUT
+            fi
+            echo "run_id=${{ github.event.workflow_run.id }}" >> $GITHUB_OUTPUT
+          else
+            echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+          fi
+
+  cuda-tests:
+    name: Run CUDA Tests (${{ needs.setup.outputs.os }})
+    needs: setup
     if: |
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.name, 'Linux')) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.os == 'linux')
-    runs-on: [self-hosted, linux-cuda]
+      (github.event_name == 'workflow_call') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
+
+    runs-on: ${{ needs.setup.outputs.os == 'linux' && fromJSON('["self-hosted", "linux-cuda"]') || fromJSON('["self-hosted", "windows-cuda"]') }}
     timeout-minutes: 45
 
+    env:
+      OS: ${{ needs.setup.outputs.os }}
+      SDK_RUN_ID: ${{ needs.setup.outputs.run_id }}
+
     steps:
-    - name: Cleanup workspace
+    - name: Cleanup workspace (Linux)
+      if: needs.setup.outputs.os == 'linux'
       run: rm -rf * || true
       continue-on-error: true
 
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-        lfs: true
-
-    - name: Download SDK Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: aprapipes-sdk-linux-x64
-        path: sdk/
-        run-id: ${{ github.event.workflow_run.id || github.event.inputs.run_id }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: List SDK Contents
-      run: |
-        echo "=== Downloaded SDK Contents ==="
-        ls -la sdk/bin/ || echo "bin empty"
-        ls -la sdk/lib/ || echo "lib empty"
-
-    - name: Verify CUDA Environment
-      run: |
-        echo "=== CUDA Environment Check ==="
-        nvcc --version
-        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
-
-    - name: Make test executable runnable
-      run: chmod +x sdk/bin/aprapipesut
-
-    - name: Run CUDA Tests
-      run: |
-        # Run from workspace root so tests find ./data folder
-        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_Linux-CUDA.xml -p -l all || echo 'test execution returned error'
-      timeout-minutes: 30
-
-    - name: Upload CUDA Test Results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: TestResults_Linux-CUDA
-        path: |
-          CI_test_result_Linux-CUDA.xml
-          ${{ github.workspace }}/data/SaveOrCompareFail/**
-
-  # Windows CUDA Tests - triggered by CI-Windows-Build-Test or manual with os=windows
-  windows-cuda-tests:
-    name: Run CUDA Tests (Windows)
-    if: |
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.name, 'Windows')) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.os == 'windows')
-    runs-on: [self-hosted, windows-cuda]
-    timeout-minutes: 45
-
-    steps:
-    - name: Cleanup workspace
+    - name: Cleanup workspace (Windows)
+      if: needs.setup.outputs.os == 'windows'
       run: Remove-Item -Recurse -Force * -ErrorAction SilentlyContinue
       shell: pwsh
       continue-on-error: true
@@ -105,32 +94,57 @@ jobs:
     - name: Download SDK Artifact
       uses: actions/download-artifact@v4
       with:
-        name: aprapipes-sdk-windows-x64
+        name: aprapipes-sdk-${{ needs.setup.outputs.os == 'linux' && 'linux-x64' || 'windows-x64' }}
         path: sdk/
-        run-id: ${{ github.event.workflow_run.id || github.event.inputs.run_id }}
+        run-id: ${{ needs.setup.outputs.run_id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: List SDK Contents
+    - name: List SDK Contents (Linux)
+      if: needs.setup.outputs.os == 'linux'
       run: |
         echo "=== Downloaded SDK Contents ==="
-        echo "bin/:"
-        Get-ChildItem "sdk/bin" | ForEach-Object { echo "  $($_.Name)" }
-        echo "lib/:"
-        Get-ChildItem "sdk/lib" -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+        ls -la sdk/bin/ || echo "bin empty"
+        ls -la sdk/lib/ || echo "lib empty"
+
+    - name: List SDK Contents (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: |
+        echo "=== Downloaded SDK Contents ==="
+        Get-ChildItem sdk/bin -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+        Get-ChildItem sdk/lib -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
       shell: pwsh
 
-    - name: Verify CUDA Environment
+    - name: Verify CUDA Environment (Linux)
+      if: needs.setup.outputs.os == 'linux'
       run: |
         echo "=== CUDA Environment Check ==="
         nvcc --version
-        echo "GPU Info:"
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+
+    - name: Verify CUDA Environment (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: |
+        echo "=== CUDA Environment Check ==="
+        nvcc --version
         nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
       shell: pwsh
 
-    - name: Run CUDA Tests
+    - name: Make test executable runnable
+      if: needs.setup.outputs.os == 'linux'
+      run: chmod +x sdk/bin/aprapipesut
+
+    - name: Run CUDA Tests (Linux)
+      if: needs.setup.outputs.os == 'linux'
       run: |
         # Run from workspace root so tests find ./data folder
-        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_Windows-CUDA.xml -p -l all || echo 'test execution returned error'
+        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_CUDA.xml -p -l all || echo 'test execution returned error'
+      timeout-minutes: 30
+
+    - name: Run CUDA Tests (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: |
+        # Run from workspace root so tests find ./data folder
+        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_CUDA.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 30
       shell: pwsh
 
@@ -138,17 +152,16 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: TestResults_Windows-CUDA
+        name: TestResults_${{ needs.setup.outputs.os }}-CUDA
         path: |
-          CI_test_result_Windows-CUDA.xml
+          CI_test_result_CUDA.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
-  # Publish results from whichever job ran
   publish-cuda-results:
     name: Publish CUDA Test Results
-    needs: [linux-cuda-tests, windows-cuda-tests]
+    needs: [cuda-tests]
     runs-on: ubuntu-latest
-    if: always() && (needs.linux-cuda-tests.result != 'skipped' || needs.windows-cuda-tests.result != 'skipped')
+    if: always() && needs.cuda-tests.result != 'skipped'
     permissions:
       checks: write
       pull-requests: write
