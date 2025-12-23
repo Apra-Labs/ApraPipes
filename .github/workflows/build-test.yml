@@ -204,6 +204,17 @@ jobs:
       if: inputs.os == 'linux'
       shell: pwsh
       run: |
+        # Add NVIDIA CUDA repo for cuDNN packages
+        # Jimver/cuda-toolkit installs CUDA directly, doesn't configure apt repos
+        $distro = "ubuntu2204"
+        $arch = "x86_64"
+
+        Write-Host "=== Adding NVIDIA CUDA repository ==="
+        sudo apt-key del 7fa2af80 2>/dev/null
+        wget -q https://developer.download.nvidia.com/compute/cuda/repos/$distro/$arch/cuda-keyring_1.1-1_all.deb -O /tmp/cuda-keyring.deb
+        sudo dpkg -i /tmp/cuda-keyring.deb
+
+        Write-Host "=== Installing cuDNN ==="
         sudo apt-get update -qq
         sudo apt-get -y install libcudnn8-dev
         Write-Host "cuDNN installed via apt"
