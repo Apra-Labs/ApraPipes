@@ -2,31 +2,41 @@
 
 ## Mission Statement
 
-### Phase 1: Unified Builds (COMPLETED)
-Create unified builds that compile with CUDA+cuDNN support but detect GPU availability at runtime, eliminating the need for separate CUDA and NoCUDA build variants.
+### Goal: Unified CI Architecture
 
-### Phase 2: Split Build/Test Architecture (IN PROGRESS)
-Create a two-workflow architecture per platform:
-1. **CI-\<OS\>-Build-Test** - Builds on cloud, runs tests (CUDA tests skip silently), publishes SDK artifact
-2. **CI-\<OS\>-CUDA-Tests** - Triggered by successful Build-Test, runs on self-hosted GPU, publishes CUDA test results
+Consolidate CI workflows into a single unified reusable workflow (`build-test.yml`) that:
+1. Supports all platforms (Linux, Windows, macOS, Docker, Jetson)
+2. Builds with CUDA support but runs gracefully on non-GPU systems
+3. Uses release-only triplets for ~50% faster builds
+4. Shares vcpkg cache across related builds (e.g., Linux cloud -> Docker)
 
-**Key Design Principles:**
-- Build-Test workflow is **CUDA-agnostic** - no knowledge of GPU availability
-- SDK artifact contains: include/, lib/, bin/, doc/
-- GPU testing is decoupled - offline GPU runners don't block builds
-- Self-hosted runners only run tests (no builds)
+### Completed Work
 
-### Progress
+| Component | Status | Details |
+|-----------|--------|---------|
+| Phase 1: Unified Builds | DONE | Runtime CUDA detection via Driver API |
+| Release-only Triplets | DONE | PR #461 merged - `x64-linux-release`, etc. |
+| Unified Reusable Workflow | DONE | `build-test.yml` handles all platforms |
+| Cache Key Standardization | DONE | `<os>-vcpkg-<hash>` pattern everywhere |
+| Docker Chaining | DONE | Docker build runs after cloud tests pass |
 
-| Platform | Build-Test | CUDA-Tests | Status |
-|----------|------------|------------|--------|
-| Windows x64 | CI-Windows-Build-Test | CI-Windows-CUDA-Tests | TODO |
-| Linux x64 | CI-Linux-Build-Test | CI-Linux-CUDA-Tests | TODO |
-| Linux ARM64 (Jetson) | CI-ARM64-Build-Test | (native GPU) | TODO |
-| MacOSX | CI-MacOSX-Build-Test | N/A | TODO |
+### Platform Coverage
 
-### Key Insight
-Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on Windows) allows binaries compiled with CUDA to run on systems without GPU/driver. Tests skip gracefully when GPU unavailable.
+| Platform | Workflow | Tests | Status |
+|----------|----------|-------|--------|
+| Linux x64 (CUDA) | CI-Linux-Build-Test-v2 | Cloud + Self-hosted GPU | Testing |
+| Linux x64 (Docker) | Chained from Linux | Container tests | Testing |
+| Windows x64 | CI-Windows-Build-Test-v2 | Cloud + Self-hosted GPU | Testing |
+| Linux ARM64 (Jetson) | CI-Linux-ARM64 | Native GPU | Working |
+| macOS | CI-MacOSX-NoCUDA | Cloud only | Working |
+
+### Key Design Decisions
+
+1. **Single reusable workflow** - `build-test.yml` replaces per-platform duplicates
+2. **Thin caller workflows** - `CI-<platform>-Build-Test-v2.yml` just pass parameters
+3. **Chained Docker builds** - Docker only runs after cloud tests pass (saves resources)
+4. **Shared caches** - Docker reuses cloud build's vcpkg cache via matching keys
+5. **Release-only builds** - No debug symbols = faster builds + smaller artifacts
 
 ---
 
@@ -63,51 +73,54 @@ Runtime CUDA detection via Driver API (`libcuda.so.1` on Linux, `nvcuda.dll` on 
 - `.claude/LEARNINGS.md` — Institutional memory, past mistakes & fixes
 
 ### Documentation
-- `.claude/docs/phase2-split-build-test.md` — Phase 2 detailed design
-- `.claude/docs/` — Other implementation docs, experiment results
+- `.claude/docs/` — Implementation docs, experiment results
 - `.claude/skills/aprapipes-devops/` — Troubleshooting guides by platform
 
-### CI Workflows (Phase 2 Target)
-- `.github/workflows/CI-<OS>-Build-Test.yml` — Build + test on cloud
-- `.github/workflows/CI-<OS>-CUDA-Tests.yml` — GPU tests on self-hosted
-- `.github/workflows/build-test-<os>.yml` — Reusable build workflows
-- `.github/workflows/publish-test.yml` — Reusable test publishing
+### CI Workflows (v2 Architecture)
+- `.github/workflows/build-test.yml` — Unified reusable workflow for all platforms
+- `.github/workflows/CI-<platform>-Build-Test-v2.yml` — Thin caller workflows
+- `.github/workflows/publish-test.yml` — Reusable test result publishing
+- `.github/workflows/build-test-lin-container.yml` — Docker container build
+- `.github/workflows/build-test-macosx.yml` — macOS-specific build
 
 ### Key Config
-- `vcpkg/triplets/community/x64-windows-cuda.cmake` — Custom triplet for Windows CUDA (v142 toolset)
+- `vcpkg/triplets/community/x64-*-release.cmake` — Release-only triplets
+- `vcpkg/triplets/community/x64-windows-cuda.cmake` — Windows CUDA (v142 toolset)
 - `base/vcpkg.json` — Dependencies with CUDA features
-- `vcpkg/ports/opencv4/vcpkg.json` — OpenCV with pthreads for CUDA
+- `thirdparty/custom-overlay/` — Custom vcpkg ports (libpng, sfml, baresip/re)
 
 ---
 
-## Windows Build Issues (All Resolved)
+## Technical Details
 
-1. **pthreads missing** — Added to opencv4 cuda feature dependency
-2. **CUDA compiler not found** — Copy MSBuildExtensions to VS BuildCustomizations
-3. **VS version mismatch** — CUDA 11.8 requires v142 toolset, not v143
-4. **DLL_NOT_FOUND on non-GPU systems** — Use DELAYLOAD for all CUDA DLLs (toolkit + driver)
+### Runtime CUDA Detection
+Binaries compiled with CUDA can run on systems without GPU by using Driver API:
 
-### Windows DELAYLOAD Solution
-All CUDA DLLs must be delay-loaded to allow the exe to start on systems without NVIDIA drivers:
-- **Toolkit DLLs**: nvjpeg64_11, nppig64_11, nppicc64_11, nppidei64_11, nppial64_11, nppc64_11, cublas64_11, cublasLt64_11, cudart64_110
-- **Driver DLLs**: nvcuvid, nvEncodeAPI64
-
----
-
-## Runtime Detection Approach
-
-### Linux
+**Linux:**
 ```cpp
 void* handle = dlopen("libcuda.so.1", RTLD_LAZY);
 auto cuInit = (cuInit_t)dlsym(handle, "cuInit");
-// Call cuInit, cuDeviceGetCount via function pointers
 ```
 
-### Windows
+**Windows:**
 ```cpp
 HMODULE handle = LoadLibraryA("nvcuda.dll");
 auto cuInit = (cuInit_t)GetProcAddress(handle, "cuInit");
-// Same Driver API, different OS primitives
 ```
 
-Tests detect GPU availability and skip CUDA tests gracefully when unavailable.
+### Windows DELAYLOAD
+All CUDA DLLs must be delay-loaded for exe to start on non-GPU systems:
+- **Toolkit**: nvjpeg64_11, nppig64_11, nppicc64_11, nppidei64_11, nppial64_11, nppc64_11, cublas64_11, cublasLt64_11, cudart64_110
+- **Driver**: nvcuvid, nvEncodeAPI64
+
+### Cache Key Pattern
+All workflows use consistent hash-based cache keys for automatic invalidation:
+```yaml
+key: ${{ os }}-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+restore-keys: ${{ os }}-vcpkg-
+```
+
+### JetPack 5.x Compatibility (ARM64)
+- Custom `nvbuf_utils.h` compatibility layer for API changes
+- Supports both `nvbuf_utils` and `nvbufsurface` library names
+- Handles `NVBUFFER_TRANSFORM_*` flag differences

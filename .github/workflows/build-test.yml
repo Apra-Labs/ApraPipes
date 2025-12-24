@@ -498,3 +498,19 @@ jobs:
       is-selfhosted: false
       cuda: ${{ inputs.cuda }}
     secrets: inherit
+
+  #===========================================================================
+  # PUBLISH DOCKER TEST RESULTS
+  # Runs if docker-container-build ran (success or failure), skips if skipped
+  #===========================================================================
+  publish-docker-results:
+    name: Publish Docker Test Results
+    needs: docker-container-build
+    if: always() && needs.docker-container-build.result != 'skipped'
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: Linux-Docker
+    secrets: inherit
