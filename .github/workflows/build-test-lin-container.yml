@@ -73,6 +73,11 @@ on:
         description: 'force cache update after CMake configure by deleting old cache and saving new one (use when cache is incomplete/stale)'
         default: false
         required: false
+      vcpkg-triplet:
+        type: string
+        description: 'vcpkg triplet for release-only builds (e.g., x64-linux-release)'
+        default: 'x64-linux-release'
+        required: false
 jobs:
   build:
     env:
@@ -87,7 +92,7 @@ jobs:
     defaults:
       run:
         shell: bash
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare builder
       run: |
@@ -191,7 +196,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      run: '${{ inputs.cmake-conf-cmd }} -DVCPKG_TARGET_TRIPLET=${{ inputs.vcpkg-triplet }} -DVCPKG_HOST_TRIPLET=${{ inputs.vcpkg-triplet }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
       continue-on-error: ${{inputs.is-prep-phase}} # in prep phase we expect an error here due to missing OpenCV
 
     - name: Force cache update - save updated cache with newly-built packages

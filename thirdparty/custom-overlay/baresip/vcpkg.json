@@ -6,7 +6,11 @@
   "dependencies": [
       {
         "name": "re",
-        "platform" : "!windows"
+        "platform" : "linux"
+      },
+      {
+        "name": "vcpkg-cmake",
+        "host": true
       }
   ]
 }

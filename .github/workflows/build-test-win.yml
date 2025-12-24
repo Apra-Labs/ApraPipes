@@ -78,7 +78,7 @@ jobs:
     env:
       TEST_EXE: build/${{inputs.buildConf}}/aprapipesut
       CMAKE_TC_FILE: '${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake'
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ fromJson(inputs.runner) }}
     steps:
     - name: Prepare builder
       run: |
@@ -188,7 +188,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
+      run: '${{ inputs.cmake-conf-cmd }} -DVCPKG_TARGET_TRIPLET=x64-windows-release -DVCPKG_HOST_TRIPLET=x64-windows-release -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}}'
 
     - name: Force cache update - save updated cache with newly-built packages
       if: ${{ always() && inputs.force-cache-update }}

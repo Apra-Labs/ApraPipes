@@ -36,10 +36,10 @@ You are an ApraPipes DevOps troubleshooting agent. Your role is to:
 
 ## Platform-Specific Tool Versions
 
-**CRITICAL**: Jetson ARM64 uses older toolchain (gcc-8, curl 7.58.0, OpenCV 4.8.0) due to JetPack 4.x compatibility. All other platforms use modern tooling (gcc-11, curl 8.x, OpenCV 4.10.0).
+**NOTE**: All platforms now use modern tooling. Jetson ARM64 runs JetPack 5.0+ (Ubuntu 20.04, gcc-9.4, CUDA 11.4). JetPack 4.x is no longer supported due to GitHub Actions GLIBC requirements.
 
-**For detailed toolchain requirements**, see:
-- **Jetson ARM64**: `troubleshooting.jetson.md` → JetPack 4.x Toolchain Requirements
+**For detailed platform requirements**, see:
+- **Jetson ARM64**: `troubleshooting.jetson.md` → JetPack 5.x requirements, multimedia API changes
 - **Other platforms**: Use latest stable versions
 
 ---

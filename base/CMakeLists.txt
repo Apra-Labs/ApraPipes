@@ -15,25 +15,26 @@ IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_CUDA_ENABLED)
 ENDIF(ENABLE_CUDA)
 
+# NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)
+# Setting it here happens TOO LATE - after vcpkg toolchain has already initialized
+# See CI workflow files (.github/workflows/) for triplet configuration
+
 IF(ENABLE_LINUX)
 	add_compile_definitions(LINUX)
 ENDIF(ENABLE_LINUX)
 
 IF(ENABLE_WINDOWS)
 	add_compile_definitions(WINDOWS)
-	set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "x64-windows")
 	set(VCPKG_PLATFORM_TOOLSET "v143" CACHE STRING "v143" FORCE)
 ENDIF(ENABLE_WINDOWS)
 
 IF(ENABLE_MACOS)
 	add_compile_definitions(MACOS)
-	# macOS uses x64-osx triplet by default
-	set(VCPKG_TARGET_TRIPLET "x64-osx" CACHE STRING "x64-osx")
 ENDIF(ENABLE_MACOS)
 
 IF(ENABLE_ARM64)
 	add_compile_definitions(ARM64)
-	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)	
+	# set(VCPKG_OVERLAY_PORTS ../vcpkg/ports/cudnn)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
@@ -59,7 +60,7 @@ find_package(LibLZMA REQUIRED)
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
-find_package(SFML COMPONENTS system window audio graphics CONFIG REQUIRED)
+find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 
 
@@ -81,7 +82,10 @@ IF(ENABLE_MACOS)
 ENDIF()
 
 IF(ENABLE_ARM64)
-	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
+	# Prepend vcpkg's pkgconfig path so vcpkg-built libraries (and their dependencies) are found first
+	# This ensures consistent library versions when vcpkg builds newer deps than system provides
+	set(VCPKG_PKGCONFIG_PATH "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/pkgconfig")
+	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX)
@@ -109,11 +113,18 @@ IF(ENABLE_CUDA)
 		find_library(EGLLIB EGL REQUIRED)
 		find_library(GLESv2LIB GLESv2 REQUIRED)
 		find_library(X11LIB X11 REQUIRED)
-		find_library(NVBUFUTILSLIB nvbuf_utils REQUIRED)
-		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer REQUIRED)
+		# JetPack 5.0+ uses nvbufsurface instead of nvbuf_utils (JetPack 4.x)
+		find_library(NVBUFUTILSLIB NAMES nvbufsurface nvbuf_utils REQUIRED)
+		# JetPack 5.0+ requires nvbufsurftransform for buffer transforms
+		find_library(NVBUFSURFTRANSFORMLIB nvbufsurftransform)
+		# nveglstream_camconsumer is only available in JetPack 4.x, not in JetPack 5.x
+		find_library(EGLSTREAM_CAMCONSUMER_LIB nveglstream_camconsumer)
+		if(NOT EGLSTREAM_CAMCONSUMER_LIB)
+			message(STATUS "nveglstream_camconsumer not found (JetPack 5.x) - EGL rendering will be limited")
+		endif()
 		find_library(NVARGUS_SOCKETCLINET_LIB nvargus_socketclient REQUIRED)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		find_package(Curses REQUIRED)
 
 		set(VCPKG_GTK_INCLUDE_DIRS
@@ -130,16 +141,23 @@ IF(ENABLE_CUDA)
 
 
 		SET(JETSON_LIBS
-			libcudart_static.a	
-			libcuda.so.1.1	
+			libcudart_static.a
+			libcuda.so.1.1
 			${V4L2LIB}
 			${NVBUFUTILSLIB}
 			${EGLLIB}
 			${GLESv2LIB}
-			${X11LIB}	
-			${EGLSTREAM_CAMCONSUMER_LIB}
+			${X11LIB}
 			${NVARGUS_SOCKETCLINET_LIB}
 		)
+		# Add nveglstream_camconsumer only if found (JetPack 4.x only)
+		if(EGLSTREAM_CAMCONSUMER_LIB)
+			list(APPEND JETSON_LIBS ${EGLSTREAM_CAMCONSUMER_LIB})
+		endif()
+		# Add nvbufsurftransform if found (JetPack 5.x)
+		if(NVBUFSURFTRANSFORMLIB)
+			list(APPEND JETSON_LIBS ${NVBUFSURFTRANSFORMLIB})
+		endif()
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 		include_directories(AFTER SYSTEM  /usr/local/cuda/samples/common/inc/)
 		include_directories(AFTER SYSTEM  /usr/include/)
@@ -162,7 +180,7 @@ IF(ENABLE_CUDA)
 			NO_DEFAULT_PATH
 		)
 		find_library(LIBRE_LIB NAMES libre.so libre.a REQUIRED)
-		find_library(BARESIP_LIB NAMES libbaresip.so REQUIRED)
+		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
 			libcuda.so		
@@ -723,7 +741,7 @@ target_link_libraries(aprapipesut
   ZLIB::ZLIB
   LibLZMA::LibLZMA
   bigint::bigint
-  sfml-audio
+  SFML::Audio
   whisper::whisper
   )
 

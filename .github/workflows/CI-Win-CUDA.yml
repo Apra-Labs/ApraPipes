@@ -33,7 +33,7 @@ jobs:
   win-cuda-build-test:
     uses: ./.github/workflows/build-test-win.yml
     with:
-      runner: windows-cuda
+      runner: '["windows-cuda"]'
       flav: 'Windows-cuda'
       cuda: 'ON'
       is-selfhosted: true

@@ -147,8 +147,8 @@ Once fix is confirmed:
    - Fast iteration: aim for 1-3 attempts per fix
 
 3. **Platform-Specific Expertise**
-   - Jetson ARM64 (JetPack 4.x): gcc-8, curl 7.58.0 + HTTP/1.1, OpenCV 4.8.0 (legacy compatibility)
-   - All Other Platforms: gcc-11, curl 8.x, HTTP/2, OpenCV 4.10.0
+   - Jetson ARM64 (JetPack 5.x): gcc-9.4, CUDA 11.4, Ubuntu 20.04, multimedia API changes from JetPack 4.x
+   - All Other Platforms: gcc-11+, CUDA 11.8+, latest tooling
    - Windows CUDA: Self-hosted runner management, cache strategies
    - Linux containers: Docker build optimization
    - WSL: Hybrid Windows/Linux build coordination

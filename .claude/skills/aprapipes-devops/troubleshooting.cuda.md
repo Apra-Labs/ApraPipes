@@ -5,7 +5,7 @@ Platform-agnostic troubleshooting for all CUDA builds on self-hosted runners.
 **Scope**: ALL CUDA builds (Windows CUDA, Linux CUDA, Jetson) running on self-hosted runners.
 
 **Platform-Specific Notes**:
-- **Jetson ARM64 builds**: Also see `troubleshooting.jetson.md` for JetPack 4.x toolchain constraints (gcc-8, curl 7.58.0, OpenCV 4.8.0)
+- **Jetson ARM64 builds**: Also see `troubleshooting.jetson.md` for JetPack 5.x requirements (gcc-9.4, CUDA 11.4, multimedia API changes)
 
 **Critical**: Self-hosted runners behave completely differently from GitHub-hosted runners.
 

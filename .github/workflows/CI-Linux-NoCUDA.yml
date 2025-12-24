@@ -33,7 +33,7 @@ jobs:
   linux-nocuda-build-test:
     uses: ./.github/workflows/build-test-lin.yml
     with:
-      runner: 'ubuntu-22.04'
+      runner: '["ubuntu-22.04"]'
       flav: Linux
       cuda: 'OFF'
       is-selfhosted: false
