@@ -29,7 +29,7 @@ permissions:
   contents: read
 
 jobs:
-  build-test:
+  ci:
     uses: ./.github/workflows/build-test.yml
     with:
       os: linux
@@ -38,4 +38,5 @@ jobs:
       cuda_version: '11.8.0'
       build_type: RelWithDebInfo
       flav: Linux
+      check_prefix: CI-Lin
     secrets: inherit

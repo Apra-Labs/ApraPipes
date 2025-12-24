@@ -1,8 +1,9 @@
 # Unified Build-Test Reusable Workflow
-# Used by: CI-Linux-Build-Test.yml, CI-Windows-Build-Test.yml
-# Future: CI-Linux-ARM64.yml, CI-MacOSX-NoCUDA.yml, CI-Linux-Docker.yml
+# Used by: CI-Linux.yml, CI-Windows.yml
+# Job naming: caller uses "ci" job name, this workflow uses generic names
+# Result: ci / build, ci / report, ci / cuda / gpu-test, etc.
 
-name: Build and Test
+name: ci
 
 on:
   workflow_call:
@@ -34,9 +35,14 @@ on:
         description: 'Badge flavor name (Linux, Windows, etc.) - used for artifact and badge naming'
         required: true
         type: string
+      check_prefix:
+        description: 'Prefix for check run names (e.g., CI-Lin, CI-Win)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
-  build-test:
+  build:
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 360  # 6 hour max for cloud runners
 
@@ -451,9 +457,9 @@ jobs:
   #===========================================================================
   # PUBLISH TEST RESULTS (DRY: uses publish-test.yml)
   #===========================================================================
-  publish-results:
-    name: Publish Test Results
-    needs: build-test
+  report:
+    name: report
+    needs: build
     if: always()
     permissions:
       checks: write
@@ -461,14 +467,15 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: ${{ inputs.flav }}
+      check_prefix: ${{ inputs.check_prefix }}
     secrets: inherit
 
   #===========================================================================
   # CUDA TESTS ON GPU RUNNER
   #===========================================================================
-  cuda-tests:
-    name: CUDA Tests
-    needs: build-test
+  cuda:
+    name: cuda
+    needs: build
     if: inputs.cuda == 'ON'
     permissions:
       checks: write
@@ -478,38 +485,43 @@ jobs:
       os: ${{ inputs.os }}
       run_id: ${{ format('{0}', github.run_id) }}
       flav: ${{ inputs.flav }}-CUDA
+      check_prefix: ${{ inputs.check_prefix }}
     secrets: inherit
 
   #===========================================================================
   # DOCKER CONTAINER BUILD (Linux only)
-  # Runs in parallel with cuda-tests after cloud build passes
+  # Runs in parallel with cuda after cloud build passes
   # Reuses vcpkg cache from cloud build via shared cache key (Linux-vcpkg-<hash>)
   #===========================================================================
-  docker-container-build:
-    name: Docker Container Build
-    needs: build-test
+  docker:
+    name: docker
+    needs: build
     if: inputs.os == 'linux' && inputs.cuda == 'ON'
     uses: ./.github/workflows/build-test-lin-container.yml
     with:
-      runner: ubuntu-22.04
+      runner: '["ubuntu-22.04"]'
       flav: Linux-Docker
       is-selfhosted: false
       cuda: ${{ inputs.cuda }}
       vcpkg-triplet: x64-linux-release
+      # Container runs as root, no sudo needed. Match old CI-Linux-CUDA-Docker.yml.disabled config
+      prep-cmd: 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl zip unzip tar autoconf automake autoconf-archive autopoint build-essential gcc g++ make flex git-core git-lfs libass-dev libfreetype6-dev libgnutls28-dev libmp3lame-dev libsdl2-dev libtool libsoup-gnome2.4-dev libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev libncurses5-dev libncursesw5-dev ninja-build pkg-config texinfo wget yasm zlib1g-dev nasm gperf bison dos2unix libx11-dev libgles2-mesa-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev python3-jinja2 libssl-dev && pip3 install meson'
+      nProc: 3
     secrets: inherit
 
   #===========================================================================
   # PUBLISH DOCKER TEST RESULTS
-  # Runs if docker-container-build ran (success or failure), skips if skipped
+  # Runs if docker ran (success or failure), skips if skipped
   #===========================================================================
-  publish-docker-results:
-    name: Publish Docker Test Results
-    needs: docker-container-build
-    if: always() && needs.docker-container-build.result != 'skipped'
+  docker-report:
+    name: docker-report
+    needs: docker
+    if: always() && needs.docker.result != 'skipped'
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux-Docker
+      check_prefix: ${{ inputs.check_prefix }}
     secrets: inherit

@@ -31,7 +31,7 @@ permissions:
   contents: read  # Required for checkout
 
 jobs:
-  macosx-nocuda-build-test:
+  mac-build:
     uses: ./.github/workflows/build-test-macosx.yml
     with:
       runner: '["macos-15-intel"]'
@@ -41,8 +41,8 @@ jobs:
       is-prep-phase: false
       nProc: 3
       force-cache-update: ${{ inputs.force-cache-update == true }}
-  macosx-nocuda-publish:
-    needs: macosx-nocuda-build-test
+  mac-report:
+    needs: mac-build
     if: ${{ always() }}
     permissions:
       checks: write
@@ -50,5 +50,6 @@ jobs:
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: MacOSX
+      check_prefix: CI-Mac
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

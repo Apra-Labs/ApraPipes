@@ -1,8 +1,8 @@
-name: CI-CUDA-Tests
+name: cuda
 
 # Phase 2: Run tests on self-hosted GPU runners
 # Triggered by:
-#   - workflow_call: Called by CI-*-Build-Test for PR validation
+#   - workflow_call: Called by build-test.yml for PR validation
 #   - workflow_run: Auto-triggered after Build-Test completes on main
 #   - workflow_dispatch: Manual trigger for testing
 
@@ -21,6 +21,11 @@ on:
         description: 'Badge flavor name (e.g., Linux-CUDA, Windows-CUDA)'
         required: true
         type: string
+      check_prefix:
+        description: 'Prefix for check run name (e.g., CI-Lin, CI-Win)'
+        required: false
+        type: string
+        default: ''
 
   workflow_run:
     workflows: ["CI-Windows-Build-Test", "CI-Linux-Build-Test"]
@@ -48,6 +53,7 @@ jobs:
       os: ${{ steps.set-os.outputs.os }}
       run_id: ${{ steps.set-os.outputs.run_id }}
       flav: ${{ steps.set-os.outputs.flav }}
+      check_prefix: ${{ steps.set-os.outputs.check_prefix }}
     steps:
       - id: set-os
         run: |
@@ -56,9 +62,11 @@ jobs:
             if [[ "${{ github.event.workflow_run.name }}" == *"Linux"* ]]; then
               echo "os=linux" >> $GITHUB_OUTPUT
               echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Lin" >> $GITHUB_OUTPUT
             else
               echo "os=windows" >> $GITHUB_OUTPUT
               echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Win" >> $GITHUB_OUTPUT
             fi
             echo "run_id=${{ github.event.workflow_run.id }}" >> $GITHUB_OUTPUT
           elif [[ -n "${{ inputs.flav }}" ]]; then
@@ -66,19 +74,22 @@ jobs:
             echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
             echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
             echo "flav=${{ inputs.flav }}" >> $GITHUB_OUTPUT
+            echo "check_prefix=${{ inputs.check_prefix }}" >> $GITHUB_OUTPUT
           else
             # workflow_dispatch - compute flav from os
             echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
             echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
             if [[ "${{ inputs.os }}" == "linux" ]]; then
               echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Lin" >> $GITHUB_OUTPUT
             else
               echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Win" >> $GITHUB_OUTPUT
             fi
           fi
 
-  cuda-tests:
-    name: Run CUDA Tests (${{ needs.setup.outputs.os }})
+  gpu-test:
+    name: gpu-test
     needs: setup
     # Run when:
     # - Called from Build-Test (setup.outputs.os is set from inputs)
@@ -185,14 +196,15 @@ jobs:
   #===========================================================================
   # PUBLISH CUDA TEST RESULTS (DRY: uses publish-test.yml)
   #===========================================================================
-  publish-cuda-results:
-    name: Publish CUDA Test Results
-    needs: [setup, cuda-tests]
-    if: always() && needs.cuda-tests.result != 'skipped'
+  report:
+    name: report
+    needs: [setup, gpu-test]
+    if: always() && needs.gpu-test.result != 'skipped'
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: ${{ needs.setup.outputs.flav }}
+      check_prefix: ${{ needs.setup.outputs.check_prefix != '' && format('{0}-CUDA', needs.setup.outputs.check_prefix) || '' }}
     secrets: inherit
