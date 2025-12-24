@@ -24,4 +24,5 @@ jobs:
       cuda: 'ON'
       cuda_version: '11.8.0'
       build_type: RelWithDebInfo
+      flav: Linux
     secrets: inherit

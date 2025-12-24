@@ -30,6 +30,10 @@ on:
         required: false
         type: string
         default: 'RelWithDebInfo'
+      flav:
+        description: 'Badge flavor name (Linux, Windows, etc.) - used for artifact and badge naming'
+        required: true
+        type: string
 
 jobs:
   build-test:
@@ -309,9 +313,14 @@ jobs:
         $cudaPath = $env:CUDA_PATH
 
         if ("${{ inputs.os }}" -eq "linux") {
+          # Linux: Use release-only triplet (avoids building Debug vcpkg packages)
+          # CUDA_ARCH_BIN limits architectures to reduce OpenCV CUDA compile time
           cmake -B . -G Ninja `
             -DCMAKE_TOOLCHAIN_FILE="${{ env.CMAKE_TC_FILE }}" `
+            -DVCPKG_TARGET_TRIPLET=x64-linux-release `
+            -DVCPKG_HOST_TRIPLET=x64-linux-release `
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} `
+            -DCUDA_ARCH_BIN="7.5;8.6" `
             -DENABLE_WINDOWS=OFF `
             -DENABLE_LINUX=ON `
             -DENABLE_CUDA=${{ inputs.cuda }} `
@@ -361,7 +370,7 @@ jobs:
       shell: pwsh
       run: |
         $testExe = "${{ env.TEST_EXE }}"
-        $xmlFile = "CI_test_result_${{ inputs.os }}.xml"
+        $xmlFile = "CI_test_result_${{ inputs.flav }}.xml"
 
         & $testExe --log_format=JUNIT --log_sink=$xmlFile -p -l all
         if ($LASTEXITCODE -ne 0) {
@@ -376,9 +385,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: TestResults_${{ inputs.os }}
+        name: TestResults_${{ inputs.flav }}
         path: |
-          CI_test_result_${{ inputs.os }}.xml
+          CI_test_result_${{ inputs.flav }}.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
       continue-on-error: true
 
@@ -386,7 +395,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: BuildLogs_${{ inputs.os }}
+        name: BuildLogs_${{ inputs.flav }}
         path: |
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.log
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
@@ -440,31 +449,19 @@ jobs:
         retention-days: 7
 
   #===========================================================================
-  # PUBLISH TEST RESULTS
+  # PUBLISH TEST RESULTS (DRY: uses publish-test.yml)
   #===========================================================================
   publish-results:
     name: Publish Test Results
     needs: build-test
-    runs-on: ubuntu-latest
     if: always()
     permissions:
       checks: write
       pull-requests: write
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Display downloaded files
-        run: ls -R artifacts/ || echo "No artifacts"
-
-      - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2.21.0
-        with:
-          files: artifacts/**/CI_test_result_*.xml
-          check_name: 'Build Tests (${{ inputs.os }})'
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: ${{ inputs.flav }}
+    secrets: inherit
 
   #===========================================================================
   # CUDA TESTS ON GPU RUNNER
@@ -480,6 +477,7 @@ jobs:
     with:
       os: ${{ inputs.os }}
       run_id: ${{ format('{0}', github.run_id) }}
+      flav: ${{ inputs.flav }}-CUDA
     secrets: inherit
 
   #===========================================================================
@@ -497,6 +495,7 @@ jobs:
       flav: Linux-Docker
       is-selfhosted: false
       cuda: ${{ inputs.cuda }}
+      vcpkg-triplet: x64-linux-release
     secrets: inherit
 
   #===========================================================================

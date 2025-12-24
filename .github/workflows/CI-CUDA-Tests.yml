@@ -17,6 +17,10 @@ on:
         description: 'Run ID of Build-Test workflow to download SDK from'
         required: true
         type: string
+      flav:
+        description: 'Badge flavor name (e.g., Linux-CUDA, Windows-CUDA)'
+        required: true
+        type: string
 
   workflow_run:
     workflows: ["CI-Windows-Build-Test", "CI-Linux-Build-Test"]
@@ -37,25 +41,40 @@ on:
         type: string
 
 jobs:
-  # Determine which OS to test based on trigger
+  # Determine OS/flav based on trigger type
   setup:
     runs-on: ubuntu-latest
     outputs:
       os: ${{ steps.set-os.outputs.os }}
       run_id: ${{ steps.set-os.outputs.run_id }}
+      flav: ${{ steps.set-os.outputs.flav }}
     steps:
       - id: set-os
         run: |
           if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            # Triggered by workflow_run - compute from triggering workflow name
             if [[ "${{ github.event.workflow_run.name }}" == *"Linux"* ]]; then
               echo "os=linux" >> $GITHUB_OUTPUT
+              echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
             else
               echo "os=windows" >> $GITHUB_OUTPUT
+              echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
             fi
             echo "run_id=${{ github.event.workflow_run.id }}" >> $GITHUB_OUTPUT
-          else
+          elif [[ -n "${{ inputs.flav }}" ]]; then
+            # Called via workflow_call with flav - use it directly
             echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
             echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+            echo "flav=${{ inputs.flav }}" >> $GITHUB_OUTPUT
+          else
+            # workflow_dispatch - compute flav from os
+            echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+            if [[ "${{ inputs.os }}" == "linux" ]]; then
+              echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
+            else
+              echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
+            fi
           fi
 
   cuda-tests:
@@ -77,6 +96,7 @@ jobs:
     env:
       OS: ${{ needs.setup.outputs.os }}
       SDK_RUN_ID: ${{ needs.setup.outputs.run_id }}
+      FLAV: ${{ needs.setup.outputs.flav }}
 
     steps:
     - name: Cleanup workspace (Linux)
@@ -142,14 +162,14 @@ jobs:
       if: needs.setup.outputs.os == 'linux'
       run: |
         # Run from workspace root so tests find ./data folder
-        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_CUDA.xml -p -l all || echo 'test execution returned error'
+        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${FLAV}.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 30
 
     - name: Run CUDA Tests (Windows)
       if: needs.setup.outputs.os == 'windows'
       run: |
         # Run from workspace root so tests find ./data folder
-        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_CUDA.xml -p -l all || echo 'test execution returned error'
+        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_$env:FLAV.xml -p -l all || echo 'test execution returned error'
       timeout-minutes: 30
       shell: pwsh
 
@@ -157,31 +177,22 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: TestResults_${{ needs.setup.outputs.os }}-CUDA
+        name: TestResults_${{ needs.setup.outputs.flav }}
         path: |
-          CI_test_result_CUDA.xml
+          CI_test_result_${{ needs.setup.outputs.flav }}.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
+  #===========================================================================
+  # PUBLISH CUDA TEST RESULTS (DRY: uses publish-test.yml)
+  #===========================================================================
   publish-cuda-results:
     name: Publish CUDA Test Results
-    needs: [cuda-tests]
-    runs-on: ubuntu-latest
+    needs: [setup, cuda-tests]
     if: always() && needs.cuda-tests.result != 'skipped'
     permissions:
       checks: write
       pull-requests: write
-
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Display structure of downloaded files
-        run: ls -R artifacts/ || echo "No artifacts"
-
-      - name: Publish CUDA Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2.21.0
-        with:
-          files: artifacts/**/CI_test_result_*.xml
-          check_name: 'CUDA Tests'
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: ${{ needs.setup.outputs.flav }}
+    secrets: inherit
