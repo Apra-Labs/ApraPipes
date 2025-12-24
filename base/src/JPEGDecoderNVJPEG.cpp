@@ -7,7 +7,7 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 
-#include "nvjpeg.h"
+#include <nvjpeg.h>
 
 class JPEGDecoderNVJPEG::Detail
 {
