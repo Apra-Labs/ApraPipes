@@ -55,15 +55,9 @@ public:
 	}
 	frame_container pop() {
 		if (mAdaptee.get() != nullptr)
-		{
-			frame_container ret = mAdaptee->try_pop();
-			if (ret.size() == 0)
-			{
-				return on_failed_pop();
-			}
-			else {
-				return on_pop_success(ret);
-			}
+	{
+			frame_container ret = mAdaptee->pop();
+			return on_pop_success(ret);
 		}
 		return frame_container();
 	}
