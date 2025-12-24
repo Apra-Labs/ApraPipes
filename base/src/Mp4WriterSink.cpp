@@ -23,24 +23,38 @@ public:
   DTSCalcStrategyType type;
 };
 
-class DTSPassThroughStrategy : public DTSCalcStrategy {
+class DTSPassThroughStrategy : public DTSCalcStrategy
+{
 public:
-  DTSPassThroughStrategy()
-      : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::PASS_THROUGH) {}
-
-  int64_t getDTS(uint64_t &frameTS, uint64_t lastFrameTS,
-                 uint16_t fps) override {
-    int64_t diffInMsecs = frameTS - lastFrameTS;
-    // half of the ideal duration of one frame i.e. (1/fps) secs
-    int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * fps));
-    if (!diffInMsecs) {
-      frameTS += halfDurationInMsecs;
-    } else if (diffInMsecs < 0) {
-      frameTS = lastFrameTS + halfDurationInMsecs;
+    DTSPassThroughStrategy()
+        : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::PASS_THROUGH) {}
+    int64_t getDTS(uint64_t &frameTS, uint64_t lastFrameTS,
+                   uint16_t fps) override
+    {
+        int64_t diffInMsecs = frameTS - lastFrameTS;
+        // half of the ideal duration of one frame i.e. (1/fps) secs
+        const int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * fps));
+        const int64_t idealDurationInMsecs = static_cast<int64_t>(1000 / fps);
+        // when the source timestamp jumps (e.g., connectivity drop), clamp the jump
+        // so the MP4 timeline stays contiguous for seeking
+        const int64_t maxJumpInMsecs = idealDurationInMsecs;
+        if (!diffInMsecs)
+        {
+            frameTS += halfDurationInMsecs;
+        }
+        else if (diffInMsecs < 0)
+        {
+            frameTS = lastFrameTS + halfDurationInMsecs;
+        }
+        else if (diffInMsecs > maxJumpInMsecs)
+        {
+            LOG_WARNING << "Clamping large frame timestamp gap of " << diffInMsecs
+                        << " ms to " << maxJumpInMsecs << " ms to keep MP4 timeline contiguous";
+            frameTS = lastFrameTS + maxJumpInMsecs;
+        }
+        diffInMsecs = frameTS - lastFrameTS;
+        return diffInMsecs;
     }
-    diffInMsecs = frameTS - lastFrameTS;
-    return diffInMsecs;
-  }
 };
 
 class DTSFixedRateStrategy : public DTSCalcStrategy {
