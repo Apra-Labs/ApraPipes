@@ -7,7 +7,7 @@
 #include "Utils.h"
 #include "AIPExceptions.h"
 #include "H264FrameDemuxer.h"
-#include "nvjpeg.h"
+#include <nvjpeg.h>
 #include "RawImageMetadata.h"
 #include "H264Metadata.h"
 #include "nvEncodeAPI.h"

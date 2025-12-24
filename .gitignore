@@ -5,3 +5,7 @@ thirdparty/gst-build/gst-build-1.16
 base/vcpkg_installed
 base/vcpkg.json
 CI_test_result*.xml
+
+# Claude state files (local only)
+.claude/CURRENT_STATE.md
+.claude/LEARNINGS.md
