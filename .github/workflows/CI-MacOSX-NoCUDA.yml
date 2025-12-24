@@ -1,19 +1,20 @@
 name: CI-MacOSX-NoCUDA
 
 on:
-  push:  # Trigger on push to any branch
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
-  pull_request:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '.github/docs/**'
-      - '.claude/**'
-      - 'docs/**'
+  # Temporarily disabled push/PR triggers during CI refactoring (PR #462)
+  # push:
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   workflow_dispatch:
     inputs:
       force-cache-update:
