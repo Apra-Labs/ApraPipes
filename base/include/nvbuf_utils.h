@@ -19,8 +19,8 @@
     #include <nvbuf_utils_orig.h>
 #else
     // JetPack 5.x: Use NvBufSurface API with compatibility mappings
-    #include "nvbufsurface.h"
-    #include "nvbufsurftransform.h"
+    #include <nvbufsurface.h>
+    #include <nvbufsurftransform.h>
     #include <EGL/egl.h>
     #include <EGL/eglext.h>
     #include <cstring>

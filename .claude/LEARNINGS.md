@@ -192,4 +192,20 @@ xvfb-run -a --server-args="-screen 0 1920x1080x24" ./test_executable
 9. Xvfb for headless display testing
 **Rule:** JetPack 5.x migration requires substantial changes - document everything in LEARNINGS.md
 
+### 2025-12-24 | CI-Linux-ARM64 | FAIL (INCLUDE PATH QUOTES VS BRACKETS)
+**Tried:** ARM64 build after PR #461 merged to main
+**Error:** `nvbuf_utils.h:22:14: fatal error: nvbufsurface.h: No such file or directory`
+**Root cause:**
+- nvbuf_utils.h compatibility header used `#include "nvbufsurface.h"` (quotes)
+- With quotes, GCC first searches the including file's directory (`base/include/`)
+- `nvbufsurface.h` is a JetPack system header at `/usr/src/jetson_multimedia_api/include`
+- Previous build passed due to different vcpkg cache state affecting include path ordering
+- Clean builds or different triplets can change `-I` flag ordering, breaking fragile fallback behavior
+**Fix:** Use angle brackets for system headers:
+```cpp
+#include <nvbufsurface.h>      // correct - searches -I paths
+#include <nvbufsurftransform.h>
+```
+**Rule:** Always use `<angle brackets>` for system/SDK headers, never `"quotes"` - quotes rely on fragile fallback behavior
+
 ---
