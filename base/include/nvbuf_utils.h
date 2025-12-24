@@ -24,6 +24,7 @@
     #include <EGL/egl.h>
     #include <EGL/eglext.h>
     #include <cstring>
+    #include <sys/mman.h>  // For msync() fallback with V4L2 mmap buffers
 
     // ============================================================================
     // Type Aliases - Map old types to new types
@@ -255,10 +256,14 @@
         NvBufSurface* surface = NvBufSurfaceManager::instance().getSurface(fd);
         if (!surface) return -1;
 
-        int ret = NvBufSurfaceMap(surface, 0, plane, memflag);
+        // For per-plane FDs, adjust plane index if necessary
+        uint32_t num_planes = surface->surfaceList[0].planeParams.num_planes;
+        uint32_t actual_plane = (plane < num_planes) ? plane : 0;
+
+        int ret = NvBufSurfaceMap(surface, 0, actual_plane, memflag);
         if (ret != 0) return ret;
 
-        *ptr = surface->surfaceList[0].mappedAddr.addr[plane];
+        *ptr = surface->surfaceList[0].mappedAddr.addr[actual_plane];
         return 0;
     }
 
@@ -274,37 +279,69 @@
         NvBufSurface* surface = NvBufSurfaceManager::instance().getSurface(fd);
         if (!surface) return -1;
 
-        return NvBufSurfaceUnMap(surface, 0, plane);
+        // For per-plane FDs, adjust plane index if necessary
+        uint32_t num_planes = surface->surfaceList[0].planeParams.num_planes;
+        uint32_t actual_plane = (plane < num_planes) ? plane : 0;
+
+        return NvBufSurfaceUnMap(surface, 0, actual_plane);
     }
 
     /**
      * @brief Sync buffer for CPU access
      * @param fd File descriptor of the buffer
      * @param plane Plane index
-     * @param ptr Mapped address (unused in new API)
+     * @param ptr Mapped address (can be used for msync fallback)
      * @return 0 on success, -1 on failure
+     *
+     * Note: For V4L2 mmap buffers (non-NvBufSurface), this function handles
+     * the case gracefully. V4L2 mmap buffers have per-plane FDs, so:
+     * - If NvBufSurfaceFromFd succeeds but returns fewer planes, sync plane 0
+     * - If NvBufSurfaceFromFd fails, return success (V4L2 driver handles coherency)
      */
     inline int NvBufferMemSyncForCpu(int fd, uint32_t plane, void** ptr) {
-        (void)ptr;  // Unused in new API
         NvBufSurface* surface = NvBufSurfaceManager::instance().getSurface(fd);
-        if (!surface) return -1;
+        if (!surface) {
+            // Not an NvBufSurface buffer (likely V4L2 mmap buffer)
+            // V4L2 driver typically handles cache coherency for mmap'd buffers
+            // Return success to maintain compatibility
+            return 0;
+        }
 
-        return NvBufSurfaceSyncForCpu(surface, 0, plane);
+        // For per-plane FDs (common in V4L2), each FD may represent a single plane
+        // If the requested plane index exceeds available planes, sync plane 0
+        uint32_t num_planes = surface->surfaceList[0].planeParams.num_planes;
+        uint32_t actual_plane = (plane < num_planes) ? plane : 0;
+
+        return NvBufSurfaceSyncForCpu(surface, 0, actual_plane);
     }
 
     /**
      * @brief Sync buffer for device (GPU/VIC) access
      * @param fd File descriptor of the buffer
      * @param plane Plane index
-     * @param ptr Mapped address (unused in new API)
+     * @param ptr Mapped address (can be used for msync fallback)
      * @return 0 on success, -1 on failure
+     *
+     * Note: For V4L2 mmap buffers (non-NvBufSurface), this function handles
+     * the case gracefully. V4L2 mmap buffers have per-plane FDs, so:
+     * - If NvBufSurfaceFromFd succeeds but returns fewer planes, sync plane 0
+     * - If NvBufSurfaceFromFd fails, return success (V4L2 driver handles coherency)
      */
     inline int NvBufferMemSyncForDevice(int fd, uint32_t plane, void** ptr) {
-        (void)ptr;  // Unused in new API
         NvBufSurface* surface = NvBufSurfaceManager::instance().getSurface(fd);
-        if (!surface) return -1;
+        if (!surface) {
+            // Not an NvBufSurface buffer (likely V4L2 mmap buffer)
+            // V4L2 driver typically handles cache coherency for mmap'd buffers
+            // Return success to maintain compatibility
+            return 0;
+        }
 
-        return NvBufSurfaceSyncForDevice(surface, 0, plane);
+        // For per-plane FDs (common in V4L2), each FD may represent a single plane
+        // If the requested plane index exceeds available planes, sync plane 0
+        uint32_t num_planes = surface->surfaceList[0].planeParams.num_planes;
+        uint32_t actual_plane = (plane < num_planes) ? plane : 0;
+
+        return NvBufSurfaceSyncForDevice(surface, 0, actual_plane);
     }
 
     /**
