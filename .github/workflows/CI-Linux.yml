@@ -3,6 +3,19 @@ name: CI-Linux
 # Unified Linux CI: builds with CUDA, runs on cloud runners
 
 on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths-ignore:
+  #     - '**.md'
+  #     - '.github/docs/**'
+  #     - '.claude/**'
+  #     - 'docs/**'
   workflow_dispatch:
 
 concurrency:
