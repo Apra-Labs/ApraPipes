@@ -802,7 +802,7 @@ Both ARM64 (Jetson) and Windows CUDA self-hosted runners are accessible via Open
 
 | Runner | Host | Port Example | Username | Password | OS |
 |--------|------|--------------|----------|----------|-----|
-| **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 18.04 |
+| **ARM64 Jetson** | `utubovyu.users.openrport.io` | `25965` (varies) | `developer` | (ask user) | Ubuntu 20.04 (JetPack 5.0+) |
 | **Windows CUDA** | `utubovyu.users.openrport.io` | `22179` (varies) | `administrator` | (ask user) | Windows 11 Pro |
 
 **Getting Current Ports**: Ports change with each OpenRPort tunnel session.
