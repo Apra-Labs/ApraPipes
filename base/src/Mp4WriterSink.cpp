@@ -48,8 +48,6 @@ public:
         }
         else if (diffInMsecs > maxJumpInMsecs)
         {
-            LOG_WARNING << "Clamping large frame timestamp gap of " << diffInMsecs
-                        << " ms to " << maxJumpInMsecs << " ms to keep MP4 timeline contiguous";
             frameTS = lastFrameTS + maxJumpInMsecs;
         }
         diffInMsecs = frameTS - lastFrameTS;
