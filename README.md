@@ -14,7 +14,7 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 |Windows|2019|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows-cuda.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Windows-cuda.svg)|[![CI-Win-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Win-CUDA.yml)|
 |Ubuntu x64_86|22.04|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux.svg)|[![CI-Linux-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-NoCUDA.yml)|
 |Ubuntu x64_86|24.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux-CudaT.svg)|[![CI-Linux-CUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA.yml)|
-|Ubuntu ARM64 (Jetsons)|18.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)|[![CI-Linux-ARM64](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml)|
+|Ubuntu ARM64 (Jetsons)|20.04|Yes|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_Linux_ARM64.svg)|[![CI-Linux-ARM64](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-ARM64.yml)|
 |Ubuntu x64_86-docker|22.04|Yes|No|[![CI-Linux-CUDA-Docker](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-Linux-CUDA-Docker.yml)|
 |macOS x86_64|15.0+|No|[![Test Results](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_MacOSX.svg)](https://gist.githubusercontent.com/kumaakh/f80af234a4aabedc69af3ee197f66944/raw/badge_MacOSX.svg)|[![CI-MacOSX-NoCUDA](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml/badge.svg)](https://github.com/Apra-Labs/ApraPipes/actions/workflows/CI-MacOSX-NoCUDA.yml)|
 
@@ -260,13 +260,13 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
     * Look at the unit_tests/params_test to check for sample usage of parameters in test code.
 </details>
 
-<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX (Jetpack ≥ 4.4)</h2>  
+<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX (JetPack ≥ 5.0)</h2>  
 <img src="./data/ReadMe Images/nvidia.png" alt="Nvidia Logo" align="right" height = "100" width="100">
 <details>
   <summary >Requirements</summary>
   
   ###  Prerequisites
-  * Setup the board with [Jetpack 4.4](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html) or higher as supported.
+  * Setup the board with [JetPack 5.0](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html) or higher (Ubuntu 20.04 required for GitHub Actions compatibility).
   
   * Clone with submodules and LFS. 
     ```
@@ -290,8 +290,8 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
   ```
   ./build_jetson.sh --build-doc
   ```
-  Build can take ~12 hours on Jetson Nano. 
-  Note: Jetson build can also be done using Ubuntu 18.04 x86_64 Laptop via cross compilation.
+  Build can take ~12 hours on Jetson Nano.
+  Note: Jetson build can also be done using Ubuntu 20.04+ x86_64 Laptop via cross compilation.
 </details>
 
 <details>
@@ -300,7 +300,7 @@ Aprapipes is automatically built and tested on Ubuntu (22.04 and 24.04), Jetson 
 ### Cross compilation using qemu
   Conceptual steps adapted from [here](https://github.com/zhj-buffer/Cross-Compile-Jetson):
 
-  * On any Intel Ubuntu 18.04 computer (physical or virtual including wsl ) mount a Jetson SD Card Image as described above
+  * On any Intel Ubuntu 20.04+ computer (physical or virtual including wsl) mount a Jetson SD Card Image as described above
   * Copy relevant files from mounted image to created a rootfs 
   * Install qemu on ubuntu host
   * chroot into emulated aarm64 environment using script provided in the github link above
