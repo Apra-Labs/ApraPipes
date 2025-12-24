@@ -366,6 +366,10 @@ var hierarchy =
     ] ],
     [ "NvArgusCameraHelper", "classNvArgusCameraHelper.html", null ],
     [ "NvArgusCameraUtils", "classNvArgusCameraUtils.html", null ],
+    [ "NvBufferCreateParams", "structNvBufferCreateParams.html", null ],
+    [ "NvBufferParams", "structNvBufferParams.html", null ],
+    [ "NvBufferTransformParams", "structNvBufferTransformParams.html", null ],
+    [ "NvBufSurfaceManager", "classNvBufSurfaceManager.html", null ],
     [ "NVCodecResources", "classNVCodecResources.html", null ],
     [ "NvDecoder", "classNvDecoder.html", [
       [ "H264DecoderNvCodecHelper", "classH264DecoderNvCodecHelper.html", null ]

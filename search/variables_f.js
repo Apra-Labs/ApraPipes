@@ -1,7 +1,7 @@
 var searchData=
 [
   ['oa_0',['oa',['../classOverlayInfoSerializerVisitor.html#a80caa72a595e31333fd0b2d8a6d50eeb',1,'OverlayInfoSerializerVisitor']]],
-  ['offset_1',['offset',['../classOverlayNPPI_1_1Detail.html#ae52a6d49643be8701b75a3148e6a4cf3',1,'OverlayNPPI::Detail']]],
+  ['offset_1',['offset',['../structNvBufferParams.html#ad1177b2b83b0e7a9e39c04f95eef8573',1,'NvBufferParams::offset'],['../classOverlayNPPI_1_1Detail.html#ae52a6d49643be8701b75a3148e6a4cf3',1,'OverlayNPPI::Detail::offset']]],
   ['offsetx_2',['offsetX',['../classOverlayNPPIProps.html#a285c72d05b8aebc2d202fc20d7d77d87',1,'OverlayNPPIProps']]],
   ['offsety_3',['offsetY',['../classOverlayNPPIProps.html#ab641c6ff4a2d33a0eab959ee53647eeb',1,'OverlayNPPIProps']]],
   ['oimg_4',['oImg',['../classDetailHost.html#abb060c51a66e6fa4ad14583ecc29de89',1,'DetailHost::oImg'],['../classImageResizeCV_1_1Detail.html#afd7480426cc8766caf82b3c55510faf5',1,'ImageResizeCV::Detail::oImg']]],

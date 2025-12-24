@@ -1,7 +1,7 @@
 var searchData=
 [
   ['oa_0',['oa',['../classOverlayInfoSerializerVisitor.html#a80caa72a595e31333fd0b2d8a6d50eeb',1,'OverlayInfoSerializerVisitor']]],
-  ['offset_1',['offset',['../classOverlayNPPI_1_1Detail.html#ae52a6d49643be8701b75a3148e6a4cf3',1,'OverlayNPPI::Detail']]],
+  ['offset_1',['offset',['../structNvBufferParams.html#ad1177b2b83b0e7a9e39c04f95eef8573',1,'NvBufferParams::offset'],['../classOverlayNPPI_1_1Detail.html#ae52a6d49643be8701b75a3148e6a4cf3',1,'OverlayNPPI::Detail::offset']]],
   ['offsetx_2',['offsetX',['../classOverlayNPPIProps.html#a285c72d05b8aebc2d202fc20d7d77d87',1,'OverlayNPPIProps']]],
   ['offsety_3',['offsetY',['../classOverlayNPPIProps.html#ab641c6ff4a2d33a0eab959ee53647eeb',1,'OverlayNPPIProps']]],
   ['oimg_4',['oImg',['../classDetailHost.html#abb060c51a66e6fa4ad14583ecc29de89',1,'DetailHost::oImg'],['../classImageResizeCV_1_1Detail.html#afd7480426cc8766caf82b3c55510faf5',1,'ImageResizeCV::Detail::oImg']]],
@@ -14,7 +14,7 @@ var searchData=
   ['on_5fresize_11',['on_resize',['../classGtkGlRenderer_1_1Detail.html#aceca09383b6404ab9fed4e6c5eb38175',1,'GtkGlRenderer::Detail']]],
   ['on_5fscroll_12',['on_scroll',['../classGtkGlRenderer_1_1Detail.html#ac52829839df03808e36cb476b0f57484',1,'GtkGlRenderer::Detail']]],
   ['on_5funrealize_13',['on_unrealize',['../classGtkGlRenderer_1_1Detail.html#a8e0ff2971a44e7a2914654d31581c1cb',1,'GtkGlRenderer::Detail']]],
-  ['onprocesssamples_14',['onProcessSamples',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#a0c9609abc4112e53ab5b75db36ffcbec',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
+  ['onprocesssamples_14',['onProcessSamples',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#af1ca3948c9f0c8415ab4a0a430e8ee51',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
   ['onstart_15',['onStart',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#af8c6c17b476fae6bf2ebd63755296011',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
   ['onstepfail_16',['onStepFail',['../classModule.html#a051b77d6878f1362ec40353c7e255d20',1,'Module']]],
   ['op_5fbuf_5ftype_17',['op_buf_type',['../structh264DecoderV4L2Helper_1_1context__t.html#a4ab2841805c6df9264614b2c47008be4',1,'h264DecoderV4L2Helper::context_t']]],

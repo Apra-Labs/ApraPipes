@@ -1,7 +1,7 @@
 var classAudioCaptureSrc_1_1Detail =
 [
     [ "ApraRecorder", "classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html", "classAudioCaptureSrc_1_1Detail_1_1ApraRecorder" ],
-    [ "Detail", "classAudioCaptureSrc_1_1Detail.html#a2e4129354661f27457e0e1fe59f24768", null ],
+    [ "Detail", "classAudioCaptureSrc_1_1Detail.html#abe24ca236273b7b6cb49252d679b177c", null ],
     [ "~Detail", "classAudioCaptureSrc_1_1Detail.html#ade43dfc7b272c08af165a5601cac9dcc", null ],
     [ "init", "classAudioCaptureSrc_1_1Detail.html#acdc89ad430b9a885827c16e623810cd9", null ],
     [ "setProps", "classAudioCaptureSrc_1_1Detail.html#a814f8add31c70fd120e7f871fb55c540", null ],

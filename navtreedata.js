@@ -95,12 +95,12 @@ var NAVTREEINDEX =
 "classModule.html#a7ad598c9bc6f641ad569e829feb318d1",
 "classMp4ReaderDetailAbs.html#aefbf3dcc3ff8fe4e8b58cb2bee2a2b75",
 "classNVDECException.html",
-"classNvV4L2CameraHelper.html#a73f0d05035e11ae0802833155855b766",
-"classQRReader.html#ab6b70ffaff014cc2369cbbfacba37708",
-"classResizeNPPI_1_1Detail.html#a4a3b4881095ee352b51765194ea7cd7c",
-"classTimeStampStrategy.html#ab6aa8484cd2048f00f0ddba56952ae32",
-"classh264DecoderV4L2Helper.html#a8de7a59ea2adcd8173764efca6d2953c",
-"structState.html#a334d1741a721bbb5b5ec75f64a2599cb"
+"classNvV4L2CameraHelper.html#a2923f094eaaf33b61e9bf05e44da5da4",
+"classPropsChangeMetadata.html#ad44f1d2be495fed50794cc6af8e2e321",
+"classResizeNPPIProps.html#a8502688e8c52edfa94270f5ea037274a",
+"classThumbnailListGenerator_1_1Detail.html#afe4aa844eadcc6c60299763bfb13ee65",
+"classh264DecoderV4L2Helper.html#a3b1d7c6d5c331139e3d34a3de3e15569",
+"structNvBufferParams.html#ad026f17ea37e501495bf517c544994cb"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

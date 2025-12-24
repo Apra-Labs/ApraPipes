@@ -9,7 +9,7 @@ var searchData=
   ['on_5fresize_6',['on_resize',['../classGtkGlRenderer_1_1Detail.html#aceca09383b6404ab9fed4e6c5eb38175',1,'GtkGlRenderer::Detail']]],
   ['on_5fscroll_7',['on_scroll',['../classGtkGlRenderer_1_1Detail.html#ac52829839df03808e36cb476b0f57484',1,'GtkGlRenderer::Detail']]],
   ['on_5funrealize_8',['on_unrealize',['../classGtkGlRenderer_1_1Detail.html#a8e0ff2971a44e7a2914654d31581c1cb',1,'GtkGlRenderer::Detail']]],
-  ['onprocesssamples_9',['onProcessSamples',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#a0c9609abc4112e53ab5b75db36ffcbec',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
+  ['onprocesssamples_9',['onProcessSamples',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#af1ca3948c9f0c8415ab4a0a430e8ee51',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
   ['onstart_10',['onStart',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#af8c6c17b476fae6bf2ebd63755296011',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
   ['open_5fvideo_5fprecoded_11',['open_video_precoded',['../classRTSPPusher_1_1Detail.html#ac4e8d1c84665511bee7aa40b33540733',1,'RTSPPusher::Detail']]],
   ['openvideosetpointer_12',['openVideoSetPointer',['../classMp4ReaderDetailAbs.html#afdf6d55361cb504db9aeafc8507de333',1,'Mp4ReaderDetailAbs']]],

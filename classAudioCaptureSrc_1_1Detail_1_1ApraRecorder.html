@@ -121,12 +121,12 @@ Collaboration diagram for AudioCaptureSrc::Detail::ApraRecorder:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aad1161348c3d278cfa068b834b221d32" id="r_aad1161348c3d278cfa068b834b221d32"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aad1161348c3d278cfa068b834b221d32">ApraRecorder</a> (std::function&lt; bool(const sf::Int16 *samples, std::size_t sampleCount)&gt; _mMakeFrame, int _processingIntervalInMilliSecond, int _channelCount)</td></tr>
-<tr class="separator:aad1161348c3d278cfa068b834b221d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c9703674323205a6fb359a89be1fa13" id="r_a7c9703674323205a6fb359a89be1fa13"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c9703674323205a6fb359a89be1fa13">ApraRecorder</a> (std::function&lt; bool(const std::int16_t *samples, std::size_t sampleCount)&gt; _mMakeFrame, int _processingIntervalInMilliSecond, int _channelCount)</td></tr>
+<tr class="separator:a7c9703674323205a6fb359a89be1fa13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8c6c17b476fae6bf2ebd63755296011" id="r_af8c6c17b476fae6bf2ebd63755296011"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8c6c17b476fae6bf2ebd63755296011">onStart</a> ()</td></tr>
 <tr class="separator:af8c6c17b476fae6bf2ebd63755296011"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c9609abc4112e53ab5b75db36ffcbec" id="r_a0c9609abc4112e53ab5b75db36ffcbec"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0c9609abc4112e53ab5b75db36ffcbec">onProcessSamples</a> (const sf::Int16 *samples, std::size_t sampleCount)</td></tr>
-<tr class="separator:a0c9609abc4112e53ab5b75db36ffcbec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1ca3948c9f0c8415ab4a0a430e8ee51" id="r_af1ca3948c9f0c8415ab4a0a430e8ee51"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af1ca3948c9f0c8415ab4a0a430e8ee51">onProcessSamples</a> (const std::int16_t *samples, std::size_t sampleCount)</td></tr>
+<tr class="separator:af1ca3948c9f0c8415ab4a0a430e8ee51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -134,8 +134,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a11a90e60026aee86f778713d4d1b67b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a649e57b27218f4d2840ad1883d037b99" id="r_a649e57b27218f4d2840ad1883d037b99"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a649e57b27218f4d2840ad1883d037b99">channelCount</a></td></tr>
 <tr class="separator:a649e57b27218f4d2840ad1883d037b99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae9d115f44854da02aacac6ff18a094ab" id="r_ae9d115f44854da02aacac6ff18a094ab"><td class="memItemLeft" align="right" valign="top">std::function&lt; bool(const sf::Int16 *samples, std::size_t sampleCount)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae9d115f44854da02aacac6ff18a094ab">mMakeFrame</a></td></tr>
-<tr class="separator:ae9d115f44854da02aacac6ff18a094ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07e69285ae49ab8f29c79aaac45d8ab3" id="r_a07e69285ae49ab8f29c79aaac45d8ab3"><td class="memItemLeft" align="right" valign="top">std::function&lt; bool(const std::int16_t *samples, std::size_t sampleCount)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a07e69285ae49ab8f29c79aaac45d8ab3">mMakeFrame</a></td></tr>
+<tr class="separator:a07e69285ae49ab8f29c79aaac45d8ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -143,8 +143,8 @@ Friends</h2></td></tr>
 <tr class="separator:a80cd80050304434091bde3d67924fe07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aad1161348c3d278cfa068b834b221d32" name="aad1161348c3d278cfa068b834b221d32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad1161348c3d278cfa068b834b221d32">&#9670;&#160;</a></span>ApraRecorder()</h2>
+<a id="a7c9703674323205a6fb359a89be1fa13" name="a7c9703674323205a6fb359a89be1fa13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c9703674323205a6fb359a89be1fa13">&#9670;&#160;</a></span>ApraRecorder()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -155,7 +155,7 @@ Friends</h2></td></tr>
         <tr>
           <td class="memname">AudioCaptureSrc::Detail::ApraRecorder::ApraRecorder </td>
           <td>(</td>
-          <td class="paramtype">std::function&lt; bool(const sf::Int16 *samples, std::size_t sampleCount)&gt;</td>          <td class="paramname"><span class="paramname"><em>_mMakeFrame</em></span>, </td>
+          <td class="paramtype">std::function&lt; bool(const std::int16_t *samples, std::size_t sampleCount)&gt;</td>          <td class="paramname"><span class="paramname"><em>_mMakeFrame</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -178,8 +178,8 @@ Friends</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a0c9609abc4112e53ab5b75db36ffcbec" name="a0c9609abc4112e53ab5b75db36ffcbec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c9609abc4112e53ab5b75db36ffcbec">&#9670;&#160;</a></span>onProcessSamples()</h2>
+<a id="af1ca3948c9f0c8415ab4a0a430e8ee51" name="af1ca3948c9f0c8415ab4a0a430e8ee51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1ca3948c9f0c8415ab4a0a430e8ee51">&#9670;&#160;</a></span>onProcessSamples()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -190,7 +190,7 @@ Friends</h2></td></tr>
         <tr>
           <td class="memname">virtual bool AudioCaptureSrc::Detail::ApraRecorder::onProcessSamples </td>
           <td>(</td>
-          <td class="paramtype">const sf::Int16 *</td>          <td class="paramname"><span class="paramname"><em>samples</em></span>, </td>
+          <td class="paramtype">const std::int16_t *</td>          <td class="paramname"><span class="paramname"><em>samples</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -278,8 +278,8 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a id="ae9d115f44854da02aacac6ff18a094ab" name="ae9d115f44854da02aacac6ff18a094ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae9d115f44854da02aacac6ff18a094ab">&#9670;&#160;</a></span>mMakeFrame</h2>
+<a id="a07e69285ae49ab8f29c79aaac45d8ab3" name="a07e69285ae49ab8f29c79aaac45d8ab3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07e69285ae49ab8f29c79aaac45d8ab3">&#9670;&#160;</a></span>mMakeFrame</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -288,7 +288,7 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::function&lt;bool(const sf::Int16 *samples, std::size_t sampleCount)&gt; AudioCaptureSrc::Detail::ApraRecorder::mMakeFrame</td>
+          <td class="memname">std::function&lt;bool(const std::int16_t *samples, std::size_t sampleCount)&gt; AudioCaptureSrc::Detail::ApraRecorder::mMakeFrame</td>
         </tr>
       </table>
   </td>
@@ -330,7 +330,7 @@ Friends</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classAudioCaptureSrc.html">AudioCaptureSrc</a></li><li class="navelem"><a class="el" href="classAudioCaptureSrc_1_1Detail.html">Detail</a></li><li class="navelem"><a class="el" href="classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html">ApraRecorder</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 8b1937d</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: fa66910</a></li>
     </ul>
   </div>
   </body>

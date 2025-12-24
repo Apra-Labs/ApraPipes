@@ -69,7 +69,7 @@ var searchData=
   ['inputframetype_66',['inputFrameType',['../classCCNPPI_1_1Detail.html#a4305c7a439de3d409ce48dd09490a2b2',1,'CCNPPI::Detail']]],
   ['inputimagetype_67',['inputImageType',['../classCCNPPI_1_1Detail.html#aa89422f5dcafd896fc7c87cacdf01595',1,'CCNPPI::Detail']]],
   ['insertinvideocache_68',['insertInVideoCache',['../classOrderedCacheOfFiles.html#ae1724ce75b0b0a0ed48bed8cba8bf5fc',1,'OrderedCacheOfFiles']]],
-  ['instance_69',['instance',['../classApraEGLDisplay.html#a0ebf9ad3ac52551a35b1391b4bb46e03',1,'ApraEGLDisplay::instance'],['../classLogger.html#ac5580e07ca1bc608e8a51950819f6977',1,'Logger::instance'],['../classNvArgusCameraUtils.html#a68dfca89d8f4f694869fb354212f89c1',1,'NvArgusCameraUtils::instance']]],
+  ['instance_69',['instance',['../classApraEGLDisplay.html#a0ebf9ad3ac52551a35b1391b4bb46e03',1,'ApraEGLDisplay::instance'],['../classLogger.html#ac5580e07ca1bc608e8a51950819f6977',1,'Logger::instance'],['../classNvArgusCameraUtils.html#a68dfca89d8f4f694869fb354212f89c1',1,'NvArgusCameraUtils::instance'],['../classNvBufSurfaceManager.html#a1e6fe824d5d1c1312999b5fce6c57644',1,'NvBufSurfaceManager::instance()']]],
   ['intermediatechannels_70',['intermediateChannels',['../classCCNPPI_1_1Detail.html#a2a1d61dd5db63dc7bacb270f7451534c',1,'CCNPPI::Detail']]],
   ['intermediateconv_71',['intermediateConv',['../classCCNPPI_1_1Detail.html#a75bcb01614e23ba3ef08cdfff8e08b0a',1,'CCNPPI::Detail']]],
   ['intermediatedst_72',['intermediatedst',['../classCCNPPI_1_1Detail.html#ac2b642c3c9cf5a2b43fa7ed2ebdb2060',1,'CCNPPI::Detail']]],

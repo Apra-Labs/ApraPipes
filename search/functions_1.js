@@ -40,7 +40,7 @@ var searchData=
   ['apranode_37',['ApraNode',['../classApraNode.html#ad973376309df1ef1f88cda7a5adaa6c1',1,'ApraNode']]],
   ['aprapoint2f_38',['ApraPoint2f',['../classApraPoint2f.html#a5f14cb772d70176d0f66f8f1e1602d8e',1,'ApraPoint2f::ApraPoint2f()'],['../classApraPoint2f.html#a5cbb933ab9c16fa168e6e5ce45b9b1c4',1,'ApraPoint2f::ApraPoint2f(cv::Point2f point)'],['../classApraPoint2f.html#a69c8136f95e36a59a217ce002347b2d4',1,'ApraPoint2f::ApraPoint2f(cv::Point2f &amp;point)']]],
   ['aprapool_39',['ApraPool',['../classApraPool.html#a4a0cd729a07175b8f3e3dfb48c3d7e96',1,'ApraPool']]],
-  ['aprarecorder_40',['ApraRecorder',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#aad1161348c3d278cfa068b834b221d32',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
+  ['aprarecorder_40',['ApraRecorder',['../classAudioCaptureSrc_1_1Detail_1_1ApraRecorder.html#a7c9703674323205a6fb359a89be1fa13',1,'AudioCaptureSrc::Detail::ApraRecorder']]],
   ['aprasegregatedstorage_41',['ApraSegregatedStorage',['../classApraSegregatedStorage.html#a419232c47999281c4f8c9d51584c50af',1,'ApraSegregatedStorage']]],
   ['archivespacemanager_42',['ArchiveSpaceManager',['../classArchiveSpaceManager.html#addf2da2832980f434539a7d4fc1709e8',1,'ArchiveSpaceManager']]],
   ['archivespacemanagerprops_43',['ArchiveSpaceManagerProps',['../classArchiveSpaceManagerProps.html#a6bff48a3987f7cfb5f455b26465ce993',1,'ArchiveSpaceManagerProps::ArchiveSpaceManagerProps(uint64_t _lowerWaterMark, uint64_t _upperWaterMark, string _pathToWatch, int _samplingFreq)'],['../classArchiveSpaceManagerProps.html#a25e3080aee1f59908740204346075f81',1,'ArchiveSpaceManagerProps::ArchiveSpaceManagerProps(uint64_t maxSizeAllowed, string _pathToWatch, int _samplingFreq)']]],
