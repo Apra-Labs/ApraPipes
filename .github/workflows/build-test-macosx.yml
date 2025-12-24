@@ -134,7 +134,7 @@ jobs:
       with:
           path: |
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key:  MacOSX-vcpkg-v1
+          key: MacOSX-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: MacOSX-vcpkg-
 
     - name: Make build folder
@@ -151,7 +151,7 @@ jobs:
       with:
         path: |
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: MacOSX-vcpkg-v1
+        key: MacOSX-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}

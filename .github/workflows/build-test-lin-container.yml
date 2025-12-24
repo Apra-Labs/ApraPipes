@@ -173,8 +173,8 @@ jobs:
           path: |
             ${{ inputs.cache-path }}
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: Linux-vcpkg-
 
     - name: Force cache update - restore and delete old cache
       id: cache-force-restore
@@ -184,8 +184,8 @@ jobs:
           path: |
             ${{ inputs.cache-path }}
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: Linux-vcpkg-
 
     # Cache deletion removed - gh cache delete requires workflow-level permissions that are not available in reusable workflows
     # To force cache updates: manually delete caches via GitHub UI or use workflow_dispatch with force-cache-update flag
@@ -206,7 +206,7 @@ jobs:
         path: |
           ${{ inputs.cache-path }}
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}

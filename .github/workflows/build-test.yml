@@ -481,3 +481,20 @@ jobs:
       os: ${{ inputs.os }}
       run_id: ${{ format('{0}', github.run_id) }}
     secrets: inherit
+
+  #===========================================================================
+  # DOCKER CONTAINER BUILD (Linux only)
+  # Runs in parallel with cuda-tests after cloud build passes
+  # Reuses vcpkg cache from cloud build via shared cache key (Linux-vcpkg-<hash>)
+  #===========================================================================
+  docker-container-build:
+    name: Docker Container Build
+    needs: build-test
+    if: inputs.os == 'linux' && inputs.cuda == 'ON'
+    uses: ./.github/workflows/build-test-lin-container.yml
+    with:
+      runner: ubuntu-22.04
+      flav: Linux-Docker
+      is-selfhosted: false
+      cuda: ${{ inputs.cuda }}
+    secrets: inherit
