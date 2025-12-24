@@ -89,9 +89,13 @@ IF(ENABLE_ARM64)
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# x64 Linux uses vcpkg's GTK
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	# We need GTK3 for linking GtkGlRenderer
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
@@ -714,10 +718,12 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
+	# ARM64/Jetson needs GTK3 for GtkGlRenderer
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
-	# ARM64/Jetson uses VCPKG_GTK_INCLUDE_DIRS and links gtk3 separately
+	# x64 Linux uses vcpkg's GTK
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
