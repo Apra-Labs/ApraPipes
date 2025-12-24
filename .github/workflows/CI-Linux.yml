@@ -1,10 +1,7 @@
-name: CI-Windows-Build-Test-v2
+name: CI-Linux
 
-# Thin caller for unified build-test.yml
-# Tests the new reusable workflow architecture
+# Unified Linux CI: builds with CUDA, runs on cloud runners
 
-# TESTING ONLY: Manual trigger until v2 is validated
-# Once validated, will replace CI-Windows-Build-Test.yml
 on:
   workflow_dispatch:
 
@@ -22,9 +19,9 @@ jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
     with:
-      os: windows
-      runner: windows-latest
+      os: linux
+      runner: ubuntu-22.04
       cuda: 'ON'
       cuda_version: '11.8.0'
-      build_type: Release
+      build_type: RelWithDebInfo
     secrets: inherit
