@@ -2,6 +2,7 @@
 #include "AIPExceptions.h"
 #include "Logger.h"
 #include <EGL/eglext.h>
+#include <cstdlib>
 
 boost::shared_ptr<ApraEGLDisplay> ApraEGLDisplay::instance;
 
@@ -20,21 +21,9 @@ ApraEGLDisplay::ApraEGLDisplay()
 {
     mEGLDisplay = EGL_NO_DISPLAY;
 
-    // First try EGL_DEFAULT_DISPLAY - works when display is connected
-    mEGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (mEGLDisplay != EGL_NO_DISPLAY)
-    {
-        if (eglInitialize(mEGLDisplay, NULL, NULL))
-        {
-            LOG_INFO << "EGL initialized via default display";
-            return;
-        }
-        // If initialize fails, try device extension
-        mEGLDisplay = EGL_NO_DISPLAY;
-    }
-
-    // Try EGL device extension for headless operation (JetPack 5.x)
-    // This requires EGL_EXT_platform_device extension
+    // For NvBufSurface/DMA operations on headless Jetson, we need the NVIDIA GPU's
+    // EGL display, not Xvfb's software display. Try device extension FIRST.
+    // This gives us direct GPU access without requiring X11/Xvfb.
     PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
         (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
     PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
@@ -46,18 +35,31 @@ ApraEGLDisplay::ApraEGLDisplay()
         EGLint numDevices;
         if (eglQueryDevicesEXT(8, devices, &numDevices) && numDevices > 0)
         {
-            // Try first device (usually the GPU)
+            // Try first device (usually the NVIDIA GPU)
             mEGLDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
             if (mEGLDisplay != EGL_NO_DISPLAY)
             {
                 if (eglInitialize(mEGLDisplay, NULL, NULL))
                 {
-                    LOG_INFO << "EGL initialized via device extension (headless)";
+                    LOG_INFO << "EGL initialized via device extension (GPU direct)";
                     return;
                 }
                 mEGLDisplay = EGL_NO_DISPLAY;
             }
         }
+    }
+
+    // Fallback to default display - works when real display is connected
+    // Note: With Xvfb, this may succeed but won't support NvBufSurface operations
+    mEGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (mEGLDisplay != EGL_NO_DISPLAY)
+    {
+        if (eglInitialize(mEGLDisplay, NULL, NULL))
+        {
+            LOG_INFO << "EGL initialized via default display";
+            return;
+        }
+        mEGLDisplay = EGL_NO_DISPLAY;
     }
 
     if (mEGLDisplay == EGL_NO_DISPLAY)
