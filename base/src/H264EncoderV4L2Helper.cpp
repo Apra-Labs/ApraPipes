@@ -255,6 +255,12 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
     struct v4l2_ext_control control;
     struct v4l2_ext_controls ctrls;
 
+    // Zero-initialize structures to ensure pMVInfo starts as nullptr
+    memset(&enc_mv_metadata, 0, sizeof(enc_mv_metadata));
+    memset(&metadata, 0, sizeof(metadata));
+    memset(&control, 0, sizeof(control));
+    memset(&ctrls, 0, sizeof(ctrls));
+
     ctrls.count = 1;
     ctrls.controls = &control;
     ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
@@ -265,13 +271,25 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
     control.id = V4L2_CID_MPEG_VIDEOENC_METADATA_MV;
     control.string = (char *)&metadata;
 
-    getExtControls(ctrls);
+    int ret = getExtControls(ctrls);
+    if (ret < 0)
+    {
+        LOG_DEBUG << "getMotionVectors: IOCTL failed with error " << ret;
+        return ret;
+    }
 
     return 1;
 }
 
 void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata, frame_container &frames)
 {
+    // Check for null pointer or zero buffer size before processing
+    if (!enc_mv_metadata.pMVInfo || enc_mv_metadata.bufSize == 0)
+    {
+        LOG_DEBUG << "serializeMotionVectors: No motion vector data available";
+        return;
+    }
+
     uint32_t numMVs = enc_mv_metadata.bufSize / sizeof(MVInfo);
     MVInfo *pInfo = enc_mv_metadata.pMVInfo;
 
@@ -324,8 +342,11 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
     if (enableMotionVectors)
     {
         v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
-        getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
-        serializeMotionVectors(enc_mv_metadata, frames);
+        int ret = getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
+        if (ret > 0)
+        {
+            serializeMotionVectors(enc_mv_metadata, frames);
+        }
     }
 
     mSendFrameContainer(frames);
