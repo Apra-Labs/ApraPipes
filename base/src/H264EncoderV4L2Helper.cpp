@@ -279,6 +279,34 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
         return ret;
     }
 
+    // JetPack 5.x compatibility: validate that the IOCTL returned sane data
+    // The motion vector IOCTL may return garbage on JetPack 5.x due to API changes
+    // Validate immediately to prevent crashes in serializeMotionVectors
+    if (enc_mv_metadata.pMVInfo == nullptr || enc_mv_metadata.bufSize == 0)
+    {
+        LOG_DEBUG << "getMotionVectors: No motion vector data returned";
+        return -1;  // Indicate failure so caller skips serializeMotionVectors
+    }
+
+    // Check for garbage pointer (low addresses are invalid userspace pointers)
+    uintptr_t ptrVal = reinterpret_cast<uintptr_t>(enc_mv_metadata.pMVInfo);
+    if (ptrVal < 0x10000 || ptrVal > 0x0000FFFFFFFFFFFFULL)
+    {
+        LOG_ERROR << "getMotionVectors: Invalid pMVInfo pointer 0x" << std::hex << ptrVal
+                  << " - JetPack 5.x motion vectors may not be supported";
+        return -1;  // Indicate failure
+    }
+
+    // Validate bufSize is reasonable (not garbage)
+    uint32_t expectedMaxMacroblocks = ((mWidth + 15) / 16) * ((mHeight + 15) / 16);
+    uint32_t expectedSize = expectedMaxMacroblocks * sizeof(MVInfo);
+    if (enc_mv_metadata.bufSize > expectedSize * 2 || enc_mv_metadata.bufSize < sizeof(MVInfo))
+    {
+        LOG_ERROR << "getMotionVectors: Invalid bufSize " << enc_mv_metadata.bufSize
+                  << " (expected ~" << expectedSize << ") - JetPack 5.x motion vectors may not be supported";
+        return -1;  // Indicate failure
+    }
+
     return 1;
 }
 
