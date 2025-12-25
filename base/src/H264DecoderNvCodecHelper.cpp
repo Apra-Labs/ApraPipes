@@ -703,25 +703,30 @@ H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 		                         "Use a CPU-based decoder instead.");
 	}
 
-	CUcontext cuContext;
+	CUcontext cuContext = nullptr;
 	bool bUseDeviceFrame = false;
-	cudaVideoCodec eCodec = cudaVideoCodec_H264;;
+	cudaVideoCodec eCodec = cudaVideoCodec_H264;
 	std::mutex* pMutex = NULL;
-	bool bLowLatency = false;
-	bool bDeviceFramePitched= false; int maxWidth; int maxHeight;
-	ck(loader.cuInit(0));
+
+	if (!ck(loader.cuInit(0))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuInit failed");
+	}
 	int nGpu = 0;
 	int iGpu = 0;
-	ck(loader.cuDeviceGetCount(&nGpu));
+	if (!ck(loader.cuDeviceGetCount(&nGpu))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDeviceGetCount failed");
+	}
 	if (iGpu < 0 || iGpu >= nGpu) {
-		std::cout << "GPU ordinal out of range. Should be within [" << 0 << ", " << nGpu - 1 << "]" << std::endl;
-		return;
+		throw std::runtime_error("H264DecoderNvCodecHelper: GPU ordinal out of range. Should be within [0, " + std::to_string(nGpu - 1) + "]");
 	}
 	CUdevice cuDevice = 0;
 
-	ck(loader.cuDeviceGet(&cuDevice, iGpu));
-	char szDeviceName[80];
-	ck(loader.cuCtxCreate(&cuContext, 0, cuDevice));
+	if (!ck(loader.cuDeviceGet(&cuDevice, iGpu))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDeviceGet failed");
+	}
+	if (!ck(loader.cuCtxCreate(&cuContext, 0, cuDevice))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuCtxCreate failed (possibly out of GPU memory)");
+	}
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
 }
 
