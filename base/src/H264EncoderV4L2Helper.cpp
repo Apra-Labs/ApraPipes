@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdint>
 #include "Overlay.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -287,6 +288,33 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
     if (!enc_mv_metadata.pMVInfo || enc_mv_metadata.bufSize == 0)
     {
         LOG_DEBUG << "serializeMotionVectors: No motion vector data available";
+        return;
+    }
+
+    // Sanity check: validate bufSize is reasonable for the frame dimensions
+    // Each 16x16 macroblock has one MVInfo entry
+    uint32_t expectedMaxMacroblocks = ((mWidth + 15) / 16) * ((mHeight + 15) / 16);
+    uint32_t expectedSize = expectedMaxMacroblocks * sizeof(MVInfo);
+    uint32_t maxReasonableSize = expectedSize * 2; // 2x margin
+
+    // Validate bufSize matches expected size (with some tolerance)
+    // On JetPack 5.x, the API might return garbage if not properly supported
+    if (enc_mv_metadata.bufSize > maxReasonableSize ||
+        enc_mv_metadata.bufSize > 10 * 1024 * 1024 ||
+        enc_mv_metadata.bufSize < sizeof(MVInfo))
+    {
+        LOG_ERROR << "serializeMotionVectors: Invalid bufSize " << enc_mv_metadata.bufSize
+                  << " (expected ~" << expectedSize << "), skipping motion vectors";
+        return;
+    }
+
+    // Additional pointer validation: check pMVInfo looks like a valid userspace address
+    // On aarch64, userspace addresses are typically below 0x0000FFFFFFFFFFFF
+    uintptr_t ptrVal = reinterpret_cast<uintptr_t>(enc_mv_metadata.pMVInfo);
+    if (ptrVal < 0x10000 || ptrVal > 0x0000FFFFFFFFFFFFULL)
+    {
+        LOG_ERROR << "serializeMotionVectors: Invalid pMVInfo pointer 0x" << std::hex << ptrVal
+                  << ", skipping motion vectors";
         return;
     }
 
