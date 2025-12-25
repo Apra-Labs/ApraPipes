@@ -554,26 +554,35 @@ NvDecoder::~NvDecoder() {
 		if (m_pMutex) m_pMutex->unlock();
 	}
 
-	std::lock_guard<std::mutex> lock(m_mtxVPFrame);
-	if (m_vpFrame.size() != m_nFrameAlloc)
 	{
-		LOG_WARNING << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
-	}
-	for (uint8_t* pFrame : m_vpFrame)
-	{
-		if (m_bUseDeviceFrame)
+		std::lock_guard<std::mutex> lock(m_mtxVPFrame);
+		if (m_vpFrame.size() != m_nFrameAlloc)
 		{
-			if (m_pMutex) m_pMutex->lock();
-			loader.cuCtxPushCurrent(m_cuContext);
-			loader.cuMemFree((CUdeviceptr)pFrame);
-			loader.cuCtxPopCurrent(NULL);
-			if (m_pMutex) m_pMutex->unlock();
+			LOG_WARNING << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
 		}
-		else
+		for (uint8_t* pFrame : m_vpFrame)
 		{
-			delete[] pFrame;
+			if (m_bUseDeviceFrame)
+			{
+				if (m_pMutex) m_pMutex->lock();
+				loader.cuCtxPushCurrent(m_cuContext);
+				loader.cuMemFree((CUdeviceptr)pFrame);
+				loader.cuCtxPopCurrent(NULL);
+				if (m_pMutex) m_pMutex->unlock();
+			}
+			else
+			{
+				delete[] pFrame;
+			}
 		}
 	}
+
+	// Destroy the CUDA context we created - this was previously leaked!
+	if (m_cuContext && loader.cuCtxDestroy) {
+		loader.cuCtxDestroy(m_cuContext);
+		m_cuContext = nullptr;
+	}
+
 	STOP_TIMER("Session Deinitialization Time: ");
 }
 
