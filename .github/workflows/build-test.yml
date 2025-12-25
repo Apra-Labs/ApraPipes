@@ -379,8 +379,26 @@ jobs:
         $xmlFile = "CI_test_result_${{ inputs.flav }}.xml"
 
         & $testExe --log_format=JUNIT --log_sink=$xmlFile -p -l all
-        if ($LASTEXITCODE -ne 0) {
-          Write-Host "Test execution returned error (some tests may have failed or been skipped)"
+        $testExitCode = $LASTEXITCODE
+
+        # Parse XML to check for actual test failures/errors
+        if (Test-Path $xmlFile) {
+          [xml]$results = Get-Content $xmlFile
+          $errors = [int]$results.testsuite.errors
+          $failures = [int]$results.testsuite.failures
+          $tests = [int]$results.testsuite.tests
+          $skipped = [int]$results.testsuite.skipped
+          $passed = $tests - $skipped - $errors - $failures
+
+          Write-Host "Test Results: $passed passed, $failures failures, $errors errors, $skipped skipped (total: $tests)"
+
+          if ($errors -gt 0 -or $failures -gt 0) {
+            Write-Host "::error::Tests failed: $failures failures, $errors errors"
+            exit 1
+          }
+        } elseif ($testExitCode -ne 0) {
+          Write-Host "::error::Test execution failed with exit code $testExitCode and no results file"
+          exit 1
         }
       timeout-minutes: 30
 

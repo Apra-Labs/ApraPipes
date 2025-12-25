@@ -170,7 +170,27 @@ jobs:
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       run: |
-        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+        TEST_EXIT=$?
+
+        # Parse XML to check for actual test failures/errors
+        if [ -f "CI_test_result_${{inputs.flav}}.xml" ]; then
+          ERRORS=$(grep -oE 'errors="[0-9]+"' CI_test_result_${{inputs.flav}}.xml | head -1 | grep -oE '[0-9]+')
+          FAILURES=$(grep -oE 'failures="[0-9]+"' CI_test_result_${{inputs.flav}}.xml | head -1 | grep -oE '[0-9]+')
+          TESTS=$(grep -oE 'tests="[0-9]+"' CI_test_result_${{inputs.flav}}.xml | head -1 | grep -oE '[0-9]+')
+          SKIPPED=$(grep -oE 'skipped="[0-9]+"' CI_test_result_${{inputs.flav}}.xml | head -1 | grep -oE '[0-9]+')
+          PASSED=$((TESTS - SKIPPED - ERRORS - FAILURES))
+
+          echo "Test Results: $PASSED passed, $FAILURES failures, $ERRORS errors, $SKIPPED skipped (total: $TESTS)"
+
+          if [ "$ERRORS" -gt 0 ] || [ "$FAILURES" -gt 0 ]; then
+            echo "::error::Tests failed: $FAILURES failures, $ERRORS errors"
+            exit 1
+          fi
+        elif [ $TEST_EXIT -ne 0 ]; then
+          echo "::error::Test execution failed with exit code $TEST_EXIT and no results file"
+          exit 1
+        fi
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
 
     - name: Upload Test Results

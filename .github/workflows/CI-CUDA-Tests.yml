@@ -173,16 +173,58 @@ jobs:
       if: needs.setup.outputs.os == 'linux'
       run: |
         # Run from workspace root so tests find ./data folder
-        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${FLAV}.xml -p -l all || echo 'test execution returned error'
+        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${FLAV}.xml -p -l all
+        TEST_EXIT=$?
+
+        # Parse XML to check for actual test failures/errors
+        if [ -f "CI_test_result_${FLAV}.xml" ]; then
+          ERRORS=$(grep -oP 'errors="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          FAILURES=$(grep -oP 'failures="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          TESTS=$(grep -oP 'tests="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          SKIPPED=$(grep -oP 'skipped="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          PASSED=$((TESTS - SKIPPED - ERRORS - FAILURES))
+
+          echo "Test Results: $PASSED passed, $FAILURES failures, $ERRORS errors, $SKIPPED skipped (total: $TESTS)"
+
+          if [ "$ERRORS" -gt 0 ] || [ "$FAILURES" -gt 0 ]; then
+            echo "::error::Tests failed: $FAILURES failures, $ERRORS errors"
+            exit 1
+          fi
+        elif [ $TEST_EXIT -ne 0 ]; then
+          echo "::error::Test execution failed with exit code $TEST_EXIT and no results file"
+          exit 1
+        fi
       timeout-minutes: 30
 
     - name: Run CUDA Tests (Windows)
       if: needs.setup.outputs.os == 'windows'
+      shell: pwsh
       run: |
         # Run from workspace root so tests find ./data folder
-        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_$env:FLAV.xml -p -l all || echo 'test execution returned error'
+        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_$env:FLAV.xml -p -l all
+        $testExitCode = $LASTEXITCODE
+        $xmlFile = "CI_test_result_$env:FLAV.xml"
+
+        # Parse XML to check for actual test failures/errors
+        if (Test-Path $xmlFile) {
+          [xml]$results = Get-Content $xmlFile
+          $errors = [int]$results.testsuite.errors
+          $failures = [int]$results.testsuite.failures
+          $tests = [int]$results.testsuite.tests
+          $skipped = [int]$results.testsuite.skipped
+          $passed = $tests - $skipped - $errors - $failures
+
+          Write-Host "Test Results: $passed passed, $failures failures, $errors errors, $skipped skipped (total: $tests)"
+
+          if ($errors -gt 0 -or $failures -gt 0) {
+            Write-Host "::error::Tests failed: $failures failures, $errors errors"
+            exit 1
+          }
+        } elseif ($testExitCode -ne 0) {
+          Write-Host "::error::Test execution failed with exit code $testExitCode and no results file"
+          exit 1
+        }
       timeout-minutes: 30
-      shell: pwsh
 
     - name: Upload CUDA Test Results
       if: always()
