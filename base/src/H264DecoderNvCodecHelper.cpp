@@ -554,35 +554,28 @@ NvDecoder::~NvDecoder() {
 		if (m_pMutex) m_pMutex->unlock();
 	}
 
+	std::lock_guard<std::mutex> lock(m_mtxVPFrame);
+	if (m_vpFrame.size() != m_nFrameAlloc)
 	{
-		std::lock_guard<std::mutex> lock(m_mtxVPFrame);
-		if (m_vpFrame.size() != m_nFrameAlloc)
+		LOG_WARNING << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
+	}
+	for (uint8_t* pFrame : m_vpFrame)
+	{
+		if (m_bUseDeviceFrame)
 		{
-			LOG_WARNING << "nFrameAlloc(" << m_nFrameAlloc << ") != m_vpFrame.size()(" << m_vpFrame.size() << ")";
+			if (m_pMutex) m_pMutex->lock();
+			loader.cuCtxPushCurrent(m_cuContext);
+			loader.cuMemFree((CUdeviceptr)pFrame);
+			loader.cuCtxPopCurrent(NULL);
+			if (m_pMutex) m_pMutex->unlock();
 		}
-		for (uint8_t* pFrame : m_vpFrame)
+		else
 		{
-			if (m_bUseDeviceFrame)
-			{
-				if (m_pMutex) m_pMutex->lock();
-				loader.cuCtxPushCurrent(m_cuContext);
-				loader.cuMemFree((CUdeviceptr)pFrame);
-				loader.cuCtxPopCurrent(NULL);
-				if (m_pMutex) m_pMutex->unlock();
-			}
-			else
-			{
-				delete[] pFrame;
-			}
+			delete[] pFrame;
 		}
 	}
-
-	// Destroy the CUDA context we created - this was previously leaked!
-	if (m_cuContext && loader.cuCtxDestroy) {
-		loader.cuCtxDestroy(m_cuContext);
-		m_cuContext = nullptr;
-	}
-
+	// Note: NvDecoder does NOT own the context, so we don't destroy it here.
+	// The context should be destroyed by whoever created it (e.g., H264DecoderNvCodecHelper).
 	STOP_TIMER("Session Deinitialization Time: ");
 }
 
@@ -736,7 +729,23 @@ H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 	if (!ck(loader.cuCtxCreate(&cuContext, 0, cuDevice))) {
 		throw std::runtime_error("H264DecoderNvCodecHelper: cuCtxCreate failed (possibly out of GPU memory)");
 	}
+	m_ownedContext = cuContext;  // Store so we can destroy in destructor
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
+}
+
+H264DecoderNvCodecHelper::~H264DecoderNvCodecHelper()
+{
+	// First destroy the helper (which uses the context)
+	helper.reset();
+
+	// Then destroy the context we created
+	if (m_ownedContext) {
+		auto& loader = CudaDriverLoader::getInstance();
+		if (loader.isAvailable() && loader.cuCtxDestroy) {
+			loader.cuCtxDestroy(m_ownedContext);
+		}
+		m_ownedContext = nullptr;
+	}
 }
 
 bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)
