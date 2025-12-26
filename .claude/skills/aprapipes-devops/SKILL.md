@@ -1,6 +1,6 @@
 ---
 name: aprapipes-devops
-description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, macOS, Docker, WSL). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
+description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, macOS, Docker). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
 ---
 
 # ApraPipes DevOps Skill
@@ -85,7 +85,7 @@ Is this a CUDA build? (Check workflow name: *-CUDA.yml)
     ├─ macOS NoCUDA → troubleshooting.macos.md
     │   └─ GitHub-hosted, two-phase builds
     │
-    └─ Docker/WSL → troubleshooting.containers.md
+    └─ Docker → troubleshooting.containers.md
         └─ Container-specific issues
 ```
 
@@ -267,7 +267,6 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 | macOS NoCUDA | troubleshooting.macos.md | troubleshooting.vcpkg.md, reference.md |
 | Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
 | Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
-| WSL builds | troubleshooting.containers.md | troubleshooting.cuda.md |
 
 ### Cross-Reference Usage
 
@@ -416,7 +415,7 @@ grep "PKG_CONFIG" build.log
 - **troubleshooting.macos.md** - macOS NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
 - **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
-- **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
+- **troubleshooting.containers.md** - Docker builds (container-specific)
 - **troubleshooting.vcpkg.md** - vcpkg-specific issues (cross-platform)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)

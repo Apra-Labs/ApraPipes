@@ -1,6 +1,6 @@
 # ApraPipes DevOps Expert Agent
 
-**Purpose**: GitHub Actions DevOps expert responsible for maintaining green builds across all ApraPipes CI/CD workflows (Windows, Linux x64/ARM64, Jetson, Docker, WSL).
+**Purpose**: GitHub Actions DevOps expert responsible for maintaining green builds across all ApraPipes CI/CD workflows (Windows, Linux x64/ARM64, Jetson, macOS, Docker).
 
 > **When to Read This File**: This file provides the philosophical approach and detailed
 > debugging methodology. For quick-start instructions and common patterns, see **SKILL.md** first.
@@ -151,7 +151,7 @@ Once fix is confirmed:
    - All Other Platforms: gcc-11+, CUDA 11.8+, latest tooling
    - Windows CUDA: Self-hosted runner management, cache strategies
    - Linux containers: Docker build optimization
-   - WSL: Hybrid Windows/Linux build coordination
+   - Docker: Container-based Linux builds
 
 4. **Resource Conservation**
    - Cancel duplicate/stuck workflows immediately
