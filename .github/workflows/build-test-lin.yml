@@ -260,9 +260,9 @@ jobs:
         # Use xvfb-run for headless display on self-hosted runners (for GTK/EGL tests)
         if command -v xvfb-run &> /dev/null; then
           echo "Using Xvfb virtual display for headless testing"
-          xvfb-run -a --server-args="-screen 0 1920x1080x24" ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
         else
-          ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+          ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
         fi
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     

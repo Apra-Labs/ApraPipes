@@ -4,16 +4,26 @@
 #include "RawImagePlanarMetadata.h"
 #include "DMAFDWrapper.h"
 #include "DMAAllocator.h"
+#include "ApraEGLDisplay.h"
 #include "Logger.h"
 
 #include <fstream>
 
 #include <boost/test/unit_test.hpp>
 
+// Helper macro to skip DMA tests when EGL/DMA is not capable (headless CI)
+// Uses isDMACapable() which tests actual eglImage creation, not just display init
+#define SKIP_IF_NO_DMA_CAPABLE() \
+    if (!ApraEGLDisplay::isDMACapable()) { \
+        LOG_WARNING << "Skipping test - DMA/eglImage not available (headless mode)"; \
+        return; \
+    }
+
 BOOST_AUTO_TEST_SUITE(frame_factory_test_dma)
 
 BOOST_AUTO_TEST_CASE(frame_factory_test_dmabuf)
 {
+	SKIP_IF_NO_DMA_CAPABLE();
 	framemetadata_sp metadata(new RawImageMetadata(640,480,ImageMetadata::RGBA,CV_8UC4,0,CV_8U,FrameMetadata::MemType::DMABUF));
 	boost::shared_ptr<FrameFactory> fact(new FrameFactory(metadata));
 	auto f1 = fact->create(1228800, fact);//uses 1 chunk size of metadata is 921600
@@ -23,6 +33,7 @@ BOOST_AUTO_TEST_CASE(frame_factory_test_dmabuf)
 
 BOOST_AUTO_TEST_CASE(memory_alloc_test)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t size = width * height * 3 >> 1;
@@ -40,6 +51,7 @@ BOOST_AUTO_TEST_CASE(memory_alloc_test)
 
 BOOST_AUTO_TEST_CASE(save_yuv420)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t sizeY = width*height;
@@ -98,6 +110,7 @@ BOOST_AUTO_TEST_CASE(save_yuv420)
 
 BOOST_AUTO_TEST_CASE(save_nv12)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t sizeY = width*height;
@@ -149,6 +162,7 @@ BOOST_AUTO_TEST_CASE(save_nv12)
 
 BOOST_AUTO_TEST_CASE(save_rgba)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t size = width * height * 4;
@@ -190,6 +204,7 @@ BOOST_AUTO_TEST_CASE(save_rgba)
 
 BOOST_AUTO_TEST_CASE(setMetadata_rawimage)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
@@ -206,6 +221,7 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawimage)
 
 BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
@@ -239,6 +255,7 @@ BOOST_AUTO_TEST_CASE(setMetadata_rawplanarimage)
 
 BOOST_AUTO_TEST_CASE(memcopy_read_write)
 {
+    SKIP_IF_NO_DMA_CAPABLE();
     uint32_t width = 1280;
     uint32_t height = 720;
     size_t size = width * height * 4;

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdint>
 #include "Overlay.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
@@ -255,6 +256,12 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
     struct v4l2_ext_control control;
     struct v4l2_ext_controls ctrls;
 
+    // Zero-initialize structures to ensure pMVInfo starts as nullptr
+    memset(&enc_mv_metadata, 0, sizeof(enc_mv_metadata));
+    memset(&metadata, 0, sizeof(metadata));
+    memset(&control, 0, sizeof(control));
+    memset(&ctrls, 0, sizeof(ctrls));
+
     ctrls.count = 1;
     ctrls.controls = &control;
     ctrls.ctrl_class = V4L2_CTRL_CLASS_MPEG;
@@ -265,13 +272,80 @@ H264EncoderV4L2Helper::getMotionVectors(uint32_t buffer_index,
     control.id = V4L2_CID_MPEG_VIDEOENC_METADATA_MV;
     control.string = (char *)&metadata;
 
-    getExtControls(ctrls);
+    int ret = getExtControls(ctrls);
+    if (ret < 0)
+    {
+        LOG_DEBUG << "getMotionVectors: IOCTL failed with error " << ret;
+        return ret;
+    }
+
+    // JetPack 5.x compatibility: validate that the IOCTL returned sane data
+    // The motion vector IOCTL may return garbage on JetPack 5.x due to API changes
+    // Validate immediately to prevent crashes in serializeMotionVectors
+    if (enc_mv_metadata.pMVInfo == nullptr || enc_mv_metadata.bufSize == 0)
+    {
+        LOG_DEBUG << "getMotionVectors: No motion vector data returned";
+        return -1;  // Indicate failure so caller skips serializeMotionVectors
+    }
+
+    // Check for garbage pointer (low addresses are invalid userspace pointers)
+    uintptr_t ptrVal = reinterpret_cast<uintptr_t>(enc_mv_metadata.pMVInfo);
+    if (ptrVal < 0x10000 || ptrVal > 0x0000FFFFFFFFFFFFULL)
+    {
+        LOG_ERROR << "getMotionVectors: Invalid pMVInfo pointer 0x" << std::hex << ptrVal
+                  << " - JetPack 5.x motion vectors may not be supported";
+        return -1;  // Indicate failure
+    }
+
+    // Validate bufSize is reasonable (not garbage)
+    uint32_t expectedMaxMacroblocks = ((mWidth + 15) / 16) * ((mHeight + 15) / 16);
+    uint32_t expectedSize = expectedMaxMacroblocks * sizeof(MVInfo);
+    if (enc_mv_metadata.bufSize > expectedSize * 2 || enc_mv_metadata.bufSize < sizeof(MVInfo))
+    {
+        LOG_ERROR << "getMotionVectors: Invalid bufSize " << enc_mv_metadata.bufSize
+                  << " (expected ~" << expectedSize << ") - JetPack 5.x motion vectors may not be supported";
+        return -1;  // Indicate failure
+    }
 
     return 1;
 }
 
 void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata, frame_container &frames)
 {
+    // Check for null pointer or zero buffer size before processing
+    if (!enc_mv_metadata.pMVInfo || enc_mv_metadata.bufSize == 0)
+    {
+        LOG_DEBUG << "serializeMotionVectors: No motion vector data available";
+        return;
+    }
+
+    // Sanity check: validate bufSize is reasonable for the frame dimensions
+    // Each 16x16 macroblock has one MVInfo entry
+    uint32_t expectedMaxMacroblocks = ((mWidth + 15) / 16) * ((mHeight + 15) / 16);
+    uint32_t expectedSize = expectedMaxMacroblocks * sizeof(MVInfo);
+    uint32_t maxReasonableSize = expectedSize * 2; // 2x margin
+
+    // Validate bufSize matches expected size (with some tolerance)
+    // On JetPack 5.x, the API might return garbage if not properly supported
+    if (enc_mv_metadata.bufSize > maxReasonableSize ||
+        enc_mv_metadata.bufSize > 10 * 1024 * 1024 ||
+        enc_mv_metadata.bufSize < sizeof(MVInfo))
+    {
+        LOG_ERROR << "serializeMotionVectors: Invalid bufSize " << enc_mv_metadata.bufSize
+                  << " (expected ~" << expectedSize << "), skipping motion vectors";
+        return;
+    }
+
+    // Additional pointer validation: check pMVInfo looks like a valid userspace address
+    // On aarch64, userspace addresses are typically below 0x0000FFFFFFFFFFFF
+    uintptr_t ptrVal = reinterpret_cast<uintptr_t>(enc_mv_metadata.pMVInfo);
+    if (ptrVal < 0x10000 || ptrVal > 0x0000FFFFFFFFFFFFULL)
+    {
+        LOG_ERROR << "serializeMotionVectors: Invalid pMVInfo pointer 0x" << std::hex << ptrVal
+                  << ", skipping motion vectors";
+        return;
+    }
+
     uint32_t numMVs = enc_mv_metadata.bufSize / sizeof(MVInfo);
     MVInfo *pInfo = enc_mv_metadata.pMVInfo;
 
@@ -323,9 +397,23 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 
     if (enableMotionVectors)
     {
-        v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
-        getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
-        serializeMotionVectors(enc_mv_metadata, frames);
+        try
+        {
+            v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
+            int ret = getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
+            if (ret > 0)
+            {
+                serializeMotionVectors(enc_mv_metadata, frames);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR << "Motion vector extraction failed: " << e.what();
+        }
+        catch (...)
+        {
+            LOG_ERROR << "Motion vector extraction failed with unknown exception";
+        }
     }
 
     mSendFrameContainer(frames);

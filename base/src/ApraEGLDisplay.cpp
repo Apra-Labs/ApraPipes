@@ -1,5 +1,9 @@
 #include "ApraEGLDisplay.h"
 #include "AIPExceptions.h"
+#include "Logger.h"
+#include "nvbuf_utils.h"
+#include <EGL/eglext.h>
+#include <cstdlib>
 
 boost::shared_ptr<ApraEGLDisplay> ApraEGLDisplay::instance;
 
@@ -14,18 +18,125 @@ EGLDisplay ApraEGLDisplay::getEGLDisplay()
     return instance->mEGLDisplay;
 }
 
-ApraEGLDisplay::ApraEGLDisplay()
+bool ApraEGLDisplay::isDMACapable()
 {
-    mEGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (mEGLDisplay == EGL_NO_DISPLAY)
+    if (!instance.get())
     {
-        throw AIPException(AIP_FATAL, "eglGetDisplay failed");
+        instance.reset(new ApraEGLDisplay());
     }
 
-    if (!eglInitialize(mEGLDisplay, NULL, NULL))
+    // Lazy test DMA capability on first call
+    if (!instance->mDMACapabilityTested)
     {
-        throw AIPException(AIP_FATAL, "eglInitialize failed");
+        instance->mDMACapable = instance->testDMACapability();
+        instance->mDMACapabilityTested = true;
     }
+
+    return instance->mDMACapable;
+}
+
+bool ApraEGLDisplay::testDMACapability()
+{
+    if (mEGLDisplay == EGL_NO_DISPLAY)
+    {
+        LOG_DEBUG << "DMA capability test: No EGL display";
+        return false;
+    }
+
+    // Create a small test NvBuffer
+    NvBufferCreateParams params = {0};
+    params.width = 64;
+    params.height = 64;
+    params.layout = NvBufferLayout_Pitch;
+    params.colorFormat = NvBufferColorFormat_ABGR32;
+    params.payloadType = NvBufferPayload_SurfArray;
+    params.nvbuf_tag = NvBufferTag_NONE;
+
+    int fd = -1;
+    if (NvBufferCreateEx(&fd, &params))
+    {
+        LOG_DEBUG << "DMA capability test: NvBufferCreateEx failed";
+        return false;
+    }
+
+    // Try to create EGLImage from the buffer
+    EGLImageKHR eglImage = NvEGLImageFromFd(mEGLDisplay, fd);
+    bool capable = (eglImage != EGL_NO_IMAGE_KHR);
+
+    // Cleanup
+    if (eglImage != EGL_NO_IMAGE_KHR)
+    {
+        NvDestroyEGLImage(mEGLDisplay, eglImage);
+    }
+    NvBufferDestroy(fd);
+
+    if (capable)
+    {
+        LOG_INFO << "DMA capability test: PASSED - eglImage creation works";
+    }
+    else
+    {
+        LOG_WARNING << "DMA capability test: FAILED - eglImage creation not supported";
+    }
+
+    return capable;
+}
+
+ApraEGLDisplay::ApraEGLDisplay() : mDMACapable(false), mDMACapabilityTested(false)
+{
+    mEGLDisplay = EGL_NO_DISPLAY;
+
+    // For NvBufSurface/DMA operations on headless Jetson, we need the NVIDIA GPU's
+    // EGL display, not Xvfb's software display. Try device extension FIRST.
+    // This gives us direct GPU access without requiring X11/Xvfb.
+    PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
+        (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
+    PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+        (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+    if (eglQueryDevicesEXT && eglGetPlatformDisplayEXT)
+    {
+        EGLDeviceEXT devices[8];
+        EGLint numDevices;
+        if (eglQueryDevicesEXT(8, devices, &numDevices) && numDevices > 0)
+        {
+            // Try first device (usually the NVIDIA GPU)
+            mEGLDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
+            if (mEGLDisplay != EGL_NO_DISPLAY)
+            {
+                if (eglInitialize(mEGLDisplay, NULL, NULL))
+                {
+                    LOG_INFO << "EGL initialized via device extension (GPU direct)";
+                    return;
+                }
+                mEGLDisplay = EGL_NO_DISPLAY;
+            }
+        }
+    }
+
+    // Fallback to default display - works when real display is connected
+    // Note: With Xvfb, this may succeed but won't support NvBufSurface operations
+    mEGLDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (mEGLDisplay != EGL_NO_DISPLAY)
+    {
+        if (eglInitialize(mEGLDisplay, NULL, NULL))
+        {
+            LOG_INFO << "EGL initialized via default display";
+            return;
+        }
+        mEGLDisplay = EGL_NO_DISPLAY;
+    }
+
+    if (mEGLDisplay == EGL_NO_DISPLAY)
+    {
+        LOG_WARNING << "EGL display not available - DMA/GPU operations will fail. "
+                    << "This is expected on headless systems without GPU access.";
+    }
+}
+
+bool ApraEGLDisplay::isAvailable()
+{
+    return getEGLDisplay() != EGL_NO_DISPLAY;
 }
 
 ApraEGLDisplay::~ApraEGLDisplay()
