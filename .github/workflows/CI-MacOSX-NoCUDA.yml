@@ -1,13 +1,12 @@
 name: CI-MacOSX-NoCUDA
 
 on:
-  # Temporarily disabled push/PR triggers during CI refactoring (PR #462)
-  # push:
-  #   paths-ignore:
-  #     - '**.md'
-  #     - '.github/docs/**'
-  #     - '.claude/**'
-  #     - 'docs/**'
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
   # pull_request:
   #   branches: [ main ]
   #   paths-ignore:
@@ -23,15 +22,21 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
 
 permissions:
   actions: write  # Required for cache deletion via gh cache delete
   contents: read  # Required for checkout
+  checks: write
+  pull-requests: write
 
 jobs:
-  mac-build:
+  ci:
     uses: ./.github/workflows/build-test-macosx.yml
     with:
       runner: '["macos-15-intel"]'
@@ -41,9 +46,10 @@ jobs:
       is-prep-phase: false
       nProc: 3
       force-cache-update: ${{ inputs.force-cache-update == true }}
-  mac-report:
-    needs: mac-build
-    if: ${{ always() }}
+
+  report:
+    needs: ci
+    if: always()
     permissions:
       checks: write
       pull-requests: write
