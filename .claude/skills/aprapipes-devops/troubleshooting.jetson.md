@@ -28,34 +28,15 @@ Platform-specific troubleshooting for Jetson ARM64 builds with CUDA.
 
 | JetPack | L4T | Ubuntu | CUDA | cuDNN | GCC | GLIBC | Notes |
 |---------|-----|--------|------|-------|-----|-------|-------|
-| 4.x | 32.x | 18.04 | 10.2 | 8.0 | 7/8 | 2.27 | Legacy, GitHub Actions Node 20 incompatible |
 | 5.0 | 35.1 | 20.04 | 11.4 | 8.6 | 9.4 | 2.31 | **Recommended minimum** |
 | 5.1+ | 35.x | 20.04 | 11.4+ | 8.6+ | 9.4 | 2.31 | Current |
 | 6.0+ | 36.x | 22.04 | 12.x | 8.9+ | 11+ | 2.35 | Latest |
 
-**CRITICAL**: JetPack 4.x (Ubuntu 18.04) is **no longer supported** by GitHub Actions. The runner requires GLIBC 2.28+ for Node 20 (mandatory since Nov 2024).
+**Note**: JetPack 4.x (Ubuntu 18.04) is **not supported** as of December 2025. GitHub Actions requires GLIBC 2.28+ for Node 20.
 
 ---
 
-## Issue J1: GitHub Actions Runner GLIBC Error
-
-**Symptom**:
-```
-GLIBC_2.28 not found (required by node20/bin/node)
-```
-
-**Root Cause**:
-- GitHub Actions Node 16 reached EOL November 2024
-- Runner 2.330.0+ requires Node 20, which needs GLIBC 2.28+
-- Ubuntu 18.04 (JetPack 4.x) only has GLIBC 2.27
-
-**Fix**: **Upgrade to JetPack 5.0+ (Ubuntu 20.04)** - no workaround exists.
-
-**Invariant**: Self-hosted runners MUST run Ubuntu 20.04+ for GitHub Actions compatibility.
-
----
-
-## Issue J2: Disk Space Exhaustion on Embedded Devices
+## Issue J1: Disk Space Exhaustion on Embedded Devices
 
 **Symptom**:
 ```
@@ -90,7 +71,7 @@ rm -rf ~/.cache/pip               # Pip cache
 
 ---
 
-## Issue J3: GCC Version Mismatch Across Platforms
+## Issue J2: GCC Version Mismatch Across Platforms
 
 **Symptom**:
 ```
@@ -120,7 +101,7 @@ CMAKE_C_COMPILER not set
 
 ---
 
-## Issue J4: Static vs Shared Library Linking
+## Issue J3: Static vs Shared Library Linking
 
 **Symptom**:
 ```
@@ -154,7 +135,7 @@ find_library(MYLIB NAMES libfoo.so libfoo.a foo REQUIRED)
 
 ---
 
-## Issue J5: vcpkg libpng vs OpenCV Header Path Mismatch
+## Issue J4: vcpkg libpng vs OpenCV Header Path Mismatch
 
 **Symptom**:
 ```
@@ -181,7 +162,7 @@ endif()
 
 ---
 
-## Issue J6: Missing CUDA Libraries on Minimal JetPack Install
+## Issue J5: Missing CUDA Libraries on Minimal JetPack Install
 
 **Symptom**:
 ```
@@ -211,7 +192,7 @@ ls /usr/local/cuda/lib64/libnpp*.so
 
 ---
 
-## Issue J7: PKG_CONFIG_PATH Version Mismatch
+## Issue J6: PKG_CONFIG_PATH Version Mismatch
 
 **Symptom**:
 ```
@@ -236,7 +217,7 @@ set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:$ENV{PKG_CONFIG_PATH}")
 
 ---
 
-## Issue J8: JetPack 5.x Multimedia API Breaking Changes
+## Issue J7: JetPack 5.x Multimedia API Breaking Changes
 
 **Symptom**:
 ```
@@ -245,12 +226,9 @@ error: nvbuf_utils.h: No such file or directory
 ```
 
 **Root Cause**:
-- JetPack 5.0 renamed/replaced multimedia libraries from JetPack 4.x:
-  - `libnvbuf_utils.so` → `libnvbufsurface.so`
-  - `nvbuf_utils.h` → Header removed (API changed to NvBufSurface)
-  - `nveglstream_camconsumer` → Removed entirely
+JetPack 5.0 renamed/replaced multimedia libraries from JetPack 4.x. See `knowledge_docs/jetson-jp5.md` for full API migration details.
 
-**Fix - Accept Both Library Names**:
+**Fix - Accept Both Library Names in CMake**:
 ```cmake
 # Accept either library name
 find_library(NVBUFUTILSLIB NAMES nvbufsurface nvbuf_utils REQUIRED)
@@ -262,33 +240,13 @@ if(EGLSTREAM_CAMCONSUMER_LIB)
 endif()
 ```
 
-**Fix - Create Compatibility Header**:
-```c
-// base/include/nvbuf_utils.h - Compatibility layer
-#pragma once
-#if defined(__aarch64__) && !defined(NVBUF_UTILS_COMPAT_H)
-#define NVBUF_UTILS_COMPAT_H
+**Invariant**: Use NAMES keyword in find_library to accept both old and new library names.
 
-#include <nvbufsurface.h>
-#include <nvbufsurftransform.h>
-
-// Map old types to new
-typedef NvBufSurface NvBufferSession;
-#define NvBufferColorFormat_NV12 NVBUF_COLOR_FORMAT_NV12
-
-// Compatibility functions
-static inline int NvBufferGetParams(int fd, void* params) {
-    // Implementation using NvBufSurface API
-}
-
-#endif
-```
-
-**Invariant**: JetPack 5.x has breaking multimedia API changes - use NAMES keyword in find_library and create compatibility headers.
+**Technical Reference**: See `knowledge_docs/jetson-jp5.md` for NvBuffer→NvBufSurface API migration, compatibility layer implementation, and V4L2 mmap handling.
 
 ---
 
-## Issue J9: CUDA Runtime Libraries Not in ldconfig
+## Issue J8: CUDA Runtime Libraries Not in ldconfig
 
 **Symptom**:
 ```
@@ -316,7 +274,7 @@ ldconfig -p | grep npp
 
 ---
 
-## Issue J10: Headless Display for GTK/EGL Tests
+## Issue J9: Headless Display for GTK/EGL Tests
 
 **Symptom**:
 - Tests hang indefinitely
@@ -441,9 +399,8 @@ export VCPKG_MAX_CONCURRENCY=4         # Limit parallelism (memory constraints)
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `GLIBC_2.28 not found` | Ubuntu 18.04 | Upgrade to JetPack 5.0+ |
 | `No space left on device` | Root filesystem full | Set `XDG_CACHE_HOME=/data/.cache` |
-| `nvbuf_utils not found` | JetPack 5.x | Use `NAMES nvbufsurface nvbuf_utils` |
+| `nvbuf_utils not found` | JetPack 5.x API change | Use `NAMES nvbufsurface nvbuf_utils` |
 | `libnpp*.so not found` | Missing ldconfig | Add CUDA path to ldconfig |
 | Tests hang | Headless display | Use xvfb-run |
 | `dlsym undefined` | Static linking | Add `${CMAKE_DL_LIBS}` |

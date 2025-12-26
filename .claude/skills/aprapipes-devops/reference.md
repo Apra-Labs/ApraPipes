@@ -103,7 +103,7 @@ vcpkg/
 
 ### vcpkg-configuration.json - Registry and Baseline
 
-**Location**: `base/vcpkg-configuration.json`
+**Location**: `vcpkg/baseline.json`
 
 **Structure**:
 ```json
@@ -468,7 +468,7 @@ on:
 
 **Current** (v5):
 ```yaml
-key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 restore-keys: ${{ inputs.flav }}-5-
 ```
 
@@ -479,7 +479,7 @@ restore-keys: ${{ inputs.flav }}-5-
 
 **Files Hashed**:
 - `base/vcpkg.json`: Changes when dependencies added/removed
-- `base/vcpkg-configuration.json`: Changes when baseline updated
+- `vcpkg/baseline.json`: Changes when baseline updated
 - `submodule_ver.txt`: Changes when vcpkg submodule updated
 
 ### Cache Invalidation
@@ -503,6 +503,34 @@ Change `5` to `6` in cache key definition in `build-test-win.yml` or `build-test
 | Phase 1 saves, Phase 2 restores | Expected flow |
 | Phase 2 before Phase 1 | Cache miss (run Phase 1 first) |
 
+### Force Cache Update
+
+Use `force-cache-update` when:
+1. **Cache corruption**: Incomplete or broken cached packages
+2. **Dependency upgrades**: Forcing rebuild with newer vcpkg package versions
+3. **Debugging**: Eliminating cache as source of build issues
+4. **Cache bloat**: Resetting to clean state
+
+**Mechanism**: When `force-cache-update: true`, the workflow:
+1. Restores cache (read-only operation)
+2. Deletes the restored cache from GitHub's cache storage
+3. Builds all packages fresh via CMake/vcpkg
+4. Saves new cache after configure completes
+
+**Triggering via GitHub UI**:
+1. Navigate to Actions tab
+2. Select workflow (e.g., "CI-Win-NoCUDA")
+3. Click "Run workflow"
+4. Check "Force cache rebuild" checkbox
+5. Click "Run workflow"
+
+**Permissions Required**:
+```yaml
+permissions:
+  actions: write  # For cache deletion via gh CLI
+  contents: read  # For checkout
+```
+
 ### Cache Optimization Tip - Preserving Cache During Development
 
 **Problem**: Cache invalidates on every vcpkg.json change, causing hours of rebuilding the same packages repeatedly.
@@ -511,7 +539,7 @@ Change `5` to `6` in cache key definition in `build-test-win.yml` or `build-test
 
 **Standard Cache Key** (production):
 ```yaml
-key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 restore-keys: ${{ inputs.flav }}-5-
 ```
 
@@ -1009,3 +1037,78 @@ grep "win-nocuda-build-test" /tmp/build.log  # Phase 2
 **Python Version**: 3.10.11
 **CMake Version**: 3.29.6
 **Cache Version**: 5
+
+---
+
+## Operational Wisdom
+
+Non-obvious patterns learned from production experience.
+
+### Git Branch Naming
+
+**Problem:** A branch named `docs` prevents creating `docs/anything` due to Git ref namespace rules.
+
+**Rule:** Never create single-word branches that could be prefixes. Use descriptive names:
+- `docs-cleanup` not `docs`
+- `fix-cuda-build` not `fix`
+- `feature-auth` not `feature`
+
+### Documentation-Only Changes
+
+**Problem:** Workflows lack `paths-ignore` filters, so docs-only changes trigger full CI builds (8+ platforms, ~20 compute-hours wasted).
+
+**Workaround:** After pushing docs-only branches, immediately cancel all triggered runs:
+```bash
+gh run list --branch <branch> --status in_progress --json databaseId -q '.[].databaseId' | xargs -I{} gh run cancel {}
+```
+
+### Include Style for System Headers
+
+**Rule:** Use angle brackets `<>` for SDK/system headers, quotes `""` for project headers.
+
+```cpp
+#include <nvjpeg.h>           // CUDA SDK header - angle brackets
+#include <nvbufsurface.h>     // JetPack header - angle brackets
+#include "MyProjectHeader.h"  // Project header - quotes
+```
+
+**Why:** Some build configurations have different include paths for system vs. project headers. Using the wrong style can cause "file not found" errors on specific platforms.
+
+### Self-Hosted Runner API Visibility
+
+**Problem:** Org-level runners don't appear in repo-level API calls.
+
+```bash
+# This returns empty even when runners exist:
+gh api repos/Apra-Labs/ApraPipes/actions/runners
+
+# Must check GitHub web UI:
+# Settings → Actions → Runners
+```
+
+### Exit Code Propagation in Scripts
+
+**Anti-pattern:**
+```bash
+$TEST_EXE ... || echo "Tests failed"  # Swallows exit code!
+```
+
+**Correct:**
+```bash
+$TEST_EXE ...  # Preserves exit code
+```
+
+**Rule:** Never use `|| echo` or `|| true` after test commands - it hides failures from CI.
+
+### Concurrent Build Constraints
+
+**Rule:** Don't run concurrent builds on resource-constrained runners (Jetson, some self-hosted).
+
+**Why:** Parallel builds cause OOM kills. The runner may appear to hang or produce cryptic errors.
+
+**Mitigation:** Use workflow concurrency groups:
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```

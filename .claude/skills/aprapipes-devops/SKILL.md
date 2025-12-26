@@ -1,6 +1,6 @@
 ---
 name: aprapipes-devops
-description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, macOS, Docker, WSL). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
+description: Diagnose and fix ApraPipes CI/CD build failures across all platforms (Windows, Linux x64/ARM64, Jetson, macOS, Docker). Handles vcpkg dependencies, GitHub Actions workflows, self-hosted CUDA runners, and platform-specific issues. Use when builds fail or when modifying CI configuration.
 ---
 
 # ApraPipes DevOps Skill
@@ -85,7 +85,7 @@ Is this a CUDA build? (Check workflow name: *-CUDA.yml)
     ├─ macOS NoCUDA → troubleshooting.macos.md
     │   └─ GitHub-hosted, two-phase builds
     │
-    └─ Docker/WSL → troubleshooting.containers.md
+    └─ Docker → troubleshooting.containers.md
         └─ Container-specific issues
 ```
 
@@ -267,7 +267,6 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 | macOS NoCUDA | troubleshooting.macos.md | troubleshooting.vcpkg.md, reference.md |
 | Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
 | Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
-| WSL builds | troubleshooting.containers.md | troubleshooting.cuda.md |
 
 ### Cross-Reference Usage
 
@@ -409,6 +408,34 @@ grep "PKG_CONFIG" build.log
 
 ---
 
+## Error Pattern Quick Lookup
+
+Use this table to quickly find the right fix for common error messages. Search for key phrases in your error log.
+
+| Error Message (grep pattern) | Issue | Fix Location |
+|------------------------------|-------|--------------|
+| `No module named 'distutils'` | Python 3.12+ removed distutils | troubleshooting.windows.md → W1 |
+| `Could NOT find PkgConfig` | pkg-config missing or incompatible | troubleshooting.windows.md → W2 |
+| `unexpected hash` | Library download hash mismatch | reference.md → Hash Fix Process |
+| `no version database entry` | vcpkg baseline outdated | reference.md → Baseline Management |
+| `not our ref` / `upload-pack` | Git commit not fetchable | reference.md → vcpkg Fork Management |
+| `Cache not found` | Cache key mismatch between phases | reference.md → Cache Configuration |
+| `CUDA_HOME is not set` | CUDA env vars missing | troubleshooting.cuda.md → C1 |
+| `nvcc: command not found` | CUDA toolkit not in PATH | troubleshooting.cuda.md → C2 |
+| `cudnn.h: No such file` | cuDNN not installed | troubleshooting.cuda.md → C3 |
+| `No space left on device` | Disk full (embedded devices) | troubleshooting.jetson.md → J1 |
+| `nvbuf_utils not found` | JetPack 5.x API change | troubleshooting.jetson.md → J7 |
+| `libnpp*.so not found` | CUDA libs not in ldconfig | troubleshooting.jetson.md → J8 |
+| `dlsym@@GLIBC` undefined | Static linking missing -ldl | troubleshooting.jetson.md → J3 |
+| `libpng/png.h not found` | vcpkg header path mismatch | troubleshooting.jetson.md → J4 |
+| `version '2.x.x', required '>= 2.y'` | PKG_CONFIG_PATH wrong order | troubleshooting.jetson.md → J6 |
+| `Unsupported SFML component` | Library breaking change | reference.md → Version Pinning |
+| `glib requires feature 'libmount'` | Platform filter needed | troubleshooting.linux.md → L2 |
+
+**Not in table?** See "When Stuck" section in methodology.md for research strategies.
+
+---
+
 ## Troubleshooting Guide Index
 
 - **troubleshooting.windows.md** - Windows NoCUDA builds (GitHub-hosted, two-phase)
@@ -416,7 +443,7 @@ grep "PKG_CONFIG" build.log
 - **troubleshooting.macos.md** - macOS NoCUDA builds (GitHub-hosted, two-phase)
 - **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
 - **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
-- **troubleshooting.containers.md** - Docker and WSL builds (container-specific)
+- **troubleshooting.containers.md** - Docker builds (container-specific)
 - **troubleshooting.vcpkg.md** - vcpkg-specific issues (cross-platform)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)

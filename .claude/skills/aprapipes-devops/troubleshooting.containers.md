@@ -1,8 +1,8 @@
-# Docker/WSL Build Troubleshooting
+# Docker Build Troubleshooting
 
-Platform-specific troubleshooting for Docker containerized builds and WSL environments.
+Platform-specific troubleshooting for Docker containerized builds.
 
-**Scope**: Docker containers and Windows Subsystem for Linux (WSL) builds.
+**Scope**: Docker containers for Linux x64 CUDA builds.
 
 ---
 
@@ -91,53 +91,6 @@ docker run --user $(id -u):$(id -g) ...
 
 ---
 
-## WSL-Specific Issues
-
-### Issue WSL1: Path Translation
-
-**Symptom**:
-```
-error: cannot find file at /mnt/c/...
-Windows path not accessible from WSL
-```
-
-**Root Cause**:
-- Path format differences between Windows and WSL
-- Symbolic links not working across boundary
-
-**Fix**:
-
-Use WSL paths consistently:
-```bash
-# Instead of: /mnt/c/Users/...
-# Use: /home/user/...
-```
-
----
-
-### Issue WSL2: Network Access
-
-**Symptom**:
-```
-vcpkg download failed
-cannot connect to github.com
-```
-
-**Root Cause**:
-- WSL2 uses virtualized network
-- Firewall blocking WSL2 network
-
-**Fix**:
-
-Check WSL network configuration:
-```bash
-# Test connectivity
-ping github.com
-curl -I https://github.com
-```
-
----
-
 ## Issue D4: GitHub Actions Node.js 20 GLIBC Compatibility (RESOLVED)
 
 **Status**: As of November 2024, GitHub Actions requires GLIBC 2.28+. Ubuntu 18.04 containers are **no longer supported**.
@@ -176,29 +129,22 @@ ldd --version
 
 ---
 
-## Docker/WSL Quick Fixes Checklist
+## Docker Quick Fixes Checklist
 
-### Docker Checklist
 - [ ] vcpkg cache mounted as volume
 - [ ] Code directory mounted correctly
 - [ ] Network access available
 - [ ] User permissions correct
 - [ ] Container cleanup after builds
-
-### WSL Checklist
-- [ ] Paths use WSL format (not /mnt/c/...)
-- [ ] Network connectivity works
-- [ ] vcpkg downloads successful
-- [ ] File permissions correct
+- [ ] Ubuntu 20.04+ base image (GLIBC 2.28+)
 
 ---
 
 ## To Be Expanded
 
-This guide will be expanded as Docker/WSL-specific issues are encountered:
+This guide will be expanded as Docker-specific issues are encountered:
 - Dockerfile examples for ApraPipes builds
 - docker-compose configuration for multi-stage builds
-- WSL2 performance optimization
 - Container registry integration
 - Multi-platform Docker builds (x64 + ARM64)
 
@@ -206,5 +152,5 @@ This guide will be expanded as Docker/WSL-specific issues are encountered:
 
 ---
 
-**Applies to**: Docker containerized builds and WSL environments
+**Applies to**: Docker containerized builds
 **Related Guides**: reference.md, troubleshooting.linux.md
