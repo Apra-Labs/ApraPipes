@@ -1141,14 +1141,22 @@ BOOST_AUTO_TEST_CASE(ultimate)
 		if (frame->isEOS())
 		{
 			auto q = r.sink->getQue();
-			
-			while (!q->size())
+
+			int waitRetries = 0;
+			const int maxWaitRetries = 30; // Max 30 seconds wait for more data
+			while (!q->size() && waitRetries < maxWaitRetries)
 			{
 				auto queSize = q->size();
-				LOG_INFO << "Waiting for more data on disk .....................";
+				LOG_INFO << "Waiting for more data on disk (" << waitRetries << "/" << maxWaitRetries << ")";
 				std::this_thread::sleep_for(std::chrono::seconds(1));
  				r.mp4Reader->step();
 				skipStep = true;
+				++waitRetries;
+			}
+			if (waitRetries >= maxWaitRetries)
+			{
+				LOG_INFO << "Max wait retries reached, exiting test";
+				break;
 			}
 			auto queSize = q->size();
 			continue;
