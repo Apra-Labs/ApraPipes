@@ -16,10 +16,11 @@
 #include "ApraEGLDisplay.h"
 #endif
 
-// Helper macro to skip DMA tests when EGL display is not available (headless CI)
-#define SKIP_IF_NO_EGL_DISPLAY() \
-    if (!ApraEGLDisplay::isAvailable()) { \
-        LOG_WARNING << "Skipping test - EGL display not available (headless mode)"; \
+// Helper macro to skip DMA tests when EGL/DMA is not capable (headless CI)
+// Uses isDMACapable() which tests actual eglImage creation, not just display init
+#define SKIP_IF_NO_DMA_CAPABLE() \
+    if (!ApraEGLDisplay::isDMACapable()) { \
+        LOG_WARNING << "Skipping test - DMA/eglImage not available (headless mode)"; \
         return; \
     }
 
@@ -28,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(memtypeconversion_tests)
 BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	SKIP_IF_NO_EGL_DISPLAY();
+	SKIP_IF_NO_DMA_CAPABLE();
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/8bit_frame_1280x720_rgba.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280, 720, ImageMetadata::ImageType::RGBA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Dma_to_Device_to_Host_RGBA_1280x720)
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	SKIP_IF_NO_EGL_DISPLAY();
+	SKIP_IF_NO_DMA_CAPABLE();
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/yuv420_400x400.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(400, 400, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	fileReader->addOutputPin(metadata);
@@ -115,7 +116,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Device_to_Host_YUV420_400x400)
 BOOST_AUTO_TEST_CASE(Host_to_Device_to_Dma_to_Host_BGRA_400x400)
 {
 #if defined(__arm__) || defined(__aarch64__)
-	SKIP_IF_NO_EGL_DISPLAY();
+	SKIP_IF_NO_DMA_CAPABLE();
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_400x400_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(400, 400, ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);

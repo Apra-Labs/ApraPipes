@@ -15,10 +15,11 @@
 #include "EglRenderer.h"
 #include "ApraEGLDisplay.h"
 
-// Helper macro to skip DMA tests when EGL display is not available (headless CI)
-#define SKIP_IF_NO_EGL_DISPLAY() \
-    if (!ApraEGLDisplay::isAvailable()) { \
-        LOG_WARNING << "Skipping test - EGL display not available (headless mode)"; \
+// Helper macro to skip DMA tests when EGL/DMA is not capable (headless CI)
+// Uses isDMACapable() which tests actual eglImage creation, not just display init
+#define SKIP_IF_NO_DMA_CAPABLE() \
+    if (!ApraEGLDisplay::isDMACapable()) { \
+        LOG_WARNING << "Skipping test - DMA/eglImage not available (headless mode)"; \
         return; \
     }
 
@@ -74,7 +75,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 {
-	SKIP_IF_NO_EGL_DISPLAY();
+	SKIP_IF_NO_DMA_CAPABLE();
 	Logger::setLogLevel("info");
 
 	// metadata is known

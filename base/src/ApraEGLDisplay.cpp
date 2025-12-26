@@ -1,6 +1,7 @@
 #include "ApraEGLDisplay.h"
 #include "AIPExceptions.h"
 #include "Logger.h"
+#include "nvbuf_utils.h"
 #include <EGL/eglext.h>
 #include <cstdlib>
 
@@ -17,7 +18,71 @@ EGLDisplay ApraEGLDisplay::getEGLDisplay()
     return instance->mEGLDisplay;
 }
 
-ApraEGLDisplay::ApraEGLDisplay()
+bool ApraEGLDisplay::isDMACapable()
+{
+    if (!instance.get())
+    {
+        instance.reset(new ApraEGLDisplay());
+    }
+
+    // Lazy test DMA capability on first call
+    if (!instance->mDMACapabilityTested)
+    {
+        instance->mDMACapable = instance->testDMACapability();
+        instance->mDMACapabilityTested = true;
+    }
+
+    return instance->mDMACapable;
+}
+
+bool ApraEGLDisplay::testDMACapability()
+{
+    if (mEGLDisplay == EGL_NO_DISPLAY)
+    {
+        LOG_DEBUG << "DMA capability test: No EGL display";
+        return false;
+    }
+
+    // Create a small test NvBuffer
+    NvBufferCreateParams params = {0};
+    params.width = 64;
+    params.height = 64;
+    params.layout = NvBufferLayout_Pitch;
+    params.colorFormat = NvBufferColorFormat_ABGR32;
+    params.payloadType = NvBufferPayload_SurfArray;
+    params.nvbuf_tag = NvBufferTag_NONE;
+
+    int fd = -1;
+    if (NvBufferCreateEx(&fd, &params))
+    {
+        LOG_DEBUG << "DMA capability test: NvBufferCreateEx failed";
+        return false;
+    }
+
+    // Try to create EGLImage from the buffer
+    EGLImageKHR eglImage = NvEGLImageFromFd(mEGLDisplay, fd);
+    bool capable = (eglImage != EGL_NO_IMAGE_KHR);
+
+    // Cleanup
+    if (eglImage != EGL_NO_IMAGE_KHR)
+    {
+        NvDestroyEGLImage(mEGLDisplay, eglImage);
+    }
+    NvBufferDestroy(fd);
+
+    if (capable)
+    {
+        LOG_INFO << "DMA capability test: PASSED - eglImage creation works";
+    }
+    else
+    {
+        LOG_WARNING << "DMA capability test: FAILED - eglImage creation not supported";
+    }
+
+    return capable;
+}
+
+ApraEGLDisplay::ApraEGLDisplay() : mDMACapable(false), mDMACapabilityTested(false)
 {
     mEGLDisplay = EGL_NO_DISPLAY;
 
