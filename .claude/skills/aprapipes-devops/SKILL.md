@@ -408,6 +408,34 @@ grep "PKG_CONFIG" build.log
 
 ---
 
+## Error Pattern Quick Lookup
+
+Use this table to quickly find the right fix for common error messages. Search for key phrases in your error log.
+
+| Error Message (grep pattern) | Issue | Fix Location |
+|------------------------------|-------|--------------|
+| `No module named 'distutils'` | Python 3.12+ removed distutils | troubleshooting.windows.md → W1 |
+| `Could NOT find PkgConfig` | pkg-config missing or incompatible | troubleshooting.windows.md → W2 |
+| `unexpected hash` | Library download hash mismatch | reference.md → Hash Fix Process |
+| `no version database entry` | vcpkg baseline outdated | reference.md → Baseline Management |
+| `not our ref` / `upload-pack` | Git commit not fetchable | reference.md → vcpkg Fork Management |
+| `Cache not found` | Cache key mismatch between phases | reference.md → Cache Configuration |
+| `CUDA_HOME is not set` | CUDA env vars missing | troubleshooting.cuda.md → C1 |
+| `nvcc: command not found` | CUDA toolkit not in PATH | troubleshooting.cuda.md → C2 |
+| `cudnn.h: No such file` | cuDNN not installed | troubleshooting.cuda.md → C3 |
+| `No space left on device` | Disk full (embedded devices) | troubleshooting.jetson.md → J1 |
+| `nvbuf_utils not found` | JetPack 5.x API change | troubleshooting.jetson.md → J7 |
+| `libnpp*.so not found` | CUDA libs not in ldconfig | troubleshooting.jetson.md → J8 |
+| `dlsym@@GLIBC` undefined | Static linking missing -ldl | troubleshooting.jetson.md → J3 |
+| `libpng/png.h not found` | vcpkg header path mismatch | troubleshooting.jetson.md → J4 |
+| `version '2.x.x', required '>= 2.y'` | PKG_CONFIG_PATH wrong order | troubleshooting.jetson.md → J6 |
+| `Unsupported SFML component` | Library breaking change | reference.md → Version Pinning |
+| `glib requires feature 'libmount'` | Platform filter needed | troubleshooting.linux.md → L2 |
+
+**Not in table?** See "When Stuck" section in methodology.md for research strategies.
+
+---
+
 ## Troubleshooting Guide Index
 
 - **troubleshooting.windows.md** - Windows NoCUDA builds (GitHub-hosted, two-phase)

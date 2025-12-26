@@ -292,6 +292,131 @@ When a workflow fails:
 
 ---
 
+## When Stuck: Research Strategies
+
+When an error doesn't match any documented pattern, follow this systematic research approach:
+
+### Step 1: Classify the Error
+```
+Is this a:
+├─ vcpkg/dependency error? → Check vcpkg port history, GitHub issues
+├─ CMake configuration error? → Check CMakeLists.txt, toolchain files
+├─ Compilation error? → Check compiler version, SDK headers
+├─ Linker error? → Check library paths, static vs dynamic linking
+├─ Runtime/test error? → Check environment, display, permissions
+└─ GitHub Actions error? → Check workflow syntax, runner state
+```
+
+### Step 2: Research Sources (In Order)
+
+1. **Compare with working version first** (most effective):
+   ```bash
+   git diff main..HEAD -- <file-that-might-have-changed>
+   git log --oneline main..HEAD
+   ```
+
+2. **vcpkg port history** (for dependency issues):
+   ```bash
+   # Check when/how a vcpkg port changed
+   cd vcpkg && git log --oneline -20 ports/<package-name>/
+   ```
+
+3. **GitHub Issues** (for external library issues):
+   - vcpkg: https://github.com/microsoft/vcpkg/issues
+   - Specific library repos
+
+4. **SDK/Platform Documentation**:
+   - JetPack: NVIDIA L4T documentation
+   - CUDA: NVIDIA CUDA toolkit docs
+   - Windows: Microsoft Visual C++ docs
+
+5. **Web Search** (last resort):
+   - Include error message in quotes
+   - Include platform (e.g., "ARM64", "Ubuntu 20.04")
+
+### Step 3: Document New Patterns
+
+**MANDATORY**: After fixing an undocumented issue, add it to the skill documentation before closing the PR. See "Feedback Loop" section below.
+
+### Step 4: Escalate if Blocked
+
+If after 3 attempts you cannot resolve:
+1. Document what you tried (commands, results)
+2. State your hypothesis
+3. Ask human for help with specific question
+
+---
+
+## Feedback Loop: Continuous Skill Improvement
+
+**Principle**: Every build fix should improve the skill documentation. Future agents should never encounter the same undocumented issue twice.
+
+### After Every Successful Build Fix
+
+Before marking a build fix PR as ready for merge, check:
+
+```
+□ Was this error pattern already documented?
+  ├─ YES → No documentation update needed
+  └─ NO → MUST update documentation (see below)
+```
+
+### Documentation Update Checklist
+
+When a new error pattern is discovered and fixed:
+
+1. **Add to Error Pattern Lookup Table** (SKILL.md):
+   ```markdown
+   | `<error grep pattern>` | <brief issue> | <troubleshooting-file.md> → <issue-code> |
+   ```
+
+2. **Add detailed issue entry** to appropriate troubleshooting guide:
+   ```markdown
+   ## Issue <PLATFORM><NUMBER>: <Title>
+
+   **Symptom**:
+   ```
+   <exact error message>
+   ```
+
+   **Root Cause**:
+   <why this happens>
+
+   **Fix**:
+   <exact commands or code changes>
+
+   **Invariant**: <one-line rule for future reference>
+   ```
+
+3. **Update LEARNINGS.md** if this represents a process/methodology learning (not just a technical fix)
+
+### Example: Complete Feedback Loop
+
+**Scenario**: Build fails with `libfoo.so: undefined reference to bar()`
+
+1. **Fix the build** (add `-lbar` to linker flags)
+2. **Before merge**, update docs:
+   - Add to SKILL.md lookup table: `| undefined reference to bar | missing -lbar | troubleshooting.linux.md → L4 |`
+   - Add Issue L4 to troubleshooting.linux.md with full details
+3. **Commit documentation with fix**: `git commit -am "fix(linux): add -lbar link flag; document L4 pattern"`
+
+### Automation Hook (Future Enhancement)
+
+Consider adding a pre-merge check that verifies documentation was updated when:
+- A build that was failing is now passing
+- The fix involved workflow or CMake changes
+
+```yaml
+# Future: .github/workflows/docs-check.yml
+- name: Check skill docs updated for build fixes
+  if: contains(github.event.pull_request.title, 'fix')
+  run: |
+    git diff --name-only origin/main | grep -E "\.claude/skills/" || \
+      echo "::warning::Build fix PR should update skill documentation"
+```
+
+---
+
 ## Quick Reference Commands
 
 ```bash

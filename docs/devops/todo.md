@@ -119,6 +119,41 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 
 ---
 
+### TODO-6: Expand Skill Documentation with Real-World Examples
+
+**Status**: Ongoing
+**Priority**: Medium
+**Trigger**: Each time a new build failure is fixed
+
+**Objective**: Fill gaps in skill documentation that require actual build failure examples. These gaps were identified during skill assessment but cannot be fabricated—they need real data from actual failures.
+
+**Gaps to Fill** (update `.claude/skills/aprapipes-devops/` files):
+
+1. **troubleshooting.linux.md - Expand Beyond L1-L3**:
+   - Currently shallow with only 3 issues documented
+   - Needs: LD_LIBRARY_PATH issues, system vs vcpkg OpenCV conflicts, compiler version errors
+   - **Action**: Next Linux x64 failure → document as Issue L4+
+
+2. **troubleshooting.cuda.md - Complete the Stubs**:
+   - Issue C4 (OpenCV CUDA) has "To Be Expanded" placeholder
+   - Issue C5 (Whisper CUDA) has "To Be Expanded" placeholder
+   - Needs: Actual error messages, compute capability issues, GPU memory errors
+   - **Action**: Next CUDA failure → fill in stub with real details
+
+3. **Test Failure Diagnosis Patterns**:
+   - No documentation for interpreting test failures
+   - Needs: Common assertion failures, timeout patterns, fixture setup failures
+   - **File**: Create `troubleshooting.tests.md` when patterns emerge
+   - **Action**: Next test failure → document the diagnosis/fix process
+
+**Process**: Follow the Feedback Loop documented in `methodology.md`:
+1. Fix the build
+2. Before merge: add error pattern to SKILL.md lookup table
+3. Add detailed issue to appropriate troubleshooting guide
+4. Mark gap as filled in this TODO
+
+---
+
 ## Low Priority (Future Improvements)
 
 ### TODO-4: Optimize vcpkg Build Performance
@@ -153,5 +188,5 @@ git commit -m "docs: Capture vcpkg version baseline for known working build"
 ---
 
 **Last Updated**: 2025-12-26
-**Maintained By**: ApraPipes DevOps team
-**Review Frequency**: After each major build system change
+**Maintained By**: ApraPipes DevOps team + Claude agents (via Feedback Loop)
+**Review Frequency**: After each major build system change or build fix
