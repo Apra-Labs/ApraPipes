@@ -46,7 +46,7 @@ jobs:
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && cmake -B . -G Ninja -DENABLE_ARM64=ON ../base'
       vcpkg-triplet: 'arm64-linux-release'
       nProc: 6
-      nTestTimeoutMins: 45  # ARM64 CPU is slower than x64, needs more time for tests
+      nTestTimeoutMins: 60  # ARM64 CPU is slower than x64, needs more time for tests
   jetson-publish:
     needs: jetson-build-test
     if: ${{ always() }}
