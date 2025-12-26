@@ -245,12 +245,9 @@ error: nvbuf_utils.h: No such file or directory
 ```
 
 **Root Cause**:
-- JetPack 5.0 renamed/replaced multimedia libraries from JetPack 4.x:
-  - `libnvbuf_utils.so` → `libnvbufsurface.so`
-  - `nvbuf_utils.h` → Header removed (API changed to NvBufSurface)
-  - `nveglstream_camconsumer` → Removed entirely
+JetPack 5.0 renamed/replaced multimedia libraries from JetPack 4.x. See `knowledge_docs/jetson-jp5.md` for full API migration details.
 
-**Fix - Accept Both Library Names**:
+**Fix - Accept Both Library Names in CMake**:
 ```cmake
 # Accept either library name
 find_library(NVBUFUTILSLIB NAMES nvbufsurface nvbuf_utils REQUIRED)
@@ -262,29 +259,9 @@ if(EGLSTREAM_CAMCONSUMER_LIB)
 endif()
 ```
 
-**Fix - Create Compatibility Header**:
-```c
-// base/include/nvbuf_utils.h - Compatibility layer
-#pragma once
-#if defined(__aarch64__) && !defined(NVBUF_UTILS_COMPAT_H)
-#define NVBUF_UTILS_COMPAT_H
+**Invariant**: Use NAMES keyword in find_library to accept both old and new library names.
 
-#include <nvbufsurface.h>
-#include <nvbufsurftransform.h>
-
-// Map old types to new
-typedef NvBufSurface NvBufferSession;
-#define NvBufferColorFormat_NV12 NVBUF_COLOR_FORMAT_NV12
-
-// Compatibility functions
-static inline int NvBufferGetParams(int fd, void* params) {
-    // Implementation using NvBufSurface API
-}
-
-#endif
-```
-
-**Invariant**: JetPack 5.x has breaking multimedia API changes - use NAMES keyword in find_library and create compatibility headers.
+**Technical Reference**: See `knowledge_docs/jetson-jp5.md` for NvBuffer→NvBufSurface API migration, compatibility layer implementation, and V4L2 mmap handling.
 
 ---
 
