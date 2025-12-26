@@ -397,11 +397,22 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
 
     if (enableMotionVectors)
     {
-        v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
-        int ret = getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
-        if (ret > 0)
+        try
         {
-            serializeMotionVectors(enc_mv_metadata, frames);
+            v4l2_ctrl_videoenc_outputbuf_metadata_MV enc_mv_metadata;
+            int ret = getMotionVectors(buffer->v4l2_buf.index, enc_mv_metadata);
+            if (ret > 0)
+            {
+                serializeMotionVectors(enc_mv_metadata, frames);
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR << "Motion vector extraction failed: " << e.what();
+        }
+        catch (...)
+        {
+            LOG_ERROR << "Motion vector extraction failed with unknown exception";
         }
     }
 
