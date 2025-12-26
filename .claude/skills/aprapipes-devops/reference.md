@@ -103,7 +103,7 @@ vcpkg/
 
 ### vcpkg-configuration.json - Registry and Baseline
 
-**Location**: `base/vcpkg-configuration.json`
+**Location**: `vcpkg/baseline.json`
 
 **Structure**:
 ```json
@@ -468,7 +468,7 @@ on:
 
 **Current** (v5):
 ```yaml
-key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 restore-keys: ${{ inputs.flav }}-5-
 ```
 
@@ -479,7 +479,7 @@ restore-keys: ${{ inputs.flav }}-5-
 
 **Files Hashed**:
 - `base/vcpkg.json`: Changes when dependencies added/removed
-- `base/vcpkg-configuration.json`: Changes when baseline updated
+- `vcpkg/baseline.json`: Changes when baseline updated
 - `submodule_ver.txt`: Changes when vcpkg submodule updated
 
 ### Cache Invalidation
@@ -503,6 +503,34 @@ Change `5` to `6` in cache key definition in `build-test-win.yml` or `build-test
 | Phase 1 saves, Phase 2 restores | Expected flow |
 | Phase 2 before Phase 1 | Cache miss (run Phase 1 first) |
 
+### Force Cache Update
+
+Use `force-cache-update` when:
+1. **Cache corruption**: Incomplete or broken cached packages
+2. **Dependency upgrades**: Forcing rebuild with newer vcpkg package versions
+3. **Debugging**: Eliminating cache as source of build issues
+4. **Cache bloat**: Resetting to clean state
+
+**Mechanism**: When `force-cache-update: true`, the workflow:
+1. Restores cache (read-only operation)
+2. Deletes the restored cache from GitHub's cache storage
+3. Builds all packages fresh via CMake/vcpkg
+4. Saves new cache after configure completes
+
+**Triggering via GitHub UI**:
+1. Navigate to Actions tab
+2. Select workflow (e.g., "CI-Win-NoCUDA")
+3. Click "Run workflow"
+4. Check "Force cache rebuild" checkbox
+5. Click "Run workflow"
+
+**Permissions Required**:
+```yaml
+permissions:
+  actions: write  # For cache deletion via gh CLI
+  contents: read  # For checkout
+```
+
 ### Cache Optimization Tip - Preserving Cache During Development
 
 **Problem**: Cache invalidates on every vcpkg.json change, causing hours of rebuilding the same packages repeatedly.
@@ -511,7 +539,7 @@ Change `5` to `6` in cache key definition in `build-test-win.yml` or `build-test
 
 **Standard Cache Key** (production):
 ```yaml
-key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'base/vcpkg-configuration.json', 'submodule_ver.txt') }}
+key: ${{ inputs.flav }}-5-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 restore-keys: ${{ inputs.flav }}-5-
 ```
 
