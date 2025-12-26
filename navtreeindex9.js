@@ -1,5 +1,10 @@
 var NAVTREEINDEX9 =
 {
+"classImageEncoderCV.html#ade1a2416935241df9920825582bb429e":[5,0,184,3],
+"classImageEncoderCV.html#afdb4710a9a083e60b07f5f749d86da78":[5,0,184,9],
+"classImageEncoderCVProps.html":[5,0,185],
+"classImageEncoderCVProps.html#ae070e8040db63b55cecea56cc7431c46":[5,0,185,0],
+"classImageEncoderCV_1_1Detail.html":[5,0,184,0],
 "classImageEncoderCV_1_1Detail.html#a114f6a3b9ccee5d523a3ab8593a8c697":[5,0,184,0,7],
 "classImageEncoderCV_1_1Detail.html#a2029c94e8178e26e15ee683dec35ce38":[5,0,184,0,6],
 "classImageEncoderCV_1_1Detail.html#a43c891ab2f37ad61c2201ba203971411":[5,0,184,0,4],
@@ -244,10 +249,5 @@ var NAVTREEINDEX9 =
 "classJPEGEncoderNVJPEG.html#a9e27740ca89b70edfcd26a8e6c2a46c2":[5,0,201,8],
 "classJPEGEncoderNVJPEG.html#aa621eb31e268cb4e325316777074fb78":[5,0,201,4],
 "classJPEGEncoderNVJPEG.html#ab37ffbce722e447448aacd77b588d178":[5,0,201,12],
-"classJPEGEncoderNVJPEG.html#ab8840ceb857c3a36bfcbb6b48e22beb6":[5,0,201,5],
-"classJPEGEncoderNVJPEG.html#ac024fc7f63430bb288e965a28e22f147":[5,0,201,13],
-"classJPEGEncoderNVJPEG.html#ad17ec4444f73396706b7f4d34bfde966":[5,0,201,2],
-"classJPEGEncoderNVJPEG.html#afed2d7fa5bbfdf0973d55551f515b1da":[5,0,201,11],
-"classJPEGEncoderNVJPEGProps.html":[5,0,202],
-"classJPEGEncoderNVJPEGProps.html#a1ede65e7d27e130a08a1c08694fa187f":[5,0,202,2]
+"classJPEGEncoderNVJPEG.html#ab8840ceb857c3a36bfcbb6b48e22beb6":[5,0,201,5]
 };

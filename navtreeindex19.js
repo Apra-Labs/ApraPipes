@@ -1,5 +1,10 @@
 var NAVTREEINDEX19 =
 {
+"structNvBufferParams.html#a3188f4b2755942adca534535658281c4":[5,0,245,7],
+"structNvBufferParams.html#a38fad0fb26cc3acce63dcdbe15ad0ce7":[5,0,245,8],
+"structNvBufferParams.html#aace05ba29e4499165b7e44eba823166a":[5,0,245,6],
+"structNvBufferParams.html#abcbe24732ed43dcbda402f830570390a":[5,0,245,9],
+"structNvBufferParams.html#ac7a7987c7b4723c82ec9660c2f50306d":[5,0,245,2],
 "structNvBufferParams.html#ad026f17ea37e501495bf517c544994cb":[5,0,245,0],
 "structNvBufferParams.html#ad1177b2b83b0e7a9e39c04f95eef8573":[5,0,245,5],
 "structNvBufferParams.html#ad9b10fc159c1219348a05097cefa8a1b":[5,0,245,1],

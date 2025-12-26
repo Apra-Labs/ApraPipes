@@ -1,5 +1,10 @@
 var NAVTREEINDEX15 =
 {
+"classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178ad86df09b549f56252ec9b0e94bf8668b":[5,0,273,0,0],
+"classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178ad8a2e49ed7bf5f347e00e2881d134c38":[5,0,273,0,17],
+"classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178ae90400955b7720d3189ec27724077407":[5,0,273,0,9],
+"classPropsChangeMetadata.html#a523135668b63fb885341289990fc6178afd533249526dbf583813f7fbf2daa74c":[5,0,273,0,14],
+"classPropsChangeMetadata.html#a82b6810a8575d2f29aba5b2cfd4d96f8":[5,0,273,1],
 "classPropsChangeMetadata.html#ad44f1d2be495fed50794cc6af8e2e321":[5,0,273,2],
 "classQRReader.html":[5,0,274],
 "classQRReader.html#a407cf5e306178e8154189b88c94b54e4":[5,0,274,8],
@@ -244,10 +249,5 @@ var NAVTREEINDEX15 =
 "classResizeNPPI.html#a945032b4a6fbbf2a88bba86f4f687d4d":[5,0,283,9],
 "classResizeNPPI.html#aaeb74f8dcd56999542c45b79d1dafc5c":[5,0,283,4],
 "classResizeNPPI.html#ad1bd5be8c7da84ba83c896fd4f312958":[5,0,283,11],
-"classResizeNPPI.html#ae6041609214dad2d70036c3f6288b3b4":[5,0,283,18],
-"classResizeNPPI.html#ae61be1dea67858f048e79f46c5c8c199":[5,0,283,13],
-"classResizeNPPIProps.html":[5,0,284],
-"classResizeNPPIProps.html#a0d793cd9a86ccb84c0c57eec54d0b901":[5,0,284,3],
-"classResizeNPPIProps.html#a2986e1f358364442c57bc5baf53697ed":[5,0,284,5],
-"classResizeNPPIProps.html#a440cb003fb266ac72f08dbddc372d169":[5,0,284,2]
+"classResizeNPPI.html#ae6041609214dad2d70036c3f6288b3b4":[5,0,283,18]
 };

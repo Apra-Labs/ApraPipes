@@ -1,5 +1,10 @@
 var NAVTREEINDEX6 =
 {
+"classFacialLandmarkCVProps.html#a6e83f19d047939409098b31045f0da10a7381b04bc40a341c4bf7b2692af2d7cd":[5,0,138,0,1],
+"classFacialLandmarkCVProps.html#a7d85d5329fff0b814873c10de9ca67f6":[5,0,138,2],
+"classFacialLandmarkCVProps.html#a7f950ec7f6d2aa568b43e82c4f1a37d0":[5,0,138,7],
+"classFacialLandmarkCVProps.html#a8aa1c49508e91a5d8fc8522df377fc78":[5,0,138,12],
+"classFacialLandmarkCVProps.html#a91a3ca5672ab676164333ff891b74f0b":[5,0,138,5],
 "classFacialLandmarkCVProps.html#aa11431143a7888a3f148885596991f68":[5,0,138,4],
 "classFacialLandmarkCVProps.html#aa99d7c8377b57e837bf86717830f5a7f":[5,0,138,10],
 "classFacialLandmarkCVProps.html#ab36058433d45e1e203f86ac6b34f1f8c":[5,0,138,11],
@@ -244,10 +249,5 @@ var NAVTREEINDEX6 =
 "classFrameMetadataFactory.html":[5,0,154],
 "classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437":[5,0,154,0],
 "classFramesMuxer.html":[5,0,155],
-"classFramesMuxer.html#a0a4ea57f7a33c54d87d893b68b891e95":[5,0,155,3],
-"classFramesMuxer.html#a137d6c1dc6668cf8d6a89700099edb90":[5,0,155,5],
-"classFramesMuxer.html#a1eecafa9d8a92bca1d4668f7bd75f012":[5,0,155,4],
-"classFramesMuxer.html#a38992197d8d7bd714be2d66fa1ffdc18":[5,0,155,6],
-"classFramesMuxer.html#a62deb852044a6239e1bfff01c2a152fe":[5,0,155,1],
-"classFramesMuxer.html#a63d351a15d8a01924898050005e5f3a5":[5,0,155,8]
+"classFramesMuxer.html#a0a4ea57f7a33c54d87d893b68b891e95":[5,0,155,3]
 };
