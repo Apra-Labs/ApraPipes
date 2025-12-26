@@ -13,6 +13,14 @@
 #include "StatSink.h"
 #ifdef ARM64
 #include "EglRenderer.h"
+#include "ApraEGLDisplay.h"
+
+// Helper macro to skip DMA tests when EGL display is not available (headless CI)
+#define SKIP_IF_NO_EGL_DISPLAY() \
+    if (!ApraEGLDisplay::isAvailable()) { \
+        LOG_WARNING << "Skipping test - EGL display not available (headless mode)"; \
+        return; \
+    }
 
 #else
 #include "CudaMemCopy.h"
@@ -66,6 +74,7 @@ BOOST_AUTO_TEST_CASE(mp4reader_decoder_eglrenderer,* boost::unit_test::disabled(
 
 BOOST_AUTO_TEST_CASE(mp4reader_decoder_extsink)
 {
+	SKIP_IF_NO_EGL_DISPLAY();
 	Logger::setLogLevel("info");
 
 	// metadata is known

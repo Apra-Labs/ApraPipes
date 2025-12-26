@@ -9,9 +9,10 @@ class ApraEGLDisplay
 private:
     ApraEGLDisplay();
 
-public:     
+public:
     ~ApraEGLDisplay();
     static EGLDisplay getEGLDisplay();
+    static bool isAvailable();
 
 private:
     EGLDisplay mEGLDisplay;

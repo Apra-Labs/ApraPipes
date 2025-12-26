@@ -64,8 +64,14 @@ ApraEGLDisplay::ApraEGLDisplay()
 
     if (mEGLDisplay == EGL_NO_DISPLAY)
     {
-        throw AIPException(AIP_FATAL, "eglGetDisplay failed - no display available");
+        LOG_WARNING << "EGL display not available - DMA/GPU operations will fail. "
+                    << "This is expected on headless systems without GPU access.";
     }
+}
+
+bool ApraEGLDisplay::isAvailable()
+{
+    return getEGLDisplay() != EGL_NO_DISPLAY;
 }
 
 ApraEGLDisplay::~ApraEGLDisplay()
