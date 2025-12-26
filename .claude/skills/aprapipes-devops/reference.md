@@ -1009,3 +1009,78 @@ grep "win-nocuda-build-test" /tmp/build.log  # Phase 2
 **Python Version**: 3.10.11
 **CMake Version**: 3.29.6
 **Cache Version**: 5
+
+---
+
+## Operational Wisdom
+
+Non-obvious patterns learned from production experience.
+
+### Git Branch Naming
+
+**Problem:** A branch named `docs` prevents creating `docs/anything` due to Git ref namespace rules.
+
+**Rule:** Never create single-word branches that could be prefixes. Use descriptive names:
+- `docs-cleanup` not `docs`
+- `fix-cuda-build` not `fix`
+- `feature-auth` not `feature`
+
+### Documentation-Only Changes
+
+**Problem:** Workflows lack `paths-ignore` filters, so docs-only changes trigger full CI builds (8+ platforms, ~20 compute-hours wasted).
+
+**Workaround:** After pushing docs-only branches, immediately cancel all triggered runs:
+```bash
+gh run list --branch <branch> --status in_progress --json databaseId -q '.[].databaseId' | xargs -I{} gh run cancel {}
+```
+
+### Include Style for System Headers
+
+**Rule:** Use angle brackets `<>` for SDK/system headers, quotes `""` for project headers.
+
+```cpp
+#include <nvjpeg.h>           // CUDA SDK header - angle brackets
+#include <nvbufsurface.h>     // JetPack header - angle brackets
+#include "MyProjectHeader.h"  // Project header - quotes
+```
+
+**Why:** Some build configurations have different include paths for system vs. project headers. Using the wrong style can cause "file not found" errors on specific platforms.
+
+### Self-Hosted Runner API Visibility
+
+**Problem:** Org-level runners don't appear in repo-level API calls.
+
+```bash
+# This returns empty even when runners exist:
+gh api repos/Apra-Labs/ApraPipes/actions/runners
+
+# Must check GitHub web UI:
+# Settings → Actions → Runners
+```
+
+### Exit Code Propagation in Scripts
+
+**Anti-pattern:**
+```bash
+$TEST_EXE ... || echo "Tests failed"  # Swallows exit code!
+```
+
+**Correct:**
+```bash
+$TEST_EXE ...  # Preserves exit code
+```
+
+**Rule:** Never use `|| echo` or `|| true` after test commands - it hides failures from CI.
+
+### Concurrent Build Constraints
+
+**Rule:** Don't run concurrent builds on resource-constrained runners (Jetson, some self-hosted).
+
+**Why:** Parallel builds cause OOM kills. The runner may appear to hang or produce cryptic errors.
+
+**Mitigation:** Use workflow concurrency groups:
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
