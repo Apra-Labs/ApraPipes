@@ -218,7 +218,10 @@ BOOST_AUTO_TEST_CASE(encodepush, *boost::unit_test::disabled())
 	LOG_INFO << "TEST DONE";
 }
 
-BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors)
+// Motion vector extraction causes stack smashing on JetPack 5.x due to IOCTL
+// returning garbage data. The encoder works fine, but motion vector APIs
+// are broken on JP5.x. Disable until NVIDIA fixes the V4L2 driver.
+BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors, *boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 640;
