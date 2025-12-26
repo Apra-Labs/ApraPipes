@@ -9,3 +9,7 @@ CI_test_result*.xml
 # Claude state files (local only)
 .claude/CURRENT_STATE.md
 .claude/LEARNINGS.md
+build/CMakeCache.txt
+build/vcpkg-manifest-install.log
+build/CMakeFiles/cmake.check_cache
+build/CMakeFiles/CMakeConfigureLog.yaml
