@@ -84,6 +84,9 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
       TEST_EXE: build/aprapipesut
+      # Use explicit gcc-11 paths to match cloud build's compiler ABI for vcpkg cache sharing
+      CC: /usr/bin/gcc-11
+      CXX: /usr/bin/g++-11
     container:
       image: nvidia/cuda:11.8.0-devel-ubuntu22.04
       volumes:
