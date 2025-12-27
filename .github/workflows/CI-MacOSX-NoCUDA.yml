@@ -1,7 +1,7 @@
 name: CI-MacOSX-NoCUDA
 
 on:
-  push:  # Trigger on push to any branch
+  push:
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
@@ -22,15 +22,21 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
 
 permissions:
   actions: write  # Required for cache deletion via gh cache delete
   contents: read  # Required for checkout
+  checks: write
+  pull-requests: write
 
 jobs:
-  macosx-nocuda-build-test:
+  ci:
     uses: ./.github/workflows/build-test-macosx.yml
     with:
       runner: '["macos-15-intel"]'
@@ -40,14 +46,16 @@ jobs:
       is-prep-phase: false
       nProc: 3
       force-cache-update: ${{ inputs.force-cache-update == true }}
-  macosx-nocuda-publish:
-    needs: macosx-nocuda-build-test
-    if: ${{ always() }}
+
+  report:
+    needs: ci
+    if: always()
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: MacOSX
+      check_prefix: CI-Mac
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

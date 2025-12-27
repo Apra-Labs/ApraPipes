@@ -1,7 +1,7 @@
 name: CI-Linux-ARM64
 
 on:
-  push:  # Trigger on push to any branch
+  push:
     paths-ignore:
       - '**.md'
       - '.github/docs/**'
@@ -16,12 +16,21 @@ on:
       - 'docs/**'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  NOTE_TO_SELF: "environments can not be passed from here to reused workflows!"
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-  
+
+# Permissions needed by nested jobs
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+
 jobs:
-  jetson-build-test:
+  ci:
     uses: ./.github/workflows/build-test-lin.yml
     with:
       runner: '["self-hosted", "Linux", "ARM64"]'
@@ -46,15 +55,17 @@ jobs:
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && cmake -B . -G Ninja -DENABLE_ARM64=ON ../base'
       vcpkg-triplet: 'arm64-linux-release'
       nProc: 6
-      nTestTimeoutMins: 45  # ARM64 CPU is slower than x64, needs more time for tests
-  jetson-publish:
-    needs: jetson-build-test
-    if: ${{ always() }}
+      nTestTimeoutMins: 45
+
+  report:
+    needs: ci
+    if: always()
     permissions:
       checks: write
       pull-requests: write
     uses: ./.github/workflows/publish-test.yml
     with:
       flav: Linux_ARM64
+      check_prefix: CI-ARM
     secrets:
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}

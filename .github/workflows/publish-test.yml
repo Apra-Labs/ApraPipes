@@ -1,17 +1,22 @@
 on:
   workflow_call:
     inputs:
-      flav: 
+      flav:
         type: string
         description: 'flavour of the build: windows/linux_x64/linux_arm64'
         default: 'Windows'
+        required: false
+      check_prefix:
+        type: string
+        description: 'Prefix for check run name (e.g., CI-Lin, CI-Win). If set, check name is {prefix}-Tests'
+        default: ''
         required: false
     secrets:
       GIST_TOKEN:
         required: true
 jobs:
-  publish-test-results:
-    name: "Publish Tests Results"
+  report:
+    name: report
     runs-on: ubuntu-latest
     permissions:
       checks: write
@@ -31,7 +36,7 @@ jobs:
         id: test-results
         with:
           files: artifacts/CI_test_result_${{inputs.flav}}.xml
-          check_name:  'Test Results ${{inputs.flav}}'
+          check_name: ${{ inputs.check_prefix != '' && format('{0}-Tests', inputs.check_prefix) || format('Test-Results-{0}', inputs.flav) }}
       - name: Set badge color
         # Upload only for main branch
         if: >

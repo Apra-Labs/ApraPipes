@@ -12,7 +12,7 @@ OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
 
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
-	add_compile_definitions(APRA_CUDA_ENABLED)
+	add_compile_definitions(APRA_HAS_CUDA_HEADERS)
 ENDIF(ENABLE_CUDA)
 
 # NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)
@@ -88,8 +88,14 @@ IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# x64 Linux uses vcpkg's GTK
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+ELSEIF(ENABLE_ARM64)
+	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
+	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
+	# We need GTK3 for linking GtkGlRenderer
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
@@ -183,14 +189,14 @@ IF(ENABLE_CUDA)
 		find_library(BARESIP_LIB NAMES libbaresip.so libbaresip.a baresip REQUIRED)
 		SET(NVCODEC_LIB ${LIBNVCUVID} ${LIBNVENCODE})
 		SET(NVCUDAToolkit_LIBS
-			libcuda.so		
+			# libcuda.so - REMOVED: Now loaded dynamically at runtime via dlopen (see CudaDriverLoader)
 			libcudart_static.a
 			libnvjpeg_static.a
 			libnppig_static.a
 			libnppicc_static.a
 			libnppidei_static.a
-			libnppial_static.a					
-			libculibos.a	
+			libnppial_static.a
+			libculibos.a
 		) 
 		include_directories(AFTER SYSTEM /usr/local/cuda/include)
 	ELSE()
@@ -428,6 +434,7 @@ SET(CUDA_CORE_FILES
 	src/CudaStreamSynchronize.cpp
 	src/CuCtxSynchronize.cpp
 	src/CudaCommon.cpp
+	src/CudaDriverLoader.cpp
 )
 
 SET(CUDA_CORE_FILES_H
@@ -711,15 +718,18 @@ find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
+	# ARM64/Jetson needs GTK3 for GtkGlRenderer
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# x64 Linux uses vcpkg's GTK
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
 	${GDK3_LIBRARIES}
   	${GTK3_LIBRARIES}
 	)
-ENDIF(ENABLE_LINUX)
+ENDIF()
 
 target_link_libraries(aprapipesut
   aprapipes
@@ -735,6 +745,7 @@ target_link_libraries(aprapipesut
   ${NVCODEC_LIB}
   ${NVJPEGLIB_L4T}
   ${CURSES_LIBRARIES}
+  ${CMAKE_DL_LIBS}  # For dlopen/dlsym in CudaDriverLoader
   ZXing::Core
   ZXing::ZXing
   BZip2::BZip2
@@ -744,6 +755,32 @@ target_link_libraries(aprapipesut
   SFML::Audio
   whisper::whisper
   )
+
+# Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
+# This enables runtime detection of GPU availability - the DLLs are only loaded when first used
+# Without this, the exe crashes immediately on systems without CUDA DLLs
+IF(ENABLE_WINDOWS AND ENABLE_CUDA)
+	# Link the delay load helper library
+	target_link_libraries(aprapipesut delayimp.lib)
+
+	# DELAYLOAD all CUDA DLLs that are linked via import libraries
+	# The DLL names include version suffix (e.g., nvjpeg64_11.dll for CUDA 11.x)
+	# Note: nvcuda.dll is NOT delay-loaded - it's loaded via LoadLibrary in CudaDriverLoader
+	target_link_options(aprapipesut PRIVATE
+		"/DELAYLOAD:nvjpeg64_11.dll"
+		"/DELAYLOAD:nppig64_11.dll"
+		"/DELAYLOAD:nppicc64_11.dll"
+		"/DELAYLOAD:nppidei64_11.dll"
+		"/DELAYLOAD:nppial64_11.dll"
+		"/DELAYLOAD:nppc64_11.dll"
+		"/DELAYLOAD:cublas64_11.dll"
+		"/DELAYLOAD:cublasLt64_11.dll"
+		"/DELAYLOAD:cudart64_110.dll"
+		# Video Codec SDK DLLs - these are part of NVIDIA driver, not CUDA toolkit
+		"/DELAYLOAD:nvcuvid.dll"
+		"/DELAYLOAD:nvEncodeAPI64.dll"
+	)
+ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
 
 IF(ENABLE_WINDOWS)
 	file(COPY ${RUNTIME_DLLS} DESTINATION Debug/)

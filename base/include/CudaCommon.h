@@ -3,14 +3,19 @@
 #include "cuda.h"
 #include "Logger.h"
 #include "cuda_runtime_api.h"
+#include "CudaDriverLoader.h"
+#include "AIPExceptions.h"
 
 inline bool check(CUresult e, int iLine, const char *szFile)
 {
     if (e != CUDA_SUCCESS)
     {
         const char *szErrName = NULL;
-        cuGetErrorName(e, &szErrName);
-        LOG_FATAL << "CUDA driver API error " << szErrName << " at line " << iLine << " in file " << szFile;
+        auto& loader = CudaDriverLoader::getInstance();
+        if (loader.cuGetErrorName) {
+            loader.cuGetErrorName(e, &szErrName);
+        }
+        LOG_FATAL << "CUDA driver API error " << (szErrName ? szErrName : "Unknown") << " at line " << iLine << " in file " << szFile;
         return false;
     }
     return true;
@@ -29,21 +34,29 @@ class ApraCUcontext
 public:
     ApraCUcontext()
     {
-        ck(cuInit(0));
+        auto& loader = CudaDriverLoader::getInstance();
+        if (!loader.isAvailable()) {
+            throw AIPException(AIP_NOTEXEPCTED, "ApraCUcontext requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
+        }
+
+        ck(loader.cuInit(0));
         int nGpu = 0;
-        ck(cuDeviceGetCount(&nGpu));
+        ck(loader.cuDeviceGetCount(&nGpu));
         m_cuDevice = 0;
-        ck(cuDeviceGet(&m_cuDevice, 0));
+        ck(loader.cuDeviceGet(&m_cuDevice, 0));
         char szDeviceName[80];
-        ck(cuDeviceGetName(szDeviceName, sizeof(szDeviceName), m_cuDevice));
+        ck(loader.cuDeviceGetName(szDeviceName, sizeof(szDeviceName), m_cuDevice));
         LOG_INFO << "GPU "<<nGpu<<" in use: " << szDeviceName;
 
-        ck(cuDevicePrimaryCtxRetain(&m_cuContext, m_cuDevice));
+        ck(loader.cuDevicePrimaryCtxRetain(&m_cuContext, m_cuDevice));
     }
 
     ~ApraCUcontext()
     {
-        ck(cuDevicePrimaryCtxRelease(m_cuDevice));
+        auto& loader = CudaDriverLoader::getInstance();
+        if (loader.isAvailable() && loader.cuDevicePrimaryCtxRelease) {
+            ck(loader.cuDevicePrimaryCtxRelease(m_cuDevice));
+        }
     }
 
     CUcontext getContext()
@@ -67,12 +80,22 @@ class ApraCudaStream
 public:
     ApraCudaStream()
     {
-        cudaStreamCreate(&m_stream);
+        auto& loader = CudaDriverLoader::getInstance();
+        if (!loader.isAvailable()) {
+            throw AIPException(AIP_NOTEXEPCTED, "ApraCudaStream requires CUDA driver but libcuda.so not available. Error: " + loader.getErrorMessage());
+        }
+
+        auto rc = cudaStreamCreate(&m_stream);
+        if (rc != cudaSuccess) {
+            throw AIPException(AIP_NOTEXEPCTED, std::string("cudaStreamCreate failed: ") + cudaGetErrorString(rc));
+        }
     }
 
     ~ApraCudaStream()
     {
-        cudaStreamDestroy(m_stream);
+        if (m_stream) {
+            cudaStreamDestroy(m_stream);
+        }
     }
 
     cudaStream_t getCudaStream()
@@ -81,7 +104,7 @@ public:
     }
 
 private:
-    cudaStream_t m_stream;
+    cudaStream_t m_stream = nullptr;
 };
 
 typedef boost::shared_ptr<ApraCUcontext> apracucontext_sp;

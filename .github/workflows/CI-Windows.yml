@@ -1,0 +1,42 @@
+name: CI-Windows
+
+# Unified Windows CI: builds with CUDA, runs on cloud runners
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/docs/**'
+      - '.claude/**'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions needed by nested jobs in build-test.yml
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/build-test.yml
+    with:
+      os: windows
+      runner: windows-latest
+      cuda: 'ON'
+      cuda_version: '11.8.0'
+      build_type: Release
+      flav: Windows
+      check_prefix: CI-Win
+    secrets: inherit

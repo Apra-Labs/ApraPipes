@@ -1,0 +1,252 @@
+name: cuda
+
+# Phase 2: Run tests on self-hosted GPU runners
+# Triggered by:
+#   - workflow_call: Called by build-test.yml for PR validation
+#   - workflow_run: Auto-triggered after Build-Test completes on main
+#   - workflow_dispatch: Manual trigger for testing
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: 'Operating system (linux or windows)'
+        required: true
+        type: string
+      run_id:
+        description: 'Run ID of Build-Test workflow to download SDK from'
+        required: true
+        type: string
+      flav:
+        description: 'Badge flavor name (e.g., Linux-CUDA, Windows-CUDA)'
+        required: true
+        type: string
+      check_prefix:
+        description: 'Prefix for check run name (e.g., CI-Lin, CI-Win)'
+        required: false
+        type: string
+        default: ''
+
+  workflow_run:
+    workflows: ["CI-Windows-Build-Test", "CI-Linux-Build-Test"]
+    types: [completed]
+
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Operating system'
+        required: true
+        type: choice
+        options:
+          - linux
+          - windows
+      run_id:
+        description: 'Run ID of Build-Test workflow to download SDK from'
+        required: true
+        type: string
+
+jobs:
+  # Determine OS/flav based on trigger type
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      os: ${{ steps.set-os.outputs.os }}
+      run_id: ${{ steps.set-os.outputs.run_id }}
+      flav: ${{ steps.set-os.outputs.flav }}
+      check_prefix: ${{ steps.set-os.outputs.check_prefix }}
+    steps:
+      - id: set-os
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            # Triggered by workflow_run - compute from triggering workflow name
+            if [[ "${{ github.event.workflow_run.name }}" == *"Linux"* ]]; then
+              echo "os=linux" >> $GITHUB_OUTPUT
+              echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Lin" >> $GITHUB_OUTPUT
+            else
+              echo "os=windows" >> $GITHUB_OUTPUT
+              echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Win" >> $GITHUB_OUTPUT
+            fi
+            echo "run_id=${{ github.event.workflow_run.id }}" >> $GITHUB_OUTPUT
+          elif [[ -n "${{ inputs.flav }}" ]]; then
+            # Called via workflow_call with flav - use it directly
+            echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+            echo "flav=${{ inputs.flav }}" >> $GITHUB_OUTPUT
+            echo "check_prefix=${{ inputs.check_prefix }}" >> $GITHUB_OUTPUT
+          else
+            # workflow_dispatch - compute flav from os
+            echo "os=${{ inputs.os }}" >> $GITHUB_OUTPUT
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+            if [[ "${{ inputs.os }}" == "linux" ]]; then
+              echo "flav=Linux-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Lin" >> $GITHUB_OUTPUT
+            else
+              echo "flav=Windows-CUDA" >> $GITHUB_OUTPUT
+              echo "check_prefix=CI-Win" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  gpu-test:
+    name: gpu-test
+    needs: setup
+    # Run when:
+    # - Called from Build-Test (setup.outputs.os is set from inputs)
+    # - Triggered by workflow_run when Build-Test completes successfully
+    # - Manually triggered via workflow_dispatch
+    # Note: github.event_name is NOT 'workflow_call' when called - it's the caller's event
+    if: |
+      (needs.setup.outputs.os != '') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch')
+
+    runs-on: ${{ needs.setup.outputs.os == 'linux' && fromJSON('["self-hosted", "linux-cuda"]') || fromJSON('["self-hosted", "windows-cuda"]') }}
+    timeout-minutes: 45
+
+    env:
+      OS: ${{ needs.setup.outputs.os }}
+      SDK_RUN_ID: ${{ needs.setup.outputs.run_id }}
+      FLAV: ${{ needs.setup.outputs.flav }}
+
+    steps:
+    - name: Cleanup workspace (Linux)
+      if: needs.setup.outputs.os == 'linux'
+      run: rm -rf * || true
+      continue-on-error: true
+
+    - name: Cleanup workspace (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: Remove-Item -Recurse -Force * -ErrorAction SilentlyContinue
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        lfs: true
+
+    - name: Download SDK Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: aprapipes-sdk-${{ needs.setup.outputs.os == 'linux' && 'linux-x64' || 'windows-x64' }}
+        path: sdk/
+        run-id: ${{ needs.setup.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: List SDK Contents (Linux)
+      if: needs.setup.outputs.os == 'linux'
+      run: |
+        echo "=== Downloaded SDK Contents ==="
+        ls -la sdk/bin/ || echo "bin empty"
+        ls -la sdk/lib/ || echo "lib empty"
+
+    - name: List SDK Contents (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: |
+        echo "=== Downloaded SDK Contents ==="
+        Get-ChildItem sdk/bin -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+        Get-ChildItem sdk/lib -ErrorAction SilentlyContinue | ForEach-Object { echo "  $($_.Name)" }
+      shell: pwsh
+
+    - name: Verify CUDA Environment (Linux)
+      if: needs.setup.outputs.os == 'linux'
+      run: |
+        echo "=== CUDA Environment Check ==="
+        nvcc --version
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+
+    - name: Verify CUDA Environment (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      run: |
+        echo "=== CUDA Environment Check ==="
+        nvcc --version
+        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+      shell: pwsh
+
+    - name: Make test executable runnable
+      if: needs.setup.outputs.os == 'linux'
+      run: chmod +x sdk/bin/aprapipesut
+
+    - name: Run CUDA Tests (Linux)
+      if: needs.setup.outputs.os == 'linux'
+      run: |
+        # Run from workspace root so tests find ./data folder
+        sdk/bin/aprapipesut --log_format=JUNIT --log_sink=CI_test_result_${FLAV}.xml -p -l all
+        TEST_EXIT=$?
+
+        # Parse XML to check for actual test failures/errors
+        if [ -f "CI_test_result_${FLAV}.xml" ]; then
+          ERRORS=$(grep -oP 'errors="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          FAILURES=$(grep -oP 'failures="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          TESTS=$(grep -oP 'tests="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          SKIPPED=$(grep -oP 'skipped="\K[0-9]+' CI_test_result_${FLAV}.xml | head -1)
+          PASSED=$((TESTS - SKIPPED - ERRORS - FAILURES))
+
+          echo "Test Results: $PASSED passed, $FAILURES failures, $ERRORS errors, $SKIPPED skipped (total: $TESTS)"
+
+          if [ "$ERRORS" -gt 0 ] || [ "$FAILURES" -gt 0 ]; then
+            echo "::error::Tests failed: $FAILURES failures, $ERRORS errors"
+            exit 1
+          fi
+        elif [ $TEST_EXIT -ne 0 ]; then
+          echo "::error::Test execution failed with exit code $TEST_EXIT and no results file"
+          exit 1
+        fi
+      timeout-minutes: 30
+
+    - name: Run CUDA Tests (Windows)
+      if: needs.setup.outputs.os == 'windows'
+      shell: pwsh
+      run: |
+        # Run from workspace root so tests find ./data folder
+        ./sdk/bin/aprapipesut.exe --log_format=JUNIT --log_sink=CI_test_result_$env:FLAV.xml -p -l all
+        $testExitCode = $LASTEXITCODE
+        $xmlFile = "CI_test_result_$env:FLAV.xml"
+
+        # Parse XML to check for actual test failures/errors
+        if (Test-Path $xmlFile) {
+          [xml]$results = Get-Content $xmlFile
+          $errors = [int]$results.testsuite.errors
+          $failures = [int]$results.testsuite.failures
+          $tests = [int]$results.testsuite.tests
+          $skipped = [int]$results.testsuite.skipped
+          $passed = $tests - $skipped - $errors - $failures
+
+          Write-Host "Test Results: $passed passed, $failures failures, $errors errors, $skipped skipped (total: $tests)"
+
+          if ($errors -gt 0 -or $failures -gt 0) {
+            Write-Host "::error::Tests failed: $failures failures, $errors errors"
+            exit 1
+          }
+        } elseif ($testExitCode -ne 0) {
+          Write-Host "::error::Test execution failed with exit code $testExitCode and no results file"
+          exit 1
+        }
+      timeout-minutes: 30
+
+    - name: Upload CUDA Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults_${{ needs.setup.outputs.flav }}
+        path: |
+          CI_test_result_${{ needs.setup.outputs.flav }}.xml
+          ${{ github.workspace }}/data/SaveOrCompareFail/**
+
+  #===========================================================================
+  # PUBLISH CUDA TEST RESULTS (DRY: uses publish-test.yml)
+  #===========================================================================
+  report:
+    name: report
+    needs: [setup, gpu-test]
+    if: always() && needs.gpu-test.result != 'skipped'
+    permissions:
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/publish-test.yml
+    with:
+      flav: ${{ needs.setup.outputs.flav }}
+      check_prefix: ${{ needs.setup.outputs.check_prefix != '' && format('{0}-CUDA', needs.setup.outputs.check_prefix) || '' }}
+    secrets: inherit

@@ -8,7 +8,7 @@
 class Module;
 // a linear pipline
 class PipeLine {
-	#define Status_ENUM(DO,C) \
+	#define PipelineStatus_ENUM(DO,C) \
 	DO(PL_CREATED,C) \
 	DO(PL_INITED,C) \
 	DO(PL_INITFAILED,C) \
@@ -17,14 +17,14 @@ class PipeLine {
 	DO(PL_STOPPING,C) \
 	DO(PL_STOPPED,C) \
 	DO(PL_TERMINATING,C) \
-	DO(PL_TERMINATED,C) 
+	DO(PL_TERMINATED,C)
 
-	enum Status {
-		Status_ENUM(MAKE_ENUM,X)
+	enum PipelineStatus {
+		PipelineStatus_ENUM(MAKE_ENUM,X)
 	};
 
 	bool mPlay;
-	Status myStatus;
+	PipelineStatus myStatus;
 	typedef boost::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
 	boost::shared_ptr<Module> controlModule = nullptr;

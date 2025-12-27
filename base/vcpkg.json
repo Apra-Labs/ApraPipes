@@ -127,6 +127,11 @@
     },
     {
       "name": "libmp4"
+    },
+    {
+      "name": "pthreads",
+      "platform": "windows",
+      "$comment": "Required for OpenCV CUDA build on Windows - provides pthread.h and pthreads.lib"
     }
   ]
 }
