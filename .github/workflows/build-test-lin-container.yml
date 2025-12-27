@@ -51,7 +51,7 @@ on:
       cache-path:
         type: string
         description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: ${{ '/mnt/.cache/vcpkg/archives' }}
+        default: '/mnt/runner-work/.cache/vcpkg'
         required: false
       cmake-conf-cmd:
         type: string
@@ -82,7 +82,8 @@ jobs:
   build:
     env:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-      VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
+      # Must match Cloud build's path exactly for cache sharing (same path = same version hash)
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/runner-work/.cache/vcpkg
       TEST_EXE: build/aprapipesut
       # Use explicit gcc-11 paths to match cloud build's compiler ABI for vcpkg cache sharing
       CC: /usr/bin/gcc-11
@@ -173,9 +174,8 @@ jobs:
       if: ${{ !inputs.force-cache-update }}
       uses: actions/cache@v3
       with:
-          path: |
-            ${{ inputs.cache-path }}
-            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          # Single path must match Cloud build exactly for cache sharing
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: Linux-vcpkg-
 
@@ -184,9 +184,7 @@ jobs:
       if: ${{ inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
-          path: |
-            ${{ inputs.cache-path }}
-            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
           restore-keys: Linux-vcpkg-
 
@@ -206,9 +204,7 @@ jobs:
       if: ${{ always() && inputs.force-cache-update }}
       uses: actions/cache/save@v3
       with:
-        path: |
-          ${{ inputs.cache-path }}
-          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
         key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
