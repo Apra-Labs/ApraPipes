@@ -84,6 +84,9 @@ jobs:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
       VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
       TEST_EXE: build/aprapipesut
+      # Use explicit gcc-11 paths to match cloud build's compiler ABI for vcpkg cache sharing
+      CC: /usr/bin/gcc-11
+      CXX: /usr/bin/g++-11
     container:
       image: nvidia/cuda:11.8.0-devel-ubuntu22.04
       volumes:
@@ -173,8 +176,8 @@ jobs:
           path: |
             ${{ inputs.cache-path }}
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: Linux-vcpkg-
 
     - name: Force cache update - restore and delete old cache
       id: cache-force-restore
@@ -184,8 +187,8 @@ jobs:
           path: |
             ${{ inputs.cache-path }}
             ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key:  ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: ${{ inputs.flav }}-
+          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: Linux-vcpkg-
 
     # Cache deletion removed - gh cache delete requires workflow-level permissions that are not available in reusable workflows
     # To force cache updates: manually delete caches via GitHub UI or use workflow_dispatch with force-cache-update flag
@@ -206,7 +209,7 @@ jobs:
         path: |
           ${{ inputs.cache-path }}
           ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: ${{ inputs.flav }}-10-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}
@@ -223,7 +226,27 @@ jobs:
     - name: Run Tests
       if: ${{!inputs.is-prep-phase && !inputs.skip-test}}
       run: |
-        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all || echo 'test execution returned error'
+        ${{env.TEST_EXE}} --log_format=JUNIT --log_sink=CI_test_result_${{inputs.flav}}.xml -p -l all
+        TEST_EXIT=$?
+
+        # Parse XML to check for actual test failures/errors
+        if [ -f "CI_test_result_${{inputs.flav}}.xml" ]; then
+          ERRORS=$(grep -oP 'errors="\K[0-9]+' CI_test_result_${{inputs.flav}}.xml | head -1)
+          FAILURES=$(grep -oP 'failures="\K[0-9]+' CI_test_result_${{inputs.flav}}.xml | head -1)
+          TESTS=$(grep -oP 'tests="\K[0-9]+' CI_test_result_${{inputs.flav}}.xml | head -1)
+          SKIPPED=$(grep -oP 'skipped="\K[0-9]+' CI_test_result_${{inputs.flav}}.xml | head -1)
+          PASSED=$((TESTS - SKIPPED - ERRORS - FAILURES))
+
+          echo "Test Results: $PASSED passed, $FAILURES failures, $ERRORS errors, $SKIPPED skipped (total: $TESTS)"
+
+          if [ "$ERRORS" -gt 0 ] || [ "$FAILURES" -gt 0 ]; then
+            echo "::error::Tests failed: $FAILURES failures, $ERRORS errors"
+            exit 1
+          fi
+        elif [ $TEST_EXIT -ne 0 ]; then
+          echo "::error::Test execution failed with exit code $TEST_EXIT and no results file"
+          exit 1
+        fi
       timeout-minutes: ${{ inputs.nTestTimeoutMins}}
     
     - name: Upload Test Results

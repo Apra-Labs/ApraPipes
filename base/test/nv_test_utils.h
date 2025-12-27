@@ -1,10 +1,13 @@
 #pragma once
 #include <boost/test/unit_test.hpp>
 #include "Logger.h"
-#include "H264EncoderNVCodecHelper.h"
 
 namespace utf = boost::unit_test;
 namespace tt = boost::test_tools;
+
+#ifdef APRA_HAS_CUDA_HEADERS
+#include "H264EncoderNVCodecHelper.h"
+
 //preempt test failure if the platform does not support H264 encode
 struct if_h264_encoder_supported{
   tt::assertion_result operator()(utf::test_unit_id)
@@ -12,7 +15,7 @@ struct if_h264_encoder_supported{
 	try{
 		auto cuContext = apracucontext_sp(new ApraCUcontext());
 		H264EncoderNVCodecHelper h(1000, cuContext, 30, 30, H264EncoderNVCodecProps::BASELINE, false);
-		
+
 	}
 	catch(AIP_Exception& ex)
 	{
@@ -34,7 +37,7 @@ struct if_compute_cap_supported{
 		if(!cuContext->getComputeCapability(major,minor))
             return false;
 		LOG_INFO << "Compute Cap "<<major <<"."<<minor;
-		if(major<=5) 
+		if(major<=5)
 		{
 			if(minor<2) //dont support below 5.2 (some tests failed on GTX 860M which is 5.0)
 			{
@@ -52,3 +55,20 @@ struct if_compute_cap_supported{
 	return true;
   }
 };
+
+#else
+// NoCUDA builds: preconditions always fail, skipping CUDA tests
+struct if_h264_encoder_supported{
+  tt::assertion_result operator()(utf::test_unit_id)
+  {
+	return false;
+  }
+};
+
+struct if_compute_cap_supported{
+  tt::assertion_result operator()(utf::test_unit_id)
+  {
+	return false;
+  }
+};
+#endif

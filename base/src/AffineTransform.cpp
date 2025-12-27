@@ -1,4 +1,4 @@
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 #include <npp.h>
 #include <CuCtxSynchronize.h>
 #include  <nppdefs.h> 
@@ -26,7 +26,7 @@ public:
 	DetailMemoryAbstract(AffineTransformProps &_props) : props(_props), shiftX(0), shiftY(0), mFrameType(FrameMetadata::GENERAL), mOutputFrameLength(0) {}
 	int setInterPolation(AffineTransformProps::Interpolation interpolation)
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		switch (props.interpolation)
 		{
 		case AffineTransformProps::NN:
@@ -166,7 +166,7 @@ public:
 			return;
 		}
 		setMetadataHelper(metadata, mOutputMetadata);
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		int inWidth = srcSize[0].width;
 		int inHeight = srcSize[0].height;
 		int outWidth = dstSize[0].width;
@@ -199,7 +199,7 @@ public:
 
 	bool setMetadataHelper(framemetadata_sp& input, framemetadata_sp& output)
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		if (mFrameType == FrameMetadata::RAW_IMAGE)
 		{
 			auto inputRawMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(input);
@@ -241,7 +241,7 @@ public:
 
 	bool compute()
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		auto status = NPP_SUCCESS;
 		auto bufferNPP = static_cast<Npp8u*>(inputPtr);
 		auto outBufferNPP = static_cast<Npp8u*>(outputPtr);
@@ -320,7 +320,7 @@ public:
 	}
 
 protected:
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	NppStreamContext nppStreamCtx;
 	void* outputPtr;
 	void* inputPtr;
@@ -349,7 +349,7 @@ class DetailDMA : public DetailGPU
 public:
 	DetailDMA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 #endif
 	}
@@ -370,14 +370,14 @@ class DeatilCUDA: public DetailGPU
 public:
 	DeatilCUDA(AffineTransformProps& _props) : DetailGPU(_props)
 	{
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		nppStreamCtx.hStream = props.stream->getCudaStream();
 #endif
 	}
 
 	bool setPtrs()
 	{
-        #ifdef APRA_CUDA_ENABLED
+        #ifdef APRA_HAS_CUDA_HEADERS
 		inputPtr = inputFrame->data();
 		outputPtr = outputFrame->data();
 		cudaMemset(outputPtr, 0, outputFrame->size());
@@ -459,7 +459,7 @@ bool AffineTransform::validateInputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is expected to be CUDA_DEVICE or DMABUF. Actual<" << memType << ">";
@@ -473,7 +473,7 @@ bool AffineTransform::validateInputPins()
 	}
 #endif
 
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	if (mProp.type == AffineTransformProps::TransformType::USING_OPENCV && memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateInputPins input memType is CUDA_DEVICE, but the transform type is USING_OPENCV";
@@ -518,7 +518,7 @@ bool AffineTransform::validateOutputPins()
 	}
 
 	FrameMetadata::MemType memType = metadata->getMemType();
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	if (memType != FrameMetadata::MemType::CUDA_DEVICE && memType != FrameMetadata::MemType::DMABUF && memType != FrameMetadata::MemType::HOST)
 	{
 		LOG_ERROR << "<" << getId() << ">::validateOutputPins input memType is expected to be CUDA_DEVICE or DMABUF . Actual<" << memType << ">";
@@ -539,7 +539,7 @@ void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
 
 	Module::addInputPin(metadata, pinId);
 	FrameMetadata::MemType memType = metadata->getMemType();
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	if (memType == FrameMetadata::MemType::CUDA_DEVICE)
 	{
 		mDetail.reset(new DeatilCUDA(mProp));

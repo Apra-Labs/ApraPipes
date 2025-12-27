@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(multiple_que_test)
 
 }
 
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 
 BOOST_AUTO_TEST_CASE(frame_factory_test_host_pinned)
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 #include "CudaCommon.h"
 #endif
 
@@ -45,7 +45,7 @@ public:
 		scale = _scale;
 		type = _type;
 	}
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	AffineTransformProps(TransformType _type, Interpolation _interpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, double _scale = 1.0)
 	{
 		if (_type != TransformType::USING_NPPI)
@@ -66,7 +66,7 @@ public:
 	int y = 0;
 	double scale = 1.0;
 	double angle;
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 	cudastream_sp stream;
 #endif
 	Interpolation interpolation = AffineTransformProps::NN;

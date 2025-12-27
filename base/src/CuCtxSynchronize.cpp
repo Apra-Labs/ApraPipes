@@ -6,6 +6,7 @@
 #include "FrameMetadata.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
+#include "CudaDriverLoader.h"
 
 
 CuCtxSynchronize::CuCtxSynchronize(CuCtxSynchronizeProps _props) :Module(TRANSFORM, "CuCtxSynchronize", _props), props(_props)
@@ -58,7 +59,15 @@ void CuCtxSynchronize::addInputPin(framemetadata_sp& metadata, string& pinId)
 bool CuCtxSynchronize::process(frame_container& frames)
 {
 	cudaFree(0);
-	auto cudaStatus = cuCtxSynchronize();
+
+	auto& loader = CudaDriverLoader::getInstance();
+	if (!loader.isAvailable() || !loader.cuCtxSynchronize) {
+		LOG_ERROR << "CUDA driver not available for cuCtxSynchronize";
+		send(frames);
+		return true; // Continue processing even if CUDA not available
+	}
+
+	auto cudaStatus = loader.cuCtxSynchronize();
 	if (cudaStatus != CUDA_SUCCESS)
 	{
 		LOG_ERROR << "cuCtxSynchronize failed <" << cudaStatus << ">";

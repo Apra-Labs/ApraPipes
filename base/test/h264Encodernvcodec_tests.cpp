@@ -21,7 +21,8 @@
 BOOST_AUTO_TEST_SUITE(h264encodernvcodec_tests)
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
-*boost::unit_test::disabled())
+*boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360_to_160x90.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -83,7 +84,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_resize,
 }
 
 BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
-*boost::unit_test::disabled())
+*boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/Raw_YUV420_640x360.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -144,7 +146,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_sync,
 	Test_Utils::saveOrCompare(fileComparePath.c_str(), (const unsigned char*)frameData, (size_t)frameSize, 0);	
 }
 
-BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/overlay_1920x960_BGRA.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -197,7 +200,8 @@ BOOST_AUTO_TEST_CASE(overlay_1920x960_BGRA, *boost::unit_test::disabled())
 
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	std::vector<std::string> outFile = { "./data/testOutput/mono_1920x960.h264" };
 	Test_Utils::FileCleaner f(outFile);
@@ -257,7 +261,8 @@ BOOST_AUTO_TEST_CASE(mono_1920x960, *boost::unit_test::disabled())
 	Test_Utils::saveOrCompare(outFile[0], 0);
 }
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	std::cout << "starting performance measurement" << std::endl;
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
@@ -301,7 +306,8 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_pipeline, *boost::unit_test::disabled())
 
 }
 
-BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(mono_1920x960_pipeline, *boost::unit_test::disabled()
+*utf::precondition(if_h264_encoder_supported()))
 {
 	auto cuContext = apracucontext_sp(new ApraCUcontext());
 	auto width = 1920;

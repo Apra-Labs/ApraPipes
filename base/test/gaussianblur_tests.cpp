@@ -15,7 +15,7 @@
 
 BOOST_AUTO_TEST_SUITE(gaussianblur_tests)
 
-BOOST_AUTO_TEST_CASE(mono_1920x1080)
+BOOST_AUTO_TEST_CASE(mono_1920x1080, *utf::precondition(if_compute_cap_supported()))
 {
 	auto width = 1920;
 	auto height = 1080;

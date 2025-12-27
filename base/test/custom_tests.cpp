@@ -21,7 +21,7 @@
 BOOST_AUTO_TEST_SUITE(custom_tests)
 
 
-BOOST_AUTO_TEST_CASE(yuv420_640x360)
+BOOST_AUTO_TEST_CASE(yuv420_640x360, *utf::precondition(if_compute_cap_supported()))
 {
 	// metadata is known
 	auto width = 640;

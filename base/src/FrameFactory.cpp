@@ -20,7 +20,7 @@ FrameFactory::FrameFactory(framemetadata_sp metadata, size_t _maxConcurrentFrame
 			memory_allocator = std::make_shared<DMAAllocator>(metadata);
 			break;
 #endif
-#ifdef APRA_CUDA_ENABLED
+#ifdef APRA_HAS_CUDA_HEADERS
 		case FrameMetadata::MemType::HOST_PINNED:
 			memory_allocator = std::make_shared<HostPinnedAllocator>();
 			break;

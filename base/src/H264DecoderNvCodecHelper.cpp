@@ -6,6 +6,7 @@
 #include "nvcuvid.h"
 #include "H264DecoderNvCodecHelper.h"
 #include "Frame.h"
+#include "CudaDriverLoader.h"
 
 #define START_TIMER auto start = std::chrono::high_resolution_clock::now();
 #define STOP_TIMER(print_message) std::cout << print_message << \
@@ -16,13 +17,16 @@
 #define CUDA_DRVAPI_CALL( call )                                                                                                 \
     do                                                                                                                           \
     {                                                                                                                            \
-        CUresult err__ = call;                                                                                                   \
+        auto& loader__ = CudaDriverLoader::getInstance();                                                                        \
+        CUresult err__ = loader__.call;                                                                                          \
         if (err__ != CUDA_SUCCESS)                                                                                               \
         {                                                                                                                        \
             const char *szErrName = NULL;                                                                                        \
-            cuGetErrorName(err__, &szErrName);                                                                                   \
+            if (loader__.cuGetErrorName) {                                                                                       \
+                loader__.cuGetErrorName(err__, &szErrName);                                                                      \
+            }                                                                                                                    \
             std::ostringstream errorLog;                                                                                         \
-            errorLog << "CUDA driver API error " << szErrName ;                                                                  \
+            errorLog << "CUDA driver API error " << (szErrName ? szErrName : "Unknown");                                         \
             throw NVDECException::makeNVDECException(errorLog.str(), err__, __FUNCTION__, __FILE__, __LINE__);                   \
         }                                                                                                                        \
     }                                                                                                                            \
@@ -529,9 +533,16 @@ NvDecoder::NvDecoder(CUcontext cuContext, int nWidth, int nHeight, bool bUseDevi
 
 NvDecoder::~NvDecoder() {
 
+	auto& loader = CudaDriverLoader::getInstance();
+	if (!loader.isAvailable()) {
+		// If loader not available, we shouldn't have created this object
+		// But handle gracefully in destructor
+		return;
+	}
+
 	START_TIMER
-		cuCtxPushCurrent(m_cuContext);
-	cuCtxPopCurrent(NULL);
+		loader.cuCtxPushCurrent(m_cuContext);
+	loader.cuCtxPopCurrent(NULL);
 
 	if (m_hParser) {
 		cuvidDestroyVideoParser(m_hParser);
@@ -553,9 +564,9 @@ NvDecoder::~NvDecoder() {
 		if (m_bUseDeviceFrame)
 		{
 			if (m_pMutex) m_pMutex->lock();
-			cuCtxPushCurrent(m_cuContext);
-			cuMemFree((CUdeviceptr)pFrame);
-			cuCtxPopCurrent(NULL);
+			loader.cuCtxPushCurrent(m_cuContext);
+			loader.cuMemFree((CUdeviceptr)pFrame);
+			loader.cuCtxPopCurrent(NULL);
 			if (m_pMutex) m_pMutex->unlock();
 		}
 		else
@@ -563,6 +574,8 @@ NvDecoder::~NvDecoder() {
 			delete[] pFrame;
 		}
 	}
+	// Note: NvDecoder does NOT own the context, so we don't destroy it here.
+	// The context should be destroyed by whoever created it (e.g., H264DecoderNvCodecHelper).
 	STOP_TIMER("Session Deinitialization Time: ");
 }
 
@@ -684,26 +697,57 @@ private:
 
 H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 {
-	CUcontext cuContext;
+	// Check if CUDA driver is available
+	auto& loader = CudaDriverLoader::getInstance();
+	if (!loader.isAvailable()) {
+		throw std::runtime_error("H264DecoderNvCodecHelper requires CUDA driver but libcuda.so not available. "
+		                         "Error: " + loader.getErrorMessage() + ". "
+		                         "Use a CPU-based decoder instead.");
+	}
+
+	CUcontext cuContext = nullptr;
 	bool bUseDeviceFrame = false;
-	cudaVideoCodec eCodec = cudaVideoCodec_H264;;
-	std::mutex* pMutex = NULL; 
-	bool bLowLatency = false; 
-	bool bDeviceFramePitched= false; int maxWidth; int maxHeight;
-	ck(cuInit(0));
+	cudaVideoCodec eCodec = cudaVideoCodec_H264;
+	std::mutex* pMutex = NULL;
+
+	if (!ck(loader.cuInit(0))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuInit failed");
+	}
 	int nGpu = 0;
 	int iGpu = 0;
-	ck(cuDeviceGetCount(&nGpu));
+	if (!ck(loader.cuDeviceGetCount(&nGpu))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDeviceGetCount failed");
+	}
 	if (iGpu < 0 || iGpu >= nGpu) {
-		std::cout << "GPU ordinal out of range. Should be within [" << 0 << ", " << nGpu - 1 << "]" << std::endl;
-		return;
+		throw std::runtime_error("H264DecoderNvCodecHelper: GPU ordinal out of range. Should be within [0, " + std::to_string(nGpu - 1) + "]");
 	}
 	CUdevice cuDevice = 0;
 
-	ck(cuDeviceGet(&cuDevice, iGpu));
-	char szDeviceName[80];
-	ck(cuCtxCreate(&cuContext, 0, cuDevice));
+	if (!ck(loader.cuDeviceGet(&cuDevice, iGpu))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDeviceGet failed");
+	}
+	// Use primary context (shared across all users) instead of creating a new context
+	// This prevents GPU memory exhaustion when many decoders are created/destroyed
+	if (!ck(loader.cuDevicePrimaryCtxRetain(&cuContext, cuDevice))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDevicePrimaryCtxRetain failed (possibly out of GPU memory)");
+	}
+	m_ownedDevice = cuDevice;  // Store device so we can release primary context in destructor
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
+}
+
+H264DecoderNvCodecHelper::~H264DecoderNvCodecHelper()
+{
+	// First destroy the helper (which uses the context)
+	helper.reset();
+
+	// Then release our reference to the primary context
+	if (m_ownedDevice >= 0) {
+		auto& loader = CudaDriverLoader::getInstance();
+		if (loader.isAvailable() && loader.cuDevicePrimaryCtxRelease) {
+			loader.cuDevicePrimaryCtxRelease(m_ownedDevice);
+		}
+		m_ownedDevice = -1;
+	}
 }
 
 bool H264DecoderNvCodecHelper::init(std::function<void(frame_sp&)> _send, std::function<frame_sp()> _makeFrame)

@@ -8,6 +8,7 @@
 #include "FileWriterModule.h"
 #include "test_utils.h"
 #include "ExternalSinkModule.h"
+#include "nv_test_utils.h"
 
 #if defined(__arm__) || defined(__aarch64__)
 #include "NvV4L2Camera.h"
@@ -358,7 +359,7 @@ BOOST_AUTO_TEST_CASE(Dma_to_Device, *boost::unit_test::disabled())
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
+BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host, *utf::precondition(if_compute_cap_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/RGB_320x180.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(320, 180, ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
@@ -391,7 +392,7 @@ BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host)
 	Test_Utils::saveOrCompare("./data/MemConversion_outputs/Host_to_Device_to_Host_RGB_320x180.raw", (const uint8_t *)outFrame->data(), outFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage)
+BOOST_AUTO_TEST_CASE(Host_to_Device_to_Host_PlanarImage, *utf::precondition(if_compute_cap_supported()))
 {
 	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/nv12-704x576.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(704, 576, ImageMetadata::ImageType::NV12, size_t(0), CV_8U));
