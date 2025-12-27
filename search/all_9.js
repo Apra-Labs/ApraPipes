@@ -91,7 +91,7 @@ var searchData=
   ['is_5fnot_5ffull_88',['is_not_full',['../classbounded__buffer.html#a9b39f13d25759eb10c5d10671abcbbb2',1,'bounded_buffer']]],
   ['is_5foutput_5favailable_89',['is_output_available',['../classH264EncoderNVCodecHelper_1_1Detail.html#a770af2d2a52b9a65d10cd17828c917aa',1,'H264EncoderNVCodecHelper::Detail']]],
   ['is_5fready_5fto_5faccept_90',['is_ready_to_accept',['../classbounded__buffer.html#a32a79620e450ec9fbfbd909e333a574b',1,'bounded_buffer']]],
-  ['isavailable_91',['isAvailable',['../classApraEGLDisplay.html#af6f9eb7b1f0482dde2e9d47369fac342',1,'ApraEGLDisplay']]],
+  ['isavailable_91',['isAvailable',['../classApraEGLDisplay.html#af6f9eb7b1f0482dde2e9d47369fac342',1,'ApraEGLDisplay::isAvailable()'],['../classCudaDriverLoader.html#ac15e426e4ae79080c8faced7544e0a09',1,'CudaDriverLoader::isAvailable()']]],
   ['isbframeenabled_92',['isBFrameEnabled',['../structState.html#a53e00b1fa7f56a8754505210feb65699',1,'State']]],
   ['iscommand_93',['isCommand',['../classFrame.html#a1957b3e8005a30a89fdca4570235e281',1,'Frame']]],
   ['isconncected_94',['isConncected',['../classRTSPClientSrc_1_1Detail.html#a778ab0bffe82290077d37e898372c8d8',1,'RTSPClientSrc::Detail']]],

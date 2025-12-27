@@ -52,6 +52,7 @@ var hierarchy =
       [ "ValvePassThroughCommand", "classValvePassThroughCommand.html", null ]
     ] ],
     [ "h264DecoderV4L2Helper::context_t", "structh264DecoderV4L2Helper_1_1context__t.html", null ],
+    [ "CudaDriverLoader", "classCudaDriverLoader.html", null ],
     [ "CudaUtils", "classCudaUtils.html", null ],
     [ "Mp4ReaderDetailAbs::DemuxAndParserState", "structMp4ReaderDetailAbs_1_1DemuxAndParserState.html", null ],
     [ "AbsControlModule::Detail", "classAbsControlModule_1_1Detail.html", null ],

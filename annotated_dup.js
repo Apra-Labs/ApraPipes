@@ -72,6 +72,7 @@ var annotated_dup =
     [ "CpuYUV420Planar2RGB", "classCpuYUV420Planar2RGB.html", "classCpuYUV420Planar2RGB" ],
     [ "CuCtxSynchronize", "classCuCtxSynchronize.html", "classCuCtxSynchronize" ],
     [ "CuCtxSynchronizeProps", "classCuCtxSynchronizeProps.html", "classCuCtxSynchronizeProps" ],
+    [ "CudaDriverLoader", "classCudaDriverLoader.html", "classCudaDriverLoader" ],
     [ "CudaMemCopy", "classCudaMemCopy.html", "classCudaMemCopy" ],
     [ "CudaMemCopyProps", "classCudaMemCopyProps.html", "classCudaMemCopyProps" ],
     [ "CudaStreamSynchronize", "classCudaStreamSynchronize.html", "classCudaStreamSynchronize" ],

@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classTestSignalGenerator_1_1Detail.html" title=" " alt="" coords="5,5,146,46"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,5,127,31"/>
+<area shape="rect" id="Node000001" href="$classAIP__Exception.html" title=" " alt="" coords="175,5,281,31"/>
+<area shape="poly" id="edge233_Node000000_Node000001" title=" " alt="" coords="142,16,174,16,174,21,142,21"/>
+<area shape="rect" id="Node000002" href="$classMp4__Exception.html" title=" " alt="" coords="329,5,438,31"/>
+<area shape="poly" id="edge234_Node000001_Node000002" title=" " alt="" coords="296,16,329,16,329,21,296,21"/>
 </map>

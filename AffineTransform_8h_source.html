@@ -106,7 +106,7 @@ $(function(){initNavTree('AffineTransform_8h_source.html',''); initResizable(tru
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;Module.h&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#ifdef APRA_CUDA_ENABLED</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#ifdef APRA_HAS_CUDA_HEADERS</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;CudaCommon.h&quot;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
@@ -157,7 +157,7 @@ $(function(){initNavTree('AffineTransform_8h_source.html',''); initResizable(tru
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        <a class="code hl_variable" href="classAffineTransformProps.html#a54b17403f03418e265e1534b46100329">type</a> = _type;</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    }</div>
 </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#ifdef APRA_CUDA_ENABLED</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#ifdef APRA_HAS_CUDA_HEADERS</span></div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <a class="code hl_function" href="classAffineTransformProps.html#a22e95e673d2321591d160f229739aa5a">AffineTransformProps</a>(<a class="code hl_enumeration" href="classAffineTransformProps.html#a3b6b780a48d94f82cbc8f528a937945f">TransformType</a> _type, <a class="code hl_enumeration" href="classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23">Interpolation</a> _interpolation, cudastream_sp &amp;_stream, <span class="keywordtype">double</span> _angle, <span class="keywordtype">int</span> _x=0, <span class="keywordtype">int</span> _y=0, <span class="keywordtype">double</span> _scale = 1.0)</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    {</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>        <span class="keywordflow">if</span> (_type != <a class="code hl_enumvalue" href="classAffineTransformProps.html#a3b6b780a48d94f82cbc8f528a937945fa9744fecc3df3f50965ef5f835c6a119a">TransformType::USING_NPPI</a>)</div>
@@ -178,7 +178,7 @@ $(function(){initNavTree('AffineTransform_8h_source.html',''); initResizable(tru
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="classAffineTransformProps.html#a0d58fba792233069478648886b01e4ac">   66</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="classAffineTransformProps.html#a0d58fba792233069478648886b01e4ac">y</a> = 0;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="classAffineTransformProps.html#ab2748bd5f642c779a95ae0f2651e287d">   67</a></span>    <span class="keywordtype">double</span> <a class="code hl_variable" href="classAffineTransformProps.html#ab2748bd5f642c779a95ae0f2651e287d">scale</a> = 1.0;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="classAffineTransformProps.html#af13b11d82d0237b08c00963bc95a04b6">   68</a></span>    <span class="keywordtype">double</span> <a class="code hl_variable" href="classAffineTransformProps.html#af13b11d82d0237b08c00963bc95a04b6">angle</a>;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#ifdef APRA_CUDA_ENABLED</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#ifdef APRA_HAS_CUDA_HEADERS</span></div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    cudastream_sp stream;</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="classAffineTransformProps.html#af1e872f41c15007ab6856032a101e888">   72</a></span>    <a class="code hl_enumeration" href="classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23">Interpolation</a> <a class="code hl_variable" href="classAffineTransformProps.html#af1e872f41c15007ab6856032a101e888">interpolation</a> = <a class="code hl_enumvalue" href="classAffineTransformProps.html#a4be77b4ab0a236eda15cfd8046a4fa23a8d4a7fa490582116aa6907a317d2c57e">AffineTransformProps::NN</a>;</div>
@@ -287,7 +287,7 @@ $(function(){initNavTree('AffineTransform_8h_source.html',''); initResizable(tru
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="dir_e914ee4d4a44400f1fdb170cb4ead18a.html">base</a></li><li class="navelem"><a class="el" href="dir_86751c6d8ae9997ab6788777e7f7ee73.html">include</a></li><li class="navelem"><b>AffineTransform.h</b></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 22a3163</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: d0af068</a></li>
     </ul>
   </div>
   </body>

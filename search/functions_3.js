@@ -100,9 +100,10 @@ var searchData=
   ['createwindow_97',['createWindow',['../classEglRenderer.html#a5714e523fb1d1a66e8e408532d578ef2',1,'EglRenderer::createWindow()'],['../classImageViewerModule.html#acd265d112c4763e542f462c3591dfe4c',1,'ImageViewerModule::createWindow()']]],
   ['cuctxsynchronize_98',['CuCtxSynchronize',['../classCuCtxSynchronize.html#a8b2bdbf3eea05e72ec9783a4d9e02138',1,'CuCtxSynchronize']]],
   ['cuctxsynchronizeprops_99',['CuCtxSynchronizeProps',['../classCuCtxSynchronizeProps.html#a7ddec96648d6f04101c15d7c57c61b0c',1,'CuCtxSynchronizeProps']]],
-  ['cudamemcopy_100',['CudaMemCopy',['../classCudaMemCopy.html#aa7568875e79f3fea8f76232cd34a8100',1,'CudaMemCopy']]],
-  ['cudamemcopyprops_101',['CudaMemCopyProps',['../classCudaMemCopyProps.html#a248f8a2d0db71ab1a106d661a377e1d4',1,'CudaMemCopyProps']]],
-  ['cudastreamsynchronize_102',['CudaStreamSynchronize',['../classCudaStreamSynchronize.html#a947289ff77450e427b2f5a48c0ad74e4',1,'CudaStreamSynchronize']]],
-  ['cudastreamsynchronizeprops_103',['CudaStreamSynchronizeProps',['../classCudaStreamSynchronizeProps.html#a09c728b2585bb2addae32a728eb246cb',1,'CudaStreamSynchronizeProps']]],
-  ['customnamedfiledircheck_104',['customNamedFileDirCheck',['../classMp4WriterSinkUtils.html#ab2935ec5b909f36e17a6cae91ce70220',1,'Mp4WriterSinkUtils']]]
+  ['cudadriverloader_100',['CudaDriverLoader',['../classCudaDriverLoader.html#ae750cfb2e6bc5f307a0f9e0a248de699',1,'CudaDriverLoader::CudaDriverLoader(const CudaDriverLoader &amp;)=delete'],['../classCudaDriverLoader.html#a575a51f1e47e99379da476d98aeaceda',1,'CudaDriverLoader::CudaDriverLoader()']]],
+  ['cudamemcopy_101',['CudaMemCopy',['../classCudaMemCopy.html#aa7568875e79f3fea8f76232cd34a8100',1,'CudaMemCopy']]],
+  ['cudamemcopyprops_102',['CudaMemCopyProps',['../classCudaMemCopyProps.html#a248f8a2d0db71ab1a106d661a377e1d4',1,'CudaMemCopyProps']]],
+  ['cudastreamsynchronize_103',['CudaStreamSynchronize',['../classCudaStreamSynchronize.html#a947289ff77450e427b2f5a48c0ad74e4',1,'CudaStreamSynchronize']]],
+  ['cudastreamsynchronizeprops_104',['CudaStreamSynchronizeProps',['../classCudaStreamSynchronizeProps.html#a09c728b2585bb2addae32a728eb246cb',1,'CudaStreamSynchronizeProps']]],
+  ['customnamedfiledircheck_105',['customNamedFileDirCheck',['../classMp4WriterSinkUtils.html#ab2935ec5b909f36e17a6cae91ce70220',1,'Mp4WriterSinkUtils']]]
 ];

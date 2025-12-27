@@ -16,16 +16,18 @@
 <area shape="poly" id="edge7_Node000004_Node000006" title=" " alt="" coords="405,162,481,162,481,168,405,168"/>
 <area shape="rect" id="Node000008" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="520,201,677,227"/>
 <area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="413,255,525,229,526,234,414,261"/>
-<area shape="rect" id="Node000011" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="520,251,676,292"/>
-<area shape="poly" id="edge12_Node000007_Node000011" title=" " alt="" coords="446,269,505,269,505,274,446,274"/>
-<area shape="rect" id="Node000012" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="500,316,696,342"/>
-<area shape="poly" id="edge13_Node000007_Node000012" title=" " alt="" coords="414,282,526,309,525,314,413,288"/>
-<area shape="rect" id="Node000013" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="494,365,702,391"/>
-<area shape="poly" id="edge14_Node000007_Node000013" title=" " alt="" coords="377,283,429,317,495,352,513,358,511,363,493,357,426,322,374,287"/>
+<area shape="rect" id="Node000012" href="$classFrameMetadataFactory.html#acb4e82000d0154fd9f3260ce870d3437" title=" " alt="" coords="520,251,676,292"/>
+<area shape="poly" id="edge13_Node000007_Node000012" title=" " alt="" coords="446,269,505,269,505,274,446,274"/>
+<area shape="rect" id="Node000013" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="500,316,696,342"/>
+<area shape="poly" id="edge14_Node000007_Node000013" title=" " alt="" coords="414,282,526,309,525,314,413,288"/>
+<area shape="rect" id="Node000014" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="494,365,702,391"/>
+<area shape="poly" id="edge15_Node000007_Node000014" title=" " alt="" coords="377,283,429,317,495,352,513,358,511,363,493,357,426,322,374,287"/>
 <area shape="rect" id="Node000009" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="751,177,967,203"/>
 <area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="677,204,736,199,736,204,678,210"/>
 <area shape="rect" id="Node000010" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="785,227,933,252"/>
 <area shape="poly" id="edge11_Node000008_Node000010" title=" " alt="" coords="678,219,769,228,769,233,677,224"/>
-<area shape="rect" id="Node000014" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="750,365,968,391"/>
-<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="703,376,735,376,735,381,703,381"/>
+<area shape="rect" id="Node000011" href="$classCudaDriverLoader.html#ae328f28675183ee9b2e0605517261123" title=" " alt="" coords="1016,227,1215,252"/>
+<area shape="poly" id="edge12_Node000010_Node000011" title=" " alt="" coords="934,237,1001,237,1001,242,934,242"/>
+<area shape="rect" id="Node000015" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="750,365,968,391"/>
+<area shape="poly" id="edge16_Node000014_Node000015" title=" " alt="" coords="703,376,735,376,735,381,703,381"/>
 </map>

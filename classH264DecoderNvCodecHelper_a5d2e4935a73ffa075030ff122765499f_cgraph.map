@@ -1,5 +1,7 @@
 <map id="H264DecoderNvCodecHelper::H264DecoderNvCodecHelper" name="H264DecoderNvCodecHelper::H264DecoderNvCodecHelper">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,204,46"/>
-<area shape="rect" id="Node000002" href="$classNvDecoder.html#a7cd1420d95befbfdab0d1d2b8a50ea41" title=" " alt="" coords="252,13,409,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,23,236,23,236,28,204,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,204,64"/>
+<area shape="rect" id="Node000002" href="$classCudaDriverLoader.html#ae328f28675183ee9b2e0605517261123" title=" " alt="" coords="252,5,451,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,31,236,27,236,33,204,36"/>
+<area shape="rect" id="Node000003" href="$classNvDecoder.html#a7cd1420d95befbfdab0d1d2b8a50ea41" title=" " alt="" coords="273,55,430,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,51,257,56,257,61,204,56"/>
 </map>

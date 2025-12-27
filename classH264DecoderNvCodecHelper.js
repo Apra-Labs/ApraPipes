@@ -8,6 +8,7 @@ var classH264DecoderNvCodecHelper =
     [ "process", "classH264DecoderNvCodecHelper.html#a114b07b24117cdf66e05e4fef49ee28b", null ],
     [ "framesTimestampEntry", "classH264DecoderNvCodecHelper.html#ae45e1dc4656c36b23735396ec29e5c1d", null ],
     [ "helper", "classH264DecoderNvCodecHelper.html#a22a5f9ac3c7002aaa9a2d2477fdb1241", null ],
+    [ "m_ownedDevice", "classH264DecoderNvCodecHelper.html#ae3fd522d8599a62c7c15fdefc4ef68e0", null ],
     [ "makeFrame", "classH264DecoderNvCodecHelper.html#ab6f6ee91418a74dee242bb87820a7c02", null ],
     [ "send", "classH264DecoderNvCodecHelper.html#ab2262a53627722d0892d861ae39784f8", null ]
 ];

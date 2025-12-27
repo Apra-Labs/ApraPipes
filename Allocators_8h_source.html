@@ -107,7 +107,7 @@ $(function(){initNavTree('Allocators_8h_source.html',''); initResizable(true); }
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;boost/pool/pool.hpp&gt;</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifdef APRA_CUDA_ENABLED</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifdef APRA_HAS_CUDA_HEADERS</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">    #include &quot;ApraPool.h&quot;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">    #include &quot;apra_cudamallochost_allocator.h&quot;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">    #include &quot;apra_cudamalloc_allocator.h&quot;</span></div>
@@ -150,7 +150,7 @@ $(function(){initNavTree('Allocators_8h_source.html',''); initResizable(true); }
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>};</div>
 </div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#ifdef APRA_CUDA_ENABLED</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#ifdef APRA_HAS_CUDA_HEADERS</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">class </span>HostPinnedAllocator : <span class="keyword">public</span> <a class="code hl_class" href="classHostAllocator.html">HostAllocator</a></div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>{</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">protected</span>:</div>
@@ -209,7 +209,7 @@ $(function(){initNavTree('Allocators_8h_source.html',''); initResizable(true); }
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="dir_e914ee4d4a44400f1fdb170cb4ead18a.html">base</a></li><li class="navelem"><a class="el" href="dir_86751c6d8ae9997ab6788777e7f7ee73.html">include</a></li><li class="navelem"><b>Allocators.h</b></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 22a3163</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: d0af068</a></li>
     </ul>
   </div>
   </body>

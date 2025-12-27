@@ -115,7 +115,7 @@ Inheritance diagram for H264DecoderNvCodecHelper:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264DecoderNvCodecHelper__inherit__graph.png" border="0" usemap="#aH264DecoderNvCodecHelper_inherit__map" alt="Inheritance graph"/></div>
 <map name="aH264DecoderNvCodecHelper_inherit__map" id="aH264DecoderNvCodecHelper_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,750,215,979"/>
+<area shape="rect" title=" " alt="" coords="5,750,215,999"/>
 <area shape="rect" href="classNvDecoder.html" title="Base class for decoder interface." alt="" coords="15,5,206,702"/>
 <area shape="poly" title=" " alt="" coords="113,717,113,750,108,750,108,717"/>
 </map>
@@ -125,9 +125,9 @@ Collaboration diagram for H264DecoderNvCodecHelper:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264DecoderNvCodecHelper__coll__graph.png" border="0" usemap="#aH264DecoderNvCodecHelper_coll__map" alt="Collaboration graph"/></div>
 <map name="aH264DecoderNvCodecHelper_coll__map" id="aH264DecoderNvCodecHelper_coll__map">
-<area shape="rect" title=" " alt="" coords="5,957,215,1186"/>
+<area shape="rect" title=" " alt="" coords="5,957,215,1206"/>
 <area shape="rect" href="classNvDecoder.html" title="Base class for decoder interface." alt="" coords="15,211,206,907"/>
-<area shape="poly" title=" " alt="" coords="113,922,113,957,108,957,108,922"/>
+<area shape="poly" title=" " alt="" coords="113,923,113,957,108,957,108,923"/>
 <area shape="rect" href="structRect.html" title=" " alt="" coords="32,5,69,133"/>
 <area shape="poly" title=" " alt="" coords="52,132,55,186,55,194,50,194,49,187,47,133"/>
 <area shape="rect" href="structDim.html" title=" " alt="" coords="153,26,187,112"/>
@@ -207,6 +207,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a22a5f9ac3c7002aaa9a2d2477fdb1241"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae45e1dc4656c36b23735396ec29e5c1d" id="r_ae45e1dc4656c36b23735396ec29e5c1d"><td class="memItemLeft" align="right" valign="top">std::queue&lt; uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae45e1dc4656c36b23735396ec29e5c1d">framesTimestampEntry</a></td></tr>
 <tr class="separator:ae45e1dc4656c36b23735396ec29e5c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3fd522d8599a62c7c15fdefc4ef68e0" id="r_ae3fd522d8599a62c7c15fdefc4ef68e0"><td class="memItemLeft" align="right" valign="top">CUdevice&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3fd522d8599a62c7c15fdefc4ef68e0">m_ownedDevice</a> = -1</td></tr>
+<tr class="separator:ae3fd522d8599a62c7c15fdefc4ef68e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5d2e4935a73ffa075030ff122765499f" name="a5d2e4935a73ffa075030ff122765499f"></a>
@@ -232,9 +234,11 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264DecoderNvCodecHelper_a5d2e4935a73ffa075030ff122765499f_cgraph.png" border="0" usemap="#aclassH264DecoderNvCodecHelper_a5d2e4935a73ffa075030ff122765499f_cgraph" alt=""/></div>
 <map name="aclassH264DecoderNvCodecHelper_a5d2e4935a73ffa075030ff122765499f_cgraph" id="aclassH264DecoderNvCodecHelper_a5d2e4935a73ffa075030ff122765499f_cgraph">
-<area shape="rect" title=" " alt="" coords="5,5,204,46"/>
-<area shape="rect" href="classNvDecoder.html#a7cd1420d95befbfdab0d1d2b8a50ea41" title=" " alt="" coords="252,13,409,38"/>
-<area shape="poly" title=" " alt="" coords="204,23,236,23,236,28,204,28"/>
+<area shape="rect" title=" " alt="" coords="5,23,204,64"/>
+<area shape="rect" href="classCudaDriverLoader.html#ae328f28675183ee9b2e0605517261123" title=" " alt="" coords="252,5,451,31"/>
+<area shape="poly" title=" " alt="" coords="204,31,236,27,236,33,204,36"/>
+<area shape="rect" href="classNvDecoder.html#a7cd1420d95befbfdab0d1d2b8a50ea41" title=" " alt="" coords="273,55,430,80"/>
+<area shape="poly" title=" " alt="" coords="204,51,257,56,257,61,204,56"/>
 </map>
 </div>
 
@@ -270,9 +274,6 @@ Here is the call graph for this function:</div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">H264DecoderNvCodecHelper::~H264DecoderNvCodecHelper </td>
@@ -281,12 +282,17 @@ Here is the call graph for this function:</div>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classH264DecoderNvCodecHelper_ac94bd2d73d1f7576e53321af551ebec9_cgraph.png" border="0" usemap="#aclassH264DecoderNvCodecHelper_ac94bd2d73d1f7576e53321af551ebec9_cgraph" alt=""/></div>
+<map name="aclassH264DecoderNvCodecHelper_ac94bd2d73d1f7576e53321af551ebec9_cgraph" id="aclassH264DecoderNvCodecHelper_ac94bd2d73d1f7576e53321af551ebec9_cgraph">
+<area shape="rect" title=" " alt="" coords="5,5,211,46"/>
+<area shape="rect" href="classCudaDriverLoader.html#ae328f28675183ee9b2e0605517261123" title=" " alt="" coords="259,13,458,38"/>
+<area shape="poly" title=" " alt="" coords="211,23,243,23,243,28,211,28"/>
+</map>
+</div>
 
 </div>
 </div>
@@ -446,6 +452,28 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
+<a id="ae3fd522d8599a62c7c15fdefc4ef68e0" name="ae3fd522d8599a62c7c15fdefc4ef68e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3fd522d8599a62c7c15fdefc4ef68e0">&#9670;&#160;</a></span>m_ownedDevice</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">CUdevice H264DecoderNvCodecHelper::m_ownedDevice = -1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ab6f6ee91418a74dee242bb87820a7c02" name="ab6f6ee91418a74dee242bb87820a7c02"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab6f6ee91418a74dee242bb87820a7c02">&#9670;&#160;</a></span>makeFrame</h2>
 
@@ -483,7 +511,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classH264DecoderNvCodecHelper.html">H264DecoderNvCodecHelper</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 22a3163</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: d0af068</a></li>
     </ul>
   </div>
   </body>

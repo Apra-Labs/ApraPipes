@@ -6,17 +6,19 @@
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="406,49,692,29,693,35,407,54"/>
 <area shape="rect" id="Node000004" href="$classDMAAllocator.html#a2bfe875acbfa3df1e3d18739cf7953f3" title=" " alt="" coords="454,70,633,96"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="407,65,439,69,438,74,406,70"/>
-<area shape="poly" id="edge7_Node000004_Node000003" title=" " alt="" coords="600,67,692,45,693,50,602,72"/>
+<area shape="poly" id="edge8_Node000004_Node000003" title=" " alt="" coords="600,67,692,45,693,50,602,72"/>
 <area shape="rect" id="Node000005" href="$classDMAFDWrapper.html#a489f2751972fa885ac17730e80d492ae" title=" " alt="" coords="707,70,864,96"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="634,80,691,80,691,86,634,86"/>
-<area shape="rect" id="Node000008" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="687,120,884,145"/>
-<area shape="poly" id="edge8_Node000004_Node000008" title=" " alt="" coords="611,94,705,113,704,118,610,99"/>
-<area shape="rect" id="Node000009" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="681,169,890,194"/>
-<area shape="poly" id="edge9_Node000004_Node000009" title=" " alt="" coords="567,94,618,125,682,155,701,162,700,167,680,160,616,129,564,99"/>
+<area shape="rect" id="Node000009" href="$classDMAAllocator.html#a997e7a426a95d6aec439ea048a53a4d8" title=" " alt="" coords="687,120,884,145"/>
+<area shape="poly" id="edge9_Node000004_Node000009" title=" " alt="" coords="611,94,705,113,704,118,610,99"/>
+<area shape="rect" id="Node000010" href="$classApraEGLDisplay.html#a00fa1e426f1141efdcd01f83ddd158fb" title=" " alt="" coords="681,169,890,194"/>
+<area shape="poly" id="edge10_Node000004_Node000010" title=" " alt="" coords="567,94,618,125,682,155,701,162,700,167,680,160,616,129,564,99"/>
 <area shape="rect" id="Node000006" href="$classDMAFDWrapper.html#ae3c1034c1bf025b00194c72553c2526c" title=" " alt="" coords="939,46,1154,72"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="864,73,923,68,923,73,865,78"/>
 <area shape="rect" id="Node000007" href="$classDMAUtils.html#a1f12894fc96e85e4d546534db5a04489" title=" " alt="" coords="972,96,1120,121"/>
 <area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="865,88,957,97,956,102,864,93"/>
-<area shape="rect" id="Node000010" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="938,169,1155,194"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="890,179,922,179,922,184,890,184"/>
+<area shape="rect" id="Node000008" href="$classCudaDriverLoader.html#ae328f28675183ee9b2e0605517261123" title=" " alt="" coords="1203,96,1402,121"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="1121,106,1188,106,1188,111,1121,111"/>
+<area shape="rect" id="Node000011" href="$classApraEGLDisplay.html#a8b5a447e3cf867d47f1899f63297dea3" title=" " alt="" coords="938,169,1155,194"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="890,179,922,179,922,184,890,184"/>
 </map>

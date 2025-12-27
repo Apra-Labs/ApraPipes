@@ -29,9 +29,10 @@ var searchData=
   ['cpuyuv420planar2rgb_26',['CpuYUV420Planar2RGB',['../classCpuYUV420Planar2RGB.html',1,'']]],
   ['cuctxsynchronize_27',['CuCtxSynchronize',['../classCuCtxSynchronize.html',1,'']]],
   ['cuctxsynchronizeprops_28',['CuCtxSynchronizeProps',['../classCuCtxSynchronizeProps.html',1,'']]],
-  ['cudamemcopy_29',['CudaMemCopy',['../classCudaMemCopy.html',1,'']]],
-  ['cudamemcopyprops_30',['CudaMemCopyProps',['../classCudaMemCopyProps.html',1,'']]],
-  ['cudastreamsynchronize_31',['CudaStreamSynchronize',['../classCudaStreamSynchronize.html',1,'']]],
-  ['cudastreamsynchronizeprops_32',['CudaStreamSynchronizeProps',['../classCudaStreamSynchronizeProps.html',1,'']]],
-  ['cudautils_33',['CudaUtils',['../classCudaUtils.html',1,'']]]
+  ['cudadriverloader_29',['CudaDriverLoader',['../classCudaDriverLoader.html',1,'']]],
+  ['cudamemcopy_30',['CudaMemCopy',['../classCudaMemCopy.html',1,'']]],
+  ['cudamemcopyprops_31',['CudaMemCopyProps',['../classCudaMemCopyProps.html',1,'']]],
+  ['cudastreamsynchronize_32',['CudaStreamSynchronize',['../classCudaStreamSynchronize.html',1,'']]],
+  ['cudastreamsynchronizeprops_33',['CudaStreamSynchronizeProps',['../classCudaStreamSynchronizeProps.html',1,'']]],
+  ['cudautils_34',['CudaUtils',['../classCudaUtils.html',1,'']]]
 ];

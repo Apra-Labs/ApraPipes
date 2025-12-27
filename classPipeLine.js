@@ -2,8 +2,8 @@ var classPipeLine =
 [
     [ "container_type", "classPipeLine.html#acbbd18d7e3773ddb9c67ae992f9049ed", null ],
     [ "item_type", "classPipeLine.html#abd95de9fc0e43834120a7a447a37323c", null ],
-    [ "Status", "classPipeLine.html#a373d1ab9c9d81ed5b67bf9fc58f1e105", [
-      [ "Status_ENUM", "classPipeLine.html#a373d1ab9c9d81ed5b67bf9fc58f1e105a9fa3fe968547589df8a351f6d0bf9848", null ]
+    [ "PipelineStatus", "classPipeLine.html#a4b0880e1bb771c63f66b07d18d281795", [
+      [ "PipelineStatus_ENUM", "classPipeLine.html#a4b0880e1bb771c63f66b07d18d281795a319baca84b4b0514c9be231187cfab3e", null ]
     ] ],
     [ "PipeLine", "classPipeLine.html#a41eabf08aef027834e65eaea0d4dcd3e", null ],
     [ "~PipeLine", "classPipeLine.html#a7b7a8d063b3b521203476f52d40368b2", null ],
@@ -28,5 +28,5 @@ var classPipeLine =
     [ "mName", "classPipeLine.html#ae1c6ac8dcc09d36a450805337c7ecded", null ],
     [ "modules", "classPipeLine.html#a55b2e4769e8ecd1424dcfb7524d3ad15", null ],
     [ "mPlay", "classPipeLine.html#a72cc0e9dd04c1e1eb0c2516dc2e6f15a", null ],
-    [ "myStatus", "classPipeLine.html#a65af8e825db93fd29ab315e309142c0d", null ]
+    [ "myStatus", "classPipeLine.html#ab99368fa91933d60ad9ff5279fbcf534", null ]
 ];

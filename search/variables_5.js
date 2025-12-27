@@ -39,10 +39,11 @@ var searchData=
   ['eos_36',['eos',['../structh264DecoderV4L2Helper_1_1context__t.html#a6173dca1385ad04730a1bf0d8f3edf7c',1,'h264DecoderV4L2Helper::context_t']]],
   ['eosframe_37',['eosFrame',['../classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f',1,'FrameFactory']]],
   ['errorcode_38',['errorCode',['../classMp4ErrorFrame.html#ac13d75df616d6e4c393bee7996d6228d',1,'Mp4ErrorFrame']]],
-  ['errormp4ts_39',['errorMp4TS',['../classMp4ErrorFrame.html#adf9ebaddb65c21c1965467726effdf1e',1,'Mp4ErrorFrame']]],
-  ['errormsg_40',['errorMsg',['../classMp4ErrorFrame.html#a5b081332aaf6f4d9290ebe4c8eb13e23',1,'Mp4ErrorFrame']]],
-  ['errortype_41',['errorType',['../classMp4ErrorFrame.html#a265c6c8e7cff060f84b34583af769405',1,'Mp4ErrorFrame']]],
-  ['event_42',['event',['../classNvEglRenderer.html#abb09950c07d415a4a8b4aac5e8cd8426',1,'NvEglRenderer']]],
-  ['event_5fconsumer_43',['event_consumer',['../classModule.html#a24b1b6a2ec08a40d3f030736deef8c85',1,'Module']]],
-  ['exportframes_44',['exportFrames',['../classMultimediaQueueXform.html#ab83b4303f65d064ff37f372e060773e0',1,'MultimediaQueueXform']]]
+  ['errormessage_39',['errorMessage',['../classCudaDriverLoader.html#a596a5e590600c1e7ec6ec0c1c31d4968',1,'CudaDriverLoader']]],
+  ['errormp4ts_40',['errorMp4TS',['../classMp4ErrorFrame.html#adf9ebaddb65c21c1965467726effdf1e',1,'Mp4ErrorFrame']]],
+  ['errormsg_41',['errorMsg',['../classMp4ErrorFrame.html#a5b081332aaf6f4d9290ebe4c8eb13e23',1,'Mp4ErrorFrame']]],
+  ['errortype_42',['errorType',['../classMp4ErrorFrame.html#a265c6c8e7cff060f84b34583af769405',1,'Mp4ErrorFrame']]],
+  ['event_43',['event',['../classNvEglRenderer.html#abb09950c07d415a4a8b4aac5e8cd8426',1,'NvEglRenderer']]],
+  ['event_5fconsumer_44',['event_consumer',['../classModule.html#a24b1b6a2ec08a40d3f030736deef8c85',1,'Module']]],
+  ['exportframes_45',['exportFrames',['../classMultimediaQueueXform.html#ab83b4303f65d064ff37f372e060773e0',1,'MultimediaQueueXform']]]
 ];
