@@ -726,10 +726,12 @@ H264DecoderNvCodecHelper::H264DecoderNvCodecHelper(int mWidth, int mHeight)
 	if (!ck(loader.cuDeviceGet(&cuDevice, iGpu))) {
 		throw std::runtime_error("H264DecoderNvCodecHelper: cuDeviceGet failed");
 	}
-	if (!ck(loader.cuCtxCreate(&cuContext, 0, cuDevice))) {
-		throw std::runtime_error("H264DecoderNvCodecHelper: cuCtxCreate failed (possibly out of GPU memory)");
+	// Use primary context (shared across all users) instead of creating a new context
+	// This prevents GPU memory exhaustion when many decoders are created/destroyed
+	if (!ck(loader.cuDevicePrimaryCtxRetain(&cuContext, cuDevice))) {
+		throw std::runtime_error("H264DecoderNvCodecHelper: cuDevicePrimaryCtxRetain failed (possibly out of GPU memory)");
 	}
-	m_ownedContext = cuContext;  // Store so we can destroy in destructor
+	m_ownedDevice = cuDevice;  // Store device so we can release primary context in destructor
 	helper.reset(new NvDecoder(cuContext, mWidth, mHeight, bUseDeviceFrame, eCodec, pMutex));
 }
 
@@ -738,13 +740,13 @@ H264DecoderNvCodecHelper::~H264DecoderNvCodecHelper()
 	// First destroy the helper (which uses the context)
 	helper.reset();
 
-	// Then destroy the context we created
-	if (m_ownedContext) {
+	// Then release our reference to the primary context
+	if (m_ownedDevice >= 0) {
 		auto& loader = CudaDriverLoader::getInstance();
-		if (loader.isAvailable() && loader.cuCtxDestroy) {
-			loader.cuCtxDestroy(m_ownedContext);
+		if (loader.isAvailable() && loader.cuDevicePrimaryCtxRelease) {
+			loader.cuDevicePrimaryCtxRelease(m_ownedDevice);
 		}
-		m_ownedContext = nullptr;
+		m_ownedDevice = -1;
 	}
 }
 

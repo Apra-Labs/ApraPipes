@@ -244,5 +244,5 @@ public:
 private:
     boost::shared_ptr<NvDecoder> helper;
     std::queue<uint64_t> framesTimestampEntry;
-    CUcontext m_ownedContext = nullptr;  // Context we created and must destroy
+    CUdevice m_ownedDevice = -1;  // Device whose primary context we retained and must release
 };
