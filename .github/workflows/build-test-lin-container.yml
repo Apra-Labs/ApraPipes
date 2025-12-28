@@ -50,8 +50,8 @@ on:
         required: false
       cache-path:
         type: string
-        description: 'the folder which needs to be cached e.g. .cache/vcpkg'
-        default: '/mnt/runner-work/.cache/vcpkg'
+        description: 'the folder which needs to be cached - MUST be under workspace for cache sharing with cloud build'
+        default: '.cache/vcpkg'
         required: false
       cmake-conf-cmd:
         type: string
@@ -82,8 +82,10 @@ jobs:
   build:
     env:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-      # Must match Cloud build's path exactly for cache sharing (same path = same version hash)
-      VCPKG_DEFAULT_BINARY_CACHE: /mnt/runner-work/.cache/vcpkg
+      # Cache path MUST be under workspace: $GITHUB_WORKSPACE/.cache/vcpkg
+      # Relative path = ".cache/vcpkg" (identical to cloud build) = same version hash = cache sharing works!
+      # Note: github.workspace in container job is the container path (/__w/ApraPipes/ApraPipes)
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
       TEST_EXE: build/aprapipesut
       # Use explicit gcc-11 paths to match cloud build's compiler ABI for vcpkg cache sharing
       CC: /usr/bin/gcc-11
