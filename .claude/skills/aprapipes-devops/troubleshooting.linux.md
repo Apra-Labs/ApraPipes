@@ -1,30 +1,33 @@
 # Linux Build Troubleshooting
 
-Platform-specific troubleshooting for Linux x64 NoCUDA builds on GitHub-hosted runners.
+Platform-specific troubleshooting for Linux x64 builds on GitHub-hosted runners.
 
-**Scope**: Linux x64 builds without CUDA, running on `ubuntu-latest` GitHub-hosted runners with two-phase build strategy.
+**Scope**: Linux x64 builds on cloud runners (CI-Linux build job), running on `ubuntu-22.04` with CUDA toolkit installed.
 
-**For Linux CUDA builds**: See `troubleshooting.cuda.md`
+**For GPU-specific tests**: See `troubleshooting.cuda.md` (CI-Linux cuda job on self-hosted runners)
+**For Docker builds**: See `troubleshooting.containers.md` (CI-Linux docker job)
 
 ---
 
 ## Linux-Specific Architecture
 
 ### Build Configuration
-- **Runner**: `ubuntu-latest` (GitHub-hosted)
-- **Strategy**: Two-phase (Phase 1: prep/cache, Phase 2: build/test)
-- **Time Limit**: 1 hour per phase
-- **Disk Space**: Limited (~14 GB available)
-- **Cache**: `~/.cache/vcpkg` or `${HOME}/.cache/vcpkg`
+- **Workflow**: CI-Linux.yml
+- **Job**: build (runs on cloud runners)
+- **Runner**: `ubuntu-22.04` (GitHub-hosted)
+- **Strategy**: Single-phase build with CUDA toolkit installed
+- **Time Limit**: 6 hours
+- **Disk Space**: Limited (~14 GB available after cleanup)
+- **Cache**: `/mnt/runner-work/.cache/vcpkg`
 
 ### Workflow Files
-- **Top-level**: `.github/workflows/CI-Linux-x64-NoCUDA.yml`
-- **Reusable**: `.github/workflows/build-test-linux.yml`
+- **Top-level**: `.github/workflows/CI-Linux.yml`
+- **Reusable**: `.github/workflows/build-test.yml` (unified with Windows)
 
 ### Key Characteristics
-- Bash-based scripts
-- Uses apt/yum for system tools
-- Similar two-phase architecture to Windows
+- PowerShell-based scripts (consistent with Windows)
+- Uses apt for system tools
+- CUDA toolkit installed for compilation (GPU tests run separately)
 - Platform-specific dependencies (GTK3, glib with libmount)
 
 ---
@@ -105,18 +108,17 @@ Same solution - downgrade Python to 3.10.11 in `vcpkg/scripts/vcpkg-tools.json`
 
 ## Linux-Specific Quick Fixes Checklist
 
-### Phase 1 (Prep) Checklist
+### Build Job Checklist
+- [ ] Disk cleanup succeeded (check available space)
 - [ ] Python version is 3.10.x in vcpkg-tools.json
 - [ ] pkgconf in vcpkg.json dependencies
 - [ ] GTK3 platform filter: `"platform": "!windows"`
 - [ ] glib platform filter correct for Linux x64
 - [ ] Baseline commit is fetchable
-
-### Phase 2 (Build/Test) Checklist
-- [ ] Cache restored from Phase 1
+- [ ] Cache restored from previous build
 - [ ] CMake finds all required packages
 - [ ] Platform-specific dependencies installed
-- [ ] Test execution completes
+- [ ] Cloud tests execution completes (GPU tests run separately)
 
 ---
 
@@ -132,5 +134,5 @@ This guide will be expanded as Linux-specific issues are encountered. Common pat
 
 ---
 
-**Applies to**: Linux x64 NoCUDA builds on GitHub-hosted runners
-**Related Guides**: reference.md, troubleshooting.windows.md (cross-platform patterns)
+**Applies to**: CI-Linux build job (cloud runners with CUDA toolkit)
+**Related Guides**: reference.md, troubleshooting.windows.md (cross-platform patterns), troubleshooting.cuda.md (GPU tests), troubleshooting.containers.md (Docker builds)

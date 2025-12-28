@@ -6,49 +6,65 @@ Cross-platform reference for vcpkg configuration, GitHub Actions, caching, and v
 
 ## Architecture Overview
 
-### Build Strategies by Platform
+### New Unified CI/CD Architecture (Dec 2025)
 
-| Platform | Runner Type | Build Strategy | Time Limit | Caching |
-|----------|-------------|----------------|------------|---------|
-| Windows NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
-| Windows CUDA | Self-hosted | Single-phase | None | No |
-| Linux x64 NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
-| Linux x64 CUDA | Self-hosted | Single-phase | None | No |
-| macOS NoCUDA | GitHub-hosted | Two-phase | 1 hour/phase | Yes |
-| Jetson ARM64 | Self-hosted | Single-phase | None | No |
-| Docker | Varies | Varies | Varies | Optional |
+**Top-Level Workflows:**
+1. **CI-Windows.yml** - Windows builds with CUDA, cloud runners
+2. **CI-Linux.yml** - Linux x64 builds with CUDA, cloud runners + Docker
+3. **CI-Linux-ARM64.yml** - Jetson ARM64 builds, self-hosted
+4. **CI-MacOSX-NoCUDA.yml** - macOS builds, cloud runners
+
+**Reusable Workflow Hierarchy:**
+```
+CI-Windows.yml / CI-Linux.yml
+└── build-test.yml (name: "ci")
+    ├── build job → cloud tests → TestResults_{flav}
+    ├── report job → publish-test.yml → badge_{flav}.svg
+    ├── cuda job → CI-CUDA-Tests.yml → TestResults_{flav}-CUDA
+    │   └── gpu-test → badge_{flav}-CUDA.svg
+    └── docker job (Linux only) → build-test-lin-container.yml
+        └── docker-report → badge_Linux-Docker.svg
+```
+
+**Key Changes from Old Architecture:**
+- **Old**: Separate CI-Win-NoCUDA.yml, CI-Win-CUDA.yml, CI-Linux-NoCUDA.yml, CI-Linux-CUDA.yml, CI-Linux-CUDA-Docker.yml
+- **New**: Unified CI-Windows.yml and CI-Linux.yml that run build, CUDA tests, and Docker tests as nested jobs
+- **CUDA tests**: Run on self-hosted GPU runners via CI-CUDA-Tests.yml (called as reusable workflow)
+- **Docker builds**: Nested within CI-Linux.yml, not a separate workflow
+- **Badge names**: Use `flav` parameter - Windows, Windows-CUDA, Linux, Linux-CUDA, Linux-Docker, Linux_ARM64, MacOSX
+
+### Build Strategies by Workflow
+
+| Workflow | Runner Type | Build Strategy | CUDA | Time Limit | Caching |
+|----------|-------------|----------------|------|------------|---------|
+| CI-Windows (build) | GitHub-hosted | Single-phase | Installed | 6 hours | Yes |
+| CI-Windows (cuda) | Self-hosted | Tests only | Required | None | No |
+| CI-Linux (build) | GitHub-hosted | Single-phase | Installed | 6 hours | Yes |
+| CI-Linux (cuda) | Self-hosted | Tests only | Required | None | No |
+| CI-Linux (docker) | Container | Containerized | Optional | Varies | Optional |
+| CI-Linux-ARM64 | Self-hosted | Single-phase | Required | None | Limited |
+| CI-MacOSX-NoCUDA | GitHub-hosted | Single-phase | None | 6 hours | Yes |
 
 **Terminology Note: macOS vs MacOSX**
 - **User-facing documentation**: Use "macOS" (Apple's official branding)
 - **Technical identifiers**: Use "MacOSX" (workflow names like `CI-MacOSX-NoCUDA.yml`, cache keys like `MacOSX-5-`)
 - **Rationale**: Technical identifiers maintain consistency with existing infrastructure and avoid filesystem/URL complications
 
-### Two-Phase Build Strategy (Hosted Runners Only)
+### Build Strategy: Single-Phase with Nested CUDA Tests
 
-**Phase 1: Prep/Cache**
-- Goal: Install heavy dependencies (especially OpenCV) and cache them
-- Trigger: Manual (`workflow_dispatch`)
-- Process:
-  1. Modify vcpkg.json to only include OpenCV (`fix-vcpkg-json.ps1 -onlyOpenCV`)
-  2. Run CMake configure to trigger vcpkg installation
-  3. Cache vcpkg archives to GitHub Actions cache
-  4. Note: Uses `continue-on-error: true` (can hide real failures)
+**Cloud Runners (CI-Windows, CI-Linux, CI-MacOSX-NoCUDA):**
+- **Build phase**: Full build with CUDA toolkit installed on cloud runners (6 hour timeout)
+- **CUDA tests**: If CUDA enabled, nested job calls CI-CUDA-Tests.yml on self-hosted GPU runners
+- **Result**: TestResults_{flav} (cloud) + TestResults_{flav}-CUDA (GPU) artifacts
 
-**Phase 2: Build/Test**
-- Goal: Full build and test execution
-- Trigger: Manual (`workflow_dispatch`)
-- Process:
-  1. Restore vcpkg cache from Phase 1
-  2. Run full CMake configure with all dependencies
-  3. Build the project
-  4. Run unit tests
-  5. Upload test results and logs
-
-### Single-Phase Build (Self-Hosted Runners)
+**Self-Hosted Runners (CI-Linux-ARM64):**
+- Single-phase build and test on same runner
 - No caching needed (persistent disk)
-- Direct build from checkout to test
-- Used for CUDA builds (require specialized hardware)
-- No time limits, no disk constraints
+- No time limits
+
+**Old Two-Phase Strategy (Deprecated as of Dec 2025):**
+- Phase 1 (prep/cache) and Phase 2 (build/test) were replaced by single-phase builds
+- Caching now happens within build job using cache restore/save pattern
 
 ---
 
@@ -371,29 +387,31 @@ git ls-remote https://github.com/Apra-Labs/vcpkg.git | grep <commit-hash>
 ### Workflow Structure
 
 **Top-Level Workflows** (`.github/workflows/`):
-- `CI-Win-NoCUDA.yml`
-- `CI-Win-CUDA.yml`
-- `CI-Linux-x64-NoCUDA.yml`
-- `CI-Linux-x64-CUDA.yml`
-- `CI-Linux-ARM64.yml` (Jetson/ARM64 builds)
-- `CI-MacOSX-NoCUDA.yml`
+- `CI-Windows.yml` - Windows builds with CUDA
+- `CI-Linux.yml` - Linux x64 builds with CUDA + Docker
+- `CI-Linux-ARM64.yml` - Jetson ARM64 builds
+- `CI-MacOSX-NoCUDA.yml` - macOS builds
 
 **Reusable Workflows**:
-- `build-test-win.yml` - Parameterized Windows builds
-- `build-test-linux.yml` - Parameterized Linux builds
+- `build-test.yml` - Unified Windows/Linux builds (called by CI-Windows.yml and CI-Linux.yml)
+- `build-test-lin.yml` - Linux-specific builds (called by CI-Linux-ARM64.yml)
+- `build-test-macosx.yml` - macOS-specific builds (called by CI-MacOSX-NoCUDA.yml)
+- `build-test-lin-container.yml` - Docker containerized builds (called by CI-Linux.yml docker job)
+- `CI-CUDA-Tests.yml` - GPU tests on self-hosted runners (called by cuda jobs)
+- `publish-test.yml` - Test result publishing and badge generation (called by report jobs)
 
 ### Key Workflow Inputs
 
 | Input | Type | Description | Example Values |
 |-------|------|-------------|----------------|
-| `runner` | string | GitHub runner to use | `windows-latest`, `ubuntu-latest`, `self-hosted` |
-| `flav` | string | Build flavor | `Win-nocuda`, `Linux-x64-cuda` |
-| `buildConf` | string | Build configuration | `Release`, `Debug` |
-| `is-selfhosted` | boolean | Skip caching if true | `true`, `false` |
-| `is-prep-phase` | boolean | Phase 1 vs Phase 2 | `true`, `false` |
+| `os` | string | Operating system | `linux`, `windows` |
+| `runner` | string | GitHub runner to use | `windows-latest`, `ubuntu-22.04`, `["self-hosted", "Linux", "ARM64"]` |
+| `flav` | string | Badge flavor name | `Windows`, `Linux`, `Linux_ARM64`, `MacOSX` |
+| `build_type` | string | CMake build type | `Release`, `RelWithDebInfo`, `Debug` |
 | `cuda` | string | Enable CUDA | `ON`, `OFF` |
-| `prep-cmd` | string | Commands to prep builder | Install tools |
-| `cmake-conf-cmd` | string | CMake configuration | CMake flags |
+| `cuda_version` | string | CUDA toolkit version | `11.8.0`, `12.0.0` |
+| `is-selfhosted` | boolean | Skip caching if true | `true`, `false` |
+| `check_prefix` | string | Prefix for check run names | `CI-Win`, `CI-Lin`, `CI-ARM`, `CI-Mac` |
 
 ### Workflow Triggers
 

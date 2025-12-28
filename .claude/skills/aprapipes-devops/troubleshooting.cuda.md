@@ -1,13 +1,13 @@
 # CUDA Build Troubleshooting
 
-Platform-agnostic troubleshooting for all CUDA builds on self-hosted runners.
+Platform-agnostic troubleshooting for GPU test jobs on self-hosted runners.
 
-**Scope**: ALL CUDA builds (Windows CUDA, Linux CUDA, Jetson) running on self-hosted runners.
+**Scope**: GPU test jobs (CI-Windows cuda job, CI-Linux cuda job) running on self-hosted runners with NVIDIA GPUs.
+
+**Note**: Cloud build jobs (CI-Windows build, CI-Linux build) also have CUDA toolkit installed for compilation, but don't run GPU tests. This guide covers only the GPU test execution on self-hosted runners.
 
 **Platform-Specific Notes**:
-- **Jetson ARM64 builds**: Also see `troubleshooting.jetson.md` for JetPack 5.x requirements (gcc-9.4, CUDA 11.4, multimedia API changes)
-
-**Critical**: Self-hosted runners behave completely differently from GitHub-hosted runners.
+- **Jetson ARM64 builds**: See `troubleshooting.jetson.md` for CI-Linux-ARM64 (different architecture - builds AND tests on same self-hosted runner)
 
 ---
 
@@ -15,21 +15,23 @@ Platform-agnostic troubleshooting for all CUDA builds on self-hosted runners.
 
 ### Key Differences
 
-| Aspect | GitHub-Hosted | Self-Hosted (CUDA) |
-|--------|---------------|---------------------|
-| Caching | Required (two-phase) | NOT needed (persistent disk) |
-| Time Limit | 1 hour/phase | None |
+| Aspect | Cloud Runners (build jobs) | Self-Hosted (cuda jobs) |
+|--------|----------------------------|-------------------------|
+| Purpose | Build with CUDA toolkit | Run GPU tests only |
+| Caching | Yes (vcpkg cache) | NOT needed (persistent disk) |
+| Time Limit | 6 hours | None |
 | Disk Space | Limited (~14 GB) | Depends on hardware |
-| CUDA Toolkit | Not installed | Pre-installed (required) |
+| CUDA Toolkit | Installed (compilation) | Pre-installed (GPU required) |
 | State Between Builds | Clean | Persistent (needs cleanup) |
-| vcpkg downloads | Cleared each run | Accumulates |
+| GPU Access | No | Yes (required) |
 
 ### Workflow Configuration
 
-**is-selfhosted: true** skips:
-- Cache save/restore steps
-- Disk cleanup steps
-- Two-phase build (runs single-phase)
+**New Architecture (Dec 2025)**:
+- Cloud build jobs compile code with CUDA toolkit installed
+- GPU test jobs (cuda) run via CI-CUDA-Tests.yml on self-hosted runners
+- Self-hosted runners receive pre-built binaries from cloud build job
+- Test results uploaded as TestResults_{flav}-CUDA artifacts
 
 ---
 
@@ -287,7 +289,7 @@ Ensure GPU is accessible:
 
 ## CUDA-Specific Quick Fixes Checklist
 
-### Pre-Build Checklist (Self-Hosted Runner Setup)
+### Pre-Test Checklist (Self-Hosted Runner Setup)
 - [ ] CUDA 11.8 toolkit installed
 - [ ] cuDNN for CUDA 11.8 installed
 - [ ] nvcc --version shows release 11.8
@@ -295,15 +297,16 @@ Ensure GPU is accessible:
 - [ ] GPU accessible (nvidia-smi works)
 - [ ] CUDA_HOME and CUDA_PATH set correctly
 
-### Build Checklist
-- [ ] workflow has `is-selfhosted: true`
+### GPU Test Job Checklist
+- [ ] Workflow calls CI-CUDA-Tests.yml reusable workflow
 - [ ] Cleanup step runs at start
+- [ ] Pre-built binaries received from cloud build job
 - [ ] CUDA environment variables set in workflow
-- [ ] opencv4[cuda] and whisper[cuda] features enabled
-- [ ] No caching steps (not needed for self-hosted)
+- [ ] GPU tests execute on self-hosted runner
+- [ ] TestResults_{flav}-CUDA artifact uploaded
 
-### Post-Build Checklist
-- [ ] Workspace cleaned for next build
+### Post-Test Checklist
+- [ ] Workspace cleaned for next test run
 - [ ] GPU memory released
 - [ ] No lingering processes
 
@@ -342,5 +345,5 @@ This guide will be expanded as CUDA-specific issues are encountered:
 
 ---
 
-**Applies to**: All CUDA builds (Windows, Linux, Jetson) on self-hosted runners
-**Related Guides**: reference.md, troubleshooting.windows.md, troubleshooting.linux.md, troubleshooting.jetson.md
+**Applies to**: GPU test jobs (CI-Windows cuda, CI-Linux cuda) on self-hosted runners
+**Related Guides**: reference.md, troubleshooting.windows.md (cloud builds), troubleshooting.linux.md (cloud builds), troubleshooting.jetson.md (ARM64 self-hosted)

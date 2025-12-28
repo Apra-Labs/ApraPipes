@@ -1,31 +1,34 @@
 # Windows Build Troubleshooting
 
-Platform-specific troubleshooting for Windows NoCUDA builds on GitHub-hosted runners.
+Platform-specific troubleshooting for Windows builds on GitHub-hosted runners.
 
-**Scope**: Windows builds without CUDA, running on `windows-latest` GitHub-hosted runners with two-phase build strategy.
+**Scope**: Windows builds on cloud runners (CI-Windows build job), running on `windows-latest` with CUDA toolkit installed.
 
-**For Windows CUDA builds**: See `troubleshooting.cuda.md`
+**For GPU-specific tests**: See `troubleshooting.cuda.md` (CI-Windows cuda job on self-hosted runners)
 
 ---
 
 ## Windows-Specific Architecture
 
 ### Build Configuration
+- **Workflow**: CI-Windows.yml
+- **Job**: build (runs on cloud runners)
 - **Runner**: `windows-latest` (GitHub-hosted)
-- **Strategy**: Two-phase (Phase 1: prep/cache, Phase 2: build/test)
-- **Time Limit**: 1 hour per phase
+- **Strategy**: Single-phase build with CUDA toolkit installed
+- **Time Limit**: 6 hours
 - **Disk Space**: Limited (~14 GB available)
 - **Cache**: `C:\Users\runneradmin\AppData\Local\vcpkg\archives`
 
 ### Workflow Files
-- **Top-level**: `.github/workflows/CI-Win-NoCUDA.yml`
-- **Reusable**: `.github/workflows/build-test-win.yml`
+- **Top-level**: `.github/workflows/CI-Windows.yml`
+- **Reusable**: `.github/workflows/build-test.yml` (unified with Linux)
 
 ### Key Characteristics
 - PowerShell-based scripts
 - Uses Chocolatey for system tools
 - vcpkg downloads tools to `vcpkg/downloads/tools/`
-- Two-phase build to work within 1-hour constraint
+- CUDA toolkit installed for compilation (GPU tests run separately)
+- Uses x64-windows-cuda vcpkg triplet
 
 ---
 
@@ -104,84 +107,16 @@ ModuleNotFoundError: No module named 'distutils'
 
 ---
 
-## Issue W2: continue-on-error Hiding Real Failures
+## Issue W2: continue-on-error in Legacy Builds (DEPRECATED)
 
-**Symptom**:
-- Phase 1 shows "success" but real errors occurred
-- Build fails in Phase 2 with errors that should have appeared in Phase 1
-- Confusing diagnostic - errors appear unrelated
+**Note**: This issue only applied to the old two-phase build strategy (deprecated Dec 2025). The new unified build does not use continue-on-error for build steps.
 
-**Root Cause**:
-- Phase 1 uses `continue-on-error: true` on CMake configure step
-- This allows partial completion (expected for caching workflow)
-- But it also hides real errors (libxml2 hash, distutils failures)
+**Historical Context**:
+- Old Phase 1 used `continue-on-error: true` to cache partial builds
+- This could hide real vcpkg errors (hash mismatches, distutils failures)
+- New single-phase builds fail immediately on errors
 
-**Diagnostic Approach**:
-
-1. **Don't trust Phase 1 step status** - check actual logs:
-   ```bash
-   # Phase 1 may show green checkmark but have errors
-   grep "error:" /tmp/build.log | grep "prep"
-   ```
-
-2. **Distinguish expected vs unexpected failures**:
-   - Expected: CMake fails to find packages (only OpenCV installed)
-   - Unexpected: vcpkg package build errors, hash mismatches
-
-3. **Search for real errors**:
-   ```bash
-   # Hash mismatches
-   grep "unexpected hash" /tmp/build.log
-
-   # Package build failures
-   grep "error:" /tmp/build.log | grep -v "Could NOT find"
-
-   # Python errors
-   grep -i "distutils\|ModuleNotFoundError" /tmp/build.log
-   ```
-
-4. **Check Phase 2 for inherited failures**:
-   - If Phase 1 had hidden vcpkg errors, Phase 2 may fail with same issue
-   - Phase 2 does NOT have `continue-on-error`, so it will fail properly
-
-**Pattern Recognition**:
-
-| Error Location | continue-on-error | Action |
-|----------------|-------------------|--------|
-| Phase 1 - CMake "Could NOT find" | Yes | Ignore (expected) |
-| Phase 1 - vcpkg build errors | Yes | **Investigate** (real problem) |
-| Phase 2 - Any error | No | Investigate (blocking issue) |
-
-**Better Alternatives**:
-
-1. **Temporarily remove continue-on-error** to see real failures:
-   ```yaml
-   # In build-test-win.yml
-   - name: Configure CMake Common
-     run: ...
-     continue-on-error: false  # Temporarily change to false
-   ```
-
-2. **Add explicit validation after Phase 1**:
-   ```yaml
-   - name: Validate cache populated
-     run: |
-       if (!(Test-Path "vcpkg_installed/x64-windows/include/opencv2")) {
-         Write-Error "Phase 1 failed to cache OpenCV"
-         exit 1
-       }
-   ```
-
-3. **Use direct vcpkg install**:
-   ```yaml
-   - name: Install OpenCV to cache
-     run: |
-       .\base\fix-vcpkg-json.ps1 -onlyOpenCV
-       .\vcpkg\vcpkg.exe install --triplet x64-windows
-     # No continue-on-error - fails loudly on real errors
-   ```
-
-**Key Lesson**: When debugging, check actual error messages in logs, not just workflow step status.
+**Key Lesson**: Always check actual error messages in logs, not just workflow step status.
 
 ---
 
@@ -582,27 +517,22 @@ grep "Building.*<package>" /tmp/build.log -A 50
 
 Before digging deep, check these common issues:
 
-### Phase 1 (Prep) Checklist
+### Build Job Checklist
 - [ ] Python version is 3.10.x in vcpkg-tools.json
 - [ ] vcpkg downloads cleared or cache key bumped
 - [ ] Baseline commit is fetchable (git ls-remote)
 - [ ] vcpkg-configuration.json has correct baseline
-- [ ] Ignore CMake "Could NOT find" errors (expected)
-- [ ] Check for real vcpkg build errors (unexpected)
-
-### Phase 2 (Build/Test) Checklist
-- [ ] Cache restored successfully from Phase 1
 - [ ] pkgconf in vcpkg.json dependencies
 - [ ] All pinned versions in overrides section
 - [ ] Disk space sufficient (< 14 GB used)
+- [ ] Cache restored successfully from previous build
 - [ ] CMake finds all required packages
-- [ ] No continue-on-error hiding errors
+- [ ] Cloud tests execution completes (GPU tests run separately)
 
 ### After Fixing Checklist
 - [ ] Commit vcpkg submodule changes to feature branch (not master!)
 - [ ] Update vcpkg-configuration.json baseline if needed
 - [ ] Bump cache key if vcpkg-tools.json changed
-- [ ] Test Phase 1 first, then Phase 2
 - [ ] Verify cache saved and restored correctly
 - [ ] Document new issue pattern in this guide
 
@@ -628,5 +558,5 @@ Gather this information:
 
 ---
 
-**Applies to**: Windows NoCUDA builds on GitHub-hosted runners
-**Related Guides**: reference.md, troubleshooting.cuda.md (for Windows CUDA)
+**Applies to**: CI-Windows build job (cloud runners with CUDA toolkit)
+**Related Guides**: reference.md, troubleshooting.cuda.md (GPU tests on self-hosted runners)
