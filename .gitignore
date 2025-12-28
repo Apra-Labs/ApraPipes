@@ -6,7 +6,8 @@ base/vcpkg_installed
 base/vcpkg.json
 CI_test_result*.xml
 
-# Claude state files (local only)
+# Claude state files (local only - NEVER commit these)
+CLAUDE.md
 .claude/CURRENT_STATE.md
 .claude/LEARNINGS.md
 .claude/settings.json
