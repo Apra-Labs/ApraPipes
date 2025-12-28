@@ -51,7 +51,8 @@ public:
 	NVCodecResources(apracucontext_sp& cuContext) : m_cuContext(cuContext),
 		m_hEncoder(nullptr),
 		m_nFreeOutputBitstreams(0),
-		m_nBusyOutputBitstreams(0)
+		m_nBusyOutputBitstreams(0),
+		m_bResourcesValid(true)
 	{
 		load2();
 	}
@@ -110,7 +111,13 @@ public:
 
 	void unload()
 	{
-		
+		 // Mark resources as invalid before destroying - protects against
+		 // use-after-free when frame deleters are called after encoder destruction
+		 {
+			 std::unique_lock<std::mutex> lock(m_mutex);
+			 m_bResourcesValid = false;
+		 }
+
 		 for (auto const &element : registeredResources)
 		 {
 		 	auto registeredPtr = element.second;
@@ -147,6 +154,12 @@ public:
 	{
 		 std::unique_lock<std::mutex> lock(m_mutex);
 
+		 // Guard against use-after-free: encoder may be destroyed while
+		 // frames with deleters are still in downstream module queues
+		 if (!m_bResourcesValid || m_hEncoder == nullptr) {
+			 return;
+		 }
+
 		 NVENC_API_CALL(m_nvenc.nvEncUnlockBitstream(m_hEncoder, outputBitstream));
 
 		 m_qBitstreamOutputBitstream.push_back(outputBitstream);
@@ -178,6 +191,7 @@ public:
 
 	uint32_t m_nFreeOutputBitstreams;
 	uint32_t m_nBusyOutputBitstreams;
+	bool m_bResourcesValid;
 
 public:
 	std::condition_variable m_wait_for_output;
