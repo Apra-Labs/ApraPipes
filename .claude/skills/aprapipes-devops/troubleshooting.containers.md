@@ -2,7 +2,22 @@
 
 Platform-specific troubleshooting for Docker containerized builds.
 
-**Scope**: Docker containers for Linux x64 CUDA builds.
+**Scope**: CI-Linux docker job running containerized builds.
+
+---
+
+## Docker-Specific Architecture
+
+### Build Configuration
+- **Workflow**: CI-Linux.yml
+- **Job**: docker (nested within CI-Linux workflow)
+- **Reusable**: build-test-lin-container.yml
+- **Environment**: Docker container (Ubuntu 20.04+ base)
+- **CUDA**: Optional (depends on container configuration)
+
+### Workflow Files
+- **Parent**: `.github/workflows/CI-Linux.yml`
+- **Reusable**: `.github/workflows/build-test-lin-container.yml`
 
 ---
 

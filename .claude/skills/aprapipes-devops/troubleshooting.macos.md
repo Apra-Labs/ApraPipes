@@ -1,5 +1,25 @@
 # macOS CI/CD Troubleshooting Guide
 
+**Scope**: CI-MacOSX-NoCUDA workflow running on cloud runners.
+
+---
+
+## macOS-Specific Architecture
+
+### Build Configuration
+- **Workflow**: CI-MacOSX-NoCUDA.yml
+- **Job**: ci (single job for build and test)
+- **Runner**: `macos-15-intel` (GitHub-hosted)
+- **Strategy**: Single-phase build
+- **Time Limit**: 6 hours
+- **CUDA**: None (macOS does not support CUDA)
+
+### Workflow Files
+- **Top-level**: `.github/workflows/CI-MacOSX-NoCUDA.yml`
+- **Reusable**: `.github/workflows/build-test-macosx.yml`
+
+---
+
 ## macOS-Specific Build Issues
 
 ## Quick Fixes Checklist

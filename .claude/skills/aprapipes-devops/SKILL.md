@@ -23,7 +23,7 @@ You are an ApraPipes DevOps troubleshooting agent. Your role is to:
 **IMPORTANT**: For the comprehensive debugging methodology and guiding principles, see **[methodology.md](methodology.md)**.
 
 **Key Principles:**
-- **Goal**: Keep all 8 GitHub workflows green
+- **Goal**: Keep all 4 primary GitHub workflows green (CI-Windows, CI-Linux, CI-Linux-ARM64, CI-MacOSX-NoCUDA)
 - **Approach**: Efficient, methodical debugging that prioritizes understanding over experimentation
 - **Target**: Strive for fixes in 1-3 attempts, not 100 experiments
 - **4-Phase Process**:
@@ -69,24 +69,21 @@ gh run view <run-id>
 Use this decision tree:
 
 ```
-Is this a CUDA build? (Check workflow name: *-CUDA.yml)
-├─ YES → troubleshooting.cuda.md (all CUDA builds use self-hosted runners)
-│   ├─ Windows CUDA → Self-hosted Windows + CUDA
-│   ├─ Linux CUDA → Self-hosted Linux x64 + CUDA
-│   └─ Jetson → Self-hosted ARM64 + CUDA (also see troubleshooting.jetson.md)
+Which workflow failed?
+├─ CI-Windows (Windows + CUDA, cloud runners)
+│   ├─ build job → troubleshooting.windows.md
+│   └─ cuda job → troubleshooting.cuda.md (GPU tests on self-hosted)
 │
-└─ NO (NoCUDA) → Which platform?
-    ├─ Windows NoCUDA → troubleshooting.windows.md
-    │   └─ GitHub-hosted, two-phase builds
-    │
-    ├─ Linux x64 NoCUDA → troubleshooting.linux.md
-    │   └─ GitHub-hosted, two-phase builds
-    │
-    ├─ macOS NoCUDA → troubleshooting.macos.md
-    │   └─ GitHub-hosted, two-phase builds
-    │
-    └─ Docker → troubleshooting.containers.md
-        └─ Container-specific issues
+├─ CI-Linux (Linux x64 + CUDA, cloud runners)
+│   ├─ build job → troubleshooting.linux.md
+│   ├─ cuda job → troubleshooting.cuda.md (GPU tests on self-hosted)
+│   └─ docker job → troubleshooting.containers.md
+│
+├─ CI-Linux-ARM64 (Jetson/ARM64 + CUDA, self-hosted)
+│   └─ ci job → troubleshooting.jetson.md + troubleshooting.cuda.md
+│
+└─ CI-MacOSX-NoCUDA (macOS, cloud runners)
+    └─ ci job → troubleshooting.macos.md
 ```
 
 ### Step 3: Download Logs and Begin Diagnosis
@@ -258,15 +255,15 @@ gh run cancel 19907395952 && gh run cancel 19907463211  # Keep 19907630652
 
 ### Primary Guide Selection
 
-| Build Configuration | Primary Guide | Secondary Guides |
-|---------------------|---------------|------------------|
-| Windows NoCUDA | troubleshooting.windows.md | reference.md |
-| Windows CUDA | troubleshooting.cuda.md | troubleshooting.windows.md |
-| Linux x64 NoCUDA | troubleshooting.linux.md | reference.md |
-| Linux x64 CUDA | troubleshooting.cuda.md | troubleshooting.linux.md |
-| macOS NoCUDA | troubleshooting.macos.md | troubleshooting.vcpkg.md, reference.md |
-| Jetson/ARM64 | troubleshooting.jetson.md | troubleshooting.cuda.md |
-| Docker builds | troubleshooting.containers.md | troubleshooting.cuda.md |
+| Workflow | Job | Primary Guide | Secondary Guides |
+|----------|-----|---------------|------------------|
+| CI-Windows | build | troubleshooting.windows.md | reference.md |
+| CI-Windows | cuda | troubleshooting.cuda.md | troubleshooting.windows.md |
+| CI-Linux | build | troubleshooting.linux.md | reference.md |
+| CI-Linux | cuda | troubleshooting.cuda.md | troubleshooting.linux.md |
+| CI-Linux | docker | troubleshooting.containers.md | troubleshooting.linux.md |
+| CI-Linux-ARM64 | ci | troubleshooting.jetson.md | troubleshooting.cuda.md |
+| CI-MacOSX-NoCUDA | ci | troubleshooting.macos.md | troubleshooting.vcpkg.md, reference.md |
 
 ### Cross-Reference Usage
 
@@ -438,12 +435,12 @@ Use this table to quickly find the right fix for common error messages. Search f
 
 ## Troubleshooting Guide Index
 
-- **troubleshooting.windows.md** - Windows NoCUDA builds (GitHub-hosted, two-phase)
-- **troubleshooting.linux.md** - Linux x64 NoCUDA builds (GitHub-hosted, two-phase)
-- **troubleshooting.macos.md** - macOS NoCUDA builds (GitHub-hosted, two-phase)
-- **troubleshooting.cuda.md** - All CUDA builds (self-hosted, platform-agnostic)
-- **troubleshooting.jetson.md** - Jetson ARM64 builds (ARM64 + CUDA constraints)
-- **troubleshooting.containers.md** - Docker builds (container-specific)
+- **troubleshooting.windows.md** - Windows cloud builds (CI-Windows build job)
+- **troubleshooting.linux.md** - Linux x64 cloud builds (CI-Linux build job)
+- **troubleshooting.macos.md** - macOS cloud builds (CI-MacOSX-NoCUDA ci job)
+- **troubleshooting.cuda.md** - GPU test jobs on self-hosted runners (CI-Windows/CI-Linux cuda jobs)
+- **troubleshooting.jetson.md** - Jetson ARM64 builds (CI-Linux-ARM64 ci job)
+- **troubleshooting.containers.md** - Docker builds (CI-Linux docker job)
 - **troubleshooting.vcpkg.md** - vcpkg-specific issues (cross-platform)
 - **reference.md** - Cross-platform reference (vcpkg, cache, GitHub Actions)
 - **methodology.md** - High-level debugging methodology (detection, validation, testing)
@@ -456,5 +453,14 @@ This skill should be updated when:
 - New platform added (update decision tree, platform coverage, troubleshooting guides)
 - New issue pattern discovered (add to appropriate troubleshooting guide)
 - vcpkg baseline updated (update reference.md with new pins)
-- Workflow structure changes (update reference.md)
+- Workflow structure changes (update reference.md and this file)
 - Self-hosted runner configuration changes (update troubleshooting.cuda.md)
+
+## CI/CD Architecture Notes
+
+The new unified architecture (as of Dec 2025):
+- **Top-level workflows**: CI-Windows, CI-Linux, CI-Linux-ARM64, CI-MacOSX-NoCUDA
+- **Reusable workflows**: build-test.yml (unified Windows/Linux), build-test-lin.yml (Linux-specific), build-test-macosx.yml (macOS)
+- **Nested structure**: Top-level calls reusable → reusable runs build/test jobs → reusable calls CI-CUDA-Tests.yml for GPU tests
+- **Badge naming**: Uses `flav` parameter - Windows, Windows-CUDA, Linux, Linux-CUDA, Linux-Docker, Linux_ARM64, MacOSX
+- **CUDA tests**: Run as nested jobs within CI-Windows/CI-Linux via CI-CUDA-Tests.yml reusable workflow on self-hosted GPU runners

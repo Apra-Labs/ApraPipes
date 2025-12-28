@@ -2,25 +2,32 @@
 
 Platform-specific troubleshooting for Jetson ARM64 builds with CUDA.
 
-**Scope**: Jetson devices (ARM64 + CUDA), most complex platform combination.
+**Scope**: CI-Linux-ARM64 workflow running on self-hosted Jetson devices (ARM64 + CUDA).
 
-**Related**: See `troubleshooting.cuda.md` for CUDA-specific issues that apply here.
+**Related**: See `troubleshooting.cuda.md` for general CUDA concepts (note: Jetson architecture differs - builds AND tests on same runner).
 
 ---
 
 ## Jetson-Specific Architecture
 
 ### Build Configuration
+- **Workflow**: CI-Linux-ARM64.yml
+- **Job**: ci (single job for build and test)
 - **Platform**: ARM64 (aarch64)
 - **CUDA**: Yes (provided by JetPack SDK)
 - **Runner**: Self-hosted (Jetson device)
 - **Constraints**: Memory limited, disk space limited, package availability limited
+
+### Workflow Files
+- **Top-level**: `.github/workflows/CI-Linux-ARM64.yml`
+- **Reusable**: `.github/workflows/build-test-lin.yml`
 
 ### Key Characteristics
 - ARM64 + CUDA combination (unique constraints)
 - JetPack SDK provides CUDA + cuDNN optimized for Jetson
 - Many vcpkg packages not available for ARM64
 - Embedded device with split filesystems (small `/` root, large `/data`)
+- Builds AND tests on same self-hosted runner (unlike x64 CUDA which splits cloud build + GPU test)
 
 ---
 
@@ -409,5 +416,5 @@ export VCPKG_MAX_CONCURRENCY=4         # Limit parallelism (memory constraints)
 
 ---
 
-**Applies to**: Jetson ARM64 builds with CUDA (JetPack 5.0+)
-**Related Guides**: reference.md, troubleshooting.cuda.md, troubleshooting.linux.md, methodology.md
+**Applies to**: CI-Linux-ARM64 workflow (self-hosted Jetson with JetPack 5.0+)
+**Related Guides**: reference.md, troubleshooting.cuda.md (general CUDA concepts), troubleshooting.linux.md (Linux-specific patterns), methodology.md
