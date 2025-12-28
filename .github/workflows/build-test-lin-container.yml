@@ -50,8 +50,8 @@ on:
         required: false
       cache-path:
         type: string
-        description: 'the folder which needs to be cached - MUST be under workspace for cache sharing with cloud build'
-        default: '.cache/vcpkg'
+        description: 'the folder which needs to be cached e.g. .cache/vcpkg'
+        default: ${{ '/mnt/.cache/vcpkg/archives' }}
         required: false
       cmake-conf-cmd:
         type: string
@@ -82,10 +82,7 @@ jobs:
   build:
     env:
       CMAKE_TC_FILE: '../vcpkg/scripts/buildsystems/vcpkg.cmake' # Note: naming this variable as CMAKE_TOOLCHAIN_FILE can cause havoc!!!
-      # Cache path MUST be under workspace: $GITHUB_WORKSPACE/.cache/vcpkg
-      # Relative path = ".cache/vcpkg" (identical to cloud build) = same version hash = cache sharing works!
-      # Note: github.workspace in container job is the container path (/__w/ApraPipes/ApraPipes)
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.cache/vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: /mnt/.cache/vcpkg
       TEST_EXE: build/aprapipesut
       # Use explicit gcc-11 paths to match cloud build's compiler ABI for vcpkg cache sharing
       CC: /usr/bin/gcc-11
@@ -176,19 +173,22 @@ jobs:
       if: ${{ !inputs.force-cache-update }}
       uses: actions/cache@v3
       with:
-          # Single path must match Cloud build exactly for cache sharing
-          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: Linux-vcpkg-
+          path: |
+            ${{ inputs.cache-path }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: LinuxD-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: LinuxD-vcpkg-
 
     - name: Force cache update - restore and delete old cache
       id: cache-force-restore
       if: ${{ inputs.force-cache-update }}
       uses: actions/cache/restore@v3
       with:
-          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
-          restore-keys: Linux-vcpkg-
+          path: |
+            ${{ inputs.cache-path }}
+            ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: LinuxD-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+          restore-keys: LinuxD-vcpkg-
 
     # Cache deletion removed - gh cache delete requires workflow-level permissions that are not available in reusable workflows
     # To force cache updates: manually delete caches via GitHub UI or use workflow_dispatch with force-cache-update flag
@@ -206,8 +206,10 @@ jobs:
       if: ${{ always() && inputs.force-cache-update }}
       uses: actions/cache/save@v3
       with:
-        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: Linux-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
+        path: |
+          ${{ inputs.cache-path }}
+          ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: LinuxD-vcpkg-${{ hashFiles('base/vcpkg.json', 'vcpkg/baseline.json', 'submodule_ver.txt') }}
 
     - name: Build
       if: ${{!inputs.is-prep-phase}}

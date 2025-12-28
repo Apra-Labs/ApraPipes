@@ -50,10 +50,7 @@ jobs:
       # Platform-adaptive paths
       TEST_EXE: ${{ inputs.os == 'linux' && 'build/aprapipesut' || 'build/Release/aprapipesut.exe' }}
       CMAKE_TC_FILE: ${{ inputs.os == 'linux' && '../vcpkg/scripts/buildsystems/vcpkg.cmake' || format('{0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) }}
-      # Cache path MUST be under workspace for consistent version hashing across container/non-container jobs
-      # Both Cloud and Docker use: ${{ github.workspace }}/.cache/vcpkg
-      # Relative path = ".cache/vcpkg" (identical) = same version hash = cache sharing works!
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.os == 'linux' && format('{0}/.cache/vcpkg', github.workspace) || 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.os == 'linux' && '/mnt/runner-work/.cache/vcpkg' || 'C:\Users\runneradmin\AppData\Local\vcpkg\archives' }}
       VCPKG_MAX_CONCURRENCY: 6
 
       # Windows-specific vcpkg settings
