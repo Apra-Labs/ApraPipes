@@ -254,8 +254,9 @@ SET(CORE_FILES
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
-	src/APErrorObject.cpp 
+	src/APErrorObject.cpp
 	src/APHealthObject.cpp
+	src/declarative/ModuleRegistry.cpp
 )
 
 SET(CORE_FILES_H
@@ -322,6 +323,8 @@ SET(CORE_FILES_H
 	include/APErrorObject.h
 	include/APCallback.h
 	include/APHealthObject.h
+	include/declarative/Metadata.h
+	include/declarative/ModuleRegistry.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -688,6 +691,7 @@ SET(UT_FILES
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
 	test/declarative/metadata_tests.cpp
+	test/declarative/module_registry_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

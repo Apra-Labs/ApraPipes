@@ -10,6 +10,35 @@
 
 using namespace apra;
 
+// ============================================================
+// Sample Module Metadata Struct (must be at namespace scope for constexpr static members)
+// ============================================================
+struct SampleModuleMetadata {
+    static constexpr std::string_view name = "SampleModule";
+    static constexpr ModuleCategory category = ModuleCategory::Transform;
+    static constexpr std::string_view description = "A sample module for testing";
+    static constexpr std::string_view version = "1.0";
+
+    static constexpr std::array<std::string_view, 2> tags = {
+        "sample",
+        "test"
+    };
+
+    static constexpr std::array<PinDef, 1> inputs = {
+        PinDef::create("input", "RawImagePlanar", true, "Input frames")
+    };
+
+    static constexpr std::array<PinDef, 1> outputs = {
+        PinDef::create("output", "RawImagePlanar", true, "Output frames")
+    };
+
+    static constexpr std::array<PropDef, 3> properties = {
+        PropDef::Int("buffer_size", 5, 1, 100, "Frame buffer size"),
+        PropDef::DynamicFloat("scale", 1.0, 0.1, 10.0, "Scale factor"),
+        PropDef::Bool("enabled", true, "Enable processing")
+    };
+};
+
 BOOST_AUTO_TEST_SUITE(MetadataTests)
 
 // ============================================================
@@ -233,7 +262,8 @@ BOOST_AUTO_TEST_CASE(PropDef_Enum_TwoValues)
         "mode",
         "auto",
         "auto", "manual",
-        "Operation mode"
+        "Operation mode",
+        PropDef::Mutability::Static
     );
 
     BOOST_CHECK_EQUAL(prop.name, "mode");
@@ -251,7 +281,8 @@ BOOST_AUTO_TEST_CASE(PropDef_Enum_ThreeValues)
         "codec",
         "h264",
         "h264", "h265", "jpeg",
-        "Video codec to use"
+        "Video codec to use",
+        PropDef::Mutability::Static
     );
 
     BOOST_CHECK_EQUAL(prop.name, "codec");
@@ -475,32 +506,8 @@ BOOST_AUTO_TEST_CASE(Tags_EmptyArray)
 
 BOOST_AUTO_TEST_CASE(SampleModuleMetadata_CanBeDeclared)
 {
-    // Test that a complete module Metadata struct can be declared
-    struct SampleModuleMetadata {
-        static constexpr std::string_view name = "SampleModule";
-        static constexpr ModuleCategory category = ModuleCategory::Transform;
-        static constexpr std::string_view description = "A sample module for testing";
-        static constexpr std::string_view version = "1.0";
-
-        static constexpr std::array<std::string_view, 2> tags = {
-            "sample",
-            "test"
-        };
-
-        static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawImagePlanar", true, "Input frames")
-        };
-
-        static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawImagePlanar", true, "Output frames")
-        };
-
-        static constexpr std::array<PropDef, 3> properties = {
-            PropDef::Int("buffer_size", 5, 1, 100, "Frame buffer size"),
-            PropDef::DynamicFloat("scale", 1.0, 0.1, 10.0, "Scale factor"),
-            PropDef::Bool("enabled", true, "Enable processing")
-        };
-    };
+    // Test that the namespace-scope SampleModuleMetadata struct is accessible
+    // (struct is defined at namespace scope above, before BOOST_AUTO_TEST_SUITE)
 
     // Verify we can access all metadata at compile time
     BOOST_CHECK_EQUAL(SampleModuleMetadata::name, "SampleModule");
