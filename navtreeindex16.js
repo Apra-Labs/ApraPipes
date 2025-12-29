@@ -1,5 +1,6 @@
 var NAVTREEINDEX16 =
 {
+"classRectangleOverlay.html#aa46d71f5c8dddb0342e972d20b232869":[5,0,281,3],
 "classRectangleOverlay.html#ab3935a7c901ba7124ce997897dba5502":[5,0,281,4],
 "classRectangleOverlay.html#ac98d07dd8f7b70e16ccb9a01abf56b9c":[5,0,281,7],
 "classRectangleOverlay.html#acb25032000edc195f72a815ed354aca4":[5,0,281,5],
@@ -248,6 +249,5 @@ var NAVTREEINDEX16 =
 "classTextOverlayXFormProps.html#aec218bc2388dc82415cf63175988c02e":[5,0,310,5],
 "classTextOverlayXForm_1_1Detail.html":[5,0,309,0],
 "classTextOverlayXForm_1_1Detail.html#a090cd6dca65d4acac6cc60aeae099dce":[5,0,309,0,5],
-"classTextOverlayXForm_1_1Detail.html#a155ef2eccc817e651aeb0d747b31f2a4":[5,0,309,0,3],
-"classTextOverlayXForm_1_1Detail.html#a1d7b75f335245c7cba4c31dcaf4a28ff":[5,0,309,0,6]
+"classTextOverlayXForm_1_1Detail.html#a155ef2eccc817e651aeb0d747b31f2a4":[5,0,309,0,3]
 };

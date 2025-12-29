@@ -7,6 +7,7 @@ var classNVCodecResources =
     [ "unload", "classNVCodecResources.html#aae7df304ea18e5ee386984b9c849e985", null ],
     [ "unlockOutputBitstream", "classNVCodecResources.html#a02868cf20554c6c2bf61d272469f601c", null ],
     [ "frame_opool", "classNVCodecResources.html#a950701e031235e4bbf5c2cfbb25c4cc4", null ],
+    [ "m_bResourcesValid", "classNVCodecResources.html#aa630a180caad1d1e7103a81f675911dd", null ],
     [ "m_cuContext", "classNVCodecResources.html#a0979a69f358f715684450757e2b08522", null ],
     [ "m_hEncoder", "classNVCodecResources.html#a3632227c44825a851c74e02b479a84fc", null ],
     [ "m_lib", "classNVCodecResources.html#ae063a5742fdabcbe0467aed0d8d4f043", null ],
