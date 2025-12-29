@@ -221,8 +221,20 @@ ENDIF(ENABLE_CUDA)
 
 
 include_directories(AFTER SYSTEM include)
+include_directories(AFTER SYSTEM include/declarative)
 
 # ApraPipes library
+
+# ═══════════════════════════════════════════════════════════════════
+# Declarative Pipeline Sources
+# ═══════════════════════════════════════════════════════════════════
+SET(DECLARATIVE_FILES
+	src/declarative/PipelineDescription.cpp
+)
+
+SET(DECLARATIVE_FILES_H
+	include/declarative/PipelineDescription.h
+)
 
 SET(CORE_FILES
 	src/ApraPool.cpp
@@ -551,6 +563,7 @@ set(SOURCE
 	${CORE_FILES} ${CORE_FILES_H}
 	${GENERIC_FILES} ${GENERIC_FILES_H}
 	${IP_FILES} ${IP_FILES_H}
+	${DECLARATIVE_FILES} ${DECLARATIVE_FILES_H}
 )
 
 IF(ENABLE_CUDA)
@@ -631,6 +644,13 @@ IF (ENABLE_CUDA)
 	ENDIF(NOT ENABLE_ARM64)
 ENDIF(ENABLE_CUDA)
 
+# ═══════════════════════════════════════════════════════════════════
+# Declarative Pipeline Tests
+# ═══════════════════════════════════════════════════════════════════
+SET(DECLARATIVE_UT_FILES
+	test/declarative/pipeline_description_tests.cpp
+)
+
 SET(UT_FILES
 	test/utmain.cpp
 	test/unit_tests.cpp
@@ -689,6 +709,7 @@ SET(UT_FILES
 	test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
+	${DECLARATIVE_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
