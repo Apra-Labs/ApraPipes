@@ -30,7 +30,7 @@ Non-blocking:           └──► C1 (validator shell)
 | **A1** | Core Metadata Types | ✅ Complete | claude-code | 2025-12-28 | 2025-12-28 | See below |
 | **B1** | Pipeline Description IR | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | A2 done |
 | **A2** | Module Registry | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | A1 done |
-| **B2** | TOML Parser | 📋 Ready | - | - | - | B1 done |
+| **B2** | TOML Parser | ✅ Complete | Agent-B1 | 2025-12-28 | 2025-12-28 | Merged |
 
 ### Sprint 1 - Parallel Work
 
@@ -45,7 +45,7 @@ Non-blocking:           └──► C1 (validator shell)
 
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
-| **D1** | Module Factory | ⏳ Blocked | - | - | - | Needs A2, B2 |
+| **D1** | Module Factory | 📋 Ready | - | - | - | A2, B2 done |
 | **E1** | CLI Tool | ⏳ Blocked | - | - | - | Needs D1 |
 | **E2** | Schema Generator | 📋 Ready | - | - | - | A2 done |
 | **M3** | FaceDetectorXform Metadata | 📋 Ready | - | - | - | A2 done |

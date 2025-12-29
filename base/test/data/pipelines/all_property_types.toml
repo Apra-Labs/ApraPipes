@@ -1,0 +1,14 @@
+# Pipeline testing all property types
+[modules.test]
+type = "TestModule"
+    [modules.test.props]
+    int_val = 42
+    negative_int = -100
+    float_val = 3.14159
+    bool_true = true
+    bool_false = false
+    string_val = "hello world"
+    int_array = [1, 2, 3, 4, 5]
+    float_array = [1.1, 2.2, 3.3]
+    string_array = ["a", "b", "c"]
+    empty_array = []

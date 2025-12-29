@@ -1,0 +1,3 @@
+# Minimal pipeline with a single module and no connections
+[modules.source]
+type = "FileReaderModule"
