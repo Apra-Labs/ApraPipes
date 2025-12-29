@@ -30,7 +30,11 @@ public:
 class TestSourceModule : public Module {
 public:
     explicit TestSourceModule(TestSourceModuleProps props)
-        : Module(SOURCE, "TestSourceModule", props), props_(props) {}
+        : Module(SOURCE, "TestSourceModule", props), props_(props) {
+        // Set up output pin immediately so setNext() works
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+        mOutputPinId = addOutputPin(metadata);
+    }
 
     // Module Metadata for registry
     struct Metadata {
@@ -60,6 +64,7 @@ protected:
 
 private:
     TestSourceModuleProps props_;
+    std::string mOutputPinId;
 };
 
 // Simple transform props
@@ -73,7 +78,11 @@ public:
 class TestTransformModule : public Module {
 public:
     explicit TestTransformModule(TestTransformModuleProps props)
-        : Module(TRANSFORM, "TestTransformModule", props), props_(props) {}
+        : Module(TRANSFORM, "TestTransformModule", props), props_(props) {
+        // Set up output pin immediately so setNext() works
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+        mOutputPinId = addOutputPin(metadata);
+    }
 
     struct Metadata {
         static constexpr std::string_view name = "TestTransformModule";
@@ -104,6 +113,7 @@ protected:
 
 private:
     TestTransformModuleProps props_;
+    std::string mOutputPinId;
 };
 
 // Simple sink props
