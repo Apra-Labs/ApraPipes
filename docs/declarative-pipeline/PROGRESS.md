@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-29 05:15` by `claude-code`
+Last Updated: `2025-12-29 06:30` by `claude-code`
 
 ---
 
@@ -28,18 +28,18 @@ Non-blocking:           └──► C1 (validator shell)
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **A1** | Core Metadata Types | ✅ Complete | claude-code | 2025-12-28 | 2025-12-28 | See below |
-| **B1** | Pipeline Description IR | 📋 Ready | - | - | - | - |
+| **B1** | Pipeline Description IR | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | A2 done |
 | **A2** | Module Registry | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | A1 done |
-| **B2** | TOML Parser | ⏳ Blocked | - | - | - | Needs B1 |
+| **B2** | TOML Parser | 📋 Ready | - | - | - | B1 done |
 
 ### Sprint 1 - Parallel Work
 
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **A3** | FrameType Registry | 📋 Ready | - | - | - | A1 done |
-| **C1** | Validator Shell | ⏳ Blocked | - | - | - | Needs A2, B1 |
-| **M1** | FileReaderModule Metadata | ⏳ Blocked | - | - | - | Needs A2 |
-| **M2** | H264Decoder Metadata | ⏳ Blocked | - | - | - | Needs A2 |
+| **C1** | Validator Shell | 📋 Ready | - | - | - | A2, B1 done |
+| **M1** | FileReaderModule Metadata | 📋 Ready | - | - | - | A2 done |
+| **M2** | H264Decoder Metadata | 📋 Ready | - | - | - | A2 done |
 
 ### Sprint 2 - Core Engine
 
@@ -47,10 +47,10 @@ Non-blocking:           └──► C1 (validator shell)
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ⏳ Blocked | - | - | - | Needs A2, B2 |
 | **E1** | CLI Tool | ⏳ Blocked | - | - | - | Needs D1 |
-| **E2** | Schema Generator | ⏳ Blocked | - | - | - | Needs A2 |
-| **M3** | FaceDetectorXform Metadata | ⏳ Blocked | - | - | - | Needs A2 |
-| **M4** | QRReader Metadata | ⏳ Blocked | - | - | - | Needs A2 |
-| **M5** | FileWriterModule Metadata | ⏳ Blocked | - | - | - | Needs A2 |
+| **E2** | Schema Generator | 📋 Ready | - | - | - | A2 done |
+| **M3** | FaceDetectorXform Metadata | 📋 Ready | - | - | - | A2 done |
+| **M4** | QRReader Metadata | 📋 Ready | - | - | - | A2 done |
+| **M5** | FileWriterModule Metadata | 📋 Ready | - | - | - | A2 done |
 | **F1-F4** | Frame Type Metadata | ⏳ Blocked | - | - | - | Needs A3 |
 
 ### Sprint 2-3 - Validator Enhancements
@@ -170,6 +170,33 @@ Non-blocking:           └──► C1 (validator shell)
 
 ---
 
+### Session: 2025-12-29 06:00
+
+**Agent:** claude-code
+**Duration:** ~30 min
+**Tasks:** A2 commit, B1 (Pipeline Description IR)
+
+**Accomplished:**
+- Committed A2 (Module Registry) implementation
+- Implemented B1 (Pipeline Description IR):
+  - Created `PipelineDescription.h` with ModuleInstance, Connection, PipelineSettings, PipelineDescription structs
+  - Created `PipelineDescription.cpp` with helpers (parse, toJson, findModule, etc.)
+  - Created 37 unit tests covering all acceptance criteria
+  - PropertyValue variant includes array types (vector<int64_t>, vector<double>, vector<string>)
+- All 37 B1 tests passing on macOS
+- Updated PROGRESS.md with task status updates
+
+**Remaining:**
+- B2 (TOML Parser) now unblocked
+- C1 (Validator Shell) now unblocked
+- Many module metadata tasks (M1-M5) now unblocked
+
+**Notes for Next Session:**
+- B1 PropertyValue (in PipelineDescription.h) has array types, A2 PropertyValue (in ModuleRegistry.h) does not - they're separate types for different purposes
+- Connection::parse() returns empty strings on bad input (no dot), use isValid() to check
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**  
@@ -191,7 +218,7 @@ Non-blocking:           └──► C1 (validator shell)
 
 | Platform | Status | Last Success | Notes |
 |----------|--------|--------------|-------|
-| macOS | ✅ Pass | 2025-12-29 | x64-osx-release, 36 tests pass |
+| macOS | ✅ Pass | 2025-12-29 | x64-osx-release, 94 tests pass (36+21+37) |
 | Linux | ❓ Unknown | - | - |
 | Windows | ❓ Unknown | - | - |
 | ARM64 | ❓ Unknown | - | - |
@@ -204,7 +231,7 @@ Non-blocking:           └──► C1 (validator shell)
 |------------|------|------|------|----------|
 | metadata_tests | 36 | 0 | 0 | 2025-12-29 |
 | module_registry_tests | 21 | 0 | 0 | 2025-12-29 |
-| pipeline_description_tests | - | - | - | - |
+| pipeline_description_tests | 37 | 0 | 0 | 2025-12-29 |
 | toml_parser_tests | - | - | - | - |
 | module_factory_tests | - | - | - | - |
 
@@ -217,14 +244,14 @@ Track new files for this feature:
 ```
 base/include/declarative/
   [x] Metadata.h                    # A1 ✅
-  [ ] PipelineDescription.h         # B1
+  [x] PipelineDescription.h         # B1 ✅
   [x] ModuleRegistry.h              # A2 ✅
   [ ] FrameTypeRegistry.h           # A3
   [ ] PipelineValidator.h           # C1
   [ ] ModuleFactory.h               # D1
 
 base/src/declarative/
-  [ ] PipelineDescription.cpp       # B1
+  [x] PipelineDescription.cpp       # B1 ✅
   [x] ModuleRegistry.cpp            # A2 ✅
   [ ] FrameTypeRegistry.cpp         # A3
   [ ] PipelineValidator.cpp         # C1
@@ -238,8 +265,8 @@ base/src/declarative/
 
 base/test/declarative/
   [x] metadata_tests.cpp            # A1 ✅
-  [ ] pipeline_description_tests.cpp # B1
-  [ ] module_registry_tests.cpp     # A2
+  [x] pipeline_description_tests.cpp # B1 ✅
+  [x] module_registry_tests.cpp     # A2 ✅
   [ ] frame_type_registry_tests.cpp # A3
   [ ] toml_parser_tests.cpp         # B2
   [ ] pipeline_validator_tests.cpp  # C1

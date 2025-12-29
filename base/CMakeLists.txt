@@ -257,6 +257,7 @@ SET(CORE_FILES
 	src/APErrorObject.cpp
 	src/APHealthObject.cpp
 	src/declarative/ModuleRegistry.cpp
+	src/declarative/PipelineDescription.cpp
 )
 
 SET(CORE_FILES_H
@@ -325,6 +326,7 @@ SET(CORE_FILES_H
 	include/APHealthObject.h
 	include/declarative/Metadata.h
 	include/declarative/ModuleRegistry.h
+	include/declarative/PipelineDescription.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -692,6 +694,7 @@ SET(UT_FILES
 	test/simpleControlModuleTests.cpp
 	test/declarative/metadata_tests.cpp
 	test/declarative/module_registry_tests.cpp
+	test/declarative/pipeline_description_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
