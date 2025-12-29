@@ -62,6 +62,8 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_path(FVAD_INCLUDE_DIR fvad.h)
+find_library(FVAD_LIBRARY NAMES fvad libfvad)
 
 
 IF(ENABLE_LINUX)
@@ -221,6 +223,9 @@ ENDIF(ENABLE_CUDA)
 
 
 include_directories(AFTER SYSTEM include)
+
+add_subdirectory(../thirdparty/libfvad libfvad)
+include_directories(AFTER SYSTEM ../thirdparty/libfvad/include)
 
 # ApraPipes library
 
@@ -396,6 +401,7 @@ SET(IP_FILES
 	src/OverlayFactory.cpp
 	src/TestSignalGeneratorSrc.cpp
 	src/AudioToTextXForm.cpp 
+	src/VoiceActivityDetector.cpp
 	src/AbsControlModule.cpp
 	src/ThumbnailListGenerator.cpp
 )
@@ -423,6 +429,7 @@ SET(IP_FILES_H
 	include/ColorConversionXForm.h
 	include/Overlay.h
 	include/AudioToTextXForm.h
+	include/VoiceActivityDetector.h
 	include/ThumbnailListGenerator.h
 )
 
@@ -581,6 +588,7 @@ target_include_directories ( aprapipes PRIVATE
 	${BARESIP_INC_DIR}
 	${LIBRE_INC_DIR}
 	${NVCODEC_INCLUDE_DIR}
+	${FVAD_INCLUDE_DIR}
 )
 
 
@@ -685,6 +693,7 @@ SET(UT_FILES
 	test/mp4_dts_strategy_tests.cpp
 	test/overlaymodule_tests.cpp
 	test/testSignalGeneratorSrc_tests.cpp
+	test/VoiceActivityDetectorTests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
 	${ARM64_UT_FILES}
@@ -754,6 +763,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   SFML::Audio
   whisper::whisper
+  ${FVAD_LIBRARY}
   )
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
