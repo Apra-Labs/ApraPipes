@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-29 14:45` by `claude-code`
+Last Updated: `2025-12-29 18:30` by `claude-code`
 
 ---
 
@@ -36,9 +36,9 @@ Non-blocking:           └──► C1 (validator shell)
 
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
-| **A3** | FrameType Registry | 📋 Ready | - | - | - | A1 done |
-| **C1** | Validator Shell | 📋 Ready | - | - | - | A2, B1 done |
-| **M1** | FileReaderModule Metadata | 📋 Ready | - | - | - | A2 done |
+| **A3** | FrameType Registry | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
+| **C1** | Validator Shell | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
+| **M1** | FileReaderModule Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **M2** | H264Decoder Metadata | 📋 Ready | - | - | - | A2 done |
 
 ### Sprint 2 - Core Engine
@@ -47,17 +47,17 @@ Non-blocking:           └──► C1 (validator shell)
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
-| **E2** | Schema Generator | 📋 Ready | - | - | - | A2 done |
+| **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **M3** | FaceDetectorXform Metadata | 📋 Ready | - | - | - | A2 done |
 | **M4** | QRReader Metadata | 📋 Ready | - | - | - | A2 done |
 | **M5** | FileWriterModule Metadata | 📋 Ready | - | - | - | A2 done |
-| **F1-F4** | Frame Type Metadata | ⏳ Blocked | - | - | - | Needs A3 |
+| **F1-F4** | Frame Type Metadata | 📋 Ready | - | - | - | A3 done |
 
 ### Sprint 2-3 - Validator Enhancements
 
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
-| **C2** | Validator: Module Checks | ⏳ Blocked | - | - | - | Needs C1 |
+| **C2** | Validator: Module Checks | 📋 Ready | - | - | - | C1 done |
 | **C3** | Validator: Property Checks | ⏳ Blocked | - | - | - | Needs C2 |
 | **C4** | Validator: Connection Checks | ⏳ Blocked | - | - | - | Needs C3, A3 |
 | **C5** | Validator: Graph Checks | ⏳ Blocked | - | - | - | Needs C4 |
@@ -255,17 +255,58 @@ Non-blocking:           └──► C1 (validator shell)
 
 ---
 
-### Session: TEMPLATE (copy this for new sessions)
+### Session: 2025-12-29 18:30
 
-**Agent:**  
-**Duration:**  
-**Tasks:**  
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** M1, A3, C1, E2 (Ready tasks implementation)
 
 **Accomplished:**
-- 
+- Implemented M1 (FileReaderModule Metadata):
+  - Added `Metadata` struct to `FileReaderModule.h` with all properties
+  - Added `REGISTER_MODULE` call in `FileReaderModule.cpp`
+- Implemented A3 (FrameType Registry):
+  - Created `FrameTypeRegistry.h` with hierarchy support, compatibility checks
+  - Created `FrameTypeRegistry.cpp` with caching and thread safety
+  - Created 35+ unit tests for frame type operations
+- Implemented C1 (Validator Shell):
+  - Created `PipelineValidator.h` with ValidationIssue, Result, Options
+  - Created `PipelineValidator.cpp` with 4-phase validation skeleton
+  - Created 30+ unit tests for validator framework
+  - Added error codes for future validator phases (C2-C5)
+- Implemented E2 (Schema Generator):
+  - Created `schema_generator.cpp` with JSON/Markdown export
+  - Added nlohmann-json to vcpkg.json
+  - Added CMake custom target for build-time schema generation
+  - Support for --all --output-dir workflow
+- Updated CMakeLists.txt with all new files and build targets
+- Updated PROGRESS.md with completed task status
 
 **Remaining:**
-- 
+- CI build verification
+- M2-M5 (more module metadata tasks)
+- C2-C5 (validator implementation phases)
+- F1-F4 (frame type metadata)
+
+**Notes for Next Session:**
+- Schema generator produces modules.json, frame_types.json, MODULES.md, FRAME_TYPES.md
+- FrameTypeRegistry has isCompatible() for output→input type checking
+- PipelineValidator has TODO placeholders for C2-C5 implementations
+- All 4 ready tasks now complete: M1, A3, C1, E2
+
+---
+
+### Session: TEMPLATE (copy this for new sessions)
+
+**Agent:**
+**Duration:**
+**Tasks:**
+
+**Accomplished:**
+-
+
+**Remaining:**
+-
 
 **Notes for Next Session:**
 - 
@@ -304,15 +345,15 @@ base/include/declarative/
   [x] Metadata.h                    # A1 ✅
   [x] PipelineDescription.h         # B1 ✅
   [x] ModuleRegistry.h              # A2 ✅
-  [ ] FrameTypeRegistry.h           # A3
-  [ ] PipelineValidator.h           # C1
+  [x] FrameTypeRegistry.h           # A3 ✅
+  [x] PipelineValidator.h           # C1 ✅
   [x] ModuleFactory.h               # D1 ✅
 
 base/src/declarative/
   [x] PipelineDescription.cpp       # B1 ✅
   [x] ModuleRegistry.cpp            # A2 ✅
-  [ ] FrameTypeRegistry.cpp         # A3
-  [ ] PipelineValidator.cpp         # C1
+  [x] FrameTypeRegistry.cpp         # A3 ✅
+  [x] PipelineValidator.cpp         # C1 ✅
   [x] ModuleFactory.cpp             # D1 ✅
 
 base/include/declarative/
@@ -325,14 +366,14 @@ base/test/declarative/
   [x] metadata_tests.cpp            # A1 ✅
   [x] pipeline_description_tests.cpp # B1 ✅
   [x] module_registry_tests.cpp     # A2 ✅
-  [ ] frame_type_registry_tests.cpp # A3
+  [x] frame_type_registry_tests.cpp # A3 ✅
   [x] toml_parser_tests.cpp         # B2 ✅
-  [ ] pipeline_validator_tests.cpp  # C1
+  [x] pipeline_validator_tests.cpp  # C1 ✅
   [x] module_factory_tests.cpp      # D1 ✅
 
 base/tools/
   [x] aprapipes_cli.cpp             # E1 ✅
-  [ ] schema_generator.cpp          # E2
+  [x] schema_generator.cpp          # E2 ✅
 ```
 
 ---

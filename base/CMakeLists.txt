@@ -63,6 +63,7 @@ find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 
 IF(ENABLE_LINUX)
@@ -261,6 +262,8 @@ SET(CORE_FILES
 	src/declarative/PipelineDescription.cpp
 	src/declarative/TomlParser.cpp
 	src/declarative/ModuleFactory.cpp
+	src/declarative/FrameTypeRegistry.cpp
+	src/declarative/PipelineValidator.cpp
 )
 
 SET(CORE_FILES_H
@@ -332,6 +335,8 @@ SET(CORE_FILES_H
 	include/declarative/PipelineDescription.h
 	include/declarative/TomlParser.h
 	include/declarative/ModuleFactory.h
+	include/declarative/FrameTypeRegistry.h
+	include/declarative/PipelineValidator.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -705,6 +710,8 @@ SET(UT_FILES
 	test/declarative/pipeline_description_tests.cpp
 	test/declarative/toml_parser_tests.cpp
 	test/declarative/module_factory_tests.cpp
+	test/declarative/frame_type_registry_tests.cpp
+	test/declarative/pipeline_validator_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -862,3 +869,47 @@ target_include_directories(aprapipes_cli PRIVATE
 # Install CLI executable
 install(TARGETS aprapipes_cli
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# ApraPipes Schema Generator Tool (E2)
+# Exports module/frame type metadata to JSON/Markdown
+# ============================================================
+add_executable(apra_schema_generator
+    tools/schema_generator.cpp
+)
+
+target_link_libraries(apra_schema_generator PRIVATE
+    aprapipes
+    nlohmann_json::nlohmann_json
+)
+
+target_include_directories(apra_schema_generator PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+)
+
+# Install schema generator executable
+install(TARGETS apra_schema_generator
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# Generate schema files at build time
+# ============================================================
+set(SCHEMA_DIR ${CMAKE_BINARY_DIR}/schema)
+
+add_custom_command(
+    OUTPUT ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SCHEMA_DIR}
+    COMMAND apra_schema_generator
+        --modules-json ${SCHEMA_DIR}/modules.json
+        --frame-types-json ${SCHEMA_DIR}/frame_types.json
+        --modules-md ${SCHEMA_DIR}/MODULES.md
+        --frame-types-md ${SCHEMA_DIR}/FRAME_TYPES.md
+    DEPENDS apra_schema_generator
+    COMMENT "Generating ApraPipes schema from C++ metadata"
+    VERBATIM
+)
+
+add_custom_target(generate_schema ALL
+    DEPENDS ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+)
