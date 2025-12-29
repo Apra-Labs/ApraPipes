@@ -687,6 +687,7 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
+	test/declarative/metadata_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
