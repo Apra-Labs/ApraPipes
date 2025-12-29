@@ -1,0 +1,50 @@
+# Face Detection Pipeline
+# Reads video frames, decodes them, and detects faces using deep learning
+#
+# This example demonstrates using the FaceDetectorXform module with
+# configurable confidence threshold and scale factor.
+
+[pipeline]
+name = "FaceDetection"
+version = "1.0"
+description = "Detects faces in video frames using DNN-based detection"
+
+[pipeline.settings]
+queue_size = 20
+on_error = "skip_frame"
+auto_start = true
+
+# ============================================================
+# Modules
+# ============================================================
+
+[modules.video_source]
+type = "FileReaderModule"
+    [modules.video_source.props]
+    strFullFileNameWithPattern = "/path/to/video/frame_????.h264"
+    startIndex = 0
+    readLoop = true
+
+[modules.decoder]
+type = "H264Decoder"
+    [modules.decoder.props]
+    lowerWaterMark = 200
+    upperWaterMark = 300
+
+[modules.face_detector]
+type = "FaceDetectorXform"
+    [modules.face_detector.props]
+    scaleFactor = 1.0
+    confidenceThreshold = 0.7
+
+# ============================================================
+# Connections
+# ============================================================
+
+[[connections]]
+from = "video_source.output"
+to = "decoder.input"
+
+[[connections]]
+from = "decoder.output"
+to = "face_detector.input"

@@ -1,0 +1,49 @@
+# QR Code Reader Pipeline
+# Reads video frames and scans for QR codes and barcodes
+#
+# This example demonstrates using the QRReader module which uses
+# the ZXing library for barcode detection.
+
+[pipeline]
+name = "QRCodeReader"
+version = "1.0"
+description = "Scans video frames for QR codes and barcodes"
+
+[pipeline.settings]
+queue_size = 15
+on_error = "skip_frame"
+auto_start = true
+
+# ============================================================
+# Modules
+# ============================================================
+
+[modules.camera]
+type = "FileReaderModule"
+    [modules.camera.props]
+    strFullFileNameWithPattern = "/path/to/frames/image_????.h264"
+    startIndex = 0
+    maxIndex = 1000
+    readLoop = false
+
+[modules.decoder]
+type = "H264Decoder"
+    [modules.decoder.props]
+    lowerWaterMark = 150
+    upperWaterMark = 200
+
+[modules.qr_scanner]
+type = "QRReader"
+# QRReader has no configurable properties - uses default ZXing settings
+
+# ============================================================
+# Connections
+# ============================================================
+
+[[connections]]
+from = "camera.output"
+to = "decoder.input"
+
+[[connections]]
+from = "decoder.output"
+to = "qr_scanner.input"

@@ -1,0 +1,51 @@
+# Video Transcoding Pipeline
+# Reads H.264 video frames, decodes them, and writes to output file
+#
+# This example demonstrates a simple 3-module pipeline using the
+# declarative TOML configuration format.
+
+[pipeline]
+name = "VideoTranscode"
+version = "1.0"
+description = "Decodes H.264 video and writes frames to file"
+
+[pipeline.settings]
+queue_size = 10
+on_error = "restart_module"
+auto_start = false
+
+# ============================================================
+# Modules
+# ============================================================
+
+[modules.source]
+type = "FileReaderModule"
+    [modules.source.props]
+    strFullFileNameWithPattern = "/path/to/input/frame_????.h264"
+    startIndex = 0
+    maxIndex = -1
+    readLoop = false
+
+[modules.decoder]
+type = "H264Decoder"
+    [modules.decoder.props]
+    lowerWaterMark = 300
+    upperWaterMark = 350
+
+[modules.writer]
+type = "FileWriterModule"
+    [modules.writer.props]
+    strFullFileNameWithPattern = "/path/to/output/frame_????.raw"
+    append = false
+
+# ============================================================
+# Connections
+# ============================================================
+
+[[connections]]
+from = "source.output"
+to = "decoder.input"
+
+[[connections]]
+from = "decoder.output"
+to = "writer.input"
