@@ -1,0 +1,7 @@
+# Pipeline with a syntax error
+[modules.source]
+type = "FileReaderModule"
+
+# Line 5: Syntax error - unclosed string
+[modules.broken]
+type = "unclosed string

@@ -1,0 +1,35 @@
+# Complete pipeline with multiple modules and connections
+[pipeline]
+name = "TestPipeline"
+version = "1.0"
+description = "A complete test pipeline"
+
+[pipeline.settings]
+queue_size = 20
+on_error = "stop_pipeline"
+auto_start = true
+
+[modules.source]
+type = "FileReaderModule"
+    [modules.source.props]
+    path = "/video.mp4"
+    loop = true
+
+[modules.decoder]
+type = "H264Decoder"
+    [modules.decoder.props]
+    output_format = "BGR"
+
+[modules.writer]
+type = "FileWriterModule"
+    [modules.writer.props]
+    path = "/output.mp4"
+    codec = "h264"
+
+[[connections]]
+from = "source.output"
+to = "decoder.input"
+
+[[connections]]
+from = "decoder.output"
+to = "writer.input"

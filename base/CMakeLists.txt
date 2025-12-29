@@ -62,6 +62,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(tomlplusplus CONFIG REQUIRED)
 
 
 IF(ENABLE_LINUX)
@@ -230,10 +231,12 @@ include_directories(AFTER SYSTEM include/declarative)
 # ═══════════════════════════════════════════════════════════════════
 SET(DECLARATIVE_FILES
 	src/declarative/PipelineDescription.cpp
+	src/declarative/TomlParser.cpp
 )
 
 SET(DECLARATIVE_FILES_H
 	include/declarative/PipelineDescription.h
+	include/declarative/TomlParser.h
 )
 
 SET(CORE_FILES
@@ -581,6 +584,9 @@ ENDIF(ENABLE_LINUX)
 
 add_library(aprapipes STATIC ${SOURCE})
 
+# Link header-only libraries for include path propagation
+target_link_libraries(aprapipes PUBLIC tomlplusplus::tomlplusplus)
+
 link_directories(${GTK3_LIBRARY_DIRS})
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
@@ -649,6 +655,7 @@ ENDIF(ENABLE_CUDA)
 # ═══════════════════════════════════════════════════════════════════
 SET(DECLARATIVE_UT_FILES
 	test/declarative/pipeline_description_tests.cpp
+	test/declarative/toml_parser_tests.cpp
 )
 
 SET(UT_FILES
@@ -775,6 +782,7 @@ target_link_libraries(aprapipesut
   bigint::bigint
   SFML::Audio
   whisper::whisper
+  tomlplusplus::tomlplusplus  # Declarative pipeline TOML parser
   )
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
