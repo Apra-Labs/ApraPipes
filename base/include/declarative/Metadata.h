@@ -147,6 +147,9 @@ struct PropDef {
     Type type = Type::Int;
     Mutability mutability = Mutability::Static;
 
+    // Required flag: true = mandatory (user must provide), false = optional (uses default)
+    bool required = false;
+
     // Numeric values stored directly for type safety
     int64_t int_default = 0;
     int64_t int_min = 0;
@@ -364,6 +367,127 @@ struct PropDef {
         std::string_view desc = ""
     ) {
         return Enum(name, default_val, v1, v2, v3, desc, Mutability::Dynamic);
+    }
+
+    // ========================================================
+    // Required (mandatory) property variants
+    // User MUST provide these values - no default is used
+    // ========================================================
+
+    static constexpr PropDef RequiredInt(
+        std::string_view name,
+        int64_t min_val,
+        int64_t max_val,
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Int;
+        p.mutability = mut;
+        p.required = true;
+        p.int_default = min_val;  // Placeholder, not used
+        p.int_min = min_val;
+        p.int_max = max_val;
+        p.description = desc;
+        return p;
+    }
+
+    static constexpr PropDef RequiredFloat(
+        std::string_view name,
+        double min_val,
+        double max_val,
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Float;
+        p.mutability = mut;
+        p.required = true;
+        p.float_default = min_val;  // Placeholder, not used
+        p.float_min = min_val;
+        p.float_max = max_val;
+        p.description = desc;
+        return p;
+    }
+
+    static constexpr PropDef RequiredString(
+        std::string_view name,
+        std::string_view desc = "",
+        std::string_view regex = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::String;
+        p.mutability = mut;
+        p.required = true;
+        p.string_default = "";  // Placeholder, not used
+        p.regex_pattern = regex;
+        p.description = desc;
+        return p;
+    }
+
+    static constexpr PropDef RequiredEnum(
+        std::string_view name,
+        std::string_view v1, std::string_view v2,
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Enum;
+        p.mutability = mut;
+        p.required = true;
+        p.string_default = v1;  // Placeholder, not used
+        p.enum_values[0] = v1;
+        p.enum_values[1] = v2;
+        p.enum_value_count = 2;
+        p.description = desc;
+        return p;
+    }
+
+    static constexpr PropDef RequiredEnum(
+        std::string_view name,
+        std::string_view v1, std::string_view v2, std::string_view v3,
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Enum;
+        p.mutability = mut;
+        p.required = true;
+        p.string_default = v1;  // Placeholder, not used
+        p.enum_values[0] = v1;
+        p.enum_values[1] = v2;
+        p.enum_values[2] = v3;
+        p.enum_value_count = 3;
+        p.description = desc;
+        return p;
+    }
+
+    static constexpr PropDef RequiredEnum(
+        std::string_view name,
+        std::string_view v1, std::string_view v2,
+        std::string_view v3, std::string_view v4,
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Enum;
+        p.mutability = mut;
+        p.required = true;
+        p.string_default = v1;  // Placeholder, not used
+        p.enum_values[0] = v1;
+        p.enum_values[1] = v2;
+        p.enum_values[2] = v3;
+        p.enum_values[3] = v4;
+        p.enum_value_count = 4;
+        p.description = desc;
+        return p;
     }
 };
 

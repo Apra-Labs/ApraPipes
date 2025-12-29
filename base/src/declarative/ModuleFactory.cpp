@@ -214,6 +214,33 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
         }, propValue);
     }
 
+    // Validate required properties are provided
+    if (info) {
+        for (const auto& propInfo : info->properties) {
+            if (propInfo.required) {
+                auto it = convertedProps.find(propInfo.name);
+                if (it == convertedProps.end()) {
+                    issues.push_back(BuildIssue::error(
+                        BuildIssue::MISSING_REQUIRED_PROP,
+                        "modules." + instance.instance_id + ".props." + propInfo.name,
+                        "Required property '" + propInfo.name + "' not provided for module '" +
+                        instance.module_type + "'"
+                    ));
+                }
+            }
+        }
+    }
+
+    // If we have errors from missing required properties, don't try to create the module
+    bool hasRequiredPropErrors = std::any_of(issues.begin(), issues.end(),
+        [&instance](const BuildIssue& i) {
+            return i.level == BuildIssue::Level::Error &&
+                   i.location.find("modules." + instance.instance_id) != std::string::npos;
+        });
+    if (hasRequiredPropErrors) {
+        return nullptr;
+    }
+
     // Create via registry factory
     try {
         auto modulePtr = registry.createModule(instance.module_type, convertedProps);

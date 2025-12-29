@@ -68,7 +68,7 @@ struct BuildIssue {
     static constexpr const char* CONNECTION_FAILED = "E025";
     static constexpr const char* EMPTY_PIPELINE = "E030";
     static constexpr const char* INIT_FAILED = "E031";
-    static constexpr const char* MISSING_REQUIRED_PROP = "W001";
+    static constexpr const char* MISSING_REQUIRED_PROP = "E012";
     static constexpr const char* PROP_TYPE_CONVERSION = "W002";
     static constexpr const char* MODULE_CREATED = "I001";
     static constexpr const char* CONNECTION_ESTABLISHED = "I002";

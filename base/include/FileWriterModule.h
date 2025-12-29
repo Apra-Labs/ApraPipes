@@ -12,13 +12,14 @@ class FileSequenceDriver;
 class FileWriterModuleProps : public ModuleProps
 {
 public:
-	FileWriterModuleProps(const string& _strFullFileNameWithPattern) : ModuleProps()
+	// Default constructor required for declarative pipeline support
+	FileWriterModuleProps() : ModuleProps()
 	{
-		strFullFileNameWithPattern = _strFullFileNameWithPattern;
+		strFullFileNameWithPattern = "";
 		append = false;
 	}
 
-	FileWriterModuleProps(const string& _strFullFileNameWithPattern, bool _append) : ModuleProps()
+	FileWriterModuleProps(const string& _strFullFileNameWithPattern, bool _append = false) : ModuleProps()
 	{
 		strFullFileNameWithPattern = _strFullFileNameWithPattern;
 		append = _append;
@@ -53,7 +54,7 @@ public:
 		static constexpr std::array<apra::PinDef, 0> outputs = {};
 
 		static constexpr std::array<apra::PropDef, 2> properties = {
-			apra::PropDef::String("strFullFileNameWithPattern", "",
+			apra::PropDef::RequiredString("strFullFileNameWithPattern",
 				"File path pattern (e.g., /path/frame_????.raw)"),
 			apra::PropDef::Bool("append", false,
 				"Append to existing file instead of overwriting")

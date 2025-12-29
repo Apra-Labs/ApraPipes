@@ -14,6 +14,7 @@
 #include <mutex>
 #include <functional>
 #include <variant>
+#include <type_traits>
 #include "declarative/Metadata.h"
 
 // Forward declaration - real Module class from existing codebase
@@ -57,6 +58,7 @@ struct ModuleInfo {
         std::string name;
         std::string type;  // "int", "float", "bool", "string", "enum"
         std::string mutability;  // "static", "dynamic"
+        bool required = false;  // true = mandatory (user must provide), false = optional (uses default)
         std::string default_value;
         std::string min_value;
         std::string max_value;
@@ -165,6 +167,7 @@ inline ModuleInfo::PropInfo toPropInfo(const PropDef& prop) {
     info.name = std::string(prop.name);
     info.type = propTypeToString(prop.type);
     info.mutability = mutabilityToString(prop.mutability);
+    info.required = prop.required;
     info.description = std::string(prop.description);
     info.unit = std::string(prop.unit);
     info.regex_pattern = std::string(prop.regex_pattern);
@@ -231,6 +234,10 @@ inline std::string categoryToString(ModuleCategory cat) {
 //     - static constexpr std::array<PropDef, N> properties
 // ============================================================
 #define REGISTER_MODULE(ModuleClass, PropsClass) \
+    static_assert(std::is_default_constructible<PropsClass>::value, \
+        "REGISTER_MODULE requires " #PropsClass " to have a default constructor. " \
+        "Add a default constructor to " #PropsClass " that initializes all members " \
+        "with sensible defaults. Required properties can be marked with PropDef::Required*()."); \
     namespace { \
         static bool _registered_##ModuleClass = []() { \
             apra::ModuleInfo info; \

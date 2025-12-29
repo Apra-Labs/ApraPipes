@@ -87,7 +87,7 @@ public:
 		};
 
 		static constexpr std::array<apra::PropDef, 4> properties = {
-			apra::PropDef::String("strFullFileNameWithPattern", "",
+			apra::PropDef::RequiredString("strFullFileNameWithPattern",
 				"File path pattern (e.g., /path/frame_????.raw)"),
 			apra::PropDef::Int("startIndex", 0, 0, INT_MAX,
 				"Starting index for file sequence"),
