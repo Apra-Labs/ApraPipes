@@ -22,9 +22,11 @@ class Module;
 namespace apra {
 
 // ============================================================
-// PropertyValue - Variant type for runtime property values
+// ScalarPropertyValue - Variant type for runtime property values
+// (scalar-only version for module creation; see PipelineDescription.h
+// for PropertyValue with array types used in config parsing)
 // ============================================================
-using PropertyValue = std::variant<
+using ScalarPropertyValue = std::variant<
     int64_t,
     double,
     bool,
@@ -67,7 +69,7 @@ struct ModuleInfo {
 
     // Factory function type - creates a module from property map
     using FactoryFn = std::function<std::unique_ptr<Module>(
-        const std::map<std::string, PropertyValue>&
+        const std::map<std::string, ScalarPropertyValue>&
     )>;
     FactoryFn factory;
 };
@@ -94,7 +96,7 @@ public:
     // Factory
     std::unique_ptr<Module> createModule(
         const std::string& name,
-        const std::map<std::string, PropertyValue>& props
+        const std::map<std::string, ScalarPropertyValue>& props
     ) const;
 
     // Export
@@ -258,7 +260,7 @@ inline std::string categoryToString(ModuleCategory cat) {
             } \
             \
             /* Factory function - creates module with props */ \
-            info.factory = [](const std::map<std::string, apra::PropertyValue>& props) \
+            info.factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props) \
                 -> std::unique_ptr<Module> { \
                 PropsClass moduleProps; \
                 /* TODO: Apply props to moduleProps based on Metadata */ \

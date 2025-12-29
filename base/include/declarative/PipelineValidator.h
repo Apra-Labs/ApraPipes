@@ -127,6 +127,8 @@ public:
         bool includeInfoMessages = false;   // Include info-level messages
         bool validateConnections = true;    // Run connection validation
         bool validateGraph = true;          // Run graph validation
+
+        Options() = default;  // Explicit default constructor for C++ compatibility
     };
 
     // Constructor

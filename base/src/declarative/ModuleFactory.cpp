@@ -149,8 +149,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
     const ModuleInfo* info = registry.getModule(instance.module_type);
 
     // Convert PipelineDescription properties to ModuleRegistry format
-    // PipelineDescription::PropertyValue includes array types, ModuleRegistry::PropertyValue doesn't
-    std::map<std::string, PropertyValue> convertedProps;
+    // PipelineDescription::PropertyValue includes array types, ScalarPropertyValue doesn't
+    std::map<std::string, ScalarPropertyValue> convertedProps;
 
     for (const auto& [propName, propValue] : instance.properties) {
         // Find property info for type conversion
@@ -345,8 +345,8 @@ bool ModuleFactory::connectModules(
 // Convert PropertyValue from PipelineDescription format
 // ============================================================
 
-std::optional<PropertyValue> ModuleFactory::convertPropertyValue(
-    const apra::PropertyValue& value,
+std::optional<ScalarPropertyValue> ModuleFactory::convertPropertyValue(
+    const PropertyValue& value,
     const ModuleInfo::PropInfo& propInfo,
     std::vector<BuildIssue>& issues,
     const std::string& location

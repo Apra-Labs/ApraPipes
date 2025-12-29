@@ -84,6 +84,8 @@ public:
         bool auto_insert_converters = false;  // Future: auto-insert frame converters
         bool strict_mode = false;              // Fail on warnings in strict mode
         bool collect_info_messages = false;    // Include info messages in result
+
+        Options() = default;  // Explicit default constructor for C++ compatibility
     };
 
     // Build result
@@ -166,10 +168,10 @@ private:
         std::vector<BuildIssue>& issues
     );
 
-    // Convert PropertyValue from PipelineDescription to ModuleRegistry format
+    // Convert PropertyValue from PipelineDescription to ScalarPropertyValue
     // (handles array types by extracting first element or using default)
-    std::optional<PropertyValue> convertPropertyValue(
-        const apra::PropertyValue& value,
+    std::optional<ScalarPropertyValue> convertPropertyValue(
+        const PropertyValue& value,
         const ModuleInfo::PropInfo& propInfo,
         std::vector<BuildIssue>& issues,
         const std::string& location

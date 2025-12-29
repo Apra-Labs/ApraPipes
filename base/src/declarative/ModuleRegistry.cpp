@@ -88,7 +88,7 @@ std::vector<std::string> ModuleRegistry::getModulesByTag(const std::string& tag)
 // ============================================================
 std::unique_ptr<Module> ModuleRegistry::createModule(
     const std::string& name,
-    const std::map<std::string, PropertyValue>& props
+    const std::map<std::string, ScalarPropertyValue>& props
 ) const {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = modules_.find(name);

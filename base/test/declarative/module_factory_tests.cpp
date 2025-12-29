@@ -166,7 +166,7 @@ void registerTestModule() {
     }
 
     // Factory function
-    info.factory = [](const std::map<std::string, apra::PropertyValue>& props)
+    info.factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props)
         -> std::unique_ptr<Module> {
         PropsClass moduleProps;
         // Note: In real usage, properties would be applied here from the map
