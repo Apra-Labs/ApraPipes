@@ -7,11 +7,8 @@ base/vcpkg.json
 CI_test_result*.xml
 
 # Claude state files (local only - NEVER commit these)
-CLAUDE.md
-.claude/CURRENT_STATE.md
-.claude/LEARNINGS.md
-.claude/settings.json
 build/CMakeCache.txt
 build/vcpkg-manifest-install.log
 build/CMakeFiles/cmake.check_cache
 build/CMakeFiles/CMakeConfigureLog.yaml
+.claude/settings.local.json

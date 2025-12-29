@@ -1,35 +1,191 @@
 {
+  "$schema": "https://claude.ai/code/settings-schema.json",
+  
+  "projectName": "ApraPipes Declarative Pipeline",
+  
+  "instructions": [
+    "Read CLAUDE.md for full agent instructions.",
+    "Check docs/declarative-pipeline/PROGRESS.md before starting any work.",
+    "All declarative pipeline code goes in base/include/declarative/, base/src/declarative/, and base/test/declarative/.",
+    "Update PROGRESS.md at the end of every session.",
+    "Write unit tests for all new code.",
+    "Use boost::shared_ptr (not std::shared_ptr) for ApraPipes modules.",
+    "Use std::string_view (not std::string) for constexpr metadata."
+  ],
+  
+  "contextFiles": [
+    "CLAUDE.md",
+    "docs/declarative-pipeline/PROGRESS.md",
+    "docs/declarative-pipeline/tasks/README.md"
+  ],
+  
+  "allowedCommands": [
+    "git *",
+    "cmake *",
+    "make *",
+    "ninja *",
+    "ctest *",
+    "cat *",
+    "ls *",
+    "find *",
+    "grep *",
+    "mkdir *",
+    "cp *",
+    "mv *",
+    "rm *",
+    "touch *",
+    "head *",
+    "tail *",
+    "wc *",
+    "diff *",
+    "gh issue *",
+    "gh pr *",
+    "gh project *",
+    "vcpkg *"
+  ],
+  
+  "blockedCommands": [
+    "sudo *",
+    "rm -rf /",
+    "rm -rf /*",
+    "chmod 777 *"
+  ],
+  
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '═══ INSTITUTIONAL MEMORY ═══'; cat .claude/LEARNINGS.md 2>/dev/null | tail -60 || echo '(no learnings yet)'; echo ''; echo '═══ CURRENT STATE ═══'; cat .claude/CURRENT_STATE.md 2>/dev/null || echo '(no state file)'; echo '═══════════════════════════'"
-          }
-        ]
-      }
+    "preSession": [
+      "echo '=== Declarative Pipeline Session Start ==='",
+      "cat docs/declarative-pipeline/PROGRESS.md 2>/dev/null || echo 'PROGRESS.md not found - create it!'",
+      "echo ''",
+      "echo '=== Recent Git History ==='",
+      "git log --oneline -5 2>/dev/null || echo 'Not a git repo yet'",
+      "echo ''",
+      "echo '=== Declarative Files ==='",
+      "ls -la base/include/declarative/ 2>/dev/null || echo 'declarative/ not created yet'",
+      "echo ''"
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'CMD=\"$TOOL_INPUT\"; if echo \"$CMD\" | grep -qE \"git push|gh workflow run\"; then if ! echo \"$CMD\" | grep -q \"gh run watch\"; then echo \"⚠ WORKFLOW TRIGGERED WITHOUT WATCH. Run: gh run watch $(gh run list -L1 --json databaseId -q .[0].databaseId) --exit-status\" >&2; fi; fi; if echo \"$CMD\" | grep -qE \"gh run watch|gh run view.*--log\"; then echo \"📝 Update CURRENT_STATE.md with results. New lesson? → LEARNINGS.md\"; fi'"
-          }
-        ]
-      }
+    
+    "postSession": [
+      "echo '=== Session End Checklist ==='",
+      "echo '1. Did you update PROGRESS.md?'",
+      "echo '2. Did you commit your changes?'",
+      "echo '3. Did you run tests?'",
+      "echo ''",
+      "git status --short 2>/dev/null || true"
     ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Before stopping, verify: (1) Is CURRENT_STATE.md updated with latest status? (2) If a build completed, are results documented? (3) If something new was learned, is it in LEARNINGS.md? (4) Are there pending workflow runs? Check with: gh run list -L3 --json status,databaseId -q '.[] | select(.status==\"in_progress\" or .status==\"queued\")'. If state not saved or builds pending, handle that first then continue. If task is complete and state is saved, you may stop."
-          }
-        ]
-      }
+    
+    "preCommit": [
+      "echo 'Running tests before commit...'",
+      "cd build && ctest -R decl --output-on-failure 2>/dev/null || echo 'No declarative tests yet or build not configured'"
+    ],
+    
+    "onFileCreate": {
+      "base/include/declarative/*.h": [
+        "echo 'Created header in declarative/ - remember to add to CMakeLists.txt'"
+      ],
+      "base/src/declarative/*.cpp": [
+        "echo 'Created source in declarative/ - remember to add to CMakeLists.txt'"
+      ],
+      "base/test/declarative/*.cpp": [
+        "echo 'Created test file - remember to add to CMakeLists.txt and run tests'"
+      ]
+    }
+  },
+  
+  "filePatterns": {
+    "include": [
+      "**/*.h",
+      "**/*.hpp",
+      "**/*.cpp",
+      "**/*.md",
+      "**/*.toml",
+      "**/*.json",
+      "**/*.cmake",
+      "**/CMakeLists.txt",
+      "**/vcpkg.json"
+    ],
+    "exclude": [
+      "build/**",
+      "vcpkg_installed/**",
+      ".git/**",
+      "**/*.o",
+      "**/*.obj",
+      "**/*.exe",
+      "**/*.dll",
+      "**/*.so",
+      "**/*.a",
+      "**/*.lib"
     ]
+  },
+  
+  "tasks": {
+    "check-progress": {
+      "description": "View current task progress",
+      "command": "cat docs/declarative-pipeline/PROGRESS.md"
+    },
+    "list-tasks": {
+      "description": "List all task specifications",
+      "command": "ls -la docs/declarative-pipeline/tasks/"
+    },
+    "view-task": {
+      "description": "View a specific task spec (provide task ID like A1, B2, etc.)",
+      "command": "cat docs/declarative-pipeline/tasks/${TASK_ID}*.md"
+    },
+    "check-declarative": {
+      "description": "Check what declarative files exist",
+      "command": "find base -path '*/declarative/*' -type f 2>/dev/null | sort"
+    },
+    "build": {
+      "description": "Build the project",
+      "command": "cmake --build build --parallel"
+    },
+    "test-declarative": {
+      "description": "Run declarative pipeline tests",
+      "command": "cd build && ctest -R decl --output-on-failure"
+    },
+    "test-all": {
+      "description": "Run all tests",
+      "command": "cd build && ctest --output-on-failure"
+    },
+    "configure": {
+      "description": "Configure CMake build",
+      "command": "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release"
+    },
+    "create-dirs": {
+      "description": "Create declarative subdirectories (run once)",
+      "command": "mkdir -p base/include/declarative base/src/declarative base/test/declarative"
+    },
+    "gh-issues": {
+      "description": "List open declarative pipeline issues",
+      "command": "gh issue list --label declarative-pipeline --state open"
+    }
+  },
+  
+  "codeStyle": {
+    "cpp": {
+      "indentSize": 4,
+      "useSpaces": true,
+      "bracketStyle": "allman",
+      "pointerAlignment": "left",
+      "includeOrder": [
+        "related header",
+        "C system headers",
+        "C++ standard library headers", 
+        "boost headers",
+        "other library headers",
+        "project headers"
+      ]
+    }
+  },
+  
+  "testing": {
+    "framework": "boost.test",
+    "testDirectory": "base/test/declarative",
+    "testPattern": "*_tests.cpp",
+    "runCommand": "cd build && ctest -R ${TEST_NAME} --output-on-failure"
+  },
+  
+  "git": {
+    "commitMessageFormat": "feat(declarative): <description>\n\n<body>\n\nTask: <task_id>\nStatus: <Complete|In Progress>\nRefs: #<issue_number>",
+    "branchNamingPattern": "feature/declarative-<task_id>-<description>"
   }
 }
