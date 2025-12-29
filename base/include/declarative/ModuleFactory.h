@@ -81,11 +81,12 @@ class ModuleFactory {
 public:
     // Build options
     struct Options {
-        bool auto_insert_converters = false;  // Future: auto-insert frame converters
-        bool strict_mode = false;              // Fail on warnings in strict mode
-        bool collect_info_messages = false;    // Include info messages in result
+        bool auto_insert_converters;    // Future: auto-insert frame converters
+        bool strict_mode;               // Fail on warnings in strict mode
+        bool collect_info_messages;     // Include info messages in result
 
-        Options() = default;  // Explicit default constructor for C++ compatibility
+        Options() : auto_insert_converters(false), strict_mode(false),
+                    collect_info_messages(false) {}
     };
 
     // Build result
@@ -131,7 +132,7 @@ public:
     };
 
     // Constructor
-    explicit ModuleFactory(Options opts = {});
+    explicit ModuleFactory(Options opts = Options());
 
     // Main build method - takes PipelineDescription, returns running pipeline
     BuildResult build(const PipelineDescription& desc);

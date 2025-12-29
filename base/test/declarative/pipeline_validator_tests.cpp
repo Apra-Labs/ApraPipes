@@ -43,7 +43,7 @@ PipelineDescription createSimplePipeline() {
     desc.modules.push_back(sink);
 
     // Add connection
-    ConnectionDef conn;
+    Connection conn;
     conn.from_module = "source";
     conn.from_pin = "output";
     conn.to_module = "sink";
@@ -65,7 +65,7 @@ PipelineDescription createPipelineWithMissingModule() {
     desc.modules.push_back(source);
 
     // Connection references non-existent module
-    ConnectionDef conn;
+    Connection conn;
     conn.from_module = "source";
     conn.from_pin = "output";
     conn.to_module = "nonexistent";

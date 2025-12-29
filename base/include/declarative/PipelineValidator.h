@@ -123,16 +123,17 @@ public:
 
     // Validation options
     struct Options {
-        bool stopOnFirstError = false;      // Stop validation on first error
-        bool includeInfoMessages = false;   // Include info-level messages
-        bool validateConnections = true;    // Run connection validation
-        bool validateGraph = true;          // Run graph validation
+        bool stopOnFirstError;          // Stop validation on first error
+        bool includeInfoMessages;       // Include info-level messages
+        bool validateConnections;       // Run connection validation
+        bool validateGraph;             // Run graph validation
 
-        Options() = default;  // Explicit default constructor for C++ compatibility
+        Options() : stopOnFirstError(false), includeInfoMessages(false),
+                    validateConnections(true), validateGraph(true) {}
     };
 
     // Constructor
-    explicit PipelineValidator(Options opts = {});
+    explicit PipelineValidator(Options opts = Options());
 
     // Main entry point - runs all validation phases
     Result validate(const PipelineDescription& desc) const;
