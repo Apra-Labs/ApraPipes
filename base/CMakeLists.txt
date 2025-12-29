@@ -260,6 +260,7 @@ SET(CORE_FILES
 	src/declarative/ModuleRegistry.cpp
 	src/declarative/PipelineDescription.cpp
 	src/declarative/TomlParser.cpp
+	src/declarative/ModuleFactory.cpp
 )
 
 SET(CORE_FILES_H
@@ -330,6 +331,7 @@ SET(CORE_FILES_H
 	include/declarative/ModuleRegistry.h
 	include/declarative/PipelineDescription.h
 	include/declarative/TomlParser.h
+	include/declarative/ModuleFactory.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -702,6 +704,7 @@ SET(UT_FILES
 	test/declarative/module_registry_tests.cpp
 	test/declarative/pipeline_description_tests.cpp
 	test/declarative/toml_parser_tests.cpp
+	test/declarative/module_factory_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
