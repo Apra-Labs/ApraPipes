@@ -2,6 +2,7 @@
 #include <boost/filesystem.hpp>
 #include "FileWriterModule.h"
 #include "FrameMetadata.h"
+#include "declarative/ModuleRegistry.h"
 
 #include "FileSequenceDriver.h"
 #include "Frame.h"
@@ -76,6 +77,9 @@ bool FileWriterModule::process(frame_container& frames)
 	{
 		LOG_FATAL << "unknown exception<>" << frame->fIndex;
 	}
-	
+
 	return true;
 }
+
+// Register module with declarative pipeline system
+REGISTER_MODULE(FileWriterModule, FileWriterModuleProps)

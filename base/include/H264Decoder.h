@@ -2,6 +2,8 @@
 
 #include "Module.h"
 #include <vector>
+#include <array>
+#include "declarative/Metadata.h"
 
 class H264DecoderProps : public ModuleProps
 {
@@ -18,6 +20,37 @@ public:
 class H264Decoder : public Module
 {
 public:
+	// ============================================================
+	// Declarative Pipeline Metadata
+	// ============================================================
+	struct Metadata {
+		static constexpr std::string_view name = "H264Decoder";
+		static constexpr apra::ModuleCategory category = apra::ModuleCategory::Transform;
+		static constexpr std::string_view version = "1.0.0";
+		static constexpr std::string_view description =
+			"Decodes H.264/AVC encoded video frames to raw image frames. "
+			"Supports bidirectional playback with GOP buffering.";
+
+		static constexpr std::array<std::string_view, 4> tags = {
+			"decoder", "h264", "video", "transform"
+		};
+
+		static constexpr std::array<apra::PinDef, 1> inputs = {
+			apra::PinDef::create("input", "H264Frame", true, "H.264 encoded video frames")
+		};
+
+		static constexpr std::array<apra::PinDef, 1> outputs = {
+			apra::PinDef::create("output", "RawImagePlanar", true, "Decoded raw image frames")
+		};
+
+		static constexpr std::array<apra::PropDef, 2> properties = {
+			apra::PropDef::Int("lowerWaterMark", 300, 0, 10000,
+				"Lower watermark for frame buffering"),
+			apra::PropDef::Int("upperWaterMark", 350, 0, 10000,
+				"Upper watermark for frame buffering")
+		};
+	};
+
 	H264Decoder(H264DecoderProps _props);
 	virtual ~H264Decoder();
 	bool init();

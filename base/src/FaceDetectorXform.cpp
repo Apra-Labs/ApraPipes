@@ -5,6 +5,7 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "Utils.h"
+#include "declarative/ModuleRegistry.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "opencv2/dnn.hpp"
@@ -213,3 +214,6 @@ void FaceDetectorXform::setProps(FaceDetectorXformProps &props)
 {
 	Module::addPropsToQueue(props);
 }
+
+// Register module with declarative pipeline system
+REGISTER_MODULE(FaceDetectorXform, FaceDetectorXformProps)
