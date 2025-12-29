@@ -15,8 +15,9 @@ BOOST_AUTO_TEST_CASE(cv_mat_memory_leak)
 	cv::Mat();
 }
 
-BOOST_AUTO_TEST_CASE(cv_mat_memory_leak_2)
+BOOST_AUTO_TEST_CASE(cv_mat_memory_leak_2, *boost::unit_test::disabled())
 {
+	// Disabled: cv::imshow requires GUI support not available in CI
 	auto zeros = cv::Mat::zeros(cv::Size(1920, 454), CV_8UC1);
 
 	for (auto i = 0; i < 100; i++)
@@ -49,8 +50,9 @@ BOOST_AUTO_TEST_CASE(cv_mat_memory_leak_4)
 
 }
 
-BOOST_AUTO_TEST_CASE(cv_memory_leak_all)
+BOOST_AUTO_TEST_CASE(cv_memory_leak_all, *boost::unit_test::disabled())
 {
+	// Disabled: cv::imshow requires GUI support not available in CI
 	cv::Mat zeros = cv::Mat::zeros(cv::Size(1920, 454), CV_8UC1);
 	zeros = cv::Mat::zeros(cv::Size(1920, 1080), CV_8UC1);
 
