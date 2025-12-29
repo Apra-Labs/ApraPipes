@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-29 14:20` by `claude-code`
+Last Updated: `2025-12-29 14:45` by `claude-code`
 
 ---
 
@@ -46,7 +46,7 @@ Non-blocking:           └──► C1 (validator shell)
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
-| **E1** | CLI Tool | 📋 Ready | - | - | - | D1 done |
+| **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | 📋 Ready | - | - | - | A2 done |
 | **M3** | FaceDetectorXform Metadata | 📋 Ready | - | - | - | A2 done |
 | **M4** | QRReader Metadata | 📋 Ready | - | - | - | A2 done |
@@ -226,6 +226,35 @@ Non-blocking:           └──► C1 (validator shell)
 
 ---
 
+### Session: 2025-12-29 14:30
+
+**Agent:** claude-code
+**Duration:** ~30 min
+**Tasks:** E1 (CLI Tool)
+
+**Accomplished:**
+- Implemented E1 CLI Tool (`aprapipes_cli.cpp`):
+  - `validate <file.toml>` - Parse and validate pipeline files
+  - `run <file.toml>` - Build and run pipeline with signal handling
+  - `list-modules` - List registered modules with --category and --tag filters
+  - `describe <module>` - Show detailed module information
+  - Support for `--json` output for tooling
+  - Support for `--set module.prop=value` runtime overrides
+  - Graceful shutdown via SIGINT/SIGTERM handling
+  - Exit codes: 0=success, 1=validation error, 2=runtime error, 3=usage error
+- Updated CMakeLists.txt to build and install CLI executable
+
+**Remaining:**
+- Integration testing (requires registered modules from M1-M5 tasks)
+- CRITICAL PATH COMPLETE! A1→A2→D1→E1 done
+
+**Notes for Next Session:**
+- CLI tool depends on modules being registered via REGISTER_MODULE
+- list-modules and describe will show "no modules" until M1-M5 tasks add metadata
+- validate and run work with any TOML file
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**  
@@ -302,7 +331,7 @@ base/test/declarative/
   [x] module_factory_tests.cpp      # D1 ✅
 
 base/tools/
-  [ ] aprapipes_cli.cpp             # E1
+  [x] aprapipes_cli.cpp             # E1 ✅
   [ ] schema_generator.cpp          # E2
 ```
 

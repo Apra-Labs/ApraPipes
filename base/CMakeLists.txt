@@ -843,3 +843,22 @@ install(
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aprapipes)
+
+# ============================================================
+# ApraPipes CLI Tool (Declarative Pipeline)
+# ============================================================
+add_executable(aprapipes_cli
+    tools/aprapipes_cli.cpp
+)
+
+target_link_libraries(aprapipes_cli PRIVATE aprapipes)
+
+# Include directories for declarative headers
+target_include_directories(aprapipes_cli PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+)
+
+# Install CLI executable
+install(TARGETS aprapipes_cli
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
