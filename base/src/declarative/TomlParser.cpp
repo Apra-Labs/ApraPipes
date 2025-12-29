@@ -1,4 +1,4 @@
-#include "TomlParser.h"
+#include "declarative/TomlParser.h"
 
 #define TOML_EXCEPTIONS 1
 #include <toml++/toml.hpp>

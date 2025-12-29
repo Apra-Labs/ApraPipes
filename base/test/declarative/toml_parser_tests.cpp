@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include "TomlParser.h"
+#include "declarative/TomlParser.h"
 #include <fstream>
 #include <cstdlib>
 

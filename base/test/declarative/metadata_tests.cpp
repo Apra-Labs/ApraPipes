@@ -135,7 +135,9 @@ BOOST_AUTO_TEST_CASE(PinDef_FourFrameTypes)
 
 BOOST_AUTO_TEST_CASE(PinDef_AcceptsFrameType)
 {
-    constexpr auto pin = PinDef::create("input", "RawImagePlanar", "RawImagePacked");
+    // Explicit 'true' for required to avoid ambiguous overload with 1-frame factory
+    // (const char* can implicitly convert to bool)
+    constexpr auto pin = PinDef::create("input", "RawImagePlanar", "RawImagePacked", true);
 
     BOOST_CHECK(pin.acceptsFrameType("RawImagePlanar"));
     BOOST_CHECK(pin.acceptsFrameType("RawImagePacked"));
