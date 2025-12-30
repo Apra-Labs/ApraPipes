@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <set>
+#include <functional>
 
 namespace apra {
 
