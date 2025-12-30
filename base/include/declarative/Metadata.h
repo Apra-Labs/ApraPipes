@@ -321,7 +321,7 @@ struct PropDef {
         int64_t max_val,
         std::string_view desc = ""
     ) {
-        return Int(name, default_val, min_val, max_val, desc, Mutability::Dynamic);
+        return Integer(name, default_val, min_val, max_val, desc, Mutability::Dynamic);
     }
 
     static constexpr PropDef DynamicFloat(
@@ -331,7 +331,7 @@ struct PropDef {
         double max_val,
         std::string_view desc = ""
     ) {
-        return Float(name, default_val, min_val, max_val, desc, Mutability::Dynamic);
+        return Floating(name, default_val, min_val, max_val, desc, Mutability::Dynamic);
     }
 
     static constexpr PropDef DynamicBool(
@@ -339,7 +339,7 @@ struct PropDef {
         bool default_val,
         std::string_view desc = ""
     ) {
-        return Bool(name, default_val, desc, Mutability::Dynamic);
+        return Boolean(name, default_val, desc, Mutability::Dynamic);
     }
 
     static constexpr PropDef DynamicString(
@@ -348,7 +348,7 @@ struct PropDef {
         std::string_view desc = "",
         std::string_view regex = ""
     ) {
-        return String(name, default_val, desc, regex, Mutability::Dynamic);
+        return Text(name, default_val, desc, regex, Mutability::Dynamic);
     }
 
     static constexpr PropDef DynamicEnum(
