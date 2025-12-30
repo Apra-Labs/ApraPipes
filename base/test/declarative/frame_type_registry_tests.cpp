@@ -8,6 +8,7 @@
 #include "declarative/FrameTypeRegistry.h"
 #include <thread>
 #include <vector>
+#include <atomic>
 
 using namespace apra;
 
