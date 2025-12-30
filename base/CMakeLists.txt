@@ -94,6 +94,8 @@ IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
 	# x64 Linux uses vcpkg's GTK
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	# Curses is needed for KeyboardListener
+	find_package(Curses REQUIRED)
 ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)

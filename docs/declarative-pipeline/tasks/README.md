@@ -15,6 +15,7 @@
 | **C1** | Validator Shell | 1d | 1 | [C1-validator-shell.md](./C1-validator-shell.md) |
 | **C2-C5** | Validator Enhancements | 6d | 2-3 | [C2-C5-validator-enhancements.md](./C2-C5-validator-enhancements.md) |
 | **D1** | Module Factory | 4d | 2 | [D1-module-factory.md](./D1-module-factory.md) |
+| **D2** | Property Binding System | 3d | 2 | [D2-property-binding.md](./D2-property-binding.md) |
 | **E1** | CLI Tool | 3d | 2 | [E1-cli-tool.md](./E1-cli-tool.md) |
 | **E2** | Schema Generator | 2d | 2 | [E2-schema-generator.md](./E2-schema-generator.md) |
 | **M1-M5** | Pilot Module Metadata | 5d | 1-2 | [M1-M5-pilot-modules.md](./M1-M5-pilot-modules.md) |
@@ -49,10 +50,15 @@ B1 ─────────► B2 ──────────────�
 
 **Minimum to reach MVP:**
 ```
-A1 → A2 → D1 → E1
-      ↑
-B1 → B2
+A1 → A2 → D1 → D2 → E1 (run)
+      ↑         ↑
+B1 → B2 ────────┘
 ```
+
+**D2 (Property Binding)** is the critical missing piece:
+- D1 creates modules but properties are NOT applied
+- D2 implements the X-Macro system to apply TOML values to Props members
+- Without D2, all modules get default values (TOML is ignored)
 
 Validator (C1-C5) runs in parallel and does NOT block Factory.
 
@@ -91,10 +97,11 @@ cd build && ctest -R metadata
 - [x] M2: H264Decoder Metadata
 
 ### Sprint 2 (Week 3-4): Core Engine
-- [ ] D1: Module Factory
-- [ ] E1: CLI Tool
-- [ ] E2: Schema Generator
-- [ ] M3-M5: Remaining Pilot Modules
+- [x] D1: Module Factory (shell complete, needs D2 for properties)
+- [ ] D2: Property Binding System (CRITICAL - enables property application)
+- [x] E1: CLI Tool
+- [x] E2: Schema Generator
+- [ ] M3-M5: Remaining Pilot Modules (59 modules to register)
 - [ ] F1-F4: Frame Type Metadata
 - [ ] C2-C3: Validator Enhancements
 
