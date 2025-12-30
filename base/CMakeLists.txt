@@ -264,6 +264,7 @@ SET(CORE_FILES
 	src/declarative/ModuleFactory.cpp
 	src/declarative/FrameTypeRegistry.cpp
 	src/declarative/PipelineValidator.cpp
+	src/declarative/ModuleRegistrations.cpp
 )
 
 SET(CORE_FILES_H
@@ -712,6 +713,9 @@ SET(UT_FILES
 	test/declarative/module_factory_tests.cpp
 	test/declarative/frame_type_registry_tests.cpp
 	test/declarative/pipeline_validator_tests.cpp
+	test/declarative/property_macros_tests.cpp
+	test/declarative/module_registration_tests.cpp
+	test/declarative/property_validators_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -741,6 +745,35 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+# ============================================================
+# Common libraries shared by aprapipesut, aprapipes_cli, and apra_schema_generator
+# DRY: Define once, use everywhere
+# ============================================================
+set(APRA_COMMON_LIBS
+    ${GLEW_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${LIBMP4_LIB}
+    ${OPENH264_LIB}
+    ${Boost_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${JETSON_LIBS}
+    ${NVCUDAToolkit_LIBS}
+    ${NVCODEC_LIB}
+    ${NVJPEGLIB_L4T}
+    ${CURSES_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ZXing::Core
+    ZXing::ZXing
+    BZip2::BZip2
+    ZLIB::ZLIB
+    LibLZMA::LibLZMA
+    bigint::bigint
+    SFML::Audio
+    whisper::whisper
+    tomlplusplus::tomlplusplus
+)
+
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
 	# ARM64/Jetson needs GTK3 for GtkGlRenderer
@@ -758,29 +791,8 @@ ENDIF()
 
 target_link_libraries(aprapipesut
   aprapipes
-  ${GLEW_LIBRARIES}
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ${CMAKE_DL_LIBS}  # For dlopen/dlsym in CudaDriverLoader
-  ZXing::Core
-  ZXing::ZXing
-  BZip2::BZip2
-  ZLIB::ZLIB
-  LibLZMA::LibLZMA
-  bigint::bigint
-  SFML::Audio
-  whisper::whisper
-  tomlplusplus::tomlplusplus  # Declarative pipeline TOML parser
-  )
+  ${APRA_COMMON_LIBS}
+)
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
@@ -858,12 +870,30 @@ add_executable(aprapipes_cli
     tools/aprapipes_cli.cpp
 )
 
-target_link_libraries(aprapipes_cli PRIVATE aprapipes)
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(aprapipes_cli PRIVATE
+        aprapipes
+    )
+endif()
 
-# Include directories for declarative headers
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+target_link_libraries(aprapipes_cli PRIVATE ${APRA_COMMON_LIBS})
+
+# Include directories for declarative headers and dependencies
 target_include_directories(aprapipes_cli PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 
 # Install CLI executable
@@ -878,14 +908,32 @@ add_executable(apra_schema_generator
     tools/schema_generator.cpp
 )
 
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(apra_schema_generator PRIVATE
+        aprapipes
+    )
+endif()
+
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY) + nlohmann_json for JSON output
 target_link_libraries(apra_schema_generator PRIVATE
-    aprapipes
+    ${APRA_COMMON_LIBS}
     nlohmann_json::nlohmann_json
 )
 
 target_include_directories(apra_schema_generator PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 
 # Install schema generator executable
