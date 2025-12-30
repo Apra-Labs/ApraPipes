@@ -29,8 +29,17 @@
 namespace apra {
 
 void ensureBuiltinModulesRegistered() {
-    static std::once_flag flag;
-    std::call_once(flag, []() {
+    // Check if modules are already registered.
+    // Note: We can't use std::once_flag because tests may clear the registry,
+    // requiring re-registration. Instead, check if registry has modules.
+    auto& registry = ModuleRegistry::instance();
+    if (registry.hasModule("FileReaderModule")) {
+        // Already registered
+        return;
+    }
+
+    // Register built-in modules
+    {
 
         // ============================================================
         // Source Modules
@@ -115,7 +124,7 @@ void ensureBuiltinModulesRegistered() {
         // 3. Run tests - AllConcreteModulesRegistered will verify
         // ============================================================
 
-    });
+    }
 }
 
 } // namespace apra
