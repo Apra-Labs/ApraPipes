@@ -12,11 +12,13 @@ Last Updated: `2025-12-29 20:00` by `claude-code`
 ## Quick Status
 
 ```
-Critical Path:  A1 ──► A2 ──────────────► D1 ──► E1
+Critical Path:  A1 ──► A2 ──────────────► D1 ──► D2 ──► E1 (run)
                         │                  ▲
 Parallel:       B1 ──► B2 ─────────────────┘
                         │
 Non-blocking:           └──► C1 (validator shell)
+
+D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 ```
 
 ---
@@ -46,6 +48,7 @@ Non-blocking:           └──► C1 (validator shell)
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
+| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Core impl done, 2 pilot modules |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **M3** | FaceDetectorXform Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | 74da106bf |
@@ -336,6 +339,145 @@ Non-blocking:           └──► C1 (validator shell)
 
 ---
 
+### Session: 2025-12-29 21:00
+
+**Agent:** claude-code
+**Duration:** ~45 min
+**Tasks:** D2 (Property Binding System) - Design Document
+
+**Accomplished:**
+- Created comprehensive D2 design document (`docs/declarative-pipeline/tasks/D2-property-binding.md`):
+  - Problem statement: REGISTER_MODULE has TODO for property application
+  - Survey results from 30+ Props classes showing property type variety
+  - X-Macro pattern design for DRY property definitions
+  - Static vs Dynamic property lifecycle (Mutability enum already in Metadata.h)
+  - Runtime property access: getProperty(name), setProperty(name, value)
+  - Extensibility framework for validators and property types
+  - Platform-specific properties (P_INTERNAL for cudaStream_t etc.)
+  - Property change notifications for Controller modules
+  - Migration path for existing modules (gradual and full conversion options)
+- Updated task README.md with D2 in critical path
+- Verified PropDef::Mutability already implemented in Metadata.h
+
+**Key Design Decisions:**
+- X-Macro format: `P(type, name, lifecycle, requirement, default, description)`
+- DECLARE_PROPS generates: members, metadata, apply, get, set, dynamicNames
+- Static properties throw on setProperty() after init
+- Dynamic properties can be changed at runtime by Controller modules
+- P_INTERNAL for non-TOML properties (CUDA handles, etc.)
+
+**Remaining:**
+- Implement PropertyMacros.h with DECLARE_PROPS
+- Implement PropertyValidators.h with ValidatorRegistry
+- Update REGISTER_MODULE to call applyProperties
+- Convert 2 pilot modules to new X-Macro syntax
+- Unit tests for property binding
+
+**Notes for Next Session:**
+- D2 is the CRITICAL missing piece - without it, TOML values are ignored
+- PropDef::Mutability::Static/Dynamic already in Metadata.h
+- 59 modules still need to be registered (after D2 enables property application)
+
+---
+
+### Session: 2025-12-29 22:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** D2 Design Refinement - Module Registration
+
+**Accomplished:**
+- Analyzed static library linker issue with static registration
+- Evaluated 4 registration approaches:
+  - Option A: Single macro (compile-time, cryptic errors)
+  - Option B: Template traits (verbose)
+  - Option C: Fluent builder (selected - readable, runtime)
+  - Option D: Hybrid X-Macro
+- Selected Option C (Fluent Builder) for module registration:
+  ```cpp
+  registerModule<FileReaderModule, FileReaderModuleProps>()
+      .category(Source)
+      .description("Reads frames from files")
+      .tags("reader", "file")
+      .output("output", "EncodedImage");
+  ```
+- Designed solution for static library linker issue:
+  - Central `ModuleRegistrations.cpp` file
+  - Lazy registration via `ensureBuiltinModulesRegistered()`
+  - Called from TomlParser::parse() and ModuleFactory::build()
+- Designed CMake + unit test detection for missing registrations:
+  - CMake scans headers for `class X : public Module`
+  - Generates `module_subclasses.inc`
+  - Unit test compares against registry, fails with helpful message
+  - Exclusion list for abstract base classes
+- Added 17 implementation tasks in 5 phases to D2 document
+
+**Key Design Decisions:**
+- Fluent builder pattern for readable, runtime registration
+- Central registration file avoids linker dead code elimination
+- `std::call_once` for thread-safe lazy initialization
+- CMake scanner + unit test catches forgotten registrations (fail-safe)
+- Module name derived from template parameter, not typed twice (DRY)
+
+**Files Updated:**
+- `docs/declarative-pipeline/tasks/D2-property-binding.md` - comprehensive design
+- `docs/declarative-pipeline/PROGRESS.md` - session logs
+
+**Remaining:**
+- Implement Phase 1-5 tasks (17 total)
+- Start with PropertyMacros.h and ModuleRegistrationBuilder.h
+
+**Notes for Next Session:**
+- Phase 1 (Property Binding) can start immediately
+- Phase 2 (Registration Builder) depends on Phase 1
+- Phase 3 (Detection) can run in parallel with Phase 2
+
+---
+
+### Session: 2025-12-30 10:00
+
+**Agent:** claude-code
+**Duration:** ~45 min
+**Tasks:** D2 (Property Binding System) - Implementation
+
+**Accomplished:**
+- Updated ModuleRegistrationBuilder.h with SFINAE detection for applyProperties
+  - Added `has_apply_properties` type trait to detect if PropsClass has applyProperties
+  - Factory function now calls applyProperties when available
+  - Modules without applyProperties still work (backwards compatible)
+- Added property binding to FileWriterModuleProps (legacy binding approach)
+  - Maps TOML properties to existing member variables
+  - All properties are static (no runtime modification)
+- Added property binding to FaceDetectorXformProps with dynamic properties
+  - scaleFactor and confidenceThreshold can be modified at runtime
+  - Proper setProperty support for dynamic props
+- All D2 tests pass:
+  - PropertyMacrosTests (28 tests)
+  - PropertyValidatorTests (26 tests)
+  - ModuleRegistrationTests (6 tests)
+- Created GitHub issue #492 for D2 task tracking
+- Closed 12 completed GitHub issues (A1-E2, M1-M5)
+- Committed and pushed D2 property binding implementation (5a2a715fb)
+
+**GitHub Issues Updated:**
+- Closed: #472 (A1), #473 (B1), #474 (A2), #475 (B2), #476 (A3)
+- Closed: #477 (C1), #478 (D1), #479 (E1), #480 (E2)
+- Closed: #481 (M1), #482 (M2), #483 (M3), #484 (M4), #485 (M5)
+- Created: #492 (D2)
+
+**Remaining:**
+- Phase 3 (CMake scanner for missing registration detection)
+- Phase 5 (Register remaining 55+ modules)
+- Integration test with full TOML → Parse → Build → Verify props applied
+
+**Notes for Next Session:**
+- D2 core is now functional - TOML properties ARE applied to modules
+- FileWriterModule and FaceDetectorXform are pilot modules with property binding
+- Other modules still use default-constructed props (backwards compatible)
+- To add property binding to a module: add applyProperties(), getProperty(), setProperty()
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
@@ -349,7 +491,7 @@ Non-blocking:           └──► C1 (validator shell)
 -
 
 **Notes for Next Session:**
-- 
+-
 
 ---
 
@@ -373,6 +515,9 @@ Non-blocking:           └──► C1 (validator shell)
 | pipeline_description_tests | 37 | 0 | 0 | 2025-12-29 |
 | toml_parser_tests | - | - | - | - |
 | module_factory_tests | - | - | - | - |
+| property_macros_tests | 28 | 0 | 0 | 2025-12-30 |
+| property_validators_tests | 26 | 0 | 0 | 2025-12-30 |
+| module_registration_tests | 6 | 0 | 0 | 2025-12-30 |
 
 ---
 
