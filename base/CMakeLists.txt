@@ -888,6 +888,17 @@ endif()
 # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
 target_link_libraries(aprapipes_cli PRIVATE ${APRA_COMMON_LIBS})
 
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(aprapipes_cli PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+    target_include_directories(aprapipes_cli PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
+
 # Include directories for declarative headers and dependencies
 target_include_directories(aprapipes_cli PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -928,6 +939,17 @@ target_link_libraries(apra_schema_generator PRIVATE
     ${APRA_COMMON_LIBS}
     nlohmann_json::nlohmann_json
 )
+
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(apra_schema_generator PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+    target_include_directories(apra_schema_generator PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
 
 target_include_directories(apra_schema_generator PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
