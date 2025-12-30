@@ -74,13 +74,24 @@ inline std::string demangleTypeName(const char* mangledName) {
     return std::string(mangledName);
 }
 
-// Extract just the class name (remove namespace)
+// Extract just the class name (remove namespace and MSVC prefixes)
 inline std::string extractClassName(const std::string& fullName) {
-    auto pos = fullName.rfind("::");
-    if (pos != std::string::npos) {
-        return fullName.substr(pos + 2);
+    std::string name = fullName;
+
+    // MSVC prepends "class " or "struct " to type names
+    if (name.substr(0, 6) == "class ") {
+        name = name.substr(6);
+    } else if (name.substr(0, 7) == "struct ") {
+        name = name.substr(7);
     }
-    return fullName;
+
+    // Remove namespace prefix
+    auto pos = name.rfind("::");
+    if (pos != std::string::npos) {
+        name = name.substr(pos + 2);
+    }
+
+    return name;
 }
 
 // ============================================================
