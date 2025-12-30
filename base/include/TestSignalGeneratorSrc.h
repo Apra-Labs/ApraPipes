@@ -1,5 +1,8 @@
 #pragma once
 #include "Module.h"
+#include <map>
+#include <vector>
+#include "declarative/PropertyMacros.h"
 
 class TestSignalGeneratorProps : public ModuleProps
 {
@@ -12,6 +15,33 @@ public:
 
     int width = 0;
     int height = 0;
+
+    // ============================================================
+    // Property Binding for Declarative Pipeline
+    // ============================================================
+    template<typename PropsT>
+    static void applyProperties(
+        PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired
+    ) {
+        apra::applyProp(props.width, "width", values, true, missingRequired);
+        apra::applyProp(props.height, "height", values, true, missingRequired);
+    }
+
+    apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+        if (propName == "width") return static_cast<int64_t>(width);
+        if (propName == "height") return static_cast<int64_t>(height);
+        throw std::runtime_error("Unknown property: " + propName);
+    }
+
+    bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+        throw std::runtime_error("Cannot modify static property '" + propName + "' after initialization");
+    }
+
+    static std::vector<std::string> dynamicPropertyNames() {
+        return {};
+    }
 
 private:
     friend class boost::serialization::access;

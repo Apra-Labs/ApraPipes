@@ -2,9 +2,12 @@
 #include <string>
 #include <unordered_map>
 #include <array>
+#include <map>
+#include <vector>
 #include "Module.h"
 #include <boost/serialization/vector.hpp>
 #include "declarative/Metadata.h"
+#include "declarative/PropertyMacros.h"
 
 using namespace std;
 
@@ -46,6 +49,41 @@ public:
 	string strFullFileNameWithPattern;
 	bool readLoop;
 	std::vector<std::string> files;
+
+	// ============================================================
+	// Property Binding for Declarative Pipeline (Legacy Binding)
+	// Maps TOML property names to existing member variables
+	// ============================================================
+	template<typename PropsT>
+	static void applyProperties(
+		PropsT& props,
+		const std::map<std::string, apra::ScalarPropertyValue>& values,
+		std::vector<std::string>& missingRequired
+	) {
+		apra::applyProp(props.strFullFileNameWithPattern, "strFullFileNameWithPattern", values, true, missingRequired);
+		apra::applyProp(props.startIndex, "startIndex", values, false, missingRequired);
+		apra::applyProp(props.maxIndex, "maxIndex", values, false, missingRequired);
+		apra::applyProp(props.readLoop, "readLoop", values, false, missingRequired);
+	}
+
+	// Runtime property getter
+	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+		if (propName == "strFullFileNameWithPattern") return strFullFileNameWithPattern;
+		if (propName == "startIndex") return static_cast<int64_t>(startIndex);
+		if (propName == "maxIndex") return static_cast<int64_t>(maxIndex);
+		if (propName == "readLoop") return readLoop;
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	// Runtime property setter (all properties are static for this module)
+	bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+		throw std::runtime_error("Cannot modify static property '" + propName + "' after initialization");
+	}
+
+	// No dynamic properties
+	static std::vector<std::string> dynamicPropertyNames() {
+		return {};
+	}
 
 private:
 	friend class boost::serialization::access;

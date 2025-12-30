@@ -15,6 +15,9 @@
 #include "FileWriterModule.h"
 #include "FaceDetectorXform.h"
 #include "QRReader.h"
+#include "ValveModule.h"
+#include "StatSink.h"
+#include "TestSignalGeneratorSrc.h"
 
 // Conditionally include CUDA modules
 #ifdef ENABLE_CUDA
@@ -39,6 +42,12 @@ void ensureBuiltinModulesRegistered() {
             .tags("reader", "file", "source", "video", "image")
             .output("output", "EncodedImage", "RawImage");
 
+        registerModule<TestSignalGenerator, TestSignalGeneratorProps>()
+            .category(ModuleCategory::Source)
+            .description("Generates test signal frames for testing pipelines")
+            .tags("source", "test", "generator", "signal")
+            .output("output", "RawImage");
+
         // ============================================================
         // Sink Modules
         // ============================================================
@@ -48,6 +57,12 @@ void ensureBuiltinModulesRegistered() {
             .description("Writes frames to files with configurable patterns")
             .tags("writer", "file", "sink")
             .input("input", "RawImage", "EncodedImage", "H264Frame");
+
+        registerModule<StatSink, StatSinkProps>()
+            .category(ModuleCategory::Sink)
+            .description("Statistics sink for measuring pipeline performance")
+            .tags("sink", "stats", "performance", "debug")
+            .input("input", "Frame");
 
         // ============================================================
         // Transform Modules
@@ -79,6 +94,17 @@ void ensureBuiltinModulesRegistered() {
             .tags("qr", "barcode", "reader", "analytics")
             .input("input", "RawImage")
             .output("output", "RawImage");
+
+        // ============================================================
+        // Utility Modules
+        // ============================================================
+
+        registerModule<ValveModule, ValveModuleProps>()
+            .category(ModuleCategory::Utility)
+            .description("Controls frame flow by allowing a specified number of frames to pass")
+            .tags("utility", "valve", "control", "flow")
+            .input("input", "Frame")
+            .output("output", "Frame");
 
         // ============================================================
         // TODO: Add remaining modules here
