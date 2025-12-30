@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <optional>
 #include <boost/shared_ptr.hpp>
 
 #include "declarative/PipelineDescription.h"
