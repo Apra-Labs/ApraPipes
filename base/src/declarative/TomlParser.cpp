@@ -1,4 +1,5 @@
 #include "declarative/TomlParser.h"
+#include "declarative/ModuleRegistrations.h"
 
 #define TOML_EXCEPTIONS 1
 #include <toml++/toml.hpp>
@@ -196,6 +197,9 @@ ParseResult parse(const toml::table& root, const std::string& source_format,
 } // anonymous namespace
 
 ParseResult TomlParser::parseFile(const std::string& filepath) {
+    // Ensure all modules are registered before parsing
+    ensureBuiltinModulesRegistered();
+
     ParseResult result;
     result.description.source_format = "toml";
     result.description.source_path = filepath;
@@ -231,6 +235,9 @@ ParseResult TomlParser::parseFile(const std::string& filepath) {
 
 ParseResult TomlParser::parseString(const std::string& content,
                                     const std::string& source_name) {
+    // Ensure all modules are registered before parsing
+    ensureBuiltinModulesRegistered();
+
     ParseResult result;
     result.description.source_format = "toml";
     result.description.source_path = source_name;

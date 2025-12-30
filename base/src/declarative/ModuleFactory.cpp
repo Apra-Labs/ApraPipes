@@ -5,6 +5,7 @@
 // ============================================================
 
 #include "declarative/ModuleFactory.h"
+#include "declarative/ModuleRegistrations.h"
 #include "Module.h"
 #include <sstream>
 
@@ -44,6 +45,9 @@ ModuleFactory::ModuleFactory(Options opts) : options_(std::move(opts)) {}
 // ============================================================
 
 ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc) {
+    // Ensure all modules are registered before building
+    ensureBuiltinModulesRegistered();
+
     BuildResult result;
 
     // Validate we have something to build
