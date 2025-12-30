@@ -478,6 +478,42 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 
 ---
 
+### Session: 2025-12-30 15:00-16:30
+
+**Agent:** claude-code
+**Duration:** ~90 min
+**Tasks:** CI Stabilization, Windows MSVC fix
+
+**Accomplished:**
+- Fixed ncurses linkage for Linux x64 (2ed5b5189)
+- Fixed test failures by replacing std::once_flag with registry sentinel check (b1e63f09d)
+  - std::once_flag was permanent, but FactoryFixture clears registry between tests
+  - Now checks if FileReaderModule is registered instead
+- Fixed Windows MSVC typeid().name() prefix issue (cd2afb266)
+  - MSVC returns "class ClassName" instead of just "ClassName"
+  - Added stripping of "class " and "struct " prefixes in extractClassName()
+- Verified all platforms:
+  - ✅ macOS: Pass
+  - ✅ Linux: Pass
+  - ✅ ARM64: Pass
+  - ❌ Windows: 1 test failure (CoreModules_AreRegistered) - fixed in cd2afb266
+
+**Files Modified:**
+- base/CMakeLists.txt - Added Curses package for Linux x64
+- base/src/declarative/ModuleRegistrations.cpp - Replaced std::once_flag
+- base/include/declarative/ModuleRegistrationBuilder.h - Strip MSVC prefix
+
+**Remaining:**
+- Wait for CI runs to verify Windows fix
+- Update PROGRESS.md with final status
+
+**Notes for Next Session:**
+- Windows MSVC returns "class FileReaderModule" from typeid().name()
+- GCC/Clang return just "FileReaderModule"
+- extractClassName() now handles both cases
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
