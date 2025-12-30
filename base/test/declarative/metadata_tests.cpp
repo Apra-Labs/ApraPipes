@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Int64_CreatesInt64Attribute)
     constexpr auto attr = AttrDef::Int64("timestamp", true, "Frame timestamp");
 
     BOOST_CHECK_EQUAL(attr.name, "timestamp");
-    BOOST_CHECK(attr.type == AttrDef::Type::Integer64);
+    BOOST_CHECK(attr.type == AttrDef::Type::Int64);
 }
 
 BOOST_AUTO_TEST_CASE(AttrDef_Float_CreatesFloatAttribute)
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_IntArray_CreatesIntArrayAttribute)
     constexpr auto attr = AttrDef::IntArray("dimensions", true, "Array dimensions");
 
     BOOST_CHECK_EQUAL(attr.name, "dimensions");
-    BOOST_CHECK(attr.type == AttrDef::Type::IntegerArray);
+    BOOST_CHECK(attr.type == AttrDef::Type::IntArray);
 }
 
 // ============================================================
