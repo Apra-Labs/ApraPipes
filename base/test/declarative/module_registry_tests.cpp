@@ -8,6 +8,7 @@
 #include "declarative/ModuleRegistry.h"
 #include <thread>
 #include <vector>
+#include <atomic>
 
 using namespace apra;
 
