@@ -532,7 +532,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Integer64;
+        a.type = Type::Int64;
         a.required = req;
         a.description = desc;
         return a;
@@ -621,7 +621,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::IntegerArray;
+        a.type = Type::IntArray;
         a.required = req;
         a.description = desc;
         return a;
