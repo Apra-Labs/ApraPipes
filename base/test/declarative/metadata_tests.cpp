@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Int_CreatesIntegerProperty)
     constexpr auto prop = PropDef::Int("device_id", 0, 0, 7, "CUDA device index");
 
     BOOST_CHECK_EQUAL(prop.name, "device_id");
-    BOOST_CHECK(prop.type == PropDef::Type::Int);
+    BOOST_CHECK(prop.type == PropDef::Type::Integer);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Static);
     BOOST_CHECK_EQUAL(prop.int_default, 0);
     BOOST_CHECK_EQUAL(prop.int_min, 0);
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Float_CreatesFloatProperty)
     constexpr auto prop = PropDef::Float("sensitivity", 0.5, 0.0, 1.0, "Motion sensitivity");
 
     BOOST_CHECK_EQUAL(prop.name, "sensitivity");
-    BOOST_CHECK(prop.type == PropDef::Type::Float);
+    BOOST_CHECK(prop.type == PropDef::Type::Floating);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Static);
     BOOST_CHECK_EQUAL(prop.float_default, 0.5);
     BOOST_CHECK_EQUAL(prop.float_min, 0.0);
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Bool_CreatesBooleanProperty)
     constexpr auto prop = PropDef::Bool("enabled", true, "Enable processing");
 
     BOOST_CHECK_EQUAL(prop.name, "enabled");
-    BOOST_CHECK(prop.type == PropDef::Type::Bool);
+    BOOST_CHECK(prop.type == PropDef::Type::Boolean);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Static);
     BOOST_CHECK_EQUAL(prop.bool_default, true);
     BOOST_CHECK_EQUAL(prop.description, "Enable processing");
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(PropDef_String_CreatesStringProperty)
     constexpr auto prop = PropDef::String("url", "rtsp://localhost", "RTSP stream URL");
 
     BOOST_CHECK_EQUAL(prop.name, "url");
-    BOOST_CHECK(prop.type == PropDef::Type::String);
+    BOOST_CHECK(prop.type == PropDef::Type::Text);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Static);
     BOOST_CHECK_EQUAL(prop.string_default, "rtsp://localhost");
     BOOST_CHECK_EQUAL(prop.description, "RTSP stream URL");
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(PropDef_String_WithRegexPattern)
     );
 
     BOOST_CHECK_EQUAL(prop.name, "ip_address");
-    BOOST_CHECK(prop.type == PropDef::Type::String);
+    BOOST_CHECK(prop.type == PropDef::Type::Text);
     BOOST_CHECK(!prop.regex_pattern.empty());
 }
 
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Enum_TwoValues)
     );
 
     BOOST_CHECK_EQUAL(prop.name, "mode");
-    BOOST_CHECK(prop.type == PropDef::Type::Enum);
+    BOOST_CHECK(prop.type == PropDef::Type::Enumeration);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Static);
     BOOST_CHECK_EQUAL(prop.string_default, "auto");
     BOOST_CHECK_EQUAL(prop.enum_value_count, 2);
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicInt_HasDynamicMutability)
 {
     constexpr auto prop = PropDef::DynamicInt("frame_skip", 1, 0, 10, "Frames to skip");
 
-    BOOST_CHECK(prop.type == PropDef::Type::Int);
+    BOOST_CHECK(prop.type == PropDef::Type::Integer);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Dynamic);
     BOOST_CHECK_EQUAL(prop.int_default, 1);
     BOOST_CHECK_EQUAL(prop.int_min, 0);
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicFloat_HasDynamicMutability)
 {
     constexpr auto prop = PropDef::DynamicFloat("brightness", 0.5, 0.0, 2.0, "Brightness adjustment");
 
-    BOOST_CHECK(prop.type == PropDef::Type::Float);
+    BOOST_CHECK(prop.type == PropDef::Type::Floating);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Dynamic);
     BOOST_CHECK_EQUAL(prop.float_default, 0.5);
 }
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicBool_HasDynamicMutability)
 {
     constexpr auto prop = PropDef::DynamicBool("paused", false, "Pause processing");
 
-    BOOST_CHECK(prop.type == PropDef::Type::Bool);
+    BOOST_CHECK(prop.type == PropDef::Type::Boolean);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Dynamic);
     BOOST_CHECK_EQUAL(prop.bool_default, false);
 }
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicString_HasDynamicMutability)
 {
     constexpr auto prop = PropDef::DynamicString("overlay_text", "", "Text overlay");
 
-    BOOST_CHECK(prop.type == PropDef::Type::String);
+    BOOST_CHECK(prop.type == PropDef::Type::Text);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Dynamic);
 }
 
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicEnum_HasDynamicMutability)
         "Encoding quality"
     );
 
-    BOOST_CHECK(prop.type == PropDef::Type::Enum);
+    BOOST_CHECK(prop.type == PropDef::Type::Enumeration);
     BOOST_CHECK(prop.mutability == PropDef::Mutability::Dynamic);
 }
 
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Int_CreatesIntAttribute)
     constexpr auto attr = AttrDef::Int("width", true, "Image width in pixels");
 
     BOOST_CHECK_EQUAL(attr.name, "width");
-    BOOST_CHECK(attr.type == AttrDef::Type::Int);
+    BOOST_CHECK(attr.type == AttrDef::Type::Integer);
     BOOST_CHECK_EQUAL(attr.required, true);
     BOOST_CHECK_EQUAL(attr.description, "Image width in pixels");
 }
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Int64_CreatesInt64Attribute)
     constexpr auto attr = AttrDef::Int64("timestamp", true, "Frame timestamp");
 
     BOOST_CHECK_EQUAL(attr.name, "timestamp");
-    BOOST_CHECK(attr.type == AttrDef::Type::Int64);
+    BOOST_CHECK(attr.type == AttrDef::Type::Integer64);
 }
 
 BOOST_AUTO_TEST_CASE(AttrDef_Float_CreatesFloatAttribute)
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Float_CreatesFloatAttribute)
     constexpr auto attr = AttrDef::Float("fps", false, "Frames per second");
 
     BOOST_CHECK_EQUAL(attr.name, "fps");
-    BOOST_CHECK(attr.type == AttrDef::Type::Float);
+    BOOST_CHECK(attr.type == AttrDef::Type::Floating);
     BOOST_CHECK_EQUAL(attr.required, false);
 }
 
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Bool_CreatesBoolAttribute)
     constexpr auto attr = AttrDef::Bool("is_keyframe", true, "Is this a keyframe");
 
     BOOST_CHECK_EQUAL(attr.name, "is_keyframe");
-    BOOST_CHECK(attr.type == AttrDef::Type::Bool);
+    BOOST_CHECK(attr.type == AttrDef::Type::Boolean);
 }
 
 BOOST_AUTO_TEST_CASE(AttrDef_String_CreatesStringAttribute)
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_String_CreatesStringAttribute)
     constexpr auto attr = AttrDef::String("codec_name", true, "Codec identifier");
 
     BOOST_CHECK_EQUAL(attr.name, "codec_name");
-    BOOST_CHECK(attr.type == AttrDef::Type::String);
+    BOOST_CHECK(attr.type == AttrDef::Type::Text);
 }
 
 BOOST_AUTO_TEST_CASE(AttrDef_Enum_TwoValues)
@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Enum_TwoValues)
     );
 
     BOOST_CHECK_EQUAL(attr.name, "color_space");
-    BOOST_CHECK(attr.type == AttrDef::Type::Enum);
+    BOOST_CHECK(attr.type == AttrDef::Type::Enumeration);
     BOOST_CHECK_EQUAL(attr.enum_value_count, 2);
 }
 
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Enum_FourValues)
     );
 
     BOOST_CHECK_EQUAL(attr.name, "pixel_format");
-    BOOST_CHECK(attr.type == AttrDef::Type::Enum);
+    BOOST_CHECK(attr.type == AttrDef::Type::Enumeration);
     BOOST_CHECK_EQUAL(attr.enum_value_count, 4);
 }
 
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_IntArray_CreatesIntArrayAttribute)
     constexpr auto attr = AttrDef::IntArray("dimensions", true, "Array dimensions");
 
     BOOST_CHECK_EQUAL(attr.name, "dimensions");
-    BOOST_CHECK(attr.type == AttrDef::Type::IntArray);
+    BOOST_CHECK(attr.type == AttrDef::Type::IntegerArray);
 }
 
 // ============================================================

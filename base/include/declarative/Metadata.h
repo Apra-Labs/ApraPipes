@@ -137,14 +137,14 @@ struct PinDef {
 // Describes a configurable property on a module
 // ============================================================
 struct PropDef {
-    enum class Type { Int, Float, Bool, String, Enum };
+    enum class Type { Integer, Floating, Boolean, Text, Enumeration };
     enum class Mutability {
         Static,   // Set at construction, cannot change
         Dynamic   // Can be modified at runtime via Controller
     };
 
     std::string_view name;
-    Type type = Type::Int;
+    Type type = Type::Integer;
     Mutability mutability = Mutability::Static;
 
     // Required flag: true = mandatory (user must provide), false = optional (uses default)
@@ -188,7 +188,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Int;
+        p.type = Type::Integer;
         p.mutability = mut;
         p.int_default = default_val;
         p.int_min = min_val;
@@ -207,7 +207,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Float;
+        p.type = Type::Floating;
         p.mutability = mut;
         p.float_default = default_val;
         p.float_min = min_val;
@@ -224,7 +224,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Bool;
+        p.type = Type::Boolean;
         p.mutability = mut;
         p.bool_default = default_val;
         p.description = desc;
@@ -240,7 +240,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::String;
+        p.type = Type::Text;
         p.mutability = mut;
         p.string_default = default_val;
         p.regex_pattern = regex;
@@ -258,7 +258,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.string_default = default_val;
         p.enum_values[0] = v1;
@@ -277,7 +277,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.string_default = default_val;
         p.enum_values[0] = v1;
@@ -298,7 +298,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.string_default = default_val;
         p.enum_values[0] = v1;
@@ -383,7 +383,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Int;
+        p.type = Type::Integer;
         p.mutability = mut;
         p.required = true;
         p.int_default = min_val;  // Placeholder, not used
@@ -402,7 +402,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Float;
+        p.type = Type::Floating;
         p.mutability = mut;
         p.required = true;
         p.float_default = min_val;  // Placeholder, not used
@@ -420,7 +420,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::String;
+        p.type = Type::Text;
         p.mutability = mut;
         p.required = true;
         p.string_default = "";  // Placeholder, not used
@@ -437,7 +437,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.required = true;
         p.string_default = v1;  // Placeholder, not used
@@ -456,7 +456,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.required = true;
         p.string_default = v1;  // Placeholder, not used
@@ -477,7 +477,7 @@ struct PropDef {
     ) {
         PropDef p;
         p.name = name;
-        p.type = Type::Enum;
+        p.type = Type::Enumeration;
         p.mutability = mut;
         p.required = true;
         p.string_default = v1;  // Placeholder, not used
@@ -496,10 +496,10 @@ struct PropDef {
 // Describes attributes of a frame type (e.g., width, height for images)
 // ============================================================
 struct AttrDef {
-    enum class Type { Int, Int64, Float, Bool, String, Enum, IntArray };
+    enum class Type { Integer, Int64, Floating, Boolean, Text, Enumeration, IntArray };
 
     std::string_view name;
-    Type type = Type::Int;
+    Type type = Type::Integer;
     bool required = true;
     std::array<std::string_view, MAX_ENUM_VALUES> enum_values{};
     size_t enum_value_count = 0;
@@ -519,7 +519,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Int;
+        a.type = Type::Integer;
         a.required = req;
         a.description = desc;
         return a;
@@ -532,7 +532,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Int64;
+        a.type = Type::Integer64;
         a.required = req;
         a.description = desc;
         return a;
@@ -545,7 +545,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Float;
+        a.type = Type::Floating;
         a.required = req;
         a.description = desc;
         return a;
@@ -558,7 +558,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Bool;
+        a.type = Type::Boolean;
         a.required = req;
         a.description = desc;
         return a;
@@ -571,7 +571,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::String;
+        a.type = Type::Text;
         a.required = req;
         a.description = desc;
         return a;
@@ -585,7 +585,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Enum;
+        a.type = Type::Enumeration;
         a.required = req;
         a.enum_values[0] = v1;
         a.enum_values[1] = v2;
@@ -603,7 +603,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::Enum;
+        a.type = Type::Enumeration;
         a.required = req;
         a.enum_values[0] = v1;
         a.enum_values[1] = v2;
@@ -621,7 +621,7 @@ struct AttrDef {
     ) {
         AttrDef a;
         a.name = name;
-        a.type = Type::IntArray;
+        a.type = Type::IntegerArray;
         a.required = req;
         a.description = desc;
         return a;

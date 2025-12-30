@@ -450,11 +450,11 @@ BOOST_FIXTURE_TEST_CASE(Size_ReturnsCorrectCount, RegistryFixture)
 
 BOOST_AUTO_TEST_CASE(PropTypeToString_ReturnsCorrectStrings)
 {
-    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Int), "int");
-    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Float), "float");
-    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Bool), "bool");
-    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::String), "string");
-    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Enum), "enum");
+    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Integer), "int");
+    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Floating), "float");
+    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Boolean), "bool");
+    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Text), "string");
+    BOOST_CHECK_EQUAL(detail::propTypeToString(PropDef::Type::Enumeration), "enum");
 }
 
 BOOST_AUTO_TEST_CASE(MutabilityToString_ReturnsCorrectStrings)

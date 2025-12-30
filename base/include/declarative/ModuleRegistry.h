@@ -143,11 +143,11 @@ inline ModuleInfo::PinInfo toPinInfo(const PinDef& pin) {
 // Convert PropDef::Type to string
 inline std::string propTypeToString(PropDef::Type type) {
     switch (type) {
-        case PropDef::Type::Int: return "int";
-        case PropDef::Type::Float: return "float";
-        case PropDef::Type::Bool: return "bool";
-        case PropDef::Type::String: return "string";
-        case PropDef::Type::Enum: return "enum";
+        case PropDef::Type::Integer: return "int";
+        case PropDef::Type::Floating: return "float";
+        case PropDef::Type::Boolean: return "bool";
+        case PropDef::Type::Text: return "string";
+        case PropDef::Type::Enumeration: return "enum";
     }
     return "unknown";
 }
@@ -174,23 +174,23 @@ inline ModuleInfo::PropInfo toPropInfo(const PropDef& prop) {
 
     // Set type-specific values
     switch (prop.type) {
-        case PropDef::Type::Int:
+        case PropDef::Type::Integer:
             info.default_value = std::to_string(prop.int_default);
             info.min_value = std::to_string(prop.int_min);
             info.max_value = std::to_string(prop.int_max);
             break;
-        case PropDef::Type::Float:
+        case PropDef::Type::Floating:
             info.default_value = std::to_string(prop.float_default);
             info.min_value = std::to_string(prop.float_min);
             info.max_value = std::to_string(prop.float_max);
             break;
-        case PropDef::Type::Bool:
+        case PropDef::Type::Boolean:
             info.default_value = prop.bool_default ? "true" : "false";
             break;
-        case PropDef::Type::String:
+        case PropDef::Type::Text:
             info.default_value = std::string(prop.string_default);
             break;
-        case PropDef::Type::Enum:
+        case PropDef::Type::Enumeration:
             info.default_value = std::string(prop.string_default);
             for (size_t i = 0; i < prop.enum_value_count; ++i) {
                 info.enum_values.push_back(std::string(prop.enum_values[i]));
