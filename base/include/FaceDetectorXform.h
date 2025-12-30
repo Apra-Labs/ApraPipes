@@ -106,9 +106,9 @@ public:
         };
 
         static constexpr std::array<apra::PropDef, 2> properties = {
-            apra::PropDef::Float("scaleFactor", 1.0, 0.1, 10.0,
+            apra::PropDef::Floating("scaleFactor", 1.0, 0.1, 10.0,
                 "Scale factor for input image preprocessing"),
-            apra::PropDef::Float("confidenceThreshold", 0.5, 0.0, 1.0,
+            apra::PropDef::Floating("confidenceThreshold", 0.5, 0.0, 1.0,
                 "Minimum confidence threshold for face detection")
         };
     };

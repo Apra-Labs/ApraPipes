@@ -44,9 +44,9 @@ public:
 		};
 
 		static constexpr std::array<apra::PropDef, 2> properties = {
-			apra::PropDef::Int("lowerWaterMark", 300, 0, 10000,
+			apra::PropDef::Integer("lowerWaterMark", 300, 0, 10000,
 				"Lower watermark for frame buffering"),
-			apra::PropDef::Int("upperWaterMark", 350, 0, 10000,
+			apra::PropDef::Integer("upperWaterMark", 350, 0, 10000,
 				"Upper watermark for frame buffering")
 		};
 	};

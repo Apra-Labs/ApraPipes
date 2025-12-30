@@ -41,7 +41,7 @@ public:
         };
 
         static constexpr std::array<PropDef, 3> properties = {
-            PropDef::Int("buffer_size", 10, 1, 100, "Frame buffer size"),
+            PropDef::Integer("buffer_size", 10, 1, 100, "Frame buffer size"),
             PropDef::DynamicFloat("scale", 1.0, 0.1, 10.0, "Scale factor"),
             PropDef::Enum("mode", "auto", "auto", "manual", "Operation mode", PropDef::Mutability::Static)
         };
@@ -70,7 +70,7 @@ public:
         };
 
         static constexpr std::array<PropDef, 1> properties = {
-            PropDef::String("path", "/tmp/video.mp4", "File path")
+            PropDef::Text("path", "/tmp/video.mp4", "File path")
         };
     };
 };

@@ -49,8 +49,8 @@ public:
             PinDef::create("output", "RawFrame", true, "Output frames")
         };
         static constexpr std::array<PropDef, 2> properties = {
-            PropDef::String("path", "/tmp/default.mp4", "File path"),
-            PropDef::Bool("loop", false, "Loop playback")
+            PropDef::Text("path", "/tmp/default.mp4", "File path"),
+            PropDef::Boolean("loop", false, "Loop playback")
         };
     };
 
@@ -98,7 +98,7 @@ public:
             PinDef::create("output", "RawFrame", true, "Output frames")
         };
         static constexpr std::array<PropDef, 2> properties = {
-            PropDef::Int("scale", 1, 1, 10, "Scale factor"),
+            PropDef::Integer("scale", 1, 1, 10, "Scale factor"),
             PropDef::Enum("mode", "auto", "auto", "manual", "Operation mode", PropDef::Mutability::Static)
         };
     };
@@ -140,7 +140,7 @@ public:
         };
         static constexpr std::array<PinDef, 0> outputs = {};
         static constexpr std::array<PropDef, 1> properties = {
-            PropDef::String("output_path", "/tmp/output.mp4", "Output file path")
+            PropDef::Text("output_path", "/tmp/output.mp4", "Output file path")
         };
     };
 

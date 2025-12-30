@@ -92,7 +92,7 @@ public:
 		static constexpr std::array<apra::PropDef, 2> properties = {
 			apra::PropDef::RequiredString("strFullFileNameWithPattern",
 				"File path pattern (e.g., /path/frame_????.raw)"),
-			apra::PropDef::Bool("append", false,
+			apra::PropDef::Boolean("append", false,
 				"Append to existing file instead of overwriting")
 		};
 	};

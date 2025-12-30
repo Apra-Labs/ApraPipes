@@ -178,7 +178,7 @@ struct PropDef {
     // Factory methods for clean declaration syntax
     // ========================================================
 
-    static constexpr PropDef Int(
+    static constexpr PropDef Integer(
         std::string_view name,
         int64_t default_val,
         int64_t min_val,
@@ -197,7 +197,7 @@ struct PropDef {
         return p;
     }
 
-    static constexpr PropDef Float(
+    static constexpr PropDef Floating(
         std::string_view name,
         double default_val,
         double min_val,
@@ -216,7 +216,7 @@ struct PropDef {
         return p;
     }
 
-    static constexpr PropDef Bool(
+    static constexpr PropDef Boolean(
         std::string_view name,
         bool default_val,
         std::string_view desc = "",
@@ -231,7 +231,7 @@ struct PropDef {
         return p;
     }
 
-    static constexpr PropDef String(
+    static constexpr PropDef Text(
         std::string_view name,
         std::string_view default_val,
         std::string_view desc = "",
@@ -512,7 +512,7 @@ struct AttrDef {
     // Factory methods
     // ========================================================
 
-    static constexpr AttrDef Int(
+    static constexpr AttrDef Integer(
         std::string_view name,
         bool req = true,
         std::string_view desc = ""
@@ -538,7 +538,7 @@ struct AttrDef {
         return a;
     }
 
-    static constexpr AttrDef Float(
+    static constexpr AttrDef Floating(
         std::string_view name,
         bool req = true,
         std::string_view desc = ""
@@ -551,7 +551,7 @@ struct AttrDef {
         return a;
     }
 
-    static constexpr AttrDef Bool(
+    static constexpr AttrDef Boolean(
         std::string_view name,
         bool req = true,
         std::string_view desc = ""
@@ -564,7 +564,7 @@ struct AttrDef {
         return a;
     }
 
-    static constexpr AttrDef String(
+    static constexpr AttrDef Text(
         std::string_view name,
         bool req = true,
         std::string_view desc = ""

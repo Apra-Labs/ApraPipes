@@ -33,9 +33,9 @@ struct SampleModuleMetadata {
     };
 
     static constexpr std::array<PropDef, 3> properties = {
-        PropDef::Int("buffer_size", 5, 1, 100, "Frame buffer size"),
+        PropDef::Integer("buffer_size", 5, 1, 100, "Frame buffer size"),
         PropDef::DynamicFloat("scale", 1.0, 0.1, 10.0, "Scale factor"),
-        PropDef::Bool("enabled", true, "Enable processing")
+        PropDef::Boolean("enabled", true, "Enable processing")
     };
 };
 
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(PinDef_DefaultRequired_IsTrue)
 
 BOOST_AUTO_TEST_CASE(PropDef_Int_CreatesIntegerProperty)
 {
-    constexpr auto prop = PropDef::Int("device_id", 0, 0, 7, "CUDA device index");
+    constexpr auto prop = PropDef::Integer("device_id", 0, 0, 7, "CUDA device index");
 
     BOOST_CHECK_EQUAL(prop.name, "device_id");
     BOOST_CHECK(prop.type == PropDef::Type::Integer);
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Int_CreatesIntegerProperty)
 
 BOOST_AUTO_TEST_CASE(PropDef_Int_RangeValidation)
 {
-    constexpr auto prop = PropDef::Int("buffer_size", 10, 1, 100, "Frame buffer size");
+    constexpr auto prop = PropDef::Integer("buffer_size", 10, 1, 100, "Frame buffer size");
 
     BOOST_CHECK_EQUAL(prop.int_min, 1);
     BOOST_CHECK_EQUAL(prop.int_max, 100);
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Int_RangeValidation)
 
 BOOST_AUTO_TEST_CASE(PropDef_Float_CreatesFloatProperty)
 {
-    constexpr auto prop = PropDef::Float("sensitivity", 0.5, 0.0, 1.0, "Motion sensitivity");
+    constexpr auto prop = PropDef::Floating("sensitivity", 0.5, 0.0, 1.0, "Motion sensitivity");
 
     BOOST_CHECK_EQUAL(prop.name, "sensitivity");
     BOOST_CHECK(prop.type == PropDef::Type::Floating);
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Float_CreatesFloatProperty)
 
 BOOST_AUTO_TEST_CASE(PropDef_Float_RangeValidation)
 {
-    constexpr auto prop = PropDef::Float("threshold", 0.75, 0.1, 0.99, "Detection threshold");
+    constexpr auto prop = PropDef::Floating("threshold", 0.75, 0.1, 0.99, "Detection threshold");
 
     BOOST_CHECK_EQUAL(prop.float_min, 0.1);
     BOOST_CHECK_EQUAL(prop.float_max, 0.99);
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Float_RangeValidation)
 
 BOOST_AUTO_TEST_CASE(PropDef_Bool_CreatesBooleanProperty)
 {
-    constexpr auto prop = PropDef::Bool("enabled", true, "Enable processing");
+    constexpr auto prop = PropDef::Boolean("enabled", true, "Enable processing");
 
     BOOST_CHECK_EQUAL(prop.name, "enabled");
     BOOST_CHECK(prop.type == PropDef::Type::Boolean);
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Bool_CreatesBooleanProperty)
 
 BOOST_AUTO_TEST_CASE(PropDef_Bool_DefaultFalse)
 {
-    constexpr auto prop = PropDef::Bool("debug_mode", false, "Enable debug output");
+    constexpr auto prop = PropDef::Boolean("debug_mode", false, "Enable debug output");
 
     BOOST_CHECK_EQUAL(prop.bool_default, false);
 }
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(PropDef_Bool_DefaultFalse)
 
 BOOST_AUTO_TEST_CASE(PropDef_String_CreatesStringProperty)
 {
-    constexpr auto prop = PropDef::String("url", "rtsp://localhost", "RTSP stream URL");
+    constexpr auto prop = PropDef::Text("url", "rtsp://localhost", "RTSP stream URL");
 
     BOOST_CHECK_EQUAL(prop.name, "url");
     BOOST_CHECK(prop.type == PropDef::Type::Text);
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(PropDef_String_CreatesStringProperty)
 
 BOOST_AUTO_TEST_CASE(PropDef_String_WithRegexPattern)
 {
-    constexpr auto prop = PropDef::String(
+    constexpr auto prop = PropDef::Text(
         "ip_address",
         "192.168.1.1",
         "Target IP address",
@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE(PropDef_DynamicEnum_HasDynamicMutability)
 
 BOOST_AUTO_TEST_CASE(AttrDef_Int_CreatesIntAttribute)
 {
-    constexpr auto attr = AttrDef::Int("width", true, "Image width in pixels");
+    constexpr auto attr = AttrDef::Integer("width", true, "Image width in pixels");
 
     BOOST_CHECK_EQUAL(attr.name, "width");
     BOOST_CHECK(attr.type == AttrDef::Type::Integer);
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Int64_CreatesInt64Attribute)
 
 BOOST_AUTO_TEST_CASE(AttrDef_Float_CreatesFloatAttribute)
 {
-    constexpr auto attr = AttrDef::Float("fps", false, "Frames per second");
+    constexpr auto attr = AttrDef::Floating("fps", false, "Frames per second");
 
     BOOST_CHECK_EQUAL(attr.name, "fps");
     BOOST_CHECK(attr.type == AttrDef::Type::Floating);
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Float_CreatesFloatAttribute)
 
 BOOST_AUTO_TEST_CASE(AttrDef_Bool_CreatesBoolAttribute)
 {
-    constexpr auto attr = AttrDef::Bool("is_keyframe", true, "Is this a keyframe");
+    constexpr auto attr = AttrDef::Boolean("is_keyframe", true, "Is this a keyframe");
 
     BOOST_CHECK_EQUAL(attr.name, "is_keyframe");
     BOOST_CHECK(attr.type == AttrDef::Type::Boolean);
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(AttrDef_Bool_CreatesBoolAttribute)
 
 BOOST_AUTO_TEST_CASE(AttrDef_String_CreatesStringAttribute)
 {
-    constexpr auto attr = AttrDef::String("codec_name", true, "Codec identifier");
+    constexpr auto attr = AttrDef::Text("codec_name", true, "Codec identifier");
 
     BOOST_CHECK_EQUAL(attr.name, "codec_name");
     BOOST_CHECK(attr.type == AttrDef::Type::Text);
@@ -453,12 +453,12 @@ BOOST_AUTO_TEST_CASE(AllTypes_AreConstexprConstructible)
     constexpr ModuleCategory cat = ModuleCategory::Transform;
     constexpr auto pin = PinDef::create("test", "Frame");
     constexpr auto pin2 = PinDef::create("test2", "F1", "F2");
-    constexpr PropDef intProp = PropDef::Int("x", 0, 0, 100);
-    constexpr PropDef floatProp = PropDef::Float("y", 0.5, 0.0, 1.0);
-    constexpr PropDef boolProp = PropDef::Bool("z", true);
-    constexpr PropDef strProp = PropDef::String("s", "default");
+    constexpr PropDef intProp = PropDef::Integer("x", 0, 0, 100);
+    constexpr PropDef floatProp = PropDef::Floating("y", 0.5, 0.0, 1.0);
+    constexpr PropDef boolProp = PropDef::Boolean("z", true);
+    constexpr PropDef strProp = PropDef::Text("s", "default");
     constexpr PropDef enumProp = PropDef::Enum("e", "a", "a", "b");
-    constexpr AttrDef intAttr = AttrDef::Int("a");
+    constexpr AttrDef intAttr = AttrDef::Integer("a");
 
     // If this compiles, constexpr is working
     BOOST_CHECK(true);

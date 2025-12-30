@@ -127,11 +127,11 @@ public:
 		static constexpr std::array<apra::PropDef, 4> properties = {
 			apra::PropDef::RequiredString("strFullFileNameWithPattern",
 				"File path pattern (e.g., /path/frame_????.raw)"),
-			apra::PropDef::Int("startIndex", 0, 0, INT_MAX,
+			apra::PropDef::Integer("startIndex", 0, 0, INT_MAX,
 				"Starting index for file sequence"),
-			apra::PropDef::Int("maxIndex", -1, -1, INT_MAX,
+			apra::PropDef::Integer("maxIndex", -1, -1, INT_MAX,
 				"Maximum index (-1 for unlimited)"),
-			apra::PropDef::Bool("readLoop", true,
+			apra::PropDef::Boolean("readLoop", true,
 				"Loop back to start when reaching end")
 		};
 	};
