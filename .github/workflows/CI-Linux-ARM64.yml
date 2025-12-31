@@ -32,7 +32,7 @@ permissions:
 jobs:
   ci:
     # TEMPORARY: Skip ARM64 builds on cpp17-modernization branch to save CI resources
-    if: ${{ !contains(github.ref, 'cpp17-modernization') }}
+    if: ${{ !contains(github.head_ref, 'cpp17-modernization') && !contains(github.ref, 'cpp17-modernization') }}
     uses: ./.github/workflows/build-test-lin.yml
     with:
       runner: '["self-hosted", "Linux", "ARM64"]'
