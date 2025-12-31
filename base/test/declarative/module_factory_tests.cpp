@@ -91,12 +91,12 @@ public:
         static constexpr std::string_view description = "Test transform module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
-        // Note: input is optional (false) to allow standalone property testing
+        // Note: input is optional to allow standalone property testing
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false, "Input frames")
+            PinDef::create("input", "RawFrame", false)
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame", true, "Output frames")
+            PinDef::create("output", "RawFrame")
         };
         static constexpr std::array<PropDef, 2> properties = {
             PropDef::Integer("scale", 1, 1, 10, "Scale factor"),
@@ -136,9 +136,9 @@ public:
         static constexpr std::string_view description = "Test sink module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
-        // Note: input is optional (false) to allow standalone property testing
+        // Note: input is optional to allow standalone property testing
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false, "Input frames")
+            PinDef::create("input", "RawFrame", false)
         };
         static constexpr std::array<PinDef, 0> outputs = {};
         static constexpr std::array<PropDef, 1> properties = {
@@ -344,12 +344,12 @@ public:
         static constexpr std::string_view description = "Test module with optional input";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
-        // Optional input (false) - doesn't need to be connected
+        // Optional input - doesn't need to be connected
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false, "Optional input")
+            PinDef::create("input", "RawFrame", false)
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame", true, "Output frames")
+            PinDef::create("output", "RawFrame")
         };
         static constexpr std::array<PropDef, 1> properties = {
             PropDef::Boolean("enabled", true, "Enable processing")
