@@ -19,6 +19,7 @@
 #include "declarative/TomlParser.h"
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistry.h"
+#include "declarative/ModuleRegistrations.h"
 #include "declarative/PipelineDescription.h"
 
 using namespace apra;
@@ -332,6 +333,7 @@ int cmdRun(const std::string& filepath,
 // Command: list-modules
 // ============================================================
 int cmdListModules(const std::string& category, const std::string& tag, bool jsonOutput) {
+    ensureBuiltinModulesRegistered();
     auto& registry = ModuleRegistry::instance();
 
     std::vector<std::string> modules;
@@ -393,6 +395,7 @@ int cmdListModules(const std::string& category, const std::string& tag, bool jso
 // Command: describe
 // ============================================================
 int cmdDescribe(const std::string& moduleName, bool jsonOutput) {
+    ensureBuiltinModulesRegistered();
     auto& registry = ModuleRegistry::instance();
     auto* info = registry.getModule(moduleName);
 
