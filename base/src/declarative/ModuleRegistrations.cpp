@@ -27,6 +27,8 @@
 #include "ImageEncoderCV.h"
 #include "Mp4ReaderSource.h"
 #include "Mp4WriterSink.h"
+#include "ImageResizeCV.h"
+#include "RotateCV.h"
 
 // Conditionally include CUDA modules
 #ifdef ENABLE_CUDA
@@ -64,7 +66,11 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Source)
                 .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
                 .tags("source", "file", "reader")
-                .output("output", "Frame");
+                .output("output", "Frame")
+                .stringProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)", true)
+                .intProp("startIndex", "Starting file index", false, 0, 0)
+                .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, -1, -1)
+                .boolProp("readLoop", "Loop back to start when reaching end", false, true);
         }
 
         // FileWriterModule - writes frames to files
@@ -73,7 +79,9 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Sink)
                 .description("Writes frames to files. Supports file sequences with pattern-based naming.")
                 .tags("sink", "file", "writer")
-                .input("input", "Frame");
+                .input("input", "Frame")
+                .stringProp("strFullFileNameWithPattern", "Output file path pattern (e.g., /path/frame_????.raw)", true)
+                .boolProp("append", "Append to existing files instead of overwriting", false, false);
         }
 
         // FaceDetectorXform - face detection
@@ -176,7 +184,15 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Source)
                 .description("Reads video frames from MP4 files")
                 .tags("source", "mp4", "video", "file")
-                .output("output", "H264Data", "EncodedImage");
+                .output("output", "H264Data", "EncodedImage")
+                .stringProp("videoPath", "Path to MP4 video file", true)
+                .boolProp("parseFS", "Parse filesystem for metadata", false, true)
+                .boolProp("direction", "Playback direction (true=forward)", false, true)
+                .boolProp("bFramesEnabled", "Enable B-frame decoding", false, false)
+                .intProp("reInitInterval", "Re-initialization interval in frames", false, 0, 0)
+                .intProp("parseFSTimeoutDuration", "Filesystem parse timeout (ms)", false, 0, 0)
+                .boolProp("readLoop", "Loop playback when reaching end", false, false)
+                .boolProp("giveLiveTS", "Use live timestamps", false, false);
         }
 
         // Mp4WriterSink - writes MP4 video files
@@ -185,7 +201,36 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Sink)
                 .description("Writes video frames to MP4 files")
                 .tags("sink", "mp4", "video", "file")
-                .input("input", "H264Data", "EncodedImage");
+                .input("input", "H264Data", "EncodedImage")
+                .stringProp("baseFolder", "Output folder for MP4 files", false, "")
+                .intProp("chunkTime", "Chunk duration in seconds", false, 60, 1)
+                .intProp("syncTimeInSecs", "Sync interval in seconds", false, 1, 1)
+                .intProp("fps", "Output frame rate", false, 30, 1, 120)
+                .boolProp("recordedTSBasedDTS", "Use recorded timestamps for DTS", false, false)
+                .boolProp("enableMetadata", "Enable metadata track", false, false);
+        }
+
+        // ImageResizeCV - resizes images using OpenCV
+        if (!registry.hasModule("ImageResizeCV")) {
+            registerModule<ImageResizeCV, ImageResizeCVProps>()
+                .category(ModuleCategory::Transform)
+                .description("Resizes images to specified dimensions using OpenCV")
+                .tags("transform", "resize", "image", "opencv")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .intProp("width", "Target width in pixels", true, 0, 1, 8192)
+                .intProp("height", "Target height in pixels", true, 0, 1, 8192);
+        }
+
+        // RotateCV - rotates images using OpenCV
+        if (!registry.hasModule("RotateCV")) {
+            registerModule<RotateCV, RotateCVProps>()
+                .category(ModuleCategory::Transform)
+                .description("Rotates images by a specified angle using OpenCV")
+                .tags("transform", "rotate", "image", "opencv")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0);
         }
 
         // ============================================================

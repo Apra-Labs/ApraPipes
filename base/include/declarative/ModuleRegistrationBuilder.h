@@ -21,6 +21,8 @@
 #include <type_traits>
 #include <typeinfo>
 #include <iostream>  // Debug output
+#include <limits>    // For std::numeric_limits
+#include <cstdint>   // For INT64_MIN, INT64_MAX
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -181,6 +183,105 @@ public:
         (pin.frame_types.push_back(std::string(rest)), ...);
         pin.required = true;
         info_.outputs.push_back(std::move(pin));
+        return *this;
+    }
+
+    // ============================================================
+    // Property definition methods
+    // ============================================================
+
+    // Add a string property
+    ModuleRegistrationBuilder& stringProp(const std::string& name, const std::string& desc,
+                                          bool required = false, const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "string";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add an integer property
+    ModuleRegistrationBuilder& intProp(const std::string& name, const std::string& desc,
+                                       bool required = false, int64_t defaultVal = 0,
+                                       int64_t minVal = INT64_MIN, int64_t maxVal = INT64_MAX) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "int";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = std::to_string(defaultVal);
+        if (minVal != INT64_MIN) prop.min_value = std::to_string(minVal);
+        if (maxVal != INT64_MAX) prop.max_value = std::to_string(maxVal);
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a float property
+    ModuleRegistrationBuilder& floatProp(const std::string& name, const std::string& desc,
+                                         bool required = false, double defaultVal = 0.0,
+                                         double minVal = -std::numeric_limits<double>::max(),
+                                         double maxVal = std::numeric_limits<double>::max()) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "float";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = std::to_string(defaultVal);
+        if (minVal != -std::numeric_limits<double>::max()) prop.min_value = std::to_string(minVal);
+        if (maxVal != std::numeric_limits<double>::max()) prop.max_value = std::to_string(maxVal);
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a boolean property
+    ModuleRegistrationBuilder& boolProp(const std::string& name, const std::string& desc,
+                                        bool required = false, bool defaultVal = false) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "bool";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal ? "true" : "false";
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add an enum property
+    template<typename... EnumValues>
+    ModuleRegistrationBuilder& enumProp(const std::string& name, const std::string& desc,
+                                        bool required, const std::string& defaultVal,
+                                        EnumValues... values) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "enum";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        (prop.enum_values.push_back(std::string(values)), ...);
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a dynamic property (can be changed at runtime)
+    ModuleRegistrationBuilder& dynamicProp(const std::string& name, const std::string& type,
+                                           const std::string& desc, bool required = false,
+                                           const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = type;
+        prop.mutability = "dynamic";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
         return *this;
     }
 
