@@ -132,6 +132,18 @@ public:
         std::string formatIssues() const;
     };
 
+    // ============================================================
+    // ModuleContext - Stores per-instance pin mappings
+    // ============================================================
+    struct ModuleContext {
+        boost::shared_ptr<Module> module;
+        std::string moduleType;                              // e.g., "FileReaderModule"
+        std::string instanceId;                              // e.g., "source"
+        std::map<std::string, std::string> outputPinMap;     // TOML name → internal pin ID
+        std::map<std::string, std::string> inputPinMap;      // TOML name → internal pin ID
+        std::vector<std::string> connectedInputs;            // Track which inputs are connected
+    };
+
     // Constructor
     explicit ModuleFactory(Options opts = Options());
 
@@ -155,6 +167,15 @@ private:
         std::vector<BuildIssue>& issues
     );
 
+    // Set up output pins for a module based on registry info
+    // Returns map of TOML pin name → internal pin ID
+    std::map<std::string, std::string> setupOutputPins(
+        Module* module,
+        const ModuleInfo& info,
+        const std::string& instanceId,
+        std::vector<BuildIssue>& issues
+    );
+
     // Apply properties from description to module
     void applyProperties(
         Module* module,
@@ -164,11 +185,21 @@ private:
     );
 
     // Connect all modules according to connections list
+    // Uses ModuleContext map for pin name resolution
     bool connectModules(
         const std::vector<Connection>& connections,
-        const std::map<std::string, boost::shared_ptr<Module>>& moduleMap,
+        std::map<std::string, ModuleContext>& contextMap,
         std::vector<BuildIssue>& issues
     );
+
+public:
+    // Parse connection endpoint "instance.pin" into parts
+    // Made public for testing
+    static std::pair<std::string, std::string> parseConnectionEndpoint(
+        const std::string& endpoint
+    );
+
+private:
 
     // Convert PropertyValue from PipelineDescription to ScalarPropertyValue
     // (handles array types by extracting first element or using default)

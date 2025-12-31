@@ -7,9 +7,83 @@
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistrations.h"
 #include "Module.h"
+#include "FrameMetadata.h"
 #include <sstream>
+#include <iostream>
 
 namespace apra {
+
+// ============================================================
+// Helper: Convert frame type string to FrameMetadata::FrameType
+// ============================================================
+static FrameMetadata::FrameType stringToFrameType(const std::string& typeStr) {
+    // Map string names to FrameType enum
+    static const std::map<std::string, FrameMetadata::FrameType> typeMap = {
+        {"Frame", FrameMetadata::GENERAL},
+        {"General", FrameMetadata::GENERAL},
+        {"EncodedImage", FrameMetadata::ENCODED_IMAGE},
+        {"RawImage", FrameMetadata::RAW_IMAGE},
+        {"RawImagePlanar", FrameMetadata::RAW_IMAGE_PLANAR},
+        {"Audio", FrameMetadata::AUDIO},
+        {"Array", FrameMetadata::ARRAY},
+        {"H264Frame", FrameMetadata::H264_DATA},
+        {"H265Frame", FrameMetadata::HEVC_DATA},
+        {"BMPImage", FrameMetadata::BMP_IMAGE},
+        {"Command", FrameMetadata::COMMAND},
+        {"PropsChange", FrameMetadata::PROPS_CHANGE},
+    };
+
+    auto it = typeMap.find(typeStr);
+    if (it != typeMap.end()) {
+        return it->second;
+    }
+    return FrameMetadata::GENERAL;  // Default to GENERAL for unknown types
+}
+
+// ============================================================
+// Parse connection endpoint "instance.pin" into (instance, pin)
+// ============================================================
+std::pair<std::string, std::string> ModuleFactory::parseConnectionEndpoint(
+    const std::string& endpoint
+) {
+    auto dotPos = endpoint.find('.');
+    if (dotPos == std::string::npos) {
+        // No pin specified, use empty string for default handling
+        return {endpoint, ""};
+    }
+    return {endpoint.substr(0, dotPos), endpoint.substr(dotPos + 1)};
+}
+
+// ============================================================
+// Set up output pins for a module based on registry info
+// Returns map of TOML pin name → internal pin ID
+// ============================================================
+std::map<std::string, std::string> ModuleFactory::setupOutputPins(
+    Module* module,
+    const ModuleInfo& info,
+    const std::string& instanceId,
+    std::vector<BuildIssue>& issues
+) {
+    std::map<std::string, std::string> pinMap;
+
+    // For each declared output pin, create a default FrameMetadata and add it
+    for (const auto& outputPin : info.outputs) {
+        // Use the first frame type in the list
+        std::string frameTypeStr = outputPin.frame_types.empty() ? "Frame" : outputPin.frame_types[0];
+        FrameMetadata::FrameType frameType = stringToFrameType(frameTypeStr);
+
+        // Create a generic FrameMetadata with the correct type
+        auto metadata = framemetadata_sp(new FrameMetadata(frameType));
+
+        // Add the output pin and capture the generated ID
+        std::string generatedPinId = module->addOutputPin(metadata);
+
+        // Store mapping: TOML pin name → internal pin ID
+        pinMap[outputPin.name] = generatedPinId;
+    }
+
+    return pinMap;
+}
 
 // ============================================================
 // BuildResult methods
@@ -69,14 +143,28 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
     // Create pipeline
     result.pipeline = std::make_unique<PipeLine>(pipelineName);
 
-    // Map of instance_id -> Module for connection phase
-    std::map<std::string, boost::shared_ptr<Module>> moduleMap;
+    // Map of instance_id -> ModuleContext for connection phase (with pin mappings)
+    std::map<std::string, ModuleContext> contextMap;
 
-    // Phase 1: Create all modules
+    // Phase 1: Create all modules and set up their output pins
+    auto& registry = ModuleRegistry::instance();
     for (const auto& instance : desc.modules) {
         auto module = createModule(instance, result.issues);
         if (module) {
-            moduleMap[instance.instance_id] = module;
+            // Create context for this module instance
+            ModuleContext ctx;
+            ctx.module = module;
+            ctx.moduleType = instance.module_type;
+            ctx.instanceId = instance.instance_id;
+
+            // Set up output pins based on registry info (required before setNext)
+            // This also populates the outputPinMap with TOML name → internal ID
+            const ModuleInfo* info = registry.getModule(instance.module_type);
+            if (info && !info->outputs.empty()) {
+                ctx.outputPinMap = setupOutputPins(module.get(), *info, instance.instance_id, result.issues);
+            }
+
+            contextMap[instance.instance_id] = std::move(ctx);
             result.pipeline->appendModule(module);
 
             if (options_.collect_info_messages) {
@@ -95,9 +183,9 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         return result;
     }
 
-    // Phase 2: Connect modules
+    // Phase 2: Connect modules using pin name resolution
     if (!desc.connections.empty()) {
-        connectModules(desc.connections, moduleMap, result.issues);
+        connectModules(desc.connections, contextMap, result.issues);
     }
 
     // If errors during connection, pipeline is invalid
@@ -296,19 +384,20 @@ void ModuleFactory::applyProperties(
 
 // ============================================================
 // Connect modules according to connections list
+// Uses ModuleContext for pin name resolution
 // ============================================================
 
 bool ModuleFactory::connectModules(
     const std::vector<Connection>& connections,
-    const std::map<std::string, boost::shared_ptr<Module>>& moduleMap,
+    std::map<std::string, ModuleContext>& contextMap,
     std::vector<BuildIssue>& issues
 ) {
     bool allSuccess = true;
 
     for (const auto& conn : connections) {
-        // Find source module
-        auto srcIt = moduleMap.find(conn.from_module);
-        if (srcIt == moduleMap.end()) {
+        // Find source module context
+        auto srcIt = contextMap.find(conn.from_module);
+        if (srcIt == contextMap.end()) {
             issues.push_back(BuildIssue::error(
                 BuildIssue::UNKNOWN_SOURCE_MODULE,
                 "connections",
@@ -318,9 +407,9 @@ bool ModuleFactory::connectModules(
             continue;
         }
 
-        // Find destination module
-        auto dstIt = moduleMap.find(conn.to_module);
-        if (dstIt == moduleMap.end()) {
+        // Find destination module context
+        auto dstIt = contextMap.find(conn.to_module);
+        if (dstIt == contextMap.end()) {
             issues.push_back(BuildIssue::error(
                 BuildIssue::UNKNOWN_DEST_MODULE,
                 "connections",
@@ -330,16 +419,70 @@ bool ModuleFactory::connectModules(
             continue;
         }
 
+        ModuleContext& srcCtx = srcIt->second;
+        ModuleContext& dstCtx = dstIt->second;
+
+        // Resolve source pin name to internal ID
+        std::string srcPinId;
+        if (!conn.from_pin.empty()) {
+            auto pinIt = srcCtx.outputPinMap.find(conn.from_pin);
+            if (pinIt != srcCtx.outputPinMap.end()) {
+                srcPinId = pinIt->second;
+            } else {
+                // Pin name not found in map - might be a single-output module
+                // or an unknown pin name
+                if (srcCtx.outputPinMap.size() == 1) {
+                    // Single output module, use that pin
+                    srcPinId = srcCtx.outputPinMap.begin()->second;
+                } else if (!srcCtx.outputPinMap.empty()) {
+                    // Multi-output module with unknown pin name
+                    issues.push_back(BuildIssue::error(
+                        BuildIssue::UNKNOWN_SOURCE_PIN,
+                        "connections",
+                        "Unknown output pin '" + conn.from_pin + "' on module '" +
+                        conn.from_module + "'. Available pins: " +
+                        [&]() {
+                            std::string pins;
+                            for (const auto& p : srcCtx.outputPinMap) {
+                                if (!pins.empty()) pins += ", ";
+                                pins += p.first;
+                            }
+                            return pins;
+                        }()
+                    ));
+                    allSuccess = false;
+                    continue;
+                }
+            }
+        } else if (srcCtx.outputPinMap.size() == 1) {
+            // No pin specified, single output - use it
+            srcPinId = srcCtx.outputPinMap.begin()->second;
+        }
+        // If srcPinId is empty, we'll use default behavior (all pins)
+
+        // Track which input is connected on destination
+        dstCtx.connectedInputs.push_back(conn.to_pin);
+
         // Connect using ApraPipes API
-        // Note: ApraPipes setNext() connects all output pins by default
-        // Pin-specific connections could be implemented in the future
         try {
-            bool connected = srcIt->second->setNext(dstIt->second);
+            bool connected;
+            if (!srcPinId.empty()) {
+                // Pin-specific connection
+                std::vector<std::string> pinIds = {srcPinId};
+                connected = srcCtx.module->setNext(dstCtx.module, pinIds);
+            } else {
+                // Default: connect all output pins
+                connected = srcCtx.module->setNext(dstCtx.module);
+            }
+
             if (!connected) {
                 issues.push_back(BuildIssue::error(
                     BuildIssue::CONNECTION_FAILED,
                     "connections",
-                    "setNext() returned false for: " + conn.from_module + " -> " + conn.to_module
+                    "setNext() returned false for: " + conn.from_module +
+                    (conn.from_pin.empty() ? "" : "." + conn.from_pin) +
+                    " -> " + conn.to_module +
+                    (conn.to_pin.empty() ? "" : "." + conn.to_pin)
                 ));
                 allSuccess = false;
             } else if (options_.collect_info_messages) {

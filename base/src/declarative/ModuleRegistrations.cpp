@@ -9,6 +9,7 @@
 #include "declarative/ModuleRegistrations.h"
 #include "declarative/ModuleRegistrationBuilder.h"
 #include "declarative/ModuleRegistry.h"
+#include <iostream>  // Debug
 
 // Include module headers (always available)
 #include "FileReaderModule.h"
@@ -33,6 +34,7 @@ void ensureBuiltinModulesRegistered() {
     // Note: We can't use std::once_flag because tests may clear the registry,
     // requiring re-registration. Instead, check if registry has modules.
     auto& registry = ModuleRegistry::instance();
+
     if (registry.hasModule("FileReaderModule")) {
         // Already registered
         return;

@@ -9,9 +9,12 @@
 
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
 #include "declarative/ModuleRegistry.h"
 #include "declarative/ModuleRegistrations.h"
+#include "declarative/ModuleRegistrationBuilder.h"
 #include "Module.h"  // For complete Module type
+#include "FileWriterModule.h"  // For direct property binding test
 #include <set>
 #include <algorithm>
 
@@ -275,6 +278,143 @@ BOOST_AUTO_TEST_CASE(DetectUnregisteredModules_InfoTest) {
 
     // This test passes but logs warnings
     BOOST_CHECK_MESSAGE(true, "Module detection completed");
+}
+
+// ============================================================
+// Property Binding Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(FileWriterModuleProps_HasApplyProperties) {
+    // Direct test: check if the type trait detects applyProperties
+    constexpr bool hasApply = apra::detail::has_apply_properties_v<FileWriterModuleProps>;
+    BOOST_TEST_MESSAGE("has_apply_properties_v<FileWriterModuleProps> = " << (hasApply ? "true" : "false"));
+    BOOST_CHECK_MESSAGE(hasApply, "FileWriterModuleProps should have applyProperties detected");
+}
+
+BOOST_AUTO_TEST_CASE(FileWriterModuleProps_ApplyPropertiesDirectly) {
+    // Test calling applyProperties directly
+    FileWriterModuleProps props;
+    BOOST_CHECK(props.strFullFileNameWithPattern.empty());
+
+    std::map<std::string, apra::ScalarPropertyValue> values;
+    values["strFullFileNameWithPattern"] = std::string("/tmp/test/frame.raw");
+    values["append"] = true;
+
+    std::vector<std::string> missing;
+    FileWriterModuleProps::applyProperties(props, values, missing);
+
+    BOOST_TEST_MESSAGE("After applyProperties:");
+    BOOST_TEST_MESSAGE("  strFullFileNameWithPattern = " << props.strFullFileNameWithPattern);
+    BOOST_TEST_MESSAGE("  append = " << props.append);
+    BOOST_TEST_MESSAGE("  missing count = " << missing.size());
+
+    BOOST_CHECK_EQUAL(props.strFullFileNameWithPattern, "/tmp/test/frame.raw");
+    BOOST_CHECK_EQUAL(props.append, true);
+    BOOST_CHECK(missing.empty());
+}
+
+BOOST_AUTO_TEST_CASE(FileWriterModule_FactoryLambdaTest) {
+    // Create the factory lambda manually to test if it works
+    auto factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props)
+        -> std::unique_ptr<Module> {
+
+        FileWriterModuleProps moduleProps;
+
+        // Debug: check if has_apply_properties_v is true
+        constexpr bool hasApply = apra::detail::has_apply_properties_v<FileWriterModuleProps>;
+        BOOST_TEST_MESSAGE("In factory lambda: has_apply_properties_v = " << (hasApply ? "true" : "false"));
+
+        if constexpr (hasApply) {
+            std::vector<std::string> missingRequired;
+            FileWriterModuleProps::applyProperties(moduleProps, props, missingRequired);
+
+            BOOST_TEST_MESSAGE("After applyProperties in factory:");
+            BOOST_TEST_MESSAGE("  strFullFileNameWithPattern = " << moduleProps.strFullFileNameWithPattern);
+
+            if (!missingRequired.empty()) {
+                std::string msg = "Missing: ";
+                for (const auto& m : missingRequired) msg += m + " ";
+                throw std::runtime_error(msg);
+            }
+        }
+
+        // Create output directory
+        if (!moduleProps.strFullFileNameWithPattern.empty()) {
+            boost::filesystem::path p(moduleProps.strFullFileNameWithPattern);
+            boost::filesystem::path dirPath = p.parent_path();
+            if (!dirPath.empty() && !boost::filesystem::exists(dirPath)) {
+                boost::filesystem::create_directories(dirPath);
+            }
+        }
+
+        return std::make_unique<FileWriterModule>(moduleProps);
+    };
+
+    // Test the factory
+    std::map<std::string, apra::ScalarPropertyValue> props;
+    props["strFullFileNameWithPattern"] = std::string("/tmp/factory_test/frame_????.raw");
+    props["append"] = false;
+
+    BOOST_TEST_MESSAGE("Calling factory with path: /tmp/factory_test/frame_????.raw");
+
+    auto module = factory(props);
+    BOOST_REQUIRE(module != nullptr);
+
+    // Clean up
+    boost::filesystem::remove_all("/tmp/factory_test");
+}
+
+BOOST_AUTO_TEST_CASE(FileWriterModule_PropertyBinding) {
+    // Clear registry to ensure fresh registration with proper factories
+    auto& registry = apra::ModuleRegistry::instance();
+    registry.clear();
+
+    // Register modules with proper factories
+    apra::ensureBuiltinModulesRegistered();
+
+    BOOST_REQUIRE(registry.hasModule("FileWriterModule"));
+
+    // Create FileWriterModule with required property
+    std::map<std::string, apra::ScalarPropertyValue> props;
+    props["strFullFileNameWithPattern"] = std::string("/tmp/apra_test_output/frame_????.raw");
+    props["append"] = false;
+
+    // Create the test directory first
+    boost::filesystem::create_directories("/tmp/apra_test_output");
+
+    // Should succeed - property must be bound for this to work
+    std::unique_ptr<Module> module;
+    try {
+        module = registry.createModule("FileWriterModule", props);
+        BOOST_REQUIRE(module != nullptr);
+    }
+    catch (const std::exception& e) {
+        BOOST_TEST_MESSAGE("std::exception: " << e.what());
+        BOOST_FAIL("FileWriterModule creation failed: " << e.what());
+    }
+
+    // Clean up test directory
+    boost::filesystem::remove_all("/tmp/apra_test_output");
+}
+
+BOOST_AUTO_TEST_CASE(FileReaderModule_PropertyBinding) {
+    // Clear registry to ensure fresh registration with proper factories
+    auto& registry = apra::ModuleRegistry::instance();
+    registry.clear();
+
+    apra::ensureBuiltinModulesRegistered();
+
+    BOOST_REQUIRE(registry.hasModule("FileReaderModule"));
+
+    // Create FileReaderModule with required property
+    std::map<std::string, apra::ScalarPropertyValue> props;
+    props["strFullFileNameWithPattern"] = std::string("./data/test_????.jpg");
+    props["readLoop"] = false;
+
+    // Should succeed
+    std::unique_ptr<Module> module;
+    BOOST_REQUIRE_NO_THROW(module = registry.createModule("FileReaderModule", props));
+    BOOST_REQUIRE(module != nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

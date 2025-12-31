@@ -213,6 +213,25 @@ inline std::string categoryToString(ModuleCategory cat) {
     return "unknown";
 }
 
+// ============================================================
+// Type trait to detect if PropsClass has applyProperties method
+// Used by REGISTER_MODULE macro to apply TOML properties
+// ============================================================
+template<typename T, typename = void>
+struct has_apply_properties : std::false_type {};
+
+template<typename T>
+struct has_apply_properties<T,
+    std::void_t<decltype(T::applyProperties(
+        std::declval<T&>(),
+        std::declval<const std::map<std::string, ScalarPropertyValue>&>(),
+        std::declval<std::vector<std::string>&>()
+    ))>
+> : std::true_type {};
+
+template<typename T>
+inline constexpr bool has_apply_properties_v = has_apply_properties<T>::value;
+
 } // namespace detail
 
 // ============================================================
@@ -270,7 +289,19 @@ inline std::string categoryToString(ModuleCategory cat) {
             info.factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props) \
                 -> std::unique_ptr<Module> { \
                 PropsClass moduleProps; \
-                /* TODO: Apply props to moduleProps based on Metadata */ \
+                /* Apply properties if PropsClass has applyProperties method */ \
+                if constexpr (apra::detail::has_apply_properties_v<PropsClass>) { \
+                    std::vector<std::string> missingRequired; \
+                    PropsClass::applyProperties(moduleProps, props, missingRequired); \
+                    if (!missingRequired.empty()) { \
+                        std::string msg = "Missing required properties: "; \
+                        for (size_t i = 0; i < missingRequired.size(); ++i) { \
+                            if (i > 0) msg += ", "; \
+                            msg += missingRequired[i]; \
+                        } \
+                        throw std::runtime_error(msg); \
+                    } \
+                } \
                 return std::make_unique<ModuleClass>(moduleProps); \
             }; \
             \

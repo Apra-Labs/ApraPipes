@@ -20,6 +20,7 @@
 #include <vector>
 #include <type_traits>
 #include <typeinfo>
+#include <iostream>  // Debug output
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -27,26 +28,9 @@
 
 namespace apra {
 
-// ============================================================
-// Type trait to detect if PropsClass has applyProperties method
-// ============================================================
+// Type trait has_apply_properties is defined in ModuleRegistry.h
+
 namespace detail {
-    // Helper to detect applyProperties(PropsT&, map, vector&)
-    template<typename T, typename = void>
-    struct has_apply_properties : std::false_type {};
-
-    template<typename T>
-    struct has_apply_properties<T,
-        std::void_t<decltype(T::applyProperties(
-            std::declval<T&>(),
-            std::declval<const std::map<std::string, ScalarPropertyValue>&>(),
-            std::declval<std::vector<std::string>&>()
-        ))>
-    > : std::true_type {};
-
-    template<typename T>
-    inline constexpr bool has_apply_properties_v = has_apply_properties<T>::value;
-
     // Helper to join strings
     inline std::string joinStrings(const std::vector<std::string>& vec, const std::string& sep = ", ") {
         std::string result;

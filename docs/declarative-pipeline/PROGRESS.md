@@ -49,6 +49,7 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Core impl done, 2 pilot modules |
+| **D3** | Multi-Pin Connection Support | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | Phase 1 done |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **M3** | FaceDetectorXform Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | 74da106bf |
@@ -514,6 +515,56 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 
 ---
 
+### Session: 2025-12-30 17:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** D3 (Multi-Pin Connection Support)
+
+**Accomplished:**
+- Created D3 design document (`docs/declarative-pipeline/tasks/D3-multi-pin-support.md`):
+  - Problem statement: current pipeline only supports single input/output modules
+  - ApraPipes pin model analysis (output pins with addOutputPin(), input pins via setNext())
+  - 4 design options evaluated, selected Option D (Hybrid Pin Mapping)
+  - TOML syntax examples for multi-output and multi-input modules
+  - Implementation phases 1-3
+- Implemented Phase 1 (Core Multi-Pin Support):
+  - Added ModuleContext structure to ModuleFactory.h (stores pin mappings per instance)
+  - Updated setupOutputPins() to return map of TOML pin names → internal pin IDs
+  - Added parseConnectionEndpoint() to parse "instance.pin" format
+  - Updated connectModules() to resolve pin names using ModuleContext map
+  - Uses pin-specific setNext(module, pinIdArr) when pin ID resolved
+- Added 9 unit tests for multi-pin scenarios:
+  - ParseConnectionEndpoint_InstanceDotPin, _InstanceOnly, _MultipleDots
+  - MultiOutput_SpecificPinConnection_Success
+  - MultiOutput_FirstPinDefaultFallback_Success
+  - MultiOutput_UnknownPin_ReturnsError
+  - MultiInput_BothInputsConnected_Success
+  - SingleOutput_ExplicitPinName_Success
+  - ComplexPipeline_MultipleOutputsAndInputs_Success
+- All 38 ModuleFactory tests pass (29 original + 9 new)
+- All 11 ModuleRegistration tests pass
+- Basic FileReader→FileWriter pipeline still works
+
+**Files Modified:**
+- `base/include/declarative/ModuleFactory.h` - Added ModuleContext, updated method signatures
+- `base/src/declarative/ModuleFactory.cpp` - Pin name resolution logic
+- `base/test/declarative/module_factory_tests.cpp` - Multi-pin test scenarios
+
+**Files Created:**
+- `docs/declarative-pipeline/tasks/D3-multi-pin-support.md` - Design document
+
+**Remaining:**
+- Phase 2: Multi-input validation (check required inputs are connected)
+- Phase 3: Frame type compatibility validation
+
+**Notes for Next Session:**
+- ModuleContext stores: module, moduleType, instanceId, outputPinMap, inputPinMap, connectedInputs
+- Pin resolution: looks up pin name in outputPinMap, falls back to single-output if only one pin
+- parseConnectionEndpoint() is public static method for testing
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
@@ -550,10 +601,10 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | module_registry_tests | 21 | 0 | 0 | 2025-12-29 |
 | pipeline_description_tests | 37 | 0 | 0 | 2025-12-29 |
 | toml_parser_tests | - | - | - | - |
-| module_factory_tests | - | - | - | - |
+| module_factory_tests | 38 | 0 | 0 | 2025-12-30 |
 | property_macros_tests | 28 | 0 | 0 | 2025-12-30 |
 | property_validators_tests | 26 | 0 | 0 | 2025-12-30 |
-| module_registration_tests | 6 | 0 | 0 | 2025-12-30 |
+| module_registration_tests | 11 | 0 | 0 | 2025-12-30 |
 
 ---
 

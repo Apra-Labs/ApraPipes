@@ -186,6 +186,98 @@ void registerTestModule() {
     ModuleRegistry::instance().registerModule(std::move(info));
 }
 
+// Multi-output module (like H264EncoderV4L2)
+class MultiOutputModuleProps : public ModuleProps {
+public:
+    int quality = 80;
+};
+
+class MultiOutputModule : public Module {
+public:
+    explicit MultiOutputModule(MultiOutputModuleProps props)
+        : Module(TRANSFORM, "MultiOutputModule", props), props_(props) {
+        // Create two output pins (like encoder with video + motion vectors)
+        auto videoMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA));
+        mVideoPinId = addOutputPin(videoMetadata);
+
+        auto motionMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+        mMotionPinId = addOutputPin(motionMetadata);
+    }
+
+    struct Metadata {
+        static constexpr std::string_view name = "MultiOutputModule";
+        static constexpr ModuleCategory category = ModuleCategory::Transform;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "Test module with multiple outputs";
+
+        static constexpr std::array<std::string_view, 1> tags = {"test"};
+        static constexpr std::array<PinDef, 1> inputs = {
+            PinDef::create("input", "RawFrame", true, "Input frames")
+        };
+        static constexpr std::array<PinDef, 2> outputs = {
+            PinDef::create("video", "H264Frame", true, "Encoded video"),
+            PinDef::create("motion_vectors", "MotionData", true, "Motion vector data")
+        };
+        static constexpr std::array<PropDef, 1> properties = {
+            PropDef::Integer("quality", 80, 1, 100, "Encoding quality")
+        };
+    };
+
+protected:
+    bool validateInputPins() override { return true; }
+    bool validateOutputPins() override { return true; }
+    bool validateInputOutputPins() override { return true; }
+
+private:
+    MultiOutputModuleProps props_;
+    std::string mVideoPinId;
+    std::string mMotionPinId;
+};
+
+// Multi-input module (like OverlayNPPI)
+class MultiInputModuleProps : public ModuleProps {
+public:
+    float opacity = 1.0f;
+};
+
+class MultiInputModule : public Module {
+public:
+    explicit MultiInputModule(MultiInputModuleProps props)
+        : Module(TRANSFORM, "MultiInputModule", props), props_(props) {
+        // Create single output pin
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::RAW_IMAGE));
+        mOutputPinId = addOutputPin(metadata);
+    }
+
+    struct Metadata {
+        static constexpr std::string_view name = "MultiInputModule";
+        static constexpr ModuleCategory category = ModuleCategory::Transform;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "Test module with multiple inputs";
+
+        static constexpr std::array<std::string_view, 1> tags = {"test"};
+        static constexpr std::array<PinDef, 2> inputs = {
+            PinDef::create("background", "RawImage", true, "Background image"),
+            PinDef::create("foreground", "OverlayInfo", true, "Foreground overlay")
+        };
+        static constexpr std::array<PinDef, 1> outputs = {
+            PinDef::create("output", "RawImage", true, "Composited output")
+        };
+        static constexpr std::array<PropDef, 1> properties = {
+            PropDef::Floating("opacity", 1.0, 0.0, 1.0, "Overlay opacity")
+        };
+    };
+
+protected:
+    bool validateInputPins() override { return true; }
+    bool validateOutputPins() override { return true; }
+    bool validateInputOutputPins() override { return true; }
+
+private:
+    MultiInputModuleProps props_;
+    std::string mOutputPinId;
+};
+
 } // namespace test_factory
 
 BOOST_AUTO_TEST_SUITE(ModuleFactoryTests)
@@ -775,6 +867,310 @@ BOOST_FIXTURE_TEST_CASE(Build_FullPipeline_Integration, FactoryFixture)
     BOOST_REQUIRE(result.pipeline != nullptr);
     BOOST_CHECK_EQUAL(result.pipeline->getName(), "full_test_pipeline");
     BOOST_CHECK(!result.hasErrors());
+}
+
+// ============================================================
+// Multi-Pin Support Tests (Task D3)
+// ============================================================
+
+// ============================================================
+// Multi-Pin Test Fixture
+// ============================================================
+struct MultiPinFixture {
+    MultiPinFixture() {
+        ModuleRegistry::instance().clear();
+
+        // Register standard test modules
+        // Use :: prefix to reference global test_factory namespace
+        ::test_factory::registerTestModule<
+            ::test_factory::TestSourceModule,
+            ::test_factory::TestSourceModuleProps>();
+        ::test_factory::registerTestModule<
+            ::test_factory::TestTransformModule,
+            ::test_factory::TestTransformModuleProps>();
+        ::test_factory::registerTestModule<
+            ::test_factory::TestSinkModule,
+            ::test_factory::TestSinkModuleProps>();
+
+        // Register multi-pin test modules
+        ::test_factory::registerTestModule<
+            ::test_factory::MultiOutputModule,
+            ::test_factory::MultiOutputModuleProps>();
+        ::test_factory::registerTestModule<
+            ::test_factory::MultiInputModule,
+            ::test_factory::MultiInputModuleProps>();
+    }
+
+    ~MultiPinFixture() {
+        ModuleRegistry::instance().clear();
+    }
+};
+
+// ============================================================
+// parseConnectionEndpoint Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(ParseConnectionEndpoint_InstanceDotPin)
+{
+    auto [instance, pin] = ModuleFactory::parseConnectionEndpoint("encoder.video");
+    BOOST_CHECK_EQUAL(instance, "encoder");
+    BOOST_CHECK_EQUAL(pin, "video");
+}
+
+BOOST_AUTO_TEST_CASE(ParseConnectionEndpoint_InstanceOnly)
+{
+    auto [instance, pin] = ModuleFactory::parseConnectionEndpoint("encoder");
+    BOOST_CHECK_EQUAL(instance, "encoder");
+    BOOST_CHECK_EQUAL(pin, "");
+}
+
+BOOST_AUTO_TEST_CASE(ParseConnectionEndpoint_MultipleDots)
+{
+    // Only first dot is the separator
+    auto [instance, pin] = ModuleFactory::parseConnectionEndpoint("encoder.motion.vectors");
+    BOOST_CHECK_EQUAL(instance, "encoder");
+    BOOST_CHECK_EQUAL(pin, "motion.vectors");
+}
+
+// ============================================================
+// Multi-Output Module Tests
+// ============================================================
+
+BOOST_FIXTURE_TEST_CASE(MultiOutput_SpecificPinConnection_Success, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "multi_output_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance encoder;
+    encoder.instance_id = "encoder";
+    encoder.module_type = "MultiOutputModule";
+    desc.modules.push_back(encoder);
+
+    ModuleInstance videoSink;
+    videoSink.instance_id = "video_sink";
+    videoSink.module_type = "TestSinkModule";
+    desc.modules.push_back(videoSink);
+
+    ModuleInstance motionSink;
+    motionSink.instance_id = "motion_sink";
+    motionSink.module_type = "TestSinkModule";
+    desc.modules.push_back(motionSink);
+
+    // Connect source -> encoder
+    desc.addConnection("source.output", "encoder.input");
+    // Connect encoder's video output to video sink
+    desc.addConnection("encoder.video", "video_sink.input");
+    // Connect encoder's motion_vectors output to motion sink
+    desc.addConnection("encoder.motion_vectors", "motion_sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(MultiOutput_FirstPinDefaultFallback_Success, MultiPinFixture)
+{
+    // When a module has multiple outputs but only one is connected,
+    // and no pin name is specified, it should use the first output
+    PipelineDescription desc;
+    desc.settings.name = "fallback_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance encoder;
+    encoder.instance_id = "encoder";
+    encoder.module_type = "MultiOutputModule";
+    desc.modules.push_back(encoder);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "TestSinkModule";
+    desc.modules.push_back(sink);
+
+    // Connect with explicit pin names
+    desc.addConnection("source.output", "encoder.input");
+    // This uses explicit "video" pin
+    desc.addConnection("encoder.video", "sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+}
+
+BOOST_FIXTURE_TEST_CASE(MultiOutput_UnknownPin_ReturnsError, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "unknown_pin_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance encoder;
+    encoder.instance_id = "encoder";
+    encoder.module_type = "MultiOutputModule";
+    desc.modules.push_back(encoder);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "TestSinkModule";
+    desc.modules.push_back(sink);
+
+    desc.addConnection("source.output", "encoder.input");
+    // Use unknown pin name
+    desc.addConnection("encoder.nonexistent_pin", "sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(!result.success());
+    BOOST_CHECK(result.hasErrors());
+
+    auto errors = result.getErrors();
+    BOOST_REQUIRE_GE(errors.size(), 1);
+    BOOST_CHECK_EQUAL(errors[0].code, BuildIssue::UNKNOWN_SOURCE_PIN);
+    BOOST_CHECK(errors[0].message.find("nonexistent_pin") != std::string::npos);
+}
+
+// ============================================================
+// Multi-Input Module Tests
+// ============================================================
+
+BOOST_FIXTURE_TEST_CASE(MultiInput_BothInputsConnected_Success, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "multi_input_test";
+
+    ModuleInstance bgSource;
+    bgSource.instance_id = "bg_source";
+    bgSource.module_type = "TestSourceModule";
+    desc.modules.push_back(bgSource);
+
+    ModuleInstance fgSource;
+    fgSource.instance_id = "fg_source";
+    fgSource.module_type = "TestSourceModule";
+    desc.modules.push_back(fgSource);
+
+    ModuleInstance overlay;
+    overlay.instance_id = "overlay";
+    overlay.module_type = "MultiInputModule";
+    desc.modules.push_back(overlay);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "TestSinkModule";
+    desc.modules.push_back(sink);
+
+    // Connect both inputs to overlay
+    desc.addConnection("bg_source.output", "overlay.background");
+    desc.addConnection("fg_source.output", "overlay.foreground");
+    desc.addConnection("overlay.output", "sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
+}
+
+// ============================================================
+// Single Output Module - Backward Compatibility Tests
+// ============================================================
+
+BOOST_FIXTURE_TEST_CASE(SingleOutput_ExplicitPinName_Success, MultiPinFixture)
+{
+    // Single-output modules should work with explicit "output" pin name
+    PipelineDescription desc;
+    desc.settings.name = "explicit_single_output";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "TestSinkModule";
+    desc.modules.push_back(sink);
+
+    // Explicit output pin name
+    desc.addConnection("source.output", "sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+}
+
+// ============================================================
+// Complex Multi-Pin Pipeline Tests
+// ============================================================
+
+BOOST_FIXTURE_TEST_CASE(ComplexPipeline_MultipleOutputsAndInputs_Success, MultiPinFixture)
+{
+    // Pipeline: source -> encoder (multi-out) -> overlay (multi-in) -> sink
+    //           source2 -> overlay.foreground
+    PipelineDescription desc;
+    desc.settings.name = "complex_multi_pin";
+
+    ModuleInstance source1;
+    source1.instance_id = "main_source";
+    source1.module_type = "TestSourceModule";
+    desc.modules.push_back(source1);
+
+    ModuleInstance source2;
+    source2.instance_id = "overlay_source";
+    source2.module_type = "TestSourceModule";
+    desc.modules.push_back(source2);
+
+    ModuleInstance encoder;
+    encoder.instance_id = "encoder";
+    encoder.module_type = "MultiOutputModule";
+    desc.modules.push_back(encoder);
+
+    ModuleInstance overlay;
+    overlay.instance_id = "overlay";
+    overlay.module_type = "MultiInputModule";
+    desc.modules.push_back(overlay);
+
+    ModuleInstance videoSink;
+    videoSink.instance_id = "video_sink";
+    videoSink.module_type = "TestSinkModule";
+    desc.modules.push_back(videoSink);
+
+    ModuleInstance motionSink;
+    motionSink.instance_id = "motion_sink";
+    motionSink.module_type = "TestSinkModule";
+    desc.modules.push_back(motionSink);
+
+    // Connect main source -> encoder
+    desc.addConnection("main_source.output", "encoder.input");
+    // Connect encoder video -> overlay background
+    desc.addConnection("encoder.video", "overlay.background");
+    // Connect overlay source -> overlay foreground
+    desc.addConnection("overlay_source.output", "overlay.foreground");
+    // Connect overlay output -> video sink
+    desc.addConnection("overlay.output", "video_sink.input");
+    // Connect encoder motion vectors -> motion sink
+    desc.addConnection("encoder.motion_vectors", "motion_sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
