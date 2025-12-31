@@ -160,8 +160,15 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
             // Set up output pins based on registry info (required before setNext)
             // This also populates the outputPinMap with TOML name → internal ID
             const ModuleInfo* info = registry.getModule(instance.module_type);
-            if (info && !info->outputs.empty()) {
-                ctx.outputPinMap = setupOutputPins(module.get(), *info, instance.instance_id, result.issues);
+            if (info) {
+                if (!info->outputs.empty()) {
+                    ctx.outputPinMap = setupOutputPins(module.get(), *info, instance.instance_id, result.issues);
+                }
+                // Populate inputPinMap from registry info (for validation)
+                for (const auto& inputPin : info->inputs) {
+                    // Store pin name with required flag (using "required:" prefix for tracking)
+                    ctx.inputPinMap[inputPin.name] = inputPin.required ? "required" : "optional";
+                }
             }
 
             contextMap[instance.instance_id] = std::move(ctx);
@@ -188,7 +195,10 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         connectModules(desc.connections, contextMap, result.issues);
     }
 
-    // If errors during connection, pipeline is invalid
+    // Phase 3: Validate required inputs are connected
+    validateInputConnections(contextMap, result.issues);
+
+    // If errors during connection or validation, pipeline is invalid
     if (result.hasErrors()) {
         result.pipeline.reset();
         return result;
@@ -528,6 +538,47 @@ std::optional<ScalarPropertyValue> ModuleFactory::convertPropertyValue(
     // This is handled inline in createModule for now
     // Keeping this method for potential future use with more complex conversions
     return std::nullopt;
+}
+
+// ============================================================
+// Validate that all required inputs are connected
+// ============================================================
+
+void ModuleFactory::validateInputConnections(
+    const std::map<std::string, ModuleContext>& contextMap,
+    std::vector<BuildIssue>& issues
+) {
+    for (const auto& [instanceId, ctx] : contextMap) {
+        // Check each declared input pin
+        for (const auto& [inputName, requiredFlag] : ctx.inputPinMap) {
+            bool isRequired = (requiredFlag == "required");
+
+            if (isRequired) {
+                // Check if this input is in the connectedInputs list
+                bool isConnected = std::find(
+                    ctx.connectedInputs.begin(),
+                    ctx.connectedInputs.end(),
+                    inputName
+                ) != ctx.connectedInputs.end();
+
+                // Also check for empty pin name (default input connection)
+                if (!isConnected && ctx.inputPinMap.size() == 1) {
+                    // Single-input module - check if any connection targets this module
+                    isConnected = !ctx.connectedInputs.empty();
+                }
+
+                if (!isConnected) {
+                    issues.push_back(BuildIssue::error(
+                        BuildIssue::MISSING_REQUIRED_INPUT,
+                        "modules." + instanceId,
+                        "Required input '" + inputName + "' is not connected on module '" +
+                        ctx.moduleType + "'"
+                    ));
+                }
+            }
+            // Optional inputs don't generate errors if not connected
+        }
+    }
 }
 
 } // namespace apra

@@ -70,6 +70,7 @@ struct BuildIssue {
     static constexpr const char* EMPTY_PIPELINE = "E030";
     static constexpr const char* INIT_FAILED = "E031";
     static constexpr const char* MISSING_REQUIRED_PROP = "E012";
+    static constexpr const char* MISSING_REQUIRED_INPUT = "E026";
     static constexpr const char* PROP_TYPE_CONVERSION = "W002";
     static constexpr const char* MODULE_CREATED = "I001";
     static constexpr const char* CONNECTION_ESTABLISHED = "I002";
@@ -189,6 +190,13 @@ private:
     bool connectModules(
         const std::vector<Connection>& connections,
         std::map<std::string, ModuleContext>& contextMap,
+        std::vector<BuildIssue>& issues
+    );
+
+    // Validate that all required inputs are connected
+    // Called after connectModules() to check input satisfaction
+    void validateInputConnections(
+        const std::map<std::string, ModuleContext>& contextMap,
         std::vector<BuildIssue>& issues
     );
 

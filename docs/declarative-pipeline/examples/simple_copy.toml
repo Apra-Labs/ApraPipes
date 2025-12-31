@@ -1,0 +1,32 @@
+# Simple File Copy Pipeline
+# Reads frames from input and writes them to output
+# This is the most basic pipeline demonstrating FileReader -> FileWriter
+
+[pipeline]
+name = "SimpleCopy"
+version = "1.0"
+description = "Copy frames from input file to output file"
+
+# ============================================================
+# Modules
+# ============================================================
+
+[modules.reader]
+type = "FileReaderModule"
+    [modules.reader.props]
+    strFullFileNameWithPattern = "/path/to/input.raw"
+    readLoop = false
+
+[modules.writer]
+type = "FileWriterModule"
+    [modules.writer.props]
+    strFullFileNameWithPattern = "/path/to/output/frame.raw"
+    append = false
+
+# ============================================================
+# Connections
+# ============================================================
+
+[[connections]]
+from = "reader.output"
+to = "writer.input"

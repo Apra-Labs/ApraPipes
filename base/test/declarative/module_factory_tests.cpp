@@ -91,8 +91,9 @@ public:
         static constexpr std::string_view description = "Test transform module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
+        // Note: input is optional (false) to allow standalone property testing
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", true, "Input frames")
+            PinDef::create("input", "RawFrame", false, "Input frames")
         };
         static constexpr std::array<PinDef, 1> outputs = {
             PinDef::create("output", "RawFrame", true, "Output frames")
@@ -135,8 +136,9 @@ public:
         static constexpr std::string_view description = "Test sink module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
+        // Note: input is optional (false) to allow standalone property testing
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", true, "Input frames")
+            PinDef::create("input", "RawFrame", false, "Input frames")
         };
         static constexpr std::array<PinDef, 0> outputs = {};
         static constexpr std::array<PropDef, 1> properties = {
@@ -275,6 +277,92 @@ protected:
 
 private:
     MultiInputModuleProps props_;
+    std::string mOutputPinId;
+};
+
+// Module with required input (for testing input validation)
+class RequiredInputModuleProps : public ModuleProps {
+public:
+    int threshold = 50;
+};
+
+class RequiredInputModule : public Module {
+public:
+    explicit RequiredInputModule(RequiredInputModuleProps props)
+        : Module(TRANSFORM, "RequiredInputModule", props), props_(props) {
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+        mOutputPinId = addOutputPin(metadata);
+    }
+
+    struct Metadata {
+        static constexpr std::string_view name = "RequiredInputModule";
+        static constexpr ModuleCategory category = ModuleCategory::Transform;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "Test module with required input";
+
+        static constexpr std::array<std::string_view, 1> tags = {"test"};
+        // Required input (true) - must be connected
+        static constexpr std::array<PinDef, 1> inputs = {
+            PinDef::create("input", "RawFrame", true, "Required input")
+        };
+        static constexpr std::array<PinDef, 1> outputs = {
+            PinDef::create("output", "RawFrame", true, "Output frames")
+        };
+        static constexpr std::array<PropDef, 1> properties = {
+            PropDef::Integer("threshold", 50, 0, 100, "Threshold value")
+        };
+    };
+
+protected:
+    bool validateInputPins() override { return true; }
+    bool validateOutputPins() override { return true; }
+    bool validateInputOutputPins() override { return true; }
+
+private:
+    RequiredInputModuleProps props_;
+    std::string mOutputPinId;
+};
+
+// Module with optional input (for testing optional input validation)
+class OptionalInputModuleProps : public ModuleProps {
+public:
+    bool enabled = true;
+};
+
+class OptionalInputModule : public Module {
+public:
+    explicit OptionalInputModule(OptionalInputModuleProps props)
+        : Module(TRANSFORM, "OptionalInputModule", props), props_(props) {
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
+        mOutputPinId = addOutputPin(metadata);
+    }
+
+    struct Metadata {
+        static constexpr std::string_view name = "OptionalInputModule";
+        static constexpr ModuleCategory category = ModuleCategory::Transform;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "Test module with optional input";
+
+        static constexpr std::array<std::string_view, 1> tags = {"test"};
+        // Optional input (false) - doesn't need to be connected
+        static constexpr std::array<PinDef, 1> inputs = {
+            PinDef::create("input", "RawFrame", false, "Optional input")
+        };
+        static constexpr std::array<PinDef, 1> outputs = {
+            PinDef::create("output", "RawFrame", true, "Output frames")
+        };
+        static constexpr std::array<PropDef, 1> properties = {
+            PropDef::Boolean("enabled", true, "Enable processing")
+        };
+    };
+
+protected:
+    bool validateInputPins() override { return true; }
+    bool validateOutputPins() override { return true; }
+    bool validateInputOutputPins() override { return true; }
+
+private:
+    OptionalInputModuleProps props_;
     std::string mOutputPinId;
 };
 
@@ -899,6 +987,14 @@ struct MultiPinFixture {
         ::test_factory::registerTestModule<
             ::test_factory::MultiInputModule,
             ::test_factory::MultiInputModuleProps>();
+
+        // Register input validation test modules
+        ::test_factory::registerTestModule<
+            ::test_factory::RequiredInputModule,
+            ::test_factory::RequiredInputModuleProps>();
+        ::test_factory::registerTestModule<
+            ::test_factory::OptionalInputModule,
+            ::test_factory::OptionalInputModuleProps>();
     }
 
     ~MultiPinFixture() {
@@ -1165,6 +1261,116 @@ BOOST_FIXTURE_TEST_CASE(ComplexPipeline_MultipleOutputsAndInputs_Success, MultiP
     desc.addConnection("overlay.output", "video_sink.input");
     // Connect encoder motion vectors -> motion sink
     desc.addConnection("encoder.motion_vectors", "motion_sink.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
+}
+
+// ============================================================
+// Input Validation Tests (D3 Phase 2)
+// ============================================================
+
+BOOST_FIXTURE_TEST_CASE(RequiredInput_NotConnected_ReturnsError, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "required_input_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    // RequiredInputModule has a required input that we don't connect
+    ModuleInstance requiredMod;
+    requiredMod.instance_id = "required_mod";
+    requiredMod.module_type = "RequiredInputModule";
+    desc.modules.push_back(requiredMod);
+
+    // Only connect source, leave required_mod.input unconnected
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(!result.success());
+    BOOST_CHECK(result.hasErrors());
+
+    auto errors = result.getErrors();
+    BOOST_REQUIRE_GE(errors.size(), 1);
+    BOOST_CHECK_EQUAL(errors[0].code, BuildIssue::MISSING_REQUIRED_INPUT);
+    BOOST_CHECK(errors[0].message.find("input") != std::string::npos);
+    BOOST_CHECK(errors[0].message.find("RequiredInputModule") != std::string::npos);
+}
+
+BOOST_FIXTURE_TEST_CASE(RequiredInput_Connected_Success, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "required_connected_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance requiredMod;
+    requiredMod.instance_id = "required_mod";
+    requiredMod.module_type = "RequiredInputModule";
+    desc.modules.push_back(requiredMod);
+
+    // Connect source to required_mod - this should satisfy the requirement
+    desc.addConnection("source.output", "required_mod.input");
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(OptionalInput_NotConnected_Success, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "optional_input_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    // OptionalInputModule has an optional input - no connection required
+    ModuleInstance optionalMod;
+    optionalMod.instance_id = "optional_mod";
+    optionalMod.module_type = "OptionalInputModule";
+    desc.modules.push_back(optionalMod);
+
+    // Don't connect optional_mod.input - this should be OK
+
+    ModuleFactory factory;
+    auto result = factory.build(desc);
+
+    BOOST_CHECK(result.success());
+    BOOST_REQUIRE(result.pipeline != nullptr);
+}
+
+BOOST_FIXTURE_TEST_CASE(OptionalInput_Connected_Success, MultiPinFixture)
+{
+    PipelineDescription desc;
+    desc.settings.name = "optional_connected_test";
+
+    ModuleInstance source;
+    source.instance_id = "source";
+    source.module_type = "TestSourceModule";
+    desc.modules.push_back(source);
+
+    ModuleInstance optionalMod;
+    optionalMod.instance_id = "optional_mod";
+    optionalMod.module_type = "OptionalInputModule";
+    desc.modules.push_back(optionalMod);
+
+    // Connect even though it's optional - should still work
+    desc.addConnection("source.output", "optional_mod.input");
 
     ModuleFactory factory;
     auto result = factory.build(desc);
