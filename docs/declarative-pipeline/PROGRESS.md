@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-31 04:30` by `claude-code`
+Last Updated: `2025-12-31 04:55` by `claude-code`
 
 ---
 
@@ -55,7 +55,7 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | **M3** | FaceDetectorXform Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | 74da106bf |
 | **M4** | QRReader Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | 74da106bf |
 | **M5** | FileWriterModule Metadata | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | 74da106bf |
-| **F1-F4** | Frame Type Metadata | 📋 Ready | - | - | - | A3 done |
+| **F1-F4** | Frame Type Metadata | ✅ Complete | claude-code | 2025-12-31 | 2025-12-31 | b51ff8eed |
 
 ### Sprint 2-3 - Validator Enhancements
 
@@ -667,6 +667,49 @@ Registered: FaceDetectorXform, FileReaderModule, FileWriterModule, QRReader
 - Scanner finds 62 Module subclasses in the codebase
 - 4 are registered, 58 need registration as coverage expands
 - Coverage report shows progress as more modules are registered
+
+---
+
+### Session: 2025-12-31 04:50
+
+**Agent:** claude-code
+**Duration:** ~20 min
+**Tasks:** F1-F4 (Frame Type Metadata)
+
+**Accomplished:**
+- Implemented F1-F4 Frame Type Metadata:
+  - Created `FrameTypeRegistrations.cpp` with 27 built-in frame types
+  - Created `FrameTypeRegistrations.h` with `ensureBuiltinFrameTypesRegistered()`
+  - Frame type hierarchy:
+    - Frame (root)
+      - RawImage > RawImagePlanar
+      - EncodedImage > H264Data, HEVCData, BMPImage
+      - Audio
+      - Array
+      - ControlFrame > ChangeDetection, PropsChange, PausePlay, Command, GPIO
+      - AnalyticsFrame > FaceDetectsInfo, FaceLandmarksInfo, DefectsInfo, etc.
+      - MotionVectorData, MP4VideoMetadata, OverlayInfoImage, Text
+  - Added 3 new tests for built-in frame type verification
+- All 34 FrameTypeRegistry tests pass
+- All 115 declarative tests pass
+
+**Files Created:**
+- `base/src/declarative/FrameTypeRegistrations.cpp`
+- `base/include/declarative/FrameTypeRegistrations.h`
+
+**Files Modified:**
+- `base/CMakeLists.txt` - Added FrameTypeRegistrations.cpp
+- `base/test/declarative/frame_type_registry_tests.cpp` - Added F1-F4 tests
+
+**Remaining:**
+- Wait for CI verification
+- D2 Phase 5 (applyProperties for more modules)
+- Integration testing
+
+**Notes for Next Session:**
+- Frame types enable C4 connection validation (isCompatible checks)
+- H264Data is compatible with EncodedImage and Frame
+- Audio is NOT compatible with RawImage (validation catches this)
 
 ---
 
