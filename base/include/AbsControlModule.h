@@ -5,6 +5,9 @@
 #include <boost/smart_ptr/weak_ptr.hpp>
 #include <map>
 #include <functional>
+#include <string>
+#include <vector>
+#include <memory>
 
 class PipeLine;
 class AbsControlModuleProps : public ModuleProps {

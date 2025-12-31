@@ -10,6 +10,8 @@
 #include <boost/multi_index/member.hpp>
 
 #include <string>
+#include <vector>
+#include <map>
 #define batch_size 1440
 
 namespace fs = std::filesystem;

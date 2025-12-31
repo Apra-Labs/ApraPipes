@@ -4,6 +4,9 @@
 #include "CudaCommon.h"
 #include "FrameMetadata.h"
 
+#include <vector>
+#include <string>
+#include <memory>
 #include <boost/serialization/vector.hpp>
 
 class GaussianBlurProps : public ModuleProps

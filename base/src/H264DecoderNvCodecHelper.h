@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <functional>
 #include "nvcuvid.h"
 #include <boost/shared_ptr.hpp>
 #include "CommonDefs.h"

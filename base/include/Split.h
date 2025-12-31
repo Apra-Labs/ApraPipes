@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Module.h"
+#include <vector>
+#include <string>
 
 class SplitProps : public ModuleProps
 {

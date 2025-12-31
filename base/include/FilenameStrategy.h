@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <filesystem>
+#include <vector>
+#include <string>
 
 class FilenameStrategy
 {
