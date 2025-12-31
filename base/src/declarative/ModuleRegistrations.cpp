@@ -32,6 +32,8 @@
 #include "ColorConversionXForm.h"
 #include "VirtualPTZ.h"
 #include "TextOverlayXForm.h"
+#include "BrightnessContrastControlXform.h"
+#include "CalcHistogramCV.h"
 
 // Conditionally include CUDA modules
 #ifdef ENABLE_CUDA
@@ -280,6 +282,30 @@ void ensureBuiltinModulesRegistered() {
                 .dynamicProp("backgroundColor", "string", "Background color (transparent for none)", false, "transparent")
                 .dynamicProp("alpha", "float", "Opacity (0-1)", false, "1.0")
                 .boolProp("isDateTime", "Display current date/time instead of text", false, false);
+        }
+
+        // BrightnessContrastControl - adjusts image brightness and contrast
+        if (!registry.hasModule("BrightnessContrastControl")) {
+            registerModule<BrightnessContrastControl, BrightnessContrastControlProps>()
+                .category(ModuleCategory::Transform)
+                .description("Adjusts image brightness and contrast in real-time")
+                .tags("transform", "brightness", "contrast", "adjustment")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .dynamicProp("contrast", "float", "Contrast multiplier (1.0 = no change)", false, "1.0")
+                .dynamicProp("brightness", "float", "Brightness offset (0.0 = no change)", false, "0.0");
+        }
+
+        // CalcHistogramCV - calculates image histogram
+        if (!registry.hasModule("CalcHistogramCV")) {
+            registerModule<CalcHistogramCV, CalcHistogramCVProps>()
+                .category(ModuleCategory::Analytics)
+                .description("Calculates histogram of image intensity values using OpenCV")
+                .tags("analytics", "histogram", "opencv", "statistics")
+                .input("input", "RawImage")
+                .output("output", "Array")
+                .dynamicProp("bins", "int", "Number of histogram bins", false, "8")
+                .dynamicProp("maskImgPath", "string", "Path to mask image (optional)", false, "");
         }
 
         // ============================================================

@@ -2,6 +2,7 @@
 
 #include "Module.h"
 #include <boost/serialization/vector.hpp>
+#include "declarative/PropertyMacros.h"
 
 /*
 ROI - optional
@@ -33,7 +34,37 @@ public:
 	// All the properties can be updated during run time using setProps
 	int bins;
 	vector<int> roi;
-	string maskImgPath;	
+	string maskImgPath;
+
+	// ============================================================
+	// Property Binding for Declarative Pipeline
+	// ============================================================
+	template<typename PropsT>
+	static void applyProperties(
+		PropsT& props,
+		const std::map<std::string, apra::ScalarPropertyValue>& values,
+		std::vector<std::string>& missingRequired
+	) {
+		apra::applyProp(props.bins, "bins", values, false, missingRequired);
+		apra::applyProp(props.maskImgPath, "maskImgPath", values, false, missingRequired);
+		// Note: roi (vector<int>) is not supported via scalar properties - use programmatic API
+	}
+
+	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+		if (propName == "bins") return static_cast<int64_t>(bins);
+		if (propName == "maskImgPath") return maskImgPath;
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+		if (propName == "bins") { bins = static_cast<int>(std::get<int64_t>(value)); return true; }
+		if (propName == "maskImgPath") { maskImgPath = std::get<std::string>(value); return true; }
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	static std::vector<std::string> dynamicPropertyNames() {
+		return {"bins", "maskImgPath"};
+	}
 
 private:
 	friend class boost::serialization::access;
@@ -42,7 +73,7 @@ private:
 	void serialize(Archive &ar, const unsigned int version)
 	{
 		ar & boost::serialization::base_object<ModuleProps>(*this);
-	
+
 		ar & bins;
 		ar & roi;
 		ar & maskImgPath;
