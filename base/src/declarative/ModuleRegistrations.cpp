@@ -29,6 +29,9 @@
 #include "Mp4WriterSink.h"
 #include "ImageResizeCV.h"
 #include "RotateCV.h"
+#include "ColorConversionXForm.h"
+#include "VirtualPTZ.h"
+#include "TextOverlayXForm.h"
 
 // Conditionally include CUDA modules
 #ifdef ENABLE_CUDA
@@ -231,6 +234,52 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImage")
                 .output("output", "RawImage")
                 .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0);
+        }
+
+        // ColorConversion - converts between color spaces
+        if (!registry.hasModule("ColorConversion")) {
+            registerModule<ColorConversion, ColorConversionProps>()
+                .category(ModuleCategory::Transform)
+                .description("Converts images between different color spaces (RGB, BGR, YUV, Mono, Bayer)")
+                .tags("transform", "color", "conversion", "opencv")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .enumProp("conversionType", "Color space conversion to perform", true, "RGB_TO_MONO",
+                    "RGB_TO_MONO", "BGR_TO_MONO", "BGR_TO_RGB", "RGB_TO_BGR",
+                    "RGB_TO_YUV420PLANAR", "YUV420PLANAR_TO_RGB",
+                    "BAYERBG8_TO_MONO", "BAYERBG8_TO_RGB", "BAYERGB8_TO_RGB",
+                    "BAYERRG8_TO_RGB", "BAYERGR8_TO_RGB");
+        }
+
+        // VirtualPTZ - virtual pan/tilt/zoom
+        if (!registry.hasModule("VirtualPTZ")) {
+            registerModule<VirtualPTZ, VirtualPTZProps>()
+                .category(ModuleCategory::Transform)
+                .description("Virtual pan/tilt/zoom by extracting a region of interest from the input image")
+                .tags("transform", "ptz", "crop", "roi")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .dynamicProp("roiX", "float", "X coordinate of ROI (0-1 normalized)", false, "0")
+                .dynamicProp("roiY", "float", "Y coordinate of ROI (0-1 normalized)", false, "0")
+                .dynamicProp("roiWidth", "float", "Width of ROI (0-1 normalized)", false, "1")
+                .dynamicProp("roiHeight", "float", "Height of ROI (0-1 normalized)", false, "1");
+        }
+
+        // TextOverlayXForm - text overlay on images
+        if (!registry.hasModule("TextOverlayXForm")) {
+            registerModule<TextOverlayXForm, TextOverlayXFormProps>()
+                .category(ModuleCategory::Transform)
+                .description("Overlays text on images with customizable font, color, and position")
+                .tags("transform", "overlay", "text", "annotation")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .dynamicProp("text", "string", "Text to overlay on the image", false, "")
+                .dynamicProp("position", "string", "Position of text (top-left, top-right, bottom-left, bottom-right)", false, "top-left")
+                .dynamicProp("fontSize", "int", "Font size in pixels", false, "24")
+                .dynamicProp("fontColor", "string", "Font color (e.g., white, black, red)", false, "white")
+                .dynamicProp("backgroundColor", "string", "Background color (transparent for none)", false, "transparent")
+                .dynamicProp("alpha", "float", "Opacity (0-1)", false, "1.0")
+                .boolProp("isDateTime", "Display current date/time instead of text", false, false);
         }
 
         // ============================================================
