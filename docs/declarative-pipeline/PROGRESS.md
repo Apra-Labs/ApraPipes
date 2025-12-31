@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-30 18:00` by `claude-code`
+Last Updated: `2025-12-31 04:30` by `claude-code`
 
 ---
 
@@ -617,6 +617,56 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 - Cycle detection uses standard DFS with white/gray/black color marking
 - Frame type compatibility check uses FrameTypeRegistry::instance().isCompatible()
 - REGISTER_MODULE now stores callback that can be called after registry.clear()
+
+---
+
+### Session: 2025-12-31 04:30
+
+**Agent:** claude-code
+**Duration:** ~30 min
+**Tasks:** D2 Phase 3 (CMake Scanner), CI Fix
+
+**Accomplished:**
+- Implemented D2 Phase 3 (CMake Scanner for Missing Registrations):
+  - Created `cmake/ScanModuleClasses.cmake` to scan headers for Module subclasses
+  - Regex matches `class ClassName : public Module` patterns
+  - Generates `generated/module_subclasses.inc` at configure time
+  - Added `scan-modules` target to rebuild list on demand
+  - Updated `module_registration_tests.cpp` to use auto-generated list
+  - Coverage report shows registered vs unregistered modules
+- Fixed scanner regex to include QRReader, H264Decoder (classes starting with uppercase sequences)
+- Fixed MSVC CI failure (ba5122f8d):
+  - Error C2666: PinDef::create overload ambiguity
+  - Removed description parameter from ambiguous calls
+
+**Test Results:**
+```
+MODULE REGISTRATION COVERAGE REPORT
+═══════════════════════════════════
+Total Modules Found:  62
+Registered:            4
+Unregistered:         58
+Coverage:           6.5%
+
+Registered: FaceDetectorXform, FileReaderModule, FileWriterModule, QRReader
+```
+
+**Files Created:**
+- `cmake/ScanModuleClasses.cmake` - Header scanner script
+
+**Files Modified:**
+- `base/CMakeLists.txt` - Added scan-modules target and include path
+- `base/test/declarative/module_registration_tests.cpp` - Use generated list
+
+**Remaining:**
+- Wait for CI verification on all 4 platforms
+- F1-F4 Frame Type Metadata implementation
+- D2 Phase 5 (applyProperties for more modules)
+
+**Notes for Next Session:**
+- Scanner finds 62 Module subclasses in the codebase
+- 4 are registered, 58 need registration as coverage expands
+- Coverage report shows progress as more modules are registered
 
 ---
 
