@@ -1,6 +1,6 @@
 #pragma once
-#include <boost/asio.hpp>
 #include <memory>
+#include <cstddef>
 #include "CommonDefs.h"
 
 using namespace std;
@@ -8,7 +8,20 @@ using namespace std;
 class FrameFactory;
 class ApraData;
 
-class Frame :public boost::asio::mutable_buffer {
+// Simple mutable buffer replacement
+class mutable_buffer {
+public:
+	mutable_buffer(void* data, size_t size) : m_data(data), m_size(size) {}
+	void* data() const { return m_data; }
+	size_t size() const { return m_size; }
+protected:
+	mutable_buffer() : m_data(nullptr), m_size(0) {}
+private:
+	void* m_data;
+	size_t m_size;
+};
+
+class Frame : public mutable_buffer {
 public:
 	Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother);
 	virtual ~Frame();
@@ -30,8 +43,8 @@ public:
 	// Make it private
 	// If someone wants to use it, make that class a friend class
 	void setMetadata(framemetadata_sp& _metadata) { mMetadata = _metadata; }
-	virtual void* data() const BOOST_ASIO_NOEXCEPT;
-	virtual std::size_t size() const BOOST_ASIO_NOEXCEPT;
+	virtual void* data() const;
+	virtual std::size_t size() const;
 protected:
 	Frame();
 	framemetadata_sp mMetadata;
@@ -82,8 +95,8 @@ public:
 	ExternalFrame(ApraData* data);
 	virtual ~ExternalFrame();
 
-	void* data() const BOOST_ASIO_NOEXCEPT;
-	std::size_t size() const BOOST_ASIO_NOEXCEPT;
+	void* data() const;
+	std::size_t size() const;
 
 private:
 	ApraData* mData;

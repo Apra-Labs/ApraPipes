@@ -1361,8 +1361,7 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 
 	if (mState.shouldPrependSpsPps || (!mState.direction && !mState.foundFirstReverseIFrame))
 	{
-		boost::asio::mutable_buffer tmpBuffer(imgFrame->data(), imgFrame->size());
-		auto type = H264Utils::getNALUType((char*)tmpBuffer.data());
+		auto type = H264Utils::getNALUType(static_cast<char*>(imgFrame->data()));
 		if (type == H264Utils::H264_NAL_TYPE_IDR_SLICE)
 		{
 			auto tempFrame = makeFrame(imgSize + spsSize + ppsSize + 8, h264ImagePinId);

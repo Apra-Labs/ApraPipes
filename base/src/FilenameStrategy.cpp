@@ -1,8 +1,9 @@
 #include "FilenameStrategy.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-#include "boost/format.hpp"
 #include <filesystem>
+#include <sstream>
+#include <iomanip>
 
 #define CH_WILD_CARD '?'
 #ifdef _WIN32
@@ -218,9 +219,9 @@ std::string FilenameStrategy::GetFileNameForCurrentIndex(bool checkForExistence)
 
 	if (mWildCardLen > 0)
 	{
-		// https://www.boost.org/doc/libs/1_71_0/libs/format/doc/format.html								
-		auto fmt = boost::format("%0"+ std::to_string(mWildCardLen)+"d") % mCurrentIndex;
-		strIndexedName = fmt.str();		
+		std::ostringstream oss;
+		oss << std::setw(mWildCardLen) << std::setfill('0') << mCurrentIndex;
+		strIndexedName = oss.str();
 	}
 
 	strFileNameForIndex = mDirName + SZ_FILE_SEPERATOR_STRING + mFileBaseName

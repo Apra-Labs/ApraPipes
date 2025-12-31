@@ -1,16 +1,14 @@
 
 #include "stdafx.h"
-#include <boost/asio.hpp>
 #include <memory>
 #include <functional>
+#include <chrono>
 
 #include "AIPExceptions.h"
 #include "Frame.h"
 #include "FrameContainerQueue.h"
 #include "FrameMetadata.h"
 #include "Module.h"
-#include <boost/lexical_cast.hpp>
-#include <chrono>
 
 #include "BufferMaker.h"
 #include "PaceMaker.h"

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <memory>
-#include <boost/container/deque.hpp>
+#include <deque>
 
 #include <map>
 #include <string>
 
-#define boost_deque boost::container::deque
+#define boost_deque std::deque
 
 class FrameMetadata;
 class Frame;

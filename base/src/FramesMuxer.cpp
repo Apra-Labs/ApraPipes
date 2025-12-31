@@ -1,5 +1,3 @@
-#include <boost/foreach.hpp>
-
 #include "FramesMuxer.h"
 #include "Frame.h"
 #include "FrameMetadata.h"

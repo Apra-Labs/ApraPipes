@@ -174,11 +174,7 @@ void Mp4WriterSinkUtils::parseTSH264(uint64_t& ts, uint32_t& chunkTimeInMinutes,
 		syncFlag = false;
 	}
 
-<<<<<<< HEAD
-	if (boost::filesystem::path(baseFolder).extension() == ".mp4")
-=======
-	if (std::filesystem::path(baseFolder).extension().string()(baseFolder) == ".mp4")
->>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
+	if (std::filesystem::path(baseFolder).extension() == ".mp4")
 	{
 		if(currentFolder != baseFolder)
 		{
