@@ -265,6 +265,7 @@ SET(CORE_FILES
 	src/declarative/TomlParser.cpp
 	src/declarative/ModuleFactory.cpp
 	src/declarative/FrameTypeRegistry.cpp
+	src/declarative/FrameTypeRegistrations.cpp
 	src/declarative/PipelineValidator.cpp
 	src/declarative/ModuleRegistrations.cpp
 )

@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
 #include "declarative/FrameTypeRegistry.h"
+#include "declarative/FrameTypeRegistrations.h"
 #include <thread>
 #include <vector>
 #include <atomic>
@@ -369,6 +370,100 @@ BOOST_FIXTURE_TEST_CASE(Clear_RemovesAllTypes, RegistryFixture)
 
     BOOST_CHECK_EQUAL(FrameTypeRegistry::instance().size(), 0);
     BOOST_CHECK(!FrameTypeRegistry::instance().hasFrameType("Frame"));
+}
+
+// ============================================================
+// F1-F4: Built-in Frame Type Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(BuiltinFrameTypes_AreRegistered)
+{
+    // Clear and re-register builtin types
+    FrameTypeRegistry::instance().clear();
+    apra::ensureBuiltinFrameTypesRegistered();
+
+    auto& registry = FrameTypeRegistry::instance();
+
+    // Check root type
+    BOOST_CHECK(registry.hasFrameType("Frame"));
+
+    // Check image types (F1)
+    BOOST_CHECK(registry.hasFrameType("RawImage"));
+    BOOST_CHECK(registry.hasFrameType("RawImagePlanar"));
+    BOOST_CHECK(registry.hasFrameType("EncodedImage"));
+    BOOST_CHECK(registry.hasFrameType("BMPImage"));
+
+    // Check video codec types (F2)
+    BOOST_CHECK(registry.hasFrameType("H264Data"));
+    BOOST_CHECK(registry.hasFrameType("HEVCData"));
+    BOOST_CHECK(registry.hasFrameType("MotionVectorData"));
+
+    // Check audio and metadata types (F3)
+    BOOST_CHECK(registry.hasFrameType("Audio"));
+    BOOST_CHECK(registry.hasFrameType("Array"));
+    BOOST_CHECK(registry.hasFrameType("MP4VideoMetadata"));
+    BOOST_CHECK(registry.hasFrameType("Text"));
+
+    // Check control and analytics types (F4)
+    BOOST_CHECK(registry.hasFrameType("ControlFrame"));
+    BOOST_CHECK(registry.hasFrameType("AnalyticsFrame"));
+    BOOST_CHECK(registry.hasFrameType("FaceDetectsInfo"));
+    BOOST_CHECK(registry.hasFrameType("FaceLandmarksInfo"));
+
+    // Count total - should have ~25 built-in types
+    BOOST_CHECK_GE(registry.size(), 20);
+
+    BOOST_TEST_MESSAGE("Built-in frame types registered: " << registry.size());
+}
+
+BOOST_AUTO_TEST_CASE(BuiltinFrameTypes_HierarchyIsCorrect)
+{
+    // Clear and re-register builtin types
+    FrameTypeRegistry::instance().clear();
+    apra::ensureBuiltinFrameTypesRegistered();
+
+    auto& registry = FrameTypeRegistry::instance();
+
+    // Check hierarchy relationships
+    BOOST_CHECK_EQUAL(registry.getParent("RawImage"), "Frame");
+    BOOST_CHECK_EQUAL(registry.getParent("RawImagePlanar"), "RawImage");
+    BOOST_CHECK_EQUAL(registry.getParent("EncodedImage"), "Frame");
+    BOOST_CHECK_EQUAL(registry.getParent("H264Data"), "EncodedImage");
+    BOOST_CHECK_EQUAL(registry.getParent("HEVCData"), "EncodedImage");
+    BOOST_CHECK_EQUAL(registry.getParent("BMPImage"), "EncodedImage");
+    BOOST_CHECK_EQUAL(registry.getParent("ControlFrame"), "Frame");
+    BOOST_CHECK_EQUAL(registry.getParent("AnalyticsFrame"), "Frame");
+    BOOST_CHECK_EQUAL(registry.getParent("FaceDetectsInfo"), "AnalyticsFrame");
+
+    // Check compatibility
+    BOOST_CHECK(registry.isCompatible("H264Data", "EncodedImage"));
+    BOOST_CHECK(registry.isCompatible("H264Data", "Frame"));
+    BOOST_CHECK(registry.isCompatible("RawImagePlanar", "RawImage"));
+    BOOST_CHECK(registry.isCompatible("RawImagePlanar", "Frame"));
+    BOOST_CHECK(!registry.isCompatible("H264Data", "RawImage")); // Not compatible
+    BOOST_CHECK(!registry.isCompatible("Audio", "RawImage"));    // Not compatible
+}
+
+BOOST_AUTO_TEST_CASE(BuiltinFrameTypes_TagsAreSet)
+{
+    // Clear and re-register builtin types
+    FrameTypeRegistry::instance().clear();
+    apra::ensureBuiltinFrameTypesRegistered();
+
+    auto& registry = FrameTypeRegistry::instance();
+
+    // Check tags on some types
+    auto videoTypes = registry.getFrameTypesByTag("video");
+    BOOST_CHECK_GE(videoTypes.size(), 2);  // H264Data, HEVCData at least
+
+    auto audioTypes = registry.getFrameTypesByTag("audio");
+    BOOST_CHECK_GE(audioTypes.size(), 1);  // Audio
+
+    auto analyticsTypes = registry.getFrameTypesByTag("analytics");
+    BOOST_CHECK_GE(analyticsTypes.size(), 5);  // FaceDetectsInfo, etc.
+
+    auto controlTypes = registry.getFrameTypesByTag("control");
+    BOOST_CHECK_GE(controlTypes.size(), 5);  // ChangeDetection, etc.
 }
 
 BOOST_AUTO_TEST_SUITE_END()
