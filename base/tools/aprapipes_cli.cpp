@@ -332,7 +332,7 @@ int cmdRun(const std::string& filepath,
 // ============================================================
 // Command: list-modules
 // ============================================================
-int cmdListModules(const std::string& category, const std::string& tag, bool jsonOutput) {
+int cmdListModules(const std::string& categoryFilter, const std::string& tag, bool jsonOutput) {
     ensureBuiltinModulesRegistered();
     auto& registry = ModuleRegistry::instance();
 
@@ -340,8 +340,8 @@ int cmdListModules(const std::string& category, const std::string& tag, bool jso
 
     if (!tag.empty()) {
         modules = registry.getModulesByTag(tag);
-    } else if (!category.empty()) {
-        modules = registry.getModulesByCategory(parseCategory(category));
+    } else if (!categoryFilter.empty()) {
+        modules = registry.getModulesByCategory(parseCategory(categoryFilter));
     } else {
         modules = registry.getAllModules();
     }
@@ -365,25 +365,63 @@ int cmdListModules(const std::string& category, const std::string& tag, bool jso
         if (modules.empty()) {
             std::cout << "No modules found";
             if (!tag.empty()) std::cout << " with tag '" << tag << "'";
-            if (!category.empty()) std::cout << " in category '" << category << "'";
+            if (!categoryFilter.empty()) std::cout << " in category '" << categoryFilter << "'";
             std::cout << "\n";
 
-            // Hint about module registration
             if (registry.size() == 0) {
-                std::cout << "\nNote: No modules are registered. "
-                          << "Modules register themselves via REGISTER_MODULE macro.\n";
+                std::cout << "\nNote: No modules are registered.\n";
             }
         } else {
+            // Group modules by category
+            std::map<ModuleCategory, std::vector<std::string>> byCategory;
             for (const auto& name : modules) {
                 auto* info = registry.getModule(name);
-                std::cout << name;
                 if (info) {
-                    std::cout << " [" << categoryToString(info->category) << "]";
-                    if (!info->tags.empty()) {
-                        std::cout << " {" << join(info->tags, ", ") << "}";
-                    }
+                    byCategory[info->category].push_back(name);
                 }
-                std::cout << "\n";
+            }
+
+            // Sort modules alphabetically within each category
+            for (auto& [cat, mods] : byCategory) {
+                std::sort(mods.begin(), mods.end());
+            }
+
+            // Category display order
+            std::vector<ModuleCategory> categoryOrder = {
+                ModuleCategory::Source,
+                ModuleCategory::Transform,
+                ModuleCategory::Analytics,
+                ModuleCategory::Sink,
+                ModuleCategory::Utility,
+                ModuleCategory::Controller
+            };
+
+            // Print tree
+            std::cout << "Registered Modules (" << modules.size() << " total)\n";
+
+            for (size_t catIdx = 0; catIdx < categoryOrder.size(); ++catIdx) {
+                ModuleCategory cat = categoryOrder[catIdx];
+                auto it = byCategory.find(cat);
+                if (it == byCategory.end() || it->second.empty()) continue;
+
+                const auto& mods = it->second;
+                bool isLastCategory = (catIdx == categoryOrder.size() - 1) ||
+                    std::none_of(categoryOrder.begin() + catIdx + 1, categoryOrder.end(),
+                        [&byCategory](ModuleCategory c) {
+                            auto iter = byCategory.find(c);
+                            return iter != byCategory.end() && !iter->second.empty();
+                        });
+
+                std::string catPrefix = isLastCategory ? "└── " : "├── ";
+                std::string modPrefix = isLastCategory ? "    " : "│   ";
+
+                std::cout << catPrefix << categoryToString(cat) << " (" << mods.size() << ")\n";
+
+                for (size_t i = 0; i < mods.size(); ++i) {
+                    bool isLastMod = (i == mods.size() - 1);
+                    std::string connector = isLastMod ? "└── " : "├── ";
+                    std::cout << modPrefix << connector << mods[i] << "\n";
+                }
             }
         }
     }
