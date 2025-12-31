@@ -34,6 +34,25 @@ void ModuleRegistry::registerModule(ModuleInfo info) {
     modules_[info.name] = std::move(info);
 }
 
+void ModuleRegistry::addRegistrationCallback(RegistrationCallback callback) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    registrationCallbacks_.push_back(std::move(callback));
+}
+
+void ModuleRegistry::rerunRegistrations() {
+    // Copy callbacks to avoid holding lock during calls
+    std::vector<RegistrationCallback> callbacks;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        callbacks = registrationCallbacks_;
+    }
+
+    // Run all registration callbacks (they check hasModule internally)
+    for (const auto& callback : callbacks) {
+        callback();
+    }
+}
+
 // ============================================================
 // Queries
 // ============================================================

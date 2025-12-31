@@ -88,6 +88,14 @@ public:
     // Registration (called from REGISTER_MODULE macro)
     void registerModule(ModuleInfo info);
 
+    // Register a callback that can re-register a module after clear()
+    // Called by REGISTER_MODULE macro to enable test isolation
+    using RegistrationCallback = std::function<void()>;
+    void addRegistrationCallback(RegistrationCallback callback);
+
+    // Re-run all registration callbacks (call after clear() in tests)
+    void rerunRegistrations();
+
     // Queries
     bool hasModule(const std::string& name) const;
     const ModuleInfo* getModule(const std::string& name) const;
@@ -106,6 +114,7 @@ public:
     std::string toToml() const;
 
     // Clear registry (useful for testing)
+    // Note: Does NOT clear registration callbacks; call rerunRegistrations() after
     void clear();
 
     // Get count of registered modules
@@ -120,6 +129,7 @@ private:
     ModuleRegistry& operator=(const ModuleRegistry&) = delete;
 
     std::map<std::string, ModuleInfo> modules_;
+    std::vector<RegistrationCallback> registrationCallbacks_;
     mutable std::mutex mutex_;
 };
 
@@ -283,10 +293,16 @@ inline auto tryApplyProperties(
         "REGISTER_MODULE requires " #PropsClass " to have a default constructor. " \
         "Add a default constructor to " #PropsClass " that initializes all members " \
         "with sensible defaults. Required properties can be marked with PropDef::Required*()."); \
-    namespace { \
-        static bool _registered_##ModuleClass = []() { \
-            apra::ModuleInfo info; \
-            info.name = std::string(ModuleClass::Metadata::name); \
+    namespace apra { namespace _reg_##ModuleClass { \
+        inline void registerIfNeeded() { \
+            auto& registry = ModuleRegistry::instance(); \
+            const std::string moduleName = std::string(ModuleClass::Metadata::name); \
+            if (registry.hasModule(moduleName)) { \
+                return; /* Already registered */ \
+            } \
+            \
+            ModuleInfo info; \
+            info.name = moduleName; \
             info.category = ModuleClass::Metadata::category; \
             info.version = std::string(ModuleClass::Metadata::version); \
             info.description = std::string(ModuleClass::Metadata::description); \
@@ -298,26 +314,26 @@ inline auto tryApplyProperties(
             \
             /* Copy inputs */ \
             for (const auto& pin : ModuleClass::Metadata::inputs) { \
-                info.inputs.push_back(apra::detail::toPinInfo(pin)); \
+                info.inputs.push_back(detail::toPinInfo(pin)); \
             } \
             \
             /* Copy outputs */ \
             for (const auto& pin : ModuleClass::Metadata::outputs) { \
-                info.outputs.push_back(apra::detail::toPinInfo(pin)); \
+                info.outputs.push_back(detail::toPinInfo(pin)); \
             } \
             \
             /* Copy properties */ \
             for (const auto& prop : ModuleClass::Metadata::properties) { \
-                info.properties.push_back(apra::detail::toPropInfo(prop)); \
+                info.properties.push_back(detail::toPropInfo(prop)); \
             } \
             \
             /* Factory function - creates module with props */ \
-            info.factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props) \
+            info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) \
                 -> std::unique_ptr<Module> { \
                 PropsClass moduleProps; \
                 /* Apply properties using SFINAE helper (MSVC-compatible) */ \
                 std::vector<std::string> missingRequired; \
-                apra::detail::tryApplyProperties(moduleProps, props, missingRequired); \
+                detail::tryApplyProperties(moduleProps, props, missingRequired); \
                 if (!missingRequired.empty()) { \
                     std::string msg = "Missing required properties: "; \
                     for (size_t i = 0; i < missingRequired.size(); ++i) { \
@@ -329,9 +345,13 @@ inline auto tryApplyProperties(
                 return std::make_unique<ModuleClass>(moduleProps); \
             }; \
             \
-            apra::ModuleRegistry::instance().registerModule(std::move(info)); \
-            return true; \
+            registry.registerModule(std::move(info)); \
+        } \
+        static const int _trigger = []() { \
+            registerIfNeeded(); \
+            ModuleRegistry::instance().addRegistrationCallback(registerIfNeeded); \
+            return 0; \
         }(); \
-    }
+    }}
 
 } // namespace apra
