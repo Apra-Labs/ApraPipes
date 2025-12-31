@@ -207,19 +207,16 @@ public:
 
             PropsClass moduleProps;
 
-            // If PropsClass has applyProperties (from DECLARE_PROPS or manual),
-            // use it to apply TOML values. Otherwise use default-constructed props.
-            if constexpr (detail::has_apply_properties_v<PropsClass>) {
-                std::vector<std::string> missingRequired;
-                PropsClass::applyProperties(moduleProps, props, missingRequired);
+            // Apply properties using SFINAE helper (MSVC-compatible)
+            // Uses function overloading instead of if constexpr
+            std::vector<std::string> missingRequired;
+            detail::tryApplyProperties(moduleProps, props, missingRequired);
 
-                if (!missingRequired.empty()) {
-                    throw std::runtime_error(
-                        "Missing required properties: " +
-                        detail::joinStrings(missingRequired));
-                }
+            if (!missingRequired.empty()) {
+                throw std::runtime_error(
+                    "Missing required properties: " +
+                    detail::joinStrings(missingRequired));
             }
-            // else: module hasn't been migrated yet, use default props
 
             return std::make_unique<ModuleClass>(moduleProps);
         };

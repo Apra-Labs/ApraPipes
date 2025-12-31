@@ -232,6 +232,32 @@ struct has_apply_properties<T,
 template<typename T>
 inline constexpr bool has_apply_properties_v = has_apply_properties<T>::value;
 
+// ============================================================
+// Helper function template to apply properties using SFINAE
+// MSVC has issues with if constexpr in lambdas within macros,
+// so we use function overloading with enable_if instead.
+// ============================================================
+template<typename T>
+inline auto tryApplyProperties(
+    T& props,
+    const std::map<std::string, ScalarPropertyValue>& propMap,
+    std::vector<std::string>& missing
+) -> std::enable_if_t<has_apply_properties_v<T>, void>
+{
+    T::applyProperties(props, propMap, missing);
+}
+
+template<typename T>
+inline auto tryApplyProperties(
+    T& props,
+    const std::map<std::string, ScalarPropertyValue>&,
+    std::vector<std::string>&
+) -> std::enable_if_t<!has_apply_properties_v<T>, void>
+{
+    // No-op for types without applyProperties method
+    // Module will use default-constructed props
+}
+
 } // namespace detail
 
 // ============================================================
@@ -289,18 +315,16 @@ inline constexpr bool has_apply_properties_v = has_apply_properties<T>::value;
             info.factory = [](const std::map<std::string, apra::ScalarPropertyValue>& props) \
                 -> std::unique_ptr<Module> { \
                 PropsClass moduleProps; \
-                /* Apply properties if PropsClass has applyProperties method */ \
-                if constexpr (apra::detail::has_apply_properties_v<PropsClass>) { \
-                    std::vector<std::string> missingRequired; \
-                    PropsClass::applyProperties(moduleProps, props, missingRequired); \
-                    if (!missingRequired.empty()) { \
-                        std::string msg = "Missing required properties: "; \
-                        for (size_t i = 0; i < missingRequired.size(); ++i) { \
-                            if (i > 0) msg += ", "; \
-                            msg += missingRequired[i]; \
-                        } \
-                        throw std::runtime_error(msg); \
+                /* Apply properties using SFINAE helper (MSVC-compatible) */ \
+                std::vector<std::string> missingRequired; \
+                apra::detail::tryApplyProperties(moduleProps, props, missingRequired); \
+                if (!missingRequired.empty()) { \
+                    std::string msg = "Missing required properties: "; \
+                    for (size_t i = 0; i < missingRequired.size(); ++i) { \
+                        if (i > 0) msg += ", "; \
+                        msg += missingRequired[i]; \
                     } \
+                    throw std::runtime_error(msg); \
                 } \
                 return std::make_unique<ModuleClass>(moduleProps); \
             }; \
