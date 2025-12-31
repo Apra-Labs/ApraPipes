@@ -985,3 +985,37 @@ add_custom_command(
 add_custom_target(generate_schema ALL
     DEPENDS ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
 )
+
+# ============================================================
+# D2 Phase 3: Module Scanner for Registration Detection
+# Scans headers for Module subclasses and generates a list
+# Used by unit tests to detect unregistered modules
+# ============================================================
+set(MODULE_SUBCLASSES_FILE ${CMAKE_BINARY_DIR}/generated/module_subclasses.inc)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
+
+set(SCAN_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ScanModuleClasses.cmake)
+
+add_custom_target(scan-modules
+    COMMAND ${CMAKE_COMMAND}
+        -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+        -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+        -P ${SCAN_SCRIPT}
+    COMMENT "Scanning for Module subclasses..."
+    VERBATIM
+)
+
+# Run scan at configure time to ensure file exists for builds
+if(EXISTS ${SCAN_SCRIPT})
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+            -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+            -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+            -P ${SCAN_SCRIPT}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+endif()
+
+# Add generated directory to test target include paths
+# so module_registration_tests.cpp can find module_subclasses.inc
+target_include_directories(aprapipesut PRIVATE ${CMAKE_BINARY_DIR}/generated)
