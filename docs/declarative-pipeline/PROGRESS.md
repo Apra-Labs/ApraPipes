@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-31 04:55` by `claude-code`
+Last Updated: `2025-12-31 05:30` by `claude-code`
 
 ---
 
@@ -713,6 +713,57 @@ Registered: FaceDetectorXform, FileReaderModule, FileWriterModule, QRReader
 
 ---
 
+### Session: 2025-12-31 05:30
+
+**Agent:** claude-code
+**Duration:** ~45 min
+**Tasks:** D2 Phase 5 (applyProperties for Priority Modules)
+
+**Accomplished:**
+- Added applyProperties to 6 priority modules:
+  - Split - adds `number` property for output count
+  - Merge - adds `maxDelay` property for frame timing
+  - ImageDecoderCV - no-op (no configurable properties)
+  - ImageEncoderCV - no-op (no configurable properties)
+  - Mp4ReaderSource - adds `videoPath`, `parseFS`, `direction`, etc. (8 properties)
+  - Mp4WriterSink - adds `baseFolder`, `chunkTime`, `fps`, etc. (6 properties)
+- Registered all 6 modules in ModuleRegistrations.cpp
+- All 45 tests pass (FrameTypeRegistry + ModuleRegistration tests)
+- CI Status:
+  - ✅ macOS: Pass
+  - ✅ Linux ARM64: Pass
+  - 🔄 Linux x64: In Progress
+  - 🔄 Windows: In Progress
+
+**Files Modified:**
+- `base/include/Split.h` - Added applyProperties, getProperty, setProperty
+- `base/include/Merge.h` - Added applyProperties, getProperty, setProperty
+- `base/include/ImageDecoderCV.h` - Added applyProperties (no-op)
+- `base/include/ImageEncoderCV.h` - Added applyProperties (no-op)
+- `base/include/Mp4ReaderSource.h` - Added applyProperties with 8 properties
+- `base/include/Mp4WriterSink.h` - Added applyProperties with 6 properties
+- `base/src/declarative/ModuleRegistrations.cpp` - Added 6 module registrations
+
+**Module Registration Coverage:**
+```
+Total Modules Found:  62
+Registered (REGISTER_MODULE): 4 (FaceDetector, FileReader, FileWriter, QRReader)
+Registered (fallback):        9 (TestSignal, StatSink, Valve, Split, Merge, ImageDecoder, ImageEncoder, Mp4Reader, Mp4Writer)
+Unregistered:                49
+```
+
+**Remaining:**
+- Wait for CI verification on Linux x64 and Windows
+- Add applyProperties to more modules as needed
+- Integration testing with real video files
+
+**Notes for Next Session:**
+- Mp4ReaderSource requires `videoPath` property (required)
+- Mp4WriterSink has all optional properties with defaults
+- Split/Merge modules have single optional property each
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
@@ -734,10 +785,10 @@ Registered: FaceDetectorXform, FileReaderModule, FileWriterModule, QRReader
 
 | Platform | Status | Last Success | Notes |
 |----------|--------|--------------|-------|
-| macOS | ✅ Pass | 2025-12-29 | x64-osx-release, 94 tests pass (36+21+37) |
-| Linux | ❓ Unknown | - | - |
-| Windows | ❓ Unknown | - | - |
-| ARM64 | ❓ Unknown | - | - |
+| macOS | ✅ Pass | 2025-12-31 | All declarative tests pass |
+| Linux x64 | 🔄 Running | - | CI in progress |
+| Windows | 🔄 Running | - | CI in progress |
+| ARM64 | ✅ Pass | 2025-12-31 | All declarative tests pass |
 
 ---
 
