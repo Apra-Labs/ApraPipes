@@ -1419,3 +1419,355 @@ base/CMakeLists.txt             # MODIFY - Add scanner target
 - [ ] CMake scanner working
 - [ ] Missing registration test working
 - [ ] Documentation updated
+
+---
+
+## Future Considerations
+
+### Issue 1: Variable Pin Count (Split/Merge Pattern)
+
+#### Problem Statement
+
+Some modules have a **variable number of inputs or outputs** determined at runtime:
+
+| Module | Behavior | Current Registration (Broken) |
+|--------|----------|-------------------------------|
+| `Split` | 1 input → N outputs (N from `number` prop) | Hardcoded 2 outputs |
+| `Merge` | N inputs → 1 output (N determined dynamically) | Hardcoded 2 inputs |
+| `Mux` | N inputs → 1 output (round-robin) | Not registered yet |
+| `Demux` | 1 input → N outputs (by metadata) | Not registered yet |
+
+Current broken registration:
+```cpp
+// WRONG - hardcodes 2 outputs, but Split can have 1-16
+registerModule<Split, SplitProps>()
+    .output("output_1", "Frame")
+    .output("output_2", "Frame");
+```
+
+#### Design Options
+
+**Option A: Pin Count Range**
+```cpp
+.outputs("output", "Frame", PinCount{.min=1, .max=16, .pattern="output_{n}"})
+```
+- Defines valid range and naming pattern
+- Validator checks actual connections against range
+- Schema generator documents the range
+
+**Option B: Property-Linked Pins**
+```cpp
+.prop("number", PropDef::Int("number", 2, 1, 16, "Number of outputs"))
+.outputsFromProp("output_{n}", "Frame", "number")
+```
+- Pin count derived from property value
+- Changes to property could dynamically add/remove pins
+- More complex but ties pins to existing property
+
+**Option C: Variadic Marker**
+```cpp
+.outputVariadic("output_", "Frame")  // Unlimited outputs matching pattern
+```
+- Simple marker, no bounds
+- Validation happens at runtime based on actual connections
+- Less safe but simpler
+
+**Option D: Min/Max Methods (Recommended)**
+```cpp
+registerModule<Split, SplitProps>()
+    .category(ModuleCategory::Utility)
+    .description("Splits input to multiple outputs")
+    .input("input", "Frame")
+    .outputN("output_", "Frame", 1, 16);  // output_1 through output_16
+
+registerModule<Merge, MergeProps>()
+    .category(ModuleCategory::Utility)
+    .description("Merges multiple inputs")
+    .inputN("input_", "Frame", 2, 16)    // input_1 through input_16
+    .output("output", "Frame");
+```
+
+#### Recommended Approach: Option D
+
+Add new builder methods:
+
+```cpp
+class ModuleRegistrationBuilder {
+    // Existing single-pin methods
+    Builder& input(std::string_view name, auto... frameTypes);
+    Builder& output(std::string_view name, auto... frameTypes);
+
+    // NEW: Variable pin count methods
+    Builder& inputN(std::string_view prefix, std::string_view frameType,
+                    int minCount, int maxCount) {
+        PinInfo pin;
+        pin.name = std::string(prefix) + "*";  // Marker for variable
+        pin.frameTypes = {std::string(frameType)};
+        pin.minCount = minCount;
+        pin.maxCount = maxCount;
+        pin.pattern = std::string(prefix) + "{n}";  // e.g., "input_{n}"
+        info_.inputs.push_back(std::move(pin));
+        return *this;
+    }
+
+    Builder& outputN(std::string_view prefix, std::string_view frameType,
+                     int minCount, int maxCount);
+};
+```
+
+#### PinInfo Extension
+
+```cpp
+struct PinInfo {
+    std::string name;           // "output" or "output_*" for variable
+    std::vector<std::string> frameTypes;
+    bool required = true;
+    std::string description;
+
+    // NEW: Variable pin support
+    int minCount = 1;           // Minimum pins (1 = single pin)
+    int maxCount = 1;           // Maximum pins (1 = single pin, >1 = variable)
+    std::string pattern;        // Naming pattern, e.g., "output_{n}"
+
+    bool isVariable() const { return maxCount > 1; }
+};
+```
+
+#### TOML Syntax for Variable Pins
+
+```toml
+[modules.splitter]
+type = "Split"
+  [modules.splitter.props]
+  number = 4  # Creates 4 output pins
+
+[[connections]]
+from = "source.output"
+to = "splitter.input"
+
+[[connections]]
+from = "splitter.output_1"
+to = "sink1.input"
+
+[[connections]]
+from = "splitter.output_2"
+to = "sink2.input"
+
+# ... etc
+```
+
+#### Validation Rules
+
+1. **Connection validation**: Check pin name matches pattern (e.g., `output_3` matches `output_{n}`)
+2. **Range validation**: Check connected pin count is within [minCount, maxCount]
+3. **Required validation**: If minCount > 0, at least that many pins must be connected
+4. **Property sync**: If pin count is property-linked, validate property value matches
+
+---
+
+### Issue 2: Reducing ModuleProps Boilerplate
+
+#### Problem Statement
+
+Each ModuleProps class requires significant boilerplate:
+
+```cpp
+// Current verbose pattern (50+ lines per module)
+class SplitProps : public ModuleProps {
+public:
+    SplitProps(int _number = 2) {
+        number = _number;
+    }
+    int number;
+
+    // applyProperties - 10+ lines
+    template<typename PropsT>
+    static void applyProperties(PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired) {
+        apra::applyProp(props.number, "number", values, false, missingRequired);
+    }
+
+    // getProperty - 5+ lines
+    apra::ScalarPropertyValue getProperty(const std::string& name) const {
+        if (name == "number") return static_cast<int64_t>(number);
+        throw std::runtime_error("Unknown property: " + name);
+    }
+
+    // setProperty - 5+ lines (for dynamic props)
+    bool setProperty(const std::string& name, const apra::ScalarPropertyValue& value) {
+        throw std::runtime_error("Property is static");
+    }
+};
+```
+
+With 60+ modules, this is ~3000+ lines of repetitive code.
+
+#### Design Options
+
+**Option A: Full X-Macro Pattern (Already in D2)**
+
+Define once, generate everything:
+```cpp
+#define SPLIT_PROPS(P) \
+    P(int, number, Static, Optional, 2, "Number of outputs")
+
+class SplitProps : public ModuleProps {
+    DECLARE_PROPS(SPLIT_PROPS)
+};
+```
+
+**Pros**: Maximum DRY, compile-time validation
+**Cons**: Unfamiliar macro syntax, harder to debug
+
+**Option B: Property<T> Wrapper Class**
+
+```cpp
+class SplitProps : public ModuleProps {
+public:
+    Property<int> number{2, "Number of outputs"};
+    // Property<T> stores value + metadata + handles get/set
+};
+```
+
+**Pros**: Clean syntax, type-safe
+**Cons**: Runtime overhead, changes member access syntax (`props.number.get()`)
+
+**Option C: CRTP with Reflection**
+
+```cpp
+class SplitProps : public PropsBase<SplitProps> {
+public:
+    int number = 2;
+
+    // Single macro registers properties for reflection
+    PROPS(
+        PROP(number, "Number of outputs")
+    )
+};
+```
+
+**Pros**: Keeps normal member syntax, single registration point
+**Cons**: Complex CRTP implementation
+
+**Option D: Centralized Metadata (Current Wave 2 Approach)**
+
+Keep Props minimal, put metadata in ModuleRegistrations.cpp:
+
+```cpp
+// Header - just members and applyProperties
+class SplitProps : public ModuleProps {
+public:
+    int number = 2;
+
+    template<typename PropsT>
+    static void applyProperties(PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired) {
+        apra::applyProp(props.number, "number", values, false, missingRequired);
+    }
+};
+
+// ModuleRegistrations.cpp - all metadata here
+registerModule<Split, SplitProps>()
+    .prop(PropDef::Int("number", 2, 1, 16, "Number of outputs"))
+    ...
+```
+
+**Pros**: Minimal header changes, metadata centralized
+**Cons**: Still need applyProperties in header
+
+**Option E: Code Generation from Schema**
+
+```yaml
+# modules.schema.yaml
+Split:
+  category: Utility
+  props:
+    number:
+      type: int
+      default: 2
+      min: 1
+      max: 16
+      description: "Number of outputs"
+```
+
+Generate C++ at build time.
+
+**Pros**: Single source of truth, can generate docs too
+**Cons**: Build complexity, harder to debug
+
+#### Recommended Hybrid Approach
+
+**Phase 1 (Current)**: Wave 2 with manual `applyProperties`
+- Keeps existing code working
+- Minimal header changes
+- Metadata centralized in ModuleRegistrations.cpp
+
+**Phase 2 (Future)**: Template helper to reduce `applyProperties` boilerplate
+
+```cpp
+// New helper macro for common case
+#define APPLY_PROPS(...) \
+    template<typename PropsT> \
+    static void applyProperties(PropsT& props, \
+        const std::map<std::string, apra::ScalarPropertyValue>& values, \
+        std::vector<std::string>& missingRequired) { \
+        APPLY_PROPS_IMPL(__VA_ARGS__) \
+    }
+
+#define APPLY_PROPS_IMPL(...) \
+    BOOST_PP_SEQ_FOR_EACH(APPLY_ONE_PROP, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+
+#define APPLY_ONE_PROP(r, _, prop) \
+    apra::applyProp(props.prop, #prop, values, false, missingRequired);
+
+// Usage - much shorter
+class SplitProps : public ModuleProps {
+public:
+    int number = 2;
+    APPLY_PROPS(number)  // Expands to full applyProperties method
+};
+```
+
+**Phase 3 (Future)**: Full X-Macro for new modules
+
+New modules can use full DECLARE_PROPS pattern:
+```cpp
+#define FACE_DETECTOR_PROPS(P) \
+    P(std::string, modelPath, Static,  Required, "",   "Path to model") \
+    P(float, scaleFactor,     Dynamic, Optional, 1.1f, "Scale factor") \
+    P(float, confidence,      Dynamic, Optional, 0.5f, "Min confidence")
+
+class FaceDetectorXformProps : public ModuleProps {
+    DECLARE_PROPS(FACE_DETECTOR_PROPS)
+};
+```
+
+#### Boilerplate Comparison
+
+| Approach | Lines per Module | DRY Score | Migration Effort |
+|----------|------------------|-----------|------------------|
+| Current manual | 50+ lines | Poor | N/A |
+| Wave 2 (now) | 20 lines | Fair | Low |
+| APPLY_PROPS macro | 5 lines | Good | Low |
+| Full X-Macro | 3 lines | Excellent | Medium |
+| Code generation | 0 lines (C++) | Excellent | High |
+
+#### Implementation Priority
+
+1. **Now**: Complete Wave 2 migration (centralize metadata, add `applyProperties`)
+2. **Next**: Add `APPLY_PROPS` helper macro to reduce `applyProperties` boilerplate
+3. **Later**: Consider full X-Macro or code generation for new modules
+
+---
+
+### Summary: Future Work Items
+
+| Item | Priority | Effort | Impact |
+|------|----------|--------|--------|
+| Variable pin count (`inputN`/`outputN`) | P1 | 2 days | Enables Split/Merge/Mux/Demux |
+| `APPLY_PROPS` helper macro | P2 | 1 day | Reduces boilerplate 60% |
+| Full DECLARE_PROPS pattern | P3 | 3 days | Reduces boilerplate 90% |
+| Property-linked pins | P3 | 2 days | Auto pin count from props |
+| Code generation | P4 | 5 days | Ultimate DRY solution |
