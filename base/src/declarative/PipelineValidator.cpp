@@ -202,6 +202,19 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
             knownProps[prop.name] = &prop;
         }
 
+        // If module has no property metadata, skip property validation for this module
+        // (properties will be passed through to the module's applyProperties)
+        if (knownProps.empty() && !module.properties.empty()) {
+            if (options_.includeInfoMessages) {
+                result.issues.push_back(ValidationIssue::info(
+                    "I021",
+                    moduleLocation,
+                    "Module type '" + module.module_type + "' has no property metadata; skipping property validation"
+                ));
+            }
+            continue;
+        }
+
         // C3: Check each property in the description
         for (const auto& [propName, propValue] : module.properties) {
             const std::string propLocation = moduleLocation + ".props." + propName;
