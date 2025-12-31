@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-29 20:00` by `claude-code`
+Last Updated: `2025-12-30 18:00` by `claude-code`
 
 ---
 
@@ -61,10 +61,10 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
-| **C2** | Validator: Module Checks | 📋 Ready | - | - | - | C1 done |
-| **C3** | Validator: Property Checks | ⏳ Blocked | - | - | - | Needs C2 |
-| **C4** | Validator: Connection Checks | ⏳ Blocked | - | - | - | Needs C3, A3 |
-| **C5** | Validator: Graph Checks | ⏳ Blocked | - | - | - | Needs C4 |
+| **C2** | Validator: Module Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
+| **C3** | Validator: Property Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
+| **C4** | Validator: Connection Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
+| **C5** | Validator: Graph Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
 
 ---
 
@@ -565,6 +565,61 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 
 ---
 
+### Session: 2025-12-30 18:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** C2-C5 (Validator Enhancements), Test Isolation Fix
+
+**Accomplished:**
+- Implemented C2 (Module Validation):
+  - Check module types exist in registry (E100 error)
+  - Suggest closest match using Levenshtein distance
+  - Info messages for validated modules
+- Implemented C3 (Property Validation):
+  - Check property names exist (E200)
+  - Check property type matches (E201)
+  - Check property range (E202)
+  - Check enum values (E203)
+  - Check regex patterns (E204)
+  - Check required properties (W200)
+- Implemented C4 (Connection Validation):
+  - Check source module exists (E300)
+  - Check dest module exists (E301)
+  - Check source pin exists (E302)
+  - Check dest pin exists (E303)
+  - Check frame type compatibility (E304)
+  - Check duplicate connections (E305)
+  - Check required pins connected (W300)
+- Implemented C5 (Graph Validation):
+  - Check for source modules (E400)
+  - Cycle detection using DFS with color marking (E401)
+  - Orphan module detection (W400)
+- Fixed test isolation issue:
+  - REGISTER_MODULE was using static bool flag, preventing re-registration after registry.clear()
+  - Changed to use registerIfNeeded() function with registry check
+  - Added addRegistrationCallback() and rerunRegistrations() to ModuleRegistry
+  - Updated ensureBuiltinModulesRegistered() to call rerunRegistrations()
+- All 175 declarative pipeline tests pass
+
+**Files Modified:**
+- `base/include/declarative/ModuleRegistry.h` - REGISTER_MODULE macro, callback storage
+- `base/src/declarative/ModuleRegistry.cpp` - addRegistrationCallback(), rerunRegistrations()
+- `base/src/declarative/ModuleRegistrations.cpp` - Updated to call rerunRegistrations()
+- `base/src/declarative/PipelineValidator.cpp` - Full C2-C5 implementation
+- `base/test/declarative/pipeline_validator_tests.cpp` - Updated test fixture
+
+**Remaining:**
+- CI verification on all platforms
+- D2 Phase 3 (CMake scanner for missing registrations)
+
+**Notes for Next Session:**
+- Cycle detection uses standard DFS with white/gray/black color marking
+- Frame type compatibility check uses FrameTypeRegistry::instance().isCompatible()
+- REGISTER_MODULE now stores callback that can be called after registry.clear()
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
@@ -597,14 +652,15 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 
 | Test Suite | Pass | Fail | Skip | Last Run |
 |------------|------|------|------|----------|
-| metadata_tests | 36 | 0 | 0 | 2025-12-29 |
-| module_registry_tests | 21 | 0 | 0 | 2025-12-29 |
-| pipeline_description_tests | 37 | 0 | 0 | 2025-12-29 |
-| toml_parser_tests | - | - | - | - |
+| metadata_tests | 36 | 0 | 0 | 2025-12-30 |
+| module_registry_tests | 21 | 0 | 0 | 2025-12-30 |
+| pipeline_description_tests | 37 | 0 | 0 | 2025-12-30 |
+| toml_parser_tests | 37 | 0 | 0 | 2025-12-30 |
 | module_factory_tests | 38 | 0 | 0 | 2025-12-30 |
 | property_macros_tests | 28 | 0 | 0 | 2025-12-30 |
 | property_validators_tests | 26 | 0 | 0 | 2025-12-30 |
 | module_registration_tests | 11 | 0 | 0 | 2025-12-30 |
+| pipeline_validator_tests | 43 | 0 | 0 | 2025-12-30 |
 
 ---
 
