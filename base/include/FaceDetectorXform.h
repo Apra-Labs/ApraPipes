@@ -6,7 +6,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include "declarative/Metadata.h"
 #include "declarative/PropertyMacros.h"
 
 class FaceDetectorXformProps : public ModuleProps
@@ -82,37 +81,6 @@ private:
 class FaceDetectorXform : public Module
 {
 public:
-    // ============================================================
-    // Declarative Pipeline Metadata
-    // ============================================================
-    struct Metadata {
-        static constexpr std::string_view name = "FaceDetectorXform";
-        static constexpr apra::ModuleCategory category = apra::ModuleCategory::Analytics;
-        static constexpr std::string_view version = "1.0.0";
-        static constexpr std::string_view description =
-            "Detects faces in image frames using deep learning models. "
-            "Outputs face bounding boxes and confidence scores.";
-
-        static constexpr std::array<std::string_view, 4> tags = {
-            "analytics", "face", "detection", "transform"
-        };
-
-        static constexpr std::array<apra::PinDef, 1> inputs = {
-            apra::PinDef::create("input", "RawImagePlanar", true, "Image frames to process")
-        };
-
-        static constexpr std::array<apra::PinDef, 1> outputs = {
-            apra::PinDef::create("output", "Frame", true, "Frames with face detection metadata")
-        };
-
-        static constexpr std::array<apra::PropDef, 2> properties = {
-            apra::PropDef::Floating("scaleFactor", 1.0, 0.1, 10.0,
-                "Scale factor for input image preprocessing"),
-            apra::PropDef::Floating("confidenceThreshold", 0.5, 0.0, 1.0,
-                "Minimum confidence threshold for face detection")
-        };
-    };
-
     FaceDetectorXform(FaceDetectorXformProps props);
     virtual ~FaceDetectorXform() {}
 

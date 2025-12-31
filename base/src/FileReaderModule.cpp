@@ -4,7 +4,6 @@
 #include "FileSequenceDriver.h"
 #include "ExtFrame.h"
 #include "Command.h"
-#include "declarative/ModuleRegistry.h"
 
 FileReaderModule::FileReaderModule(FileReaderModuleProps _props)
 	:Module(SOURCE, "FileReaderModule", _props), mProps(_props), mCache(false)
@@ -168,6 +167,3 @@ bool FileReaderModule::handlePropsChange(frame_sp& frame)
 
 	return ret;
 }
-
-// Register module with declarative pipeline system
-REGISTER_MODULE(FileReaderModule, FileReaderModuleProps)

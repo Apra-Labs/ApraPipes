@@ -55,12 +55,48 @@ void ensureBuiltinModulesRegistered() {
     // register fallback modules without full property metadata.
     // This is a safety net for edge cases like dynamic loading.
 
-    // Register built-in modules that don't have REGISTER_MODULE yet
+    // Register all built-in modules using central registration pattern
+    // (Wave 2 approach: metadata here, only applyProperties in module headers)
     {
-        // Note: Most core modules now use REGISTER_MODULE macro
-        // This section is for modules being migrated or special cases
+        // FileReaderModule - reads frames from files
+        if (!registry.hasModule("FileReaderModule")) {
+            registerModule<FileReaderModule, FileReaderModuleProps>()
+                .category(ModuleCategory::Source)
+                .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
+                .tags("source", "file", "reader")
+                .output("output", "Frame");
+        }
 
-        // TestSignalGenerator - might not have REGISTER_MODULE yet
+        // FileWriterModule - writes frames to files
+        if (!registry.hasModule("FileWriterModule")) {
+            registerModule<FileWriterModule, FileWriterModuleProps>()
+                .category(ModuleCategory::Sink)
+                .description("Writes frames to files. Supports file sequences with pattern-based naming.")
+                .tags("sink", "file", "writer")
+                .input("input", "Frame");
+        }
+
+        // FaceDetectorXform - face detection
+        if (!registry.hasModule("FaceDetectorXform")) {
+            registerModule<FaceDetectorXform, FaceDetectorXformProps>()
+                .category(ModuleCategory::Analytics)
+                .description("Detects faces in image frames using deep learning models.")
+                .tags("analytics", "face", "detection", "transform")
+                .input("input", "RawImagePlanar")
+                .output("output", "Frame");
+        }
+
+        // QRReader - QR code and barcode detection
+        if (!registry.hasModule("QRReader")) {
+            registerModule<QRReader, QRReaderProps>()
+                .category(ModuleCategory::Analytics)
+                .description("Reads and decodes QR codes and barcodes from image frames.")
+                .tags("analytics", "qr", "barcode", "reader")
+                .input("input", "RawImagePlanar")
+                .output("output", "Frame");
+        }
+
+        // TestSignalGenerator - generates test frames
         if (!registry.hasModule("TestSignalGenerator")) {
             registerModule<TestSignalGenerator, TestSignalGeneratorProps>()
                 .category(ModuleCategory::Source)
@@ -151,6 +187,21 @@ void ensureBuiltinModulesRegistered() {
                 .tags("sink", "mp4", "video", "file")
                 .input("input", "H264Data", "EncodedImage");
         }
+
+        // ============================================================
+        // CUDA-only modules
+        // ============================================================
+#ifdef ENABLE_CUDA
+        // H264Decoder - decodes H.264 video
+        if (!registry.hasModule("H264Decoder")) {
+            registerModule<H264Decoder, H264DecoderProps>()
+                .category(ModuleCategory::Transform)
+                .description("Decodes H.264/AVC encoded video frames to raw image frames.")
+                .tags("decoder", "h264", "video", "transform")
+                .input("input", "H264Frame")
+                .output("output", "RawImagePlanar");
+        }
+#endif
     }
 }
 

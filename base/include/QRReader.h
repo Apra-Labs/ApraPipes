@@ -6,7 +6,6 @@
 #include <array>
 #include <map>
 #include <vector>
-#include "declarative/Metadata.h"
 #include "declarative/PropertyMacros.h"
 
 class QRReaderProps : public ModuleProps
@@ -44,32 +43,6 @@ class QRReader : public Module
 {
 
 public:
-	// ============================================================
-	// Declarative Pipeline Metadata
-	// ============================================================
-	struct Metadata {
-		static constexpr std::string_view name = "QRReader";
-		static constexpr apra::ModuleCategory category = apra::ModuleCategory::Analytics;
-		static constexpr std::string_view version = "1.0.0";
-		static constexpr std::string_view description =
-			"Reads and decodes QR codes and barcodes from image frames using ZXing library.";
-
-		static constexpr std::array<std::string_view, 4> tags = {
-			"analytics", "qr", "barcode", "reader"
-		};
-
-		static constexpr std::array<apra::PinDef, 1> inputs = {
-			apra::PinDef::create("input", "RawImagePlanar", true, "Image frames to scan for QR codes")
-		};
-
-		static constexpr std::array<apra::PinDef, 1> outputs = {
-			apra::PinDef::create("output", "Frame", true, "Frames with QR code metadata")
-		};
-
-		// No configurable properties
-		static constexpr std::array<apra::PropDef, 0> properties = {};
-	};
-
 	QRReader(QRReaderProps _props=QRReaderProps());
 	virtual ~QRReader();
 	bool init();

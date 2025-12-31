@@ -4,7 +4,6 @@
 #include "Frame.h"
 #include "Logger.h"
 #include "RawImageMetadata.h"
-#include "declarative/ModuleRegistry.h"
 
 class QRReader::Detail
 {
@@ -148,6 +147,3 @@ bool QRReader::shouldTriggerSOS()
 {
 	return mDetail->mWidth == 0;
 }
-
-// Register module with declarative pipeline system
-REGISTER_MODULE(QRReader, QRReaderProps)

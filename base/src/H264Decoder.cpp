@@ -1,5 +1,4 @@
 #include "H264Decoder.h"
-#include "declarative/ModuleRegistry.h"
 
 #ifdef ARM64
 #include "H264DecoderV4L2Helper.h"
@@ -747,6 +746,3 @@ void H264Decoder::flushQue()
 {
 	Module::flushQue();
 }
-
-// Register module with declarative pipeline system
-REGISTER_MODULE(H264Decoder, H264DecoderProps)

@@ -6,7 +6,6 @@
 #include <vector>
 #include "Module.h"
 #include <boost/serialization/vector.hpp>
-#include "declarative/Metadata.h"
 #include "declarative/PropertyMacros.h"
 
 using namespace std;
@@ -102,40 +101,6 @@ private:
 
 class FileReaderModule: public Module {
 public:
-	// ============================================================
-	// Declarative Pipeline Metadata
-	// ============================================================
-	struct Metadata {
-		static constexpr std::string_view name = "FileReaderModule";
-		static constexpr apra::ModuleCategory category = apra::ModuleCategory::Source;
-		static constexpr std::string_view version = "1.0.0";
-		static constexpr std::string_view description =
-			"Reads frames from files matching a pattern. Supports image sequences "
-			"and raw frame files. Use with appropriate output pin metadata.";
-
-		static constexpr std::array<std::string_view, 3> tags = {
-			"source", "file", "reader"
-		};
-
-		// Source module - no inputs
-		static constexpr std::array<apra::PinDef, 0> inputs = {};
-
-		static constexpr std::array<apra::PinDef, 1> outputs = {
-			apra::PinDef::create("output", "Frame", true, "Output frames read from files")
-		};
-
-		static constexpr std::array<apra::PropDef, 4> properties = {
-			apra::PropDef::RequiredString("strFullFileNameWithPattern",
-				"File path pattern (e.g., /path/frame_????.raw)"),
-			apra::PropDef::Integer("startIndex", 0, 0, INT_MAX,
-				"Starting index for file sequence"),
-			apra::PropDef::Integer("maxIndex", -1, -1, INT_MAX,
-				"Maximum index (-1 for unlimited)"),
-			apra::PropDef::Boolean("readLoop", true,
-				"Loop back to start when reaching end")
-		};
-	};
-
 	FileReaderModule(FileReaderModuleProps _props);
 	virtual ~FileReaderModule();
 	bool init();
