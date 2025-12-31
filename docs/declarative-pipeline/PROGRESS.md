@@ -48,7 +48,7 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
-| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Property methods in builder, 15 modules registered |
+| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Property methods in builder, 20 modules registered (32%) |
 | **D3** | Multi-Pin Connection Support | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | Phase 1 done |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
@@ -847,6 +847,62 @@ Coverage: 24.2%
 - Property validation now works for modules with metadata, skips for those without
 - All property methods support required flag, defaults, and range constraints
 - Consider batch conversion of similar modules (e.g., all CV modules together)
+
+---
+
+### Session: 2025-12-31 18:00
+
+**Agent:** claude-code
+**Duration:** ~45 min
+**Tasks:** D2 Phase 5 (More Module Property Bindings)
+
+**Accomplished:**
+- Added property binding to 5 more modules:
+  - ColorConversion: enum property for 11 color space conversions
+  - VirtualPTZ: dynamic float properties for ROI (roiX, roiY, roiWidth, roiHeight)
+  - TextOverlayXForm: 7 dynamic properties for text, position, font, colors
+  - BrightnessContrastControl: dynamic contrast/brightness properties
+  - CalcHistogramCV: bins and maskImgPath properties
+- Registered all 5 modules in ModuleRegistrations.cpp with full metadata
+- All 268 declarative tests pass
+- All changes committed and pushed
+
+**Files Modified:**
+- `base/include/ColorConversionXForm.h` - applyProperties with enum support
+- `base/include/VirtualPTZ.h` - applyProperties with 4 dynamic float props
+- `base/include/TextOverlayXForm.h` - applyProperties with 7 dynamic props
+- `base/include/BrightnessContrastControlXform.h` - applyProperties
+- `base/include/CalcHistogramCV.h` - applyProperties
+- `base/src/declarative/ModuleRegistrations.cpp` - 5 new registrations
+
+**Module Registration Coverage:**
+```
+Total Modules Found:  62
+Registered with full metadata: 20 modules
+  - Sources: FileReaderModule, TestSignalGenerator, Mp4ReaderSource
+  - Sinks: FileWriterModule, StatSink, Mp4WriterSink
+  - Transforms: FaceDetectorXform, ImageDecoderCV, ImageEncoderCV,
+                ImageResizeCV, RotateCV, ColorConversion, VirtualPTZ,
+                TextOverlayXForm, BrightnessContrastControl
+  - Utility: ValveModule, Split, Merge
+  - Analytics: QRReader, CalcHistogramCV
+Unregistered: 42 modules
+Coverage: 32.3%
+```
+
+**Commits:**
+- `4f8ad9cdf` - ColorConversion, VirtualPTZ, TextOverlay
+- `5d045a6ea` - BrightnessContrast, CalcHistogram
+
+**Remaining:**
+- Continue adding property binding to more modules
+- Consider AffineTransform, BMPConverter, other CV modules
+- Integration testing with real video files
+
+**Notes for Next Session:**
+- ColorConversion has enum property with string-to-enum mapping
+- VirtualPTZ, TextOverlay, BrightnessContrast have dynamic properties (runtime-modifiable)
+- CalcHistogramCV has vector<int> roi that cannot be set via TOML (array not supported yet)
 
 ---
 
