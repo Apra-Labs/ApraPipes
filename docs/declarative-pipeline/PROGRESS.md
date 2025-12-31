@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-31 16:30` by `claude-code`
+Last Updated: `2025-12-31 17:30` by `claude-code`
 
 ---
 
@@ -48,7 +48,7 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
-| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Core impl done, 2 pilot modules |
+| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Property methods in builder, 15 modules registered |
 | **D3** | Multi-Pin Connection Support | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | Phase 1 done |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
@@ -780,11 +780,6 @@ Unregistered:                49
   - Properties pass through to module's `applyProperties` method
 - All 268 declarative tests pass locally
 - Committed fix: `9ab289d7c`
-- CI Status:
-  - ✅ macOS: Pass
-  - 🔄 Linux: In Progress
-  - 🔄 Windows: In Progress
-  - 🔄 ARM64: In Progress
 
 **Files Modified:**
 - `base/src/declarative/PipelineValidator.cpp` - Skip validation for modules without property metadata
@@ -794,15 +789,64 @@ Unregistered:                49
 - Validation happens at runtime via `applyProperties` (unknown properties cause exceptions)
 - This is intentional: allows incremental migration of modules to full metadata
 
+---
+
+### Session: 2025-12-31 17:30
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** D2 Phase 5 (Property Builder Enhancement + More Modules)
+
+**Accomplished:**
+- Enhanced ModuleRegistrationBuilder with property definition methods:
+  - `stringProp()` - String properties with required flag and default
+  - `intProp()` - Integer properties with min/max range constraints
+  - `floatProp()` - Float properties with min/max range constraints
+  - `boolProp()` - Boolean properties with default value
+  - `enumProp()` - Enum properties with allowed values list
+  - `dynamicProp()` - Runtime-modifiable properties
+- Added property metadata to module registrations in ModuleRegistrations.cpp:
+  - FileReaderModule: strFullFileNameWithPattern (required), startIndex, maxIndex, readLoop
+  - FileWriterModule: strFullFileNameWithPattern (required), append
+  - Mp4ReaderSource: videoPath (required), parseFS, direction, bFramesEnabled, reInitInterval, parseFSTimeoutDuration, readLoop, giveLiveTS
+  - Mp4WriterSink: baseFolder, chunkTime, syncTimeInSecs, fps (with range 1-120), recordedTSBasedDTS, enableMetadata
+  - ImageResizeCV: width (required, range 1-8192), height (required, range 1-8192)
+  - RotateCV: angle (required, range -360 to 360)
+- Added applyProperties to 2 new modules:
+  - ImageResizeCV: width, height properties with range validation
+  - RotateCV: angle property for rotation in degrees
+- Registered ImageResizeCV and RotateCV in ModuleRegistrations.cpp
+- All 268 declarative tests pass
+- All 4 CI platforms pass: macOS, Linux x64, Windows, ARM64
+- Committed: `35d1b2ac1`
+
+**Files Modified:**
+- `base/include/declarative/ModuleRegistrationBuilder.h` - Added property methods
+- `base/src/declarative/ModuleRegistrations.cpp` - Added property metadata and 2 new module registrations
+- `base/include/ImageResizeCV.h` - Added applyProperties, getProperty, setProperty
+- `base/include/RotateCV.h` - Added applyProperties, getProperty, setProperty
+
+**Module Registration Coverage:**
+```
+Total Modules Found:  62
+Registered with full metadata: 15 modules
+  - FileReaderModule, FileWriterModule, FaceDetectorXform, QRReader
+  - TestSignalGenerator, StatSink, ValveModule
+  - Split, Merge, ImageDecoderCV, ImageEncoderCV
+  - Mp4ReaderSource, Mp4WriterSink, ImageResizeCV, RotateCV
+Unregistered: 47 modules
+Coverage: 24.2%
+```
+
 **Remaining:**
-- Wait for CI verification on Linux x64, Windows, ARM64
-- D2 Phase 5 continues: add property metadata to more modules
-- Add `.property()` method to fluent builder for full metadata support
+- Continue adding applyProperties to more modules
+- Priority modules: VirtualPTZ, ColorConversion, Overlay modules
+- Integration testing with real video files
 
 **Notes for Next Session:**
-- Current module registration coverage: ~13 modules registered, 49 unregistered
-- Priority modules for property binding: ImageResizeCV, RotateCV, VirtualPTZ
-- Consider adding property metadata to FileReaderModule/FileWriterModule registrations
+- Property validation now works for modules with metadata, skips for those without
+- All property methods support required flag, defaults, and range constraints
+- Consider batch conversion of similar modules (e.g., all CV modules together)
 
 ---
 
@@ -827,10 +871,10 @@ Unregistered:                49
 
 | Platform | Status | Last Success | Notes |
 |----------|--------|--------------|-------|
-| macOS | ✅ Pass | 2025-12-31 | 9ab289d7c - validator fix |
-| Linux x64 | 🔄 Running | - | CI in progress |
-| Windows | 🔄 Running | - | CI in progress |
-| ARM64 | 🔄 Running | - | CI in progress |
+| macOS | ✅ Pass | 2025-12-31 | All tests passing |
+| Linux x64 | ✅ Pass | 2025-12-31 | All tests passing |
+| Windows | ✅ Pass | 2025-12-31 | All tests passing |
+| ARM64 | ✅ Pass | 2025-12-31 | All tests passing |
 
 ---
 
