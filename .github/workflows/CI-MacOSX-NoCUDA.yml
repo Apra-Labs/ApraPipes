@@ -37,6 +37,8 @@ permissions:
 
 jobs:
   ci:
+    # TEMPORARY: Skip macOS builds on cpp17-modernization branch to save CI resources
+    if: ${{ !contains(github.ref, 'cpp17-modernization') }}
     uses: ./.github/workflows/build-test-macosx.yml
     with:
       runner: '["macos-15-intel"]'

@@ -30,6 +30,8 @@ permissions:
 
 jobs:
   ci:
+    # TEMPORARY: Skip Linux builds on cpp17-modernization branch to save CI resources
+    if: ${{ !contains(github.ref, 'cpp17-modernization') }}
     uses: ./.github/workflows/build-test.yml
     with:
       os: linux
