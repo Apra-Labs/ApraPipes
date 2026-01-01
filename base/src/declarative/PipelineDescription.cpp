@@ -23,21 +23,27 @@ Connection Connection::parse(const std::string& from, const std::string& to) {
     if (dot1 != std::string::npos) {
         c.from_module = from.substr(0, dot1);
         c.from_pin = from.substr(dot1 + 1);
+    } else {
+        // No dot: entire string is module name, pin is empty (use default)
+        c.from_module = from;
+        c.from_pin = "";  // Will use default output pin
     }
 
     if (dot2 != std::string::npos) {
         c.to_module = to.substr(0, dot2);
         c.to_pin = to.substr(dot2 + 1);
+    } else {
+        // No dot: entire string is module name, pin is empty (use default)
+        c.to_module = to;
+        c.to_pin = "";  // Will use default input pin
     }
 
     return c;
 }
 
 bool Connection::isValid() const {
-    return !from_module.empty() &&
-           !from_pin.empty() &&
-           !to_module.empty() &&
-           !to_pin.empty();
+    // Pins can be empty (use defaults), but modules must be specified
+    return !from_module.empty() && !to_module.empty();
 }
 
 // ============================================================

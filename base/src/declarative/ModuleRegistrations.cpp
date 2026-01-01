@@ -115,7 +115,9 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Source)
                 .description("Generates test signal frames for testing pipelines")
                 .tags("source", "test", "generator", "signal")
-                .output("output", "RawImage");
+                .output("output", "RawImagePlanar")
+                .intProp("width", "Frame width in pixels", true, 0, 1, 4096)
+                .intProp("height", "Frame height in pixels", true, 0, 1, 4096);
         }
 
         // StatSink - might not have REGISTER_MODULE yet

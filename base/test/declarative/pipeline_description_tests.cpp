@@ -150,12 +150,24 @@ BOOST_AUTO_TEST_CASE(Connection_ParseHandlesMissingDot)
 {
     auto c = Connection::parse("source", "decoder.input");
 
-    // from side has no dot, so from_module and from_pin are empty
-    BOOST_CHECK(c.from_module.empty());
+    // from side has no dot: module name is set, pin is empty (use default)
+    BOOST_CHECK_EQUAL(c.from_module, "source");
     BOOST_CHECK(c.from_pin.empty());
     BOOST_CHECK_EQUAL(c.to_module, "decoder");
     BOOST_CHECK_EQUAL(c.to_pin, "input");
-    BOOST_CHECK(!c.isValid());
+    BOOST_CHECK(c.isValid());  // Now valid - modules are set
+}
+
+BOOST_AUTO_TEST_CASE(Connection_ParseHandlesBothMissingDot)
+{
+    auto c = Connection::parse("source", "sink");
+
+    // Neither has dot: module names set, both pins empty (use defaults)
+    BOOST_CHECK_EQUAL(c.from_module, "source");
+    BOOST_CHECK(c.from_pin.empty());
+    BOOST_CHECK_EQUAL(c.to_module, "sink");
+    BOOST_CHECK(c.to_pin.empty());
+    BOOST_CHECK(c.isValid());  // Valid - modules are set
 }
 
 BOOST_AUTO_TEST_CASE(Connection_ParseHandlesComplexPinNames)
@@ -251,11 +263,24 @@ BOOST_AUTO_TEST_CASE(PipelineDescription_AddConnectionWithStringParsing)
     BOOST_CHECK_EQUAL(pd.connections[0].to_pin, "input");
 }
 
-BOOST_AUTO_TEST_CASE(PipelineDescription_AddConnectionFailsOnBadFormat)
+BOOST_AUTO_TEST_CASE(PipelineDescription_AddConnectionSucceedsWithoutPin)
 {
     PipelineDescription pd;
 
-    bool success = pd.addConnection("source", "decoder.input");  // missing dot in 'from'
+    // Missing dot is now valid - uses default pins
+    bool success = pd.addConnection("source", "decoder.input");
+    BOOST_CHECK(success);
+    BOOST_CHECK_EQUAL(pd.connections.size(), 1u);
+    BOOST_CHECK_EQUAL(pd.connections[0].from_module, "source");
+    BOOST_CHECK(pd.connections[0].from_pin.empty());  // Will use default output pin
+}
+
+BOOST_AUTO_TEST_CASE(PipelineDescription_AddConnectionFailsOnEmptyModule)
+{
+    PipelineDescription pd;
+
+    // Empty module name is invalid
+    bool success = pd.addConnection("", "decoder.input");
     BOOST_CHECK(!success);
     BOOST_CHECK(pd.connections.empty());
 }

@@ -1,0 +1,34 @@
+# 03_split_pipeline.toml
+# Branching pipeline: TestSignalGenerator → Split → 2x StatSink
+# Tests one-to-many module connections
+
+[pipeline]
+name = "split_pipeline"
+description = "Pipeline testing Split module (one input to multiple outputs)"
+
+[modules.generator]
+type = "TestSignalGenerator"
+  [modules.generator.props]
+  width = 640
+  height = 480
+
+[modules.splitter]
+type = "Split"
+
+[modules.stats1]
+type = "StatSink"
+
+[modules.stats2]
+type = "StatSink"
+
+[[connections]]
+from = "generator"
+to = "splitter"
+
+[[connections]]
+from = "splitter.output_1"
+to = "stats1"
+
+[[connections]]
+from = "splitter.output_2"
+to = "stats2"

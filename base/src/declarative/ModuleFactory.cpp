@@ -66,6 +66,29 @@ std::map<std::string, std::string> ModuleFactory::setupOutputPins(
 ) {
     std::map<std::string, std::string> pinMap;
 
+    // Check if module already has output pins (set up in constructor)
+    // Some modules like TestSignalGenerator create their own metadata with proper dimensions
+    // Collect ALL existing pins across all frame types (TEXT=24 is the last enum value as of Dec 2025)
+    std::vector<std::string> existingPins;
+    for (int ft = FrameMetadata::GENERAL; ft <= FrameMetadata::TEXT; ++ft) {
+        auto pins = module->getAllOutputPinsByType(ft);
+        for (const auto& pin : pins) {
+            existingPins.push_back(pin);
+        }
+    }
+
+    if (!existingPins.empty()) {
+        // Map registry output names to existing pins (in order)
+        // This allows multi-output modules with existing pins to work correctly
+        size_t pinIndex = 0;
+        for (const auto& outputPin : info.outputs) {
+            if (pinIndex < existingPins.size()) {
+                pinMap[outputPin.name] = existingPins[pinIndex++];
+            }
+        }
+        return pinMap;
+    }
+
     // For each declared output pin, create a default FrameMetadata and add it
     for (const auto& outputPin : info.outputs) {
         // Use the first frame type in the list
