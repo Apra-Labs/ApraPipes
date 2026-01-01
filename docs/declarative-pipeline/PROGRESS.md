@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2025-12-31 17:30` by `claude-code`
+Last Updated: `2026-01-01 00:45` by `claude-code`
 
 ---
 
@@ -903,6 +903,83 @@ Coverage: 32.3%
 - ColorConversion has enum property with string-to-enum mapping
 - VirtualPTZ, TextOverlay, BrightnessContrast have dynamic properties (runtime-modifiable)
 - CalcHistogramCV has vector<int> roi that cannot be set via TOML (array not supported yet)
+
+---
+
+### Session: 2026-01-01 00:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** Validation Suggestion System, DRY Refactoring
+
+**Accomplished:**
+- Implemented Validation Suggestion System:
+  - Created `Issue.h` with unified Issue struct (consolidates ValidationIssue + BuildIssue)
+  - Added `KNOWN_CONVERSIONS` registry for type bridge modules
+  - Added static type checking in `ModuleFactory::connectModules()` before runtime connection
+  - Generates TOML snippets for suggested bridge modules (e.g., ColorConversion)
+  - Updated CLI to display suggestions with copy-paste ready TOML
+  - Added `suggestion` field to Issue struct with JSON output support
+- Fixed module registrations to match actual validation requirements:
+  - FaceDetectorXform: Changed to "RawImage" (was wrongly "RawImagePlanar")
+  - QRReader: Changed to accept both "RawImage", "RawImagePlanar"
+  - ColorConversion: Changed to accept both input and output types
+  - RotateCV: Changed to accept both "RawImage", "RawImagePlanar"
+- Refactored to eliminate DRY violation:
+  - Created `Issue.h` as single source of truth for validation/build issues
+  - ValidationIssue and BuildIssue are now type aliases to Issue
+  - Updated PipelineValidator.cpp and ModuleFactory.cpp to use Issue::
+  - Updated pipeline_validator_tests.cpp for new error codes
+- All 28 PipelineValidator tests pass
+- All unit tests pass
+
+**Example Output:**
+```
+$ ./aprapipes_cli validate pipeline.toml
+[ERROR] E304 @ connections: Frame type mismatch: generator outputs 'RawImagePlanar', but ptz expects [RawImage]
+
+  SUGGESTION: Insert ColorConversion module to convert RawImagePlanar → RawImage:
+  Add this module:
+
+  [modules.convert_generator_to_ptz]
+  type = "ColorConversion"
+    [modules.convert_generator_to_ptz.props]
+    conversionType = "YUV420PLANAR_TO_RGB"
+
+  And update connections:
+  [[connections]]
+  from = "generator"
+  to = "convert_generator_to_ptz"
+
+  [[connections]]
+  from = "convert_generator_to_ptz"
+  to = "ptz"
+
+✗ Validation failed with 1 error(s), 1 suggestion(s)
+```
+
+**Files Created:**
+- `base/include/declarative/Issue.h` - Unified Issue struct
+- `docs/declarative-pipeline/VALIDATION_SUGGESTIONS.md` - Design document
+
+**Files Modified:**
+- `base/include/declarative/ModuleFactory.h` - Use Issue instead of BuildIssue
+- `base/include/declarative/PipelineValidator.h` - Use Issue.h
+- `base/src/declarative/ModuleFactory.cpp` - Static type checking with suggestions
+- `base/src/declarative/ModuleRegistrations.cpp` - Fixed inaccurate registrations
+- `base/src/declarative/PipelineValidator.cpp` - Use Issue::
+- `base/test/declarative/pipeline_validator_tests.cpp` - Updated error code test
+- `base/tools/aprapipes_cli.cpp` - Display suggestions in CLI output
+
+**Remaining:**
+- Commit and push changes
+- Integration testing with more complex pipelines
+- Add more KNOWN_CONVERSIONS as needed
+
+**Notes for Next Session:**
+- Validation now suggests bridge modules for type mismatches
+- KNOWN_CONVERSIONS table in ModuleFactory.cpp and PipelineValidator.cpp (could consolidate)
+- CLI displays suggestions with TOML snippets ready to copy-paste
 
 ---
 

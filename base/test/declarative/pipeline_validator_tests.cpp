@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(ValidationIssue_ErrorCodes_Defined)
     BOOST_CHECK_EQUAL(std::string(ValidationIssue::PROPERTY_OUT_OF_RANGE), "E202");
     BOOST_CHECK_EQUAL(std::string(ValidationIssue::PROPERTY_INVALID_ENUM), "E203");
     BOOST_CHECK_EQUAL(std::string(ValidationIssue::PROPERTY_REGEX_MISMATCH), "E204");
-    BOOST_CHECK_EQUAL(std::string(ValidationIssue::MISSING_REQUIRED_PROPERTY), "W200");
+    BOOST_CHECK_EQUAL(std::string(ValidationIssue::MISSING_REQUIRED_PROPERTY), "E205");
 
     // Connection validation codes (C4)
     BOOST_CHECK_EQUAL(std::string(ValidationIssue::UNKNOWN_SOURCE_MODULE), "E300");

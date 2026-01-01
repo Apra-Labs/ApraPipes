@@ -13,6 +13,88 @@
 namespace apra {
 
 // ============================================================
+// Type Conversion Registry - Known conversions between frame types
+// ============================================================
+
+struct TypeConversion {
+    std::string fromType;
+    std::string toType;
+    std::string moduleName;
+    std::map<std::string, std::string> props;
+};
+
+// Static registry of known type conversions
+static const std::vector<TypeConversion> KNOWN_CONVERSIONS = {
+    // Planar to Packed conversions
+    {"RawImagePlanar", "RawImage", "ColorConversion", {{"conversionType", "YUV420PLANAR_TO_RGB"}}},
+
+    // Packed to Planar conversions
+    {"RawImage", "RawImagePlanar", "ColorConversion", {{"conversionType", "RGB_TO_YUV420PLANAR"}}},
+
+    // Decode conversions
+    {"EncodedImage", "RawImage", "ImageDecoderCV", {}},
+    {"H264Data", "RawImagePlanar", "H264Decoder", {}},
+
+    // Encode conversions
+    {"RawImage", "EncodedImage", "ImageEncoderCV", {}},
+};
+
+// Find a bridge module that converts from srcType to dstType
+static const TypeConversion* findTypeConversion(const std::string& srcType, const std::string& dstType) {
+    for (const auto& conv : KNOWN_CONVERSIONS) {
+        if (conv.fromType == srcType && conv.toType == dstType) {
+            return &conv;
+        }
+    }
+    return nullptr;
+}
+
+// Generate a suggested module instance name based on conversion
+static std::string generateBridgeModuleName(const std::string& fromModule, const std::string& toModule, const TypeConversion& conv) {
+    // Create a descriptive name like "convert_generator_to_ptz"
+    std::string name = "convert_" + fromModule + "_to_" + toModule;
+    // Sanitize: replace any non-alphanumeric chars with underscore
+    for (char& c : name) {
+        if (!std::isalnum(c) && c != '_') {
+            c = '_';
+        }
+    }
+    return name;
+}
+
+// Generate TOML snippet for inserting a bridge module
+static std::string generateTomlSnippet(
+    const std::string& fromModule,
+    const std::string& toModule,
+    const TypeConversion& conv
+) {
+    std::string bridgeName = generateBridgeModuleName(fromModule, toModule, conv);
+    std::ostringstream oss;
+
+    oss << "\n  Add this module:\n\n";
+    oss << "  [modules." << bridgeName << "]\n";
+    oss << "  type = \"" << conv.moduleName << "\"\n";
+
+    if (!conv.props.empty()) {
+        oss << "    [modules." << bridgeName << ".props]\n";
+        for (const auto& [key, value] : conv.props) {
+            oss << "    " << key << " = \"" << value << "\"\n";
+        }
+    }
+
+    oss << "\n  And update connections:\n\n";
+    oss << "  [[connections]]\n";
+    oss << "  from = \"" << fromModule << "\"\n";
+    oss << "  to = \"" << bridgeName << "\"\n";
+    oss << "\n";
+    oss << "  [[connections]]\n";
+    oss << "  from = \"" << bridgeName << "\"\n";
+    oss << "  to = \"" << toModule << "\"\n";
+
+    return oss.str();
+}
+
+// ============================================================
 // Result formatting
 // ============================================================
 
@@ -21,13 +103,13 @@ std::string PipelineValidator::Result::format() const {
 
     for (const auto& issue : issues) {
         switch (issue.level) {
-            case ValidationIssue::Level::Error:
+            case Issue::Level::Error:
                 oss << "[ERROR] ";
                 break;
-            case ValidationIssue::Level::Warning:
+            case Issue::Level::Warning:
                 oss << "[WARN]  ";
                 break;
-            case ValidationIssue::Level::Info:
+            case Issue::Level::Info:
                 oss << "[INFO]  ";
                 break;
         }
@@ -60,7 +142,7 @@ PipelineValidator::Result PipelineValidator::validate(const PipelineDescription&
 
     // Add info about what we're validating
     if (options_.includeInfoMessages) {
-        result.issues.push_back(ValidationIssue::info(
+        result.issues.push_back(Issue::info(
             "I000",
             "pipeline",
             "Validating pipeline: " + desc.settings.name +
@@ -103,7 +185,7 @@ PipelineValidator::Result PipelineValidator::validate(const PipelineDescription&
 
     // Summary
     if (options_.includeInfoMessages) {
-        result.issues.push_back(ValidationIssue::info(
+        result.issues.push_back(Issue::info(
             "I001",
             "pipeline",
             "Validation complete: " +
@@ -127,7 +209,7 @@ PipelineValidator::Result PipelineValidator::validateModules(const PipelineDescr
         const std::string location = "modules." + module.instance_id;
 
         if (options_.includeInfoMessages) {
-            result.issues.push_back(ValidationIssue::info(
+            result.issues.push_back(Issue::info(
                 "I010",
                 location,
                 "Found module: " + module.module_type
@@ -159,8 +241,8 @@ PipelineValidator::Result PipelineValidator::validateModules(const PipelineDescr
                 if (allModules.size() > 5) suggestion += "...";
             }
 
-            result.issues.push_back(ValidationIssue::error(
-                ValidationIssue::UNKNOWN_MODULE_TYPE,
+            result.issues.push_back(Issue::error(
+                Issue::UNKNOWN_MODULE,
                 location,
                 "Unknown module type '" + module.module_type + "'",
                 suggestion
@@ -189,7 +271,7 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
         }
 
         if (options_.includeInfoMessages && !module.properties.empty()) {
-            result.issues.push_back(ValidationIssue::info(
+            result.issues.push_back(Issue::info(
                 "I020",
                 moduleLocation,
                 "Module has " + std::to_string(module.properties.size()) + " properties"
@@ -206,7 +288,7 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
         // (properties will be passed through to the module's applyProperties)
         if (knownProps.empty() && !module.properties.empty()) {
             if (options_.includeInfoMessages) {
-                result.issues.push_back(ValidationIssue::info(
+                result.issues.push_back(Issue::info(
                     "I021",
                     moduleLocation,
                     "Module type '" + module.module_type + "' has no property metadata; skipping property validation"
@@ -230,8 +312,8 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
                         suggestion += moduleInfo->properties[i].name;
                     }
                 }
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::UNKNOWN_PROPERTY,
+                result.issues.push_back(Issue::error(
+                    Issue::UNKNOWN_PROPERTY,
                     propLocation,
                     "Unknown property '" + propName + "' for module type '" + module.module_type + "'",
                     suggestion
@@ -264,8 +346,8 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
             }, propValue);
 
             if (!typeMatch) {
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::PROPERTY_TYPE_MISMATCH,
+                result.issues.push_back(Issue::error(
+                    Issue::PROPERTY_TYPE_MISMATCH,
                     propLocation,
                     "Type mismatch: expected " + expectedType + ", got " + actualType,
                     ""
@@ -288,8 +370,8 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
                         int64_t minVal = std::stoll(propInfo.min_value);
                         int64_t maxVal = std::stoll(propInfo.max_value);
                         if (intVal < minVal || intVal > maxVal) {
-                            result.issues.push_back(ValidationIssue::error(
-                                ValidationIssue::PROPERTY_OUT_OF_RANGE,
+                            result.issues.push_back(Issue::error(
+                                Issue::PROPERTY_OUT_OF_RANGE,
                                 propLocation,
                                 "Value " + std::to_string(intVal) + " out of range [" +
                                     propInfo.min_value + ", " + propInfo.max_value + "]",
@@ -323,8 +405,8 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
                         if (i > 0) validValues += ", ";
                         validValues += propInfo.enum_values[i];
                     }
-                    result.issues.push_back(ValidationIssue::error(
-                        ValidationIssue::PROPERTY_INVALID_ENUM,
+                    result.issues.push_back(Issue::error(
+                        Issue::PROPERTY_INVALID_ENUM,
                         propLocation,
                         "Invalid enum value '" + strVal + "'",
                         "Valid values: " + validValues
@@ -337,8 +419,8 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
         for (const auto& propInfo : moduleInfo->properties) {
             if (propInfo.required) {
                 if (module.properties.find(propInfo.name) == module.properties.end()) {
-                    result.issues.push_back(ValidationIssue::warning(
-                        ValidationIssue::MISSING_REQUIRED_PROPERTY,
+                    result.issues.push_back(Issue::warning(
+                        Issue::MISSING_REQUIRED_PROPERTY,
                         moduleLocation + ".props",
                         "Missing required property '" + propInfo.name + "'",
                         "Default value: " + propInfo.default_value
@@ -360,7 +442,7 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
     auto& registry = ModuleRegistry::instance();
 
     if (options_.includeInfoMessages && !desc.connections.empty()) {
-        result.issues.push_back(ValidationIssue::info(
+        result.issues.push_back(Issue::info(
             "I030",
             "connections",
             "Pipeline has " + std::to_string(desc.connections.size()) + " connections"
@@ -385,8 +467,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         // C4: Check source module exists
         auto srcIt = moduleMap.find(conn.from_module);
         if (srcIt == moduleMap.end()) {
-            result.issues.push_back(ValidationIssue::error(
-                ValidationIssue::UNKNOWN_SOURCE_MODULE,
+            result.issues.push_back(Issue::error(
+                Issue::UNKNOWN_SOURCE_MODULE,
                 location,
                 "Unknown source module '" + conn.from_module + "' in connection",
                 ""
@@ -397,8 +479,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         // C4: Check dest module exists
         auto dstIt = moduleMap.find(conn.to_module);
         if (dstIt == moduleMap.end()) {
-            result.issues.push_back(ValidationIssue::error(
-                ValidationIssue::UNKNOWN_DEST_MODULE,
+            result.issues.push_back(Issue::error(
+                Issue::UNKNOWN_DEST_MODULE,
                 location,
                 "Unknown destination module '" + conn.to_module + "' in connection",
                 ""
@@ -431,8 +513,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                         suggestion += srcInfo->outputs[i].name;
                     }
                 }
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::UNKNOWN_SOURCE_PIN,
+                result.issues.push_back(Issue::error(
+                    Issue::UNKNOWN_SOURCE_PIN,
                     location,
                     "Unknown output pin '" + conn.from_pin + "' on module '" + conn.from_module + "'",
                     suggestion
@@ -463,8 +545,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                         suggestion += dstInfo->inputs[i].name;
                     }
                 }
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::UNKNOWN_DEST_PIN,
+                result.issues.push_back(Issue::error(
+                    Issue::UNKNOWN_DEST_PIN,
                     location,
                     "Unknown input pin '" + conn.to_pin + "' on module '" + conn.to_module + "'",
                     suggestion
@@ -479,7 +561,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         if (!srcPinType.empty() && !dstPinTypes.empty()) {
             bool compatible = false;
             for (const auto& dstType : dstPinTypes) {
-                if (srcPinType == dstType || dstType == "*" || srcPinType == "*") {
+                if (srcPinType == dstType || dstType == "*" || srcPinType == "*" ||
+                    dstType == "Frame" || srcPinType == "Frame") {
                     compatible = true;
                     break;
                 }
@@ -490,12 +573,25 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                     if (i > 0) dstTypesStr += ", ";
                     dstTypesStr += dstPinTypes[i];
                 }
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::FRAME_TYPE_INCOMPATIBLE,
+
+                // Look for a known type conversion
+                std::string suggestion;
+                for (const auto& dstType : dstPinTypes) {
+                    const TypeConversion* conv = findTypeConversion(srcPinType, dstType);
+                    if (conv) {
+                        suggestion = "Insert " + conv->moduleName + " module to convert " +
+                                     srcPinType + " → " + dstType + ":" +
+                                     generateTomlSnippet(conn.from_module, conn.to_module, *conv);
+                        break;
+                    }
+                }
+
+                result.issues.push_back(Issue::error(
+                    Issue::FRAME_TYPE_INCOMPATIBLE,
                     location,
                     "Frame type mismatch: output produces '" + srcPinType +
                         "', input expects [" + dstTypesStr + "]",
-                    ""
+                    suggestion
                 ));
             }
         }
@@ -503,8 +599,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         // C4: Check for duplicate connections to same input
         std::string inputKey = conn.to_module + "." + (conn.to_pin.empty() ? "input" : conn.to_pin);
         if (connectedInputs.find(inputKey) != connectedInputs.end()) {
-            result.issues.push_back(ValidationIssue::error(
-                ValidationIssue::DUPLICATE_INPUT_CONNECTION,
+            result.issues.push_back(Issue::error(
+                Issue::DUPLICATE_INPUT_CONNECTION,
                 location,
                 "Duplicate connection to input '" + inputKey + "'",
                 "Each input pin can only have one connection"
@@ -528,8 +624,8 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                     connected = connectedInputs.find(module.instance_id + ".input") != connectedInputs.end();
                 }
                 if (!connected) {
-                    result.issues.push_back(ValidationIssue::warning(
-                        ValidationIssue::REQUIRED_PIN_UNCONNECTED,
+                    result.issues.push_back(Issue::warning(
+                        Issue::REQUIRED_PIN_UNCONNECTED,
                         "modules." + module.instance_id,
                         "Required input pin '" + inputPin.name + "' is not connected",
                         ""
@@ -552,7 +648,7 @@ PipelineValidator::Result PipelineValidator::validateGraph(const PipelineDescrip
 
     if (desc.modules.empty()) {
         if (options_.includeInfoMessages) {
-            result.issues.push_back(ValidationIssue::info(
+            result.issues.push_back(Issue::info(
                 "I040",
                 "pipeline",
                 "Pipeline has no modules"
@@ -572,8 +668,8 @@ PipelineValidator::Result PipelineValidator::validateGraph(const PipelineDescrip
     }
 
     if (!hasSource) {
-        result.issues.push_back(ValidationIssue::error(
-            ValidationIssue::NO_SOURCE_MODULE,
+        result.issues.push_back(Issue::error(
+            Issue::NO_SOURCE_MODULE,
             "pipeline",
             "Pipeline has no Source modules (nothing will produce data)",
             "Add a module with category 'Source' like FileReaderModule or Mp4ReaderSource"
@@ -644,8 +740,8 @@ PipelineValidator::Result PipelineValidator::validateGraph(const PipelineDescrip
                         cycleStr += node;
                     }
                 }
-                result.issues.push_back(ValidationIssue::error(
-                    ValidationIssue::GRAPH_HAS_CYCLE,
+                result.issues.push_back(Issue::error(
+                    Issue::GRAPH_HAS_CYCLE,
                     "pipeline",
                     "Cycle detected in pipeline: " + cycleStr,
                     "Remove one of the connections to break the cycle"
@@ -676,8 +772,8 @@ PipelineValidator::Result PipelineValidator::validateGraph(const PipelineDescrip
 
         // Single-module pipelines are not orphans
         if (isOrphan && desc.modules.size() > 1) {
-            result.issues.push_back(ValidationIssue::warning(
-                ValidationIssue::ORPHAN_MODULE,
+            result.issues.push_back(Issue::warning(
+                Issue::ORPHAN_MODULE,
                 "modules." + module.instance_id,
                 "Module is not connected to any other module (orphan)",
                 "Either connect it to the pipeline or remove it"

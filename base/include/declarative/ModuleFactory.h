@@ -16,65 +16,13 @@
 
 #include "declarative/PipelineDescription.h"
 #include "declarative/ModuleRegistry.h"
+#include "declarative/Issue.h"
 #include "PipeLine.h"
 
 // Forward declaration
 class Module;
 
 namespace apra {
-
-// ============================================================
-// BuildIssue - Represents an issue encountered during build
-// ============================================================
-struct BuildIssue {
-    enum class Level {
-        Error,      // Fatal - stops build
-        Warning,    // Non-fatal - build continues
-        Info        // Informational - for logging
-    };
-
-    Level level = Level::Error;
-    std::string code;           // e.g., "E001", "W002", "I001"
-    std::string location;       // e.g., "modules.decoder.props.device_id"
-    std::string message;        // Human-readable description
-
-    // Factory methods for common issues
-    static BuildIssue error(const std::string& code,
-                           const std::string& location,
-                           const std::string& message) {
-        return {Level::Error, code, location, message};
-    }
-
-    static BuildIssue warning(const std::string& code,
-                             const std::string& location,
-                             const std::string& message) {
-        return {Level::Warning, code, location, message};
-    }
-
-    static BuildIssue info(const std::string& code,
-                          const std::string& location,
-                          const std::string& message) {
-        return {Level::Info, code, location, message};
-    }
-
-    // Common error codes
-    static constexpr const char* UNKNOWN_MODULE = "E001";
-    static constexpr const char* MODULE_CREATION_FAILED = "E002";
-    static constexpr const char* UNKNOWN_PROPERTY = "E010";
-    static constexpr const char* PROPERTY_TYPE_MISMATCH = "E011";
-    static constexpr const char* UNKNOWN_SOURCE_MODULE = "E020";
-    static constexpr const char* UNKNOWN_SOURCE_PIN = "E021";
-    static constexpr const char* UNKNOWN_DEST_MODULE = "E022";
-    static constexpr const char* UNKNOWN_DEST_PIN = "E023";
-    static constexpr const char* CONNECTION_FAILED = "E025";
-    static constexpr const char* EMPTY_PIPELINE = "E030";
-    static constexpr const char* INIT_FAILED = "E031";
-    static constexpr const char* MISSING_REQUIRED_PROP = "E012";
-    static constexpr const char* MISSING_REQUIRED_INPUT = "E026";
-    static constexpr const char* PROP_TYPE_CONVERSION = "W002";
-    static constexpr const char* MODULE_CREATED = "I001";
-    static constexpr const char* CONNECTION_ESTABLISHED = "I002";
-};
 
 // ============================================================
 // ModuleFactory - Builds PipeLine from PipelineDescription

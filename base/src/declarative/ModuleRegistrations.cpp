@@ -90,22 +90,24 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // FaceDetectorXform - face detection
+        // NOTE: Validates for RAW_IMAGE only (not RawImagePlanar despite what name suggests)
         if (!registry.hasModule("FaceDetectorXform")) {
             registerModule<FaceDetectorXform, FaceDetectorXformProps>()
                 .category(ModuleCategory::Analytics)
                 .description("Detects faces in image frames using deep learning models.")
                 .tags("analytics", "face", "detection", "transform")
-                .input("input", "RawImagePlanar")
+                .input("input", "RawImage")
                 .output("output", "Frame");
         }
 
         // QRReader - QR code and barcode detection
+        // NOTE: Accepts both RAW_IMAGE and RAW_IMAGE_PLANAR
         if (!registry.hasModule("QRReader")) {
             registerModule<QRReader, QRReaderProps>()
                 .category(ModuleCategory::Analytics)
                 .description("Reads and decodes QR codes and barcodes from image frames.")
                 .tags("analytics", "qr", "barcode", "reader")
-                .input("input", "RawImagePlanar")
+                .input("input", "RawImage", "RawImagePlanar")
                 .output("output", "Frame");
         }
 
@@ -230,24 +232,27 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // RotateCV - rotates images using OpenCV
+        // NOTE: Accepts both RAW_IMAGE and RAW_IMAGE_PLANAR
         if (!registry.hasModule("RotateCV")) {
             registerModule<RotateCV, RotateCVProps>()
                 .category(ModuleCategory::Transform)
                 .description("Rotates images by a specified angle using OpenCV")
                 .tags("transform", "rotate", "image", "opencv")
-                .input("input", "RawImage")
+                .input("input", "RawImage", "RawImagePlanar")
                 .output("output", "RawImage")
                 .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0);
         }
 
         // ColorConversion - converts between color spaces
+        // NOTE: Accepts both RAW_IMAGE and RAW_IMAGE_PLANAR, can convert between them
+        // Key conversions: YUV420PLANAR_TO_RGB converts RawImagePlanar to RawImage
         if (!registry.hasModule("ColorConversion")) {
             registerModule<ColorConversion, ColorConversionProps>()
                 .category(ModuleCategory::Transform)
-                .description("Converts images between different color spaces (RGB, BGR, YUV, Mono, Bayer)")
-                .tags("transform", "color", "conversion", "opencv")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .description("Converts images between different color spaces (RGB, BGR, YUV, Mono, Bayer). Use YUV420PLANAR_TO_RGB to convert planar to packed format.")
+                .tags("transform", "color", "conversion", "opencv", "planar")
+                .input("input", "RawImage", "RawImagePlanar")
+                .output("output", "RawImage", "RawImagePlanar")
                 .enumProp("conversionType", "Color space conversion to perform", true, "RGB_TO_MONO",
                     "RGB_TO_MONO", "BGR_TO_MONO", "BGR_TO_RGB", "RGB_TO_BGR",
                     "RGB_TO_YUV420PLANAR", "YUV420PLANAR_TO_RGB",

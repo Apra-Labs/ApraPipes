@@ -10,8 +10,90 @@
 #include "FrameMetadata.h"
 #include <sstream>
 #include <iostream>
+#include <cctype>
 
 namespace apra {
+
+// ============================================================
+// Type Conversion Registry - Known conversions between frame types
+// ============================================================
+
+struct TypeConversion {
+    std::string fromType;
+    std::string toType;
+    std::string moduleName;
+    std::map<std::string, std::string> props;
+};
+
+// Static registry of known type conversions
+static const std::vector<TypeConversion> KNOWN_CONVERSIONS = {
+    // Planar to Packed conversions
+    {"RawImagePlanar", "RawImage", "ColorConversion", {{"conversionType", "YUV420PLANAR_TO_RGB"}}},
+
+    // Packed to Planar conversions
+    {"RawImage", "RawImagePlanar", "ColorConversion", {{"conversionType", "RGB_TO_YUV420PLANAR"}}},
+
+    // Decode conversions
+    {"EncodedImage", "RawImage", "ImageDecoderCV", {}},
+    {"H264Data", "RawImagePlanar", "H264Decoder", {}},
+    {"H264Frame", "RawImagePlanar", "H264Decoder", {}},
+
+    // Encode conversions
+    {"RawImage", "EncodedImage", "ImageEncoderCV", {}},
+};
+
+// Find a bridge module that converts from srcType to dstType
+static const TypeConversion* findTypeConversion(const std::string& srcType, const std::string& dstType) {
+    for (const auto& conv : KNOWN_CONVERSIONS) {
+        if (conv.fromType == srcType && conv.toType == dstType) {
+            return &conv;
+        }
+    }
+    return nullptr;
+}
+
+// Generate a suggested module instance name based on conversion
+static std::string generateBridgeModuleName(const std::string& fromModule, const std::string& toModule) {
+    std::string name = "convert_" + fromModule + "_to_" + toModule;
+    for (char& c : name) {
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') {
+            c = '_';
+        }
+    }
+    return name;
+}
+
+// Generate TOML snippet for inserting a bridge module
+static std::string generateTomlSnippet(
+    const std::string& fromModule,
+    const std::string& toModule,
+    const TypeConversion& conv
+) {
+    std::string bridgeName = generateBridgeModuleName(fromModule, toModule);
+    std::ostringstream oss;
+
+    oss << "\n  Add this module:\n\n";
+    oss << "  [modules." << bridgeName << "]\n";
+    oss << "  type = \"" << conv.moduleName << "\"\n";
+
+    if (!conv.props.empty()) {
+        oss << "    [modules." << bridgeName << ".props]\n";
+        for (const auto& [key, value] : conv.props) {
+            oss << "    " << key << " = \"" << value << "\"\n";
+        }
+    }
+
+    oss << "\n  And update connections:\n\n";
+    oss << "  [[connections]]\n";
+    oss << "  from = \"" << fromModule << "\"\n";
+    oss << "  to = \"" << bridgeName << "\"\n";
+    oss << "\n";
+    oss << "  [[connections]]\n";
+    oss << "  from = \"" << bridgeName << "\"\n";
+    oss << "  to = \"" << toModule << "\"\n";
+
+    return oss.str();
+}
 
 // ============================================================
 // Helper: Convert frame type string to FrameMetadata::FrameType
@@ -116,13 +198,13 @@ std::string ModuleFactory::BuildResult::formatIssues() const {
     std::ostringstream oss;
     for (const auto& issue : issues) {
         switch (issue.level) {
-            case BuildIssue::Level::Error:
+            case Issue::Level::Error:
                 oss << "[ERROR] ";
                 break;
-            case BuildIssue::Level::Warning:
+            case Issue::Level::Warning:
                 oss << "[WARN]  ";
                 break;
-            case BuildIssue::Level::Info:
+            case Issue::Level::Info:
                 oss << "[INFO]  ";
                 break;
         }
@@ -149,8 +231,8 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
 
     // Validate we have something to build
     if (desc.modules.empty()) {
-        result.issues.push_back(BuildIssue::error(
-            BuildIssue::EMPTY_PIPELINE,
+        result.issues.push_back(Issue::error(
+            Issue::EMPTY_PIPELINE,
             "pipeline",
             "Pipeline has no modules"
         ));
@@ -198,8 +280,8 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
             result.pipeline->appendModule(module);
 
             if (options_.collect_info_messages) {
-                result.issues.push_back(BuildIssue::info(
-                    BuildIssue::MODULE_CREATED,
+                result.issues.push_back(Issue::info(
+                    Issue::MODULE_CREATED,
                     "modules." + instance.instance_id,
                     "Created module: " + instance.module_type
                 ));
@@ -230,7 +312,7 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
     // In strict mode, treat warnings as errors
     if (options_.strict_mode && result.hasWarnings()) {
         result.pipeline.reset();
-        result.issues.push_back(BuildIssue::error(
+        result.issues.push_back(Issue::error(
             "E099",
             "pipeline",
             "Build failed due to warnings in strict mode"
@@ -242,7 +324,7 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         auto& issues = result.issues;
         issues.erase(
             std::remove_if(issues.begin(), issues.end(),
-                [](const BuildIssue& i) { return i.level == BuildIssue::Level::Info; }),
+                [](const BuildIssue& i) { return i.level == Issue::Level::Info; }),
             issues.end()
         );
     }
@@ -262,8 +344,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
 
     // Check module exists in registry
     if (!registry.hasModule(instance.module_type)) {
-        issues.push_back(BuildIssue::error(
-            BuildIssue::UNKNOWN_MODULE,
+        issues.push_back(Issue::error(
+            Issue::UNKNOWN_MODULE,
             "modules." + instance.instance_id,
             "Unknown module type: " + instance.module_type
         ));
@@ -309,8 +391,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
             else if constexpr (std::is_same_v<T, std::vector<int64_t>>) {
                 if (!val.empty()) {
                     convertedProps[propName] = val[0];
-                    issues.push_back(BuildIssue::warning(
-                        BuildIssue::PROP_TYPE_CONVERSION,
+                    issues.push_back(Issue::warning(
+                        Issue::PROP_TYPE_CONVERSION,
                         location,
                         "Array property converted to scalar (using first element)"
                     ));
@@ -319,8 +401,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
             else if constexpr (std::is_same_v<T, std::vector<double>>) {
                 if (!val.empty()) {
                     convertedProps[propName] = val[0];
-                    issues.push_back(BuildIssue::warning(
-                        BuildIssue::PROP_TYPE_CONVERSION,
+                    issues.push_back(Issue::warning(
+                        Issue::PROP_TYPE_CONVERSION,
                         location,
                         "Array property converted to scalar (using first element)"
                     ));
@@ -329,8 +411,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
             else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                 if (!val.empty()) {
                     convertedProps[propName] = val[0];
-                    issues.push_back(BuildIssue::warning(
-                        BuildIssue::PROP_TYPE_CONVERSION,
+                    issues.push_back(Issue::warning(
+                        Issue::PROP_TYPE_CONVERSION,
                         location,
                         "Array property converted to scalar (using first element)"
                     ));
@@ -345,8 +427,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
             if (propInfo.required) {
                 auto it = convertedProps.find(propInfo.name);
                 if (it == convertedProps.end()) {
-                    issues.push_back(BuildIssue::error(
-                        BuildIssue::MISSING_REQUIRED_PROP,
+                    issues.push_back(Issue::error(
+                        Issue::MISSING_REQUIRED_PROP,
                         "modules." + instance.instance_id + ".props." + propInfo.name,
                         "Required property '" + propInfo.name + "' not provided for module '" +
                         instance.module_type + "'"
@@ -359,7 +441,7 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
     // If we have errors from missing required properties, don't try to create the module
     bool hasRequiredPropErrors = std::any_of(issues.begin(), issues.end(),
         [&instance](const BuildIssue& i) {
-            return i.level == BuildIssue::Level::Error &&
+            return i.level == Issue::Level::Error &&
                    i.location.find("modules." + instance.instance_id) != std::string::npos;
         });
     if (hasRequiredPropErrors) {
@@ -370,8 +452,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
     try {
         auto modulePtr = registry.createModule(instance.module_type, convertedProps);
         if (!modulePtr) {
-            issues.push_back(BuildIssue::error(
-                BuildIssue::MODULE_CREATION_FAILED,
+            issues.push_back(Issue::error(
+                Issue::MODULE_CREATION_FAILED,
                 "modules." + instance.instance_id,
                 "Factory returned null for module: " + instance.module_type
             ));
@@ -382,16 +464,16 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
         return boost::shared_ptr<Module>(modulePtr.release());
     }
     catch (const std::exception& e) {
-        issues.push_back(BuildIssue::error(
-            BuildIssue::MODULE_CREATION_FAILED,
+        issues.push_back(Issue::error(
+            Issue::MODULE_CREATION_FAILED,
             "modules." + instance.instance_id,
             "Failed to create module: " + std::string(e.what())
         ));
         return nullptr;
     }
     catch (...) {
-        issues.push_back(BuildIssue::error(
-            BuildIssue::MODULE_CREATION_FAILED,
+        issues.push_back(Issue::error(
+            Issue::MODULE_CREATION_FAILED,
             "modules." + instance.instance_id,
             "Unknown exception while creating module"
         ));
@@ -431,8 +513,8 @@ bool ModuleFactory::connectModules(
         // Find source module context
         auto srcIt = contextMap.find(conn.from_module);
         if (srcIt == contextMap.end()) {
-            issues.push_back(BuildIssue::error(
-                BuildIssue::UNKNOWN_SOURCE_MODULE,
+            issues.push_back(Issue::error(
+                Issue::UNKNOWN_SOURCE_MODULE,
                 "connections",
                 "Unknown source module: " + conn.from_module
             ));
@@ -443,8 +525,8 @@ bool ModuleFactory::connectModules(
         // Find destination module context
         auto dstIt = contextMap.find(conn.to_module);
         if (dstIt == contextMap.end()) {
-            issues.push_back(BuildIssue::error(
-                BuildIssue::UNKNOWN_DEST_MODULE,
+            issues.push_back(Issue::error(
+                Issue::UNKNOWN_DEST_MODULE,
                 "connections",
                 "Unknown destination module: " + conn.to_module
             ));
@@ -469,8 +551,8 @@ bool ModuleFactory::connectModules(
                     srcPinId = srcCtx.outputPinMap.begin()->second;
                 } else if (!srcCtx.outputPinMap.empty()) {
                     // Multi-output module with unknown pin name
-                    issues.push_back(BuildIssue::error(
-                        BuildIssue::UNKNOWN_SOURCE_PIN,
+                    issues.push_back(Issue::error(
+                        Issue::UNKNOWN_SOURCE_PIN,
                         "connections",
                         "Unknown output pin '" + conn.from_pin + "' on module '" +
                         conn.from_module + "'. Available pins: " +
@@ -496,6 +578,82 @@ bool ModuleFactory::connectModules(
         // Track which input is connected on destination
         dstCtx.connectedInputs.push_back(conn.to_pin);
 
+        // Static type checking BEFORE attempting connection
+        // Get source and destination module info from registry
+        auto& registry = ModuleRegistry::instance();
+        const ModuleInfo* srcInfo = registry.getModule(srcCtx.moduleType);
+        const ModuleInfo* dstInfo = registry.getModule(dstCtx.moduleType);
+
+        if (srcInfo && dstInfo) {
+            // Get source output type
+            std::string srcOutputType;
+            if (!srcInfo->outputs.empty()) {
+                // Use specified pin or first output
+                for (const auto& outputPin : srcInfo->outputs) {
+                    if (conn.from_pin.empty() || outputPin.name == conn.from_pin) {
+                        if (!outputPin.frame_types.empty()) {
+                            srcOutputType = outputPin.frame_types[0];
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Get destination input types
+            std::vector<std::string> dstInputTypes;
+            if (!dstInfo->inputs.empty()) {
+                for (const auto& inputPin : dstInfo->inputs) {
+                    if (conn.to_pin.empty() || inputPin.name == conn.to_pin) {
+                        dstInputTypes = inputPin.frame_types;
+                        break;
+                    }
+                }
+            }
+
+            // Check type compatibility
+            if (!srcOutputType.empty() && !dstInputTypes.empty()) {
+                bool compatible = false;
+                for (const auto& dstType : dstInputTypes) {
+                    if (srcOutputType == dstType ||
+                        dstType == "*" || srcOutputType == "*" ||
+                        dstType == "Frame" || srcOutputType == "Frame") {
+                        compatible = true;
+                        break;
+                    }
+                }
+
+                if (!compatible) {
+                    // Look for a known type conversion
+                    std::string suggestion;
+                    for (const auto& dstType : dstInputTypes) {
+                        const TypeConversion* conv = findTypeConversion(srcOutputType, dstType);
+                        if (conv) {
+                            suggestion = "Insert " + conv->moduleName + " module to convert " +
+                                         srcOutputType + " → " + dstType + ":" +
+                                         generateTomlSnippet(conn.from_module, conn.to_module, *conv);
+                            break;
+                        }
+                    }
+
+                    std::string dstTypesStr;
+                    for (size_t i = 0; i < dstInputTypes.size(); ++i) {
+                        if (i > 0) dstTypesStr += ", ";
+                        dstTypesStr += dstInputTypes[i];
+                    }
+
+                    issues.push_back(Issue::error(
+                        Issue::FRAME_TYPE_INCOMPATIBLE,
+                        "connections",
+                        "Frame type mismatch: " + conn.from_module + " outputs '" + srcOutputType +
+                            "', but " + conn.to_module + " expects [" + dstTypesStr + "]",
+                        suggestion
+                    ));
+                    allSuccess = false;
+                    continue;  // Skip the actual connection attempt
+                }
+            }
+        }
+
         // Connect using ApraPipes API
         try {
             bool connected;
@@ -509,8 +667,8 @@ bool ModuleFactory::connectModules(
             }
 
             if (!connected) {
-                issues.push_back(BuildIssue::error(
-                    BuildIssue::CONNECTION_FAILED,
+                issues.push_back(Issue::error(
+                    Issue::CONNECTION_FAILED,
                     "connections",
                     "setNext() returned false for: " + conn.from_module +
                     (conn.from_pin.empty() ? "" : "." + conn.from_pin) +
@@ -519,8 +677,8 @@ bool ModuleFactory::connectModules(
                 ));
                 allSuccess = false;
             } else if (options_.collect_info_messages) {
-                issues.push_back(BuildIssue::info(
-                    BuildIssue::CONNECTION_ESTABLISHED,
+                issues.push_back(Issue::info(
+                    Issue::CONNECTION_ESTABLISHED,
                     "connections",
                     "Connected: " + conn.from_module + "." + conn.from_pin +
                     " -> " + conn.to_module + "." + conn.to_pin
@@ -528,16 +686,16 @@ bool ModuleFactory::connectModules(
             }
         }
         catch (const std::exception& e) {
-            issues.push_back(BuildIssue::error(
-                BuildIssue::CONNECTION_FAILED,
+            issues.push_back(Issue::error(
+                Issue::CONNECTION_FAILED,
                 "connections",
                 "Connection failed: " + std::string(e.what())
             ));
             allSuccess = false;
         }
         catch (...) {
-            issues.push_back(BuildIssue::error(
-                BuildIssue::CONNECTION_FAILED,
+            issues.push_back(Issue::error(
+                Issue::CONNECTION_FAILED,
                 "connections",
                 "Unknown exception during connection"
             ));
@@ -591,8 +749,8 @@ void ModuleFactory::validateInputConnections(
                 }
 
                 if (!isConnected) {
-                    issues.push_back(BuildIssue::error(
-                        BuildIssue::MISSING_REQUIRED_INPUT,
+                    issues.push_back(Issue::error(
+                        Issue::MISSING_REQUIRED_INPUT,
                         "modules." + instanceId,
                         "Required input '" + inputName + "' is not connected on module '" +
                         ctx.moduleType + "'"

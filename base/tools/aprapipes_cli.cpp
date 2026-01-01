@@ -214,21 +214,43 @@ int cmdValidate(const std::string& filepath, bool jsonOutput) {
                           issue.level == BuildIssue::Level::Warning ? "warning" : "info")
                       << R"(","code":")" << issue.code
                       << R"(","location":")" << issue.location
-                      << R"(","message":")" << issue.message << "\"}";
+                      << R"(","message":")" << issue.message << "\"";
+            if (!issue.suggestion.empty()) {
+                // Escape newlines in suggestion for JSON
+                std::string escapedSuggestion = issue.suggestion;
+                size_t pos = 0;
+                while ((pos = escapedSuggestion.find('\n', pos)) != std::string::npos) {
+                    escapedSuggestion.replace(pos, 1, "\\n");
+                    pos += 2;
+                }
+                std::cout << R"(,"suggestion":")" << escapedSuggestion << "\"";
+            }
+            std::cout << "}";
         }
         std::cout << "]}\n";
     } else {
         // Print issues
+        int suggestionCount = 0;
         for (const auto& issue : buildResult.issues) {
             const char* prefix =
                 issue.level == BuildIssue::Level::Error ? "[ERROR]" :
                 issue.level == BuildIssue::Level::Warning ? "[WARN] " : "[INFO] ";
             std::cerr << prefix << " " << issue.code << " @ " << issue.location
                       << ": " << issue.message << "\n";
+
+            // Print suggestion if available
+            if (!issue.suggestion.empty()) {
+                std::cerr << "\n  SUGGESTION: " << issue.suggestion << "\n";
+                suggestionCount++;
+            }
         }
 
         if (hasErrors) {
-            std::cerr << "\n✗ Validation failed with errors\n";
+            std::cerr << "\n✗ Validation failed with " << buildResult.getErrors().size() << " error(s)";
+            if (suggestionCount > 0) {
+                std::cerr << ", " << suggestionCount << " suggestion(s)";
+            }
+            std::cerr << "\n";
         } else if (hasWarnings) {
             std::cout << "\n⚠ Validation passed with warnings\n";
             std::cout << "  Modules: " << result.description.modules.size() << "\n";
