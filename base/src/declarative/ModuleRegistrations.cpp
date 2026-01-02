@@ -97,7 +97,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Detects faces in image frames using deep learning models.")
                 .tags("analytics", "face", "detection", "transform")
                 .input("input", "RawImage")
-                .output("output", "Frame");
+                .output("output", "Frame")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // QRReader - QR code and barcode detection
@@ -108,7 +109,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Reads and decodes QR codes and barcodes from image frames.")
                 .tags("analytics", "qr", "barcode", "reader")
                 .input("input", "RawImage", "RawImagePlanar")
-                .output("output", "Frame");
+                .output("output", "Frame")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // TestSignalGenerator - generates test frames
@@ -153,7 +155,8 @@ void ensureBuiltinModulesRegistered() {
                 .tags("utility", "split", "routing")
                 .input("input", "Frame")
                 .output("output_1", "Frame")
-                .output("output_2", "Frame");
+                .output("output_2", "Frame")
+                .selfManagedOutputPins();  // Creates output pins in addInputPin()
         }
 
         // Merge - merges frames from multiple inputs
@@ -164,7 +167,8 @@ void ensureBuiltinModulesRegistered() {
                 .tags("utility", "merge", "sync")
                 .input("input_1", "Frame")
                 .input("input_2", "Frame")
-                .output("output", "Frame");
+                .output("output", "Frame")
+                .selfManagedOutputPins();  // Creates output pin dynamically
         }
 
         // ImageDecoderCV - decodes encoded images to raw
@@ -184,7 +188,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Encodes raw images to JPEG/PNG format using OpenCV")
                 .tags("encoder", "image", "opencv")
                 .input("input", "RawImage")
-                .output("output", "EncodedImage");
+                .output("output", "EncodedImage")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // Mp4ReaderSource - reads MP4 video files
@@ -228,7 +233,8 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImage")
                 .output("output", "RawImage")
                 .intProp("width", "Target width in pixels", true, 0, 1, 8192)
-                .intProp("height", "Target height in pixels", true, 0, 1, 8192);
+                .intProp("height", "Target height in pixels", true, 0, 1, 8192)
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // RotateCV - rotates images using OpenCV
@@ -240,7 +246,8 @@ void ensureBuiltinModulesRegistered() {
                 .tags("transform", "rotate", "image", "opencv")
                 .input("input", "RawImage", "RawImagePlanar")
                 .output("output", "RawImage")
-                .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0);
+                .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0)
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // ColorConversion - converts between color spaces
@@ -257,7 +264,8 @@ void ensureBuiltinModulesRegistered() {
                     "RGB_TO_MONO", "BGR_TO_MONO", "BGR_TO_RGB", "RGB_TO_BGR",
                     "RGB_TO_YUV420PLANAR", "YUV420PLANAR_TO_RGB",
                     "BAYERBG8_TO_MONO", "BAYERBG8_TO_RGB", "BAYERGB8_TO_RGB",
-                    "BAYERRG8_TO_RGB", "BAYERGR8_TO_RGB");
+                    "BAYERRG8_TO_RGB", "BAYERGR8_TO_RGB")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // VirtualPTZ - virtual pan/tilt/zoom
@@ -271,7 +279,8 @@ void ensureBuiltinModulesRegistered() {
                 .dynamicProp("roiX", "float", "X coordinate of ROI (0-1 normalized)", false, "0")
                 .dynamicProp("roiY", "float", "Y coordinate of ROI (0-1 normalized)", false, "0")
                 .dynamicProp("roiWidth", "float", "Width of ROI (0-1 normalized)", false, "1")
-                .dynamicProp("roiHeight", "float", "Height of ROI (0-1 normalized)", false, "1");
+                .dynamicProp("roiHeight", "float", "Height of ROI (0-1 normalized)", false, "1")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // TextOverlayXForm - text overlay on images
@@ -288,7 +297,8 @@ void ensureBuiltinModulesRegistered() {
                 .dynamicProp("fontColor", "string", "Font color (e.g., white, black, red)", false, "white")
                 .dynamicProp("backgroundColor", "string", "Background color (transparent for none)", false, "transparent")
                 .dynamicProp("alpha", "float", "Opacity (0-1)", false, "1.0")
-                .boolProp("isDateTime", "Display current date/time instead of text", false, false);
+                .boolProp("isDateTime", "Display current date/time instead of text", false, false)
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // BrightnessContrastControl - adjusts image brightness and contrast
@@ -300,7 +310,8 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImage")
                 .output("output", "RawImage")
                 .dynamicProp("contrast", "float", "Contrast multiplier (1.0 = no change)", false, "1.0")
-                .dynamicProp("brightness", "float", "Brightness offset (0.0 = no change)", false, "0.0");
+                .dynamicProp("brightness", "float", "Brightness offset (0.0 = no change)", false, "0.0")
+                .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 
         // CalcHistogramCV - calculates image histogram
@@ -312,7 +323,8 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImage")
                 .output("output", "Array")
                 .dynamicProp("bins", "int", "Number of histogram bins", false, "8")
-                .dynamicProp("maskImgPath", "string", "Path to mask image (optional)", false, "");
+                .dynamicProp("maskImgPath", "string", "Path to mask image (optional)", false, "")
+                .selfManagedOutputPins();  // Creates output pin dynamically
         }
 
         // ============================================================

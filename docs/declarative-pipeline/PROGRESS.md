@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2026-01-01 00:45` by `claude-code`
+Last Updated: `2026-01-01 22:50` by `claude-code`
 
 ---
 
@@ -980,6 +980,62 @@ $ ./aprapipes_cli validate pipeline.toml
 - Validation now suggests bridge modules for type mismatches
 - KNOWN_CONVERSIONS table in ModuleFactory.cpp and PipelineValidator.cpp (could consolidate)
 - CLI displays suggestions with TOML snippets ready to copy-paste
+
+---
+
+### Session: 2026-01-01 22:30
+
+**Agent:** claude-code
+**Duration:** ~45 min
+**Tasks:** selfManagedOutputPins fix, Integration Testing
+
+**Accomplished:**
+- Fixed "duplicate output pin" issue affecting many modules:
+  - Root cause: ModuleFactory's setupOutputPins() was creating pins before addInputPin() which creates them again
+  - Added `selfManagedOutputPins` flag to ModuleInfo and ModuleRegistrationBuilder
+  - Added `selfManagedOutputPins()` to 12 module registrations:
+    - FaceDetectorXform, QRReader, ImageEncoderCV, Split, Merge, CalcHistogramCV
+    - ImageResizeCV, RotateCV, ColorConversion, VirtualPTZ, TextOverlayXForm, BrightnessContrastControl
+  - ModuleFactory now skips setupOutputPins() when flag is true
+- Integration Testing Results:
+  - **Working Pipelines (4):**
+    - 01_simple_source_sink.toml ✅
+    - 02_three_module_chain.toml ✅
+    - 03_split_pipeline.toml ✅ (moved from not-working)
+    - 04_ptz_with_conversion.toml ✅
+  - **Not Working - Intentional (need bridge modules):**
+    - 03_transform_ptz.toml - Correctly detects RawImagePlanar→RawImage mismatch with suggestion
+    - 03_face_detector.toml - Correctly detects RawImagePlanar→RawImage mismatch with suggestion
+- Validation suggestion system working correctly (shows TOML snippets for bridge modules)
+
+**Files Modified:**
+- `base/include/declarative/ModuleRegistry.h` - Added selfManagedOutputPins flag
+- `base/include/declarative/ModuleRegistrationBuilder.h` - Added selfManagedOutputPins() method
+- `base/src/declarative/ModuleFactory.cpp` - Skip setupOutputPins for self-managed modules
+- `base/src/declarative/ModuleRegistrations.cpp` - Added flag to 12 modules
+- `docs/declarative-pipeline/examples/working/03_split_pipeline.toml` - Moved from not-working
+
+**Module Registration Coverage:**
+```
+Total Modules Found:  62
+Registered with full metadata: 20 modules
+  - All with correct selfManagedOutputPins flag
+Coverage: 32.3%
+```
+
+**Integration Tests:**
+```
+Working Pipelines:  4/4 pass
+Error Detection:    2/2 correctly detect and suggest fixes
+```
+
+**Remaining:**
+- Continue adding property binding to more modules
+- Consider batch conversion of similar modules
+
+**Notes for Next Session:**
+- Build cache issue: may need to remove old .o files and relink manually
+- CMake didn't detect file changes sometimes (use rm *.o && rebuild)
 
 ---
 

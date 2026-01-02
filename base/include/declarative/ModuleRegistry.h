@@ -74,6 +74,10 @@ struct ModuleInfo {
         const std::map<std::string, ScalarPropertyValue>&
     )>;
     FactoryFn factory;
+
+    // Flag indicating module creates its own output pins in addInputPin()
+    // When true, ModuleFactory skips output pin setup to avoid duplicates
+    bool selfManagedOutputPins = false;
 };
 
 // ============================================================

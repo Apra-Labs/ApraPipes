@@ -285,6 +285,13 @@ public:
         return *this;
     }
 
+    // Mark module as managing its own output pins (creates them in addInputPin)
+    // This prevents ModuleFactory from pre-creating output pins
+    ModuleRegistrationBuilder& selfManagedOutputPins() {
+        info_.selfManagedOutputPins = true;
+        return *this;
+    }
+
     // Destructor registers the module
     ~ModuleRegistrationBuilder() {
         if (!registered_) {
