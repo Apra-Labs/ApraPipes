@@ -186,7 +186,7 @@ public:
                    bool open = true);
   [[nodiscard]] bool addFeedback(std::shared_ptr<Module> next,
                    bool open = true); // take all the output pins
-  boost_deque<std::shared_ptr<Module>> getConnectedModules();
+  std::deque<std::shared_ptr<Module>> getConnectedModules();
 
   bool relay(std::shared_ptr<Module> next, bool open, bool priority = false);
 

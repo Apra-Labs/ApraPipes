@@ -234,21 +234,22 @@ string Module::addOutputPin(framemetadata_sp &metadata)
 
 void Module::addOutputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
-  if (mOutputPinIdFrameFactoryMap.find(pinId) !=
+  std::string pinIdStr(pinId);
+  if (mOutputPinIdFrameFactoryMap.find(pinIdStr) !=
       mOutputPinIdFrameFactoryMap.end())
   {
     // key alread exist exception
-    auto msg = "<" + getId() + "> pinId<" + pinId +
+    auto msg = "<" + getId() + "> pinId<" + pinIdStr +
                "> Already Exist. Please give unique name.";
     throw AIPException(AIP_UNIQUE_CONSTRAINT_FAILED, msg);
   }
   mOutputPinIdFrameFactoryMap.insert(
-      std::make_pair(pinId, framefactory_sp(new FrameFactory(
+      std::make_pair(pinIdStr, framefactory_sp(new FrameFactory(
                                 metadata, mProps->maxConcurrentFrames))));
 
   if (!validateOutputPins())
   {
-    mOutputPinIdFrameFactoryMap.erase(pinId);
+    mOutputPinIdFrameFactoryMap.erase(pinIdStr);
     auto msg = "<" + getId() + "> Output Pins Validation Failed.";
     throw AIPException(AIP_PINS_VALIDATION_FAILED, msg);
   }
@@ -290,7 +291,7 @@ bool Module::setNext(std::shared_ptr<Module> next, vector<string> &pinIdArr,
   }
   mModules[nextModuleId] = next;
   mConnections.insert(
-      make_pair(nextModuleId, boost::container::deque<string>()));
+      make_pair(nextModuleId, std::deque<string>()));
 
   if (sieve)
   {
@@ -468,30 +469,31 @@ void Module::addInputPin(framemetadata_sp &metadata, std::string_view pinId,
   if (isFeedback)
   {
     mForwardPins--;
-    mInputPinsDirection[pinId] = false; // feedback
+    mInputPinsDirection[std::string(pinId)] = false; // feedback
   }
 }
 
 void Module::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
-  if (mInputPinIdMetadataMap.find(pinId) != mInputPinIdMetadataMap.end())
+  std::string pinIdStr(pinId);
+  if (mInputPinIdMetadataMap.find(pinIdStr) != mInputPinIdMetadataMap.end())
   {
-    auto msg = "<" + getId() + "> pinId <" + pinId + "> already added for <" +
+    auto msg = "<" + getId() + "> pinId <" + pinIdStr + "> already added for <" +
                getId() + ">";
     throw AIPException(AIP_UNIQUE_CONSTRAINT_FAILED, msg);
   }
 
-  mInputPinIdMetadataMap[pinId] = metadata;
+  mInputPinIdMetadataMap[pinIdStr] = metadata;
 
   if (!validateInputPins())
   {
-    mInputPinIdMetadataMap.erase(pinId);
+    mInputPinIdMetadataMap.erase(pinIdStr);
     auto msg = "Input Pins Validation Failed. <" + getId() + ">";
     throw AIPException(AIP_PINS_VALIDATION_FAILED, msg);
   }
 
   mForwardPins++;
-  mInputPinsDirection[pinId] = true; // forward
+  mInputPinsDirection[pinIdStr] = true; // forward
 }
 
 bool Module::isFeedbackEnabled(std::string &moduleId)
@@ -547,10 +549,10 @@ framemetadata_sp Module::getFirstOutputMetadata()
   return mOutputPinIdFrameFactoryMap.begin()->second->getFrameMetadata();
 }
 
-boost::container::deque<std::shared_ptr<Module>>
+std::deque<std::shared_ptr<Module>>
 Module::getConnectedModules()
 {
-  boost::container::deque<std::shared_ptr<Module>> nextModules;
+  std::deque<std::shared_ptr<Module>> nextModules;
 
   for (const auto& [moduleId, pModule] : mModules)
   {
@@ -1558,7 +1560,7 @@ bool Module::addEoPFrame(frame_container &frames)
   // frames - extra EOP frames downstream shouldn't matter
   if (mIsSieveDisabledForAny)
   {
-    for (const auto& [pinId, metadata] : mInputPinIdMetadataMap)
+    for (auto& [pinId, metadata] : mInputPinIdMetadataMap)
     {
       auto frame = frame_sp(new EoPFrame());
       frame->setMetadata(metadata);
@@ -1648,16 +1650,16 @@ void Module::stop_onStepfail()
 
 void Module::emit_event(unsigned short eventID)
 {
-  if (!event_consumer.empty())
+  if (event_consumer)
   {
     event_consumer(this, eventID);
-    event_consumer.clear(); // we can only fire once.
+    event_consumer = nullptr; // we can only fire once.
   }
 }
 
 void Module::emit_fatal(unsigned short eventID)
 {
-  if (!fatal_event_consumer.empty())
+  if (fatal_event_consumer)
   {
     // we have a handler... let's trigger it
     fatal_event_consumer(this, eventID);
