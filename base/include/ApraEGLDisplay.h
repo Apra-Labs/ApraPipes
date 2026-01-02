@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <opencv2/opencv.hpp> // this is added to address the following issue: https://github.com/opencv/opencv/issues/7113
 #include "EGL/egl.h"
 
@@ -21,7 +21,7 @@ private:
     EGLDisplay mEGLDisplay;
     bool mDMACapable;
     bool mDMACapabilityTested;
-    static boost::shared_ptr<ApraEGLDisplay> instance;
+    static std::shared_ptr<ApraEGLDisplay> instance;
 
     bool testDMACapability();
 };

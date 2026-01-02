@@ -2,16 +2,16 @@
 #include "FrameContainerQueue.h"
 #include "Logger.h"
 
-boost::shared_ptr<QuePushStrategy> QuePushStrategy::getStrategy(QuePushStrategyType type, std::string& srcModuleId)
+std::shared_ptr<QuePushStrategy> QuePushStrategy::getStrategy(QuePushStrategyType type, std::string& srcModuleId)
 {
 	switch (type)
 	{
-		case QuePushStrategy::NON_BLOCKING_ALL_OR_NONE:	
-			return boost::shared_ptr<QuePushStrategy>(new NonBlockingAllOrNonePushStrategy(srcModuleId));
-		case QuePushStrategy::NON_BLOCKING_ANY:		
-			return boost::shared_ptr<QuePushStrategy>(new NonBlockingAnyPushStrategy(srcModuleId));
+		case QuePushStrategy::NON_BLOCKING_ALL_OR_NONE:
+			return std::make_shared<NonBlockingAllOrNonePushStrategy>(srcModuleId);
+		case QuePushStrategy::NON_BLOCKING_ANY:
+			return std::make_shared<NonBlockingAnyPushStrategy>(srcModuleId);
 		default:
-			return boost::shared_ptr<QuePushStrategy>(new QuePushStrategy(srcModuleId));
+			return std::make_shared<QuePushStrategy>(srcModuleId);
 	}
 }
 
@@ -25,7 +25,7 @@ QuePushStrategy::~QuePushStrategy()
 	mQueByModule.clear();
 }
 
-void QuePushStrategy::addQue(std::string dstModuleId, boost::shared_ptr<FrameContainerQueue>& que)
+void QuePushStrategy::addQue(std::string dstModuleId, std::shared_ptr<FrameContainerQueue>& que)
 {
 	mQueByModule[dstModuleId] = que;
 }
@@ -70,7 +70,7 @@ NonBlockingAllOrNonePushStrategy::~NonBlockingAllOrNonePushStrategy()
 
 void NonBlockingAllOrNonePushStrategy::push(std::string dstModuleId, frame_container& frames)
 {
-	auto ret = mFramesByModule.insert(std::make_pair(dstModuleId, frames));
+	auto ret = mFramesByModule.insert({dstModuleId, frames});
 	if (!ret.second)
 	{
 		LOG_ERROR << mId << "<" << dstModuleId << "> already has an entry. Not expected to come here.";
@@ -82,34 +82,34 @@ bool NonBlockingAllOrNonePushStrategy::flush()
 	bool allQuesFree = true;
 	uint32_t lockCounter = 0;
 	std::string firstFullModuleId;
-	for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+	for (const auto& [moduleId, frames] : mFramesByModule)
 	{
-		auto& que = mQueByModule[it->first];
+		auto& que = mQueByModule[moduleId];
 		que->acquireLock();
 		lockCounter++;
 
 		if (!que->is_not_full())
 		{
-			allQuesFree = false;	
-			firstFullModuleId = it->first;
+			allQuesFree = false;
+			firstFullModuleId = moduleId;
 			break;
-		}			
+		}
 	}
 
 
 	if (allQuesFree)
 	{
-		for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+		for (const auto& [moduleId, frames] : mFramesByModule)
 		{
-			mQueByModule[it->first]->pushUnsafeForQuePushStrategy(it->second);
+			mQueByModule[moduleId]->pushUnsafeForQuePushStrategy(frames);
 		}
-	}	
+	}
 	else
 	{
-		
-		for (frames_by_module::const_iterator it = mFramesByModule.cbegin(); it != mFramesByModule.cend(); ++it)
+
+		for (const auto& [moduleId, frames] : mFramesByModule)
 		{
-			mQueByModule[it->first]->releaseLock();
+			mQueByModule[moduleId]->releaseLock();
 			lockCounter--;
 			if (lockCounter == 0)
 			{
@@ -118,7 +118,7 @@ bool NonBlockingAllOrNonePushStrategy::flush()
 		}
 		// LOG_ERROR << mId << "<> skipping all from que because <" << firstFullModuleId << "> is full";
 	}
-	
+
 	mFramesByModule.clear();
 	return true;
 }

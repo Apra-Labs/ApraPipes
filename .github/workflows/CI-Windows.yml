@@ -34,9 +34,10 @@ jobs:
     with:
       os: windows
       runner: windows-latest
-      cuda: 'ON'
+      # TEMPORARY: Test with NoCUDA first on cpp17-modernization branch
+      cuda: 'OFF'
       cuda_version: '11.8.0'
       build_type: Release
-      flav: Windows
+      flav: Windows_NoCUDA
       check_prefix: CI-Win
     secrets: inherit

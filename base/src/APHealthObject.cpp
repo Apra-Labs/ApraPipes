@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <ctime>
 #include <chrono>
+#include <iomanip>
 
 APHealthObject::APHealthObject(const std::string &modId) : mModuleId(modId)
 {

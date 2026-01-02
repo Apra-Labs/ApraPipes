@@ -17,22 +17,22 @@ class BMPConverter : public Module
 public:
 	BMPConverter(BMPConverterProps _props);
 	virtual ~BMPConverter();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 	void getImageSize(int& width, int& height);
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool shouldTriggerSOS();
-	bool processEOS(string& pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool shouldTriggerSOS() override;
+	bool processEOS(string& pinId) override;
 
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;

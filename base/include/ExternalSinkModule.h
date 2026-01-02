@@ -28,7 +28,7 @@ public:
 		return Module::try_pop(); 
 	}
 protected:
-	bool validateInputPins()
+	bool validateInputPins() override
 	{
 		return true;
 	}

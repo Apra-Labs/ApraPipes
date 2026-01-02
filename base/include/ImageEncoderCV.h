@@ -17,19 +17,19 @@ class ImageEncoderCV : public Module
 public:
 	ImageEncoderCV(ImageEncoderCVProps _props);
 	virtual ~ImageEncoderCV();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
 
-private:		
+private:
 	int mFrameType;
 	ImageEncoderCVProps props;
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 	framemetadata_sp mOutputMetadata;
 	std::string mOutputPinId;
 	

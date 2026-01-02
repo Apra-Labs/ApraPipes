@@ -62,7 +62,7 @@ public:
 	std::string outputPinId;
 
 private:
-	boost::shared_ptr<JPEGDecoderL4TMHelper> decHelper;
+	std::shared_ptr<JPEGDecoderL4TMHelper> decHelper;
 
 	framemetadata_sp mMetadata;
 	size_t mDataSize;
@@ -153,7 +153,7 @@ bool JPEGDecoderL4TM::process(frame_container &frames)
 	
 	auto outFrame = makeFrame(bufferFrame, frameLength,mDetail->outputPinId);
 
-	frames.insert(make_pair(mDetail->outputPinId, outFrame));
+	frames.insert({mDetail->outputPinId, outFrame});
 	send(frames);
 	return true;
 }

@@ -383,7 +383,7 @@ void H264EncoderV4L2Helper::serializeMotionVectors(v4l2_ctrl_videoenc_outputbuf_
         serializeSize += 100;
         auto motionVectorFrame = makeFrame(serializeSize, motionVectorFramePinId);
         drawingOverlay.serialize(motionVectorFrame);
-        frames.insert(make_pair(motionVectorFramePinId, motionVectorFrame));
+        frames.insert({motionVectorFramePinId, motionVectorFrame});
     }
 }
 void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
@@ -393,7 +393,7 @@ void H264EncoderV4L2Helper::capturePlaneDQCallback(AV4L2Buffer *buffer)
     frame_container frames;
     frame->timestamp = incomingTimeStamp.front();
     incomingTimeStamp.pop();
-    frames.insert(make_pair(h264FrameOutputPinId, frame));
+    frames.insert({h264FrameOutputPinId, frame});
 
     if (enableMotionVectors)
     {
@@ -436,8 +436,8 @@ bool H264EncoderV4L2Helper::process(frame_sp& frame)
         return true;
     }
 
-    mConverter->process(frame, buffer);
-    mOutputPlane->qBuffer(buffer->getIndex());
+    mConverter->process(frame, *buffer);
+    mOutputPlane->qBuffer((*buffer)->getIndex());
 
     return true;
 }
@@ -450,8 +450,8 @@ bool H264EncoderV4L2Helper::processEOS()
         return true;
     }
 
-    mOutputPlane->setEOSFlag(buffer);
-    mOutputPlane->qBuffer(buffer->getIndex());
+    mOutputPlane->setEOSFlag(*buffer);
+    mOutputPlane->qBuffer((*buffer)->getIndex());
 
     mCapturePlane->waitForDQThread(2000); // blocking call - waits for 2 secs for thread to exit
 

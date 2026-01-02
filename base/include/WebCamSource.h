@@ -32,16 +32,16 @@ class WebCamSource : public Module
 public:
 	WebCamSource(WebCamSourceProps props);
 	virtual ~WebCamSource();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 	void setProps(WebCamSourceProps &props);
 	WebCamSourceProps getProps();
 
 protected:
-	bool produce();
-	bool validateOutputPins();
-	bool handlePropsChange(frame_sp &frame);
+	bool produce() override;
+	bool validateOutputPins() override;
+	bool handlePropsChange(frame_sp &frame) override;
 
 private:
 	class Detail;

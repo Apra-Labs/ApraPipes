@@ -1,5 +1,7 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <memory>
+#include <cstddef>
+#include <boost/asio/buffer.hpp>
 #include "CommonDefs.h"
 
 using namespace std;
@@ -7,9 +9,9 @@ using namespace std;
 class FrameFactory;
 class ApraData;
 
-class Frame :public boost::asio::mutable_buffer {
+class Frame : public boost::asio::mutable_buffer {
 public:
-	Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother);
+	Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother);
 	virtual ~Frame();
 	short mFrameType;
 	uint64_t mFStart, mFEnd;
@@ -29,8 +31,8 @@ public:
 	// Make it private
 	// If someone wants to use it, make that class a friend class
 	void setMetadata(framemetadata_sp& _metadata) { mMetadata = _metadata; }
-	virtual void* data() const BOOST_ASIO_NOEXCEPT;
-	virtual std::size_t size() const BOOST_ASIO_NOEXCEPT;
+	virtual void* data() const;
+	virtual std::size_t size() const;
 protected:
 	Frame();
 	framemetadata_sp mMetadata;
@@ -39,7 +41,7 @@ private:
 	void resetMemory();
 	void *myOrig;
 	friend class FrameFactory;
-	boost::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children	
+	std::shared_ptr<FrameFactory> myMother; //so that the mother does not get destroyed before children
 };
 
 class EoPFrame : public Frame
@@ -81,8 +83,8 @@ public:
 	ExternalFrame(ApraData* data);
 	virtual ~ExternalFrame();
 
-	void* data() const BOOST_ASIO_NOEXCEPT;
-	std::size_t size() const BOOST_ASIO_NOEXCEPT;
+	void* data() const;
+	std::size_t size() const;
 
 private:
 	ApraData* mData;

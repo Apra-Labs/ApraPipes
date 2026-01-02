@@ -33,18 +33,18 @@ public:
 	FramesMuxer(FramesMuxerProps _props=FramesMuxerProps());
 	virtual ~FramesMuxer() {}
 
-	virtual bool init();
-	virtual bool term();
+	bool init() override;
+	bool term() override;
 
-protected:	
-	bool process(frame_container& frames);
-	bool validateInputPins();
-	bool validateOutputPins();	
-	bool validateInputOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+protected:
+	bool process(frame_container& frames) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 
-private:		
-	boost::shared_ptr<FramesMuxerStrategy> mDetail;
+private:
+	std::shared_ptr<FramesMuxerStrategy> mDetail;
 };
 
 

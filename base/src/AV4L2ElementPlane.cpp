@@ -351,7 +351,7 @@ int AV4L2ElementPlane::waitForDQThread(uint32_t max_wait_ms)
     return return_val;
 }
 
-AV4L2Buffer *AV4L2ElementPlane::getFreeBuffer()
+std::optional<AV4L2Buffer*> AV4L2ElementPlane::getFreeBuffer()
 {
     if (mFreeCount)
     {
@@ -362,7 +362,7 @@ AV4L2Buffer *AV4L2ElementPlane::getFreeBuffer()
     AV4L2Buffer *buffer = nullptr;
     dqBuffer(&buffer, 10);
 
-    return buffer;
+    return buffer ? std::make_optional(buffer) : std::nullopt;
 }
 
 void AV4L2ElementPlane::qAllBuffers()

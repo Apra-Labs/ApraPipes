@@ -1,5 +1,3 @@
-#include <boost/foreach.hpp>
-
 #include "Split.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
@@ -48,7 +46,7 @@ bool Split::term()
 	return Module::term();
 }
 
-void Split::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Split::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	for(uint32_t i = 0; i < mNumber; i++)
@@ -61,7 +59,7 @@ bool Split::process(frame_container& frames)
 {		
 	auto frame = frames.begin()->second;
 	frame->fIndex2 = mFIndex2++;
-	frames.insert(std::make_pair(mPinIds[mCurrentIndex], frame));
+	frames.insert({mPinIds[mCurrentIndex], frame});
 	
 	send(frames);
 	mCurrentIndex++;

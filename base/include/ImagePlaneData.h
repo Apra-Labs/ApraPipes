@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
+#include <vector>
+#include <memory>
+#include <cstring>
 
 class ImagePlaneData
 {

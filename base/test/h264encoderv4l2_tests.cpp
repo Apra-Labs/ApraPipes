@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "PipeLine.h"
 #include "H264EncoderV4L2.h"
@@ -26,16 +29,16 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360)
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	fileReader->setNext(encoder);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -63,22 +66,22 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720, *boost::unit_test::disabled()
 	auto width = 1280;
 	auto height = 720;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_RGB24_1280x720")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_RGB24_1280x720")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGB, CV_8UC3, size_t(0), CV_8U, FrameMetadata::HOST, true));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, stream);
 	copyProps.sync = true;
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	copy->setNext(encoder);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -109,18 +112,18 @@ BOOST_AUTO_TEST_CASE(yuv420_640x360_profiling, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw");
 	fileReaderProps.fps = 1000;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	fileReader->setNext(encoder);
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
-	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new StatSink(sinkProps));
 	encoder->setNext(sink);
 
 	PipeLine p("test");
@@ -149,24 +152,24 @@ BOOST_AUTO_TEST_CASE(rgb24_1280x720_profiling, *boost::unit_test::disabled()
 
 	FileReaderModuleProps fileReaderProps("./data/Raw_RGB24_1280x720");
 	fileReaderProps.fps = 1000;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::ImageType::RGB, CV_8UC3, size_t(0), CV_8U, FrameMetadata::HOST, true));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
 	auto copyProps = CudaMemCopyProps(cudaMemcpyHostToDevice, stream);
 	copyProps.sync = true;
-	auto copy = boost::shared_ptr<Module>(new CudaMemCopy(copyProps));
+	auto copy = std::shared_ptr<Module>(new CudaMemCopy(copyProps));
 	fileReader->setNext(copy);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	copy->setNext(encoder);
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
-	auto sink = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	auto sink = std::shared_ptr<Module>(new StatSink(sinkProps));
 	encoder->setNext(sink);
 
 	PipeLine p("test");
@@ -193,16 +196,16 @@ BOOST_AUTO_TEST_CASE(encodepush, *boost::unit_test::disabled())
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	fileReader->setNext(encoder);
 
-	auto sink = boost::shared_ptr<Module>(new RTSPPusher(RTSPPusherProps("rtsp://10.102.10.129:5544", "aprapipes_h264")));
+	auto sink = std::shared_ptr<Module>(new RTSPPusher(RTSPPusherProps("rtsp://10.102.10.129:5544", "aprapipes_h264")));
 	encoder->setNext(sink);
 
 	PipeLine p("test");
@@ -230,17 +233,17 @@ BOOST_AUTO_TEST_CASE(encode_and_extract_motion_vectors, *boost::unit_test::disab
 	auto width = 640;
 	auto height = 360;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/Raw_YUV420_640x360/Image???_YUV420.raw")));
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::ImageType::YUV420, size_t(0), CV_8U));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	H264EncoderV4L2Props encoderProps;
 	encoderProps.targetKbps = 1024;
 	encoderProps.enableMotionVectors = true;
-	auto encoder = boost::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
+	auto encoder = std::shared_ptr<Module>(new H264EncoderV4L2(encoderProps));
 	fileReader->setNext(encoder);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encoder->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

@@ -4,11 +4,11 @@
 #include "ApraData.h"
 #include "FrameMetadata.h"
 
-Frame::Frame():mutable_buffer(0, 0),myOrig(0)
+Frame::Frame():mutable_buffer(nullptr, 0),myOrig(nullptr)
 {
 	setDefaultValues();
 }
-Frame::Frame(void *buff, size_t size, boost::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother)
+Frame::Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother):mutable_buffer(buff,size), myOrig(buff), myMother(mother)
 {
 	setDefaultValues();
 }
@@ -27,14 +27,14 @@ void Frame::setDefaultValues()
 	 pictureType = 255;
 }
 
-void* Frame::data() const BOOST_ASIO_NOEXCEPT
-{	
-	return boost::asio::mutable_buffer::data();
+void* Frame::data() const
+{
+	return mutable_buffer::data();
 }
 
-std::size_t Frame::size() const BOOST_ASIO_NOEXCEPT
+std::size_t Frame::size() const
 {
-	return boost::asio::mutable_buffer::size();
+	return mutable_buffer::size();
 }
 
 bool Frame::isPropsChange()
@@ -91,12 +91,12 @@ ExternalFrame::~ExternalFrame()
 	mData->locked.fetch_sub(1, memory_order_seq_cst);
 }
 
-void* ExternalFrame::data() const BOOST_ASIO_NOEXCEPT
+void* ExternalFrame::data() const
 {
 	return mData->buffer;
 }
 
-std::size_t ExternalFrame::size() const BOOST_ASIO_NOEXCEPT
+std::size_t ExternalFrame::size() const
 {
 	return mData->size;
 }

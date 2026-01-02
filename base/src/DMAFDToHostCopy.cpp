@@ -52,7 +52,7 @@ bool DMAFDToHostCopy::validateOutputPins()
 	return true;
 }
 
-void DMAFDToHostCopy::addInputPin(framemetadata_sp &metadata, string &pinId)
+void DMAFDToHostCopy::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -175,7 +175,7 @@ bool DMAFDToHostCopy::processSOS(frame_sp &frame)
 	return true;
 }
 
-bool DMAFDToHostCopy::processEOS(string &pinId)
+bool DMAFDToHostCopy::processEOS(std::string_view pinId)
 {
 	mDetail->mOutputMetadata->reset();
 	return true;

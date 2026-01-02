@@ -1,7 +1,9 @@
 #include "FilenameStrategy.h"
 #include "Logger.h"
 #include "AIPExceptions.h"
-#include "boost/format.hpp"
+#include <filesystem>
+#include <sstream>
+#include <iomanip>
 
 #define CH_WILD_CARD '?'
 #ifdef _WIN32
@@ -10,7 +12,7 @@
 #define SZ_FILE_SEPERATOR_STRING "/"
 #endif //_WIN32
 
-boost::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::string& strPath,
+std::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::string& strPath,
 	int startIndex,
 	int maxIndex,
 	bool readLoop,
@@ -18,19 +20,19 @@ boost::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::str
 	bool appendFlag
 )
 {
-	bool isDirectory = boost::filesystem::is_directory(strPath);	
-		
+	bool isDirectory = std::filesystem::is_directory(strPath);
+
 	if (files.size())
 	{
-		return boost::shared_ptr<FilenameStrategy>(new ListStrategy(files, strPath, readLoop));
+		return std::make_shared<ListStrategy>(files, strPath, readLoop);
 	}
 	else if (isDirectory)
 	{
-		return boost::shared_ptr<FilenameStrategy>(new BoostDirectoryStrategy(strPath, startIndex, maxIndex, readLoop));
+		return std::make_shared<BoostDirectoryStrategy>(strPath, startIndex, maxIndex, readLoop);
 	}
 	else
 	{
-		return boost::shared_ptr<FilenameStrategy>(new FilenameStrategy(strPath, startIndex, maxIndex, readLoop, appendFlag));		
+		return std::make_shared<FilenameStrategy>(strPath, startIndex, maxIndex, readLoop, appendFlag);
 	}
 }
 
@@ -97,15 +99,15 @@ bool FilenameStrategy::Connect()
 
 	if (!mDirName.empty())
 	{
-		connectionRes = boost::filesystem::is_directory(mDirName.c_str());
+		connectionRes = std::filesystem::is_directory(mDirName.c_str());
 	}
 
 	if (connectionRes)
 	{
 		mCurrentIndex = mStartIndex;
 		mWildCardLen = (short)std::count(mFileBaseName.begin(), mFileBaseName.end(), CH_WILD_CARD);
-		boost::filesystem::path originalPath(origPath);
-		boost::filesystem::path parentPath = originalPath.parent_path();
+		std::filesystem::path originalPath(origPath);
+		std::filesystem::path parentPath = originalPath.parent_path();
 		if (mWildCardLen > 0)
 		{
 			const std::string strFileNameWithPattern = mFileBaseName;
@@ -114,7 +116,7 @@ bool FilenameStrategy::Connect()
 			mFileBaseName = strFileNameWithPattern.substr(0, basePos);
 			mFileTailName = strFileNameWithPattern.substr(basePos + mWildCardLen);
 		}
-		else if (!boost::filesystem::exists(boost::filesystem::path(parentPath)))
+		else if (!std::filesystem::exists(std::filesystem::path(parentPath)))
 		{
 			// if not a directory or pattern .. then it is a single file .. so checking if path exist
 			LOG_ERROR << "DirName " << origPath << " is Invalid";
@@ -217,9 +219,9 @@ std::string FilenameStrategy::GetFileNameForCurrentIndex(bool checkForExistence)
 
 	if (mWildCardLen > 0)
 	{
-		// https://www.boost.org/doc/libs/1_71_0/libs/format/doc/format.html								
-		auto fmt = boost::format("%0"+ std::to_string(mWildCardLen)+"d") % mCurrentIndex;
-		strIndexedName = fmt.str();		
+		std::ostringstream oss;
+		oss << std::setw(mWildCardLen) << std::setfill('0') << mCurrentIndex;
+		strIndexedName = oss.str();
 	}
 
 	strFileNameForIndex = mDirName + SZ_FILE_SEPERATOR_STRING + mFileBaseName
@@ -242,7 +244,7 @@ void FilenameStrategy::SetReadLoop(bool readLoop)
 
 bool FilenameStrategy::fileExists(const char *path)
 {
-	return boost::filesystem::exists(path);
+	return std::filesystem::exists(path);
 }
 
 BoostDirectoryStrategy::BoostDirectoryStrategy(const std::string& strPath,	int startIndex,	int maxIndex, bool readLoop) : FilenameStrategy(strPath, startIndex, maxIndex, readLoop)
@@ -262,10 +264,10 @@ bool BoostDirectoryStrategy::Connect()
 		return true;
 	}
 		
-	for (auto &&itr : boost::filesystem::directory_iterator(mDirName))
+	for (auto &&itr : std::filesystem::directory_iterator(mDirName))
 	{
 		auto fileNameToUse = itr.path().generic_string();
-		if(boost::filesystem::is_regular_file(fileNameToUse))
+		if(std::filesystem::is_regular_file(fileNameToUse))
 		{
 			mFiles.push_back(itr.path());
 		}		
@@ -357,5 +359,5 @@ ListStrategy::ListStrategy(const std::vector<std::string>& files, const std::str
 	}
 
 	mCurrentIndex = 0;
-	mRootDir = boost::filesystem::path(dirPath);
+	mRootDir = std::filesystem::path(dirPath);
 }

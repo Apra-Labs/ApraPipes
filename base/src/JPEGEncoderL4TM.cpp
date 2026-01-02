@@ -121,8 +121,8 @@ private:
 		mDataSize = 	dummyBufferLength;	
 	}	
 
-	boost::shared_ptr<unsigned char[]> dummyBuffer;
-	boost::shared_ptr<JPEGEncoderL4TMHelper> encHelper;
+	std::shared_ptr<unsigned char[]> dummyBuffer;
+	std::shared_ptr<JPEGEncoderL4TMHelper> encHelper;
 
 	framemetadata_sp mMetadata;		
 	framemetadata_sp mOutputMetadata;	
@@ -217,7 +217,7 @@ bool JPEGEncoderL4TM::process(frame_container& frames)
 		
 	auto outFrame = makeFrame(bufferFrame, frameLength, mDetail->outputPinId);
 
-	frames.insert(make_pair(mDetail->outputPinId, outFrame));
+	frames.insert({mDetail->outputPinId, outFrame});
 	send(frames);
 	return true;
 }

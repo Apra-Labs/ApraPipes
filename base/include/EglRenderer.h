@@ -33,17 +33,17 @@ public:
     EglRenderer(EglRendererProps props);
     ~EglRenderer();
 
-    bool init();
-    bool term();
+    bool init() override;
+    bool term() override;
 	bool closeWindow();
 	bool createWindow(int width, int height);
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool shouldTriggerSOS();
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool shouldTriggerSOS() override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

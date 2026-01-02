@@ -3,13 +3,15 @@
 #include "Module.h"
 #include "Utils.h"
 #include <string>
+#include <memory>
+#include <thread>
 
 PipeLine::~PipeLine()
 {
 	//LOG_INFO << "Dest'r ~PipeLine" << mName << endl;
 }
 
-bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
+bool PipeLine::appendModule(std::shared_ptr<Module> pModule)
 {
 	// assumes that appendModule is called after all the connections
 
@@ -32,7 +34,7 @@ bool PipeLine::appendModule(boost::shared_ptr<Module> pModule)
 	return true;
 }
 
-bool PipeLine::addControlModule(boost::shared_ptr<AbsControlModule> cModule)
+bool PipeLine::addControlModule(std::shared_ptr<AbsControlModule> cModule)
 {
 	for (int i = 0; i < modules.size(); i++)
 	{
@@ -278,23 +280,28 @@ void PipeLine::interrupt_wait_for_all()
 	}
 
 	// std::thread doesn't have interrupt() - modules stop via mRunning flag
-
 	for (auto i = modules.begin(); i != modules.end(); i++)
 	{
 		Module& m = *(i->get());
-		m.myThread.join();
+		if (m.myThread.joinable())
+		{
+			m.myThread.join();
+		}
 	}
 
 	if (controlModule != nullptr)
 	{
-		controlModule->myThread.join();
+		if (controlModule->myThread.joinable())
+		{
+			controlModule->myThread.join();
+		}
 	}
 	myStatus = PL_STOPPED;
 }
 
 const char * PipeLine::getStatus()
 {
-	const char* const StatusNames[] = {
+	static constexpr const char* const StatusNames[] = {
 		PipelineStatus_ENUM(MAKE_STRINGS,X)
 		};
 	return StatusNames[myStatus];

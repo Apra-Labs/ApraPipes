@@ -123,11 +123,11 @@ bool GaussianBlur::validateOutputPins()
     return true;
 }
 
-void GaussianBlur::addInputPin(framemetadata_sp &metadata, string &pinId)
+void GaussianBlur::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
 
-    mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+    mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
     mOutputMetadata->copyHint(*metadata.get());
     mOutputPinId = addOutputPin(mOutputMetadata);
 }
@@ -162,7 +162,7 @@ bool GaussianBlur::process(frame_container &frames)
 		return true;
 	}
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 
 	send(frames);
 
@@ -197,7 +197,7 @@ bool GaussianBlur::shouldTriggerSOS()
     return !mOutputMetadata->isSet();
 }
 
-bool GaussianBlur::processEOS(string &pinId)
+bool GaussianBlur::processEOS(std::string_view pinId)
 {
     mOutputMetadata.reset();
     return true;

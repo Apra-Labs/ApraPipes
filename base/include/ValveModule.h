@@ -35,26 +35,26 @@ class ValveModule : public Module
 public:
 	ValveModule(ValveModuleProps _props);
 	~ValveModule();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	/* We can set the number of frames property by passing as
 	arguement to allowFrames else module props value is taken */
 	bool allowFrames(int numframes); 
 	void setProps(ValveModuleProps& props);
 	ValveModuleProps getProps();
-	bool setNext(boost::shared_ptr<Module> next, bool open = true, bool sieve = false);
+	bool setNext(std::shared_ptr<Module> next, bool open = true, bool sieve = false) override;
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	bool validateInputOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
-	bool handlePropsChange(frame_sp& frame);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
+	bool handlePropsChange(frame_sp& frame) override;
 
 private:
 	void setMetadata(framemetadata_sp& metadata);
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

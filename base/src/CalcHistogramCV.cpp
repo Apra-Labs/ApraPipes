@@ -1,5 +1,5 @@
 #include <opencv2/highgui.hpp>
-#include <boost/foreach.hpp>
+#include <memory>
 
 #include "CalcHistogramCV.h"
 #include "Frame.h"
@@ -196,7 +196,7 @@ private:
 	float* range;
 	const float** ranges;
 
-	boost::shared_ptr<CalcHistogramCVProps> mProps;
+	std::shared_ptr<CalcHistogramCVProps> mProps;
 };
 
 
@@ -232,10 +232,9 @@ bool CalcHistogramCV::validateOutputPins()
 		return false;
 	}
 
-	pair<string, framefactory_sp> me; // map element	
 	auto framefactoryByPin = getOutputFrameFactory();
-	BOOST_FOREACH(me, framefactoryByPin) {
-		FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
+	for (const auto& [pinId, factory] : framefactoryByPin) {
+		FrameMetadata::FrameType frameType = factory->getFrameMetadata()->getFrameType();
 		if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ARRAY)
 		{
 			LOG_ERROR << "<" << getId() << ">::validateOutputPins input frameType is expected to be RAW_IMAGE OR ARRAY. Actual<" << frameType << ">";
@@ -257,7 +256,7 @@ bool CalcHistogramCV::validateInputOutputPins()
 	return Module::validateInputOutputPins();
 }
 
-void CalcHistogramCV::addInputPin(framemetadata_sp& metadata, string& pinId)
+void CalcHistogramCV::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	addOutputPin(metadata, pinId);
@@ -298,7 +297,7 @@ bool CalcHistogramCV::process(frame_container& frames)
 	mDetail->compute(frame, outFrame);	
 		
 	auto pinId = getOutputPinIdByType(FrameMetadata::ARRAY);
-	frames.insert(make_pair(pinId, outFrame));	
+	frames.insert({pinId, outFrame});
 	send(frames);
 
 	return true;

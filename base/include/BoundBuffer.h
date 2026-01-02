@@ -2,8 +2,7 @@
 #include <boost/container/deque.hpp>
 #include <mutex>
 #include <condition_variable>
-#include <thread>
-#include <functional>
+#include <type_traits>
 #include "Logger.h"
 
 template <class T>
@@ -14,11 +13,12 @@ public:
 	typedef boost::container::deque<T> container_type;
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
+	typedef const value_type& param_type;
 
 	explicit bounded_buffer(size_type capacity) : m_unread(0), m_capacity(capacity), m_accept(true) {}
 
 	void push(const value_type& item)
-	{ // C++11: Using const reference for parameter passing
+	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
 		std::unique_lock<std::mutex> lock(m_mutex);
 		m_not_full.wait(lock, [this]() { return is_ready_to_accept(); });
@@ -37,7 +37,7 @@ public:
 	}
 
 	void push_back(const value_type& item)
-	{ // C++11: Using const reference for parameter passing
+	{ // `param_type` represents the "best" way to pass a parameter of type `value_type` to a method.
 
 		std::unique_lock<std::mutex> lock(m_mutex);
 		bool isCommandQueueNotFull = m_unread < m_capacity * 2;
@@ -61,11 +61,11 @@ public:
 		std::unique_lock<std::mutex> lock(m_mutex);
 		if(!m_accept) return; // we are not accepting yet so drop what came in
 
-		if(is_not_full()) 
+		if(is_not_full())
 		{
 			++m_unread;
 		}
-		else // we are full 
+		else // we are full
 		{
 			//note: m_unread does not change in this case.
 			m_container.pop_back();//to drop the oldest
@@ -118,6 +118,7 @@ public:
 			value_type ret = m_container.back();
 			return ret;
 		}
+		return value_type();
 	}
 
 	value_type try_pop() {

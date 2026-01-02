@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
 #include "test_utils.h"
@@ -13,13 +14,13 @@ BOOST_AUTO_TEST_SUITE(color_conversion_tests)
 
 frame_sp colorConversion(std::string inputPathName, framemetadata_sp metadata, ColorConversionProps::ConversionType conversionType)
 {
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inputPathName)));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps(inputPathName)));
 	fileReader->addOutputPin(metadata);
 
-	auto colorchange = boost::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(conversionType)));
+	auto colorchange = std::shared_ptr<ColorConversion>(new ColorConversion(ColorConversionProps(conversionType)));
 	fileReader->setNext(colorchange);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	colorchange->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

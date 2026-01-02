@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -20,14 +23,14 @@ BOOST_AUTO_TEST_SUITE(ImageEncodeCV_tests)
 BOOST_AUTO_TEST_CASE(mono1_1920x960)
 {	
 
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/mono_1920x960.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920,960,ImageMetadata::ImageType::MONO, CV_8UC1, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 	
-	auto encode = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
+	auto encode = std::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
 	fileReader->setNext(encode);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encode->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -49,14 +52,14 @@ BOOST_AUTO_TEST_CASE(mono1_1920x960)
 BOOST_AUTO_TEST_CASE(color_rgb_1280x720)
 {	
 
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1280,720,ImageMetadata::ImageType::RGB, CV_8UC3, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 	
-	auto encode = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
+	auto encode = std::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
 	fileReader->setNext(encode);
 				
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encode->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -78,14 +81,14 @@ BOOST_AUTO_TEST_CASE(color_rgb_1280x720)
 BOOST_AUTO_TEST_CASE(color_bgra_1920x960)
 {	
 
-    auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+    auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(1920,960,ImageMetadata::ImageType::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST, true));
 	fileReader->addOutputPin(metadata);
 	
-	auto encode = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
+	auto encode = std::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(ImageEncoderCVProps()));
 	fileReader->setNext(encode);
 				
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	encode->setNext(sink);
 
 	BOOST_TEST(fileReader->init());
@@ -115,14 +118,14 @@ BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 	auto width = 3840;
 	auto height = 2160;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/4k.yuv")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/4k.yuv")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, 1, CV_8UC1, width, CV_8U));
 
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	
-	auto m2 = boost::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
+	auto m2 = std::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
 	fileReader->setNext(m2);
 	
 	
@@ -132,10 +135,10 @@ BOOST_AUTO_TEST_CASE(MONO_profile, *boost::unit_test::disabled())
 	StatSinkProps statSinkProps;
 	statSinkProps.logHealth = true;
 	statSinkProps.logHealthFrequency = 10;
-	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
+	auto statSink = std::shared_ptr<Module>(new StatSink(statSinkProps));
 	m2->setNext(statSink);
 
-	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	auto p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 	p->init();
 	p->run_all_threaded();
@@ -155,7 +158,7 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	auto width = 1280;
 	auto height = 720;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
@@ -163,22 +166,22 @@ BOOST_AUTO_TEST_CASE(RGB_profile, *boost::unit_test::disabled())
 	ImageEncoderCVProps encoderProps;
 	encoderProps.enableHealthCallBack = true;
 	encoderProps.healthUpdateIntervalInSec = 10;
-	auto m2 = boost::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(encoderProps));
+	auto m2 = std::shared_ptr<ImageEncoderCV>(new ImageEncoderCV(encoderProps));
 	fileReader->setNext(m2);
 	
 	
 	auto outputPinId = m2->getAllOutputPinsByType(FrameMetadata::ENCODED_IMAGE)[0];
 
 	auto controlProps = SimpleControlModuleProps();
-	boost::shared_ptr<SimpleControlModule> mControl = boost::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
+	std::shared_ptr<SimpleControlModule> mControl = std::shared_ptr<SimpleControlModule>(new SimpleControlModule(controlProps));
 	
 	StatSinkProps statSinkProps;
 	// statSinkProps.logHealth = true;
 	// statSinkProps.logHealthFrequency = 10;
-	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
+	auto statSink = std::shared_ptr<Module>(new StatSink(statSinkProps));
 	m2->setNext(statSink);
 
-	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	auto p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 	p->addControlModule(mControl);
 	p->init();
@@ -203,13 +206,13 @@ BOOST_AUTO_TEST_CASE(bgra_profile, *boost::unit_test::disabled())
 	auto width = 1920;
 	auto height = 960;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/overlay_1920x960_BGRA.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::BGRA, CV_8UC4, 0, CV_8U, FrameMetadata::HOST));
 
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
 	
-	auto m2 = boost::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
+	auto m2 = std::shared_ptr<Module>(new ImageEncoderCV(ImageEncoderCVProps()));
 	fileReader->setNext(m2);
 	
 	
@@ -219,10 +222,10 @@ BOOST_AUTO_TEST_CASE(bgra_profile, *boost::unit_test::disabled())
 	StatSinkProps statSinkProps;
 	statSinkProps.logHealth = true;
 	statSinkProps.logHealthFrequency = 10;
-	auto statSink = boost::shared_ptr<Module>(new StatSink(statSinkProps));
+	auto statSink = std::shared_ptr<Module>(new StatSink(statSinkProps));
 	m2->setNext(statSink);
 
-	auto p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	auto p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(fileReader);
 	p->init();
 	p->run_all_threaded();

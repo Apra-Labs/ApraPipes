@@ -1,8 +1,7 @@
 #pragma once
 #include <boost/asio/buffer.hpp>
 #include "FrameContainerQueue.h"
-using boost::asio::const_buffer;
-using boost::asio::mutable_buffer;
+
 class Frame;
 class H264FrameDemuxer : public FrameContainerQueueAdapter{
 	enum STATE {
@@ -12,9 +11,9 @@ class H264FrameDemuxer : public FrameContainerQueueAdapter{
 		WAITING_FOR_IFRAME, // drops
 		NORMAL
 	};
-	const_buffer parseNALU(mutable_buffer& input, short &typeFound);
+	boost::asio::const_buffer parseNALU(boost::asio::mutable_buffer& input, short &typeFound);
 	STATE myState;
-	const_buffer sps, pps, sps_pps;
+	boost::asio::const_buffer sps, pps, sps_pps;
 protected:
 	FrameContainerQueueAdapter::PushType should_push(frame_container item);
 	void on_failed_push(frame_container item);
@@ -24,7 +23,7 @@ protected:
 public:
 	H264FrameDemuxer(): myState(INITIAL) {}
 		short getState() { return myState; }
-	const_buffer getSPS() { return sps; }
-	const_buffer getPPS() { return pps; }
-	const_buffer getSPS_PPS() { return sps_pps; } //as is supplied by the source
+	boost::asio::const_buffer getSPS() { return sps; }
+	boost::asio::const_buffer getPPS() { return pps; }
+	boost::asio::const_buffer getSPS_PPS() { return sps_pps; } //as is supplied by the source
 };

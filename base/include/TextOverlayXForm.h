@@ -35,21 +35,21 @@ class TextOverlayXForm : public Module
 public:
 	TextOverlayXForm(TextOverlayXFormProps _props);
 	virtual ~TextOverlayXForm();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(TextOverlayXFormProps &props);
 	TextOverlayXFormProps getProps();
 
 protected:
-	bool process(frame_container &frames);
-	bool processSOS(frame_sp &frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	bool handlePropsChange(frame_sp &frame);
+	bool process(frame_container &frames) override;
+	bool processSOS(frame_sp &frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override;
+	bool handlePropsChange(frame_sp &frame) override;
 
 private:
 	void setMetadata(framemetadata_sp &metadata);
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "Module.h"
 #include "FrameMetadata.h"
@@ -18,12 +19,12 @@ BOOST_AUTO_TEST_SUITE(calchistogramcv_tests, * boost::unit_test::disabled())
 BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 {
 	{			
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
+		auto m1 = std::shared_ptr<Module>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));		
 		m1->addOutputPin(metadata);
 
 		CalcHistogramCVProps histProps(8);
-		auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
+		auto m2 = std::shared_ptr<Module>(new CalcHistogramCV(histProps));
 		BOOST_TEST(m2->init() == false);
 		m1->setNext(m2);
 		BOOST_TEST(m2->init() == false);
@@ -34,13 +35,13 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 	} 
 
 	{			
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
+		auto m1 = std::shared_ptr<Module>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata());		
 		m1->addOutputPin(metadata);
 
 		CalcHistogramCVProps histProps(8);
 		histProps.roi = { 491,6,1429, 338 };		
-		auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
+		auto m2 = std::shared_ptr<Module>(new CalcHistogramCV(histProps));
 		m1->setNext(m2);
 		auto histMetadata = framemetadata_sp(new ArrayMetadata());
 		m2->addOutputPin(histMetadata);
@@ -49,13 +50,13 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 	}
 
 	{		
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
+		auto m1 = std::shared_ptr<Module>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata());		
 		m1->addOutputPin(metadata);
 				
 		CalcHistogramCVProps histProps(8);
 		histProps.maskImgPath = "./data/maskImg.jpg";
-		auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
+		auto m2 = std::shared_ptr<Module>(new CalcHistogramCV(histProps));
 		m1->setNext(m2);
 		auto histMetadata = framemetadata_sp(new ArrayMetadata());
 		m2->addOutputPin(histMetadata);
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 	}
 
 	{
-		auto m1 = boost::shared_ptr<Module>(new ExternalSourceModule());
+		auto m1 = std::shared_ptr<Module>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));
 		m1->addOutputPin(metadata);
 				
@@ -72,7 +73,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		{
 			CalcHistogramCVProps histProps(8);
 			histProps.maskImgPath = "maskImg.jpg";
-			auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(histProps));
+			auto m2 = std::shared_ptr<Module>(new CalcHistogramCV(histProps));
 			BOOST_TEST(false);
 		}
 		catch (AIP_Exception& exception)
@@ -93,13 +94,13 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 			BOOST_TEST(false);
 		}
 
-		auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+		auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 		auto metadata = framemetadata_sp(new RawImageMetadata(100, 100, 1, CV_8UC1, 100, CV_8U));		
 		auto rawImagePinId = m1->addOutputPin(metadata);
 
 		CalcHistogramCVProps props;
 		props.roi = { 491,6,1429, 3338 };
-		auto m2 = boost::shared_ptr<Module>();
+		auto m2 = std::shared_ptr<Module>();
 		m2.reset(new CalcHistogramCV(props));
 
 		m1->setNext(m2);
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		auto histPinId = m2->addOutputPin(histMetadata);
 
 
-		auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+		auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 		m2->setNext(m3);
 
 		BOOST_TEST(m1->init());
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_basic)
 		memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 		frame_container frames;
-		frames.insert(make_pair(rawImagePinId, rawImageFrame));
+		frames.insert({rawImagePinId, rawImageFrame});
 		m1->send(frames);
 
 		m1->send(frames);
@@ -181,7 +182,7 @@ void testValues(int bins, int type, vector<float>& histValues)
 		BOOST_TEST(false);
 	}
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 	auto rawImagePinId = m1->addOutputPin(metadata);
@@ -195,12 +196,12 @@ void testValues(int bins, int type, vector<float>& histValues)
 	{
 		props.maskImgPath = "./data/maskImg.jpg";
 	}
-	auto m2 = boost::shared_ptr<Module>(new CalcHistogramCV(props));
+	auto m2 = std::shared_ptr<Module>(new CalcHistogramCV(props));
 	m1->setNext(m2);
 	auto histMetadata = framemetadata_sp(new ArrayMetadata());
 	auto histPinId = m2->addOutputPin(histMetadata);
 	
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -211,7 +212,7 @@ void testValues(int bins, int type, vector<float>& histValues)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 	m1->send(frames);
 
 
@@ -236,7 +237,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_basic)
 	testValues(8, 3, histValuesMaskImg);
 }
 
-void testValues2(frame_container& frames, boost::shared_ptr<ExternalSourceModule>& m1, boost::shared_ptr<CalcHistogramCV>& m2, boost::shared_ptr<ExternalSinkModule>& m3, string& histPinId, vector<float>& histValues)
+void testValues2(frame_container& frames, std::shared_ptr<ExternalSourceModule>& m1, std::shared_ptr<CalcHistogramCV>& m2, std::shared_ptr<ExternalSinkModule>& m3, string& histPinId, vector<float>& histValues)
 {
 	m1->send(frames);
 
@@ -260,7 +261,7 @@ void testValues2(frame_container& frames, boost::shared_ptr<ExternalSourceModule
 	
 }
 
-void testSetProps(int bins, int type, boost::shared_ptr<CalcHistogramCV>& m2, boost::shared_ptr<ExternalSinkModule>& m3, string& histPinId )
+void testSetProps(int bins, int type, std::shared_ptr<CalcHistogramCV>& m2, std::shared_ptr<ExternalSinkModule>& m3, string& histPinId )
 {
 	auto props = m2->getProps();
 	props.bins = bins;
@@ -316,19 +317,19 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_withchangeprops)
 		BOOST_TEST(false);
 	}
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 	auto rawImagePinId = m1->addOutputPin(metadata);
 
 	int bins = 8;
 	CalcHistogramCVProps props(bins);	
-	auto m2 = boost::shared_ptr<CalcHistogramCV>(new CalcHistogramCV(props));
+	auto m2 = std::shared_ptr<CalcHistogramCV>(new CalcHistogramCV(props));
 	m1->setNext(m2);
 	auto histMetadata = framemetadata_sp(new ArrayMetadata());
 	auto histPinId = m2->addOutputPin(histMetadata);
 		
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -339,7 +340,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_values_withchangeprops)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 
 	testValues2(frames, m1, m2, m3, histPinId, histValuesNone);
 	testSetProps(16, 1, m2, m3, histPinId);
@@ -370,19 +371,19 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_perf)
 		BOOST_TEST(false);
 	}
 
-	auto m1 = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto m1 = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata());
 	FrameMetadataFactory::downcast<RawImageMetadata>(metadata)->setData(img);
 	auto rawImagePinId = m1->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>();
+	auto m2 = std::shared_ptr<Module>();
 	m2.reset(new CalcHistogramCV(CalcHistogramCVProps()));
 	
 	m1->setNext(m2);
 	auto histMetadata = framemetadata_sp(new ArrayMetadata());
 	auto histPinId = m2->addOutputPin(histMetadata);
 	
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(m1->init());
@@ -393,7 +394,7 @@ BOOST_AUTO_TEST_CASE(calchistogramcv_perf)
 	memcpy(rawImageFrame->data(), img.data, metadata->getDataSize());
 
 	frame_container frames;
-	frames.insert(make_pair(rawImagePinId, rawImageFrame));
+	frames.insert({rawImagePinId, rawImageFrame});
 	m1->send(frames);
 
 	auto j = 0;

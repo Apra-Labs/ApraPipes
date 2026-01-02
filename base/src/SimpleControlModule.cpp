@@ -31,7 +31,7 @@ void SimpleControlModule::handleError(const APErrorObject &error)
 void SimpleControlModule::handleHealthCallback(const APHealthObject &healthObj)
 {
 	LOG_ERROR << "Health Callback from  module " << healthObj.getModuleId();
-	if (!healthCallbackExtention.empty())
+	if (healthCallbackExtention)
 	{
 		LOG_INFO << "Calling Health Callback Extention...";
 		healthCallbackExtention(&healthObj,1);

@@ -53,7 +53,7 @@ void ColorConversion::setConversionStrategy(framemetadata_sp inputMetadata, fram
 	mDetail = AbsColorConversionFactory::create(inputMetadata, outputMetadata,mDetail->inpImg,mDetail->outImg);
 }
 
-void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ColorConversion::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	mInputMetadata = metadata;
 	Module::addInputPin(metadata, pinId);
@@ -61,11 +61,11 @@ void ColorConversion::addInputPin(framemetadata_sp& metadata, string& pinId)
 	auto frameType = metadata->getFrameType();
 	if (mProps.type == ColorConversionProps::RGB_TO_YUV420PLANAR)
 	{
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImagePlanarMetadata(FrameMetadata::HOST));
+		mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(FrameMetadata::HOST);
 	}
 	else
 	{
-		mOutputMetadata = boost::shared_ptr<FrameMetadata>(new RawImageMetadata(FrameMetadata::HOST));
+		mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::HOST);
 	}
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
@@ -90,7 +90,7 @@ bool ColorConversion::process(frame_container& frames)
 {
 	auto outFrame = makeFrame();
 	mDetail->convert(frames, outFrame, mOutputMetadata);
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);
 	return true;
 }

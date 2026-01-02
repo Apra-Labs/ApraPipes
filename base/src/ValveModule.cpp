@@ -1,6 +1,6 @@
 #include <map>
 #include <stdafx.h>
-#include <boost/filesystem.hpp>
+#include <memory>
 #include "ValveModule.h"
 #include "Module.h"
 #include "Command.h"
@@ -37,12 +37,11 @@ public:
 
     void createPinMap(frame_container frames)
     {
-        for (auto it = frames.begin(); it != frames.end(); it++)
+        for (const auto& [pinId, frame] : frames)
         {
-            if (pinMap.find(it->first) == pinMap.end())
+            if (pinMap.find(pinId) == pinMap.end())
             {
-                auto itr = it;
-                pinMap.insert(pair<string, int>(itr->first, mProps.noOfFramesToCapture));
+                pinMap.insert(pair<string, int>(pinId, mProps.noOfFramesToCapture));
             }
         }
     }
@@ -52,9 +51,9 @@ public:
         if (enableFlow)
         {
             bool reset = true;
-            for (auto it = pinMap.begin(); it != pinMap.end(); it++)
+            for (const auto& [pinId, count] : pinMap)
             {
-                if (it->second > 0)
+                if (count > 0)
                 {
                     reset = false;
                 }
@@ -65,16 +64,15 @@ public:
                 pinMap.clear();
                 return false;
             }
-            for (auto it = frames.begin(); it != frames.end(); it++)
+            for (const auto& [pinId, frame] : frames)
             {
-                if (pinMap[it->first] == 0)
+                if (pinMap[pinId] == 0)
                 {
-                    auto itr = it;
-                    frames.erase(itr->first);
+                    frames.erase(pinId);
                 }
                 else
                 {
-                    pinMap[it->first]--;
+                    pinMap[pinId]--;
                 }
             }
             return true;
@@ -115,12 +113,12 @@ bool ValveModule::validateInputOutputPins()
 }
 
 // default - open, sieve is disabled - feedback false
-bool ValveModule::setNext(boost::shared_ptr<Module> next, bool open, bool sieve)
+bool ValveModule::setNext(std::shared_ptr<Module> next, bool open, bool sieve)
 {
     return Module::setNext(next, open, false, sieve);
 }
 
-void ValveModule::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ValveModule::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
 }

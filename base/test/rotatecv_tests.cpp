@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -15,16 +16,16 @@ BOOST_AUTO_TEST_SUITE(rotatecv_tests)
 void test(std::string filename, int width, int height, ImageMetadata::ImageType imageType, int type, int depth, double angle)
 {
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/" + filename + ".raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/" + filename + ".raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width * 3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 
-	auto m1 = boost::shared_ptr<Module>(new RotateCV(RotateCVProps(angle)));
+	auto m1 = std::shared_ptr<Module>(new RotateCV(RotateCVProps(angle)));
 	fileReader->setNext(m1);
 
 	auto outputPinId = m1->getAllOutputPinsByType(FrameMetadata::RAW_IMAGE)[0];
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m1->setNext(sink);
 
 	BOOST_TEST(fileReader->init());

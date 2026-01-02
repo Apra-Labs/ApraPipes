@@ -8,6 +8,7 @@
 #include "nv_test_utils.h"
 
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 // NOTE: TESTS WHICH REQUIRE ANY ENVIRONMENT TO BE PRESENT BEFORE RUNNING ARE NOT UNIT TESTS !!!
 
@@ -21,18 +22,18 @@ BOOST_AUTO_TEST_CASE(isCudaSupported, * utf::precondition(if_compute_cap_support
 
 BOOST_AUTO_TEST_CASE(general, * utf::precondition(if_compute_cap_supported()))
 {
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId = source->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
-	auto copy2 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	copy1->setNext(copy2);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -45,7 +46,7 @@ BOOST_AUTO_TEST_CASE(general, * utf::precondition(if_compute_cap_supported()))
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();
@@ -65,18 +66,18 @@ BOOST_AUTO_TEST_CASE(rawimage, * utf::precondition(if_compute_cap_supported()))
 	int type = CV_8UC3;
 	int depth = CV_8U;
 
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, type, 0, depth, FrameMetadata::HOST, true));
 	auto pinId = source->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);	
-	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
-	auto copy2 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	copy1->setNext(copy2);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE(rawimage, * utf::precondition(if_compute_cap_supported()))
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();
@@ -119,18 +120,18 @@ BOOST_AUTO_TEST_CASE(rawimageplanar, * utf::precondition(if_compute_cap_supporte
 	int channels = 3;
 	int depth = CV_8U;
 
-	auto source = boost::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
+	auto source = std::shared_ptr<ExternalSourceModule>(new ExternalSourceModule());
 	auto metadata = framemetadata_sp(new RawImagePlanarMetadata(width, height, ImageMetadata::YUV420, size_t(0), depth));
 	auto pinId = source->addOutputPin(metadata);
 
 	auto stream = cudastream_sp(new ApraCudaStream);
-	auto copy1 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
+	auto copy1 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyHostToDevice, stream)));
 	source->setNext(copy1);
 
-	auto copy2 = boost::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
+	auto copy2 = std::shared_ptr<CudaMemCopy>(new CudaMemCopy(CudaMemCopyProps(cudaMemcpyDeviceToHost, stream)));
 	copy1->setNext(copy2);
 
-	auto sink = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto sink = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	copy2->setNext(sink);
 
 	BOOST_TEST(source->init());
@@ -143,7 +144,7 @@ BOOST_AUTO_TEST_CASE(rawimageplanar, * utf::precondition(if_compute_cap_supporte
 	memset(frame->data(), 5, readDataSize);
 
 	frame_container frames;
-	frames.insert(make_pair(pinId, frame));
+	frames.insert({pinId, frame});
 
 	source->send(frames);
 	copy1->step();

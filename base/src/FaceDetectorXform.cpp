@@ -83,7 +83,7 @@ bool FaceDetectorXform::validateOutputPins()
 	return true;
 }
 
-void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, string &pinId)
+void FaceDetectorXform::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mDetail->mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACEDETECTS_INFO));
@@ -147,7 +147,7 @@ bool FaceDetectorXform::process(frame_container &frames)
 	mDetail->faceDetectsInfo.faces = mDetail->faces;
 	auto outFrame = makeFrame(mDetail->faceDetectsInfo.getSerializeSize());
 	mDetail->faceDetectsInfo.serialize(outFrame->data(), mDetail->faceDetectsInfo.getSerializeSize());
-	frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+	frames.insert({mDetail->mOutputPinId, outFrame});
 	mDetail->faces.clear();
 	mDetail->faceDetectsInfo.faces.clear();
 	send(frames);

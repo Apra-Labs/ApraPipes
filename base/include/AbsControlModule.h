@@ -4,6 +4,10 @@
 #include "Module.h"
 #include <boost/smart_ptr/weak_ptr.hpp>
 #include <map>
+#include <functional>
+#include <string>
+#include <vector>
+#include <memory>
 
 class PipeLine;
 class AbsControlModuleProps : public ModuleProps {
@@ -15,10 +19,10 @@ class AbsControlModule : public Module {
 public:
 	AbsControlModule(AbsControlModuleProps _props);
 	~AbsControlModule();
-	bool init();
-	bool term();
-	bool enrollModule(std::string role, boost::shared_ptr<Module> module);
-	boost::shared_ptr<Module> getModuleofRole(std::string role);
+	bool init() override;
+	bool term() override;
+	bool enrollModule(std::string role, std::shared_ptr<Module> module);
+	std::shared_ptr<Module> getModuleofRole(std::string role);
 	std::string printStatus();
 	virtual void handleMp4MissingVideotrack(std::string previousVideoFile, std::string nextVideoFile) {}
 	virtual void handleMMQExport(Command cmd, bool priority = false) {}
@@ -28,7 +32,7 @@ public:
 	virtual void handleGoLive(bool goLive, bool priority) {}
 	virtual void handleDecoderSpeed(DecoderPlaybackSpeed cmd, bool priority) {}
 	// Note: weak pointers to avoid cyclic dependency and mem leaks
-	std::map<std::string, boost::weak_ptr<Module>> moduleRoles;
+	std::map<std::string, std::weak_ptr<Module>> moduleRoles;
   	virtual void handleError(const APErrorObject &error) {}
 	virtual void handleHealthCallback(const APHealthObject& healthObj);
 	/**
@@ -38,17 +42,17 @@ public:
 	 * @return nothing.
 	 */
 	void registerHealthCallbackExtention(
-		boost::function<void(const APHealthObject*, unsigned short)> callbackFunction);
+		std::function<void(const APHealthObject*, unsigned short)> callbackFunction);
 protected:
-	bool process(frame_container& frames);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
-	bool handlePropsChange(frame_sp& frame);
-	virtual void sendEOS() {}
-	virtual void sendEOS(frame_sp& frame) {}
+	bool process(frame_container& frames) override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
+	bool handlePropsChange(frame_sp& frame) override;
+	void sendEOS() override {}
+	void sendEOS(frame_sp& frame) override {}
 	virtual void sendEOPFrame() {}
 	std::vector<std::string> serializeControlModule();
-	boost::function<void(const APHealthObject*, unsigned short)> healthCallbackExtention;
+	std::function<void(const APHealthObject*, unsigned short)> healthCallbackExtention;
 private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

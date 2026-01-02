@@ -534,7 +534,7 @@ bool AffineTransform::validateOutputPins()
 	return true;
 }
 
-void AffineTransform::addInputPin(framemetadata_sp &metadata, string &pinId)
+void AffineTransform::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
 
 	Module::addInputPin(metadata, pinId);
@@ -591,7 +591,7 @@ bool AffineTransform::process(frame_container &frames)
 	mDetail->setPtrs();
 
 	mDetail->compute();
-	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
+	frames.insert({mDetail->mOutputPinId, mDetail->outputFrame});
 	send(frames);
 
 	return true;
@@ -609,7 +609,7 @@ bool AffineTransform::shouldTriggerSOS()
 	return mDetail->mOutputFrameLength == 0;
 }
 
-bool AffineTransform::processEOS(string &pinId)
+bool AffineTransform::processEOS(std::string_view pinId)
 {
 	mDetail->mOutputFrameLength = 0;
 	return true;

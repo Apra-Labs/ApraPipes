@@ -1,9 +1,10 @@
 #pragma once
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/container/deque.hpp>
 #include "AbsControlModule.h"
 #include "enum_macros.h"
 #include <string>
+#include <string_view>
 
 class Module;
 // a linear pipline
@@ -25,21 +26,21 @@ class PipeLine {
 
 	bool mPlay;
 	PipelineStatus myStatus;
-	typedef boost::shared_ptr<Module> item_type;
+	typedef std::shared_ptr<Module> item_type;
 	typedef boost::container::deque< item_type > container_type;
-	boost::shared_ptr<Module> controlModule = nullptr;
+	std::shared_ptr<Module> controlModule = nullptr;
 
 	std::string mName;
 	container_type modules;
 	bool validate();
 	bool checkCyclicDependency();
 public:
-	PipeLine(std::string name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
+	PipeLine(std::string_view name) :mName(name), myStatus(PL_CREATED), mPlay(false) {}
 	~PipeLine();
 	std::string getName() { return mName; }
-	bool appendModule(boost::shared_ptr<Module> pModule);
-	bool addControlModule(boost::shared_ptr<AbsControlModule>cModule);
-	bool init();
+	[[nodiscard]] bool appendModule(std::shared_ptr<Module> pModule);
+	[[nodiscard]] bool addControlModule(std::shared_ptr<AbsControlModule>cModule);
+	[[nodiscard]] bool init();
 	void run_all_threaded();
 	void run_all_threaded_withpause();
 	void pause();

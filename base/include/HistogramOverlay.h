@@ -23,21 +23,21 @@ public:
 	HistogramOverlay(HistogramOverlayProps _props=HistogramOverlayProps());
 	virtual ~HistogramOverlay() {}
 
-	virtual bool init();
-	virtual bool term();
+	bool init() override;
+	bool term() override;
 
-protected:	
-	bool processEOS(string& pinId);
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();	
-	bool validateInputOutputPins();
-	bool shouldTriggerSOS();
+protected:
+	bool processEOS(string& pinId) override;
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	bool validateInputOutputPins() override;
+	bool shouldTriggerSOS() override;
 
-private:	
+private:
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };
 
 

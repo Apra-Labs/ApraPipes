@@ -441,7 +441,7 @@ bool EffectsNPPI::validateOutputPins()
 	return true;
 }
 
-void EffectsNPPI::addInputPin(framemetadata_sp& metadata, string& pinId)
+void EffectsNPPI::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 
@@ -473,7 +473,7 @@ bool EffectsNPPI::process(frame_container &frames)
 
 	mDetail->compute(frame->data(), outFrame->data());
 
-	frames.insert(make_pair(mOutputPinId, outFrame));
+	frames.insert({mOutputPinId, outFrame});
 	send(frames);	
 
 	return true;
@@ -494,10 +494,10 @@ void EffectsNPPI::setMetadata(framemetadata_sp& metadata)
 		switch (mFrameType)
 		{
 		case FrameMetadata::RAW_IMAGE:
-			mOutputMetadata = framemetadata_sp(new RawImageMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = std::make_shared<RawImageMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
 			break;
 		case FrameMetadata::RAW_IMAGE_PLANAR:
-			mOutputMetadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::MemType::CUDA_DEVICE));
+			mOutputMetadata = std::make_shared<RawImagePlanarMetadata>(FrameMetadata::MemType::CUDA_DEVICE);
 			break;
 		default:
 			throw AIPException(AIP_FATAL, "Unsupported frameType<" + std::to_string(mFrameType) + ">");
@@ -549,7 +549,7 @@ bool EffectsNPPI::shouldTriggerSOS()
 	return mFrameLength == 0;
 }
 
-bool EffectsNPPI::processEOS(string& pinId)
+bool EffectsNPPI::processEOS(std::string_view pinId)
 {
 	mFrameLength = 0;
 	return true;

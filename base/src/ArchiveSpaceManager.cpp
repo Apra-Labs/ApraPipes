@@ -1,6 +1,6 @@
 #include <stdafx.h>
 #include<cstdlib>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "Module.h"
 #include "ArchiveSpaceManager.h"
 
@@ -20,7 +20,7 @@ public:
         mProps = _props;
     }
 
-  uint64_t estimateDirectorySize(boost::filesystem::path _dir) 
+  uint64_t estimateDirectorySize(std::filesystem::path _dir) 
     {
     std::cout << "Estimating size for directory: " << _dir << std::endl;
     uint64_t dirSize = 0;
@@ -29,9 +29,9 @@ public:
         int countFreq = 0;
     uint64_t tempSize = 0;
 
-        for (const auto& entry : boost::filesystem::recursive_directory_iterator(_dir))
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(_dir))
         {
-      if (boost::filesystem::is_regular_file(entry)) 
+      if (std::filesystem::is_regular_file(entry)) 
             {
         if (countFreq % mProps.samplingFreq == 0) 
                 {
@@ -42,7 +42,7 @@ public:
         {
           try 
                 {
-                    tempSize = boost::filesystem::file_size(entry);
+                    tempSize = std::filesystem::file_size(entry);
                     dirSize += tempSize * mProps.samplingFreq;
           } 
           catch (const std::exception &e) 
@@ -63,15 +63,15 @@ public:
         return dirSize;
     }
 
-    boost::filesystem::path getOldestDirectory(boost::filesystem::path _cam)
+    std::filesystem::path getOldestDirectory(std::filesystem::path _cam)
     {
-        for (const auto& camFolder : boost::filesystem::directory_iterator(_cam))
+        for (const auto& camFolder : std::filesystem::directory_iterator(_cam))
         {
-            for (const auto& folder : boost::filesystem::recursive_directory_iterator(camFolder))
+            for (const auto& folder : std::filesystem::recursive_directory_iterator(camFolder))
             {
-                if (boost::filesystem::is_regular_file(folder))
+                if (std::filesystem::is_regular_file(folder))
                 {
-                    boost::filesystem::path p = folder.path().parent_path();
+                    std::filesystem::path p = folder.path().parent_path();
                     return p;
                 }
             }
@@ -81,24 +81,24 @@ public:
 
     void manageDirectory()
     {
-    auto comparator = [](std::pair<boost::filesystem::path, uint64_t>& a, std::pair<boost::filesystem::path, uint64_t>& b) {return a.second < b.second; };
+    auto comparator = [](std::pair<std::filesystem::path, uint64_t>& a, std::pair<std::filesystem::path, uint64_t>& b) {return a.second < b.second; };
         while (archiveSize > mProps.lowerWaterMark)
         {
-            for (const auto& camFolder : boost::filesystem::directory_iterator(mProps.pathToWatch))
+            for (const auto& camFolder : std::filesystem::directory_iterator(mProps.pathToWatch))
             {
-                boost::filesystem::path oldHrDir = getOldestDirectory(camFolder);
-                foldVector.push_back({ oldHrDir,boost::filesystem::last_write_time(oldHrDir) });
+                std::filesystem::path oldHrDir = getOldestDirectory(camFolder);
+                foldVector.emplace_back(oldHrDir, std::filesystem::last_write_time(oldHrDir).time_since_epoch().count());
             }
             sort(foldVector.begin(), foldVector.end(), comparator); //Sorting the vector
 
       uint64_t tempSize = 0;
-            boost::filesystem::path delDir = foldVector[0].first;
+            std::filesystem::path delDir = foldVector[0].first;
             BOOST_LOG_TRIVIAL(info) << "Deleting file : " << delDir.string();
             tempSize = estimateDirectorySize(delDir);
             archiveSize = archiveSize - tempSize;
             try
             {
-                boost::filesystem::remove_all(delDir);
+                std::filesystem::remove_all(delDir);
             }
             catch (...)
             {
@@ -125,7 +125,7 @@ public:
     }
     ArchiveSpaceManagerProps mProps;
   uint64_t archiveSize = 0;
-  std::vector<std::pair<boost::filesystem::path, uint64_t>> foldVector;
+  std::vector<std::pair<std::filesystem::path, uint64_t>> foldVector;
 };
 
 
@@ -150,7 +150,7 @@ bool ArchiveSpaceManager::validateInputOutputPins()
     return true;
 }
 
-void ArchiveSpaceManager::addInputPin(framemetadata_sp& metadata, string& pinId)
+void ArchiveSpaceManager::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
     Module::addOutputPin(metadata, pinId);

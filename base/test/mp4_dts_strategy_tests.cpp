@@ -2,6 +2,9 @@
 #include <string>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 #include "Logger.h"
 
 #include "Mp4ReaderSource.h"
@@ -28,7 +31,7 @@ void read_write(std::string videoPath, std::string outPath,
 	auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, readLoop, false);
 	mp4ReaderProps.logHealth = true;
 	mp4ReaderProps.logHealthFrequency = 300;
-	auto mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+	auto mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 	auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 	mp4Reader->addOutPutPin(h264ImageMetadata);
 	auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
@@ -39,11 +42,11 @@ void read_write(std::string videoPath, std::string outPath,
     auto mp4WriterSinkProps = Mp4WriterSinkProps(chunkTime, 1, 30, outPath, recordedTSBasedDTS);
 	mp4WriterSinkProps.logHealth = true;
 	mp4WriterSinkProps.logHealthFrequency = 300;
-	auto mp4WriterSink = boost::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
+	auto mp4WriterSink = std::shared_ptr<Module>(new Mp4WriterSink(mp4WriterSinkProps));
 	mp4Reader->setNext(mp4WriterSink, mImagePin);
 
-	boost::shared_ptr<PipeLine> p;
-	p = boost::shared_ptr<PipeLine>(new PipeLine("test"));
+	std::shared_ptr<PipeLine> p;
+	p = std::shared_ptr<PipeLine>(new PipeLine("test"));
 	p->appendModule(mp4Reader);
 
 	if (!p->init())
@@ -104,7 +107,7 @@ struct SetupSeekTest {
 		auto mp4ReaderProps = Mp4ReaderSourceProps(videoPath, parseFS, 0, true, readLoop, false);
 		mp4ReaderProps.logHealth = true;
 		mp4ReaderProps.logHealthFrequency = 300;
-		mp4Reader = boost::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
+		mp4Reader = std::shared_ptr<Mp4ReaderSource>(new Mp4ReaderSource(mp4ReaderProps));
 		auto h264ImageMetadata = framemetadata_sp(new H264Metadata(0, 0));
 		mp4Reader->addOutPutPin(h264ImageMetadata);
 		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
@@ -114,7 +117,7 @@ struct SetupSeekTest {
 		mImagePin = mp4Reader->getAllOutputPinsByType(FrameMetadata::H264_DATA);
 
 		auto sinkProps = ExternalSinkProps();;
-		sink = boost::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
+		sink = std::shared_ptr<ExternalSink>(new ExternalSink(sinkProps));
 		mp4Reader->setNext(sink, mImagePin);
 	}
 
@@ -168,8 +171,8 @@ struct SetupSeekTest {
 		}
 
 	}; // ExternalSink
-	boost::shared_ptr<Mp4ReaderSource> mp4Reader;
-	boost::shared_ptr<ExternalSink> sink;
+	std::shared_ptr<Mp4ReaderSource> mp4Reader;
+	std::shared_ptr<ExternalSink> sink;
 };
 
 BOOST_AUTO_TEST_CASE(eof_seek_step)

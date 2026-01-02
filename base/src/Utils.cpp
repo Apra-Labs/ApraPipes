@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "Utils.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
 #include <iostream>
 #include <locale>
+#include <thread>
+#include <chrono>
+#include <sstream>
+#include <iomanip>
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
 #ifdef _WIN64
@@ -56,15 +59,15 @@ int64_t Utils::GetEpocFromTime(const char * inp) {
 	std::string t(inp);
 	if (t.length() != 0) {
 		try {
-			boost::posix_time::ptime abs_time;// = boost::posix_time::time_from_string(t.c_str());
-			boost::posix_time::time_input_facet *tif = new boost::posix_time::time_input_facet;
-			tif->set_iso_extended_format();
+			std::tm tm = {};
 			std::istringstream iss(t);
-			iss.imbue(std::locale(std::locale::classic(), tif));
-			iss >> abs_time;
-			boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-			x = (abs_time - epoch).total_seconds();
-			
+			iss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+			if (iss.fail()) {
+				LOG_ERROR << "Failed to parse time string: " << t;
+				return 0;
+			}
+			auto time_point = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+			x = std::chrono::duration_cast<std::chrono::seconds>(time_point.time_since_epoch()).count();
 		}
 		catch (std::exception &ex) {
 			LOG_ERROR << "exception occured in parsing sps buffer:" <<ex.what();
@@ -78,15 +81,15 @@ int64_t Utils::GetEpocFromTimeInMillis(const char * inp) {
 	std::string t(inp);
 	if (t.length() != 0) {
 		try {
-			boost::posix_time::ptime abs_time;// = boost::posix_time::time_from_string(t.c_str());
-			boost::posix_time::time_input_facet *tif = new boost::posix_time::time_input_facet;
-			tif->set_iso_extended_format();
+			std::tm tm = {};
 			std::istringstream iss(t);
-			iss.imbue(std::locale(std::locale::classic(), tif));
-			iss >> abs_time;
-			boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-			x = (abs_time - epoch).total_milliseconds();
-
+			iss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+			if (iss.fail()) {
+				LOG_ERROR << "Failed to parse time string: " << t;
+				return 0;
+			}
+			auto time_point = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+			x = std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch()).count();
 		}
 		catch (std::exception &ex) {
 			LOG_ERROR << "exception occured in parsing sps buffer:" << ex.what();
@@ -97,7 +100,7 @@ int64_t Utils::GetEpocFromTimeInMillis(const char * inp) {
 
 std::string Utils::base64_encode(unsigned char const* bytes_to_encode, size_t in_len) {
 
-	static const std::string base64_chars =
+	static constexpr std::string_view base64_chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"abcdefghijklmnopqrstuvwxyz"
 		"0123456789+/";

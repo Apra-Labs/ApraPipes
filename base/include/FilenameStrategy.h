@@ -1,13 +1,15 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <boost/filesystem.hpp>
+#include <memory>
+#include <filesystem>
+#include <vector>
+#include <string>
 
 class FilenameStrategy
 {
 public:
 
-	static boost::shared_ptr<FilenameStrategy> getStrategy(const std::string& strPath,
+	static std::shared_ptr<FilenameStrategy> getStrategy(const std::string& strPath,
 		int startIndex,
 		int maxIndex,
 		bool readLoop,
@@ -31,14 +33,15 @@ public:
 	void SetReadLoop(bool readLoop);
 	static bool fileExists(const char *path);
 
-protected:
 	FilenameStrategy(const std::string& strPath,
 		int startIndex,
 		int maxIndex,
 		bool readLoop,
 		bool appendFlag);
-	
+
 	FilenameStrategy(bool readLoop);
+
+protected:
 
 	void incrementIndex();
 
@@ -64,7 +67,7 @@ private:
 
 class BoostDirectoryStrategy: public FilenameStrategy
 {
-public:	
+public:
 	virtual ~BoostDirectoryStrategy();
 
 	bool Connect();
@@ -74,14 +77,15 @@ public:
 
 	friend class FilenameStrategy;
 
-protected:
 	BoostDirectoryStrategy(const std::string& strPath,
 		int startIndex,
 		int maxIndex,
 		bool readLoop);
 
-private:	
-	std::vector<boost::filesystem::path> mFiles;	
+protected:
+
+private:
+	std::vector<std::filesystem::path> mFiles;
 };
 
 class ListStrategy : public FilenameStrategy
@@ -96,10 +100,11 @@ public:
 
 	friend class FilenameStrategy;
 
-protected:
 	ListStrategy(const std::vector<std::string>& files, const std::string& dirPath, bool readLoop);
+
+protected:
 
 private:
 	std::vector<std::string> mFiles;
-	boost::filesystem::path mRootDir;
+	std::filesystem::path mRootDir;
 };

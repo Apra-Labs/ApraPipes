@@ -127,7 +127,7 @@ public:
 		setDataSize();
 	}
 
-	int getWidth()
+	constexpr int getWidth() const
 	{
 		return width;
 	}
@@ -165,14 +165,14 @@ public:
 		return static_cast<size_t>(width*multiple*elemSize);
 	}
 
-	int getHeight()
+	constexpr int getHeight() const
 	{
 		return height;
 	}
 
-	int getType() { return type; }
+	constexpr int getType() const { return type; }
 
-	size_t getStep() { return step; }
+	constexpr size_t getStep() const { return step; }
 
 	size_t getOffset(int offsetX, int offsetY) 
 	{
@@ -181,11 +181,11 @@ public:
 		return (step*offsetY + (elemSize*offsetX*channels) );
 	}
 
-	int getChannels() { return channels; }
+	constexpr int getChannels() const { return channels; }
 
-	int getDepth() { return depth; }
+	constexpr int getDepth() const { return depth; }
 
-	ImageMetadata::ImageType getImageType() { return imageType; }
+	constexpr ImageMetadata::ImageType getImageType() const { return imageType; }
 
 protected:
 	void setDataSize()

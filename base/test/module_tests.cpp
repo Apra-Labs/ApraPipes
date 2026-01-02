@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include <boost/foreach.hpp>
-#include <boost/chrono.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "PipeLine.h"
 #include "Module.h"
@@ -40,7 +41,7 @@ public:
 	string getInputPinIdByType(int type) { return Module::getInputPinIdByType(type); }
 	string getOutputPinIdByType(int type) { return Module::getOutputPinIdByType(type); }
 
-	void addInputPin(framemetadata_sp& metadata, string& pinId) { return Module::addInputPin(metadata, pinId); } // throws exception if validation fails
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) { return Module::addInputPin(metadata, pinId); } // throws exception if validation fails
 	Connections getConnections() { return Module::getConnections(); }
 
 	boost_deque<frame_sp> getFrames(frame_container& frames) { return Module::getFrames(frames); }
@@ -50,7 +51,7 @@ public:
 	
 	bool send(frame_container& frames) { return Module::send(frames); }
 
-	boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+	std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 	frame_sp getFrameByType(frame_container& frames, int frameType) { return Module::getFrameByType(frames, frameType); }
 
 	ModuleProps getProps() { return Module::getProps(); }
@@ -133,12 +134,12 @@ struct FlushQTests
 
 BOOST_AUTO_TEST_CASE(module_flushQ)
 {
-	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new FlushQTests::TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
 
-	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new FlushQTests::TestModule2());
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId2 = string("s_p1");
 	m2->addOutputPin(metadata2, pinId2);
@@ -150,7 +151,7 @@ BOOST_AUTO_TEST_CASE(module_flushQ)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	
@@ -163,18 +164,18 @@ BOOST_AUTO_TEST_CASE(module_flushQ)
 
 BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
 {
-	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new FlushQTests::TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
 
-	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new FlushQTests::TestModule2());
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId2 = string("s_p1");
 	m2->addOutputPin(metadata2, pinId2);
 
-	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
-	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m3 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
 
 	BOOST_TEST(m1->setNext(m2));
 	BOOST_TEST(m1->setNext(m3));
@@ -187,7 +188,7 @@ BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	m1->send(frames);
@@ -233,24 +234,24 @@ BOOST_AUTO_TEST_CASE(module_flushQRec_linear)
 
 BOOST_AUTO_TEST_CASE(module_flushQRec_branched)
 {
-	auto m1 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new FlushQTests::TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
 
-	auto m2 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new FlushQTests::TestModule2());
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId2 = string("s_p1");
 	m2->addOutputPin(metadata2, pinId2);
 
-	auto m3 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
-	auto m4 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m3 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m4 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
 
-	auto m5 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule2());
+	auto m5 = std::shared_ptr<TestModule>(new FlushQTests::TestModule2());
 	m5->addOutputPin(metadata2, pinId2);
 
-	auto m6 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
-	auto m7 = boost::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m6 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
+	auto m7 = std::shared_ptr<TestModule>(new FlushQTests::TestModule3());
 
 	BOOST_TEST(m1->setNext(m2));
 	BOOST_TEST(m1->setNext(m3));
@@ -269,7 +270,7 @@ BOOST_AUTO_TEST_CASE(module_flushQRec_branched)
 	auto genMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
 	auto frame = m1->makeFrame(512, "s_p1");
 	frame_container frames;
-	frames.insert(make_pair("s_p1", frame));
+	frames.insert({"s_p1", frame});
 	m1->send(frames);
 	m1->send(frames);
 	m1->send(frames);
@@ -362,12 +363,11 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 				return false;
 			}
 
-			pair<string, framefactory_sp> me; // map element	
 			auto framefactoryByPin = getOutputFrameFactory();
-			BOOST_FOREACH(me, framefactoryByPin) {
+			for (const auto& me : framefactoryByPin) {
 				FrameMetadata::FrameType frameType = me.second->getFrameMetadata()->getFrameType();
 				if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ENCODED_IMAGE)
-				{					
+				{
 					return false;
 				}
 			}
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(module_addOutputPin)
 	};
 
 
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	m1->addOutputPin(metadata1);
 
@@ -481,9 +481,8 @@ BOOST_AUTO_TEST_CASE(module_addInputPin)
 				return false;
 			}
 
-			pair<string, framemetadata_sp> me; // map element	
 			auto metadataByPin = getInputMetadata();
-			BOOST_FOREACH(me, metadataByPin) {
+			for (const auto& me : metadataByPin) {
 				FrameMetadata::FrameType frameType = me.second->getFrameType();
 				if (frameType != FrameMetadata::RAW_IMAGE && frameType != FrameMetadata::ENCODED_IMAGE)
 				{
@@ -495,7 +494,7 @@ BOOST_AUTO_TEST_CASE(module_addInputPin)
 		}
 	};
 
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId1 = string("p1");
 	m1->addInputPin(metadata1, pinId1);
@@ -625,7 +624,7 @@ BOOST_AUTO_TEST_CASE(module_setNext)
 		bool validateInputPins() { return false; } // invoked with setInputPin
 	};
 
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
@@ -633,11 +632,11 @@ BOOST_AUTO_TEST_CASE(module_setNext)
 	auto pinId2 = string("s_p2");
 	m1->addOutputPin(metadata2, pinId2);
 
-	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
-	auto m3 = boost::shared_ptr<TestModule>(new TestModule2());
-	auto m4 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new TestModule2());
+	auto m3 = std::shared_ptr<TestModule>(new TestModule2());
+	auto m4 = std::shared_ptr<TestModule>(new TestModule2());
 
-	auto m5 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto m5 = std::shared_ptr<TestModule>(new TestModule3());
 
 	vector<string> pinIdArr = { string("s_p1"), string("s_p2") };
 	
@@ -779,7 +778,7 @@ BOOST_AUTO_TEST_CASE(disable_sieve)
 		bool validateInputPins() { return true; }
 	};
 
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
@@ -787,12 +786,12 @@ BOOST_AUTO_TEST_CASE(disable_sieve)
 	auto pinId2 = string("s_p2");
 	m1->addOutputPin(metadata2, pinId2);
 
-	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new TestModule2());
 	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId3 = string("s_p3");
 	m2->addOutputPin(metadata3, pinId3);
 
-	auto m3 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto m3 = std::shared_ptr<TestModule>(new TestModule3());
 	auto metadata4 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ARRAY));
 	auto pinId4 = string("s_p4");
 	m3->addOutputPin(metadata4, pinId4);
@@ -812,14 +811,14 @@ BOOST_AUTO_TEST_CASE(disable_sieve)
 
 
 	// m3 -> m4 with sieve = true - expected only the output pin of m3 to be input of m4
-	auto m4 = boost::shared_ptr<TestModule>(new TestModule4());
+	auto m4 = std::shared_ptr<TestModule>(new TestModule4());
 	m3->setNext(m4); // sieve = true by default
 	BOOST_TEST(m4->getNumberOfInputPins() == 1);
 	auto m4InputMetadata = m4->getInputMetadata();
 	BOOST_TEST(m4InputMetadata["s_p4"]->getFrameType() == FrameMetadata::FrameType::ARRAY);
 
 	// m3 -> m5 with sieve = false - expected all input pins + output pins of m3 to be input of m5
-	auto m5 = boost::shared_ptr<TestModule>(new TestModule5());
+	auto m5 = std::shared_ptr<TestModule>(new TestModule5());
 	m3->setNext(m5, true, false);
 	BOOST_TEST(m5->getNumberOfInputPins() == 4);
 	auto m5InputMetadata = m5->getInputMetadata();
@@ -875,7 +874,7 @@ BOOST_AUTO_TEST_CASE(sieve_compl_outputPin_methods)
 		bool validateOutputPins() { return true; }
 	};
 
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule1());
+	auto m1 = std::shared_ptr<TestModule>(new TestModule1());
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId1 = string("s_p1");
 	m1->addOutputPin(metadata1, pinId1);
@@ -884,14 +883,14 @@ BOOST_AUTO_TEST_CASE(sieve_compl_outputPin_methods)
 	m1->addOutputPin(metadata2, pinId2);
 	BOOST_TEST(m1->getNumberOfOutputPins() == 2);
 
-	auto m2 = boost::shared_ptr<TestModule>(new TestModule2());
+	auto m2 = std::shared_ptr<TestModule>(new TestModule2());
 	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId3 = string("s_p3");
 	m2->addOutputPin(metadata3, pinId3);
 	BOOST_TEST(m1->setNext(m2));
 	BOOST_TEST(m2->getNumberOfOutputPins() == 1);
 
-	auto m3 = boost::shared_ptr<TestModule>(new TestModule3());
+	auto m3 = std::shared_ptr<TestModule>(new TestModule3());
 	auto metadata4 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ARRAY));
 	auto pinId4 = string("s_p4");
 	m3->addOutputPin(metadata4, pinId4);
@@ -923,11 +922,11 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 		bool validateOutputPins() { return true; } // invoked with addOutputPin	
 	};
 		
-	auto m = boost::shared_ptr<TestModule>(new TestModule2(Module::SOURCE, "Module"));
-	auto m1 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
-	auto m2 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
-	auto m3 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
-	auto m4 = boost::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
+	auto m = std::shared_ptr<TestModule>(new TestModule2(Module::SOURCE, "Module"));
+	auto m1 = std::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
+	auto m2 = std::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
+	auto m3 = std::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
+	auto m4 = std::shared_ptr<TestModule>(new TestModule2(Module::SINK, "Module"));
 
 	auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE,FrameMetadata::MemType::HOST));
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::H264_DATA,FrameMetadata::MemType::HOST));
@@ -962,9 +961,9 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 	BOOST_TEST(((frame3->size() == 10000) && (frame3->data() != NULL)));
 	
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pin1Id, frame1));
-	frames_orig.insert(make_pair(pin2Id, frame2));
-	frames_orig.insert(make_pair(pin3Id, frame3));
+	frames_orig.insert({pin1Id, frame1});
+	frames_orig.insert({pin2Id, frame2});
+	frames_orig.insert({pin3Id, frame3});
 
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::ENCODED_IMAGE) == frame1);
 	BOOST_TEST(m->getFrameByType(frames_orig, FrameMetadata::GENERAL) == frame3);
@@ -1017,7 +1016,7 @@ BOOST_AUTO_TEST_CASE(module_frame_container_utils)
 
 BOOST_AUTO_TEST_CASE(module_props)
 {
-	auto module = boost::shared_ptr<TestModule>(new TestModule(Module::SOURCE, "hola", ModuleProps(50, 40, true)));
+	auto module = std::shared_ptr<TestModule>(new TestModule(Module::SOURCE, "hola", ModuleProps(50, 40, true)));
 	auto props = module->getProps();
 	BOOST_TEST(props.fps == 50);
 	BOOST_TEST(props.getQLen() == 40);
@@ -1039,7 +1038,7 @@ BOOST_AUTO_TEST_CASE(module_props)
 	BOOST_TEST(props.logHealth == false);
 }
 
-void test_skip(boost::shared_ptr<TestModule>& source, boost::shared_ptr<TestModule>& transform1, boost::shared_ptr<TestModule>& transform2, boost::shared_ptr<TestModule>& transform3, boost::shared_ptr<FrameContainerQueue>& q1, boost::shared_ptr<FrameContainerQueue>& q2, boost::shared_ptr<FrameContainerQueue>& q3, boost::shared_ptr<FrameContainerQueue>& q4, int s1, int s2, int s3, int s4)
+void test_skip(std::shared_ptr<TestModule>& source, std::shared_ptr<TestModule>& transform1, std::shared_ptr<TestModule>& transform2, std::shared_ptr<TestModule>& transform3, std::shared_ptr<FrameContainerQueue>& q1, std::shared_ptr<FrameContainerQueue>& q2, std::shared_ptr<FrameContainerQueue>& q3, std::shared_ptr<FrameContainerQueue>& q4, int s1, int s2, int s3, int s4)
 {
 	source->step();
 
@@ -1077,7 +1076,7 @@ BOOST_AUTO_TEST_CASE(skip_test)
 			auto frame = makeFrame(1024, pinId);
 
 			frame_container frames;
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1090,7 +1089,7 @@ BOOST_AUTO_TEST_CASE(skip_test)
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024, pinId);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1098,35 +1097,35 @@ BOOST_AUTO_TEST_CASE(skip_test)
 		}
 	};
 
-	auto source = boost::shared_ptr<TestModule>(new DummyModule(Module::SOURCE, "source"));
+	auto source = std::shared_ptr<TestModule>(new DummyModule(Module::SOURCE, "source"));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	source->addOutputPin(metadata);
 
-	auto transform1 = boost::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform1"));
+	auto transform1 = std::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform1"));
 	source->setNext(transform1);
 	auto metadata_t1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	transform1->addOutputPin(metadata_t1);
 
-	auto sink1 = boost::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink1"));
+	auto sink1 = std::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink1"));
 	transform1->setNext(sink1);	
 
-	auto transform2 = boost::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform2"));
+	auto transform2 = std::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform2"));
 	source->setNext(transform2);
 	auto metadata_t2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	transform2->addOutputPin(metadata_t2);
 
-	auto sink2 = boost::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink2"));
+	auto sink2 = std::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink2"));
 	transform2->setNext(sink2);
 
-	auto transform3 = boost::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform3"));
+	auto transform3 = std::shared_ptr<TestModule>(new DummyModule(Module::TRANSFORM, "transform3"));
 	source->setNext(transform3);
 	auto metadata_t3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	transform3->addOutputPin(metadata_t3);
 
-	auto sink3 = boost::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink3"));
+	auto sink3 = std::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink3"));
 	transform3->setNext(sink3);
 
-	auto sink4 = boost::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink4"));
+	auto sink4 = std::shared_ptr<TestModule>(new DummyModule(Module::SINK, "sink4"));
 	transform3->setNext(sink4);
 
 	BOOST_TEST(source->init());
@@ -1229,14 +1228,14 @@ BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 	};
 
 	{
-		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto m1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
-		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		auto m2 = std::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
 		m1->setNext(m2);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m2->addOutputPin(metadata2);
-		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		auto m3 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
 		m2->setNext(m3);
 
 		m1->init();
@@ -1251,14 +1250,14 @@ BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 	}
 
 	{
-		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto m1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
-		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		auto m2 = std::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
 		m1->setNext(m2);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m2->addOutputPin(metadata2);
-		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		auto m3 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
 		m2->setNext(m3);
 
 		m1->init();
@@ -1281,14 +1280,14 @@ BOOST_AUTO_TEST_CASE(stop, * boost::unit_test::disabled())
 	}
 
 	{
-		auto m1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
+		auto m1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "hola1"));
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
-		auto m2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
+		auto m2 = std::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "hola3"));
 		m1->setNext(m2);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m2->addOutputPin(metadata2);
-		auto m3 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
+		auto m3 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "hola2"));
 		m2->setNext(m3);
 		m1->init();
 		m2->init();
@@ -1336,7 +1335,7 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 			auto frame = makeFrame(1024, getOutputPinIdByType(metadata->getFrameType()));
 
 			frame_container frames;
-			frames.insert(std::make_pair(getOutputPinIdByType(metadata->getFrameType()), frame));
+			frames.insert({getOutputPinIdByType(metadata->getFrameType()), frame});
 
 			send(frames);
 
@@ -1349,11 +1348,11 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 	ModuleProps props;
 	props.qlen = 1;
 
-	auto source1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source", props));
+	auto source1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source", props));
 	source1->addOutputPin(metadata);	
-	auto source2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source", props));
+	auto source2 = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source", props));
 	source2->addOutputPin(metadata);
-	auto sink = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink", props));
+	auto sink = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink", props));
 	source1->setNext(sink);
 	source2->setNext(sink);
 
@@ -1361,6 +1360,7 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 	source2->init();
 	sink->init();
 
+<<<<<<< HEAD
 	auto t1 = std::thread(std::ref(*(source1.get())));
 	auto t2 = std::thread(std::ref(*(source2.get())));
 	auto t3 = std::thread(std::ref(*(sink.get())));
@@ -1370,6 +1370,17 @@ BOOST_AUTO_TEST_CASE(stop_bug, * boost::unit_test::disabled())
 	source1->stop();
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time
 
+=======
+	auto t1 = std::thread(ref(*(source1.get())));
+	auto t2 = std::thread(ref(*(source2.get())));
+	auto t3 = std::thread(ref(*(sink.get())));
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
+
+	source1->stop();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time
+			
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	source2->stop();
 	// previously stuck in the above step
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time
@@ -1405,13 +1416,18 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 	
 	{
 		// basic play
-		auto m1 = boost::shared_ptr<TestModule1>(new TestModule1());
+		auto m1 = std::shared_ptr<TestModule1>(new TestModule1());
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
 
 		m1->init();
+<<<<<<< HEAD
 		std::thread(std::ref(*(m1.get())));
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
+=======
+		std::thread(ref(*(m1.get())));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 
 		BOOST_TEST(m1->getPlayState() == true);
 		BOOST_TEST(m1->getTickCounter() != 0);
@@ -1422,13 +1438,18 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 
 	{
 		// play pause play
-		auto m1 = boost::shared_ptr<TestModule1>(new TestModule1());
+		auto m1 = std::shared_ptr<TestModule1>(new TestModule1());
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
 
 		m1->init();
+<<<<<<< HEAD
 		std::thread(std::ref(*(m1.get())));
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step
+=======
+		std::thread(ref(*(m1.get())));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));  // giving time to call step 
+>>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 
 		BOOST_TEST(m1->getPlayState() == true);
 		auto prevCounter = m1->getTickCounter();
@@ -1455,7 +1476,7 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 	{
 		// pipeline play pause play
 
-		auto m1 = boost::shared_ptr<TestModule1>(new TestModule1());
+		auto m1 = std::shared_ptr<TestModule1>(new TestModule1());
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
 
@@ -1502,7 +1523,7 @@ BOOST_AUTO_TEST_CASE(pause_play_step, * boost::unit_test::disabled())
 	{
 		// pipeline pause play pause
 
-		auto m1 = boost::shared_ptr<TestModule1>(new TestModule1());
+		auto m1 = std::shared_ptr<TestModule1>(new TestModule1());
 		auto metadata1 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		m1->addOutputPin(metadata1);
 
@@ -1568,12 +1589,12 @@ BOOST_AUTO_TEST_CASE(relay)
 		bool validateOutputPins() { return true; } // invoked with addOutputPin	
 	};
 
-	auto source = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
+	auto source = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto sink1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	source->setNext(sink1, false);
-	auto sink2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink2 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	source->setNext(sink2);
 
 	source->init();
@@ -1585,7 +1606,7 @@ BOOST_AUTO_TEST_CASE(relay)
 
 	auto frame = source->makeFrame(1023);
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pinId, frame));
+	frames_orig.insert({pinId, frame});
 
 	// 1 close 2 open
 	source->send(frames_orig);
@@ -1646,12 +1667,12 @@ BOOST_AUTO_TEST_CASE(pipeline_relay, * boost::unit_test::disabled())
 		bool validateOutputPins() { return true; } // invoked with addOutputPin	
 	};
 
-	auto source = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
+	auto source = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
-	auto sink1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	source->setNext(sink1, false);
-	auto sink2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink2 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	source->setNext(sink2);
 
 	PipeLine p("test");
@@ -1690,28 +1711,28 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 			auto frame1 = makeFrame(1023, getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE));
 			auto frame2 = makeFrame(1024, getOutputPinIdByType(FrameMetadata::RAW_IMAGE));
 
-			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), frame1));
-			frames.insert(make_pair(getOutputPinIdByType(FrameMetadata::RAW_IMAGE), frame2));
+			frames.insert({getOutputPinIdByType(FrameMetadata::ENCODED_IMAGE), frame1});
+			frames.insert({getOutputPinIdByType(FrameMetadata::RAW_IMAGE), frame2});
 
 			send(frames);
 			return true;
 		}
 	};
 
-	auto source = boost::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
+	auto source = std::shared_ptr<TestModule2>(new TestModule2(Module::SOURCE, "source"));
 	auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 	auto pinId = source->addOutputPin(metadata);
 	
-	auto transform = boost::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "transform"));
+	auto transform = std::shared_ptr<TestModule2>(new TestModule2(Module::TRANSFORM, "transform"));
 	source->setNext(transform);
 	auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::ENCODED_IMAGE));
 	transform->addOutputPin(metadata2);
 	auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::RAW_IMAGE));
 	transform->addOutputPin(metadata3);
 
-	auto sink1 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink1 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	transform->setNext(sink1);
-	auto sink2 = boost::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
+	auto sink2 = std::shared_ptr<TestModule2>(new TestModule2(Module::SINK, "sink"));
 	transform->setNext(sink2);
 
 	source->init();
@@ -1725,7 +1746,7 @@ BOOST_AUTO_TEST_CASE(fIndex2_propagate)
 	auto frame = source->makeFrame(1023);
 	frame->fIndex2 = 1011;
 	frame_container frames_orig;
-	frames_orig.insert(make_pair(pinId, frame));
+	frames_orig.insert({pinId, frame});
 
 	// 1 close 2 open
 	source->send(frames_orig);
@@ -1772,7 +1793,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto frame = makeFrame(1024);
 
 			frame_container frames;
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1798,7 +1819,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			// LOG_ERROR << "DESTRUCTOR TRANSFORM1";
 		}
 
-		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+		std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 	protected:
 		bool validateInputPins() { return true; } // invoked with setInputPin
@@ -1817,7 +1838,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1838,7 +1859,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			// LOG_ERROR << "DESTRUCTOR TRANSFORM2";
 		}
 
-		boost::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
+		std::shared_ptr<FrameContainerQueue> getQue() { return Module::getQue(); }
 
 	protected:
 		bool validateInputPins() { return true; } // invoked with setInputPin
@@ -1849,7 +1870,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 			auto pinId = getOutputFrameFactory().begin()->first;
 			auto frame = makeFrame(1024);
 
-			frames.insert(std::make_pair(pinId, frame));
+			frames.insert({pinId, frame});
 
 			send(frames);
 
@@ -1880,23 +1901,23 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 	};
 		
 	{		
-		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto source = std::shared_ptr<Module>(new TestSource());
 		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		auto pinId = source->addOutputPin(metadata);
 		
-		auto transform1 = boost::shared_ptr<Module>(new TestTransform1());
+		auto transform1 = std::shared_ptr<Module>(new TestTransform1());
 		source->setNext(transform1);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform1->addOutputPin(metadata2);
 		
-		auto transform2 = boost::shared_ptr<Module>(new TestTransform2());
+		auto transform2 = std::shared_ptr<Module>(new TestTransform2());
 		transform1->setNext(transform2);
 		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform2->addOutputPin(metadata3);
 		
 		transform2->setNext(transform1);
 		
-		auto sink = boost::shared_ptr<Module>(new TestSink());
+		auto sink = std::shared_ptr<Module>(new TestSink());
 		transform2->setNext(sink);
 		
 		PipeLine p("test");
@@ -1910,23 +1931,23 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 	}
 
 	{
-		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto source = std::shared_ptr<Module>(new TestSource());
 		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		auto pinId = source->addOutputPin(metadata);
 
-		auto transform1 = boost::shared_ptr<Module>(new TestTransform1());
+		auto transform1 = std::shared_ptr<Module>(new TestTransform1());
 		source->setNext(transform1);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform1->addOutputPin(metadata2);
 
-		auto transform2 = boost::shared_ptr<Module>(new TestTransform2());
+		auto transform2 = std::shared_ptr<Module>(new TestTransform2());
 		transform1->setNext(transform2);
 		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform2->addOutputPin(metadata3);
 
 		transform2->addFeedback(transform1);
 
-		auto sink = boost::shared_ptr<Module>(new TestSink());
+		auto sink = std::shared_ptr<Module>(new TestSink());
 		transform2->setNext(sink);
 
 		PipeLine p("test");
@@ -1943,14 +1964,14 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 	}
 
 	{
-		auto source = boost::shared_ptr<Module>(new TestSource());
+		auto source = std::shared_ptr<Module>(new TestSource());
 		auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		auto pinId = source->addOutputPin(metadata);
 
 		TestTransform1Props props;
 		props.qlen = 1;
 		props.quePushStrategyType = QuePushStrategy::NON_BLOCKING_ANY;
-		auto transform1 = boost::shared_ptr<TestTransform1>(new TestTransform1(props));
+		auto transform1 = std::shared_ptr<TestTransform1>(new TestTransform1(props));
 		source->setNext(transform1);
 		auto metadata2 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform1->addOutputPin(metadata2);
@@ -1958,7 +1979,7 @@ BOOST_AUTO_TEST_CASE(feedbackmodule, * boost::unit_test::disabled())
 		PipeLine p("test");
 		p.appendModule(source);
 
-		auto transform2 = boost::shared_ptr<TestTransform2>(new TestTransform2());
+		auto transform2 = std::shared_ptr<TestTransform2>(new TestTransform2());
 		transform1->setNext(transform2);
 		auto metadata3 = framemetadata_sp(new FrameMetadata(FrameMetadata::FrameType::GENERAL));
 		transform2->addOutputPin(metadata3);

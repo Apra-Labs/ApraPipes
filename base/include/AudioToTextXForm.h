@@ -37,23 +37,23 @@ class AudioToTextXForm  : public Module
 public:
 	AudioToTextXForm(AudioToTextXFormProps _props);
 	virtual ~AudioToTextXForm();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(AudioToTextXFormProps& props);
 	AudioToTextXFormProps getProps();
 
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool validateInputPins();
-	bool validateOutputPins();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
-	bool handlePropsChange(frame_sp& frame);
-	bool processEOS(string &pinId);
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool validateInputPins() override;
+	bool validateOutputPins() override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
+	bool handlePropsChange(frame_sp& frame) override;
+	bool processEOS(std::string_view pinId);
 	bool handleFlushingBuffer();
 
 private:
 	void setMetadata(framemetadata_sp& metadata);
 	class Detail;
-	boost::shared_ptr<Detail> mDetail;
+	std::shared_ptr<Detail> mDetail;
 };

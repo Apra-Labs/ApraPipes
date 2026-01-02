@@ -102,7 +102,7 @@ bool VirtualPTZ::validateOutputPins()
     return true;
 }
 
-void VirtualPTZ::addInputPin(framemetadata_sp &metadata, string &pinId)
+void VirtualPTZ::addInputPin(framemetadata_sp &metadata, std::string_view pinId)
 {
     Module::addInputPin(metadata, pinId);
     mDetail->mOutputMetadata = framemetadata_sp(new RawImageMetadata());
@@ -129,7 +129,7 @@ bool VirtualPTZ::process(frame_container &frames)
     mDetail->mOutputImg.data = static_cast<uint8_t *>(outFrame->data());
 
     cv::resize(mDetail->mInputImg(mDetail->mRoi), mDetail->mOutputImg, mDetail->mOutSize);
-    frames.insert(make_pair(mDetail->mOutputPinId, outFrame));
+    frames.insert({mDetail->mOutputPinId, outFrame});
 
     send(frames);
     return true;

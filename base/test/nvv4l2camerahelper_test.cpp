@@ -7,6 +7,8 @@
 #include "Logger.h"
 
 #include <memory>
+#include <thread>
+#include <chrono>
 
 BOOST_AUTO_TEST_SUITE(nvv4l2camerahelper_tests)
 

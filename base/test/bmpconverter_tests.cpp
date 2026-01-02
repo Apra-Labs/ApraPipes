@@ -1,4 +1,7 @@
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <thread>
+#include <chrono>
 
 #include "FileReaderModule.h"
 #include "ExternalSinkModule.h"
@@ -20,15 +23,15 @@ BOOST_AUTO_TEST_CASE(rgb)
 	auto width = 1280;
 	auto height = 720;
 
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(FileReaderModuleProps("./data/frame_1280x720_rgb.raw")));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	auto rawImagePin = fileReader->addOutputPin(metadata);
 	
-	auto m2 = boost::shared_ptr<BMPConverter>(new BMPConverter(BMPConverterProps()));
+	auto m2 = std::shared_ptr<BMPConverter>(new BMPConverter(BMPConverterProps()));
 	fileReader->setNext(m2);
 	auto outputPin = m2->getAllOutputPinsByType(FrameMetadata::BMP_IMAGE)[0];
 
-	auto m3 = boost::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
+	auto m3 = std::shared_ptr<ExternalSinkModule>(new ExternalSinkModule());
 	m2->setNext(m3);
 
 	BOOST_TEST(fileReader->init());
@@ -58,17 +61,17 @@ BOOST_AUTO_TEST_CASE(perf, *boost::unit_test::disabled())
 
 	FileReaderModuleProps fileReaderProps("./data/frame_1280x720_rgb.raw");
 	fileReaderProps.fps = 1000;
-	auto fileReader = boost::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
+	auto fileReader = std::shared_ptr<FileReaderModule>(new FileReaderModule(fileReaderProps));
 	auto metadata = framemetadata_sp(new RawImageMetadata(width, height, ImageMetadata::RGB, CV_8UC3, width*3, CV_8U, FrameMetadata::HOST));
 	fileReader->addOutputPin(metadata);
 
-	auto m2 = boost::shared_ptr<Module>(new BMPConverter(BMPConverterProps()));
+	auto m2 = std::shared_ptr<Module>(new BMPConverter(BMPConverterProps()));
 	fileReader->setNext(m2);	
 
 	StatSinkProps sinkProps;
 	sinkProps.logHealth = true;
 	sinkProps.logHealthFrequency = 100;
-	auto m3 = boost::shared_ptr<Module>(new StatSink(sinkProps));
+	auto m3 = std::shared_ptr<Module>(new StatSink(sinkProps));
 	m2->setNext(m3);
 
 	PipeLine p("test");

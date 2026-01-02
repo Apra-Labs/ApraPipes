@@ -9,6 +9,8 @@
 #include "ApraEGLDisplay.h"
 #include "Logger.h"
 #include <deque>
+#include <vector>
+#include <string>
 
 class DMAAllocator : public HostAllocator
 {

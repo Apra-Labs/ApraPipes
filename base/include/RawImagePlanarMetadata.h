@@ -92,12 +92,12 @@ public:
 		return channels != NOT_SET_NUM;
 	}
 
-	int getWidth(int channelId)
+	constexpr int getWidth(int channelId) const
 	{
 		return width[channelId];
 	}
 
-	int getHeight(int channelId)
+	constexpr int getHeight(int channelId) const
 	{
 		return height[channelId];
 	}
@@ -113,8 +113,8 @@ public:
 		return static_cast<size_t>(width[channelId] * elemSize * multiple);
 	}
 
-	size_t getStep(int channelId) { return step[channelId]; }
-	size_t getNextPtrOffset(int channelId) { return nextPtrOffset[channelId]; }
+	constexpr size_t getStep(int channelId) const { return step[channelId]; }
+	constexpr size_t getNextPtrOffset(int channelId) const { return nextPtrOffset[channelId]; }
 
 	size_t getOffset(int channelId, int offsetX, int offsetY)
 	{
@@ -139,11 +139,11 @@ public:
 		return static_cast<size_t>(step[channelId] * height[channelId] * elemSize);
 	}
 
-	int getDepth() { return depth; }
+	constexpr int getDepth() const { return depth; }
 
-	int getChannels() { return channels; }
+	constexpr int getChannels() const { return channels; }
 
-	ImageMetadata::ImageType getImageType() { return imageType; }
+	constexpr ImageMetadata::ImageType getImageType() const { return imageType; }
 
 protected:
 	void setDataSize()

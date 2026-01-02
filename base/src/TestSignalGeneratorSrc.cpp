@@ -93,7 +93,7 @@ bool TestSignalGenerator::produce()
     frame_container frames;
     frame_sp frame = makeFrame(outputFrameSize);
     mDetail->generate(frame);
-    frames.insert(make_pair(mPinId, frame));
+    frames.insert({mPinId, frame});
     send(frames);
     return true;
 }

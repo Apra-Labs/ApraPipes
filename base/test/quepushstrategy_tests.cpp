@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
+#include <memory>
 #include "FrameContainerQueue.h"
 #include "QuePushStrategy.h"
 
@@ -11,8 +12,8 @@ BOOST_AUTO_TEST_SUITE(quepushstrategy_tests)
 
 BOOST_AUTO_TEST_CASE(blocking)
 {
-	boost::shared_ptr<FrameContainerQueue> que1 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
-	boost::shared_ptr<FrameContainerQueue> que2 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
+	std::shared_ptr<FrameContainerQueue> que1 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
+	std::shared_ptr<FrameContainerQueue> que2 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
 
 	auto moduleId = std::string("HOLA");
 	auto strategy = QuePushStrategy::getStrategy(QuePushStrategy::BLOCKING, moduleId);
@@ -35,8 +36,8 @@ BOOST_AUTO_TEST_CASE(blocking)
 
 BOOST_AUTO_TEST_CASE(NON_BLOCKING_ANY)
 {
-	boost::shared_ptr<FrameContainerQueue> que1 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
-	boost::shared_ptr<FrameContainerQueue> que2 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
+	std::shared_ptr<FrameContainerQueue> que1 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
+	std::shared_ptr<FrameContainerQueue> que2 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
 
 	auto moduleId = std::string("HOLA");
 	auto strategy = QuePushStrategy::getStrategy(QuePushStrategy::NON_BLOCKING_ANY, moduleId);
@@ -90,8 +91,8 @@ BOOST_AUTO_TEST_CASE(NON_BLOCKING_ANY)
 
 BOOST_AUTO_TEST_CASE(NonBlockingAllOrNonePushStrategy)
 {
-	boost::shared_ptr<FrameContainerQueue> que1 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
-	boost::shared_ptr<FrameContainerQueue> que2 = boost::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
+	std::shared_ptr<FrameContainerQueue> que1 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(10));
+	std::shared_ptr<FrameContainerQueue> que2 = std::shared_ptr<FrameContainerQueue>(new FrameContainerQueue(2));
 
 	auto moduleId = std::string("HOLA");
 	auto strategy = QuePushStrategy::getStrategy(QuePushStrategy::NON_BLOCKING_ALL_OR_NONE, moduleId);

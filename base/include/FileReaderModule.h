@@ -64,8 +64,8 @@ class FileReaderModule: public Module {
 public:
 	FileReaderModule(FileReaderModuleProps _props);
 	virtual ~FileReaderModule();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 
 	bool jump(uint64_t index);
 
@@ -73,14 +73,14 @@ public:
 	FileReaderModuleProps getProps();
 
 protected:
-	bool produce();
-	bool validateOutputPins();
-	void notifyPlay(bool play);
-	bool handleCommand(Command::CommandType type, frame_sp& frame);
-	bool handlePropsChange(frame_sp& frame);
+	bool produce() override;
+	bool validateOutputPins() override;
+	void notifyPlay(bool play) override;
+	bool handleCommand(Command::CommandType type, frame_sp& frame) override;
+	bool handlePropsChange(frame_sp& frame) override;
 private:
 	string mPinId;
-	boost::shared_ptr<FileSequenceDriver> mDriver;
+	std::shared_ptr<FileSequenceDriver> mDriver;
 	FileReaderModuleProps mProps;
 	frame_container mFrames;
 	bool mCache;

@@ -1,5 +1,3 @@
-#include <boost/foreach.hpp>
-
 #include "Merge.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
@@ -20,24 +18,23 @@ public:
 		clear();
 	}
 
-	void setOutputPinId(std::string& pinId)
+	void setOutputPinId(std::string_view pinId)
 	{
 		mOutputPinId = pinId;
 	}
 		
 	bool queue(frame_container& frames)
-	{		
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+	{
+		for (const auto& [pinId, frame] : frames)
 		{
-			auto& frame = it->second;
 			if (frame->fIndex2 < lastIndex)
 			{
 				// frame index jumped may be because of drop upstream
 				continue;
 			}
-			mQueue[frame->fIndex2] = frame;	
+			mQueue[frame->fIndex2] = frame;
 			mQueueSize++;
-		}			
+		}
 
 		return true;
 	}
@@ -90,22 +87,22 @@ Merge::Merge(MergeProps _props):Module(TRANSFORM, "Merge", _props)
 }
 
 bool Merge::validateInputPins()
-{	
+{
 	auto frameType = -1;
-	for (auto const& elem: getInputMetadata())
+	for (const auto& [pinId, metadata] : getInputMetadata())
 	{
 		if (frameType == -1)
 		{
-			frameType = elem.second->getFrameType();
+			frameType = metadata->getFrameType();
 			continue;
 		}
 
-		if (frameType == elem.second->getFrameType())
+		if (frameType == metadata->getFrameType())
 		{
 			continue;
 		}
 
-		LOG_ERROR << "All inputs must be of same type. Expected<" << frameType << "> Actual<" << elem.second->getFrameType() << ">";
+		LOG_ERROR << "All inputs must be of same type. Expected<" << frameType << "> Actual<" << metadata->getFrameType() << ">";
 		return false;
 	}
 
@@ -140,7 +137,7 @@ bool Merge::term()
 	return Module::term();
 }
 
-void Merge::addInputPin(framemetadata_sp& metadata, string& pinId)
+void Merge::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	if(getNumberOfOutputPins() == 0)

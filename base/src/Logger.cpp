@@ -1,6 +1,10 @@
 #include "Logger.h"
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <filesystem>
 
-boost::shared_ptr<Logger> Logger::instance;
+std::shared_ptr<Logger> Logger::instance;
 std::mutex Logger::logger_mutex;
 
 void Logger::initLogger(LoggerProps props)
@@ -43,7 +47,7 @@ void Logger::initBoostLogger(LoggerProps props)
 {
 	if (props.enableConsoleLog)
 	{
-		mConsoleSink = boost::log::add_console_log();
+		mConsoleSink = boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_ostream_backend>>(boost::log::add_console_log());
 	}
 
 	if (!props.enableFileLog)
@@ -64,16 +68,16 @@ void Logger::initBoostLogger(LoggerProps props)
 	}
 	props.fileLogPath = props.fileLogPath.substr(0, index) + "_%5N" + props.fileLogPath.substr(index);
 
-	mFileSink = boost::log::add_file_log
+	mFileSink = boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>(boost::log::add_file_log
 	(
 		boost::log::keywords::file_name = props.fileLogPath,                                        /*< file name pattern >*/
 		boost::log::keywords::rotation_size = 10*1024*1024,                                   /*< rotate files every 10 MiB... >*/
-		boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/		
+		boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
 		boost::log::keywords::auto_flush = true,
 		boost::log::keywords::min_free_space = 25 * 1024 * 1024, /* 25 MB */
 		boost::log::keywords::max_files = 25,
-		boost::log::keywords::target = boost::filesystem::path(props.fileLogPath).parent_path().string()
-	);
+		boost::log::keywords::target = std::filesystem::path(props.fileLogPath).parent_path().string()
+	));
 	
 	boost::log::add_common_attributes();
 }
@@ -239,7 +243,7 @@ bool Logger::push(boost::log::trivial::severity_level level, std::ostringstream&
 	//push to queue only if the thread is running
 	if(mRunning && myThread.get_id()!=std::thread::id())	//log thread is running
 	{
-		mQue.push(stream.str());	
+		mQue.push(stream.str());
 	}
 	else
 	{

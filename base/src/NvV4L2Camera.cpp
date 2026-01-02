@@ -11,7 +11,7 @@ NvV4L2Camera::NvV4L2Camera(NvV4L2CameraProps _props)
 
 	mHelper = std::make_shared<NvV4L2CameraHelper>([&](frame_sp &frame) -> void {
 			frame_container frames;
-			frames.insert(make_pair(mOutputPinId, frame));
+			frames.insert({mOutputPinId, frame});
 			send(frames); 
 		}, [&]() -> frame_sp {
 			return makeFrame(); 

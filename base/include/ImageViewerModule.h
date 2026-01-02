@@ -50,18 +50,18 @@ class ImageViewerModule : public Module
 public:
 	ImageViewerModule(ImageViewerModuleProps _props);
 	virtual ~ImageViewerModule();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	bool closeWindow();
 	bool createWindow(int width, int height);
 
 protected:
-	bool process(frame_container &frames);
-	bool processSOS(frame_sp &frame);
-	bool validateInputPins();
-	bool shouldTriggerSOS();
-	void addInputPin(framemetadata_sp &metadata, string &pinId);
-	bool handleCommand(Command::CommandType type, frame_sp &frame);
-	boost::shared_ptr<DetailRenderer> mDetail;
+	bool process(frame_container &frames) override;
+	bool processSOS(frame_sp &frame) override;
+	bool validateInputPins() override;
+	bool shouldTriggerSOS() override;
+	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override;
+	bool handleCommand(Command::CommandType type, frame_sp &frame) override;
+	std::shared_ptr<DetailRenderer> mDetail;
 	ImageViewerModuleProps mProps;
 };

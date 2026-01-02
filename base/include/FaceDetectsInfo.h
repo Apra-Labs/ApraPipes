@@ -4,6 +4,7 @@
 #include "Frame.h"
 #include "Utils.h"
 #include "Module.h"
+#include <vector>
 #include <boost/serialization/vector.hpp>
 #include "ApraFaceInfo.h"
 #include <opencv2/core/types.hpp>

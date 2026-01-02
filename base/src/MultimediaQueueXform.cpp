@@ -1,8 +1,7 @@
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <stdafx.h>
 #include <map>
 #include <thread>
+#include <memory>
 #include "Frame.h"
 #include "MultimediaQueueXform.h"
 #include "Logger.h"
@@ -41,12 +40,12 @@ public:
 	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+		for (const auto& [pinId, frame] : frames)
 		{
-			mQueue.insert({ it->second->timestamp, frames });
-			if (largestTimeStamp < it->second->timestamp)
+			mQueue.insert({ frame->timestamp, frames });
+			if (largestTimeStamp < frame->timestamp)
 			{
-				largestTimeStamp = it->second->timestamp;
+				largestTimeStamp = frame->timestamp;
 			}
 		}
 		if (isMapDelayInTime) // If the lower and upper watermark are given in time
@@ -120,9 +119,8 @@ public:
 	bool enqueue(frame_container& frames, bool  pushToNextModule)
 	{	//	Here the frame_containers are inserted into the map
 		uint64_t largestTimeStamp = 0;
-		for (auto it = frames.cbegin(); it != frames.cend(); it++)
+		for (const auto& [pinId, frame] : frames)
 		{
-			auto frame = it->second;
 			auto mFrameBuffer = const_buffer(frame->data(), frame->size());
 			auto ret = H264Utils::parseNalu(mFrameBuffer);
 			tie(typeFound, spsBuff, ppsBuff) = ret;
@@ -135,11 +133,11 @@ public:
 				spsBuffer = spsBuff;
 				ppsBuffer = ppsBuff;
 			}
-			mQueue.insert({ it->second->timestamp, frames });
+			mQueue.insert({ frame->timestamp, frames });
 
-			if (largestTimeStamp < it->second->timestamp)
+			if (largestTimeStamp < frame->timestamp)
 			{
-				largestTimeStamp = it->second->timestamp;
+				largestTimeStamp = frame->timestamp;
 			}
 		}
 		BOOST_LOG_TRIVIAL(info) << "queue size = " << mQueue.size();
@@ -243,7 +241,7 @@ protected:
 
 class State {
 public:
-	boost::shared_ptr<FramesQueue> queueObject;
+	std::shared_ptr<FramesQueue> queueObject;
 	State() {}
 	virtual ~State() {}
 	typedef std::map<uint64_t, frame_container> mQueueMap;
@@ -280,7 +278,7 @@ class ExportJpeg : public ExportQState
 {
 public:
 	ExportJpeg() : ExportQState(StateType::EXPORT) {}
-	ExportJpeg(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : ExportQState(StateType::EXPORT) {
+	ExportJpeg(std::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send) : ExportQState(StateType::EXPORT) {
 		send = _send;
 		queueObject = queueObj;
 	}
@@ -329,7 +327,7 @@ class ExportH264 : public ExportQState
 {
 public:
 	ExportH264() : ExportQState(StateType::EXPORT) {}
-	ExportH264(boost::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType, std::string _mOutputPinId) : ExportQState(StateType::EXPORT) {
+	ExportH264(std::shared_ptr<FramesQueue> queueObj, std::function<bool(frame_container& frames, bool forceBlockingPush)> _send, std::function<frame_sp(size_t size, string pinID)> _makeFrame, std::function<std::string(int type)> _getInputPinIdByType, std::string _mOutputPinId) : ExportQState(StateType::EXPORT) {
 		getInputPinIdByType = _getInputPinIdByType;
 		makeFrame = _makeFrame;
 		send = _send;
@@ -495,7 +493,7 @@ private:
 class Waiting : public State {
 public:
 	Waiting() : State(State::StateType::WAITING) {}
-	Waiting(boost::shared_ptr<FramesQueue> queueObj) : State(State::StateType::WAITING) {
+	Waiting(std::shared_ptr<FramesQueue> queueObj) : State(State::StateType::WAITING) {
 		queueObject = queueObj;
 	}
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
@@ -508,7 +506,7 @@ public:
 class Idle : public State {
 public:
 	Idle() : State(StateType::IDLE) {}
-	Idle(boost::shared_ptr<FramesQueue> queueObj) : State(StateType::IDLE) {
+	Idle(std::shared_ptr<FramesQueue> queueObj) : State(StateType::IDLE) {
 		queueObject = queueObj;
 	}
 	bool handleExport(uint64_t& queryStart, uint64_t& queryEnd, bool& timeReset, mQueueMap& queueMap, uint64_t& endTimeSaved) override
@@ -538,7 +536,7 @@ bool MultimediaQueueXform::validateInputOutputPins()
 	return Module::validateInputOutputPins();
 }
 
-void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, string& pinId)
+void MultimediaQueueXform::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	mOutputPinId = pinId;
@@ -553,9 +551,8 @@ bool MultimediaQueueXform::init()
 	}
 	auto inputPinIdMetadataMap = getInputMetadata();
 
-	for (auto const& element : inputPinIdMetadataMap)
+	for (const auto& [pinId, metadata] : inputPinIdMetadataMap)
 	{
-		auto& metadata = element.second;
 		mFrameType = metadata->getFrameType();
 		if ((mFrameType == FrameMetadata::FrameType::ENCODED_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE) || (mFrameType == FrameMetadata::FrameType::RAW_IMAGE_PLANAR))
 		{
@@ -629,27 +626,27 @@ void MultimediaQueueXform::setState(uint64_t tStart, uint64_t tEnd)
 	}
 }
 
-void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContainerQueue>& frameQueue)
+void MultimediaQueueXform::extractFramesAndEnqueue(std::shared_ptr<FrameContainerQueue>& frameQueue)
 {
 	//loop over frame container
 	if (frameQueue->size())
 	{
 		frame_container framesContainer;
 		auto frames = frameQueue->pop();
-		for (auto itr = frames.begin(); itr != frames.end(); itr++)
+		for (auto& [pinId, frame] : frames)
 		{
-			if (itr->second->isCommand())
+			if (frame->isCommand())
 			{
-				auto cmdType = NoneCommand::getCommandType(itr->second->data(), itr->second->size());
-				handleCommand(cmdType, itr->second);
+				auto cmdType = NoneCommand::getCommandType(frame->data(), frame->size());
+				handleCommand(cmdType, frame);
 			}
-			else if(itr->second->isPropsChange())
+			else if(frame->isPropsChange())
 			{
-				handlePropsChange(itr->second);
+				handlePropsChange(frame);
 			}
 			else
 			{
-				framesContainer.insert(make_pair(itr->first, itr->second));
+				framesContainer.insert({pinId, frame});
 			}
 		}
 		if (!framesContainer.empty())
@@ -659,7 +656,7 @@ void MultimediaQueueXform::extractFramesAndEnqueue(boost::shared_ptr<FrameContai
 	}
 }
 
-boost::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
+std::shared_ptr<FrameContainerQueue> MultimediaQueueXform::getQue()
 {
 	return Module::getQue();
 }
@@ -757,7 +754,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 						}
 						frame_container outFrames;
 						auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
-						outFrames.insert(make_pair(outputId, it->second.begin()->second));
+						outFrames.insert({outputId, it->second.begin()->second});
 						if (!framesToSkip)
 						{
 							mState->exportSend(outFrames);
@@ -772,7 +769,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 								{
 									bool goLive = true;
 									bool priority = true;
-									boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+									std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 									ctl->handleGoLive(goLive, priority);
 								}
 								exportFrames = false;
@@ -837,7 +834,7 @@ bool MultimediaQueueXform::handleCommand(Command::CommandType type, frame_sp& fr
 							if(controlModule != nullptr)
 							{
 								// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-								boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+								std::shared_ptr<AbsControlModule> ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 								ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
 							}
 							exportFrames = false;
@@ -959,7 +956,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 					frame_container outFrames;
 					auto outputId = Module::getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
 
-					outFrames.insert(make_pair(outputId, it->second.begin()->second));
+					outFrames.insert({outputId, it->second.begin()->second});
 					//LOG_ERROR<<"sENDING FROM PROCESS AT TIME "<< it->first;
 					if (!framesToSkip)
 					{
@@ -1020,7 +1017,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 						if(controlModule != nullptr)
 						{
 							// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-							boost::shared_ptr<AbsControlModule> ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+							std::shared_ptr<AbsControlModule> ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 							ctl->handleMMQExportView(latestFrameExportedFromProcess, 0, direction, true, true);
 						}
 						exportFrames = false;
@@ -1066,7 +1063,7 @@ bool MultimediaQueueXform::process(frame_container& frames)
 			auto back = mState->queueObject->mQueue.crbegin();
 			uint64_t lastTimeStamp = back->first;
 			// Stubbing the eventual application's control module & the handleExportMMQ method. Might need to implement a custom command. See below. 
-			boost::shared_ptr<AbsControlModule>ctl = boost::dynamic_pointer_cast<AbsControlModule>(controlModule);
+			std::shared_ptr<AbsControlModule>ctl = std::dynamic_pointer_cast<AbsControlModule>(controlModule);
 			ctl->handleSendMMQTSCmd(firstTimeStamp, lastTimeStamp, priority);
 		}
 		return true;

@@ -73,7 +73,7 @@ bool KeyboardListener::term()
 	return Module::term();
 }
 
-void KeyboardListener::addInputPin(framemetadata_sp& metadata, string& pinId)
+void KeyboardListener::addInputPin(framemetadata_sp& metadata, std::string_view pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	addOutputPin(metadata, pinId);

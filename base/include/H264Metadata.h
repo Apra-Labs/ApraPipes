@@ -25,12 +25,12 @@ public:
 		return width != NOT_SET_NUM;
 	}
 
-	int getWidth()
+	constexpr int getWidth() const
 	{
 		return width;
 	}
 
-	int getHeight()
+	constexpr int getHeight() const
 	{
 		return height;
 	}

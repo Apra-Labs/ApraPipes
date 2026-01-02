@@ -81,23 +81,23 @@ class Mp4WriterSink : public Module
 public:
 	Mp4WriterSink(Mp4WriterSinkProps _props);
 	virtual ~Mp4WriterSink();
-	bool init();
-	bool term();
+	bool init() override;
+	bool term() override;
 	void setProps(Mp4WriterSinkProps &props);
 	Mp4WriterSinkProps getProps();
 	bool doMp4MuxSync();
 protected:
-	bool process(frame_container& frames);
-	bool processSOS(frame_sp& frame);
-	bool processEOS(string &pinId);
-	bool validateInputPins();
-	bool validateInputOutputPins();
+	bool process(frame_container& frames) override;
+	bool processSOS(frame_sp& frame) override;
+	bool processEOS(std::string_view pinId);
+	bool validateInputPins() override;
+	bool validateInputOutputPins() override;
 	bool setMetadata(framemetadata_sp &inputMetadata);
-	bool handlePropsChange(frame_sp &frame);
-	bool shouldTriggerSOS();
-	void addInputPin(framemetadata_sp& metadata, string& pinId);
+	bool handlePropsChange(frame_sp &frame) override;
+	bool shouldTriggerSOS() override;
+	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	bool enableMp4Metadata(framemetadata_sp &inputMetadata);
-	boost::shared_ptr<DetailAbs> mDetail;
+	std::shared_ptr<DetailAbs> mDetail;
 	Mp4WriterSinkProps mProp;
 
 };

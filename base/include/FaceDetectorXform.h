@@ -34,23 +34,23 @@ public:
     FaceDetectorXform(FaceDetectorXformProps props);
     virtual ~FaceDetectorXform() {}
 
-    virtual bool init();
-    virtual bool term();
+    bool init() override;
+    bool term() override;
 
     void setProps(FaceDetectorXformProps &props);
     FaceDetectorXformProps getProps();
 
 protected:
-    bool process(frame_container &frames);
-    bool processSOS(frame_sp &frame);
-    bool validateInputPins();
-    bool validateOutputPins();
+    bool process(frame_container &frames) override;
+    bool processSOS(frame_sp &frame) override;
+    bool validateInputPins() override;
+    bool validateOutputPins() override;
     void setMetadata(framemetadata_sp &metadata);
-    void addInputPin(framemetadata_sp &metadata, string &pinId);
-    bool shouldTriggerSOS();
-    bool handlePropsChange(frame_sp &frame);
+    void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override;
+    bool shouldTriggerSOS() override;
+    bool handlePropsChange(frame_sp &frame) override;
 
 private:
     class Detail;
-    boost::shared_ptr<Detail> mDetail;
+    std::shared_ptr<Detail> mDetail;
 };
