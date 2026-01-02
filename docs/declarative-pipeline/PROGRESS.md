@@ -1039,6 +1039,50 @@ Error Detection:    2/2 correctly detect and suggest fixes
 
 ---
 
+### Session: 2026-01-02 14:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** D1 Fixes, Face Detection Demo Investigation
+
+**Accomplished:**
+- Fixed ModuleFactory to create appropriate metadata subclasses:
+  - RawImageMetadata for RAW_IMAGE frame type
+  - RawImagePlanarMetadata for RAW_IMAGE_PLANAR frame type
+  - Required by ImageDecoderCV and similar modules that downcast metadata
+- Fixed appendModule ordering in ModuleFactory:
+  - appendModule is now called AFTER connections are made
+  - Only called for source modules (modules with no incoming connections)
+  - appendModule is recursive and follows connections automatically
+- Changed FileReaderModule output type from "Frame" to "EncodedImage"
+  - Matches ImageDecoderCV input requirement
+  - Validation now passes for FileReader → ImageDecoder pipelines
+- Simple pipeline (FileReader → StatSink) runs successfully
+
+**Known Issue:**
+- Pipelines with ImageDecoderCV crash at runtime (segfault)
+- Validation passes, but run_all_threaded() causes crash
+- Existing unit test facedetector_tests/basic works (uses manual step())
+- Issue is specific to threaded pipeline execution
+
+**Files Modified:**
+- `base/src/declarative/ModuleFactory.cpp` - Metadata subclass creation, appendModule ordering
+- `base/src/declarative/ModuleRegistrations.cpp` - FileReaderModule output type fix
+
+**Commits:**
+- `226b8fa19` - fix(declarative): fix ModuleFactory pipeline building
+
+**Remaining:**
+- Debug ImageDecoderCV pipeline crash during threaded execution
+- Create working face detection demo pipeline
+
+**Notes for Next Session:**
+- The crash happens in run_all_threaded(), not during validation
+- May need to investigate threading/synchronization issues
+- Compare test's manual step() approach vs pipeline's threaded approach
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
