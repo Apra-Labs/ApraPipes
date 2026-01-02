@@ -35,8 +35,8 @@ git log --oneline -20 --all | head -20
 ls -la base/include/declarative/ 2>/dev/null || echo "Directory not created yet"
 ls -la base/src/declarative/ 2>/dev/null || echo "Directory not created yet"
 
-# 4. Check test status (if build exists)
-cd build && ctest --output-on-failure -R "decl" ; cd ..
+# 4. Check test status (if build exists) - uses Boost.Test
+./build/aprapipesut --run_test="ModuleRegistryTests/*" --log_level=test_suite
 
 # 5. Check GitHub issues (if gh cli available)
 gh issue list --label "declarative-pipeline" --state open
@@ -155,11 +155,11 @@ cmake -B build -S . -DENABLE_CUDA=OFF  # adjust flags as needed
 # Build
 cmake --build build --parallel
 
-# Run specific tests
-cd build && ctest -R metadata --output-on-failure
+# Run specific test suite (Boost.Test)
+./build/aprapipesut --run_test="MetadataTests/*" --log_level=test_suite
 
 # Run all tests
-cd build && ctest --output-on-failure
+./build/aprapipesut --log_level=test_suite
 ```
 
 ### 6. Update Progress Tracking
@@ -447,41 +447,54 @@ mkdir -p base/test/declarative
 
 ## 🤖 Claude Code Integration
 
-The `.claude/settings.json` provides hooks and shortcuts for Claude Code agents.
+The `.claude/settings.json` provides permissions and hooks for Claude Code agents.
 
-### Pre-Session Hook (runs automatically)
+### Configured Permissions
 
-When you start a session, Claude Code will automatically:
-1. Show current PROGRESS.md
-2. Show recent git history
-3. List existing declarative files
+Common build/dev commands are pre-approved:
+- `git`, `cmake`, `make`, `ninja`
+- `gh issue`, `gh pr`, `gh project`
+- File operations: `mkdir`, `cp`, `mv`, `rm`, `touch`, `diff`
+- `vcpkg` for dependencies
 
-### Available Tasks
+Dangerous commands are blocked:
+- `sudo`, `rm -rf /`, `chmod 777`
 
-Run these with the task command:
+### Post-Edit Hook
 
-| Task | Description |
-|------|-------------|
-| `check-progress` | View PROGRESS.md |
-| `list-tasks` | List all task specs |
-| `check-declarative` | Show implemented declarative files |
-| `build` | Build the project |
-| `test-declarative` | Run declarative tests only |
-| `test-all` | Run all tests |
-| `configure` | Configure CMake |
-| `create-dirs` | Create declarative/ subdirectories (run once) |
-| `gh-issues` | List open GitHub issues |
+When editing files in `declarative/` directories, you'll see a reminder to update CMakeLists.txt.
 
-### File Creation Hooks
+### Quick Commands
 
-When you create files in `base/*/declarative/`, you'll get a reminder to update CMakeLists.txt.
+```bash
+# Check progress
+cat docs/declarative-pipeline/PROGRESS.md
 
-### Post-Session Reminder
+# List task specs
+ls docs/declarative-pipeline/tasks/
 
-When ending a session, you'll see a checklist:
-- Did you update PROGRESS.md?
-- Did you commit your changes?
-- Did you run tests?
+# Check declarative files
+find base -path '*/declarative/*' -type f | sort
+
+# Build
+cmake --build build --parallel
+
+# Test declarative suites (Boost.Test)
+./build/aprapipesut --run_test="ModuleRegistryTests/*" --log_level=test_suite
+./build/aprapipesut --run_test="PipelineValidatorTests/*" --log_level=test_suite
+
+# Test all (Boost.Test)
+./build/aprapipesut --log_level=test_suite
+
+# Configure CMake
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+# Create directories (first time)
+mkdir -p base/include/declarative base/src/declarative base/test/declarative
+
+# GitHub issues
+gh issue list --label declarative-pipeline --state open
+```
 
 ---
 
@@ -542,16 +555,16 @@ BOOST_AUTO_TEST_CASE(ClassName_MethodName_Scenario) {
 }
 ```
 
-**Run tests:**
+**Run tests (Boost.Test):**
 ```bash
 # All tests
-cd build && ctest --output-on-failure
+./build/aprapipesut --log_level=test_suite
 
-# Specific test file
-cd build && ctest -R metadata --output-on-failure
+# Specific test suite
+./build/aprapipesut --run_test="MetadataTests/*" --log_level=test_suite
 
-# Verbose
-cd build && ctest -V -R metadata
+# List available test suites
+./build/aprapipesut --list_content 2>&1 | grep -E "^\w+Tests"
 ```
 
 ---
@@ -562,7 +575,7 @@ cd build && ctest -V -R metadata
 
 - [ ] Read `docs/declarative-pipeline/PROGRESS.md`
 - [ ] Check `git log --oneline -10`
-- [ ] Run `ctest` to verify current state
+- [ ] Run `./build/aprapipesut` to verify current state
 - [ ] Identify next task from progress file
 - [ ] Read full task spec
 
@@ -570,7 +583,7 @@ cd build && ctest -V -R metadata
 
 - [ ] Follow TDD: write tests first
 - [ ] Build frequently: `cmake --build build`
-- [ ] Run tests frequently: `ctest -R <feature>`
+- [ ] Run tests frequently: `./build/aprapipesut --run_test="SuiteName/*"`
 - [ ] Commit working increments
 
 ### Ending a Session
@@ -638,8 +651,8 @@ cat docs/declarative-pipeline/tasks/A1-core-metadata-types.md
 # Build
 cmake --build build --parallel
 
-# Test
-cd build && ctest -R metadata --output-on-failure
+# Test (Boost.Test)
+./build/aprapipesut --run_test="MetadataTests/*" --log_level=test_suite
 
 # Commit
 git add -A && git commit -m "feat(declarative): ..."
