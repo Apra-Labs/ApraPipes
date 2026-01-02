@@ -1,0 +1,25 @@
+# 08_mp4_reader_writer.toml
+# MP4 video pipeline: Mp4ReaderSource → Mp4WriterSink
+# NOTE: Update videoPath before running!
+
+[pipeline]
+name = "mp4_copy"
+description = "Read MP4 video and write to output folder"
+
+[modules.reader]
+type = "Mp4ReaderSource"
+  [modules.reader.props]
+  videoPath = "/path/to/input/video.mp4"
+  parseFS = true
+  readLoop = false
+
+[modules.writer]
+type = "Mp4WriterSink"
+  [modules.writer.props]
+  baseFolder = "/path/to/output/"
+  chunkTime = 60
+  fps = 30
+
+[[connections]]
+from = "reader"
+to = "writer"
