@@ -1,0 +1,46 @@
+# 05_transform_ptz_with_conversion.toml
+# Transform pipeline: TestSignalGenerator → ColorConversion → VirtualPTZ → StatSink
+# Fixed version of 03_transform_ptz.toml with proper frame type conversion
+#
+# TestSignalGenerator outputs RawImagePlanar (YUV420)
+# VirtualPTZ requires RawImage (RGB)
+# ColorConversion bridges the gap with YUV420PLANAR_TO_RGB conversion
+
+[pipeline]
+name = "transform_ptz_fixed"
+description = "Pipeline testing VirtualPTZ transform with frame type conversion"
+
+[modules.generator]
+type = "TestSignalGenerator"
+  [modules.generator.props]
+  width = 1920
+  height = 1080
+
+# Bridge module: converts RawImagePlanar → RawImage
+[modules.convert]
+type = "ColorConversion"
+  [modules.convert.props]
+  conversionType = "YUV420PLANAR_TO_RGB"
+
+[modules.ptz]
+type = "VirtualPTZ"
+  [modules.ptz.props]
+  roiX = 0.25
+  roiY = 0.25
+  roiWidth = 0.5
+  roiHeight = 0.5
+
+[modules.stats]
+type = "StatSink"
+
+[[connections]]
+from = "generator"
+to = "convert"
+
+[[connections]]
+from = "convert"
+to = "ptz"
+
+[[connections]]
+from = "ptz"
+to = "stats"
