@@ -8,9 +8,12 @@
 #include "declarative/ModuleRegistrations.h"
 #include "Module.h"
 #include "FrameMetadata.h"
+#include "RawImageMetadata.h"
+#include "RawImagePlanarMetadata.h"
 #include <sstream>
 #include <iostream>
 #include <cctype>
+#include <set>
 
 namespace apra {
 
@@ -171,14 +174,27 @@ std::map<std::string, std::string> ModuleFactory::setupOutputPins(
         return pinMap;
     }
 
-    // For each declared output pin, create a default FrameMetadata and add it
+    // For each declared output pin, create appropriate FrameMetadata and add it
     for (const auto& outputPin : info.outputs) {
         // Use the first frame type in the list
         std::string frameTypeStr = outputPin.frame_types.empty() ? "Frame" : outputPin.frame_types[0];
         FrameMetadata::FrameType frameType = stringToFrameType(frameTypeStr);
 
-        // Create a generic FrameMetadata with the correct type
-        auto metadata = framemetadata_sp(new FrameMetadata(frameType));
+        // Create the appropriate metadata subclass based on frame type
+        // Some modules require specific metadata types (e.g., ImageDecoderCV requires RawImageMetadata)
+        framemetadata_sp metadata;
+        switch (frameType) {
+            case FrameMetadata::RAW_IMAGE:
+                metadata = framemetadata_sp(new RawImageMetadata());
+                break;
+            case FrameMetadata::RAW_IMAGE_PLANAR:
+                metadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::HOST));
+                break;
+            default:
+                // For all other types, use generic FrameMetadata
+                metadata = framemetadata_sp(new FrameMetadata(frameType));
+                break;
+        }
 
         // Add the output pin and capture the generated ID
         std::string generatedPinId = module->addOutputPin(metadata);
@@ -279,7 +295,7 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
             }
 
             contextMap[instance.instance_id] = std::move(ctx);
-            result.pipeline->appendModule(module);
+            // Note: appendModule is called AFTER connections are made (see Phase 4)
 
             if (options_.collect_info_messages) {
                 result.issues.push_back(Issue::info(
@@ -304,6 +320,19 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
 
     // Phase 3: Validate required inputs are connected
     validateInputConnections(contextMap, result.issues);
+
+    // Phase 4: Add source modules to pipeline (appendModule is recursive and follows connections)
+    // Identify source modules: modules that are not destination of any connection
+    std::set<std::string> destinationModules;
+    for (const auto& conn : desc.connections) {
+        destinationModules.insert(conn.to_module);
+    }
+    for (const auto& [instanceId, ctx] : contextMap) {
+        if (destinationModules.find(instanceId) == destinationModules.end()) {
+            // This is a source module (not a destination of any connection)
+            result.pipeline->appendModule(ctx.module);
+        }
+    }
 
     // If errors during connection or validation, pipeline is invalid
     if (result.hasErrors()) {

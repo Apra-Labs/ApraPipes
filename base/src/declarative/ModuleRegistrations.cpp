@@ -71,7 +71,7 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Source)
                 .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
                 .tags("source", "file", "reader")
-                .output("output", "Frame")
+                .output("output", "EncodedImage")  // For image files (jpg, png, bmp, etc.)
                 .stringProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)", true)
                 .intProp("startIndex", "Starting file index", false, 0, 0)
                 .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, -1, -1)
