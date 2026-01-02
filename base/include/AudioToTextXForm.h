@@ -49,7 +49,7 @@ protected:
 	bool validateOutputPins() override;
 	void addInputPin(framemetadata_sp& metadata, std::string_view pinId) override;
 	bool handlePropsChange(frame_sp& frame) override;
-	bool processEOS(std::string_view pinId) override;
+	bool processEOS(std::string_view pinId);
 	bool handleFlushingBuffer();
 
 private:

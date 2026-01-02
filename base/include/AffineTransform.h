@@ -108,7 +108,7 @@ protected:
 	bool validateOutputPins() override;
 	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override; // throws exception if validation fails
 	bool shouldTriggerSOS() override;
-	bool processEOS(std::string_view pinId) override;
+	bool processEOS(std::string_view pinId);
 	AffineTransformProps mProp;
 	bool handlePropsChange(frame_sp& frame) override;
 	std::shared_ptr<DetailMemoryAbstract> mDetail;

@@ -30,7 +30,7 @@ protected:
 	bool validateOutputPins() override;
 	void addInputPin(framemetadata_sp &metadata, std::string_view pinId) override; // throws exception if validation fails
 	bool shouldTriggerSOS() override;
-	bool processEOS(std::string_view pinId) override;
+	bool processEOS(std::string_view pinId);
 
 private:
 	class Detail;

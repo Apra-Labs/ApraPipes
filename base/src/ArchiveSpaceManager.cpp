@@ -87,7 +87,7 @@ public:
             for (const auto& camFolder : std::filesystem::directory_iterator(mProps.pathToWatch))
             {
                 std::filesystem::path oldHrDir = getOldestDirectory(camFolder);
-                foldVector.push_back({ oldHrDir,std::filesystem::last_write_time(oldHrDir) });
+                foldVector.emplace_back(oldHrDir, std::filesystem::last_write_time(oldHrDir).time_since_epoch().count());
             }
             sort(foldVector.begin(), foldVector.end(), comparator); //Sorting the vector
 

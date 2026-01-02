@@ -110,7 +110,7 @@ void AbsControlModule::registerHealthCallbackExtention(
 void AbsControlModule::handleHealthCallback(const APHealthObject& healthObj)
 {
 	LOG_INFO << "Health Callback from  module " << healthObj.getModuleId();
-	if (!healthCallbackExtention.empty())
+	if (healthCallbackExtention)
 	{
 		LOG_INFO << "Calling the registered Health Callback Extention...";
 		healthCallbackExtention(&healthObj, 1);
