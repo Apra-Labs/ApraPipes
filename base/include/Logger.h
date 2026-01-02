@@ -82,8 +82,8 @@ private:
 
 	static std::shared_ptr<Logger> instance;
 	boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;
-	std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > > mConsoleSink;
-	std::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mFileSink;
+	boost::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > > mConsoleSink;
+	boost::shared_ptr< boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > > mFileSink;
 };
 
 #define A_LOG_SEV(severity) for(std::ostringstream stream; Logger::getLogger()->push(severity, stream);) Logger::getLogger()->pre(stream, severity)

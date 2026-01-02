@@ -1,13 +1,14 @@
 #pragma once
+#include <atomic>
 
 /**
 * locked != 0-> in use by Framework
 * ApraData should  be destroyed only when locked == 0
-* buffer should not be modified when locked != 0 
+* buffer should not be modified when locked != 0
 */
 class ApraData
 {
-public:	
+public:
 	ApraData(void* _buffer, size_t _size, uint64_t _fIndex)
 	{
 		buffer = _buffer;
@@ -16,7 +17,7 @@ public:
 		locked = 0;
 	}
 
-	~ApraData() 
+	~ApraData()
 	{
 
 	}
@@ -32,5 +33,5 @@ private:
 	void* buffer;
 	size_t size;
 	uint64_t fIndex;
-	atomic_uint locked;
+	std::atomic<unsigned int> locked;
 };

@@ -89,7 +89,7 @@ public:
 protected:
 	bool process(frame_container& frames) override;
 	bool processSOS(frame_sp& frame) override;
-	bool processEOS(std::string_view pinId) override;
+	bool processEOS(std::string_view pinId);
 	bool validateInputPins() override;
 	bool validateInputOutputPins() override;
 	bool setMetadata(framemetadata_sp &inputMetadata);

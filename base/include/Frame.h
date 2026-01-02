@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <cstddef>
+#include <boost/asio/buffer.hpp>
 #include "CommonDefs.h"
 
 using namespace std;
@@ -8,20 +9,7 @@ using namespace std;
 class FrameFactory;
 class ApraData;
 
-// Simple mutable buffer replacement
-class mutable_buffer {
-public:
-	mutable_buffer(void* data, size_t size) : m_data(data), m_size(size) {}
-	void* data() const { return m_data; }
-	size_t size() const { return m_size; }
-protected:
-	mutable_buffer() : m_data(nullptr), m_size(0) {}
-private:
-	void* m_data;
-	size_t m_size;
-};
-
-class Frame : public mutable_buffer {
+class Frame : public boost::asio::mutable_buffer {
 public:
 	Frame(void *buff, size_t size, std::shared_ptr<FrameFactory> mother);
 	virtual ~Frame();

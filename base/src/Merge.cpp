@@ -1,5 +1,3 @@
-#include <boost/foreach.hpp>
-
 #include "Merge.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
@@ -20,7 +18,7 @@ public:
 		clear();
 	}
 
-	void setOutputPinId(std::std::string_view pinId)
+	void setOutputPinId(std::string_view pinId)
 	{
 		mOutputPinId = pinId;
 	}

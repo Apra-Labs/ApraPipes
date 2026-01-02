@@ -811,11 +811,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-<<<<<<< HEAD
-					std::unique_lock<std::mutex>(m_mutex);
-=======
 					std::unique_lock<std::mutex> lock(m_mutex);
->>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 				}
@@ -835,11 +831,7 @@ void OrderedCacheOfFiles::dropFarthestFromTS(uint64_t ts)
 				auto path = itr->path;
 				if (videoCache.size() >= lowerWaterMark)
 				{
-<<<<<<< HEAD
-					std::unique_lock<std::mutex>(m_mutex);
-=======
 					std::unique_lock<std::mutex> lock(m_mutex);
->>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 					// Note - erase returns the iterator of next element after deletion.
 					itr = videoCache.erase(itr);
 					--itr;
@@ -861,11 +853,7 @@ void OrderedCacheOfFiles::deleteLostEntry(std::string& filePath)
 		return;
 	}
 
-<<<<<<< HEAD
-	std::unique_lock<std::mutex>(m_mutex);
-=======
 	std::unique_lock<std::mutex> lock(m_mutex);
->>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 	itr = videoCache.erase(itr); // erase gives updated itr from cache
 
 	return;
@@ -875,11 +863,7 @@ void OrderedCacheOfFiles::clearCache()
 {
 	if (videoCache.size())
 	{
-<<<<<<< HEAD
-		std::unique_lock<std::mutex>(m_mutex);
-=======
 		std::unique_lock<std::mutex> lock(m_mutex);
->>>>>>> 8e1d2f1f1 (refactor: Replace Boost dependencies with C++17 standard library)
 		videoCache.clear();
 	}
 }

@@ -1,5 +1,3 @@
-#include <boost/foreach.hpp>
-
 #include "Split.h"
 #include "Frame.h"
 #include "FrameMetadata.h"
