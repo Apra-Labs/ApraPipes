@@ -3,7 +3,7 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2026-01-01 22:50` by `claude-code`
+Last Updated: `2026-01-02 15:30` by `claude-code`
 
 ---
 
@@ -1059,7 +1059,7 @@ Error Detection:    2/2 correctly detect and suggest fixes
   - Validation now passes for FileReader → ImageDecoder pipelines
 - Simple pipeline (FileReader → StatSink) runs successfully
 
-**Known Issue:**
+**Known Issue:** (RESOLVED in later sessions)
 - Pipelines with ImageDecoderCV crash at runtime (segfault)
 - Validation passes, but run_all_threaded() causes crash
 - Existing unit test facedetector_tests/basic works (uses manual step())
@@ -1080,6 +1080,41 @@ Error Detection:    2/2 correctly detect and suggest fixes
 - The crash happens in run_all_threaded(), not during validation
 - May need to investigate threading/synchronization issues
 - Compare test's manual step() approach vs pipeline's threaded approach
+
+---
+
+### Session: 2026-01-02 15:00
+
+**Agent:** claude-code
+**Duration:** ~30 min
+**Tasks:** Integration Test Simplification
+
+**Accomplished:**
+- Fixed integration test to use TOML file directly instead of programmatic pipeline building
+- Test now parses `09_face_detection_demo.toml` using TomlParser
+- Builds and runs pipeline via ModuleFactory
+- Verifies output file contains 5 detected faces with valid coordinates
+- All integration test assertions pass:
+  - TOML parsing ✅
+  - Pipeline build ✅
+  - Pipeline init ✅
+  - Pipeline run_all_threaded() ✅
+  - 5 faces detected with valid coordinates ✅
+
+**Files Modified:**
+- `base/test/declarative/pipeline_integration_tests.cpp` - Simplified to use TOML file
+
+**Commits:**
+- `daa0797f5` - refactor(declarative): simplify integration test to use TOML file directly
+
+**Integration Test Status:**
+- Face detection pipeline from TOML → working ✅
+- Test verifies: TOML parse, build, init, run, face detection output
+
+**Notes for Next Session:**
+- Integration test is disabled by default (requires face detection model)
+- Run with `--run_test="PipelineIntegrationTests/*"` to enable
+- All other 268 declarative unit tests pass normally
 
 ---
 
