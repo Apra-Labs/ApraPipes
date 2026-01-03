@@ -66,16 +66,20 @@ void ensureBuiltinModulesRegistered() {
     // (Wave 2 approach: metadata here, only applyProperties in module headers)
     {
         // FileReaderModule - reads frames from files
+        // NOTE: Output type depends on what user specifies - this is a generic file reader
+        // The outputFrameType property allows users to specify the frame type in TOML
         if (!registry.hasModule("FileReaderModule")) {
             registerModule<FileReaderModule, FileReaderModuleProps>()
                 .category(ModuleCategory::Source)
                 .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
                 .tags("source", "file", "reader")
-                .output("output", "EncodedImage")  // For image files (jpg, png, bmp, etc.)
+                .output("output", "Frame")  // Generic - actual type set via outputFrameType prop
                 .stringProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)", true)
                 .intProp("startIndex", "Starting file index", false, 0, 0)
                 .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, -1, -1)
-                .boolProp("readLoop", "Loop back to start when reaching end", false, true);
+                .boolProp("readLoop", "Loop back to start when reaching end", false, true)
+                .enumProp("outputFrameType", "Output frame type", false, "Frame",
+                    "Frame", "EncodedImage", "RawImage", "RawImagePlanar");
         }
 
         // FileWriterModule - writes frames to files

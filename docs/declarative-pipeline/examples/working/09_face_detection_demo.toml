@@ -1,0 +1,38 @@
+# 09_face_detection_demo.toml
+# End-to-end face detection demo
+#
+# Pipeline: FileReaderModule → ImageDecoderCV → FaceDetectorXform → StatSink
+#
+# FileReaderModule uses outputFrameType to specify it outputs EncodedImage
+
+[pipeline]
+name = "face_detection_demo"
+description = "End-to-end face detection pipeline"
+
+[modules.reader]
+type = "FileReaderModule"
+  [modules.reader.props]
+  strFullFileNameWithPattern = "./data/faces.jpg"
+  readLoop = false
+  outputFrameType = "EncodedImage"
+
+[modules.decoder]
+type = "ImageDecoderCV"
+
+[modules.face_detect]
+type = "FaceDetectorXform"
+
+[modules.sink]
+type = "StatSink"
+
+[[connections]]
+from = "reader"
+to = "decoder"
+
+[[connections]]
+from = "decoder"
+to = "face_detect"
+
+[[connections]]
+from = "face_detect"
+to = "sink"

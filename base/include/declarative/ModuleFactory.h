@@ -118,10 +118,11 @@ private:
 
     // Set up output pins for a module based on registry info
     // Returns map of TOML pin name → internal pin ID
+    // Uses outputFrameType property from instance if present to override default
     std::map<std::string, std::string> setupOutputPins(
         Module* module,
         const ModuleInfo& info,
-        const std::string& instanceId,
+        const ModuleInstance& instance,
         std::vector<BuildIssue>& issues
     );
 

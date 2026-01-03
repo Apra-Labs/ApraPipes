@@ -146,7 +146,7 @@ std::pair<std::string, std::string> ModuleFactory::parseConnectionEndpoint(
 std::map<std::string, std::string> ModuleFactory::setupOutputPins(
     Module* module,
     const ModuleInfo& info,
-    const std::string& instanceId,
+    const ModuleInstance& instance,
     std::vector<BuildIssue>& issues
 ) {
     std::map<std::string, std::string> pinMap;
@@ -174,10 +174,24 @@ std::map<std::string, std::string> ModuleFactory::setupOutputPins(
         return pinMap;
     }
 
+    // Check for outputFrameType property override (used by FileReaderModule etc.)
+    std::string outputFrameTypeOverride;
+    auto propIt = instance.properties.find("outputFrameType");
+    if (propIt != instance.properties.end()) {
+        if (auto* strVal = std::get_if<std::string>(&propIt->second)) {
+            outputFrameTypeOverride = *strVal;
+        }
+    }
+
     // For each declared output pin, create appropriate FrameMetadata and add it
     for (const auto& outputPin : info.outputs) {
-        // Use the first frame type in the list
-        std::string frameTypeStr = outputPin.frame_types.empty() ? "Frame" : outputPin.frame_types[0];
+        // Use outputFrameType property if set, otherwise use first frame type from registry
+        std::string frameTypeStr;
+        if (!outputFrameTypeOverride.empty()) {
+            frameTypeStr = outputFrameTypeOverride;
+        } else {
+            frameTypeStr = outputPin.frame_types.empty() ? "Frame" : outputPin.frame_types[0];
+        }
         FrameMetadata::FrameType frameType = stringToFrameType(frameTypeStr);
 
         // Create the appropriate metadata subclass based on frame type
@@ -285,7 +299,7 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
                 // Only set up output pins if module doesn't manage its own
                 // (modules that create pins in addInputPin() set selfManagedOutputPins=true)
                 if (!info->outputs.empty() && !info->selfManagedOutputPins) {
-                    ctx.outputPinMap = setupOutputPins(module.get(), *info, instance.instance_id, result.issues);
+                    ctx.outputPinMap = setupOutputPins(module.get(), *info, instance, result.issues);
                 }
                 // Populate inputPinMap from registry info (for validation)
                 for (const auto& inputPin : info->inputs) {
