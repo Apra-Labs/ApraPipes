@@ -46,7 +46,7 @@ public:
         static constexpr std::array<std::string_view, 1> tags = {"test"};
         static constexpr std::array<PinDef, 0> inputs = {};
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame", true, "Output frames")
+            PinDef::create("output", "Frame", true, "Output frames")
         };
         static constexpr std::array<PropDef, 2> properties = {
             PropDef::Text("path", "/tmp/default.mp4", "File path"),
@@ -91,12 +91,12 @@ public:
         static constexpr std::string_view description = "Test transform module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
-        // Note: input is optional to allow standalone property testing
+        // Note: input is optional, accepts Frame (base type) for compatibility
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false)
+            PinDef::create("input", "Frame", false)
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame")
+            PinDef::create("output", "Frame")
         };
         static constexpr std::array<PropDef, 2> properties = {
             PropDef::Integer("scale", 1, 1, 10, "Scale factor"),
@@ -136,9 +136,9 @@ public:
         static constexpr std::string_view description = "Test sink module";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
-        // Note: input is optional to allow standalone property testing
+        // Note: input is optional and accepts Frame (base type) to allow connection from any output
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false)
+            PinDef::create("input", "Frame", false)
         };
         static constexpr std::array<PinDef, 0> outputs = {};
         static constexpr std::array<PropDef, 1> properties = {
@@ -185,6 +185,10 @@ void registerTestModule() {
         return std::make_unique<ModuleClass>(moduleProps);
     };
 
+    // Test modules create their output pins in constructors, so mark as self-managed
+    // This prevents ModuleFactory from calling setupOutputPins() which would create duplicates
+    info.selfManagedOutputPins = true;
+
     ModuleRegistry::instance().registerModule(std::move(info));
 }
 
@@ -214,11 +218,11 @@ public:
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", true, "Input frames")
+            PinDef::create("input", "Frame", true, "Input frames")
         };
         static constexpr std::array<PinDef, 2> outputs = {
-            PinDef::create("video", "H264Frame", true, "Encoded video"),
-            PinDef::create("motion_vectors", "MotionData", true, "Motion vector data")
+            PinDef::create("video", "Frame", true, "Encoded video"),
+            PinDef::create("motion_vectors", "Frame", true, "Motion vector data")
         };
         static constexpr std::array<PropDef, 1> properties = {
             PropDef::Integer("quality", 80, 1, 100, "Encoding quality")
@@ -247,7 +251,7 @@ public:
     explicit MultiInputModule(MultiInputModuleProps props)
         : Module(TRANSFORM, "MultiInputModule", props), props_(props) {
         // Create single output pin
-        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::RAW_IMAGE));
+        auto metadata = framemetadata_sp(new FrameMetadata(FrameMetadata::GENERAL));
         mOutputPinId = addOutputPin(metadata);
     }
 
@@ -258,12 +262,13 @@ public:
         static constexpr std::string_view description = "Test module with multiple inputs";
 
         static constexpr std::array<std::string_view, 1> tags = {"test"};
+        // Accept Frame (base type) for compatibility with any output
         static constexpr std::array<PinDef, 2> inputs = {
-            PinDef::create("background", "RawImage", true, "Background image"),
-            PinDef::create("foreground", "OverlayInfo", true, "Foreground overlay")
+            PinDef::create("background", "Frame", true, "Background image"),
+            PinDef::create("foreground", "Frame", true, "Foreground overlay")
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawImage", true, "Composited output")
+            PinDef::create("output", "Frame", true, "Composited output")
         };
         static constexpr std::array<PropDef, 1> properties = {
             PropDef::Floating("opacity", 1.0, 0.0, 1.0, "Overlay opacity")
@@ -303,10 +308,10 @@ public:
         static constexpr std::array<std::string_view, 1> tags = {"test"};
         // Required input (true) - must be connected
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", true, "Required input")
+            PinDef::create("input", "Frame", true, "Required input")
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame", true, "Output frames")
+            PinDef::create("output", "Frame", true, "Output frames")
         };
         static constexpr std::array<PropDef, 1> properties = {
             PropDef::Integer("threshold", 50, 0, 100, "Threshold value")
@@ -346,10 +351,10 @@ public:
         static constexpr std::array<std::string_view, 1> tags = {"test"};
         // Optional input - doesn't need to be connected
         static constexpr std::array<PinDef, 1> inputs = {
-            PinDef::create("input", "RawFrame", false)
+            PinDef::create("input", "Frame", false)
         };
         static constexpr std::array<PinDef, 1> outputs = {
-            PinDef::create("output", "RawFrame")
+            PinDef::create("output", "Frame")
         };
         static constexpr std::array<PropDef, 1> properties = {
             PropDef::Boolean("enabled", true, "Enable processing")
