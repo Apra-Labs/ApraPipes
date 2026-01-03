@@ -1,12 +1,15 @@
 // ============================================================
 // Pipeline Integration Tests
-// Verifies end-to-end declarative pipeline execution
+// Verifies end-to-end declarative pipeline execution using TOML files
 // ============================================================
 
 #include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <thread>
+#include <chrono>
 #include "declarative/TomlParser.h"
 #include "declarative/ModuleFactory.h"
+#include "declarative/PipelineDescription.h"
 #include "FaceDetectsInfo.h"
 #include "Utils.h"
 
@@ -14,52 +17,71 @@ using namespace apra;
 
 BOOST_AUTO_TEST_SUITE(PipelineIntegrationTests, *boost::unit_test::disabled())
 
-// Helper to read file contents
-std::vector<uint8_t> readFile(const std::string& path) {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    if (!file) return {};
+namespace {
+    const std::string FACE_DETECTION_TOML = "./docs/declarative-pipeline/examples/working/09_face_detection_demo.toml";
+    const std::string TEST_OUTPUT_PATH = "./data/testOutput/declarative_face_result.raw";
 
-    auto size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<uint8_t> data(size);
-    file.read(reinterpret_cast<char*>(data.data()), size);
-    return data;
+    std::vector<uint8_t> readFile(const std::string& path) {
+        std::ifstream file(path, std::ios::binary | std::ios::ate);
+        if (!file) return {};
+        auto size = file.tellg();
+        file.seekg(0, std::ios::beg);
+        std::vector<uint8_t> data(size);
+        file.read(reinterpret_cast<char*>(data.data()), size);
+        return data;
+    }
 }
 
-BOOST_AUTO_TEST_CASE(FaceDetectionPipeline_ProducesValidOutput)
+BOOST_AUTO_TEST_CASE(FaceDetectionPipeline_FromToml_ProducesValidOutput)
 {
-    // This test verifies the declarative face detection pipeline works
-    // by checking the output file contains valid FaceDetectsInfo
+    // Clean up any existing output file
+    std::remove(TEST_OUTPUT_PATH.c_str());
 
-    const std::string outputPath = "./data/testOutput/declarative_face_result.raw";
+    // Parse TOML file
+    TomlParser parser;
+    auto parseResult = parser.parseFile(FACE_DETECTION_TOML);
+    BOOST_REQUIRE_MESSAGE(parseResult.success,
+        "Failed to parse TOML: " + parseResult.error);
 
-    // Read the output file produced by the pipeline
-    auto data = readFile(outputPath);
-    BOOST_REQUIRE(!data.empty());
+    // Build pipeline from parsed description
+    ModuleFactory factory;
+    auto buildResult = factory.build(parseResult.description);
+    BOOST_REQUIRE_MESSAGE(buildResult.success(), buildResult.formatIssues());
+
+    // Initialize
+    BOOST_REQUIRE(buildResult.pipeline->init());
+
+    // Run with threads and wait for completion
+    buildResult.pipeline->run_all_threaded();
+
+    // Wait for pipeline to process (single image, should be quick)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    // Stop
+    buildResult.pipeline->stop();
+    buildResult.pipeline->term();
+    buildResult.pipeline->wait_for_all();
+
+    // Verify output file was created and contains valid face detection data
+    auto data = readFile(TEST_OUTPUT_PATH);
+    BOOST_REQUIRE_MESSAGE(!data.empty(), "Output file was not created or is empty");
 
     // Deserialize FaceDetectsInfo
     FaceDetectsInfo result;
     Utils::deSerialize<FaceDetectsInfo>(result, data.data(), data.size());
 
-    // Verify faces were detected
+    // Verify faces were detected (faces.jpg has 5 faces)
     BOOST_TEST(result.facesFound == true);
-    BOOST_TEST(result.faces.size() > 0);
+    BOOST_TEST(result.faces.size() == 5);
 
-    // Print detected faces for verification
-    BOOST_TEST_MESSAGE("Detected " << result.faces.size() << " face(s):");
-    for (size_t i = 0; i < result.faces.size(); i++) {
-        const auto& face = result.faces[i];
-        BOOST_TEST_MESSAGE("  Face " << (i+1) << ": ("
-            << face.x1 << ", " << face.y1 << ") - ("
-            << face.x2 << ", " << face.y2 << "), score=" << face.score);
-
-        // Basic sanity checks on coordinates
-        // Note: Face detector may use (x1,y1)=bottom-left, (x2,y2)=top-right convention
-        BOOST_TEST(face.x2 > face.x1);  // Width > 0
-        BOOST_TEST(face.y1 != face.y2); // Height != 0
-        BOOST_TEST(face.score > 0.0f);  // Confidence > 0
+    // Verify face data is valid
+    for (const auto& face : result.faces) {
+        BOOST_TEST(face.x2 > face.x1);   // Width > 0
+        BOOST_TEST(face.score > 0.5f);   // Reasonable confidence
     }
+
+    // Clean up
+    std::remove(TEST_OUTPUT_PATH.c_str());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
