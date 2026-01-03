@@ -22,8 +22,10 @@ type = "ImageDecoderCV"
 [modules.face_detect]
 type = "FaceDetectorXform"
 
-[modules.sink]
-type = "StatSink"
+[modules.writer]
+type = "FileWriterModule"
+  [modules.writer.props]
+  strFullFileNameWithPattern = "./data/testOutput/declarative_face_result.raw"
 
 [[connections]]
 from = "reader"
@@ -35,4 +37,4 @@ to = "face_detect"
 
 [[connections]]
 from = "face_detect"
-to = "sink"
+to = "writer"

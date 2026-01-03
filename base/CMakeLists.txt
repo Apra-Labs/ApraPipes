@@ -719,6 +719,7 @@ SET(UT_FILES
 	test/declarative/property_macros_tests.cpp
 	test/declarative/module_registration_tests.cpp
 	test/declarative/property_validators_tests.cpp
+	test/declarative/pipeline_integration_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
