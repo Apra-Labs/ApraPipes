@@ -35,6 +35,26 @@
 #include "BrightnessContrastControlXform.h"
 #include "CalcHistogramCV.h"
 
+// Batch 1: Additional Source modules
+#include "WebCamSource.h"
+#include "RTSPClientSrc.h"
+#include "ExternalSourceModule.h"
+
+// Batch 2: Additional Transform modules
+#include "OverlayModule.h"
+#include "HistogramOverlay.h"
+// Note: AffineTransform requires TransformType + angle in constructor
+// Note: MultimediaQueueXform has ambiguous constructors (both are 0-arg compatible)
+
+// Batch 3: Additional Sink modules
+#include "ExternalSinkModule.h"
+// Note: RTSPPusher and VirtualCameraSink require mandatory constructor args
+// and need applyProperties support - skipped for now
+
+// Batch 5: Utility modules
+#include "FramesMuxer.h"
+// Note: H264FrameDemuxer is not derived from Module - cannot be registered
+
 // Conditionally include CUDA modules
 #ifdef ENABLE_CUDA
 #include "H264Decoder.h"
@@ -45,25 +65,19 @@
 namespace apra {
 
 void ensureBuiltinModulesRegistered() {
-    // Check if modules are already registered.
     auto& registry = ModuleRegistry::instance();
-
-    if (registry.hasModule("FileReaderModule")) {
-        // Already registered (via REGISTER_MODULE macro in .cpp files)
-        return;
-    }
 
     // If registry is empty (e.g., after clear() in tests), re-run all
     // registered callbacks. This allows modules registered via REGISTER_MODULE
     // to be re-registered with their full property metadata.
-    registry.rerunRegistrations();
+    if (!registry.hasModule("FileReaderModule")) {
+        registry.rerunRegistrations();
+    }
 
-    // If modules are still not registered (e.g., static init hasn't run yet),
-    // register fallback modules without full property metadata.
-    // This is a safety net for edge cases like dynamic loading.
-
-    // Register all built-in modules using central registration pattern
-    // (Wave 2 approach: metadata here, only applyProperties in module headers)
+    // Register all built-in modules using central registration pattern.
+    // Each module registration checks if it's already registered to avoid duplicates.
+    // This allows modules to be registered here even if some modules were already
+    // registered via REGISTER_MODULE macro.
     {
         // FileReaderModule - reads frames from files
         // NOTE: Output type depends on what user specifies - this is a generic file reader
@@ -330,6 +344,112 @@ void ensureBuiltinModulesRegistered() {
                 .dynamicProp("maskImgPath", "string", "Path to mask image (optional)", false, "")
                 .selfManagedOutputPins();  // Creates output pin dynamically
         }
+
+        // ============================================================
+        // Batch 1: Additional Source Modules
+        // ============================================================
+
+        // WebCamSource - captures from webcam/camera
+        if (!registry.hasModule("WebCamSource")) {
+            registerModule<WebCamSource, WebCamSourceProps>()
+                .category(ModuleCategory::Source)
+                .description("Captures video frames from webcam or USB camera using OpenCV")
+                .tags("source", "camera", "webcam", "capture", "opencv")
+                .output("output", "RawImage")
+                .intProp("cameraId", "Camera device ID (-1 for default)", false, -1, -1, 10)
+                .intProp("width", "Capture width in pixels", false, 640, 1, 4096)
+                .intProp("height", "Capture height in pixels", false, 480, 1, 4096)
+                .intProp("fps", "Target frames per second", false, 30, 1, 120);
+        }
+
+        // RTSPClientSrc - receives video from RTSP stream
+        if (!registry.hasModule("RTSPClientSrc")) {
+            registerModule<RTSPClientSrc, RTSPClientSrcProps>()
+                .category(ModuleCategory::Source)
+                .description("Receives video from RTSP stream (IP cameras, media servers)")
+                .tags("source", "rtsp", "network", "stream", "camera")
+                .output("output", "H264Data", "EncodedImage")
+                .stringProp("rtspURL", "RTSP stream URL (e.g., rtsp://host:port/path)", true)
+                .stringProp("userName", "Authentication username", false, "")
+                .stringProp("password", "Authentication password", false, "")
+                .boolProp("useTCP", "Use TCP transport instead of UDP", false, true);
+        }
+
+        // ExternalSourceModule - allows external frame injection
+        if (!registry.hasModule("ExternalSourceModule")) {
+            registerModule<ExternalSourceModule, ExternalSourceModuleProps>()
+                .category(ModuleCategory::Source)
+                .description("Source module for external frame injection. Used for programmatic frame feeding.")
+                .tags("source", "external", "api", "programmatic")
+                .output("output", "Frame");
+        }
+
+        // ============================================================
+        // Batch 2: Additional Transform Modules
+        // ============================================================
+
+        // Note: AffineTransform requires TransformType + angle in constructor - needs applyProperties
+        // Note: MultimediaQueueXform has ambiguous constructors - needs applyProperties
+
+        // OverlayModule - overlays graphics on frames
+        if (!registry.hasModule("OverlayModule")) {
+            registerModule<OverlayModule, OverlayModuleProps>()
+                .category(ModuleCategory::Transform)
+                .description("Overlays graphics, shapes, and annotations on image frames")
+                .tags("transform", "overlay", "graphics", "annotation")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .selfManagedOutputPins();
+        }
+
+        // HistogramOverlay - overlays histogram visualization
+        if (!registry.hasModule("HistogramOverlay")) {
+            registerModule<HistogramOverlay, HistogramOverlayProps>()
+                .category(ModuleCategory::Transform)
+                .description("Overlays histogram visualization on image frames")
+                .tags("transform", "histogram", "overlay", "visualization")
+                .input("input", "RawImage")
+                .output("output", "RawImage")
+                .selfManagedOutputPins();
+        }
+
+        // ============================================================
+        // Batch 3: Additional Sink Modules
+        // ============================================================
+
+        // ExternalSinkModule - allows external frame consumption
+        if (!registry.hasModule("ExternalSinkModule")) {
+            registerModule<ExternalSinkModule, ExternalSinkModuleProps>()
+                .category(ModuleCategory::Sink)
+                .description("Sink module for external frame consumption. Used for programmatic frame retrieval.")
+                .tags("sink", "external", "api", "programmatic")
+                .input("input", "Frame");
+        }
+
+        // Note: RTSPPusher and VirtualCameraSink require mandatory constructor args
+        // and need custom applyProperties support - will be added after builder enhancement
+
+        // ============================================================
+        // Batch 5: Additional Utility Modules
+        // ============================================================
+
+        // FramesMuxer - synchronizes multiple frame streams
+        if (!registry.hasModule("FramesMuxer")) {
+            registerModule<FramesMuxer, FramesMuxerProps>()
+                .category(ModuleCategory::Utility)
+                .description("Synchronizes and multiplexes multiple input frame streams based on timestamp or frame index")
+                .tags("utility", "mux", "sync", "multiplex")
+                .input("input_1", "Frame")
+                .input("input_2", "Frame")
+                .output("output", "Frame")
+                .intProp("maxDelay", "Maximum frame delay before dropping", false, 30, 1, 1000)
+                .floatProp("maxTsDelayInMS", "Maximum timestamp delay in milliseconds", false, 16.67, 0.0, 1000.0)
+                .enumProp("strategy", "Muxing strategy", false, "ALL_OR_NONE",
+                    "ALL_OR_NONE", "MAX_DELAY_ANY", "MAX_TIMESTAMP_DELAY")
+                .selfManagedOutputPins();
+        }
+
+        // Note: H264FrameDemuxer is not derived from Module, cannot be registered
 
         // ============================================================
         // CUDA-only modules
