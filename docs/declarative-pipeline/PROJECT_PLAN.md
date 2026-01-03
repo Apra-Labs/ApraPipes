@@ -50,15 +50,15 @@ All core infrastructure is complete. The system is functional with end-to-end TO
 
 ### Current Module Registration Coverage
 
-**20 modules registered (32% of 62 total)**
+**27 modules registered (44% of 62 total)**
 
 | Category | Registered Modules |
 |----------|-------------------|
-| Source | FileReaderModule, TestSignalGenerator, Mp4ReaderSource |
-| Sink | FileWriterModule, StatSink, Mp4WriterSink |
-| Transform | ImageDecoderCV, ImageEncoderCV, ImageResizeCV, RotateCV, ColorConversion, VirtualPTZ, TextOverlayXForm, BrightnessContrastControl |
+| Source | FileReaderModule, TestSignalGenerator, Mp4ReaderSource, WebCamSource, RTSPClientSrc, ExternalSourceModule |
+| Sink | FileWriterModule, StatSink, Mp4WriterSink, ExternalSinkModule |
+| Transform | ImageDecoderCV, ImageEncoderCV, ImageResizeCV, RotateCV, ColorConversion, VirtualPTZ, TextOverlayXForm, BrightnessContrastControl, OverlayModule, HistogramOverlay |
 | Analytics | FaceDetectorXform, QRReader, CalcHistogramCV |
-| Utility | ValveModule, Split, Merge |
+| Utility | ValveModule, Split, Merge, FramesMuxer |
 
 ---
 
