@@ -3,22 +3,27 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2026-01-02 15:30` by `claude-code`
+Last Updated: `2026-01-02 16:00` by `claude-code`
 
 ---
 
-## Current Sprint: 1 (Foundations)
+## Current Sprint: 3 (Documentation & Expansion)
 
 ## Quick Status
 
-```
-Critical Path:  A1 ──► A2 ──────────────► D1 ──► D2 ──► E1 (run)
-                        │                  ▲
-Parallel:       B1 ──► B2 ─────────────────┘
-                        │
-Non-blocking:           └──► C1 (validator shell)
+**Core Infrastructure: ✅ COMPLETE**
 
-D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
+All foundational work is done. End-to-end TOML-to-pipeline execution is working.
+
+**Current Focus:**
+1. Documentation (Developer Guide, Pipeline Author Guide)
+2. Module Registration Expansion (20/62 = 32% → 80%+ target)
+3. Example Pipelines for all registered modules
+
+```
+Sprint 1 (Foundations):  ✅ A1, A2, A3, B1, B2, C1, M1, M2 - COMPLETE
+Sprint 2 (Core Engine):  ✅ D1, D2, D3, E1, E2, C2-C5, F1-F4 - COMPLETE
+Sprint 3 (Expansion):    🔄 DOC1, DOC2, Batch 1-5 - IN PROGRESS
 ```
 
 ---
@@ -48,7 +53,7 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | Task | Description | Status | Assignee | Started | Completed | PR/Commit |
 |------|-------------|--------|----------|---------|-----------|-----------|
 | **D1** | Module Factory | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
-| **D2** | Property Binding System | 🔄 In Progress | claude-code | 2025-12-29 | - | Property methods in builder, 20 modules registered (32%) |
+| **D2** | Property Binding System | ✅ Complete | claude-code | 2025-12-29 | 2025-12-31 | 20 modules registered (32%) |
 | **D3** | Multi-Pin Connection Support | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | Phase 1 done |
 | **E1** | CLI Tool | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
 | **E2** | Schema Generator | ✅ Complete | claude-code | 2025-12-29 | 2025-12-29 | Implemented |
@@ -65,6 +70,20 @@ D2 (Property Binding) is CRITICAL: Without it, TOML properties are ignored!
 | **C3** | Validator: Property Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
 | **C4** | Validator: Connection Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
 | **C5** | Validator: Graph Checks | ✅ Complete | claude-code | 2025-12-30 | 2025-12-30 | 96a619540 |
+
+### Sprint 3 - Documentation & Expansion
+
+| Task | Description | Status | Assignee | Started | Completed | Notes |
+|------|-------------|--------|----------|---------|-----------|-------|
+| **DOC1** | Developer Guide for Module Registration | 🔄 In Progress | claude-code | 2026-01-02 | - | Comprehensive guide |
+| **DOC2** | Pipeline Author Guide | ⏳ Pending | claude-code | - | - | With schema generator |
+| **Batch1** | Source modules registration | ⏳ Pending | claude-code | - | - | WebcamSource, RTSP, etc. |
+| **Batch2** | Transform modules registration | ⏳ Pending | claude-code | - | - | AffineTransform, Overlay, etc. |
+| **Batch3** | Sink modules registration | ⏳ Pending | claude-code | - | - | RTSPPusher, etc. |
+| **Batch4** | CUDA modules registration | ⏳ Pending | claude-code | - | - | H264Encoder, JPEGDecoder, etc. |
+| **Batch5** | Remaining utility modules | ⏳ Pending | claude-code | - | - | - |
+| **EX1** | Create example pipelines | ⏳ Pending | claude-code | - | - | For each batch |
+| **FIX1** | Fix not_working pipelines | ⏳ Pending | claude-code | - | - | After all batches |
 
 ---
 
@@ -1115,6 +1134,48 @@ Error Detection:    2/2 correctly detect and suggest fixes
 - Integration test is disabled by default (requires face detection model)
 - Run with `--run_test="PipelineIntegrationTests/*"` to enable
 - All other 268 declarative unit tests pass normally
+
+---
+
+### Session: 2026-01-02 16:00
+
+**Agent:** claude-code
+**Duration:** ~60 min
+**Tasks:** Sprint 3 Planning, Documentation Start
+
+**Accomplished:**
+- Updated PROJECT_PLAN.md with Sprint 3 status:
+  - Marked Sprint 1 & 2 as complete
+  - Added Sprint 3 documentation and expansion tasks
+  - Updated architecture diagram
+  - Listed all 20 registered modules by category
+- Updated PROGRESS.md with Sprint 3 task tracking
+- Started Developer Guide (DEVELOPER_GUIDE.md):
+  - Comprehensive guide for module registration
+  - Covers all registration patterns
+  - Property definitions (string, int, float, bool, enum, dynamic)
+  - Frame type hierarchy and creation
+  - Self-managed pins explanation
+  - Testing procedures
+
+**Files Created:**
+- `docs/declarative-pipeline/DEVELOPER_GUIDE.md` - Developer guide (draft)
+
+**Files Modified:**
+- `docs/declarative-pipeline/PROJECT_PLAN.md` - Full rewrite for Sprint 3
+- `docs/declarative-pipeline/PROGRESS.md` - Sprint 3 task tracking
+
+**Sprint 3 Task List:**
+1. DOC1: Developer Guide ← In Progress
+2. DOC2: Pipeline Author Guide
+3. Batch1-5: Module registrations
+4. EX1: Example pipelines
+5. FIX1: Fix not_working pipelines
+
+**Notes for Next Session:**
+- Complete Developer Guide
+- Create Pipeline Author Guide with schema generator focus
+- Start Batch 1 (Source modules)
 
 ---
 

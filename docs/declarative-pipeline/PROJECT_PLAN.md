@@ -1,180 +1,261 @@
 # Declarative Pipeline Construction - Project Plan
 
+> Last Updated: 2026-01-02
+
+## Project Status: Sprint 3 (Documentation & Expansion)
+
+All core infrastructure is complete. The system is functional with end-to-end TOML-to-pipeline execution working. Current focus is on documentation and expanding module coverage.
+
+---
+
 ## Sprints Overview
 
-| Sprint | Duration | Theme | Key Deliverables |
-|--------|----------|-------|------------------|
-| **Sprint 1** | Week 1-2 | Foundations | Metadata, Registries, IR, Parser |
-| **Sprint 2** | Week 3-4 | Core Engine | Factory, CLI, Pilot Modules |
-| **Sprint 3** | Week 5+ | Polish | Validator rules, More modules, Docs |
+| Sprint | Status | Theme | Key Deliverables |
+|--------|--------|-------|------------------|
+| **Sprint 1** | ✅ Complete | Foundations | Metadata, Registries, IR, Parser |
+| **Sprint 2** | ✅ Complete | Core Engine | Factory, CLI, Validator, Schema Generator |
+| **Sprint 3** | 🔄 In Progress | Documentation & Expansion | Guides, Module Coverage, Examples |
 
 ---
 
-## Sprint 1: Foundations (Week 1-2)
+## Completed Work Summary
+
+### Sprint 1: Foundations ✅
+
+| Task | Description | Status |
+|------|-------------|--------|
+| A1 | Core Metadata Types | ✅ Complete |
+| B1 | PipelineDescription IR | ✅ Complete |
+| A2 | Module Registry | ✅ Complete |
+| B2 | TOML Parser | ✅ Complete |
+| A3 | FrameType Registry | ✅ Complete |
+| C1 | Validator Shell | ✅ Complete |
+| M1 | FileReaderModule Metadata | ✅ Complete |
+| M2 | H264Decoder Metadata | ✅ Complete |
+
+### Sprint 2: Core Engine ✅
+
+| Task | Description | Status |
+|------|-------------|--------|
+| D1 | Module Factory | ✅ Complete |
+| D2 | Property Binding System | ✅ Complete (20 modules, 32%) |
+| D3 | Multi-Pin Connection Support | ✅ Complete |
+| E1 | CLI Tool | ✅ Complete |
+| E2 | Schema Generator | ✅ Complete |
+| C2 | Validator: Module Checks | ✅ Complete |
+| C3 | Validator: Property Checks | ✅ Complete |
+| C4 | Validator: Connection Checks | ✅ Complete |
+| C5 | Validator: Graph Checks | ✅ Complete |
+| F1-F4 | Frame Type Metadata | ✅ Complete |
+
+### Current Module Registration Coverage
+
+**20 modules registered (32% of 62 total)**
+
+| Category | Registered Modules |
+|----------|-------------------|
+| Source | FileReaderModule, TestSignalGenerator, Mp4ReaderSource |
+| Sink | FileWriterModule, StatSink, Mp4WriterSink |
+| Transform | ImageDecoderCV, ImageEncoderCV, ImageResizeCV, RotateCV, ColorConversion, VirtualPTZ, TextOverlayXForm, BrightnessContrastControl |
+| Analytics | FaceDetectorXform, QRReader, CalcHistogramCV |
+| Utility | ValveModule, Split, Merge |
+
+---
+
+## Sprint 3: Documentation & Expansion (Current)
 
 ### Goals
-- ✅ All type definitions in place
-- ✅ Registries working with static registration
-- ✅ TOML parsing to IR
-- ✅ First modules with Metadata
+- Create comprehensive Developer Guide for module registration
+- Create Pipeline Author Guide with schema generator usage
+- Expand module registration coverage to 80%+
+- Create example pipelines demonstrating all registered modules
+- Fix any failing pipelines
 
-### Critical Path (Must Complete)
-| ID | Task | Days | Owner |
-|----|------|------|-------|
-| A1 | Core Metadata Types | 3 | Agent 1 |
-| B1 | PipelineDescription IR | 2 | Agent 2 |
-| A2 | Module Registry | 4 | Agent 1 |
-| B2 | TOML Parser | 4 | Agent 2 |
+### Phase 1: Documentation
 
-### Parallel Work
-| ID | Task | Days | Owner |
-|----|------|------|-------|
-| A3 | FrameType Registry | 3 | Agent 1 (after A1) |
-| C1 | Validator Shell | 1 | Agent 2 (after B1) |
-| M1 | FileReaderModule Metadata | 1 | Agent 3 (after A2) |
-| M2 | H264Decoder Metadata | 1 | Agent 3 (after A2) |
+| Task | Description | Status |
+|------|-------------|--------|
+| DOC1 | Developer Guide for Module Registration | 🔄 In Progress |
+| DOC2 | Pipeline Author Guide | ⏳ Pending |
+| DOC3 | Update README with quickstart | ⏳ Pending |
 
-### Sprint 1 Exit Criteria
-- [ ] `Metadata.h` compiles with all types
-- [ ] `REGISTER_MODULE` works in test
-- [ ] `TomlParser` parses reference pipeline.toml
-- [ ] At least 2 modules have Metadata
-- [ ] Unit tests pass
+### Phase 2: Module Registration Expansion
 
----
+| Batch | Modules | Status |
+|-------|---------|--------|
+| Batch 1 | Source modules (WebcamSource, RTSPClientSrc, etc.) | ⏳ Pending |
+| Batch 2 | Transform modules (AffineTransform, OverlayModule, etc.) | ⏳ Pending |
+| Batch 3 | Sink modules (RTSPPusher, etc.) | ⏳ Pending |
+| Batch 4 | CUDA modules (H264Encoder, JPEGDecoder, etc.) | ⏳ Pending |
+| Batch 5 | Remaining utility modules | ⏳ Pending |
 
-## Sprint 2: Core Engine (Week 3-4)
+### Phase 3: Example Pipelines
 
-### Goals
-- ✅ Working end-to-end flow: TOML → Run
-- ✅ CLI tool usable
-- ✅ All 5 pilot modules with Metadata
-- ✅ Schema generation working
-
-### Critical Path
-| ID | Task | Days | Owner |
-|----|------|------|-------|
-| D1 | Module Factory | 4 | Agent 1 |
-| E1 | CLI Tool | 3 | Agent 1 (after D1) |
-
-### Parallel Work
-| ID | Task | Days | Owner |
-|----|------|------|-------|
-| E2 | Schema Generator | 2 | Agent 2 |
-| M3 | FaceDetectorXform Metadata | 1 | Agent 3 |
-| M4 | QRReader Metadata | 1 | Agent 3 |
-| M5 | FileWriterModule Metadata | 1 | Agent 3 |
-| F1-F4 | Frame Type Metadata | 2 | Agent 2 |
-| C2 | Validator Module Checks | 1 | Agent 3 |
-| C3 | Validator Property Checks | 2 | Agent 3 |
-
-### Sprint 2 Exit Criteria
-- [ ] `aprapipes validate pipeline.toml` works
-- [ ] `aprapipes run pipeline.toml` starts pipeline
-- [ ] `aprapipes list-modules` shows all modules
-- [ ] All 5 pilot modules registered
-- [ ] Schema JSON generated at build time
-- [ ] Integration test passes
+| Task | Description | Status |
+|------|-------------|--------|
+| EX1 | Create examples for each batch | ⏳ Pending |
+| EX2 | Document not_working pipelines with reasons | ⏳ Pending |
+| EX3 | Fix identified pipeline issues | ⏳ Pending |
 
 ---
 
-## Sprint 3: Polish (Week 5+)
+## Working Pipelines
 
-### Goals
-- ✅ Validator catches real errors
-- ✅ Documentation generated
-- ✅ Ready for team use
-
-### Tasks
-| ID | Task | Days | Owner |
-|----|------|------|-------|
-| C4 | Validator Connection Checks | 2 | - |
-| C5 | Validator Graph Checks | 1 | - |
-| - | Add Metadata to more modules | ongoing | - |
-| - | Integration tests | 2 | - |
-| - | Documentation | 1 | - |
+| Pipeline | Description | Modules Used |
+|----------|-------------|--------------|
+| 01_simple_source_sink.toml | Minimal test | TestSignalGenerator → StatSink |
+| 02_three_module_chain.toml | Basic chain | FileReader → ImageDecoder → StatSink |
+| 03_split_pipeline.toml | Fan-out | TestSignal → Split → 2x StatSink |
+| 04_ptz_with_conversion.toml | Type bridge | TestSignal → ColorConversion → VirtualPTZ → StatSink |
+| 09_face_detection_demo.toml | Full demo | FileReader → ImageDecoder → FaceDetector → FileWriter |
 
 ---
 
-## Task Dependency Graph
+## Integration Test Status
+
+| Test | Description | Status |
+|------|-------------|--------|
+| FaceDetectionPipeline_FromToml | End-to-end face detection | ✅ Passing |
+| Validates | TOML parse → Build → Init → Run → Verify 5 faces | ✅ |
+
+---
+
+## Architecture Overview
 
 ```
-Week 1                    Week 2                    Week 3                    Week 4
-──────────────────────────────────────────────────────────────────────────────────────
-
-A1 ─────────► A2 ─────────────────────┐
-(Metadata)    (Registry)               │
-                │                      │
-                ├───► A3               │
-                │   (FrameTypes)       │
-                │                      │
-                ├───► M1, M2           │
-                │   (Modules)          │
-                │                      ▼
-B1 ─────────► B2 ─────────────────────► D1 ─────────► E1
-(IR)          (Parser)                  (Factory)     (CLI)
-                │                       
-                ├───► C1 ───► C2 ───► C3 ───► C4 ───► C5
-                │   (Validator Shell → Enhancements)
-                │
-                └───► E2
-                    (Schema Gen)
+┌─────────────────────────────────────────────────────────────────┐
+│                     TOML Pipeline File                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      TomlParser                                 │
+│  Parses TOML → PipelineDescription IR                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   PipelineValidator                             │
+│  C2: Module checks | C3: Property checks                        │
+│  C4: Connection checks | C5: Graph checks                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    ModuleRegistry                               │
+│  Looks up module metadata, creates instances via factory        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    ModuleFactory                                │
+│  Creates modules | Applies properties | Connects pipeline       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Running Pipeline                             │
+│  init() → run_all_threaded() → stop() → term()                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## GitHub Project Structure
+## File Structure
 
-### Columns
-1. **Backlog** - All tasks not yet started
-2. **In Progress** - Currently being worked on
-3. **Review** - PR submitted, awaiting review
-4. **Done** - Merged to main
-
-### Labels
-- `P0-critical` - Critical path, blocks others
-- `P1-high` - High priority, should be in sprint
-- `P2-medium` - Nice to have in sprint
-- `P3-low` - Can defer
-- `sprint-1` - Sprint 1 tasks
-- `sprint-2` - Sprint 2 tasks
-- `type:infrastructure` - Core framework
-- `type:module` - Module metadata
-- `type:tooling` - CLI, generators
-- `type:validation` - Validator rules
-
-### Milestones
-- **v0.1-foundations** - Sprint 1 complete
-- **v0.2-mvp** - Sprint 2 complete (MVP)
-- **v0.3-polish** - Sprint 3 complete
+```
+base/
+├── include/declarative/
+│   ├── Metadata.h                 # Core type definitions
+│   ├── ModuleRegistry.h           # Module registration
+│   ├── ModuleRegistrationBuilder.h # Fluent builder API
+│   ├── ModuleRegistrations.h      # Registration entry point
+│   ├── FrameTypeRegistry.h        # Frame type hierarchy
+│   ├── FrameTypeRegistrations.h   # Frame type entry point
+│   ├── PipelineDescription.h      # IR types
+│   ├── PipelineValidator.h        # Validation API
+│   ├── ModuleFactory.h            # Factory API
+│   ├── TomlParser.h               # TOML parsing
+│   ├── Issue.h                    # Error/warning types
+│   ├── PropertyMacros.h           # Property utilities
+│   └── PropertyValidators.h       # Property validation
+├── src/declarative/
+│   ├── ModuleRegistrations.cpp    # All module registrations
+│   ├── FrameTypeRegistrations.cpp # All frame type registrations
+│   ├── ModuleRegistry.cpp
+│   ├── FrameTypeRegistry.cpp
+│   ├── PipelineDescription.cpp
+│   ├── PipelineValidator.cpp
+│   ├── ModuleFactory.cpp
+│   └── TomlParser.cpp
+├── test/declarative/              # Unit tests (268 tests)
+└── tools/
+    ├── aprapipes_cli.cpp          # CLI tool
+    └── schema_generator.cpp       # Schema export
+```
 
 ---
 
-## Risk Register
+## CLI Commands
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| REGISTER_MODULE macro complexity | High | Test early with simple mock module |
-| ApraPipes connection API mismatch | Medium | Review existing test code patterns |
-| TOML library integration | Low | toml++ is header-only, easy to integrate |
-| Constexpr string handling | Medium | Use runtime strings in registry, constexpr in metadata |
+```bash
+# Validate a pipeline
+./aprapipes_cli validate pipeline.toml
+
+# Run a pipeline
+./aprapipes_cli run pipeline.toml
+
+# List registered modules
+./aprapipes_cli list-modules
+./aprapipes_cli list-modules --category Source
+./aprapipes_cli list-modules --tag opencv
+
+# Describe a module
+./aprapipes_cli describe FileReaderModule
+
+# Generate schema
+./apra_schema_generator --all --output-dir ./schema
+```
 
 ---
 
 ## Success Metrics
 
-### Sprint 1
-- [ ] 10+ unit tests passing
-- [ ] 2+ modules with Metadata
-- [ ] Parser handles all TOML features
+### Sprint 1 ✅
+- [x] 10+ unit tests passing (268 tests)
+- [x] 2+ modules with Metadata (20 modules)
+- [x] Parser handles all TOML features
 
-### Sprint 2 (MVP)
-- [ ] End-to-end test: TOML → running pipeline
-- [ ] 5 pilot modules registered
-- [ ] CLI has 4 commands working
-- [ ] Schema JSON < 100KB for 5 modules
+### Sprint 2 ✅
+- [x] End-to-end test: TOML → running pipeline
+- [x] 5+ pilot modules registered (20 modules)
+- [x] CLI has 4 commands working
+- [x] Schema JSON generation working
 
-### Sprint 3
-- [ ] Validator catches 80% of common errors
-- [ ] All existing modules have Metadata
-- [ ] Documentation generated and readable
+### Sprint 3 (In Progress)
+- [ ] Developer Guide complete
+- [ ] Pipeline Author Guide complete
+- [ ] 50+ modules registered (80%+ coverage)
+- [ ] Example pipelines for all module categories
+- [ ] Validator catches all common errors
+
+---
+
+## Next Steps
+
+1. **Documentation** - Complete developer and author guides
+2. **Module Expansion** - Register remaining 42 modules in batches
+3. **Examples** - Create example pipelines for each batch
+4. **Testing** - Move failing pipelines to not_working, fix issues
+5. **CI Verification** - Ensure all platforms pass
+
+---
+
+## Risk Register
+
+| Risk | Impact | Status |
+|------|--------|--------|
+| REGISTER_MODULE macro complexity | High | ✅ Resolved - Using fluent builder |
+| ApraPipes connection API mismatch | Medium | ✅ Resolved - appendModule ordering fixed |
+| Frame type compatibility | Medium | ✅ Resolved - Suggestion system implemented |
+| CUDA module registration | Low | ⏳ Pending - needs #ifdef guards |
