@@ -427,6 +427,7 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 			// parse - green
 			queryBeforeCacheStart = true;
 			freshParseStartTS = skipTS;
+
 		}
 		else
 		{
@@ -475,6 +476,7 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 	if (!foundRelevantFiles)
 	{
 		// seek fails
+		LOG_INFO<<"foundNoRelevantFiles:";
 		return false;
 	}
 
@@ -507,6 +509,7 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 	{
 		/*case: in case of fwd parse, cache might include last file on disk as relevant file,
 		but, if the skipTS is not in that file, the seek fails here. */
+		LOG_INFO<<"isSkipFileInCache:";
 		return false; // seek fails
 		//throw Mp4Exception(MP4_UNEXPECTED_STATE, "unexpected error happened while searching for file in cache.");
 	}
