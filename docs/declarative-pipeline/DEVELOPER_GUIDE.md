@@ -1,6 +1,6 @@
 # Developer Guide: Module Registration for Declarative Pipelines
 
-> Complete guide for ApraPipes developers on registering modules for use in declarative (TOML-based) pipelines.
+> Complete guide for ApraPipes developers on registering modules for use in declarative (JSON-based) pipelines.
 
 ---
 
@@ -24,27 +24,29 @@
 
 ## Overview
 
-The declarative pipeline system allows users to define video processing pipelines using TOML configuration files instead of writing C++ code. For this to work, each module must be **registered** with metadata describing:
+The declarative pipeline system allows users to define video processing pipelines using JSON configuration files instead of writing C++ code. For this to work, each module must be **registered** with metadata describing:
 
 - **Category**: Source, Sink, Transform, Analytics, or Utility
 - **Input/Output pins**: What frame types the module accepts and produces
-- **Properties**: Configuration options available in TOML
+- **Properties**: Configuration options available in JSON
 
 ### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     TOML Pipeline File                          │
-│  [modules.reader]                                               │
-│  type = "FileReaderModule"                                      │
-│    [modules.reader.props]                                       │
-│    strFullFileNameWithPattern = "./video.mp4"                   │
+│                     JSON Pipeline File                          │
+│  "modules": {                                                   │
+│    "reader": {                                                  │
+│      "type": "FileReaderModule",                                │
+│      "props": { "strFullFileNameWithPattern": "./video.mp4" }   │
+│    }                                                            │
+│  }                                                              │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      TomlParser                                 │
-│  Parses TOML → PipelineDescription                              │
+│                      JsonParser                                 │
+│  Parses JSON → PipelineDescription                              │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -60,7 +62,7 @@ The declarative pipeline system allows users to define video processing pipeline
 ┌─────────────────────────────────────────────────────────────────┐
 │                    ModuleFactory                                │
 │  Creates module instances using registered factory function     │
-│  Applies TOML properties via applyProperties()                  │
+│  Applies JSON properties via applyProperties()                  │
 │  Connects modules using setNext()                               │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -86,11 +88,16 @@ if (!registry.hasModule("YourModule")) {
 }
 ```
 
-That's it! Your module is now usable in TOML pipelines:
+That's it! Your module is now usable in JSON pipelines:
 
-```toml
-[modules.mymodule]
-type = "YourModule"
+```json
+{
+  "modules": {
+    "mymodule": {
+      "type": "YourModule"
+    }
+  }
+}
 ```
 
 ---
@@ -388,7 +395,7 @@ registerModule<ImageEncoderCV, ImageEncoderCVProps>()
 
 ## Adding applyProperties to Modules
 
-For full TOML property support, modules should implement `applyProperties()` in their Props class. This is done in the module's header file.
+For full JSON property support, modules should implement `applyProperties()` in their Props class. This is done in the module's header file.
 
 ### Example: Adding applyProperties to YourModuleProps
 
@@ -405,7 +412,7 @@ public:
 
     YourModuleProps() {}
 
-    // Add this method for TOML property binding
+    // Add this method for JSON property binding
     void applyProperties(const std::map<std::string, apra::ScalarPropertyValue>& props) {
         for (const auto& [key, value] : props) {
             if (key == "inputPath") {
@@ -477,45 +484,47 @@ This test compares registered modules against discovered Module subclasses.
 # Get module details
 ./build/aprapipes_cli describe YourModule
 
-# Validate a TOML pipeline using your module
-./build/aprapipes_cli validate your_pipeline.toml
+# Validate a JSON pipeline using your module
+./build/aprapipes_cli validate your_pipeline.json
 ```
 
 ### 4. Create a Test Pipeline
 
-Create `docs/declarative-pipeline/examples/working/test_yourmodule.toml`:
+Create `docs/declarative-pipeline/examples/working/test_yourmodule.json`:
 
-```toml
-[pipeline]
-name = "test_yourmodule"
-
-[modules.source]
-type = "TestSignalGenerator"
-  [modules.source.props]
-  width = 640
-  height = 480
-
-[modules.yourmodule]
-type = "YourModule"
-  [modules.yourmodule.props]
-  # your properties here
-
-[modules.sink]
-type = "StatSink"
-
-[[connections]]
-from = "source"
-to = "yourmodule"
-
-[[connections]]
-from = "yourmodule"
-to = "sink"
+```json
+{
+  "pipeline": {
+    "name": "test_yourmodule"
+  },
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "yourmodule": {
+      "type": "YourModule",
+      "props": {
+      }
+    },
+    "sink": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "yourmodule" },
+    { "from": "yourmodule", "to": "sink" }
+  ]
+}
 ```
 
 Test it:
 ```bash
-./build/aprapipes_cli validate docs/declarative-pipeline/examples/working/test_yourmodule.toml
-./build/aprapipes_cli run docs/declarative-pipeline/examples/working/test_yourmodule.toml
+./build/aprapipes_cli validate docs/declarative-pipeline/examples/working/test_yourmodule.json
+./build/aprapipes_cli run docs/declarative-pipeline/examples/working/test_yourmodule.json
 ```
 
 ---
@@ -528,7 +537,7 @@ Test it:
 2. Create your Props class extending `ModuleProps`
 3. Add `applyProperties()` to Props (optional but recommended)
 4. Register in `ModuleRegistrations.cpp`
-5. Test with a TOML pipeline
+5. Test with a JSON pipeline
 
 ### Scenario 2: Modifying an Existing Module
 
@@ -724,6 +733,6 @@ public:
 
 ## Next Steps
 
-- See [Pipeline Author Guide](./PIPELINE_AUTHOR_GUIDE.md) for TOML pipeline creation
+- See [Pipeline Author Guide](./PIPELINE_AUTHOR_GUIDE.md) for JSON pipeline creation
 - Run `./build/aprapipes_cli list-modules` to see all registered modules
 - Check `docs/declarative-pipeline/examples/` for example pipelines

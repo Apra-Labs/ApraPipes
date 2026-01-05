@@ -62,7 +62,6 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
-find_package(tomlplusplus CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 
@@ -262,7 +261,7 @@ SET(CORE_FILES
 	src/APHealthObject.cpp
 	src/declarative/ModuleRegistry.cpp
 	src/declarative/PipelineDescription.cpp
-	src/declarative/TomlParser.cpp
+	src/declarative/JsonParser.cpp
 	src/declarative/ModuleFactory.cpp
 	src/declarative/FrameTypeRegistry.cpp
 	src/declarative/FrameTypeRegistrations.cpp
@@ -337,7 +336,8 @@ SET(CORE_FILES_H
 	include/declarative/Metadata.h
 	include/declarative/ModuleRegistry.h
 	include/declarative/PipelineDescription.h
-	include/declarative/TomlParser.h
+	include/declarative/JsonParser.h
+	include/declarative/ParseResult.h
 	include/declarative/ModuleFactory.h
 	include/declarative/FrameTypeRegistry.h
 	include/declarative/PipelineValidator.h
@@ -587,9 +587,6 @@ ENDIF(ENABLE_LINUX)
 
 add_library(aprapipes STATIC ${SOURCE})
 
-# Link header-only libraries for include path propagation
-target_link_libraries(aprapipes PUBLIC tomlplusplus::tomlplusplus)
-
 link_directories(${GTK3_LIBRARY_DIRS})
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 target_include_directories ( aprapipes PRIVATE 
@@ -712,7 +709,7 @@ SET(UT_FILES
 	test/declarative/metadata_tests.cpp
 	test/declarative/module_registry_tests.cpp
 	test/declarative/pipeline_description_tests.cpp
-	test/declarative/toml_parser_tests.cpp
+	test/declarative/json_parser_tests.cpp
 	test/declarative/module_factory_tests.cpp
 	test/declarative/frame_type_registry_tests.cpp
 	test/declarative/pipeline_validator_tests.cpp
@@ -775,7 +772,6 @@ set(APRA_COMMON_LIBS
     bigint::bigint
     SFML::Audio
     whisper::whisper
-    tomlplusplus::tomlplusplus
 )
 
 IF(ENABLE_ARM64)

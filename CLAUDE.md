@@ -4,13 +4,19 @@
 
 ## 🎯 Project Goal
 
-Transform ApraPipes from imperative C++ construction to declarative TOML/YAML/JSON configuration. Users should be able to write:
+Transform ApraPipes from imperative C++ construction to declarative JSON configuration. Users should be able to write:
 
-```toml
-[modules.source]
-type = "FileReaderModule"
-  [modules.source.props]
-  path = "/video.mp4"
+```json
+{
+  "modules": {
+    "source": {
+      "type": "FileReaderModule",
+      "props": {
+        "path": "/video.mp4"
+      }
+    }
+  }
+}
 ```
 
 Instead of:
@@ -54,7 +60,7 @@ All task specs are in `docs/declarative-pipeline/tasks/`. **Always read the full
 | A2 | `A2-module-registry.md` | `ls base/include/declarative/ModuleRegistry.h` |
 | A3 | `A3-frame-type-registry.md` | `ls base/include/declarative/FrameTypeRegistry.h` |
 | B1 | `B1-pipeline-description-ir.md` | `ls base/include/declarative/PipelineDescription.h` |
-| B2 | `B2-toml-parser.md` | `ls base/include/declarative/TomlParser.h` |
+| J1 | `J1-json-parser.md` | `ls base/include/declarative/JsonParser.h` |
 | C1 | `C1-validator-shell.md` | `ls base/include/declarative/PipelineValidator.h` |
 | D1 | `D1-module-factory.md` | `ls base/include/declarative/ModuleFactory.h` |
 | E1 | `E1-cli-tool.md` | `ls base/tools/aprapipes_cli.cpp` |
@@ -74,7 +80,7 @@ cat docs/declarative-pipeline/PROGRESS.md
 cat docs/declarative-pipeline/tasks/README.md
 ```
 
-**Critical Path:** A1 → A2 → D1 → E1 (with B1 → B2 in parallel)
+**Critical Path:** A1 → A2 → D1 → E1 (with B1 → J1 in parallel)
 
 Pick the **first incomplete task** whose dependencies are complete.
 
@@ -312,7 +318,7 @@ ApraPipes/
 │   │       ├── FrameTypeRegistry.h  # A3
 │   │       ├── PipelineValidator.h  # C1
 │   │       ├── ModuleFactory.h      # D1
-│   │       └── TomlParser.h         # B2
+│   │       └── JsonParser.h         # J1
 │   ├── src/
 │   │   ├── Module.cpp         # Existing
 │   │   └── declarative/       # ★ NEW - All declarative pipeline sources
@@ -321,7 +327,7 @@ ApraPipes/
 │   │       ├── FrameTypeRegistry.cpp
 │   │       ├── PipelineValidator.cpp
 │   │       ├── ModuleFactory.cpp
-│   │       └── TomlParser.cpp
+│   │       └── JsonParser.cpp
 │   ├── test/
 │   │   ├── existing_tests.cpp # Existing
 │   │   └── declarative/       # ★ NEW - All declarative pipeline tests
@@ -329,13 +335,13 @@ ApraPipes/
 │   │       ├── pipeline_description_tests.cpp
 │   │       ├── module_registry_tests.cpp
 │   │       ├── frame_type_registry_tests.cpp
-│   │       ├── toml_parser_tests.cpp
+│   │       ├── json_parser_tests.cpp
 │   │       ├── pipeline_validator_tests.cpp
 │   │       └── module_factory_tests.cpp
 │   ├── tools/
 │   │   ├── aprapipes_cli.cpp        # E1 - CLI tool
 │   │   └── schema_generator.cpp     # E2 - Schema export
-│   ├── vcpkg.json             # Add: tomlplusplus, nlohmann-json
+│   ├── vcpkg.json             # Add: nlohmann-json
 │   └── CMakeLists.txt         # Add declarative sources
 ├── docs/
 │   └── declarative-pipeline/
@@ -381,7 +387,7 @@ set(DECLARATIVE_HEADERS
     include/declarative/FrameTypeRegistry.h
     include/declarative/PipelineValidator.h
     include/declarative/ModuleFactory.h
-    include/declarative/TomlParser.h
+    include/declarative/JsonParser.h
 )
 
 set(DECLARATIVE_SOURCES
@@ -390,7 +396,7 @@ set(DECLARATIVE_SOURCES
     src/declarative/FrameTypeRegistry.cpp
     src/declarative/PipelineValidator.cpp
     src/declarative/ModuleFactory.cpp
-    src/declarative/TomlParser.cpp
+    src/declarative/JsonParser.cpp
 )
 
 # Add to main library sources
@@ -411,7 +417,7 @@ set(DECLARATIVE_TESTS
     test/declarative/pipeline_description_tests.cpp
     test/declarative/module_registry_tests.cpp
     test/declarative/frame_type_registry_tests.cpp
-    test/declarative/toml_parser_tests.cpp
+    test/declarative/json_parser_tests.cpp
     test/declarative/pipeline_validator_tests.cpp
     test/declarative/module_factory_tests.cpp
 )
@@ -426,7 +432,6 @@ For vcpkg dependencies, add to `base/vcpkg.json`:
 ```json
 {
   "dependencies": [
-    "tomlplusplus",
     "nlohmann-json"
   ]
 }

@@ -1,6 +1,6 @@
-# Pipeline Author Guide: Creating TOML Pipelines
+# Pipeline Author Guide: Creating JSON Pipelines
 
-> Complete guide for creating video processing pipelines using TOML configuration files.
+> Complete guide for creating video processing pipelines using JSON configuration files.
 
 ---
 
@@ -8,7 +8,7 @@
 
 1. [Overview](#overview)
 2. [Getting Started](#getting-started)
-3. [TOML Pipeline Structure](#toml-pipeline-structure)
+3. [JSON Pipeline Structure](#json-pipeline-structure)
 4. [Module Configuration](#module-configuration)
 5. [Connections](#connections)
 6. [Using the CLI Tool](#using-the-cli-tool)
@@ -23,44 +23,47 @@
 
 ## Overview
 
-The declarative pipeline system allows you to define video processing pipelines using TOML configuration files instead of writing C++ code. This approach offers several benefits:
+The declarative pipeline system allows you to define video processing pipelines using JSON configuration files instead of writing C++ code. This approach offers several benefits:
 
 - **No compilation required** - Modify pipelines without rebuilding
-- **Readable configuration** - TOML is human-friendly
+- **Readable configuration** - JSON is human-friendly and widely supported
 - **Validation before runtime** - Catch errors early
 - **Documentation as code** - Pipeline files are self-documenting
+- **LLM-friendly** - Easy for AI assistants to generate and modify
 
 ### What You Can Do
 
-```toml
-# Read a video, detect faces, and write results
-[modules.reader]
-type = "FileReaderModule"
-  [modules.reader.props]
-  strFullFileNameWithPattern = "./video.mp4"
-
-[modules.decoder]
-type = "ImageDecoderCV"
-
-[modules.face_detect]
-type = "FaceDetectorXform"
-
-[modules.writer]
-type = "FileWriterModule"
-  [modules.writer.props]
-  strFullFileNameWithPattern = "./faces_output.raw"
-
-[[connections]]
-from = "reader"
-to = "decoder"
-
-[[connections]]
-from = "decoder"
-to = "face_detect"
-
-[[connections]]
-from = "face_detect"
-to = "writer"
+```json
+{
+  "pipeline": {
+    "description": "Read a video, detect faces, and write results"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./video.mp4"
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "face_detect": {
+      "type": "FaceDetectorXform"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./faces_output.raw"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "face_detect" },
+    { "from": "face_detect", "to": "writer" }
+  ]
+}
 ```
 
 ---
@@ -75,81 +78,94 @@ to = "writer"
 
 ### Quick Start
 
-1. **Create a simple pipeline file** (`my_pipeline.toml`):
+1. **Create a simple pipeline file** (`my_pipeline.json`):
 
-```toml
-[pipeline]
-name = "my_first_pipeline"
-
-[modules.generator]
-type = "TestSignalGenerator"
-  [modules.generator.props]
-  width = 640
-  height = 480
-
-[modules.stats]
-type = "StatSink"
-
-[[connections]]
-from = "generator"
-to = "stats"
+```json
+{
+  "pipeline": {
+    "name": "my_first_pipeline"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "stats" }
+  ]
+}
 ```
 
 2. **Validate the pipeline**:
 
 ```bash
-./aprapipes_cli validate my_pipeline.toml
+./aprapipes_cli validate my_pipeline.json
 ```
 
 3. **Run the pipeline**:
 
 ```bash
-./aprapipes_cli run my_pipeline.toml
+./aprapipes_cli run my_pipeline.json
 ```
 
 ---
 
-## TOML Pipeline Structure
+## JSON Pipeline Structure
 
-A pipeline TOML file has three main sections:
+A pipeline JSON file has three main sections:
 
 ### 1. Pipeline Metadata (Optional)
 
-```toml
-[pipeline]
-name = "face_detection_pipeline"
-description = "Detects faces in video files"
+```json
+{
+  "pipeline": {
+    "name": "face_detection_pipeline",
+    "description": "Detects faces in video files"
+  }
+}
 ```
 
 ### 2. Module Definitions
 
-```toml
-[modules.reader]
-type = "FileReaderModule"
-  [modules.reader.props]
-  strFullFileNameWithPattern = "./video.mp4"
-  readLoop = false
-
-[modules.decoder]
-type = "ImageDecoderCV"
-# No props needed for this module
-
-[modules.writer]
-type = "FileWriterModule"
-  [modules.writer.props]
-  strFullFileNameWithPattern = "./output.raw"
+```json
+{
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./video.mp4",
+        "readLoop": false
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./output.raw"
+      }
+    }
+  }
+}
 ```
 
 ### 3. Connections
 
-```toml
-[[connections]]
-from = "reader"
-to = "decoder"
-
-[[connections]]
-from = "decoder"
-to = "writer"
+```json
+{
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "writer" }
+  ]
+}
 ```
 
 ---
@@ -160,9 +176,14 @@ to = "writer"
 
 Every module needs at least a `type`:
 
-```toml
-[modules.my_instance_name]
-type = "ModuleTypeName"
+```json
+{
+  "modules": {
+    "my_instance_name": {
+      "type": "ModuleTypeName"
+    }
+  }
+}
 ```
 
 - **Instance name** (`my_instance_name`): Your unique identifier for this module instance
@@ -172,23 +193,29 @@ type = "ModuleTypeName"
 
 Properties are set in a `props` subsection:
 
-```toml
-[modules.reader]
-type = "FileReaderModule"
-  [modules.reader.props]
-  strFullFileNameWithPattern = "./data/video.mp4"
-  readLoop = true
-  startIndex = 0
+```json
+{
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/video.mp4",
+        "readLoop": true,
+        "startIndex": 0
+      }
+    }
+  }
+}
 ```
 
 ### Property Types
 
-| Type | TOML Syntax | Example |
+| Type | JSON Syntax | Example |
 |------|-------------|---------|
-| String | `"value"` or `'value'` | `path = "./video.mp4"` |
-| Integer | `123` | `width = 640` |
-| Float | `1.5` | `angle = 45.0` |
-| Boolean | `true` or `false` | `readLoop = true` |
+| String | `"value"` | `"path": "./video.mp4"` |
+| Integer | `123` | `"width": 640` |
+| Float | `1.5` | `"angle": 45.0` |
+| Boolean | `true` or `false` | `"readLoop": true` |
 
 ### Finding Available Modules
 
@@ -225,67 +252,60 @@ Output shows:
 
 ### Basic Connection
 
-```toml
-[[connections]]
-from = "source_module"
-to = "destination_module"
+```json
+{
+  "connections": [
+    { "from": "source_module", "to": "destination_module" }
+  ]
+}
 ```
 
 ### Connection with Pin Names
 
 For modules with multiple inputs or outputs, specify pin names:
 
-```toml
-[[connections]]
-from = "source_module.output_pin"
-to = "destination_module.input_pin"
+```json
+{
+  "connections": [
+    { "from": "source_module.output_pin", "to": "destination_module.input_pin" }
+  ]
+}
 ```
 
 ### Fan-Out (One to Many)
 
-```toml
-[modules.source]
-type = "TestSignalGenerator"
-
-[modules.sink1]
-type = "StatSink"
-
-[modules.sink2]
-type = "StatSink"
-
-[modules.splitter]
-type = "Split"
-
-[[connections]]
-from = "source"
-to = "splitter"
-
-[[connections]]
-from = "splitter.output_1"
-to = "sink1"
-
-[[connections]]
-from = "splitter.output_2"
-to = "sink2"
+```json
+{
+  "modules": {
+    "source": { "type": "TestSignalGenerator" },
+    "sink1": { "type": "StatSink" },
+    "sink2": { "type": "StatSink" },
+    "splitter": { "type": "Split" }
+  },
+  "connections": [
+    { "from": "source", "to": "splitter" },
+    { "from": "splitter.output_1", "to": "sink1" },
+    { "from": "splitter.output_2", "to": "sink2" }
+  ]
+}
 ```
 
 ### Fan-In (Many to One)
 
-```toml
-[modules.merge]
-type = "Merge"
-
-[[connections]]
-from = "source1"
-to = "merge.input_1"
-
-[[connections]]
-from = "source2"
-to = "merge.input_2"
-
-[[connections]]
-from = "merge"
-to = "sink"
+```json
+{
+  "modules": {
+    "source1": { "type": "TestSignalGenerator" },
+    "source2": { "type": "TestSignalGenerator" },
+    "merge": { "type": "Merge" },
+    "sink": { "type": "StatSink" }
+  },
+  "connections": [
+    { "from": "source1", "to": "merge.input_1" },
+    { "from": "source2", "to": "merge.input_2" },
+    { "from": "merge", "to": "sink" }
+  ]
+}
 ```
 
 ---
@@ -296,10 +316,10 @@ to = "sink"
 
 ```bash
 # Validate a pipeline (check for errors without running)
-./aprapipes_cli validate pipeline.toml
+./aprapipes_cli validate pipeline.json
 
 # Run a pipeline
-./aprapipes_cli run pipeline.toml
+./aprapipes_cli run pipeline.json
 
 # List registered modules
 ./aprapipes_cli list-modules
@@ -314,10 +334,10 @@ to = "sink"
 
 ### Runtime Property Overrides
 
-Override properties without editing the TOML file:
+Override properties without editing the JSON file:
 
 ```bash
-./aprapipes_cli run pipeline.toml --set reader.strFullFileNameWithPattern="./other_video.mp4"
+./aprapipes_cli run pipeline.json --set reader.strFullFileNameWithPattern="./other_video.mp4"
 ```
 
 ### Exit Codes
@@ -438,31 +458,26 @@ Frame (root - accepts anything)
 
 **Solution**: Use ColorConversion module:
 
-```toml
-[modules.source]
-type = "TestSignalGenerator"
-  [modules.source.props]
-  width = 640
-  height = 480
-# Outputs: RawImagePlanar
-
-[modules.convert]
-type = "ColorConversion"
-  [modules.convert.props]
-  conversionType = "YUV420PLANAR_TO_RGB"
-# Converts: RawImagePlanar → RawImage
-
-[modules.ptz]
-type = "VirtualPTZ"
-# Expects: RawImage
-
-[[connections]]
-from = "source"
-to = "convert"
-
-[[connections]]
-from = "convert"
-to = "ptz"
+```json
+{
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": { "width": 640, "height": 480 }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": { "conversionType": "YUV420PLANAR_TO_RGB" }
+    },
+    "ptz": {
+      "type": "VirtualPTZ"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "ptz" }
+  ]
+}
 ```
 
 ### Validation Suggestions
@@ -473,12 +488,7 @@ When validation detects a type mismatch, it suggests bridge modules:
 [ERROR] E304 @ connections: Frame type mismatch: generator outputs 'RawImagePlanar',
         but ptz expects [RawImage]
 
-  SUGGESTION: Insert ColorConversion module to convert RawImagePlanar → RawImage:
-
-  [modules.convert_generator_to_ptz]
-  type = "ColorConversion"
-    [modules.convert_generator_to_ptz.props]
-    conversionType = "YUV420PLANAR_TO_RGB"
+  SUGGESTION: Insert ColorConversion module to convert RawImagePlanar → RawImage
 ```
 
 ---
@@ -487,180 +497,156 @@ When validation detects a type mismatch, it suggests bridge modules:
 
 ### Pattern 1: Simple Source to Sink
 
-```toml
-[modules.source]
-type = "TestSignalGenerator"
-  [modules.source.props]
-  width = 640
-  height = 480
-
-[modules.sink]
-type = "StatSink"
-
-[[connections]]
-from = "source"
-to = "sink"
+```json
+{
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": { "width": 640, "height": 480 }
+    },
+    "sink": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "sink" }
+  ]
+}
 ```
 
 ### Pattern 2: File Processing Chain
 
-```toml
-[modules.reader]
-type = "FileReaderModule"
-  [modules.reader.props]
-  strFullFileNameWithPattern = "./input.jpg"
-  readLoop = false
-  outputFrameType = "EncodedImage"
-
-[modules.decoder]
-type = "ImageDecoderCV"
-
-[modules.processor]
-type = "RotateCV"
-  [modules.processor.props]
-  angle = 90.0
-
-[modules.encoder]
-type = "ImageEncoderCV"
-
-[modules.writer]
-type = "FileWriterModule"
-  [modules.writer.props]
-  strFullFileNameWithPattern = "./output.jpg"
-
-[[connections]]
-from = "reader"
-to = "decoder"
-
-[[connections]]
-from = "decoder"
-to = "processor"
-
-[[connections]]
-from = "processor"
-to = "encoder"
-
-[[connections]]
-from = "encoder"
-to = "writer"
+```json
+{
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./input.jpg",
+        "readLoop": false,
+        "outputFrameType": "EncodedImage"
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "processor": {
+      "type": "RotateCV",
+      "props": { "angle": 90.0 }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": { "strFullFileNameWithPattern": "./output.jpg" }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "processor" },
+    { "from": "processor", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}
 ```
 
 ### Pattern 3: Video with Analytics
 
-```toml
-[modules.reader]
-type = "FileReaderModule"
-  [modules.reader.props]
-  strFullFileNameWithPattern = "./video.jpg"
-  outputFrameType = "EncodedImage"
-
-[modules.decoder]
-type = "ImageDecoderCV"
-
-[modules.face_detect]
-type = "FaceDetectorXform"
-
-[modules.writer]
-type = "FileWriterModule"
-  [modules.writer.props]
-  strFullFileNameWithPattern = "./faces.raw"
-
-[[connections]]
-from = "reader"
-to = "decoder"
-
-[[connections]]
-from = "decoder"
-to = "face_detect"
-
-[[connections]]
-from = "face_detect"
-to = "writer"
+```json
+{
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./video.jpg",
+        "outputFrameType": "EncodedImage"
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "face_detect": {
+      "type": "FaceDetectorXform"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": { "strFullFileNameWithPattern": "./faces.raw" }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "face_detect" },
+    { "from": "face_detect", "to": "writer" }
+  ]
+}
 ```
 
 ### Pattern 4: Type Conversion Bridge
 
-```toml
-# When you need to connect modules with incompatible types
-[modules.source]
-type = "TestSignalGenerator"
-  [modules.source.props]
-  width = 640
-  height = 480
-
-# TestSignalGenerator outputs RawImagePlanar
-# VirtualPTZ expects RawImage
-# Solution: ColorConversion bridge
-
-[modules.convert]
-type = "ColorConversion"
-  [modules.convert.props]
-  conversionType = "YUV420PLANAR_TO_RGB"
-
-[modules.ptz]
-type = "VirtualPTZ"
-
-[modules.sink]
-type = "StatSink"
-
-[[connections]]
-from = "source"
-to = "convert"
-
-[[connections]]
-from = "convert"
-to = "ptz"
-
-[[connections]]
-from = "ptz"
-to = "sink"
+```json
+{
+  "pipeline": {
+    "description": "When you need to connect modules with incompatible types"
+  },
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": { "width": 640, "height": 480 }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": { "conversionType": "YUV420PLANAR_TO_RGB" }
+    },
+    "ptz": {
+      "type": "VirtualPTZ"
+    },
+    "sink": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "ptz" },
+    { "from": "ptz", "to": "sink" }
+  ]
+}
 ```
 
 ### Pattern 5: Split and Merge
 
-```toml
-[modules.source]
-type = "TestSignalGenerator"
-  [modules.source.props]
-  width = 640
-  height = 480
-
-[modules.split]
-type = "Split"
-
-[modules.process1]
-type = "RotateCV"
-  [modules.process1.props]
-  angle = 45.0
-
-[modules.process2]
-type = "BrightnessContrastControl"
-
-[modules.sink1]
-type = "StatSink"
-
-[modules.sink2]
-type = "StatSink"
-
-[[connections]]
-from = "source"
-to = "split"
-
-[[connections]]
-from = "split.output_1"
-to = "process1"
-
-[[connections]]
-from = "split.output_2"
-to = "process2"
-
-[[connections]]
-from = "process1"
-to = "sink1"
-
-[[connections]]
-from = "process2"
-to = "sink2"
+```json
+{
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": { "width": 640, "height": 480 }
+    },
+    "split": {
+      "type": "Split"
+    },
+    "process1": {
+      "type": "RotateCV",
+      "props": { "angle": 45.0 }
+    },
+    "process2": {
+      "type": "BrightnessContrastControl"
+    },
+    "sink1": {
+      "type": "StatSink"
+    },
+    "sink2": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "split" },
+    { "from": "split.output_1", "to": "process1" },
+    { "from": "split.output_2", "to": "process2" },
+    { "from": "process1", "to": "sink1" },
+    { "from": "process2", "to": "sink2" }
+  ]
+}
 ```
 
 ---
@@ -670,45 +656,49 @@ to = "sink2"
 ### Required vs Optional Properties
 
 **Required properties** must be set:
-```toml
-[modules.reader.props]
-strFullFileNameWithPattern = "./video.mp4"  # Required - no default
+```json
+{
+  "props": {
+    "strFullFileNameWithPattern": "./video.mp4"
+  }
+}
 ```
 
 **Optional properties** have defaults:
-```toml
-[modules.reader.props]
-readLoop = true  # Optional - default is true
+```json
+{
+  "props": {
+    "readLoop": true
+  }
+}
 ```
 
 ### Property Value Types
 
-```toml
-[modules.example.props]
-# String (use quotes)
-path = "./data/video.mp4"
-
-# Integer (no quotes)
-width = 640
-height = 480
-
-# Float (use decimal point)
-angle = 45.0
-scale = 1.5
-
-# Boolean (true/false)
-enabled = true
-loop = false
+```json
+{
+  "props": {
+    "path": "./data/video.mp4",
+    "width": 640,
+    "height": 480,
+    "angle": 45.0,
+    "scale": 1.5,
+    "enabled": true,
+    "loop": false
+  }
+}
 ```
 
 ### Enum Properties
 
 Some properties accept only specific string values:
 
-```toml
-[modules.convert.props]
-# Must be one of: RGB_TO_MONO, BGR_TO_RGB, YUV420PLANAR_TO_RGB, etc.
-conversionType = "YUV420PLANAR_TO_RGB"
+```json
+{
+  "props": {
+    "conversionType": "YUV420PLANAR_TO_RGB"
+  }
+}
 ```
 
 Use `./aprapipes_cli describe ModuleName` to see allowed values.
@@ -717,12 +707,15 @@ Use `./aprapipes_cli describe ModuleName` to see allowed values.
 
 Some properties can be changed at runtime (marked as "dynamic" in module descriptions):
 
-```toml
-[modules.ptz.props]
-roiX = 0.1
-roiY = 0.1
-roiWidth = 0.5
-roiHeight = 0.5
+```json
+{
+  "props": {
+    "roiX": 0.1,
+    "roiY": 0.1,
+    "roiWidth": 0.5,
+    "roiHeight": 0.5
+  }
+}
 ```
 
 ---
@@ -760,10 +753,13 @@ roiHeight = 0.5
 
 **Cause**: A required property was not set.
 
-**Solution**: Add the property to your TOML file:
-```toml
-[modules.reader.props]
-strFullFileNameWithPattern = "./video.mp4"  # Add this
+**Solution**: Add the property to your JSON file:
+```json
+{
+  "props": {
+    "strFullFileNameWithPattern": "./video.mp4"
+  }
+}
 ```
 
 ### "Cycle detected in pipeline"
@@ -781,7 +777,7 @@ strFullFileNameWithPattern = "./video.mp4"  # Add this
 
 **Solutions**:
 1. Check file paths are correct and files exist
-2. Set `readLoop = true` for testing
+2. Set `"readLoop": true` for testing
 3. Check output file permissions
 
 ---
@@ -792,20 +788,20 @@ Example pipelines are in `docs/declarative-pipeline/examples/`:
 
 | File | Description |
 |------|-------------|
-| `01_simple_source_sink.toml` | Minimal pipeline (TestSignal → StatSink) |
-| `02_three_module_chain.toml` | FileReader → ImageDecoder → StatSink |
-| `03_split_pipeline.toml` | Fan-out with Split module |
-| `04_ptz_with_conversion.toml` | Type bridge example |
-| `09_face_detection_demo.toml` | Full face detection pipeline |
+| `01_simple_source_sink.json` | Minimal pipeline (TestSignal → StatSink) |
+| `02_three_module_chain.json` | FileReader → ImageDecoder → StatSink |
+| `03_split_pipeline.json` | Fan-out with Split module |
+| `04_ptz_with_conversion.json` | Type bridge example |
+| `09_face_detection_demo.json` | Full face detection pipeline |
 
 ### Running Examples
 
 ```bash
 # Validate an example
-./aprapipes_cli validate docs/declarative-pipeline/examples/working/01_simple_source_sink.toml
+./aprapipes_cli validate docs/declarative-pipeline/examples/working/01_simple_source_sink.json
 
 # Run an example
-./aprapipes_cli run docs/declarative-pipeline/examples/working/01_simple_source_sink.toml
+./aprapipes_cli run docs/declarative-pipeline/examples/working/01_simple_source_sink.json
 ```
 
 ---
@@ -815,8 +811,8 @@ Example pipelines are in `docs/declarative-pipeline/examples/`:
 ### CLI Commands
 
 ```bash
-./aprapipes_cli validate <file.toml>        # Validate pipeline
-./aprapipes_cli run <file.toml>             # Run pipeline
+./aprapipes_cli validate <file.json>        # Validate pipeline
+./aprapipes_cli run <file.json>             # Run pipeline
 ./aprapipes_cli list-modules                # List all modules
 ./aprapipes_cli list-modules --category X   # Filter by category
 ./aprapipes_cli describe ModuleName         # Module details

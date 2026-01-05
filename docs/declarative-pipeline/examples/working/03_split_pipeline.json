@@ -1,0 +1,29 @@
+{
+  "pipeline": {
+    "name": "split_pipeline",
+    "description": "Branching pipeline: TestSignalGenerator -> Split -> 2x StatSink"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "splitter": {
+      "type": "Split"
+    },
+    "stats1": {
+      "type": "StatSink"
+    },
+    "stats2": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "splitter" },
+    { "from": "splitter.output_1", "to": "stats1" },
+    { "from": "splitter.output_2", "to": "stats2" }
+  ]
+}

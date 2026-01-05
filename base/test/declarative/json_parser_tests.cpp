@@ -1,6 +1,12 @@
+// ============================================================
+// File: json_parser_tests.cpp
+// Unit tests for JSON pipeline parser
+// Task J2: JSON Parser Tests
+// ============================================================
+
 #include "stdafx.h"
 #include <boost/test/unit_test.hpp>
-#include "declarative/TomlParser.h"
+#include "declarative/JsonParser.h"
 #include <fstream>
 #include <cstdlib>
 
@@ -26,7 +32,7 @@ std::string getTestDataPath(const std::string& filename) {
 }
 }
 
-BOOST_AUTO_TEST_SUITE(toml_parser_tests)
+BOOST_AUTO_TEST_SUITE(json_parser_tests)
 
 // ============================================================================
 // Basic Parsing Tests
@@ -34,8 +40,7 @@ BOOST_AUTO_TEST_SUITE(toml_parser_tests)
 
 BOOST_AUTO_TEST_CASE(ParseMinimalPipeline)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("minimal.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("minimal.json"));
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.modules.size(), 1);
@@ -46,8 +51,7 @@ BOOST_AUTO_TEST_CASE(ParseMinimalPipeline)
 
 BOOST_AUTO_TEST_CASE(ParseCompletePipeline)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("complete.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("complete.json"));
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.modules.size(), 3);
@@ -56,7 +60,7 @@ BOOST_AUTO_TEST_CASE(ParseCompletePipeline)
     // Check settings
     BOOST_CHECK_EQUAL(result.description.settings.name, "TestPipeline");
     BOOST_CHECK_EQUAL(result.description.settings.version, "1.0");
-    BOOST_CHECK_EQUAL(result.description.settings.description, "A complete test pipeline");
+    BOOST_CHECK_EQUAL(result.description.settings.description, "A complete test pipeline with multiple modules and connections");
     BOOST_CHECK_EQUAL(result.description.settings.queue_size, 20);
     BOOST_CHECK_EQUAL(result.description.settings.on_error, "stop_pipeline");
     BOOST_CHECK_EQUAL(result.description.settings.auto_start, true);
@@ -64,8 +68,7 @@ BOOST_AUTO_TEST_CASE(ParseCompletePipeline)
 
 BOOST_AUTO_TEST_CASE(ParseAllPropertyTypes)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("all_property_types.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("all_property_types.json"));
 
     BOOST_CHECK(result.success);
     BOOST_REQUIRE_EQUAL(result.description.modules.size(), 1);
@@ -114,8 +117,7 @@ BOOST_AUTO_TEST_CASE(ParseAllPropertyTypes)
 
 BOOST_AUTO_TEST_CASE(ParseConnections)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("complete.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("complete.json"));
 
     BOOST_CHECK(result.success);
     BOOST_REQUIRE_EQUAL(result.description.connections.size(), 2);
@@ -139,18 +141,15 @@ BOOST_AUTO_TEST_CASE(ParseConnections)
 
 BOOST_AUTO_TEST_CASE(SyntaxErrorReporting)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("syntax_error.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("syntax_error.json"));
 
     BOOST_CHECK(!result.success);
     BOOST_CHECK(!result.error.empty());
-    BOOST_CHECK(result.error_line > 0);  // Should report line number
 }
 
 BOOST_AUTO_TEST_CASE(MissingTypeField)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("missing_type.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("missing_type.json"));
 
     BOOST_CHECK(!result.success);
     BOOST_CHECK(result.error.find("type") != std::string::npos);
@@ -158,8 +157,7 @@ BOOST_AUTO_TEST_CASE(MissingTypeField)
 
 BOOST_AUTO_TEST_CASE(FileNotFound)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile("nonexistent_file.toml");
+    auto result = apra::JsonParser::parseFile("nonexistent_file.json");
 
     BOOST_CHECK(!result.success);
     BOOST_CHECK(!result.error.empty());
@@ -167,9 +165,8 @@ BOOST_AUTO_TEST_CASE(FileNotFound)
 
 BOOST_AUTO_TEST_CASE(EmptyFile)
 {
-    apra::TomlParser parser;
-    // Parse empty TOML string
-    auto result = parser.parseString("");
+    // Parse empty JSON object
+    auto result = apra::JsonParser::parseString("{}");
 
     // Empty file should be valid (just an empty pipeline)
     BOOST_CHECK(result.success);
@@ -183,23 +180,24 @@ BOOST_AUTO_TEST_CASE(EmptyFile)
 
 BOOST_AUTO_TEST_CASE(ParseFromString)
 {
-    apra::TomlParser parser;
+    std::string json = R"({
+        "pipeline": {
+            "name": "InlineTest"
+        },
+        "modules": {
+            "source": {
+                "type": "FileReaderModule",
+                "props": {
+                    "path": "/video.mp4"
+                }
+            }
+        },
+        "connections": [
+            { "from": "source.output", "to": "decoder.input" }
+        ]
+    })";
 
-    std::string toml = R"(
-[pipeline]
-name = "InlineTest"
-
-[modules.source]
-type = "FileReaderModule"
-    [modules.source.props]
-    path = "/video.mp4"
-
-[[connections]]
-from = "source.output"
-to = "decoder.input"
-)";
-
-    auto result = parser.parseString(toml, "inline_test");
+    auto result = apra::JsonParser::parseString(json, "inline_test");
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.settings.name, "InlineTest");
@@ -210,18 +208,18 @@ to = "decoder.input"
 
 BOOST_AUTO_TEST_CASE(ParseStringWithSyntaxError)
 {
-    apra::TomlParser parser;
+    std::string json = R"({
+        "modules": {
+            "broken": {
+                "type": "unclosed
+            }
+        }
+    })";
 
-    std::string toml = R"(
-[modules.broken]
-type = "unclosed
-)";
-
-    auto result = parser.parseString(toml);
+    auto result = apra::JsonParser::parseString(json);
 
     BOOST_CHECK(!result.success);
     BOOST_CHECK(!result.error.empty());
-    BOOST_CHECK(result.error_line > 0);
 }
 
 // ============================================================================
@@ -230,21 +228,19 @@ type = "unclosed
 
 BOOST_AUTO_TEST_CASE(SourceTrackingFromFile)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseFile(getTestDataPath("minimal.toml"));
+    auto result = apra::JsonParser::parseFile(getTestDataPath("minimal.json"));
 
     BOOST_CHECK(result.success);
-    BOOST_CHECK_EQUAL(result.description.source_format, "toml");
-    BOOST_CHECK(result.description.source_path.find("minimal.toml") != std::string::npos);
+    BOOST_CHECK_EQUAL(result.description.source_format, "json");
+    BOOST_CHECK(result.description.source_path.find("minimal.json") != std::string::npos);
 }
 
 BOOST_AUTO_TEST_CASE(SourceTrackingFromString)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseString("[modules.test]\ntype = \"Test\"", "custom_source");
+    auto result = apra::JsonParser::parseString(R"({"modules": {"test": {"type": "Test"}}})", "custom_source");
 
     BOOST_CHECK(result.success);
-    BOOST_CHECK_EQUAL(result.description.source_format, "toml");
+    BOOST_CHECK_EQUAL(result.description.source_format, "json");
     BOOST_CHECK_EQUAL(result.description.source_path, "custom_source");
 }
 
@@ -254,16 +250,14 @@ BOOST_AUTO_TEST_CASE(SourceTrackingFromString)
 
 BOOST_AUTO_TEST_CASE(FormatName)
 {
-    apra::TomlParser parser;
-    BOOST_CHECK_EQUAL(parser.formatName(), "toml");
+    BOOST_CHECK_EQUAL(apra::JsonParser::formatName(), "json");
 }
 
 BOOST_AUTO_TEST_CASE(FileExtensions)
 {
-    apra::TomlParser parser;
-    auto extensions = parser.fileExtensions();
+    auto extensions = apra::JsonParser::fileExtensions();
     BOOST_REQUIRE_EQUAL(extensions.size(), 1);
-    BOOST_CHECK_EQUAL(extensions[0], ".toml");
+    BOOST_CHECK_EQUAL(extensions[0], ".json");
 }
 
 // ============================================================================
@@ -272,11 +266,13 @@ BOOST_AUTO_TEST_CASE(FileExtensions)
 
 BOOST_AUTO_TEST_CASE(ModuleWithNoProps)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseString(R"(
-[modules.simple]
-type = "SimpleModule"
-)");
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "simple": {
+                "type": "SimpleModule"
+            }
+        }
+    })");
 
     BOOST_CHECK(result.success);
     BOOST_REQUIRE_EQUAL(result.description.modules.size(), 1);
@@ -285,12 +281,12 @@ type = "SimpleModule"
 
 BOOST_AUTO_TEST_CASE(PipelineWithOnlySettings)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseString(R"(
-[pipeline]
-name = "EmptyPipeline"
-version = "2.0"
-)");
+    auto result = apra::JsonParser::parseString(R"({
+        "pipeline": {
+            "name": "EmptyPipeline",
+            "version": "2.0"
+        }
+    })");
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.settings.name, "EmptyPipeline");
@@ -298,31 +294,15 @@ version = "2.0"
     BOOST_CHECK_EQUAL(result.description.modules.size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(MultilineStrings)
-{
-    apra::TomlParser parser;
-    auto result = parser.parseString(R"(
-[modules.test]
-type = "TestModule"
-    [modules.test.props]
-    description = """
-This is a
-multiline string
-"""
-)");
-
-    BOOST_CHECK(result.success);
-    auto& desc = std::get<std::string>(result.description.modules[0].properties.at("description"));
-    BOOST_CHECK(desc.find("\n") != std::string::npos);
-}
-
 BOOST_AUTO_TEST_CASE(DefaultSettings)
 {
-    apra::TomlParser parser;
-    auto result = parser.parseString(R"(
-[modules.test]
-type = "TestModule"
-)");
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "test": {
+                "type": "TestModule"
+            }
+        }
+    })");
 
     BOOST_CHECK(result.success);
     // Should have default values
@@ -330,6 +310,132 @@ type = "TestModule"
     BOOST_CHECK_EQUAL(result.description.settings.queue_size, 10);
     BOOST_CHECK_EQUAL(result.description.settings.on_error, "restart_module");
     BOOST_CHECK_EQUAL(result.description.settings.auto_start, false);
+}
+
+// ============================================================================
+// JSON-Specific Tests
+// ============================================================================
+
+BOOST_AUTO_TEST_CASE(CommentFieldsIgnored)
+{
+    // Fields starting with # are treated as comments and ignored in props
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "test": {
+                "type": "TestModule",
+                "props": {
+                    "#comment": "This is a comment field",
+                    "value": 42
+                }
+            }
+        }
+    })");
+
+    BOOST_CHECK(result.success);
+    BOOST_REQUIRE_EQUAL(result.description.modules.size(), 1);
+    // Comment field should not be in properties
+    BOOST_CHECK(result.description.modules[0].properties.find("#comment") ==
+                result.description.modules[0].properties.end());
+    // Regular property should be present
+    BOOST_CHECK_EQUAL(std::get<int64_t>(result.description.modules[0].properties.at("value")), 42);
+}
+
+BOOST_AUTO_TEST_CASE(CamelCaseAndSnakeCaseSettings)
+{
+    // Test camelCase
+    auto result1 = apra::JsonParser::parseString(R"({
+        "settings": {
+            "queueSize": 30,
+            "onError": "stop",
+            "autoStart": true
+        },
+        "modules": {}
+    })");
+
+    BOOST_CHECK(result1.success);
+    BOOST_CHECK_EQUAL(result1.description.settings.queue_size, 30);
+    BOOST_CHECK_EQUAL(result1.description.settings.on_error, "stop");
+    BOOST_CHECK_EQUAL(result1.description.settings.auto_start, true);
+
+    // Test snake_case
+    auto result2 = apra::JsonParser::parseString(R"({
+        "settings": {
+            "queue_size": 40,
+            "on_error": "skip",
+            "auto_start": false
+        },
+        "modules": {}
+    })");
+
+    BOOST_CHECK(result2.success);
+    BOOST_CHECK_EQUAL(result2.description.settings.queue_size, 40);
+    BOOST_CHECK_EQUAL(result2.description.settings.on_error, "skip");
+    BOOST_CHECK_EQUAL(result2.description.settings.auto_start, false);
+}
+
+BOOST_AUTO_TEST_CASE(InvalidModulesNotObject)
+{
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": "not_an_object"
+    })");
+
+    BOOST_CHECK(!result.success);
+    BOOST_CHECK(result.error.find("object") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(InvalidConnectionsNotArray)
+{
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {},
+        "connections": "not_an_array"
+    })");
+
+    BOOST_CHECK(!result.success);
+    BOOST_CHECK(result.error.find("array") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionMissingFrom)
+{
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {},
+        "connections": [
+            { "to": "sink.input" }
+        ]
+    })");
+
+    BOOST_CHECK(!result.success);
+    BOOST_CHECK(result.error.find("from") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionMissingTo)
+{
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {},
+        "connections": [
+            { "from": "source.output" }
+        ]
+    })");
+
+    BOOST_CHECK(!result.success);
+    BOOST_CHECK(result.error.find("to") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(MixedTypeArrayRejected)
+{
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "test": {
+                "type": "TestModule",
+                "props": {
+                    "mixed": [1, "two", 3]
+                }
+            }
+        }
+    })");
+
+    BOOST_CHECK(!result.success);
+    BOOST_CHECK(result.error.find("Mixed") != std::string::npos ||
+                result.error.find("type") != std::string::npos);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

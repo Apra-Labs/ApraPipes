@@ -3,27 +3,28 @@
 > **This file is the source of truth for task status.**  
 > Update this file at the end of EVERY session.
 
-Last Updated: `2026-01-05 09:30` by `claude-code`
+Last Updated: `2026-01-05 12:00` by `claude-code`
 
 ---
 
-## Current Sprint: 3 (Documentation & Expansion)
+## Current Sprint: 4 (JSON Migration)
 
 ## Quick Status
 
 **Core Infrastructure: ✅ COMPLETE**
+**JSON Migration: ✅ COMPLETE**
 
-All foundational work is done. End-to-end TOML-to-pipeline execution is working.
+TOML has been completely removed. Pipelines now use JSON format only.
 
 **Current Focus:**
-1. Documentation (Developer Guide, Pipeline Author Guide) - ✅ Complete
+1. Node.js addon implementation (Phase 2-5 of JS Interface Plan)
 2. Module Registration Expansion (31/62 = 50% → 80%+ target)
-3. Example Pipelines for all registered modules
 
 ```
 Sprint 1 (Foundations):  ✅ A1, A2, A3, B1, B2, C1, M1, M2 - COMPLETE
 Sprint 2 (Core Engine):  ✅ D1, D2, D3, E1, E2, C2-C5, F1-F4 - COMPLETE
-Sprint 3 (Expansion):    🔄 DOC1, DOC2, Batch 1-5 - IN PROGRESS
+Sprint 3 (Expansion):    ✅ DOC1, DOC2, Batch 1-2 - COMPLETE
+Sprint 4 (JSON):         ✅ Phase 0-1 COMPLETE (TOML removed, JSON parser added)
 ```
 
 ---
@@ -257,8 +258,8 @@ Sprint 3 (Expansion):    🔄 DOC1, DOC2, Batch 1-5 - IN PROGRESS
 
 **Accomplished:**
 - Implemented E1 CLI Tool (`aprapipes_cli.cpp`):
-  - `validate <file.toml>` - Parse and validate pipeline files
-  - `run <file.toml>` - Build and run pipeline with signal handling
+  - `validate <file.json>` - Parse and validate pipeline files
+  - `run <file.json>` - Build and run pipeline with signal handling
   - `list-modules` - List registered modules with --category and --tag filters
   - `describe <module>` - Show detailed module information
   - Support for `--json` output for tooling
@@ -274,7 +275,7 @@ Sprint 3 (Expansion):    🔄 DOC1, DOC2, Batch 1-5 - IN PROGRESS
 **Notes for Next Session:**
 - CLI tool depends on modules being registered via REGISTER_MODULE
 - list-modules and describe will show "no modules" until M1-M5 tasks add metadata
-- validate and run work with any TOML file
+- validate and run work with any JSON file
 
 ---
 
@@ -1274,6 +1275,70 @@ Error Detection:    2/2 correctly detect and suggest fixes
 
 ---
 
+### Session: 2026-01-05 12:00
+
+**Agent:** claude-code
+**Duration:** ~90 min
+**Tasks:** Phase 0-1 JSON Migration (TOML Removal + JSON Parser)
+
+**Accomplished:**
+- **Created JsonParser (Phase 1 complete):**
+  - Created `base/include/declarative/JsonParser.h` with static parsing methods
+  - Created `base/src/declarative/JsonParser.cpp` using nlohmann-json
+  - Created `base/include/declarative/ParseResult.h` shared header
+  - Created 24 unit tests in `json_parser_tests.cpp`
+  - All JSON parser tests pass
+
+- **Removed TOML support (Phase 0 complete):**
+  - Deleted `TomlParser.h`, `TomlParser.cpp`, `toml_parser_tests.cpp`
+  - Removed `tomlplusplus` from vcpkg.json and CMakeLists.txt
+  - Updated CLI (`aprapipes_cli.cpp`) to use JsonParser
+  - Updated integration tests to use JSON files
+
+- **Converted all pipeline examples to JSON:**
+  - 10 working pipelines converted
+  - 2 not-working pipelines converted
+  - 5 template pipelines converted
+  - Deleted all TOML example files
+
+- **Removed #desc comment convention:**
+  - Updated JsonParser to not special-case #desc
+  - Updated all JSON files to use `description` in pipeline section instead
+  - Updated test data files
+
+**Files Created:**
+- `base/include/declarative/ParseResult.h`
+- `base/include/declarative/JsonParser.h`
+- `base/src/declarative/JsonParser.cpp`
+- `base/test/declarative/json_parser_tests.cpp`
+- 17 JSON pipeline files in `docs/declarative-pipeline/examples/`
+- 4 JSON test data files in `base/test/data/pipelines/`
+
+**Files Deleted:**
+- `base/include/declarative/TomlParser.h`
+- `base/src/declarative/TomlParser.cpp`
+- `base/test/declarative/toml_parser_tests.cpp`
+- All 17 TOML pipeline files
+
+**Files Modified:**
+- `base/CMakeLists.txt` - Removed TOML, added JSON files
+- `base/vcpkg.json` - Removed tomlplusplus dependency
+- `base/tools/aprapipes_cli.cpp` - Use JsonParser
+- `base/test/declarative/pipeline_integration_tests.cpp` - Use JSON
+- `base/include/declarative/ModuleRegistrations.h` - Update comments
+
+**Remaining:**
+- Phase 2-5: Node.js addon implementation
+- Module registration expansion
+
+**Notes for Next Session:**
+- JSON pipeline format is now the only supported format
+- CLI accepts .json files only
+- All 24 json_parser_tests pass
+- Ready to proceed with Node.js addon (Phase 2)
+
+---
+
 ### Session: TEMPLATE (copy this for new sessions)
 
 **Agent:**
@@ -1309,7 +1374,7 @@ Error Detection:    2/2 correctly detect and suggest fixes
 | metadata_tests | 36 | 0 | 0 | 2025-12-31 |
 | module_registry_tests | 21 | 0 | 0 | 2025-12-31 |
 | pipeline_description_tests | 37 | 0 | 0 | 2025-12-31 |
-| toml_parser_tests | 37 | 0 | 0 | 2025-12-31 |
+| json_parser_tests | 24 | 0 | 0 | 2026-01-05 |
 | module_factory_tests | 38 | 0 | 0 | 2025-12-31 |
 | property_macros_tests | 28 | 0 | 0 | 2025-12-31 |
 | property_validators_tests | 26 | 0 | 0 | 2025-12-31 |

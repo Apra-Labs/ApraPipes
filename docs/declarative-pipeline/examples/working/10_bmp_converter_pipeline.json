@@ -1,0 +1,35 @@
+{
+  "pipeline": {
+    "name": "BMP Converter Pipeline",
+    "description": "Converts test signal frames to BMP images and saves them to disk. Chain: TestSignalGenerator -> ColorConversion -> BMPConverter -> FileWriter"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 320,
+        "height": 240
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "bmp_encoder": {
+      "type": "BMPConverter"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/declarative_test/bmp_output/frame_????.bmp"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "bmp_encoder" },
+    { "from": "bmp_encoder", "to": "writer" }
+  ]
+}

@@ -16,7 +16,7 @@
 #include <csignal>
 #include <cstdlib>
 
-#include "declarative/TomlParser.h"
+#include "declarative/JsonParser.h"
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistry.h"
 #include "declarative/ModuleRegistrations.h"
@@ -172,8 +172,7 @@ int cmdValidate(const std::string& filepath, bool jsonOutput) {
         return EXIT_VALIDATION_ERROR;
     }
 
-    TomlParser parser;
-    auto result = parser.parseFile(filepath);
+    auto result = JsonParser::parseFile(filepath);
 
     if (!result.success) {
         if (jsonOutput) {
@@ -277,8 +276,7 @@ int cmdRun(const std::string& filepath,
     }
 
     // Parse
-    TomlParser parser;
-    auto parseResult = parser.parseFile(filepath);
+    auto parseResult = JsonParser::parseFile(filepath);
 
     if (!parseResult.success) {
         std::cerr << "Parse error: " << parseResult.error << "\n";
@@ -632,8 +630,8 @@ ApraPipes - Declarative Pipeline CLI
 Usage: )" << progname << R"( <command> [options]
 
 Commands:
-  validate <file.toml>          Validate a pipeline definition file
-  run <file.toml>               Build and run a pipeline
+  validate <file.json>          Validate a pipeline definition file
+  run <file.json>               Build and run a pipeline
   list-modules                  List all registered modules
   describe <module>             Show detailed module information
 
@@ -651,8 +649,8 @@ Options for 'list-modules':
   --tag <tag>                   Filter by tag
 
 Examples:
-  )" << progname << R"( validate pipeline.toml
-  )" << progname << R"( run pipeline.toml --set decoder.device_id=1
+  )" << progname << R"( validate pipeline.json
+  )" << progname << R"( run pipeline.json --set decoder.device_id=1
   )" << progname << R"( list-modules --category source
   )" << progname << R"( describe FileReaderModule --json
 

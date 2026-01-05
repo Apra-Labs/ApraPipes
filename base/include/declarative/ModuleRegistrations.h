@@ -17,7 +17,7 @@ namespace apra {
 // It should be called before any module lookup/creation.
 //
 // Automatically called by:
-//   - TomlParser::parse()
+//   - JsonParser::parseFile()
 //   - ModuleFactory::build()
 //
 // Can also be called explicitly if needed before those.

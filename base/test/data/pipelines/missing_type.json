@@ -1,0 +1,12 @@
+{
+  "pipeline": {
+    "description": "Pipeline with missing type field (should cause error)"
+  },
+  "modules": {
+    "broken": {
+      "props": {
+        "path": "/video.mp4"
+      }
+    }
+  }
+}

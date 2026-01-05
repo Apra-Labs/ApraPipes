@@ -21,12 +21,14 @@ When detecting a type mismatch, the validator:
 
 ### Example
 
-```toml
-# User writes this (incompatible):
-[[connections]]
-from = "generator"       # outputs RawImagePlanar
-to = "virtualPTZ"        # expects RawImage
+```json
+{
+  "connections": [
+    { "from": "generator", "to": "virtualPTZ" }
+  ]
+}
 ```
+Where generator outputs RawImagePlanar and virtualPTZ expects RawImage.
 
 **Current output:**
 ```
@@ -38,18 +40,16 @@ to = "virtualPTZ"        # expects RawImage
 [ERROR] E304 @ connections: Incompatible frame types: generator(RawImagePlanar) → virtualPTZ(RawImage)
 [SUGGESTION] Insert ColorConversion with conversionType="YUV420PLANAR_TO_RGB" between these modules:
 
-  [modules.planar_to_rgb]
-  type = "ColorConversion"
-    [modules.planar_to_rgb.props]
-    conversionType = "YUV420PLANAR_TO_RGB"
-
-  [[connections]]
-  from = "generator"
-  to = "planar_to_rgb"
-
-  [[connections]]
-  from = "planar_to_rgb"
-  to = "virtualPTZ"
+  "modules": {
+    "planar_to_rgb": {
+      "type": "ColorConversion",
+      "props": { "conversionType": "YUV420PLANAR_TO_RGB" }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "planar_to_rgb" },
+    { "from": "planar_to_rgb", "to": "virtualPTZ" }
+  ]
 ```
 
 ## Implementation Design
@@ -80,7 +80,7 @@ struct ValidationIssue {
 
     struct Suggestion {
         std::string description;
-        std::string tomlSnippet;       // Ready-to-copy TOML
+        std::string jsonSnippet;       // Ready-to-copy JSON
     };
     std::vector<Suggestion> suggestions;
 };
@@ -102,7 +102,7 @@ if (!FrameTypeRegistry::instance().isCompatible(srcType, dstType)) {
             Suggestion s;
             s.description = "Insert " + bridge.name + " to convert " +
                             srcType + " → " + dstType;
-            s.tomlSnippet = generateTomlSnippet(bridge, srcModule, dstModule);
+            s.jsonSnippet = generateJsonSnippet(bridge, srcModule, dstModule);
             issue.suggestions.push_back(s);
         }
     }
@@ -141,7 +141,7 @@ const std::vector<TypeConversion> KNOWN_CONVERSIONS = {
 ### 5. CLI Output Format
 
 ```
-$ aprapipes_cli validate pipeline.toml
+$ aprapipes_cli validate pipeline.json
 
 [ERROR] E304 @ connections[0]: Incompatible frame types
   Source: generator (TestSignalGenerator) outputs RawImagePlanar
@@ -149,22 +149,21 @@ $ aprapipes_cli validate pipeline.toml
 
   SUGGESTION: Insert ColorConversion module
   ─────────────────────────────────────────
-  Add this to your TOML:
+  Add this to your JSON:
 
-  [modules.convert_planar_to_rgb]
-  type = "ColorConversion"
-    [modules.convert_planar_to_rgb.props]
-    conversionType = "YUV420PLANAR_TO_RGB"
+  "modules": {
+    "convert_planar_to_rgb": {
+      "type": "ColorConversion",
+      "props": { "conversionType": "YUV420PLANAR_TO_RGB" }
+    }
+  }
 
   And update connections:
 
-  [[connections]]
-  from = "generator"
-  to = "convert_planar_to_rgb"
-
-  [[connections]]
-  from = "convert_planar_to_rgb"
-  to = "ptz"
+  "connections": [
+    { "from": "generator", "to": "convert_planar_to_rgb" },
+    { "from": "convert_planar_to_rgb", "to": "ptz" }
+  ]
 
 ✗ Validation failed with 1 error, 1 suggestion
 ```
@@ -179,7 +178,7 @@ $ aprapipes_cli validate pipeline.toml
 ### Phase 2: Known Conversions
 - [ ] Create KNOWN_CONVERSIONS constant
 - [ ] Implement lookup in validateConnections()
-- [ ] Generate TOML snippets
+- [ ] Generate JSON snippets
 
 ### Phase 3: Dynamic Bridge Discovery
 - [ ] Implement findBridgeModules() in ModuleRegistry

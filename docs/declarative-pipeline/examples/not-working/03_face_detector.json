@@ -1,0 +1,25 @@
+{
+  "pipeline": {
+    "name": "face_detector",
+    "description": "Analytics pipeline: TestSignalGenerator -> FaceDetectorXform -> StatSink. NOTE: This pipeline fails validation - TestSignalGenerator outputs RawImagePlanar but FaceDetectorXform requires RawImage. See 06_face_detector_with_conversion.json for the fixed version."
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "face_detect": {
+      "type": "FaceDetectorXform"
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "face_detect" },
+    { "from": "face_detect", "to": "stats" }
+  ]
+}

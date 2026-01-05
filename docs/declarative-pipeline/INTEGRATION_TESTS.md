@@ -12,10 +12,10 @@
 
 ## Issues Found During Integration Testing
 
-### Issue #1: TOML Connection Syntax
+### Issue #1: Connection Syntax
 **Status:** Fixed
-**Description:** Initial TOML used `source`/`destination` but parser expects `from`/`to`
-**Fix:** Use correct syntax: `from = "module1"`, `to = "module2"`
+**Description:** Initial JSON used `source`/`destination` but parser expects `from`/`to`
+**Fix:** Use correct syntax: `"from": "module1"`, `"to": "module2"`
 
 ### Issue #2: TestSignalGenerator Missing Properties in Registration
 **Status:** Fixed
@@ -32,7 +32,7 @@
 
 ### Issue #4: Connection::parse Not Handling Module-Only Syntax
 **Status:** Fixed
-**Description:** TOML connections like `from = "generator"` (without pin specification) resulted in empty `from_module` field
+**Description:** JSON connections like `"from": "generator"` (without pin specification) resulted in empty `from_module` field
 **Error:** `Unknown source module: ` (empty string)
 **Root Cause:** Connection::parse() only populated from_module when a dot was present; otherwise it left fields empty
 **Fix:** Updated Connection::parse() to set module name even without dot, leaving pin empty (uses default)
@@ -70,13 +70,13 @@
 
 ## Working Examples
 
-### 01_simple_source_sink.toml
+### 01_simple_source_sink.json
 - **Pipeline:** TestSignalGenerator → StatSink
 - **Description:** Minimal pipeline to test basic module connectivity
 - **Validates:** ✅
 - **Runs:** ✅ (generates test frames, StatSink collects stats)
 
-### 02_three_module_chain.toml
+### 02_three_module_chain.json
 - **Pipeline:** TestSignalGenerator → ValveModule → StatSink
 - **Description:** Three-module linear chain
 - **Validates:** ✅
@@ -86,19 +86,19 @@
 
 ## Not Working Examples
 
-### 03_transform_ptz.toml
+### 03_transform_ptz.json
 - **Pipeline:** TestSignalGenerator → VirtualPTZ → StatSink
 - **Issue:** Frame type mismatch (RawImagePlanar vs RawImage)
 - **Error:** `input frameType is expected to be RAW_IMAGE. Actual<3>`
 - **Related Issue:** #5
 
-### 03_face_detector.toml
+### 03_face_detector.json
 - **Pipeline:** TestSignalGenerator → FaceDetectorXform → StatSink
 - **Issue:** Frame type mismatch (registration says RawImagePlanar but module validates for RawImage)
 - **Error:** `input frameType is expected to be Raw_Image. Actual<3>`
 - **Related Issue:** #5
 
-### 03_split_pipeline.toml
+### 03_split_pipeline.json
 - **Pipeline:** TestSignalGenerator → Split → 2x StatSink
 - **Issue:** Split module creates pins dynamically, conflicts with factory-created pins
 - **Error:** `Expected <2>. But Actual<3>` in validateOutputPins

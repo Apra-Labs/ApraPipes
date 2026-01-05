@@ -1,0 +1,38 @@
+{
+  "pipeline": {
+    "name": "TestPipeline",
+    "version": "1.0",
+    "description": "A complete test pipeline with multiple modules and connections"
+  },
+  "settings": {
+    "queue_size": 20,
+    "on_error": "stop_pipeline",
+    "auto_start": true
+  },
+  "modules": {
+    "source": {
+      "type": "FileReaderModule",
+      "props": {
+        "path": "/video.mp4",
+        "loop": true
+      }
+    },
+    "decoder": {
+      "type": "H264Decoder",
+      "props": {
+        "output_format": "BGR"
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "path": "/output.mp4",
+        "codec": "h264"
+      }
+    }
+  },
+  "connections": [
+    { "from": "source.output", "to": "decoder.input" },
+    { "from": "decoder.output", "to": "writer.input" }
+  ]
+}

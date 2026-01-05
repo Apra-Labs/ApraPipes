@@ -129,12 +129,8 @@
       "name": "libmp4"
     },
     {
-      "name": "tomlplusplus",
-      "$reason": "TOML parser for declarative pipeline configuration"
-    },
-    {
       "name": "nlohmann-json",
-      "$reason": "JSON generation for schema export and LLM integration"
+      "$reason": "JSON parser for declarative pipeline configuration and schema export"
     },
     {
       "name": "pthreads",

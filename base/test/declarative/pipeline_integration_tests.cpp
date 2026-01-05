@@ -1,13 +1,13 @@
 // ============================================================
 // Pipeline Integration Tests
-// Verifies end-to-end declarative pipeline execution using TOML files
+// Verifies end-to-end declarative pipeline execution using JSON files
 // ============================================================
 
 #include <boost/test/unit_test.hpp>
 #include <fstream>
 #include <thread>
 #include <chrono>
-#include "declarative/TomlParser.h"
+#include "declarative/JsonParser.h"
 #include "declarative/ModuleFactory.h"
 #include "declarative/PipelineDescription.h"
 #include "FaceDetectsInfo.h"
@@ -18,7 +18,7 @@ using namespace apra;
 BOOST_AUTO_TEST_SUITE(PipelineIntegrationTests, *boost::unit_test::disabled())
 
 namespace {
-    const std::string FACE_DETECTION_TOML = "./docs/declarative-pipeline/examples/working/09_face_detection_demo.toml";
+    const std::string FACE_DETECTION_JSON = "./docs/declarative-pipeline/examples/working/09_face_detection_demo.json";
     const std::string TEST_OUTPUT_PATH = "./data/testOutput/declarative_face_result.raw";
 
     std::vector<uint8_t> readFile(const std::string& path) {
@@ -32,16 +32,15 @@ namespace {
     }
 }
 
-BOOST_AUTO_TEST_CASE(FaceDetectionPipeline_FromToml_ProducesValidOutput)
+BOOST_AUTO_TEST_CASE(FaceDetectionPipeline_FromJson_ProducesValidOutput)
 {
     // Clean up any existing output file
     std::remove(TEST_OUTPUT_PATH.c_str());
 
-    // Parse TOML file
-    TomlParser parser;
-    auto parseResult = parser.parseFile(FACE_DETECTION_TOML);
+    // Parse JSON file
+    auto parseResult = JsonParser::parseFile(FACE_DETECTION_JSON);
     BOOST_REQUIRE_MESSAGE(parseResult.success,
-        "Failed to parse TOML: " + parseResult.error);
+        "Failed to parse JSON: " + parseResult.error);
 
     // Build pipeline from parsed description
     ModuleFactory factory;
