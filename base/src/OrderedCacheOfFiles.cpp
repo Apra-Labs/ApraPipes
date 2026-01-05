@@ -476,7 +476,7 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 	if (!foundRelevantFiles)
 	{
 		// seek fails
-		LOG_INFO<<"foundNoRelevantFiles:";
+		LOG_INFO<<"foundNoRelevantFiles:"<<foundRelevantFiles;
 		return false;
 	}
 
@@ -504,6 +504,7 @@ bool OrderedCacheOfFiles::getRandomSeekFile(uint64_t skipTS, bool direction, uin
 	}
 
 	// check in updated cache data
+	LOG_INFO<<"skipVideoFile :"<<skipVideoFile;
 	bool isSkipFileInCache = getFileFromCache(skipTS, direction, skipVideoFile);
 	if (!isSkipFileInCache)
 	{
@@ -530,7 +531,9 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 	try
 	{
 		fileName = getFileAt(timestamp, direction);
+		LOG_INFO<<"getFileAt: filename: "<<fileName;
 		bool tsInFileFlag = isTimeStampInFile(fileName, timestamp);
+		LOG_INFO<<"tsInFileFlag: "<<tsInFileFlag;
 
 		if (tsInFileFlag)
 		{
@@ -546,6 +549,11 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 				uint64_t tstart_ts, tend_ts;
 				readVideoStartEnd(fileName, tstart_ts, tend_ts);
 				updateCache(fileName, tstart_ts, tend_ts);
+				LOG_INFO<<"updating cache: ";
+				LOG_INFO<<"tstart_ts: "<<tstart_ts;
+				LOG_INFO<<"tend_ts: "<<tend_ts;
+				LOG_INFO<<"timestamp"<<timestamp;
+
 				if (timestamp >= tstart_ts && timestamp <= tend_ts)
 				{
 					return true;
@@ -559,6 +567,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 	{
 		if (exception.getCode() == MP4_OCOF_EMPTY)
 		{
+			LOG_INFO<<"execption caught1";
 			fileName = "";
 			auto msg = "Unexpected error happened in OrderedCacheOfFiles while getting file from it";
 			LOG_ERROR << msg;
@@ -566,8 +575,10 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 		}
 		if (exception.getCode() == MP4_OCOF_END)
 		{
+			LOG_INFO<<"execption caught2";
 			fileName = "";
 		}
+		LOG_INFO<<"execption caught";
 		return false;
 	}
 }
