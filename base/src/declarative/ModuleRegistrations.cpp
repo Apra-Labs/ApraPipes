@@ -43,8 +43,10 @@
 // Batch 2: Additional Transform modules
 #include "OverlayModule.h"
 #include "HistogramOverlay.h"
+#include "BMPConverter.h"
+#include "MotionVectorExtractor.h"
 // Note: AffineTransform requires TransformType + angle in constructor
-// Note: MultimediaQueueXform has ambiguous constructors (both are 0-arg compatible)
+// Note: MultimediaQueueXform has ambiguous constructors - needs applyProperties
 
 // Batch 3: Additional Sink modules
 #include "ExternalSinkModule.h"
@@ -211,6 +213,8 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // Mp4ReaderSource - reads MP4 video files
+        // Note: Output pin type is determined at runtime based on actual MP4 content
+        // Requires valid video file path to run - validation will fail without real file
         if (!registry.hasModule("Mp4ReaderSource")) {
             registerModule<Mp4ReaderSource, Mp4ReaderSourceProps>()
                 .category(ModuleCategory::Source)
@@ -410,6 +414,31 @@ void ensureBuiltinModulesRegistered() {
                 .tags("transform", "histogram", "overlay", "visualization")
                 .input("input", "RawImage")
                 .output("output", "RawImage")
+                .selfManagedOutputPins();
+        }
+
+        // BMPConverter - converts raw images to BMP format
+        if (!registry.hasModule("BMPConverter")) {
+            registerModule<BMPConverter, BMPConverterProps>()
+                .category(ModuleCategory::Transform)
+                .description("Converts raw images to BMP (bitmap) format. Useful for saving images or viewing in standard image viewers.")
+                .tags("transform", "image", "bmp", "converter", "encoder")
+                .input("input", "RawImage")
+                .output("output", "EncodedImage")
+                .selfManagedOutputPins();
+        }
+
+        // MotionVectorExtractor - extracts motion vectors from H264 video
+        if (!registry.hasModule("MotionVectorExtractor")) {
+            registerModule<MotionVectorExtractor, MotionVectorExtractorProps>()
+                .category(ModuleCategory::Analytics)
+                .description("Extracts motion vectors from H.264 encoded video frames. Useful for motion analysis and activity detection.")
+                .tags("analytics", "motion", "vector", "h264", "video")
+                .input("input", "H264Data")
+                .output("output", "MotionVectorData")
+                .enumProp("MVExtractMethod", "Extraction method to use", false, "FFMPEG", "FFMPEG", "OPENH264")
+                .boolProp("sendDecodedFrame", "Also output decoded raw frames", false, false)
+                .intProp("motionVectorThreshold", "Minimum motion vector magnitude to report", false, 2, 0, 100)
                 .selfManagedOutputPins();
         }
 

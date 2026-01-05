@@ -296,10 +296,10 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
             // This also populates the outputPinMap with TOML name → internal ID
             const ModuleInfo* info = registry.getModule(instance.module_type);
             if (info) {
-                // setupOutputPins() handles both cases:
-                // - For self-managed modules: detects existing pins and creates name→ID mapping
-                // - For non-self-managed modules: creates pins and mapping
-                if (!info->outputs.empty()) {
+                // For self-managed modules (those that create output pins in addInputPin()),
+                // skip setupOutputPins entirely - pins will be created when connections are made
+                // For other modules, create pins based on registry metadata
+                if (!info->outputs.empty() && !info->selfManagedOutputPins) {
                     ctx.outputPinMap = setupOutputPins(module.get(), *info, instance, result.issues);
                 }
                 // Populate inputPinMap from registry info (for validation)
