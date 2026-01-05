@@ -142,12 +142,15 @@ std::pair<std::string, std::string> ModuleFactory::parseConnectionEndpoint(
 // ============================================================
 // Set up output pins for a module based on registry info
 // Returns map of TOML pin name → internal pin ID
+// If selfManagedOutputPins is true and no existing pins, returns empty map
+// (module will create its pins later, e.g., in addInputPin)
 // ============================================================
 std::map<std::string, std::string> ModuleFactory::setupOutputPins(
     Module* module,
     const ModuleInfo& info,
     const ModuleInstance& instance,
-    std::vector<BuildIssue>& issues
+    std::vector<BuildIssue>& issues,
+    bool selfManagedOutputPins
 ) {
     std::map<std::string, std::string> pinMap;
 
@@ -171,6 +174,12 @@ std::map<std::string, std::string> ModuleFactory::setupOutputPins(
                 pinMap[outputPin.name] = existingPins[pinIndex++];
             }
         }
+        return pinMap;
+    }
+
+    // For self-managed modules with no existing pins, return empty map.
+    // The module will create its pins later (e.g., Split creates pins in addInputPin).
+    if (selfManagedOutputPins) {
         return pinMap;
     }
 
@@ -296,11 +305,13 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
             // This also populates the outputPinMap with TOML name → internal ID
             const ModuleInfo* info = registry.getModule(instance.module_type);
             if (info) {
-                // For self-managed modules (those that create output pins in addInputPin()),
-                // skip setupOutputPins entirely - pins will be created when connections are made
-                // For other modules, create pins based on registry metadata
-                if (!info->outputs.empty() && !info->selfManagedOutputPins) {
-                    ctx.outputPinMap = setupOutputPins(module.get(), *info, instance, result.issues);
+                // Call setupOutputPins with the selfManagedOutputPins flag.
+                // For modules that already created pins (selfManaged=true, has existing pins), it maps registry names.
+                // For modules without pins (selfManaged=false), it creates pins from registry metadata.
+                // For modules that create pins later (selfManaged=true, no existing pins), outputPinMap stays empty.
+                if (!info->outputs.empty()) {
+                    ctx.outputPinMap = setupOutputPins(module.get(), *info, instance, result.issues,
+                                                        info->selfManagedOutputPins);
                 }
                 // Populate inputPinMap from registry info (for validation)
                 for (const auto& inputPin : info->inputs) {
