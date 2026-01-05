@@ -1017,3 +1017,75 @@ endif()
 # Add generated directory to test target include paths
 # so module_registration_tests.cpp can find module_subclasses.inc
 target_include_directories(aprapipesut PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+# ============================================================
+# Node.js Native Addon (Optional)
+# Build with: cmake -DBUILD_NODE_ADDON=ON ...
+# Requires: node-addon-api and node-api-headers from vcpkg
+# ============================================================
+option(BUILD_NODE_ADDON "Build Node.js native addon (@apralabs/aprapipes)" OFF)
+
+if(BUILD_NODE_ADDON)
+    message(STATUS "Node.js addon build enabled")
+
+    # Find node-addon-api from vcpkg
+    find_package(unofficial-node-addon-api CONFIG QUIET)
+    find_package(unofficial-node-api-headers CONFIG QUIET)
+
+    if(unofficial-node-addon-api_FOUND AND unofficial-node-api-headers_FOUND)
+        message(STATUS "Found node-addon-api and node-api-headers")
+
+        set(NODE_ADDON_NAME "aprapipes_node")
+
+        add_library(${NODE_ADDON_NAME} SHARED
+            bindings/node/addon.cpp
+        )
+
+        # Set output extension to .node
+        set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+            OUTPUT_NAME "aprapipes"
+            PREFIX ""
+            SUFFIX ".node"
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+        )
+
+        # Link dependencies
+        target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+            unofficial::node-addon-api::node-addon-api
+            aprapipes
+        )
+
+        # Include directories
+        target_include_directories(${NODE_ADDON_NAME} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+        )
+
+        # Platform-specific settings
+        if(APPLE)
+            # macOS: Use undefined dynamic lookup for Node symbols
+            set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+                LINK_FLAGS "-undefined dynamic_lookup"
+            )
+        endif()
+
+        # Copy to project root for npm usage
+        add_custom_command(TARGET ${NODE_ADDON_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:${NODE_ADDON_NAME}>
+                ${CMAKE_CURRENT_SOURCE_DIR}/../$<TARGET_FILE_NAME:${NODE_ADDON_NAME}>
+            COMMENT "Copying Node addon to project root"
+        )
+
+        # Install target
+        install(TARGETS ${NODE_ADDON_NAME}
+            LIBRARY DESTINATION lib/node
+            RUNTIME DESTINATION lib/node
+        )
+
+        message(STATUS "Node.js addon target: ${NODE_ADDON_NAME}")
+    else()
+        message(WARNING "Node.js addon requested but node-addon-api not found in vcpkg. Run: vcpkg install node-addon-api node-api-headers")
+    endif()
+endif()
