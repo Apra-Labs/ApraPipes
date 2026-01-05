@@ -549,7 +549,7 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 				uint64_t tstart_ts, tend_ts;
 				int RetryAttempts=0;
 				
-				while(RetryAttempts<3)
+				while(RetryAttempts<30)
 				{
 
 					readVideoStartEnd(fileName, tstart_ts, tend_ts);
