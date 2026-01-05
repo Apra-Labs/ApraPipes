@@ -547,7 +547,20 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 			if (direction && fileName == videoCache.rbegin()->path) //boost::filesystem::equivalent(boost::filesystem::canonical(fileName), boost::filesystem::canonical(videoCache.rbegin()->path))
 			{
 				uint64_t tstart_ts, tend_ts;
-				readVideoStartEnd(fileName, tstart_ts, tend_ts);
+				int RetryAttempts=0;
+				
+				while(RetryAttempts<3)
+				{
+
+					readVideoStartEnd(fileName, tstart_ts, tend_ts);
+					LOG_INFO<<"tend_ts: "<<tend_ts;
+					LOG_INFO<<"RetryAttempts: "<<RetryAttempts;
+					if(timestamp<tend_ts)
+					{
+						break;
+					}
+					RetryAttempts++;
+				}
 				updateCache(fileName, tstart_ts, tend_ts);
 				LOG_INFO<<"updating cache: ";
 				LOG_INFO<<"tstart_ts: "<<tstart_ts;
