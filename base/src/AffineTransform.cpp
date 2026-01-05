@@ -393,6 +393,10 @@ public:
 	void mSetMetadata(framemetadata_sp& metadata)
 	{
 		setMetadata(metadata);
+		if (!metadata->isSet())
+		{
+			return;
+		}
 		iImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(metadata));
 		oImg = Utils::getMatHeader(FrameMetadataFactory::downcast<RawImageMetadata>(mOutputMetadata));
 
@@ -587,9 +591,14 @@ bool AffineTransform::term()
 bool AffineTransform::process(frame_container &frames)
 {
 	mDetail->inputFrame = frames.cbegin()->second;
+
+	if (mDetail->mOutputFrameLength == 0) {
+		LOG_ERROR << "<" << getId() << "> process called before processSOS initialized output dimensions";
+		return true; // Skip this frame
+	}
+
 	mDetail->outputFrame = makeFrame(mDetail->mOutputFrameLength);
 	mDetail->setPtrs();
-
 	mDetail->compute();
 	frames.insert(make_pair(mDetail->mOutputPinId, mDetail->outputFrame));
 	send(frames);
@@ -601,6 +610,8 @@ bool AffineTransform::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->mSetMetadata(metadata);
+	// Update the frame factory with the initialized metadata containing dimensions
+	Module::setMetadata(mDetail->mOutputPinId, mDetail->mOutputMetadata);
 	return true;
 }
 

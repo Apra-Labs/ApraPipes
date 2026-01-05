@@ -46,6 +46,7 @@ public:
 protected:
 	bool process(frame_container& frames);
 	bool processSOS(frame_sp& frame);
+	bool shouldTriggerSOS();
 	bool validateInputPins();
 	bool validateOutputPins();
 

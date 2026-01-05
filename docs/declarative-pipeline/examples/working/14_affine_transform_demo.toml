@@ -1,0 +1,57 @@
+# Affine Transform Demo Pipeline (Template)
+# Demonstrates rotation, scaling, and translation of images
+#
+# NOTE: This pipeline validates successfully but requires testing with real input files.
+# Use FileReaderModule instead of TestSignalGenerator for actual image processing.
+#
+# Output: JPEG files written to ./data/testOutput/affine_????.jpg
+
+[pipeline]
+name = "Affine Transform Demo"
+
+# Generate test frames (YUV420 planar format)
+[modules.generator]
+type = "TestSignalGenerator"
+  [modules.generator.props]
+  width = 640
+  height = 480
+
+# Convert from YUV420 planar to RGB (required for AffineTransform)
+[modules.color_convert]
+type = "ColorConversion"
+  [modules.color_convert.props]
+  conversionType = "YUV420PLANAR_TO_RGB"
+
+# Apply affine transformation: 30 degree rotation, 0.9x scale
+[modules.transform]
+type = "AffineTransform"
+  [modules.transform.props]
+  angle = 30.0
+  scale = 0.9
+
+# Encode to JPEG format
+[modules.encoder]
+type = "ImageEncoderCV"
+
+# Write output files
+[modules.writer]
+type = "FileWriterModule"
+  [modules.writer.props]
+  strFullFileNameWithPattern = "./data/testOutput/affine_????.jpg"
+
+# Pipeline: generator -> convert -> transform -> encode -> write
+[[connections]]
+from = "generator"
+to = "color_convert"
+
+[[connections]]
+from = "color_convert"
+to = "transform"
+
+[[connections]]
+from = "transform"
+to = "encoder"
+
+[[connections]]
+from = "encoder"
+to = "writer"
