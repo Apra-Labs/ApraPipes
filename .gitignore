@@ -13,3 +13,4 @@ build/vcpkg-manifest-install.log
 build/CMakeFiles/cmake.check_cache
 build/CMakeFiles/CMakeConfigureLog.yaml
 .claude/settings.local.json
+aprapipes.node
