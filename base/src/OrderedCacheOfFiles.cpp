@@ -559,6 +559,11 @@ bool OrderedCacheOfFiles::getFileFromCache(uint64_t timestamp, bool direction, s
 					{
 						break;
 					}
+					
+					 if(RetryAttempts < 30)  // Don't sleep on last attempt
+    				{
+        				boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+    				}
 					RetryAttempts++;
 				}
 				updateCache(fileName, tstart_ts, tend_ts);
