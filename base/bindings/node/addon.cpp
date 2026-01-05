@@ -37,9 +37,8 @@ Napi::Value ListModules(const Napi::CallbackInfo& info) {
     auto modules = registry.getAllModules();
 
     Napi::Array result = Napi::Array::New(env, modules.size());
-    size_t i = 0;
-    for (const auto& [name, info] : modules) {
-        result.Set(i++, Napi::String::New(env, name));
+    for (size_t i = 0; i < modules.size(); i++) {
+        result.Set(i, Napi::String::New(env, modules[i]));
     }
 
     return result;
@@ -196,9 +195,9 @@ Napi::Value ValidatePipeline(const Napi::CallbackInfo& info) {
 
     // Validate the pipeline
     apra::PipelineValidator validator;
-    apra::ValidationResult validationResult = validator.validate(parseResult.description);
+    apra::PipelineValidator::Result validationResult = validator.validate(parseResult.description);
 
-    result.Set("valid", Napi::Boolean::New(env, validationResult.isValid()));
+    result.Set("valid", Napi::Boolean::New(env, !validationResult.hasErrors()));
 
     // Convert issues to JS array
     Napi::Array issues = Napi::Array::New(env, validationResult.issues.size());

@@ -1056,10 +1056,14 @@ if(BUILD_NODE_ADDON)
             aprapipes
         )
 
-        # Include directories
+        # Include directories (same as aprapipes target)
         target_include_directories(${NODE_ADDON_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+            ${OpenCV_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
+            ${FFMPEG_INCLUDE_DIRS}
+            ${LIBMP4_INC_DIR}
         )
 
         # Platform-specific settings
