@@ -45,8 +45,8 @@
 #include "HistogramOverlay.h"
 #include "BMPConverter.h"
 #include "MotionVectorExtractor.h"
-// Note: AffineTransform requires TransformType + angle in constructor
-// Note: MultimediaQueueXform has ambiguous constructors - needs applyProperties
+#include "AffineTransform.h"
+#include "MultimediaQueueXform.h"
 
 // Batch 3: Additional Sink modules
 #include "ExternalSinkModule.h"
@@ -439,6 +439,37 @@ void ensureBuiltinModulesRegistered() {
                 .enumProp("MVExtractMethod", "Extraction method to use", false, "FFMPEG", "FFMPEG", "OPENH264")
                 .boolProp("sendDecodedFrame", "Also output decoded raw frames", false, false)
                 .intProp("motionVectorThreshold", "Minimum motion vector magnitude to report", false, 2, 0, 100)
+                .selfManagedOutputPins();
+        }
+
+        // AffineTransform - applies affine transformations (rotation, scale, translate)
+        // Note: Creates output pin in addInputPin(), so selfManagedOutputPins is required
+        if (!registry.hasModule("AffineTransform")) {
+            registerModule<AffineTransform, AffineTransformProps>()
+                .category(ModuleCategory::Transform)
+                .description("Applies affine transformations to images including rotation, scaling, and translation using OpenCV.")
+                .tags("transform", "affine", "rotate", "scale", "translate", "opencv")
+                .input("input", "RawImage")  // Only accepts RawImage (not planar)
+                .output("output", "RawImage")
+                .floatProp("angle", "Rotation angle in degrees", false, 0.0, -360.0, 360.0)
+                .intProp("x", "Horizontal translation in pixels", false, 0)
+                .intProp("y", "Vertical translation in pixels", false, 0)
+                .floatProp("scale", "Scale factor (1.0 = no scaling)", false, 1.0, 0.01, 100.0)
+                .selfManagedOutputPins();
+        }
+
+        // MultimediaQueueXform - multimedia frame queue for buffering and playback
+        if (!registry.hasModule("MultimediaQueueXform")) {
+            registerModule<MultimediaQueueXform, MultimediaQueueXformProps>()
+                .category(ModuleCategory::Utility)
+                .description("Multimedia frame queue for buffering, playback control, and temporal frame access. Useful for video recording and playback systems.")
+                .tags("utility", "queue", "buffer", "playback", "multimedia")
+                .input("input", "Frame")
+                .output("output", "Frame")
+                .intProp("queueLength", "Queue capacity (frames or milliseconds)", false, 10000, 1, 1000000)
+                .intProp("tolerance", "Additional buffer when downstream is full", false, 5000, 0, 100000)
+                .intProp("mmqFps", "Target FPS for queue timing calculations", false, 24, 1, 120)
+                .boolProp("isMapDelayInTime", "Interpret queue length as time (true) or frames (false)", false, true)
                 .selfManagedOutputPins();
         }
 

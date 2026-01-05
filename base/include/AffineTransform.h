@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Module.h"
+#include <map>
+#include <variant>
+#include <string>
 #ifdef APRA_HAS_CUDA_HEADERS
 #include "CudaCommon.h"
 #endif
@@ -33,6 +36,16 @@ public:
 		USING_NPPI
 	};
 
+	// Default constructor for declarative pipeline support
+	AffineTransformProps()
+	{
+		type = TransformType::USING_OPENCV;
+		angle = 0.0;
+		x = 0;
+		y = 0;
+		scale = 1.0;
+	}
+
 	AffineTransformProps(TransformType _type, double _angle, int _x = 0, int _y = 0, double _scale = 1.0)
 	{
 		if (_type != TransformType::USING_OPENCV)
@@ -44,6 +57,52 @@ public:
 		y = _y;
 		scale = _scale;
 		type = _type;
+	}
+
+	// Declarative pipeline property binding
+	void applyProperties(const std::map<std::string, std::variant<int64_t, double, bool, std::string>>& props)
+	{
+		for (const auto& [key, value] : props) {
+			if (key == "angle") {
+				if (std::holds_alternative<double>(value)) {
+					angle = std::get<double>(value);
+				} else if (std::holds_alternative<int64_t>(value)) {
+					angle = static_cast<double>(std::get<int64_t>(value));
+				}
+			} else if (key == "x") {
+				if (std::holds_alternative<int64_t>(value)) {
+					x = static_cast<int>(std::get<int64_t>(value));
+				}
+			} else if (key == "y") {
+				if (std::holds_alternative<int64_t>(value)) {
+					y = static_cast<int>(std::get<int64_t>(value));
+				}
+			} else if (key == "scale") {
+				if (std::holds_alternative<double>(value)) {
+					scale = std::get<double>(value);
+				} else if (std::holds_alternative<int64_t>(value)) {
+					scale = static_cast<double>(std::get<int64_t>(value));
+				}
+			} else if (key == "transformType") {
+				if (std::holds_alternative<std::string>(value)) {
+					const auto& strVal = std::get<std::string>(value);
+					if (strVal == "USING_OPENCV") {
+						type = TransformType::USING_OPENCV;
+					}
+					// USING_NPPI not supported via TOML (requires cudastream_sp)
+				}
+			}
+		}
+	}
+
+	std::variant<int64_t, double, bool, std::string> getProperty(const std::string& name) const
+	{
+		if (name == "angle") return angle;
+		if (name == "x") return static_cast<int64_t>(x);
+		if (name == "y") return static_cast<int64_t>(y);
+		if (name == "scale") return scale;
+		if (name == "transformType") return type == TransformType::USING_OPENCV ? std::string("USING_OPENCV") : std::string("USING_NPPI");
+		return int64_t(0);
 	}
 #ifdef APRA_HAS_CUDA_HEADERS
 	AffineTransformProps(TransformType _type, Interpolation _interpolation, cudastream_sp &_stream, double _angle, int _x=0, int _y=0, double _scale = 1.0)

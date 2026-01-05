@@ -1,0 +1,47 @@
+# 13_multimedia_queue_pipeline.toml
+# Demonstrates frame buffering with MultimediaQueueXform
+# Chain: TestSignalGenerator -> MultimediaQueueXform -> StatSink
+#
+# TEMPLATE: This is a demonstration pipeline showing MultimediaQueueXform usage.
+# In real use cases, MultimediaQueueXform is typically used for:
+# - Video recording systems that need to buffer frames
+# - Playback control with frame seeking
+# - Handling backpressure in complex pipelines
+#
+# This pipeline demonstrates:
+# - Frame buffering with configurable queue length
+# - Time-based or frame-based queue measurement
+# - Watermark management for flow control
+
+[pipeline]
+name = "Multimedia Queue Demo Pipeline"
+description = "Demonstrates frame buffering with MultimediaQueueXform"
+
+# Generate test frames
+[modules.generator]
+type = "TestSignalGenerator"
+  [modules.generator.props]
+  width = 320
+  height = 240
+
+# Buffer frames with multimedia queue
+# Queue stores ~10 seconds of frames at 24 fps (time-based)
+[modules.buffer]
+type = "MultimediaQueueXform"
+  [modules.buffer.props]
+  queueLength = 10000         # 10000 ms = 10 seconds of buffer
+  tolerance = 2000            # Additional 2 seconds when downstream backs up
+  mmqFps = 24                 # Expected frame rate for timing calculations
+  isMapDelayInTime = true     # Interpret queueLength as milliseconds (not frame count)
+
+# Collect statistics
+[modules.stats]
+type = "StatSink"
+
+[[connections]]
+from = "generator"
+to = "buffer"
+
+[[connections]]
+from = "buffer"
+to = "stats"
