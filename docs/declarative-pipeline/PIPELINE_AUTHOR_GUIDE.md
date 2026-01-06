@@ -13,11 +13,12 @@
 5. [Connections](#connections)
 6. [Using the CLI Tool](#using-the-cli-tool)
 7. [Using the Schema Generator](#using-the-schema-generator)
-8. [Frame Type Compatibility](#frame-type-compatibility)
-9. [Common Pipeline Patterns](#common-pipeline-patterns)
-10. [Working with Properties](#working-with-properties)
-11. [Troubleshooting](#troubleshooting)
-12. [Example Pipelines](#example-pipelines)
+8. [Using Node.js](#using-nodejs)
+9. [Frame Type Compatibility](#frame-type-compatibility)
+10. [Common Pipeline Patterns](#common-pipeline-patterns)
+11. [Working with Properties](#working-with-properties)
+12. [Troubleshooting](#troubleshooting)
+13. [Example Pipelines](#example-pipelines)
 
 ---
 
@@ -90,15 +91,30 @@ The declarative pipeline system allows you to define video processing pipelines 
       "type": "TestSignalGenerator",
       "props": {
         "width": 640,
-        "height": 480
+        "height": 480,
+        "pattern": "CHECKERBOARD"
       }
     },
-    "stats": {
-      "type": "StatSink"
+    "colorConvert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./output/frame_????.jpg"
+      }
     }
   },
   "connections": [
-    { "from": "generator", "to": "stats" }
+    { "from": "generator", "to": "colorConvert" },
+    { "from": "colorConvert", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
   ]
 }
 ```
@@ -420,6 +436,140 @@ Use the JSON schema with IDE plugins for:
 - Autocomplete on module types
 - Property validation
 - Inline documentation
+
+---
+
+## Using Node.js
+
+The declarative pipeline system also supports JavaScript/Node.js for building interactive applications.
+
+### Loading the Addon
+
+```javascript
+const ap = require('./aprapipes.node');
+```
+
+### Creating and Running a Pipeline
+
+```javascript
+const ap = require('./aprapipes.node');
+
+const pipeline = ap.createPipeline({
+    modules: {
+        source: {
+            type: "TestSignalGenerator",
+            props: { width: 640, height: 480, pattern: "GRID" }
+        },
+        colorConvert: {
+            type: "ColorConversion",
+            props: { conversionType: "YUV420PLANAR_TO_RGB" }
+        },
+        encoder: { type: "ImageEncoderCV" },
+        writer: {
+            type: "FileWriterModule",
+            props: { strFullFileNameWithPattern: "./output/frame_????.jpg" }
+        }
+    },
+    connections: [
+        { from: "source", to: "colorConvert" },
+        { from: "colorConvert", to: "encoder" },
+        { from: "encoder", to: "writer" }
+    ]
+});
+
+async function main() {
+    // Initialize pipeline
+    await pipeline.init();
+
+    // Start processing
+    pipeline.run();
+
+    // Let it run for 3 seconds
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Stop and cleanup
+    await pipeline.stop();
+}
+
+main();
+```
+
+### Dynamic Property Control
+
+Node.js allows real-time property changes while the pipeline is running:
+
+```javascript
+const pipeline = ap.createPipeline({
+    modules: {
+        source: { type: "TestSignalGenerator", props: { width: 1920, height: 1080, pattern: "GRID" } },
+        colorConvert: { type: "ColorConversion", props: { conversionType: "YUV420PLANAR_TO_RGB" } },
+        ptz: { type: "VirtualPTZ" },
+        encoder: { type: "ImageEncoderCV" },
+        writer: { type: "FileWriterModule", props: { strFullFileNameWithPattern: "./output/ptz_????.jpg" } }
+    },
+    connections: [
+        { from: "source", to: "colorConvert" },
+        { from: "colorConvert", to: "ptz" },
+        { from: "ptz", to: "encoder" },
+        { from: "encoder", to: "writer" }
+    ]
+});
+
+async function main() {
+    await pipeline.init();
+    pipeline.run();
+
+    const ptz = pipeline.getModule('ptz');
+
+    // Check if PTZ supports dynamic properties
+    if (ptz.hasDynamicProperties()) {
+        console.log('Available props:', ptz.getDynamicPropertyNames());
+
+        // Zoom to 2x (50% of frame)
+        ptz.setProperty('roiWidth', 0.5);
+        ptz.setProperty('roiHeight', 0.5);
+        ptz.setProperty('roiX', 0.25);
+        ptz.setProperty('roiY', 0.25);
+
+        await new Promise(r => setTimeout(r, 1000));
+
+        // Pan to bottom-right
+        ptz.setProperty('roiX', 0.5);
+        ptz.setProperty('roiY', 0.5);
+
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    await pipeline.stop();
+}
+
+main();
+```
+
+### Event Handling
+
+```javascript
+pipeline
+    .on('health', (event) => {
+        console.log(`[Health] ${event.moduleId}: ${event.message}`);
+    })
+    .on('error', (event) => {
+        console.error(`[Error] ${event.moduleId}: ${event.message}`);
+    });
+```
+
+### When to Use Node.js vs CLI
+
+| Use Case | Recommended |
+|----------|-------------|
+| Quick testing / one-off processing | CLI |
+| Batch processing with same config | CLI |
+| Interactive applications | Node.js |
+| Real-time PTZ/parameter control | Node.js |
+| Integration with web servers | Node.js |
+| Scripted automation | Either |
+
+For complete Node.js API documentation, see [Node.js API Reference](../node-api.md).
 
 ---
 

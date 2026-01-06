@@ -19,6 +19,50 @@ The addon file `aprapipes.node` will be copied to the project root.
 const ap = require('./aprapipes.node');
 ```
 
+## Quick Start
+
+```javascript
+const ap = require('./aprapipes.node');
+
+const pipeline = ap.createPipeline({
+    modules: {
+        source: {
+            type: "TestSignalGenerator",
+            props: { width: 640, height: 480, pattern: "CHECKERBOARD" }
+        },
+        colorConvert: {
+            type: "ColorConversion",
+            props: { conversionType: "YUV420PLANAR_TO_RGB" }
+        },
+        encoder: { type: "ImageEncoderCV" },
+        writer: {
+            type: "FileWriterModule",
+            props: { strFullFileNameWithPattern: "./output/frame_????.jpg" }
+        }
+    },
+    connections: [
+        { from: "source", to: "colorConvert" },
+        { from: "colorConvert", to: "encoder" },
+        { from: "encoder", to: "writer" }
+    ]
+});
+
+// Event handlers (optional)
+pipeline.on('error', (e) => console.error(`Error: ${e.message}`));
+
+// Run pipeline
+await pipeline.init();
+pipeline.run();
+
+// Let it run for 2 seconds
+await new Promise(resolve => setTimeout(resolve, 2000));
+
+// Stop pipeline
+await pipeline.stop();
+```
+
+---
+
 ## API Reference
 
 ### `ap.createPipeline(config)`
@@ -83,6 +127,61 @@ const pipeline = ap.createPipeline(config);
 ---
 
 ## Pipeline Class
+
+### Lifecycle Methods
+
+#### `pipeline.init()` (async)
+
+Initializes all modules in the pipeline. Must be called before `run()`.
+
+**Returns:** Promise that resolves when initialization is complete
+
+**Throws:** Error if initialization fails
+
+```javascript
+await pipeline.init();
+```
+
+#### `pipeline.run()`
+
+Starts the pipeline execution. Modules begin processing frames.
+
+**Note:** This method returns immediately. Use event handlers or `setTimeout` to control duration.
+
+```javascript
+pipeline.run();
+```
+
+#### `pipeline.stop()` (async)
+
+Stops all modules and cleans up resources.
+
+**Returns:** Promise that resolves when all modules have stopped
+
+```javascript
+await pipeline.stop();
+```
+
+### Complete Lifecycle Example
+
+```javascript
+const pipeline = ap.createPipeline(config);
+
+// 1. Initialize
+await pipeline.init();
+console.log('Pipeline initialized');
+
+// 2. Run
+pipeline.run();
+console.log('Pipeline running');
+
+// 3. Let it process for some time
+await new Promise(resolve => setTimeout(resolve, 5000));
+
+// 4. Stop
+await pipeline.stop();
+console.log('Pipeline stopped');
+```
 
 ### `pipeline.getModule(instanceId)`
 
@@ -162,12 +261,20 @@ Removes all listeners for an event.
 |----------|------|-------------|
 | `id` | string | Module instance ID |
 | `type` | string | Module type name |
+| `name` | string | Module's internal name |
 
 ### `module.getProps()`
 
-Gets the module's current properties.
+Gets the module's current base properties.
 
-**Returns:** Object with properties `fps`, `qlen`, `logHealth`
+**Returns:** Object with properties:
+- `fps` (number): Frames per second
+- `qlen` (number): Queue length
+- `logHealth` (boolean): Whether health logging is enabled
+- `logHealthFrequency` (number): Health log frequency
+- `maxConcurrentFrames` (number): Max concurrent frame processing
+- `enableHealthCallBack` (boolean): Whether health callbacks are enabled
+- `healthUpdateIntervalInSec` (number): Health update interval
 
 ### `module.isRunning()`
 
@@ -234,7 +341,7 @@ if (ptz.hasDynamicProperties()) {
     // Read property
     const x = ptz.getProperty('roiX');
 
-    // Write property
+    // Write property at runtime
     ptz.setProperty('roiX', 0.5);
 }
 ```
@@ -300,6 +407,11 @@ const config: ap.PipelineConfig = {
 
 const pipeline: ap.Pipeline = ap.createPipeline(config);
 const module: ap.ModuleHandle = pipeline.getModule('source');
+
+// Lifecycle
+await pipeline.init();
+pipeline.run();
+await pipeline.stop();
 ```
 
 ---
@@ -343,13 +455,17 @@ pipeline.on('error', (e) => {
 
 ## Best Practices
 
-1. **Register event handlers before starting** - Set up health and error handlers before calling `start()` to avoid missing early events.
+1. **Always use the lifecycle pattern** - Call `init()`, `run()`, and `stop()` in sequence.
 
-2. **Use non-integer floats in config** - JavaScript JSON serialization converts `10.0` to `10`. Use values like `10.5` or `10.1` for float properties.
+2. **Register event handlers early** - Set up health and error handlers before calling `init()` to catch all events.
 
-3. **Check dynamic property support** - Always call `hasDynamicProperties()` before trying to read/write properties.
+3. **Use async/await** - Both `init()` and `stop()` are async and return Promises.
 
-4. **Clean up listeners** - Call `removeAllListeners()` when done to prevent memory leaks.
+4. **Check dynamic property support** - Always call `hasDynamicProperties()` before trying to read/write properties.
+
+5. **Clean up listeners** - Call `removeAllListeners()` when done to prevent memory leaks.
+
+6. **Use file writers for visible output** - Use `ImageEncoderCV` → `FileWriterModule` to produce JPEG/PNG files you can view.
 
 ---
 
@@ -371,5 +487,6 @@ Get detailed information about a specific module:
 
 ## See Also
 
-- [Examples](../examples/node/README.md) - Working example applications
-- [CLI Reference](declarative-pipeline/README.md) - Command-line tool documentation
+- [Examples](../examples/node/) - Working example applications
+- [Pipeline Author Guide](declarative-pipeline/PIPELINE_AUTHOR_GUIDE.md) - JSON pipeline authoring
+- [Developer Guide](declarative-pipeline/DEVELOPER_GUIDE.md) - Module registration guide

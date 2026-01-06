@@ -1,6 +1,6 @@
 # Developer Guide: Module Registration for Declarative Pipelines
 
-> Complete guide for ApraPipes developers on registering modules for use in declarative (JSON-based) pipelines.
+> Complete guide for ApraPipes developers on registering modules for use in declarative (JSON/JavaScript) pipelines.
 
 ---
 
@@ -9,61 +9,49 @@
 1. [Overview](#overview)
 2. [Quick Start](#quick-start)
 3. [Registration Patterns](#registration-patterns)
-4. [Module Categories](#module-categories)
-5. [Input and Output Pins](#input-and-output-pins)
-6. [Property Definitions](#property-definitions)
-7. [Frame Types](#frame-types)
-8. [Self-Managed Pins](#self-managed-pins)
-9. [Adding applyProperties to Modules](#adding-applyproperties-to-modules)
-10. [Testing Your Registration](#testing-your-registration)
-11. [Common Scenarios](#common-scenarios)
-12. [Best Practices](#best-practices)
-13. [Troubleshooting](#troubleshooting)
+4. [Property Definitions](#property-definitions)
+5. [Dynamic Properties](#dynamic-properties)
+6. [Frame Types](#frame-types)
+7. [Self-Managed Pins](#self-managed-pins)
+8. [Testing Your Registration](#testing-your-registration)
+9. [Best Practices](#best-practices)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Overview
 
-The declarative pipeline system allows users to define video processing pipelines using JSON configuration files instead of writing C++ code. For this to work, each module must be **registered** with metadata describing:
+The declarative pipeline system allows users to define video processing pipelines using:
+- **JSON configuration files** (via CLI)
+- **JavaScript/Node.js** (via native addon)
 
-- **Category**: Source, Sink, Transform, Analytics, or Utility
-- **Input/Output pins**: What frame types the module accepts and produces
-- **Properties**: Configuration options available in JSON
+For this to work, each module must be **registered** with metadata describing its inputs, outputs, and properties.
 
 ### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     JSON Pipeline File                          │
-│  "modules": {                                                   │
-│    "reader": {                                                  │
-│      "type": "FileReaderModule",                                │
-│      "props": { "strFullFileNameWithPattern": "./video.mp4" }   │
-│    }                                                            │
-│  }                                                              │
+│                     JSON Config / JS Object                      │
+│  {                                                               │
+│    "modules": {                                                  │
+│      "ptz": { "type": "VirtualPTZ", "props": { "roiX": 0.5 } }  │
+│    }                                                             │
+│  }                                                               │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      JsonParser                                 │
-│  Parses JSON → PipelineDescription                              │
+│                    ModuleRegistry                                │
+│  Looks up module metadata by type name                           │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ "VirtualPTZ" → ModuleInfo (category, pins, properties)  │    │
+│  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    ModuleRegistry                               │
-│  Looks up module metadata by type name                          │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ "FileReaderModule" → ModuleInfo (category, pins, props) │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    ModuleFactory                                │
-│  Creates module instances using registered factory function     │
-│  Applies JSON properties via applyProperties()                  │
-│  Connects modules using setNext()                               │
+│                    ModuleFactory                                 │
+│  Creates module instances, applies properties, connects pins     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -71,7 +59,7 @@ The declarative pipeline system allows users to define video processing pipeline
 
 ## Quick Start
 
-### Minimal Registration (in ModuleRegistrations.cpp)
+### Step 1: Register Your Module
 
 Add your module to `base/src/declarative/ModuleRegistrations.cpp`:
 
@@ -84,168 +72,303 @@ if (!registry.hasModule("YourModule")) {
         .category(ModuleCategory::Transform)
         .description("Brief description of what your module does")
         .input("input", "RawImage")
-        .output("output", "RawImage");
+        .output("output", "RawImage")
+        .intProp("width", "Frame width", true, 640, 1, 4096);
 }
 ```
 
-That's it! Your module is now usable in JSON pipelines:
+### Step 2: Add Property Binding to Props Class
+
+In your module's header file, add the `applyProperties` static method:
+
+```cpp
+#include "declarative/PropertyMacros.h"
+
+class YourModuleProps : public ModuleProps {
+public:
+    int width = 640;
+    int height = 480;
+
+    // Property binding for declarative pipeline
+    template<typename PropsT>
+    static void applyProperties(
+        PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired
+    ) {
+        apra::applyProp(props.width, "width", values, true, missingRequired);
+        apra::applyProp(props.height, "height", values, true, missingRequired);
+    }
+};
+```
+
+### Step 3: Test It
+
+Your module is now usable in JSON pipelines:
 
 ```json
 {
   "modules": {
     "mymodule": {
-      "type": "YourModule"
+      "type": "YourModule",
+      "props": { "width": 1920, "height": 1080 }
     }
   }
 }
+```
+
+And in JavaScript:
+
+```javascript
+const ap = require('./aprapipes.node');
+const pipeline = ap.createPipeline({
+    modules: {
+        mymodule: { type: "YourModule", props: { width: 1920, height: 1080 } }
+    },
+    connections: []
+});
 ```
 
 ---
 
 ## Registration Patterns
 
-### Pattern 1: Simple Transform Module
-
-For modules that take one input and produce one output of the same type:
+### Pattern 1: Source Module (No Input)
 
 ```cpp
-registerModule<RotateCV, RotateCVProps>()
-    .category(ModuleCategory::Transform)
-    .description("Rotates images by a specified angle using OpenCV")
-    .tags("transform", "rotate", "image", "opencv")
-    .input("input", "RawImage")
-    .output("output", "RawImage")
-    .floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0);
+registerModule<TestSignalGenerator, TestSignalGeneratorProps>()
+    .category(ModuleCategory::Source)
+    .description("Generates test signal frames")
+    .tags("source", "test", "generator")
+    .output("output", "RawImagePlanar")
+    .intProp("width", "Frame width in pixels", true, 0, 1, 4096)
+    .intProp("height", "Frame height in pixels", true, 0, 1, 4096)
+    .stringProp("pattern", "Pattern type: GRADIENT, CHECKERBOARD, COLOR_BARS, GRID", false, "GRADIENT");
 ```
 
-### Pattern 2: Source Module (No Input)
-
-For modules that generate frames:
+### Pattern 2: Transform Module
 
 ```cpp
-registerModule<FileReaderModule, FileReaderModuleProps>()
-    .category(ModuleCategory::Source)
-    .description("Reads frames from files matching a pattern")
-    .tags("source", "file", "reader")
-    .output("output", "Frame")  // Generic output
-    .stringProp("strFullFileNameWithPattern", "File path pattern", true)
-    .boolProp("readLoop", "Loop back to start when reaching end", false, true)
-    .enumProp("outputFrameType", "Output frame type", false, "Frame",
-        "Frame", "EncodedImage", "RawImage", "RawImagePlanar");
+registerModule<VirtualPTZ, VirtualPTZProps>()
+    .category(ModuleCategory::Transform)
+    .description("Virtual Pan-Tilt-Zoom using ROI cropping")
+    .tags("transform", "ptz", "crop", "zoom")
+    .input("input", "RawImage")
+    .output("output", "RawImage")
+    .floatProp("roiX", "ROI X position (0-1)", false, 0.0, 0.0, 1.0)
+    .floatProp("roiY", "ROI Y position (0-1)", false, 0.0, 0.0, 1.0)
+    .floatProp("roiWidth", "ROI width (0-1)", false, 1.0, 0.0, 1.0)
+    .floatProp("roiHeight", "ROI height (0-1)", false, 1.0, 0.0, 1.0)
+    .selfManagedOutputPins();
 ```
 
 ### Pattern 3: Sink Module (No Output)
 
-For modules that consume frames:
-
 ```cpp
-registerModule<StatSink, StatSinkProps>()
+registerModule<FileWriterModule, FileWriterModuleProps>()
     .category(ModuleCategory::Sink)
-    .description("Statistics sink for measuring pipeline performance")
-    .tags("sink", "stats", "performance", "debug")
-    .input("input", "Frame");  // Accepts any frame type
-```
-
-### Pattern 4: Multi-Input Module
-
-For modules that merge multiple streams:
-
-```cpp
-registerModule<Merge, MergeProps>()
-    .category(ModuleCategory::Utility)
-    .description("Merges frames from multiple input pins")
-    .tags("utility", "merge", "sync")
-    .input("input_1", "Frame")
-    .input("input_2", "Frame")
-    .output("output", "Frame")
-    .selfManagedOutputPins();  // Module creates pins dynamically
-```
-
-### Pattern 5: Multi-Output Module
-
-For modules that split streams:
-
-```cpp
-registerModule<Split, SplitProps>()
-    .category(ModuleCategory::Utility)
-    .description("Splits input frames across multiple output pins")
-    .tags("utility", "split", "routing")
+    .description("Writes frames to files")
+    .tags("sink", "file", "writer")
     .input("input", "Frame")
-    .output("output_1", "Frame")
-    .output("output_2", "Frame")
-    .selfManagedOutputPins();  // Module creates pins in addInputPin()
+    .stringProp("strFullFileNameWithPattern", "Output file pattern (e.g., output_????.jpg)", true);
 ```
 
-### Pattern 6: Codec/Decoder Module
-
-For modules that transform between frame types:
+### Pattern 4: Codec Module
 
 ```cpp
-registerModule<ImageDecoderCV, ImageDecoderCVProps>()
+registerModule<ImageEncoderCV, ImageEncoderCVProps>()
     .category(ModuleCategory::Transform)
-    .description("Decodes encoded images (JPEG, PNG, BMP) to raw image format")
-    .tags("decoder", "image", "opencv")
-    .input("input", "EncodedImage")
-    .output("output", "RawImage");
-```
-
-### Pattern 7: Analytics Module
-
-For modules that produce detection/analysis results:
-
-```cpp
-registerModule<FaceDetectorXform, FaceDetectorXformProps>()
-    .category(ModuleCategory::Analytics)
-    .description("Detects faces in image frames using deep learning models")
-    .tags("analytics", "face", "detection", "transform")
+    .description("Encodes raw images to JPEG/PNG")
+    .tags("encoder", "image", "opencv", "jpeg", "png")
     .input("input", "RawImage")
-    .output("output", "Frame")  // Outputs FaceDetectsInfo
+    .output("output", "EncodedImage")
     .selfManagedOutputPins();
 ```
 
 ---
 
-## Module Categories
+## Property Definitions
 
-| Category | Description | Example Modules |
-|----------|-------------|-----------------|
-| `Source` | Generates frames (no input) | FileReaderModule, WebcamSource, RTSPClientSrc |
-| `Sink` | Consumes frames (no output) | FileWriterModule, StatSink, Mp4WriterSink |
-| `Transform` | Processes frames (input → output) | ImageDecoderCV, RotateCV, ColorConversion |
-| `Analytics` | Produces detection/analysis data | FaceDetectorXform, QRReader |
-| `Utility` | Flow control, routing | Split, Merge, ValveModule |
+### Property Methods
 
-Usage:
+| Method | Parameters | Example |
+|--------|------------|---------|
+| `.stringProp()` | name, desc, required, default | `.stringProp("path", "File path", true)` |
+| `.intProp()` | name, desc, required, default, min, max | `.intProp("width", "Width", true, 640, 1, 4096)` |
+| `.floatProp()` | name, desc, required, default, min, max | `.floatProp("scale", "Scale", false, 1.0, 0.1, 10.0)` |
+| `.boolProp()` | name, desc, required, default | `.boolProp("loop", "Loop playback", false, true)` |
+| `.enumProp()` | name, desc, required, default, values... | `.enumProp("mode", "Mode", false, "auto", "auto", "manual")` |
+
+### applyProperties Pattern
+
+Use the `apra::applyProp` helper from `PropertyMacros.h`:
+
 ```cpp
-.category(ModuleCategory::Transform)
+#include "declarative/PropertyMacros.h"
+
+class MyModuleProps : public ModuleProps {
+public:
+    std::string path;
+    int width = 640;
+    float scale = 1.0f;
+    bool enabled = true;
+
+    template<typename PropsT>
+    static void applyProperties(
+        PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired
+    ) {
+        // Required properties (4th param = true)
+        apra::applyProp(props.path, "path", values, true, missingRequired);
+        apra::applyProp(props.width, "width", values, true, missingRequired);
+
+        // Optional properties (4th param = false)
+        apra::applyProp(props.scale, "scale", values, false, missingRequired);
+        apra::applyProp(props.enabled, "enabled", values, false, missingRequired);
+    }
+};
+```
+
+### Enum Properties
+
+For enum properties, handle the string-to-enum conversion:
+
+```cpp
+class ColorConversionProps : public ModuleProps {
+public:
+    ColorConversionType conversionType = ColorConversionType::RGB_TO_BGR;
+
+    template<typename PropsT>
+    static void applyProperties(
+        PropsT& props,
+        const std::map<std::string, apra::ScalarPropertyValue>& values,
+        std::vector<std::string>& missingRequired
+    ) {
+        auto it = values.find("conversionType");
+        if (it != values.end()) {
+            if (auto* v = std::get_if<std::string>(&it->second)) {
+                if (*v == "RGB_TO_BGR") props.conversionType = ColorConversionType::RGB_TO_BGR;
+                else if (*v == "YUV420PLANAR_TO_RGB") props.conversionType = ColorConversionType::YUV420PLANAR_TO_RGB;
+                // ... more mappings
+            }
+        } else {
+            missingRequired.push_back("conversionType");
+        }
+    }
+};
 ```
 
 ---
 
-## Input and Output Pins
+## Dynamic Properties
 
-### Single Frame Type
+Dynamic properties allow JavaScript to read and modify module properties at runtime while the pipeline is running.
 
-```cpp
-.input("input", "RawImage")
-.output("output", "RawImage")
-```
-
-### Multiple Frame Types (Module Accepts Either)
+### Step 1: Add Dynamic Property Methods to Props Class
 
 ```cpp
-.input("input", "RawImage", "RawImagePlanar")  // Accepts both types
+class VirtualPTZProps : public ModuleProps {
+public:
+    float roiX = 0.0f;
+    float roiY = 0.0f;
+    float roiWidth = 1.0f;
+    float roiHeight = 1.0f;
+
+    // Static method returning list of dynamic property names
+    static std::vector<std::string> dynamicPropertyNames() {
+        return {"roiX", "roiY", "roiWidth", "roiHeight"};
+    }
+
+    // Get property value
+    apra::ScalarPropertyValue getProperty(const std::string& name) const {
+        if (name == "roiX") return static_cast<double>(roiX);
+        if (name == "roiY") return static_cast<double>(roiY);
+        if (name == "roiWidth") return static_cast<double>(roiWidth);
+        if (name == "roiHeight") return static_cast<double>(roiHeight);
+        throw std::runtime_error("Unknown property: " + name);
+    }
+
+    // Set property value
+    bool setProperty(const std::string& name, const apra::ScalarPropertyValue& value) {
+        if (name == "roiX") {
+            if (auto* v = std::get_if<double>(&value)) { roiX = static_cast<float>(*v); return true; }
+        } else if (name == "roiY") {
+            if (auto* v = std::get_if<double>(&value)) { roiY = static_cast<float>(*v); return true; }
+        } else if (name == "roiWidth") {
+            if (auto* v = std::get_if<double>(&value)) { roiWidth = static_cast<float>(*v); return true; }
+        } else if (name == "roiHeight") {
+            if (auto* v = std::get_if<double>(&value)) { roiHeight = static_cast<float>(*v); return true; }
+        }
+        return false;
+    }
+
+    // Required: applyProperties for initial config
+    template<typename PropsT>
+    static void applyProperties(PropsT& props, const std::map<std::string, apra::ScalarPropertyValue>& values, std::vector<std::string>& missingRequired) {
+        apra::applyProp(props.roiX, "roiX", values, false, missingRequired);
+        apra::applyProp(props.roiY, "roiY", values, false, missingRequired);
+        apra::applyProp(props.roiWidth, "roiWidth", values, false, missingRequired);
+        apra::applyProp(props.roiHeight, "roiHeight", values, false, missingRequired);
+    }
+};
 ```
 
-### Optional Input
+### Step 2: Implement setProps() in Module
+
+The module must apply property changes to its internal state:
 
 ```cpp
-.optionalInput("mask", "RawImage")  // Optional mask input
+void VirtualPTZ::setProps(VirtualPTZProps& props) {
+    // If pipeline not running, update directly
+    if (!canQueueProps()) {
+        mDetail->mProps = props;
+        mDetail->setProps(props);
+        return;
+    }
+    // If running, queue for thread-safe update
+    Module::addPropsToQueue(props);
+}
+
+VirtualPTZProps VirtualPTZ::getProps() {
+    fillProps(mDetail->mProps);
+    return mDetail->mProps;
+}
 ```
 
-### Frame Type Hierarchy
+### Step 3: JavaScript Usage
 
-Frame types form a hierarchy for compatibility checking:
+```javascript
+const ptz = pipeline.getModule('ptz');
+
+if (ptz.hasDynamicProperties()) {
+    // Get available properties
+    console.log(ptz.getDynamicPropertyNames());  // ["roiX", "roiY", "roiWidth", "roiHeight"]
+
+    // Read current value
+    const x = ptz.getProperty('roiX');
+
+    // Update at runtime (while pipeline is running)
+    ptz.setProperty('roiX', 0.5);
+    ptz.setProperty('roiWidth', 0.5);
+}
+```
+
+---
+
+## Frame Types
+
+### Common Frame Types
+
+| Type | Description | Used By |
+|------|-------------|---------|
+| `Frame` | Base type (accepts anything) | Generic sinks |
+| `RawImage` | Uncompressed RGB/BGR pixels | Most transforms |
+| `RawImagePlanar` | YUV planar format | TestSignalGenerator, video sources |
+| `EncodedImage` | JPEG/PNG encoded data | Encoders, file writers |
+| `H264Data` | H.264 video frames | Video decoders/encoders |
+
+### Type Hierarchy
 
 ```
 Frame (root)
@@ -253,383 +376,84 @@ Frame (root)
 │   └── RawImagePlanar
 ├── EncodedImage
 │   ├── H264Data
-│   ├── HEVCData
 │   └── BMPImage
-├── Audio
-├── Array
-├── ControlFrame
-│   ├── ChangeDetection
-│   ├── PropsChange
-│   └── Command
 └── AnalyticsFrame
     ├── FaceDetectsInfo
     └── DefectsInfo
 ```
 
-**Compatibility Rules:**
-- A module expecting `RawImage` will also accept `RawImagePlanar` (subtype)
-- A module expecting `Frame` accepts anything
-- A module expecting `RawImage` will NOT accept `EncodedImage` (different branch)
+### Compatibility Rules
 
----
-
-## Property Definitions
-
-### String Property
-
-```cpp
-.stringProp("name", "description", required, "default_value")
-
-// Example:
-.stringProp("strFullFileNameWithPattern", "File path pattern", true)  // Required, no default
-.stringProp("outputFormat", "Output format", false, "jpeg")  // Optional with default
-```
-
-### Integer Property
-
-```cpp
-.intProp("name", "description", required, default, min, max)
-
-// Example:
-.intProp("width", "Frame width in pixels", true, 0, 1, 4096)  // Required, range 1-4096
-.intProp("fps", "Frames per second", false, 30, 1, 120)  // Optional, default 30
-```
-
-### Float Property
-
-```cpp
-.floatProp("name", "description", required, default, min, max)
-
-// Example:
-.floatProp("angle", "Rotation angle in degrees", true, 0.0, -360.0, 360.0)
-.floatProp("scale", "Scale factor", false, 1.0, 0.1, 10.0)
-```
-
-### Boolean Property
-
-```cpp
-.boolProp("name", "description", required, default)
-
-// Example:
-.boolProp("readLoop", "Loop playback", false, true)  // Optional, default true
-.boolProp("enableMetadata", "Enable metadata track", false, false)
-```
-
-### Enum Property
-
-```cpp
-.enumProp("name", "description", required, "default", "value1", "value2", ...)
-
-// Example:
-.enumProp("conversionType", "Color space conversion", true, "RGB_TO_MONO",
-    "RGB_TO_MONO", "BGR_TO_MONO", "BGR_TO_RGB", "RGB_TO_BGR",
-    "RGB_TO_YUV420PLANAR", "YUV420PLANAR_TO_RGB")
-```
-
-### Dynamic Property (Runtime-Modifiable)
-
-```cpp
-.dynamicProp("name", "type", "description", required, "default")
-
-// Example:
-.dynamicProp("contrast", "float", "Contrast multiplier", false, "1.0")
-.dynamicProp("text", "string", "Text to overlay", false, "")
-```
-
----
-
-## Frame Types
-
-### Registering a New Frame Type
-
-If your module uses a custom frame type, add it to `FrameTypeRegistrations.cpp`:
-
-```cpp
-// In registerBuiltinFrameTypes()
-registerType("MyCustomData", "Frame",
-             "Description of my custom frame type",
-             {"custom", "mymodule"});
-```
-
-For hierarchical types:
-```cpp
-// MySpecificData inherits from AnalyticsFrame
-registerType("MySpecificData", "AnalyticsFrame",
-             "Specific detection results from MyModule",
-             {"analytics", "detection", "mymodule"});
-```
-
-### Frame Type Best Practices
-
-1. **Use existing types when possible** - Check `FrameTypeRegistrations.cpp` first
-2. **Choose the right parent** - Your type should inherit from the most specific applicable parent
-3. **Add descriptive tags** - Helps with filtering and documentation
+- **Exact match**: Always works
+- **Subtype → Parent**: Works (RawImagePlanar connects to RawImage input)
+- **Different branches**: Fails (RawImage cannot connect to EncodedImage)
 
 ---
 
 ## Self-Managed Pins
 
-Some modules create output pins dynamically in their `addInputPin()` method. For these modules, you must call `.selfManagedOutputPins()`:
+Add `.selfManagedOutputPins()` when your module creates output pins dynamically in `addInputPin()`:
 
 ```cpp
 registerModule<ImageEncoderCV, ImageEncoderCVProps>()
-    .category(ModuleCategory::Transform)
-    .description("Encodes raw images to JPEG/PNG format")
     .input("input", "RawImage")
     .output("output", "EncodedImage")
-    .selfManagedOutputPins();  // REQUIRED - module creates pin in addInputPin()
+    .selfManagedOutputPins();  // Module creates pin in addInputPin()
 ```
-
-**When to use:**
-- Module's `addInputPin()` calls `addOutputPin()` internally
-- Module creates multiple output pins based on input type
-- Module's output pin count depends on runtime configuration
 
 **Common modules requiring this:**
-- FaceDetectorXform, QRReader (analytics modules)
-- ImageEncoderCV, ImageResizeCV, RotateCV
-- Split, Merge
-- ColorConversion, VirtualPTZ
-
----
-
-## Adding applyProperties to Modules
-
-For full JSON property support, modules should implement `applyProperties()` in their Props class. This is done in the module's header file.
-
-### Example: Adding applyProperties to YourModuleProps
-
-In `YourModule.h`:
-
-```cpp
-class YourModuleProps : public ModuleProps {
-public:
-    std::string inputPath;
-    int width = 640;
-    int height = 480;
-    float scale = 1.0;
-    bool enableFeature = false;
-
-    YourModuleProps() {}
-
-    // Add this method for JSON property binding
-    void applyProperties(const std::map<std::string, apra::ScalarPropertyValue>& props) {
-        for (const auto& [key, value] : props) {
-            if (key == "inputPath") {
-                if (auto* v = std::get_if<std::string>(&value)) inputPath = *v;
-            } else if (key == "width") {
-                if (auto* v = std::get_if<int64_t>(&value)) width = static_cast<int>(*v);
-            } else if (key == "height") {
-                if (auto* v = std::get_if<int64_t>(&value)) height = static_cast<int>(*v);
-            } else if (key == "scale") {
-                if (auto* v = std::get_if<double>(&value)) scale = static_cast<float>(*v);
-            } else if (key == "enableFeature") {
-                if (auto* v = std::get_if<bool>(&value)) enableFeature = *v;
-            }
-        }
-    }
-};
-```
-
-### With Enum Properties
-
-```cpp
-enum class ConversionType { RGB_TO_MONO, BGR_TO_RGB, /* ... */ };
-
-class ColorConversionProps : public ModuleProps {
-public:
-    ConversionType conversionType = ConversionType::RGB_TO_MONO;
-
-    void applyProperties(const std::map<std::string, apra::ScalarPropertyValue>& props) {
-        for (const auto& [key, value] : props) {
-            if (key == "conversionType") {
-                if (auto* v = std::get_if<std::string>(&value)) {
-                    if (*v == "RGB_TO_MONO") conversionType = ConversionType::RGB_TO_MONO;
-                    else if (*v == "BGR_TO_RGB") conversionType = ConversionType::BGR_TO_RGB;
-                    // ... more mappings
-                }
-            }
-        }
-    }
-};
-```
-
-**Note:** Even without `applyProperties()`, modules can still be registered. They'll just use default-constructed Props.
+- Transform modules that copy input metadata to output
+- Analytics modules that create output pins based on input type
+- Split/Merge utilities
 
 ---
 
 ## Testing Your Registration
 
-### 1. Build and Run Unit Tests
+### 1. Build and Run Tests
 
 ```bash
-cmake --build build --target aprapipesut -j8
+cmake --build build --parallel
 ./build/aprapipesut --run_test="ModuleRegistrationTests/*"
 ```
 
-### 2. Check Registration Coverage
+### 2. Validate with CLI
 
 ```bash
-./build/aprapipesut --run_test="ModuleRegistrationTests/AllModules_AreDiscovered"
-```
-
-This test compares registered modules against discovered Module subclasses.
-
-### 3. Validate with CLI
-
-```bash
-# List registered modules
 ./build/aprapipes_cli list-modules
-
-# Get module details
 ./build/aprapipes_cli describe YourModule
-
-# Validate a JSON pipeline using your module
-./build/aprapipes_cli validate your_pipeline.json
 ```
 
-### 4. Create a Test Pipeline
+### 3. Test with Node.js
 
-Create `docs/declarative-pipeline/examples/working/test_yourmodule.json`:
+```javascript
+const ap = require('./aprapipes.node');
 
-```json
-{
-  "pipeline": {
-    "name": "test_yourmodule"
-  },
-  "modules": {
-    "source": {
-      "type": "TestSignalGenerator",
-      "props": {
-        "width": 640,
-        "height": 480
-      }
+const pipeline = ap.createPipeline({
+    modules: {
+        test: { type: "YourModule", props: { width: 640 } }
     },
-    "yourmodule": {
-      "type": "YourModule",
-      "props": {
-      }
-    },
-    "sink": {
-      "type": "StatSink"
-    }
-  },
-  "connections": [
-    { "from": "source", "to": "yourmodule" },
-    { "from": "yourmodule", "to": "sink" }
-  ]
-}
+    connections: []
+});
+
+const mod = pipeline.getModule('test');
+console.log(mod.type);  // "YourModule"
+console.log(mod.hasDynamicProperties());
 ```
-
-Test it:
-```bash
-./build/aprapipes_cli validate docs/declarative-pipeline/examples/working/test_yourmodule.json
-./build/aprapipes_cli run docs/declarative-pipeline/examples/working/test_yourmodule.json
-```
-
----
-
-## Common Scenarios
-
-### Scenario 1: Creating a New Module
-
-1. Create your module class extending `Module`
-2. Create your Props class extending `ModuleProps`
-3. Add `applyProperties()` to Props (optional but recommended)
-4. Register in `ModuleRegistrations.cpp`
-5. Test with a JSON pipeline
-
-### Scenario 2: Modifying an Existing Module
-
-If you add new properties to an existing module:
-
-1. Update `applyProperties()` in the Props class header
-2. Update registration in `ModuleRegistrations.cpp` to include new property
-3. Update documentation and examples
-
-### Scenario 3: Module with Dynamic Output Type
-
-Some modules (like FileReaderModule) can output different frame types:
-
-```cpp
-registerModule<FileReaderModule, FileReaderModuleProps>()
-    .output("output", "Frame")  // Generic - actual type set by property
-    .enumProp("outputFrameType", "Output frame type", false, "Frame",
-        "Frame", "EncodedImage", "RawImage", "RawImagePlanar");
-```
-
-### Scenario 4: Module that Bridges Frame Types
-
-For modules like ColorConversion that convert between types:
-
-```cpp
-registerModule<ColorConversion, ColorConversionProps>()
-    .input("input", "RawImage", "RawImagePlanar")  // Accepts both
-    .output("output", "RawImage", "RawImagePlanar")  // Can produce either
-    .enumProp("conversionType", "Conversion type", true, "RGB_TO_MONO",
-        "RGB_TO_MONO", "YUV420PLANAR_TO_RGB", /* ... */);
-```
-
-### Scenario 5: Adding a New Frame Type
-
-1. Add to `FrameTypeRegistrations.cpp`:
-   ```cpp
-   registerType("MyNewType", "Frame", "Description", {"tag1", "tag2"});
-   ```
-
-2. Use in module registration:
-   ```cpp
-   .output("output", "MyNewType")
-   ```
 
 ---
 
 ## Best Practices
 
-### 1. Match Property Names to Member Variables
+1. **Match property names exactly** - JSON property names must match the member variable names in your Props class
 
-```cpp
-// In Props class:
-std::string strFullFileNameWithPattern;
+2. **Use selfManagedOutputPins when needed** - If validation fails with "duplicate output pin", your module creates pins in addInputPin()
 
-// In registration:
-.stringProp("strFullFileNameWithPattern", "File path pattern", true)
-```
+3. **Add meaningful descriptions** - Property descriptions show up in CLI and documentation
 
-### 2. Provide Accurate Frame Types
+4. **Support dynamic properties for real-time control** - Any property users might want to change at runtime should be dynamic
 
-Don't just use "Frame" for everything. Be specific:
-- `RawImage` for uncompressed pixel data
-- `EncodedImage` for JPEG/PNG/compressed images
-- `H264Data` for H.264 encoded video
-
-### 3. Mark Required Properties Correctly
-
-```cpp
-.stringProp("videoPath", "Path to video file", true)  // Required
-.intProp("bufferSize", "Buffer size", false, 10)      // Optional with default
-```
-
-### 4. Use selfManagedOutputPins When Needed
-
-If validation fails with "duplicate output pin" errors, your module likely creates pins in `addInputPin()`. Add `.selfManagedOutputPins()`.
-
-### 5. Add Meaningful Tags
-
-Tags help with filtering and documentation:
-```cpp
-.tags("transform", "image", "opencv", "resize")
-```
-
-### 6. Keep Descriptions Concise
-
-```cpp
-// Good:
-.description("Rotates images by a specified angle using OpenCV")
-
-// Too verbose:
-.description("This module takes an input image and rotates it by the specified angle in degrees using the OpenCV library's rotation functions...")
-```
+5. **Test with actual pipelines** - Create a test JSON file and run it through the CLI
 
 ---
 
@@ -637,102 +461,47 @@ Tags help with filtering and documentation:
 
 ### "Module not found: YourModule"
 
-1. Check spelling matches class name exactly
-2. Verify registration is in `ModuleRegistrations.cpp`
-3. Ensure `#include "YourModule.h"` is at top of file
-
-### "Frame type mismatch" Validation Error
-
-1. Check input pin frame types match upstream module's output
-2. Consider using a bridge module (e.g., ColorConversion, ImageDecoderCV)
-3. Verify frame type hierarchy in `FrameTypeRegistrations.cpp`
-
-### "Duplicate output pin" Error
-
-Add `.selfManagedOutputPins()` to registration if your module creates output pins in `addInputPin()`.
+- Check spelling matches class name exactly
+- Verify include is at top of ModuleRegistrations.cpp
+- Ensure registration is inside `ensureBuiltinModulesRegistered()`
 
 ### "Unknown property: xyz"
 
-1. Add property to registration with `.stringProp()`, `.intProp()`, etc.
-2. If property should be ignored, it's not in registration metadata
+- Add property with `.stringProp()`, `.intProp()`, etc.
+- Property name must match exactly (case-sensitive)
 
-### Properties Not Applied
+### "Frame type mismatch"
 
-1. Verify `applyProperties()` exists in Props class
-2. Check property name matches exactly
-3. Verify type conversion (int64_t for integers, double for floats)
+- Check input/output frame types are compatible
+- Use ColorConversion for RawImagePlanar → RawImage
+- Use ImageDecoderCV for EncodedImage → RawImage
 
-### CI Build Failures
+### "Duplicate output pin"
 
-After adding registration:
-1. Include all necessary headers in `ModuleRegistrations.cpp`
-2. Handle platform-specific modules with `#ifdef` guards:
-   ```cpp
-   #ifdef ENABLE_CUDA
-   // CUDA-only module registrations
-   #endif
-   ```
+- Add `.selfManagedOutputPins()` to registration
 
----
+### Properties not applying
 
-## Reference: Complete Registration Example
-
-```cpp
-// In ModuleRegistrations.cpp:
-
-#include "MyAwesomeModule.h"
-
-// In ensureBuiltinModulesRegistered():
-if (!registry.hasModule("MyAwesomeModule")) {
-    registerModule<MyAwesomeModule, MyAwesomeModuleProps>()
-        .category(ModuleCategory::Transform)
-        .description("Performs awesome transformations on images")
-        .tags("transform", "image", "awesome")
-        .input("input", "RawImage")
-        .output("output", "RawImage")
-        .stringProp("mode", "Processing mode", false, "auto")
-        .intProp("intensity", "Processing intensity", false, 50, 0, 100)
-        .floatProp("threshold", "Detection threshold", false, 0.5, 0.0, 1.0)
-        .boolProp("enableDebug", "Enable debug output", false, false)
-        .enumProp("quality", "Output quality", false, "medium",
-            "low", "medium", "high", "ultra")
-        .selfManagedOutputPins();  // Only if module creates pins dynamically
-}
-```
-
-```cpp
-// In MyAwesomeModule.h:
-
-class MyAwesomeModuleProps : public ModuleProps {
-public:
-    std::string mode = "auto";
-    int intensity = 50;
-    float threshold = 0.5f;
-    bool enableDebug = false;
-    std::string quality = "medium";
-
-    void applyProperties(const std::map<std::string, apra::ScalarPropertyValue>& props) {
-        for (const auto& [key, value] : props) {
-            if (key == "mode") {
-                if (auto* v = std::get_if<std::string>(&value)) mode = *v;
-            } else if (key == "intensity") {
-                if (auto* v = std::get_if<int64_t>(&value)) intensity = static_cast<int>(*v);
-            } else if (key == "threshold") {
-                if (auto* v = std::get_if<double>(&value)) threshold = static_cast<float>(*v);
-            } else if (key == "enableDebug") {
-                if (auto* v = std::get_if<bool>(&value)) enableDebug = *v;
-            } else if (key == "quality") {
-                if (auto* v = std::get_if<std::string>(&value)) quality = *v;
-            }
-        }
-    }
-};
-```
+- Verify `applyProperties()` exists in Props class
+- Check property names match registration
+- Use `apra::applyProp()` helper for type-safe binding
 
 ---
 
-## Next Steps
+## Reference: Module Categories
 
-- See [Pipeline Author Guide](./PIPELINE_AUTHOR_GUIDE.md) for JSON pipeline creation
-- Run `./build/aprapipes_cli list-modules` to see all registered modules
-- Check `docs/declarative-pipeline/examples/` for example pipelines
+| Category | Description | Examples |
+|----------|-------------|----------|
+| `Source` | Generates frames (no input) | TestSignalGenerator, FileReaderModule |
+| `Sink` | Consumes frames (no output) | FileWriterModule, StatSink |
+| `Transform` | Processes frames | VirtualPTZ, ColorConversion, ImageEncoderCV |
+| `Analytics` | Detection/analysis | FaceDetectorXform, QRReader |
+| `Utility` | Flow control | Split, Merge, ValveModule |
+
+---
+
+## See Also
+
+- [Node.js API Reference](../node-api.md) - JavaScript API for pipelines
+- [Examples](../../examples/node/) - Working Node.js examples
+- [PIPELINE_AUTHOR_GUIDE.md](./PIPELINE_AUTHOR_GUIDE.md) - JSON pipeline authoring
