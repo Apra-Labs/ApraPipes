@@ -50,8 +50,15 @@
 
 // Batch 3: Additional Sink modules
 #include "ExternalSinkModule.h"
-// Note: RTSPPusher and VirtualCameraSink require mandatory constructor args
-// and need applyProperties support - skipped for now
+#include "RTSPPusher.h"
+#include "ThumbnailListGenerator.h"
+
+// Batch 4: Analytics modules with face detection
+#include "FacialLandmarksCV.h"
+
+// Batch 6: Additional source and utility modules
+#include "AudioCaptureSrc.h"
+#include "ArchiveSpaceManager.h"
 
 // Batch 5: Utility modules
 #include "FramesMuxer.h"
@@ -487,8 +494,79 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "Frame");
         }
 
-        // Note: RTSPPusher and VirtualCameraSink require mandatory constructor args
-        // and need custom applyProperties support - will be added after builder enhancement
+        // RTSPPusher - pushes video to RTSP server
+        if (!registry.hasModule("RTSPPusher")) {
+            registerModule<RTSPPusher, RTSPPusherProps>()
+                .category(ModuleCategory::Sink)
+                .description("Pushes video stream to an RTSP server for remote viewing")
+                .tags("sink", "rtsp", "network", "stream", "push")
+                .input("input", "H264Data")
+                .stringProp("url", "RTSP server URL to push to", true)
+                .stringProp("title", "Stream title", false, "stream")
+                .boolProp("isTCP", "Use TCP transport", false, true)
+                .intProp("encoderTargetKbps", "Target bitrate in Kbps", false, 2048, 100, 50000);
+        }
+
+        // ThumbnailListGenerator - generates thumbnail strip (ARM/Jetson only)
+        if (!registry.hasModule("ThumbnailListGenerator")) {
+            registerModule<ThumbnailListGenerator, ThumbnailListGeneratorProps>()
+                .category(ModuleCategory::Sink)
+                .description("Generates thumbnail strip image from video frames (ARM/Jetson platforms only)")
+                .tags("sink", "thumbnail", "image", "jetson")
+                .input("input", "RawImagePlanar")
+                .intProp("thumbnailWidth", "Thumbnail width in pixels", false, 128, 16, 1024)
+                .intProp("thumbnailHeight", "Thumbnail height in pixels", false, 128, 16, 1024)
+                .stringProp("fileToStore", "Output file path for thumbnail strip", true);
+        }
+
+        // ============================================================
+        // Batch 4: Analytics Modules
+        // ============================================================
+
+        // FacialLandmarkCV - facial landmark detection
+        if (!registry.hasModule("FacialLandmarkCV")) {
+            registerModule<FacialLandmarkCV, FacialLandmarkCVProps>()
+                .category(ModuleCategory::Analytics)
+                .description("Detects facial landmarks (eyes, nose, mouth) using OpenCV face module. Supports SSD and Haar cascade detection methods.")
+                .tags("analytics", "face", "landmarks", "opencv", "detection")
+                .input("input", "RawImage")
+                .output("landmarks", "FaceLandmarksInfo")
+                .enumProp("modelType", "Face detection model type", false, "SSD", "SSD", "HAAR_CASCADE")
+                .stringProp("faceDetectionConfig", "Path to SSD config file", false, "./data/assets/deploy.prototxt")
+                .stringProp("faceDetectionWeights", "Path to SSD weights file", false, "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel")
+                .stringProp("landmarksModel", "Path to facial landmarks model", false, "./data/assets/face_landmark_model.dat")
+                .stringProp("haarCascadeModel", "Path to Haar cascade model", false, "./data/assets/haarcascade.xml")
+                .selfManagedOutputPins();
+        }
+
+        // ============================================================
+        // Batch 6: Additional Source and Utility Modules
+        // ============================================================
+
+        // AudioCaptureSrc - captures audio from microphone
+        if (!registry.hasModule("AudioCaptureSrc")) {
+            registerModule<AudioCaptureSrc, AudioCaptureSrcProps>()
+                .category(ModuleCategory::Source)
+                .description("Captures audio from microphone or audio input device using PortAudio")
+                .tags("source", "audio", "capture", "microphone")
+                .output("output", "AudioFrame")
+                .intProp("sampleRate", "Audio sample rate in Hz", false, 44100, 8000, 192000)
+                .intProp("channels", "Number of audio channels", false, 2, 1, 8)
+                .intProp("audioInputDeviceIndex", "Audio device index (0 = default)", false, 0, 0, 100)
+                .intProp("processingIntervalMS", "Processing interval in milliseconds", false, 100, 10, 1000);
+        }
+
+        // ArchiveSpaceManager - manages disk space for video archives
+        if (!registry.hasModule("ArchiveSpaceManager")) {
+            registerModule<ArchiveSpaceManager, ArchiveSpaceManagerProps>()
+                .category(ModuleCategory::Utility)
+                .description("Monitors and manages disk space by deleting oldest files when storage exceeds threshold")
+                .tags("utility", "archive", "storage", "disk", "management")
+                .stringProp("pathToWatch", "Directory path to monitor for space management", true)
+                .intProp("lowerWaterMark", "Lower threshold in bytes - stop deleting when reached", true, 0)
+                .intProp("upperWaterMark", "Upper threshold in bytes - start deleting when exceeded", true, 0)
+                .intProp("samplingFreq", "Sampling frequency for size estimation", false, 60, 1, 1000);
+        }
 
         // ============================================================
         // Batch 5: Additional Utility Modules
