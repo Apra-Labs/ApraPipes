@@ -15,13 +15,10 @@
 #include "declarative/ModuleRegistry.h"
 #include "declarative/ModuleRegistrations.h"
 
-namespace aprapipes_node {
+// Phase 3: Pipeline wrapper
+#include "pipeline_wrapper.h"
 
-// ============================================================
-// Forward declarations for wrapper classes (Phase 3)
-// ============================================================
-class PipelineWrapper;
-class ModuleWrapper;
+namespace aprapipes_node {
 
 // ============================================================
 // listModules() - Get list of registered modules
@@ -247,9 +244,8 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set("describeModule", Napi::Function::New(env, DescribeModule));
     exports.Set("validatePipeline", Napi::Function::New(env, ValidatePipeline));
 
-    // TODO Phase 3: Add Pipeline and Module wrapper classes
-    // exports.Set("createPipeline", Napi::Function::New(env, CreatePipeline));
-    // exports.Set("Pipeline", PipelineWrapper::GetClass(env));
+    // Phase 3: Pipeline wrapper class and factory
+    PipelineWrapper::Init(env, exports);
 
     return exports;
 }

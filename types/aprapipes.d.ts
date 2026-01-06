@@ -99,45 +99,97 @@ declare module '@apralabs/aprapipes' {
   }
 
   // ============================================================
-  // Future Phase 3+ types (not yet implemented)
+  // Pipeline creation and control (Phase 3)
   // ============================================================
 
-  // export function createPipeline(config: string | PipelineConfig): Pipeline;
+  /**
+   * Create a pipeline from configuration
+   * @param config Pipeline configuration (JSON string or object)
+   * @returns Pipeline instance ready for init/run
+   * @throws Error if config is invalid or build fails
+   */
+  export function createPipeline(config: string | PipelineConfig): Pipeline;
 
-  // export interface Pipeline {
-  //   init(): Promise<void>;
-  //   run(): Promise<void>;
-  //   stop(): Promise<void>;
-  //   pause(): void;
-  //   play(): void;
-  //   getModule(id: string): ModuleHandle | null;
-  //   getStatus(): PipelineStatus;
-  //   on(event: 'error', handler: (error: PipelineError) => void): void;
-  //   on(event: 'stats', handler: (stats: PipelineStats) => void): void;
-  //   on(event: 'health', handler: (health: HealthReport) => void): void;
-  //   off(event: string, handler: Function): void;
-  // }
+  /**
+   * Pipeline class - wraps a running pipeline
+   */
+  export class Pipeline {
+    /**
+     * Initialize the pipeline (must be called before run)
+     * @returns Promise that resolves when init completes
+     */
+    init(): Promise<boolean>;
 
-  // export interface ModuleHandle {
-  //   id: string;
-  //   type: string;
-  //   getProperty<T = any>(name: string): T;
-  //   setProperty<T = any>(name: string, value: T): void;
-  //   getStatus(): ModuleStatus;
-  // }
+    /**
+     * Start the pipeline running
+     * @param options Run options
+     * @returns Promise that resolves when pipeline stops
+     */
+    run(options?: { pauseSupport?: boolean }): Promise<boolean>;
 
-  // export interface PipelineStatus {
-  //   state: 'idle' | 'running' | 'paused' | 'stopped' | 'error';
-  //   modules: { [id: string]: ModuleStatus };
-  // }
+    /**
+     * Stop the pipeline
+     * @returns Promise that resolves when stop completes
+     */
+    stop(): Promise<boolean>;
 
-  // export interface ModuleStatus {
-  //   state: 'idle' | 'running' | 'paused' | 'error';
-  //   framesProcessed: number;
-  //   currentFps: number;
-  //   errorCount: number;
-  // }
+    /**
+     * Terminate and cleanup the pipeline
+     * @returns Promise that resolves when terminate completes
+     */
+    terminate(): Promise<boolean>;
 
+    /**
+     * Pause the pipeline (requires pauseSupport in run options)
+     */
+    pause(): void;
+
+    /**
+     * Resume a paused pipeline
+     */
+    play(): void;
+
+    /**
+     * Step one frame (when paused)
+     */
+    step(): void;
+
+    /**
+     * Get current pipeline status
+     * @returns Status string (PL_CREATED, PL_INITED, PL_RUNNING, etc.)
+     */
+    getStatus(): string;
+
+    /**
+     * Get pipeline name
+     */
+    getName(): string;
+
+    /**
+     * Get list of module instance IDs
+     */
+    getModuleIds(): string[];
+
+    /**
+     * Get a module handle by ID
+     * @param id Module instance ID
+     * @returns Module handle or null if not found
+     */
+    getModule(id: string): ModuleHandle | null;
+  }
+
+  // ============================================================
+  // Future Phase 4+ types (not yet implemented)
+  // ============================================================
+
+  export interface ModuleHandle {
+    id: string;
+    type: string;
+    getProperty<T = any>(name: string): T;
+    setProperty<T = any>(name: string, value: T): void;
+  }
+
+  // Event system (Phase 4)
   // export interface PipelineError {
   //   moduleId: string;
   //   errorCode: number;
@@ -147,12 +199,7 @@ declare module '@apralabs/aprapipes' {
 
   // export interface PipelineStats {
   //   timestamp: Date;
-  //   data: PipelineStatus;
-  // }
-
-  // export interface HealthReport {
-  //   timestamp: Date;
-  //   healthy: boolean;
-  //   modules: { [id: string]: boolean };
+  //   fps: number;
+  //   framesProcessed: number;
   // }
 }

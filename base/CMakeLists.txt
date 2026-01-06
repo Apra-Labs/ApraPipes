@@ -1039,6 +1039,7 @@ if(BUILD_NODE_ADDON)
 
         add_library(${NODE_ADDON_NAME} SHARED
             bindings/node/addon.cpp
+            bindings/node/pipeline_wrapper.cpp
         )
 
         # Set output extension to .node
@@ -1077,10 +1078,11 @@ if(BUILD_NODE_ADDON)
         # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
         target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
 
-        # Include directories (same as aprapipes target)
+        # Include directories (same as aprapipes target + bindings/node for wrapper headers)
         target_include_directories(${NODE_ADDON_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+            ${CMAKE_CURRENT_SOURCE_DIR}/bindings/node
             ${OpenCV_INCLUDE_DIRS}
             ${Boost_INCLUDE_DIRS}
             ${FFMPEG_INCLUDE_DIRS}
