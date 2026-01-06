@@ -1,19 +1,19 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-05
+> Last Updated: 2026-01-06
 
 ---
 
 ## Current Status
 
 **Sprints 1-3:** ✅ COMPLETE
-**Sprint 4 (Node.js):** 🔄 Phase 4 complete, Phase 5 pending
+**Sprint 4 (Node.js):** 🔄 Phase 5 in progress
 
 ```
 Core Infrastructure:  ✅ Complete (Metadata, Registry, Factory, Validator, CLI)
 JSON Migration:       ✅ Complete (TOML removed, JsonParser added)
 Module Coverage:      31/62 (50%)
-Node.js Addon:        ✅ Phase 4 complete (events)
+Node.js Addon:        ✅ Phase 4.5 complete (events + dynamic props)
 ```
 
 ---
@@ -27,7 +27,8 @@ Node.js Addon:        ✅ Phase 4 complete (events)
 | Phase 2 | ✅ Complete | Node addon foundation |
 | Phase 3 | ✅ Complete | Core JS API (createPipeline, Pipeline, ModuleHandle) |
 | Phase 4 | ✅ Complete | Event system (on/off, health/error callbacks) |
-| Phase 5 | ⏳ Pending | Testing & docs |
+| Phase 4.5 | ✅ Complete | Dynamic property support (getProperty/setProperty) |
+| Phase 5 | 🔄 In Progress | Testing & docs |
 
 ---
 
@@ -38,8 +39,8 @@ Node.js Addon:        ✅ Phase 4 complete (events)
 - Batch 4: CUDA modules (H264Encoder, JPEGDecoder, etc.)
 - Batch 5: Remaining utility modules
 
-### Node.js Addon (Phase 5)
-- Node.js unit tests
+### Node.js Addon (Phase 5 - Remaining)
+- ~~Node.js unit tests~~ ✅ event_tests.js, ptz_dynamic_props_test.js
 - Example applications
 - API documentation
 
@@ -58,17 +59,28 @@ Node.js Addon:        ✅ Phase 4 complete (events)
 
 ## Test Results
 
+### C++ Unit Tests (Boost.Test)
+
 | Test Suite | Tests |
 |------------|-------|
 | MetadataTests | 36 |
 | ModuleRegistryTests | 21 |
 | PipelineDescriptionTests | 37 |
 | JsonParserTests | 24 |
-| ModuleFactoryTests | 38 |
+| ModuleFactoryTests | 42 |
 | FrameTypeRegistryTests | 34 |
 | PipelineValidatorTests | 28 |
 | PropertyMacrosTests | 28 |
 | PropertyValidatorTests | 26 |
 | ModuleRegistrationTests | 11 |
 
-**Total: 268+ declarative tests passing**
+**Total: 268+ declarative C++ tests passing**
+
+### Node.js Tests
+
+| Test File | Tests |
+|-----------|-------|
+| event_tests.js | 10 |
+| ptz_dynamic_props_test.js | 10 |
+
+**Total: 20 Node.js tests passing**
