@@ -166,7 +166,7 @@ cleanup_outputs() {
 # Validate a pipeline file
 validate_pipeline() {
     local pipeline_file="$1"
-    local pipeline_name=$(basename "$pipeline_file" .toml)
+    local pipeline_name=$(basename "$pipeline_file" .json)
 
     print_info "Validating $pipeline_name..."
 
@@ -181,7 +181,7 @@ validate_pipeline() {
 run_pipeline() {
     local pipeline_file="$1"
     local duration="$2"
-    local pipeline_name=$(basename "$pipeline_file" .toml)
+    local pipeline_name=$(basename "$pipeline_file" .json)
 
     print_info "Running $pipeline_name for ${duration}s..."
 
@@ -285,7 +285,7 @@ get_pipeline_config() {
 # Run test for a single pipeline
 test_pipeline() {
     local pipeline_file="$1"
-    local pipeline_name=$(basename "$pipeline_file" .toml)
+    local pipeline_name=$(basename "$pipeline_file" .json)
 
     ((TOTAL_TESTS++))
     print_test "$pipeline_name"
@@ -365,12 +365,12 @@ main() {
     local failed_pipelines=()
 
     # Find all working pipelines
-    for pipeline_file in "$WORKING_DIR"/*.toml; do
+    for pipeline_file in "$WORKING_DIR"/*.json; do
         if [ ! -f "$pipeline_file" ]; then
             continue
         fi
 
-        local pipeline_name=$(basename "$pipeline_file" .toml)
+        local pipeline_name=$(basename "$pipeline_file" .json)
 
         # Filter by specific pipeline if requested
         if [ -n "$SPECIFIC_PIPELINE" ]; then
