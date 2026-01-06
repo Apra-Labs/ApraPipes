@@ -12,11 +12,9 @@
 #include <map>
 #include "PipeLine.h"
 #include "declarative/ModuleFactory.h"
+#include "module_wrapper.h"
 
 namespace aprapipes_node {
-
-// Forward declaration
-class ModuleWrapper;
 
 // ============================================================
 // PipelineWrapper - Wraps C++ PipeLine for JavaScript
@@ -55,10 +53,17 @@ private:
 
     // Internal state
     std::unique_ptr<PipeLine> pipeline_;
-    std::map<std::string, apra::ModuleFactory::ModuleContext> moduleContexts_;
     std::vector<apra::BuildIssue> buildIssues_;
     bool initialized_ = false;
     bool running_ = false;
+
+    // Store module info for getModule() / getModuleIds()
+    struct ModuleInfo {
+        std::string instanceId;
+        std::string moduleType;
+        boost::shared_ptr<Module> module;
+    };
+    std::map<std::string, ModuleInfo> moduleInfoMap_;
 
     // Store reference to prevent GC
     Napi::ObjectReference selfRef_;

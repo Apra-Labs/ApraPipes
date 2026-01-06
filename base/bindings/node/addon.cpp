@@ -15,8 +15,9 @@
 #include "declarative/ModuleRegistry.h"
 #include "declarative/ModuleRegistrations.h"
 
-// Phase 3: Pipeline wrapper
+// Phase 3: Pipeline and Module wrappers
 #include "pipeline_wrapper.h"
+#include "module_wrapper.h"
 
 namespace aprapipes_node {
 
@@ -244,7 +245,8 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set("describeModule", Napi::Function::New(env, DescribeModule));
     exports.Set("validatePipeline", Napi::Function::New(env, ValidatePipeline));
 
-    // Phase 3: Pipeline wrapper class and factory
+    // Phase 3: Pipeline and Module wrapper classes
+    ModuleWrapper::Init(env, exports);
     PipelineWrapper::Init(env, exports);
 
     return exports;

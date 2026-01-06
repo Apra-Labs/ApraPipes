@@ -262,6 +262,15 @@ Napi::Value PipelineWrapper::CreatePipeline(const Napi::CallbackInfo& info) {
     instance->pipeline_ = std::move(buildResult.pipeline);
     instance->buildIssues_ = std::move(buildResult.issues);
 
+    // Store module info for getModule() / getModuleIds()
+    for (const auto& moduleInstance : parseResult.description.modules) {
+        ModuleInfo info;
+        info.instanceId = moduleInstance.instance_id;
+        info.moduleType = moduleInstance.module_type;
+        info.module = nullptr;  // We don't have direct access to the Module objects
+        instance->moduleInfoMap_[moduleInstance.instance_id] = info;
+    }
+
     return wrapper;
 }
 
@@ -419,17 +428,30 @@ Napi::Value PipelineWrapper::GetName(const Napi::CallbackInfo& info) {
 Napi::Value PipelineWrapper::GetModule(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    // TODO: Implement ModuleWrapper and return it here
-    // For now, return null
-    return env.Null();
+    if (info.Length() < 1 || !info[0].IsString()) {
+        Napi::TypeError::New(env, "Module ID (string) required").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string moduleId = info[0].As<Napi::String>().Utf8Value();
+
+    auto it = moduleInfoMap_.find(moduleId);
+    if (it == moduleInfoMap_.end()) {
+        return env.Null();  // Module not found
+    }
+
+    const ModuleInfo& modInfo = it->second;
+
+    // Create a ModuleWrapper
+    return ModuleWrapper::Create(env, modInfo.module, modInfo.instanceId, modInfo.moduleType);
 }
 
 Napi::Value PipelineWrapper::GetModuleIds(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    Napi::Array result = Napi::Array::New(env, moduleContexts_.size());
+    Napi::Array result = Napi::Array::New(env, moduleInfoMap_.size());
     size_t i = 0;
-    for (const auto& [id, context] : moduleContexts_) {
+    for (const auto& [id, modInfo] : moduleInfoMap_) {
         result.Set(i++, Napi::String::New(env, id));
     }
 

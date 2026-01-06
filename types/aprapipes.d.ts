@@ -179,14 +179,46 @@ declare module '@apralabs/aprapipes' {
   }
 
   // ============================================================
-  // Future Phase 4+ types (not yet implemented)
+  // Module Handle (Phase 3)
   // ============================================================
 
-  export interface ModuleHandle {
-    id: string;
-    type: string;
-    getProperty<T = any>(name: string): T;
-    setProperty<T = any>(name: string, value: T): void;
+  /**
+   * ModuleHandle - provides access to individual module info
+   */
+  export class ModuleHandle {
+    /** Instance ID (e.g., "source", "decoder") */
+    readonly id: string;
+
+    /** Module type (e.g., "TestSignalGenerator", "H264Decoder") */
+    readonly type: string;
+
+    /** Internal module name (may be null if module not accessible) */
+    readonly name: string | null;
+
+    /**
+     * Get module properties (fps, qlen, etc.)
+     */
+    getProps(): ModuleProps;
+
+    /**
+     * Check if module queue is full
+     */
+    isFull(): boolean;
+
+    /**
+     * Check if module is running
+     */
+    isRunning(): boolean;
+  }
+
+  export interface ModuleProps {
+    fps: number;
+    qlen: number;
+    logHealth: boolean;
+    logHealthFrequency: number;
+    maxConcurrentFrames: number;
+    enableHealthCallBack: boolean;
+    healthUpdateIntervalInSec: number;
   }
 
   // Event system (Phase 4)

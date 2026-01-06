@@ -1040,6 +1040,7 @@ if(BUILD_NODE_ADDON)
         add_library(${NODE_ADDON_NAME} SHARED
             bindings/node/addon.cpp
             bindings/node/pipeline_wrapper.cpp
+            bindings/node/module_wrapper.cpp
         )
 
         # Set output extension to .node
