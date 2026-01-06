@@ -226,8 +226,8 @@ void ensureBuiltinModulesRegistered() {
                 .boolProp("parseFS", "Parse filesystem for metadata", false, true)
                 .boolProp("direction", "Playback direction (true=forward)", false, true)
                 .boolProp("bFramesEnabled", "Enable B-frame decoding", false, false)
-                .intProp("reInitInterval", "Re-initialization interval in frames", false, 0, 0)
-                .intProp("parseFSTimeoutDuration", "Filesystem parse timeout (ms)", false, 0, 0)
+                .intProp("reInitInterval", "Re-initialization interval in seconds (0=disabled)", false, 0, 0)
+                .intProp("parseFSTimeoutDuration", "Filesystem parse timeout in seconds", false, 15, 0)
                 .boolProp("readLoop", "Loop playback when reaching end", false, false)
                 .boolProp("giveLiveTS", "Use live timestamps", false, false);
         }
@@ -239,12 +239,12 @@ void ensureBuiltinModulesRegistered() {
                 .description("Writes video frames to MP4 files")
                 .tags("sink", "mp4", "video", "file")
                 .input("input", "H264Data", "EncodedImage")
-                .stringProp("baseFolder", "Output folder for MP4 files", false, "")
-                .intProp("chunkTime", "Chunk duration in seconds", false, 60, 1)
-                .intProp("syncTimeInSecs", "Sync interval in seconds", false, 1, 1)
+                .stringProp("baseFolder", "Output folder for MP4 files", false, "./data/Mp4_videos/")
+                .intProp("chunkTime", "Chunk duration in minutes (1-60)", false, 1, 1, 60)
+                .intProp("syncTimeInSecs", "Sync interval in seconds (1-60)", false, 1, 1, 60)
                 .intProp("fps", "Output frame rate", false, 30, 1, 120)
-                .boolProp("recordedTSBasedDTS", "Use recorded timestamps for DTS", false, false)
-                .boolProp("enableMetadata", "Enable metadata track", false, false);
+                .boolProp("recordedTSBasedDTS", "Use recorded timestamps for DTS", false, true)
+                .boolProp("enableMetadata", "Enable metadata track", false, true);
         }
 
         // ImageResizeCV - resizes images using OpenCV
@@ -320,7 +320,7 @@ void ensureBuiltinModulesRegistered() {
                 .dynamicProp("fontColor", "string", "Font color (e.g., white, black, red)", false, "white")
                 .dynamicProp("backgroundColor", "string", "Background color (transparent for none)", false, "transparent")
                 .dynamicProp("alpha", "float", "Opacity (0-1)", false, "1.0")
-                .boolProp("isDateTime", "Display current date/time instead of text", false, false)
+                .dynamicProp("isDateTime", "bool", "Display current date/time instead of text", false, "false")
                 .selfManagedOutputPins();  // Creates output pin in addInputPin()
         }
 

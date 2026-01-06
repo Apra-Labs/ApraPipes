@@ -312,7 +312,7 @@ void DetailOpenH264::getMotionVectors(frame_container& frames, frame_sp& outFram
 		frames.insert(make_pair(rawFramePinId, decodedFrame));
 	}
 }
-MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props)
+MotionVectorExtractor::MotionVectorExtractor(MotionVectorExtractorProps props) : Module(TRANSFORM, "MotionVectorExtractor", props), mProps(props)
 {
 	if (props.MVExtract == MotionVectorExtractorProps::MVExtractMethod::FFMPEG)
 	{
@@ -411,10 +411,17 @@ bool MotionVectorExtractor::handlePropsChange(frame_sp& frame)
 {
 	MotionVectorExtractorProps props;
 	auto ret = Module::handlePropsChange(frame, props);
+	mProps = props;
 	mDetail->setProps(props);
 	return ret;
 }
 void MotionVectorExtractor::setProps(MotionVectorExtractorProps& props)
 {
 	Module::addPropsToQueue(props);
+}
+
+MotionVectorExtractorProps MotionVectorExtractor::getProps()
+{
+	fillProps(mProps);
+	return mProps;
 }
