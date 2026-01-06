@@ -78,126 +78,128 @@ const config = {
     ]
 };
 
-console.log('=== Image Processing Pipeline Example ===\n');
+async function main() {
+    console.log('=== Image Processing Pipeline Example ===\n');
 
-// Create pipeline
-const pipeline = ap.createPipeline(config);
-
-// Register error handler
-pipeline.on('error', (e) => {
-    console.error(`ERROR in ${e.moduleId}: ${e.message}`);
-});
-
-// Display pipeline structure
-console.log('Pipeline Structure:');
-console.log('');
-console.log('  [TestSignalGenerator] 1920x1080');
-console.log('          |');
-console.log('          v');
-console.log('  [ColorConversion] YUV420 -> RGB');
-console.log('          |');
-console.log('          v');
-console.log('  [VirtualPTZ] <- Has dynamic properties!');
-console.log('          |');
-console.log('          v');
-console.log('  [ImageEncoderCV] RGB -> JPEG');
-console.log('          |');
-console.log('          v');
-console.log('  [FileWriterModule] -> processed_????.jpg');
-console.log('');
-
-// Get module handles
-const modules = {
-    source: pipeline.getModule('source'),
-    colorConvert: pipeline.getModule('colorConvert'),
-    ptz: pipeline.getModule('ptz'),
-    encoder: pipeline.getModule('encoder'),
-    writer: pipeline.getModule('writer')
-};
-
-// Display module info
-console.log('--- Module Info ---\n');
-Object.entries(modules).forEach(([name, mod]) => {
-    const hasDyn = mod.hasDynamicProperties();
-    console.log(`${name}:`);
-    console.log(`  Type: ${mod.type}`);
-    console.log(`  ID: ${mod.id}`);
-    console.log(`  Dynamic props: ${hasDyn ? mod.getDynamicPropertyNames().join(', ') : 'none'}`);
+    // Display pipeline structure
+    console.log('Pipeline Structure:');
     console.log('');
+    console.log('  [TestSignalGenerator] 1920x1080');
+    console.log('          |');
+    console.log('          v');
+    console.log('  [ColorConversion] YUV420 -> RGB');
+    console.log('          |');
+    console.log('          v');
+    console.log('  [VirtualPTZ] <- Has dynamic properties!');
+    console.log('          |');
+    console.log('          v');
+    console.log('  [ImageEncoderCV] RGB -> JPEG');
+    console.log('          |');
+    console.log('          v');
+    console.log('  [FileWriterModule] -> processed_????.jpg');
+    console.log('');
+
+    // Create pipeline
+    const pipeline = ap.createPipeline(config);
+
+    // Register error handler
+    pipeline.on('error', (e) => {
+        console.error(`ERROR in ${e.moduleId}: ${e.message}`);
+    });
+
+    // Get module handles
+    const modules = {
+        source: pipeline.getModule('source'),
+        colorConvert: pipeline.getModule('colorConvert'),
+        ptz: pipeline.getModule('ptz'),
+        encoder: pipeline.getModule('encoder'),
+        writer: pipeline.getModule('writer')
+    };
+
+    // Display module info
+    console.log('--- Module Info ---\n');
+    Object.entries(modules).forEach(([name, mod]) => {
+        const hasDyn = mod.hasDynamicProperties();
+        console.log(`${name}:`);
+        console.log(`  Type: ${mod.type}`);
+        console.log(`  ID: ${mod.id}`);
+        console.log(`  Dynamic props: ${hasDyn ? mod.getDynamicPropertyNames().join(', ') : 'none'}`);
+        console.log('');
+    });
+
+    // Get PTZ module for dynamic control
+    const ptz = modules.ptz;
+
+    // Initialize and start the pipeline
+    console.log('--- Starting Pipeline ---\n');
+    console.log('Initializing pipeline...');
+    await pipeline.init();
+
+    console.log('Starting pipeline...');
+    pipeline.run();
+
+    // Demonstrate PTZ dynamic properties while pipeline runs
+    console.log('\n--- Live PTZ Control Demo ---\n');
+
+    // Initial state - full frame
+    console.log('Initial PTZ state (full frame):');
+    console.log(`  roiX: ${ptz.getProperty('roiX')}`);
+    console.log(`  roiY: ${ptz.getProperty('roiY')}`);
+    console.log(`  roiWidth: ${ptz.getProperty('roiWidth')}`);
+    console.log(`  roiHeight: ${ptz.getProperty('roiHeight')}`);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Operation 1: Zoom to center
+    console.log('\n1. Focus on center region (2x zoom):');
+    ptz.setProperty('roiWidth', 0.5);
+    ptz.setProperty('roiHeight', 0.5);
+    ptz.setProperty('roiX', 0.25);
+    ptz.setProperty('roiY', 0.25);
+    console.log(`   Crop: ${ptz.getProperty('roiWidth')}x${ptz.getProperty('roiHeight')} at (${ptz.getProperty('roiX')}, ${ptz.getProperty('roiY')})`);
+    console.log('   Effect: Extracts 960x540 region from center of 1920x1080');
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Operation 2: Pan to corner
+    console.log('\n2. Pan to bottom-right corner:');
+    ptz.setProperty('roiX', 0.5);
+    ptz.setProperty('roiY', 0.5);
+    console.log(`   Position: (${ptz.getProperty('roiX')}, ${ptz.getProperty('roiY')})`);
+    console.log('   Effect: Now viewing bottom-right quadrant');
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Operation 3: High zoom
+    console.log('\n3. Zoom in further (4x zoom):');
+    ptz.setProperty('roiWidth', 0.25);
+    ptz.setProperty('roiHeight', 0.25);
+    ptz.setProperty('roiX', 0.375);
+    ptz.setProperty('roiY', 0.375);
+    console.log(`   Crop: ${ptz.getProperty('roiWidth')}x${ptz.getProperty('roiHeight')}`);
+    console.log('   Effect: Extracts 480x270 region, upscaled to output');
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Reset
+    console.log('\n4. Reset to full frame:');
+    ptz.setProperty('roiX', 0);
+    ptz.setProperty('roiY', 0);
+    ptz.setProperty('roiWidth', 1);
+    ptz.setProperty('roiHeight', 1);
+    console.log('   Effect: Full frame, no crop');
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Stop the pipeline
+    console.log('\n--- Stopping Pipeline ---\n');
+    await pipeline.stop();
+    console.log('Pipeline stopped.');
+
+    // Check output files
+    const files = fs.readdirSync(outputDir).filter(f => f.startsWith('processed_') && f.endsWith('.jpg'));
+    console.log(`\nGenerated ${files.length} JPEG files in ${outputDir}/`);
+    console.log('The frames show different PTZ positions applied in real-time.');
+
+    console.log('\n=== Example Complete ===\n');
+}
+
+main().catch(err => {
+    console.error('Error:', err);
+    process.exit(1);
 });
-
-// Demonstrate PTZ dynamic properties
-const ptz = modules.ptz;
-console.log('--- PTZ Dynamic Properties Demo ---\n');
-
-// Initial state
-console.log('Initial PTZ state (full frame):');
-console.log(`  roiX: ${ptz.getProperty('roiX')}`);
-console.log(`  roiY: ${ptz.getProperty('roiY')}`);
-console.log(`  roiWidth: ${ptz.getProperty('roiWidth')}`);
-console.log(`  roiHeight: ${ptz.getProperty('roiHeight')}`);
-
-// Simulate image processing operations
-console.log('\n--- Simulated Processing Operations ---\n');
-
-// Operation 1: Zoom to center
-console.log('1. Focus on center region (2x zoom):');
-ptz.setProperty('roiWidth', 0.5);
-ptz.setProperty('roiHeight', 0.5);
-ptz.setProperty('roiX', 0.25);
-ptz.setProperty('roiY', 0.25);
-console.log(`   Crop: ${ptz.getProperty('roiWidth')}x${ptz.getProperty('roiHeight')} at (${ptz.getProperty('roiX')}, ${ptz.getProperty('roiY')})`);
-console.log('   Effect: Extracts 960x540 region from center of 1920x1080');
-
-// Operation 2: Pan to corner
-console.log('\n2. Pan to bottom-right corner:');
-ptz.setProperty('roiX', 0.5);
-ptz.setProperty('roiY', 0.5);
-console.log(`   Position: (${ptz.getProperty('roiX')}, ${ptz.getProperty('roiY')})`);
-console.log('   Effect: Now viewing bottom-right quadrant');
-
-// Operation 3: High zoom
-console.log('\n3. Zoom in further (4x zoom):');
-ptz.setProperty('roiWidth', 0.25);
-ptz.setProperty('roiHeight', 0.25);
-ptz.setProperty('roiX', 0.375);
-ptz.setProperty('roiY', 0.375);
-console.log(`   Crop: ${ptz.getProperty('roiWidth')}x${ptz.getProperty('roiHeight')}`);
-console.log('   Effect: Extracts 480x270 region, upscaled to output');
-
-// Reset
-console.log('\n4. Reset to full frame:');
-ptz.setProperty('roiX', 0);
-ptz.setProperty('roiY', 0);
-ptz.setProperty('roiWidth', 1);
-ptz.setProperty('roiHeight', 1);
-console.log('   Effect: Full frame, no crop');
-
-// Show output info
-console.log('\n--- Output ---\n');
-console.log(`JPEG images will be written to: ${outputDir}/`);
-console.log('Files: processed_0001.jpg, processed_0002.jpg, ...');
-
-// Show usage pattern
-console.log('\n--- Usage Pattern ---\n');
-console.log('// Create pipeline');
-console.log('const pipeline = ap.createPipeline(config);');
-console.log('');
-console.log('// Get PTZ module');
-console.log('const ptz = pipeline.getModule("ptz");');
-console.log('');
-console.log('// Start processing');
-console.log('pipeline.start();');
-console.log('');
-console.log('// Adjust PTZ in real-time while pipeline is running');
-console.log('ptz.setProperty("roiX", 0.3);');
-console.log('ptz.setProperty("roiY", 0.2);');
-console.log('ptz.setProperty("roiWidth", 0.4);');
-console.log('ptz.setProperty("roiHeight", 0.4);');
-console.log('');
-console.log('// View output files: processed_????.jpg');
-console.log('');
-console.log('// Stop when done');
-console.log('pipeline.stop();');
-
-console.log('\n=== Example Complete ===\n');

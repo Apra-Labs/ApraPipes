@@ -57,93 +57,111 @@ const config = {
     ]
 };
 
-console.log('=== Event Handling Example ===\n');
+async function main() {
+    console.log('=== Event Handling Example ===\n');
 
-// Create the pipeline
-const pipeline = ap.createPipeline(config);
+    // Create the pipeline
+    const pipeline = ap.createPipeline(config);
 
-// Event counters for demonstration
-const stats = {
-    healthEvents: 0,
-    errorEvents: 0
-};
+    // Event counters for demonstration
+    const stats = {
+        healthEvents: 0,
+        errorEvents: 0
+    };
 
-// Register health event handler
-pipeline.on('health', (event) => {
-    stats.healthEvents++;
-    console.log(`[HEALTH] Module: ${event.moduleId}`);
-    console.log(`         Message: ${event.message}`);
-    console.log(`         Timestamp: ${new Date(event.timestamp).toISOString()}`);
-    console.log('');
+    // Register health event handler
+    const healthHandler = (event) => {
+        stats.healthEvents++;
+        console.log(`[HEALTH] Module: ${event.moduleId}`);
+        console.log(`         Message: ${event.message}`);
+        console.log(`         Timestamp: ${new Date(event.timestamp).toISOString()}`);
+        console.log('');
+    };
+    pipeline.on('health', healthHandler);
+
+    // Register error event handler
+    pipeline.on('error', (event) => {
+        stats.errorEvents++;
+        console.error(`[ERROR] Module: ${event.moduleId}`);
+        console.error(`        Code: ${event.errorCode}`);
+        console.error(`        Message: ${event.message}`);
+        console.error(`        Timestamp: ${new Date(event.timestamp).toISOString()}`);
+        console.error('');
+    });
+
+    console.log('Event handlers registered.\n');
+    console.log('Supported events:');
+    console.log('  - "health": Module health status updates');
+    console.log('  - "error": Module error notifications\n');
+
+    // Demonstrate event API
+    console.log('--- Event API Demo ---\n');
+
+    // Chaining example
+    console.log('1. Method chaining:');
+    console.log('   pipeline.on("health", fn1).on("error", fn2)');
+
+    // Multiple handlers
+    console.log('\n2. Multiple handlers per event:');
+    const handler1 = (e) => { /* handler 1 */ };
+    const handler2 = (e) => { /* handler 2 */ };
+    pipeline.on('health', handler1);
+    pipeline.on('health', handler2);
+    console.log('   Two additional handlers registered for "health" event');
+
+    // Remove specific handler
+    console.log('\n3. Remove specific handler:');
+    pipeline.off('health', handler1);
+    console.log('   Handler 1 removed');
+
+    // Show module information
+    console.log('\n--- Module Information ---\n');
+
+    const modules = ['source', 'transform', 'encoder', 'writer'];
+    modules.forEach(name => {
+        const mod = pipeline.getModule(name);
+        console.log(`${name}:`);
+        console.log(`  Type: ${mod.type}`);
+        console.log(`  ID: ${mod.id}`);
+        console.log(`  Has dynamic props: ${mod.hasDynamicProperties()}`);
+        console.log('');
+    });
+
+    // Initialize and run the pipeline
+    console.log('--- Running Pipeline ---\n');
+    console.log('Initializing pipeline...');
+    await pipeline.init();
+
+    console.log('Starting pipeline...');
+    pipeline.run();
+
+    // Let it run for 2 seconds
+    console.log('Running for 2 seconds (watch for health events)...\n');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Stop the pipeline
+    console.log('Stopping pipeline...');
+    await pipeline.stop();
+    console.log('Pipeline stopped.\n');
+
+    // Summary
+    console.log('--- Event Summary ---');
+    console.log(`  Health events received: ${stats.healthEvents}`);
+    console.log(`  Error events received: ${stats.errorEvents}`);
+
+    // Check output files
+    const files = fs.readdirSync(outputDir).filter(f => f.startsWith('event_') && f.endsWith('.jpg'));
+    console.log(`\nGenerated ${files.length} JPEG files in ${outputDir}/`);
+
+    // Clean up listeners
+    pipeline.removeAllListeners('health');
+    pipeline.removeAllListeners('error');
+    console.log('\nEvent listeners cleaned up.');
+
+    console.log('\n=== Example Complete ===\n');
+}
+
+main().catch(err => {
+    console.error('Error:', err);
+    process.exit(1);
 });
-
-// Register error event handler
-pipeline.on('error', (event) => {
-    stats.errorEvents++;
-    console.error(`[ERROR] Module: ${event.moduleId}`);
-    console.error(`        Code: ${event.errorCode}`);
-    console.error(`        Message: ${event.message}`);
-    console.error(`        Timestamp: ${new Date(event.timestamp).toISOString()}`);
-    console.error('');
-});
-
-console.log('Event handlers registered.\n');
-console.log('Supported events:');
-console.log('  - "health": Module health status updates');
-console.log('  - "error": Module error notifications\n');
-
-// Demonstrate event API
-console.log('--- Event API Demo ---\n');
-
-// Chaining example
-console.log('1. Method chaining:');
-console.log('   pipeline.on("health", fn1).on("error", fn2)');
-
-// Multiple handlers
-console.log('\n2. Multiple handlers per event:');
-const handler1 = (e) => console.log('Handler 1 called');
-const handler2 = (e) => console.log('Handler 2 called');
-pipeline.on('health', handler1);
-pipeline.on('health', handler2);
-console.log('   Two handlers registered for "health" event');
-
-// Remove specific handler
-console.log('\n3. Remove specific handler:');
-pipeline.off('health', handler1);
-console.log('   Handler 1 removed, Handler 2 still active');
-
-// Remove all handlers
-console.log('\n4. Remove all handlers for an event:');
-pipeline.removeAllListeners('health');
-console.log('   All "health" handlers removed');
-
-// Re-register for final demo
-pipeline.on('health', (e) => {
-    console.log(`   Health update: ${e.moduleId}`);
-});
-
-console.log('\n5. Re-registered health handler');
-
-// Show module information
-console.log('\n--- Module Information ---\n');
-
-const modules = ['source', 'transform', 'encoder', 'writer'];
-modules.forEach(name => {
-    const mod = pipeline.getModule(name);
-    console.log(`${name}:`);
-    console.log(`  Type: ${mod.type}`);
-    console.log(`  ID: ${mod.id}`);
-    console.log(`  Running: ${mod.isRunning()}`);
-    console.log(`  Has dynamic props: ${mod.hasDynamicProperties()}`);
-    console.log('');
-});
-
-// Final summary
-console.log('--- Usage Notes ---\n');
-console.log('In a real application:');
-console.log('1. Register event handlers before calling pipeline.start()');
-console.log('2. Use "health" events to monitor frame rates and throughput');
-console.log('3. Use "error" events to handle failures gracefully');
-console.log('4. Clean up handlers when done with pipeline.removeAllListeners()');
-
-console.log('\n=== Example Complete ===\n');

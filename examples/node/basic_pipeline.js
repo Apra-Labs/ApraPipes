@@ -68,44 +68,72 @@ const pipelineConfig = {
     ]
 };
 
-console.log('\n=== Basic Pipeline Example ===\n');
-console.log('Pipeline configuration:');
-console.log(JSON.stringify(pipelineConfig, null, 2));
+async function main() {
+    console.log('\n=== Basic Pipeline Example ===\n');
+    console.log('Pipeline configuration:');
+    console.log(JSON.stringify(pipelineConfig, null, 2));
 
-// Create the pipeline
-console.log('\nCreating pipeline...');
-const pipeline = ap.createPipeline(pipelineConfig);
+    // Create the pipeline
+    console.log('\nCreating pipeline...');
+    const pipeline = ap.createPipeline(pipelineConfig);
 
-// Get module handles
-const source = pipeline.getModule('source');
-const encoder = pipeline.getModule('encoder');
-const writer = pipeline.getModule('writer');
+    // Get module handles
+    const source = pipeline.getModule('source');
+    const encoder = pipeline.getModule('encoder');
+    const writer = pipeline.getModule('writer');
 
-console.log('\nModules created:');
-console.log(`  - source: ${source.type} (${source.id})`);
-console.log(`  - encoder: ${encoder.type} (${encoder.id})`);
-console.log(`  - writer: ${writer.type} (${writer.id})`);
+    console.log('\nModules created:');
+    console.log(`  - source: ${source.type} (${source.id})`);
+    console.log(`  - encoder: ${encoder.type} (${encoder.id})`);
+    console.log(`  - writer: ${writer.type} (${writer.id})`);
 
-// Check initial properties
-console.log('\nSource properties:');
-const props = source.getProps();
-console.log(`  - fps: ${props.fps}`);
-console.log(`  - qlen: ${props.qlen}`);
+    // Check initial properties
+    console.log('\nSource properties:');
+    const props = source.getProps();
+    console.log(`  - fps: ${props.fps}`);
+    console.log(`  - qlen: ${props.qlen}`);
 
-// Set up event handlers
-pipeline
-    .on('health', (event) => {
-        console.log(`[Health] ${event.moduleId}: ${event.message}`);
-    })
-    .on('error', (event) => {
-        console.error(`[Error] ${event.moduleId}: ${event.message}`);
-    });
+    // Set up event handlers
+    pipeline
+        .on('health', (event) => {
+            console.log(`[Health] ${event.moduleId}: ${event.message}`);
+        })
+        .on('error', (event) => {
+            console.error(`[Error] ${event.moduleId}: ${event.message}`);
+        });
 
-console.log('\nEvent handlers registered.');
-console.log(`\nOutput will be written to: ${outputDir}/`);
-console.log('\nTo run this pipeline and generate output:');
-console.log('  pipeline.start()');
-console.log('  // ... let it process frames ...');
-console.log('  pipeline.stop()');
+    console.log('\nEvent handlers registered.');
+    console.log(`Output will be written to: ${outputDir}/`);
 
-console.log('\n=== Example Complete ===\n');
+    // Initialize the pipeline
+    console.log('\nInitializing pipeline...');
+    await pipeline.init();
+    console.log('Pipeline initialized.');
+
+    // Run the pipeline
+    console.log('Starting pipeline...');
+    pipeline.run();
+
+    // Let it run for 2 seconds to generate some frames
+    console.log('Running for 2 seconds...\n');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Stop the pipeline
+    console.log('\nStopping pipeline...');
+    await pipeline.stop();
+    console.log('Pipeline stopped.');
+
+    // Check output files
+    const files = fs.readdirSync(outputDir).filter(f => f.startsWith('frame_') && f.endsWith('.jpg'));
+    console.log(`\nGenerated ${files.length} JPEG files in ${outputDir}/`);
+    if (files.length > 0) {
+        console.log('Files:', files.slice(0, 5).join(', ') + (files.length > 5 ? '...' : ''));
+    }
+
+    console.log('\n=== Example Complete ===\n');
+}
+
+main().catch(err => {
+    console.error('Error:', err);
+    process.exit(1);
+});
