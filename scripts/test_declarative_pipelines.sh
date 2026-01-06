@@ -4,6 +4,8 @@
 # ==============================================================================
 # This script tests all working declarative pipelines to ensure no regressions.
 #
+# Runtime: Uses Node.js addon when available, falls back to CLI
+#
 # Usage:
 #   ./scripts/test_declarative_pipelines.sh [options]
 #
@@ -17,7 +19,7 @@
 # Exit codes:
 #   0 - All tests passed
 #   1 - One or more tests failed
-#   2 - Script error (missing CLI, etc.)
+#   2 - Script error (missing addon/CLI, etc.)
 # ==============================================================================
 
 set -e
@@ -33,9 +35,14 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLI_PATH="$PROJECT_ROOT/build/aprapipes_cli"
+NODE_ADDON_PATH="$PROJECT_ROOT/build/aprapipes.node"
+NODE_RUNNER="$SCRIPT_DIR/pipeline_test_runner.js"
 WORKING_DIR="$PROJECT_ROOT/docs/declarative-pipeline/examples/working"
 OUTPUT_DIR="$PROJECT_ROOT/data/testOutput"
 RUN_DURATION=2  # seconds to run each pipeline
+
+# Runtime mode: 'node' or 'cli'
+RUNTIME_MODE="cli"
 
 # Options
 VALIDATE_ONLY=false
@@ -125,13 +132,23 @@ parse_args() {
 check_prerequisites() {
     print_header "Checking Prerequisites"
 
-    # Check CLI exists
-    if [ ! -f "$CLI_PATH" ]; then
-        echo -e "${RED}ERROR: CLI not found at $CLI_PATH${NC}"
-        echo "Please build the project first: cmake --build build"
-        exit 2
+    # Check for Node.js and addon first (preferred method)
+    if command -v node &> /dev/null && [ -f "$NODE_ADDON_PATH" ] && [ -f "$NODE_RUNNER" ]; then
+        RUNTIME_MODE="node"
+        print_info "Node.js found: $(node --version)"
+        print_info "Node addon found: $NODE_ADDON_PATH"
+        echo -e "${GREEN}Using Node.js runtime${NC}"
+    else
+        # Fallback to CLI
+        if [ ! -f "$CLI_PATH" ]; then
+            echo -e "${RED}ERROR: Neither Node.js addon nor CLI found${NC}"
+            echo "Please build the project first: cmake --build build -DBUILD_NODE_ADDON=ON"
+            exit 2
+        fi
+        RUNTIME_MODE="cli"
+        print_info "CLI found: $CLI_PATH"
+        echo -e "${YELLOW}Using CLI runtime (Node.js addon not available)${NC}"
     fi
-    print_info "CLI found: $CLI_PATH"
 
     # Check working directory exists
     if [ ! -d "$WORKING_DIR" ]; then
@@ -170,10 +187,18 @@ validate_pipeline() {
 
     print_info "Validating $pipeline_name..."
 
-    if "$CLI_PATH" validate "$pipeline_file" > /dev/null 2>&1; then
-        return 0
+    if [ "$RUNTIME_MODE" = "node" ]; then
+        if node "$NODE_RUNNER" validate "$pipeline_file" > /dev/null 2>&1; then
+            return 0
+        else
+            return 1
+        fi
     else
-        return 1
+        if "$CLI_PATH" validate "$pipeline_file" > /dev/null 2>&1; then
+            return 0
+        else
+            return 1
+        fi
     fi
 }
 
@@ -185,40 +210,60 @@ run_pipeline() {
 
     print_info "Running $pipeline_name for ${duration}s..."
 
-    # Start pipeline in background
-    "$CLI_PATH" run "$pipeline_file" > /tmp/pipeline_$$.log 2>&1 &
-    local pid=$!
-
-    # Wait for specified duration
-    sleep "$duration"
-
-    # Stop the pipeline gracefully
-    kill -SIGINT $pid 2>/dev/null || true
-
-    # Wait for it to finish (with timeout)
-    local wait_count=0
-    while kill -0 $pid 2>/dev/null && [ $wait_count -lt 10 ]; do
-        sleep 0.5
-        ((wait_count++))
-    done
-
-    # Force kill if still running
-    if kill -0 $pid 2>/dev/null; then
-        kill -9 $pid 2>/dev/null || true
-    fi
-
-    # Check for errors in log
-    if grep -q "error\|FAILED\|Assertion failed" /tmp/pipeline_$$.log 2>/dev/null; then
-        if [ "$VERBOSE" = true ]; then
-            echo "Pipeline log:"
-            cat /tmp/pipeline_$$.log
+    if [ "$RUNTIME_MODE" = "node" ]; then
+        # Use Node.js runner (handles start/stop/terminate internally)
+        if node "$NODE_RUNNER" run "$pipeline_file" "$duration" > /tmp/pipeline_$$.log 2>&1; then
+            if [ "$VERBOSE" = true ]; then
+                echo "Pipeline log:"
+                cat /tmp/pipeline_$$.log
+            fi
+            rm -f /tmp/pipeline_$$.log
+            return 0
+        else
+            if [ "$VERBOSE" = true ]; then
+                echo "Pipeline log:"
+                cat /tmp/pipeline_$$.log
+            fi
+            rm -f /tmp/pipeline_$$.log
+            return 1
         fi
-        rm -f /tmp/pipeline_$$.log
-        return 1
-    fi
+    else
+        # Use CLI (original implementation)
+        # Start pipeline in background
+        "$CLI_PATH" run "$pipeline_file" > /tmp/pipeline_$$.log 2>&1 &
+        local pid=$!
 
-    rm -f /tmp/pipeline_$$.log
-    return 0
+        # Wait for specified duration
+        sleep "$duration"
+
+        # Stop the pipeline gracefully
+        kill -SIGINT $pid 2>/dev/null || true
+
+        # Wait for it to finish (with timeout)
+        local wait_count=0
+        while kill -0 $pid 2>/dev/null && [ $wait_count -lt 10 ]; do
+            sleep 0.5
+            ((wait_count++))
+        done
+
+        # Force kill if still running
+        if kill -0 $pid 2>/dev/null; then
+            kill -9 $pid 2>/dev/null || true
+        fi
+
+        # Check for errors in log
+        if grep -q "error\|FAILED\|Assertion failed" /tmp/pipeline_$$.log 2>/dev/null; then
+            if [ "$VERBOSE" = true ]; then
+                echo "Pipeline log:"
+                cat /tmp/pipeline_$$.log
+            fi
+            rm -f /tmp/pipeline_$$.log
+            return 1
+        fi
+
+        rm -f /tmp/pipeline_$$.log
+        return 0
+    fi
 }
 
 # Check if output files were created
