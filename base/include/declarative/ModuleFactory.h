@@ -39,10 +39,18 @@ public:
                     collect_info_messages(false) {}
     };
 
+    // Module info for external access (e.g., event callbacks)
+    struct ModuleEntry {
+        boost::shared_ptr<Module> module;
+        std::string moduleType;
+        std::string instanceId;
+    };
+
     // Build result
     struct BuildResult {
         std::unique_ptr<PipeLine> pipeline;
         std::vector<BuildIssue> issues;
+        std::map<std::string, ModuleEntry> modules;  // instanceId -> module info
 
         // Check if build succeeded (no errors)
         bool success() const {

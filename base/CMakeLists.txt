@@ -1041,6 +1041,7 @@ if(BUILD_NODE_ADDON)
             bindings/node/addon.cpp
             bindings/node/pipeline_wrapper.cpp
             bindings/node/module_wrapper.cpp
+            bindings/node/event_emitter.cpp
         )
 
         # Set output extension to .node

@@ -1,7 +1,7 @@
 // ============================================================
 // File: bindings/node/pipeline_wrapper.cpp
 // PipelineWrapper implementation
-// Phase 3: Core JS API
+// Phase 3: Core JS API + Phase 4: Event System
 // ============================================================
 
 #include "pipeline_wrapper.h"
@@ -9,6 +9,8 @@
 #include "declarative/PipelineValidator.h"
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistrations.h"
+#include "APCallback.h"
+#include "Module.h"
 
 namespace aprapipes_node {
 
@@ -155,6 +157,10 @@ Napi::Object PipelineWrapper::Init(Napi::Env env, Napi::Object exports) {
         InstanceMethod("getName", &PipelineWrapper::GetName),
         InstanceMethod("getModule", &PipelineWrapper::GetModule),
         InstanceMethod("getModuleIds", &PipelineWrapper::GetModuleIds),
+        // Phase 4: Event methods
+        InstanceMethod("on", &PipelineWrapper::On),
+        InstanceMethod("off", &PipelineWrapper::Off),
+        InstanceMethod("removeAllListeners", &PipelineWrapper::RemoveAllListeners),
     });
 
     Napi::FunctionReference* constructor = new Napi::FunctionReference();
@@ -178,6 +184,12 @@ PipelineWrapper::PipelineWrapper(const Napi::CallbackInfo& info)
 }
 
 PipelineWrapper::~PipelineWrapper() {
+    // Release event emitter first (must happen while env is still valid)
+    if (eventEmitter_) {
+        eventEmitter_->release();
+        eventEmitter_.reset();
+    }
+
     if (pipeline_) {
         try {
             if (running_) {
@@ -262,13 +274,13 @@ Napi::Value PipelineWrapper::CreatePipeline(const Napi::CallbackInfo& info) {
     instance->pipeline_ = std::move(buildResult.pipeline);
     instance->buildIssues_ = std::move(buildResult.issues);
 
-    // Store module info for getModule() / getModuleIds()
-    for (const auto& moduleInstance : parseResult.description.modules) {
+    // Store module info from build result (includes actual module pointers)
+    for (const auto& [instanceId, entry] : buildResult.modules) {
         ModuleInfo info;
-        info.instanceId = moduleInstance.instance_id;
-        info.moduleType = moduleInstance.module_type;
-        info.module = nullptr;  // We don't have direct access to the Module objects
-        instance->moduleInfoMap_[moduleInstance.instance_id] = info;
+        info.instanceId = entry.instanceId;
+        info.moduleType = entry.moduleType;
+        info.module = entry.module;
+        instance->moduleInfoMap_[instanceId] = info;
     }
 
     return wrapper;
@@ -456,6 +468,89 @@ Napi::Value PipelineWrapper::GetModuleIds(const Napi::CallbackInfo& info) {
     }
 
     return result;
+}
+
+// ============================================================
+// Event Methods (Phase 4)
+// ============================================================
+
+Napi::Value PipelineWrapper::On(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
+        Napi::TypeError::New(env, "on(event: string, callback: function) required")
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string event = info[0].As<Napi::String>().Utf8Value();
+    Napi::Function callback = info[1].As<Napi::Function>();
+
+    // Create event emitter on first use
+    if (!eventEmitter_) {
+        eventEmitter_ = std::make_unique<EventEmitter>(env);
+
+        // Register callbacks with all modules when event emitter is first created
+        // This allows C++ modules to emit events that get delivered to JS
+        EventEmitter* emitter = eventEmitter_.get();
+
+        for (const auto& [instanceId, modInfo] : moduleInfoMap_) {
+            if (modInfo.module) {
+                // Register error callback
+                modInfo.module->registerErrorCallback(
+                    [emitter](const APErrorObject& error) {
+                        emitter->emitError(error);
+                    });
+
+                // Register health callback
+                modInfo.module->registerHealthCallback(
+                    [emitter](const APHealthObject& health) {
+                        emitter->emitHealth(health);
+                    });
+            }
+        }
+    }
+
+    eventEmitter_->on(event, callback);
+
+    // Return this for chaining
+    return info.This();
+}
+
+Napi::Value PipelineWrapper::Off(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsFunction()) {
+        Napi::TypeError::New(env, "off(event: string, callback: function) required")
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string event = info[0].As<Napi::String>().Utf8Value();
+    Napi::Function callback = info[1].As<Napi::Function>();
+
+    if (eventEmitter_) {
+        eventEmitter_->off(event, callback);
+    }
+
+    // Return this for chaining
+    return info.This();
+}
+
+Napi::Value PipelineWrapper::RemoveAllListeners(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    std::string event;
+    if (info.Length() > 0 && info[0].IsString()) {
+        event = info[0].As<Napi::String>().Utf8Value();
+    }
+
+    if (eventEmitter_) {
+        eventEmitter_->removeAllListeners(event);
+    }
+
+    // Return this for chaining
+    return info.This();
 }
 
 } // namespace aprapipes_node

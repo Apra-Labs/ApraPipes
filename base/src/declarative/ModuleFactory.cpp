@@ -366,6 +366,15 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         return result;
     }
 
+    // Phase 5: Populate result.modules for external access (e.g., event callbacks)
+    for (const auto& [instanceId, ctx] : contextMap) {
+        ModuleEntry entry;
+        entry.module = ctx.module;
+        entry.moduleType = ctx.moduleType;
+        entry.instanceId = ctx.instanceId;
+        result.modules[instanceId] = entry;
+    }
+
     // In strict mode, treat warnings as errors
     if (options_.strict_mode && result.hasWarnings()) {
         result.pipeline.reset();

@@ -1,7 +1,7 @@
 // ============================================================
 // File: bindings/node/pipeline_wrapper.h
 // PipelineWrapper - N-API wrapper for PipeLine
-// Phase 3: Core JS API
+// Phase 3: Core JS API + Phase 4: Event System
 // ============================================================
 
 #pragma once
@@ -13,6 +13,7 @@
 #include "PipeLine.h"
 #include "declarative/ModuleFactory.h"
 #include "module_wrapper.h"
+#include "event_emitter.h"
 
 namespace aprapipes_node {
 
@@ -51,6 +52,11 @@ private:
     Napi::Value GetModule(const Napi::CallbackInfo& info);
     Napi::Value GetModuleIds(const Napi::CallbackInfo& info);
 
+    // Event methods (Phase 4)
+    Napi::Value On(const Napi::CallbackInfo& info);
+    Napi::Value Off(const Napi::CallbackInfo& info);
+    Napi::Value RemoveAllListeners(const Napi::CallbackInfo& info);
+
     // Internal state
     std::unique_ptr<PipeLine> pipeline_;
     std::vector<apra::BuildIssue> buildIssues_;
@@ -67,6 +73,9 @@ private:
 
     // Store reference to prevent GC
     Napi::ObjectReference selfRef_;
+
+    // Event emitter for thread-safe JS callbacks (Phase 4)
+    std::unique_ptr<EventEmitter> eventEmitter_;
 };
 
 } // namespace aprapipes_node

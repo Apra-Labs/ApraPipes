@@ -125,7 +125,7 @@ Napi::Value ModuleWrapper::IsInputQueFull(const Napi::CallbackInfo& info) {
     if (!module_) {
         return Napi::Boolean::New(info.Env(), false);
     }
-    return Napi::Boolean::New(info.Env(), module_->isQueFull());
+    return Napi::Boolean::New(info.Env(), module_->isFull());
 }
 
 } // namespace aprapipes_node

@@ -176,6 +176,36 @@ declare module '@apralabs/aprapipes' {
      * @returns Module handle or null if not found
      */
     getModule(id: string): ModuleHandle | null;
+
+    // ============================================================
+    // Event methods (Phase 4)
+    // ============================================================
+
+    /**
+     * Register an event listener
+     * @param event Event name ('error', 'health', 'started', 'stopped', etc.)
+     * @param callback Function to call when event occurs
+     * @returns this for chaining
+     */
+    on(event: 'error', callback: (error: PipelineError) => void): this;
+    on(event: 'health', callback: (health: PipelineHealth) => void): this;
+    on(event: 'started' | 'stopped' | 'paused' | 'resumed', callback: (event: LifecycleEvent) => void): this;
+    on(event: string, callback: (data: any) => void): this;
+
+    /**
+     * Remove an event listener
+     * @param event Event name
+     * @param callback Function to remove
+     * @returns this for chaining
+     */
+    off(event: string, callback: (...args: any[]) => void): this;
+
+    /**
+     * Remove all listeners for an event (or all events if no event specified)
+     * @param event Optional event name
+     * @returns this for chaining
+     */
+    removeAllListeners(event?: string): this;
   }
 
   // ============================================================
@@ -221,17 +251,25 @@ declare module '@apralabs/aprapipes' {
     healthUpdateIntervalInSec: number;
   }
 
-  // Event system (Phase 4)
-  // export interface PipelineError {
-  //   moduleId: string;
-  //   errorCode: number;
-  //   errorMessage: string;
-  //   timestamp: Date;
-  // }
+  // ============================================================
+  // Event types (Phase 4)
+  // ============================================================
 
-  // export interface PipelineStats {
-  //   timestamp: Date;
-  //   fps: number;
-  //   framesProcessed: number;
-  // }
+  export interface PipelineError {
+    errorCode: number;
+    errorMessage: string;
+    moduleName: string;
+    moduleId: string;
+    timestamp: string;
+  }
+
+  export interface PipelineHealth {
+    moduleId: string;
+    timestamp: string;
+  }
+
+  export interface LifecycleEvent {
+    event: string;
+    timestamp: string;
+  }
 }
