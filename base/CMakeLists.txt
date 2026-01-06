@@ -1050,11 +1050,32 @@ if(BUILD_NODE_ADDON)
             CXX_STANDARD_REQUIRED ON
         )
 
-        # Link dependencies
+        # Link node-addon-api
         target_link_libraries(${NODE_ADDON_NAME} PRIVATE
             unofficial::node-addon-api::node-addon-api
-            aprapipes
         )
+
+        # Force load aprapipes to include static module registrations (same pattern as aprapipes_cli)
+        if(APPLE)
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                -Wl,-force_load,$<TARGET_FILE:aprapipes>
+            )
+            # macOS: Use undefined dynamic lookup for Node symbols
+            set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+                LINK_FLAGS "-undefined dynamic_lookup"
+            )
+        elseif(UNIX)
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+            )
+        else()
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                aprapipes
+            )
+        endif()
+
+        # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+        target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
 
         # Include directories (same as aprapipes target)
         target_include_directories(${NODE_ADDON_NAME} PRIVATE
@@ -1065,14 +1086,6 @@ if(BUILD_NODE_ADDON)
             ${FFMPEG_INCLUDE_DIRS}
             ${LIBMP4_INC_DIR}
         )
-
-        # Platform-specific settings
-        if(APPLE)
-            # macOS: Use undefined dynamic lookup for Node symbols
-            set_target_properties(${NODE_ADDON_NAME} PROPERTIES
-                LINK_FLAGS "-undefined dynamic_lookup"
-            )
-        endif()
 
         # Copy to project root for npm usage
         add_custom_command(TARGET ${NODE_ADDON_NAME} POST_BUILD
