@@ -6,9 +6,12 @@
  * changing the ROI (Region of Interest) parameters.
  *
  * Usage: node examples/node/ptz_control.js
+ *
+ * Output: Creates ptz_????.jpg files in ./output/ showing different PTZ positions
  */
 
 const path = require('path');
+const fs = require('fs');
 
 // Load the addon
 const addonPath = path.join(__dirname, '../../aprapipes.node');
@@ -18,6 +21,12 @@ try {
 } catch (e) {
     console.error('Failed to load addon:', e.message);
     process.exit(1);
+}
+
+// Create output directory
+const outputDir = path.join(__dirname, 'output');
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
 }
 
 // Pipeline with VirtualPTZ for PTZ simulation
@@ -39,15 +48,23 @@ const ptzPipelineConfig = {
             type: "VirtualPTZ"
             // Default props: roiX=0, roiY=0, roiWidth=1, roiHeight=1 (full frame)
         },
-        // Output statistics
-        sink: {
-            type: "StatSink"
+        // Encode as JPEG
+        encoder: {
+            type: "ImageEncoderCV"
+        },
+        // Write to files
+        writer: {
+            type: "FileWriterModule",
+            props: {
+                strFullFileNameWithPattern: path.join(outputDir, "ptz_????.jpg")
+            }
         }
     },
     connections: [
         { from: "source", to: "colorConvert" },
         { from: "colorConvert", to: "ptz" },
-        { from: "ptz", to: "sink" }
+        { from: "ptz", to: "encoder" },
+        { from: "encoder", to: "writer" }
     ]
 };
 
@@ -136,5 +153,8 @@ console.log('Example PTZ helper function:');
 console.log('  setPTZ(0.5, 0.5, 2)  // Center at 2x zoom');
 const result = setPTZ(0.5, 0.5, 2);
 console.log(`  Result: ${JSON.stringify(result)}`);
+
+console.log(`\nOutput directory: ${outputDir}/`);
+console.log('Run pipeline.start() to generate PTZ frames as JPEG files.');
 
 console.log('\n=== Example Complete ===\n');

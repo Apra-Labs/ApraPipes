@@ -5,9 +5,12 @@
  * handle errors, and react to pipeline state changes.
  *
  * Usage: node examples/node/event_handling.js
+ *
+ * Output: Creates event_????.jpg files in ./output/
  */
 
 const path = require('path');
+const fs = require('fs');
 
 // Load the addon
 const addonPath = path.join(__dirname, '../../aprapipes.node');
@@ -17,6 +20,12 @@ try {
 } catch (e) {
     console.error('Failed to load addon:', e.message);
     process.exit(1);
+}
+
+// Create output directory
+const outputDir = path.join(__dirname, 'output');
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
 }
 
 // Pipeline configuration
@@ -31,13 +40,20 @@ const config = {
             type: "ColorConversion",
             props: { conversionType: "YUV420PLANAR_TO_RGB" }
         },
-        sink: {
-            type: "StatSink"
+        encoder: {
+            type: "ImageEncoderCV"
+        },
+        writer: {
+            type: "FileWriterModule",
+            props: {
+                strFullFileNameWithPattern: path.join(outputDir, "event_????.jpg")
+            }
         }
     },
     connections: [
         { from: "source", to: "transform" },
-        { from: "transform", to: "sink" }
+        { from: "transform", to: "encoder" },
+        { from: "encoder", to: "writer" }
     ]
 };
 
@@ -111,7 +127,7 @@ console.log('\n5. Re-registered health handler');
 // Show module information
 console.log('\n--- Module Information ---\n');
 
-const modules = ['source', 'transform', 'sink'];
+const modules = ['source', 'transform', 'encoder', 'writer'];
 modules.forEach(name => {
     const mod = pipeline.getModule(name);
     console.log(`${name}:`);

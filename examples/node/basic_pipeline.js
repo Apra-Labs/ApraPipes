@@ -1,14 +1,16 @@
 /**
  * Basic Pipeline Example
  *
- * Demonstrates how to create and run a simple pipeline using the
- * ApraPipes Node.js addon. This example creates a test signal generator
- * that outputs to a statistics sink.
+ * Demonstrates how to create a simple pipeline that generates test frames
+ * and saves them as JPEG images to files.
  *
  * Usage: node examples/node/basic_pipeline.js
+ *
+ * Output: Creates frame_0001.jpg, frame_0002.jpg, etc. in ./output/
  */
 
 const path = require('path');
+const fs = require('fs');
 
 // Load the addon from the project root
 const addonPath = path.join(__dirname, '../../aprapipes.node');
@@ -22,7 +24,13 @@ try {
     process.exit(1);
 }
 
-// Define a simple pipeline configuration
+// Create output directory
+const outputDir = path.join(__dirname, 'output');
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+}
+
+// Define a pipeline that outputs JPEG images
 const pipelineConfig = {
     name: "BasicPipeline",
     modules: {
@@ -34,13 +42,29 @@ const pipelineConfig = {
                 height: 480
             }
         },
-        // Statistics sink - collects frame statistics
-        sink: {
-            type: "StatSink"
+        // Convert YUV to RGB for JPEG encoding
+        colorConvert: {
+            type: "ColorConversion",
+            props: {
+                conversionType: "YUV420PLANAR_TO_RGB"
+            }
+        },
+        // Encode as JPEG
+        encoder: {
+            type: "ImageEncoderCV"
+        },
+        // Write to files
+        writer: {
+            type: "FileWriterModule",
+            props: {
+                strFullFileNameWithPattern: path.join(outputDir, "frame_????.jpg")
+            }
         }
     },
     connections: [
-        { from: "source", to: "sink" }
+        { from: "source", to: "colorConvert" },
+        { from: "colorConvert", to: "encoder" },
+        { from: "encoder", to: "writer" }
     ]
 };
 
@@ -54,11 +78,13 @@ const pipeline = ap.createPipeline(pipelineConfig);
 
 // Get module handles
 const source = pipeline.getModule('source');
-const sink = pipeline.getModule('sink');
+const encoder = pipeline.getModule('encoder');
+const writer = pipeline.getModule('writer');
 
 console.log('\nModules created:');
 console.log(`  - source: ${source.type} (${source.id})`);
-console.log(`  - sink: ${sink.type} (${sink.id})`);
+console.log(`  - encoder: ${encoder.type} (${encoder.id})`);
+console.log(`  - writer: ${writer.type} (${writer.id})`);
 
 // Check initial properties
 console.log('\nSource properties:');
@@ -76,7 +102,8 @@ pipeline
     });
 
 console.log('\nEvent handlers registered.');
-console.log('\nPipeline is ready. To run it, you would call:');
+console.log(`\nOutput will be written to: ${outputDir}/`);
+console.log('\nTo run this pipeline and generate output:');
 console.log('  pipeline.start()');
 console.log('  // ... let it process frames ...');
 console.log('  pipeline.stop()');

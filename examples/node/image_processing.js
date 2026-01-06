@@ -3,11 +3,15 @@
  *
  * Demonstrates a pipeline with multiple processing stages and
  * dynamic property support using VirtualPTZ module.
+ * Outputs actual JPEG images to show the processing results.
  *
  * Usage: node examples/node/image_processing.js
+ *
+ * Output: Creates processed_????.jpg files in ./output/
  */
 
 const path = require('path');
+const fs = require('fs');
 
 // Load the addon
 const addonPath = path.join(__dirname, '../../aprapipes.node');
@@ -19,7 +23,13 @@ try {
     process.exit(1);
 }
 
-// Image processing pipeline with PTZ control
+// Create output directory
+const outputDir = path.join(__dirname, 'output');
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+}
+
+// Image processing pipeline with PTZ control and file output
 const config = {
     name: "ImageProcessingPipeline",
     modules: {
@@ -47,15 +57,24 @@ const config = {
             // Default: full frame (roiX=0, roiY=0, roiWidth=1, roiHeight=1)
         },
 
-        // Output statistics
-        sink: {
-            type: "StatSink"
+        // Encode as JPEG
+        encoder: {
+            type: "ImageEncoderCV"
+        },
+
+        // Write to files
+        writer: {
+            type: "FileWriterModule",
+            props: {
+                strFullFileNameWithPattern: path.join(outputDir, "processed_????.jpg")
+            }
         }
     },
     connections: [
         { from: "source", to: "colorConvert" },
         { from: "colorConvert", to: "ptz" },
-        { from: "ptz", to: "sink" }
+        { from: "ptz", to: "encoder" },
+        { from: "encoder", to: "writer" }
     ]
 };
 
@@ -81,7 +100,10 @@ console.log('          v');
 console.log('  [VirtualPTZ] <- Has dynamic properties!');
 console.log('          |');
 console.log('          v');
-console.log('  [StatSink]');
+console.log('  [ImageEncoderCV] RGB -> JPEG');
+console.log('          |');
+console.log('          v');
+console.log('  [FileWriterModule] -> processed_????.jpg');
 console.log('');
 
 // Get module handles
@@ -89,7 +111,8 @@ const modules = {
     source: pipeline.getModule('source'),
     colorConvert: pipeline.getModule('colorConvert'),
     ptz: pipeline.getModule('ptz'),
-    sink: pipeline.getModule('sink')
+    encoder: pipeline.getModule('encoder'),
+    writer: pipeline.getModule('writer')
 };
 
 // Display module info
@@ -150,6 +173,11 @@ ptz.setProperty('roiWidth', 1);
 ptz.setProperty('roiHeight', 1);
 console.log('   Effect: Full frame, no crop');
 
+// Show output info
+console.log('\n--- Output ---\n');
+console.log(`JPEG images will be written to: ${outputDir}/`);
+console.log('Files: processed_0001.jpg, processed_0002.jpg, ...');
+
 // Show usage pattern
 console.log('\n--- Usage Pattern ---\n');
 console.log('// Create pipeline');
@@ -161,11 +189,13 @@ console.log('');
 console.log('// Start processing');
 console.log('pipeline.start();');
 console.log('');
-console.log('// Adjust PTZ in real-time');
+console.log('// Adjust PTZ in real-time while pipeline is running');
 console.log('ptz.setProperty("roiX", 0.3);');
 console.log('ptz.setProperty("roiY", 0.2);');
 console.log('ptz.setProperty("roiWidth", 0.4);');
 console.log('ptz.setProperty("roiHeight", 0.4);');
+console.log('');
+console.log('// View output files: processed_????.jpg');
 console.log('');
 console.log('// Stop when done');
 console.log('pipeline.stop();');
