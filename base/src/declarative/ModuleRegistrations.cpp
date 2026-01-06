@@ -141,7 +141,8 @@ void ensureBuiltinModulesRegistered() {
                 .tags("source", "test", "generator", "signal")
                 .output("output", "RawImagePlanar")
                 .intProp("width", "Frame width in pixels", true, 0, 1, 4096)
-                .intProp("height", "Frame height in pixels", true, 0, 1, 4096);
+                .intProp("height", "Frame height in pixels", true, 0, 1, 4096)
+                .stringProp("pattern", "Test pattern type: GRADIENT, CHECKERBOARD, COLOR_BARS, GRID", false, "GRADIENT");
         }
 
         // StatSink - might not have REGISTER_MODULE yet

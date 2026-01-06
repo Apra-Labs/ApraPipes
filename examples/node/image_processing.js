@@ -33,12 +33,13 @@ if (!fs.existsSync(outputDir)) {
 const config = {
     name: "ImageProcessingPipeline",
     modules: {
-        // Source: generates 1080p test frames
+        // Source: generates 1080p test frames with COLOR_BARS pattern
         source: {
             type: "TestSignalGenerator",
             props: {
                 width: 1920,
-                height: 1080
+                height: 1080,
+                pattern: "COLOR_BARS"
             }
         },
 

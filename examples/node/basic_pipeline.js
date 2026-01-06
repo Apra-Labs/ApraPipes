@@ -34,12 +34,13 @@ if (!fs.existsSync(outputDir)) {
 const pipelineConfig = {
     name: "BasicPipeline",
     modules: {
-        // Test signal generator - creates synthetic video frames
+        // Test signal generator - creates synthetic video frames with CHECKERBOARD pattern
         source: {
             type: "TestSignalGenerator",
             props: {
                 width: 640,
-                height: 480
+                height: 480,
+                pattern: "CHECKERBOARD"
             }
         },
         // Convert YUV to RGB for JPEG encoding

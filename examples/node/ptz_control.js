@@ -33,10 +33,10 @@ if (!fs.existsSync(outputDir)) {
 const ptzPipelineConfig = {
     name: "PTZControlDemo",
     modules: {
-        // Generate 1080p test signal
+        // Generate 1080p test signal with GRID pattern for visible PTZ effects
         source: {
             type: "TestSignalGenerator",
-            props: { width: 1920, height: 1080 }
+            props: { width: 1920, height: 1080, pattern: "GRID" }
         },
         // Convert to RGB for PTZ processing
         colorConvert: {
