@@ -46,7 +46,7 @@ private:
 
     // State
     Napi::Value IsRunning(const Napi::CallbackInfo& info);
-    Napi::Value IsFull(const Napi::CallbackInfo& info);
+    Napi::Value IsInputQueFull(const Napi::CallbackInfo& info);
 
     // Internal state
     boost::shared_ptr<Module> module_;

@@ -201,9 +201,9 @@ declare module '@apralabs/aprapipes' {
     getProps(): ModuleProps;
 
     /**
-     * Check if module queue is full
+     * Check if module's input queue is full
      */
-    isFull(): boolean;
+    isInputQueFull(): boolean;
 
     /**
      * Check if module is running

@@ -18,7 +18,7 @@ Napi::Object ModuleWrapper::Init(Napi::Env env, Napi::Object exports) {
         InstanceAccessor<&ModuleWrapper::GetName>("name"),
         InstanceMethod("getProps", &ModuleWrapper::GetProps),
         InstanceMethod("isRunning", &ModuleWrapper::IsRunning),
-        InstanceMethod("isFull", &ModuleWrapper::IsFull),
+        InstanceMethod("isInputQueFull", &ModuleWrapper::IsInputQueFull),
     });
 
     moduleConstructor = new Napi::FunctionReference();
@@ -121,11 +121,11 @@ Napi::Value ModuleWrapper::IsRunning(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), true);
 }
 
-Napi::Value ModuleWrapper::IsFull(const Napi::CallbackInfo& info) {
+Napi::Value ModuleWrapper::IsInputQueFull(const Napi::CallbackInfo& info) {
     if (!module_) {
         return Napi::Boolean::New(info.Env(), false);
     }
-    return Napi::Boolean::New(info.Env(), module_->isFull());
+    return Napi::Boolean::New(info.Env(), module_->isQueFull());
 }
 
 } // namespace aprapipes_node
