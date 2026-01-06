@@ -167,6 +167,14 @@ void VirtualPTZ::setMetadata(framemetadata_sp &metadata)
 
 void VirtualPTZ::setProps(VirtualPTZProps &props)
 {
+    // If the module's command factory isn't set up (pipeline not running),
+    // update props directly instead of queueing
+    if (!canQueueProps()) {
+        mDetail->mProps = props;
+        // Also update Detail's internal state if it's been initialized
+        mDetail->setProps(props);
+        return;
+    }
     Module::addPropsToQueue(props);
 }
 

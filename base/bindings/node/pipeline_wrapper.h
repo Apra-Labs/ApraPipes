@@ -64,12 +64,8 @@ private:
     bool running_ = false;
 
     // Store module info for getModule() / getModuleIds()
-    struct ModuleInfo {
-        std::string instanceId;
-        std::string moduleType;
-        boost::shared_ptr<Module> module;
-    };
-    std::map<std::string, ModuleInfo> moduleInfoMap_;
+    // Uses ModuleEntry from ModuleFactory which includes property accessors
+    std::map<std::string, apra::ModuleFactory::ModuleEntry> moduleInfoMap_;
 
     // Store reference to prevent GC
     Napi::ObjectReference selfRef_;

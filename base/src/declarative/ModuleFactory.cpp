@@ -366,12 +366,19 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         return result;
     }
 
-    // Phase 5: Populate result.modules for external access (e.g., event callbacks)
+    // Phase 5: Populate result.modules for external access (e.g., event callbacks, dynamic props)
     for (const auto& [instanceId, ctx] : contextMap) {
         ModuleEntry entry;
         entry.module = ctx.module;
         entry.moduleType = ctx.moduleType;
         entry.instanceId = ctx.instanceId;
+
+        // Create property accessors if module type supports them
+        const ModuleInfo* info = registry.getModule(ctx.moduleType);
+        if (info && info->propertyAccessorFactory && ctx.module) {
+            entry.propertyAccessors = info->propertyAccessorFactory(ctx.module.get());
+        }
+
         result.modules[instanceId] = entry;
     }
 

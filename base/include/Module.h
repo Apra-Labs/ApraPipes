@@ -229,6 +229,8 @@ protected:
 
   void setProps(ModuleProps &props);
   void fillProps(ModuleProps &props);
+  // Check if the module is ready for queue-based property changes
+  bool canQueueProps() const { return mpCommandFactory != nullptr; }
   template <class T>
   void addPropsToQueue(T &props, bool priority = false)
   {

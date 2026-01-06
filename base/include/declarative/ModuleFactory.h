@@ -24,6 +24,9 @@ class Module;
 
 namespace apra {
 
+// Use PropertyAccessors from ModuleInfo for consistency
+using DynamicPropertyAccessors = ModuleInfo::PropertyAccessors;
+
 // ============================================================
 // ModuleFactory - Builds PipeLine from PipelineDescription
 // ============================================================
@@ -39,11 +42,12 @@ public:
                     collect_info_messages(false) {}
     };
 
-    // Module info for external access (e.g., event callbacks)
+    // Module info for external access (e.g., event callbacks, property access)
     struct ModuleEntry {
         boost::shared_ptr<Module> module;
         std::string moduleType;
         std::string instanceId;
+        DynamicPropertyAccessors propertyAccessors;  // Runtime property access
     };
 
     // Build result

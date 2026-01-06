@@ -75,6 +75,16 @@ struct ModuleInfo {
     )>;
     FactoryFn factory;
 
+    // Dynamic property accessor factory - creates type-erased accessors bound to a module instance
+    // Returns {getDynamicPropertyNames, getProperty, setProperty} functions
+    struct PropertyAccessors {
+        std::function<std::vector<std::string>()> getDynamicPropertyNames;
+        std::function<ScalarPropertyValue(const std::string&)> getProperty;
+        std::function<bool(const std::string&, const ScalarPropertyValue&)> setProperty;
+    };
+    using PropertyAccessorFactoryFn = std::function<PropertyAccessors(Module*)>;
+    PropertyAccessorFactoryFn propertyAccessorFactory;
+
     // Flag indicating module creates its own output pins in addInputPin()
     // When true, ModuleFactory skips output pin setup to avoid duplicates
     bool selfManagedOutputPins = false;

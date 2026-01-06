@@ -274,14 +274,8 @@ Napi::Value PipelineWrapper::CreatePipeline(const Napi::CallbackInfo& info) {
     instance->pipeline_ = std::move(buildResult.pipeline);
     instance->buildIssues_ = std::move(buildResult.issues);
 
-    // Store module info from build result (includes actual module pointers)
-    for (const auto& [instanceId, entry] : buildResult.modules) {
-        ModuleInfo info;
-        info.instanceId = entry.instanceId;
-        info.moduleType = entry.moduleType;
-        info.module = entry.module;
-        instance->moduleInfoMap_[instanceId] = info;
-    }
+    // Store module info from build result (includes actual module pointers and property accessors)
+    instance->moduleInfoMap_ = std::move(buildResult.modules);
 
     return wrapper;
 }
@@ -452,10 +446,11 @@ Napi::Value PipelineWrapper::GetModule(const Napi::CallbackInfo& info) {
         return env.Null();  // Module not found
     }
 
-    const ModuleInfo& modInfo = it->second;
+    const auto& modEntry = it->second;
 
-    // Create a ModuleWrapper
-    return ModuleWrapper::Create(env, modInfo.module, modInfo.instanceId, modInfo.moduleType);
+    // Create a ModuleWrapper with property accessors
+    return ModuleWrapper::Create(env, modEntry.module, modEntry.instanceId,
+                                  modEntry.moduleType, modEntry.propertyAccessors);
 }
 
 Napi::Value PipelineWrapper::GetModuleIds(const Napi::CallbackInfo& info) {

@@ -42,6 +42,53 @@ namespace detail {
         }
         return result;
     }
+
+    // ============================================================
+    // SFINAE helpers for detecting dynamic property support on Props class
+    // ============================================================
+
+    // Check if PropsClass has static dynamicPropertyNames()
+    template<typename P, typename = void>
+    struct has_dynamic_property_names : std::false_type {};
+
+    template<typename P>
+    struct has_dynamic_property_names<P,
+        std::void_t<decltype(P::dynamicPropertyNames())>> : std::true_type {};
+
+    // Check if PropsClass has getProperty(string) const
+    template<typename P, typename = void>
+    struct has_get_property : std::false_type {};
+
+    template<typename P>
+    struct has_get_property<P,
+        std::void_t<decltype(std::declval<const P&>().getProperty(std::string{}))>> : std::true_type {};
+
+    // Check if PropsClass has setProperty(string, value)
+    template<typename P, typename = void>
+    struct has_set_property : std::false_type {};
+
+    template<typename P>
+    struct has_set_property<P,
+        std::void_t<decltype(std::declval<P&>().setProperty(std::string{}, ScalarPropertyValue{}))>> : std::true_type {};
+
+    // Check if ModuleClass has getProps() and setProps(PropsClass&)
+    template<typename M, typename P, typename = void>
+    struct has_get_set_props : std::false_type {};
+
+    template<typename M, typename P>
+    struct has_get_set_props<M, P,
+        std::void_t<
+            decltype(std::declval<M&>().getProps()),
+            decltype(std::declval<M&>().setProps(std::declval<P&>()))
+        >> : std::true_type {};
+
+    // Combined check: module supports dynamic properties if all methods exist
+    template<typename M, typename P>
+    constexpr bool supports_dynamic_props_v =
+        has_dynamic_property_names<P>::value &&
+        has_get_property<P>::value &&
+        has_set_property<P>::value &&
+        has_get_set_props<M, P>::value;
 }
 
 // ============================================================
@@ -329,9 +376,58 @@ public:
             return std::make_unique<ModuleClass>(moduleProps);
         };
 
+        // Create property accessor factory for modules that support dynamic props
+        createPropertyAccessorFactory();
+
         // Register with the singleton registry
         ModuleRegistry::instance().registerModule(std::move(info_));
     }
+
+private:
+    // Helper to create property accessor factory (SFINAE-enabled)
+    template<typename M = ModuleClass, typename P = PropsClass>
+    typename std::enable_if<detail::supports_dynamic_props_v<M, P>, void>::type
+    createPropertyAccessorFactory() {
+        info_.propertyAccessorFactory = [](Module* rawModule) -> ModuleInfo::PropertyAccessors {
+            ModuleInfo::PropertyAccessors accessors;
+
+            // Cast to concrete module type
+            auto* typedModule = static_cast<ModuleClass*>(rawModule);
+
+            // Get list of dynamic property names (static on props class)
+            accessors.getDynamicPropertyNames = []() -> std::vector<std::string> {
+                return PropsClass::dynamicPropertyNames();
+            };
+
+            // Get property value from current props
+            accessors.getProperty = [typedModule](const std::string& name) -> ScalarPropertyValue {
+                PropsClass props = typedModule->getProps();
+                return props.getProperty(name);
+            };
+
+            // Set property value: get current props, modify, apply back
+            accessors.setProperty = [typedModule](const std::string& name,
+                                                   const ScalarPropertyValue& value) -> bool {
+                PropsClass props = typedModule->getProps();
+                bool success = props.setProperty(name, value);
+                if (success) {
+                    typedModule->setProps(props);
+                }
+                return success;
+            };
+
+            return accessors;
+        };
+    }
+
+    // Fallback for modules without dynamic property support
+    template<typename M = ModuleClass, typename P = PropsClass>
+    typename std::enable_if<!detail::supports_dynamic_props_v<M, P>, void>::type
+    createPropertyAccessorFactory() {
+        // No-op: leave propertyAccessorFactory as nullptr
+    }
+
+public:
 
     // Prevent copying
     ModuleRegistrationBuilder(const ModuleRegistrationBuilder&) = delete;

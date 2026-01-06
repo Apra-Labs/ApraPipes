@@ -239,6 +239,39 @@ declare module '@apralabs/aprapipes' {
      * Check if module is running
      */
     isRunning(): boolean;
+
+    // ============================================================
+    // Dynamic Property Methods
+    // ============================================================
+
+    /**
+     * Check if module supports dynamic properties
+     * @returns true if getProperty/setProperty methods are available
+     */
+    hasDynamicProperties(): boolean;
+
+    /**
+     * Get list of dynamic property names
+     * @returns Array of property names (e.g., ["roiX", "roiY", "roiWidth", "roiHeight"])
+     */
+    getDynamicPropertyNames(): string[];
+
+    /**
+     * Get a dynamic property value
+     * @param name Property name
+     * @returns Property value (number, boolean, or string)
+     * @throws Error if property doesn't exist or module doesn't support dynamic properties
+     */
+    getProperty(name: string): number | boolean | string;
+
+    /**
+     * Set a dynamic property value (takes effect at runtime)
+     * @param name Property name
+     * @param value New value
+     * @returns true if successfully set
+     * @throws Error if property doesn't exist or module doesn't support dynamic properties
+     */
+    setProperty(name: string, value: number | boolean | string): boolean;
   }
 
   export interface ModuleProps {
