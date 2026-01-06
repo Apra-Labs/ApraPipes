@@ -78,6 +78,11 @@ on:
         description: 'vcpkg triplet for release-only builds (e.g., x64-linux-release, arm64-linux-release)'
         default: 'x64-linux-release'
         required: false
+      build-node-addon:
+        type: boolean
+        description: 'Build Node.js addon (disabled on ARM64 due to -fPIC issues with static ffmpeg)'
+        default: true
+        required: false
 jobs:
   build:
     env:
@@ -232,7 +237,7 @@ jobs:
 
     - name: Configure CMake Common
       working-directory: ${{github.workspace}}/build
-      run: '${{ inputs.cmake-conf-cmd }} -DVCPKG_TARGET_TRIPLET=${{ inputs.vcpkg-triplet }} -DVCPKG_HOST_TRIPLET=${{ inputs.vcpkg-triplet }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda}} -DBUILD_NODE_ADDON=ON'
+      run: '${{ inputs.cmake-conf-cmd }} -DVCPKG_TARGET_TRIPLET=${{ inputs.vcpkg-triplet }} -DVCPKG_HOST_TRIPLET=${{ inputs.vcpkg-triplet }} -DCMAKE_TOOLCHAIN_FILE=${{env.CMAKE_TC_FILE}} -DCMAKE_BUILD_TYPE=${{inputs.buildConf}} -DENABLE_CUDA=${{inputs.cuda }} -DBUILD_NODE_ADDON=${{ inputs.build-node-addon && ''ON'' || ''OFF'' }}'
 
     - name: Force cache update - save updated cache with newly-built packages
       if: ${{ always() && !inputs.is-selfhosted && inputs.force-cache-update }}
