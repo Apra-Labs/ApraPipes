@@ -14,3 +14,5 @@ build/CMakeFiles/cmake.check_cache
 build/CMakeFiles/CMakeConfigureLog.yaml
 .claude/settings.local.json
 aprapipes.node
+examples/node/output
+data/SaveOrCompareFail
