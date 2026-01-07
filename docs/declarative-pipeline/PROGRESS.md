@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-06
+> Last Updated: 2026-01-07
 
 ---
 
@@ -12,7 +12,7 @@
 ```
 Core Infrastructure:  ✅ Complete (Metadata, Registry, Factory, Validator, CLI)
 JSON Migration:       ✅ Complete (TOML removed, JsonParser added)
-Module Coverage:      31+ modules (all commonly used modules)
+Module Coverage:      37 modules (cross-platform) + platform-specific
 Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
 ```
 
@@ -32,90 +32,121 @@ Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
 
 ---
 
-## Registered Modules (31+)
+## Registered Modules
 
-### Source Modules
-- TestSignalGenerator (with GRADIENT, CHECKERBOARD, COLOR_BARS, GRID patterns)
+### Source Modules (7)
+- TestSignalGenerator (patterns: GRADIENT, CHECKERBOARD, COLOR_BARS, GRID)
 - FileReaderModule
-- Mp4ReaderSource
+- Mp4ReaderSource (outputFormat: "h264"/"jpeg" for declarative)
 - WebCamSource
 - RTSPClientSrc
 - ExternalSourceModule
+- AudioCaptureSrc
 
-### Transform Modules
+### Transform Modules (13)
 - ImageDecoderCV
 - ImageEncoderCV
 - ImageResizeCV
 - RotateCV
 - ColorConversion
-- VirtualPTZ (dynamic properties: roiX, roiY, roiWidth, roiHeight)
+- VirtualPTZ (dynamic: roiX, roiY, roiWidth, roiHeight)
 - TextOverlayXForm (dynamic properties)
-- BrightnessContrastControl (dynamic properties)
+- BrightnessContrastControl (dynamic: contrast, brightness)
 - AffineTransform
 - BMPConverter
 - OverlayModule
 - HistogramOverlay
+- AudioToTextXForm (Whisper speech-to-text)
 
-### Analytics Modules
+### Analytics Modules (5)
 - FaceDetectorXform
+- FacialLandmarkCV
 - QRReader
 - CalcHistogramCV
 - MotionVectorExtractor
 
-### Sink Modules
+### Sink Modules (6)
 - FileWriterModule
 - Mp4WriterSink
 - StatSink
 - ExternalSinkModule
+- RTSPPusher
+- ThumbnailListGenerator
 
-### Utility Modules
+### Utility Modules (6)
 - Split
 - Merge
 - ValveModule
 - FramesMuxer
 - MultimediaQueueXform
+- ArchiveSpaceManager
 
-### CUDA Modules (conditional)
-- H264Decoder (ENABLE_CUDA)
+### Linux-Only Modules (ENABLE_LINUX)
+- VirtualCameraSink (virtual camera device output)
+- H264EncoderV4L2 (V4L2 hardware encoder)
+
+### CUDA-Only Modules (ENABLE_CUDA)
+- H264Decoder (NVDEC decoder)
+
+**Total: 37 cross-platform + 2 Linux + 1 CUDA = 40 modules**
 
 ---
 
-## Modules Not Registered (Known Limitations)
+## Modules Not Registered
 
-### CUDA Modules (require CUDA context/stream)
-- H264EncoderNVCodec
-- JPEGDecoderNVJPEG
-- JPEGEncoderNVJPEG
-- ResizeNPPI, RotateNPPI, CCNPPI, EffectsNPPI, OverlayNPPI
-- CudaMemCopy, CudaStreamSynchronize, MemTypeConversion
+### CUDA Modules (require cudastream_sp in constructor)
+| Module | Reason |
+|--------|--------|
+| GaussianBlur | Requires CUDA stream |
+| H264EncoderNVCodec | Requires CUDA stream |
+| JPEGDecoderNVJPEG | Requires CUDA stream |
+| JPEGEncoderNVJPEG | Requires CUDA stream |
+| ResizeNPPI | Requires CUDA stream |
+| RotateNPPI | Requires CUDA stream |
+| CCNPPI | Requires CUDA stream |
+| EffectsNPPI | Requires CUDA stream |
+| OverlayNPPI | Requires CUDA stream |
+| CudaMemCopy | Requires CUDA stream |
+| CudaStreamSynchronize | Requires CUDA stream |
+| CuCtxSynchronize | Requires CUDA context |
+| MemTypeConversion | Requires CUDA stream |
 
-### Platform-Specific Modules
-- H264EncoderV4L2 (V4L2/Linux)
-- NvV4L2Camera, NvTransform, JPEGEncoderL4TM (Jetson)
-- GtkGlRenderer, EglRenderer (Display)
-- DMAFDToHostCopy (Jetson)
+**Blocker:** Need CUDA context factory to create/pass cudastream_sp declaratively.
 
-### Complex Constructor Modules
-- VirtualCameraSink (requires device path)
-- RTSPPusher (requires network config)
-- ArchiveSpaceManager (requires storage config)
+### Jetson-Only Modules (L4T/Tegra)
+| Module | Reason |
+|--------|--------|
+| NvArgusCamera | Jetson Argus camera API |
+| NvV4L2Camera | Jetson V4L2 camera |
+| NvTransform | Jetson multimedia transform |
+| JPEGDecoderL4TM | L4T Multimedia decoder |
+| JPEGEncoderL4TM | L4T Multimedia encoder |
+| DMAFDToHostCopy | Jetson DMA file descriptor |
 
-### Specialized Modules
-- FacialLandmarksCV (requires OpenCV model files)
-- ThumbnailListGenerator (needs applyProperties)
-- AudioCaptureSrc, AudioToTextXForm (audio pipeline)
-- ImageViewerModule, KeyboardListener (UI)
+**Status:** Need conditional registration with `#ifdef` guards on Jetson builds.
+
+### Display/UI Modules
+| Module | Reason |
+|--------|--------|
+| GtkGlRenderer | Requires GTK display |
+| EglRenderer | Requires EGL display |
+| ImageViewerModule | Requires OpenCV GUI |
+| KeyboardListener | Requires keyboard input |
+
+**Status:** Could be registered but typically not used in headless pipelines.
 
 ---
 
 ## Build Status
 
-| Platform | Status | Node Addon |
-|----------|--------|------------|
-| macOS | ✅ Pass | ✅ |
-| Linux x64 | ✅ Pass | ✅ |
-| Windows | ✅ Pass | ✅ |
-| ARM64 | ✅ Pass | ❌ (issue #493) |
+| Platform | Status | Node Addon | Modules |
+|----------|--------|------------|---------|
+| macOS | ✅ Pass | ✅ | 37 |
+| Linux x64 | ✅ Pass | ✅ | 39 (+V4L2) |
+| Windows | ✅ Pass | ✅ | 37 |
+| Linux ARM64 | ✅ Pass | ❌ (#493) | 39 |
+| Linux CUDA | ✅ Pass | ✅ | 40 (+H264Decoder) |
+| Jetson | ✅ Pass | ❌ | 40+ (+Jetson modules) |
 
 ---
 
@@ -166,12 +197,24 @@ Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
 | ptz_control.js | VirtualPTZ with real-time property changes |
 | event_handling.js | Health/error event handling |
 | image_processing.js | Color bars + brightness/contrast control |
+| rtsp_pusher_demo.js | Mp4ReaderSource -> RTSPPusher streaming |
 
 ---
 
 ## Future Work
 
-1. **CUDA Module Support** - Add CUDA context factory for declarative CUDA pipelines
-2. **Platform Modules** - Add conditional registration for Jetson/V4L2 modules
-3. **Additional Modules** - Add applyProperties to remaining modules
-4. **ARM64 Node Addon** - Fix -fPIC issue for ARM64 builds
+### Priority 1: CUDA Module Support
+- Create CUDA context factory for declarative CUDA pipelines
+- Allow cudastream_sp to be created/passed via pipeline config
+- Enable 13 CUDA modules for declarative use
+
+### Priority 2: Jetson Module Registration
+- Add `#ifdef` guards for Jetson-specific modules
+- Test on Jetson device with L4T
+
+### Priority 3: Display Modules (Optional)
+- Register UI modules with platform checks
+- Low priority - mainly for debugging
+
+### Priority 4: ARM64 Node Addon
+- Fix -fPIC linking issue (#493)
