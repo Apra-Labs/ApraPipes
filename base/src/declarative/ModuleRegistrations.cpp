@@ -59,6 +59,13 @@
 // Batch 6: Additional source and utility modules
 #include "AudioCaptureSrc.h"
 #include "ArchiveSpaceManager.h"
+#include "AudioToTextXForm.h"
+
+// Platform-specific modules (conditionally compiled)
+#ifdef ENABLE_LINUX
+#include "VirtualCameraSink.h"
+#include "H264EncoderV4L2.h"
+#endif
 
 // Batch 5: Utility modules
 #include "FramesMuxer.h"
@@ -221,12 +228,11 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // Mp4ReaderSource - reads MP4 video files
-        // Note: Output pin type is determined at runtime based on actual MP4 content
-        // Requires valid video file path to run - validation will fail without real file
+        // Set outputFormat to "h264" or "jpeg" for declarative pipelines
         if (!registry.hasModule("Mp4ReaderSource")) {
             registerModule<Mp4ReaderSource, Mp4ReaderSourceProps>()
                 .category(ModuleCategory::Source)
-                .description("Reads video frames from MP4 files")
+                .description("Reads video frames from MP4 files. Set outputFormat='h264' or 'jpeg' for declarative use.")
                 .tags("source", "mp4", "video", "file")
                 .output("output", "H264Data", "EncodedImage")
                 .stringProp("videoPath", "Path to MP4 video file", true)
@@ -236,7 +242,9 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("reInitInterval", "Re-initialization interval in seconds (0=disabled)", false, 0, 0)
                 .intProp("parseFSTimeoutDuration", "Filesystem parse timeout in seconds", false, 15, 0)
                 .boolProp("readLoop", "Loop playback when reaching end", false, false)
-                .boolProp("giveLiveTS", "Use live timestamps", false, false);
+                .boolProp("giveLiveTS", "Use live timestamps", false, false)
+                .stringProp("outputFormat", "Output format: 'h264' or 'jpeg' (required for declarative)", false, "")
+                .selfManagedOutputPins();  // Output pins created in constructor when outputFormat is set
         }
 
         // Mp4WriterSink - writes MP4 video files
@@ -593,6 +601,52 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // Note: H264FrameDemuxer is not derived from Module, cannot be registered
+
+        // ============================================================
+        // Batch 7: Additional Transform/Analytics Modules
+        // ============================================================
+
+        // AudioToTextXForm - speech-to-text using Whisper
+        if (!registry.hasModule("AudioToTextXForm")) {
+            registerModule<AudioToTextXForm, AudioToTextXFormProps>()
+                .category(ModuleCategory::Transform)
+                .description("Transforms audio input to text using Whisper speech recognition model")
+                .tags("transform", "audio", "speech", "text", "whisper", "ml")
+                .input("input", "AudioFrame")
+                .output("output", "TextFrame")
+                .stringProp("modelPath", "Path to Whisper model file", true)
+                .intProp("bufferSize", "Audio buffer size in samples", false, 16000, 1000, 100000)
+                .enumProp("samplingStrategy", "Decoder sampling strategy", false, "GREEDY", "GREEDY", "BEAM_SEARCH")
+                .selfManagedOutputPins();
+        }
+
+        // ============================================================
+        // Linux-only modules
+        // ============================================================
+#ifdef ENABLE_LINUX
+        // VirtualCameraSink - outputs to virtual camera device
+        if (!registry.hasModule("VirtualCameraSink")) {
+            registerModule<VirtualCameraSink, VirtualCameraSinkProps>()
+                .category(ModuleCategory::Sink)
+                .description("Outputs video frames to a virtual camera device (e.g., /dev/video0 on Linux)")
+                .tags("sink", "camera", "virtual", "v4l2")
+                .input("input", "RawImage")
+                .stringProp("device", "Virtual camera device path (e.g., /dev/video0)", true);
+        }
+        // H264EncoderV4L2 - H.264 encoding via V4L2
+        if (!registry.hasModule("H264EncoderV4L2")) {
+            registerModule<H264EncoderV4L2, H264EncoderV4L2Props>()
+                .category(ModuleCategory::Transform)
+                .description("Encodes raw video frames to H.264 using V4L2 hardware encoder (Linux only)")
+                .tags("encoder", "h264", "video", "v4l2", "linux")
+                .input("input", "RawImagePlanar")
+                .output("output", "H264Data")
+                .intProp("targetKbps", "Target bitrate in Kbps", false, 1024, 100, 50000)
+                .boolProp("enableMotionVectors", "Enable motion vector extraction", false, false)
+                .intProp("motionVectorThreshold", "Motion vector threshold", false, 5, 0, 100)
+                .selfManagedOutputPins();
+        }
+#endif
 
         // ============================================================
         // CUDA-only modules

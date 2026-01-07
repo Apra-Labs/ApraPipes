@@ -85,6 +85,10 @@ public:
 	bool readLoop = false;
 	bool giveLiveTS = false;
 
+	// Declarative pipeline support: "h264" or "jpeg" to auto-create output pins
+	// If empty (default), output pins must be added manually via addOutPutPin()
+	std::string outputFormat = "";
+
 	// ============================================================
 	// Property Binding for Declarative Pipeline
 	// ============================================================
@@ -102,6 +106,7 @@ public:
 		apra::applyProp(props.parseFSTimeoutDuration, "parseFSTimeoutDuration", values, false, missingRequired);
 		apra::applyProp(props.readLoop, "readLoop", values, false, missingRequired);
 		apra::applyProp(props.giveLiveTS, "giveLiveTS", values, false, missingRequired);
+		apra::applyProp(props.outputFormat, "outputFormat", values, false, missingRequired);
 	}
 
 	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
@@ -113,6 +118,7 @@ public:
 		if (propName == "parseFSTimeoutDuration") return static_cast<int64_t>(parseFSTimeoutDuration);
 		if (propName == "readLoop") return readLoop;
 		if (propName == "giveLiveTS") return giveLiveTS;
+		if (propName == "outputFormat") return outputFormat;
 		throw std::runtime_error("Unknown property: " + propName);
 	}
 
