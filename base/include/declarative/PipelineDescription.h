@@ -50,6 +50,12 @@ struct Connection {
     std::string to_module;        // "decoder"
     std::string to_pin;           // "input"
 
+    // Sieve mode: when true, only explicit output pins are connected.
+    // When false (default), input pins also pass through to the next module.
+    // This affects transform modules - with sieve=false, the input frame
+    // is forwarded along with any new output frames the module creates.
+    bool sieve = false;           // default: passthrough enabled
+
     // Source location for error messages
     int source_line = -1;
     int source_column = -1;

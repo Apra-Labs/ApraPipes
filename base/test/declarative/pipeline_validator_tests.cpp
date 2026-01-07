@@ -500,4 +500,102 @@ BOOST_AUTO_TEST_CASE(Validate_PipelineName_InSummary)
     BOOST_CHECK(formatted.find("my_custom_pipeline") != std::string::npos);
 }
 
+// ============================================================
+// Sieve and Input Pin Passthrough Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(Validate_InputPinAsSource_SieveFalse_Valid)
+{
+    // With sieve=false (default), input pins pass through and can be used as source
+    PipelineValidator validator;
+
+    PipelineDescription desc;
+    ModuleInstance transform;
+    transform.instance_id = "transform";
+    transform.module_type = "ImageResizeCV";  // Transform module with input pin
+    desc.addModule(transform);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "StatSink";
+    desc.addModule(sink);
+
+    // Use input pin as source with sieve=false (default)
+    Connection conn;
+    conn.from_module = "transform";
+    conn.from_pin = "input";  // Input pin used as source
+    conn.to_module = "sink";
+    conn.sieve = false;  // Passthrough enabled
+    desc.addConnection(conn);
+
+    auto result = validator.validateConnections(desc);
+
+    // Should NOT have an error about input pin
+    std::string formatted = result.format();
+    BOOST_CHECK(formatted.find("cannot be used as source with sieve=true") == std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(Validate_InputPinAsSource_SieveTrue_Error)
+{
+    // With sieve=true, input pins don't pass through - error if used as source
+    PipelineValidator validator;
+
+    PipelineDescription desc;
+    ModuleInstance transform;
+    transform.instance_id = "transform";
+    transform.module_type = "ImageResizeCV";  // Transform module with input pin
+    desc.addModule(transform);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "StatSink";
+    desc.addModule(sink);
+
+    // Use input pin as source with sieve=true - should fail
+    Connection conn;
+    conn.from_module = "transform";
+    conn.from_pin = "input";  // Input pin used as source
+    conn.to_module = "sink";
+    conn.sieve = true;  // Passthrough disabled
+    desc.addConnection(conn);
+
+    auto result = validator.validateConnections(desc);
+
+    // Should have an error about input pin with sieve=true
+    BOOST_CHECK(result.hasErrors());
+    std::string formatted = result.format();
+    BOOST_CHECK(formatted.find("cannot be used as source with sieve=true") != std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE(Validate_OutputPinAsSource_SieveTrue_Valid)
+{
+    // Output pins are always valid as source, regardless of sieve
+    PipelineValidator validator;
+
+    PipelineDescription desc;
+    ModuleInstance transform;
+    transform.instance_id = "transform";
+    transform.module_type = "ImageResizeCV";
+    desc.addModule(transform);
+
+    ModuleInstance sink;
+    sink.instance_id = "sink";
+    sink.module_type = "StatSink";
+    desc.addModule(sink);
+
+    // Use output pin as source with sieve=true - should work
+    Connection conn;
+    conn.from_module = "transform";
+    conn.from_pin = "output";  // Output pin
+    conn.to_module = "sink";
+    conn.sieve = true;
+    desc.addConnection(conn);
+
+    auto result = validator.validateConnections(desc);
+
+    // Should NOT have an error
+    std::string formatted = result.format();
+    BOOST_CHECK(formatted.find("cannot be used as source") == std::string::npos);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

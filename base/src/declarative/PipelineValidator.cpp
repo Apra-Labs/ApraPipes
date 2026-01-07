@@ -9,6 +9,7 @@
 #include <sstream>
 #include <set>
 #include <queue>
+#include <algorithm>
 
 namespace apra {
 
@@ -491,20 +492,54 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         const auto* srcInfo = moduleInfoMap[conn.from_module];
         const auto* dstInfo = moduleInfoMap[conn.to_module];
 
-        // C4: Check source pin exists (if specified and module info available)
-        std::string srcPinType;
+        // C4: Compute effective source output types
+        // With sieve=false (default), Transform modules pass through their input types
+        // as well as their declared output types
+        std::vector<std::string> srcPinTypes;
+
         if (srcInfo && !conn.from_pin.empty()) {
-            bool foundPin = false;
+            // Specific pin requested - find it
+            bool foundInOutputs = false;
+            bool foundInInputs = false;
+
+            // First check output pins (always valid as source)
             for (const auto& pin : srcInfo->outputs) {
                 if (pin.name == conn.from_pin) {
-                    foundPin = true;
-                    if (!pin.frame_types.empty()) {
-                        srcPinType = pin.frame_types[0];
+                    foundInOutputs = true;
+                    for (const auto& ft : pin.frame_types) {
+                        srcPinTypes.push_back(ft);
                     }
                     break;
                 }
             }
-            if (!foundPin) {
+
+            // If not in outputs, check input pins (valid only with sieve=false)
+            if (!foundInOutputs) {
+                for (const auto& pin : srcInfo->inputs) {
+                    if (pin.name == conn.from_pin) {
+                        foundInInputs = true;
+                        if (conn.sieve) {
+                            // Input pin used as source with sieve=true - ERROR
+                            result.issues.push_back(Issue::error(
+                                Issue::UNKNOWN_SOURCE_PIN,
+                                location,
+                                "Input pin '" + conn.from_pin + "' cannot be used as source with sieve=true. "
+                                "Input pins only pass through when sieve=false (default).",
+                                "Either remove 'sieve: true' from this connection, or use an output pin."
+                            ));
+                        } else {
+                            // sieve=false: input pin passes through, valid as source
+                            for (const auto& ft : pin.frame_types) {
+                                srcPinTypes.push_back(ft);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (!foundInOutputs && !foundInInputs) {
+                // Pin not found in either outputs or inputs
                 std::string suggestion;
                 if (!srcInfo->outputs.empty()) {
                     suggestion = "Available output pins: ";
@@ -513,16 +548,41 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                         suggestion += srcInfo->outputs[i].name;
                     }
                 }
+                if (!conn.sieve && !srcInfo->inputs.empty()) {
+                    if (!suggestion.empty()) suggestion += ". ";
+                    suggestion += "With sieve=false, input pins also available: ";
+                    for (size_t i = 0; i < srcInfo->inputs.size(); ++i) {
+                        if (i > 0) suggestion += ", ";
+                        suggestion += srcInfo->inputs[i].name;
+                    }
+                }
                 result.issues.push_back(Issue::error(
                     Issue::UNKNOWN_SOURCE_PIN,
                     location,
-                    "Unknown output pin '" + conn.from_pin + "' on module '" + conn.from_module + "'",
+                    "Unknown pin '" + conn.from_pin + "' on module '" + conn.from_module + "'",
                     suggestion
                 ));
             }
-        } else if (srcInfo && !srcInfo->outputs.empty()) {
-            // Use first output pin type if pin not specified
-            srcPinType = srcInfo->outputs[0].frame_types.empty() ? "" : srcInfo->outputs[0].frame_types[0];
+        } else if (srcInfo) {
+            // No specific pin - collect all declared output types
+            for (const auto& pin : srcInfo->outputs) {
+                for (const auto& ft : pin.frame_types) {
+                    srcPinTypes.push_back(ft);
+                }
+            }
+
+            // Sieve passthrough: with sieve=false (default), Transform modules also
+            // pass through their input types as effective outputs
+            if (!conn.sieve && srcInfo->category == ModuleCategory::Transform) {
+                for (const auto& inputPin : srcInfo->inputs) {
+                    for (const auto& ft : inputPin.frame_types) {
+                        // Avoid duplicates
+                        if (std::find(srcPinTypes.begin(), srcPinTypes.end(), ft) == srcPinTypes.end()) {
+                            srcPinTypes.push_back(ft);
+                        }
+                    }
+                }
+            }
         }
 
         // C4: Check dest pin exists (if specified and module info available)
@@ -558,39 +618,52 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
         }
 
         // C4: Check frame type compatibility
-        if (!srcPinType.empty() && !dstPinTypes.empty()) {
+        // Check if ANY source output type is compatible with ANY destination input type
+        if (!srcPinTypes.empty() && !dstPinTypes.empty()) {
             bool compatible = false;
-            for (const auto& dstType : dstPinTypes) {
-                if (srcPinType == dstType || dstType == "*" || srcPinType == "*" ||
-                    dstType == "Frame" || srcPinType == "Frame") {
-                    compatible = true;
-                    break;
+            for (const auto& srcType : srcPinTypes) {
+                for (const auto& dstType : dstPinTypes) {
+                    if (srcType == dstType || dstType == "*" || srcType == "*" ||
+                        dstType == "Frame" || srcType == "Frame") {
+                        compatible = true;
+                        break;
+                    }
                 }
+                if (compatible) break;
             }
             if (!compatible) {
+                // Format source types for error message
+                std::string srcTypesStr;
+                for (size_t i = 0; i < srcPinTypes.size(); ++i) {
+                    if (i > 0) srcTypesStr += ", ";
+                    srcTypesStr += srcPinTypes[i];
+                }
+
                 std::string dstTypesStr;
                 for (size_t i = 0; i < dstPinTypes.size(); ++i) {
                     if (i > 0) dstTypesStr += ", ";
                     dstTypesStr += dstPinTypes[i];
                 }
 
-                // Look for a known type conversion
+                // Look for a known type conversion (using first source type)
                 std::string suggestion;
-                for (const auto& dstType : dstPinTypes) {
-                    const TypeConversion* conv = findTypeConversion(srcPinType, dstType);
-                    if (conv) {
-                        suggestion = "Insert " + conv->moduleName + " module to convert " +
-                                     srcPinType + " → " + dstType + ":" +
-                                     generateTomlSnippet(conn.from_module, conn.to_module, *conv);
-                        break;
+                if (!srcPinTypes.empty()) {
+                    for (const auto& dstType : dstPinTypes) {
+                        const TypeConversion* conv = findTypeConversion(srcPinTypes[0], dstType);
+                        if (conv) {
+                            suggestion = "Insert " + conv->moduleName + " module to convert " +
+                                         srcPinTypes[0] + " → " + dstType + ":" +
+                                         generateTomlSnippet(conn.from_module, conn.to_module, *conv);
+                            break;
+                        }
                     }
                 }
 
                 result.issues.push_back(Issue::error(
                     Issue::FRAME_TYPE_INCOMPATIBLE,
                     location,
-                    "Frame type mismatch: output produces '" + srcPinType +
-                        "', input expects [" + dstTypesStr + "]",
+                    "Frame type mismatch: output produces [" + srcTypesStr +
+                        "], input expects [" + dstTypesStr + "]",
                     suggestion
                 ));
             }

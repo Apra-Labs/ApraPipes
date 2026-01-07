@@ -438,4 +438,85 @@ BOOST_AUTO_TEST_CASE(MixedTypeArrayRejected)
                 result.error.find("type") != std::string::npos);
 }
 
+// ============================================================
+// Sieve Property Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(ConnectionSievePropertyDefault)
+{
+    // Test that sieve defaults to false when not specified
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "source": { "type": "TestSignalGenerator" },
+            "sink": { "type": "StatSink" }
+        },
+        "connections": [
+            { "from": "source", "to": "sink" }
+        ]
+    })");
+
+    BOOST_CHECK(result.success);
+    BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionSievePropertyTrue)
+{
+    // Test parsing sieve: true
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "source": { "type": "TestSignalGenerator" },
+            "sink": { "type": "StatSink" }
+        },
+        "connections": [
+            { "from": "source", "to": "sink", "sieve": true }
+        ]
+    })");
+
+    BOOST_CHECK(result.success);
+    BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, true);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionSievePropertyFalse)
+{
+    // Test parsing explicit sieve: false
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "source": { "type": "TestSignalGenerator" },
+            "sink": { "type": "StatSink" }
+        },
+        "connections": [
+            { "from": "source", "to": "sink", "sieve": false }
+        ]
+    })");
+
+    BOOST_CHECK(result.success);
+    BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+}
+
+BOOST_AUTO_TEST_CASE(ConnectionMixedSieveProperties)
+{
+    // Test multiple connections with different sieve values
+    auto result = apra::JsonParser::parseString(R"({
+        "modules": {
+            "source": { "type": "TestSignalGenerator" },
+            "transform": { "type": "ImageResizeCV" },
+            "sink": { "type": "StatSink" }
+        },
+        "connections": [
+            { "from": "source", "to": "transform" },
+            { "from": "transform", "to": "sink", "sieve": true }
+        ]
+    })");
+
+    BOOST_CHECK(result.success);
+    BOOST_CHECK_EQUAL(result.description.connections.size(), 2);
+    // First connection: sieve defaults to false
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+    // Second connection: sieve explicitly true
+    BOOST_CHECK_EQUAL(result.description.connections[1].sieve, true);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

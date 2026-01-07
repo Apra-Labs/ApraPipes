@@ -524,10 +524,14 @@ void ensureBuiltinModulesRegistered() {
         // ============================================================
 
         // FacialLandmarkCV - facial landmark detection
+        // Note: This is a transform module that:
+        // - Modifies the input image (draws green rectangles on detected faces)
+        // - Outputs landmarks data (FaceLandmarksInfo)
+        // With sieve=false (default), the modified input image passes through automatically
         if (!registry.hasModule("FacialLandmarkCV")) {
             registerModule<FacialLandmarkCV, FacialLandmarkCVProps>()
                 .category(ModuleCategory::Analytics)
-                .description("Detects facial landmarks (eyes, nose, mouth) using OpenCV face module. Supports SSD and Haar cascade detection methods.")
+                .description("Detects facial landmarks (eyes, nose, mouth) using OpenCV face module. Draws green rectangles on faces and passes through the modified image. Supports SSD and Haar cascade detection methods.")
                 .tags("analytics", "face", "landmarks", "opencv", "detection")
                 .input("input", "RawImage")
                 .output("landmarks", "FaceLandmarksInfo")

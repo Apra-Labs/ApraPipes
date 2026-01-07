@@ -125,5 +125,5 @@ protected:
 	boost::shared_ptr<Detail> mDetail;
 	FacialLandmarkCVProps mProp;
 	bool handlePropsChange(frame_sp& frame);
-	std::string mOutputPinId1;
+	std::string mOutputPinId;
 };

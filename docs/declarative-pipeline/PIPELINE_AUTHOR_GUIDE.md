@@ -11,6 +11,7 @@
 3. [JSON Pipeline Structure](#json-pipeline-structure)
 4. [Module Configuration](#module-configuration)
 5. [Connections](#connections)
+   - [Sieve and Passthrough](#sieve-and-passthrough)
 6. [Using the CLI Tool](#using-the-cli-tool)
 7. [Using the Schema Generator](#using-the-schema-generator)
 8. [Using Node.js](#using-nodejs)
@@ -320,6 +321,102 @@ For modules with multiple inputs or outputs, specify pin names:
     { "from": "source1", "to": "merge.input_1" },
     { "from": "source2", "to": "merge.input_2" },
     { "from": "merge", "to": "sink" }
+  ]
+}
+```
+
+### Sieve and Passthrough
+
+Transform modules have a special behavior called **passthrough**: by default, their input frames are forwarded along with any output frames they produce. This is controlled by the `sieve` connection property.
+
+#### Understanding Sieve
+
+| `sieve` Value | Behavior |
+|---------------|----------|
+| `false` (default) | **Passthrough enabled** - Both declared outputs AND input frames are forwarded to the downstream module |
+| `true` | **Only explicit outputs** - Only the module's declared output pins are connected |
+
+#### Example: Face Detection with Passthrough
+
+`FacialLandmarkCV` declares only `FaceLandmarksInfo` as its output, but with `sieve=false` (default), the input `RawImage` passes through:
+
+```json
+{
+  "modules": {
+    "decoder": { "type": "ImageDecoderCV" },
+    "faceDetector": { "type": "FacialLandmarkCV" },
+    "encoder": { "type": "ImageEncoderCV" },
+    "landmarksSink": { "type": "StatSink" }
+  },
+  "connections": [
+    { "from": "decoder", "to": "faceDetector" },
+
+    // sieve=false (default): RawImage passes through, so encoder receives it
+    { "from": "faceDetector", "to": "encoder" },
+
+    // Both RawImage and FaceLandmarksInfo go to landmarksSink
+    { "from": "faceDetector", "to": "landmarksSink" }
+  ]
+}
+```
+
+#### Using Input Pins as Source
+
+With `sieve=false`, you can explicitly reference input pins as connection sources:
+
+```json
+{
+  "connections": [
+    // Explicitly use the input pin that passes through
+    { "from": "faceDetector.input", "to": "encoder" },
+
+    // Use the declared output pin
+    { "from": "faceDetector.landmarks", "to": "landmarksProcessor" }
+  ]
+}
+```
+
+#### Disabling Passthrough
+
+Set `sieve: true` when you only want declared outputs:
+
+```json
+{
+  "connections": [
+    // Only FaceLandmarksInfo is forwarded, NOT the input RawImage
+    { "from": "faceDetector", "to": "landmarksProcessor", "sieve": true }
+  ]
+}
+```
+
+**Important:** If you reference an input pin as source with `sieve: true`, validation will fail:
+
+```json
+// ERROR: Input pins cannot be used as source with sieve=true
+{ "from": "faceDetector.input", "to": "encoder", "sieve": true }
+```
+
+#### When to Use Each Mode
+
+| Use Case | sieve Setting |
+|----------|---------------|
+| Pass original image through analytics | `false` (default) |
+| Route different outputs to different sinks | `false` with pin-specific connections |
+| Only forward analytics results | `true` |
+| Reduce memory/bandwidth | `true` (fewer frames forwarded) |
+
+#### Per-Connection Control
+
+Each downstream connection can have its own sieve setting:
+
+```json
+{
+  "connections": [
+    // Encoder gets passthrough RawImage
+    { "from": "faceDetector", "to": "encoder" },
+
+    // Landmarks processor gets ONLY landmarks
+    { "from": "faceDetector", "to": "landmarksProcessor", "sieve": true }
   ]
 }
 ```

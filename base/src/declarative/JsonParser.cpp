@@ -212,7 +212,14 @@ void parseConnectionsSection(const json& root, PipelineDescription& desc) {
             throw std::runtime_error("Connection 'to' field is empty");
         }
 
-        desc.connections.push_back(Connection::parse(from, to));
+        Connection conn = Connection::parse(from, to);
+
+        // Parse optional sieve property (default: false = passthrough enabled)
+        if (conn_obj.contains("sieve") && conn_obj["sieve"].is_boolean()) {
+            conn.sieve = conn_obj["sieve"].get<bool>();
+        }
+
+        desc.connections.push_back(std::move(conn));
     }
 }
 
