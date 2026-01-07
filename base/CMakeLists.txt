@@ -62,6 +62,7 @@ find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 
 IF(ENABLE_LINUX)
@@ -92,6 +93,8 @@ IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
 	# x64 Linux uses vcpkg's GTK
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	# Curses is needed for KeyboardListener
+	find_package(Curses REQUIRED)
 ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
@@ -254,8 +257,16 @@ SET(CORE_FILES
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
-	src/APErrorObject.cpp 
+	src/APErrorObject.cpp
 	src/APHealthObject.cpp
+	src/declarative/ModuleRegistry.cpp
+	src/declarative/PipelineDescription.cpp
+	src/declarative/JsonParser.cpp
+	src/declarative/ModuleFactory.cpp
+	src/declarative/FrameTypeRegistry.cpp
+	src/declarative/FrameTypeRegistrations.cpp
+	src/declarative/PipelineValidator.cpp
+	src/declarative/ModuleRegistrations.cpp
 )
 
 SET(CORE_FILES_H
@@ -322,6 +333,14 @@ SET(CORE_FILES_H
 	include/APErrorObject.h
 	include/APCallback.h
 	include/APHealthObject.h
+	include/declarative/Metadata.h
+	include/declarative/ModuleRegistry.h
+	include/declarative/PipelineDescription.h
+	include/declarative/JsonParser.h
+	include/declarative/ParseResult.h
+	include/declarative/ModuleFactory.h
+	include/declarative/FrameTypeRegistry.h
+	include/declarative/PipelineValidator.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -687,6 +706,17 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
+	test/declarative/metadata_tests.cpp
+	test/declarative/module_registry_tests.cpp
+	test/declarative/pipeline_description_tests.cpp
+	test/declarative/json_parser_tests.cpp
+	test/declarative/module_factory_tests.cpp
+	test/declarative/frame_type_registry_tests.cpp
+	test/declarative/pipeline_validator_tests.cpp
+	test/declarative/property_macros_tests.cpp
+	test/declarative/module_registration_tests.cpp
+	test/declarative/property_validators_tests.cpp
+	test/declarative/pipeline_integration_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
@@ -716,6 +746,34 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+# ============================================================
+# Common libraries shared by aprapipesut, aprapipes_cli, and apra_schema_generator
+# DRY: Define once, use everywhere
+# ============================================================
+set(APRA_COMMON_LIBS
+    ${GLEW_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${LIBMP4_LIB}
+    ${OPENH264_LIB}
+    ${Boost_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${JETSON_LIBS}
+    ${NVCUDAToolkit_LIBS}
+    ${NVCODEC_LIB}
+    ${NVJPEGLIB_L4T}
+    ${CURSES_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ZXing::Core
+    ZXing::ZXing
+    BZip2::BZip2
+    ZLIB::ZLIB
+    LibLZMA::LibLZMA
+    bigint::bigint
+    SFML::Audio
+    whisper::whisper
+)
+
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
 	# ARM64/Jetson needs GTK3 for GtkGlRenderer
@@ -733,28 +791,8 @@ ENDIF()
 
 target_link_libraries(aprapipesut
   aprapipes
-  ${GLEW_LIBRARIES}
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ${CMAKE_DL_LIBS}  # For dlopen/dlsym in CudaDriverLoader
-  ZXing::Core
-  ZXing::ZXing
-  BZip2::BZip2
-  ZLIB::ZLIB
-  LibLZMA::LibLZMA
-  bigint::bigint
-  SFML::Audio
-  whisper::whisper
-  )
+  ${APRA_COMMON_LIBS}
+)
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
@@ -824,3 +862,251 @@ install(
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aprapipes)
+
+# ============================================================
+# ApraPipes CLI Tool (Declarative Pipeline)
+# ============================================================
+add_executable(aprapipes_cli
+    tools/aprapipes_cli.cpp
+)
+
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(aprapipes_cli PRIVATE
+        aprapipes
+    )
+endif()
+
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+target_link_libraries(aprapipes_cli PRIVATE ${APRA_COMMON_LIBS})
+
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(aprapipes_cli PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+    target_include_directories(aprapipes_cli PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
+
+# Include directories for declarative headers and dependencies
+target_include_directories(aprapipes_cli PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
+
+# Install CLI executable
+install(TARGETS aprapipes_cli
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# ApraPipes Schema Generator Tool (E2)
+# Exports module/frame type metadata to JSON/Markdown
+# ============================================================
+add_executable(apra_schema_generator
+    tools/schema_generator.cpp
+)
+
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(apra_schema_generator PRIVATE
+        aprapipes
+    )
+endif()
+
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY) + nlohmann_json for JSON output
+target_link_libraries(apra_schema_generator PRIVATE
+    ${APRA_COMMON_LIBS}
+    nlohmann_json::nlohmann_json
+)
+
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(apra_schema_generator PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+    target_include_directories(apra_schema_generator PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
+
+target_include_directories(apra_schema_generator PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
+
+# Install schema generator executable
+install(TARGETS apra_schema_generator
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# Generate schema files at build time
+# ============================================================
+set(SCHEMA_DIR ${CMAKE_BINARY_DIR}/schema)
+
+add_custom_command(
+    OUTPUT ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SCHEMA_DIR}
+    COMMAND apra_schema_generator
+        --modules-json ${SCHEMA_DIR}/modules.json
+        --frame-types-json ${SCHEMA_DIR}/frame_types.json
+        --modules-md ${SCHEMA_DIR}/MODULES.md
+        --frame-types-md ${SCHEMA_DIR}/FRAME_TYPES.md
+    DEPENDS apra_schema_generator
+    COMMENT "Generating ApraPipes schema from C++ metadata"
+    VERBATIM
+)
+
+add_custom_target(generate_schema ALL
+    DEPENDS ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+)
+
+# ============================================================
+# D2 Phase 3: Module Scanner for Registration Detection
+# Scans headers for Module subclasses and generates a list
+# Used by unit tests to detect unregistered modules
+# ============================================================
+set(MODULE_SUBCLASSES_FILE ${CMAKE_BINARY_DIR}/generated/module_subclasses.inc)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
+
+set(SCAN_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ScanModuleClasses.cmake)
+
+add_custom_target(scan-modules
+    COMMAND ${CMAKE_COMMAND}
+        -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+        -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+        -P ${SCAN_SCRIPT}
+    COMMENT "Scanning for Module subclasses..."
+    VERBATIM
+)
+
+# Run scan at configure time to ensure file exists for builds
+if(EXISTS ${SCAN_SCRIPT})
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+            -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+            -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+            -P ${SCAN_SCRIPT}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+endif()
+
+# Add generated directory to test target include paths
+# so module_registration_tests.cpp can find module_subclasses.inc
+target_include_directories(aprapipesut PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+# ============================================================
+# Node.js Native Addon (Optional)
+# Build with: cmake -DBUILD_NODE_ADDON=ON ...
+# Requires: node-addon-api and node-api-headers from vcpkg
+# ============================================================
+option(BUILD_NODE_ADDON "Build Node.js native addon (@apralabs/aprapipes)" OFF)
+
+if(BUILD_NODE_ADDON)
+    message(STATUS "Node.js addon build enabled")
+
+    # Find node-addon-api from vcpkg
+    find_package(unofficial-node-addon-api CONFIG QUIET)
+    find_package(unofficial-node-api-headers CONFIG QUIET)
+
+    if(unofficial-node-addon-api_FOUND AND unofficial-node-api-headers_FOUND)
+        message(STATUS "Found node-addon-api and node-api-headers")
+
+        set(NODE_ADDON_NAME "aprapipes_node")
+
+        add_library(${NODE_ADDON_NAME} SHARED
+            bindings/node/addon.cpp
+            bindings/node/pipeline_wrapper.cpp
+            bindings/node/module_wrapper.cpp
+            bindings/node/event_emitter.cpp
+        )
+
+        # Set output extension to .node
+        set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+            OUTPUT_NAME "aprapipes"
+            PREFIX ""
+            SUFFIX ".node"
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+        )
+
+        # Link node-addon-api
+        target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+            unofficial::node-addon-api::node-addon-api
+        )
+
+        # Force load aprapipes to include static module registrations (same pattern as aprapipes_cli)
+        if(APPLE)
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                -Wl,-force_load,$<TARGET_FILE:aprapipes>
+            )
+            # macOS: Use undefined dynamic lookup for Node symbols
+            set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+                LINK_FLAGS "-undefined dynamic_lookup"
+            )
+        elseif(UNIX)
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+            )
+        else()
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                aprapipes
+            )
+        endif()
+
+        # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+        target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
+
+        # Include directories (same as aprapipes target + bindings/node for wrapper headers)
+        target_include_directories(${NODE_ADDON_NAME} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+            ${CMAKE_CURRENT_SOURCE_DIR}/bindings/node
+            ${OpenCV_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
+            ${FFMPEG_INCLUDE_DIRS}
+            ${LIBMP4_INC_DIR}
+        )
+
+        # Copy to project root for npm usage
+        add_custom_command(TARGET ${NODE_ADDON_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:${NODE_ADDON_NAME}>
+                ${CMAKE_CURRENT_SOURCE_DIR}/../$<TARGET_FILE_NAME:${NODE_ADDON_NAME}>
+            COMMENT "Copying Node addon to project root"
+        )
+
+        # Install target
+        install(TARGETS ${NODE_ADDON_NAME}
+            LIBRARY DESTINATION lib/node
+            RUNTIME DESTINATION lib/node
+        )
+
+        message(STATUS "Node.js addon target: ${NODE_ADDON_NAME}")
+    else()
+        message(WARNING "Node.js addon requested but node-addon-api not found in vcpkg. Run: vcpkg install node-addon-api node-api-headers")
+    endif()
+endif()

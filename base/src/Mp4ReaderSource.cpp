@@ -1476,6 +1476,23 @@ bool Mp4ReaderDetailH264::produceFrames(frame_container& frames)
 Mp4ReaderSource::Mp4ReaderSource(Mp4ReaderSourceProps _props)
 	: Module(SOURCE, "Mp4ReaderSource", _props), props(_props)
 {
+	// Auto-create output pins for declarative pipeline support
+	if (!_props.outputFormat.empty())
+	{
+		if (_props.outputFormat == "h264")
+		{
+			auto h264Metadata = framemetadata_sp(new H264Metadata(0, 0));
+			addOutPutPin(h264Metadata);
+		}
+		else if (_props.outputFormat == "jpeg" || _props.outputFormat == "encoded")
+		{
+			auto encodedMetadata = framemetadata_sp(new EncodedImageMetadata(0, 0));
+			addOutPutPin(encodedMetadata);
+		}
+		// Always add Mp4VideoMetadata pin for metadata frames
+		auto mp4Metadata = framemetadata_sp(new Mp4VideoMetadata("v_1"));
+		addOutPutPin(mp4Metadata);
+	}
 }
 
 Mp4ReaderSource::~Mp4ReaderSource() {}

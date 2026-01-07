@@ -1,0 +1,27 @@
+{
+  "pipeline": {
+    "name": "mp4_copy",
+    "description": "MP4 video pipeline: Mp4ReaderSource -> Mp4WriterSink. NOTE: Update videoPath before running!"
+  },
+  "modules": {
+    "reader": {
+      "type": "Mp4ReaderSource",
+      "props": {
+        "videoPath": "/path/to/input/video.mp4",
+        "parseFS": true,
+        "readLoop": false
+      }
+    },
+    "writer": {
+      "type": "Mp4WriterSink",
+      "props": {
+        "baseFolder": "/path/to/output/",
+        "chunkTime": 60,
+        "fps": 30
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "writer" }
+  ]
+}

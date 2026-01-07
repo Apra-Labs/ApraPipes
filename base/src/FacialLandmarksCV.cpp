@@ -242,7 +242,7 @@ void FacialLandmarkCV::addInputPin(framemetadata_sp &metadata, string &pinId)
 {
 	Module::addInputPin(metadata, pinId);
 	auto landmarksOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::FACE_LANDMARKS_INFO));
-	mOutputPinId1 = addOutputPin(landmarksOutputMetadata);
+	mOutputPinId = addOutputPin(landmarksOutputMetadata);
 }
 
 bool FacialLandmarkCV::init()
@@ -301,7 +301,7 @@ bool FacialLandmarkCV::process(frame_container& frames)
 
 	Utils::serialize<std::vector<std::vector<ApraPoint2f>>>(apralandmarks, landmarksFrame->data(), bufferSize);
 
-	frames.insert(make_pair(mOutputPinId1, landmarksFrame));
+	frames.insert(make_pair(mOutputPinId, landmarksFrame));
 
 	send(frames);
 

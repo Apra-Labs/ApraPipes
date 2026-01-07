@@ -1,0 +1,27 @@
+{
+  "pipeline": {
+    "name": "file_copy",
+    "description": "File I/O pipeline: FileReaderModule -> FileWriterModule. NOTE: Update paths before running!"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "/path/to/input/frame_????.raw",
+        "startIndex": 1,
+        "maxIndex": 100,
+        "readLoop": false
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/path/to/output/frame_????.raw",
+        "append": false
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "writer" }
+  ]
+}

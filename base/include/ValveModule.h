@@ -1,10 +1,13 @@
-#pragma once 
+#pragma once
 #include "Module.h"
+#include <map>
+#include <vector>
+#include "declarative/PropertyMacros.h"
 
 class ValveModuleProps : public ModuleProps
 {
 public:
-	ValveModuleProps() 
+	ValveModuleProps()
 	{
 
 	}
@@ -17,6 +20,34 @@ public:
 	size_t getSerializeSize()
 	{
 		return ModuleProps::getSerializeSize() + sizeof(noOfFramesToCapture);
+	}
+
+	// ============================================================
+	// Property Binding for Declarative Pipeline
+	// ============================================================
+	template<typename PropsT>
+	static void applyProperties(
+		PropsT& props,
+		const std::map<std::string, apra::ScalarPropertyValue>& values,
+		std::vector<std::string>& missingRequired
+	) {
+		apra::applyProp(props.noOfFramesToCapture, "noOfFramesToCapture", values, false, missingRequired);
+	}
+
+	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+		if (propName == "noOfFramesToCapture") return static_cast<int64_t>(noOfFramesToCapture);
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+		if (propName == "noOfFramesToCapture") {
+			return apra::applyFromVariant(noOfFramesToCapture, value);
+		}
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	static std::vector<std::string> dynamicPropertyNames() {
+		return {"noOfFramesToCapture"};
 	}
 
 private:

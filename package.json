@@ -1,0 +1,55 @@
+{
+  "name": "@apralabs/aprapipes",
+  "version": "0.1.0",
+  "description": "Native Node.js bindings for ApraPipes video processing framework",
+  "main": "aprapipes.node",
+  "types": "types/aprapipes.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Apra-Labs/ApraPipes.git"
+  },
+  "keywords": [
+    "video",
+    "streaming",
+    "processing",
+    "pipeline",
+    "native",
+    "gpu",
+    "cuda"
+  ],
+  "author": "Apra Labs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Apra-Labs/ApraPipes/issues"
+  },
+  "homepage": "https://github.com/Apra-Labs/ApraPipes#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "cmake --build build --target aprapipes_node",
+    "build:debug": "cmake --build build --config Debug --target aprapipes_node",
+    "configure": "cmake -B build -S . -DBUILD_NODE_ADDON=ON",
+    "configure:debug": "cmake -B build -S . -DBUILD_NODE_ADDON=ON -DCMAKE_BUILD_TYPE=Debug",
+    "test": "node test/smoke.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "aprapipes.node",
+    "types/",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

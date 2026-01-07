@@ -1,0 +1,36 @@
+{
+  "pipeline": {
+    "name": "Affine Transform Chain",
+    "description": "Affine Transform Chain Example. Demonstrates connecting AffineTransform in a pipeline."
+  },
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "transform": {
+      "type": "AffineTransform",
+      "props": {
+        "angle": 45.0,
+        "scale": 0.8
+      }
+    },
+    "sink": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "transform" },
+    { "from": "transform", "to": "sink" }
+  ]
+}

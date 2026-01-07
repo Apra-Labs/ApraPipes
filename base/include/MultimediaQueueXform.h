@@ -1,18 +1,14 @@
 #pragma once
 
 #include "Module.h"
+#include <map>
+#include <variant>
 
 class MultimediaQueueXform;
 class MultimediaQueueXformProps : public ModuleProps
 {
 public:
-	MultimediaQueueXformProps()
-	{
-		// watermark can be passed in millisec or number of frames
-		lowerWaterMark = 10000;
-		upperWaterMark = 15000;
-		isMapDelayInTime = true;
-	}
+	// Note: Removed ambiguous default constructor - use constructor with defaults below
 	MultimediaQueueXformProps(uint32_t queueLength = 10000, uint16_t tolerance = 5000, int _mmqFps = 24, bool _isDelayTime = true)
 	{
 		lowerWaterMark = queueLength;
@@ -47,6 +43,44 @@ private:
 		ar & upperWaterMark;
 		ar & isMapDelayInTime;
 		ar & mmqFps;
+	}
+
+public:
+	// Declarative pipeline property binding
+	void applyProperties(const std::map<std::string, std::variant<int64_t, double, bool, std::string>>& props)
+	{
+		for (const auto& [key, value] : props) {
+			if (key == "queueLength" || key == "lowerWaterMark") {
+				if (std::holds_alternative<int64_t>(value)) {
+					lowerWaterMark = static_cast<uint32_t>(std::get<int64_t>(value));
+				}
+			} else if (key == "tolerance") {
+				if (std::holds_alternative<int64_t>(value)) {
+					upperWaterMark = lowerWaterMark + static_cast<uint32_t>(std::get<int64_t>(value));
+				}
+			} else if (key == "upperWaterMark") {
+				if (std::holds_alternative<int64_t>(value)) {
+					upperWaterMark = static_cast<uint32_t>(std::get<int64_t>(value));
+				}
+			} else if (key == "mmqFps") {
+				if (std::holds_alternative<int64_t>(value)) {
+					mmqFps = static_cast<int>(std::get<int64_t>(value));
+				}
+			} else if (key == "isMapDelayInTime") {
+				if (std::holds_alternative<bool>(value)) {
+					isMapDelayInTime = std::get<bool>(value);
+				}
+			}
+		}
+	}
+
+	std::variant<int64_t, double, bool, std::string> getProperty(const std::string& name) const
+	{
+		if (name == "queueLength" || name == "lowerWaterMark") return static_cast<int64_t>(lowerWaterMark);
+		if (name == "upperWaterMark") return static_cast<int64_t>(upperWaterMark);
+		if (name == "mmqFps") return static_cast<int64_t>(mmqFps);
+		if (name == "isMapDelayInTime") return isMapDelayInTime;
+		return int64_t(0);
 	}
 };
 

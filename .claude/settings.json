@@ -1,32 +1,69 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(cmake:*)",
+      "Bash(make:*)",
+      "Bash(ninja:*)",
+      "Bash(ctest:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(touch:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(diff:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh project:*)",
+      "Bash(vcpkg:*)"
+    ],
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(chmod 777:*)"
+    ]
+  },
+
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "echo '═══ INSTITUTIONAL MEMORY ═══'; cat .claude/LEARNINGS.md 2>/dev/null | tail -60 || echo '(no learnings yet)'; echo ''; echo '═══ CURRENT STATE ═══'; cat .claude/CURRENT_STATE.md 2>/dev/null || echo '(no state file)'; echo '═══════════════════════════'"
+            "command": "echo '=== Declarative Pipeline Session Start ===' && cat docs/declarative-pipeline/PROGRESS.md 2>/dev/null || echo 'PROGRESS.md not found - create it!'"
           }
         ]
       }
     ],
-    "PostToolUse": [
+
+    "SessionEnd": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'CMD=\"$TOOL_INPUT\"; if echo \"$CMD\" | grep -qE \"git push|gh workflow run\"; then if ! echo \"$CMD\" | grep -q \"gh run watch\"; then echo \"⚠ WORKFLOW TRIGGERED WITHOUT WATCH. Run: gh run watch $(gh run list -L1 --json databaseId -q .[0].databaseId) --exit-status\" >&2; fi; fi; if echo \"$CMD\" | grep -qE \"gh run watch|gh run view.*--log\"; then echo \"📝 Update CURRENT_STATE.md with results. New lesson? → LEARNINGS.md\"; fi'"
+            "command": "echo '=== Session End Checklist ===' && echo '1. Did you update PROGRESS.md?' && echo '2. Did you commit your changes?' && echo '3. Did you run tests?' && git status --short 2>/dev/null || true"
           }
         ]
       }
     ],
-    "Stop": [
+
+    "PostToolUse": [
       {
+        "matcher": "Write",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Before stopping, verify: (1) Is CURRENT_STATE.md updated with latest status? (2) If a build completed, are results documented? (3) If something new was learned, is it in LEARNINGS.md? (4) Are there pending workflow runs? Check with: gh run list -L3 --json status,databaseId -q '.[] | select(.status==\"in_progress\" or .status==\"queued\")'. If state not saved or builds pending, handle that first then continue. If task is complete and state is saved, you may stop."
+            "type": "command",
+            "command": "echo 'Note: File created/modified - remember to update CMakeLists.txt if needed'"
           }
         ]
       }

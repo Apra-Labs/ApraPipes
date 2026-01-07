@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Module.h"
+#include "declarative/PropertyMacros.h"
 
 class DetailAbs;
 class DetailJpeg;
@@ -60,6 +61,43 @@ public:
 	uint16_t fps = 30;
 	bool recordedTSBasedDTS = true;
 	bool enableMetadata = true;
+
+	// ============================================================
+	// Property Binding for Declarative Pipeline
+	// ============================================================
+	template<typename PropsT>
+	static void applyProperties(
+		PropsT& props,
+		const std::map<std::string, apra::ScalarPropertyValue>& values,
+		std::vector<std::string>& missingRequired
+	) {
+		apra::applyProp(props.baseFolder, "baseFolder", values, false, missingRequired);
+		apra::applyProp(props.chunkTime, "chunkTime", values, false, missingRequired);
+		apra::applyProp(props.syncTimeInSecs, "syncTimeInSecs", values, false, missingRequired);
+		apra::applyProp(props.fps, "fps", values, false, missingRequired);
+		apra::applyProp(props.recordedTSBasedDTS, "recordedTSBasedDTS", values, false, missingRequired);
+		apra::applyProp(props.enableMetadata, "enableMetadata", values, false, missingRequired);
+	}
+
+	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+		if (propName == "baseFolder") return baseFolder;
+		if (propName == "chunkTime") return static_cast<int64_t>(chunkTime);
+		if (propName == "syncTimeInSecs") return static_cast<int64_t>(syncTimeInSecs);
+		if (propName == "fps") return static_cast<int64_t>(fps);
+		if (propName == "recordedTSBasedDTS") return recordedTSBasedDTS;
+		if (propName == "enableMetadata") return enableMetadata;
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+		// Most properties are static (can't change after init)
+		return false;
+	}
+
+	std::vector<std::string> dynamicPropertyNames() const {
+		return {};  // No dynamically changeable properties
+	}
+
 private:
 	friend class boost::serialization::access;
 

@@ -2,7 +2,6 @@
 #include <boost/filesystem.hpp>
 #include "FileWriterModule.h"
 #include "FrameMetadata.h"
-
 #include "FileSequenceDriver.h"
 #include "Frame.h"
 
@@ -76,6 +75,6 @@ bool FileWriterModule::process(frame_container& frames)
 	{
 		LOG_FATAL << "unknown exception<>" << frame->fIndex;
 	}
-	
+
 	return true;
 }

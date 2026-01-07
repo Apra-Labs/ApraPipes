@@ -1,0 +1,31 @@
+{
+  "pipeline": {
+    "name": "Motion Vector Extraction Pipeline",
+    "description": "Extracts motion vectors from H.264 video for motion analysis. Chain: Mp4ReaderSource -> MotionVectorExtractor -> StatSink. IMPORTANT: Replace /path/to/video.mp4 with an actual H.264 encoded video file."
+  },
+  "modules": {
+    "reader": {
+      "type": "Mp4ReaderSource",
+      "props": {
+        "videoPath": "/path/to/video.mp4",
+        "parseFS": true,
+        "readLoop": false
+      }
+    },
+    "motion": {
+      "type": "MotionVectorExtractor",
+      "props": {
+        "MVExtractMethod": "FFMPEG",
+        "sendDecodedFrame": false,
+        "motionVectorThreshold": 2
+      }
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "motion" },
+    { "from": "motion", "to": "stats" }
+  ]
+}

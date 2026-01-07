@@ -129,9 +129,21 @@
       "name": "libmp4"
     },
     {
+      "name": "nlohmann-json",
+      "$reason": "JSON parser for declarative pipeline configuration and schema export"
+    },
+    {
       "name": "pthreads",
       "platform": "windows",
       "$comment": "Required for OpenCV CUDA build on Windows - provides pthread.h and pthreads.lib"
+    },
+    {
+      "name": "node-addon-api",
+      "$reason": "Node.js native addon API for @apralabs/aprapipes JavaScript bindings"
+    },
+    {
+      "name": "node-api-headers",
+      "$reason": "Node API headers for native addon compilation"
     }
   ]
 }

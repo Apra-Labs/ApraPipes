@@ -1,0 +1,32 @@
+{
+  "pipeline": {
+    "name": "PTZ with Color Conversion",
+    "description": "Pipeline: TestSignalGenerator -> ColorConversion -> VirtualPTZ -> StatSink"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "ptz": {
+      "type": "VirtualPTZ"
+    },
+    "sink": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "convert" },
+    { "from": "convert", "to": "ptz" },
+    { "from": "ptz", "to": "sink" }
+  ]
+}

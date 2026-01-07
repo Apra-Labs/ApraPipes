@@ -140,6 +140,7 @@ bool ImageEncoderCV::process(frame_container &frames)
 	{
 		return true;
 	}
+
 	vector<uchar> buf;
 
 	mDetail->iImg.data = static_cast<uint8_t *>(frame->data());
@@ -149,6 +150,19 @@ bool ImageEncoderCV::process(frame_container &frames)
 	frames.insert(make_pair(mOutputPinId,outFrame));
 	send(frames);
 	return true;
+}
+
+bool ImageEncoderCV::shouldTriggerSOS()
+{
+	bool result = Module::shouldTriggerSOS();
+	// Also trigger SOS if iImg is not yet initialized (cv::Mat header not set up)
+	// This handles the case where upstream module sets metadata via Module::setMetadata()
+	// after our init() ran, but before we receive our first frame
+	if (!result && mDetail->iImg.empty())
+	{
+		result = true;
+	}
+	return result;
 }
 
 bool ImageEncoderCV::processSOS(frame_sp &frame)

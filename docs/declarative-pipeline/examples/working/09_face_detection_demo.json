@@ -1,0 +1,33 @@
+{
+  "pipeline": {
+    "name": "face_detection_demo",
+    "description": "End-to-end face detection demo. Pipeline: FileReaderModule -> ImageDecoderCV -> FaceDetectorXform -> FileWriterModule"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/faces.jpg",
+        "readLoop": false,
+        "outputFrameType": "EncodedImage"
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "face_detect": {
+      "type": "FaceDetectorXform"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/declarative_face_result.raw"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "face_detect" },
+    { "from": "face_detect", "to": "writer" }
+  ]
+}
