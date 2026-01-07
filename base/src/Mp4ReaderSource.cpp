@@ -897,6 +897,8 @@ public:
 	{
 		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
 		{
+			LOG_INFO<<"mFrameCounterIdx"<<mState.mFrameCounterIdx;
+			LOG_INFO<<"mFramesInVideo"<<mFramesInVideo;
 			return true;
 		}
 		if (!mState.direction && mState.mFrameCounterIdx <= -1)
@@ -982,6 +984,7 @@ public:
 		// video is finished
 		if (isOpenVideoFinished())
 		{
+			LOG_INFO<<"opened video finished";
 			mState.end = !mProps.parseFS;
 			initNewVideo(); // new video is init or mState.end is reached.
 		}
