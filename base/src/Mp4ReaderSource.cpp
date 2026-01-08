@@ -894,19 +894,47 @@ public:
 	}
 
 	bool isOpenVideoFinished()
-	{
-		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
-		{
-			LOG_INFO<<"mFrameCounterIdx"<<mState.mFrameCounterIdx;
-			LOG_INFO<<"mFramesInVideo"<<mState.mFramesInVideo;
-			return true;
-		}
-		if (!mState.direction && mState.mFrameCounterIdx <= -1)
-		{
-			return true;
-		}
-		return false;
-	}
+   {
+	LOG_INFO<<"isOpenVideoFinished";
+    if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
+    {
+        // For live recording scenarios
+        if (mProps.parseFS && mProps.reInitInterval)
+        {
+            LOG_DEBUG << "EOF reached. Checking if file has grown...";
+            
+            // Close and reopen to get fresh metadata
+            try
+            {
+                std::string currentPath = mState.mVideoPath;
+                termOpenVideo();
+                openVideoSetPointer(currentPath);
+                
+                LOG_INFO << "After reopen - mFrameCounterIdx: " << mState.mFrameCounterIdx 
+                         << " mFramesInVideo: " << mState.mFramesInVideo;
+                
+                // Check again with updated values
+                if (mState.mFrameCounterIdx >= mState.mFramesInVideo)
+                {
+                    return true; // Still at EOF
+                }
+                
+                return false; // New frames available
+            }
+            catch (...)
+            {
+                LOG_ERROR << "Failed to reopen file to check for new frames";
+                return true;
+            }
+        }
+        return true;
+    }
+    if (!mState.direction && mState.mFrameCounterIdx <= -1)
+    {
+        return true;
+    }
+    return false;
+}
 
 	void readNextFrame(frame_sp& imgFrame, frame_sp& metadetaFrame, size_t& imgSize, size_t& metadataSize, uint64_t& frameTSInMsecs, int32_t& mp4FIndex) noexcept
 	{
