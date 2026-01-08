@@ -56,38 +56,61 @@ public:
 	virtual int getGop() = 0;
 
 	bool Init()
-	{
-		sentEOSSignal = false;
-		auto filePath = boost::filesystem::path(mState.mVideoPath);
-		if (filePath.extension() != ".mp4")
-		{
-			if (!cof->probe(filePath, mState.mVideoPath))
-			{
-				LOG_DEBUG << "Mp4 file is not present" << ">";
-				isVideoFileFound = false;
-				return true;
-			}
-			isVideoFileFound = true;
-		}
-		if (mProps.parseFS)
-		{
-			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-			uint64_t start_parsing_ts = 0;
-			try
-			{
-				start_parsing_ts = std::stoull(boostVideoTS);
-			}
-			catch (std::invalid_argument)
-			{
-				auto msg = "Video File name not in proper format.Check the filename sent as props. \
-					If you want to read a file with custom name instead, please disable parseFS flag.";
-				LOG_ERROR << msg;
-				throw AIPException(AIP_FATAL, msg);
-			}
-			cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, dont disable disableBatchSizeCheck
-		}
-		return initNewVideo(true); // enable firstOpenAfterinit
-	}
+{
+    sentEOSSignal = false;
+    auto filePath = boost::filesystem::path(mState.mVideoPath);
+    
+    if (filePath.extension() != ".mp4")
+    {
+        // Directory path - probe it directly
+        if (!cof->probe(filePath, mState.mVideoPath))
+        {
+            LOG_DEBUG << "Mp4 file is not present";
+            LOG_ERROR << "Probe failed for " << mState.mVideoPath;
+            isVideoFileFound = false;
+            return true;
+        }
+        isVideoFileFound = true;
+    }
+    else
+    {
+        if (boost::filesystem::exists(filePath) && 
+            boost::filesystem::is_regular_file(filePath))
+        {
+            isVideoFileFound = true;
+            LOG_INFO << "MP4 file exists: " << mState.mVideoPath;
+        }
+        else
+        {
+            LOG_ERROR << "MP4 file does not exist: " << mState.mVideoPath;
+            isVideoFileFound = false;
+            // Don't return false here if parseFS is enabled - probe might find other files
+            if (!mProps.parseFS)
+            {
+                return false;
+            }
+        }
+    }
+    
+    if (mProps.parseFS)
+    {
+        auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+        uint64_t start_parsing_ts = 0;
+        try
+        {
+            start_parsing_ts = std::stoull(boostVideoTS);
+        }
+        catch (std::invalid_argument)
+        {
+            auto msg = "Video File name not in proper format. Check the filename sent as props. \
+                If you want to read a file with custom name instead, please disable parseFS flag.";
+            LOG_ERROR << msg;
+            throw AIPException(AIP_FATAL, msg);
+        }
+        cof->parseFiles(start_parsing_ts, mState.direction, true, false);
+    }
+    return initNewVideo(true);
+}
 
 	void propagateError(const APErrorObject& error)
     {
@@ -111,6 +134,21 @@ public:
 
 	void setProps(Mp4ReaderSourceProps& props)
 	{
+		// Prevent recursive calls when setProps is called from openVideoSetPointer via setMp4ReaderProps
+		if (isUpdatingProps)
+		{
+			// Only update state if video path hasn't changed (e.g., just FPS update)
+			if (props.videoPath == mProps.videoPath && props.parseFS == mProps.parseFS && props.skipDir == mProps.skipDir)
+			{
+				mProps = props;
+				return;
+			}
+			// If video path changed during prop update, log warning and return to prevent recursion
+			LOG_INFO << "setProps called recursively with different video path. Ignoring to prevent loop.";
+			return;
+		}
+		
+		LOG_INFO << "setProps called with videoPath: " << props.videoPath;
 		std::string tempVideoPath;
 		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
 		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
@@ -140,7 +178,17 @@ public:
 				return;
 			}
 			updateMstate(props, tempVideoPath);
-			initNewVideo();
+			isUpdatingProps = true;
+			try
+			{
+				initNewVideo();
+			}
+			catch (...)
+			{
+				isUpdatingProps = false;
+				throw;
+			}
+			isUpdatingProps = false;
 		}
 
 		std::string tempSkipDir;
@@ -197,7 +245,17 @@ public:
 			//parse successful - update mState and skipDir with current root dir
 			updateMstate(props, tempVideoPath);
 			mProps.skipDir = tempSkipDir;
-			initNewVideo(true);
+			isUpdatingProps = true;
+			try
+			{
+				initNewVideo(true);
+			}
+			catch (...)
+			{
+				isUpdatingProps = false;
+				throw;
+			}
+			isUpdatingProps = false;
 
 			return;
 		}
@@ -339,17 +397,27 @@ public:
 
 			// in case race conditions happen between writer and reader (videotrack not found etc) - use code will retry
 		auto filePath = boost::filesystem::path(mState.mVideoPath);
+
 		if (filePath.extension() != ".mp4")
 		{
-			if (!cof->probe(filePath, mState.mVideoPath))
+			boost::filesystem::path probeDir = filePath;
+			
+			if (!cof->probe(probeDir, mState.mVideoPath))
 			{
-				LOG_DEBUG << "Mp4 file is not present" << ">";
+				LOG_DEBUG << "Mp4 file is not present";
 				isVideoFileFound = false;
 				return true;
 			}
 			isVideoFileFound = true;
 		}
-
+		else
+		{
+			// ✅ For MP4 files, just verify existence
+			if (boost::filesystem::exists(filePath))
+			{
+				isVideoFileFound = true;
+			}
+		}
 		auto nextFilePath = mState.mVideoPath;
 		if (mProps.parseFS)
 		{
@@ -560,7 +628,21 @@ public:
 						mProps.fps = mProps.fps / gop;
 					}
 				}
-				setMp4ReaderProps(mProps);
+				// Only update props if not already updating to prevent recursion
+				if (!isUpdatingProps)
+				{
+					isUpdatingProps = true;
+					try
+					{
+						setMp4ReaderProps(mProps);
+					}
+					catch (...)
+					{
+						isUpdatingProps = false;
+						throw;
+					}
+					isUpdatingProps = false;
+				}
 			}
 		}
 
@@ -642,6 +724,7 @@ public:
 	{
 		/* Seeking in custom file i.e. parseFS is disabled */
 		LOG_ERROR << "IN Random Seek Interval";
+		LOG_INFO << "Random Seek to TS <" << skipTS << "> in video <" << mState.mVideoPath << ">";
 		if (!mProps.parseFS)
 		{
 			int seekedToFrame = -1;
@@ -703,26 +786,58 @@ public:
 		LOG_ERROR << "Handling Random Seek Command";
 		if (!isVideoFileFound)
 		{
-			LOG_ERROR << "Probing =======>>>";
+			LOG_INFO << "Video file not found, attempting to probe directory";
 			try
 			{
-				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+				auto filePath = boost::filesystem::path(mState.mVideoPath);
+				boost::filesystem::path probeDir;
+				
+				// ✅ Determine what to probe based on file type
+				if (filePath.extension() == ".mp4")
 				{
+					// For MP4 files: /root/cameraID/YYYYMMDD/HHMM/timestamp.mp4
+					// Go up 3 levels to reach the cameraID directory
+					probeDir = filePath.parent_path()        // → /root/cameraID/YYYYMMDD/HHMM/
+									.parent_path()         // → /root/cameraID/YYYYMMDD/
+									.parent_path();        // → /root/cameraID/
+					
+					LOG_INFO << "Probing camera directory: " << probeDir 
+							<< " for file: " << mState.mVideoPath;
+				}
+				else
+				{
+					// For directory paths, use as-is
+					probeDir = filePath;
+					LOG_INFO << "Probing directory: " << probeDir;
+				}
+				
+				// Verify the probe directory exists
+				if (!boost::filesystem::exists(probeDir))
+				{
+					LOG_ERROR << "Probe directory does not exist: " << probeDir;
 					return false;
 				}
+				
+				if (!boost::filesystem::is_directory(probeDir))
+				{
+					LOG_ERROR << "Path is not a directory: " << probeDir;
+					return false;
+				}
+				
+				if (!cof->probe(probeDir, mState.mVideoPath))
+				{
+					LOG_ERROR << "Probe failed for: " << probeDir;
+					return false;
+				}
+				
+				isVideoFileFound = true;
+				LOG_INFO << "Probe successful, video set to: " << mState.mVideoPath;
 			}
 			catch (const std::exception &e)
 			{
-				LOG_ERROR << "Exception caught while probing the video path: " << e.what();
+				LOG_ERROR << "Exception caught while probing: " << e.what();
 				return false;
 			}
-			catch (...)
-			{
-				LOG_ERROR << "Unknown error occurred while probing the video path.";
-				return false;
-			}
-
-			isVideoFileFound = true;
 		}
 		if (mProps.parseFS)
 		{
@@ -942,16 +1057,35 @@ public:
 	{
 		if (!isVideoFileFound)
 		{
-			currentTS = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			currentTS = std::chrono::duration_cast<std::chrono::seconds>(
+				std::chrono::system_clock::now().time_since_epoch()).count();
+				
 			if (currentTS >= recheckDiskTS)
 			{
-				if (!cof->probe(boost::filesystem::path(mState.mVideoPath), mState.mVideoPath))
+				auto filePath = boost::filesystem::path(mState.mVideoPath);
+				boost::filesystem::path probeDir;
+				
+				// ✅ Determine probe directory
+				if (filePath.extension() == ".mp4")
 				{
+					// Go up 3 levels: HHMM → YYYYMMDD → cameraID
+					probeDir = filePath.parent_path().parent_path().parent_path();
+				}
+				else
+				{
+					probeDir = filePath;
+				}
+				
+				if (!cof->probe(probeDir, mState.mVideoPath))
+				{
+					LOG_ERROR << "Probe failed during recheck for " << probeDir;
 					imgFrame = nullptr;
 					imageFrameSize = 0;
 					recheckDiskTS = currentTS + mProps.parseFSTimeoutDuration;
 					return;
 				}
+				isVideoFileFound = true;
+				LOG_INFO << "Probe successful during recheck";
 			}
 			else
 			{
@@ -1166,6 +1300,7 @@ protected:
 	bool seekReachedEOF = false;
 	bool waitFlag = false;
 	uint64_t recheckDiskTS = 0;
+	bool isUpdatingProps = false; 
 	boost::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
 	framemetadata_sp mH264Metadata;
@@ -1257,8 +1392,37 @@ void Mp4ReaderDetailJpeg::setMetadata()
 
 int Mp4ReaderDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
 {
-	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
-	return ret;
+    auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
+    
+    // CHANGE: Same handling for JPEG
+    if (ret == -2)
+    {
+        LOG_INFO << "Seek returned -2 (beyond EOF), attempting to seek to last available frame";
+        
+        uint64_t start_ts = 0, duration = 0;
+        try
+        {
+            mp4_demux_time_range(demux, &start_ts, &duration);
+            uint64_t safe_offset = (duration > 1000) ? (duration - 1000) : 0;
+            ret = mp4_demux_seek_jpeg(demux, safe_offset, syncType, &seekedToFrame);
+            
+            if (ret >= 0)
+            {
+                LOG_INFO << "Successfully seeked to safe offset for JPEG";
+                return ret;
+            }
+        }
+        catch (...)
+        {
+            LOG_WARNING << "Failed to get time range for safe seek";
+        }
+        
+        seekedToFrame = mState.mFramesInVideo - 1;
+        if (seekedToFrame < 0) seekedToFrame = 0;
+        ret = 0;
+    }
+    
+    return ret;
 }
 
 int Mp4ReaderDetailJpeg::getGop()
@@ -1395,13 +1559,41 @@ void Mp4ReaderDetailH264::countOrCopy(uint8_t** out, uint64_t* out_size, const u
 
 int Mp4ReaderDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
 {
-	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
-	if (ret == -2)
-	{
-		seekedToFrame = mState.mFramesInVideo;
-		ret = 0;
-	}
-	return ret;
+    auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+    
+    // CHANGE: Handle case where seek reports beyond EOF but file metadata suggests frames exist
+    if (ret == -2)
+    {
+        LOG_INFO << "Seek returned -2 (beyond EOF), attempting to seek to last available frame";
+        
+        // Try to get the last sync frame instead
+        uint64_t start_ts = 0, duration = 0;
+        try
+        {
+            mp4_demux_time_range(demux, &start_ts, &duration);
+            
+            // Seek to a point slightly before the end
+            uint64_t safe_offset = (duration > 1000) ? (duration - 1000) : 0;
+            ret = mp4_demux_seek(demux, safe_offset, syncType, &seekedToFrame);
+            
+            if (ret >= 0)
+            {
+                LOG_INFO << "Successfully seeked to safe offset: " << safe_offset << " usec";
+                return ret;
+            }
+        }
+        catch (...)
+        {
+            LOG_WARNING << "Failed to get time range for safe seek";
+        }
+        
+        // If still failing, try to position at the last known good frame
+        seekedToFrame = mState.mFramesInVideo - 1;
+        if (seekedToFrame < 0) seekedToFrame = 0;
+        ret = 0; // Consider this success - we'll read from last frame
+    }
+    
+    return ret;
 }
 
 int Mp4ReaderDetailH264::getGop()
