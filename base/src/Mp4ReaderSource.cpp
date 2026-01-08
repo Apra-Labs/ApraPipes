@@ -898,7 +898,7 @@ public:
 		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
 		{
 			LOG_INFO<<"mFrameCounterIdx"<<mState.mFrameCounterIdx;
-			LOG_INFO<<"mFramesInVideo"<<mFramesInVideo;
+			LOG_INFO<<"mFramesInVideo"<<mState.mFramesInVideo;
 			return true;
 		}
 		if (!mState.direction && mState.mFrameCounterIdx <= -1)
