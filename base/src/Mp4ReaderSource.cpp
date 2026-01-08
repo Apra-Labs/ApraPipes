@@ -898,7 +898,7 @@ public:
 
 	bool isOpenVideoFinished()
 	{
-		ret = mp4_demux_get_track_info(mState.demux, 1, &mState.info);
+		ret = mp4_demux_get_track_info(mState.demux, 0, &mState.info);
 		if(mState.info.sample_count>mState.mFramesInVideo)
 		{
 			LOG_INFO<<"current file grown";
