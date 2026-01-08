@@ -721,298 +721,228 @@ public:
 	}
 
 	bool randomSeekInternal(uint64_t& skipTS, bool forceReopen = false)
-{
-    LOG_INFO << "Random Seek to TS <" << skipTS << "> in video <" << mState.mVideoPath << ">";
-    
-    if (!mProps.parseFS)
-    {
-        int seekedToFrame = -1;
-        uint64_t skipMsecsInFile = 0;
+	{
+		/* Seeking in custom file i.e. parseFS is disabled */
+		LOG_ERROR << "IN Random Seek Interval";
+		LOG_INFO << "Random Seek to TS <" << skipTS << "> in video <" << mState.mVideoPath << ">";
+		if (!mProps.parseFS)
+		{
+			int seekedToFrame = -1;
+			uint64_t skipMsecsInFile = 0;
 
-        if (!mState.startTimeStampFromFile)
-        {
-            LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
-            return false;
-        }
-        
-        if (skipTS < mState.startTimeStampFromFile)
-        {
-            LOG_INFO << "seek time outside range. Seeking to start of video.";
-            skipMsecsInFile = 0;
-        }
-        else
-        {
-            skipMsecsInFile = skipTS - mState.startTimeStampFromFile;
-        }
+			if (!mState.startTimeStampFromFile)
+			{
+				LOG_ERROR << "Start timestamp is not saved in the file. Can't support seeking with timestamps.";
+				return false;
+			}
+			if (skipTS < mState.startTimeStampFromFile)
+			{
+				LOG_INFO << "seek time outside range. Seeking to start of video.";
+				skipMsecsInFile = 0;
+			}
+			else
+			{
+				skipMsecsInFile = skipTS - mState.startTimeStampFromFile;
+			}
 
-        LOG_INFO << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
-        uint64_t time_offset_usec = skipMsecsInFile * 1000;
-        
-        // CHANGE: Check if seeking to a timestamp within file's declared range but beyond actual frames
-        uint64_t file_duration_msec = (mState.endTS - mState.startTimeStampFromFile);
-        if (skipMsecsInFile > file_duration_msec)
-        {
-            LOG_WARNING << "Seek timestamp beyond file duration. SkipMS: " << skipMsecsInFile 
-                       << ", FileDuration: " << file_duration_msec;
-            
-            // Seek to last frame instead
-            skipMsecsInFile = file_duration_msec;
-            time_offset_usec = skipMsecsInFile * 1000;
-        }
-        
-        int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC, seekedToFrame);
-        
-        // CHANGE: Handle case where seek succeeds but lands on duplicate frame
-        if (returnCode >= 0)
-        {
-            mState.mFrameCounterIdx = seekedToFrame;
-            
-            // Verify we're within valid frame range
-            if (mState.mFrameCounterIdx >= mState.mFramesInVideo)
-            {
-                LOG_WARNING << "Seek resulted in frame index beyond video. Clamping to last frame.";
-                mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
-            }
-            if (mState.mFrameCounterIdx < 0)
-            {
-                LOG_WARNING << "Seek resulted in negative frame index. Setting to 0.";
-                mState.mFrameCounterIdx = 0;
-            }
-        }
-        
-        if (returnCode == -ENFILE)
-        {
-            LOG_INFO << "Query time beyond the EOF. Resuming...";
-            auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, skipTS));
-            sendEOS(frame);
-            seekReachedEOF = true;
-            return true;
-        }
-        
-        if (returnCode < 0)
-        {
-            LOG_ERROR << "Seek failed with error code: " << returnCode;
-            
-            // CHANGE: Try reopening the file and seeking again
-            LOG_INFO << "Attempting to recover by reopening file...";
-            try
-            {
-                openVideoSetPointer(mState.mVideoPath);
-                
-                // Recalculate offset after reopen
-                skipMsecsInFile = (skipTS > mState.startTimeStampFromFile) ? 
-                                 (skipTS - mState.startTimeStampFromFile) : 0;
-                time_offset_usec = skipMsecsInFile * 1000;
-                
-                returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC, seekedToFrame);
-                
-                if (returnCode >= 0)
-                {
-                    LOG_INFO << "Seek succeeded after file reopen";
-                    mState.mFrameCounterIdx = seekedToFrame;
-                }
-                else
-                {
-                    auto msg = "Seek failed even after file reopen";
-                    LOG_ERROR << msg;
-                    throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
-                }
-            }
-            catch (...)
-            {
-                auto msg = "Failed to recover from seek failure";
-                LOG_ERROR << msg;
-                throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
-            }
-        }
-        
-        mState.has_more_video = 1;
-        mState.end = false;
-        waitFlag = false;
-        sentEOSSignal = false;
-        isMp4SeekFrame = true;
-        setMetadata();
-        return true;
-    }
+			LOG_INFO << "Attempting seek <" << mState.mVideoPath << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+			uint64_t time_offset_usec = skipMsecsInFile * 1000;
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC, seekedToFrame);
+			mState.mFrameCounterIdx = seekedToFrame;
+			if (returnCode == -ENFILE)
+			{
+				LOG_INFO << "Query time beyond the EOF. Resuming...";
+				auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, skipTS));
+				sendEOS(frame);
+				seekReachedEOF = true;
+				return true;
+			}
+			if (returnCode < 0)
+			{
+				LOG_ERROR << "Seek failed. Unexpected error.";
+				auto msg = "Unexpected error happened whie seeking inside the video file.";
+				LOG_ERROR << msg;
+				throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
+			}
+			// continue reading file if seek is successful
+			mState.has_more_video = 1;
+			mState.end = false; // enable seeking after eof
+			// reset flags
+			waitFlag = false;
+			sentEOSSignal = false;
+			isMp4SeekFrame = true;
+			setMetadata();
+			return true;
+		}
 
-    // Regular seek with parseFS enabled
-    std::string skipVideoFile;
-    uint64_t skipMsecsInFile;
-    
-    if (!isVideoFileFound)
-    {
-        LOG_INFO << "Video file not found, attempting to probe directory";
-        try
-        {
-            auto filePath = boost::filesystem::path(mState.mVideoPath);
-            boost::filesystem::path probeDir;
-            
-            if (filePath.extension() == ".mp4")
-            {
-                probeDir = filePath.parent_path().parent_path().parent_path();
-            }
-            else
-            {
-                probeDir = filePath;
-            }
-            
-            if (!boost::filesystem::exists(probeDir) || !cof->probe(probeDir, mState.mVideoPath))
-            {
-                LOG_ERROR << "Probe failed for: " << probeDir;
-                return false;
-            }
-            
-            isVideoFileFound = true;
-        }
-        catch (const std::exception &e)
-        {
-            LOG_ERROR << "Exception during probe: " << e.what();
-            return false;
-        }
-    }
-    
-    if (mProps.parseFS)
-    {
-        auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
-        uint64_t start_parsing_ts = 0;
-        try
-        {
-            start_parsing_ts = std::stoull(boostVideoTS);
-            cof->parseFiles(start_parsing_ts, mState.direction, true, false);
-        }
-        catch (...)
-        {
-            LOG_ERROR << "Failed to parse files for seek";
-            throw;
-        }
-    }
-    
-    bool ret;
-    try
-    {
-        ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
-    }
-    catch (const std::exception &e)
-    {
-        LOG_ERROR << "Exception getting random seek file: " << e.what();
-        return false;
-    }
+		/* Regular seek
+			1. bool cof.getRandomSeekFile(skipTS, skipVideoFile, skipMsec)
+			2. That method returns false if randomSeek has failed. Then, do nothing.
+			3. On success, we know which file to open and how many secs to skip in it.
+			4. Do openVideoFor() this file & seek in this file & set the mFrameCountIdx to the seekedToFrame ?
+		*/
+		std::string skipVideoFile;
+		uint64_t skipMsecsInFile;
+		LOG_ERROR << "Handling Random Seek Command";
+		if (!isVideoFileFound)
+		{
+			LOG_INFO << "Video file not found, attempting to probe directory";
+			try
+			{
+				auto filePath = boost::filesystem::path(mState.mVideoPath);
+				boost::filesystem::path probeDir;
+				
+				// ✅ Determine what to probe based on file type
+				if (filePath.extension() == ".mp4")
+				{
+					// For MP4 files: /root/cameraID/YYYYMMDD/HHMM/timestamp.mp4
+					// Go up 3 levels to reach the cameraID directory
+					probeDir = filePath.parent_path()        // → /root/cameraID/YYYYMMDD/HHMM/
+									.parent_path()         // → /root/cameraID/YYYYMMDD/
+									.parent_path();        // → /root/cameraID/
+					
+					LOG_INFO << "Probing camera directory: " << probeDir 
+							<< " for file: " << mState.mVideoPath;
+				}
+				else
+				{
+					// For directory paths, use as-is
+					probeDir = filePath;
+					LOG_INFO << "Probing directory: " << probeDir;
+				}
+				
+				// Verify the probe directory exists
+				if (!boost::filesystem::exists(probeDir))
+				{
+					LOG_ERROR << "Probe directory does not exist: " << probeDir;
+					return false;
+				}
+				
+				if (!boost::filesystem::is_directory(probeDir))
+				{
+					LOG_ERROR << "Path is not a directory: " << probeDir;
+					return false;
+				}
+				
+				if (!cof->probe(probeDir, mState.mVideoPath))
+				{
+					LOG_ERROR << "Probe failed for: " << probeDir;
+					return false;
+				}
+				
+				isVideoFileFound = true;
+				LOG_INFO << "Probe successful, video set to: " << mState.mVideoPath;
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR << "Exception caught while probing: " << e.what();
+				return false;
+			}
+		}
+		if (mProps.parseFS)
+		{
+			LOG_ERROR << "Checking Video File Name";
+			auto boostVideoTS = boost::filesystem::path(mState.mVideoPath).stem().string();
+			uint64_t start_parsing_ts = 0;
+			try
+			{
+				start_parsing_ts = std::stoull(boostVideoTS);
+			}
+			catch (std::invalid_argument)
+			{
+				auto msg = "Video File name not in proper format.Check the filename sent as props. \
+					If you want to read a file with custom name instead, please disable parseFS flag.";
+				LOG_ERROR << msg;
+				throw AIPException(AIP_FATAL, msg);
+			}
+			try
+			{
+				cof->parseFiles(start_parsing_ts, mState.direction, true, false); // enable exactMatch, don't disable disableBatchSizeCheck
+			}
+			catch (const std::exception &e)
+			{
+				LOG_ERROR << "Exception caught while parsing files: " << e.what();
+				throw; // Rethrow if you want to propagate the exception further
+			}
+			catch (...)
+			{
+				LOG_ERROR << "Unknown error occurred while parsing files.";
+				throw; // Rethrow if you want to propagate the exception further
+			}
+		}
+		bool ret;
+		try
+		{
+			LOG_ERROR << "Handling Random Seek Command";
+			ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
+		}
+		catch (const std::exception &e)
+		{
+			LOG_ERROR << "Exception caught while getting random seek file: " << e.what();
+			return false; // Handle failure according to your application's logic
+		}
+		catch (...)
+		{
+			LOG_ERROR << "Unknown error occurred while getting random seek file.";
+			return false; // Handle failure according to your application's logic
+		}
 
-    if (!ret)
-    {
-        auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, skipTS));
-        sendEOS(frame);
-        seekReachedEOF = true;
-        LOG_INFO << "Seek to skipTS <" << skipTS << "> failed. Resuming playback...";
-        return false;
-    }
-    
-    bool skipTSInOpenFile = false;
-    if (!mState.end)
-    {
-        skipTSInOpenFile = cof->isTimeStampInFile(mState.mVideoPath, skipTS);
-    }
-    
-    auto lastVideoInCache = boost::filesystem::canonical(cof->getLastVideoInCache());
-    bool skipFileIsLastInCache = boost::filesystem::equivalent(lastVideoInCache, boost::filesystem::canonical(skipVideoFile));
-    
-    // CHANGE: Always reopen if seeking to last file in cache (actively being written)
-    // OR if the current file might have stale data
-    bool needsReopen = !skipTSInOpenFile || skipFileIsLastInCache || forceReopen;
-    
-    if (needsReopen)
-    {
-        LOG_INFO << "Reopening video file for seek: " << skipVideoFile 
-                 << " (lastInCache=" << skipFileIsLastInCache << ")";
-        openVideoSetPointer(skipVideoFile);
-    }
-    
-    LOG_INFO << "Attempting seek in file <" << skipVideoFile << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
-    
-    if (skipMsecsInFile > 0)
-    {
-        uint64_t time_offset_usec = skipMsecsInFile * 1000;
-        int seekedToFrame = 0;
-        mp4_seek_method seekDirectionStrategy = mState.direction ? 
-            mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC : 
-            mp4_seek_method::MP4_SEEK_METHOD_PREVIOUS_SYNC;
-        
-        // CHANGE: Validate time offset against file duration
-        uint64_t file_duration_usec = 0;
-        try
-        {
-            uint64_t dummy_start = 0;
-            mp4_demux_time_range(mState.demux, &dummy_start, &file_duration_usec);
-            
-            if (time_offset_usec > file_duration_usec)
-            {
-                LOG_WARNING << "Seek offset " << time_offset_usec 
-                           << " exceeds file duration " << file_duration_usec 
-                           << ". Adjusting to file end.";
-                time_offset_usec = (file_duration_usec > 1000) ? (file_duration_usec - 1000) : 0;
-            }
-        }
-        catch (...)
-        {
-            LOG_WARNING << "Could not validate seek offset against file duration";
-        }
-        
-        int returnCode = mp4Seek(mState.demux, time_offset_usec, seekDirectionStrategy, seekedToFrame);
-        
-        if (returnCode < 0)
-        {
-            LOG_ERROR << "Seek failed with return code: " << returnCode;
-            
-            // CHANGE: Try alternative seek strategy
-            LOG_INFO << "Retrying seek with alternative strategy...";
-            
-            // Try seeking to nearest sync point before target
-            mp4_seek_method altStrategy = mp4_seek_method::MP4_SEEK_METHOD_PREVIOUS_SYNC;
-            returnCode = mp4Seek(mState.demux, time_offset_usec, altStrategy, seekedToFrame);
-            
-            if (returnCode < 0)
-            {
-                auto msg = "Seek failed even with alternative strategy";
-                LOG_ERROR << msg;
-                throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
-            }
-            
-            LOG_INFO << "Alternative seek strategy succeeded";
-        }
-        
-        mState.mFrameCounterIdx = seekedToFrame;
-        
-        // CHANGE: Clamp frame index to valid range
-        if (mState.mFrameCounterIdx >= mState.mFramesInVideo)
-        {
-            LOG_WARNING << "Frame index " << mState.mFrameCounterIdx 
-                       << " exceeds video frame count " << mState.mFramesInVideo 
-                       << ". Clamping.";
-            mState.mFrameCounterIdx = mState.mFramesInVideo - 1;
-        }
-        if (mState.mFrameCounterIdx < 0)
-        {
-            mState.mFrameCounterIdx = 0;
-        }
-        
-        LOG_TRACE << "Seek complete. Time offset: " << time_offset_usec 
-                 << " usec, Frame index: " << mState.mFrameCounterIdx;
-    }
-    else
-    {
-        // skipMsecsInFile is 0, position at start
-        mState.mFrameCounterIdx = mState.direction ? 0 : mState.mFramesInVideo - 1;
-        LOG_INFO << "Seek to file start. Frame index: " << mState.mFrameCounterIdx;
-    }
+		if (!ret)
+		{
+			// send EOS signal
+			auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_SEEK_EOS, skipTS));
+			sendEOS(frame);
+			LOG_ERROR << "Sending EOS Frame";
+			// skip the frame in the readNextFrame that happens in the same step
+			seekReachedEOF = true;
+			LOG_INFO << "Seek to skipTS <" << skipTS << "> failed. Resuming playback...";
+			return false;
+		}
+		// check if the skipTS is in already opened file (if mState.end has not reached)
+		bool skipTSInOpenFile = false;
+		if (!mState.end)
+		{
+			skipTSInOpenFile = cof->isTimeStampInFile(mState.mVideoPath, skipTS);
+		}
+		// force reopen the video file if skipVideo is the last file in cache
+		auto lastVideoInCache = boost::filesystem::canonical(cof->getLastVideoInCache());
+		bool skipFileIsLastInCache = boost::filesystem::equivalent(lastVideoInCache, boost::filesystem::canonical(skipVideoFile));
+		LOG_ERROR << "Next is to Open Video Set Pointer";
+		if (!skipTSInOpenFile || skipFileIsLastInCache)
+		{
+			// open skipVideoFile if mState.end has reached or skipTS not in currently open video
+			openVideoSetPointer(skipVideoFile); // it is possible that this file has been deleted but not removed from cache
+		}
+		LOG_INFO << "Attempting seek <" << skipVideoFile << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
+		if (skipMsecsInFile)
+		{
+			uint64_t time_offset_usec = skipMsecsInFile * 1000;
+			int seekedToFrame = 0;
+			mp4_seek_method seekDirectionStrategy = mState.direction ? mp4_seek_method::MP4_SEEK_METHOD_NEXT_SYNC : mp4_seek_method::MP4_SEEK_METHOD_PREVIOUS_SYNC;
+			int returnCode = mp4Seek(mState.demux, time_offset_usec, seekDirectionStrategy, seekedToFrame);
+			if (returnCode < 0)
+			{
+				auto msg = "Unexpected error happened whie seeking inside the video file.";
+				LOG_ERROR << msg;
+				throw Mp4Exception(MP4_SEEK_INSIDE_FILE_FAILED, msg);
+			}
+			mState.mFrameCounterIdx = seekedToFrame;
+			LOG_TRACE << "Time offset usec <" << time_offset_usec << ">, seekedToFrame <" << seekedToFrame << ">";
+		}
+		LOG_ERROR << "Will Set Metadata";
 
-    mState.end = false;
-    sentEOSSignal = false;
-    waitFlag = false;
-    isMp4SeekFrame = true;
-    setMetadata();
-    LOG_INFO << "Seek successful to timestamp " << skipTS;
-    return true;
-}
+		// seek successful
+		mState.end = false; // enable seeking after eof
+		// reset sentEOFSignal
+		sentEOSSignal = false;
+		// reset waitFlag
+		waitFlag = false;
+		isMp4SeekFrame = true;
+		setMetadata();
+		LOG_INFO << "seek successfull";
+		return true;
+	}
+
 	uint64_t calcReloadFileAfter()
 	{
 		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
@@ -1275,38 +1205,21 @@ public:
 				throw Mp4Exception(MP4_BUFFER_TOO_SMALL, msg);
 			}
 
-			  if (ret != 0 || mState.sample.size == 0)
-        {
-            LOG_INFO << "Frame read returned ret=" << ret 
-                    << ", size=" << mState.sample.size 
-                    << ", frameIdx=" << mp4FIndex;
-            
-            // CHANGE: Check if we're at a valid boundary or if this is an error
-            bool atValidBoundary = (mState.direction && mp4FIndex >= mState.mFramesInVideo) ||
-                                   (!mState.direction && mp4FIndex < 0);
-            
-            if (!atValidBoundary)
-            {
-                LOG_WARNING << "Unexpected read failure mid-file. Attempting recovery...";
-                
-                // Try to reposition to a safe location
-                if (mState.direction && mp4FIndex < mState.mFramesInVideo - 1)
-                {
-                    LOG_INFO << "Attempting to skip to next sync frame";
-                    // The next iteration will try the next frame
-                }
-            }
-            
-            mState.has_more_video = 0;
-            
-            if (!mProps.parseFS && !sentEOSSignal)
-            {
-                auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_PLYB_EOS, mState.frameTSInMsecs));
-                sendEOS(frame);
-                sentEOSSignal = true;
-            }
-            return;
-        }
+			if (ret != 0 || mState.sample.size == 0)
+			{
+				LOG_INFO << "<" << ret << "," << mState.sample.size << "," << mState.sample.metadata_size << ">";
+				mState.has_more_video = 0;
+				if (!mProps.parseFS)
+				{
+					if (!sentEOSSignal)
+					{
+						auto frame = frame_sp(new EoSFrame(EoSFrame::EoSFrameType::MP4_PLYB_EOS, mState.frameTSInMsecs));
+						sendEOS(frame); // just send once
+						sentEOSSignal = true;
+					}
+				}
+				return;
+			}
 
 			// get the frame timestamp
 			uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
