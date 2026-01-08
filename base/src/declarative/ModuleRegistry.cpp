@@ -143,7 +143,7 @@ std::unique_ptr<Module> ModuleRegistry::createCudaModule(
     return it->second.cudaFactory(props, cudaStreamPtr);
 }
 
-bool ModuleRegistry::setCudaFactory(const std::string& name, CudaFactoryFn factory) {
+bool ModuleRegistry::setCudaFactory(const std::string& name, ModuleInfo::CudaFactoryFn factory) {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = modules_.find(name);
     if (it == modules_.end()) {

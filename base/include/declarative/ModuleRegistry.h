@@ -145,7 +145,7 @@ public:
 
     // Set CUDA factory for a module (call after registerModule)
     // Used by CUDA-specific registration code
-    bool setCudaFactory(const std::string& name, CudaFactoryFn factory);
+    bool setCudaFactory(const std::string& name, ModuleInfo::CudaFactoryFn factory);
 
     // Check if a module requires CUDA stream
     bool moduleRequiresCudaStream(const std::string& name) const;

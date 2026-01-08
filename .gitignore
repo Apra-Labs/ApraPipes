@@ -16,3 +16,8 @@ build/CMakeFiles/CMakeConfigureLog.yaml
 aprapipes.node
 examples/node/output
 data/SaveOrCompareFail
+# Downloaded SDK artifacts
+sdk-ci/
+aprapipes-sdk-*/
+BuildLogs_*/
+cuda-install-*/
