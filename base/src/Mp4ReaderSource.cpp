@@ -893,54 +893,27 @@ public:
 		// sendMp4ErrorFrame(errorFrame);
 	}
 
-bool isOpenVideoFinished()
-{
-    LOG_INFO << "Checking is OVF";
-    if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
-    {
-        // For live recording scenarios
-        if (mProps.parseFS && mProps.reInitInterval)
-        {
-            LOG_INFO << "EOF reached. Checking if file has grown...";
-            
-            try
-            {
-                // Save current position before reopen
-                int32_t currentFrameIdx = mState.mFrameCounterIdx;
-                int32_t oldFrameCount = mState.mFramesInVideo;
-                
-                LOG_INFO << "Before reopen - mFrameCounterIdx: " << currentFrameIdx 
-                         << " mFramesInVideo: " << oldFrameCount;
-                
-                std::string currentPath = mState.mVideoPath;
-                openVideoSetPointer(currentPath);
-                
-                LOG_INFO << "After reopen - mFramesInVideo: " << mState.mFramesInVideo;
-                
-                // Check if new frames were added
-                if (mState.mFramesInVideo > oldFrameCount)
-                {
-                    // File grew - restore position and continue
-                    mState.mFrameCounterIdx = currentFrameIdx;
-                    return false; // New frames available
-                }
-                
-                return true; // Still at EOF
-            }
-            catch (...)
-            {
-                LOG_ERROR << "Failed to reopen file to check for new frames";
-                return true;
-            }
-        }
-        return true;
-    }
-    if (!mState.direction && mState.mFrameCounterIdx <= -1)
-    {
-        return true;
-    }
-    return false;
-}
+	bool isOpenVideoFinished()
+	{
+		ret = mp4_demux_get_track_info(mState.demux, i, &mState.info);
+		if(mState.info.sample_count>mState.mFramesInVideo)
+		{
+			LOG_INFO<<"current file grown";
+			mState.mFramesInVideo = mState.info.sample_count;
+		}
+		
+		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
+		{
+			LOG_INFO<<"mFrameCounterIdx"<<mState.mFrameCounterIdx;
+			LOG_INFO<<"mFramesInVideo"<<mState.mFramesInVideo;
+			return true;
+		}
+		if (!mState.direction && mState.mFrameCounterIdx <= -1)
+		{
+			return true;
+		}
+		return false;
+	}
 
 	void readNextFrame(frame_sp& imgFrame, frame_sp& metadetaFrame, size_t& imgSize, size_t& metadataSize, uint64_t& frameTSInMsecs, int32_t& mp4FIndex) noexcept
 	{
