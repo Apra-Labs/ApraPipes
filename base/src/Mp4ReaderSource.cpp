@@ -421,6 +421,7 @@ public:
 			LOG_INFO << "Reached EOF end state in playback.";
 			if (mProps.readLoop)
 			{
+				LOG_INFO<<"readloop true: calling openVideoSetPointer for current file";
 				openVideoSetPointer(mState.mVideoPath);
 				mState.end = false;
 				return true;
@@ -796,6 +797,7 @@ public:
 		if (!skipTSInOpenFile || skipFileIsLastInCache)
 		{
 			// open skipVideoFile if mState.end has reached or skipTS not in currently open video
+			LOG_INFO<<"inside randomSeekInternal: calling openVideoSetPointer";
 			openVideoSetPointer(skipVideoFile); // it is possible that this file has been deleted but not removed from cache
 		}
 		LOG_INFO << "Attempting seek <" << skipVideoFile << "> @skipMsecsInFile <" << skipMsecsInFile << ">";
