@@ -1479,38 +1479,10 @@ void Mp4ReaderDetailJpeg::setMetadata()
 
 int Mp4ReaderDetailJpeg::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
 {
-    auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
-    
-    // CHANGE: Same handling for JPEG
-    if (ret == -2)
-    {
-        LOG_INFO << "Seek returned -2 (beyond EOF), attempting to seek to last available frame";
-        
-        uint64_t start_ts = 0, duration = 0;
-        try
-        {
-            mp4_demux_time_range(demux, &start_ts, &duration);
-            uint64_t safe_offset = (duration > 1000) ? (duration - 1000) : 0;
-            ret = mp4_demux_seek_jpeg(demux, safe_offset, syncType, &seekedToFrame);
-            
-            if (ret >= 0)
-            {
-                LOG_INFO << "Successfully seeked to safe offset for JPEG";
-                return ret;
-            }
-        }
-        catch (...)
-        {
-            LOG_WARNING << "Failed to get time range for safe seek";
-        }
-        
-        seekedToFrame = mState.mFramesInVideo - 1;
-        if (seekedToFrame < 0) seekedToFrame = 0;
-        ret = 0;
-    }
-    
-    return ret;
+	auto ret = mp4_demux_seek_jpeg(demux, time_offset_usec, syncType, &seekedToFrame);
+	return ret;
 }
+
 
 int Mp4ReaderDetailJpeg::getGop()
 {
@@ -1646,41 +1618,13 @@ void Mp4ReaderDetailH264::countOrCopy(uint8_t** out, uint64_t* out_size, const u
 
 int Mp4ReaderDetailH264::mp4Seek(mp4_demux* demux, uint64_t time_offset_usec, mp4_seek_method syncType, int& seekedToFrame)
 {
-    auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
-    
-    // CHANGE: Handle case where seek reports beyond EOF but file metadata suggests frames exist
-    if (ret == -2)
-    {
-        LOG_INFO << "Seek returned -2 (beyond EOF), attempting to seek to last available frame";
-        
-        // Try to get the last sync frame instead
-        uint64_t start_ts = 0, duration = 0;
-        try
-        {
-            mp4_demux_time_range(demux, &start_ts, &duration);
-            
-            // Seek to a point slightly before the end
-            uint64_t safe_offset = (duration > 1000) ? (duration - 1000) : 0;
-            ret = mp4_demux_seek(demux, safe_offset, syncType, &seekedToFrame);
-            
-            if (ret >= 0)
-            {
-                LOG_INFO << "Successfully seeked to safe offset: " << safe_offset << " usec";
-                return ret;
-            }
-        }
-        catch (...)
-        {
-            LOG_WARNING << "Failed to get time range for safe seek";
-        }
-        
-        // If still failing, try to position at the last known good frame
-        seekedToFrame = mState.mFramesInVideo - 1;
-        if (seekedToFrame < 0) seekedToFrame = 0;
-        ret = 0; // Consider this success - we'll read from last frame
-    }
-    
-    return ret;
+	auto ret = mp4_demux_seek(demux, time_offset_usec, syncType, &seekedToFrame);
+	if (ret == -2)
+	{
+		seekedToFrame = mState.mFramesInVideo;
+		ret = 0;
+	}
+	return ret;
 }
 
 int Mp4ReaderDetailH264::getGop()
