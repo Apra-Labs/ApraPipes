@@ -893,33 +893,39 @@ public:
 		// sendMp4ErrorFrame(errorFrame);
 	}
 
-	bool isOpenVideoFinished()
-   {
-	LOG_INFO<<"isOpenVideoFinished";
+bool isOpenVideoFinished()
+{
+    LOG_INFO << "Checking is OVF";
     if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
     {
         // For live recording scenarios
         if (mProps.parseFS && mProps.reInitInterval)
         {
-            LOG_DEBUG << "EOF reached. Checking if file has grown...";
+            LOG_INFO << "EOF reached. Checking if file has grown...";
             
-            // Close and reopen to get fresh metadata
             try
             {
+                // Save current position before reopen
+                int32_t currentFrameIdx = mState.mFrameCounterIdx;
+                int32_t oldFrameCount = mState.mFramesInVideo;
+                
+                LOG_INFO << "Before reopen - mFrameCounterIdx: " << currentFrameIdx 
+                         << " mFramesInVideo: " << oldFrameCount;
+                
                 std::string currentPath = mState.mVideoPath;
-                termOpenVideo();
                 openVideoSetPointer(currentPath);
                 
-                LOG_INFO << "After reopen - mFrameCounterIdx: " << mState.mFrameCounterIdx 
-                         << " mFramesInVideo: " << mState.mFramesInVideo;
+                LOG_INFO << "After reopen - mFramesInVideo: " << mState.mFramesInVideo;
                 
-                // Check again with updated values
-                if (mState.mFrameCounterIdx >= mState.mFramesInVideo)
+                // Check if new frames were added
+                if (mState.mFramesInVideo > oldFrameCount)
                 {
-                    return true; // Still at EOF
+                    // File grew - restore position and continue
+                    mState.mFrameCounterIdx = currentFrameIdx;
+                    return false; // New frames available
                 }
                 
-                return false; // New frames available
+                return true; // Still at EOF
             }
             catch (...)
             {
