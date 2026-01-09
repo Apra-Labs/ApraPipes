@@ -28,20 +28,53 @@ public:
   DTSPassThroughStrategy()
       : DTSCalcStrategy(DTSCalcStrategy::DTSCalcStrategyType::PASS_THROUGH) {}
 
-  int64_t getDTS(uint64_t &frameTS, uint64_t lastFrameTS,
+  int64_t getDTS(uint64_t &frameTS,
+                 uint64_t lastFrameTS,
                  uint16_t fps) override {
-    int64_t diffInMsecs = frameTS - lastFrameTS;
-    // half of the ideal duration of one frame i.e. (1/fps) secs
-    int64_t halfDurationInMsecs = static_cast<int64_t>(1000 / (2 * fps));
-    if (!diffInMsecs) {
+
+    LOG_INFO << "[DTS][PassThrough] Input: frameTS={}, lastFrameTS={}, fps={}",
+              frameTS, lastFrameTS, fps;
+
+    int64_t diffInMsecs =
+        static_cast<int64_t>(frameTS) - static_cast<int64_t>(lastFrameTS);
+
+    // Ideal half-frame duration = (1 / fps) / 2 seconds
+    int64_t halfDurationInMsecs =
+        static_cast<int64_t>(1000 / (2 * fps));
+
+    LOG_INFO << "[DTS][PassThrough] Initial diff={} ms, halfFrameDuration={} ms",
+              diffInMsecs, halfDurationInMsecs;
+
+    if (diffInMsecs == 0) {
+      LOG_INFO << "[DTS][PassThrough] Duplicate timestamp detected. "
+               "Adjusting frameTS forward by half frame duration";
+
+      uint64_t oldFrameTS = frameTS;
       frameTS += halfDurationInMsecs;
+
+      LOG_INFO << "[DTS][PassThrough] frameTS adjusted: {} -> {}",
+                oldFrameTS, frameTS;
+
     } else if (diffInMsecs < 0) {
+      LOG_INFO << "[DTS][PassThrough] Backward timestamp detected (diff={} ms). "
+               "Clamping frameTS to lastFrameTS + half frame duration",
+               diffInMsecs;
+
+      uint64_t oldFrameTS = frameTS;
       frameTS = lastFrameTS + halfDurationInMsecs;
+
+      LOG_INFO << "[DTS][PassThrough] frameTS corrected: {} -> {}",
+                oldFrameTS, frameTS;
     }
-    diffInMsecs = frameTS - lastFrameTS;
+
+    diffInMsecs =
+        static_cast<int64_t>(frameTS) - static_cast<int64_t>(lastFrameTS);
+
+    LOG_INFO << "[DTS][PassThrough] Final DTS diff={} ms", diffInMsecs;
     return diffInMsecs;
   }
 };
+
 
 class DTSFixedRateStrategy : public DTSCalcStrategy {
 public:
