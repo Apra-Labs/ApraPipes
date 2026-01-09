@@ -437,13 +437,13 @@ public:
 					cof->fetchAndUpdateFromDisk(mState.mVideoPath, tstart_ts, tend_ts);
 				}
 				// verify if file is updated
-				LOG_TRACE << "old endTS <" << mState.endTS << "> new endTS <" << tend_ts << ">";
+				LOG_INFO << "old endTS <" << mState.endTS << "> new endTS <" << tend_ts << ">";
 				if (mState.endTS >= tend_ts)
 				{
 					return true;
 				}
 				// open the video in reader and set pointer at correct place
-				LOG_TRACE << "REOPEN THE FILE < " << mState.mVideoPath << ">";
+				LOG_INFO << "REOPEN THE FILE < " << mState.mVideoPath << ">";
 				openVideoSetPointer(mState.mVideoPath);
 				auto seekTS = mState.direction ? mState.frameTSInMsecs + 1 : mState.frameTSInMsecs - 1;
 				auto ret = randomSeekInternal(seekTS); // also resets end
@@ -526,13 +526,14 @@ public:
 		mState.ntracks = mp4_demux_get_track_count(mState.demux);
 		for (auto i = 0; i < mState.ntracks; i++)
 		{
+			 LOG_INFO<<"no of frames in video before:"<<mState.mFramesInVideo;
 			ret = mp4_demux_get_track_info(mState.demux, i, &mState.info);
 			if (ret < 0)
 			{
 				LOG_ERROR << "mp4 track info fetch failed <" << i << "> ret<" << ret << ">";
 				continue;
 			}
-
+           
 			if (mState.info.type == MP4_TRACK_TYPE_VIDEO && mState.videotrack == -1)
 			{
 				LOG_INFO<<"video track:"<<i;
@@ -563,6 +564,7 @@ public:
 					}
 				}
 				setMp4ReaderProps(mProps);
+				LOG_INFO<<"no of frames in video after:"<<mState.mFramesInVideo;
 			}
 		}
 
@@ -969,14 +971,14 @@ public:
 		}
 		if (waitFlag)
 		{
-			LOG_TRACE << "readNextFrame: waitFlag <" << waitFlag << ">";
+			LOG_INFO << "readNextFrame: waitFlag <" << waitFlag << ">";
 			std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
 			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
 			uint64_t nowTS = dur.count();
-			LOG_TRACE << "readNextFrameInternal: nowTS <" << nowTS << "> reloadFileAfter <" << reloadFileAfter << ">";
+			LOG_INFO << "readNextFrameInternal: nowTS <" << nowTS << "> reloadFileAfter <" << reloadFileAfter << ">";
 			if (reloadFileAfter > nowTS)
 			{
-				LOG_TRACE << "waiting....";
+				LOG_INFO << "waiting....";
 				return;
 			}
 			else // no new data on reload (wait state continues) so, re-calc a new reloadFileAfter 
@@ -990,6 +992,7 @@ public:
 		if (isOpenVideoFinished())
 		{
 			LOG_INFO<<"opened video finished";
+			LOG_INFO<<"value mState.end:"<<mState.end;
 			mState.end = !mProps.parseFS;
 			initNewVideo(); // new video is init or mState.end is reached.
 		}
@@ -1008,7 +1011,7 @@ public:
 			{
 				reloadFileAfter = calcReloadFileAfter();
 				waitFlag = true; // will be reset by openVideoSetPointer or randomSeek or setPlayback
-				LOG_TRACE << "EOR reached in readNextFrame: waitFlag <" << waitFlag << ">";
+				LOG_INFO << "EOR reached in readNextFrame: waitFlag <" << waitFlag << ">";
 				LOG_INFO << "Reload File After reloadFileAfter <" << reloadFileAfter << ">";
 				//return nullptr;
 			}
@@ -1099,7 +1102,7 @@ public:
 			uint64_t sample_ts_usec = mp4_sample_time_to_usec(mState.sample.dts, mState.video.timescale);
 			frameTSInMsecs = mState.resolvedStartingTS + (sample_ts_usec / 1000);
 			mState.frameTSInMsecs = frameTSInMsecs;
-			LOG_TRACE << "readNextFrame frameTS <" << frameTSInMsecs << ">";
+			LOG_INFO << "readNextFrame frameTS <" << frameTSInMsecs << ">";
 			imageFrameSize += static_cast<size_t>(mState.sample.size);
 			metadataFrameSize = static_cast<size_t>(mState.sample.metadata_size);
 			// for metadata to be ignored - we will have metadata_buffer = nullptr and size = 0
