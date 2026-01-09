@@ -898,17 +898,12 @@ public:
 
 	bool isOpenVideoFinished()
 	{
-		ret = mp4_demux_get_track_info(mState.demux, 0, &mState.info);
-		if(mState.info.sample_count>mState.mFramesInVideo)
-		{
-			LOG_INFO<<"current file grown";
-			mState.mFramesInVideo = mState.info.sample_count;
-		}
-		
+		LOG_INFO<<"mFrameCounterIdx-00-"<<mState.mFrameCounterIdx;
+		LOG_INFO<<"mFramesInVideo-00-"<<mState.mFramesInVideo;
 		if (mState.direction && (mState.mFrameCounterIdx >= mState.mFramesInVideo))
 		{
-			LOG_INFO<<"mFrameCounterIdx"<<mState.mFrameCounterIdx;
-			LOG_INFO<<"mFramesInVideo"<<mState.mFramesInVideo;
+			LOG_INFO<<"mFrameCounterIdx-01-"<<mState.mFrameCounterIdx;
+			LOG_INFO<<"mFramesInVideo-01-"<<mState.mFramesInVideo;
 			return true;
 		}
 		if (!mState.direction && mState.mFrameCounterIdx <= -1)
