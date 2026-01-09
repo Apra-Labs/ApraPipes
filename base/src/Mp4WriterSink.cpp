@@ -32,48 +32,52 @@ public:
                  uint64_t lastFrameTS,
                  uint16_t fps) override {
 
-    LOG_INFO << "[DTS][PassThrough] Input: frameTS={}, lastFrameTS={}, fps={}",
-              frameTS, lastFrameTS, fps;
+    LOG_INFO << "[DTS][PassThrough] Input: frameTS=" << frameTS
+             << ", lastFrameTS=" << lastFrameTS
+             << ", fps=" << fps;
 
     int64_t diffInMsecs =
         static_cast<int64_t>(frameTS) - static_cast<int64_t>(lastFrameTS);
 
-    // Ideal half-frame duration = (1 / fps) / 2 seconds
+    // Half frame duration in milliseconds (minimum 1 ms)
     int64_t halfDurationInMsecs =
-        static_cast<int64_t>(1000 / (2 * fps));
+        std::max<int64_t>(1, 1000 / (2 * fps));
 
-    LOG_INFO << "[DTS][PassThrough] Initial diff={} ms, halfFrameDuration={} ms",
-              diffInMsecs, halfDurationInMsecs;
+    LOG_INFO << "[DTS][PassThrough] Initial diff=" << diffInMsecs
+             << " ms, halfFrameDuration=" << halfDurationInMsecs << " ms";
 
     if (diffInMsecs == 0) {
       LOG_INFO << "[DTS][PassThrough] Duplicate timestamp detected. "
-               "Adjusting frameTS forward by half frame duration";
+               << "Adjusting frameTS forward by half frame duration";
 
       uint64_t oldFrameTS = frameTS;
       frameTS += halfDurationInMsecs;
 
-      LOG_INFO << "[DTS][PassThrough] frameTS adjusted: {} -> {}",
-                oldFrameTS, frameTS;
+      LOG_INFO << "[DTS][PassThrough] frameTS adjusted: "
+               << oldFrameTS << " -> " << frameTS;
 
     } else if (diffInMsecs < 0) {
-      LOG_INFO << "[DTS][PassThrough] Backward timestamp detected (diff={} ms). "
-               "Clamping frameTS to lastFrameTS + half frame duration",
-               diffInMsecs;
+      LOG_INFO << "[DTS][PassThrough] Backward timestamp detected. diff="
+               << diffInMsecs << " ms. "
+               << "Clamping frameTS to lastFrameTS + half frame duration";
 
       uint64_t oldFrameTS = frameTS;
       frameTS = lastFrameTS + halfDurationInMsecs;
 
-      LOG_INFO << "[DTS][PassThrough] frameTS corrected: {} -> {}",
-                oldFrameTS, frameTS;
+      LOG_INFO << "[DTS][PassThrough] frameTS corrected: "
+               << oldFrameTS << " -> " << frameTS;
     }
 
     diffInMsecs =
         static_cast<int64_t>(frameTS) - static_cast<int64_t>(lastFrameTS);
 
-    LOG_INFO << "[DTS][PassThrough] Final DTS diff={} ms", diffInMsecs;
+    LOG_INFO << "[DTS][PassThrough] Final DTS diff="
+             << diffInMsecs << " ms";
+
     return diffInMsecs;
   }
 };
+
 
 
 class DTSFixedRateStrategy : public DTSCalcStrategy {
