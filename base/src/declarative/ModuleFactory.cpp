@@ -803,7 +803,8 @@ bool ModuleFactory::connectModules(
         }
 
         // Connect using ApraPipes API
-        // Use sieve property from connection (default: false = passthrough enabled)
+        // If sieve is explicitly set in JSON, use that value.
+        // Otherwise, use C++ API default (sieve=true in Module::setNext).
         // When sieve=false, input frames pass through along with explicit outputs
         // When sieve=true, only explicit output pins are connected
         try {
@@ -814,10 +815,12 @@ bool ModuleFactory::connectModules(
                 // The internal setNext(pinIdArr) always uses sieve=true
                 std::vector<std::string> pinIds = {srcPinId};
                 connected = srcCtx.module->setNext(dstCtx.module, pinIds);
+            } else if (conn.sieve.has_value()) {
+                // Sieve explicitly set in JSON - use specified value
+                connected = srcCtx.module->setNext(dstCtx.module, true, conn.sieve.value());
             } else {
-                // Connect all output pins with specified sieve mode
-                // open=true (connection is active), sieve=conn.sieve
-                connected = srcCtx.module->setNext(dstCtx.module, true, conn.sieve);
+                // Sieve not specified - use C++ API default (sieve=true)
+                connected = srcCtx.module->setNext(dstCtx.module, true);
             }
 
             if (!connected) {

@@ -293,28 +293,30 @@ void ensureBuiltinModulesRegistered() {
         // NOTE: Output type depends on what user specifies - this is a generic file reader
         // The outputFrameType property allows users to specify the frame type in TOML
         if (!registry.hasModule("FileReaderModule")) {
+            FileReaderModuleProps fileReaderDefaults;  // Query defaults from Props class
             registerModule<FileReaderModule, FileReaderModuleProps>()
                 .category(ModuleCategory::Source)
                 .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
                 .tags("source", "file", "reader")
                 .output("output", "Frame")  // Generic - actual type set via outputFrameType prop
                 .stringProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)", true)
-                .intProp("startIndex", "Starting file index", false, 0, 0)
-                .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, -1, -1)
-                .boolProp("readLoop", "Loop back to start when reaching end", false, true)
+                .intProp("startIndex", "Starting file index", false, fileReaderDefaults.startIndex, 0)
+                .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, fileReaderDefaults.maxIndex, -1)
+                .boolProp("readLoop", "Loop back to start when reaching end", false, fileReaderDefaults.readLoop)
                 .enumProp("outputFrameType", "Output frame type", false, "Frame",
                     "Frame", "EncodedImage", "RawImage", "RawImagePlanar");
         }
 
         // FileWriterModule - writes frames to files
         if (!registry.hasModule("FileWriterModule")) {
+            FileWriterModuleProps fileWriterDefaults;  // Query defaults from Props class
             registerModule<FileWriterModule, FileWriterModuleProps>()
                 .category(ModuleCategory::Sink)
                 .description("Writes frames to files. Supports file sequences with pattern-based naming.")
                 .tags("sink", "file", "writer")
                 .input("input", "Frame")
                 .stringProp("strFullFileNameWithPattern", "Output file path pattern (e.g., /path/frame_????.raw)", true)
-                .boolProp("append", "Append to existing files instead of overwriting", false, false);
+                .boolProp("append", "Append to existing files instead of overwriting", false, fileWriterDefaults.append);
         }
 
         // FaceDetectorXform - face detection
@@ -655,16 +657,17 @@ void ensureBuiltinModulesRegistered() {
         // AffineTransform - applies affine transformations (rotation, scale, translate)
         // Note: Creates output pin in addInputPin(), so selfManagedOutputPins is required
         if (!registry.hasModule("AffineTransform")) {
+            AffineTransformProps affineDefaults;  // Query defaults from Props class
             registerModule<AffineTransform, AffineTransformProps>()
                 .category(ModuleCategory::Transform)
                 .description("Applies affine transformations to images including rotation, scaling, and translation using OpenCV.")
                 .tags("transform", "affine", "rotate", "scale", "translate", "opencv")
                 .input("input", "RawImage")  // Only accepts RawImage (not planar)
                 .output("output", "RawImage")
-                .floatProp("angle", "Rotation angle in degrees", false, 0.0, -360.0, 360.0)
-                .intProp("x", "Horizontal translation in pixels", false, 0)
-                .intProp("y", "Vertical translation in pixels", false, 0)
-                .floatProp("scale", "Scale factor (1.0 = no scaling)", false, 1.0, 0.01, 100.0)
+                .floatProp("angle", "Rotation angle in degrees", false, affineDefaults.angle, -360.0, 360.0)
+                .intProp("x", "Horizontal translation in pixels", false, affineDefaults.x)
+                .intProp("y", "Vertical translation in pixels", false, affineDefaults.y)
+                .floatProp("scale", "Scale factor (1.0 = no scaling)", false, affineDefaults.scale, 0.01, 100.0)
                 .selfManagedOutputPins();
         }
 

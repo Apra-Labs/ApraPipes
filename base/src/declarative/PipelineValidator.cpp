@@ -333,7 +333,9 @@ PipelineValidator::Result PipelineValidator::validateProperties(const PipelineDe
                 using T = std::decay_t<decltype(val)>;
                 if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, std::vector<int64_t>>) {
                     actualType = "int";
-                    typeMatch = (propInfo.type == "int");
+                    // Allow int values for both int and float properties
+                    // JSON doesn't distinguish 45 from 45.0, so we accept ints for floats
+                    typeMatch = (propInfo.type == "int" || propInfo.type == "float");
                 } else if constexpr (std::is_same_v<T, double> || std::is_same_v<T, std::vector<double>>) {
                     actualType = "float";
                     typeMatch = (propInfo.type == "float" || propInfo.type == "int"); // Allow int for float
@@ -514,21 +516,24 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
             }
 
             // If not in outputs, check input pins (valid only with sieve=false)
+            // Note: C++ API default is sieve=true, so passthrough requires explicit sieve=false
             if (!foundInOutputs) {
                 for (const auto& pin : srcInfo->inputs) {
                     if (pin.name == conn.from_pin) {
                         foundInInputs = true;
-                        if (conn.sieve) {
-                            // Input pin used as source with sieve=true - ERROR
+                        // Input pins can only be used as source with explicit sieve=false
+                        bool sieveEnabled = conn.sieve.value_or(true);  // C++ default is true
+                        if (sieveEnabled) {
+                            // Input pin used as source with sieve=true (or default) - ERROR
                             result.issues.push_back(Issue::error(
                                 Issue::UNKNOWN_SOURCE_PIN,
                                 location,
                                 "Input pin '" + conn.from_pin + "' cannot be used as source with sieve=true. "
-                                "Input pins only pass through when sieve=false (default).",
-                                "Either remove 'sieve: true' from this connection, or use an output pin."
+                                "Input pins only pass through when sieve=false is explicitly set.",
+                                "Add 'sieve: false' to this connection to enable passthrough, or use an output pin."
                             ));
                         } else {
-                            // sieve=false: input pin passes through, valid as source
+                            // sieve=false explicitly set: input pin passes through, valid as source
                             for (const auto& ft : pin.frame_types) {
                                 srcPinTypes.push_back(ft);
                             }
@@ -548,7 +553,9 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                         suggestion += srcInfo->outputs[i].name;
                     }
                 }
-                if (!conn.sieve && !srcInfo->inputs.empty()) {
+                // Only suggest input pins if sieve=false was explicitly set
+                bool sieveExplicitlyFalse = conn.sieve.has_value() && !conn.sieve.value();
+                if (sieveExplicitlyFalse && !srcInfo->inputs.empty()) {
                     if (!suggestion.empty()) suggestion += ". ";
                     suggestion += "With sieve=false, input pins also available: ";
                     for (size_t i = 0; i < srcInfo->inputs.size(); ++i) {
@@ -571,9 +578,11 @@ PipelineValidator::Result PipelineValidator::validateConnections(const PipelineD
                 }
             }
 
-            // Sieve passthrough: with sieve=false (default), Transform modules also
+            // Sieve passthrough: with explicit sieve=false, Transform modules also
             // pass through their input types as effective outputs
-            if (!conn.sieve && srcInfo->category == ModuleCategory::Transform) {
+            // Note: C++ API default is sieve=true, so passthrough requires explicit sieve=false
+            bool sieveExplicitlyFalse = conn.sieve.has_value() && !conn.sieve.value();
+            if (sieveExplicitlyFalse && srcInfo->category == ModuleCategory::Transform) {
                 for (const auto& inputPin : srcInfo->inputs) {
                     for (const auto& ft : inputPin.frame_types) {
                         // Avoid duplicates

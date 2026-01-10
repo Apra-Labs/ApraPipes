@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <variant>
+#include <optional>
 
 namespace apra {
 
@@ -51,10 +52,11 @@ struct Connection {
     std::string to_pin;           // "input"
 
     // Sieve mode: when true, only explicit output pins are connected.
-    // When false (default), input pins also pass through to the next module.
+    // When false, input pins also pass through to the next module.
+    // When not set (nullopt), uses Module::setNext() C++ default (sieve=true).
     // This affects transform modules - with sieve=false, the input frame
     // is forwarded along with any new output frames the module creates.
-    bool sieve = false;           // default: passthrough enabled
+    std::optional<bool> sieve;    // nullopt = use C++ API default
 
     // Source location for error messages
     int source_line = -1;

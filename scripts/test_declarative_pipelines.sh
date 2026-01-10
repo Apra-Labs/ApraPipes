@@ -44,6 +44,14 @@ RUN_DURATION=2  # seconds to run each pipeline
 # Runtime mode: 'node' or 'cli'
 RUNTIME_MODE="cli"
 
+# On Linux, the Node.js addon requires GTK3 to be preloaded for OpenCV/GUI symbols
+if [[ "$(uname -s)" == "Linux" ]]; then
+    GTK3_LIB=$(ldconfig -p 2>/dev/null | grep 'libgtk-3.so.0' | awk '{print $NF}' | head -1)
+    if [[ -n "$GTK3_LIB" && -f "$GTK3_LIB" ]]; then
+        export LD_PRELOAD="$GTK3_LIB"
+    fi
+fi
+
 # Options
 VALIDATE_ONLY=false
 VERBOSE=false
