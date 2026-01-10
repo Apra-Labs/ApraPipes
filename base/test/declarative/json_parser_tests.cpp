@@ -444,7 +444,8 @@ BOOST_AUTO_TEST_CASE(MixedTypeArrayRejected)
 
 BOOST_AUTO_TEST_CASE(ConnectionSievePropertyDefault)
 {
-    // Test that sieve defaults to false when not specified
+    // Test that sieve is not set (nullopt) when not specified in JSON
+    // This allows the C++ API default (sieve=true) to be used
     auto result = apra::JsonParser::parseString(R"({
         "modules": {
             "source": { "type": "TestSignalGenerator" },
@@ -457,7 +458,7 @@ BOOST_AUTO_TEST_CASE(ConnectionSievePropertyDefault)
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
-    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+    BOOST_CHECK(!result.description.connections[0].sieve.has_value());
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionSievePropertyTrue)
@@ -475,7 +476,8 @@ BOOST_AUTO_TEST_CASE(ConnectionSievePropertyTrue)
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
-    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, true);
+    BOOST_CHECK(result.description.connections[0].sieve.has_value());
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve.value(), true);
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionSievePropertyFalse)
@@ -493,7 +495,8 @@ BOOST_AUTO_TEST_CASE(ConnectionSievePropertyFalse)
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.connections.size(), 1);
-    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+    BOOST_CHECK(result.description.connections[0].sieve.has_value());
+    BOOST_CHECK_EQUAL(result.description.connections[0].sieve.value(), false);
 }
 
 BOOST_AUTO_TEST_CASE(ConnectionMixedSieveProperties)
@@ -513,10 +516,11 @@ BOOST_AUTO_TEST_CASE(ConnectionMixedSieveProperties)
 
     BOOST_CHECK(result.success);
     BOOST_CHECK_EQUAL(result.description.connections.size(), 2);
-    // First connection: sieve defaults to false
-    BOOST_CHECK_EQUAL(result.description.connections[0].sieve, false);
+    // First connection: sieve not specified (nullopt)
+    BOOST_CHECK(!result.description.connections[0].sieve.has_value());
     // Second connection: sieve explicitly true
-    BOOST_CHECK_EQUAL(result.description.connections[1].sieve, true);
+    BOOST_CHECK(result.description.connections[1].sieve.has_value());
+    BOOST_CHECK_EQUAL(result.description.connections[1].sieve.value(), true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
