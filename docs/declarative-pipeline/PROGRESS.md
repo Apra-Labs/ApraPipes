@@ -357,15 +357,16 @@ Skipped: 3 (2 face detection models + 1 Node.js ImageEncoderCV)
 **Note:** All pipelines pass. The `14_affine_transform_demo` is skipped for Node.js runtime due to libjpeg setjmp/longjmp threading conflict, but works correctly with CLI.
 
 ### Task R5: ImageEncoderCV Node.js Fix ✅
-**Issue:** `14_affine_transform_demo` crashed with SIGSEGV in Node.js addon.
+**Issue:** `14_affine_transform_demo` crashed with SIGSEGV in Node.js addon on Linux.
 
-**Root Cause:** libjpeg's error handling uses setjmp/longjmp which conflicts with Node.js threading model. The crash occurred in `cv::imencode` within `ImageEncoderCV`.
+**Root Cause:** Node.js addon required GTK preload to resolve GtkGlRenderer symbols. GTK pulls in system libjpeg which conflicts with vcpkg's statically linked libjpeg-turbo, causing crash in `cv::imencode`.
 
-**Solution:** Updated `scripts/test_declarative_pipelines.sh` to:
-1. Auto-detect and preload GTK3 on Linux for Node.js addon
-2. Skip `14_affine_transform_demo` when using Node.js runtime (works fine with CLI)
+**Solution (commit 849c1c00f):**
+1. Created `aprapipes_node_headless` library in `base/CMakeLists.txt`
+2. Excludes GTKGL_FILES (GtkGlRenderer, etc.) from Node.js addon on Linux
+3. No GTK preload needed = no libjpeg symbol conflict
 
-**Note:** This is a known limitation of OpenCV JPEG encoding in Node.js addons. CLI runtime handles all pipelines correctly.
+**Status:** Fix committed and pushed, pending CI rebuild. Test script temporarily skips on Node.js/Linux. macOS and CLI work correctly (macOS uses Cocoa, not GTK).
 
 ---
 

@@ -327,10 +327,12 @@ get_pipeline_config() {
             echo "yes|||Affine transform chain"
             ;;
         "14_affine_transform_demo")
-            # ImageEncoderCV crashes in Node.js due to libjpeg setjmp/longjmp threading conflict
-            # Works fine with CLI runtime
-            if [ "$RUNTIME_MODE" = "node" ]; then
-                echo "skip|||Node.js: ImageEncoderCV libjpeg threading conflict"
+            # ImageEncoderCV crashes in Node.js on Linux due to GTK/libjpeg symbol conflict
+            # Fix committed: aprapipes_node_headless excludes GTK modules (commit 849c1c00f)
+            # Once CI rebuilds with fix, this skip can be removed
+            # Works fine with CLI runtime and on macOS (no GTK)
+            if [ "$RUNTIME_MODE" = "node" ] && [[ "$(uname -s)" == "Linux" ]]; then
+                echo "skip|||Node.js/Linux: GTK/libjpeg conflict (fix pending CI rebuild)"
             else
                 echo "yes|$OUTPUT_DIR/affine_*.jpg|5|Affine transform with JPEG output"
             fi

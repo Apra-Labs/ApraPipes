@@ -62,23 +62,22 @@ export LD_PRELOAD=/lib/x86_64-linux-gnu/libgtk-3.so.0
 
 ## Known Issues
 
-### Issue #7: ImageEncoderCV Node.js Segfault
-**Status:** Documented - Known Limitation
-**Affected Pipeline:** `14_affine_transform_demo`
+### Issue #7: ImageEncoderCV Node.js Segfault (Linux)
+**Status:** Fix Committed (849c1c00f) - Pending CI Rebuild
+**Affected Pipeline:** `14_affine_transform_demo` on Linux with Node.js runtime
 **Symptoms:** SIGSEGV crash in `__longjmp_chk` during `cv::imencode`
 
 **Root Cause:**
-libjpeg uses setjmp/longjmp for error handling, which conflicts with Node.js threading model. The crash occurs in OpenCV's JPEG encoding when called from a Node.js addon.
+Node.js addon required GTK preload to resolve GtkGlRenderer symbols. GTK brings in system libjpeg which conflicts with vcpkg's statically linked libjpeg-turbo, causing crash in `cv::imencode`.
 
-**Workaround:**
-- The test script skips this pipeline when using Node.js runtime
-- CLI runtime handles the pipeline correctly
-- Other pipelines using `ImageDecoderCV` (decoding) work fine in Node.js
+**Fix (commit 849c1c00f):**
+Created `aprapipes_node_headless` library on Linux that excludes GTKGL_FILES (GtkGlRenderer and display modules). Without GTK dependency, no preload needed = no libjpeg conflict.
 
-**Resolution Options:**
-1. Use PNG encoding instead of JPEG (no setjmp issue)
-2. Run JPEG encoding pipelines with CLI only
-3. Build OpenCV with libjpeg-turbo (may help)
+**Current Status:**
+- Fix committed and pushed to `feat-declarative-pipeline-v2`
+- Test script temporarily skips on Node.js/Linux until CI rebuilds
+- macOS works (uses Cocoa, not GTK)
+- CLI runtime works on all platforms
 
 ---
 
