@@ -6,6 +6,13 @@ OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
 
+# FFmpeg Assembly Optimizations
+# Default OFF: FFmpeg built without hand-written assembly, allowing static linking into shared objects (Node.js addon)
+# When ON: FFmpeg built with assembly (MMX/SSE/AVX on x64, NEON on ARM64) for better performance,
+#          but Node.js addon will exclude FFmpeg-dependent modules (RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils)
+# See docs/declarative-pipeline/BUILD_OPTIONS.md for details
+OPTION(USE_FFMPEG_ASM_OPTIMIZATIONS "Enable FFmpeg hand-written assembly optimizations (excludes FFmpeg modules from Node.js addon)" OFF)
+
 # vcpkg overlay ports are controlled via VCPKG_OVERLAY_PORTS environment variable
 # ARM64 builds set this in CI workflow to use arm64-overlay directory
 # All other builds use standard vcpkg.json versions
@@ -251,9 +258,6 @@ SET(CORE_FILES
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
-	src/RTSPClientSrc.cpp
-	src/RTSPClientSrc.cpp
-	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
@@ -319,12 +323,8 @@ SET(CORE_FILES_H
 	include/ValveModule.h
 	include/ArchiveSpaceManager.h
 	include/MultimediaQueueXform.h
-	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/Mp4ReaderSource.h
-	include/RTSPClientSrc.h
-	include/H264Metadata.h
-	include/MotionVectorExtractor.h
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
@@ -351,18 +351,34 @@ IF(ENABLE_WINDOWS)
 ENDIF(ENABLE_WINDOWS)
 
 SET(GENERIC_FILES
-	src/RTSPPusher.cpp
 	src/H264FrameDemuxer.cpp
-	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
 	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
-	include/H264ParserUtils.h
 	include/H264Utils.h
-	include/RTSPPusher.h
 	include/QRReader.h
+)
+
+# ============================================================
+# FFmpeg-Dependent Modules
+# These modules require FFmpeg and are separated to allow conditional
+# exclusion from Node.js addon when USE_FFMPEG_ASM_OPTIMIZATIONS is ON.
+# When asm optimizations are enabled, static FFmpeg cannot be linked
+# into shared objects due to -fPIC relocation issues.
+# ============================================================
+SET(FFMPEG_DEPENDENT_SOURCES
+	src/RTSPClientSrc.cpp
+	src/RTSPPusher.cpp
+	src/MotionVectorExtractor.cpp
+	src/H264ParserUtils.cpp
+)
+SET(FFMPEG_DEPENDENT_HEADERS
+	include/RTSPClientSrc.h
+	include/RTSPPusher.h
+	include/MotionVectorExtractor.h
+	include/H264ParserUtils.h
 )
 
 IF(ENABLE_LINUX)
@@ -569,6 +585,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(SOURCE
 	${CORE_FILES} ${CORE_FILES_H}
 	${GENERIC_FILES} ${GENERIC_FILES_H}
+	${FFMPEG_DEPENDENT_SOURCES} ${FFMPEG_DEPENDENT_HEADERS}
 	${IP_FILES} ${IP_FILES_H}
 )
 
@@ -1022,6 +1039,12 @@ target_include_directories(aprapipesut PRIVATE ${CMAKE_BINARY_DIR}/generated)
 # Node.js Native Addon (Optional)
 # Build with: cmake -DBUILD_NODE_ADDON=ON ...
 # Requires: node-addon-api and node-api-headers from vcpkg
+#
+# When USE_FFMPEG_ASM_OPTIMIZATIONS=ON:
+#   - FFmpeg-dependent modules are excluded from the Node.js addon
+#   - Excluded modules: RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils
+#   - This is necessary because FFmpeg with assembly optimizations cannot be
+#     statically linked into shared objects due to -fPIC relocation issues
 # ============================================================
 option(BUILD_NODE_ADDON "Build Node.js native addon (@apralabs/aprapipes)" OFF)
 
@@ -1034,6 +1057,93 @@ if(BUILD_NODE_ADDON)
 
     if(unofficial-node-addon-api_FOUND AND unofficial-node-api-headers_FOUND)
         message(STATUS "Found node-addon-api and node-api-headers")
+
+        # When ASM optimizations are enabled, we need a separate library without FFmpeg modules
+        if(USE_FFMPEG_ASM_OPTIMIZATIONS)
+            message(STATUS "USE_FFMPEG_ASM_OPTIMIZATIONS=ON: Building Node.js addon WITHOUT FFmpeg-dependent modules")
+            message(STATUS "  Excluded: RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils")
+
+            # Build source list without FFmpeg-dependent modules
+            set(NODE_COMPAT_SOURCE
+                ${CORE_FILES} ${CORE_FILES_H}
+                ${GENERIC_FILES} ${GENERIC_FILES_H}
+                ${IP_FILES} ${IP_FILES_H}
+            )
+            IF(ENABLE_CUDA)
+                set(NODE_COMPAT_SOURCE ${NODE_COMPAT_SOURCE}
+                    ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+                    ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+                )
+            ENDIF(ENABLE_CUDA)
+            # Note: GTKGL_FILES intentionally excluded from Node.js addon
+            # GtkGlRenderer is a display module not needed for headless pipelines
+            # Including it requires GTK preload which causes libjpeg symbol conflicts
+
+            # Create Node-compatible library without FFmpeg modules
+            add_library(aprapipes_node_compat STATIC ${NODE_COMPAT_SOURCE})
+
+            # Same include directories as aprapipes
+            target_include_directories(aprapipes_node_compat PRIVATE
+                ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+                ${GTK3_INCLUDE_DIRS}
+                ${VCPKG_GTK_INCLUDE_DIRS}
+                ${FFMPEG_INCLUDE_DIRS}
+                ${OpenCV_INCLUDE_DIRS}
+                ${Boost_INCLUDE_DIRS}
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+                ${CMAKE_BINARY_DIR}/generated
+                ${LIBMP4_INC_DIR}
+            )
+
+            # Add compile definition to indicate FFmpeg modules are excluded
+            target_compile_definitions(aprapipes_node_compat PRIVATE APRAPIPES_NO_FFMPEG_MODULES)
+
+            set(NODE_ADDON_APRAPIPES_LIB aprapipes_node_compat)
+            # Don't link FFmpeg libraries when using node_compat
+            set(NODE_ADDON_EXTRA_LIBS "")
+        else()
+            # On Linux, we need to exclude GTK modules from Node.js addon
+            # GTK display modules (GtkGlRenderer) can't work in Node.js anyway
+            # Including them requires GTK preload which causes libjpeg symbol conflicts
+            if(ENABLE_LINUX)
+                message(STATUS "Building Node.js addon without GTK display modules (Linux)")
+
+                # Build source list without GTK modules
+                set(NODE_HEADLESS_SOURCE
+                    ${CORE_FILES} ${CORE_FILES_H}
+                    ${GENERIC_FILES} ${GENERIC_FILES_H}
+                    ${IP_FILES} ${IP_FILES_H}
+                )
+                IF(ENABLE_CUDA)
+                    set(NODE_HEADLESS_SOURCE ${NODE_HEADLESS_SOURCE}
+                        ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+                        ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+                    )
+                ENDIF(ENABLE_CUDA)
+                # Note: GTKGL_FILES intentionally excluded - display modules not needed in Node.js
+
+                add_library(aprapipes_node_headless STATIC ${NODE_HEADLESS_SOURCE})
+                target_include_directories(aprapipes_node_headless PRIVATE
+                    ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+                    ${FFMPEG_INCLUDE_DIRS}
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+                    ${CMAKE_BINARY_DIR}/generated
+                    ${LIBMP4_INC_DIR}
+                )
+                target_compile_definitions(aprapipes_node_headless PRIVATE APRAPIPES_NO_GTK_MODULES)
+
+                set(NODE_ADDON_APRAPIPES_LIB aprapipes_node_headless)
+                set(NODE_ADDON_EXTRA_LIBS ${FFMPEG_LIBRARIES})
+            else()
+                message(STATUS "USE_FFMPEG_ASM_OPTIMIZATIONS=OFF: Building Node.js addon with all modules")
+                set(NODE_ADDON_APRAPIPES_LIB aprapipes)
+                set(NODE_ADDON_EXTRA_LIBS ${FFMPEG_LIBRARIES})
+            endif()
+        endif()
 
         set(NODE_ADDON_NAME "aprapipes_node")
 
@@ -1058,10 +1168,10 @@ if(BUILD_NODE_ADDON)
             unofficial::node-addon-api::node-addon-api
         )
 
-        # Force load aprapipes to include static module registrations (same pattern as aprapipes_cli)
+        # Force load aprapipes (or aprapipes_node_compat) to include static module registrations
         if(APPLE)
             target_link_libraries(${NODE_ADDON_NAME} PRIVATE
-                -Wl,-force_load,$<TARGET_FILE:aprapipes>
+                -Wl,-force_load,$<TARGET_FILE:${NODE_ADDON_APRAPIPES_LIB}>
             )
             # macOS: Use undefined dynamic lookup for Node symbols
             set_target_properties(${NODE_ADDON_NAME} PROPERTIES
@@ -1069,16 +1179,24 @@ if(BUILD_NODE_ADDON)
             )
         elseif(UNIX)
             target_link_libraries(${NODE_ADDON_NAME} PRIVATE
-                -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+                -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} -Wl,--no-whole-archive
             )
         else()
             target_link_libraries(${NODE_ADDON_NAME} PRIVATE
-                aprapipes
+                ${NODE_ADDON_APRAPIPES_LIB}
             )
         endif()
 
         # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
-        target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
+        # When ASM is ON, exclude FFmpeg libraries from node addon
+        if(USE_FFMPEG_ASM_OPTIMIZATIONS)
+            # Create a copy of APRA_COMMON_LIBS without FFMPEG_LIBRARIES
+            set(NODE_ADDON_LIBS ${APRA_COMMON_LIBS})
+            list(REMOVE_ITEM NODE_ADDON_LIBS ${FFMPEG_LIBRARIES})
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${NODE_ADDON_LIBS})
+        else()
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
+        endif()
 
         # Include directories (same as aprapipes target + bindings/node for wrapper headers)
         target_include_directories(${NODE_ADDON_NAME} PRIVATE
@@ -1106,6 +1224,7 @@ if(BUILD_NODE_ADDON)
         )
 
         message(STATUS "Node.js addon target: ${NODE_ADDON_NAME}")
+        message(STATUS "Node.js addon library: ${NODE_ADDON_APRAPIPES_LIB}")
     else()
         message(WARNING "Node.js addon requested but node-addon-api not found in vcpkg. Run: vcpkg install node-addon-api node-api-headers")
     endif()
