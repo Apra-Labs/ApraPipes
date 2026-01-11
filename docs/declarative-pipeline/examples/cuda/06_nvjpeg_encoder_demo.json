@@ -1,0 +1,59 @@
+{
+  "pipeline": {
+    "name": "CUDA nvJPEG Encoder Demo",
+    "description": "Demonstrates GPU-accelerated JPEG encoding using NVIDIA nvJPEG library. Encodes directly on the GPU before transferring compressed data. Output: ./data/testOutput/cuda_nvjpeg_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "upload_gpu": {
+      "type": "CudaMemCopy",
+      "props": {
+        "kind": "HostToDevice"
+      }
+    },
+    "effects": {
+      "type": "EffectsNPPI",
+      "props": {
+        "contrast": 1.1
+      }
+    },
+    "encoder": {
+      "type": "JPEGEncoderNVJPEG",
+      "props": {
+        "quality": 85
+      }
+    },
+    "download_cpu": {
+      "type": "CudaMemCopy",
+      "props": {
+        "kind": "DeviceToHost"
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_nvjpeg_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "upload_gpu" },
+    { "from": "upload_gpu", "to": "effects" },
+    { "from": "effects", "to": "encoder" },
+    { "from": "encoder", "to": "download_cpu" },
+    { "from": "download_cpu", "to": "writer" }
+  ]
+}

@@ -5,6 +5,7 @@ OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
+OPTION(BUILD_HEADLESS "Build without GTK/GUI dependencies (for headless/server environments)" OFF)
 
 # FFmpeg Assembly Optimizations
 # Default OFF: FFmpeg built without hand-written assembly, allowing static linking into shared objects (Node.js addon)
@@ -20,6 +21,7 @@ OPTION(USE_FFMPEG_ASM_OPTIMIZATIONS "Enable FFmpeg hand-written assembly optimiz
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_HAS_CUDA_HEADERS)
+	add_compile_definitions(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 # NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)
@@ -64,6 +66,15 @@ find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibLZMA REQUIRED)
+
+# libarchive is a transitive dependency of OpenCV highgui - we need to link it
+# explicitly with its dependencies (BZ2, ZLIB, LZMA) to fix static link order issues
+find_library(LIBARCHIVE_LIB NAMES archive libarchive.a
+    PATHS ${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib
+    NO_DEFAULT_PATH)
+if(LIBARCHIVE_LIB)
+    message(STATUS "Found libarchive: ${LIBARCHIVE_LIB}")
+endif()
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
@@ -96,12 +107,17 @@ IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND NOT BUILD_HEADLESS)
 	# x64 Linux uses vcpkg's GTK
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 	# Curses is needed for KeyboardListener
 	find_package(Curses REQUIRED)
+ELSEIF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND BUILD_HEADLESS)
+	# Headless build - skip GTK/GDK
+	message(STATUS "BUILD_HEADLESS=ON: Skipping GTK/GDK dependencies")
+	set(GDK3_FOUND FALSE)
+	set(GTK3_FOUND FALSE)
 ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
@@ -382,25 +398,37 @@ SET(FFMPEG_DEPENDENT_HEADERS
 )
 
 IF(ENABLE_LINUX)
-	list(APPEND CORE_FILES src/KeyboardListener.cpp)
-	list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	# VirtualCameraSink doesn't require GTK
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-	SET(GTKGL_FILES_H include/Background.h
-		include/GLUtils.h
-		include/GtkGlRenderer.h
-		include/GTKMatrix.h
-		include/GTKModel.h
-		include/GTKSetup.h
-		include/GTKView.h
-	)
-	SET(GTKGL_FILES_CPP src/Background.cpp
-		src/GtkGlRenderer.cpp
-		src/GTKMatrix.cpp
-		src/GTKModel.cpp
-		src/GTKSetup.cpp
-		src/GTKView.cpp
+
+	# KeyboardListener requires Curses - only include if not headless
+	IF(NOT BUILD_HEADLESS AND CURSES_FOUND)
+		list(APPEND CORE_FILES src/KeyboardListener.cpp)
+		list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	ENDIF()
+
+	# GTK/GL files only included if GTK3 is found (not in headless mode)
+	IF(GTK3_FOUND)
+		SET(GTKGL_FILES_H include/Background.h
+			include/GLUtils.h
+			include/GtkGlRenderer.h
+			include/GTKMatrix.h
+			include/GTKModel.h
+			include/GTKSetup.h
+			include/GTKView.h
 		)
+		SET(GTKGL_FILES_CPP src/Background.cpp
+			src/GtkGlRenderer.cpp
+			src/GTKMatrix.cpp
+			src/GTKModel.cpp
+			src/GTKSetup.cpp
+			src/GTKView.cpp
+			)
+	ELSE()
+		SET(GTKGL_FILES_H "")
+		SET(GTKGL_FILES_CPP "")
+	ENDIF()
 ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
@@ -740,10 +768,13 @@ SET(UT_FILES
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	test/gtkglrenderer_tests.cpp
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
+	# GTK-dependent tests only when GTK is available
+	IF(GTK3_FOUND)
+		list(APPEND UT_FILES test/gtkglrenderer_tests.cpp)
+	ENDIF()
 	set(GLEW_LIBRARIES
 		GLEW::GLEW
 		glfw
@@ -781,6 +812,7 @@ set(APRA_COMMON_LIBS
     ${NVJPEGLIB_L4T}
     ${CURSES_LIBRARIES}
     ${CMAKE_DL_LIBS}
+    ${LIBARCHIVE_LIB}
     ZXing::Core
     ZXing::ZXing
     BZip2::BZip2
@@ -797,7 +829,7 @@ IF(ENABLE_ARM64)
 	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
 	# x64 Linux uses vcpkg's GTK
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
@@ -911,7 +943,7 @@ IF(ENABLE_ARM64)
     target_link_libraries(aprapipes_cli PRIVATE ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
     target_include_directories(aprapipes_cli PRIVATE ${GTK3_INCLUDE_DIRS})
     target_link_libraries(aprapipes_cli PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
 ENDIF()
@@ -963,7 +995,7 @@ IF(ENABLE_ARM64)
     target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
     target_include_directories(apra_schema_generator PRIVATE ${GTK3_INCLUDE_DIRS})
     target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
 ENDIF()
@@ -1133,6 +1165,7 @@ if(BUILD_NODE_ADDON)
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
                     ${CMAKE_BINARY_DIR}/generated
                     ${LIBMP4_INC_DIR}
+                    ${NVCODEC_INCLUDE_DIR}
                 )
                 target_compile_definitions(aprapipes_node_headless PRIVATE APRAPIPES_NO_GTK_MODULES)
 
