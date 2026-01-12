@@ -352,7 +352,8 @@ void ensureBuiltinModulesRegistered() {
                 .output("output", "RawImagePlanar")
                 .intProp("width", "Frame width in pixels", true, 0, 1, 4096)
                 .intProp("height", "Frame height in pixels", true, 0, 1, 4096)
-                .stringProp("pattern", "Test pattern type: GRADIENT, CHECKERBOARD, COLOR_BARS, GRID", false, "GRADIENT");
+                .stringProp("pattern", "Test pattern type: GRADIENT, CHECKERBOARD, COLOR_BARS, GRID", false, "GRADIENT")
+                .intProp("maxFrames", "Maximum frames to generate (0 = unlimited)", false, 0, 0, INT_MAX);
         }
 
         // StatSink - might not have REGISTER_MODULE yet

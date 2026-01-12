@@ -329,10 +329,35 @@ int cmdRun(const std::string& filepath,
 
         buildResult.pipeline->run_all_threaded();
 
+        // Collect source modules to detect auto-termination
+        std::vector<boost::shared_ptr<Module>> sourceModules;
+        auto& registry = ModuleRegistry::instance();
+        for (const auto& [instanceId, entry] : buildResult.modules) {
+            auto* info = registry.getModule(entry.moduleType);
+            if (info && info->category == ModuleCategory::Source) {
+                sourceModules.push_back(entry.module);
+            }
+        }
+
         std::cout << "Pipeline running. Press Ctrl+C to stop.\n";
 
         while (g_running) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            // Check if all source modules have stopped (auto-termination)
+            if (!sourceModules.empty()) {
+                bool allSourcesStopped = true;
+                for (const auto& src : sourceModules) {
+                    if (src && src->isModuleRunning()) {
+                        allSourcesStopped = false;
+                        break;
+                    }
+                }
+                if (allSourcesStopped) {
+                    std::cout << "All source modules completed.\n";
+                    g_running = false;
+                }
+            }
         }
 
         std::cout << "Stopping pipeline...\n";

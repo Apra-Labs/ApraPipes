@@ -199,6 +199,7 @@ public:
   virtual bool term();
   virtual bool isFull();
   bool isNextModuleQueFull();
+  bool isModuleRunning() { return mRunning; }  // Public method to check if module is running
 
   void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
 

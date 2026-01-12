@@ -237,6 +237,13 @@ bool TestSignalGenerator::init()
 
 bool TestSignalGenerator::produce()
 {
+    // Check if maxFrames limit reached
+    auto props = getProps();
+    if (props.maxFrames > 0 && mDetail->frameCount >= props.maxFrames) {
+        stop();  // Stop the module gracefully (triggers EOS)
+        return true;
+    }
+
     auto mPinId = getOutputPinIdByType(FrameMetadata::RAW_IMAGE_PLANAR);
     frame_container frames;
     frame_sp frame = makeFrame(outputFrameSize);

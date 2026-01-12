@@ -8,7 +8,8 @@
       "type": "TestSignalGenerator",
       "props": {
         "width": 320,
-        "height": 240
+        "height": 240,
+        "maxFrames": 300
       }
     },
     "color_convert": {

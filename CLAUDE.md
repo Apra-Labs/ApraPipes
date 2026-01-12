@@ -2,6 +2,47 @@
 
 > Instructions for Claude Code agents working on the ApraPipes Declarative Pipeline feature.
 
+**Git Branch:** `feat-declarative-pipeline-v2`
+
+---
+
+## MANDATORY: Build and Test Before Commit
+
+**This is non-negotiable. NEVER commit code without verifying build and tests pass.**
+
+```
+1. Write code
+2. BUILD - must succeed
+3. TEST - must pass
+4. ONLY THEN commit
+```
+
+**If build directory doesn't exist or build fails:**
+- Configure and build first: `cmake -B build -S . && cmake --build build -j$(nproc)`
+- If build cannot be completed (disk full, missing deps, etc.), DO NOT COMMIT
+- Tell the user the code is ready but untested, and wait for them to build/test
+
+**If tests fail:**
+- Fix the code
+- Re-run tests
+- DO NOT COMMIT until tests pass
+
+**Verification commands before ANY commit:**
+```bash
+# 1. Build must succeed
+cmake --build build -j$(nproc)
+
+# 2. Tests must pass (at minimum, run relevant test suite)
+./build/aprapipesut --run_test="<RelevantSuite>/*" --log_level=test_suite
+
+# 3. For CLI/runtime changes, also run a quick smoke test
+./build/aprapipes_cli run <some_example.json>
+```
+
+**NO EXCEPTIONS. Untested commits waste everyone's time.**
+
+---
+
 ## 🎯 Project Goal
 
 Transform ApraPipes from imperative C++ construction to declarative JSON configuration. Users should be able to write:
@@ -179,7 +220,13 @@ cmake --build build --parallel
 
 ### 7. Commit with Conventional Message
 
+**STOP! Before committing, verify:**
+1. `cmake --build build` - Did it succeed?
+2. `./build/aprapipesut --run_test="<Suite>/*"` - Did tests pass?
+3. If NO to either, DO NOT COMMIT. Fix the issues first.
+
 ```bash
+# Only after build and tests pass:
 git add -A
 git commit -m "feat(declarative): implement A1 Core Metadata Types
 

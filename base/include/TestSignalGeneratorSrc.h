@@ -16,14 +16,15 @@ class TestSignalGeneratorProps : public ModuleProps
 {
 public:
     TestSignalGeneratorProps() {}
-    TestSignalGeneratorProps(int _width, int _height, TestPatternType _pattern = TestPatternType::GRADIENT)
-        : width(_width), height(_height), pattern(_pattern) {}
+    TestSignalGeneratorProps(int _width, int _height, TestPatternType _pattern = TestPatternType::GRADIENT, int _maxFrames = 0)
+        : width(_width), height(_height), pattern(_pattern), maxFrames(_maxFrames) {}
 
     ~TestSignalGeneratorProps() {}
 
     int width = 0;
     int height = 0;
     TestPatternType pattern = TestPatternType::GRADIENT;
+    int maxFrames = 0;  // 0 = unlimited, >0 = stop after N frames
 
     // ============================================================
     // Property Binding for Declarative Pipeline
@@ -36,6 +37,7 @@ public:
     ) {
         apra::applyProp(props.width, "width", values, true, missingRequired);
         apra::applyProp(props.height, "height", values, true, missingRequired);
+        apra::applyProp(props.maxFrames, "maxFrames", values, false, missingRequired);
 
         // Handle pattern property (optional, default GRADIENT)
         auto patternIt = values.find("pattern");
@@ -55,6 +57,7 @@ public:
     apra::ScalarPropertyValue getProperty(const std::string& propName) const {
         if (propName == "width") return static_cast<int64_t>(width);
         if (propName == "height") return static_cast<int64_t>(height);
+        if (propName == "maxFrames") return static_cast<int64_t>(maxFrames);
         if (propName == "pattern") {
             switch (pattern) {
                 case TestPatternType::GRADIENT: return std::string("GRADIENT");
@@ -84,6 +87,7 @@ private:
         ar &width;
         ar &height;
         ar &pattern;
+        ar &maxFrames;
     }
 };
 
