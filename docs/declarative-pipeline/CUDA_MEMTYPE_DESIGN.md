@@ -799,3 +799,335 @@ This design transforms the declarative framework from a passive builder into an 
 7. **Enables** future LLM-based pipeline generation
 
 The user experience changes from "must understand CUDA memory model" to "just pick the modules you want."
+
+---
+
+## Appendix A: Complete Module Specification
+
+This appendix provides exact specifications for every registered module including:
+- Input/output PIN memory types
+- Required functional tags
+- Backend tags
+
+### A.1 Memory Type Legend
+
+| MemType | Value | Description |
+|---------|-------|-------------|
+| HOST | 1 | Regular CPU memory (default) |
+| HOST_PINNED | 2 | Page-locked CPU memory |
+| CUDA_DEVICE | 3 | NVIDIA CUDA GPU memory |
+| DMABUF | 4 | DMA buffer (Linux/Jetson) |
+
+### A.2 Source Modules
+
+All source modules output to HOST memory by default.
+
+| Module | Output MemType | Function Tags | Backend Tags | Media Tags |
+|--------|---------------|---------------|--------------|------------|
+| FileReaderModule | HOST | `function:read` | `backend:cpu` | `media:file` |
+| TestSignalGenerator | HOST | `function:generate`, `function:test` | `backend:cpu` | `media:image` |
+| WebCamSource | HOST | `function:capture` | `backend:cpu`, `backend:opencv` | `media:video`, `media:camera` |
+| RTSPClientSrc | HOST | `function:capture`, `function:stream` | `backend:cpu` | `media:video`, `media:network` |
+| ExternalSourceModule | HOST | `function:inject` | `backend:cpu` | `media:any` |
+| Mp4ReaderSource | HOST | `function:read`, `function:decode` | `backend:cpu` | `media:video`, `media:file` |
+| AudioCaptureSrc | HOST | `function:capture` | `backend:cpu` | `media:audio` |
+
+### A.3 Transform Modules (CPU)
+
+| Module | Input MemType | Output MemType | Function Tags | Backend Tags |
+|--------|--------------|----------------|---------------|--------------|
+| ImageDecoderCV | HOST | HOST | `function:decode` | `backend:cpu`, `backend:opencv` |
+| ImageEncoderCV | HOST | HOST | `function:encode` | `backend:cpu`, `backend:opencv` |
+| ImageResizeCV | HOST | HOST | `function:resize` | `backend:cpu`, `backend:opencv` |
+| RotateCV | HOST | HOST | `function:rotate` | `backend:cpu`, `backend:opencv` |
+| ColorConversion | HOST | HOST | `function:color-convert` | `backend:cpu`, `backend:opencv` |
+| VirtualPTZ | HOST | HOST | `function:crop`, `function:ptz` | `backend:cpu` |
+| TextOverlayXForm | HOST | HOST | `function:overlay`, `function:text` | `backend:cpu` |
+| BrightnessContrastControl | HOST | HOST | `function:adjust`, `function:brightness`, `function:contrast` | `backend:cpu` |
+| OverlayModule | HOST | HOST | `function:overlay` | `backend:cpu` |
+| HistogramOverlay | HOST | HOST | `function:overlay`, `function:histogram` | `backend:cpu` |
+| BMPConverter | HOST | HOST | `function:encode` | `backend:cpu` |
+| AffineTransform | HOST | HOST | `function:transform`, `function:rotate`, `function:scale` | `backend:cpu`, `backend:opencv` |
+| AudioToTextXForm | HOST | HOST | `function:transcribe`, `function:speech-to-text` | `backend:cpu`, `backend:whisper` |
+
+### A.4 Transform Modules (CUDA)
+
+| Module | Input MemType | Output MemType | Function Tags | Backend Tags |
+|--------|--------------|----------------|---------------|--------------|
+| GaussianBlur | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:blur` | `backend:cuda`, `backend:npp` |
+| ResizeNPPI | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:resize` | `backend:cuda`, `backend:npp` |
+| RotateNPPI | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:rotate` | `backend:cuda`, `backend:npp` |
+| CCNPPI | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:color-convert` | `backend:cuda`, `backend:npp` |
+| EffectsNPPI | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:adjust`, `function:effects` | `backend:cuda`, `backend:npp` |
+| OverlayNPPI | **CUDA_DEVICE** | **CUDA_DEVICE** | `function:overlay` | `backend:cuda`, `backend:npp` |
+| JPEGDecoderNVJPEG | HOST | **CUDA_DEVICE** | `function:decode` | `backend:cuda`, `backend:nvjpeg` |
+| JPEGEncoderNVJPEG | **CUDA_DEVICE** | HOST | `function:encode` | `backend:cuda`, `backend:nvjpeg` |
+| H264Decoder | HOST | HOST* | `function:decode` | `backend:cpu` |
+
+*Note: H264Decoder outputs HOST on x64, DMABUF on ARM64/Jetson.
+
+### A.5 Analytics Modules
+
+| Module | Input MemType | Output MemType | Function Tags | Backend Tags |
+|--------|--------------|----------------|---------------|--------------|
+| FaceDetectorXform | HOST | HOST | `function:detect`, `function:face` | `backend:cpu`, `backend:opencv` |
+| QRReader | HOST | HOST | `function:detect`, `function:qr`, `function:barcode` | `backend:cpu` |
+| CalcHistogramCV | HOST | HOST | `function:analyze`, `function:histogram` | `backend:cpu`, `backend:opencv` |
+| FacialLandmarkCV | HOST | HOST | `function:detect`, `function:face`, `function:landmarks` | `backend:cpu`, `backend:opencv` |
+| MotionVectorExtractor | HOST | HOST | `function:analyze`, `function:motion` | `backend:cpu` |
+
+### A.6 Sink Modules
+
+All sink modules accept HOST memory by default.
+
+| Module | Input MemType | Function Tags | Backend Tags | Media Tags |
+|--------|--------------|---------------|--------------|------------|
+| FileWriterModule | HOST | `function:write` | `backend:cpu` | `media:file` |
+| StatSink | HOST | `function:stats`, `function:debug` | `backend:cpu` | — |
+| Mp4WriterSink | HOST | `function:write`, `function:encode` | `backend:cpu` | `media:video`, `media:file` |
+| ExternalSinkModule | HOST | `function:export` | `backend:cpu` | `media:any` |
+| RTSPPusher | HOST | `function:stream`, `function:push` | `backend:cpu` | `media:video`, `media:network` |
+| ThumbnailListGenerator | HOST | `function:generate`, `function:thumbnail` | `backend:cpu` | `media:image` |
+| VirtualCameraSink | HOST | `function:output` | `backend:cpu`, `backend:v4l2` | `media:video`, `media:camera` |
+
+### A.7 Utility Modules
+
+| Module | Input MemType | Output MemType | Function Tags | Backend Tags | Notes |
+|--------|--------------|----------------|---------------|--------------|-------|
+| ValveModule | HOST | HOST | `function:control`, `function:flow` | `backend:cpu` | Pass-through |
+| Split | HOST | HOST | `function:split`, `function:route` | `backend:cpu` | Pass-through |
+| Merge | HOST | HOST | `function:merge`, `function:sync` | `backend:cpu` | Pass-through |
+| MultimediaQueueXform | HOST | HOST | `function:buffer`, `function:queue` | `backend:cpu` | Pass-through |
+| FramesMuxer | HOST | HOST | `function:mux`, `function:sync` | `backend:cpu` | Pass-through |
+| ArchiveSpaceManager | — | — | `function:manage`, `function:storage` | `backend:cpu` | No pins |
+| **CudaMemCopy** | **DYNAMIC** | **DYNAMIC** | `function:transfer` | `backend:cuda` | See A.8 |
+| CudaStreamSynchronize | CUDA_DEVICE | CUDA_DEVICE | `function:sync` | `backend:cuda` | Pass-through |
+| MemTypeConversion | DYNAMIC | DYNAMIC | `function:transfer`, `function:convert` | `backend:cuda` | See A.8 |
+| CuCtxSynchronize | CUDA_DEVICE | CUDA_DEVICE | `function:sync` | `backend:cuda` | Pass-through |
+
+### A.8 Memory Transfer Modules (Special Handling)
+
+These modules change memory type based on their properties.
+
+#### CudaMemCopy
+
+| props.kind | Input MemType | Output MemType |
+|------------|--------------|----------------|
+| HostToDevice | HOST | CUDA_DEVICE |
+| DeviceToHost | CUDA_DEVICE | HOST |
+| DeviceToDevice | CUDA_DEVICE | CUDA_DEVICE |
+
+#### MemTypeConversion
+
+| props.outputMemType | Input MemType | Output MemType |
+|--------------------|--------------|----------------|
+| HOST | ANY | HOST |
+| DEVICE | ANY | CUDA_DEVICE |
+| DMA | ANY | DMABUF |
+
+### A.9 Linux-Only Modules
+
+| Module | Input MemType | Output MemType | Function Tags | Backend Tags |
+|--------|--------------|----------------|---------------|--------------|
+| VirtualCameraSink | HOST | — | `function:output` | `backend:cpu`, `backend:v4l2` |
+| H264EncoderV4L2 | HOST | HOST | `function:encode` | `backend:cpu`, `backend:v4l2` |
+
+### A.10 Format Tags
+
+| Module | Format Tags |
+|--------|-------------|
+| ImageDecoderCV | `format:jpeg`, `format:png`, `format:bmp` |
+| ImageEncoderCV | `format:jpeg`, `format:png` |
+| JPEGDecoderNVJPEG | `format:jpeg` |
+| JPEGEncoderNVJPEG | `format:jpeg` |
+| BMPConverter | `format:bmp` |
+| Mp4ReaderSource | `format:mp4`, `format:h264` |
+| Mp4WriterSink | `format:mp4`, `format:h264` |
+| H264Decoder | `format:h264` |
+| H264EncoderV4L2 | `format:h264` |
+| RTSPClientSrc | `format:h264`, `format:rtsp` |
+| RTSPPusher | `format:h264`, `format:rtsp` |
+
+---
+
+## Appendix B: Functional Equivalence Groups
+
+Modules with the same `function:*` tag are functionally equivalent and can be suggested as alternatives.
+
+### B.1 Resize Group (`function:resize`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| ImageResizeCV | cpu, opencv | HOST |
+| ResizeNPPI | cuda, npp | CUDA_DEVICE |
+
+**Auto-suggestion**: When ImageResizeCV breaks a CUDA chain, suggest ResizeNPPI.
+
+### B.2 Rotate Group (`function:rotate`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| RotateCV | cpu, opencv | HOST |
+| RotateNPPI | cuda, npp | CUDA_DEVICE |
+| AffineTransform | cpu, opencv | HOST |
+
+**Auto-suggestion**: When RotateCV breaks a CUDA chain, suggest RotateNPPI.
+
+### B.3 Color Convert Group (`function:color-convert`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| ColorConversion | cpu, opencv | HOST |
+| CCNPPI | cuda, npp | CUDA_DEVICE |
+
+**Auto-suggestion**: When ColorConversion breaks a CUDA chain, suggest CCNPPI.
+
+### B.4 Blur Group (`function:blur`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| GaussianBlur | cuda, npp | CUDA_DEVICE |
+
+**Note**: No CPU equivalent registered. Consider registering a CPU blur module in future.
+
+### B.5 Encode Group (`function:encode`)
+
+| Module | Backend | Format | Input MemType |
+|--------|---------|--------|---------------|
+| ImageEncoderCV | cpu, opencv | jpeg, png | HOST |
+| JPEGEncoderNVJPEG | cuda, nvjpeg | jpeg | CUDA_DEVICE |
+| BMPConverter | cpu | bmp | HOST |
+| H264EncoderV4L2 | cpu, v4l2 | h264 | HOST |
+
+### B.6 Decode Group (`function:decode`)
+
+| Module | Backend | Format | Output MemType |
+|--------|---------|--------|----------------|
+| ImageDecoderCV | cpu, opencv | jpeg, png, bmp | HOST |
+| JPEGDecoderNVJPEG | cuda, nvjpeg | jpeg | CUDA_DEVICE |
+| H264Decoder | cpu | h264 | HOST |
+
+### B.7 Overlay Group (`function:overlay`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| OverlayModule | cpu | HOST |
+| TextOverlayXForm | cpu | HOST |
+| HistogramOverlay | cpu | HOST |
+| OverlayNPPI | cuda, npp | CUDA_DEVICE |
+
+### B.8 Adjust/Effects Group (`function:adjust`)
+
+| Module | Backend | MemType |
+|--------|---------|---------|
+| BrightnessContrastControl | cpu | HOST |
+| EffectsNPPI | cuda, npp | CUDA_DEVICE |
+
+---
+
+## Appendix C: Implementation Checklist
+
+### C.1 Phase 1: PIN MemType Registration
+
+Update `ModuleRegistrations.cpp` to add memType to each PIN:
+
+```cpp
+// Example change needed:
+.input("input", "RawImage")  // Current
+.input("input", "RawImage", FrameMetadata::HOST)  // New (explicit)
+.input("input", "RawImage", FrameMetadata::CUDA_DEVICE)  // For CUDA modules
+```
+
+**Files to modify:**
+- `base/include/declarative/ModuleRegistry.h` - Add memType to PinInfo struct
+- `base/include/declarative/ModuleRegistrationBuilder.h` - Add memType parameter to input()/output()
+- `base/src/declarative/ModuleRegistrations.cpp` - Update all 50+ module registrations
+
+**Modules requiring CUDA_DEVICE:**
+- [ ] GaussianBlur (input + output)
+- [ ] ResizeNPPI (input + output)
+- [ ] RotateNPPI (input + output)
+- [ ] CCNPPI (input + output)
+- [ ] EffectsNPPI (input + output)
+- [ ] OverlayNPPI (input + output)
+- [ ] JPEGDecoderNVJPEG (output only)
+- [ ] JPEGEncoderNVJPEG (input only)
+- [ ] CudaStreamSynchronize (input + output)
+- [ ] CuCtxSynchronize (input + output)
+
+**Modules requiring DYNAMIC handling:**
+- [ ] CudaMemCopy - output depends on props.kind
+- [ ] MemTypeConversion - output depends on props.outputMemType
+
+### C.2 Phase 2: Functional Tags
+
+Add tags to all module registrations:
+
+**Modules needing `function:resize`:**
+- [ ] ImageResizeCV
+- [ ] ResizeNPPI
+
+**Modules needing `function:rotate`:**
+- [ ] RotateCV
+- [ ] RotateNPPI
+- [ ] AffineTransform
+
+**Modules needing `function:color-convert`:**
+- [ ] ColorConversion
+- [ ] CCNPPI
+
+**Modules needing `function:blur`:**
+- [ ] GaussianBlur
+
+**Modules needing `function:encode`:**
+- [ ] ImageEncoderCV
+- [ ] JPEGEncoderNVJPEG
+- [ ] BMPConverter
+- [ ] H264EncoderV4L2
+
+**Modules needing `function:decode`:**
+- [ ] ImageDecoderCV
+- [ ] JPEGDecoderNVJPEG
+- [ ] H264Decoder
+
+**Modules needing `function:overlay`:**
+- [ ] OverlayModule
+- [ ] TextOverlayXForm
+- [ ] HistogramOverlay
+- [ ] OverlayNPPI
+
+**Modules needing `function:adjust`:**
+- [ ] BrightnessContrastControl
+- [ ] EffectsNPPI
+
+**Modules needing `function:detect`:**
+- [ ] FaceDetectorXform
+- [ ] QRReader
+- [ ] FacialLandmarkCV
+
+**Modules needing `function:transfer`:**
+- [ ] CudaMemCopy
+- [ ] MemTypeConversion
+
+### C.3 Phase 3: Backend Tags
+
+All CPU modules need: `backend:cpu`
+OpenCV modules additionally need: `backend:opencv`
+CUDA modules need: `backend:cuda`
+NPP modules additionally need: `backend:npp`
+nvJPEG modules additionally need: `backend:nvjpeg`
+V4L2 modules need: `backend:v4l2`
+
+### C.4 Unit Test Checklist
+
+- [ ] Test memType stored correctly in registry for each module
+- [ ] Test tag queries return correct module sets
+- [ ] Test functional equivalence queries (resize: ImageResizeCV + ResizeNPPI)
+- [ ] Test backend filtering (cuda + resize = ResizeNPPI only)
+- [ ] Test MemTypeAnalyzer identifies HOST→CUDA_DEVICE mismatches
+- [ ] Test MemTypeAnalyzer identifies CUDA_DEVICE→HOST mismatches
+- [ ] Test auto-bridge insertion for simple CUDA pipeline
+- [ ] Test auto-bridge insertion for multi-CUDA pipeline (only 2 bridges)
+- [ ] Test suboptimal pattern detection (CPU in CUDA chain)
+- [ ] Test suggestion generation (ResizeNPPI for ImageResizeCV)
+- [ ] Integration test: CUDA pipeline produces output files
