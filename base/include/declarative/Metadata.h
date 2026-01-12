@@ -9,6 +9,8 @@
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include "FrameMetadata.h"
+#include "ImageMetadata.h"
 
 namespace apra {
 
@@ -31,36 +33,9 @@ enum class ModuleCategory {
     Utility       // Helper modules (queue, tee, mux)
 };
 
-// ============================================================
-// Memory Type (mirrors FrameMetadata::MemType for constexpr use)
-// Values MUST match FrameMetadata::MemType exactly
-// ============================================================
-enum class MemType {
-    HOST = 1,           // Regular CPU memory (default)
-    HOST_PINNED = 2,    // Page-locked CPU memory (faster CUDA transfers)
-    CUDA_DEVICE = 3,    // NVIDIA CUDA GPU memory
-    DMABUF = 4          // DMA buffer (Linux/Jetson)
-};
-
-// ============================================================
-// Image Type (mirrors ImageMetadata::ImageType for constexpr use)
-// Values MUST match ImageMetadata::ImageType exactly
-// Used to declare pixel format requirements for pins
-// ============================================================
-enum class ImageType {
-    UNSET = 0,      // No specific format required
-    MONO = 1,       // Grayscale
-    BGR = 2,        // Interleaved BGR
-    BGRA = 3,       // Interleaved BGRA
-    RGB = 4,        // Interleaved RGB
-    RGBA = 5,       // Interleaved RGBA
-    YUV411_I = 10,  // Interleaved YUV411
-    YUV444 = 11,    // Planar YUV444
-    YUV420 = 12,    // Planar YUV420
-    UYVY = 13,      // Interleaved UYVY
-    YUYV = 14,      // Interleaved YUYV
-    NV12 = 15       // NV12 (Y plane + interleaved UV)
-};
+// Use the canonical types from existing headers - no duplication
+using MemType = FrameMetadata::MemType;
+using ImageType = ImageMetadata::ImageType;
 
 // ============================================================
 // Pin Definition
@@ -77,7 +52,7 @@ struct PinDef {
     size_t frame_type_count = 0;
     bool required = true;
     std::string_view description = "";
-    MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
+    MemType memType = FrameMetadata::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
 
     // Supported pixel formats (empty = any format accepted)
     std::array<ImageType, MAX_IMAGE_TYPES> image_types{};
@@ -120,7 +95,7 @@ struct PinDef {
         std::string_view frame_type,
         bool required_ = true,
         std::string_view description_ = "",
-        MemType memType_ = MemType::HOST
+        MemType memType_ = FrameMetadata::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -138,7 +113,7 @@ struct PinDef {
         std::string_view ft1, std::string_view ft2,
         bool required_ = true,
         std::string_view description_ = "",
-        MemType memType_ = MemType::HOST
+        MemType memType_ = FrameMetadata::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -157,7 +132,7 @@ struct PinDef {
         std::string_view ft1, std::string_view ft2, std::string_view ft3,
         bool required_ = true,
         std::string_view description_ = "",
-        MemType memType_ = MemType::HOST
+        MemType memType_ = FrameMetadata::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -178,7 +153,7 @@ struct PinDef {
         std::string_view ft3, std::string_view ft4,
         bool required_ = true,
         std::string_view description_ = "",
-        MemType memType_ = MemType::HOST
+        MemType memType_ = FrameMetadata::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -199,7 +174,7 @@ struct PinDef {
         std::string_view frame_type,
         std::string_view description_ = ""
     ) {
-        return create(name_, frame_type, true, description_, MemType::CUDA_DEVICE);
+        return create(name_, frame_type, true, description_, FrameMetadata::CUDA_DEVICE);
     }
 
     static constexpr PinDef cudaOutput(
@@ -207,7 +182,7 @@ struct PinDef {
         std::string_view frame_type,
         std::string_view description_ = ""
     ) {
-        return create(name_, frame_type, true, description_, MemType::CUDA_DEVICE);
+        return create(name_, frame_type, true, description_, FrameMetadata::CUDA_DEVICE);
     }
 
     // Builder method to add image type restrictions

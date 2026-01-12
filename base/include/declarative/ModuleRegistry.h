@@ -50,7 +50,7 @@ struct ModuleInfo {
         std::vector<std::string> frame_types;
         bool required = true;
         std::string description;
-        MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
+        MemType memType = FrameMetadata::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
         std::vector<ImageType> image_types;  // Supported pixel formats (empty = any)
     };
     std::vector<PinInfo> inputs;
@@ -200,18 +200,18 @@ inline ModuleInfo::PinInfo toPinInfo(const PinDef& pin) {
 // Convert ImageType to string
 inline std::string imageTypeToString(ImageType type) {
     switch (type) {
-        case ImageType::UNSET: return "UNSET";
-        case ImageType::MONO: return "MONO";
-        case ImageType::BGR: return "BGR";
-        case ImageType::BGRA: return "BGRA";
-        case ImageType::RGB: return "RGB";
-        case ImageType::RGBA: return "RGBA";
-        case ImageType::YUV411_I: return "YUV411_I";
-        case ImageType::YUV444: return "YUV444";
-        case ImageType::YUV420: return "YUV420";
-        case ImageType::UYVY: return "UYVY";
-        case ImageType::YUYV: return "YUYV";
-        case ImageType::NV12: return "NV12";
+        case ImageMetadata::UNSET: return "UNSET";
+        case ImageMetadata::MONO: return "MONO";
+        case ImageMetadata::BGR: return "BGR";
+        case ImageMetadata::BGRA: return "BGRA";
+        case ImageMetadata::RGB: return "RGB";
+        case ImageMetadata::RGBA: return "RGBA";
+        case ImageMetadata::YUV411_I: return "YUV411_I";
+        case ImageMetadata::YUV444: return "YUV444";
+        case ImageMetadata::YUV420: return "YUV420";
+        case ImageMetadata::UYVY: return "UYVY";
+        case ImageMetadata::YUYV: return "YUYV";
+        case ImageMetadata::NV12: return "NV12";
     }
     return "unknown";
 }
@@ -231,10 +231,10 @@ inline std::string propTypeToString(PropDef::Type type) {
 // Convert MemType to string
 inline std::string memTypeToString(MemType type) {
     switch (type) {
-        case MemType::HOST: return "HOST";
-        case MemType::HOST_PINNED: return "HOST_PINNED";
-        case MemType::CUDA_DEVICE: return "CUDA_DEVICE";
-        case MemType::DMABUF: return "DMABUF";
+        case FrameMetadata::HOST: return "HOST";
+        case FrameMetadata::HOST_PINNED: return "HOST_PINNED";
+        case FrameMetadata::CUDA_DEVICE: return "CUDA_DEVICE";
+        case FrameMetadata::DMABUF: return "DMABUF";
     }
     return "unknown";
 }

@@ -533,10 +533,10 @@ BOOST_AUTO_TEST_CASE(CategoryToString_ReturnsCorrectStrings)
 
 BOOST_AUTO_TEST_CASE(MemTypeToString_ReturnsCorrectStrings)
 {
-    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::HOST), "HOST");
-    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::HOST_PINNED), "HOST_PINNED");
-    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::CUDA_DEVICE), "CUDA_DEVICE");
-    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::DMABUF), "DMABUF");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(FrameMetadata::HOST), "HOST");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(FrameMetadata::HOST_PINNED), "HOST_PINNED");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(FrameMetadata::CUDA_DEVICE), "CUDA_DEVICE");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(FrameMetadata::DMABUF), "DMABUF");
 }
 
 BOOST_FIXTURE_TEST_CASE(PinInfo_HasCorrectMemType_CUDA, RegistryFixture)
@@ -550,12 +550,12 @@ BOOST_FIXTURE_TEST_CASE(PinInfo_HasCorrectMemType_CUDA, RegistryFixture)
     // Check input pin has CUDA_DEVICE memType
     BOOST_REQUIRE_EQUAL(module->inputs.size(), 1);
     BOOST_CHECK_EQUAL(module->inputs[0].name, "input");
-    BOOST_CHECK(module->inputs[0].memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK(module->inputs[0].memType == FrameMetadata::CUDA_DEVICE);
 
     // Check output pin has CUDA_DEVICE memType
     BOOST_REQUIRE_EQUAL(module->outputs.size(), 1);
     BOOST_CHECK_EQUAL(module->outputs[0].name, "output");
-    BOOST_CHECK(module->outputs[0].memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK(module->outputs[0].memType == FrameMetadata::CUDA_DEVICE);
 }
 
 BOOST_FIXTURE_TEST_CASE(PinInfo_HasDefaultHostMemType, RegistryFixture)
@@ -568,18 +568,18 @@ BOOST_FIXTURE_TEST_CASE(PinInfo_HasDefaultHostMemType, RegistryFixture)
 
     // Check input pin defaults to HOST memType
     BOOST_REQUIRE_EQUAL(module->inputs.size(), 1);
-    BOOST_CHECK(module->inputs[0].memType == MemType::HOST);
+    BOOST_CHECK(module->inputs[0].memType == FrameMetadata::HOST);
 
     // Check output pin defaults to HOST memType
     BOOST_REQUIRE_EQUAL(module->outputs.size(), 1);
-    BOOST_CHECK(module->outputs[0].memType == MemType::HOST);
+    BOOST_CHECK(module->outputs[0].memType == FrameMetadata::HOST);
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_CudaInput_SetsCorrectMemType)
 {
     // Test the cudaInput convenience method
     constexpr auto pin = PinDef::cudaInput("test_input", "RawImage", "Test input");
-    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK(pin.memType == FrameMetadata::CUDA_DEVICE);
     BOOST_CHECK_EQUAL(std::string_view(pin.name), "test_input");
     BOOST_CHECK_EQUAL(std::string_view(pin.frame_types[0]), "RawImage");
 }
@@ -588,7 +588,7 @@ BOOST_AUTO_TEST_CASE(PinDef_CudaOutput_SetsCorrectMemType)
 {
     // Test the cudaOutput convenience method
     constexpr auto pin = PinDef::cudaOutput("test_output", "RawImage", "Test output");
-    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK(pin.memType == FrameMetadata::CUDA_DEVICE);
     BOOST_CHECK_EQUAL(std::string_view(pin.name), "test_output");
     BOOST_CHECK_EQUAL(std::string_view(pin.frame_types[0]), "RawImage");
 }
@@ -596,24 +596,24 @@ BOOST_AUTO_TEST_CASE(PinDef_CudaOutput_SetsCorrectMemType)
 BOOST_AUTO_TEST_CASE(PinDef_Create_WithExplicitMemType)
 {
     // Test create() with explicit memType parameter
-    constexpr auto hostPin = PinDef::create("host_pin", "Frame", true, "Host pin", MemType::HOST);
-    BOOST_CHECK(hostPin.memType == MemType::HOST);
+    constexpr auto hostPin = PinDef::create("host_pin", "Frame", true, "Host pin", FrameMetadata::HOST);
+    BOOST_CHECK(hostPin.memType == FrameMetadata::HOST);
 
-    constexpr auto cudaPin = PinDef::create("cuda_pin", "Frame", true, "CUDA pin", MemType::CUDA_DEVICE);
-    BOOST_CHECK(cudaPin.memType == MemType::CUDA_DEVICE);
+    constexpr auto cudaPin = PinDef::create("cuda_pin", "Frame", true, "CUDA pin", FrameMetadata::CUDA_DEVICE);
+    BOOST_CHECK(cudaPin.memType == FrameMetadata::CUDA_DEVICE);
 
-    constexpr auto pinnedPin = PinDef::create("pinned_pin", "Frame", true, "Pinned pin", MemType::HOST_PINNED);
-    BOOST_CHECK(pinnedPin.memType == MemType::HOST_PINNED);
+    constexpr auto pinnedPin = PinDef::create("pinned_pin", "Frame", true, "Pinned pin", FrameMetadata::HOST_PINNED);
+    BOOST_CHECK(pinnedPin.memType == FrameMetadata::HOST_PINNED);
 
-    constexpr auto dmaPin = PinDef::create("dma_pin", "Frame", true, "DMA pin", MemType::DMABUF);
-    BOOST_CHECK(dmaPin.memType == MemType::DMABUF);
+    constexpr auto dmaPin = PinDef::create("dma_pin", "Frame", true, "DMA pin", FrameMetadata::DMABUF);
+    BOOST_CHECK(dmaPin.memType == FrameMetadata::DMABUF);
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_Create_DefaultsToHost)
 {
     // Test that create() defaults to HOST when no memType is specified
     constexpr auto pin = PinDef::create("default_pin", "Frame", true, "Default pin");
-    BOOST_CHECK(pin.memType == MemType::HOST);
+    BOOST_CHECK(pin.memType == FrameMetadata::HOST);
 }
 
 // ============================================================
@@ -622,36 +622,36 @@ BOOST_AUTO_TEST_CASE(PinDef_Create_DefaultsToHost)
 
 BOOST_AUTO_TEST_CASE(ImageTypeToString_ReturnsCorrectStrings)
 {
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::UNSET), "UNSET");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::MONO), "MONO");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::BGR), "BGR");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::BGRA), "BGRA");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::RGB), "RGB");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::RGBA), "RGBA");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::YUV420), "YUV420");
-    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::NV12), "NV12");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::UNSET), "UNSET");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::MONO), "MONO");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::BGR), "BGR");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::BGRA), "BGRA");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::RGB), "RGB");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::RGBA), "RGBA");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::YUV420), "YUV420");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageMetadata::NV12), "NV12");
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_WithImageTypes_SingleType)
 {
     // Test withImageTypes with a single image type
-    constexpr auto pin = PinDef::create("input", "RawImage").withImageTypes(ImageType::BGR);
+    constexpr auto pin = PinDef::create("input", "RawImage").withImageTypes(ImageMetadata::BGR);
     BOOST_CHECK_EQUAL(pin.image_type_count, 1);
-    BOOST_CHECK(pin.image_types[0] == ImageType::BGR);
-    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
-    BOOST_CHECK(!pin.acceptsImageType(ImageType::RGB));
+    BOOST_CHECK(pin.image_types[0] == ImageMetadata::BGR);
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::BGR));
+    BOOST_CHECK(!pin.acceptsImageType(ImageMetadata::RGB));
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_WithImageTypes_MultipleTypes)
 {
     // Test withImageTypes with multiple image types
     constexpr auto pin = PinDef::create("input", "RawImage")
-        .withImageTypes(ImageType::BGR, ImageType::RGB, ImageType::MONO);
+        .withImageTypes(ImageMetadata::BGR, ImageMetadata::RGB, ImageMetadata::MONO);
     BOOST_CHECK_EQUAL(pin.image_type_count, 3);
-    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::RGB));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::MONO));
-    BOOST_CHECK(!pin.acceptsImageType(ImageType::NV12));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::BGR));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::RGB));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::MONO));
+    BOOST_CHECK(!pin.acceptsImageType(ImageMetadata::NV12));
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_NoImageTypes_AcceptsAny)
@@ -660,17 +660,17 @@ BOOST_AUTO_TEST_CASE(PinDef_NoImageTypes_AcceptsAny)
     constexpr auto pin = PinDef::create("input", "RawImage");
     BOOST_CHECK_EQUAL(pin.image_type_count, 0);
     BOOST_CHECK(!pin.hasImageTypeRestrictions());
-    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::RGB));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::NV12));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::UNSET));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::BGR));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::RGB));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::NV12));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::UNSET));
 }
 
 BOOST_AUTO_TEST_CASE(PinDef_HasImageTypeRestrictions)
 {
     // Test hasImageTypeRestrictions method
     constexpr auto pinWithTypes = PinDef::create("input", "RawImage")
-        .withImageTypes(ImageType::BGR);
+        .withImageTypes(ImageMetadata::BGR);
     constexpr auto pinWithoutTypes = PinDef::create("input", "RawImage");
 
     BOOST_CHECK(pinWithTypes.hasImageTypeRestrictions());
@@ -681,12 +681,12 @@ BOOST_AUTO_TEST_CASE(PinDef_CudaWithImageTypes)
 {
     // Test combining CUDA memType with imageTypes
     constexpr auto pin = PinDef::cudaInput("input", "RawImage")
-        .withImageTypes(ImageType::NV12, ImageType::YUV420);
-    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+        .withImageTypes(ImageMetadata::NV12, ImageMetadata::YUV420);
+    BOOST_CHECK(pin.memType == FrameMetadata::CUDA_DEVICE);
     BOOST_CHECK_EQUAL(pin.image_type_count, 2);
-    BOOST_CHECK(pin.acceptsImageType(ImageType::NV12));
-    BOOST_CHECK(pin.acceptsImageType(ImageType::YUV420));
-    BOOST_CHECK(!pin.acceptsImageType(ImageType::BGR));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::NV12));
+    BOOST_CHECK(pin.acceptsImageType(ImageMetadata::YUV420));
+    BOOST_CHECK(!pin.acceptsImageType(ImageMetadata::BGR));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

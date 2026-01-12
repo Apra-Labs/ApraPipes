@@ -152,7 +152,7 @@ public:
     }
 
     CudaModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType,
-                                         MemType memType = MemType::HOST) {
+                                         MemType memType = FrameMetadata::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
@@ -164,11 +164,11 @@ public:
 
     // Convenience method for CUDA input pins
     CudaModuleRegistrationBuilder& cudaInput(const std::string& pinName, const std::string& frameType) {
-        return input(pinName, frameType, MemType::CUDA_DEVICE);
+        return input(pinName, frameType, FrameMetadata::CUDA_DEVICE);
     }
 
     CudaModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType,
-                                          MemType memType = MemType::HOST) {
+                                          MemType memType = FrameMetadata::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
@@ -180,7 +180,7 @@ public:
 
     // Convenience method for CUDA output pins
     CudaModuleRegistrationBuilder& cudaOutput(const std::string& pinName, const std::string& frameType) {
-        return output(pinName, frameType, MemType::CUDA_DEVICE);
+        return output(pinName, frameType, FrameMetadata::CUDA_DEVICE);
     }
 
     // Set image types on the last input pin
@@ -889,7 +889,7 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Decodes H.264/AVC encoded video frames to raw image frames.")
                 .tags("decoder", "h264", "video", "transform", "cuda")
-                .input("input", "H264Frame", MemType::HOST)
+                .input("input", "H264Frame", FrameMetadata::HOST)
                 .cudaOutput("output", "RawImagePlanar");
         }
 
@@ -1104,7 +1104,7 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Decodes JPEG images using NVIDIA nvJPEG library.")
                 .tags("decoder", "jpeg", "image", "cuda", "nvjpeg")
-                .input("input", "EncodedImage", MemType::HOST)
+                .input("input", "EncodedImage", FrameMetadata::HOST)
                 .cudaOutput("output", "RawImage")
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     JPEGDecoderNVJPEGProps moduleProps(stream);
@@ -1120,7 +1120,7 @@ void ensureBuiltinModulesRegistered() {
                 .description("Encodes images to JPEG using NVIDIA nvJPEG library.")
                 .tags("encoder", "jpeg", "image", "cuda", "nvjpeg")
                 .cudaInput("input", "RawImage")
-                .output("output", "EncodedImage", MemType::HOST)
+                .output("output", "EncodedImage", FrameMetadata::HOST)
                 .intProp("quality", "JPEG quality (1-100)", false, 90, 1, 100)
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     JPEGEncoderNVJPEGProps moduleProps(stream);
