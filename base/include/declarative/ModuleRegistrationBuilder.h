@@ -262,6 +262,46 @@ public:
     }
 
     // ============================================================
+    // Image Type methods (set allowed pixel formats on last-added pin)
+    // ============================================================
+
+    // Set image types on the last input pin
+    template<typename... ImageTypes>
+    ModuleRegistrationBuilder& inputImageTypes(ImageTypes... types) {
+        if (!info_.inputs.empty()) {
+            (info_.inputs.back().image_types.push_back(types), ...);
+        }
+        return *this;
+    }
+
+    // Set image types on the last output pin
+    template<typename... ImageTypes>
+    ModuleRegistrationBuilder& outputImageTypes(ImageTypes... types) {
+        if (!info_.outputs.empty()) {
+            (info_.outputs.back().image_types.push_back(types), ...);
+        }
+        return *this;
+    }
+
+    // Add input pin with specific image types
+    template<typename... ImageTypes>
+    ModuleRegistrationBuilder& inputWithImageTypes(const std::string& pinName, const std::string& frameType,
+                                                    MemType memType, ImageTypes... types) {
+        input(pinName, frameType, memType);
+        inputImageTypes(types...);
+        return *this;
+    }
+
+    // Add output pin with specific image types
+    template<typename... ImageTypes>
+    ModuleRegistrationBuilder& outputWithImageTypes(const std::string& pinName, const std::string& frameType,
+                                                     MemType memType, ImageTypes... types) {
+        output(pinName, frameType, memType);
+        outputImageTypes(types...);
+        return *this;
+    }
+
+    // ============================================================
     // Property definition methods
     // ============================================================
 

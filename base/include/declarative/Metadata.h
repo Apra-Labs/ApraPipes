@@ -16,6 +16,7 @@ namespace apra {
 // Constants for fixed-capacity arrays
 // ============================================================
 inline constexpr size_t MAX_FRAME_TYPES = 8;
+inline constexpr size_t MAX_IMAGE_TYPES = 8;
 inline constexpr size_t MAX_ENUM_VALUES = 16;
 
 // ============================================================
@@ -42,6 +43,26 @@ enum class MemType {
 };
 
 // ============================================================
+// Image Type (mirrors ImageMetadata::ImageType for constexpr use)
+// Values MUST match ImageMetadata::ImageType exactly
+// Used to declare pixel format requirements for pins
+// ============================================================
+enum class ImageType {
+    UNSET = 0,      // No specific format required
+    MONO = 1,       // Grayscale
+    BGR = 2,        // Interleaved BGR
+    BGRA = 3,       // Interleaved BGRA
+    RGB = 4,        // Interleaved RGB
+    RGBA = 5,       // Interleaved RGBA
+    YUV411_I = 10,  // Interleaved YUV411
+    YUV444 = 11,    // Planar YUV444
+    YUV420 = 12,    // Planar YUV420
+    UYVY = 13,      // Interleaved UYVY
+    YUYV = 14,      // Interleaved YUYV
+    NV12 = 15       // NV12 (Y plane + interleaved UV)
+};
+
+// ============================================================
 // Pin Definition
 // Describes an input or output pin on a module
 //
@@ -58,6 +79,10 @@ struct PinDef {
     std::string_view description = "";
     MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
 
+    // Supported pixel formats (empty = any format accepted)
+    std::array<ImageType, MAX_IMAGE_TYPES> image_types{};
+    size_t image_type_count = 0;
+
     // Default constructor
     constexpr PinDef() = default;
 
@@ -70,6 +95,23 @@ struct PinDef {
             if (frame_types[i] == ft) return true;
         }
         return false;
+    }
+
+    // Access image types count
+    constexpr size_t imageTypeCount() const { return image_type_count; }
+
+    // Check if an image type is supported (empty list = any type accepted)
+    constexpr bool acceptsImageType(ImageType it) const {
+        if (image_type_count == 0) return true;  // No restriction
+        for (size_t i = 0; i < image_type_count; ++i) {
+            if (image_types[i] == it) return true;
+        }
+        return false;
+    }
+
+    // Check if this pin has image type restrictions
+    constexpr bool hasImageTypeRestrictions() const {
+        return image_type_count > 0;
     }
 
     // Factory for single frame type
@@ -166,6 +208,35 @@ struct PinDef {
         std::string_view description_ = ""
     ) {
         return create(name_, frame_type, true, description_, MemType::CUDA_DEVICE);
+    }
+
+    // Builder method to add image type restrictions
+    // Usage: PinDef::create(...).withImageTypes({ImageType::BGR, ImageType::RGB})
+    constexpr PinDef withImageType(ImageType it) const {
+        PinDef p = *this;
+        if (p.image_type_count < MAX_IMAGE_TYPES) {
+            p.image_types[p.image_type_count++] = it;
+        }
+        return p;
+    }
+
+    constexpr PinDef withImageTypes(ImageType it1) const {
+        return withImageType(it1);
+    }
+
+    constexpr PinDef withImageTypes(ImageType it1, ImageType it2) const {
+        PinDef p = withImageType(it1);
+        return p.withImageType(it2);
+    }
+
+    constexpr PinDef withImageTypes(ImageType it1, ImageType it2, ImageType it3) const {
+        PinDef p = withImageTypes(it1, it2);
+        return p.withImageType(it3);
+    }
+
+    constexpr PinDef withImageTypes(ImageType it1, ImageType it2, ImageType it3, ImageType it4) const {
+        PinDef p = withImageTypes(it1, it2, it3);
+        return p.withImageType(it4);
     }
 };
 

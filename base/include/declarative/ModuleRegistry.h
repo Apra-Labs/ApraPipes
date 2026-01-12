@@ -51,6 +51,7 @@ struct ModuleInfo {
         bool required = true;
         std::string description;
         MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
+        std::vector<ImageType> image_types;  // Supported pixel formats (empty = any)
     };
     std::vector<PinInfo> inputs;
     std::vector<PinInfo> outputs;
@@ -190,7 +191,29 @@ inline ModuleInfo::PinInfo toPinInfo(const PinDef& pin) {
     for (size_t i = 0; i < pin.frame_type_count; ++i) {
         info.frame_types.push_back(std::string(pin.frame_types[i]));
     }
+    for (size_t i = 0; i < pin.image_type_count; ++i) {
+        info.image_types.push_back(pin.image_types[i]);
+    }
     return info;
+}
+
+// Convert ImageType to string
+inline std::string imageTypeToString(ImageType type) {
+    switch (type) {
+        case ImageType::UNSET: return "UNSET";
+        case ImageType::MONO: return "MONO";
+        case ImageType::BGR: return "BGR";
+        case ImageType::BGRA: return "BGRA";
+        case ImageType::RGB: return "RGB";
+        case ImageType::RGBA: return "RGBA";
+        case ImageType::YUV411_I: return "YUV411_I";
+        case ImageType::YUV444: return "YUV444";
+        case ImageType::YUV420: return "YUV420";
+        case ImageType::UYVY: return "UYVY";
+        case ImageType::YUYV: return "YUYV";
+        case ImageType::NV12: return "NV12";
+    }
+    return "unknown";
 }
 
 // Convert PropDef::Type to string

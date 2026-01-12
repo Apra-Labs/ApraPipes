@@ -616,4 +616,77 @@ BOOST_AUTO_TEST_CASE(PinDef_Create_DefaultsToHost)
     BOOST_CHECK(pin.memType == MemType::HOST);
 }
 
+// ============================================================
+// ImageType Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(ImageTypeToString_ReturnsCorrectStrings)
+{
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::UNSET), "UNSET");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::MONO), "MONO");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::BGR), "BGR");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::BGRA), "BGRA");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::RGB), "RGB");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::RGBA), "RGBA");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::YUV420), "YUV420");
+    BOOST_CHECK_EQUAL(detail::imageTypeToString(ImageType::NV12), "NV12");
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_WithImageTypes_SingleType)
+{
+    // Test withImageTypes with a single image type
+    constexpr auto pin = PinDef::create("input", "RawImage").withImageTypes(ImageType::BGR);
+    BOOST_CHECK_EQUAL(pin.image_type_count, 1);
+    BOOST_CHECK(pin.image_types[0] == ImageType::BGR);
+    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
+    BOOST_CHECK(!pin.acceptsImageType(ImageType::RGB));
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_WithImageTypes_MultipleTypes)
+{
+    // Test withImageTypes with multiple image types
+    constexpr auto pin = PinDef::create("input", "RawImage")
+        .withImageTypes(ImageType::BGR, ImageType::RGB, ImageType::MONO);
+    BOOST_CHECK_EQUAL(pin.image_type_count, 3);
+    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::RGB));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::MONO));
+    BOOST_CHECK(!pin.acceptsImageType(ImageType::NV12));
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_NoImageTypes_AcceptsAny)
+{
+    // Test that pin without image types accepts any type
+    constexpr auto pin = PinDef::create("input", "RawImage");
+    BOOST_CHECK_EQUAL(pin.image_type_count, 0);
+    BOOST_CHECK(!pin.hasImageTypeRestrictions());
+    BOOST_CHECK(pin.acceptsImageType(ImageType::BGR));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::RGB));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::NV12));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::UNSET));
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_HasImageTypeRestrictions)
+{
+    // Test hasImageTypeRestrictions method
+    constexpr auto pinWithTypes = PinDef::create("input", "RawImage")
+        .withImageTypes(ImageType::BGR);
+    constexpr auto pinWithoutTypes = PinDef::create("input", "RawImage");
+
+    BOOST_CHECK(pinWithTypes.hasImageTypeRestrictions());
+    BOOST_CHECK(!pinWithoutTypes.hasImageTypeRestrictions());
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_CudaWithImageTypes)
+{
+    // Test combining CUDA memType with imageTypes
+    constexpr auto pin = PinDef::cudaInput("input", "RawImage")
+        .withImageTypes(ImageType::NV12, ImageType::YUV420);
+    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK_EQUAL(pin.image_type_count, 2);
+    BOOST_CHECK(pin.acceptsImageType(ImageType::NV12));
+    BOOST_CHECK(pin.acceptsImageType(ImageType::YUV420));
+    BOOST_CHECK(!pin.acceptsImageType(ImageType::BGR));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

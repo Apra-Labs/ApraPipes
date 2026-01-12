@@ -183,6 +183,24 @@ public:
         return output(pinName, frameType, MemType::CUDA_DEVICE);
     }
 
+    // Set image types on the last input pin
+    template<typename... ImageTypes>
+    CudaModuleRegistrationBuilder& inputImageTypes(ImageTypes... types) {
+        if (!info_.inputs.empty()) {
+            (info_.inputs.back().image_types.push_back(types), ...);
+        }
+        return *this;
+    }
+
+    // Set image types on the last output pin
+    template<typename... ImageTypes>
+    CudaModuleRegistrationBuilder& outputImageTypes(ImageTypes... types) {
+        if (!info_.outputs.empty()) {
+            (info_.outputs.back().image_types.push_back(types), ...);
+        }
+        return *this;
+    }
+
     CudaModuleRegistrationBuilder& intProp(const std::string& name, const std::string& desc,
                                            bool required = false, int64_t defaultVal = 0,
                                            int64_t minVal = INT64_MIN, int64_t maxVal = INT64_MAX) {
