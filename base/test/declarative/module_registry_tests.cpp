@@ -316,6 +316,45 @@ BOOST_FIXTURE_TEST_CASE(GetModulesByTag_FiltersCorrectly, RegistryFixture)
     BOOST_CHECK_EQUAL(noModules.size(), 0);
 }
 
+BOOST_FIXTURE_TEST_CASE(GetModulesWithAllTags_FiltersCorrectly, RegistryFixture)
+{
+    // Create modules with different tag combinations
+    auto info1 = test_modules::createModuleInfo<test_modules::MockModule>();
+    // MockModule has tags: "test", "mock"
+
+    auto info2 = test_modules::createModuleInfo<test_modules::SourceMockModule>();
+    // SourceMockModule has tags: "source", "test", "file"
+
+    auto info3 = test_modules::createModuleInfo<test_modules::CudaMockModule>();
+    // CudaMockModule has tags: "cuda", "test"
+
+    ModuleRegistry::instance().registerModule(std::move(info1));
+    ModuleRegistry::instance().registerModule(std::move(info2));
+    ModuleRegistry::instance().registerModule(std::move(info3));
+
+    // Query with single tag (all have "test")
+    auto testModules = ModuleRegistry::instance().getModulesWithAllTags({"test"});
+    BOOST_CHECK_EQUAL(testModules.size(), 3);
+
+    // Query with two tags - only SourceMockModule has both "test" and "source"
+    auto sourceTestModules = ModuleRegistry::instance().getModulesWithAllTags({"test", "source"});
+    BOOST_CHECK_EQUAL(sourceTestModules.size(), 1);
+    BOOST_CHECK_EQUAL(sourceTestModules[0], "SourceMockModule");
+
+    // Query with two tags - only CudaMockModule has both "test" and "cuda"
+    auto cudaTestModules = ModuleRegistry::instance().getModulesWithAllTags({"test", "cuda"});
+    BOOST_CHECK_EQUAL(cudaTestModules.size(), 1);
+    BOOST_CHECK_EQUAL(cudaTestModules[0], "CudaMockModule");
+
+    // Query with tags that no module has together
+    auto noModules = ModuleRegistry::instance().getModulesWithAllTags({"cuda", "source"});
+    BOOST_CHECK_EQUAL(noModules.size(), 0);
+
+    // Empty tags list should return all modules
+    auto allModules = ModuleRegistry::instance().getModulesWithAllTags({});
+    BOOST_CHECK_EQUAL(allModules.size(), 3);
+}
+
 // ============================================================
 // ModuleInfo Content Tests
 // ============================================================

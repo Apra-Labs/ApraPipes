@@ -130,6 +130,7 @@ public:
     std::vector<std::string> getAllModules() const;
     std::vector<std::string> getModulesByCategory(ModuleCategory cat) const;
     std::vector<std::string> getModulesByTag(const std::string& tag) const;
+    std::vector<std::string> getModulesWithAllTags(const std::vector<std::string>& tags) const;
 
     // Factory
     std::unique_ptr<Module> createModule(

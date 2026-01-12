@@ -102,6 +102,24 @@ std::vector<std::string> ModuleRegistry::getModulesByTag(const std::string& tag)
     return names;
 }
 
+std::vector<std::string> ModuleRegistry::getModulesWithAllTags(const std::vector<std::string>& tags) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::vector<std::string> names;
+    for (const auto& [name, info] : modules_) {
+        bool hasAllTags = true;
+        for (const auto& tag : tags) {
+            if (std::find(info.tags.begin(), info.tags.end(), tag) == info.tags.end()) {
+                hasAllTags = false;
+                break;
+            }
+        }
+        if (hasAllTags) {
+            names.push_back(name);
+        }
+    }
+    return names;
+}
+
 // ============================================================
 // Factory
 // ============================================================
