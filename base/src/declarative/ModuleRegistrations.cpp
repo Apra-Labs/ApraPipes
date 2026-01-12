@@ -151,22 +151,36 @@ public:
         return *this;
     }
 
-    CudaModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType) {
+    CudaModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType,
+                                         MemType memType = MemType::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
         pin.required = true;
+        pin.memType = memType;
         info_.inputs.push_back(std::move(pin));
         return *this;
     }
 
-    CudaModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType) {
+    // Convenience method for CUDA input pins
+    CudaModuleRegistrationBuilder& cudaInput(const std::string& pinName, const std::string& frameType) {
+        return input(pinName, frameType, MemType::CUDA_DEVICE);
+    }
+
+    CudaModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType,
+                                          MemType memType = MemType::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
         pin.required = true;
+        pin.memType = memType;
         info_.outputs.push_back(std::move(pin));
         return *this;
+    }
+
+    // Convenience method for CUDA output pins
+    CudaModuleRegistrationBuilder& cudaOutput(const std::string& pinName, const std::string& frameType) {
+        return output(pinName, frameType, MemType::CUDA_DEVICE);
     }
 
     CudaModuleRegistrationBuilder& intProp(const std::string& name, const std::string& desc,
@@ -851,13 +865,14 @@ void ensureBuiltinModulesRegistered() {
         // ============================================================
 #ifdef ENABLE_CUDA
         // H264Decoder - decodes H.264 video
+        // Input: HOST memory (encoded H264), Output: CUDA_DEVICE memory (decoded RawImagePlanar)
         if (!registry.hasModule("H264Decoder")) {
             registerModule<H264Decoder, H264DecoderProps>()
                 .category(ModuleCategory::Transform)
                 .description("Decodes H.264/AVC encoded video frames to raw image frames.")
-                .tags("decoder", "h264", "video", "transform")
-                .input("input", "H264Frame")
-                .output("output", "RawImagePlanar");
+                .tags("decoder", "h264", "video", "transform", "cuda")
+                .input("input", "H264Frame", MemType::HOST)
+                .cudaOutput("output", "RawImagePlanar");
         }
 
         // ============================================================
@@ -870,8 +885,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Applies Gaussian blur filter using CUDA/NPP.")
                 .tags("transform", "blur", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .intProp("kernelSize", "Gaussian kernel size (must be odd)", false, 11, 3, 31)
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     int kernelSize = 11;
@@ -891,8 +906,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Resizes images using NVIDIA Performance Primitives (NPP).")
                 .tags("transform", "resize", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .intProp("width", "Output width in pixels", true, 0, 1, 8192)
                 .intProp("height", "Output height in pixels", true, 0, 1, 8192)
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
@@ -918,8 +933,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Rotates images using NVIDIA Performance Primitives (NPP).")
                 .tags("transform", "rotate", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .floatProp("angle", "Rotation angle in degrees", true, 0.0)
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     double angle = 0.0;
@@ -941,8 +956,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Converts image color spaces using NVIDIA Performance Primitives (NPP).")
                 .tags("transform", "color", "conversion", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .enumProp("imageType", "Target image type", true, "RGB",
                     "RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12")
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
@@ -970,8 +985,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Applies image effects (brightness, contrast, saturation, hue) using NPP.")
                 .tags("transform", "effects", "brightness", "contrast", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .floatProp("hue", "Hue adjustment (0-255, 0=no change)", false, 0.0)
                 .floatProp("saturation", "Saturation multiplier (1=no change)", false, 1.0)
                 .floatProp("contrast", "Contrast multiplier (1=no change)", false, 1.0)
@@ -1000,8 +1015,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Transform)
                 .description("Overlays one image on another using NPP with alpha blending.")
                 .tags("transform", "overlay", "blend", "cuda", "npp")
-                .input("input", "RawImage")
-                .output("output", "RawImage")
+                .cudaInput("input", "RawImage")
+                .cudaOutput("output", "RawImage")
                 .intProp("offsetX", "X offset for overlay", false, 0)
                 .intProp("offsetY", "Y offset for overlay", false, 0)
                 .intProp("globalAlpha", "Global alpha value (-1 for source alpha)", false, -1, -1, 255)
@@ -1020,12 +1035,14 @@ void ensureBuiltinModulesRegistered() {
                 });
         }
 
-        // CudaMemCopy - GPU memory transfer
+        // CudaMemCopy - GPU memory transfer (BRIDGE MODULE)
+        // Note: memType is kept as HOST because actual I/O memType depends on "kind" property.
+        // This is a bridge module used by auto-bridging to convert between memory types.
         if (!registry.hasModule("CudaMemCopy")) {
             registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopy")
                 .category(ModuleCategory::Utility)
                 .description("Copies data between host and device memory.")
-                .tags("utility", "memory", "cuda", "transfer")
+                .tags("utility", "memory", "cuda", "transfer", "bridge")
                 .input("input", "Frame")
                 .output("output", "Frame")
                 .enumProp("kind", "Memory copy direction", true, "HostToDevice",
@@ -1054,8 +1071,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Utility)
                 .description("Synchronizes CUDA stream to ensure all operations complete.")
                 .tags("utility", "sync", "cuda")
-                .input("input", "Frame")
-                .output("output", "Frame")
+                .cudaInput("input", "Frame")
+                .cudaOutput("output", "Frame")
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     CudaStreamSynchronizeProps moduleProps(stream);
                     return std::make_unique<CudaStreamSynchronize>(moduleProps);
@@ -1063,13 +1080,14 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // JPEGDecoderNVJPEG - GPU-accelerated JPEG decoder
+        // Input: HOST memory (encoded JPEG), Output: CUDA_DEVICE memory (decoded RawImage)
         if (!registry.hasModule("JPEGDecoderNVJPEG")) {
             registerCudaModule<JPEGDecoderNVJPEG, JPEGDecoderNVJPEGProps>("JPEGDecoderNVJPEG")
                 .category(ModuleCategory::Transform)
                 .description("Decodes JPEG images using NVIDIA nvJPEG library.")
                 .tags("decoder", "jpeg", "image", "cuda", "nvjpeg")
-                .input("input", "EncodedImage")
-                .output("output", "RawImage")
+                .input("input", "EncodedImage", MemType::HOST)
+                .cudaOutput("output", "RawImage")
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     JPEGDecoderNVJPEGProps moduleProps(stream);
                     return std::make_unique<JPEGDecoderNVJPEG>(moduleProps);
@@ -1077,13 +1095,14 @@ void ensureBuiltinModulesRegistered() {
         }
 
         // JPEGEncoderNVJPEG - GPU-accelerated JPEG encoder
+        // Input: CUDA_DEVICE memory (RawImage), Output: HOST memory (encoded JPEG)
         if (!registry.hasModule("JPEGEncoderNVJPEG")) {
             registerCudaModule<JPEGEncoderNVJPEG, JPEGEncoderNVJPEGProps>("JPEGEncoderNVJPEG")
                 .category(ModuleCategory::Transform)
                 .description("Encodes images to JPEG using NVIDIA nvJPEG library.")
                 .tags("encoder", "jpeg", "image", "cuda", "nvjpeg")
-                .input("input", "RawImage")
-                .output("output", "EncodedImage")
+                .cudaInput("input", "RawImage")
+                .output("output", "EncodedImage", MemType::HOST)
                 .intProp("quality", "JPEG quality (1-100)", false, 90, 1, 100)
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     JPEGEncoderNVJPEGProps moduleProps(stream);
@@ -1096,12 +1115,14 @@ void ensureBuiltinModulesRegistered() {
                 });
         }
 
-        // MemTypeConversion - GPU memory type conversion
+        // MemTypeConversion - GPU memory type conversion (BRIDGE MODULE)
+        // Note: memType is kept as HOST because actual I/O memType depends on "outputMemType" property.
+        // This is a bridge module used by auto-bridging to convert between memory types.
         if (!registry.hasModule("MemTypeConversion")) {
             registerCudaModule<MemTypeConversion, MemTypeConversionProps>("MemTypeConversion")
                 .category(ModuleCategory::Utility)
                 .description("Converts frame data between HOST, DEVICE, and DMA memory types.")
-                .tags("utility", "memory", "cuda", "conversion")
+                .tags("utility", "memory", "cuda", "conversion", "bridge")
                 .input("input", "Frame")
                 .output("output", "Frame")
                 .enumProp("outputMemType", "Target memory type", true, "DEVICE",
@@ -1122,13 +1143,14 @@ void ensureBuiltinModulesRegistered() {
 
         // CuCtxSynchronize - CUDA context synchronization
         // Note: This does not need a CUDA stream - it synchronizes the entire context
+        // Typically used in CUDA pipelines so marked with CUDA_DEVICE memType
         if (!registry.hasModule("CuCtxSynchronize")) {
             registerModule<CuCtxSynchronize, CuCtxSynchronizeProps>()
                 .category(ModuleCategory::Utility)
                 .description("Synchronizes the CUDA context to ensure all GPU operations are complete.")
                 .tags("utility", "sync", "cuda", "context")
-                .input("input", "Frame")
-                .output("output", "Frame")
+                .cudaInput("input", "Frame")
+                .cudaOutput("output", "Frame")
                 .selfManagedOutputPins();
         }
 

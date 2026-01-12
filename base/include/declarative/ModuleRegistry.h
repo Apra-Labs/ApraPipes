@@ -50,6 +50,7 @@ struct ModuleInfo {
         std::vector<std::string> frame_types;
         bool required = true;
         std::string description;
+        MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
     };
     std::vector<PinInfo> inputs;
     std::vector<PinInfo> outputs;
@@ -185,6 +186,7 @@ inline ModuleInfo::PinInfo toPinInfo(const PinDef& pin) {
     info.name = std::string(pin.name);
     info.required = pin.required;
     info.description = std::string(pin.description);
+    info.memType = pin.memType;
     for (size_t i = 0; i < pin.frame_type_count; ++i) {
         info.frame_types.push_back(std::string(pin.frame_types[i]));
     }
@@ -199,6 +201,17 @@ inline std::string propTypeToString(PropDef::Type type) {
         case PropDef::Type::Boolean: return "bool";
         case PropDef::Type::Text: return "string";
         case PropDef::Type::Enumeration: return "enum";
+    }
+    return "unknown";
+}
+
+// Convert MemType to string
+inline std::string memTypeToString(MemType type) {
+    switch (type) {
+        case MemType::HOST: return "HOST";
+        case MemType::HOST_PINNED: return "HOST_PINNED";
+        case MemType::CUDA_DEVICE: return "CUDA_DEVICE";
+        case MemType::DMABUF: return "DMABUF";
     }
     return "unknown";
 }

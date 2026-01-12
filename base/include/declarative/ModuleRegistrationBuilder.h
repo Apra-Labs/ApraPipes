@@ -180,11 +180,13 @@ public:
     }
 
     // Add input pin with single frame type
-    ModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType) {
+    ModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType,
+                                     MemType memType = MemType::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
         pin.required = true;
+        pin.memType = memType;
         info_.inputs.push_back(std::move(pin));
         return *this;
     }
@@ -201,22 +203,37 @@ public:
         return *this;
     }
 
+    // Add input pin with memType and multiple frame types
+    ModuleRegistrationBuilder& inputWithMemType(const std::string& pinName, MemType memType,
+                                                 const std::string& frameType) {
+        return input(pinName, frameType, memType);
+    }
+
+    // Add CUDA input pin (convenience for CUDA_DEVICE memType)
+    ModuleRegistrationBuilder& cudaInput(const std::string& pinName, const std::string& frameType) {
+        return input(pinName, frameType, MemType::CUDA_DEVICE);
+    }
+
     // Add optional input pin
-    ModuleRegistrationBuilder& optionalInput(const std::string& pinName, const std::string& frameType) {
+    ModuleRegistrationBuilder& optionalInput(const std::string& pinName, const std::string& frameType,
+                                             MemType memType = MemType::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
         pin.required = false;
+        pin.memType = memType;
         info_.inputs.push_back(std::move(pin));
         return *this;
     }
 
     // Add output pin with single frame type
-    ModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType) {
+    ModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType,
+                                      MemType memType = MemType::HOST) {
         ModuleInfo::PinInfo pin;
         pin.name = pinName;
         pin.frame_types.push_back(frameType);
         pin.required = true;
+        pin.memType = memType;
         info_.outputs.push_back(std::move(pin));
         return *this;
     }
@@ -231,6 +248,17 @@ public:
         pin.required = true;
         info_.outputs.push_back(std::move(pin));
         return *this;
+    }
+
+    // Add output pin with memType and multiple frame types
+    ModuleRegistrationBuilder& outputWithMemType(const std::string& pinName, MemType memType,
+                                                  const std::string& frameType) {
+        return output(pinName, frameType, memType);
+    }
+
+    // Add CUDA output pin (convenience for CUDA_DEVICE memType)
+    ModuleRegistrationBuilder& cudaOutput(const std::string& pinName, const std::string& frameType) {
+        return output(pinName, frameType, MemType::CUDA_DEVICE);
     }
 
     // ============================================================

@@ -75,6 +75,60 @@ public:
     };
 };
 
+// Mock CUDA module for testing memType registration
+class CudaMockModule {
+public:
+    struct Metadata {
+        static constexpr std::string_view name = "CudaMockModule";
+        static constexpr ModuleCategory category = ModuleCategory::Transform;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "A mock CUDA module for testing memType";
+
+        static constexpr std::array<std::string_view, 2> tags = {
+            "cuda",
+            "test"
+        };
+
+        // CUDA input/output using cudaInput/cudaOutput convenience methods
+        static constexpr std::array<PinDef, 1> inputs = {
+            PinDef::cudaInput("input", "RawImage", "CUDA device input")
+        };
+
+        static constexpr std::array<PinDef, 1> outputs = {
+            PinDef::cudaOutput("output", "RawImage", "CUDA device output")
+        };
+
+        static constexpr std::array<PropDef, 0> properties = {};
+    };
+};
+
+// Mock bridge module for testing HOST memType (default)
+class BridgeMockModule {
+public:
+    struct Metadata {
+        static constexpr std::string_view name = "BridgeMockModule";
+        static constexpr ModuleCategory category = ModuleCategory::Utility;
+        static constexpr std::string_view version = "1.0.0";
+        static constexpr std::string_view description = "A mock bridge module for testing default HOST memType";
+
+        static constexpr std::array<std::string_view, 2> tags = {
+            "bridge",
+            "test"
+        };
+
+        // Default HOST memType (no explicit memType parameter)
+        static constexpr std::array<PinDef, 1> inputs = {
+            PinDef::create("input", "Frame", true, "Host memory input")
+        };
+
+        static constexpr std::array<PinDef, 1> outputs = {
+            PinDef::create("output", "Frame", true, "Host memory output")
+        };
+
+        static constexpr std::array<PropDef, 0> properties = {};
+    };
+};
+
 // Helper function to create ModuleInfo from Metadata
 template<typename ModuleClass>
 ModuleInfo createModuleInfo() {
@@ -471,6 +525,95 @@ BOOST_AUTO_TEST_CASE(CategoryToString_ReturnsCorrectStrings)
     BOOST_CHECK_EQUAL(detail::categoryToString(ModuleCategory::Analytics), "analytics");
     BOOST_CHECK_EQUAL(detail::categoryToString(ModuleCategory::Controller), "controller");
     BOOST_CHECK_EQUAL(detail::categoryToString(ModuleCategory::Utility), "utility");
+}
+
+// ============================================================
+// MemType Tests
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(MemTypeToString_ReturnsCorrectStrings)
+{
+    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::HOST), "HOST");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::HOST_PINNED), "HOST_PINNED");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::CUDA_DEVICE), "CUDA_DEVICE");
+    BOOST_CHECK_EQUAL(detail::memTypeToString(MemType::DMABUF), "DMABUF");
+}
+
+BOOST_FIXTURE_TEST_CASE(PinInfo_HasCorrectMemType_CUDA, RegistryFixture)
+{
+    auto info = test_modules::createModuleInfo<test_modules::CudaMockModule>();
+    ModuleRegistry::instance().registerModule(std::move(info));
+
+    const auto* module = ModuleRegistry::instance().getModule("CudaMockModule");
+    BOOST_REQUIRE(module != nullptr);
+
+    // Check input pin has CUDA_DEVICE memType
+    BOOST_REQUIRE_EQUAL(module->inputs.size(), 1);
+    BOOST_CHECK_EQUAL(module->inputs[0].name, "input");
+    BOOST_CHECK(module->inputs[0].memType == MemType::CUDA_DEVICE);
+
+    // Check output pin has CUDA_DEVICE memType
+    BOOST_REQUIRE_EQUAL(module->outputs.size(), 1);
+    BOOST_CHECK_EQUAL(module->outputs[0].name, "output");
+    BOOST_CHECK(module->outputs[0].memType == MemType::CUDA_DEVICE);
+}
+
+BOOST_FIXTURE_TEST_CASE(PinInfo_HasDefaultHostMemType, RegistryFixture)
+{
+    auto info = test_modules::createModuleInfo<test_modules::BridgeMockModule>();
+    ModuleRegistry::instance().registerModule(std::move(info));
+
+    const auto* module = ModuleRegistry::instance().getModule("BridgeMockModule");
+    BOOST_REQUIRE(module != nullptr);
+
+    // Check input pin defaults to HOST memType
+    BOOST_REQUIRE_EQUAL(module->inputs.size(), 1);
+    BOOST_CHECK(module->inputs[0].memType == MemType::HOST);
+
+    // Check output pin defaults to HOST memType
+    BOOST_REQUIRE_EQUAL(module->outputs.size(), 1);
+    BOOST_CHECK(module->outputs[0].memType == MemType::HOST);
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_CudaInput_SetsCorrectMemType)
+{
+    // Test the cudaInput convenience method
+    constexpr auto pin = PinDef::cudaInput("test_input", "RawImage", "Test input");
+    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK_EQUAL(std::string_view(pin.name), "test_input");
+    BOOST_CHECK_EQUAL(std::string_view(pin.frame_types[0]), "RawImage");
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_CudaOutput_SetsCorrectMemType)
+{
+    // Test the cudaOutput convenience method
+    constexpr auto pin = PinDef::cudaOutput("test_output", "RawImage", "Test output");
+    BOOST_CHECK(pin.memType == MemType::CUDA_DEVICE);
+    BOOST_CHECK_EQUAL(std::string_view(pin.name), "test_output");
+    BOOST_CHECK_EQUAL(std::string_view(pin.frame_types[0]), "RawImage");
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_Create_WithExplicitMemType)
+{
+    // Test create() with explicit memType parameter
+    constexpr auto hostPin = PinDef::create("host_pin", "Frame", true, "Host pin", MemType::HOST);
+    BOOST_CHECK(hostPin.memType == MemType::HOST);
+
+    constexpr auto cudaPin = PinDef::create("cuda_pin", "Frame", true, "CUDA pin", MemType::CUDA_DEVICE);
+    BOOST_CHECK(cudaPin.memType == MemType::CUDA_DEVICE);
+
+    constexpr auto pinnedPin = PinDef::create("pinned_pin", "Frame", true, "Pinned pin", MemType::HOST_PINNED);
+    BOOST_CHECK(pinnedPin.memType == MemType::HOST_PINNED);
+
+    constexpr auto dmaPin = PinDef::create("dma_pin", "Frame", true, "DMA pin", MemType::DMABUF);
+    BOOST_CHECK(dmaPin.memType == MemType::DMABUF);
+}
+
+BOOST_AUTO_TEST_CASE(PinDef_Create_DefaultsToHost)
+{
+    // Test that create() defaults to HOST when no memType is specified
+    constexpr auto pin = PinDef::create("default_pin", "Frame", true, "Default pin");
+    BOOST_CHECK(pin.memType == MemType::HOST);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

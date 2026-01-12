@@ -31,6 +31,17 @@ enum class ModuleCategory {
 };
 
 // ============================================================
+// Memory Type (mirrors FrameMetadata::MemType for constexpr use)
+// Values MUST match FrameMetadata::MemType exactly
+// ============================================================
+enum class MemType {
+    HOST = 1,           // Regular CPU memory (default)
+    HOST_PINNED = 2,    // Page-locked CPU memory (faster CUDA transfers)
+    CUDA_DEVICE = 3,    // NVIDIA CUDA GPU memory
+    DMABUF = 4          // DMA buffer (Linux/Jetson)
+};
+
+// ============================================================
 // Pin Definition
 // Describes an input or output pin on a module
 //
@@ -45,6 +56,7 @@ struct PinDef {
     size_t frame_type_count = 0;
     bool required = true;
     std::string_view description = "";
+    MemType memType = MemType::HOST;  // Memory location (HOST, CUDA_DEVICE, etc.)
 
     // Default constructor
     constexpr PinDef() = default;
@@ -65,7 +77,8 @@ struct PinDef {
         std::string_view name_,
         std::string_view frame_type,
         bool required_ = true,
-        std::string_view description_ = ""
+        std::string_view description_ = "",
+        MemType memType_ = MemType::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -73,6 +86,7 @@ struct PinDef {
         p.frame_type_count = 1;
         p.required = required_;
         p.description = description_;
+        p.memType = memType_;
         return p;
     }
 
@@ -81,7 +95,8 @@ struct PinDef {
         std::string_view name_,
         std::string_view ft1, std::string_view ft2,
         bool required_ = true,
-        std::string_view description_ = ""
+        std::string_view description_ = "",
+        MemType memType_ = MemType::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -90,6 +105,7 @@ struct PinDef {
         p.frame_type_count = 2;
         p.required = required_;
         p.description = description_;
+        p.memType = memType_;
         return p;
     }
 
@@ -98,7 +114,8 @@ struct PinDef {
         std::string_view name_,
         std::string_view ft1, std::string_view ft2, std::string_view ft3,
         bool required_ = true,
-        std::string_view description_ = ""
+        std::string_view description_ = "",
+        MemType memType_ = MemType::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -108,6 +125,7 @@ struct PinDef {
         p.frame_type_count = 3;
         p.required = required_;
         p.description = description_;
+        p.memType = memType_;
         return p;
     }
 
@@ -117,7 +135,8 @@ struct PinDef {
         std::string_view ft1, std::string_view ft2,
         std::string_view ft3, std::string_view ft4,
         bool required_ = true,
-        std::string_view description_ = ""
+        std::string_view description_ = "",
+        MemType memType_ = MemType::HOST
     ) {
         PinDef p;
         p.name = name_;
@@ -128,7 +147,25 @@ struct PinDef {
         p.frame_type_count = 4;
         p.required = required_;
         p.description = description_;
+        p.memType = memType_;
         return p;
+    }
+
+    // Convenience factories for CUDA modules
+    static constexpr PinDef cudaInput(
+        std::string_view name_,
+        std::string_view frame_type,
+        std::string_view description_ = ""
+    ) {
+        return create(name_, frame_type, true, description_, MemType::CUDA_DEVICE);
+    }
+
+    static constexpr PinDef cudaOutput(
+        std::string_view name_,
+        std::string_view frame_type,
+        std::string_view description_ = ""
+    ) {
+        return create(name_, frame_type, true, description_, MemType::CUDA_DEVICE);
     }
 };
 
