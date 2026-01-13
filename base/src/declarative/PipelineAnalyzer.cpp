@@ -137,9 +137,11 @@ bool PipelineAnalyzer::checkFrameTypeCompatibility(
             if (fromType == toType) {
                 return true;
             }
-            // Also check inheritance: e.g., "RawImage" is compatible with "Frame"
-            if (toType == "Frame") {
-                return true;  // Frame accepts anything
+            // "Frame" acts as a wildcard on either side:
+            // - If target accepts "Frame", it accepts anything
+            // - If source produces "Frame", it's a passthrough module that preserves the actual type
+            if (toType == "Frame" || fromType == "Frame") {
+                return true;
             }
         }
     }
@@ -376,10 +378,14 @@ std::string PipelineAnalyzer::selectMemoryBridgeModule(
     FrameMetadata::MemType from,
     FrameMetadata::MemType to
 ) const {
-    // For HOST <-> CUDA_DEVICE, use CudaMemCopy
-    if ((from == FrameMetadata::HOST && to == FrameMetadata::CUDA_DEVICE) ||
-        (from == FrameMetadata::CUDA_DEVICE && to == FrameMetadata::HOST)) {
-        return "CudaMemCopy";
+    // For HOST -> CUDA_DEVICE, use CudaMemCopyH2D
+    if (from == FrameMetadata::HOST && to == FrameMetadata::CUDA_DEVICE) {
+        return "CudaMemCopyH2D";
+    }
+
+    // For CUDA_DEVICE -> HOST, use CudaMemCopyD2H
+    if (from == FrameMetadata::CUDA_DEVICE && to == FrameMetadata::HOST) {
+        return "CudaMemCopyD2H";
     }
 
     // For DMABUF conversions, use MemTypeConversion

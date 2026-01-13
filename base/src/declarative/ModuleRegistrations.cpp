@@ -259,6 +259,12 @@ public:
         return *this;
     }
 
+    // Mark module as managing its own output pins (creates them in addInputPin)
+    CudaModuleRegistrationBuilder& selfManagedOutputPins() {
+        info_.selfManagedOutputPins = true;
+        return *this;
+    }
+
     // Finalize with CUDA factory - takes a lambda that creates the module
     template<typename CudaFactoryLambda>
     void finalizeCuda(CudaFactoryLambda&& cudaFactoryFn) {
@@ -284,6 +290,7 @@ public:
 
         // No regular factory - CUDA modules require CUDA stream
         info_.factory = nullptr;
+        info_.requiresCudaStream = true;
 
         ModuleRegistry::instance().registerModule(std::move(info_));
     }
@@ -906,6 +913,7 @@ void ensureBuiltinModulesRegistered() {
                 .cudaInput("input", "RawImage")
                 .cudaOutput("output", "RawImage")
                 .intProp("kernelSize", "Gaussian kernel size (must be odd)", false, 11, 3, 31)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     int kernelSize = 11;
                     if (auto it = props.find("kernelSize"); it != props.end()) {
@@ -928,6 +936,7 @@ void ensureBuiltinModulesRegistered() {
                 .cudaOutput("output", "RawImage")
                 .intProp("width", "Output width in pixels", true, 0, 1, 8192)
                 .intProp("height", "Output height in pixels", true, 0, 1, 8192)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     int width = 640, height = 480;
                     if (auto it = props.find("width"); it != props.end()) {
@@ -949,11 +958,12 @@ void ensureBuiltinModulesRegistered() {
         if (!registry.hasModule("RotateNPPI")) {
             registerCudaModule<RotateNPPI, RotateNPPIProps>("RotateNPPI")
                 .category(ModuleCategory::Transform)
-                .description("Rotates images using NVIDIA Performance Primitives (NPP).")
+                .description("Rotates images using NVIDIA Performance Primitives (NPP). Only supports 90-degree increments.")
                 .tags("transform", "rotate", "cuda", "npp")
                 .cudaInput("input", "RawImage")
                 .cudaOutput("output", "RawImage")
-                .floatProp("angle", "Rotation angle in degrees", true, 0.0)
+                .floatProp("angle", "Rotation angle in degrees (must be 90, 180, or 270)", true, 0.0)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     double angle = 0.0;
                     if (auto it = props.find("angle"); it != props.end()) {
@@ -978,6 +988,7 @@ void ensureBuiltinModulesRegistered() {
                 .cudaOutput("output", "RawImage")
                 .enumProp("imageType", "Target image type", true, "RGB",
                     "RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12")
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     ImageMetadata::ImageType imageType = ImageMetadata::RGB;
                     if (auto it = props.find("imageType"); it != props.end()) {
@@ -1009,6 +1020,7 @@ void ensureBuiltinModulesRegistered() {
                 .floatProp("saturation", "Saturation multiplier (1=no change)", false, 1.0)
                 .floatProp("contrast", "Contrast multiplier (1=no change)", false, 1.0)
                 .intProp("brightness", "Brightness adjustment (-100 to 100)", false, 0, -100, 100)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     EffectsNPPIProps moduleProps(stream);
                     if (auto it = props.find("hue"); it != props.end()) {
@@ -1053,29 +1065,39 @@ void ensureBuiltinModulesRegistered() {
                 });
         }
 
-        // CudaMemCopy - GPU memory transfer (BRIDGE MODULE)
-        // Note: memType is kept as HOST because actual I/O memType depends on "kind" property.
-        // This is a bridge module used by auto-bridging to convert between memory types.
-        if (!registry.hasModule("CudaMemCopy")) {
-            registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopy")
+        // CudaMemCopyH2D - Host to Device memory transfer (BRIDGE MODULE)
+        // Used by auto-bridging when HOST → CUDA_DEVICE transfer is needed
+        if (!registry.hasModule("CudaMemCopyH2D")) {
+            registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopyH2D")
                 .category(ModuleCategory::Utility)
-                .description("Copies data between host and device memory.")
+                .description("Copies data from host (CPU) to device (GPU) memory.")
                 .tags("utility", "memory", "cuda", "transfer", "bridge")
-                .input("input", "Frame")
-                .output("output", "Frame")
-                .enumProp("kind", "Memory copy direction", true, "HostToDevice",
-                    "HostToDevice", "DeviceToHost", "DeviceToDevice")
+                .input("input", "Frame")              // HOST (default)
+                .cudaOutput("output", "Frame")        // CUDA_DEVICE
                 .boolProp("sync", "Synchronize after copy", false, false)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
-                    cudaMemcpyKind kind = cudaMemcpyHostToDevice;
-                    if (auto it = props.find("kind"); it != props.end()) {
-                        if (auto* val = std::get_if<std::string>(&it->second)) {
-                            if (*val == "HostToDevice") kind = cudaMemcpyHostToDevice;
-                            else if (*val == "DeviceToHost") kind = cudaMemcpyDeviceToHost;
-                            else if (*val == "DeviceToDevice") kind = cudaMemcpyDeviceToDevice;
-                        }
+                    CudaMemCopyProps moduleProps(cudaMemcpyHostToDevice, stream);
+                    if (auto it = props.find("sync"); it != props.end()) {
+                        if (auto* val = std::get_if<bool>(&it->second)) moduleProps.sync = *val;
                     }
-                    CudaMemCopyProps moduleProps(kind, stream);
+                    return std::make_unique<CudaMemCopy>(moduleProps);
+                });
+        }
+
+        // CudaMemCopyD2H - Device to Host memory transfer (BRIDGE MODULE)
+        // Used by auto-bridging when CUDA_DEVICE → HOST transfer is needed
+        if (!registry.hasModule("CudaMemCopyD2H")) {
+            registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopyD2H")
+                .category(ModuleCategory::Utility)
+                .description("Copies data from device (GPU) to host (CPU) memory.")
+                .tags("utility", "memory", "cuda", "transfer", "bridge")
+                .cudaInput("input", "Frame")          // CUDA_DEVICE
+                .output("output", "Frame")            // HOST (default)
+                .boolProp("sync", "Synchronize after copy", false, false)
+                .selfManagedOutputPins()  // Creates output pin in addInputPin()
+                .finalizeCuda([](const auto& props, cudastream_sp stream) {
+                    CudaMemCopyProps moduleProps(cudaMemcpyDeviceToHost, stream);
                     if (auto it = props.find("sync"); it != props.end()) {
                         if (auto* val = std::get_if<bool>(&it->second)) moduleProps.sync = *val;
                     }

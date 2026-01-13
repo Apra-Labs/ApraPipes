@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-12
+> Last Updated: 2026-01-13
 
 **Git Branch:** `feat-declarative-pipeline-v2` (tracking `origin/feat-declarative-pipeline-v2`)
 
@@ -115,6 +115,43 @@ All enum value references updated to use canonical class-qualified names
 - [x] 5.5 Add formatPipelineGraph() for verbose pipeline visualization
 
 **Commit:** `2f01c53f3 feat(declarative): Add pipeline graph formatting for verbose output`
+
+### Completed: Phase 6 - CUDA Auto-Bridging Bug Fixes (2026-01-13)
+
+**Problem:** CUDA pipelines failed at init time with `GaussianBlur: input memType is expected to be CUDA_DEVICE. Actual<1>` even when CudaMemCopy was in the pipeline.
+
+**Root Cause Analysis:**
+1. CudaMemCopy was registered as a single module with a "kind" property, but memType was determined at runtime
+2. PipelineAnalyzer couldn't determine the correct bridge module without knowing the memType ahead of time
+3. Several infrastructure bugs prevented proper CUDA module initialization
+
+**Solution: Two-Registration Approach**
+
+Replaced single CudaMemCopy with two explicitly-typed variants:
+- `CudaMemCopyH2D`: input=HOST, output=CUDA_DEVICE (cudaMemcpyHostToDevice)
+- `CudaMemCopyD2H`: input=CUDA_DEVICE, output=HOST (cudaMemcpyDeviceToHost)
+
+**Bug Fixes:**
+
+| Bug | File | Fix |
+|-----|------|-----|
+| Missing `requiresCudaStream` flag | ModuleRegistrations.cpp | Added to finalizeCuda() builder |
+| Output pin memType not set | ModuleFactory.cpp | setupOutputPins now uses pin's declared memType |
+| Duplicate output pins | ModuleRegistrations.cpp | Added selfManagedOutputPins() to CUDA modules |
+| Frame type wildcard | PipelineAnalyzer.cpp | "Frame" now acts as wildcard on both source and target |
+| Empty pin name mismatch | ModuleFactory.cpp | insertBridgeModules normalizes empty pins to "output"/"input" |
+
+**Files Modified:**
+- `base/src/declarative/ModuleRegistrations.cpp` - Two-registration + selfManagedOutputPins
+- `base/src/declarative/ModuleFactory.cpp` - setupOutputPins + insertBridgeModules fixes
+- `base/src/declarative/PipelineAnalyzer.cpp` - Frame type wildcard + variant names
+- `base/src/CudaMemCopy.cpp` - Use mMemType for output metadata
+- `base/test/declarative/pipeline_analyzer_tests.cpp` - Updated assertions
+
+**Tests:**
+- 13 PipelineAnalyzerTests pass
+- Explicit CudaMemCopy pipeline works (`01_gaussian_blur_demo.json`)
+- Auto-bridging pipeline works (`02_auto_bridge_demo.json`)
 
 ---
 
@@ -411,20 +448,25 @@ cmake -B build -G Ninja \
 
 > Added: 2026-01-11
 
-Location: `docs/declarative-pipeline/examples/cuda/`
+Location: `examples/cuda/`
 
 | Example | Description | Output |
 |---------|-------------|--------|
-| 01_gaussian_blur_demo | GPU-accelerated Gaussian blur (kernelSize: 15) | `cuda_blur_????.jpg` |
-| 02_effects_demo | NPP effects: brightness +30, contrast 1.3, saturation 1.5 | `cuda_effects_????.jpg` |
-| 03_resize_demo | GPU resize from 640x480 to 320x240 | `cuda_resize_????.jpg` |
-| 04_rotate_demo | GPU rotation by 45 degrees | `cuda_rotate_????.jpg` |
-| 05_processing_chain_demo | Multi-stage GPU: resize → blur → effects | `cuda_chain_????.jpg` |
-| 06_nvjpeg_encoder_demo | GPU JPEG encoding with nvJPEG library | `cuda_nvjpeg_????.jpg` |
+| gaussian_blur | GPU-accelerated Gaussian blur (explicit bridges) | `cuda_blur_????.jpg` |
+| auto_bridge | Auto-bridging: no explicit CudaMemCopy needed | `cuda_auto_????.jpg` |
+| effects | NPP effects: brightness +30, contrast 1.3, saturation 1.5 | `cuda_effects_????.jpg` |
+| resize | GPU resize from 640x480 to 320x240 | `cuda_resize_????.jpg` |
+| rotate | GPU rotation by 90 degrees | `cuda_rotate_????.jpg` |
+| processing_chain | Multi-stage GPU: resize → blur → effects | `cuda_chain_????.jpg` |
+| nvjpeg_encoder | GPU JPEG encoding with nvJPEG library | `cuda_nvjpeg_????.jpg` |
 
-**Pipeline Pattern:**
+**Pipeline Patterns:**
 ```
-TestSignalGenerator → ColorConversion → CudaMemCopy(H→D) → [GPU Processing] → CudaMemCopy(D→H) → Encoder → FileWriter
+# Explicit bridges:
+TestSignalGenerator → ColorConversion → CudaMemCopyH2D → [GPU Processing] → CudaMemCopyD2H → Encoder → FileWriter
+
+# Auto-bridging (bridges auto-inserted at build time):
+TestSignalGenerator → ColorConversion → [GPU Processing] → Encoder → FileWriter
 ```
 
 **Testing:** Requires build with `ENABLE_CUDA=ON` (see build instructions in README).

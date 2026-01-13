@@ -1,7 +1,7 @@
 {
   "pipeline": {
-    "name": "CUDA Rotate Demo",
-    "description": "Demonstrates GPU-accelerated image rotation using NVIDIA NPP. Rotates images by 45 degrees. Output: ./data/testOutput/cuda_rotate_????.jpg"
+    "name": "CUDA Resize Demo",
+    "description": "Demonstrates GPU-accelerated image resizing using NVIDIA NPP. Resizes 640x480 to 320x240. Output: ./data/testOutput/cuda_resize_????.jpg"
   },
   "modules": {
     "generator": {
@@ -9,7 +9,8 @@
       "props": {
         "width": 640,
         "height": 480,
-        "maxFrames": 300
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
       }
     },
     "color_convert": {
@@ -19,22 +20,19 @@
       }
     },
     "upload_gpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "HostToDevice"
-      }
+      "type": "CudaMemCopyH2D",
+      "props": {}
     },
-    "rotate": {
-      "type": "RotateNPPI",
+    "resize": {
+      "type": "ResizeNPPI",
       "props": {
-        "angle": 45.0
+        "width": 320,
+        "height": 240
       }
     },
     "download_cpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "DeviceToHost"
-      }
+      "type": "CudaMemCopyD2H",
+      "props": {}
     },
     "encoder": {
       "type": "ImageEncoderCV",
@@ -45,15 +43,15 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "./data/testOutput/cuda_rotate_????.jpg"
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_resize_????.jpg"
       }
     }
   },
   "connections": [
     { "from": "generator", "to": "color_convert" },
     { "from": "color_convert", "to": "upload_gpu" },
-    { "from": "upload_gpu", "to": "rotate" },
-    { "from": "rotate", "to": "download_cpu" },
+    { "from": "upload_gpu", "to": "resize" },
+    { "from": "resize", "to": "download_cpu" },
     { "from": "download_cpu", "to": "encoder" },
     { "from": "encoder", "to": "writer" }
   ]

@@ -144,7 +144,7 @@ After each phase completion:
 ```bash
 #!/bin/bash
 # Run all working declarative pipeline examples
-EXAMPLES_DIR="docs/declarative-pipeline/examples"
+EXAMPLES_DIR="examples"
 CLI="./build/aprapipes_cli"
 
 for json in "$EXAMPLES_DIR"/*.json; do

@@ -9,7 +9,7 @@
       "props": {
         "width": 640,
         "height": 480,
-        "maxFrames": 300
+        "maxFrames": 100
       }
     },
     "stats": {

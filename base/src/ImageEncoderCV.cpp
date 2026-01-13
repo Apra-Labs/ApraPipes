@@ -3,6 +3,7 @@
 #include "ImageMetadata.h"
 #include "RawImageMetadata.h"
 #include "RawImagePlanarMetadata.h"
+#include "EncodedImageMetadata.h"
 #include "FrameMetadataFactory.h"
 #include "Frame.h"
 #include "Logger.h"
@@ -66,9 +67,10 @@ private:
 };
 
 ImageEncoderCV::ImageEncoderCV(ImageEncoderCVProps _props) : Module(TRANSFORM, "ImageEncoderCV", _props)
-{	
+{
 	mDetail.reset(new Detail(_props));
-	mOutputMetadata = framemetadata_sp(new FrameMetadata(FrameMetadata::ENCODED_IMAGE));
+	// Use EncodedImageMetadata so downstream modules (like Mp4WriterSink) can downcast correctly
+	mOutputMetadata = framemetadata_sp(new EncodedImageMetadata());
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
 
@@ -169,5 +171,15 @@ bool ImageEncoderCV::processSOS(frame_sp &frame)
 {
 	auto metadata = frame->getMetadata();
 	mDetail->setMetadata(metadata);
+
+	// Update output metadata with dimensions from input
+	auto rawImageMetadata = FrameMetadataFactory::downcast<RawImageMetadata>(metadata);
+	auto encodedImageMetadata = FrameMetadataFactory::downcast<EncodedImageMetadata>(mOutputMetadata);
+	EncodedImageMetadata newMetadata(rawImageMetadata->getWidth(), rawImageMetadata->getHeight());
+	encodedImageMetadata->setData(newMetadata);
+
+	// Propagate updated metadata to downstream modules
+	Module::setMetadata(mOutputPinId, mOutputMetadata);
+
 	return true;
 }

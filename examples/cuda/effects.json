@@ -1,7 +1,7 @@
 {
   "pipeline": {
-    "name": "CUDA Gaussian Blur Demo",
-    "description": "Demonstrates GPU-accelerated Gaussian blur using NVIDIA NPP. Generates test frames, uploads to GPU, applies blur, downloads, and saves as JPEG. Output: ./data/testOutput/cuda_blur_????.jpg"
+    "name": "CUDA Image Effects Demo",
+    "description": "Demonstrates GPU-accelerated image effects (brightness, contrast) using NVIDIA NPP. Output: ./data/testOutput/cuda_effects_????.jpg"
   },
   "modules": {
     "generator": {
@@ -9,7 +9,8 @@
       "props": {
         "width": 640,
         "height": 480,
-        "maxFrames": 300
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
       }
     },
     "color_convert": {
@@ -19,22 +20,19 @@
       }
     },
     "upload_gpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "HostToDevice"
-      }
+      "type": "CudaMemCopyH2D",
+      "props": {}
     },
-    "blur": {
-      "type": "GaussianBlur",
+    "effects": {
+      "type": "EffectsNPPI",
       "props": {
-        "kernelSize": 15
+        "brightness": 50,
+        "contrast": 1.5
       }
     },
     "download_cpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "DeviceToHost"
-      }
+      "type": "CudaMemCopyD2H",
+      "props": {}
     },
     "encoder": {
       "type": "ImageEncoderCV",
@@ -45,15 +43,15 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "./data/testOutput/cuda_blur_????.jpg"
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_effects_????.jpg"
       }
     }
   },
   "connections": [
     { "from": "generator", "to": "color_convert" },
     { "from": "color_convert", "to": "upload_gpu" },
-    { "from": "upload_gpu", "to": "blur" },
-    { "from": "blur", "to": "download_cpu" },
+    { "from": "upload_gpu", "to": "effects" },
+    { "from": "effects", "to": "download_cpu" },
     { "from": "download_cpu", "to": "encoder" },
     { "from": "encoder", "to": "writer" }
   ]

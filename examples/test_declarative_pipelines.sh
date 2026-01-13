@@ -34,11 +34,11 @@ NC='\033[0m' # No Color
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CLI_PATH="$PROJECT_ROOT/build/aprapipes_cli"
-NODE_ADDON_PATH="$PROJECT_ROOT/build/aprapipes.node"
+CLI_PATH="$PROJECT_ROOT/bin/aprapipes_cli"
+NODE_ADDON_PATH="$PROJECT_ROOT/bin/aprapipes.node"
 NODE_RUNNER="$SCRIPT_DIR/pipeline_test_runner.js"
-WORKING_DIR="$PROJECT_ROOT/docs/declarative-pipeline/examples/working"
-OUTPUT_DIR="$PROJECT_ROOT/data/testOutput"
+WORKING_DIR="$PROJECT_ROOT/examples/basic"
+OUTPUT_DIR="$PROJECT_ROOT/bin/data/testOutput"
 RUN_DURATION=2  # seconds to run each pipeline
 
 # Runtime mode: 'node' or 'cli'

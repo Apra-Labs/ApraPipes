@@ -1,6 +1,6 @@
-# CUDA Memory Type Auto-Bridging Design
+# Automatic Bridging Design: Memory Types and Pixel Formats
 
-> Design document for automatic memory type handling in the declarative pipeline framework.
+> Design document for automatic memory type and pixel format handling in the declarative pipeline framework.
 
 **Status**: Design Phase
 **Author**: Claude Code + Akhil
@@ -13,15 +13,17 @@
 
 1. [Problem Statement](#problem-statement)
 2. [Existing Infrastructure](#existing-infrastructure)
-3. [Solution Overview](#solution-overview)
-4. [Per-PIN Memory Type Registration](#per-pin-memory-type-registration)
-5. [Functional Tags for Module Equivalence](#functional-tags-for-module-equivalence)
-6. [Expert Validator Behavior](#expert-validator-behavior)
-7. [Auto-Bridge Insertion](#auto-bridge-insertion)
-8. [Edge Cases](#edge-cases)
-9. [Implementation Plan](#implementation-plan)
-10. [Testing Strategy](#testing-strategy)
-11. [Future: LLM Pipeline Building](#future-llm-pipeline-building)
+3. [The Three Dimensions of PIN Compatibility](#the-three-dimensions-of-pin-compatibility)
+4. [Solution Overview](#solution-overview)
+5. [Per-PIN Memory Type Registration](#per-pin-memory-type-registration)
+6. [Per-PIN Pixel Format Registration](#per-pin-pixel-format-registration)
+7. [Functional Tags for Module Equivalence](#functional-tags-for-module-equivalence)
+8. [Expert Validator Behavior](#expert-validator-behavior)
+9. [Auto-Bridge Insertion](#auto-bridge-insertion)
+10. [Edge Cases](#edge-cases)
+11. [Implementation Plan](#implementation-plan)
+12. [Testing Strategy](#testing-strategy)
+13. [Future: LLM Pipeline Building](#future-llm-pipeline-building)
 
 ---
 
@@ -114,6 +116,105 @@ enum MemType
 ### Shared cudastream
 
 `ModuleFactory` already creates a shared `cudastream_sp` for all CUDA modules. This infrastructure remains unchanged.
+
+---
+
+## The Three Dimensions of PIN Compatibility
+
+Understanding why `frame_types` exists in PINInfo is key to the overall design.
+
+### Dimension 1: Frame Type (Coarse-Grained)
+
+**What it is**: The high-level data format category.
+
+**Values**: `RAW_IMAGE`, `RAW_IMAGE_PLANAR`, `ENCODED_IMAGE`, `H264_DATA`, `AUDIO`, etc.
+
+**Purpose**: Prevents obviously incompatible connections.
+- Audio output → Video input = ERROR
+- H264 data → Raw image processor = ERROR
+- Encoded JPEG → Face detector expecting raw pixels = ERROR
+
+**Already exists** in PINInfo as `frame_types: std::vector<std::string>`.
+
+### Dimension 2: Pixel Format (Fine-Grained, within RAW_IMAGE)
+
+**What it is**: The exact pixel arrangement for raw image data.
+
+**Values** (from `ImageMetadata::ImageType`):
+- `MONO` - Grayscale
+- `BGR`, `BGRA`, `RGB`, `RGBA` - Packed color formats
+- `YUV420`, `YUV411_I`, `YUV444` - Planar YUV formats
+- `NV12` - Semi-planar (Y plane + interleaved UV)
+- `UYVY`, `YUYV` - Packed YUV formats
+
+**Purpose**: Enables automatic ColorConversion bridging.
+- TestSignalGenerator outputs YUV420
+- ResizeNPPI expects NV12
+- Framework auto-inserts ColorConversion (or CCNPPI for GPU)
+
+**Needs to be added** to PINInfo as `imageTypes: std::vector<ImageMetadata::ImageType>`.
+
+### Dimension 3: Memory Type (Location)
+
+**What it is**: Where the frame data resides in memory.
+
+**Values** (from `FrameMetadata::MemType`):
+- `HOST` - Regular CPU memory
+- `HOST_PINNED` - Page-locked CPU memory
+- `CUDA_DEVICE` - NVIDIA GPU memory
+- `DMABUF` - DMA buffer (Linux/Jetson)
+
+**Purpose**: Enables automatic CudaMemCopy bridging.
+- ColorConversion outputs HOST
+- GaussianBlur expects CUDA_DEVICE
+- Framework auto-inserts CudaMemCopy(H2D)
+
+**Needs to be added** to PINInfo as `memType: FrameMetadata::MemType`.
+
+### The Complete PIN Model
+
+```cpp
+struct PinInfo {
+    std::string name;                                    // "input", "output"
+
+    // Dimension 1: Frame Type (coarse)
+    std::vector<std::string> frame_types;               // ["RawImage", "RawImagePlanar"]
+
+    // Dimension 2: Pixel Format (fine, for raw images only)
+    std::vector<ImageMetadata::ImageType> imageTypes;   // [YUV420, NV12] - NEW
+
+    // Dimension 3: Memory Location
+    FrameMetadata::MemType memType = FrameMetadata::HOST;  // NEW
+
+    bool required = true;
+};
+```
+
+### Validation Hierarchy
+
+The validator checks compatibility in order:
+
+```
+1. Frame Type Check
+   └─ RAW_IMAGE → RAW_IMAGE ✓ (compatible high-level types)
+
+2. Pixel Format Check (only for RAW_IMAGE types)
+   └─ YUV420 → NV12 ✗ MISMATCH
+   └─ Action: Auto-insert ColorConversion bridge
+
+3. Memory Type Check
+   └─ HOST → CUDA_DEVICE ✗ MISMATCH
+   └─ Action: Auto-insert CudaMemCopy bridge
+```
+
+### Why This Matters
+
+Users and LLMs shouldn't need to understand:
+- That ResizeNPPI only accepts NV12 format
+- That GaussianBlur requires CUDA_DEVICE memory
+- The correct sequence of color conversion and memory transfers
+
+The framework handles all of this automatically, making pipelines "just work."
 
 ---
 
@@ -224,6 +325,92 @@ ModuleRegistrationBuilder<CudaMemCopy>("CudaMemCopy")
 | Uploader | HOST | CUDA_DEVICE | CudaMemCopy(H2D) |
 | Downloader | CUDA_DEVICE | HOST | CudaMemCopy(D2H) |
 | DMA | DMABUF | DMABUF | NvArgusCamera, JPEGEncoderL4TM |
+
+---
+
+## Per-PIN Pixel Format Registration
+
+### Model
+
+Every PIN that handles raw image data has a set of accepted pixel formats:
+- **Input PIN**: accepts one or more imageTypes
+- **Output PIN**: produces exactly one imageType (determined by props or input)
+- **Default**: empty set (accepts any / not applicable for non-image types)
+
+### Registration API Extension
+
+```cpp
+// In Metadata.h - extend PinDef further
+struct PinDef {
+    std::string name;
+    std::vector<FrameMetadata::FrameType> types;
+    FrameMetadata::MemType memType = FrameMetadata::HOST;
+    std::vector<ImageMetadata::ImageType> imageTypes;  // NEW: [YUV420, NV12, RGB]
+    bool required = true;
+};
+```
+
+### Registration Examples
+
+```cpp
+// Module that only accepts YUV420 (common for video processing)
+ModuleRegistrationBuilder<H264EncoderV4L2>("H264EncoderV4L2")
+    .inputPin("input", FrameType::RAW_IMAGE, FrameMetadata::HOST, {ImageType::YUV420})
+    .outputPin("output", FrameType::H264_DATA, FrameMetadata::HOST)
+    ...
+
+// Module that accepts multiple formats
+ModuleRegistrationBuilder<ImageEncoderCV>("ImageEncoderCV")
+    .inputPin("input", FrameType::RAW_IMAGE, FrameMetadata::HOST,
+              {ImageType::BGR, ImageType::RGB, ImageType::MONO})
+    .outputPin("output", FrameType::ENCODED_IMAGE, FrameMetadata::HOST)
+    ...
+
+// CUDA module with specific format requirement
+ModuleRegistrationBuilder<ResizeNPPI>("ResizeNPPI")
+    .inputPin("input", FrameType::RAW_IMAGE, FrameMetadata::CUDA_DEVICE,
+              {ImageType::NV12, ImageType::YUV420})
+    .outputPin("output", FrameType::RAW_IMAGE, FrameMetadata::CUDA_DEVICE)
+    ...
+
+// Color conversion module - input can be anything, output depends on props
+ModuleRegistrationBuilder<ColorConversion>("ColorConversion")
+    .inputPin("input", FrameType::RAW_IMAGE, FrameMetadata::HOST)  // any format
+    .dynamicOutputImageType([](const auto& props) {
+        return props.outFormat;  // BGR, RGB, YUV420, etc.
+    })
+    ...
+```
+
+### Module Classification by ImageType Support
+
+| Category | Accepts | Examples |
+|----------|---------|----------|
+| Any format | {} (empty) | FileWriterModule, StatSink |
+| BGR/RGB only | {BGR, RGB} | ImageEncoderCV (JPEG/PNG), FaceDetectorXform |
+| YUV only | {YUV420, NV12} | H264EncoderV4L2, Mp4WriterSink |
+| NV12 preferred | {NV12} | CUDA NPP modules |
+| Format converter | any → specified | ColorConversion, CCNPPI |
+
+### Common Pixel Format Mismatches
+
+| Producer | Consumer | Auto-Bridge |
+|----------|----------|-------------|
+| TestSignalGenerator (YUV420) | ImageEncoderCV (BGR) | ColorConversion(YUV420→BGR) |
+| ImageDecoderCV (BGR) | Mp4WriterSink (YUV420) | ColorConversion(BGR→YUV420) |
+| WebCamSource (YUYV) | FaceDetectorXform (BGR) | ColorConversion(YUYV→BGR) |
+| Mp4ReaderSource (NV12) | ImageEncoderCV (BGR) | ColorConversion(NV12→BGR) |
+
+### Bridge Module Selection for Pixel Formats
+
+| From Format | To Format | Bridge Module (HOST) | Bridge Module (CUDA) |
+|-------------|-----------|---------------------|---------------------|
+| YUV420 | BGR | ColorConversion | CCNPPI |
+| BGR | YUV420 | ColorConversion | CCNPPI |
+| NV12 | BGR | ColorConversion | CCNPPI |
+| RGB | BGR | ColorConversion | CCNPPI |
+| YUYV | BGR | ColorConversion | CCNPPI |
+| Any | Any | ColorConversion | CCNPPI |
 
 ---
 
@@ -340,7 +527,12 @@ ModuleRegistrationBuilder<JPEGEncoderNVJPEG>("JPEGEncoderNVJPEG")
 
 ## Expert Validator Behavior
 
-### Example 1: Simple CUDA Pipeline
+The expert validator performs three levels of optimization:
+1. **Auto-insert bridges** for format and memory mismatches
+2. **Suggest replacements** for better performance (module-level substitution)
+3. **Warn about suboptimal patterns** (D→H→D roundtrips, etc.)
+
+### Example 1: Simple CUDA Pipeline with Encoder Replacement Suggestion
 
 **User Input:**
 ```json
@@ -355,22 +547,38 @@ ModuleRegistrationBuilder<JPEGEncoderNVJPEG>("JPEGEncoderNVJPEG")
 
 **Analysis:**
 ```
-generator    HOST         → blur     CUDA_DEVICE   ✗ MISMATCH
-blur         CUDA_DEVICE  → encoder  HOST          ✗ MISMATCH
+generator    HOST         → blur     CUDA_DEVICE   ✗ MemType MISMATCH
+blur         CUDA_DEVICE  → encoder  HOST          ✗ MemType MISMATCH
+encoder accepts: {BGR, RGB}
+blur outputs: YUV420 (inherited from generator)                ✗ ImageType MISMATCH
 ```
 
 **Validator Output:**
 ```
 [INFO] Building pipeline...
+
 [INFO] Memory type mismatch: generator (HOST) → blur (CUDA_DEVICE)
-[INFO] Auto-inserting CudaMemCopy (HostToDevice) between 'generator' and 'blur'
+       Auto-inserting CudaMemCopy (HostToDevice)
+
 [INFO] Memory type mismatch: blur (CUDA_DEVICE) → encoder (HOST)
-[INFO] Auto-inserting CudaMemCopy (DeviceToHost) between 'blur' and 'encoder'
-[INFO]
-[INFO] Final pipeline:
-       generator → [H2D] → blur → [D2H] → encoder
-                   ~~~~          ~~~~
-                   (auto)        (auto)
+       Auto-inserting CudaMemCopy (DeviceToHost)
+
+[INFO] Pixel format mismatch: blur (YUV420) → encoder (expects BGR/RGB)
+       Auto-inserting ColorConversion (YUV420→BGR)
+
+[SUGGEST] GPU-accelerated encoder available!
+          Current:     ImageEncoderCV (CPU, requires D2H transfer)
+          Alternative: JPEGEncoderNVJPEG (CUDA, no D2H needed)
+          Benefit:     Eliminates 1 memory transfer, ~2x faster encoding
+
+[INFO] Final pipeline (with auto-bridges):
+       generator → [H2D] → blur → [D2H] → [YUV→BGR] → encoder
+                   ~~~~          ~~~~     ~~~~~~~~~
+                   (auto)        (auto)     (auto)
+
+[INFO] Suggested pipeline (optimal):
+       generator → [H2D] → blur → JPEGEncoderNVJPEG → FileWriter
+                   ~~~~          └── stays on GPU! ──┘
 ```
 
 ### Example 2: Consecutive CUDA Modules
@@ -406,7 +614,7 @@ effects  CUDA_DEVICE  → encoder  HOST          ✗ Need D2H
                       └──────────────── GPU BLOCK ────────────────┘
 ```
 
-### Example 3: Suboptimal Pattern Warning
+### Example 3: Suboptimal Pattern Warning with Module Replacement
 
 **User Input:**
 ```json
@@ -428,18 +636,120 @@ effects  CUDA_DEVICE  → encoder  HOST          ✗ Need D2H
 
   This adds 2 unnecessary memory transfers.
 
-  Suggestion: Use 'ResizeNPPI' instead of 'ImageResizeCV' to keep processing on GPU:
-  blur → ResizeNPPI → effects
-         └─── continuous GPU ───┘
+[SUGGEST] GPU equivalent module available!
+          Current:     ImageResizeCV (HOST, function:resize, backend:cpu)
+          Alternative: ResizeNPPI (CUDA_DEVICE, function:resize, backend:cuda)
+
+          Replace 'resize' with:
+          "resize": { "type": "ResizeNPPI", "props": { "width": 640, "height": 480 } }
+
+          Result: blur → ResizeNPPI → effects
+                        └─── continuous GPU ───┘
 
 [INFO] Proceeding with user's pipeline (with auto-inserted bridges)...
+```
+
+### Example 4: Complex Pipeline with Combined Format + Memory Bridging
+
+**User Input:**
+```json
+{
+  "modules": {
+    "camera": { "type": "WebCamSource" },
+    "face": { "type": "FaceDetectorXform" },
+    "blur": { "type": "GaussianBlur" },
+    "encode": { "type": "ImageEncoderCV" },
+    "writer": { "type": "FileWriterModule" }
+  },
+  "connections": [
+    { "from": "camera", "to": "face" },
+    { "from": "face", "to": "blur" },
+    { "from": "blur", "to": "encode" },
+    { "from": "encode", "to": "writer" }
+  ]
+}
+```
+
+**Analysis:**
+```
+camera (YUYV/HOST) → face (BGR/HOST)        ✗ ImageType MISMATCH
+face (BGR/HOST) → blur (CUDA_DEVICE)        ✗ MemType MISMATCH
+blur (BGR/CUDA) → encode (BGR/HOST)         ✗ MemType MISMATCH (format OK)
+encode (JPEG/HOST) → writer (any/HOST)      ✓ OK
+```
+
+**Validator Output:**
+```
+[INFO] Building pipeline...
+
+[INFO] Pixel format mismatch: camera (YUYV) → face (expects BGR)
+       Auto-inserting ColorConversion (YUYV→BGR)
+
+[INFO] Memory type mismatch: face (HOST) → blur (CUDA_DEVICE)
+       Auto-inserting CudaMemCopy (HostToDevice)
+
+[INFO] Memory type mismatch: blur (CUDA_DEVICE) → encode (HOST)
+       Auto-inserting CudaMemCopy (DeviceToHost)
+
+[SUGGEST] GPU-accelerated encoder available!
+          Current:     ImageEncoderCV (CPU)
+          Alternative: JPEGEncoderNVJPEG (CUDA)
+          Note:        Would eliminate D2H transfer before encoding
+
+[INFO] Final pipeline (with auto-bridges):
+       camera → [YUYV→BGR] → face → [H2D] → blur → [D2H] → encode → writer
+                ~~~~~~~~~          ~~~~          ~~~~
+                 (auto)           (auto)        (auto)
+
+       Memory:  HOST → HOST → HOST → CUDA → CUDA → HOST → HOST → HOST
+       Format:  YUYV → BGR  → BGR  → BGR  → BGR  → JPEG → JPEG
+```
+
+### Example 5: Full GPU Pipeline (Optimal)
+
+**User Input:**
+```json
+{
+  "modules": {
+    "generator": { "type": "TestSignalGenerator" },
+    "upload": { "type": "CudaMemCopy", "props": { "kind": "HostToDevice" } },
+    "blur": { "type": "GaussianBlur" },
+    "resize": { "type": "ResizeNPPI" },
+    "effects": { "type": "EffectsNPPI" },
+    "encode": { "type": "JPEGEncoderNVJPEG" },
+    "writer": { "type": "FileWriterModule" }
+  }
+}
+```
+
+**Validator Output:**
+```
+[INFO] Building pipeline...
+[INFO] Excellent! This pipeline is already optimized:
+       - Single H2D transfer at the start
+       - All processing stays on GPU
+       - JPEGEncoderNVJPEG handles encoding on GPU, outputs HOST
+       - No D2H transfer needed (encoder does it internally)
+
+[INFO] Final pipeline:
+       generator → upload → blur → resize → effects → encode → writer
+       HOST      → CUDA   → CUDA → CUDA   → CUDA   → HOST   → HOST
+                   └───────────── GPU BLOCK ───────────────┘
+
+       Memory transfers: 1 (minimum possible)
 ```
 
 ---
 
 ## Auto-Bridge Insertion
 
-### Bridge Module Selection
+### Bridge Types
+
+The framework auto-inserts two types of bridges:
+1. **Memory bridges**: Transfer data between memory locations (CudaMemCopy)
+2. **Format bridges**: Convert pixel formats (ColorConversion, CCNPPI)
+
+### Memory Bridge Selection
 
 | From MemType | To MemType | Bridge Module | Props |
 |--------------|------------|---------------|-------|
@@ -450,11 +760,56 @@ effects  CUDA_DEVICE  → encoder  HOST          ✗ Need D2H
 | CUDA_DEVICE | DMABUF | *not supported* | error |
 | DMABUF | CUDA_DEVICE | *not supported* | error |
 
+### Format Bridge Selection
+
+| Current MemType | Bridge Module | Props |
+|-----------------|---------------|-------|
+| HOST | ColorConversion | inFormat, outFormat |
+| CUDA_DEVICE | CCNPPI | inFormat, outFormat |
+
+**Note**: Format bridge is selected based on the *current* memory type at that point in the pipeline. If data is on GPU, use CCNPPI to avoid unnecessary transfers.
+
+### Combined Bridge Order
+
+When BOTH format and memory mismatch exist, the order matters:
+
+**Scenario A: HOST → CUDA with format change**
+```
+Producer (HOST, YUV420) → Consumer (CUDA_DEVICE, NV12)
+
+Option 1: Format first (on HOST), then upload
+  [ColorConversion YUV420→NV12] → [CudaMemCopy H2D]
+  Cost: CPU conversion + H2D transfer
+
+Option 2: Upload first, then format (on GPU)
+  [CudaMemCopy H2D] → [CCNPPI YUV420→NV12]
+  Cost: H2D transfer + GPU conversion
+
+Preferred: Option 2 (GPU conversion is faster)
+```
+
+**Scenario B: CUDA → HOST with format change**
+```
+Producer (CUDA_DEVICE, YUV420) → Consumer (HOST, BGR)
+
+Option 1: Format first (on GPU), then download
+  [CCNPPI YUV420→BGR] → [CudaMemCopy D2H]
+  Cost: GPU conversion + D2H transfer
+
+Option 2: Download first, then format (on HOST)
+  [CudaMemCopy D2H] → [ColorConversion YUV420→BGR]
+  Cost: D2H transfer + CPU conversion
+
+Preferred: Option 1 (do conversion while still on GPU)
+```
+
 ### Bridge Naming Convention
 
 Auto-inserted modules get generated names:
 - `_bridge_H2D_color_blur` (between color and blur, HostToDevice)
 - `_bridge_D2H_effects_encoder` (between effects and encoder, DeviceToHost)
+- `_bridge_cvt_YUV_BGR_source_face` (format conversion, YUV to BGR)
+- `_bridge_cvt_gpu_YUV_NV12_blur_resize` (GPU format conversion)
 
 The `_` prefix indicates framework-generated modules.
 
@@ -561,6 +916,29 @@ HOST  → HOST     → HOST    → HOST     ✓ All compatible (no bridges neede
 - Unit tests verify memType is stored correctly
 - Backward compatible (HOST default)
 
+### Phase 1b: PIN ImageType Registration
+
+**Files to modify:**
+- `base/include/declarative/Metadata.h` - Add imageTypes to PinDef
+- `base/include/declarative/ModuleRegistry.h` - Update PinInfo
+- `base/src/declarative/ModuleRegistrations.cpp` - Update all registrations
+
+**Tasks:**
+1. Add `std::vector<ImageMetadata::ImageType> imageTypes` field to `PinDef` struct
+2. Add `.inputImageTypes()` and `.outputImageType()` to registration builder
+3. Default to empty (accepts any) when not specified
+4. Update modules with specific format requirements:
+   - ImageEncoderCV: {BGR, RGB, MONO}
+   - FaceDetectorXform: {BGR}
+   - H264EncoderV4L2: {YUV420}
+   - ResizeNPPI: {NV12, YUV420}
+   - etc.
+
+**Acceptance Criteria:**
+- All modules have correct imageType declarations
+- Unit tests verify imageTypes stored correctly
+- Backward compatible (empty = any format)
+
 ### Phase 2: Functional Tags
 
 **Files to modify:**
@@ -577,22 +955,44 @@ HOST  → HOST     → HOST    → HOST     ✓ All compatible (no bridges neede
 - Can query "all resize modules" and get ImageResizeCV + ResizeNPPI
 - Can query "cuda + resize" and get only ResizeNPPI
 
-### Phase 3: Memory Type Analyzer
+### Phase 3: Pipeline Compatibility Analyzer
 
 **Files to create:**
-- `base/include/declarative/MemTypeAnalyzer.h`
-- `base/src/declarative/MemTypeAnalyzer.cpp`
+- `base/include/declarative/PipelineAnalyzer.h`
+- `base/src/declarative/PipelineAnalyzer.cpp`
 
 **Tasks:**
-1. Build memtype flow graph from connections
-2. Query registry for each module's PIN memtypes
-3. Identify all mismatches
-4. Return list of required bridges
+1. Build compatibility flow graph from connections
+2. Query registry for each module's PIN specs (memType, imageTypes)
+3. Identify all mismatches in order:
+   a. Frame type mismatches (ERROR - cannot bridge)
+   b. Pixel format mismatches (can bridge with ColorConversion/CCNPPI)
+   c. Memory type mismatches (can bridge with CudaMemCopy)
+4. Return list of required bridges with proper ordering
+
+**Analyzer Output Structure:**
+```cpp
+struct AnalysisResult {
+    bool hasErrors;                    // Frame type incompatibilities
+    std::vector<BridgeSpec> bridges;   // Required bridges in order
+    std::vector<Suggestion> suggestions; // Module replacements
+    std::vector<Warning> warnings;     // Suboptimal patterns
+};
+
+struct BridgeSpec {
+    std::string fromModule;
+    std::string toModule;
+    BridgeType type;                   // FORMAT or MEMORY
+    std::string bridgeModule;          // "ColorConversion", "CudaMemCopy", etc.
+    nlohmann::json props;              // Props for bridge module
+};
+```
 
 **Acceptance Criteria:**
-- Correctly identifies HOST→CUDA_DEVICE mismatches
-- Correctly identifies CUDA_DEVICE→HOST mismatches
-- Handles chains of CUDA modules (no false positives)
+- Correctly identifies frame type mismatches (errors)
+- Correctly identifies pixel format mismatches (bridges)
+- Correctly identifies memory type mismatches (bridges)
+- Handles combined format+memory mismatches with correct order
 - Unit tests for various pipeline topologies
 
 ### Phase 4: Auto-Bridge Insertion
@@ -601,16 +1001,42 @@ HOST  → HOST     → HOST    → HOST     ✓ All compatible (no bridges neede
 - `base/src/declarative/ModuleFactory.cpp`
 
 **Tasks:**
-1. After module creation, run MemTypeAnalyzer
-2. For each mismatch, create bridge module
-3. Update connection graph to include bridges
-4. Ensure bridges use shared cudastream
-5. Generate meaningful bridge names
+1. After module creation, run PipelineAnalyzer
+2. For each bridge spec:
+   a. Create bridge module with correct props
+   b. Insert into connection graph
+   c. For CUDA bridges: use shared cudastream
+   d. For format bridges: configure in/out formats
+3. Generate meaningful bridge names
+4. Track bridge insertion for user feedback
+
+**Bridge Creation Rules:**
+```cpp
+// Memory bridges
+if (bridge.type == MEMORY) {
+    if (currentMemType == HOST && targetMemType == CUDA_DEVICE) {
+        createCudaMemCopy(HostToDevice, sharedStream);
+    } else if (currentMemType == CUDA_DEVICE && targetMemType == HOST) {
+        createCudaMemCopy(DeviceToHost, sharedStream);
+    }
+}
+
+// Format bridges (select based on current memory location)
+if (bridge.type == FORMAT) {
+    if (currentMemType == CUDA_DEVICE) {
+        createCCNPPI(inFormat, outFormat, sharedStream);
+    } else {
+        createColorConversion(inFormat, outFormat);
+    }
+}
+```
 
 **Acceptance Criteria:**
 - CUDA pipelines work without manual CudaMemCopy
+- Pixel format conversions happen automatically
 - Bridges share cudastream with other CUDA modules
 - Pipeline init succeeds
+- Correct bridge ordering (format before memory when going D→H)
 
 ### Phase 5: User Feedback & Suggestions
 
@@ -649,6 +1075,29 @@ BOOST_AUTO_TEST_CASE(GaussianBlur_InputMemType_IsCUDA_DEVICE) {
 }
 ```
 
+**ImageType Registration Tests:**
+```cpp
+BOOST_AUTO_TEST_CASE(PinDef_DefaultImageTypes_IsEmpty) {
+    PinDef pin{"input", {FrameType::RAW_IMAGE}};
+    BOOST_CHECK(pin.imageTypes.empty());  // Empty = accepts any
+}
+
+BOOST_AUTO_TEST_CASE(ImageEncoderCV_InputImageTypes_IsBGR_RGB) {
+    auto* info = registry.getModule("ImageEncoderCV");
+    auto& types = info->inputs[0].imageTypes;
+    BOOST_CHECK(contains(types, ImageType::BGR));
+    BOOST_CHECK(contains(types, ImageType::RGB));
+    BOOST_CHECK(!contains(types, ImageType::YUV420));  // Not supported
+}
+
+BOOST_AUTO_TEST_CASE(FaceDetectorXform_RequiresBGR) {
+    auto* info = registry.getModule("FaceDetectorXform");
+    auto& types = info->inputs[0].imageTypes;
+    BOOST_CHECK_EQUAL(types.size(), 1);
+    BOOST_CHECK_EQUAL(types[0], ImageType::BGR);
+}
+```
+
 **Tag Query Tests:**
 ```cpp
 BOOST_AUTO_TEST_CASE(Query_ResizeModules_ReturnsBothCPUAndCUDA) {
@@ -664,19 +1113,68 @@ BOOST_AUTO_TEST_CASE(Query_CUDAResize_ReturnsOnlyResizeNPPI) {
 }
 ```
 
-**MemType Analyzer Tests:**
+**Pipeline Analyzer Tests - Memory:**
 ```cpp
 BOOST_AUTO_TEST_CASE(Analyzer_HostToCUDA_RequiresBridge) {
     // ColorConversion (HOST) → GaussianBlur (CUDA_DEVICE)
     auto result = analyzer.analyze(connections);
     BOOST_CHECK_EQUAL(result.bridges.size(), 1);
-    BOOST_CHECK_EQUAL(result.bridges[0].type, BridgeType::HOST_TO_CUDA);
+    BOOST_CHECK_EQUAL(result.bridges[0].type, BridgeType::MEMORY);
 }
 
 BOOST_AUTO_TEST_CASE(Analyzer_CUDAToCUDA_NoBridge) {
     // GaussianBlur (CUDA) → ResizeNPPI (CUDA)
     auto result = analyzer.analyze(connections);
     BOOST_CHECK(result.bridges.empty());
+}
+```
+
+**Pipeline Analyzer Tests - Pixel Format:**
+```cpp
+BOOST_AUTO_TEST_CASE(Analyzer_YUV_To_BGR_RequiresColorConversion) {
+    // TestSignalGenerator (YUV420) → ImageEncoderCV (BGR)
+    auto result = analyzer.analyze(connections);
+    BOOST_CHECK_EQUAL(result.bridges.size(), 1);
+    BOOST_CHECK_EQUAL(result.bridges[0].type, BridgeType::FORMAT);
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "ColorConversion");
+}
+
+BOOST_AUTO_TEST_CASE(Analyzer_BGR_To_BGR_NoBridge) {
+    // ImageDecoderCV (BGR) → FaceDetectorXform (BGR)
+    auto result = analyzer.analyze(connections);
+    BOOST_CHECK(result.bridges.empty());
+}
+
+BOOST_AUTO_TEST_CASE(Analyzer_GPU_FormatMismatch_UsesCCNPPI) {
+    // GaussianBlur (YUV420/CUDA) → EffectsNPPI (NV12/CUDA)
+    auto result = analyzer.analyze(connections);
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CCNPPI");  // Not ColorConversion
+}
+```
+
+**Pipeline Analyzer Tests - Combined:**
+```cpp
+BOOST_AUTO_TEST_CASE(Analyzer_Combined_Format_And_Memory) {
+    // TestSignalGenerator (YUV420/HOST) → ResizeNPPI (NV12/CUDA)
+    auto result = analyzer.analyze(connections);
+
+    // Should have 2 bridges
+    BOOST_CHECK_EQUAL(result.bridges.size(), 2);
+
+    // Order matters: H2D first, then CCNPPI (do format on GPU)
+    BOOST_CHECK_EQUAL(result.bridges[0].type, BridgeType::MEMORY);
+    BOOST_CHECK_EQUAL(result.bridges[1].type, BridgeType::FORMAT);
+    BOOST_CHECK_EQUAL(result.bridges[1].bridgeModule, "CCNPPI");  // On GPU
+}
+
+BOOST_AUTO_TEST_CASE(Analyzer_CUDA_To_HOST_Format_And_Memory) {
+    // GaussianBlur (YUV420/CUDA) → ImageEncoderCV (BGR/HOST)
+    auto result = analyzer.analyze(connections);
+
+    // Order: CCNPPI first (while on GPU), then D2H
+    BOOST_CHECK_EQUAL(result.bridges[0].type, BridgeType::FORMAT);
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CCNPPI");
+    BOOST_CHECK_EQUAL(result.bridges[1].type, BridgeType::MEMORY);
 }
 ```
 
@@ -791,14 +1289,18 @@ std::vector<std::string> getSinkModules(const std::string& backend = "");
 This design transforms the declarative framework from a passive builder into an intelligent assistant that:
 
 1. **Understands** memory requirements via per-PIN memType registration
-2. **Classifies** modules via functional tags (function, backend, media, format)
-3. **Detects** memory type incompatibilities automatically
-4. **Resolves** them by auto-inserting bridge modules (CudaMemCopy)
-5. **Optimizes** by recognizing consecutive CUDA modules
-6. **Educates** users about suboptimal patterns with actionable suggestions
-7. **Enables** future LLM-based pipeline generation
+2. **Understands** pixel format requirements via per-PIN imageType registration
+3. **Classifies** modules via functional tags (function, backend, media, format)
+4. **Detects** memory type incompatibilities automatically
+5. **Detects** pixel format incompatibilities automatically
+6. **Resolves** memory mismatches by auto-inserting CudaMemCopy bridges
+7. **Resolves** format mismatches by auto-inserting ColorConversion/CCNPPI bridges
+8. **Optimizes** bridge order (do format conversion on GPU when possible)
+9. **Suggests** GPU-accelerated alternatives to avoid unnecessary transfers
+10. **Educates** users about suboptimal patterns with actionable suggestions
+11. **Enables** future LLM-based pipeline generation
 
-The user experience changes from "must understand CUDA memory model" to "just pick the modules you want."
+The user experience changes from "must understand CUDA memory model and pixel formats" to "just pick the modules you want."
 
 ---
 
@@ -806,6 +1308,7 @@ The user experience changes from "must understand CUDA memory model" to "just pi
 
 This appendix provides exact specifications for every registered module including:
 - Input/output PIN memory types
+- Input/output PIN pixel formats (imageTypes)
 - Required functional tags
 - Backend tags
 
@@ -948,6 +1451,76 @@ These modules change memory type based on their properties.
 | RTSPClientSrc | `format:h264`, `format:rtsp` |
 | RTSPPusher | `format:h264`, `format:rtsp` |
 
+### A.11 ImageType Specifications (Pixel Formats)
+
+This section specifies which pixel formats each module accepts/produces.
+
+**ImageType Legend** (from `ImageMetadata::ImageType`):
+
+| ImageType | Description |
+|-----------|-------------|
+| MONO | Grayscale, single channel |
+| BGR | Blue-Green-Red packed (OpenCV default) |
+| BGRA | BGR + Alpha channel |
+| RGB | Red-Green-Blue packed |
+| RGBA | RGB + Alpha channel |
+| YUV420 | Planar YUV 4:2:0 (Y plane + U plane + V plane) |
+| YUV411_I | Interleaved YUV 4:1:1 |
+| YUV444 | Planar YUV 4:4:4 |
+| NV12 | Semi-planar YUV (Y plane + interleaved UV) |
+| UYVY | Packed YUV (U-Y-V-Y) |
+| YUYV | Packed YUV (Y-U-Y-V) |
+
+**Source Module Output Formats:**
+
+| Module | Output ImageTypes | Notes |
+|--------|-------------------|-------|
+| TestSignalGenerator | YUV420 | Planar YUV output |
+| WebCamSource | YUYV, UYVY, BGR | Depends on camera driver |
+| Mp4ReaderSource | NV12, YUV420 | Depends on video codec |
+| RTSPClientSrc | NV12, YUV420 | Typically H264→NV12 |
+| ImageDecoderCV | BGR | Always outputs BGR |
+
+**Transform Module ImageType Requirements:**
+
+| Module | Input ImageTypes | Output ImageTypes | Notes |
+|--------|------------------|-------------------|-------|
+| ImageEncoderCV | {BGR, RGB, MONO} | — | Only accepts BGR/RGB/MONO |
+| ImageResizeCV | {any} | same as input | Format pass-through |
+| RotateCV | {any} | same as input | Format pass-through |
+| ColorConversion | {any} | configured | Configurable output |
+| FaceDetectorXform | {BGR} | BGR | **Only BGR** (OpenCV DNN) |
+| FacialLandmarkCV | {BGR} | BGR | **Only BGR** (OpenCV) |
+| VirtualPTZ | {any} | same as input | Format pass-through |
+| AffineTransform | {any} | same as input | Format pass-through |
+| BrightnessContrastControl | {BGR, RGB} | same as input | Color images only |
+| TextOverlayXForm | {BGR, RGB} | same as input | Color images only |
+| QRReader | {any} | same as input | Internally converts |
+
+**CUDA Module ImageType Requirements:**
+
+| Module | Input ImageTypes | Output ImageTypes | Notes |
+|--------|------------------|-------------------|-------|
+| GaussianBlur | {NV12, YUV420} | same as input | NPP format |
+| ResizeNPPI | {NV12, YUV420} | same as input | NPP format |
+| RotateNPPI | {NV12, YUV420} | same as input | NPP format |
+| EffectsNPPI | {NV12, YUV420} | same as input | NPP format |
+| OverlayNPPI | {NV12} | NV12 | **Only NV12** |
+| CCNPPI | {any} | configured | GPU color converter |
+| JPEGDecoderNVJPEG | — | BGR, RGB | JPEG → color |
+| JPEGEncoderNVJPEG | {BGR, RGB, YUV420} | — | Color → JPEG |
+
+**Sink Module ImageType Requirements:**
+
+| Module | Input ImageTypes | Notes |
+|--------|------------------|-------|
+| FileWriterModule | {any} | Writes raw bytes |
+| Mp4WriterSink | {YUV420, NV12} | Video encoder requires YUV |
+| H264EncoderV4L2 | {YUV420} | **Only YUV420** |
+| RTSPPusher | {YUV420, NV12} | For H264 encoding |
+| StatSink | {any} | Ignores format |
+| VirtualCameraSink | {YUV420, YUYV} | V4L2 formats |
+
 ---
 
 ## Appendix B: Functional Equivalence Groups
@@ -1059,6 +1632,44 @@ Update `ModuleRegistrations.cpp` to add memType to each PIN:
 - [ ] CudaMemCopy - output depends on props.kind
 - [ ] MemTypeConversion - output depends on props.outputMemType
 
+### C.1b Phase 1b: PIN ImageType Registration
+
+Update `ModuleRegistrations.cpp` to add imageTypes to each PIN:
+
+```cpp
+// Example change needed:
+.input("input", "RawImage", FrameMetadata::HOST)  // Current
+.input("input", "RawImage", FrameMetadata::HOST, {ImageType::BGR, ImageType::RGB})  // New
+```
+
+**Files to modify:**
+- `base/include/declarative/ModuleRegistry.h` - Add imageTypes to PinInfo struct
+- `base/include/declarative/ModuleRegistrationBuilder.h` - Add imageTypes parameter
+- `base/src/declarative/ModuleRegistrations.cpp` - Update all module registrations
+
+**Modules requiring specific ImageTypes (INPUT):**
+- [ ] ImageEncoderCV: {BGR, RGB, MONO}
+- [ ] FaceDetectorXform: {BGR}
+- [ ] FacialLandmarkCV: {BGR}
+- [ ] BrightnessContrastControl: {BGR, RGB}
+- [ ] TextOverlayXForm: {BGR, RGB}
+- [ ] H264EncoderV4L2: {YUV420}
+- [ ] Mp4WriterSink: {YUV420, NV12}
+- [ ] RTSPPusher: {YUV420, NV12}
+- [ ] VirtualCameraSink: {YUV420, YUYV}
+- [ ] JPEGEncoderNVJPEG: {BGR, RGB, YUV420}
+
+**CUDA Modules requiring specific ImageTypes:**
+- [ ] GaussianBlur: {NV12, YUV420}
+- [ ] ResizeNPPI: {NV12, YUV420}
+- [ ] RotateNPPI: {NV12, YUV420}
+- [ ] EffectsNPPI: {NV12, YUV420}
+- [ ] OverlayNPPI: {NV12}
+
+**Modules with DYNAMIC output ImageTypes:**
+- [ ] ColorConversion - output depends on props.outFormat
+- [ ] CCNPPI - output depends on props.outFormat
+
 ### C.2 Phase 2: Functional Tags
 
 Add tags to all module registrations:
@@ -1120,14 +1731,47 @@ V4L2 modules need: `backend:v4l2`
 
 ### C.4 Unit Test Checklist
 
+**MemType Tests:**
 - [ ] Test memType stored correctly in registry for each module
+- [ ] Test default memType is HOST
+- [ ] Test CUDA modules have CUDA_DEVICE memType
+
+**ImageType Tests:**
+- [ ] Test imageTypes stored correctly in registry for each module
+- [ ] Test default imageTypes is empty (accepts any)
+- [ ] Test ImageEncoderCV accepts only BGR/RGB/MONO
+- [ ] Test FaceDetectorXform requires BGR
+- [ ] Test CUDA NPP modules require NV12/YUV420
+
+**Tag Tests:**
 - [ ] Test tag queries return correct module sets
 - [ ] Test functional equivalence queries (resize: ImageResizeCV + ResizeNPPI)
 - [ ] Test backend filtering (cuda + resize = ResizeNPPI only)
-- [ ] Test MemTypeAnalyzer identifies HOST→CUDA_DEVICE mismatches
-- [ ] Test MemTypeAnalyzer identifies CUDA_DEVICE→HOST mismatches
+
+**Pipeline Analyzer Tests - Memory:**
+- [ ] Test analyzer identifies HOST→CUDA_DEVICE mismatches
+- [ ] Test analyzer identifies CUDA_DEVICE→HOST mismatches
+- [ ] Test consecutive CUDA modules need no bridge
 - [ ] Test auto-bridge insertion for simple CUDA pipeline
 - [ ] Test auto-bridge insertion for multi-CUDA pipeline (only 2 bridges)
+
+**Pipeline Analyzer Tests - Format:**
+- [ ] Test analyzer identifies YUV420→BGR format mismatch
+- [ ] Test analyzer uses ColorConversion for HOST format bridging
+- [ ] Test analyzer uses CCNPPI for CUDA format bridging
+- [ ] Test same-format connections need no bridge
+
+**Pipeline Analyzer Tests - Combined:**
+- [ ] Test combined format+memory mismatch (HOST/YUV → CUDA/NV12)
+- [ ] Test correct bridge order: H2D first, then CCNPPI
+- [ ] Test correct bridge order: CCNPPI first, then D2H
+
+**Suggestion Tests:**
 - [ ] Test suboptimal pattern detection (CPU in CUDA chain)
-- [ ] Test suggestion generation (ResizeNPPI for ImageResizeCV)
-- [ ] Integration test: CUDA pipeline produces output files
+- [ ] Test GPU alternative suggestions (ImageResizeCV → ResizeNPPI)
+- [ ] Test GPU encoder suggestions (ImageEncoderCV → JPEGEncoderNVJPEG)
+
+**Integration Tests:**
+- [ ] CUDA pipeline with auto-bridges produces output files
+- [ ] Pipeline with auto format conversion produces correct images
+- [ ] Complex pipeline (camera → detect → GPU → encode) works end-to-end

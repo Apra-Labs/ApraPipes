@@ -9,7 +9,8 @@
       "props": {
         "width": 800,
         "height": 600,
-        "maxFrames": 300
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
       }
     },
     "color_convert": {
@@ -19,10 +20,8 @@
       }
     },
     "upload_gpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "HostToDevice"
-      }
+      "type": "CudaMemCopyH2D",
+      "props": {}
     },
     "resize": {
       "type": "ResizeNPPI",
@@ -40,15 +39,13 @@
     "effects": {
       "type": "EffectsNPPI",
       "props": {
-        "brightness": 20,
-        "contrast": 1.2
+        "brightness": 40,
+        "contrast": 1.4
       }
     },
     "download_cpu": {
-      "type": "CudaMemCopy",
-      "props": {
-        "kind": "DeviceToHost"
-      }
+      "type": "CudaMemCopyD2H",
+      "props": {}
     },
     "encoder": {
       "type": "ImageEncoderCV",

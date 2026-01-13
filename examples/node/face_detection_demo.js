@@ -23,7 +23,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load the addon
-const addonPath = path.join(__dirname, '../../aprapipes.node');
+const addonPath = path.join(__dirname, '../../bin/aprapipes.node');
 let ap;
 try {
     ap = require(addonPath);

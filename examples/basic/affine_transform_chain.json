@@ -1,7 +1,7 @@
 {
   "pipeline": {
     "name": "Affine Transform Chain",
-    "description": "Affine Transform Chain Example. Demonstrates connecting AffineTransform in a pipeline."
+    "description": "Affine Transform Chain Example. Demonstrates rotation and scaling with AffineTransform. Output: ./data/testOutput/affine_chain_????.jpg"
   },
   "modules": {
     "source": {
@@ -9,7 +9,8 @@
       "props": {
         "width": 640,
         "height": 480,
-        "maxFrames": 300
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
       }
     },
     "convert": {
@@ -25,13 +26,23 @@
         "scale": 0.8
       }
     },
-    "sink": {
-      "type": "StatSink"
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/affine_chain_????.jpg"
+      }
     }
   },
   "connections": [
     { "from": "source", "to": "convert" },
     { "from": "convert", "to": "transform" },
-    { "from": "transform", "to": "sink" }
+    { "from": "transform", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
   ]
 }

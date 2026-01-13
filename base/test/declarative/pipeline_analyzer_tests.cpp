@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(AnalyzeHostToCuda_RequiresMemoryBridge)
     BOOST_CHECK(!result.hasErrors);
     BOOST_REQUIRE_EQUAL(result.bridges.size(), 1);
     BOOST_CHECK(result.bridges[0].type == BridgeType::Memory);
-    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopy");
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopyH2D");
     BOOST_CHECK(result.bridges[0].memoryDirection == MemoryDirection::HostToDevice);
     BOOST_CHECK_EQUAL(result.memoryBridgeCount, 1);
 }
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(AnalyzeCudaToHost_RequiresMemoryBridge)
     BOOST_CHECK(!result.hasErrors);
     BOOST_REQUIRE_EQUAL(result.bridges.size(), 1);
     BOOST_CHECK(result.bridges[0].type == BridgeType::Memory);
-    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopy");
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopyD2H");
     BOOST_CHECK(result.bridges[0].memoryDirection == MemoryDirection::DeviceToHost);
 }
 
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(AnalyzeMemoryAndFormatMismatch_RequiresBothBridges)
 
     // First bridge should be memory (HOST -> CUDA)
     BOOST_CHECK(result.bridges[0].type == BridgeType::Memory);
-    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopy");
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "CudaMemCopyH2D");
 
     // Second bridge should be format (on CUDA, so CCNPPI)
     BOOST_CHECK(result.bridges[1].type == BridgeType::Format);

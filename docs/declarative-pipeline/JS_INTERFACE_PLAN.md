@@ -823,8 +823,8 @@ C++ Module Thread          N-API Layer              Node.js Event Loop
 base/include/declarative/TomlParser.h      # DELETE
 base/src/declarative/TomlParser.cpp        # DELETE
 base/test/declarative/toml_parser_tests.cpp # DELETE
-docs/declarative-pipeline/examples/working/*.toml  # CONVERT to JSON, then DELETE
-docs/declarative-pipeline/examples/templates/*.toml # CONVERT to JSON, then DELETE
+examples/basic/*.toml  # CONVERT to JSON, then DELETE
+examples/advanced/*.toml # CONVERT to JSON, then DELETE
 ```
 
 ### 6.3 Dependencies to REMOVE
@@ -876,7 +876,7 @@ aprapipes_cli convert pipeline.json --output pipeline.toml
 | **R1** | Delete TomlParser files | `base/include/declarative/TomlParser.h`, `base/src/declarative/TomlParser.cpp` |
 | **R2** | Delete TOML tests | `base/test/declarative/toml_parser_tests.cpp` |
 | **R3** | Remove tomlplusplus from vcpkg | `base/vcpkg.json` |
-| **R6** | Delete original .toml files | `docs/declarative-pipeline/examples/**/*.toml` |
+| **R6** | Delete original .toml files | `examples/**/*.toml` |
 
 #### Test Files to UPDATE (not delete)
 
@@ -909,7 +909,7 @@ aprapipes_cli convert pipeline.json --output pipeline.toml
 | Task | Description | Files |
 |------|-------------|-------|
 | **R4** | Update CMakeLists.txt | `base/CMakeLists.txt` (remove TomlParser references) |
-| **R5** | Convert all .toml examples to .json | `docs/declarative-pipeline/examples/` |
+| **R5** | Convert all .toml examples to .json | `examples/` |
 | **R7** | Update integration test script | `scripts/test_declarative_pipelines.sh` - use .json files |
 | **R19** | Update documentation | All `docs/declarative-pipeline/*.md` files referencing TOML |
 

@@ -1,0 +1,37 @@
+{
+  "pipeline": {
+    "name": "File Reader Writer Demo",
+    "description": "Demonstrates reading an image file, decoding, re-encoding, and writing. Output: ./data/testOutput/file_copy_????.jpg"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/faces.jpg",
+        "readLoop": false,
+        "maxIndex": 99,
+        "outputFrameType": "EncodedImage"
+      }
+    },
+    "decoder": {
+      "type": "ImageDecoderCV"
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/file_copy_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

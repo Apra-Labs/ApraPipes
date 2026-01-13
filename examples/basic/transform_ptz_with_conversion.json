@@ -9,7 +9,7 @@
       "props": {
         "width": 1920,
         "height": 1080,
-        "maxFrames": 300
+        "maxFrames": 100
       }
     },
     "convert": {

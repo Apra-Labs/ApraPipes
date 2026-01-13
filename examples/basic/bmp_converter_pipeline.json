@@ -9,7 +9,7 @@
       "props": {
         "width": 320,
         "height": 240,
-        "maxFrames": 300
+        "maxFrames": 100
       }
     },
     "color_convert": {
@@ -24,7 +24,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/declarative_test/bmp_output/frame_????.bmp"
+        "strFullFileNameWithPattern": "./data/testOutput/bmp_????.bmp"
       }
     }
   },

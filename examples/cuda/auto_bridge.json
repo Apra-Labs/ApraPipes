@@ -1,0 +1,47 @@
+{
+  "pipeline": {
+    "name": "CUDA Auto-Bridge Demo",
+    "description": "Tests auto-bridging: generates test frames on CPU, applies GPU blur (auto-inserted H2D transfer), downloads (auto-inserted D2H transfer), and saves. Output: ./data/testOutput/cuda_auto_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "blur": {
+      "type": "GaussianBlur",
+      "props": {
+        "kernelSize": 15
+      }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_auto_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "blur" },
+    { "from": "blur", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

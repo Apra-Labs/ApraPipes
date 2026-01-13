@@ -3,7 +3,7 @@
 
 
 CudaMemCopy::CudaMemCopy(CudaMemCopyProps _props) : Module(TRANSFORM, "CudaMemCopy", _props), props(_props), mOutputPinId(""), mCopy2D(false), mChannels(NOT_SET_NUM)
-{		
+{
 }
 
 CudaMemCopy::~CudaMemCopy()
@@ -37,11 +37,11 @@ void CudaMemCopy::addInputPin(framemetadata_sp& metadata, string& pinId)
 	Module::addInputPin(metadata, pinId);
 
 	switch (props.memcpyKind)
-	{			
+	{
 	case cudaMemcpyDeviceToHost:
 		mMemType = FrameMetadata::MemType::HOST;
 		break;
-	case cudaMemcpyHostToDevice:	
+	case cudaMemcpyHostToDevice:
 		mMemType = FrameMetadata::MemType::CUDA_DEVICE;
 		break;
 	case cudaMemcpyDeviceToDevice:
@@ -51,7 +51,7 @@ void CudaMemCopy::addInputPin(framemetadata_sp& metadata, string& pinId)
 	}
 
 	mFrameType = metadata->getFrameType();
-	mOutputMetadata = cloneMetadata(metadata, mMemType);	
+	mOutputMetadata = cloneMetadata(metadata, mMemType);
 	mOutputMetadata->copyHint(*metadata.get());
 	mOutputPinId = addOutputPin(mOutputMetadata);
 }
@@ -170,7 +170,7 @@ void CudaMemCopy::setOutputMetadata(framemetadata_sp& inputMetadata)
 			rawImageMetadata->getType(),
 			props.alignLength,
 			rawImageMetadata->getDepth(),
-			FrameMetadata::MemType::HOST,
+			mMemType,
 			true);
 		rawOutMetadata->setData(other);
 
@@ -192,7 +192,7 @@ void CudaMemCopy::setOutputMetadata(framemetadata_sp& inputMetadata)
 			rawImagePlanarMetadata->getImageType(),
 			props.alignLength,
 			rawImagePlanarMetadata->getDepth(),
-			FrameMetadata::MemType::HOST);
+			mMemType);
 		rawOutMetadata->setData(other);
 
 		mChannels = rawImagePlanarMetadata->getChannels();

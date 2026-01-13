@@ -1031,24 +1031,27 @@ Some properties can be changed at runtime (marked as "dynamic" in module descrip
 
 ## Example Pipelines
 
-Example pipelines are in `docs/declarative-pipeline/examples/`:
+Example pipelines are in `examples/`:
 
-| File | Description |
-|------|-------------|
-| `01_simple_source_sink.json` | Minimal pipeline (TestSignal → StatSink) |
-| `02_three_module_chain.json` | FileReader → ImageDecoder → StatSink |
-| `03_split_pipeline.json` | Fan-out with Split module |
-| `04_ptz_with_conversion.json` | Type bridge example |
-| `09_face_detection_demo.json` | Full face detection pipeline |
+| Directory | Description |
+|-----------|-------------|
+| `examples/basic/` | Simple CPU-only pipelines |
+| `examples/cuda/` | GPU-accelerated pipelines |
+| `examples/advanced/` | Complex pipelines (MP4, file I/O) |
+| `examples/node/` | Node.js addon examples |
 
 ### Running Examples
 
 ```bash
+# Install build outputs to bin/
+./scripts/install_to_bin.sh
+
 # Validate an example
-./aprapipes_cli validate docs/declarative-pipeline/examples/working/01_simple_source_sink.json
+./bin/aprapipes_cli validate examples/basic/simple_source_sink.json
 
 # Run an example
-./aprapipes_cli run docs/declarative-pipeline/examples/working/01_simple_source_sink.json
+cd bin
+./aprapipes_cli run ../examples/basic/simple_source_sink.json
 ```
 
 ---

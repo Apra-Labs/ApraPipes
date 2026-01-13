@@ -117,7 +117,7 @@ Created `aprapipes_node_headless` library on Linux that excludes GTKGL_FILES (Gt
 
 ## Working Pipelines
 
-All pipelines in `docs/declarative-pipeline/examples/working/` have been tested and verified.
+All pipelines in `examples/basic/` and `examples/cuda/` have been tested and verified.
 
 ### Pipeline Descriptions
 

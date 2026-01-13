@@ -21,3 +21,4 @@ sdk-ci/
 aprapipes-sdk-*/
 BuildLogs_*/
 cuda-install-*/
+bin/

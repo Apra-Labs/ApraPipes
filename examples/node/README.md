@@ -10,7 +10,7 @@ This directory contains example applications demonstrating the ApraPipes Node.js
    cmake --build build --parallel
    ```
 
-2. The addon file `aprapipes.node` should be in the project root.
+2. The addon file `aprapipes.node` should be in the `bin/` directory. Run `./scripts/install_to_bin.sh` after building.
 
 ## Examples
 
@@ -132,11 +132,11 @@ if (ptz.hasDynamicProperties()) {
 Run the CLI to see all registered modules:
 
 ```bash
-./build/aprapipes_cli list-modules
+./bin/aprapipes_cli list-modules
 ```
 
 Or get details about a specific module:
 
 ```bash
-./build/aprapipes_cli describe VirtualPTZ
+./bin/aprapipes_cli describe VirtualPTZ
 ```

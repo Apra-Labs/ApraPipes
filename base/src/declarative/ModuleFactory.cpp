@@ -233,17 +233,19 @@ std::map<std::string, std::string> ModuleFactory::setupOutputPins(
 
         // Create the appropriate metadata subclass based on frame type
         // Some modules require specific metadata types (e.g., ImageDecoderCV requires RawImageMetadata)
+        // Use the pin's declared memType (HOST, CUDA_DEVICE, etc.)
+        FrameMetadata::MemType pinMemType = outputPin.memType;
         framemetadata_sp metadata;
         switch (frameType) {
             case FrameMetadata::RAW_IMAGE:
-                metadata = framemetadata_sp(new RawImageMetadata());
+                metadata = framemetadata_sp(new RawImageMetadata(pinMemType));
                 break;
             case FrameMetadata::RAW_IMAGE_PLANAR:
-                metadata = framemetadata_sp(new RawImagePlanarMetadata(FrameMetadata::HOST));
+                metadata = framemetadata_sp(new RawImagePlanarMetadata(pinMemType));
                 break;
             default:
                 // For all other types, use generic FrameMetadata
-                metadata = framemetadata_sp(new FrameMetadata(frameType));
+                metadata = framemetadata_sp(new FrameMetadata(frameType, pinMemType));
                 break;
         }
 
@@ -683,7 +685,8 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
     try {
         std::unique_ptr<Module> modulePtr;
 
-        if (registry.moduleRequiresCudaStream(instance.module_type)) {
+        bool needsCuda = registry.moduleRequiresCudaStream(instance.module_type);
+        if (needsCuda) {
             // Use CUDA factory
             if (!cudaStreamPtr_) {
                 issues.push_back(Issue::error(
@@ -758,9 +761,12 @@ std::vector<Connection> ModuleFactory::insertBridgeModules(
 ) {
     // Build a map of original connections to their indices
     // Key: "fromModule.fromPin -> toModule.toPin"
+    // Empty pins default to "output" (source) and "input" (destination)
     auto makeConnKey = [](const Connection& conn) {
-        return conn.from_module + "." + conn.from_pin + "->" +
-               conn.to_module + "." + conn.to_pin;
+        std::string fromPin = conn.from_pin.empty() ? "output" : conn.from_pin;
+        std::string toPin = conn.to_pin.empty() ? "input" : conn.to_pin;
+        return conn.from_module + "." + fromPin + "->" +
+               conn.to_module + "." + toPin;
     };
 
     // Build map of bridge specs by connection key
