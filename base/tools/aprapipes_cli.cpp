@@ -355,6 +355,10 @@ int cmdRun(const std::string& filepath,
                 }
                 if (allSourcesStopped) {
                     std::cout << "All source modules completed.\n";
+                    // Give downstream modules time to process remaining frames
+                    // (encoders may have buffered frames to flush)
+                    std::cout << "Draining pipeline (2 seconds)...\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
                     g_running = false;
                 }
             }

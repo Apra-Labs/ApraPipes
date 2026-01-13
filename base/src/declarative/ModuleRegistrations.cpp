@@ -1277,6 +1277,7 @@ void ensureBuiltinModulesRegistered() {
                 .tags("utility", "sync", "cuda")
                 .cudaInput("input", "Frame")
                 .cudaOutput("output", "Frame")
+                .selfManagedOutputPins()
                 .finalizeCuda([](const auto& props, cudastream_sp stream) {
                     CudaStreamSynchronizeProps moduleProps(stream);
                     return std::make_unique<CudaStreamSynchronize>(moduleProps);

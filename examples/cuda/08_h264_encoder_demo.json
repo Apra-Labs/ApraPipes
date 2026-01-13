@@ -1,0 +1,48 @@
+{
+  "pipeline": {
+    "name": "H264EncoderNVCodec Demo",
+    "description": "GPU-accelerated H.264 encoding using NVCodec. Generates YUV420 planar test frames, uploads to GPU, syncs, encodes to H.264. Output: ./data/testOutput/cuda_h264_demo.h264"
+  },
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "upload": {
+      "type": "CudaMemCopyH2D",
+      "props": {}
+    },
+    "sync": {
+      "type": "CudaStreamSynchronize",
+      "props": {}
+    },
+    "encoder": {
+      "type": "H264EncoderNVCodec",
+      "props": {
+        "bitRateKbps": 2000,
+        "gopLength": 30,
+        "frameRate": 30,
+        "profile": "MAIN",
+        "enableBFrames": false
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_h264_demo.h264",
+        "append": true
+      }
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "upload" },
+    { "from": "upload", "to": "sync" },
+    { "from": "sync", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}
