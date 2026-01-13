@@ -6,6 +6,7 @@
 
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistrations.h"
+#include "declarative/PipelineAnalyzer.h"
 #include "Module.h"
 #include "FrameMetadata.h"
 #include "RawImageMetadata.h"
@@ -397,9 +398,54 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
         return result;
     }
 
+    // Phase 1b: Auto-Bridge Analysis and Insertion
+    // Analyze the pipeline for compatibility issues and auto-insert bridge modules
+    std::vector<Connection> modifiedConnections = desc.connections;
+    if (options_.auto_bridge_enabled && !desc.connections.empty()) {
+        PipelineAnalyzer analyzer;
+        auto analysis = analyzer.analyze(desc, registry);
+
+        // Report any errors from analysis (frame type mismatches)
+        for (const auto& error : analysis.errors) {
+            result.issues.push_back(Issue::error(
+                error.code,
+                error.fromModule + " -> " + error.toModule,
+                error.message + ": " + error.details
+            ));
+        }
+
+        // Report warnings
+        for (const auto& warning : analysis.warnings) {
+            result.issues.push_back(Issue::warning(
+                warning.code,
+                warning.moduleId,
+                warning.message + ". " + warning.suggestion
+            ));
+        }
+
+        // Report suggestions (as info)
+        if (options_.collect_info_messages) {
+            for (const auto& suggestion : analysis.suggestions) {
+                result.issues.push_back(Issue::info(
+                    "S001",
+                    suggestion.moduleId,
+                    "Consider using '" + suggestion.suggestedModule +
+                    "' instead of '" + suggestion.currentModule + "': " + suggestion.reason
+                ));
+            }
+        }
+
+        // Insert bridge modules
+        if (!analysis.bridges.empty()) {
+            modifiedConnections = insertBridgeModules(
+                desc.connections, analysis.bridges, contextMap, result.issues
+            );
+        }
+    }
+
     // Phase 2: Connect modules using pin name resolution
-    if (!desc.connections.empty()) {
-        connectModules(desc.connections, contextMap, result.issues);
+    if (!modifiedConnections.empty()) {
+        connectModules(modifiedConnections, contextMap, result.issues);
     }
 
     // Phase 3: Validate required inputs are connected
@@ -408,7 +454,7 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
     // Phase 4: Add source modules to pipeline (appendModule is recursive and follows connections)
     // Identify source modules: modules that are not destination of any connection
     std::set<std::string> destinationModules;
-    for (const auto& conn : desc.connections) {
+    for (const auto& conn : modifiedConnections) {
         destinationModules.insert(conn.to_module);
     }
     for (const auto& [instanceId, ctx] : contextMap) {
@@ -643,6 +689,150 @@ void ModuleFactory::applyProperties(
     // Properties are currently passed to the factory function during module creation.
     // This method is here for future use if we need to apply dynamic properties
     // after module creation.
+}
+
+// ============================================================
+// Insert bridge modules for memory/format conversion
+// Returns modified connections list with bridges inserted
+// ============================================================
+
+std::vector<Connection> ModuleFactory::insertBridgeModules(
+    const std::vector<Connection>& originalConnections,
+    const std::vector<BridgeSpec>& bridges,
+    std::map<std::string, ModuleContext>& contextMap,
+    std::vector<BuildIssue>& issues
+) {
+    // Build a map of original connections to their indices
+    // Key: "fromModule.fromPin -> toModule.toPin"
+    auto makeConnKey = [](const Connection& conn) {
+        return conn.from_module + "." + conn.from_pin + "->" +
+               conn.to_module + "." + conn.to_pin;
+    };
+
+    // Build map of bridge specs by connection key
+    std::map<std::string, std::vector<const BridgeSpec*>> bridgesByConnection;
+    for (const auto& bridge : bridges) {
+        std::string key = bridge.fromModule + "." + bridge.fromPin + "->" +
+                          bridge.toModule + "." + bridge.toPin;
+        bridgesByConnection[key].push_back(&bridge);
+    }
+
+    auto& registry = ModuleRegistry::instance();
+    std::vector<Connection> modifiedConnections;
+    int bridgeCounter = 0;
+
+    for (const auto& conn : originalConnections) {
+        std::string connKey = makeConnKey(conn);
+        auto bridgeIt = bridgesByConnection.find(connKey);
+
+        if (bridgeIt == bridgesByConnection.end() || bridgeIt->second.empty()) {
+            // No bridge needed for this connection, keep as-is
+            modifiedConnections.push_back(conn);
+            continue;
+        }
+
+        // Insert bridges for this connection
+        const auto& bridgesForConn = bridgeIt->second;
+        std::string currentFromModule = conn.from_module;
+        std::string currentFromPin = conn.from_pin;
+
+        for (const auto* bridgePtr : bridgesForConn) {
+            const auto& bridge = *bridgePtr;
+            ++bridgeCounter;
+
+            // Generate unique bridge instance ID
+            std::string bridgeInstanceId = "_bridge_" + std::to_string(bridgeCounter) +
+                                           "_" + bridge.bridgeModule;
+
+            // Create module instance for bridge
+            ModuleInstance bridgeInstance;
+            bridgeInstance.instance_id = bridgeInstanceId;
+            bridgeInstance.module_type = bridge.bridgeModule;
+
+            // Set properties from bridge spec
+            if (bridge.type == BridgeType::Memory) {
+                // For CudaMemCopy, set direction
+                if (bridge.memoryDirection == MemoryDirection::HostToDevice) {
+                    bridgeInstance.properties["direction"] = std::string("hostToDevice");
+                } else if (bridge.memoryDirection == MemoryDirection::DeviceToHost) {
+                    bridgeInstance.properties["direction"] = std::string("deviceToHost");
+                }
+            } else if (bridge.type == BridgeType::Format) {
+                // For ColorConversion/CCNPPI, set input/output formats
+                bridgeInstance.properties["inputFormat"] = static_cast<int64_t>(bridge.fromFormat);
+                bridgeInstance.properties["outputFormat"] = static_cast<int64_t>(bridge.toFormat);
+            }
+
+            // Create the bridge module
+            auto bridgeModule = createModule(bridgeInstance, issues);
+            if (!bridgeModule) {
+                issues.push_back(Issue::error(
+                    "E_BRIDGE_CREATION",
+                    bridgeInstanceId,
+                    "Failed to create bridge module: " + bridge.bridgeModule
+                ));
+                continue;
+            }
+
+            // Create context for bridge module
+            ModuleContext bridgeCtx;
+            bridgeCtx.module = bridgeModule;
+            bridgeCtx.moduleType = bridge.bridgeModule;
+            bridgeCtx.instanceId = bridgeInstanceId;
+
+            // Set up output pins for bridge module
+            const ModuleInfo* bridgeInfo = registry.getModule(bridge.bridgeModule);
+            if (bridgeInfo && !bridgeInfo->outputs.empty()) {
+                bridgeCtx.outputPinMap = setupOutputPins(
+                    bridgeModule.get(), *bridgeInfo, bridgeInstance, issues,
+                    bridgeInfo->selfManagedOutputPins
+                );
+            }
+
+            contextMap[bridgeInstanceId] = std::move(bridgeCtx);
+
+            // Report bridge insertion
+            if (options_.collect_info_messages) {
+                std::string direction;
+                if (bridge.type == BridgeType::Memory) {
+                    direction = (bridge.memoryDirection == MemoryDirection::HostToDevice)
+                                ? "HOST->CUDA" : "CUDA->HOST";
+                } else {
+                    direction = "Format conversion";
+                }
+                issues.push_back(Issue::info(
+                    "I_BRIDGE_INSERTED",
+                    bridgeInstanceId,
+                    "Auto-inserted " + bridge.bridgeModule + " (" + direction +
+                    ") between " + conn.from_module + " and " + conn.to_module
+                ));
+            }
+
+            // Create connection from current source to bridge
+            Connection connToBridge;
+            connToBridge.from_module = currentFromModule;
+            connToBridge.from_pin = currentFromPin;
+            connToBridge.to_module = bridgeInstanceId;
+            connToBridge.to_pin = "input";
+            connToBridge.sieve = conn.sieve;
+            modifiedConnections.push_back(connToBridge);
+
+            // Update current source for next bridge (or final connection)
+            currentFromModule = bridgeInstanceId;
+            currentFromPin = "output";
+        }
+
+        // Create final connection from last bridge to original destination
+        Connection connFromBridge;
+        connFromBridge.from_module = currentFromModule;
+        connFromBridge.from_pin = currentFromPin;
+        connFromBridge.to_module = conn.to_module;
+        connFromBridge.to_pin = conn.to_pin;
+        connFromBridge.sieve = conn.sieve;
+        modifiedConnections.push_back(connFromBridge);
+    }
+
+    return modifiedConnections;
 }
 
 // ============================================================

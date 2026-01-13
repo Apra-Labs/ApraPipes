@@ -24,6 +24,10 @@ class Module;
 
 namespace apra {
 
+// Forward declarations for auto-bridging
+struct BridgeSpec;
+enum class BridgeType;
+
 // Use PropertyAccessors from ModuleInfo for consistency
 using DynamicPropertyAccessors = ModuleInfo::PropertyAccessors;
 
@@ -37,9 +41,10 @@ public:
         bool auto_insert_converters;    // Future: auto-insert frame converters
         bool strict_mode;               // Fail on warnings in strict mode
         bool collect_info_messages;     // Include info messages in result
+        bool auto_bridge_enabled;       // Auto-insert memory/format bridge modules
 
         Options() : auto_insert_converters(false), strict_mode(false),
-                    collect_info_messages(false) {}
+                    collect_info_messages(false), auto_bridge_enabled(true) {}
     };
 
     // Module info for external access (e.g., event callbacks, property access)
@@ -157,6 +162,15 @@ private:
     // Uses ModuleContext map for pin name resolution
     bool connectModules(
         const std::vector<Connection>& connections,
+        std::map<std::string, ModuleContext>& contextMap,
+        std::vector<BuildIssue>& issues
+    );
+
+    // Insert bridge modules for memory/format conversion
+    // Returns modified connections list with bridge modules inserted
+    std::vector<Connection> insertBridgeModules(
+        const std::vector<Connection>& originalConnections,
+        const std::vector<BridgeSpec>& bridges,
         std::map<std::string, ModuleContext>& contextMap,
         std::vector<BuildIssue>& issues
     );
