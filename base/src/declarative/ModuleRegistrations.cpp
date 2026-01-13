@@ -83,7 +83,7 @@
 #include "OverlayNPPI.h"
 #include "CudaMemCopy.h"
 #include "CudaStreamSynchronize.h"
-#ifndef ENABLE_ARM64
+#ifndef ARM64
 // nvJPEG and NVCodec modules not available on ARM64/Jetson
 #include "JPEGDecoderNVJPEG.h"
 #include "JPEGEncoderNVJPEG.h"
@@ -1122,7 +1122,7 @@ void ensureBuiltinModulesRegistered() {
                 });
         }
 
-#ifndef ENABLE_ARM64
+#ifndef ARM64
         // nvJPEG modules not available on ARM64/Jetson (nvJPEG library not supported)
 
         // JPEGDecoderNVJPEG - GPU-accelerated JPEG decoder
@@ -1160,7 +1160,7 @@ void ensureBuiltinModulesRegistered() {
                     return std::make_unique<JPEGEncoderNVJPEG>(moduleProps);
                 });
         }
-#endif // !ENABLE_ARM64
+#endif // !ARM64
 
         // MemTypeConversion - GPU memory type conversion (BRIDGE MODULE)
         // Note: memType is kept as HOST because actual I/O memType depends on "outputMemType" property.
