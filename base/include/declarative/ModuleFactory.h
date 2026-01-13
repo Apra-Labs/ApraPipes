@@ -96,6 +96,10 @@ public:
 
         // Format all issues as string for display
         std::string formatIssues() const;
+
+        // Format pipeline graph as text for display (verbose mode)
+        // Returns a text representation showing module connections
+        std::string formatPipelineGraph(const std::vector<Connection>& connections) const;
     };
 
     // ============================================================

@@ -280,6 +280,60 @@ std::string ModuleFactory::BuildResult::formatIssues() const {
     return oss.str();
 }
 
+std::string ModuleFactory::BuildResult::formatPipelineGraph(
+    const std::vector<Connection>& connections
+) const {
+    std::ostringstream oss;
+    oss << "\n=== Pipeline Graph ===\n";
+
+    if (modules.empty()) {
+        oss << "(empty pipeline)\n";
+        return oss.str();
+    }
+
+    // List modules with their types
+    oss << "\nModules:\n";
+    for (const auto& [instanceId, entry] : modules) {
+        bool isBridge = instanceId.find("_bridge_") == 0;
+        oss << "  " << (isBridge ? "[*] " : "[ ] ") << instanceId
+            << " (" << entry.moduleType << ")\n";
+    }
+
+    // Show connections
+    if (!connections.empty()) {
+        oss << "\nConnections:\n";
+        for (const auto& conn : connections) {
+            oss << "  " << conn.from_module;
+            if (!conn.from_pin.empty() && conn.from_pin != "output") {
+                oss << "." << conn.from_pin;
+            }
+            oss << " --> " << conn.to_module;
+            if (!conn.to_pin.empty() && conn.to_pin != "input") {
+                oss << "." << conn.to_pin;
+            }
+            if (conn.sieve.has_value() && !conn.sieve.value()) {
+                oss << " [sieve=false]";
+            }
+            oss << "\n";
+        }
+    }
+
+    // Show auto-inserted bridges (from issues)
+    bool hasBridgeInfo = false;
+    for (const auto& issue : issues) {
+        if (issue.code == "I_BRIDGE_INSERTED") {
+            if (!hasBridgeInfo) {
+                oss << "\nAuto-inserted bridges:\n";
+                hasBridgeInfo = true;
+            }
+            oss << "  [*] " << issue.location << ": " << issue.message << "\n";
+        }
+    }
+
+    oss << "\n======================\n";
+    return oss.str();
+}
+
 // ============================================================
 // ModuleFactory constructor
 // ============================================================
