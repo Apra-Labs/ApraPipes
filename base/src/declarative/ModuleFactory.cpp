@@ -39,8 +39,25 @@ static void* createCudaStream() {
         return nullptr;
     }
 }
+
+// Holder for CUDA context to ensure proper lifetime management
+static thread_local apracucontext_sp g_cuContext;
+
+static void* createCuContext() {
+    try {
+        g_cuContext = apracucontext_sp(new ApraCUcontext());
+        return &g_cuContext;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to create CUDA context: " << e.what() << std::endl;
+        return nullptr;
+    }
+}
 #else
 static void* createCudaStream() {
+    return nullptr;  // CUDA not enabled
+}
+
+static void* createCuContext() {
     return nullptr;  // CUDA not enabled
 }
 #endif
@@ -376,12 +393,15 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
 
     auto& registry = ModuleRegistry::instance();
 
-    // Phase 0: Check if any modules require CUDA and create stream if needed
+    // Phase 0: Check if any modules require CUDA and create stream/context if needed
     bool needsCudaStream = false;
+    bool needsCuContext = false;
     for (const auto& instance : desc.modules) {
         if (registry.moduleRequiresCudaStream(instance.module_type)) {
             needsCudaStream = true;
-            break;
+        }
+        if (registry.moduleRequiresCuContext(instance.module_type)) {
+            needsCuContext = true;
         }
     }
 
@@ -400,6 +420,27 @@ ModuleFactory::BuildResult ModuleFactory::build(const PipelineDescription& desc)
                 "E_CUDA_NOT_ENABLED",
                 "pipeline",
                 "Pipeline contains CUDA modules but CUDA is not enabled in this build"
+            ));
+            return result;
+#endif
+        }
+    }
+
+    if (needsCuContext) {
+        cuContextPtr_ = createCuContext();
+        if (!cuContextPtr_) {
+#ifdef ENABLE_CUDA
+            result.issues.push_back(Issue::error(
+                "E_CUDA_CONTEXT",
+                "pipeline",
+                "Failed to create CUDA context for NVCodec modules"
+            ));
+            return result;
+#else
+            result.issues.push_back(Issue::error(
+                "E_CUDA_NOT_ENABLED",
+                "pipeline",
+                "Pipeline contains NVCodec modules but CUDA is not enabled in this build"
             ));
             return result;
 #endif
@@ -681,13 +722,26 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
         return nullptr;
     }
 
-    // Create via registry factory (use CUDA factory if module requires CUDA stream)
+    // Create via registry factory (use appropriate CUDA factory if module requires it)
     try {
         std::unique_ptr<Module> modulePtr;
 
-        bool needsCuda = registry.moduleRequiresCudaStream(instance.module_type);
-        if (needsCuda) {
-            // Use CUDA factory
+        bool needsCuContext = registry.moduleRequiresCuContext(instance.module_type);
+        bool needsCudaStream = registry.moduleRequiresCudaStream(instance.module_type);
+
+        if (needsCuContext) {
+            // Use CuContext factory (for NVCodec encoder)
+            if (!cuContextPtr_) {
+                issues.push_back(Issue::error(
+                    Issue::MODULE_CREATION_FAILED,
+                    "modules." + instance.instance_id,
+                    "Module " + instance.module_type + " requires CUDA context but none available"
+                ));
+                return nullptr;
+            }
+            modulePtr = registry.createCuContextModule(instance.module_type, convertedProps, cuContextPtr_);
+        } else if (needsCudaStream) {
+            // Use CUDA stream factory
             if (!cudaStreamPtr_) {
                 issues.push_back(Issue::error(
                     Issue::MODULE_CREATION_FAILED,

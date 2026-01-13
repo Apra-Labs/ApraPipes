@@ -133,6 +133,10 @@ private:
     // Actually points to a boost::shared_ptr<ApraCudaStream> when CUDA is enabled
     void* cudaStreamPtr_ = nullptr;
 
+    // CUDA context for NVCodec modules (type-erased to avoid header dependency)
+    // Actually points to a boost::shared_ptr<ApraCUcontext> when CUDA is enabled
+    void* cuContextPtr_ = nullptr;
+
     // Internal helpers
 
     // Create a single module from instance description

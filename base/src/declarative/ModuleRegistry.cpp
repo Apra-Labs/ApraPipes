@@ -182,6 +182,49 @@ bool ModuleRegistry::moduleRequiresCudaStream(const std::string& name) const {
 }
 
 // ============================================================
+// CUDA Context Factory (for NVCodec encoder)
+// ============================================================
+std::unique_ptr<Module> ModuleRegistry::createCuContextModule(
+    const std::string& name,
+    const std::map<std::string, ScalarPropertyValue>& props,
+    void* cuContextPtr
+) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = modules_.find(name);
+    if (it == modules_.end()) {
+        return nullptr;
+    }
+    if (!it->second.cuContextFactory) {
+        // Fall back to regular factory if no CuContext factory
+        if (it->second.factory) {
+            return it->second.factory(props);
+        }
+        return nullptr;
+    }
+    return it->second.cuContextFactory(props, cuContextPtr);
+}
+
+bool ModuleRegistry::setCuContextFactory(const std::string& name, ModuleInfo::CuContextFactoryFn factory) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = modules_.find(name);
+    if (it == modules_.end()) {
+        return false;
+    }
+    it->second.cuContextFactory = std::move(factory);
+    it->second.requiresCuContext = true;
+    return true;
+}
+
+bool ModuleRegistry::moduleRequiresCuContext(const std::string& name) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = modules_.find(name);
+    if (it == modules_.end()) {
+        return false;
+    }
+    return it->second.requiresCuContext;
+}
+
+// ============================================================
 // Export - JSON
 // ============================================================
 std::string ModuleRegistry::toJson() const {

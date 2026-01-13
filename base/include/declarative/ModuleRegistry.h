@@ -89,6 +89,18 @@ struct ModuleInfo {
     // Flag indicating this module requires a CUDA stream
     bool requiresCudaStream = false;
 
+    // CUDA context factory function type - creates a module from property map + CUDA context
+    // The void* is a pointer to apracucontext_sp (type-erased to avoid CUDA header dependency)
+    // Use this for modules that require apracucontext_sp (NVCodec encoder)
+    using CuContextFactoryFn = std::function<std::unique_ptr<Module>(
+        const std::map<std::string, ScalarPropertyValue>&,
+        void* cuContextPtr  // Points to apracucontext_sp
+    )>;
+    CuContextFactoryFn cuContextFactory;
+
+    // Flag indicating this module requires a CUDA context (for NVCodec)
+    bool requiresCuContext = false;
+
     // Dynamic property accessor factory - creates type-erased accessors bound to a module instance
     // Returns {getDynamicPropertyNames, getProperty, setProperty} functions
     struct PropertyAccessors {
@@ -152,6 +164,21 @@ public:
 
     // Check if a module requires CUDA stream
     bool moduleRequiresCudaStream(const std::string& name) const;
+
+    // CUDA Context Factory - creates module with CUDA context (for NVCodec)
+    // cuContextPtr should point to a apracucontext_sp
+    std::unique_ptr<Module> createCuContextModule(
+        const std::string& name,
+        const std::map<std::string, ScalarPropertyValue>& props,
+        void* cuContextPtr
+    ) const;
+
+    // Set CUDA context factory for a module (call after registerModule)
+    // Used by NVCodec encoder registration
+    bool setCuContextFactory(const std::string& name, ModuleInfo::CuContextFactoryFn factory);
+
+    // Check if a module requires CUDA context
+    bool moduleRequiresCuContext(const std::string& name) const;
 
     // Export
     std::string toJson() const;

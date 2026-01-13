@@ -314,6 +314,167 @@ CudaModuleRegistrationBuilder<ModuleClass, PropsClass> registerCudaModule(const 
     return CudaModuleRegistrationBuilder<ModuleClass, PropsClass>(name);
 }
 
+// ============================================================
+// CuContext Module Registration Helper
+// For modules that require apracucontext_sp in their Props constructor (NVCodec)
+// ============================================================
+
+template<typename ModuleClass, typename PropsClass>
+class CuContextModuleRegistrationBuilder {
+    ModuleInfo info_;
+    bool registered_ = false;
+
+public:
+    CuContextModuleRegistrationBuilder(const std::string& name) {
+        info_.name = name;
+        info_.requiresCuContext = true;
+    }
+
+    CuContextModuleRegistrationBuilder& category(ModuleCategory cat) {
+        info_.category = cat;
+        return *this;
+    }
+
+    CuContextModuleRegistrationBuilder& description(const std::string& desc) {
+        info_.description = desc;
+        return *this;
+    }
+
+    CuContextModuleRegistrationBuilder& version(const std::string& ver) {
+        info_.version = ver;
+        return *this;
+    }
+
+    template<typename... Tags>
+    CuContextModuleRegistrationBuilder& tags(Tags... t) {
+        (info_.tags.push_back(std::string(t)), ...);
+        return *this;
+    }
+
+    CuContextModuleRegistrationBuilder& input(const std::string& pinName, const std::string& frameType,
+                                               MemType memType = FrameMetadata::HOST) {
+        ModuleInfo::PinInfo pin;
+        pin.name = pinName;
+        pin.frame_types.push_back(frameType);
+        pin.required = true;
+        pin.memType = memType;
+        info_.inputs.push_back(std::move(pin));
+        return *this;
+    }
+
+    // Convenience method for CUDA input pins
+    CuContextModuleRegistrationBuilder& cudaInput(const std::string& pinName, const std::string& frameType) {
+        return input(pinName, frameType, FrameMetadata::CUDA_DEVICE);
+    }
+
+    CuContextModuleRegistrationBuilder& output(const std::string& pinName, const std::string& frameType,
+                                                MemType memType = FrameMetadata::HOST) {
+        ModuleInfo::PinInfo pin;
+        pin.name = pinName;
+        pin.frame_types.push_back(frameType);
+        pin.required = true;
+        pin.memType = memType;
+        info_.outputs.push_back(std::move(pin));
+        return *this;
+    }
+
+    CuContextModuleRegistrationBuilder& intProp(const std::string& name, const std::string& desc,
+                                                 bool required = false, int64_t defaultVal = 0,
+                                                 int64_t minVal = INT64_MIN, int64_t maxVal = INT64_MAX) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "int";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = std::to_string(defaultVal);
+        if (minVal != INT64_MIN) prop.min_value = std::to_string(minVal);
+        if (maxVal != INT64_MAX) prop.max_value = std::to_string(maxVal);
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    CuContextModuleRegistrationBuilder& boolProp(const std::string& name, const std::string& desc,
+                                                  bool required = false, bool defaultVal = false) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "bool";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal ? "true" : "false";
+        prop.description = desc;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    template<typename... EnumValues>
+    CuContextModuleRegistrationBuilder& enumProp(const std::string& name, const std::string& desc,
+                                                  bool required, const std::string& defaultVal,
+                                                  EnumValues... values) {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "enum";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        (prop.enum_values.push_back(std::string(values)), ...);
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Mark module as managing its own output pins
+    CuContextModuleRegistrationBuilder& selfManagedOutputPins() {
+        info_.selfManagedOutputPins = true;
+        return *this;
+    }
+
+    // Finalize with CuContext factory - takes a lambda that creates the module
+    template<typename CuContextFactoryLambda>
+    void finalizeCuContext(CuContextFactoryLambda&& cuContextFactoryFn) {
+        if (registered_) return;
+        registered_ = true;
+
+        if (info_.version.empty()) {
+            info_.version = "1.0";
+        }
+
+        // Create type-erased CuContext factory
+        info_.cuContextFactory = [fn = std::forward<CuContextFactoryLambda>(cuContextFactoryFn)](
+            const std::map<std::string, ScalarPropertyValue>& props,
+            void* cuContextPtr
+        ) -> std::unique_ptr<Module> {
+            // Cast void* back to apracucontext_sp*
+            apracucontext_sp* contextPtr = static_cast<apracucontext_sp*>(cuContextPtr);
+            if (!contextPtr || !*contextPtr) {
+                throw std::runtime_error("CUDA context not available");
+            }
+            return fn(props, *contextPtr);
+        };
+
+        // No regular factory - CuContext modules require CUDA context
+        info_.factory = nullptr;
+        info_.requiresCuContext = true;
+
+        ModuleRegistry::instance().registerModule(std::move(info_));
+    }
+
+    // Prevent copying
+    CuContextModuleRegistrationBuilder(const CuContextModuleRegistrationBuilder&) = delete;
+    CuContextModuleRegistrationBuilder& operator=(const CuContextModuleRegistrationBuilder&) = delete;
+
+    // Allow moving
+    CuContextModuleRegistrationBuilder(CuContextModuleRegistrationBuilder&& other) noexcept
+        : info_(std::move(other.info_)), registered_(other.registered_) {
+        other.registered_ = true;
+    }
+};
+
+template<typename ModuleClass, typename PropsClass>
+CuContextModuleRegistrationBuilder<ModuleClass, PropsClass> registerCuContextModule(const std::string& name) {
+    return CuContextModuleRegistrationBuilder<ModuleClass, PropsClass>(name);
+}
+
 #endif // ENABLE_CUDA
 
 void ensureBuiltinModulesRegistered() {
@@ -1201,9 +1362,65 @@ void ensureBuiltinModulesRegistered() {
                 .selfManagedOutputPins();
         }
 
-        // Note: H264EncoderNVCodec requires apracucontext_sp, not cudastream_sp
-        // It needs special handling with a different factory pattern - skipped for now
-#endif
+#ifndef ARM64
+        // H264EncoderNVCodec - GPU-accelerated H.264 encoder using NVCodec
+        // Requires apracucontext_sp (CUDA Driver API context)
+        // Not available on ARM64/Jetson (uses different encoder)
+        if (!registry.hasModule("H264EncoderNVCodec")) {
+            registerCuContextModule<H264EncoderNVCodec, H264EncoderNVCodecProps>("H264EncoderNVCodec")
+                .category(ModuleCategory::Transform)
+                .description("GPU-accelerated H.264 video encoder using NVIDIA NVCodec.")
+                .tags("transform", "encode", "h264", "cuda", "nvcodec", "video")
+                .cudaInput("input", "RawImagePlanar")
+                .output("output", "H264Frame", FrameMetadata::HOST)
+                .intProp("bitRateKbps", "Target bit rate in kilobits per second", false, 1000, 100, 50000)
+                .intProp("gopLength", "Group of Pictures (GOP) length - frames between keyframes", false, 30, 1, 300)
+                .intProp("frameRate", "Target frame rate", false, 30, 1, 120)
+                .enumProp("profile", "H.264 codec profile", false, "BASELINE", "BASELINE", "MAIN", "HIGH")
+                .boolProp("enableBFrames", "Enable B-frames for better compression (increases latency)", false, false)
+                .intProp("bufferThres", "Buffer threshold for encoder", false, 30, 1, 100)
+                .finalizeCuContext([](const auto& props, apracucontext_sp cuContext) {
+                    // Extract properties from props map
+                    uint32_t bitRateKbps = 1000;
+                    uint32_t gopLength = 30;
+                    uint32_t frameRate = 30;
+                    H264EncoderNVCodecProps::H264CodecProfile profile = H264EncoderNVCodecProps::BASELINE;
+                    bool enableBFrames = false;
+
+                    if (auto it = props.find("bitRateKbps"); it != props.end()) {
+                        if (auto* val = std::get_if<int64_t>(&it->second)) {
+                            bitRateKbps = static_cast<uint32_t>(*val);
+                        }
+                    }
+                    if (auto it = props.find("gopLength"); it != props.end()) {
+                        if (auto* val = std::get_if<int64_t>(&it->second)) {
+                            gopLength = static_cast<uint32_t>(*val);
+                        }
+                    }
+                    if (auto it = props.find("frameRate"); it != props.end()) {
+                        if (auto* val = std::get_if<int64_t>(&it->second)) {
+                            frameRate = static_cast<uint32_t>(*val);
+                        }
+                    }
+                    if (auto it = props.find("profile"); it != props.end()) {
+                        if (auto* val = std::get_if<std::string>(&it->second)) {
+                            if (*val == "MAIN") profile = H264EncoderNVCodecProps::MAIN;
+                            else if (*val == "HIGH") profile = H264EncoderNVCodecProps::HIGH;
+                            // Default BASELINE
+                        }
+                    }
+                    if (auto it = props.find("enableBFrames"); it != props.end()) {
+                        if (auto* val = std::get_if<bool>(&it->second)) {
+                            enableBFrames = *val;
+                        }
+                    }
+
+                    H264EncoderNVCodecProps moduleProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
+                    return std::make_unique<H264EncoderNVCodec>(moduleProps);
+                });
+        }
+#endif // !ARM64
+#endif // ENABLE_CUDA
     }
 }
 
