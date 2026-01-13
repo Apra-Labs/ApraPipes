@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-11
+> Last Updated: 2026-01-12
 
 **Git Branch:** `feat-declarative-pipeline-v2` (tracking `origin/feat-declarative-pipeline-v2`)
 
@@ -12,6 +12,7 @@
 **Sprint 4 (Node.js):** ✅ COMPLETE
 **Sprint 5 (CUDA):** ✅ COMPLETE
 **Sprint 6 (DRY Refactoring):** ✅ COMPLETE
+**Sprint 7 (Auto-Bridging):** ✅ COMPLETE
 
 ```
 Core Infrastructure:  ✅ Complete (Metadata, Registry, Factory, Validator, CLI)
@@ -20,7 +21,100 @@ Module Coverage:      37 modules (cross-platform) + platform-specific
 Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
 CUDA Modules:         ✅ 12 of 13 registered (H264EncoderNVCodec pending)
 Build Headless:       ✅ BUILD_HEADLESS option for server environments
+Auto-Bridging:        ✅ Complete (PipelineAnalyzer, auto-insert bridges)
 ```
+
+---
+
+## Sprint 7 Progress (Auto-Bridging)
+
+**Design Document:** `docs/declarative-pipeline/CUDA_MEMTYPE_DESIGN.md` (1777 lines)
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 | ✅ Complete | PIN MemType Registration |
+| Phase 1b | ✅ Complete | PIN ImageType Registration |
+| Phase 2 | ✅ Complete | Functional Tags |
+| Phase 3 | ✅ Complete | Pipeline Compatibility Analyzer |
+| Phase 4 | ✅ Complete | Auto-Bridge Insertion |
+| Phase 5 | ✅ Complete | User Feedback & Suggestions |
+
+### Completed: Phase 1 - PIN MemType Registration
+
+- [x] 1.1 Add `memType` field to `PinInfo` struct in ModuleRegistry.h
+- [x] 1.2 Add `cudaInput()`/`cudaOutput()` convenience methods to builders
+- [x] 1.3 Update CUDA module registrations to declare CUDA_DEVICE
+- [x] 1.4 DMA module registrations skipped (future work)
+- [x] 1.5 Add unit tests for memType registration
+
+**Commit:** `4ad6f7da6 feat(declarative): Add memType registration for CUDA modules`
+
+### Completed: Phase 1b - PIN ImageType Registration
+
+- [x] 1b.1 Add `imageTypes` field to `PinInfo` struct
+- [x] 1b.2 Add `inputImageTypes()`/`outputImageTypes()` to builders
+- [x] 1b.3 Module-specific format requirements (incremental)
+- [x] 1b.4 Add unit tests for imageType registration
+
+**Commit:** `1ada7a15e feat(declarative): Add imageType registration for pixel format validation`
+
+### Completed: DRY Refactoring (Critical Fix)
+
+Removed duplicate MemType and ImageType enum classes that mirrored existing
+`FrameMetadata::MemType` and `ImageMetadata::ImageType`. Now using type aliases:
+
+```cpp
+using MemType = FrameMetadata::MemType;
+using ImageType = ImageMetadata::ImageType;
+```
+
+All enum value references updated to use canonical class-qualified names
+(e.g., `FrameMetadata::HOST` instead of `MemType::HOST`).
+
+**Commit:** `d889da86d refactor(declarative): Remove duplicate MemType/ImageType enums - use canonical types`
+
+### Completed: Phase 2 - Functional Tags
+
+- [x] 2.1 Add `tags` field to ModuleInfo struct (already existed)
+- [x] 2.2 Add `.tag()` method to ModuleRegistrationBuilder (already existed)
+- [x] 2.3 Add `getModulesByTag()` and `getModulesWithAllTags()` to registry
+- [x] 2.4 Tag modules with function/backend/media tags
+- [x] 2.5 Add unit tests for tag queries
+
+**Commit:** `7a836c6b0 feat(declarative): Add getModulesWithAllTags() for multi-tag queries`
+
+### Completed: Phase 3 - Pipeline Compatibility Analyzer
+
+- [x] 3.1 Create `PipelineAnalyzer.h` with AnalysisResult, BridgeSpec structs
+- [x] 3.2 Create `PipelineAnalyzer.cpp` with connection analysis
+- [x] 3.3 Implement frame type compatibility check (E001 error on mismatch)
+- [x] 3.4 Implement pixel format mismatch detection (ColorConversion/CCNPPI bridges)
+- [x] 3.5 Implement memory type mismatch detection (CudaMemCopy bridges)
+- [x] 3.6 Generate BridgeSpec list with correct ordering (memory before format)
+- [x] 3.7 Add 13 unit tests for analyzer
+
+**Commit:** `c1b922df3 feat(declarative): Add PipelineAnalyzer for auto-bridging detection`
+
+### Completed: Phase 4 - Auto-Bridge Insertion
+
+- [x] 4.1 Integrate PipelineAnalyzer into ModuleFactory.build()
+- [x] 4.2 Auto-create CudaMemCopy for HOST<->CUDA_DEVICE
+- [x] 4.3 Auto-create ColorConversion/CCNPPI for format mismatches
+- [x] 4.4 Bridges share cudastream via existing CUDA factory pattern
+- [x] 4.5 Generate bridge names `_bridge_N_ModuleType`
+- [x] 4.6 Add `auto_bridge_enabled` option (default: true)
+
+**Commit:** `a79396b10 feat(declarative): Integrate auto-bridge insertion into ModuleFactory`
+
+### Completed: Phase 5 - User Feedback & Suggestions
+
+- [x] 5.1 Log auto-inserted bridges as INFO messages (I_BRIDGE_INSERTED)
+- [x] 5.2 Detect suboptimal patterns (CPU modules in GPU-heavy pipelines)
+- [x] 5.3 Suggest GPU alternatives using getModulesWithAllTags()
+- [x] 5.4 Add suggestions to BuildResult (as INFO issues when collect_info_messages=true)
+- [x] 5.5 Add formatPipelineGraph() for verbose pipeline visualization
+
+**Commit:** `2f01c53f3 feat(declarative): Add pipeline graph formatting for verbose output`
 
 ---
 
