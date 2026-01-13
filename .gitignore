@@ -1,5 +1,6 @@
 _build*
 build*
+!thirdparty/*/ffmpeg/build.sh.in
 _debug*
 data/testOutput
 thirdparty/gst-build/gst-build-1.16
