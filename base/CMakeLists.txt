@@ -286,6 +286,7 @@ SET(CORE_FILES
 	src/declarative/FrameTypeRegistry.cpp
 	src/declarative/FrameTypeRegistrations.cpp
 	src/declarative/PipelineValidator.cpp
+	src/declarative/PipelineAnalyzer.cpp
 	src/declarative/ModuleRegistrations.cpp
 )
 
@@ -758,6 +759,7 @@ SET(UT_FILES
 	test/declarative/module_factory_tests.cpp
 	test/declarative/frame_type_registry_tests.cpp
 	test/declarative/pipeline_validator_tests.cpp
+	test/declarative/pipeline_analyzer_tests.cpp
 	test/declarative/property_macros_tests.cpp
 	test/declarative/module_registration_tests.cpp
 	test/declarative/property_validators_tests.cpp
