@@ -86,6 +86,7 @@ cmake -G Ninja \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
   -DVCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay \
+  -DVCPKG_OVERLAY_TRIPLETS=../thirdparty/triplets \
   -DVCPKG_TARGET_TRIPLET=x64-linux-release \
   -DVCPKG_HOST_TRIPLET=x64-linux-release \
   -DCUDA_ARCH_BIN="7.5;8.6" \
