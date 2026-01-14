@@ -37,20 +37,26 @@
 
 // Batch 1: Additional Source modules
 #include "WebCamSource.h"
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
 #include "RTSPClientSrc.h"
+#endif
 #include "ExternalSourceModule.h"
 
 // Batch 2: Additional Transform modules
 #include "OverlayModule.h"
 #include "HistogramOverlay.h"
 #include "BMPConverter.h"
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
 #include "MotionVectorExtractor.h"
+#endif
 #include "AffineTransform.h"
 #include "MultimediaQueueXform.h"
 
 // Batch 3: Additional Sink modules
 #include "ExternalSinkModule.h"
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
 #include "RTSPPusher.h"
+#endif
 #include "ThumbnailListGenerator.h"
 
 // Batch 4: Analytics modules with face detection
@@ -793,6 +799,7 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("fps", "Target frames per second", false, 30, 1, 120);
         }
 
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
         // RTSPClientSrc - receives video from RTSP stream
         if (!registry.hasModule("RTSPClientSrc")) {
             registerModule<RTSPClientSrc, RTSPClientSrcProps>()
@@ -805,6 +812,7 @@ void ensureBuiltinModulesRegistered() {
                 .stringProp("password", "Authentication password", false, "")
                 .boolProp("useTCP", "Use TCP transport instead of UDP", false, true);
         }
+#endif
 
         // ExternalSourceModule - allows external frame injection
         if (!registry.hasModule("ExternalSourceModule")) {
@@ -855,6 +863,7 @@ void ensureBuiltinModulesRegistered() {
                 .selfManagedOutputPins();
         }
 
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
         // MotionVectorExtractor - extracts motion vectors from H264 video
         if (!registry.hasModule("MotionVectorExtractor")) {
             registerModule<MotionVectorExtractor, MotionVectorExtractorProps>()
@@ -868,6 +877,7 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("motionVectorThreshold", "Minimum motion vector magnitude to report", false, 2, 0, 100)
                 .selfManagedOutputPins();
         }
+#endif
 
         // AffineTransform - applies affine transformations (rotation, scale, translate)
         // Note: Creates output pin in addInputPin(), so selfManagedOutputPins is required
@@ -914,6 +924,7 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "Frame");
         }
 
+#ifndef APRAPIPES_NO_FFMPEG_MODULES
         // RTSPPusher - pushes video to RTSP server
         if (!registry.hasModule("RTSPPusher")) {
             registerModule<RTSPPusher, RTSPPusherProps>()
@@ -926,6 +937,7 @@ void ensureBuiltinModulesRegistered() {
                 .boolProp("isTCP", "Use TCP transport", false, true)
                 .intProp("encoderTargetKbps", "Target bitrate in Kbps", false, 2048, 100, 50000);
         }
+#endif
 
         // ThumbnailListGenerator - generates thumbnail strip (ARM/Jetson only)
         if (!registry.hasModule("ThumbnailListGenerator")) {

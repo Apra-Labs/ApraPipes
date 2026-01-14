@@ -1180,7 +1180,7 @@ if(BUILD_NODE_ADDON)
                     ${LIBMP4_INC_DIR}
                     ${NVCODEC_INCLUDE_DIR}
                 )
-                target_compile_definitions(aprapipes_node_headless PRIVATE APRAPIPES_NO_GTK_MODULES)
+                target_compile_definitions(aprapipes_node_headless PRIVATE APRAPIPES_NO_GTK_MODULES APRAPIPES_NO_FFMPEG_MODULES)
 
                 set(NODE_ADDON_APRAPIPES_LIB aprapipes_node_headless)
                 set(NODE_ADDON_EXTRA_LIBS ${FFMPEG_LIBRARIES})
