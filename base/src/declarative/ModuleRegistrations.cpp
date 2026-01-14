@@ -1074,7 +1074,7 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Captures video from Jetson CSI camera using NVIDIA Argus API";
             info.version = "1.0";
             info.tags = {"source", "camera", "jetson", "argus", "csi", "arm64"};
-            info.outputs.push_back({"output", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
             info.properties.push_back({"width", "int", "static", true, "1920", "320", "4096", {}, "Capture width in pixels", ""});
             info.properties.push_back({"height", "int", "static", true, "1080", "240", "2160", {}, "Capture height in pixels", ""});
             info.properties.push_back({"cameraId", "int", "static", false, "0", "0", "7", {}, "CSI camera sensor ID", ""});
@@ -1099,7 +1099,7 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Captures video from USB camera on Jetson using V4L2";
             info.version = "1.0";
             info.tags = {"source", "camera", "jetson", "v4l2", "usb", "arm64"};
-            info.outputs.push_back({"output", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
             info.properties.push_back({"width", "int", "static", true, "640", "1", "4096", {}, "Capture width in pixels", ""});
             info.properties.push_back({"height", "int", "static", true, "480", "1", "4096", {}, "Capture height in pixels", ""});
             info.properties.push_back({"maxConcurrentFrames", "int", "static", false, "10", "1", "100", {}, "Maximum concurrent frames buffer", ""});
@@ -1129,8 +1129,8 @@ void ensureBuiltinModulesRegistered() {
             info.description = "GPU-accelerated image resize, crop, and transform using Jetson hardware";
             info.version = "1.0";
             info.tags = {"transform", "resize", "crop", "jetson", "gpu", "arm64"};
-            info.inputs.push_back({"input", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
-            info.outputs.push_back({"output", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
             info.properties.push_back({"imageType", "enum", "static", true, "YUV420", "", "", {"RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12", "UYVY", "YUYV"}, "Output image format", ""});
             info.properties.push_back({"width", "int", "static", false, "0", "0", "8192", {}, "Output width in pixels (0 = input width)", ""});
             info.properties.push_back({"height", "int", "static", false, "0", "0", "8192", {}, "Output height in pixels (0 = input height)", ""});
@@ -1173,8 +1173,8 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Hardware-accelerated JPEG decoder using Jetson L4T Multimedia API";
             info.version = "1.0";
             info.tags = {"decoder", "jpeg", "image", "jetson", "l4tm", "arm64"};
-            info.inputs.push_back({"input", {"EncodedImage"}, true, FrameMetadata::HOST});
-            info.outputs.push_back({"output", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"EncodedImage"}; pin.memType = FrameMetadata::HOST; info.inputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>&) -> std::unique_ptr<Module> {
                 JPEGDecoderL4TMProps moduleProps;
@@ -1191,8 +1191,8 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Hardware-accelerated JPEG encoder using Jetson L4T Multimedia API";
             info.version = "1.0";
             info.tags = {"encoder", "jpeg", "image", "jetson", "l4tm", "arm64"};
-            info.inputs.push_back({"input", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
-            info.outputs.push_back({"output", {"EncodedImage"}, true, FrameMetadata::HOST});
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"EncodedImage"}; pin.memType = FrameMetadata::HOST; info.outputs.push_back(std::move(pin)); }
             info.properties.push_back({"quality", "int", "static", false, "90", "1", "100", {}, "JPEG quality (1-100)", ""});
             info.properties.push_back({"scale", "float", "static", false, "1.0", "0.1", "4.0", {}, "Output scale factor", ""});
             info.selfManagedOutputPins = true;
@@ -1217,7 +1217,7 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Renders frames to display using EGL on Jetson (requires display or Xvfb)";
             info.version = "1.0";
             info.tags = {"sink", "display", "render", "egl", "jetson", "arm64"};
-            info.inputs.push_back({"input", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
             info.properties.push_back({"x_offset", "int", "static", false, "0", "0", "8192", {}, "Window X position", ""});
             info.properties.push_back({"y_offset", "int", "static", false, "0", "0", "8192", {}, "Window Y position", ""});
             info.properties.push_back({"width", "int", "static", false, "0", "0", "8192", {}, "Window width (0 = auto from input)", ""});
@@ -1251,8 +1251,8 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Copies frame data from DMA buffer to host (CPU) memory";
             info.version = "1.0";
             info.tags = {"utility", "memory", "copy", "dma", "bridge", "jetson", "arm64"};
-            info.inputs.push_back({"input", {"RawImagePlanar"}, true, FrameMetadata::DMABUF});
-            info.outputs.push_back({"output", {"RawImagePlanar"}, true, FrameMetadata::HOST});
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::HOST; info.outputs.push_back(std::move(pin)); }
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>&) -> std::unique_ptr<Module> {
                 DMAFDToHostCopyProps moduleProps;
