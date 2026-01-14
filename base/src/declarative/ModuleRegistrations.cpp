@@ -1065,7 +1065,43 @@ void ensureBuiltinModulesRegistered() {
         // ============================================================
         // Note: Jetson modules use direct ModuleInfo construction to avoid
         // GCC 9 template lambda issues with registerModule<>() template.
+        // Also use explicit PropInfo/PinInfo construction for GCC 9 compatibility.
 #ifdef ARM64
+        // Helper lambdas for GCC 9 compatible PropInfo construction
+        auto makeIntProp = [](const std::string& name, const std::string& desc,
+                              bool required, const std::string& defVal,
+                              const std::string& minVal, const std::string& maxVal) {
+            ModuleInfo::PropInfo p;
+            p.name = name; p.type = "int"; p.mutability = "static";
+            p.required = required; p.default_value = defVal;
+            p.min_value = minVal; p.max_value = maxVal; p.description = desc;
+            return p;
+        };
+        auto makeFloatProp = [](const std::string& name, const std::string& desc,
+                                bool required, const std::string& defVal,
+                                const std::string& minVal, const std::string& maxVal) {
+            ModuleInfo::PropInfo p;
+            p.name = name; p.type = "float"; p.mutability = "static";
+            p.required = required; p.default_value = defVal;
+            p.min_value = minVal; p.max_value = maxVal; p.description = desc;
+            return p;
+        };
+        auto makeBoolProp = [](const std::string& name, const std::string& desc,
+                               bool required, const std::string& defVal) {
+            ModuleInfo::PropInfo p;
+            p.name = name; p.type = "bool"; p.mutability = "static";
+            p.required = required; p.default_value = defVal; p.description = desc;
+            return p;
+        };
+        auto makeEnumProp = [](const std::string& name, const std::string& desc,
+                               bool required, const std::string& defVal,
+                               const std::vector<std::string>& values) {
+            ModuleInfo::PropInfo p;
+            p.name = name; p.type = "enum"; p.mutability = "static";
+            p.required = required; p.default_value = defVal;
+            p.enum_values = values; p.description = desc;
+            return p;
+        };
         // NvArgusCamera - Jetson CSI camera via Argus API
         if (!registry.hasModule("NvArgusCamera")) {
             ModuleInfo info;
@@ -1075,9 +1111,9 @@ void ensureBuiltinModulesRegistered() {
             info.version = "1.0";
             info.tags = {"source", "camera", "jetson", "argus", "csi", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
-            info.properties.push_back({"width", "int", "static", true, "1920", "320", "4096", {}, "Capture width in pixels", ""});
-            info.properties.push_back({"height", "int", "static", true, "1080", "240", "2160", {}, "Capture height in pixels", ""});
-            info.properties.push_back({"cameraId", "int", "static", false, "0", "0", "7", {}, "CSI camera sensor ID", ""});
+            info.properties.push_back(makeIntProp("width", "Capture width in pixels", true, "1920", "320", "4096"));
+            info.properties.push_back(makeIntProp("height", "Capture height in pixels", true, "1080", "240", "2160"));
+            info.properties.push_back(makeIntProp("cameraId", "CSI camera sensor ID", false, "0", "0", "7"));
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) -> std::unique_ptr<Module> {
                 auto width = static_cast<uint32_t>(std::get<int64_t>(props.at("width")));
@@ -1100,10 +1136,10 @@ void ensureBuiltinModulesRegistered() {
             info.version = "1.0";
             info.tags = {"source", "camera", "jetson", "v4l2", "usb", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
-            info.properties.push_back({"width", "int", "static", true, "640", "1", "4096", {}, "Capture width in pixels", ""});
-            info.properties.push_back({"height", "int", "static", true, "480", "1", "4096", {}, "Capture height in pixels", ""});
-            info.properties.push_back({"maxConcurrentFrames", "int", "static", false, "10", "1", "100", {}, "Maximum concurrent frames buffer", ""});
-            info.properties.push_back({"isMirror", "bool", "static", false, "false", "", "", {}, "Mirror image horizontally", ""});
+            info.properties.push_back(makeIntProp("width", "Capture width in pixels", true, "640", "1", "4096"));
+            info.properties.push_back(makeIntProp("height", "Capture height in pixels", true, "480", "1", "4096"));
+            info.properties.push_back(makeIntProp("maxConcurrentFrames", "Maximum concurrent frames buffer", false, "10", "1", "100"));
+            info.properties.push_back(makeBoolProp("isMirror", "Mirror image horizontally", false, "false"));
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) -> std::unique_ptr<Module> {
                 auto width = static_cast<uint32_t>(std::get<int64_t>(props.at("width")));
@@ -1131,14 +1167,14 @@ void ensureBuiltinModulesRegistered() {
             info.tags = {"transform", "resize", "crop", "jetson", "gpu", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
             { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
-            info.properties.push_back({"imageType", "enum", "static", true, "YUV420", "", "", {"RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12", "UYVY", "YUYV"}, "Output image format", ""});
-            info.properties.push_back({"width", "int", "static", false, "0", "0", "8192", {}, "Output width in pixels (0 = input width)", ""});
-            info.properties.push_back({"height", "int", "static", false, "0", "0", "8192", {}, "Output height in pixels (0 = input height)", ""});
-            info.properties.push_back({"top", "int", "static", false, "0", "0", "8192", {}, "Crop top offset", ""});
-            info.properties.push_back({"left", "int", "static", false, "0", "0", "8192", {}, "Crop left offset", ""});
-            info.properties.push_back({"scaleWidth", "float", "static", false, "1.0", "0.01", "10.0", {}, "Scale factor for width", ""});
-            info.properties.push_back({"scaleHeight", "float", "static", false, "1.0", "0.01", "10.0", {}, "Scale factor for height", ""});
-            info.properties.push_back({"filterType", "enum", "static", false, "SMART", "", "", {"NEAREST", "BILINEAR", "TAP_5", "TAP_10", "SMART", "NICEST"}, "Interpolation filter type", ""});
+            info.properties.push_back(makeEnumProp("imageType", "Output image format", true, "YUV420", {"RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12", "UYVY", "YUYV"}));
+            info.properties.push_back(makeIntProp("width", "Output width in pixels (0 = input width)", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("height", "Output height in pixels (0 = input height)", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("top", "Crop top offset", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("left", "Crop left offset", false, "0", "0", "8192"));
+            info.properties.push_back(makeFloatProp("scaleWidth", "Scale factor for width", false, "1.0", "0.01", "10.0"));
+            info.properties.push_back(makeFloatProp("scaleHeight", "Scale factor for height", false, "1.0", "0.01", "10.0"));
+            info.properties.push_back(makeEnumProp("filterType", "Interpolation filter type", false, "SMART", {"NEAREST", "BILINEAR", "TAP_5", "TAP_10", "SMART", "NICEST"}));
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) -> std::unique_ptr<Module> {
                 auto imageTypeStr = std::get<std::string>(props.at("imageType"));
@@ -1193,8 +1229,8 @@ void ensureBuiltinModulesRegistered() {
             info.tags = {"encoder", "jpeg", "image", "jetson", "l4tm", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
             { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"EncodedImage"}; pin.memType = FrameMetadata::HOST; info.outputs.push_back(std::move(pin)); }
-            info.properties.push_back({"quality", "int", "static", false, "90", "1", "100", {}, "JPEG quality (1-100)", ""});
-            info.properties.push_back({"scale", "float", "static", false, "1.0", "0.1", "4.0", {}, "Output scale factor", ""});
+            info.properties.push_back(makeIntProp("quality", "JPEG quality (1-100)", false, "90", "1", "100"));
+            info.properties.push_back(makeFloatProp("scale", "Output scale factor", false, "1.0", "0.1", "4.0"));
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) -> std::unique_ptr<Module> {
                 JPEGEncoderL4TMProps moduleProps;
@@ -1218,11 +1254,11 @@ void ensureBuiltinModulesRegistered() {
             info.version = "1.0";
             info.tags = {"sink", "display", "render", "egl", "jetson", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
-            info.properties.push_back({"x_offset", "int", "static", false, "0", "0", "8192", {}, "Window X position", ""});
-            info.properties.push_back({"y_offset", "int", "static", false, "0", "0", "8192", {}, "Window Y position", ""});
-            info.properties.push_back({"width", "int", "static", false, "0", "0", "8192", {}, "Window width (0 = auto from input)", ""});
-            info.properties.push_back({"height", "int", "static", false, "0", "0", "8192", {}, "Window height (0 = auto from input)", ""});
-            info.properties.push_back({"displayOnTop", "bool", "static", false, "true", "", "", {}, "Keep window always on top", ""});
+            info.properties.push_back(makeIntProp("x_offset", "Window X position", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("y_offset", "Window Y position", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("width", "Window width (0 = auto from input)", false, "0", "0", "8192"));
+            info.properties.push_back(makeIntProp("height", "Window height (0 = auto from input)", false, "0", "0", "8192"));
+            info.properties.push_back(makeBoolProp("displayOnTop", "Keep window always on top", false, "true"));
             info.factory = [](const std::map<std::string, ScalarPropertyValue>& props) -> std::unique_ptr<Module> {
                 uint32_t x_offset = 0, y_offset = 0, width = 0, height = 0;
                 bool displayOnTop = true;
