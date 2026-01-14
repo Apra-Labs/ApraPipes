@@ -1063,6 +1063,8 @@ void ensureBuiltinModulesRegistered() {
         // ============================================================
         // Jetson/ARM64-only modules
         // ============================================================
+        // Note: Jetson modules use finalizeWith() to avoid GCC 9 lambda issues
+        // and to handle Props classes without default constructors.
 #ifdef ARM64
         // NvArgusCamera - Jetson CSI camera via Argus API
         if (!registry.hasModule("NvArgusCamera")) {
@@ -1074,7 +1076,16 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("width", "Capture width in pixels", true, 1920, 320, 4096)
                 .intProp("height", "Capture height in pixels", true, 1080, 240, 2160)
                 .intProp("cameraId", "CSI camera sensor ID", false, 0, 0, 7)
-                .selfManagedOutputPins();
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>& props) {
+                    auto width = static_cast<uint32_t>(std::get<int64_t>(props.at("width")));
+                    auto height = static_cast<uint32_t>(std::get<int64_t>(props.at("height")));
+                    NvArgusCameraProps moduleProps(width, height);
+                    if (props.count("cameraId")) {
+                        moduleProps.cameraId = static_cast<int>(std::get<int64_t>(props.at("cameraId")));
+                    }
+                    return std::make_unique<NvArgusCamera>(moduleProps);
+                });
         }
 
         // NvV4L2Camera - Jetson USB camera via V4L2
@@ -1088,7 +1099,20 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("height", "Capture height in pixels", true, 480, 1, 4096)
                 .intProp("maxConcurrentFrames", "Maximum concurrent frames buffer", false, 10, 1, 100)
                 .boolProp("isMirror", "Mirror image horizontally", false, false)
-                .selfManagedOutputPins();
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>& props) {
+                    auto width = static_cast<uint32_t>(std::get<int64_t>(props.at("width")));
+                    auto height = static_cast<uint32_t>(std::get<int64_t>(props.at("height")));
+                    uint32_t maxConcurrentFrames = 10;
+                    if (props.count("maxConcurrentFrames")) {
+                        maxConcurrentFrames = static_cast<uint32_t>(std::get<int64_t>(props.at("maxConcurrentFrames")));
+                    }
+                    NvV4L2CameraProps moduleProps(width, height, maxConcurrentFrames);
+                    if (props.count("isMirror")) {
+                        moduleProps.isMirror = std::get<bool>(props.at("isMirror"));
+                    }
+                    return std::make_unique<NvV4L2Camera>(moduleProps);
+                });
         }
 
         // NvTransform - GPU-accelerated resize/crop/transform on Jetson
@@ -1109,7 +1133,31 @@ void ensureBuiltinModulesRegistered() {
                 .floatProp("scaleHeight", "Scale factor for height (1.0 = no scaling)", false, 1.0, 0.01, 10.0)
                 .enumProp("filterType", "Interpolation filter type", false, "SMART",
                     "NEAREST", "BILINEAR", "TAP_5", "TAP_10", "SMART", "NICEST")
-                .selfManagedOutputPins();
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>& props) {
+                    // Parse imageType enum
+                    auto imageTypeStr = std::get<std::string>(props.at("imageType"));
+                    ImageMetadata::ImageType imageType = ImageMetadata::YUV420;
+                    if (imageTypeStr == "RGB") imageType = ImageMetadata::RGB;
+                    else if (imageTypeStr == "BGR") imageType = ImageMetadata::BGR;
+                    else if (imageTypeStr == "RGBA") imageType = ImageMetadata::RGBA;
+                    else if (imageTypeStr == "BGRA") imageType = ImageMetadata::BGRA;
+                    else if (imageTypeStr == "MONO") imageType = ImageMetadata::MONO;
+                    else if (imageTypeStr == "YUV444") imageType = ImageMetadata::YUV444;
+                    else if (imageTypeStr == "NV12") imageType = ImageMetadata::NV12;
+                    else if (imageTypeStr == "UYVY") imageType = ImageMetadata::UYVY;
+                    else if (imageTypeStr == "YUYV") imageType = ImageMetadata::YUYV;
+
+                    NvTransformProps moduleProps(imageType);
+                    if (props.count("width")) moduleProps.width = static_cast<int>(std::get<int64_t>(props.at("width")));
+                    if (props.count("height")) moduleProps.height = static_cast<int>(std::get<int64_t>(props.at("height")));
+                    if (props.count("top")) moduleProps.top = static_cast<int>(std::get<int64_t>(props.at("top")));
+                    if (props.count("left")) moduleProps.left = static_cast<int>(std::get<int64_t>(props.at("left")));
+                    if (props.count("scaleWidth")) moduleProps.scaleWidth = static_cast<float>(std::get<double>(props.at("scaleWidth")));
+                    if (props.count("scaleHeight")) moduleProps.scaleHeight = static_cast<float>(std::get<double>(props.at("scaleHeight")));
+                    // filterType enum could be parsed similarly if needed
+                    return std::make_unique<NvTransform>(moduleProps);
+                });
         }
 
         // JPEGDecoderL4TM - Hardware JPEG decoder on Jetson
@@ -1120,21 +1168,34 @@ void ensureBuiltinModulesRegistered() {
                 .tags("decoder", "jpeg", "image", "jetson", "l4tm", "arm64")
                 .input("input", "EncodedImage", FrameMetadata::HOST)
                 .output("output", "RawImagePlanar", FrameMetadata::DMABUF)
-                .selfManagedOutputPins();
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>&) {
+                    JPEGDecoderL4TMProps moduleProps;
+                    return std::make_unique<JPEGDecoderL4TM>(moduleProps);
+                });
         }
 
         // JPEGEncoderL4TM - Hardware JPEG encoder on Jetson
         if (!registry.hasModule("JPEGEncoderL4TM")) {
-            JPEGEncoderL4TMProps jpegEncDefaults;
             registerModule<JPEGEncoderL4TM, JPEGEncoderL4TMProps>()
                 .category(ModuleCategory::Transform)
                 .description("Hardware-accelerated JPEG encoder using Jetson L4T Multimedia API")
                 .tags("encoder", "jpeg", "image", "jetson", "l4tm", "arm64")
                 .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
                 .output("output", "EncodedImage", FrameMetadata::HOST)
-                .intProp("quality", "JPEG quality (1-100)", false, jpegEncDefaults.quality, 1, 100)
-                .floatProp("scale", "Output scale factor", false, jpegEncDefaults.scale, 0.1, 4.0)
-                .selfManagedOutputPins();
+                .intProp("quality", "JPEG quality (1-100)", false, 90, 1, 100)
+                .floatProp("scale", "Output scale factor", false, 1.0, 0.1, 4.0)
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>& props) {
+                    JPEGEncoderL4TMProps moduleProps;
+                    if (props.count("quality")) {
+                        moduleProps.quality = static_cast<unsigned short>(std::get<int64_t>(props.at("quality")));
+                    }
+                    if (props.count("scale")) {
+                        moduleProps.scale = static_cast<float>(std::get<double>(props.at("scale")));
+                    }
+                    return std::make_unique<JPEGEncoderL4TM>(moduleProps);
+                });
         }
 
         // EglRenderer - Display renderer on Jetson
@@ -1148,7 +1209,24 @@ void ensureBuiltinModulesRegistered() {
                 .intProp("y_offset", "Window Y position", false, 0, 0, 8192)
                 .intProp("width", "Window width (0 = auto from input)", false, 0, 0, 8192)
                 .intProp("height", "Window height (0 = auto from input)", false, 0, 0, 8192)
-                .boolProp("displayOnTop", "Keep window always on top", false, true);
+                .boolProp("displayOnTop", "Keep window always on top", false, true)
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>& props) {
+                    uint32_t x_offset = 0, y_offset = 0, width = 0, height = 0;
+                    bool displayOnTop = true;
+                    if (props.count("x_offset")) x_offset = static_cast<uint32_t>(std::get<int64_t>(props.at("x_offset")));
+                    if (props.count("y_offset")) y_offset = static_cast<uint32_t>(std::get<int64_t>(props.at("y_offset")));
+                    if (props.count("width")) width = static_cast<uint32_t>(std::get<int64_t>(props.at("width")));
+                    if (props.count("height")) height = static_cast<uint32_t>(std::get<int64_t>(props.at("height")));
+                    if (props.count("displayOnTop")) displayOnTop = std::get<bool>(props.at("displayOnTop"));
+
+                    if (width > 0 && height > 0) {
+                        EglRendererProps moduleProps(x_offset, y_offset, width, height);
+                        return std::make_unique<EglRenderer>(moduleProps);
+                    } else {
+                        EglRendererProps moduleProps(x_offset, y_offset, displayOnTop);
+                        return std::make_unique<EglRenderer>(moduleProps);
+                    }
+                });
         }
 
         // DMAFDToHostCopy - Bridge module for DMABUF to HOST memory
@@ -1159,7 +1237,11 @@ void ensureBuiltinModulesRegistered() {
                 .tags("utility", "memory", "copy", "dma", "bridge", "jetson", "arm64")
                 .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
                 .output("output", "RawImagePlanar", FrameMetadata::HOST)
-                .selfManagedOutputPins();
+                .selfManagedOutputPins()
+                .finalizeWith([](const std::map<std::string, ScalarPropertyValue>&) {
+                    DMAFDToHostCopyProps moduleProps;
+                    return std::make_unique<DMAFDToHostCopy>(moduleProps);
+                });
         }
 #endif // ARM64
 

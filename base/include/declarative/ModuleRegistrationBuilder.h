@@ -422,6 +422,28 @@ public:
         }
     }
 
+    // Finalize with a custom factory function
+    // Use this for Props classes that don't have default constructors
+    // (e.g., Jetson modules like NvTransform, EglRenderer)
+    // The lambda is defined at the call site, avoiding GCC 9 template lambda issues
+    template<typename FactoryLambda>
+    void finalizeWith(FactoryLambda&& factoryFn) {
+        if (registered_) return;
+        registered_ = true;
+
+        if (info_.version.empty()) {
+            info_.version = "1.0";
+        }
+
+        // Forward the factory lambda directly
+        info_.factory = ModuleInfo::FactoryFn(std::forward<FactoryLambda>(factoryFn));
+
+        // No property accessor factory for custom-constructed modules
+        // (they typically don't support dynamic properties)
+
+        ModuleRegistry::instance().registerModule(std::move(info_));
+    }
+
     // Explicit registration (called by destructor if not called manually)
     void finalize() {
         if (registered_) return;
