@@ -1,0 +1,43 @@
+{
+  "pipeline": {
+    "name": "DMABUF to HOST Bridge Demo",
+    "description": "Demonstrates DMAFDToHostCopy bridge - decodes JPEG to DMABUF, copies to HOST for CPU processing"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/test_????.jpg",
+        "readLoop": true,
+        "maxIndex": 10
+      }
+    },
+    "jpeg_decoder": {
+      "type": "JPEGDecoderL4TM",
+      "comment": "Decodes JPEG to DMABUF memory (GPU accessible)"
+    },
+    "dmabuf_to_host": {
+      "type": "DMAFDToHostCopy",
+      "comment": "Copies from DMABUF to HOST memory (CPU accessible)"
+    },
+    "cpu_encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "type": "JPEG"
+      },
+      "comment": "CPU-based JPEG encoding (requires HOST memory)"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_output/bridge_output_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "jpeg_decoder" },
+    { "from": "jpeg_decoder", "to": "dmabuf_to_host" },
+    { "from": "dmabuf_to_host", "to": "cpu_encoder" },
+    { "from": "cpu_encoder", "to": "writer" }
+  ]
+}

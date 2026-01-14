@@ -444,4 +444,80 @@ BOOST_AUTO_TEST_CASE(AnalyzeChainedPipeline_CorrectBridgeOrdering)
     BOOST_CHECK(result.bridges[1].memoryDirection == MemoryDirection::DeviceToHost);
 }
 
+// ============================================================
+// DMABUF Bridging Tests (Jetson-specific)
+// ============================================================
+
+BOOST_AUTO_TEST_CASE(AnalyzeDmabufToHost_UsesDMAFDToHostCopy)
+{
+    // DMABUF source -> HOST sink should use DMAFDToHostCopy
+    registerMockModule("DmabufSource", FrameMetadata::DMABUF, FrameMetadata::DMABUF,
+                       "RawImagePlanar", "RawImagePlanar", {"jetson"});
+    registerMockModule("HostSink", FrameMetadata::HOST, FrameMetadata::HOST,
+                       "RawImagePlanar", "RawImagePlanar");
+
+    auto pipeline = createSimplePipeline("DmabufSource", "HostSink");
+    auto result = analyzer.analyze(pipeline);
+
+    BOOST_CHECK(!result.hasErrors);
+    BOOST_REQUIRE_EQUAL(result.bridges.size(), 1);
+    BOOST_CHECK(result.bridges[0].type == BridgeType::Memory);
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "DMAFDToHostCopy");
+    BOOST_CHECK(result.bridges[0].memoryDirection == MemoryDirection::DeviceToHost);
+}
+
+BOOST_AUTO_TEST_CASE(AnalyzeDmabufToCuda_DirectInterop_NoBridge)
+{
+    // DMABUF -> CUDA_DEVICE is direct interop on Jetson (no bridge needed)
+    registerMockModule("DmabufSource", FrameMetadata::DMABUF, FrameMetadata::DMABUF,
+                       "RawImagePlanar", "RawImagePlanar", {"jetson"});
+    registerMockModule("CudaSink", FrameMetadata::CUDA_DEVICE, FrameMetadata::CUDA_DEVICE,
+                       "RawImagePlanar", "RawImagePlanar", {"cuda"});
+
+    auto pipeline = createSimplePipeline("DmabufSource", "CudaSink");
+    auto result = analyzer.analyze(pipeline);
+
+    BOOST_CHECK(!result.hasErrors);
+    // No memory bridge needed - DMABUF and CUDA share memory on Jetson
+    BOOST_CHECK_EQUAL(result.memoryBridgeCount, 0);
+}
+
+BOOST_AUTO_TEST_CASE(AnalyzeDmabufToDmabuf_NoBridge)
+{
+    // DMABUF -> DMABUF (same memory type)
+    registerMockModule("DmabufSource", FrameMetadata::DMABUF, FrameMetadata::DMABUF,
+                       "RawImagePlanar", "RawImagePlanar", {"jetson"});
+    registerMockModule("DmabufSink", FrameMetadata::DMABUF, FrameMetadata::DMABUF,
+                       "RawImagePlanar", "RawImagePlanar", {"jetson"});
+
+    auto pipeline = createSimplePipeline("DmabufSource", "DmabufSink");
+    auto result = analyzer.analyze(pipeline);
+
+    BOOST_CHECK(!result.hasErrors);
+    BOOST_CHECK(result.bridges.empty());
+}
+
+BOOST_AUTO_TEST_CASE(AnalyzeDmabufFormatMismatch_UsesNvTransform)
+{
+    // Format mismatch on DMABUF should use NvTransform
+    registerMockModuleWithFormats(
+        "DmabufBGRSource", FrameMetadata::DMABUF,
+        {}, {ImageMetadata::BGR},
+        {"jetson"}
+    );
+    registerMockModuleWithFormats(
+        "DmabufYUVSink", FrameMetadata::DMABUF,
+        {ImageMetadata::YUV420}, {},
+        {"jetson"}
+    );
+
+    auto pipeline = createSimplePipeline("DmabufBGRSource", "DmabufYUVSink");
+    auto result = analyzer.analyze(pipeline);
+
+    BOOST_CHECK(!result.hasErrors);
+    BOOST_REQUIRE_EQUAL(result.bridges.size(), 1);
+    BOOST_CHECK(result.bridges[0].type == BridgeType::Format);
+    BOOST_CHECK_EQUAL(result.bridges[0].bridgeModule, "NvTransform");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -67,6 +67,17 @@
 #include "H264EncoderV4L2.h"
 #endif
 
+// Jetson-specific modules (ARM64 + CUDA)
+#ifdef ARM64
+#include "NvArgusCamera.h"
+#include "NvV4L2Camera.h"
+#include "NvTransform.h"
+#include "JPEGDecoderL4TM.h"
+#include "JPEGEncoderL4TM.h"
+#include "EglRenderer.h"
+#include "DMAFDToHostCopy.h"
+#endif
+
 // Batch 5: Utility modules
 #include "FramesMuxer.h"
 // Note: H264FrameDemuxer is not derived from Module - cannot be registered
@@ -1048,6 +1059,109 @@ void ensureBuiltinModulesRegistered() {
                 .selfManagedOutputPins();
         }
 #endif
+
+        // ============================================================
+        // Jetson/ARM64-only modules
+        // ============================================================
+#ifdef ARM64
+        // NvArgusCamera - Jetson CSI camera via Argus API
+        if (!registry.hasModule("NvArgusCamera")) {
+            registerModule<NvArgusCamera, NvArgusCameraProps>()
+                .category(ModuleCategory::Source)
+                .description("Captures video from Jetson CSI camera using NVIDIA Argus API")
+                .tags("source", "camera", "jetson", "argus", "csi", "arm64")
+                .output("output", "RawImagePlanar", FrameMetadata::DMABUF)
+                .intProp("width", "Capture width in pixels", true, 1920, 320, 4096)
+                .intProp("height", "Capture height in pixels", true, 1080, 240, 2160)
+                .intProp("cameraId", "CSI camera sensor ID", false, 0, 0, 7)
+                .selfManagedOutputPins();
+        }
+
+        // NvV4L2Camera - Jetson USB camera via V4L2
+        if (!registry.hasModule("NvV4L2Camera")) {
+            registerModule<NvV4L2Camera, NvV4L2CameraProps>()
+                .category(ModuleCategory::Source)
+                .description("Captures video from USB camera on Jetson using V4L2")
+                .tags("source", "camera", "jetson", "v4l2", "usb", "arm64")
+                .output("output", "RawImagePlanar", FrameMetadata::DMABUF)
+                .intProp("width", "Capture width in pixels", true, 640, 1, 4096)
+                .intProp("height", "Capture height in pixels", true, 480, 1, 4096)
+                .intProp("maxConcurrentFrames", "Maximum concurrent frames buffer", false, 10, 1, 100)
+                .boolProp("isMirror", "Mirror image horizontally", false, false)
+                .selfManagedOutputPins();
+        }
+
+        // NvTransform - GPU-accelerated resize/crop/transform on Jetson
+        if (!registry.hasModule("NvTransform")) {
+            registerModule<NvTransform, NvTransformProps>()
+                .category(ModuleCategory::Transform)
+                .description("GPU-accelerated image resize, crop, and transform using Jetson hardware")
+                .tags("transform", "resize", "crop", "jetson", "gpu", "arm64")
+                .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
+                .output("output", "RawImagePlanar", FrameMetadata::DMABUF)
+                .enumProp("imageType", "Output image format", true, "YUV420",
+                    "RGB", "BGR", "RGBA", "BGRA", "MONO", "YUV420", "YUV444", "NV12", "UYVY", "YUYV")
+                .intProp("width", "Output width in pixels (0 = input width)", false, 0, 0, 8192)
+                .intProp("height", "Output height in pixels (0 = input height)", false, 0, 0, 8192)
+                .intProp("top", "Crop top offset", false, 0, 0, 8192)
+                .intProp("left", "Crop left offset", false, 0, 0, 8192)
+                .floatProp("scaleWidth", "Scale factor for width (1.0 = no scaling)", false, 1.0, 0.01, 10.0)
+                .floatProp("scaleHeight", "Scale factor for height (1.0 = no scaling)", false, 1.0, 0.01, 10.0)
+                .enumProp("filterType", "Interpolation filter type", false, "SMART",
+                    "NEAREST", "BILINEAR", "TAP_5", "TAP_10", "SMART", "NICEST")
+                .selfManagedOutputPins();
+        }
+
+        // JPEGDecoderL4TM - Hardware JPEG decoder on Jetson
+        if (!registry.hasModule("JPEGDecoderL4TM")) {
+            registerModule<JPEGDecoderL4TM, JPEGDecoderL4TMProps>()
+                .category(ModuleCategory::Transform)
+                .description("Hardware-accelerated JPEG decoder using Jetson L4T Multimedia API")
+                .tags("decoder", "jpeg", "image", "jetson", "l4tm", "arm64")
+                .input("input", "EncodedImage", FrameMetadata::HOST)
+                .output("output", "RawImagePlanar", FrameMetadata::DMABUF)
+                .selfManagedOutputPins();
+        }
+
+        // JPEGEncoderL4TM - Hardware JPEG encoder on Jetson
+        if (!registry.hasModule("JPEGEncoderL4TM")) {
+            JPEGEncoderL4TMProps jpegEncDefaults;
+            registerModule<JPEGEncoderL4TM, JPEGEncoderL4TMProps>()
+                .category(ModuleCategory::Transform)
+                .description("Hardware-accelerated JPEG encoder using Jetson L4T Multimedia API")
+                .tags("encoder", "jpeg", "image", "jetson", "l4tm", "arm64")
+                .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
+                .output("output", "EncodedImage", FrameMetadata::HOST)
+                .intProp("quality", "JPEG quality (1-100)", false, jpegEncDefaults.quality, 1, 100)
+                .floatProp("scale", "Output scale factor", false, jpegEncDefaults.scale, 0.1, 4.0)
+                .selfManagedOutputPins();
+        }
+
+        // EglRenderer - Display renderer on Jetson
+        if (!registry.hasModule("EglRenderer")) {
+            registerModule<EglRenderer, EglRendererProps>()
+                .category(ModuleCategory::Sink)
+                .description("Renders frames to display using EGL on Jetson (requires display or Xvfb)")
+                .tags("sink", "display", "render", "egl", "jetson", "arm64")
+                .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
+                .intProp("x_offset", "Window X position", false, 0, 0, 8192)
+                .intProp("y_offset", "Window Y position", false, 0, 0, 8192)
+                .intProp("width", "Window width (0 = auto from input)", false, 0, 0, 8192)
+                .intProp("height", "Window height (0 = auto from input)", false, 0, 0, 8192)
+                .boolProp("displayOnTop", "Keep window always on top", false, true);
+        }
+
+        // DMAFDToHostCopy - Bridge module for DMABUF to HOST memory
+        if (!registry.hasModule("DMAFDToHostCopy")) {
+            registerModule<DMAFDToHostCopy, DMAFDToHostCopyProps>()
+                .category(ModuleCategory::Utility)
+                .description("Copies frame data from DMA buffer to host (CPU) memory")
+                .tags("utility", "memory", "copy", "dma", "bridge", "jetson", "arm64")
+                .input("input", "RawImagePlanar", FrameMetadata::DMABUF)
+                .output("output", "RawImagePlanar", FrameMetadata::HOST)
+                .selfManagedOutputPins();
+        }
+#endif // ARM64
 
         // ============================================================
         // CUDA-only modules

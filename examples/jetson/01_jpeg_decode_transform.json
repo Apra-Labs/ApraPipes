@@ -1,0 +1,45 @@
+{
+  "pipeline": {
+    "name": "Jetson JPEG Decode and Transform",
+    "description": "Reads JPEG files, decodes using Jetson hardware, transforms with NvTransform, and re-encodes"
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/test_????.jpg",
+        "readLoop": true,
+        "maxIndex": 10
+      }
+    },
+    "decoder": {
+      "type": "JPEGDecoderL4TM"
+    },
+    "transform": {
+      "type": "NvTransform",
+      "props": {
+        "imageType": "YUV420",
+        "width": 320,
+        "height": 240
+      }
+    },
+    "encoder": {
+      "type": "JPEGEncoderL4TM",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_output/resized_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "transform" },
+    { "from": "transform", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

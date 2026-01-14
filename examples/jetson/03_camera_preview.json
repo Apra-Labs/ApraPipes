@@ -1,0 +1,28 @@
+{
+  "pipeline": {
+    "name": "Argus Camera Preview",
+    "description": "Displays Jetson CSI camera feed on screen (requires CSI camera and display)"
+  },
+  "modules": {
+    "camera": {
+      "type": "NvArgusCamera",
+      "props": {
+        "width": 1920,
+        "height": 1080,
+        "cameraId": 0
+      }
+    },
+    "display": {
+      "type": "EglRenderer",
+      "props": {
+        "x_offset": 0,
+        "y_offset": 0,
+        "width": 1920,
+        "height": 1080
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "display" }
+  ]
+}

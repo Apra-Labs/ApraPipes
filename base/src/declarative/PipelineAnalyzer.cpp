@@ -183,15 +183,23 @@ void PipelineAnalyzer::checkMemoryTypeCompatibility(
         return;  // Already compatible
     }
 
+    // Select the appropriate bridge module
+    std::string bridgeModuleName = selectMemoryBridgeModule(conn.fromMemType, conn.toMemType);
+
+    // If no bridge needed (e.g., DMABUF -> CUDA_DEVICE direct interop on Jetson)
+    if (bridgeModuleName.empty()) {
+        return;  // Direct interop, no bridge required
+    }
+
     BridgeSpec bridge;
     bridge.fromModule = conn.fromModuleId;
     bridge.toModule = conn.toModuleId;
     bridge.fromPin = conn.fromPin;
     bridge.toPin = conn.toPin;
     bridge.type = BridgeType::Memory;
-    bridge.bridgeModule = selectMemoryBridgeModule(conn.fromMemType, conn.toMemType);
+    bridge.bridgeModule = bridgeModuleName;
 
-    // Set direction
+    // Set direction based on memory type transition
     if (conn.fromMemType == FrameMetadata::HOST &&
         conn.toMemType == FrameMetadata::CUDA_DEVICE) {
         bridge.memoryDirection = MemoryDirection::HostToDevice;
@@ -200,6 +208,21 @@ void PipelineAnalyzer::checkMemoryTypeCompatibility(
                conn.toMemType == FrameMetadata::HOST) {
         bridge.memoryDirection = MemoryDirection::DeviceToHost;
         bridge.props["direction"] = "deviceToHost";
+    } else if (conn.fromMemType == FrameMetadata::DMABUF &&
+               conn.toMemType == FrameMetadata::HOST) {
+        // DMABUF -> HOST: DMA buffer copy to CPU memory
+        bridge.memoryDirection = MemoryDirection::DeviceToHost;
+        bridge.props["direction"] = "dmabufToHost";
+    } else if (conn.fromMemType == FrameMetadata::HOST &&
+               conn.toMemType == FrameMetadata::DMABUF) {
+        // HOST -> DMABUF: CPU memory to DMA buffer (rare)
+        bridge.memoryDirection = MemoryDirection::HostToDevice;
+        bridge.props["direction"] = "hostToDmabuf";
+    } else if (conn.fromMemType == FrameMetadata::CUDA_DEVICE &&
+               conn.toMemType == FrameMetadata::DMABUF) {
+        // CUDA_DEVICE -> DMABUF
+        bridge.memoryDirection = MemoryDirection::DeviceToHost;
+        bridge.props["direction"] = "cudaToDmabuf";
     }
 
     result.bridges.push_back(std::move(bridge));
@@ -388,8 +411,30 @@ std::string PipelineAnalyzer::selectMemoryBridgeModule(
         return "CudaMemCopyD2H";
     }
 
-    // For DMABUF conversions, use MemTypeConversion
-    if (from == FrameMetadata::DMABUF || to == FrameMetadata::DMABUF) {
+    // ============================================================
+    // DMABUF bridging (Jetson-specific)
+    // ============================================================
+
+    // DMABUF -> HOST: Use DMAFDToHostCopy (Jetson DMA file descriptor copy)
+    if (from == FrameMetadata::DMABUF && to == FrameMetadata::HOST) {
+        return "DMAFDToHostCopy";
+    }
+
+    // DMABUF -> CUDA_DEVICE: Direct interop on Jetson (NvBuffer has CUDA mapping)
+    // No bridge needed - Jetson DMABUF is directly accessible from CUDA
+    // Return empty string to indicate no bridge needed
+    if (from == FrameMetadata::DMABUF && to == FrameMetadata::CUDA_DEVICE) {
+        return "";  // Direct interop, no bridge
+    }
+
+    // CUDA_DEVICE -> DMABUF: Not common, but could use MemTypeConversion
+    if (from == FrameMetadata::CUDA_DEVICE && to == FrameMetadata::DMABUF) {
+        return "MemTypeConversion";
+    }
+
+    // HOST -> DMABUF: Uncommon - Jetson sources typically produce DMABUF directly
+    // Could potentially use a memory copy if needed
+    if (from == FrameMetadata::HOST && to == FrameMetadata::DMABUF) {
         return "MemTypeConversion";
     }
 
@@ -411,6 +456,12 @@ std::string PipelineAnalyzer::selectFormatBridgeModule(
     // Use CUDA-accelerated conversion if data is on GPU
     if (memType == FrameMetadata::CUDA_DEVICE) {
         return "CCNPPI";  // CUDA/NPP color conversion
+    }
+
+    // For DMABUF memory on Jetson, use NvTransform for format conversion
+    // NvTransform can handle YUV/RGB conversions in DMABUF space
+    if (memType == FrameMetadata::DMABUF) {
+        return "NvTransform";  // Jetson hardware-accelerated transform
     }
 
     // Use CPU conversion for host memory

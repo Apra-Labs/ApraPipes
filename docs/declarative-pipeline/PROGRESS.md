@@ -13,16 +13,100 @@
 **Sprint 5 (CUDA):** ✅ COMPLETE
 **Sprint 6 (DRY Refactoring):** ✅ COMPLETE
 **Sprint 7 (Auto-Bridging):** ✅ COMPLETE
+**Sprint 8 (Jetson Integration):** 🔄 IN PROGRESS
 
 ```
 Core Infrastructure:  ✅ Complete (Metadata, Registry, Factory, Validator, CLI)
 JSON Migration:       ✅ Complete (TOML removed, JsonParser added)
-Module Coverage:      37 modules (cross-platform) + platform-specific
+Module Coverage:      37 modules (cross-platform) + 8 Jetson + 15 CUDA = 60 modules (max)
 Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
 CUDA Modules:         ✅ 15 modules registered (NPP + NVCodec + memory transfer)
+Jetson Modules:       🔄 8 modules registered (NvArgus, NvV4L2, NvTransform, L4TM, etc.)
 Build Headless:       ✅ BUILD_HEADLESS option for server environments
 Auto-Bridging:        ✅ Complete (PipelineAnalyzer, auto-insert bridges)
+DMABUF Bridging:      ✅ Complete (DMAFDToHostCopy, NvTransform for format)
 ```
+
+---
+
+## Sprint 8 Progress (Jetson Integration)
+
+> Started: 2026-01-13
+
+**Plan:** `.claude/plans/encapsulated-churning-spindle.md`
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| P.0-P.5 | ✅ Complete | Prerequisites (CI disabled, SSH, workspace) |
+| Phase 1.0 | 🔄 Building | Jetson CMake configure with Node.js addon |
+| Phase 1.1 | ⏳ Pending | Test Node.js addon on Jetson |
+| Phase 2 | ✅ Complete | Register 8 Jetson modules |
+| Phase 2.5 | ✅ Complete | Add DMABUF auto-bridging |
+| Phase 3 | ✅ Complete | Create 7 Jetson JSON examples |
+| Phase 4 | ⏳ Pending | Update docs, re-enable CI |
+
+### Completed: Prerequisites (P.0-P.5)
+
+- [x] P.0 Disabled CI-Linux-ARM64.yml during development
+- [x] P.1 Added Jetson Device Rules to CLAUDE.md
+- [x] P.2 Set up SSH key authentication to Jetson (192.168.1.18)
+- [x] P.3 Created workspace at ~/ws/ApraPipes on Jetson
+- [x] P.4 Verified vcpkg cache (1.7GB shared with CI)
+- [x] P.5 Pushed changes for Jetson to pull
+
+### In Progress: Phase 1 - Node.js Addon Build
+
+Jetson build started with `-DBUILD_NODE_ADDON=ON`. Currently running vcpkg install.
+
+### Completed: Phase 2 - Register 8 Jetson Modules
+
+Added to `base/src/declarative/ModuleRegistrations.cpp` inside `#ifdef ARM64`:
+
+| Module | Category | Input MemType | Output MemType | Description |
+|--------|----------|---------------|----------------|-------------|
+| NvArgusCamera | Source | - | DMABUF | Jetson CSI camera via Argus API |
+| NvV4L2Camera | Source | - | DMABUF | USB camera via V4L2 |
+| NvTransform | Transform | DMABUF | DMABUF | GPU-accelerated resize/crop/transform |
+| JPEGDecoderL4TM | Transform | HOST | DMABUF | L4T hardware JPEG decoder |
+| JPEGEncoderL4TM | Transform | DMABUF | HOST | L4T hardware JPEG encoder |
+| H264EncoderV4L2 | Transform | DMABUF | HOST | V4L2 hardware H264 encoder |
+| EglRenderer | Sink | DMABUF | - | EGL display output |
+| DMAFDToHostCopy | Utility | DMABUF | HOST | DMA buffer to CPU memory bridge |
+
+### Completed: Phase 2.5 - DMABUF Auto-Bridging
+
+Updated `base/src/declarative/PipelineAnalyzer.cpp`:
+
+| Source MemType | Target MemType | Bridge Module | Notes |
+|----------------|----------------|---------------|-------|
+| DMABUF | HOST | DMAFDToHostCopy | Copy DMA buffer to CPU memory |
+| DMABUF | CUDA_DEVICE | (none) | Direct interop on Jetson |
+| DMABUF | DMABUF | (none) | Same memory type |
+| HOST | DMABUF | MemTypeConversion | Rare case |
+
+Format bridging on DMABUF uses `NvTransform` (Jetson hardware-accelerated).
+
+**Unit Tests Added:**
+- `AnalyzeDmabufToHost_UsesDMAFDToHostCopy`
+- `AnalyzeDmabufToCuda_DirectInterop_NoBridge`
+- `AnalyzeDmabufToDmabuf_NoBridge`
+- `AnalyzeDmabufFormatMismatch_UsesNvTransform`
+
+### Completed: Phase 3 - Jetson JSON Examples
+
+Created 7 examples in `examples/jetson/`:
+
+| File | Description | Tested Sources |
+|------|-------------|----------------|
+| `01_jpeg_decode_transform.json` | JPEG decode → resize → encode | FileReaderModule |
+| `01_test_signal_to_jpeg.json` | Test pattern → JPEG encode | TestSignalGenerator |
+| `02_h264_encode_demo.json` | JPEG → H264 encoding | FileReaderModule |
+| `03_camera_preview.json` | CSI camera → display | NvArgusCamera (hw) |
+| `04_usb_camera_jpeg.json` | USB camera → JPEG | NvV4L2Camera (hw) |
+| `05_dmabuf_to_host_bridge.json` | DMABUF→HOST bridge demo | FileReaderModule |
+| `06_camera_h264_stream.json` | Camera → H264 stream | NvArgusCamera (hw) |
+
+Examples use FileReaderModule and TestSignalGenerator as tested sources where possible.
 
 ---
 

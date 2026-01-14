@@ -1,0 +1,42 @@
+{
+  "pipeline": {
+    "name": "USB Camera to JPEG",
+    "description": "Captures from USB camera via V4L2, transforms and saves as JPEG files (requires USB camera)"
+  },
+  "modules": {
+    "camera": {
+      "type": "NvV4L2Camera",
+      "props": {
+        "width": 1280,
+        "height": 720,
+        "maxConcurrentFrames": 10,
+        "isMirror": false
+      }
+    },
+    "transform": {
+      "type": "NvTransform",
+      "props": {
+        "imageType": "YUV420",
+        "width": 640,
+        "height": 480
+      }
+    },
+    "encoder": {
+      "type": "JPEGEncoderL4TM",
+      "props": {
+        "quality": 85
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_output/usb_frame_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "transform" },
+    { "from": "transform", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

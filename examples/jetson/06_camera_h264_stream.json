@@ -1,0 +1,42 @@
+{
+  "pipeline": {
+    "name": "Camera to H264 Stream",
+    "description": "Complete pipeline: CSI camera capture, transform, H264 encode (requires camera)"
+  },
+  "modules": {
+    "camera": {
+      "type": "NvArgusCamera",
+      "props": {
+        "width": 1920,
+        "height": 1080,
+        "cameraId": 0
+      }
+    },
+    "transform": {
+      "type": "NvTransform",
+      "props": {
+        "imageType": "YUV420",
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "h264_encoder": {
+      "type": "H264EncoderV4L2",
+      "props": {
+        "targetKbps": 4000
+      }
+    },
+    "stats": {
+      "type": "StatSink",
+      "props": {
+        "logHealth": true,
+        "logHealthFrequency": 100
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "transform" },
+    { "from": "transform", "to": "h264_encoder" },
+    { "from": "h264_encoder", "to": "stats" }
+  ]
+}
