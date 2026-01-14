@@ -45,11 +45,12 @@ aprapipes_cli run pipeline.json
 
 | Document | Description |
 |----------|-------------|
-| [RFC.md](./RFC.md) | Full RFC with design decisions |
-| [PROJECT_PLAN.md](./PROJECT_PLAN.md) | Sprint plan and timeline |
+| [PROGRESS.md](./PROGRESS.md) | Current progress and status tracker |
 | [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) | Guide for module developers |
 | [PIPELINE_AUTHOR_GUIDE.md](./PIPELINE_AUTHOR_GUIDE.md) | Guide for pipeline authors |
-| [tasks/](./tasks/) | Detailed task specifications |
+| [BUILD_OPTIONS.md](./BUILD_OPTIONS.md) | Build configuration options |
+| [INTEGRATION_TESTS.md](./INTEGRATION_TESTS.md) | Test results and known issues |
+| [CUDA_MEMTYPE_DESIGN.md](./CUDA_MEMTYPE_DESIGN.md) | Auto-bridging design document |
 
 ## Quick Links
 
@@ -115,26 +116,26 @@ aprapipes_cli run pipeline.json
 ### For Developers
 
 1. Read the [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)
-2. Check [tasks/README.md](./tasks/README.md) for implementation details
-3. Register your module in `ModuleRegistrations.cpp`
+2. Study existing registrations in `base/src/declarative/ModuleRegistrations.cpp`
+3. Register your module following the documented patterns
 
 ### For Pipeline Authors
 
 1. Read the [PIPELINE_AUTHOR_GUIDE.md](./PIPELINE_AUTHOR_GUIDE.md)
-2. Check the [examples](./examples/) directory
+2. Check the [examples](../../examples/) directory
 3. Use `aprapipes_cli validate pipeline.json` to check your pipeline
 
 ### For Claude Code Agents
 
 ```bash
-# Read your assigned task
-cat docs/declarative-pipeline/tasks/A1-core-metadata-types.md
+# Check current progress
+cat docs/declarative-pipeline/PROGRESS.md
 
-# Implement in specified location
-# Check "Files" section in the spec
+# Read the developer guide for registration patterns
+cat docs/declarative-pipeline/DEVELOPER_GUIDE.md
 
-# Verify
-cd build && ctest -R <test_name>
+# Verify changes with tests (Boost.Test)
+./build/aprapipesut --run_test="ModuleRegistryTests/*" --log_level=test_suite
 ```
 
 ## Timeline
@@ -144,12 +145,13 @@ cd build && ctest -R <test_name>
 | Sprint 1 | Foundations (Types, Registry, Parser) | ✅ Complete |
 | Sprint 2 | MVP (Factory, CLI) | ✅ Complete |
 | Sprint 3 | Polish (Validation, Docs) | ✅ Complete |
-| Sprint 4 | JSON Migration | ✅ Complete |
+| Sprint 4 | JSON Migration + Node.js Addon | ✅ Complete |
+| Sprint 5 | CUDA Module Registration | ✅ Complete |
+| Sprint 6 | DRY Refactoring | ✅ Complete |
+| Sprint 7 | Auto-Bridging (MemType, ImageType, PipelineAnalyzer) | ✅ Complete |
 
 ## Contributing
 
-1. Pick a task from [tasks/](./tasks/)
-2. Check dependencies are complete
-3. Follow the spec's "Implementation Notes"
-4. Ensure all acceptance criteria pass
-5. Submit PR referencing the GitHub issue
+1. Check [PROGRESS.md](./PROGRESS.md) for current status and future work items
+2. Read [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for module registration patterns
+3. Submit PR referencing the relevant GitHub issue

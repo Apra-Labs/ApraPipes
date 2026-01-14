@@ -19,7 +19,7 @@ Core Infrastructure:  ✅ Complete (Metadata, Registry, Factory, Validator, CLI)
 JSON Migration:       ✅ Complete (TOML removed, JsonParser added)
 Module Coverage:      37 modules (cross-platform) + platform-specific
 Node.js Addon:        ✅ Complete (Phase 5 - testing, docs, examples)
-CUDA Modules:         ✅ 12 of 13 registered (H264EncoderNVCodec pending)
+CUDA Modules:         ✅ 15 modules registered (NPP + NVCodec + memory transfer)
 Build Headless:       ✅ BUILD_HEADLESS option for server environments
 Auto-Bridging:        ✅ Complete (PipelineAnalyzer, auto-insert bridges)
 ```
@@ -150,8 +150,8 @@ Replaced single CudaMemCopy with two explicitly-typed variants:
 
 **Tests:**
 - 13 PipelineAnalyzerTests pass
-- Explicit CudaMemCopy pipeline works (`01_gaussian_blur_demo.json`)
-- Auto-bridging pipeline works (`02_auto_bridge_demo.json`)
+- Explicit CudaMemCopy pipeline works (`gaussian_blur.json`)
+- Auto-bridging pipeline works (`auto_bridge.json`)
 
 ---
 
@@ -246,32 +246,35 @@ Replaced single CudaMemCopy with two explicitly-typed variants:
 
 ### CUDA-Only Modules (ENABLE_CUDA)
 - H264Decoder (NVDEC decoder)
+- H264EncoderNVCodec (NVCodec H.264 encoder - uses apracucontext_sp)
 - GaussianBlur (NPP Gaussian blur filter)
 - ResizeNPPI (NPP image resizing)
 - RotateNPPI (NPP image rotation)
 - CCNPPI (NPP color space conversion)
 - EffectsNPPI (NPP brightness/contrast/saturation/hue)
 - OverlayNPPI (NPP image overlay with alpha blending)
-- CudaMemCopy (host/device memory transfer)
+- CudaMemCopyH2D (host to device memory transfer)
+- CudaMemCopyD2H (device to host memory transfer)
 - CudaStreamSynchronize (CUDA stream sync)
 - JPEGDecoderNVJPEG (nvJPEG decoder)
 - JPEGEncoderNVJPEG (nvJPEG encoder)
 - MemTypeConversion (HOST/DEVICE/DMA memory type conversion)
 - CuCtxSynchronize (CUDA context synchronization)
 
-**Total: 37 cross-platform + 2 Linux + 13 CUDA = 52 modules**
+**Total: 37 cross-platform + 2 Linux + 15 CUDA = 54 modules (max)**
+
+*Note: Actual count depends on build flags. CLI shows `52` with CUDA but without Linux-specific modules.*
 
 ---
 
 ## Modules Not Registered
 
-### CUDA Modules (require special factory pattern)
-| Module | Reason |
-|--------|--------|
-| H264EncoderNVCodec | Requires apracucontext_sp (not cudastream_sp) |
+### CUDA Modules
+All 15 CUDA modules are now registered:
+- **NPP modules** (14): Use `CudaModuleRegistrationBuilder` with shared `cudastream_sp`
+- **NVCodec modules** (1): Use `CuContextModuleRegistrationBuilder` with shared `apracucontext_sp`
 
-**Note:** 12 CUDA modules now registered using CudaModuleRegistrationBuilder pattern.
-The ModuleFactory automatically creates and shares a cudastream_sp across all CUDA modules in a pipeline.
+The ModuleFactory automatically creates and shares CUDA resources across all CUDA modules in a pipeline.
 
 ### Jetson-Only Modules (L4T/Tegra)
 | Module | Reason |
@@ -305,7 +308,7 @@ The ModuleFactory automatically creates and shares a cudastream_sp across all CU
 | Linux x64 | ✅ Pass | ✅ | 39 (+V4L2) |
 | Windows | ✅ Pass | ✅ | 37 |
 | Linux ARM64 | ✅ Pass | ❌ (#493) | 39 |
-| Linux CUDA | 🔄 Pending | ✅ | 52 (+13 CUDA modules) |
+| Linux CUDA | 🔄 Pending | ✅ | 52 (+15 CUDA modules) |
 | Jetson | ✅ Pass | ❌ | 40+ (+Jetson modules) |
 
 **Note:** Linux CUDA local build on Ubuntu 24.04 requires custom FFmpeg overlay (see below).
@@ -537,10 +540,11 @@ Skipped: 3 (2 face detection models + 1 Node.js ImageEncoderCV)
 
 ## Future Work
 
-### Priority 1: H264EncoderNVCodec Support
-- Create apracucontext_sp factory pattern (different from cudastream_sp)
-- Enable H264EncoderNVCodec for declarative use
-- Consider shared CUDA context across pipeline
+### Priority 1: H264EncoderNVCodec Support ✅ COMPLETE
+- ✅ Created `CuContextModuleRegistrationBuilder` for apracucontext_sp pattern
+- ✅ Registered H264EncoderNVCodec for declarative use
+- ✅ ModuleFactory creates shared apracucontext_sp for NVCodec modules
+- Example: `examples/cuda/08_h264_encoder_demo.json`
 
 ### Priority 2: Jetson Module Registration
 - Add `#ifdef` guards for Jetson-specific modules

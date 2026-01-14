@@ -9,13 +9,14 @@
 1. [Overview](#overview)
 2. [Quick Start](#quick-start)
 3. [Registration Patterns](#registration-patterns)
-4. [Property Definitions](#property-definitions)
-5. [Dynamic Properties](#dynamic-properties)
-6. [Frame Types](#frame-types)
-7. [Self-Managed Pins](#self-managed-pins)
-8. [Testing Your Registration](#testing-your-registration)
-9. [Best Practices](#best-practices)
-10. [Troubleshooting](#troubleshooting)
+4. [CUDA Module Registration](#cuda-module-registration)
+5. [Property Definitions](#property-definitions)
+6. [Dynamic Properties](#dynamic-properties)
+7. [Frame Types](#frame-types)
+8. [Self-Managed Pins](#self-managed-pins)
+9. [Testing Your Registration](#testing-your-registration)
+10. [Best Practices](#best-practices)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -184,6 +185,125 @@ registerModule<ImageEncoderCV, ImageEncoderCVProps>()
     .output("output", "EncodedImage")
     .selfManagedOutputPins();
 ```
+
+---
+
+## CUDA Module Registration
+
+CUDA modules require special factory patterns because they need shared GPU resources (CUDA streams or contexts).
+
+### CUDA Stream Modules (NPP Operations)
+
+Most CUDA modules use NPP (NVIDIA Performance Primitives) and share a `cudastream_sp`. Use `CudaModuleRegistrationBuilder`:
+
+```cpp
+#ifdef ENABLE_CUDA
+// In registerCudaModules() section of ModuleRegistrations.cpp
+registerCudaModule<GaussianBlur, GaussianBlurProps>("GaussianBlur")
+    .category(ModuleCategory::Transform)
+    .description("GPU-accelerated Gaussian blur filter using NPP")
+    .tags("transform", "filter", "blur", "cuda", "npp")
+    .cudaInput("input", "RawImage")      // Input is CUDA_DEVICE memory
+    .cudaOutput("output", "RawImage")    // Output is CUDA_DEVICE memory
+    .intProp("kernelSize", "Blur kernel size (odd number)", false, 3, 1, 31)
+    .selfManagedOutputPins()
+    .finalizeCuda([](const auto& props, cudastream_sp stream) {
+        GaussianBlurProps moduleProps(stream);
+        // Apply props from map...
+        return std::make_unique<GaussianBlur>(moduleProps);
+    });
+#endif
+```
+
+**Key differences from regular modules:**
+
+| Method | Purpose |
+|--------|---------|
+| `CudaModuleRegistrationBuilder<M,P>` | Template that sets up CUDA factory |
+| `.cudaInput()` / `.cudaOutput()` | Declares pins with `CUDA_DEVICE` memory type |
+| `.finalizeCuda()` | Sets `requiresCudaStream = true` flag |
+
+The `ModuleFactory` automatically creates a shared `cudastream_sp` for all CUDA modules in a pipeline.
+
+### CUDA Context Modules (NVCodec)
+
+Modules using NVIDIA Video Codec SDK (NVCodec) require `apracucontext_sp` instead of `cudastream_sp`. Use `CuContextModuleRegistrationBuilder`:
+
+```cpp
+#ifdef ENABLE_CUDA
+registerCuContextModule<H264EncoderNVCodec, H264EncoderNVCodecProps>("H264EncoderNVCodec")
+    .category(ModuleCategory::Transform)
+    .description("GPU-accelerated H.264 video encoder using NVIDIA NVCodec")
+    .tags("transform", "encode", "h264", "cuda", "nvcodec", "video")
+    .cudaInput("input", "RawImagePlanar")                    // YUV420 in CUDA_DEVICE memory
+    .output("output", "H264Frame", FrameMetadata::HOST)      // H264 bitstream in HOST memory
+    .intProp("bitRateKbps", "Target bitrate in Kbps", false, 1000, 100, 50000)
+    .intProp("gopLength", "GOP length (frames between keyframes)", false, 30, 1, 300)
+    .intProp("frameRate", "Output frame rate", false, 30, 1, 120)
+    .enumProp("profile", "H.264 profile", false, "BASELINE", "BASELINE", "MAIN", "HIGH")
+    .boolProp("enableBFrames", "Enable B-frames", false, false)
+    .finalizeCuContext([](const auto& props, apracucontext_sp cuContext) {
+        // Factory lambda extracts props and creates module with CUDA context
+        H264EncoderNVCodecProps moduleProps(bitRateKbps, cuContext, gopLength, frameRate, profile, enableBFrames);
+        return std::make_unique<H264EncoderNVCodec>(moduleProps);
+    });
+#endif
+```
+
+**Note:** H264EncoderNVCodec takes GPU memory input (YUV420 frames) and outputs HOST memory (encoded H.264 bitstream).
+
+### Memory Transfer Modules
+
+For memory transfers between HOST and CUDA_DEVICE, use explicit variants:
+
+```cpp
+// Host → Device
+registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopyH2D")
+    .category(ModuleCategory::Utility)
+    .description("Copy frames from HOST to CUDA_DEVICE memory")
+    .input("input", "Frame", FrameMetadata::HOST)
+    .cudaOutput("output", "Frame")
+    .selfManagedOutputPins()
+    .finalizeCuda([](const auto& props, cudastream_sp stream) {
+        CudaMemCopyProps moduleProps(cudaMemcpyHostToDevice, stream);
+        return std::make_unique<CudaMemCopy>(moduleProps);
+    });
+
+// Device → Host
+registerCudaModule<CudaMemCopy, CudaMemCopyProps>("CudaMemCopyD2H")
+    .category(ModuleCategory::Utility)
+    .description("Copy frames from CUDA_DEVICE to HOST memory")
+    .cudaInput("input", "Frame")
+    .output("output", "Frame", FrameMetadata::HOST)
+    .selfManagedOutputPins()
+    .finalizeCuda([](const auto& props, cudastream_sp stream) {
+        CudaMemCopyProps moduleProps(cudaMemcpyDeviceToHost, stream);
+        return std::make_unique<CudaMemCopy>(moduleProps);
+    });
+```
+
+### Memory Type and Image Type Registration
+
+For auto-bridging to work correctly, declare memory types and pixel formats on pins:
+
+```cpp
+// Declare memory type explicitly
+.input("input", "RawImage", FrameMetadata::HOST)           // HOST memory
+.cudaInput("input", "RawImage")                             // CUDA_DEVICE memory (shorthand)
+.input("input", "RawImage", FrameMetadata::CUDA_DEVICE)    // CUDA_DEVICE (explicit)
+
+// Declare accepted image types (for format validation)
+.inputImageTypes({ImageMetadata::BGRA, ImageMetadata::RGBA})
+.outputImageTypes({ImageMetadata::NV12, ImageMetadata::YUV420})
+```
+
+### CUDA Registration Summary
+
+| Module Type | Builder | Shared Resource | Example Modules |
+|-------------|---------|-----------------|-----------------|
+| NPP transforms | `CudaModuleRegistrationBuilder` | `cudastream_sp` | GaussianBlur, ResizeNPPI, CCNPPI |
+| NVCodec codecs | `CuContextModuleRegistrationBuilder` | `apracucontext_sp` | H264EncoderNVCodec |
+| Memory transfer | `CudaModuleRegistrationBuilder` | `cudastream_sp` | CudaMemCopyH2D, CudaMemCopyD2H |
 
 ---
 

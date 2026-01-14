@@ -16,10 +16,11 @@
 7. [Using the Schema Generator](#using-the-schema-generator)
 8. [Using Node.js](#using-nodejs)
 9. [Frame Type Compatibility](#frame-type-compatibility)
-10. [Common Pipeline Patterns](#common-pipeline-patterns)
-11. [Working with Properties](#working-with-properties)
-12. [Troubleshooting](#troubleshooting)
-13. [Example Pipelines](#example-pipelines)
+10. [Auto-Bridging (CUDA Pipelines)](#auto-bridging-cuda-pipelines)
+11. [Common Pipeline Patterns](#common-pipeline-patterns)
+12. [Working with Properties](#working-with-properties)
+13. [Troubleshooting](#troubleshooting)
+14. [Example Pipelines](#example-pipelines)
 
 ---
 
@@ -737,6 +738,107 @@ When validation detects a type mismatch, it suggests bridge modules:
 
   SUGGESTION: Insert ColorConversion module to convert RawImagePlanar → RawImage
 ```
+
+---
+
+## Auto-Bridging (CUDA Pipelines)
+
+When building pipelines with CUDA modules, the system automatically inserts bridge modules to handle:
+
+1. **Memory type mismatches** - HOST ↔ CUDA_DEVICE transfers
+2. **Pixel format mismatches** - Color conversions between formats
+
+### How It Works
+
+Instead of manually adding memory transfer modules:
+
+```json
+// Manual bridging (explicit)
+{
+  "modules": {
+    "source": { "type": "TestSignalGenerator", "props": { "width": 640, "height": 480 } },
+    "convert": { "type": "ColorConversion", "props": { "conversionType": "YUV420PLANAR_TO_RGB" } },
+    "upload": { "type": "CudaMemCopyH2D" },
+    "blur": { "type": "GaussianBlur", "props": { "kernelSize": 5 } },
+    "download": { "type": "CudaMemCopyD2H" },
+    "encoder": { "type": "ImageEncoderCV" },
+    "writer": { "type": "FileWriterModule", "props": { "strFullFileNameWithPattern": "./output_????.jpg" } }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "upload" },
+    { "from": "upload", "to": "blur" },
+    { "from": "blur", "to": "download" },
+    { "from": "download", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}
+```
+
+You can let the system insert bridges automatically:
+
+```json
+// Auto-bridging (implicit)
+{
+  "modules": {
+    "source": { "type": "TestSignalGenerator", "props": { "width": 640, "height": 480 } },
+    "convert": { "type": "ColorConversion", "props": { "conversionType": "YUV420PLANAR_TO_RGB" } },
+    "blur": { "type": "GaussianBlur", "props": { "kernelSize": 5 } },
+    "encoder": { "type": "ImageEncoderCV" },
+    "writer": { "type": "FileWriterModule", "props": { "strFullFileNameWithPattern": "./output_????.jpg" } }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "blur" },
+    { "from": "blur", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}
+```
+
+The system detects that:
+- `ColorConversion` outputs HOST memory
+- `GaussianBlur` requires CUDA_DEVICE memory
+- → Auto-inserts `CudaMemCopyH2D` between them
+
+And:
+- `GaussianBlur` outputs CUDA_DEVICE memory
+- `ImageEncoderCV` requires HOST memory
+- → Auto-inserts `CudaMemCopyD2H` between them
+
+### Bridge Types
+
+| Mismatch | Bridge Inserted |
+|----------|-----------------|
+| HOST → CUDA_DEVICE | `CudaMemCopyH2D` |
+| CUDA_DEVICE → HOST | `CudaMemCopyD2H` |
+| RGB → YUV (GPU) | `CCNPPI` |
+| YUV → RGB (CPU) | `ColorConversion` |
+
+### Disabling Auto-Bridging
+
+If you prefer explicit control, disable auto-bridging:
+
+```json
+{
+  "pipeline": {
+    "auto_bridge_enabled": false
+  },
+  "modules": { ... }
+}
+```
+
+### CUDA Pipeline Examples
+
+See `examples/cuda/` for working CUDA pipeline examples:
+
+| Example | Description |
+|---------|-------------|
+| `gaussian_blur.json` | Explicit bridges (CudaMemCopyH2D/D2H) |
+| `auto_bridge.json` | Auto-bridging enabled |
+| `effects.json` | NPP effects (brightness, contrast, saturation) |
+| `resize.json` | GPU-accelerated image resizing |
+| `08_h264_encoder_demo.json` | H.264 encoding with NVCodec |
 
 ---
 

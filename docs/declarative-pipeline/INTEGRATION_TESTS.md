@@ -6,7 +6,7 @@
 ## Test Environment
 - Platforms: Linux x64, macOS, Windows
 - Branch: feat-declarative-pipeline-v2
-- Registered Modules: 37 cross-platform + 2 Linux + 13 CUDA
+- Registered Modules: 37 cross-platform + 2 Linux + 15 CUDA
 
 ---
 
@@ -15,16 +15,16 @@
 Run integration tests with:
 ```bash
 # Full test (runs pipelines)
-./scripts/test_declarative_pipelines.sh
+./examples/test_declarative_pipelines.sh
 
 # Validate only (no runtime execution)
-./scripts/test_declarative_pipelines.sh --validate-only
+./examples/test_declarative_pipelines.sh --validate-only
 
 # Verbose output
-./scripts/test_declarative_pipelines.sh --verbose
+./examples/test_declarative_pipelines.sh --verbose
 
 # Test specific pipeline
-./scripts/test_declarative_pipelines.sh --pipeline "14_affine"
+./examples/test_declarative_pipelines.sh --pipeline "affine"
 ```
 
 ### Runtime Modes
@@ -123,13 +123,13 @@ All pipelines in `examples/basic/` and `examples/cuda/` have been tested and ver
 
 | Pipeline | Description |
 |----------|-------------|
-| 01_simple_source_sink | Minimal: TestSignalGenerator → StatSink |
-| 02_three_module_chain | Chain: TestSignalGenerator → ValveModule → StatSink |
-| 03_split_pipeline | Split: TestSignalGenerator → Split → 2x StatSink |
-| 04_ptz_with_conversion | PTZ: Generator → ColorConversion → VirtualPTZ → StatSink |
-| 05_transform_ptz_with_conversion | Transform: Generator → Convert → AffineTransform → PTZ → Sink |
-| 10_bmp_converter_pipeline | Output: Generator → Convert → BMPConverter → FileWriter |
-| 14_affine_transform_chain | Affine: Generator → Convert → AffineTransform → StatSink |
-| 14_affine_transform_demo | JPEG Output: Generator → Convert → Affine → ImageEncoder → FileWriter |
+| simple_source_sink | Minimal: TestSignalGenerator → StatSink |
+| three_module_chain | Chain: TestSignalGenerator → ValveModule → StatSink |
+| split_pipeline | Split: TestSignalGenerator → Split → 2x StatSink |
+| ptz_with_conversion | PTZ: Generator → ColorConversion → VirtualPTZ → StatSink |
+| transform_ptz_with_conversion | Transform: Generator → Convert → AffineTransform → PTZ → Sink |
+| bmp_converter_pipeline | Output: Generator → Convert → BMPConverter → FileWriter |
+| affine_transform_chain | Affine: Generator → Convert → AffineTransform → StatSink |
+| affine_transform_demo | JPEG Output: Generator → Convert → Affine → ImageEncoder → FileWriter |
 
 ---

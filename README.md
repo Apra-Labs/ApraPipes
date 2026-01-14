@@ -3,8 +3,34 @@
 </p>
 
 # ApraPipes
-A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits.  
+A pipeline framework for developing video and image processing applications. Supports multiple GPUs and Machine Learning toolkits.
 Learn more about ApraPipes [here](https://deepwiki.com/Apra-Labs/ApraPipes).
+
+## Declarative Pipelines & Node.js Support
+
+Build video processing pipelines using **JSON configuration** or **JavaScript**:
+
+```json
+{
+  "modules": {
+    "source": { "type": "FileReaderModule", "props": { "path": "video.mp4" } },
+    "decoder": { "type": "Mp4ReaderSource" },
+    "sink": { "type": "FileSinkModule" }
+  },
+  "connections": [
+    { "from": "source", "to": "decoder" },
+    { "from": "decoder", "to": "sink" }
+  ]
+}
+```
+
+**Features:**
+- 50+ registered modules (sources, transforms, encoders, AI inference)
+- GPU acceleration with automatic CPU↔GPU memory bridging
+- Node.js addon for JavaScript/TypeScript applications
+- CLI tool for running and validating pipelines
+
+See [examples/](./examples/) and [Pipeline Author Guide](./docs/declarative-pipeline/PIPELINE_AUTHOR_GUIDE.md) to get started.
 
 ## Build Status
 ApraPipes is automatically built and tested on Windows, Linux (x64 and ARM64), and macOS.
@@ -113,23 +139,24 @@ ApraPipes is automatically built and tested on Windows, Linux (x64 and ARM64), a
 
 </details>
 
-<h2 id="linux">Linux (Ubuntu ≥ 18.04)</h2>  
+<h2 id="linux">Linux (Ubuntu ≥ 20.04)</h2>
 <img src="./data/ReadMe Images/Linux.png" alt="Linux Logo" align="right" height = "100" width="100">
 <details>
   <summary>Requirements</summary>
-  
+
   ### Prerequisites
 
   ### Cuda
   * Create an account on developer.nvidia.com if you're not already a member. Note : Otherwise the next step will show HTTP 404/403 error.
-  * Ubuntu 18.04/20.04:   
-    18.04 - [CUDA Toolkit 10.2](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=debnetwork)  
-    20.04 - [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
+  * Ubuntu 20.04/22.04:
+    * 20.04 - [CUDA Toolkit 11.8](https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04)
+    * 22.04 - [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04)
 
-  ### Cudnn  
-  * Download [Cudnn](https://developer.nvidia.com/rdp/cudnn-archive#a-collapse765-102)
+  ### Cudnn
+  * Download [cuDNN](https://developer.nvidia.com/cudnn) matching your CUDA version
   * Linux:
-      * Download [this file](https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar.xz)
+      * For CUDA 11.8: [cuDNN 8.x](https://developer.nvidia.com/rdp/cudnn-archive)
+      * For CUDA 12.x: [cuDNN 9.x](https://developer.nvidia.com/cudnn)
 
   * Clone with submodules and LFS.
     ```
@@ -258,13 +285,15 @@ ApraPipes is automatically built and tested on Windows, Linux (x64 and ARM64), a
     * Look at the unit_tests/params_test to check for sample usage of parameters in test code.
 </details>
 
-<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX (JetPack ≥ 5.0)</h2>  
+<h2 id="jetson">Jetson Boards - Nano, TX2, NX, AGX, Orin (JetPack ≥ 5.0)</h2>
 <img src="./data/ReadMe Images/nvidia.png" alt="Nvidia Logo" align="right" height = "100" width="100">
 <details>
   <summary >Requirements</summary>
-  
+
   ###  Prerequisites
-  * Setup the board with [JetPack 5.0](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html) or higher (Ubuntu 20.04 required for GitHub Actions compatibility).
+  * Setup the board with [JetPack 5.0+](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html):
+    * JetPack 5.x: Ubuntu 20.04, CUDA 11.4
+    * JetPack 6.x: Ubuntu 22.04, CUDA 12.x
   
   * Clone with submodules and LFS. 
     ```
@@ -334,10 +363,10 @@ ApraPipes is automatically built and tested on Windows, Linux (x64 and ARM64), a
     ```
     wsl --set-default-version 2
     ```
-  * Install Ubuntu-18.04 from [Microsoft store](https://apps.microsoft.com/store/detail/ubuntu-1804-on-windows/9N9TNGVNDL3Q?hl=en-in&gl=in&rtc=1) , Refer [this article](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for any issues regarding installation 
-  * Install Docker Desktop on Windows -from [here](https://docs.docker.com/desktop/install/windows-install/)
-  * Enable Docker integration with WSL 2 (in Docker Desktop settings -> Resources -> WSL integration -> Enable Ubuntu-18.04 -> Apply&restart)
-  * Install nvida-container-toolkit using (WSL Ubuntu-18.04) for docker to access Host-system GPU -Follow [this document](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) to install nvidia-container-toolkit
+  * Install Ubuntu 22.04 from [Microsoft Store](https://apps.microsoft.com/detail/9pn20msr04dw) or run `wsl --install -d Ubuntu-22.04`
+  * Install Docker Desktop on Windows from [here](https://docs.docker.com/desktop/install/windows-install/)
+  * Enable Docker integration with WSL 2 (Docker Desktop settings → Resources → WSL integration → Enable Ubuntu-22.04 → Apply & Restart)
+  * Install nvidia-container-toolkit in WSL Ubuntu for GPU access - Follow [this guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
   * Note:"Follow the exact instructions outlined in the document to ensure the correct and successful installation of the NVIDIA Container Toolkit"
 </details>
 
@@ -345,10 +374,11 @@ ApraPipes is automatically built and tested on Windows, Linux (x64 and ARM64), a
   <summary>Build</summary>
 
 ### Build for Docker
-  * Use this [docker image](https://github.com/users/kumaakh/packages/container/package/aprapipes-build-x86-ubutu18.04-cuda) with all the software setup.
+  * Use this [docker image](https://github.com/users/kumaakh/packages/container/package/aprapipes-build-x86-ubutu18.04-cuda) with all dependencies pre-installed:
   ```
   docker pull ghcr.io/kumaakh/aprapipes-build-x86-ubutu18.04-cuda:last-good
   ```
+  > **Note:** This image is based on Ubuntu 18.04 with pre-cached vcpkg dependencies for fast builds (~10 min). The WSL host can be Ubuntu 22.04.
 * Mount an external volume as a build area, and then use the Windows command line to create a Docker container using the above image with the following command:  
   ```
   docker run -dit --gpus all -v "</path/to/external_volume>":"/mnt/b/" --name <give-container-name> a799cc26f4b7

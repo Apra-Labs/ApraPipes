@@ -199,6 +199,7 @@ Example:
 
 ## Related Documentation
 
-- [Declarative Pipeline RFC](../docs/declarative-pipeline/RFC.md)
-- [Module Registry](../docs/declarative-pipeline/MODULE_REGISTRY.md)
+- [Pipeline Author Guide](../docs/declarative-pipeline/PIPELINE_AUTHOR_GUIDE.md)
+- [Developer Guide](../docs/declarative-pipeline/DEVELOPER_GUIDE.md)
+- [Progress & Module List](../docs/declarative-pipeline/PROGRESS.md)
 - [Build Instructions](../README.md)
