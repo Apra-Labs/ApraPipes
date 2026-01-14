@@ -43,6 +43,46 @@ cmake --build build -j$(nproc)
 
 ---
 
+## 🚨 Jetson Device Rules (CRITICAL)
+
+When working with the Jetson device (ssh akhil@192.168.1.18):
+- **NEVER** delete or modify `/data/action-runner/` - used by GitHub Actions
+- **NEVER** delete `/data/.cache/` en-mass - vcpkg cache shared with CI
+- **ALWAYS** work in `/data/ws/` for development
+- Disable CI-Linux-ARM64.yml before pushing to avoid resource competition
+
+---
+
+## 🔍 Code Review Before Every Commit (MANDATORY)
+
+Before EVERY git commit (whether on local machine or Jetson device):
+
+1. **Run `git diff --staged`** and review EVERY changed line
+2. **Justify each change** - ask "why is this line changing?"
+3. **Remove unintended changes** with `git checkout -- <file>` or `git reset HEAD <file>`
+4. **Check for forbidden content:**
+   - No debug code (console.log, printf debugging, etc.)
+   - No temporary hacks or workarounds
+   - No commented-out code
+   - No unrelated files staged
+5. **Only commit when 100% confident** all changes are intentional and correct
+
+```bash
+# Code review checklist before commit
+git diff --staged                    # Review all changes
+git diff --staged --stat             # Check which files changed
+git status                           # Verify nothing unexpected staged
+```
+
+**If you find unwanted changes:**
+```bash
+git reset HEAD <file>                # Unstage entire file
+git checkout -- <file>               # Discard file changes entirely
+git add -p <file>                    # Stage only specific hunks
+```
+
+---
+
 ## 🎯 Project Goal
 
 Transform ApraPipes from imperative C++ construction to declarative JSON configuration. Users should be able to write:

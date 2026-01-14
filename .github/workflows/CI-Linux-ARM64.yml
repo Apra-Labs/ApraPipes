@@ -31,6 +31,9 @@ permissions:
 
 jobs:
   ci:
+    # TEMP: Disabled during Sprint 8 Jetson development to avoid resource competition
+    # Re-enable after Phase 4 completion
+    if: false
     uses: ./.github/workflows/build-test-lin.yml
     with:
       runner: '["self-hosted", "Linux", "ARM64"]'
@@ -60,7 +63,8 @@ jobs:
 
   report:
     needs: ci
-    if: always()
+    # Skip when ci job is skipped (disabled during Sprint 8)
+    if: always() && needs.ci.result != 'skipped'
     permissions:
       checks: write
       pull-requests: write
