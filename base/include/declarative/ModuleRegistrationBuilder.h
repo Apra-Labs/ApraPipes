@@ -433,7 +433,10 @@ public:
         }
 
         // Create factory function that applies properties and creates module
-        info_.factory = [](const std::map<std::string, ScalarPropertyValue>& props)
+        // Note: Explicit ModuleInfo::FactoryFn cast required for GCC 9 compatibility
+        // (GCC 9 has issues with lambda-to-std::function conversion in templates)
+        info_.factory = ModuleInfo::FactoryFn(
+            [](const std::map<std::string, ScalarPropertyValue>& props)
             -> std::unique_ptr<Module> {
 
             PropsClass moduleProps;
@@ -450,7 +453,7 @@ public:
             }
 
             return std::make_unique<ModuleClass>(moduleProps);
-        };
+        });
 
         // Create property accessor factory for modules that support dynamic props
         createPropertyAccessorFactory();
@@ -461,10 +464,12 @@ public:
 
 private:
     // Helper to create property accessor factory (SFINAE-enabled)
+    // Note: Explicit ModuleInfo::PropertyAccessorFactoryFn cast required for GCC 9 compatibility
     template<typename M = ModuleClass, typename P = PropsClass>
     typename std::enable_if<detail::supports_dynamic_props_v<M, P>, void>::type
     createPropertyAccessorFactory() {
-        info_.propertyAccessorFactory = [](Module* rawModule) -> ModuleInfo::PropertyAccessors {
+        info_.propertyAccessorFactory = ModuleInfo::PropertyAccessorFactoryFn(
+            [](Module* rawModule) -> ModuleInfo::PropertyAccessors {
             ModuleInfo::PropertyAccessors accessors;
 
             // Cast to concrete module type
@@ -493,7 +498,7 @@ private:
             };
 
             return accessors;
-        };
+        });
     }
 
     // Fallback for modules without dynamic property support
