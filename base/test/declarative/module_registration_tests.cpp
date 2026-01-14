@@ -74,10 +74,12 @@ BOOST_AUTO_TEST_CASE(RegisteredModules_HaveValidMetadata) {
         BOOST_CHECK_MESSAGE(!info->version.empty(),
             "Module " << name << " missing version");
 
-        // Module must have a factory (either regular or CUDA)
-        bool hasFactory = (info->factory != nullptr) || (info->cudaFactory != nullptr);
+        // Module must have a factory (regular, CUDA stream, or CuContext)
+        bool hasFactory = (info->factory != nullptr) ||
+                          (info->cudaFactory != nullptr) ||
+                          (info->cuContextFactory != nullptr);
         BOOST_CHECK_MESSAGE(hasFactory,
-            "Module " << name << " missing factory (neither factory nor cudaFactory set)");
+            "Module " << name << " missing factory (no factory, cudaFactory, or cuContextFactory set)");
     }
 }
 
