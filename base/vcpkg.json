@@ -90,8 +90,8 @@
     "brotli",
     {
       "name": "gtk3",
-      "platform": "linux",
-      "$reason": "GTK3 not used on macOS or Windows"
+      "platform": "(linux & x64)",
+      "$reason": "GTK3 via vcpkg for x64 Linux only. ARM64 uses system GTK or headless build."
     },
     {
       "name": "glib",
