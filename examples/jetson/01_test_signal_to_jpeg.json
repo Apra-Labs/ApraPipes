@@ -1,40 +1,39 @@
 {
   "pipeline": {
-    "name": "Jetson Test Signal to JPEG",
-    "description": "Demonstrates Jetson hardware JPEG encoding using TestSignalGenerator (no camera required)"
+    "name": "Jetson JPEG Decode/Encode",
+    "description": "Demonstrates Jetson hardware JPEG decode and encode (no camera required). Uses existing test data."
   },
   "modules": {
-    "source": {
-      "type": "TestSignalGenerator",
+    "reader": {
+      "type": "FileReaderModule",
       "props": {
-        "width": 640,
-        "height": 480,
-        "pattern": "COLOR_BARS",
-        "maxFrames": 100
-      }
+        "strFullFileNameWithPattern": "./data/frame.jpg",
+        "readLoop": true,
+        "maxIndex": 10
+      },
+      "comment": "Reads JPEG files - outputs EncodedImage"
     },
-    "color_convert": {
-      "type": "ColorConversion",
-      "props": {
-        "conversionType": "RGB_TO_YUV420PLANAR"
-      }
+    "decoder": {
+      "type": "JPEGDecoderL4TM",
+      "comment": "Hardware JPEG decoder - outputs RawImage (MONO or RGB)"
     },
     "encoder": {
       "type": "JPEGEncoderL4TM",
       "props": {
         "quality": 85
-      }
+      },
+      "comment": "Hardware JPEG encoder - accepts RawImage (MONO or RGB)"
     },
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_test/frame_????.jpg"
+        "strFullFileNameWithPattern": "/tmp/jetson_test/encoded_????.jpg"
       }
     }
   },
   "connections": [
-    { "from": "source", "to": "color_convert" },
-    { "from": "color_convert", "to": "encoder" },
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "encoder" },
     { "from": "encoder", "to": "writer" }
   ]
 }
