@@ -38,12 +38,12 @@ DMABUF Bridging:      ✅ Complete (DMAFDToHostCopy, NvTransform for format)
 | Phase | Status | Description |
 |-------|--------|-------------|
 | P.0-P.5 | ✅ Complete | Prerequisites (CI disabled, SSH, workspace) |
-| Phase 1.0 | 🔄 Building | Jetson CMake configure with Node.js addon |
-| Phase 1.1 | ⏳ Pending | Test Node.js addon on Jetson |
+| Phase 1.0 | ✅ Complete | Jetson CMake configure with Node.js addon |
+| Phase 1.1 | ❌ Blocked | Test Node.js addon on Jetson (J2: Boost.Serialization) |
 | Phase 2 | ✅ Complete | Register 8 Jetson modules |
 | Phase 2.5 | ✅ Complete | Add DMABUF auto-bridging |
-| Phase 3 | ✅ Complete | Create 7 Jetson JSON examples |
-| Phase 4 | ⏳ Pending | Update docs, re-enable CI |
+| Phase 3 | ⚠️ Partial | Create 7 Jetson JSON examples (J1: libjpeg blocks L4TM) |
+| Phase 4 | ✅ Complete | Update docs, re-enable CI |
 
 ### Completed: Prerequisites (P.0-P.5)
 
@@ -54,9 +54,13 @@ DMABUF Bridging:      ✅ Complete (DMAFDToHostCopy, NvTransform for format)
 - [x] P.4 Verified vcpkg cache (1.7GB shared with CI)
 - [x] P.5 Pushed changes for Jetson to pull
 
-### In Progress: Phase 1 - Node.js Addon Build
+### Completed: Phase 1.0 - Jetson Build
 
-Jetson build started with `-DBUILD_NODE_ADDON=ON`. Currently running vcpkg install.
+Jetson build completed successfully with all declarative pipeline modules.
+
+### Blocked: Phase 1.1 - Node.js Addon
+
+Node.js addon cannot load due to [Issue J2: Boost.Serialization linking](#issue-j2-nodejs-addon-linking). The CLI works correctly as a workaround.
 
 ### Completed: Phase 2 - Register 8 Jetson Modules
 
@@ -109,18 +113,43 @@ Created 7 examples in `examples/jetson/`:
 
 ### Known Issues (Jetson)
 
-1. **libjpeg version conflict**: L4TM modules fail with `Wrong JPEG library version: library is 62, caller expects 80`. The L4T Multimedia API links against system libjpeg (62) while vcpkg provides libjpeg-turbo (80).
+> **Detailed documentation:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md)
 
-2. **H264EncoderV4L2 not registered**: The module is only registered under `#ifdef ENABLE_LINUX`, which is not defined for ARM64 builds. Need to either:
-   - Define ENABLE_LINUX for ARM64+Linux builds, or
-   - Register H264EncoderV4L2 under ARM64 separately
+| Issue | Severity | Affected | Workaround | Status |
+|-------|----------|----------|------------|--------|
+| [J1: libjpeg version conflict](#issue-j1-libjpeg-version-conflict) | High | JPEGEncoder/DecoderL4TM | Use JPEGEncoderNVJPEG | OPEN |
+| [J2: Node.js addon linking](#issue-j2-nodejs-addon-linking) | Medium | Node.js addon | Use CLI | OPEN |
+| [J3: H264EncoderV4L2 missing](#issue-j3-h264encoderv4l2-missing) | Low | H264EncoderV4L2 | Use H264EncoderNVCodec | OPEN |
 
-3. **Node.js addon linking**: Boost.Serialization symbols missing (`undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE`). Library order issue in CMake.
+#### Issue J1: libjpeg Version Conflict
+
+**Error:** `Wrong JPEG library version: library is 62, caller expects 80`
+
+**Root Cause:** The L4T Multimedia API (`libnvjpeg.so`) dynamically links against system libjpeg (v62), while ApraPipes is built with vcpkg's libjpeg-turbo (v80). When both are loaded, struct size mismatches cause crashes.
+
+**Why not caught in CI:** All 11 L4TM encoder tests and decoder tests are marked with `* boost::unit_test::disabled()` in source code - they have NEVER been executed in CI.
+
+**Workaround:** Use `JPEGEncoderNVJPEG` (CUDA-based, no libjpeg dependency) instead of L4TM modules.
+
+#### Issue J2: Node.js Addon Linking
+
+**Error:** `undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE`
+
+**Root Cause:** The Node.js addon uses `--whole-archive` to force static module registrations, but Boost.Serialization's RTTI (typeinfo) symbols are not being pulled into the shared library. GCC 9.4 on Jetson has stricter symbol resolution than newer compilers.
+
+**Workaround:** Use `aprapipes_cli` instead of Node.js addon on Jetson.
+
+#### Issue J3: H264EncoderV4L2 Missing
+
+**Root Cause:** Module registered under `#ifdef ENABLE_LINUX`, which is not defined for ARM64 builds.
+
+**Workaround:** Use `H264EncoderNVCodec` (CUDA-based H.264 encoder).
 
 **Verified Working:**
 - Basic examples (simple_source_sink.json) work on Jetson
 - Build system compiles all modules correctly
 - Module registration is correct (HOST memory for L4TM modules)
+- CI-Linux-ARM64 workflow re-enabled (commit 833ad6ffa)
 
 ---
 
@@ -528,8 +557,11 @@ cmake -B build -G Ninja \
 
 - [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) - Module registration guide
 - [PIPELINE_AUTHOR_GUIDE.md](./PIPELINE_AUTHOR_GUIDE.md) - JSON/JS pipeline creation
+- [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) - Jetson platform issues and workarounds
+- [CUDA_MEMTYPE_DESIGN.md](./CUDA_MEMTYPE_DESIGN.md) - Auto-bridging design document
 - [node-api.md](../node-api.md) - Node.js API reference
 - [examples/node/](../../examples/node/) - Working Node.js examples
+- [examples/jetson/](../../examples/jetson/) - Jetson JSON examples
 
 ---
 
@@ -644,13 +676,22 @@ Skipped: 3 (2 face detection models + 1 Node.js ImageEncoderCV)
 - ✅ ModuleFactory creates shared apracucontext_sp for NVCodec modules
 - Example: `examples/cuda/08_h264_encoder_demo.json`
 
-### Priority 2: Jetson Module Registration
-- Add `#ifdef` guards for Jetson-specific modules
-- Test on Jetson device with L4T
+### Priority 2: Jetson Module Registration ✅ COMPLETE (with caveats)
+- ✅ Added 8 Jetson modules with `#ifdef ARM64` guards
+- ✅ Added DMABUF bridging support
+- ⚠️ L4TM modules blocked by libjpeg version conflict (see [J1](./JETSON_KNOWN_ISSUES.md#issue-j1-libjpeg-version-conflict-l4tm-modules))
+- Workaround: Use `JPEGEncoderNVJPEG` instead of `JPEGEncoderL4TM`
 
-### Priority 3: Display Modules (Optional)
+### Priority 3: Jetson Node.js Addon
+- ❌ Blocked by Boost.Serialization linking issue (see [J2](./JETSON_KNOWN_ISSUES.md#issue-j2-nodejs-addon-boostserialization-linking))
+- Potential fix: Extend `--whole-archive` to include Boost libraries
+- Workaround: Use `aprapipes_cli` on Jetson
+
+### Priority 4: Display Modules (Optional)
 - Register UI modules with platform checks
 - Low priority - mainly for debugging
 
-### Priority 4: ARM64 Node Addon
-- Fix -fPIC linking issue (#493)
+### Priority 5: Fix libjpeg Version Conflict
+- Requires investigation into L4T Multimedia API linking
+- Options: shared libjpeg-turbo, LD_PRELOAD, or process isolation
+- See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) for detailed analysis

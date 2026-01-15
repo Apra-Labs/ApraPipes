@@ -1,8 +1,8 @@
 # Declarative Pipeline Construction - Project Plan
 
-> Last Updated: 2026-01-12
+> Last Updated: 2026-01-15
 
-## Project Status: Sprint 7 (Auto-Bridging)
+## Project Status: Sprint 8 (Jetson Integration)
 
 **Package:** `@apralabs/aprapipes`
 **Format:** JSON only
@@ -21,6 +21,64 @@
 | Sprint 5 | ✅ Complete | CUDA Module Registration (12 modules) |
 | Sprint 6 | ✅ Complete | DRY Refactoring |
 | Sprint 7 | ✅ Complete | Auto-Bridging (Memory + Pixel Format) |
+| Sprint 8 | ⚠️ Partial | Jetson Integration (Known Issues) |
+
+---
+
+## Sprint 8: Jetson Integration
+
+> Started: 2026-01-13
+
+**Documentation:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md)
+
+### Objectives
+
+1. Register Jetson-specific modules (NvArgus, NvV4L2, L4TM, etc.)
+2. Add DMABUF memory type bridging support
+3. Create Jetson JSON pipeline examples
+4. Test Node.js addon on Jetson
+
+### Completed Work
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| P.0-P.5 | ✅ Done | Prerequisites (CI, SSH, workspace setup) |
+| Phase 1.0 | ✅ Done | Jetson build with declarative pipeline |
+| Phase 2 | ✅ Done | Register 8 Jetson modules |
+| Phase 2.5 | ✅ Done | DMABUF auto-bridging in PipelineAnalyzer |
+| Phase 3 | ⚠️ Partial | 7 JSON examples (some blocked by J1) |
+| Phase 4 | ✅ Done | Documentation, CI re-enabled |
+
+### Registered Jetson Modules
+
+| Module | Category | MemType | Description |
+|--------|----------|---------|-------------|
+| NvArgusCamera | Source | DMABUF | CSI camera via Argus API |
+| NvV4L2Camera | Source | DMABUF | USB camera via V4L2 |
+| NvTransform | Transform | DMABUF | GPU resize/crop/transform |
+| JPEGDecoderL4TM | Transform | HOST | L4T hardware JPEG decoder |
+| JPEGEncoderL4TM | Transform | HOST | L4T hardware JPEG encoder |
+| EglRenderer | Sink | DMABUF | EGL display output |
+| DMAFDToHostCopy | Utility | DMABUF→HOST | DMA buffer bridge |
+
+### Known Issues (Blocking)
+
+| Issue | Severity | Impact | Workaround |
+|-------|----------|--------|------------|
+| **J1: libjpeg conflict** | High | L4TM JPEG modules fail | Use JPEGEncoderNVJPEG |
+| **J2: Boost.Serialization** | Medium | Node.js addon fails | Use CLI |
+| **J3: H264EncoderV4L2** | Low | Missing on ARM64 | Use H264EncoderNVCodec |
+
+See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) for detailed analysis and potential solutions.
+
+### Sprint 8 Outcome
+
+Sprint 8 is **functionally complete** but with known limitations:
+- ✅ Jetson modules registered and building
+- ✅ DMABUF bridging implemented
+- ✅ CI re-enabled
+- ⚠️ L4TM modules blocked by libjpeg conflict (use NVJPEG instead)
+- ⚠️ Node.js addon blocked by linking issue (use CLI instead)
 
 ---
 
