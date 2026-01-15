@@ -863,16 +863,22 @@ std::vector<Connection> ModuleFactory::insertBridgeModules(
             bridgeInstance.instance_id = bridgeInstanceId;
             bridgeInstance.module_type = bridge.bridgeModule;
 
-            // Set properties from bridge spec
-            if (bridge.type == BridgeType::Memory) {
-                // For CudaMemCopy, set direction
-                if (bridge.memoryDirection == MemoryDirection::HostToDevice) {
-                    bridgeInstance.properties["direction"] = std::string("hostToDevice");
-                } else if (bridge.memoryDirection == MemoryDirection::DeviceToHost) {
-                    bridgeInstance.properties["direction"] = std::string("deviceToHost");
+            // Copy properties from bridge spec (set by PipelineAnalyzer)
+            // This includes outputMemType for MemTypeConversion, etc.
+            for (const auto& [key, value] : bridge.props.items()) {
+                if (value.is_string()) {
+                    bridgeInstance.properties[key] = value.get<std::string>();
+                } else if (value.is_number_integer()) {
+                    bridgeInstance.properties[key] = value.get<int64_t>();
+                } else if (value.is_number_float()) {
+                    bridgeInstance.properties[key] = value.get<double>();
+                } else if (value.is_boolean()) {
+                    bridgeInstance.properties[key] = value.get<bool>();
                 }
-            } else if (bridge.type == BridgeType::Format) {
-                // For ColorConversion/CCNPPI, set input/output formats
+            }
+
+            // For format bridges, also set input/output format properties
+            if (bridge.type == BridgeType::Format) {
                 bridgeInstance.properties["inputFormat"] = static_cast<int64_t>(bridge.fromFormat);
                 bridgeInstance.properties["outputFormat"] = static_cast<int64_t>(bridge.toFormat);
             }
