@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-13
+> Last Updated: 2026-01-15
 
 **Git Branch:** `feat-declarative-pipeline-v2` (tracking `origin/feat-declarative-pipeline-v2`)
 
@@ -67,11 +67,12 @@ Added to `base/src/declarative/ModuleRegistrations.cpp` inside `#ifdef ARM64`:
 | NvArgusCamera | Source | - | DMABUF | Jetson CSI camera via Argus API |
 | NvV4L2Camera | Source | - | DMABUF | USB camera via V4L2 |
 | NvTransform | Transform | DMABUF | DMABUF | GPU-accelerated resize/crop/transform |
-| JPEGDecoderL4TM | Transform | HOST | DMABUF | L4T hardware JPEG decoder |
-| JPEGEncoderL4TM | Transform | DMABUF | HOST | L4T hardware JPEG encoder |
-| H264EncoderV4L2 | Transform | DMABUF | HOST | V4L2 hardware H264 encoder |
+| JPEGDecoderL4TM | Transform | HOST | HOST | L4T hardware JPEG decoder (RawImage output) |
+| JPEGEncoderL4TM | Transform | HOST | HOST | L4T hardware JPEG encoder (RawImage input) |
 | EglRenderer | Sink | DMABUF | - | EGL display output |
 | DMAFDToHostCopy | Utility | DMABUF | HOST | DMA buffer to CPU memory bridge |
+
+**Note:** H264EncoderV4L2 is not registered on ARM64 builds (ENABLE_LINUX flag issue).
 
 ### Completed: Phase 2.5 - DMABUF Auto-Bridging
 
@@ -96,17 +97,30 @@ Format bridging on DMABUF uses `NvTransform` (Jetson hardware-accelerated).
 
 Created 7 examples in `examples/jetson/`:
 
-| File | Description | Tested Sources |
-|------|-------------|----------------|
-| `01_jpeg_decode_transform.json` | JPEG decode → resize → encode | FileReaderModule |
-| `01_test_signal_to_jpeg.json` | Test pattern → JPEG encode | TestSignalGenerator |
-| `02_h264_encode_demo.json` | JPEG → H264 encoding | FileReaderModule |
-| `03_camera_preview.json` | CSI camera → display | NvArgusCamera (hw) |
-| `04_usb_camera_jpeg.json` | USB camera → JPEG | NvV4L2Camera (hw) |
-| `05_dmabuf_to_host_bridge.json` | DMABUF→HOST bridge demo | FileReaderModule |
-| `06_camera_h264_stream.json` | Camera → H264 stream | NvArgusCamera (hw) |
+| File | Description | Status |
+|------|-------------|--------|
+| `01_jpeg_decode_transform.json` | JPEG decode → resize → encode | ⚠️ libjpeg conflict |
+| `01_test_signal_to_jpeg.json` | JPEG decode → encode (no resize) | ⚠️ libjpeg conflict |
+| `02_h264_encode_demo.json` | JPEG → H264 encoding | ⚠️ H264EncoderV4L2 missing |
+| `03_camera_preview.json` | CSI camera → display | ⏳ Requires hardware |
+| `04_usb_camera_jpeg.json` | USB camera → JPEG | ⏳ Requires hardware |
+| `05_dmabuf_to_host_bridge.json` | USB camera → HOST bridge | ⏳ Requires hardware |
+| `06_camera_h264_stream.json` | Camera → H264 stream | ⏳ Requires hardware |
 
-Examples use FileReaderModule and TestSignalGenerator as tested sources where possible.
+### Known Issues (Jetson)
+
+1. **libjpeg version conflict**: L4TM modules fail with `Wrong JPEG library version: library is 62, caller expects 80`. The L4T Multimedia API links against system libjpeg (62) while vcpkg provides libjpeg-turbo (80).
+
+2. **H264EncoderV4L2 not registered**: The module is only registered under `#ifdef ENABLE_LINUX`, which is not defined for ARM64 builds. Need to either:
+   - Define ENABLE_LINUX for ARM64+Linux builds, or
+   - Register H264EncoderV4L2 under ARM64 separately
+
+3. **Node.js addon linking**: Boost.Serialization symbols missing (`undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE`). Library order issue in CMake.
+
+**Verified Working:**
+- Basic examples (simple_source_sink.json) work on Jetson
+- Build system compiles all modules correctly
+- Module registration is correct (HOST memory for L4TM modules)
 
 ---
 
