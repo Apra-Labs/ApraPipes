@@ -51,6 +51,90 @@ When working with the Jetson device (ssh akhil@192.168.1.18):
 - **ALWAYS** work in `/data/ws/` for development
 - Disable CI-Linux-ARM64.yml before pushing to avoid resource competition
 
+---
+
+## 🛡️ Platform Protection Rules (CRITICAL)
+
+**Goal: Keep all 4 primary CI workflows GREEN at all times.**
+
+The following workflows must remain passing:
+1. **CI-Windows** - Windows x64 + CUDA
+2. **CI-Linux** - Linux x64 + CUDA
+3. **CI-Linux-ARM64** - Jetson ARM64 + CUDA
+4. **CI-MacOSX-NoCUDA** - macOS (no CUDA)
+
+### When Making Jetson/ARM64-Specific Changes
+
+**ALWAYS use preprocessor guards** to isolate ARM64-specific code:
+
+```cpp
+// CORRECT: Changes isolated to ARM64
+#ifdef ENABLE_ARM64
+    // Jetson-specific code here
+#endif
+
+// CORRECT: Combined guard for multiple platforms
+#if defined(ENABLE_ARM64) || defined(ENABLE_LINUX)
+    // Linux + Jetson code here
+#endif
+
+// WRONG: Changing shared code without guards
+void someFunction() {
+    // This affects ALL platforms!
+}
+```
+
+### Before Committing ANY Code Changes
+
+1. **Verify the change is properly guarded:**
+   - If it's ARM64/Jetson-specific → must be inside `#ifdef ENABLE_ARM64` or `#ifdef ARM64`
+   - If it's CUDA-specific → must be inside `#ifdef ENABLE_CUDA`
+   - If it's Linux-specific → must be inside `#ifdef ENABLE_LINUX`
+
+2. **Check for cross-platform impact:**
+   - Does this file compile on Windows? macOS?
+   - Are there any new dependencies that other platforms don't have?
+   - Did you add any new source files to CMakeLists.txt correctly?
+
+3. **Never modify these shared files for Jetson-only fixes:**
+   - `base/CMakeLists.txt` (unless properly guarded with `IF(ENABLE_ARM64)`)
+   - `base/vcpkg.json` (affects all platforms)
+   - Core headers in `base/include/` (unless changes are guarded)
+
+### Example: Adding Jetson-Only Module Registration
+
+```cpp
+// In ModuleRegistrations.cpp
+
+// Cross-platform modules (always registered)
+ModuleRegistrationBuilder("FileReaderModule")
+    // ... registration
+    .finalize(registry);
+
+// ARM64/Jetson-only modules (properly guarded)
+#ifdef ARM64
+    ModuleRegistrationBuilder("NvArgusCamera")
+        // ... registration
+        .finalize(registry);
+#endif
+```
+
+### CI Monitoring After Push
+
+After pushing changes, monitor CI status:
+```bash
+# Check all workflow runs
+gh run list --limit 8
+
+# If a non-ARM64 workflow fails, IMMEDIATELY investigate
+gh run view <run-id> --log | grep -i error
+```
+
+**If you break Windows, Linux x64, or macOS builds:**
+1. Revert the problematic commit immediately
+2. Fix with proper guards
+3. Push the fixed version
+
 ### Jetson Workspace Layout
 
 The Jetson has two storage devices:
