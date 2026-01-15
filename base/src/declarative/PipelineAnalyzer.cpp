@@ -199,30 +199,41 @@ void PipelineAnalyzer::checkMemoryTypeCompatibility(
     bridge.type = BridgeType::Memory;
     bridge.bridgeModule = bridgeModuleName;
 
-    // Set direction based on memory type transition
+    // Set memory direction and outputMemType for bridge modules
+    // MemTypeConversion requires "outputMemType" prop with values: "HOST", "DEVICE", "DMA"
+    // CudaMemCopyH2D/D2H don't need props - they're pre-configured
     if (conn.fromMemType == FrameMetadata::HOST &&
         conn.toMemType == FrameMetadata::CUDA_DEVICE) {
         bridge.memoryDirection = MemoryDirection::HostToDevice;
-        bridge.props["direction"] = "hostToDevice";
+        // CudaMemCopyH2D is pre-configured, no props needed
     } else if (conn.fromMemType == FrameMetadata::CUDA_DEVICE &&
                conn.toMemType == FrameMetadata::HOST) {
         bridge.memoryDirection = MemoryDirection::DeviceToHost;
-        bridge.props["direction"] = "deviceToHost";
+        // CudaMemCopyD2H is pre-configured, no props needed
     } else if (conn.fromMemType == FrameMetadata::DMABUF &&
                conn.toMemType == FrameMetadata::HOST) {
-        // DMABUF -> HOST: DMA buffer copy to CPU memory
+        // DMABUF -> HOST: DMAFDToHostCopy (no props needed)
         bridge.memoryDirection = MemoryDirection::DeviceToHost;
-        bridge.props["direction"] = "dmabufToHost";
     } else if (conn.fromMemType == FrameMetadata::HOST &&
                conn.toMemType == FrameMetadata::DMABUF) {
-        // HOST -> DMABUF: CPU memory to DMA buffer (rare)
+        // HOST -> DMABUF: MemTypeConversion needs outputMemType
         bridge.memoryDirection = MemoryDirection::HostToDevice;
-        bridge.props["direction"] = "hostToDmabuf";
+        bridge.props["outputMemType"] = std::string("DMA");
     } else if (conn.fromMemType == FrameMetadata::CUDA_DEVICE &&
                conn.toMemType == FrameMetadata::DMABUF) {
-        // CUDA_DEVICE -> DMABUF
+        // CUDA_DEVICE -> DMABUF: MemTypeConversion needs outputMemType
         bridge.memoryDirection = MemoryDirection::DeviceToHost;
-        bridge.props["direction"] = "cudaToDmabuf";
+        bridge.props["outputMemType"] = std::string("DMA");
+    } else if (conn.fromMemType == FrameMetadata::HOST &&
+               conn.toMemType == FrameMetadata::HOST_PINNED) {
+        // HOST -> HOST_PINNED: MemTypeConversion
+        bridge.memoryDirection = MemoryDirection::HostToDevice;
+        bridge.props["outputMemType"] = std::string("HOST");  // HOST_PINNED maps to HOST
+    } else if (conn.fromMemType == FrameMetadata::HOST_PINNED &&
+               conn.toMemType == FrameMetadata::HOST) {
+        // HOST_PINNED -> HOST: MemTypeConversion
+        bridge.memoryDirection = MemoryDirection::DeviceToHost;
+        bridge.props["outputMemType"] = std::string("HOST");
     }
 
     result.bridges.push_back(std::move(bridge));
