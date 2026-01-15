@@ -51,6 +51,61 @@ When working with the Jetson device (ssh akhil@192.168.1.18):
 - **ALWAYS** work in `/data/ws/` for development
 - Disable CI-Linux-ARM64.yml before pushing to avoid resource competition
 
+### Jetson Workspace Layout
+
+The Jetson has two storage devices:
+- **Root filesystem** (`/dev/mmcblk0p1`): 14GB eMMC - small, keep usage low
+- **Data partition** (`/dev/nvme0n1p1`): 117GB NVMe - use for builds and workspace
+
+```
+/data/ws/ApraPipes/          # Main workspace (on NVMe)
+├── _build -> /data/.cache/build/aprapipes_build  # Build directory symlink
+├── base/                    # Source code
+├── vcpkg/                   # vcpkg submodule
+└── ...
+
+/data/.cache/                # Shared cache directory
+├── vcpkg_installed/         # vcpkg packages (shared with CI)
+├── build/aprapipes_build/   # Build artifacts
+└── tmp/                     # Temp directory for builds (set TMPDIR)
+
+~/ws -> /data/ws             # Convenience symlink
+```
+
+### Jetson Build Commands
+
+```bash
+# SSH to Jetson
+ssh akhil@192.168.1.18
+
+# Navigate to workspace
+cd /data/ws/ApraPipes
+
+# Configure build (use -j2 to avoid OOM)
+cmake -B _build -S base \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_ARM64=ON \
+  -DENABLE_CUDA=ON \
+  -DBUILD_NODE_ADDON=ON
+
+# Build with reduced parallelism (Jetson has limited RAM)
+TMPDIR=/data/.cache/tmp cmake --build _build -j2
+
+# Run tests
+./_build/aprapipesut --run_test="ModuleRegistryTests/*" --log_level=test_suite
+
+# Run CLI
+./_build/aprapipes_cli list-modules
+```
+
+### Jetson Build Issues & Solutions
+
+| Issue | Symptom | Solution |
+|-------|---------|----------|
+| OOM during compile | `Killed signal terminated program cc1plus` | Use `-j2` instead of `-j4` |
+| Disk full on root | `No space left on device` in `/tmp` | Set `TMPDIR=/data/.cache/tmp` |
+| Build dir too large | Root filesystem > 80% | Move `_build` to `/data/.cache/build/` |
+
 ---
 
 ## 🔍 Code Review Before Every Commit (MANDATORY)
