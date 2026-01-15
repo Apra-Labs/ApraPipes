@@ -1,20 +1,17 @@
 {
   "pipeline": {
     "name": "DMABUF to HOST Bridge Demo",
-    "description": "Demonstrates DMAFDToHostCopy bridge - decodes JPEG to DMABUF, copies to HOST for CPU processing"
+    "description": "Demonstrates DMAFDToHostCopy bridge - camera produces DMABUF, bridge copies to HOST for CPU processing. REQUIRES USB CAMERA."
   },
   "modules": {
-    "reader": {
-      "type": "FileReaderModule",
+    "camera": {
+      "type": "NvV4L2Camera",
       "props": {
-        "strFullFileNameWithPattern": "./data/test_????.jpg",
-        "readLoop": true,
-        "maxIndex": 10
-      }
-    },
-    "jpeg_decoder": {
-      "type": "JPEGDecoderL4TM",
-      "comment": "Decodes JPEG to DMABUF memory (GPU accessible)"
+        "width": 640,
+        "height": 480,
+        "maxConcurrentFrames": 10
+      },
+      "comment": "V4L2 USB camera - outputs DMABUF memory"
     },
     "dmabuf_to_host": {
       "type": "DMAFDToHostCopy",
@@ -35,8 +32,7 @@
     }
   },
   "connections": [
-    { "from": "reader", "to": "jpeg_decoder" },
-    { "from": "jpeg_decoder", "to": "dmabuf_to_host" },
+    { "from": "camera", "to": "dmabuf_to_host" },
     { "from": "dmabuf_to_host", "to": "cpu_encoder" },
     { "from": "cpu_encoder", "to": "writer" }
   ]

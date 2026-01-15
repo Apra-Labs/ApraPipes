@@ -1222,7 +1222,7 @@ void ensureBuiltinModulesRegistered() {
             info.version = "1.0";
             info.tags = {"decoder", "jpeg", "image", "jetson", "l4tm", "arm64"};
             { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"EncodedImage"}; pin.memType = FrameMetadata::HOST; info.inputs.push_back(std::move(pin)); }
-            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.outputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"RawImage"}; pin.memType = FrameMetadata::HOST; info.outputs.push_back(std::move(pin)); }
             info.selfManagedOutputPins = true;
             info.factory = [](const std::map<std::string, ScalarPropertyValue>&) -> std::unique_ptr<Module> {
                 JPEGDecoderL4TMProps moduleProps;
@@ -1239,7 +1239,7 @@ void ensureBuiltinModulesRegistered() {
             info.description = "Hardware-accelerated JPEG encoder using Jetson L4T Multimedia API";
             info.version = "1.0";
             info.tags = {"encoder", "jpeg", "image", "jetson", "l4tm", "arm64"};
-            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImagePlanar"}; pin.memType = FrameMetadata::DMABUF; info.inputs.push_back(std::move(pin)); }
+            { ModuleInfo::PinInfo pin; pin.name = "input"; pin.frame_types = {"RawImage"}; pin.memType = FrameMetadata::HOST; info.inputs.push_back(std::move(pin)); }
             { ModuleInfo::PinInfo pin; pin.name = "output"; pin.frame_types = {"EncodedImage"}; pin.memType = FrameMetadata::HOST; info.outputs.push_back(std::move(pin)); }
             info.properties.push_back(makeIntProp("quality", "JPEG quality (1-100)", false, "90", "1", "100"));
             info.properties.push_back(makeFloatProp("scale", "Output scale factor", false, "1.0", "0.1", "4.0"));

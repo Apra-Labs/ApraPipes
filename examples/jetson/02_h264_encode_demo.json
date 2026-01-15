@@ -1,7 +1,7 @@
 {
   "pipeline": {
     "name": "Jetson H264 Encoding",
-    "description": "Demonstrates Jetson V4L2 H264 hardware encoder - decodes JPEG, transforms, and encodes to H264"
+    "description": "Demonstrates Jetson V4L2 H264 hardware encoder - decodes JPEG and encodes to H264"
   },
   "modules": {
     "reader": {
@@ -13,21 +13,22 @@
       }
     },
     "jpeg_decoder": {
-      "type": "JPEGDecoderL4TM"
+      "type": "JPEGDecoderL4TM",
+      "comment": "Hardware JPEG decoder - outputs HOST memory"
     },
-    "transform": {
-      "type": "NvTransform",
+    "color_convert": {
+      "type": "ColorConversion",
       "props": {
-        "imageType": "YUV420",
-        "width": 1280,
-        "height": 720
-      }
+        "conversionType": "RGB_TO_YUV420PLANAR"
+      },
+      "comment": "Convert to YUV420 planar format for H264 encoder"
     },
     "h264_encoder": {
       "type": "H264EncoderV4L2",
       "props": {
         "targetKbps": 4000
-      }
+      },
+      "comment": "V4L2 hardware H264 encoder"
     },
     "writer": {
       "type": "FileWriterModule",
@@ -38,8 +39,8 @@
   },
   "connections": [
     { "from": "reader", "to": "jpeg_decoder" },
-    { "from": "jpeg_decoder", "to": "transform" },
-    { "from": "transform", "to": "h264_encoder" },
+    { "from": "jpeg_decoder", "to": "color_convert" },
+    { "from": "color_convert", "to": "h264_encoder" },
     { "from": "h264_encoder", "to": "writer" }
   ]
 }
