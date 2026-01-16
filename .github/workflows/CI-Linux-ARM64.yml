@@ -55,7 +55,7 @@ jobs:
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && cmake -B . -G Ninja -DENABLE_ARM64=ON ../base'
       vcpkg-triplet: 'arm64-linux-release'
       build-node-addon: false
-      nProc: 6
+      nProc: 4
       nTestTimeoutMins: 45
 
   report:

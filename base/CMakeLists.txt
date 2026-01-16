@@ -861,6 +861,11 @@ target_link_libraries(aprapipesut
   ${APRA_COMMON_LIBS}
 )
 
+# ARM64: Link GTK3 again AFTER aprapipes to resolve DSO dependencies
+# (GTK3 shared libs need to come after static libs that reference them)
+IF(ENABLE_ARM64)
+    target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
+ENDIF()
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
