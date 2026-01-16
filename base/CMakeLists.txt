@@ -83,7 +83,8 @@ find_package(whisper CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 
-IF(ENABLE_LINUX)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+	# x64 Linux dependencies - ARM64 has its own handling below
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
@@ -96,6 +97,13 @@ IF(ENABLE_LINUX)
 	ELSE()
 		message(STATUS "BUILD_HEADLESS=ON: Skipping GIO/GOBJECT dependencies")
 	ENDIF()
+ELSEIF(ENABLE_ARM64)
+	# ARM64/Jetson uses system packages directly (not vcpkg's gtk/gio)
+	find_package(GLEW REQUIRED)
+	find_package(glfw3 CONFIG REQUIRED)
+	find_package(FreeGLUT CONFIG REQUIRED)
+	pkg_check_modules(GLFW REQUIRED glfw3)
+	# GIO/GOBJECT come from system on ARM64 - handled via GTK3 pkg-config below
 ENDIF()
 
 IF(ENABLE_MACOS)
