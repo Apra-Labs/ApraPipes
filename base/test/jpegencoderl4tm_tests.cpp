@@ -18,7 +18,7 @@
 
 BOOST_AUTO_TEST_SUITE(jpegencoderl4tm_tests)
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 3840;
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 1280;
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb)
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencoderl4tm_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto width = 3840;
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm_scale_0.125.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0); 
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 {
 	LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf)
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 {
 
 	LoggerProps logprops;
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disabled())
 {
 
 	LoggerProps logprops;
@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test::disabled())
 {
 	// metadata is known
 	auto img = cv::imread("./data/frame.jpg");
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2)
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels)
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::disabled())
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg");

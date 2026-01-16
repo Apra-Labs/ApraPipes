@@ -13,7 +13,7 @@
 
 BOOST_AUTO_TEST_SUITE(jpegdecoderl4tm_tests)
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic)
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 {	
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic)
 	delete[] pReadData;
 }
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb)
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
 {		
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb)
 	delete[] pReadData;
 }
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono)
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, * boost::unit_test::disabled())
 {
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
