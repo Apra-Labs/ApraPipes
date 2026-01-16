@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, *boost::unit_test::disabled())
 {
 	// DISABLED: RGB encoding crashes inside NVIDIA's libnvjpeg.so (jpegTegraEncoderMgrCreate)
 	// This is a pre-existing issue with NVIDIA's hardware encoder, not our dlopen wrapper.
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm_scale_0.125.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0); 
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, *boost::unit_test::disabled())
 {
 	// DISABLED: RGB encoding crashes inside NVIDIA's libnvjpeg.so
 	LoggerProps logprops;
