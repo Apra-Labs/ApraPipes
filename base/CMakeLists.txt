@@ -818,7 +818,10 @@ set(APRA_COMMON_LIBS
     ${JETSON_LIBS}
     ${NVCUDAToolkit_LIBS}
     ${NVCODEC_LIB}
-    ${NVJPEGLIB_L4T}
+    # NOTE: NVJPEGLIB_L4T (libnvjpeg.so) is NOT linked here because:
+    # 1. It exports jpeg_* symbols that conflict with vcpkg's libjpeg-turbo
+    # 2. L4TM modules use dlopen via L4TMJpegLoader to load it at runtime
+    # 3. Linking it causes OpenCV's JpegDecoder to use wrong struct sizes and crash
     ${CURSES_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${LIBARCHIVE_LIB}
