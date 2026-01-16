@@ -9,7 +9,8 @@
       "props": {
         "strFullFileNameWithPattern": "./data/frame.jpg",
         "readLoop": true,
-        "maxIndex": 10
+        "maxIndex": 10,
+        "outputFrameType": "EncodedImage"
       },
       "comment": "Reads JPEG files - outputs EncodedImage"
     },

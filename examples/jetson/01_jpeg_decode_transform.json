@@ -9,7 +9,8 @@
       "props": {
         "strFullFileNameWithPattern": "./data/frame_????.jpg",
         "readLoop": true,
-        "maxIndex": 10
+        "maxIndex": 10,
+        "outputFrameType": "EncodedImage"
       }
     },
     "decoder": {
