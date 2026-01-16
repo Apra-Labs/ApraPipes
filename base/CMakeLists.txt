@@ -132,17 +132,11 @@ ELSEIF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND BUILD_HEADLESS)
 	message(STATUS "BUILD_HEADLESS=ON: Skipping GTK/GDK dependencies")
 	set(GDK3_FOUND FALSE)
 	set(GTK3_FOUND FALSE)
-ELSEIF(ENABLE_ARM64 AND NOT BUILD_HEADLESS)
+ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
-	# We need GTK3 and GDK3 for linking GtkGlRenderer
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	# We need GTK3 for linking GtkGlRenderer
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-ELSEIF(ENABLE_ARM64 AND BUILD_HEADLESS)
-	# Headless ARM64 build - skip GTK/GDK (for server/Node.js environments)
-	message(STATUS "BUILD_HEADLESS=ON (ARM64): Skipping GTK/GDK dependencies")
-	set(GDK3_FOUND FALSE)
-	set(GTK3_FOUND FALSE)
 ENDIF()
 
 IF(ENABLE_CUDA)
@@ -849,7 +843,8 @@ set(APRA_COMMON_LIBS
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	# Note: ARM64 GTK3/GDK3 libraries linked AFTER aprapipes below (link order matters)
+	# ARM64/Jetson needs GTK3 for GtkGlRenderer
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
@@ -866,10 +861,6 @@ target_link_libraries(aprapipesut
   ${APRA_COMMON_LIBS}
 )
 
-# ARM64/Jetson: Link GTK3/GDK3 AFTER aprapipes (link order matters - shared libs must come after static libs that need them)
-IF(ENABLE_ARM64 AND NOT BUILD_HEADLESS)
-	target_link_libraries(aprapipesut ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
-ENDIF()
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
