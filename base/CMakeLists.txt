@@ -834,10 +834,6 @@ set(APRA_COMMON_LIBS
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	# ARM64/Jetson needs GTK3 for GtkGlRenderer
-	# NOTE: Don't link GDK3_LIBRARIES - it causes faciallandmarks test crash
-	# GTK3_LIBRARIES pulls in gdk_pixbuf transitively via pkg-config
-	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
@@ -853,6 +849,13 @@ target_link_libraries(aprapipesut
   aprapipes
   ${APRA_COMMON_LIBS}
 )
+
+# ARM64/Jetson needs GTK3 for GtkGlRenderer - linked AFTER aprapipes
+# to fix "DSO missing from command line" error
+# NOTE: Don't link GDK3_LIBRARIES - it causes faciallandmarks test crash
+IF(ENABLE_ARM64)
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
