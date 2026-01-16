@@ -1,4 +1,5 @@
 #include "JPEGEncoderL4TMHelper.h"
+#include "L4TMJpegLoader.h"
 #include <string.h>
 #include <malloc.h>
 
@@ -9,12 +10,15 @@
 
 JPEGEncoderL4TMHelper::JPEGEncoderL4TMHelper(int _quality): planes(3)
 {
+    // Initialize the L4TM jpeg loader (loads libnvjpeg.so)
+    L4TMJpegLoader::init();
+
     memset(&cinfo, 0, sizeof(cinfo));
     memset(&jerr, 0, sizeof(jerr));
-    cinfo.err = jpeg_std_error(&jerr);
+    cinfo.err = L4TMJpegLoader::std_error(&jerr);
 
-    jpeg_create_compress(&cinfo);
-    jpeg_suppress_tables(&cinfo, TRUE);
+    L4TMJpegLoader::create_compress(&cinfo);
+    L4TMJpegLoader::suppress_tables(&cinfo, TRUE);
 
     quality = _quality;
      for (auto i = 0; i < 3; i++)
@@ -34,7 +38,7 @@ JPEGEncoderL4TMHelper::~JPEGEncoderL4TMHelper()
             line[i] = nullptr;
         }
     }
-    jpeg_destroy_compress(&cinfo);
+    L4TMJpegLoader::destroy_compress(&cinfo);
 }
 
 bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stride, J_COLOR_SPACE color_space, double scale)
@@ -87,8 +91,8 @@ bool JPEGEncoderL4TMHelper::init(uint32_t width, uint32_t height, uint32_t _stri
         cinfo.scaled_image_height = height * scale;
     }
 
-    jpeg_set_defaults(&cinfo);
-    jpeg_set_quality(&cinfo, quality, TRUE);
+    L4TMJpegLoader::set_defaults(&cinfo);
+    L4TMJpegLoader::set_quality(&cinfo, quality, TRUE);
 
     if (planes == 3)
     {
@@ -111,24 +115,24 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
     {
         // every time destroy the cinfo and create it
         // if we don't do this per encode memory leak of the order of input frame
-        jpeg_destroy_compress(&cinfo);
+        L4TMJpegLoader::destroy_compress(&cinfo);
 
         memset(&cinfo, 0, sizeof(cinfo));
-        cinfo.err = jpeg_std_error(&jerr);
-        jpeg_create_compress(&cinfo);
-        jpeg_suppress_tables(&cinfo, TRUE);
+        cinfo.err = L4TMJpegLoader::std_error(&jerr);
+        L4TMJpegLoader::create_compress(&cinfo);
+        L4TMJpegLoader::suppress_tables(&cinfo, TRUE);
 
         cinfo.image_width = comp_width[0];
         cinfo.image_height = comp_height[0];
         cinfo.input_components = 3; // YUV RGB
         cinfo.in_color_space = JCS_RGB;
 
-        jpeg_set_defaults(&cinfo);
-        jpeg_set_quality(&cinfo, quality, TRUE);
+        L4TMJpegLoader::set_defaults(&cinfo);
+        L4TMJpegLoader::set_quality(&cinfo, quality, TRUE);
     }
 
-    jpeg_mem_dest(&cinfo, out_buf, &out_buf_size);
-    jpeg_set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
+    L4TMJpegLoader::mem_dest(&cinfo, out_buf, &out_buf_size);
+    L4TMJpegLoader::set_hardware_acceleration_parameters_enc(&cinfo, TRUE, out_buf_size, 0, 0);
 
     unsigned char *base[planes], *end[planes];
 
@@ -142,7 +146,7 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
         in_buf = end[i];
     }
 
-    jpeg_start_compress(&cinfo, TRUE);
+    L4TMJpegLoader::start_compress(&cinfo, TRUE);
 
     if (cinfo.err->msg_code)
     {
@@ -166,7 +170,7 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
                 }
             }
 
-            jpeg_write_raw_data(&cinfo, line, v_max_samp * DCTSIZE);
+            L4TMJpegLoader::write_raw_data(&cinfo, line, v_max_samp * DCTSIZE);
         }
     }
     else
@@ -174,12 +178,12 @@ int JPEGEncoderL4TMHelper::encode(const unsigned char *in_buf, unsigned char **o
         while (cinfo.next_scanline < cinfo.image_height)
         {
             auto row = base[0] + (cinfo.next_scanline*stride[0]);
-            jpeg_write_scanlines(&cinfo, &row, 1); 
+            L4TMJpegLoader::write_scanlines(&cinfo, &row, 1);
         }
     }
-            
 
-    jpeg_finish_compress(&cinfo);
+
+    L4TMJpegLoader::finish_compress(&cinfo);
 
     return 0;
 }

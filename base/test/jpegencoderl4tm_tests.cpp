@@ -18,7 +18,7 @@
 
 BOOST_AUTO_TEST_SUITE(jpegencoderl4tm_tests)
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic)
 {
 	// metadata is known
 	auto width = 3840;
@@ -65,6 +65,8 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 {
+	// DISABLED: RGB encoding crashes inside NVIDIA's libnvjpeg.so (jpegTegraEncoderMgrCreate)
+	// This is a pre-existing issue with NVIDIA's hardware encoder, not our dlopen wrapper.
 	// metadata is known
 	auto width = 1280;
 	auto height = 720;
@@ -109,7 +111,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb, * boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/jpegencoderl4tm_frame_1280x720_rgb.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale)
 {
 	// metadata is known
 	auto width = 3840;
@@ -158,6 +160,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_scale, * boost::unit_test::disabled()
 
 BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 {
+	// DISABLED: RGB encoding crashes inside NVIDIA's libnvjpeg.so
 	LoggerProps logprops;
 	logprops.logLevel = boost::log::trivial::severity_level::info;
 	Logger::initLogger(logprops);
@@ -197,7 +200,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_rgb_perf, * boost::unit_test::disabled())
 	p.wait_for_all();
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf)
 {
 
 	LoggerProps logprops;
@@ -247,7 +250,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf, * boost::unit_test::disabled())
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale)
 {
 
 	LoggerProps logprops;
@@ -298,7 +301,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale, * boost::unit_test::disab
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2)
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -334,7 +337,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_2, * boost::unit_test::disabled())
 	Test_Utils::saveOrCompare("./data/testOutput/frame_test_l4tm.jpg", (const uint8_t *)encodedImageFrame->data(), encodedImageFrame->size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32)
 {
 	// metadata is set after init
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -380,7 +383,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32, * boost::unit_
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2)
 {
 	// metadata is known
 	auto img_orig = cv::imread("./data/frame.jpg", cv::IMREAD_GRAYSCALE);
@@ -407,7 +410,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_notmultipleof32_2, * boost::uni
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2)
 {
 	// metadata is known
 	auto img = cv::imread("./data/frame.jpg");
@@ -432,7 +435,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels_2, * boost::unit_test:
 	}
 }
 
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_width_channels)
 {
 	// metadata is set after init
 	auto img = cv::imread("./data/frame.jpg");

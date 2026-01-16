@@ -543,6 +543,7 @@ IF(ENABLE_ARM64)
 		src/JPEGDecoderL4TMHelper.cpp
 		src/JPEGEncoderL4TM.cpp
 		src/JPEGEncoderL4TMHelper.cpp
+		src/L4TMJpegLoader.cpp
 		src/AV4L2Buffer.cpp
 		src/AV4L2ElementPlane.cpp
 		src/H264EncoderV4L2Helper.cpp
@@ -589,9 +590,10 @@ SET(CUDA_IP_FILES_H
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
 		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
+		include/JPEGDecoderL4TM.h
 		include/JPEGEncoderL4TMHelper.h
 		include/JPEGEncoderL4TM.h
+		include/L4TMJpegLoader.h
 		include/AV4L2Buffer.h
 		include/AV4L2ElementPlane.h
 		include/H264EncoderV4L2Helper.h
