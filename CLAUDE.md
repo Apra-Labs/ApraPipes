@@ -7,32 +7,49 @@
 
 ---
 
-## 🎯 Current Phase: CLI Pipeline Testing
+## 🎯 Current Phase: Node.js Addon on Jetson (J2)
 
-**Mission:** Get L4TM modules working via `aprapipes_cli` on Jetson.
+**Mission:** Fix the Node.js addon (`aprapipes.node`) build and test on Jetson ARM64.
 
 **Protected Assets (DO NOT BREAK):**
 - ✅ 7 L4TM tests passing in CI-Linux-ARM64
 - ✅ All 4 CI workflows GREEN
-- ✅ Existing module registrations that work
+- ✅ L4TM CLI pipelines working on Jetson
 
 **Current Issue:**
-The L4TM CLI example fails because `FileReaderModule` outputs generic `Frame` type, but `JPEGDecoderL4TM` expects `EncodedImage`.
+Node.js addon fails to load due to missing Boost.Serialization RTTI symbols:
+```
+undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE
+```
 
-**Analysis:**
-- `FileReaderModule` has an `outputFrameType` property (optional, defaults to "Frame")
-- The JSON example should specify `"outputFrameType": "EncodedImage"`
-- This is a **pipeline definition issue**, not a registration bug
+**Root Cause (from JETSON_KNOWN_ISSUES.md):**
+- `--whole-archive` flag only applies to `aprapipes` library, not Boost libraries
+- GCC 9.4 on Jetson has stricter symbol resolution than newer GCC
+- Typeinfo symbols for polymorphic classes get discarded during linking
 
-**Possible Solutions:**
-1. **Fix JSON examples** - Add `outputFrameType` property (simple, correct)
-2. **Frame type inference** - Validator infers from downstream (medium complexity)
-3. **File extension heuristic** - Guess from `.jpg` extension (medium complexity)
+**Potential Solutions:**
+1. **Option A:** Extend `--whole-archive` to include `Boost_SERIALIZATION_LIBRARY`
+2. **Option B:** Use `--no-as-needed` flag for Boost libraries
+3. **Option C:** Build Boost as shared libraries on ARM64
+4. **Option E:** Remove Boost.Serialization dependency from declarative code path
 
-**Approach:**
-1. Analyze thoroughly before changing code
-2. Prefer simple solutions that align with existing architecture
-3. Run L4TM tests after any changes to ensure no regression
+**Reference:** See `docs/declarative-pipeline/JETSON_KNOWN_ISSUES.md` → Issue J2
+
+---
+
+## 📚 Learnings (Document for Future Reference)
+
+### L4TM CLI Pipeline Debugging (2026-01-16)
+
+**Problem 1: Frame type mismatch**
+- Error: `input frameType is expected to be ENCODED_IMAGE. Actual<0>`
+- Fix: Add `"outputFrameType": "EncodedImage"` to FileReaderModule props
+- Learning: FileReaderModule defaults to generic "Frame" type; must explicitly specify for encoded content
+
+**Problem 2: No Pins to connect**
+- Error: `No Pins to connect. JPEGDecoderL4TM_1 -> JPEGEncoderL4TM_2`
+- Fix: Remove `selfManagedOutputPins = true` from L4TM module registrations
+- Learning: Modules that expect factory to create output pins must have `selfManagedOutputPins = false` (the default)
 
 ---
 

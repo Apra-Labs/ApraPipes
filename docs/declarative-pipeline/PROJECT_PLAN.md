@@ -19,6 +19,7 @@
 | Sprint 6 | ✅ Complete | DRY Refactoring |
 | Sprint 7 | ✅ Complete | Auto-Bridging (Memory + Pixel Format) |
 | Sprint 8 | ✅ Complete | Jetson Integration |
+| Sprint 9 | 🔄 In Progress | Node.js Addon on Jetson (J2) |
 
 ---
 
@@ -75,7 +76,57 @@ Sprint 8 is **complete**:
 - ✅ DMABUF bridging implemented
 - ✅ CI re-enabled and passing
 - ✅ L4TM modules working (7 tests passing)
+- ✅ L4TM CLI pipelines working on Jetson
 - ⚠️ Node.js addon blocked by linking issue (J2)
+
+---
+
+## Sprint 9: Node.js Addon on Jetson (J2)
+
+> Started: 2026-01-16 | Status: In Progress
+
+**Documentation:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2
+
+### Objective
+
+Fix the Node.js addon (`aprapipes.node`) to build and load correctly on Jetson ARM64.
+
+### Problem
+
+The addon fails to load due to missing Boost.Serialization RTTI symbols:
+```
+undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE
+```
+
+### Root Cause
+
+- `--whole-archive` only applies to `aprapipes` library, not Boost libraries
+- GCC 9.4 on Jetson has stricter symbol resolution
+- Typeinfo symbols get discarded during linking
+
+### Potential Solutions
+
+| Option | Description | Complexity |
+|--------|-------------|------------|
+| A | Extend `--whole-archive` to include Boost.Serialization | Low |
+| B | Use `--no-as-needed` for Boost libs | Low |
+| C | Build Boost as shared libraries on ARM64 | Medium |
+| E | Remove Boost.Serialization dependency | High |
+
+### Phases
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 | ⏳ Pending | Try Option A (`--whole-archive` for Boost.Serialization) |
+| Phase 2 | ⏳ Pending | Build and test on Jetson |
+| Phase 3 | ⏳ Pending | Verify CI still passes |
+| Phase 4 | ⏳ Pending | Test Node.js addon with L4TM pipeline |
+
+### Related Files
+
+- `base/CMakeLists.txt` - Node addon linking (lines 1213-1245)
+- `base/bindings/node/` - Node.js addon source code
+- `thirdparty/triplets/arm64-linux-release.cmake` - ARM64 vcpkg triplet
 
 ---
 

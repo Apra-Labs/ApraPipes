@@ -61,6 +61,39 @@
 
 **J2 Root Cause:** Boost.Serialization RTTI symbols not exported with `--whole-archive`. GCC 9.4 on Jetson has stricter symbol resolution.
 
+### CLI Pipeline Learnings (2026-01-16)
+
+While testing L4TM modules via CLI, we discovered and fixed two issues:
+
+1. **FileReaderModule outputFrameType**
+   - `FileReaderModule` defaults to generic "Frame" type
+   - Must explicitly set `"outputFrameType": "EncodedImage"` for JPEG pipelines
+   - Fixed in `examples/jetson/01_*.json` and `02_*.json`
+
+2. **selfManagedOutputPins flag**
+   - L4TM registrations incorrectly had `selfManagedOutputPins = true`
+   - Modules expect factory to create output pins → should be `false` (default)
+   - Fixed in `ModuleRegistrations.cpp`
+
+---
+
+## Sprint 9: Node.js Addon on Jetson (J2)
+
+> Started: 2026-01-16 | Status: In Progress
+
+**Goal:** Fix Node.js addon (`aprapipes.node`) to build and load on Jetson ARM64.
+
+**Issue:** Missing Boost.Serialization RTTI symbols during addon load.
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 | ⏳ Pending | Try `--whole-archive` for Boost.Serialization |
+| Phase 2 | ⏳ Pending | Build and test on Jetson |
+| Phase 3 | ⏳ Pending | Verify CI passes |
+| Phase 4 | ⏳ Pending | Test addon with L4TM pipeline |
+
+See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2 for details.
+
 ---
 
 ## Build Status
@@ -122,9 +155,9 @@
 
 ## Future Work
 
-### Priority 1: Fix Node.js Addon on Jetson (J2)
-- Potential: Extend `--whole-archive` to include Boost libraries
-- Workaround: Use CLI
+### Current: Sprint 9 - Node.js Addon on Jetson (J2)
+- See Sprint 9 section above for phases and status
+- Priority: High
 
 ### Priority 2: Display Modules
 - Register GtkGlRenderer, ImageViewerModule
