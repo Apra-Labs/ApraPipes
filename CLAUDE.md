@@ -7,24 +7,32 @@
 
 ---
 
-## 🎯 Current Phase: Module Registration Improvements
+## 🎯 Current Phase: CLI Pipeline Testing
 
-**Mission:** Improve module registrations to fix CLI pipeline execution issues.
+**Mission:** Get L4TM modules working via `aprapipes_cli` on Jetson.
 
 **Protected Assets (DO NOT BREAK):**
 - ✅ 7 L4TM tests passing in CI-Linux-ARM64
 - ✅ All 4 CI workflows GREEN
 - ✅ Existing module registrations that work
 
-**Focus Areas:**
-- Fix `FileReaderModule` output frame type (currently outputs `Frame` instead of `EncodedImage`)
-- Ensure L4TM modules work via `aprapipes_cli`
-- Test with `examples/jetson/01_test_signal_to_jpeg.json`
+**Current Issue:**
+The L4TM CLI example fails because `FileReaderModule` outputs generic `Frame` type, but `JPEGDecoderL4TM` expects `EncodedImage`.
+
+**Analysis:**
+- `FileReaderModule` has an `outputFrameType` property (optional, defaults to "Frame")
+- The JSON example should specify `"outputFrameType": "EncodedImage"`
+- This is a **pipeline definition issue**, not a registration bug
+
+**Possible Solutions:**
+1. **Fix JSON examples** - Add `outputFrameType` property (simple, correct)
+2. **Frame type inference** - Validator infers from downstream (medium complexity)
+3. **File extension heuristic** - Guess from `.jpg` extension (medium complexity)
 
 **Approach:**
-1. Make minimal, targeted changes to module registrations
-2. Test each change locally before committing
-3. Run L4TM tests after any registration changes to ensure no regression
+1. Analyze thoroughly before changing code
+2. Prefer simple solutions that align with existing architecture
+3. Run L4TM tests after any changes to ensure no regression
 
 ---
 

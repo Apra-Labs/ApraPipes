@@ -1,6 +1,6 @@
 # Declarative Pipeline - Project Plan
 
-> Last Updated: 2026-01-15
+> Last Updated: 2026-01-16
 
 **Branch:** `feat-declarative-pipeline-v2`
 **Progress:** See [PROGRESS.md](./PROGRESS.md) for detailed status
@@ -18,13 +18,13 @@
 | Sprint 5 | ✅ Complete | CUDA Module Registration (15 modules) |
 | Sprint 6 | ✅ Complete | DRY Refactoring |
 | Sprint 7 | ✅ Complete | Auto-Bridging (Memory + Pixel Format) |
-| Sprint 8 | ⚠️ Partial | Jetson Integration (Known Issues) |
+| Sprint 8 | ✅ Complete | Jetson Integration |
 
 ---
 
 ## Sprint 8: Jetson Integration
 
-> Started: 2026-01-13
+> Started: 2026-01-13 | Completed: 2026-01-16
 
 **Documentation:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md)
 
@@ -43,7 +43,7 @@
 | Phase 1 | ✅ Done | Jetson build with declarative pipeline |
 | Phase 2 | ✅ Done | Register 8 Jetson modules |
 | Phase 2.5 | ✅ Done | DMABUF auto-bridging in PipelineAnalyzer |
-| Phase 3 | ⚠️ Partial | 7 JSON examples (some blocked by J1) |
+| Phase 3 | ✅ Done | JSON examples (L4TM working via dlopen) |
 | Phase 4 | ✅ Done | Documentation, CI re-enabled |
 
 ### Registered Jetson Modules
@@ -53,29 +53,29 @@
 | NvArgusCamera | DMABUF | CSI camera via Argus API |
 | NvV4L2Camera | DMABUF | USB camera via V4L2 |
 | NvTransform | DMABUF | GPU resize/crop/transform |
-| JPEGDecoderL4TM | HOST | L4T hardware JPEG decoder |
-| JPEGEncoderL4TM | HOST | L4T hardware JPEG encoder |
+| JPEGDecoderL4TM | HOST | L4T hardware JPEG decoder ✅ |
+| JPEGEncoderL4TM | HOST | L4T hardware JPEG encoder ✅ |
 | EglRenderer | DMABUF | EGL display output |
 | DMAFDToHostCopy | DMABUF→HOST | DMA buffer bridge |
 
 ### Known Issues
 
-| Issue | Severity | Workaround |
-|-------|----------|------------|
-| **J1: libjpeg conflict** | High | Use JPEGEncoderNVJPEG |
-| **J2: Boost.Serialization** | Medium | Use CLI instead of Node.js |
-| **J3: H264EncoderV4L2** | Low | Use H264EncoderNVCodec |
+| Issue | Status | Workaround |
+|-------|--------|------------|
+| ~~J1: libjpeg conflict~~ | ✅ RESOLVED | dlopen wrapper isolates symbols |
+| **J2: Boost.Serialization** | Open | Use CLI instead of Node.js |
+| **J3: H264EncoderV4L2** | Open | Use H264EncoderNVCodec |
 
 See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) for detailed analysis.
 
 ### Outcome
 
-Sprint 8 is **functionally complete** with known limitations:
+Sprint 8 is **complete**:
 - ✅ Jetson modules registered and building
 - ✅ DMABUF bridging implemented
-- ✅ CI re-enabled
-- ⚠️ L4TM modules blocked by libjpeg conflict
-- ⚠️ Node.js addon blocked by linking issue
+- ✅ CI re-enabled and passing
+- ✅ L4TM modules working (7 tests passing)
+- ⚠️ Node.js addon blocked by linking issue (J2)
 
 ---
 
