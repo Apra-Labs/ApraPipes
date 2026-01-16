@@ -7,6 +7,27 @@
 
 ---
 
+## 🎯 Current Phase: Module Registration Improvements
+
+**Mission:** Improve module registrations to fix CLI pipeline execution issues.
+
+**Protected Assets (DO NOT BREAK):**
+- ✅ 7 L4TM tests passing in CI-Linux-ARM64
+- ✅ All 4 CI workflows GREEN
+- ✅ Existing module registrations that work
+
+**Focus Areas:**
+- Fix `FileReaderModule` output frame type (currently outputs `Frame` instead of `EncodedImage`)
+- Ensure L4TM modules work via `aprapipes_cli`
+- Test with `examples/jetson/01_test_signal_to_jpeg.json`
+
+**Approach:**
+1. Make minimal, targeted changes to module registrations
+2. Test each change locally before committing
+3. Run L4TM tests after any registration changes to ensure no regression
+
+---
+
 ## 🚨 Critical Rules
 
 ### 1. Build and Test Before Commit (MANDATORY)
@@ -137,9 +158,20 @@ TMPDIR=/data/.cache/tmp cmake --build _build -j2
 ### Known Issues
 
 See `docs/declarative-pipeline/JETSON_KNOWN_ISSUES.md` for:
-- J1: libjpeg version conflict (L4TM modules)
-- J2: Node.js addon Boost.Serialization linking
-- J3: H264EncoderV4L2 not registered on ARM64
+- ~~J1: libjpeg version conflict~~ ✅ RESOLVED (dlopen wrapper isolates symbols)
+- J2: Node.js addon Boost.Serialization linking (use CLI as workaround)
+- J3: H264EncoderV4L2 not registered on ARM64 (use H264EncoderNVCodec)
+
+### L4TM Test Protection
+
+**Before ANY changes to module registrations or Jetson code:**
+```bash
+ssh akhil@192.168.1.18
+cd /data/ws/ApraPipes
+./_build/aprapipesut --run_test="jpegencoderl4tm_tests/*,jpegdecoderl4tm_tests/*" --log_level=test_suite
+```
+
+**Expected:** 7 tests pass, 7 tests skipped (disabled). If any previously passing test fails, STOP and investigate before committing.
 
 ---
 
@@ -160,7 +192,8 @@ Transform ApraPipes from imperative C++ to declarative JSON:
 ### Current Status
 
 Check `docs/declarative-pipeline/PROGRESS.md` for:
-- Sprint status (currently Sprint 8: Jetson Integration)
+- Sprint 8 (Jetson Integration) ✅ COMPLETE
+- Current focus: Module registration improvements for CLI
 - Registered modules (50+ modules)
 - Known issues and workarounds
 
