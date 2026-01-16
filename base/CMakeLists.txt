@@ -135,7 +135,8 @@ ELSEIF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND BUILD_HEADLESS)
 ELSEIF(ENABLE_ARM64 AND NOT BUILD_HEADLESS)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
-	# We need GTK3 for linking GtkGlRenderer
+	# We need GTK3 and GDK3 for linking GtkGlRenderer
+	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ELSEIF(ENABLE_ARM64 AND BUILD_HEADLESS)
 	# Headless ARM64 build - skip GTK/GDK (for server/Node.js environments)
