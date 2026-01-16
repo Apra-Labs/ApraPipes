@@ -47,6 +47,8 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+	# Set PKG_CONFIG_PATH so system packages like gio-2.0 can be found
+	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
