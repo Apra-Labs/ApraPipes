@@ -11,9 +11,7 @@
 #include "JPEGDecoderL4TM.h"
 #include "test_utils.h"
 
-// L4TM JPEG tests are disabled until libjpeg version conflict (Issue J1) is fully resolved.
-// The dlopen wrapper (L4TMJpegLoader) needs more work to support these tests.
-BOOST_AUTO_TEST_SUITE(jpegdecoderl4tm_tests, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_SUITE(jpegdecoderl4tm_tests)
 
 BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic)
 {	
