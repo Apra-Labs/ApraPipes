@@ -849,8 +849,7 @@ set(APRA_COMMON_LIBS
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	# ARM64/Jetson needs GTK3 for GtkGlRenderer
-	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
+	# Note: ARM64 GTK3/GDK3 libraries linked AFTER aprapipes below (link order matters)
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
@@ -866,6 +865,11 @@ target_link_libraries(aprapipesut
   aprapipes
   ${APRA_COMMON_LIBS}
 )
+
+# ARM64/Jetson: Link GTK3/GDK3 AFTER aprapipes (link order matters - shared libs must come after static libs that need them)
+IF(ENABLE_ARM64 AND NOT BUILD_HEADLESS)
+	target_link_libraries(aprapipesut ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
