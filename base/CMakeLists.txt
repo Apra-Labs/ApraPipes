@@ -139,8 +139,7 @@ ELSEIF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND BUILD_HEADLESS)
 ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
-	# We need both GDK3 and GTK3 for linking GtkGlRenderer (GDK3 provides gdk_pixbuf dependencies)
-	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
+	# Only check GTK3 for ARM64 - GDK3 linking causes faciallandmarks test crash
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
@@ -848,11 +847,10 @@ set(APRA_COMMON_LIBS
 
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	# ARM64/Jetson needs both GDK3 and GTK3 for GtkGlRenderer
-	target_link_libraries(aprapipesut
-		${GDK3_LIBRARIES}
-		${GTK3_LIBRARIES}
-	)
+	# ARM64/Jetson needs GTK3 for GtkGlRenderer
+	# NOTE: Don't link GDK3_LIBRARIES - it causes faciallandmarks test crash
+	# GTK3_LIBRARIES pulls in gdk_pixbuf transitively via pkg-config
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
@@ -966,7 +964,7 @@ target_link_libraries(aprapipes_cli PRIVATE ${APRA_COMMON_LIBS})
 # GTK linkage for Linux/ARM64 (same as aprapipesut)
 IF(ENABLE_ARM64)
     target_include_directories(aprapipes_cli PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
-    target_link_libraries(aprapipes_cli PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+    target_link_libraries(aprapipes_cli PRIVATE ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
@@ -1018,7 +1016,7 @@ target_link_libraries(apra_schema_generator PRIVATE
 # GTK linkage for Linux/ARM64 (same as aprapipesut)
 IF(ENABLE_ARM64)
     target_include_directories(apra_schema_generator PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
-    target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+    target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
 IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
