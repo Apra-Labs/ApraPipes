@@ -47,8 +47,6 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
-	# Set PKG_CONFIG_PATH early so system packages can be found
-	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -85,29 +83,16 @@ find_package(whisper CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
-	# x64 Linux dependencies - ARM64 has its own handling below
+# Linux dependencies (includes ARM64 via ENABLE_LINUX)
+# This pattern matches the working configuration from commit 06d464fd
+IF(ENABLE_LINUX)
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
-	pkg_check_modules(GLFW REQUIRED glfw3)
-	IF(NOT BUILD_HEADLESS)
-		# GIO and GOBJECT are only needed for GTK-based modules (GtkGlRenderer)
-		# Skip for headless builds (server/Node.js environments)
-		pkg_check_modules(GIO REQUIRED gio-2.0)
-		pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
-	ELSE()
-		message(STATUS "BUILD_HEADLESS=ON: Skipping GIO/GOBJECT dependencies")
-	ENDIF()
-ELSEIF(ENABLE_ARM64)
-	# ARM64/Jetson uses system packages directly (not vcpkg's gtk/gio)
-	find_package(GLEW REQUIRED)
-	find_package(glfw3 CONFIG REQUIRED)
-	find_package(FreeGLUT CONFIG REQUIRED)
-	pkg_check_modules(GLFW REQUIRED glfw3)
-	# GIO/GOBJECT needed for GTK dependency resolution (fixes DSO missing error)
+	# GIO and GOBJECT are needed for GTK-based modules
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
+	pkg_check_modules(GLFW REQUIRED glfw3)
 ENDIF()
 
 IF(ENABLE_MACOS)
