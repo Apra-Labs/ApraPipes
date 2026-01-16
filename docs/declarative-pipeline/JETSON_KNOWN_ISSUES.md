@@ -16,9 +16,9 @@ This document details known issues specific to the Jetson (ARM64/L4T) platform w
 
 ## Issue J1: libjpeg Version Conflict (L4TM Modules)
 
-### Status: OPEN (Blocker for L4TM modules)
+### Status: FIX IDENTIFIED (Simple header change)
 
-### Severity: High
+### Severity: High → Low (once fix applied)
 
 ### Affected Modules
 - `JPEGEncoderL4TM`
@@ -30,40 +30,23 @@ This document details known issues specific to the Jetson (ARM64/L4T) platform w
 Wrong JPEG library version: library is 62, caller expects 80
 ```
 
-Or at runtime:
-```
-JPEG parameter struct mismatch: library thinks size is 584, caller expects 680
-```
+### Root Cause (Verified via SSH Diagnostics)
 
-### Description
+**NVIDIA ships mismatched headers and library in JetPack 5.x:**
 
-The L4T Multimedia (L4TM) JPEG encoder/decoder modules use NVIDIA's hardware-accelerated JPEG codec via the L4T Multimedia API (`libnvjpeg.so`). This library is dynamically linked against the **system libjpeg** (version 6.2, ABI version 62), which is part of the base Jetson L4T image.
+| Component | JPEG_LIB_VERSION | Location |
+|-----------|------------------|----------|
+| vcpkg jconfig.h | **62** | `_build/vcpkg_installed/arm64-linux/include/jconfig.h` |
+| NVIDIA libjpeg-8b header | **80** | `/usr/src/jetson_multimedia_api/include/libjpeg-8b/jpeglib.h` |
+| vcpkg libjpeg.a | **62** | Statically linked into binary |
+| libnvjpeg.so internal | **62** | Runtime version check |
 
-However, ApraPipes is built with **vcpkg's libjpeg-turbo** (version 8.0, ABI version 80) for better performance and consistency across platforms. When the L4TM modules attempt to use libjpeg functions, the version mismatch causes struct size mismatches and crashes.
+**What happens:**
+1. L4TM code includes `"libjpeg-8b/jpeglib.h"` → compiles expecting version 80
+2. At link time, vcpkg's `libjpeg.a` (version 62) provides `jpeg_*` symbols
+3. Runtime: `jpeg_CreateCompress` checks version → **FAIL** (caller=80, library=62)
 
-### Root Cause Analysis
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        ApraPipes Application                        │
-├─────────────────────────────────────────────────────────────────────┤
-│  ImageEncoderCV      │  JPEGEncoderL4TM      │  JPEGEncoderNVJPEG   │
-│  (OpenCV + vcpkg)    │  (L4T Multimedia API) │  (CUDA nvJPEG)       │
-│         │            │         │             │         │            │
-│         ▼            │         ▼             │         ▼            │
-│  libjpeg-turbo 8.0   │  libnvjpeg.so (L4T)   │  nvjpeg (CUDA)       │
-│  (vcpkg, static)     │         │             │  (no libjpeg dep)    │
-│                      │         ▼             │                      │
-│                      │  libjpeg.so.62        │                      │
-│                      │  (system, dynamic)    │                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Key Points:**
-1. vcpkg builds libjpeg-turbo as a **static library** and links it into OpenCV
-2. The L4T Multimedia API (`libnvjpeg.so`) **dynamically links** against system libjpeg
-3. When both are loaded in the same process, the version check fails
-4. The struct layouts differ between versions (584 bytes vs 680 bytes)
+**The bug:** NVIDIA ships version 80 headers (`libjpeg-8b/jpeglib.h`) but `libnvjpeg.so` contains version 62 libjpeg internally. This is an NVIDIA header/library mismatch in JetPack 5.x.
 
 ### Why This Was Never Caught in CI
 
@@ -184,11 +167,99 @@ Rebuild the L4T Multimedia libraries against libjpeg-turbo.
 - Maintenance burden for each L4T version
 - Complex build process
 
+#### Option F: CMake OBJECT Library Isolation (Recommended Fix)
+
+Compile L4TM sources in a separate CMake OBJECT library with isolated include paths that use system libjpeg headers (ABI 62) instead of the mismatched `libjpeg-8b` headers from Jetson Multimedia API.
+
+**Pros:**
+- Clean separation of compilation contexts
+- L4TM uses consistent headers + runtime (both ABI 62)
+- Rest of codebase continues using vcpkg libjpeg-turbo (ABI 80)
+- No LD_PRELOAD or deployment complexity
+- Only affects ARM64 builds
+
+**Cons:**
+- Requires explicit linking to system libjpeg for L4TM
+- Potential link-time symbol conflicts if vcpkg's static symbols take precedence
+
+**Why This Should Work:**
+
+The root cause is that L4TM code includes `libjpeg-8b/jpeglib.h` (ABI 80 struct sizes) but at runtime, `libnvjpeg.so` loads system libjpeg (ABI 62). By compiling L4TM with system `/usr/include/jpeglib.h` (ABI 62), the struct sizes match what the runtime library expects.
+
+**Implementation:**
+
+```cmake
+if(ENABLE_ARM64)
+    # Isolated OBJECT library for L4TM JPEG modules
+    set(L4TM_JPEG_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/JPEGEncoderL4TM.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/JPEGEncoderL4TMHelper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/JPEGDecoderL4TM.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/JPEGDecoderL4TMHelper.cpp
+    )
+
+    find_path(SYSTEM_JPEG_INCLUDE jpeglib.h PATHS /usr/include REQUIRED)
+
+    add_library(l4tm_jpeg_objects OBJECT ${L4TM_JPEG_SOURCES})
+
+    # System libjpeg MUST come first
+    target_include_directories(l4tm_jpeg_objects BEFORE PRIVATE
+        ${SYSTEM_JPEG_INCLUDE}
+    )
+
+    target_include_directories(l4tm_jpeg_objects PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+        ${OpenCV_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(l4tm_jpeg_objects PRIVATE jpeg)
+endif()
+```
+
+Also change header includes from:
+```cpp
+#include "libjpeg-8b/jpeglib.h"
+```
+To:
+```cpp
+#include <jpeglib.h>
+```
+
+**Risks:**
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| Link-time symbol conflicts | HIGH | If vcpkg's static libjpeg symbols take precedence, fall back to separate shared library |
+| vcpkg toolchain overrides include paths | MEDIUM | Use absolute paths, CMAKE_C_FLAGS if needed |
+| System libjpeg-dev not installed | LOW | Use REQUIRED in find_path |
+
+### Cross-Platform Precedent
+
+Similar libjpeg conflicts have been encountered and solved on other platforms:
+
+**macOS (build-test-macosx.yml):**
+```yaml
+- name: CRITICAL - Unlink Homebrew JPEG BEFORE vcpkg (prevent path eclipsing)
+  run: |
+    brew unlink jpeg-turbo || true
+```
+Homebrew's jpeg-turbo headers were eclipsing vcpkg's, causing build failures. Solution: unlink before vcpkg runs.
+
+**Linux Node.js Addon (INTEGRATION_TESTS.md):**
+GTK brought in system libjpeg which conflicted with vcpkg's statically linked libjpeg-turbo, causing crashes in `cv::imencode`. Solution: created `aprapipes_node_headless` library excluding GTK modules.
+
 ### Recommended Path Forward
 
-1. **Short-term (Sprint 8):** Document the issue and recommend `JPEGEncoderNVJPEG` as the alternative
-2. **Medium-term:** Investigate Option B (shared libjpeg-turbo with LD_PRELOAD)
-3. **Long-term:** Work with NVIDIA to understand L4TM's libjpeg requirements
+1. **Immediate (Option F):** Implement CMake OBJECT library isolation
+   - Enable the 15 disabled L4TM tests
+   - Compile L4TM sources with system libjpeg headers (ABI 62)
+   - Verify no regression in ImageEncoderCV or JPEGEncoderNVJPEG tests
+
+2. **Fallback:** If Option F fails due to link-time symbol conflicts, build L4TM as a separate shared library (`libl4tm_jpeg.so`) that explicitly links only system libjpeg
+
+3. **Alternative:** Continue using `JPEGEncoderNVJPEG` as workaround for users who don't need L4TM specifically
 
 ### Related Files
 
