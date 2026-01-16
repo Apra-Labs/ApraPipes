@@ -63,6 +63,34 @@ git diff --staged --stat   # Check which files changed
 
 Check for: debug code, temporary hacks, commented-out code, unrelated changes.
 
+### 4. Mission Alignment Checkpoint (MANDATORY)
+
+**Before EVERY commit, answer these questions:**
+
+1. **What is the mission?** (Re-read the plan file or task description)
+2. **Does this commit move toward the mission?**
+3. **Am I disabling/removing/hiding something instead of fixing it?**
+
+#### Red Flag Actions - STOP and Reflect
+
+If you're about to do any of these, STOP and ask "Is this actually achieving the mission?":
+
+- Disabling tests to make CI green
+- Removing functionality to avoid fixing it
+- Adding `#if 0` / `#ifdef DISABLED` around problematic code
+- Marking something as "TODO later" when it's the actual task
+- Celebrating "green CI" when tests are skipped/disabled
+
+**These are symptoms of metric gaming, not problem solving.**
+
+#### The Test
+
+> If someone asked "Did you fix the problem?", would your answer be:
+> - ✅ "Yes, it works now" → Commit OK
+> - ❌ "No, but CI is green because I disabled/skipped it" → DO NOT COMMIT
+
+**Never optimize for intermediate metrics (CI green, build passing) at the expense of the actual mission. If you find yourself disabling something to make a dashboard green, you've lost the plot.**
+
 ---
 
 ## 🔧 Jetson Development
