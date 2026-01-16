@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-15
+> Last Updated: 2026-01-16
 
 **Branch:** `feat-declarative-pipeline-v2`
 
@@ -14,17 +14,17 @@
 | JSON Parser | ✅ Complete (TOML removed) |
 | Cross-platform Modules | ✅ 37 modules |
 | CUDA Modules | ✅ 15 modules (NPP + NVCodec) |
-| Jetson Modules | ⚠️ 8 modules (L4TM blocked by libjpeg) |
-| Node.js Addon | ✅ Complete (Jetson blocked by linking) |
+| Jetson Modules | ✅ 8 modules (L4TM working via dlopen wrapper) |
+| Node.js Addon | ✅ Complete (Jetson blocked by linking - J2) |
 | Auto-Bridging | ✅ Complete (memory + pixel format) |
 
 **Module count:** Run `./build/aprapipes_cli list-modules` for current count per platform.
 
 ---
 
-## Sprint 8: Jetson Integration (Current)
+## Sprint 8: Jetson Integration (Complete)
 
-> Started: 2026-01-13
+> Started: 2026-01-13 | Completed: 2026-01-16
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -32,7 +32,7 @@
 | Phase 1 | ✅ Complete | Jetson build |
 | Phase 2 | ✅ Complete | Register 8 Jetson modules |
 | Phase 2.5 | ✅ Complete | DMABUF auto-bridging |
-| Phase 3 | ⚠️ Partial | JSON examples (J1 blocks L4TM) |
+| Phase 3 | ✅ Complete | JSON examples (L4TM working via dlopen) |
 | Phase 4 | ✅ Complete | Docs, CI re-enabled |
 
 ### Jetson Modules Registered
@@ -51,13 +51,13 @@
 
 > **Details:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md)
 
-| Issue | Severity | Workaround |
-|-------|----------|------------|
-| J1: libjpeg conflict | High | Use JPEGEncoderNVJPEG |
-| J2: Node.js linking | Medium | Use CLI |
-| J3: H264EncoderV4L2 | Low | Use H264EncoderNVCodec |
+| Issue | Status | Notes |
+|-------|--------|-------|
+| J1: libjpeg conflict | ✅ RESOLVED | dlopen wrapper isolates symbols |
+| J2: Node.js linking | ⚠️ Open | Use CLI as workaround |
+| J3: H264EncoderV4L2 | ⚠️ Open | Use H264EncoderNVCodec |
 
-**J1 Root Cause:** L4T Multimedia API links system libjpeg-62, vcpkg provides libjpeg-turbo-80. Struct size mismatch causes crashes.
+**J1 Resolution:** L4TMJpegLoader uses `dlopen()` with `RTLD_LOCAL` to isolate NVIDIA's libjpeg symbols. 7 tests passing in CI.
 
 **J2 Root Cause:** Boost.Serialization RTTI symbols not exported with `--whole-archive`. GCC 9.4 on Jetson has stricter symbol resolution.
 
@@ -101,9 +101,10 @@
 - processing_chain.json - Multi-stage GPU pipeline
 
 ### Jetson (`examples/jetson/`)
+- 01_test_signal_to_jpeg.json - L4TM JPEG encode/decode
+- 01_jpeg_decode_transform.json - L4TM decode + resize
 - 03_camera_preview.json - CSI camera → display
 - 04_usb_camera_jpeg.json - USB camera → JPEG
-- ⚠️ L4TM examples blocked by J1
 
 ---
 
@@ -121,17 +122,18 @@
 
 ## Future Work
 
-### Priority 1: Fix libjpeg Conflict (J1)
-- Options: shared libjpeg-turbo, LD_PRELOAD, process isolation
-- See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md#issue-j1-libjpeg-version-conflict-l4tm-modules)
-
-### Priority 2: Fix Node.js Addon on Jetson (J2)
+### Priority 1: Fix Node.js Addon on Jetson (J2)
 - Potential: Extend `--whole-archive` to include Boost libraries
 - Workaround: Use CLI
 
-### Priority 3: Display Modules
-- Register GtkGlRenderer, EglRenderer, ImageViewerModule
+### Priority 2: Display Modules
+- Register GtkGlRenderer, ImageViewerModule
+- Note: EglRenderer is already registered for Jetson
 - Low priority - mainly for debugging
+
+### Priority 3: H264EncoderV4L2 on ARM64 (J3)
+- Add ARM64 guard to registration
+- Low priority - H264EncoderNVCodec works
 
 ---
 

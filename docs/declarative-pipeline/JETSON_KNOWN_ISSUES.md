@@ -1,6 +1,6 @@
 # Jetson Platform Known Issues
 
-> Last Updated: 2026-01-15
+> Last Updated: 2026-01-16
 
 This document details known issues specific to the Jetson (ARM64/L4T) platform when using the declarative pipeline system.
 
@@ -16,15 +16,37 @@ This document details known issues specific to the Jetson (ARM64/L4T) platform w
 
 ## Issue J1: libjpeg Version Conflict (L4TM Modules)
 
-### Status: OPEN (Blocker for L4TM modules)
+### Status: ✅ RESOLVED (2026-01-16)
 
-### Severity: High
+### Severity: ~~High~~ Resolved
 
 ### Affected Modules
-- `JPEGEncoderL4TM`
-- `JPEGDecoderL4TM`
+- `JPEGEncoderL4TM` - ✅ Working
+- `JPEGDecoderL4TM` - ✅ Working
 
-### Error Message
+### Resolution
+
+The L4TM modules now work correctly thanks to the `L4TMJpegLoader` dlopen wrapper implementation (`base/src/L4TMJpegLoader.cpp`). This wrapper:
+
+1. Uses `dlopen()` with `RTLD_LOCAL` to load `libnvjpeg.so` in isolation
+2. Uses `dlsym()` to retrieve jpeg function pointers at runtime
+3. Keeps NVIDIA's libjpeg symbols separate from vcpkg's libjpeg-turbo
+
+**Test Status (CI-Linux-ARM64):**
+- 7 L4TM tests PASSING
+- 7 tests disabled with documented reasons (hardware limitations, deprecated patterns)
+
+**Working Tests:**
+- `jpegencoderl4tm_basic`, `basic_scale`, `basic_perf`, `basic_perf_scale`, `basic_width_notmultipleof32_2`
+- `jpegdecoderl4tm_basic`, `jpegdecoderl4tm_rgb`
+
+**Disabled Tests (legitimate reasons):**
+- `jpegdecoderl4tm_mono` - NVIDIA hardware hangs on grayscale images
+- `jpegencoderl4tm_rgb`, `rgb_perf` - Pre-existing NVIDIA RGB encoder crash
+- `jpegencoderl4tm_basic_2`, `basic_width_notmultipleof32`, `basic_width_channels` - Deprecated "metadata after init" pattern
+- `jpegencoderl4tm_basic_width_channels_2` - BGR not supported by L4TM encoder
+
+### Original Error (Historical)
 
 ```
 Wrong JPEG library version: library is 62, caller expects 80
@@ -35,7 +57,7 @@ Or at runtime:
 JPEG parameter struct mismatch: library thinks size is 584, caller expects 680
 ```
 
-### Description
+### Original Description (Historical)
 
 The L4T Multimedia (L4TM) JPEG encoder/decoder modules use NVIDIA's hardware-accelerated JPEG codec via the L4T Multimedia API (`libnvjpeg.so`). This library is dynamically linked against the **system libjpeg** (version 6.2, ABI version 62), which is part of the base Jetson L4T image.
 
@@ -65,102 +87,37 @@ However, ApraPipes is built with **vcpkg's libjpeg-turbo** (version 8.0, ABI ver
 3. When both are loaded in the same process, the version check fails
 4. The struct layouts differ between versions (584 bytes vs 680 bytes)
 
-### Why This Was Never Caught in CI
+### CI Status
 
-All L4TM unit tests in the codebase are **disabled** with Boost.Test's `disabled()` decorator:
+L4TM tests now run in CI-Linux-ARM64:
+- **7 tests enabled and passing**
+- **7 tests disabled** with documented hardware/API limitations
 
-```cpp
-// base/test/jpegencoderl4tm_tests.cpp
-BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic, * boost::unit_test::disabled())
-{
-    // Test code here - never executed
-}
-```
-
-There are **11 disabled tests** for JPEGEncoderL4TM and similar counts for JPEGDecoderL4TM. These tests were likely disabled during initial development when the conflict was first discovered, but the issue was never resolved.
-
-### Affected Examples
-
-The following Jetson JSON examples are blocked by this issue:
+### Jetson JSON Examples
 
 | Example | Status |
 |---------|--------|
-| `examples/jetson/01_jpeg_decode_transform.json` | ❌ Blocked |
-| `examples/jetson/01_test_signal_to_jpeg.json` | ❌ Blocked |
+| `examples/jetson/01_jpeg_decode_transform.json` | ✅ Should work |
+| `examples/jetson/01_test_signal_to_jpeg.json` | ✅ Should work |
 
-### Potential Solutions
+### Solution Implemented: dlopen Wrapper (L4TMJpegLoader)
 
-#### Option A: Use System libjpeg for Entire Build (Not Recommended)
+The implemented solution uses runtime dynamic loading to isolate NVIDIA's libjpeg from vcpkg's libjpeg-turbo:
 
-Configure vcpkg to use system libjpeg instead of libjpeg-turbo.
-
-**Pros:**
-- Simple configuration change
-- Consistent libjpeg version
-
-**Cons:**
-- Loses libjpeg-turbo performance benefits
-- May break other platforms
-- System libjpeg (6.2) is very old
-
-**Implementation:**
-```cmake
-# In arm64-linux-release triplet or vcpkg.json
-# Would require significant vcpkg customization
+```cpp
+// base/src/L4TMJpegLoader.cpp
+void* handle = dlopen("libnvjpeg.so", RTLD_NOW | RTLD_LOCAL);
+// RTLD_LOCAL keeps symbols private to this handle
 ```
 
-#### Option B: Build libjpeg-turbo as Shared Library (Partial Fix)
+This approach:
+- **Pros:** No deployment changes, no LD_PRELOAD needed, works transparently
+- **Cons:** Slightly more complex code, runtime lookup overhead (negligible)
 
-Build libjpeg-turbo as a shared library and ensure it's loaded before system libjpeg.
+### Alternative: JPEGEncoderNVJPEG (CUDA-based)
 
-**Pros:**
-- Maintains libjpeg-turbo performance
-- Standard approach for symbol resolution
+If L4TM modules don't meet your needs, `JPEGEncoderNVJPEG` is also available:
 
-**Cons:**
-- Complex deployment (must ship .so file)
-- LD_PRELOAD or rpath manipulation required
-- May not fully resolve struct layout issues
-
-**Implementation:**
-```cmake
-# In vcpkg triplet
-set(VCPKG_LIBRARY_LINKAGE dynamic)
-```
-
-Then at runtime:
-```bash
-LD_PRELOAD=/path/to/libjpeg.so.62.3.0 ./aprapipes_cli run example.json
-```
-
-#### Option C: Isolate L4TM Modules in Separate Process (Complex)
-
-Run L4TM modules in a separate process that only links against system libjpeg.
-
-**Pros:**
-- Complete isolation
-- No symbol conflicts
-
-**Cons:**
-- Significant architecture change
-- IPC overhead for frame data
-- Complex implementation
-
-#### Option D: Use JPEGEncoderNVJPEG Instead (Recommended Workaround)
-
-Use NVIDIA's nvJPEG library (CUDA-based) instead of L4T Multimedia JPEG.
-
-**Pros:**
-- No libjpeg dependency (uses CUDA directly)
-- Better performance (GPU-accelerated)
-- Already registered in declarative pipeline
-
-**Cons:**
-- Requires CUDA memory (need CudaMemCopy bridges)
-- Different API/quality settings
-- Not a drop-in replacement
-
-**Implementation:**
 ```json
 {
   "modules": {
@@ -172,23 +129,7 @@ Use NVIDIA's nvJPEG library (CUDA-based) instead of L4T Multimedia JPEG.
 }
 ```
 
-#### Option E: Patch L4T Multimedia to Use libjpeg-turbo (Invasive)
-
-Rebuild the L4T Multimedia libraries against libjpeg-turbo.
-
-**Pros:**
-- Proper fix at the source
-
-**Cons:**
-- Requires NVIDIA source code (may not be available)
-- Maintenance burden for each L4T version
-- Complex build process
-
-### Recommended Path Forward
-
-1. **Short-term (Sprint 8):** Document the issue and recommend `JPEGEncoderNVJPEG` as the alternative
-2. **Medium-term:** Investigate Option B (shared libjpeg-turbo with LD_PRELOAD)
-3. **Long-term:** Work with NVIDIA to understand L4TM's libjpeg requirements
+Note: NVJPEG requires CUDA memory, so you'll need `HostCopyCuda` bridges.
 
 ### Related Files
 
@@ -444,11 +385,11 @@ Use `H264EncoderNVCodec` which is registered on ARM64 CUDA builds.
 
 ## Summary Table
 
-| Issue | Module(s) | Severity | Workaround | Fix Complexity |
-|-------|-----------|----------|------------|----------------|
-| J1 | JPEGEncoder/DecoderL4TM | High | Use JPEGEncoderNVJPEG | High |
-| J2 | Node.js Addon | Medium | Use CLI | Medium |
-| J3 | H264EncoderV4L2 | Low | Use H264EncoderNVCodec | Low |
+| Issue | Module(s) | Severity | Status | Notes |
+|-------|-----------|----------|--------|-------|
+| J1 | JPEGEncoder/DecoderL4TM | ~~High~~ | ✅ RESOLVED | dlopen wrapper isolates symbols |
+| J2 | Node.js Addon | Medium | ⚠️ OPEN | Use CLI as workaround |
+| J3 | H264EncoderV4L2 | Low | ⚠️ OPEN | Use H264EncoderNVCodec |
 
 ---
 
