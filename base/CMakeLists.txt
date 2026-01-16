@@ -1228,9 +1228,19 @@ if(BUILD_NODE_ADDON)
                 LINK_FLAGS "-undefined dynamic_lookup"
             )
         elseif(UNIX)
-            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
-                -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} -Wl,--no-whole-archive
-            )
+            # GCC 9.x has stricter RTTI symbol handling - include Boost.Serialization in whole-archive
+            # This fixes "undefined symbol: typeinfo for boost::archive::detail::basic_iserializer" on Jetson
+            # See: docs/declarative-pipeline/JETSON_KNOWN_ISSUES.md -> Issue J2
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+                message(STATUS "GCC ${CMAKE_CXX_COMPILER_VERSION} detected - applying Boost.Serialization whole-archive workaround for Node.js addon (J2 fix)")
+                target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                    -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} ${Boost_SERIALIZATION_LIBRARY} -Wl,--no-whole-archive
+                )
+            else()
+                target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                    -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} -Wl,--no-whole-archive
+                )
+            endif()
         else()
             target_link_libraries(${NODE_ADDON_NAME} PRIVATE
                 ${NODE_ADDON_APRAPIPES_LIB}
