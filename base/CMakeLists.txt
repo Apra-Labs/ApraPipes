@@ -47,6 +47,8 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+	# Set PKG_CONFIG_PATH early so system packages can be found
+	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -103,7 +105,7 @@ ELSEIF(ENABLE_ARM64)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
 	pkg_check_modules(GLFW REQUIRED glfw3)
-	# GIO/GOBJECT needed for GTK-based modules - system versions on ARM64
+	# GIO/GOBJECT needed for GTK dependency resolution (fixes DSO missing error)
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 ENDIF()
