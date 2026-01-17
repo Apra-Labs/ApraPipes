@@ -143,9 +143,9 @@ Note: NVJPEG requires CUDA memory, so you'll need `HostCopyCuda` bridges.
 
 ## Issue J2: Node.js Addon Boost.Serialization Linking
 
-### Status: OPEN (Blocker for Node.js addon on Jetson)
+### Status: ✅ RESOLVED (2026-01-17)
 
-### Severity: Medium (CLI works, only addon affected)
+### Severity: ~~Medium~~ Resolved
 
 ### Error Message
 
@@ -160,7 +160,37 @@ Demangled symbol name:
 typeinfo for boost::archive::detail::basic_iserializer
 ```
 
-### Description
+### Resolution
+
+Added GCC version check in `base/CMakeLists.txt`:
+
+```cmake
+# GCC 9.x has stricter RTTI symbol handling - include Boost.Serialization in whole-archive
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+    message(STATUS "GCC ${CMAKE_CXX_COMPILER_VERSION} detected - applying Boost.Serialization whole-archive workaround")
+    target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+        -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} ${Boost_SERIALIZATION_LIBRARY} -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+        -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} -Wl,--no-whole-archive
+    )
+endif()
+```
+
+**Key Points:**
+- Version-gated to GCC < 10 (not platform-specific)
+- Automatically stops being applied when upgrading to JetPack 6.x (GCC 11+)
+- No impact on other platforms
+
+**Verification (2026-01-17):**
+```bash
+node -e "require('./build/aprapipes.node')"
+SUCCESS: Node addon loaded!
+Methods: [ 'getVersion', 'listModules', 'describeModule', 'validatePipeline', ... ]
+```
+
+### Description (Historical)
 
 The Node.js addon (`aprapipes_node.node`) fails to load on Jetson ARM64 due to missing RTTI (Run-Time Type Information) symbols from Boost.Serialization. The symbol `_ZTIN5boost7archive6detail17basic_iserializerE` is the typeinfo for a class used by Boost.Serialization's archive system.
 
@@ -388,7 +418,7 @@ Use `H264EncoderNVCodec` which is registered on ARM64 CUDA builds.
 | Issue | Module(s) | Severity | Status | Notes |
 |-------|-----------|----------|--------|-------|
 | J1 | JPEGEncoder/DecoderL4TM | ~~High~~ | ✅ RESOLVED | dlopen wrapper isolates symbols |
-| J2 | Node.js Addon | Medium | ⚠️ OPEN | Use CLI as workaround |
+| J2 | Node.js Addon | ~~Medium~~ | ✅ RESOLVED | GCC 9 whole-archive workaround |
 | J3 | H264EncoderV4L2 | Low | ⚠️ OPEN | Use H264EncoderNVCodec |
 
 ---

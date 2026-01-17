@@ -19,7 +19,7 @@
 | Sprint 6 | ✅ Complete | DRY Refactoring |
 | Sprint 7 | ✅ Complete | Auto-Bridging (Memory + Pixel Format) |
 | Sprint 8 | ✅ Complete | Jetson Integration |
-| Sprint 9 | 🔄 In Progress | Node.js Addon on Jetson (J2) |
+| Sprint 9 | ✅ Complete | Node.js Addon on Jetson (J2) |
 
 ---
 
@@ -83,7 +83,7 @@ Sprint 8 is **complete**:
 
 ## Sprint 9: Node.js Addon on Jetson (J2)
 
-> Started: 2026-01-16 | Status: In Progress
+> Started: 2026-01-16 | Completed: 2026-01-17
 
 **Documentation:** [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2
 
@@ -91,42 +91,31 @@ Sprint 8 is **complete**:
 
 Fix the Node.js addon (`aprapipes.node`) to build and load correctly on Jetson ARM64.
 
-### Problem
+### Solution
 
-The addon fails to load due to missing Boost.Serialization RTTI symbols:
-```
-undefined symbol: _ZTIN5boost7archive6detail17basic_iserializerE
-```
+Added GCC version check in `CMakeLists.txt` (Option A):
+- For GCC < 10: Include `Boost_SERIALIZATION_LIBRARY` in `--whole-archive`
+- For GCC 10+: Standard linking (workaround not needed)
 
-### Root Cause
-
-- `--whole-archive` only applies to `aprapipes` library, not Boost libraries
-- GCC 9.4 on Jetson has stricter symbol resolution
-- Typeinfo symbols get discarded during linking
-
-### Potential Solutions
-
-| Option | Description | Complexity |
-|--------|-------------|------------|
-| A | Extend `--whole-archive` to include Boost.Serialization | Low |
-| B | Use `--no-as-needed` for Boost libs | Low |
-| C | Build Boost as shared libraries on ARM64 | Medium |
-| E | Remove Boost.Serialization dependency | High |
+This is version-gated so it automatically stops being applied when upgrading to JetPack 6.x (which has GCC 11+).
 
 ### Phases
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 1 | ⏳ Pending | Try Option A (`--whole-archive` for Boost.Serialization) |
-| Phase 2 | ⏳ Pending | Build and test on Jetson |
-| Phase 3 | ⏳ Pending | Verify CI still passes |
-| Phase 4 | ⏳ Pending | Test Node.js addon with L4TM pipeline |
+| Phase 1 | ✅ Complete | Added GCC 9 workaround in CMakeLists.txt |
+| Phase 2 | ✅ Complete | Build succeeded on Jetson (1h 21m) |
+| Phase 3 | ✅ Complete | CI-Linux-ARM64 passed |
+| Phase 4 | ✅ Complete | Node addon loads and works on Jetson |
 
-### Related Files
+### Outcome
 
-- `base/CMakeLists.txt` - Node addon linking (lines 1213-1245)
-- `base/bindings/node/` - Node.js addon source code
-- `thirdparty/triplets/arm64-linux-release.cmake` - ARM64 vcpkg triplet
+Node.js addon now works on Jetson ARM64:
+```
+node -e "require('./build/aprapipes.node')"
+SUCCESS: Node addon loaded!
+Methods: [ 'getVersion', 'listModules', 'describeModule', 'validatePipeline', ... ]
+```
 
 ---
 

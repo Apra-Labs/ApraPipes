@@ -54,12 +54,12 @@
 | Issue | Status | Notes |
 |-------|--------|-------|
 | J1: libjpeg conflict | ✅ RESOLVED | dlopen wrapper isolates symbols |
-| J2: Node.js linking | ⚠️ Open | Use CLI as workaround |
+| J2: Node.js linking | ✅ RESOLVED | GCC 9 whole-archive workaround |
 | J3: H264EncoderV4L2 | ⚠️ Open | Use H264EncoderNVCodec |
 
 **J1 Resolution:** L4TMJpegLoader uses `dlopen()` with `RTLD_LOCAL` to isolate NVIDIA's libjpeg symbols. 7 tests passing in CI.
 
-**J2 Root Cause:** Boost.Serialization RTTI symbols not exported with `--whole-archive`. GCC 9.4 on Jetson has stricter symbol resolution.
+**J2 Resolution:** Added GCC version check - for GCC < 10, include `Boost_SERIALIZATION_LIBRARY` in `--whole-archive`. Node addon now loads on Jetson.
 
 ### CLI Pipeline Learnings (2026-01-16)
 
@@ -77,22 +77,27 @@ While testing L4TM modules via CLI, we discovered and fixed two issues:
 
 ---
 
-## Sprint 9: Node.js Addon on Jetson (J2)
+## Sprint 9: Node.js Addon on Jetson (J2) - COMPLETE
 
-> Started: 2026-01-16 | Status: In Progress
+> Started: 2026-01-16 | Completed: 2026-01-17
 
 **Goal:** Fix Node.js addon (`aprapipes.node`) to build and load on Jetson ARM64.
 
-**Issue:** Missing Boost.Serialization RTTI symbols during addon load.
+**Solution:** Added GCC version check in `CMakeLists.txt` - for GCC < 10, include `Boost_SERIALIZATION_LIBRARY` in `--whole-archive`.
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 1 | ⏳ Pending | Try `--whole-archive` for Boost.Serialization |
-| Phase 2 | ⏳ Pending | Build and test on Jetson |
-| Phase 3 | ⏳ Pending | Verify CI passes |
-| Phase 4 | ⏳ Pending | Test addon with L4TM pipeline |
+| Phase 1 | ✅ Complete | Added GCC 9 workaround in CMakeLists.txt |
+| Phase 2 | ✅ Complete | Build succeeded on Jetson (1h 21m) |
+| Phase 3 | ✅ Complete | CI-Linux-ARM64 passed |
+| Phase 4 | ✅ Complete | Node addon loads and works on Jetson |
 
-See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2 for details.
+**Verification:**
+```
+node -e "require('./build/aprapipes.node')"
+SUCCESS: Node addon loaded!
+Methods: [ 'getVersion', 'listModules', 'describeModule', ... ]
+```
 
 ---
 
@@ -104,7 +109,7 @@ See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2 for details.
 | Windows | ✅ | ✅ | 37 modules |
 | Linux x64 | ✅ | ✅ | 39 modules (+V4L2) |
 | Linux x64 CUDA | ✅ | ✅ | 52 modules (+15 CUDA) |
-| Jetson ARM64 | ✅ | ❌ | 45+ modules (J2 blocks addon) |
+| Jetson ARM64 | ✅ | ✅ | 45+ modules (J2 fixed!) |
 
 ---
 
@@ -155,11 +160,7 @@ See [JETSON_KNOWN_ISSUES.md](./JETSON_KNOWN_ISSUES.md) → Issue J2 for details.
 
 ## Future Work
 
-### Current: Sprint 9 - Node.js Addon on Jetson (J2)
-- See Sprint 9 section above for phases and status
-- Priority: High
-
-### Priority 2: Display Modules
+### Priority 1: Display Modules
 - Register GtkGlRenderer, ImageViewerModule
 - Note: EglRenderer is already registered for Jetson
 - Low priority - mainly for debugging
