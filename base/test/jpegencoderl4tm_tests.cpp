@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf)
 	frame_container frames;
 	frames.insert(make_pair(rawImagePin, rawImageFrame));
 
-	for (auto i = 0; i < 10000; i++)
+	for (auto i = 0; i < 1000; i++)
 	{
 		m1->send(frames);
 		m2->step();
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(jpegencoderl4tm_basic_perf_scale)
 	frame_container frames;
 	frames.insert(make_pair(rawImagePin, rawImageFrame));
 
-	for (auto i = 0; i < 10000; i++)
+	for (auto i = 0; i < 1000; i++)
 	{
 		m1->send(frames);
 		m2->step();

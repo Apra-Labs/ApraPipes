@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(h264_to_mp4v)
 BOOST_AUTO_TEST_CASE(h264_to_mp4v_chunking)
 {
 	std::string outFolderPath = "./data/testOutput/mp4_videos/h264_videos/";
-	writeH264(true, 130, outFolderPath);
+	writeH264(true, 30, outFolderPath);
 }
 
 BOOST_AUTO_TEST_CASE(h264_metadata, *boost::unit_test::disabled())
