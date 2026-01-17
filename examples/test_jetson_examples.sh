@@ -72,17 +72,17 @@ print_test() {
 
 print_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
 }
 
 print_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
 }
 
 print_skip() {
     echo -e "${YELLOW}[SKIP]${NC} $1"
-    ((SKIPPED_TESTS++))
+    SKIPPED_TESTS=$((SKIPPED_TESTS + 1))
 }
 
 print_info() {
@@ -205,7 +205,7 @@ run_cli_example() {
     local example_name=$(basename "$json_file" .json)
     local duration="${2:-5}"
 
-    ((TOTAL_TESTS++))
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
     print_test "CLI: $example_name"
 
     if [[ ! -f "$json_file" ]]; then
@@ -267,7 +267,6 @@ if [ "$TEST_CLI" = true ]; then
         run_cli_example "$EXAMPLES_DIR/jetson/02_h264_encode_demo.json" 3 || true
     else
         print_skip "H264 encoder not available"
-        ((SKIPPED_TESTS++))
     fi
 fi
 
@@ -279,7 +278,7 @@ run_node_example() {
     local js_file="$1"
     local example_name=$(basename "$js_file" .js)
 
-    ((TOTAL_TESTS++))
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
     print_test "Node: $example_name"
 
     if [[ ! -f "$js_file" ]]; then

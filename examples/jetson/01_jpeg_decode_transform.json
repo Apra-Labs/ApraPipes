@@ -1,48 +1,40 @@
 {
   "pipeline": {
-    "name": "Jetson JPEG Decode and Resize",
-    "description": "Reads JPEG files, decodes using Jetson L4TM hardware, resizes with CPU, and re-encodes"
+    "name": "Jetson L4TM Quality Adjustment",
+    "description": "Reads JPEG files, decodes/re-encodes at different quality using Jetson L4TM hardware codec."
   },
   "modules": {
     "reader": {
       "type": "FileReaderModule",
       "props": {
-        "strFullFileNameWithPattern": "./data/frame_????.jpg",
+        "strFullFileNameWithPattern": "./data/frame.jpg",
         "readLoop": true,
         "maxIndex": 10,
         "outputFrameType": "EncodedImage"
-      }
+      },
+      "comment": "Reads JPEG files"
     },
     "decoder": {
       "type": "JPEGDecoderL4TM",
-      "comment": "Hardware JPEG decoder - outputs HOST memory"
-    },
-    "resize": {
-      "type": "ImageResizeCV",
-      "props": {
-        "width": 320,
-        "height": 240
-      },
-      "comment": "CPU-based resize - works with HOST memory"
+      "comment": "Hardware JPEG decoder (L4TM)"
     },
     "encoder": {
       "type": "JPEGEncoderL4TM",
       "props": {
-        "quality": 90
+        "quality": 70
       },
-      "comment": "Hardware JPEG encoder - inputs HOST memory"
+      "comment": "Re-encode at lower quality (70 vs typical 90)"
     },
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_output/resized_????.jpg"
+        "strFullFileNameWithPattern": "/tmp/jetson_test/q70_????.jpg"
       }
     }
   },
   "connections": [
     { "from": "reader", "to": "decoder" },
-    { "from": "decoder", "to": "resize" },
-    { "from": "resize", "to": "encoder" },
+    { "from": "decoder", "to": "encoder" },
     { "from": "encoder", "to": "writer" }
   ]
 }
