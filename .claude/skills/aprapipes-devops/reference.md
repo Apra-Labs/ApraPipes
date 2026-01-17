@@ -430,6 +430,105 @@ on:
 #     branches: [ main ]
 ```
 
+### Runner Parameter for Container Workflows
+
+**CRITICAL**: When calling `build-test-lin-container.yml` which uses `fromJson(inputs.runner)`, the runner parameter MUST be a JSON-formatted string, not a plain string.
+
+```yaml
+# BAD - plain string causes silent job failure
+runner: ubuntu-22.04
+
+# GOOD - JSON array format
+runner: '["ubuntu-22.04"]'
+
+# GOOD - multiple labels for self-hosted
+runner: '["self-hosted", "Linux", "ARM64"]'
+```
+
+**Symptom:** Job silently doesn't run (not even shown as skipped), dependent jobs fail trying to download non-existent artifacts.
+
+### Cross-Workflow Check Runs
+
+`EnricoMi/publish-unit-test-result-action` creates GitHub check runs that are visible across ALL workflows for the same commit. A check named `Test Results Linux_ARM64` created by CI-Linux-ARM64 will appear in CI-Linux's check list.
+
+**Impact:** When CI-Linux shows "failure" with `Test Results Linux_ARM64` failing, it's actually a failure from CI-Linux-ARM64 workflow, not CI-Linux.
+
+**Solutions:**
+1. Prefix check names with workflow: `CI-Linux: Test Results` vs `CI-ARM64: Test Results`
+2. Use `check_run_annotations` parameter to control visibility
+3. Accept the behavior and check actual workflow run
+
+### Check Run Naming with Prefix
+
+Use `check_prefix` parameter to distinguish check runs from different workflows:
+
+```yaml
+# In publish-test.yml
+check_name: ${{ inputs.check_prefix != '' && format('{0}-Tests', inputs.check_prefix) || format('Test-Results-{0}', inputs.flav) }}
+```
+
+Results:
+- CI-Linux with `check_prefix: CI-Lin` → check name `CI-Lin-Tests`
+- CI-Windows with `check_prefix: CI-Win` → check name `CI-Win-Tests`
+- Fallback (no prefix) → `Test-Results-{flav}`
+
+### Job Naming Convention for Reusable Workflows
+
+When using reusable workflows, job names appear as `{caller-job} / {reusable-job}`. Use short, meaningful names:
+
+**Caller workflow (e.g., CI-Linux.yml):**
+```yaml
+jobs:
+  ci:  # Short top-level name
+    uses: ./.github/workflows/build-test.yml
+    with:
+      check_prefix: CI-Lin  # For check run naming
+```
+
+**Result in UI:**
+```
+ci
+├── build
+├── report
+├── cuda / setup
+├── cuda / gpu-test
+├── cuda / report
+├── docker / build
+└── docker-report
+```
+
+### Test Steps Must Exit 1 on Failure
+
+**CRITICAL**: Test execution steps must parse XML results and exit with code 1 if there are failures. Otherwise workflows show green when tests fail!
+
+```bash
+# BAD - swallows the error, workflow shows green
+./test_exe --log_format=JUNIT --log_sink=results.xml -p -l all || echo 'error'
+
+# GOOD - parse XML and fail on errors/failures
+./test_exe --log_format=JUNIT --log_sink=results.xml -p -l all
+TEST_EXIT=$?
+
+if [ -f "results.xml" ]; then
+  ERRORS=$(grep -oP 'errors="\K[0-9]+' results.xml | head -1)
+  FAILURES=$(grep -oP 'failures="\K[0-9]+' results.xml | head -1)
+  if [ "$ERRORS" -gt 0 ] || [ "$FAILURES" -gt 0 ]; then
+    echo "::error::Tests failed: $FAILURES failures, $ERRORS errors"
+    exit 1
+  fi
+fi
+```
+
+**Important:** Ensure `Upload test results` step has `if: always()` and `report` job has `if: always()` so results are published even when tests fail.
+
+### Verify CI Status Before Accepting
+
+Never trust "all passed" claims without verification:
+
+1. Run `gh run view <id> --json jobs` to see actual job status
+2. Check for jobs that didn't run (missing from list = potential silent failure)
+3. Look at actual test result annotations, not just job conclusions
+
 ### CI Best Practices - Non-Regression Testing
 
 **CRITICAL RULE**: When making build system or devops changes, always validate that you don't regress other platforms.

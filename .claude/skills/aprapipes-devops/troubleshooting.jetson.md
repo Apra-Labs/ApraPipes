@@ -413,6 +413,60 @@ export VCPKG_MAX_CONCURRENCY=4         # Limit parallelism (memory constraints)
 | `dlsym undefined` | Static linking | Add `${CMAKE_DL_LIBS}` |
 | `libpng/png.h not found` | vcpkg path | Create libpng overlay with symlink |
 | `gio-2.0 version mismatch` | pkg-config order | Prepend vcpkg pkgconfig path |
+| `undefined reference to 'gtk_gl_area_get_error'` | GTK3 not linked | Add `${GTK3_LIBRARIES}` to target_link_libraries |
+| `if_h264_encoder_supported undefined` | nv_test_utils.h not available | Don't use NVENC preconditions in ARM64 tests |
+
+---
+
+## Issue J10: GTK3 Must Be Explicitly Linked on ARM64
+
+**Symptom**:
+```
+undefined reference to 'gtk_gl_area_get_error'
+undefined reference to 'gtk_gl_area_new'
+```
+
+**Root Cause**:
+When adding GTK-dependent code to ARM64/Jetson builds, you must explicitly call `pkg_check_modules(GTK3 ...)` AND link the libraries. The CMakeLists.txt may have ARM64-specific include directories but be missing the library linking.
+
+**Fix**:
+```cmake
+# For ARM64/Jetson, need BOTH:
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)  # Define GTK3_LIBRARIES
+target_include_directories(target PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+target_link_libraries(target ${GTK3_LIBRARIES})  # Don't forget this!
+```
+
+**Invariant**: On ARM64, always explicitly link GTK3 libraries - unlike x64, implicit linking may not work.
+
+---
+
+## Issue J11: nv_test_utils.h Not Available for ARM64 Tests
+
+**Symptom**:
+```
+error: 'utf' was not declared in this scope
+error: 'if_h264_encoder_supported' was not declared in this scope
+```
+
+**Root Cause**:
+The `nv_test_utils.h` header (which contains `utf` namespace alias and `if_h264_encoder_supported` precondition) is only included for non-ARM64 builds. NVENC-specific preconditions don't apply on Jetson.
+
+**Bad Code**:
+```cpp
+#ifdef ARM64
+BOOST_AUTO_TEST_CASE(test, *utf::precondition(if_h264_encoder_supported()))  // ERROR!
+#endif
+```
+
+**Good Code**:
+```cpp
+#ifdef ARM64
+BOOST_AUTO_TEST_CASE(test)  // No NVENC precondition for ARM64 tests
+#endif
+```
+
+**Invariant**: Never use `nv_test_utils.h` symbols (like `utf::precondition`, `if_h264_encoder_supported`) inside `#ifdef ARM64` blocks.
 
 ---
 

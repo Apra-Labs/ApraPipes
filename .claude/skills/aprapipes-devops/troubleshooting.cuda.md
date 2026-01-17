@@ -331,13 +331,112 @@ Ensure GPU is accessible:
 
 ---
 
+## Issue C8: ck() Macro Return Value Ignored
+
+**Symptom**:
+```
+Memory access violation at address 0x3f8
+Crash accessing NvDecoder methods after cuCtxCreate
+```
+
+**Root Cause**:
+The `ck()` macro logs errors but does NOT throw exceptions - it returns `false`. If you ignore the return value, execution continues with invalid CUDA state.
+
+**Bad Code**:
+```cpp
+// Continues with invalid cuContext if cuCtxCreate fails
+ck(loader.cuCtxCreate(&cuContext, 0, cuDevice));
+helper.reset(new NvDecoder(cuContext, ...));  // Crash later!
+```
+
+**Good Code**:
+```cpp
+// Throw on failure to prevent invalid state
+if (!ck(loader.cuCtxCreate(&cuContext, 0, cuDevice))) {
+    throw std::runtime_error("cuCtxCreate failed (possibly out of GPU memory)");
+}
+```
+
+**Fix**: Always check `ck()` return value and throw exception on failure.
+
+---
+
+## Issue C9: CUDA Context Memory Leak
+
+**Symptom**:
+```
+CUDA_ERROR_OUT_OF_MEMORY after creating/destroying multiple decoders
+GPU OOM in tests that run late in the test suite
+```
+
+**Root Cause**:
+CUDA contexts consume significant GPU memory. If `cuCtxDestroy()` is not called in destructors, memory accumulates until exhausted.
+
+**Bad Code**:
+```cpp
+NvDecoder::~NvDecoder() {
+    cuvidDestroyVideoParser(m_hParser);
+    cuvidDestroyDecoder(m_hDecoder);
+    // Missing: cuCtxDestroy(m_cuContext)!
+}
+```
+
+**Good Code**:
+```cpp
+NvDecoder::~NvDecoder() {
+    cuvidDestroyVideoParser(m_hParser);
+    cuvidDestroyDecoder(m_hDecoder);
+    if (m_cuContext && loader.cuCtxDestroy) {
+        loader.cuCtxDestroy(m_cuContext);
+        m_cuContext = nullptr;
+    }
+}
+```
+
+**Fix**: Always destroy CUDA contexts in destructors.
+
+---
+
+## Issue C10: GPU OOM from Multiple Context Creation
+
+**Symptom**:
+```
+CUDA_ERROR_OUT_OF_MEMORY when creating contexts
+Tests fail late in test suite (e.g., h264decoder_tests runs last)
+```
+
+**Root Cause**:
+Each `cuCtxCreate` allocates GPU memory. When running many tests sequentially, memory accumulates even with proper destruction due to overlapping lifetimes.
+
+**Bad Code**:
+```cpp
+CUcontext cuContext;
+cuCtxCreate(&cuContext, 0, cuDevice);  // Creates new context each time
+// ... use context ...
+cuCtxDestroy(cuContext);  // Too late if many instances created
+```
+
+**Good Code**:
+```cpp
+CUcontext cuContext;
+cuDevicePrimaryCtxRetain(&cuContext, cuDevice);  // Reference-counted, shared
+m_ownedDevice = cuDevice;  // Store device for release
+// ... use context ...
+cuDevicePrimaryCtxRelease(m_ownedDevice);  // Just decrements refcount
+```
+
+**Fix**: Use primary context API (`cuDevicePrimaryCtxRetain/Release`) instead of `cuCtxCreate/Destroy`. This matches the pattern in `ApraCUcontext` in `CudaCommon.h`.
+
+**Fixed File**: `H264DecoderNvCodecHelper.cpp`
+
+---
+
 ## To Be Expanded
 
 This guide will be expanded as CUDA-specific issues are encountered:
 - OpenCV CUDA build flags and architecture configuration
 - Whisper CUDA compilation issues
 - CUDA compute capability troubleshooting
-- GPU memory issues and profiling
 - Multi-GPU configurations
 - CUDA version upgrade procedures
 

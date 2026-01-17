@@ -423,6 +423,65 @@ Use `H264EncoderNVCodec` which is registered on ARM64 CUDA builds.
 
 ---
 
+## Jetson Device Development Rules
+
+When working on the Jetson device (ssh to self-hosted runner), follow these **critical rules**:
+
+### Protected Directories
+
+| Path | Purpose | Action |
+|------|---------|--------|
+| `/data/action-runner/` | GitHub Actions runner | **NEVER modify** |
+| `/data/.cache/` | vcpkg cache shared with CI | **NEVER delete en-masse** |
+| `/data/ws/` | Development workspace | Use for all development work |
+
+### Workspace Layout
+
+```
+/data/ws/ApraPipes/          # Main workspace (NVMe)
+├── _build/                  # Build directory
+├── base/                    # Source code
+└── vcpkg/                   # vcpkg submodule
+
+/data/.cache/                # Shared cache (DO NOT DELETE)
+├── vcpkg_installed/         # vcpkg packages
+└── tmp/                     # Temp for builds (TMPDIR)
+
+/data/action-runner/         # GitHub Actions (DO NOT TOUCH)
+├── _work/                   # Workflow workspace
+└── ...
+```
+
+### CI Workflow Conflicts
+
+**Before pushing changes** that will trigger CI-Linux-ARM64:
+- Disable CI-Linux-ARM64.yml first (add to `branches-ignore` or disable workflow)
+- Push your changes and test locally
+- Re-enable CI-Linux-ARM64.yml when ready
+
+**Why:** Development work and CI runs compete for the same hardware resources. Running both concurrently can cause OOM kills or unexpected failures.
+
+### Build Commands
+
+```bash
+ssh akhil@192.168.1.18
+cd /data/ws/ApraPipes
+
+# Configure
+cmake -B _build -S base \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_ARM64=ON \
+  -DENABLE_CUDA=ON
+
+# Build (use -j2 to avoid OOM on 8GB Jetson)
+TMPDIR=/data/.cache/tmp cmake --build _build -j2
+
+# Test
+./_build/aprapipesut --run_test="ModuleRegistryTests/*" --log_level=test_suite
+```
+
+---
+
 ## References
 
 - [Boost.Serialization Documentation](https://www.boost.org/doc/libs/release/libs/serialization/)
