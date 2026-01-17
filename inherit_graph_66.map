@@ -1,3 +1,17 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classGaussianBlur_1_1Detail.html" title=" " alt="" coords="5,5,144,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,122,141,162"/>
+<area shape="rect" id="Node000001" href="$classFrame.html" title=" " alt="" coords="189,129,247,155"/>
+<area shape="poly" id="edge6_Node000000_Node000001" title=" " alt="" coords="156,140,188,140,188,145,156,145"/>
+<area shape="rect" id="Node000002" href="$classEmptyFrame.html" title=" " alt="" coords="303,5,397,31"/>
+<area shape="poly" id="edge7_Node000001_Node000002" title=" " alt="" coords="232,114,258,77,293,40,311,29,313,34,297,44,262,80,236,117"/>
+<area shape="rect" id="Node000003" href="$classEoPFrame.html" title=" " alt="" coords="309,55,391,80"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="248,118,294,89,315,78,318,83,296,94,251,122"/>
+<area shape="rect" id="Node000004" href="$classEoSFrame.html" title=" " alt="" coords="309,104,391,130"/>
+<area shape="poly" id="edge9_Node000001_Node000004" title=" " alt="" coords="262,131,308,122,309,127,263,136"/>
+<area shape="rect" id="Node000005" href="$classExtFrame.html" title=" " alt="" coords="312,153,388,179"/>
+<area shape="poly" id="edge10_Node000001_Node000005" title=" " alt="" coords="263,148,312,157,311,162,262,153"/>
+<area shape="rect" id="Node000006" href="$classExternalFrame.html" title=" " alt="" coords="298,203,402,228"/>
+<area shape="poly" id="edge11_Node000001_Node000006" title=" " alt="" coords="252,162,296,189,318,200,315,204,294,194,249,166"/>
+<area shape="rect" id="Node000007" href="$classMp4ErrorFrame.html" title=" " alt="" coords="295,252,405,278"/>
+<area shape="poly" id="edge12_Node000001_Node000007" title=" " alt="" coords="236,167,262,203,297,239,313,249,311,254,293,243,258,207,232,170"/>
 </map>

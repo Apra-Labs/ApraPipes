@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['nvtransformfilter_0',['NvTransformFilter',['../classNvTransformProps.html#aca5f816c4838d320100f9bf474eef8ae',1,'NvTransformProps']]]
+  ['level_0',['Level',['../structapra_1_1Issue.html#ada71b0edb3e711415fd44abe6e90838f',1,'apra::Issue']]]
 ];

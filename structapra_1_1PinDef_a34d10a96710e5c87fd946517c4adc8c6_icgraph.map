@@ -1,0 +1,13 @@
+<map id="apra::PinDef::withImageType" name="apra::PinDef::withImageType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="486,55,671,81"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1PinDef.html#ab3a77717c2f52bc5b369544bf76b663b" title=" " alt="" coords="246,30,438,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="470,59,438,55,439,50,471,54"/>
+<area shape="rect" id="Node000003" href="$structapra_1_1PinDef.html#a3f7436c0b6d6208a35ffb3f948cb0bd0" title=" " alt="" coords="5,6,198,31"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="534,51,488,33,437,20,376,12,313,9,198,12,198,6,313,3,377,7,439,14,490,28,536,46"/>
+<area shape="rect" id="Node000004" href="$structapra_1_1PinDef.html#a0c945cf80c430ee0e186f12370b0c69f" title=" " alt="" coords="5,55,198,81"/>
+<area shape="poly" id="edge6_Node000001_Node000004" title=" " alt="" coords="471,70,198,70,198,65,471,65"/>
+<area shape="rect" id="Node000005" href="$structapra_1_1PinDef.html#a7ebe0a5dbdc6b0d1a2d8028867fa667b" title=" " alt="" coords="246,131,438,157"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="523,88,385,133,384,128,521,83"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="230,34,198,31,198,25,230,29"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="230,57,198,60,198,55,230,52"/>
+</map>

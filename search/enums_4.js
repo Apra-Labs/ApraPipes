@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['h264_5fnal_5ftype_0',['H264_NAL_TYPE',['../classH264Utils.html#a8d315c1620520e9318d923fea0b152ea',1,'H264Utils']]],
-  ['h264codecprofile_1',['H264CodecProfile',['../classH264EncoderNVCodecProps.html#adfdda947cb7df1ae8b2923b6cf4dc494',1,'H264EncoderNVCodecProps']]]
+  ['facedetectionmodeltype_0',['FaceDetectionModelType',['../classFacialLandmarkCVProps.html#a6e83f19d047939409098b31045f0da10',1,'FacialLandmarkCVProps']]],
+  ['findexstrategytype_1',['FIndexStrategyType',['../classFIndexStrategy.html#a63f3a40dcad58ebefcba897420cfc867',1,'FIndexStrategy']]],
+  ['framefetchstrategy_2',['FrameFetchStrategy',['../classModuleProps.html#abecc900a400242d2d91ecd7896c03992',1,'ModuleProps']]],
+  ['frametype_3',['FrameType',['../classFrameMetadata.html#af324c09818d5965791464a2b687c95ab',1,'FrameMetadata']]]
 ];

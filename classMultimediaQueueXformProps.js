@@ -1,7 +1,8 @@
 var classMultimediaQueueXformProps =
 [
-    [ "MultimediaQueueXformProps", "classMultimediaQueueXformProps.html#aa7edeb9f9b0d49a3768e57144f3213f3", null ],
     [ "MultimediaQueueXformProps", "classMultimediaQueueXformProps.html#a4b449806768b1ceeaedc1fbc7b10f5e2", null ],
+    [ "applyProperties", "classMultimediaQueueXformProps.html#a758326b9100e4065145ccc5079410258", null ],
+    [ "getProperty", "classMultimediaQueueXformProps.html#adf05b2793102a289eb9efff9fe00a333", null ],
     [ "getSerializeSize", "classMultimediaQueueXformProps.html#afa641d1bab9a217b25a0e6797b90b259", null ],
     [ "serialize", "classMultimediaQueueXformProps.html#a1f68b5cb0dacf4c3afed73c099b38cd4", null ],
     [ "boost::serialization::access", "classMultimediaQueueXformProps.html#ac98d07dd8f7b70e16ccb9a01abf56b9c", null ],

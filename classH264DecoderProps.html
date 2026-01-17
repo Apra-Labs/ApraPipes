@@ -102,6 +102,7 @@ $(function(){initNavTree('classH264DecoderProps.html',''); initResizable(true); 
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classH264DecoderProps-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">H264DecoderProps Class Reference</div></div>
@@ -114,9 +115,9 @@ Inheritance diagram for H264DecoderProps:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264DecoderProps__inherit__graph.png" border="0" usemap="#aH264DecoderProps_inherit__map" alt="Inheritance graph"/></div>
 <map name="aH264DecoderProps_inherit__map" id="aH264DecoderProps_inherit__map">
-<area shape="rect" title=" " alt="" coords="22,465,167,552"/>
+<area shape="rect" title=" " alt="" coords="22,465,167,572"/>
 <area shape="rect" href="classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
-<area shape="poly" title=" " alt="" coords="97,432,97,466,92,466,92,432"/>
+<area shape="poly" title=" " alt="" coords="97,433,97,466,92,466,92,433"/>
 </map>
 </div>
 <div class="dynheader">
@@ -124,9 +125,9 @@ Collaboration diagram for H264DecoderProps:</div>
 <div class="dyncontent">
 <div class="center"><img src="classH264DecoderProps__coll__graph.png" border="0" usemap="#aH264DecoderProps_coll__map" alt="Collaboration graph"/></div>
 <map name="aH264DecoderProps_coll__map" id="aH264DecoderProps_coll__map">
-<area shape="rect" title=" " alt="" coords="22,465,167,552"/>
+<area shape="rect" title=" " alt="" coords="22,465,167,572"/>
 <area shape="rect" href="classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
-<area shape="poly" title=" " alt="" coords="97,432,97,466,92,466,92,432"/>
+<area shape="poly" title=" " alt="" coords="97,433,97,466,92,466,92,433"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -147,6 +148,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abeeb326cbaa62a2e4b7cda05ff0b8bf5 inherit pub_methods_classModuleProps"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf0671a8cbb73c83a9694db0a059e5ab inherit pub_methods_classModuleProps" id="r_abf0671a8cbb73c83a9694db0a059e5ab"><td class="memItemLeft" align="right" valign="top">virtual size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModuleProps.html#abf0671a8cbb73c83a9694db0a059e5ab">getSerializeSize</a> ()</td></tr>
 <tr class="separator:abf0671a8cbb73c83a9694db0a059e5ab inherit pub_methods_classModuleProps"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a791358e7de82849277c6db7a93a7692c" id="r_a791358e7de82849277c6db7a93a7692c"><td class="memTemplParams" colspan="2">template&lt;typename PropsT &gt; </td></tr>
+<tr class="memitem:a791358e7de82849277c6db7a93a7692c"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a791358e7de82849277c6db7a93a7692c">applyProperties</a> (PropsT &amp;props, const std::map&lt; std::string, <a class="el" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a> &gt; &amp;values, std::vector&lt; std::string &gt; &amp;missingRequired)</td></tr>
+<tr class="separator:a791358e7de82849277c6db7a93a7692c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -218,6 +225,53 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a791358e7de82849277c6db7a93a7692c" name="a791358e7de82849277c6db7a93a7692c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a791358e7de82849277c6db7a93a7692c">&#9670;&#160;</a></span>applyProperties()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename PropsT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void H264DecoderProps::applyProperties </td>
+          <td>(</td>
+          <td class="paramtype">PropsT &amp;</td>          <td class="paramname"><span class="paramname"><em>props</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; std::string, <a class="el" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>values</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>missingRequired</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classH264DecoderProps_a791358e7de82849277c6db7a93a7692c_cgraph.png" border="0" usemap="#aclassH264DecoderProps_a791358e7de82849277c6db7a93a7692c_cgraph" alt=""/></div>
+<map name="aclassH264DecoderProps_a791358e7de82849277c6db7a93a7692c_cgraph" id="aclassH264DecoderProps_a791358e7de82849277c6db7a93a7692c_cgraph">
+<area shape="rect" title=" " alt="" coords="5,5,235,31"/>
+<area shape="rect" href="namespaceapra.html#a8ba802c11726758be243bade4527b538" title=" " alt="" coords="283,5,392,31"/>
+<area shape="poly" title=" " alt="" coords="235,16,267,16,267,21,235,21"/>
+</map>
+</div>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a9e4f43497ebc93c14c00e07d53033eab" name="a9e4f43497ebc93c14c00e07d53033eab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9e4f43497ebc93c14c00e07d53033eab">&#9670;&#160;</a></span>lowerWaterMark</h2>
@@ -255,7 +309,7 @@ Additional Inherited Members</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="classH264DecoderProps.html">H264DecoderProps</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 669df2a</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: b9db9d8</a></li>
     </ul>
   </div>
   </body>

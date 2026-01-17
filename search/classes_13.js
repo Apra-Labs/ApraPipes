@@ -11,5 +11,6 @@ var searchData=
   ['state_8',['State',['../structState.html',1,'']]],
   ['statsink_9',['StatSink',['../classStatSink.html',1,'']]],
   ['statsinkprops_10',['StatSinkProps',['../classStatSinkProps.html',1,'']]],
-  ['stepcommand_11',['StepCommand',['../classStepCommand.html',1,'']]]
+  ['stepcommand_11',['StepCommand',['../classStepCommand.html',1,'']]],
+  ['suggestion_12',['Suggestion',['../structapra_1_1Suggestion.html',1,'apra']]]
 ];

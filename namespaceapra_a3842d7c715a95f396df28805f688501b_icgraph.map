@@ -1,0 +1,9 @@
+<map id="apra::ensureBuiltinModulesRegistered" name="apra::ensureBuiltinModulesRegistered">
+<area shape="rect" id="Node000001" title=" " alt="" coords="244,63,420,103"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1ModuleFactory.html#a8220a54d0b93e218288083a9d9588ac8" title=" " alt="" coords="32,5,169,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,61,169,45,170,40,233,56"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1JsonParser.html#ae8c7300d84794f472821e1b36a424911" title=" " alt="" coords="12,70,189,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,86,190,86,190,80,228,80"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1JsonParser.html#a2e0d4630c06bc78cff891610a112f9ba" title=" " alt="" coords="5,120,196,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="230,108,165,121,164,116,228,102"/>
+</map>

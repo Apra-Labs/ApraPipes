@@ -1,0 +1,19 @@
+<map id="apra::ModuleFactory::insertBridgeModules" name="apra::ModuleFactory::insertBridgeModules">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,108,151,149"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1ModuleFactory.html#aac1e65056cd99d667d042c195f23a7b6" title=" " alt="" coords="199,51,336,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,105,183,94,185,99,148,111"/>
+<area shape="rect" id="Node000003" href="$structapra_1_1Issue.html#aef9e5b2ba55d09adb42ec984a67a3981" title=" " alt="" coords="408,5,524,31"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="98,106,141,69,168,51,198,37,247,23,298,14,392,11,393,16,299,20,248,28,200,42,171,56,144,73,101,110"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1ModuleRegistry.html#af5e31c26b3abbb480d13ebddf08884ab" title=" " alt="" coords="396,108,537,149"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="151,126,380,126,380,132,151,132"/>
+<area shape="rect" id="Node000006" href="$structapra_1_1Issue.html#a89ef2cf14fd7a7488b691cb924445627" title=" " alt="" coords="212,167,323,192"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="152,146,203,160,201,165,150,151"/>
+<area shape="rect" id="Node000007" href="$classapra_1_1ModuleFactory.html#aa5d4f0c673edba3cc41abce3e2823609" title=" " alt="" coords="199,216,336,257"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="111,147,200,203,208,207,205,211,197,207,108,152"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="335,51,400,33,402,38,337,56"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="337,89,381,102,380,107,335,94"/>
+<area shape="rect" id="Node000005" href="$structapra_1_1Issue.html#a6ede84e21b9bc1e0b1a8149811cee16f" title=" " alt="" coords="398,59,534,84"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="336,69,383,69,383,74,336,74"/>
+<area shape="rect" id="Node000008" href="$namespaceapra.html#af997f9e8bac7cc661d248ec6cab6e7d7" title=" " alt="" coords="384,224,548,250"/>
+<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="336,234,368,234,368,240,336,240"/>
+</map>

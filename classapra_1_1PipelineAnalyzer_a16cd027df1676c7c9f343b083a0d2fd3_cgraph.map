@@ -1,0 +1,11 @@
+<map id="apra::PipelineAnalyzer::buildConnectionInfoList" name="apra::PipelineAnalyzer::buildConnectionInfoList">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,104,169,145"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1PipelineAnalyzer.html#a0d50b0aaed4c38a449c48b427c42bd0c" title=" " alt="" coords="225,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,101,216,57,230,50,232,55,218,61,128,106"/>
+<area shape="rect" id="Node000003" href="$structapra_1_1PipelineDescription.html#aadd7ae1371ec835a0ede6e79668d7924" title=" " alt="" coords="217,71,380,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,109,201,104,202,109,169,114"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1PipelineAnalyzer.html#a1647e30d2bd171afd6dcc40bb99ddc99" title=" " alt="" coords="225,136,372,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="169,134,210,140,209,146,169,139"/>
+<area shape="rect" id="Node000005" href="$classapra_1_1ModuleRegistry.html#a1befd2952f7d9a90972fb716ab6e74c0" title=" " alt="" coords="228,201,369,242"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="130,143,218,186,232,192,230,197,216,191,127,148"/>
+</map>

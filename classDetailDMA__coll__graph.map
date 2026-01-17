@@ -1,11 +1,11 @@
 <map id="DetailDMA" name="DetailDMA">
-<area shape="rect" id="Node000001" title=" " alt="" coords="47,1397,141,1483"/>
-<area shape="rect" id="Node000002" href="$classDetailGPU.html" title=" " alt="" coords="23,1220,165,1347"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,1362,97,1397,92,1397,92,1362"/>
-<area shape="rect" id="Node000003" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="11,738,178,1171"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,1186,97,1221,92,1221,92,1186"/>
-<area shape="rect" id="Node000004" href="$classAffineTransformProps.html" title=" " alt="" coords="16,467,173,675"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="97,675,97,722,92,722,92,675"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="47,1458,141,1544"/>
+<area shape="rect" id="Node000002" href="$classDetailGPU.html" title=" " alt="" coords="23,1281,165,1408"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,1423,97,1458,92,1458,92,1423"/>
+<area shape="rect" id="Node000003" href="$classDetailMemoryAbstract.html" title=" " alt="" coords="11,799,178,1232"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,1247,97,1282,92,1282,92,1247"/>
+<area shape="rect" id="Node000004" href="$classAffineTransformProps.html" title=" " alt="" coords="16,467,173,736"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="97,736,97,782,92,782,92,736"/>
 <area shape="rect" id="Node000005" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

@@ -1,0 +1,9 @@
+<map id="apra::ModuleFactory::createModule" name="apra::ModuleFactory::createModule">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,143,96"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1Issue.html#aef9e5b2ba55d09adb42ec984a67a3981" title=" " alt="" coords="203,5,320,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,52,201,34,203,39,143,57"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1ModuleRegistry.html#af5e31c26b3abbb480d13ebddf08884ab" title=" " alt="" coords="191,55,332,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="143,73,175,73,175,78,143,78"/>
+<area shape="rect" id="Node000004" href="$structapra_1_1Issue.html#a6ede84e21b9bc1e0b1a8149811cee16f" title=" " alt="" coords="194,120,329,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="143,94,203,112,201,117,142,99"/>
+</map>

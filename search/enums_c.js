@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['transformtype_0',['TransformType',['../classAffineTransformProps.html#a3b6b780a48d94f82cbc8f528a937945f',1,'AffineTransformProps']]]
+  ['quepushstrategytype_0',['QuePushStrategyType',['../classQuePushStrategy.html#aa52a7d2892cca56382e1ec93c836d360',1,'QuePushStrategy']]]
 ];

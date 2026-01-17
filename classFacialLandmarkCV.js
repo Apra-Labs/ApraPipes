@@ -15,6 +15,6 @@ var classFacialLandmarkCV =
     [ "validateInputPins", "classFacialLandmarkCV.html#a1fa39e9b88b6569939248d1dcb6c20ca", null ],
     [ "validateOutputPins", "classFacialLandmarkCV.html#aa41816347200ba2e6e873fd7b0bad43c", null ],
     [ "mDetail", "classFacialLandmarkCV.html#a03ba80bc9958d87a8f3a7ec84e47600d", null ],
-    [ "mOutputPinId1", "classFacialLandmarkCV.html#a3d54b82e09231b2f3f96984353d68d20", null ],
+    [ "mOutputPinId", "classFacialLandmarkCV.html#a20879178dd0a1039fd40f8d92d46849f", null ],
     [ "mProp", "classFacialLandmarkCV.html#a896e7b1235d458dae4bb1bb7ff8393c0", null ]
 ];

@@ -15,5 +15,9 @@ var classColorConversionProps =
     ] ],
     [ "ColorConversionProps", "classColorConversionProps.html#a6942e0ff6b3064cecc2f899babce7dc6", null ],
     [ "ColorConversionProps", "classColorConversionProps.html#add87ef42f0fbf5cb3ec1cc78b3320a52", null ],
+    [ "applyProperties", "classColorConversionProps.html#a9c99d8558b724d4f89ad11197a1c7c04", null ],
+    [ "dynamicPropertyNames", "classColorConversionProps.html#aca1b6d9f734fb8a23b43f1a4da5d3c4b", null ],
+    [ "getProperty", "classColorConversionProps.html#a008d67b317d71d7548595adf14814890", null ],
+    [ "setProperty", "classColorConversionProps.html#a64b0f35d7339ed24c15226da12dbcb43", null ],
     [ "type", "classColorConversionProps.html#a22d41f95f89b52b12a25980b2d778d0b", null ]
 ];

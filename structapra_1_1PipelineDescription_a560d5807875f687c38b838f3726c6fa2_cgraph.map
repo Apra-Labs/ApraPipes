@@ -1,0 +1,7 @@
+<map id="apra::PipelineDescription::addConnection" name="apra::PipelineDescription::addConnection">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,169,64"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1Connection.html#a8bf6c08818907fcaa40f811d5ce0a4ef" title=" " alt="" coords="217,5,379,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,31,201,27,201,32,169,36"/>
+<area shape="rect" id="Node000003" href="$structapra_1_1Connection.html#ab3b55ff5baaaa62793742c24cfe82c3f" title=" " alt="" coords="220,55,376,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,50,205,54,204,60,169,55"/>
+</map>

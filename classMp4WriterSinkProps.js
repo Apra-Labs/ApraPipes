@@ -2,8 +2,12 @@ var classMp4WriterSinkProps =
 [
     [ "Mp4WriterSinkProps", "classMp4WriterSinkProps.html#ae9a283499a7bf8072d492a7a05f02d59", null ],
     [ "Mp4WriterSinkProps", "classMp4WriterSinkProps.html#a1312239d0e334be759e6eff8bf36a4e8", null ],
+    [ "applyProperties", "classMp4WriterSinkProps.html#a459d9f49e70b9c1717728457ebc82ae9", null ],
+    [ "dynamicPropertyNames", "classMp4WriterSinkProps.html#a0c147e5cc1811c66e2cd39e42d4fea08", null ],
+    [ "getProperty", "classMp4WriterSinkProps.html#afe26be32754a88e4100a8af7865a67d0", null ],
     [ "getSerializeSize", "classMp4WriterSinkProps.html#a191971e76f93aa5e6980b5bc3732af64", null ],
     [ "serialize", "classMp4WriterSinkProps.html#a35fc5f5bdd59c6dc5cea3608b7478c38", null ],
+    [ "setProperty", "classMp4WriterSinkProps.html#a3fa715d66223ff00262373b923718951", null ],
     [ "boost::serialization::access", "classMp4WriterSinkProps.html#ac98d07dd8f7b70e16ccb9a01abf56b9c", null ],
     [ "baseFolder", "classMp4WriterSinkProps.html#afa95971fce285ce71b96e2b244c437c5", null ],
     [ "chunkTime", "classMp4WriterSinkProps.html#af7aaea550d493c661730004393af051e", null ],

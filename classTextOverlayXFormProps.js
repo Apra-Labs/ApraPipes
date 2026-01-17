@@ -1,8 +1,13 @@
 var classTextOverlayXFormProps =
 [
     [ "TextOverlayXFormProps", "classTextOverlayXFormProps.html#aa16a4a30c5262c9b1f1f7337e05607f4", null ],
+    [ "TextOverlayXFormProps", "classTextOverlayXFormProps.html#a89f9234d84f503a325b1bf36f149bf1f", null ],
+    [ "applyProperties", "classTextOverlayXFormProps.html#a80575c49425a553af553c688f1fc0b78", null ],
+    [ "dynamicPropertyNames", "classTextOverlayXFormProps.html#a636911c7b6cd99ef371678a6003ed7dd", null ],
+    [ "getProperty", "classTextOverlayXFormProps.html#af4c4f2238339ff9ca038bed517711897", null ],
     [ "getSerializeSize", "classTextOverlayXFormProps.html#a4698c40af9d542153bc91e52df6acd12", null ],
     [ "serialize", "classTextOverlayXFormProps.html#a9687995fc9c77bac471bb5de291345b4", null ],
+    [ "setProperty", "classTextOverlayXFormProps.html#aefe41eb08d0cfbc9b3dd80de1133f278", null ],
     [ "boost::serialization::access", "classTextOverlayXFormProps.html#ac98d07dd8f7b70e16ccb9a01abf56b9c", null ],
     [ "alpha", "classTextOverlayXFormProps.html#a5dcb615b6f059c90efd7cee56753e7a1", null ],
     [ "backgroundColor", "classTextOverlayXFormProps.html#aec218bc2388dc82415cf63175988c02e", null ],

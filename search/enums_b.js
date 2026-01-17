@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['state_0',['STATE',['../classH264FrameDemuxer.html#a0db03e42a24c17cf794ca5d14a5db834',1,'H264FrameDemuxer']]],
-  ['statetype_1',['StateType',['../structState.html#a50d35fcb67f5c9ff4ac2b4d80f2923fd',1,'State']]],
-  ['strategy_2',['Strategy',['../classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9',1,'FramesMuxerProps']]]
+  ['pipelinestatus_0',['PipelineStatus',['../classPipeLine.html#a4b0880e1bb771c63f66b07d18d281795',1,'PipeLine']]],
+  ['pushtype_1',['PushType',['../classFrameContainerQueueAdapter.html#af2b16bda42cda27e8561f3285d198be9',1,'FrameContainerQueueAdapter']]]
 ];

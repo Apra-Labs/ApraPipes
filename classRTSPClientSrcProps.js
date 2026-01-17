@@ -2,8 +2,12 @@ var classRTSPClientSrcProps =
 [
     [ "RTSPClientSrcProps", "classRTSPClientSrcProps.html#aaddd2fc8040c40d95790fdfd18d29986", null ],
     [ "RTSPClientSrcProps", "classRTSPClientSrcProps.html#a6930d6d39a1b1efb2fecae985df55ee3", null ],
+    [ "applyProperties", "classRTSPClientSrcProps.html#a0e764a570d8f077798cd1094588d0e03", null ],
+    [ "dynamicPropertyNames", "classRTSPClientSrcProps.html#aeb898e82ce709a79263406febb43dfc3", null ],
+    [ "getProperty", "classRTSPClientSrcProps.html#ad88775c9863d5af38450ff88244b3489", null ],
     [ "getSerializeSize", "classRTSPClientSrcProps.html#ad33e7608f7020d311d9dbb0cf0022eaa", null ],
     [ "serialize", "classRTSPClientSrcProps.html#a33d230e55c6b1bd9be51bdf5a645d7e0", null ],
+    [ "setProperty", "classRTSPClientSrcProps.html#a9f7e72a2f722e8c327d3f68308fedaf2", null ],
     [ "boost::serialization::access", "classRTSPClientSrcProps.html#ac98d07dd8f7b70e16ccb9a01abf56b9c", null ],
     [ "password", "classRTSPClientSrcProps.html#a99d9d1aeb8298ed15a3d1d2259355477", null ],
     [ "rtspURL", "classRTSPClientSrcProps.html#ad7f51e7c4c20f09ba87717da612ead8f", null ],

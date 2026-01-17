@@ -1,10 +1,23 @@
 var searchData=
 [
   ['pacemaker_0',['PaceMaker',['../classPaceMaker.html',1,'']]],
-  ['pauseplaymetadata_1',['PausePlayMetadata',['../classPausePlayMetadata.html',1,'']]],
-  ['pipeline_2',['PipeLine',['../classPipeLine.html',1,'']]],
-  ['playpausecommand_3',['PlayPauseCommand',['../classPlayPauseCommand.html',1,'']]],
-  ['profiler_4',['Profiler',['../classModule_1_1Profiler.html',1,'Module']]],
-  ['program_5',['program',['../structprogram.html',1,'']]],
-  ['propschangemetadata_6',['PropsChangeMetadata',['../classPropsChangeMetadata.html',1,'']]]
+  ['parseresult_1',['ParseResult',['../structapra_1_1ParseResult.html',1,'apra']]],
+  ['pauseplaymetadata_2',['PausePlayMetadata',['../classPausePlayMetadata.html',1,'']]],
+  ['pindef_3',['PinDef',['../structapra_1_1PinDef.html',1,'apra']]],
+  ['pininfo_4',['PinInfo',['../structapra_1_1ModuleInfo_1_1PinInfo.html',1,'apra::ModuleInfo']]],
+  ['pipeline_5',['PipeLine',['../classPipeLine.html',1,'']]],
+  ['pipelineanalyzer_6',['PipelineAnalyzer',['../classapra_1_1PipelineAnalyzer.html',1,'apra']]],
+  ['pipelinedescription_7',['PipelineDescription',['../structapra_1_1PipelineDescription.html',1,'apra']]],
+  ['pipelinesettings_8',['PipelineSettings',['../structapra_1_1PipelineSettings.html',1,'apra']]],
+  ['pipelinevalidator_9',['PipelineValidator',['../classapra_1_1PipelineValidator.html',1,'apra']]],
+  ['playpausecommand_10',['PlayPauseCommand',['../classPlayPauseCommand.html',1,'']]],
+  ['profiler_11',['Profiler',['../classModule_1_1Profiler.html',1,'Module']]],
+  ['program_12',['program',['../structprogram.html',1,'']]],
+  ['propdef_13',['PropDef',['../structapra_1_1PropDef.html',1,'apra']]],
+  ['propertyaccessors_14',['PropertyAccessors',['../structapra_1_1ModuleInfo_1_1PropertyAccessors.html',1,'apra::ModuleInfo']]],
+  ['propertyinfo_15',['PropertyInfo',['../structapra_1_1PropertyInfo.html',1,'apra']]],
+  ['propertyvalidator_16',['PropertyValidator',['../classapra_1_1PropertyValidator.html',1,'apra']]],
+  ['propertyvalidatorregistry_17',['PropertyValidatorRegistry',['../classapra_1_1PropertyValidatorRegistry.html',1,'apra']]],
+  ['propinfo_18',['PropInfo',['../structapra_1_1ModuleInfo_1_1PropInfo.html',1,'apra::ModuleInfo']]],
+  ['propschangemetadata_19',['PropsChangeMetadata',['../classPropsChangeMetadata.html',1,'']]]
 ];

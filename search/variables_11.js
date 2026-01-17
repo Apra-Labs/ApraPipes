@@ -9,6 +9,7 @@ var searchData=
   ['quesize_6',['queSize',['../classModule_1_1Profiler.html#a5a57a4e114bf8c654e4b42f07f283a2b',1,'Module::Profiler']]],
   ['queue_5fcond_7',['queue_cond',['../structh264DecoderV4L2Helper_1_1context__t.html#a13dbfc8c35e4dd339606c045c3f604b5',1,'h264DecoderV4L2Helper::context_t']]],
   ['queue_5flock_8',['queue_lock',['../structh264DecoderV4L2Helper_1_1context__t.html#a462acaf4c9b3c6f74c6cb751558b3cf7',1,'h264DecoderV4L2Helper::context_t']]],
-  ['queuemutex_9',['queueMutex',['../classGtkGlRenderer.html#a0a9dc15e2759367582c4c5d46a3345e5',1,'GtkGlRenderer']]],
-  ['queueobject_10',['queueObject',['../structState.html#a60dc6898636ce32d40477ec46140f081',1,'State']]]
+  ['queue_5fsize_9',['queue_size',['../structapra_1_1PipelineSettings.html#ae1ec34cd99e4f1e10a4e6feabb8864db',1,'apra::PipelineSettings']]],
+  ['queuemutex_10',['queueMutex',['../classGtkGlRenderer.html#a0a9dc15e2759367582c4c5d46a3345e5',1,'GtkGlRenderer']]],
+  ['queueobject_11',['queueObject',['../structState.html#a60dc6898636ce32d40477ec46140f081',1,'State']]]
 ];

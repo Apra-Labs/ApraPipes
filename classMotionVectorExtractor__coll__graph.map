@@ -1,5 +1,9 @@
 <map id="MotionVectorExtractor" name="MotionVectorExtractor">
-<area shape="rect" id="Node000001" title=" " alt="" coords="8,1116,175,1447"/>
-<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,5,178,1068"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="94,1083,94,1117,89,1117,89,1083"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="30,1592,197,1943"/>
+<area shape="rect" id="Node000002" href="$classModule.html" title=" " alt="" coords="5,467,178,1529"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,1544,111,1592,106,1592,104,1544"/>
+<area shape="rect" id="Node000003" href="$classMotionVectorExtractorProps.html" title=" " alt="" coords="203,884,397,1112"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="283,1113,245,1308,193,1530,180,1577,175,1576,188,1529,240,1307,278,1112"/>
+<area shape="rect" id="Node000004" href="$classModuleProps.html" title=" " alt="" coords="211,5,389,417"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="302,432,302,884,297,884,297,432"/>
 </map>

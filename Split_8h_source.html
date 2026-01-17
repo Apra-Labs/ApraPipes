@@ -106,72 +106,116 @@ $(function(){initNavTree('Split_8h_source.html',''); initResizable(true); });
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;Module.h&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="foldopen" id="foldopen00005" data-start="{" data-end="};">
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno"><a class="line" href="classSplitProps.html">    5</a></span><span class="keyword">class </span><a class="code hl_class" href="classSplitProps.html">SplitProps</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModuleProps.html">ModuleProps</a></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>{</div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00008" data-start="{" data-end="}">
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno"><a class="line" href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">    8</a></span>    <a class="code hl_function" href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">SplitProps</a>() : <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>() </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>        <a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a> = 2;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    }</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;declarative/PropertyMacros.h&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="foldopen" id="foldopen00006" data-start="{" data-end="};">
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno"><a class="line" href="classSplitProps.html">    6</a></span><span class="keyword">class </span><a class="code hl_class" href="classSplitProps.html">SplitProps</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModuleProps.html">ModuleProps</a></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>{</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00009" data-start="{" data-end="}">
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">    9</a></span>    <a class="code hl_function" href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">SplitProps</a>() : <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    {</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>        <a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a> = 2;</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    }</div>
 </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">   13</a></span>    uint32_t <a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a>;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>};</div>
-</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">   14</a></span>    uint32_t <a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a>;</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="classSplit.html">   16</a></span><span class="keyword">class </span><a class="code hl_class" href="classSplit.html">Split</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModule.html">Module</a> {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <a class="code hl_function" href="classSplit.html#a9e483114c0b37974ddf3337934369189">Split</a>(<a class="code hl_class" href="classSplitProps.html">SplitProps</a> _props=<a class="code hl_class" href="classSplitProps.html">SplitProps</a>());</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">   20</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">~Split</a>() {}</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a440acf9770fa169b5df2ad5d58a22776">init</a>();</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a2666f00a654aac9047bea9c094a8714a">term</a>();</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">protected</span>:  </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#aecd4d9378da3d2ee3b5e71449945d067">process</a>(frame_container&amp; frames);</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#ae85e6de6e3f101bc676a5b0af9330c36">validateInputPins</a>();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a420a8233cf2ff04826f92bcb963befb7">validateOutputPins</a>();      </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classSplit.html#ab2cdb74a6ac33a8ba168a1debaa86bf1">addInputPin</a>(framemetadata_sp&amp; metadata, <span class="keywordtype">string</span>&amp; pinId);</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">private</span>:    </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">   32</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">mNumber</a>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">   33</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">mCurrentIndex</a>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">   34</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">mFIndex2</a>;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">   35</a></span>    std::vector&lt;std::string&gt; <a class="code hl_variable" href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">mPinIds</a>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>};</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="comment">// ============================================================</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="comment">// Property Binding for Declarative Pipeline</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="comment">// ============================================================</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> PropsT&gt;</div>
+<div class="foldopen" id="foldopen00020" data-start="{" data-end="}">
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classSplitProps.html#a2402263ff9afb9af41fb13e3d021b851">   20</a></span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classSplitProps.html#a2402263ff9afb9af41fb13e3d021b851">applyProperties</a>(</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        PropsT&amp; props,</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        <span class="keyword">const</span> std::map&lt;std::string, apra::ScalarPropertyValue&gt;&amp; values,</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        std::vector&lt;std::string&gt;&amp; missingRequired</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    ) {</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        <a class="code hl_function" href="namespaceapra.html#a8ba802c11726758be243bade4527b538">apra::applyProp</a>(props.number, <span class="stringliteral">&quot;number&quot;</span>, values, <span class="keyword">false</span>, missingRequired);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    }</div>
 </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="foldopen" id="foldopen00028" data-start="{" data-end="}">
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="classSplitProps.html#a4215f8e742e369e2ea54c797b59001e3">   28</a></span>    <a class="code hl_typedef" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a> <a class="code hl_function" href="classSplitProps.html#a4215f8e742e369e2ea54c797b59001e3">getProperty</a>(<span class="keyword">const</span> std::string&amp; propName)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>        <span class="keywordflow">if</span> (propName == <span class="stringliteral">&quot;number&quot;</span>) <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>int64_t<span class="keyword">&gt;</span>(<a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a>);</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Unknown property: &quot;</span> + propName);</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    }</div>
+</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="foldopen" id="foldopen00033" data-start="{" data-end="}">
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classSplitProps.html#a687bf777a8eae8ac87373d4e0827f901">   33</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplitProps.html#a687bf777a8eae8ac87373d4e0827f901">setProperty</a>(<span class="keyword">const</span> std::string&amp; propName, <span class="keyword">const</span> <a class="code hl_typedef" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a>&amp; value) {</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordflow">if</span> (propName == <span class="stringliteral">&quot;number&quot;</span>) {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceapra.html#aeed3f8f94e5c4966d7cd5a08ea175a1b">apra::applyFromVariant</a>(<a class="code hl_variable" href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">number</a>, value);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        }</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    }</div>
+</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="foldopen" id="foldopen00040" data-start="{" data-end="}">
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="classSplitProps.html#ac76025423cd679a559ff37f77792d0f2">   40</a></span>    std::vector&lt;std::string&gt; <a class="code hl_function" href="classSplitProps.html#ac76025423cd679a559ff37f77792d0f2">dynamicPropertyNames</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <span class="keywordflow">return</span> {};  <span class="comment">// number is not dynamically changeable at runtime</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    }</div>
+</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>};</div>
+</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="foldopen" id="foldopen00045" data-start="{" data-end="};">
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classSplit.html">   45</a></span><span class="keyword">class </span><a class="code hl_class" href="classSplit.html">Split</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModule.html">Module</a> {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <a class="code hl_function" href="classSplit.html#a9e483114c0b37974ddf3337934369189">Split</a>(<a class="code hl_class" href="classSplitProps.html">SplitProps</a> _props=<a class="code hl_class" href="classSplitProps.html">SplitProps</a>());</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">   49</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">~Split</a>() {}</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a440acf9770fa169b5df2ad5d58a22776">init</a>();</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a2666f00a654aac9047bea9c094a8714a">term</a>();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">protected</span>:  </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#aecd4d9378da3d2ee3b5e71449945d067">process</a>(frame_container&amp; frames);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#ae85e6de6e3f101bc676a5b0af9330c36">validateInputPins</a>();</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classSplit.html#a420a8233cf2ff04826f92bcb963befb7">validateOutputPins</a>();      </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classSplit.html#ab2cdb74a6ac33a8ba168a1debaa86bf1">addInputPin</a>(framemetadata_sp&amp; metadata, <span class="keywordtype">string</span>&amp; pinId);</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">private</span>:    </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">   61</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">mNumber</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">   62</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">mCurrentIndex</a>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">   63</a></span>    uint32_t <a class="code hl_variable" href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">mFIndex2</a>;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">   64</a></span>    std::vector&lt;std::string&gt; <a class="code hl_variable" href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">mPinIds</a>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>};</div>
+</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
 <div class="ttc" id="aclassModuleProps_html"><div class="ttname"><a href="classModuleProps.html">ModuleProps</a></div><div class="ttdef"><b>Definition</b> Module.h:33</div></div>
 <div class="ttc" id="aclassModule_html"><div class="ttname"><a href="classModule.html">Module</a></div><div class="ttdef"><b>Definition</b> Module.h:151</div></div>
-<div class="ttc" id="aclassSplitProps_html"><div class="ttname"><a href="classSplitProps.html">SplitProps</a></div><div class="ttdef"><b>Definition</b> Split.h:6</div></div>
-<div class="ttc" id="aclassSplitProps_html_a03b76c3ed209c29f09f3112fc5a21311"><div class="ttname"><a href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">SplitProps::SplitProps</a></div><div class="ttdeci">SplitProps()</div><div class="ttdef"><b>Definition</b> Split.h:8</div></div>
-<div class="ttc" id="aclassSplitProps_html_a25b8903e6bc4052092c1a9f10b7c98da"><div class="ttname"><a href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">SplitProps::number</a></div><div class="ttdeci">uint32_t number</div><div class="ttdef"><b>Definition</b> Split.h:13</div></div>
-<div class="ttc" id="aclassSplit_html"><div class="ttname"><a href="classSplit.html">Split</a></div><div class="ttdef"><b>Definition</b> Split.h:16</div></div>
-<div class="ttc" id="aclassSplit_html_a1ebfed35e9e366dc99ceef9d51d2c92c"><div class="ttname"><a href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">Split::mNumber</a></div><div class="ttdeci">uint32_t mNumber</div><div class="ttdef"><b>Definition</b> Split.h:32</div></div>
+<div class="ttc" id="aclassSplitProps_html"><div class="ttname"><a href="classSplitProps.html">SplitProps</a></div><div class="ttdef"><b>Definition</b> Split.h:7</div></div>
+<div class="ttc" id="aclassSplitProps_html_a03b76c3ed209c29f09f3112fc5a21311"><div class="ttname"><a href="classSplitProps.html#a03b76c3ed209c29f09f3112fc5a21311">SplitProps::SplitProps</a></div><div class="ttdeci">SplitProps()</div><div class="ttdef"><b>Definition</b> Split.h:9</div></div>
+<div class="ttc" id="aclassSplitProps_html_a2402263ff9afb9af41fb13e3d021b851"><div class="ttname"><a href="classSplitProps.html#a2402263ff9afb9af41fb13e3d021b851">SplitProps::applyProperties</a></div><div class="ttdeci">static void applyProperties(PropsT &amp;props, const std::map&lt; std::string, apra::ScalarPropertyValue &gt; &amp;values, std::vector&lt; std::string &gt; &amp;missingRequired)</div><div class="ttdef"><b>Definition</b> Split.h:20</div></div>
+<div class="ttc" id="aclassSplitProps_html_a25b8903e6bc4052092c1a9f10b7c98da"><div class="ttname"><a href="classSplitProps.html#a25b8903e6bc4052092c1a9f10b7c98da">SplitProps::number</a></div><div class="ttdeci">uint32_t number</div><div class="ttdef"><b>Definition</b> Split.h:14</div></div>
+<div class="ttc" id="aclassSplitProps_html_a4215f8e742e369e2ea54c797b59001e3"><div class="ttname"><a href="classSplitProps.html#a4215f8e742e369e2ea54c797b59001e3">SplitProps::getProperty</a></div><div class="ttdeci">apra::ScalarPropertyValue getProperty(const std::string &amp;propName) const</div><div class="ttdef"><b>Definition</b> Split.h:28</div></div>
+<div class="ttc" id="aclassSplitProps_html_a687bf777a8eae8ac87373d4e0827f901"><div class="ttname"><a href="classSplitProps.html#a687bf777a8eae8ac87373d4e0827f901">SplitProps::setProperty</a></div><div class="ttdeci">bool setProperty(const std::string &amp;propName, const apra::ScalarPropertyValue &amp;value)</div><div class="ttdef"><b>Definition</b> Split.h:33</div></div>
+<div class="ttc" id="aclassSplitProps_html_ac76025423cd679a559ff37f77792d0f2"><div class="ttname"><a href="classSplitProps.html#ac76025423cd679a559ff37f77792d0f2">SplitProps::dynamicPropertyNames</a></div><div class="ttdeci">std::vector&lt; std::string &gt; dynamicPropertyNames() const</div><div class="ttdef"><b>Definition</b> Split.h:40</div></div>
+<div class="ttc" id="aclassSplit_html"><div class="ttname"><a href="classSplit.html">Split</a></div><div class="ttdef"><b>Definition</b> Split.h:45</div></div>
+<div class="ttc" id="aclassSplit_html_a1ebfed35e9e366dc99ceef9d51d2c92c"><div class="ttname"><a href="classSplit.html#a1ebfed35e9e366dc99ceef9d51d2c92c">Split::mNumber</a></div><div class="ttdeci">uint32_t mNumber</div><div class="ttdef"><b>Definition</b> Split.h:61</div></div>
 <div class="ttc" id="aclassSplit_html_a2666f00a654aac9047bea9c094a8714a"><div class="ttname"><a href="classSplit.html#a2666f00a654aac9047bea9c094a8714a">Split::term</a></div><div class="ttdeci">virtual bool term()</div><div class="ttdef"><b>Definition</b> Split.cpp:46</div></div>
-<div class="ttc" id="aclassSplit_html_a32dbfe29fb20758a1b43451496cbcab5"><div class="ttname"><a href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">Split::mPinIds</a></div><div class="ttdeci">std::vector&lt; std::string &gt; mPinIds</div><div class="ttdef"><b>Definition</b> Split.h:35</div></div>
+<div class="ttc" id="aclassSplit_html_a32dbfe29fb20758a1b43451496cbcab5"><div class="ttname"><a href="classSplit.html#a32dbfe29fb20758a1b43451496cbcab5">Split::mPinIds</a></div><div class="ttdeci">std::vector&lt; std::string &gt; mPinIds</div><div class="ttdef"><b>Definition</b> Split.h:64</div></div>
 <div class="ttc" id="aclassSplit_html_a420a8233cf2ff04826f92bcb963befb7"><div class="ttname"><a href="classSplit.html#a420a8233cf2ff04826f92bcb963befb7">Split::validateOutputPins</a></div><div class="ttdeci">bool validateOutputPins()</div><div class="ttdef"><b>Definition</b> Split.cpp:25</div></div>
 <div class="ttc" id="aclassSplit_html_a440acf9770fa169b5df2ad5d58a22776"><div class="ttname"><a href="classSplit.html#a440acf9770fa169b5df2ad5d58a22776">Split::init</a></div><div class="ttdeci">virtual bool init()</div><div class="ttdef"><b>Definition</b> Split.cpp:36</div></div>
-<div class="ttc" id="aclassSplit_html_a6dfd61785e7dbf3e420870ae0dda20ad"><div class="ttname"><a href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">Split::mCurrentIndex</a></div><div class="ttdeci">uint32_t mCurrentIndex</div><div class="ttdef"><b>Definition</b> Split.h:33</div></div>
+<div class="ttc" id="aclassSplit_html_a6dfd61785e7dbf3e420870ae0dda20ad"><div class="ttname"><a href="classSplit.html#a6dfd61785e7dbf3e420870ae0dda20ad">Split::mCurrentIndex</a></div><div class="ttdeci">uint32_t mCurrentIndex</div><div class="ttdef"><b>Definition</b> Split.h:62</div></div>
 <div class="ttc" id="aclassSplit_html_a9e483114c0b37974ddf3337934369189"><div class="ttname"><a href="classSplit.html#a9e483114c0b37974ddf3337934369189">Split::Split</a></div><div class="ttdeci">Split(SplitProps _props=SplitProps())</div><div class="ttdef"><b>Definition</b> Split.cpp:9</div></div>
-<div class="ttc" id="aclassSplit_html_aaa8d96fb4f93bc943d96ebfab45e91f3"><div class="ttname"><a href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">Split::~Split</a></div><div class="ttdeci">virtual ~Split()</div><div class="ttdef"><b>Definition</b> Split.h:20</div></div>
+<div class="ttc" id="aclassSplit_html_aaa8d96fb4f93bc943d96ebfab45e91f3"><div class="ttname"><a href="classSplit.html#aaa8d96fb4f93bc943d96ebfab45e91f3">Split::~Split</a></div><div class="ttdeci">virtual ~Split()</div><div class="ttdef"><b>Definition</b> Split.h:49</div></div>
 <div class="ttc" id="aclassSplit_html_ab2cdb74a6ac33a8ba168a1debaa86bf1"><div class="ttname"><a href="classSplit.html#ab2cdb74a6ac33a8ba168a1debaa86bf1">Split::addInputPin</a></div><div class="ttdeci">void addInputPin(framemetadata_sp &amp;metadata, string &amp;pinId)</div><div class="ttdef"><b>Definition</b> Split.cpp:51</div></div>
 <div class="ttc" id="aclassSplit_html_ae85e6de6e3f101bc676a5b0af9330c36"><div class="ttname"><a href="classSplit.html#ae85e6de6e3f101bc676a5b0af9330c36">Split::validateInputPins</a></div><div class="ttdeci">bool validateInputPins()</div><div class="ttdef"><b>Definition</b> Split.cpp:14</div></div>
-<div class="ttc" id="aclassSplit_html_aec86fcf5b34e443c4c47ba6960ea3696"><div class="ttname"><a href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">Split::mFIndex2</a></div><div class="ttdeci">uint32_t mFIndex2</div><div class="ttdef"><b>Definition</b> Split.h:34</div></div>
+<div class="ttc" id="aclassSplit_html_aec86fcf5b34e443c4c47ba6960ea3696"><div class="ttname"><a href="classSplit.html#aec86fcf5b34e443c4c47ba6960ea3696">Split::mFIndex2</a></div><div class="ttdeci">uint32_t mFIndex2</div><div class="ttdef"><b>Definition</b> Split.h:63</div></div>
 <div class="ttc" id="aclassSplit_html_aecd4d9378da3d2ee3b5e71449945d067"><div class="ttname"><a href="classSplit.html#aecd4d9378da3d2ee3b5e71449945d067">Split::process</a></div><div class="ttdeci">bool process(frame_container &amp;frames)</div><div class="ttdef"><b>Definition</b> Split.cpp:60</div></div>
+<div class="ttc" id="anamespaceapra_html_a8ba802c11726758be243bade4527b538"><div class="ttname"><a href="namespaceapra.html#a8ba802c11726758be243bade4527b538">apra::applyProp</a></div><div class="ttdeci">void applyProp(T &amp;member, const char *propName, const std::map&lt; std::string, ScalarPropertyValue &gt; &amp;values, bool isRequired, std::vector&lt; std::string &gt; &amp;missingRequired)</div><div class="ttdef"><b>Definition</b> PropertyMacros.h:36</div></div>
+<div class="ttc" id="anamespaceapra_html_aeed3f8f94e5c4966d7cd5a08ea175a1b"><div class="ttname"><a href="namespaceapra.html#aeed3f8f94e5c4966d7cd5a08ea175a1b">apra::applyFromVariant</a></div><div class="ttdeci">bool applyFromVariant(T &amp;member, const ScalarPropertyValue &amp;value)</div><div class="ttdef"><b>Definition</b> PropertyMacros.h:108</div></div>
+<div class="ttc" id="anamespaceapra_html_af055647ba6443d5f9fd0f44b978078c4"><div class="ttname"><a href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a></div><div class="ttdeci">std::variant&lt; int64_t, double, bool, std::string &gt; ScalarPropertyValue</div><div class="ttdef"><b>Definition</b> ModuleRegistry.h:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="dir_e914ee4d4a44400f1fdb170cb4ead18a.html">base</a></li><li class="navelem"><a class="el" href="dir_86751c6d8ae9997ab6788777e7f7ee73.html">include</a></li><li class="navelem"><b>Split.h</b></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 669df2a</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: b9db9d8</a></li>
     </ul>
   </div>
   </body>

@@ -20,12 +20,13 @@ var searchData=
   ['queue_17',['queue',['../classFramesMuxerStrategy.html#ab29766cb0318dcb2ddfb4ebf424421ad',1,'FramesMuxerStrategy::queue()'],['../classAllOrNoneStrategy.html#a2b71515f656de82089fdcc2012d18f32',1,'AllOrNoneStrategy::queue()'],['../classMaxDelayAnyStrategy.html#accdd94b65d13c61143ffb6347b65f809',1,'MaxDelayAnyStrategy::queue()'],['../classTimeStampStrategy.html#a61c3f3d37c710378b246994ac98e2eb0',1,'TimeStampStrategy::queue()'],['../classMerge_1_1Detail.html#afd93cdb2253bcd460a453e93dda5c2b2',1,'Merge::Detail::queue()']]],
   ['queue_5fcond_18',['queue_cond',['../structh264DecoderV4L2Helper_1_1context__t.html#a13dbfc8c35e4dd339606c045c3f604b5',1,'h264DecoderV4L2Helper::context_t']]],
   ['queue_5flock_19',['queue_lock',['../structh264DecoderV4L2Helper_1_1context__t.html#a462acaf4c9b3c6f74c6cb751558b3cf7',1,'h264DecoderV4L2Helper::context_t']]],
-  ['queuebuffertocamera_20',['queueBufferToCamera',['../classNvV4L2CameraHelper.html#a8493fbba7e3066e0fb189c65d62725eb',1,'NvV4L2CameraHelper']]],
-  ['queuecommand_21',['queueCommand',['../classModule.html#a815dd4a2e34761df83a5fcbe194406d5',1,'Module']]],
-  ['queueframetocamera_22',['queueFrameToCamera',['../classNvArgusCameraHelper.html#ae39cb9ff12e5d00c824e68a1ced554c2',1,'NvArgusCameraHelper']]],
-  ['queuemutex_23',['queueMutex',['../classGtkGlRenderer.html#a0a9dc15e2759367582c4c5d46a3345e5',1,'GtkGlRenderer']]],
-  ['queueobject_24',['queueObject',['../structState.html#a60dc6898636ce32d40477ec46140f081',1,'State']]],
-  ['queueplaypausecommand_25',['queuePlayPauseCommand',['../classModule.html#ad24cc1c19048e8a0197d9bd7213a3d8c',1,'Module']]],
-  ['queueprioritycommand_26',['queuePriorityCommand',['../classModule.html#a6192818693d0f3869d8d6ed012f12727',1,'Module']]],
-  ['queuestep_27',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
+  ['queue_5fsize_20',['queue_size',['../structapra_1_1PipelineSettings.html#ae1ec34cd99e4f1e10a4e6feabb8864db',1,'apra::PipelineSettings']]],
+  ['queuebuffertocamera_21',['queueBufferToCamera',['../classNvV4L2CameraHelper.html#a8493fbba7e3066e0fb189c65d62725eb',1,'NvV4L2CameraHelper']]],
+  ['queuecommand_22',['queueCommand',['../classModule.html#a815dd4a2e34761df83a5fcbe194406d5',1,'Module']]],
+  ['queueframetocamera_23',['queueFrameToCamera',['../classNvArgusCameraHelper.html#ae39cb9ff12e5d00c824e68a1ced554c2',1,'NvArgusCameraHelper']]],
+  ['queuemutex_24',['queueMutex',['../classGtkGlRenderer.html#a0a9dc15e2759367582c4c5d46a3345e5',1,'GtkGlRenderer']]],
+  ['queueobject_25',['queueObject',['../structState.html#a60dc6898636ce32d40477ec46140f081',1,'State']]],
+  ['queueplaypausecommand_26',['queuePlayPauseCommand',['../classModule.html#ad24cc1c19048e8a0197d9bd7213a3d8c',1,'Module']]],
+  ['queueprioritycommand_27',['queuePriorityCommand',['../classModule.html#a6192818693d0f3869d8d6ed012f12727',1,'Module']]],
+  ['queuestep_28',['queueStep',['../classModule.html#a36a14f15feafa636851b78c698971722',1,'Module']]]
 ];

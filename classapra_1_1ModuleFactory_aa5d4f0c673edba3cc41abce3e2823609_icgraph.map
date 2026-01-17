@@ -1,0 +1,8 @@
+<map id="apra::ModuleFactory::setupOutputPins" name="apra::ModuleFactory::setupOutputPins">
+<area shape="rect" id="Node000001" title=" " alt="" coords="384,5,521,46"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1ModuleFactory.html#a8220a54d0b93e218288083a9d9588ac8" title=" " alt="" coords="5,5,143,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="368,25,336,24,191,24,143,26,143,20,191,19,336,19,368,20"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1ModuleFactory.html#a697dbff67bee24ef0c8d92321b6c9ed9" title=" " alt="" coords="191,33,336,74"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="369,41,337,46,336,40,368,35"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="175,43,142,38,143,33,176,38"/>
+</map>

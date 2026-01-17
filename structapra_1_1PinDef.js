@@ -1,0 +1,28 @@
+var structapra_1_1PinDef =
+[
+    [ "PinDef", "structapra_1_1PinDef.html#a5348ad680f9f25c1d11db57adeb009a7", null ],
+    [ "acceptsFrameType", "structapra_1_1PinDef.html#aa3c1ba8de25f58bb7037ffb8427e1309", null ],
+    [ "acceptsImageType", "structapra_1_1PinDef.html#af08225cb2f9ce3ff508623a35e36c075", null ],
+    [ "create", "structapra_1_1PinDef.html#aa26fea1f05af536fa86952fe9964b29e", null ],
+    [ "create", "structapra_1_1PinDef.html#a30e4867c6d3eea500cd264fd4daadec0", null ],
+    [ "create", "structapra_1_1PinDef.html#a9e63a29853eb66ccdfd8a8af8480d1a6", null ],
+    [ "create", "structapra_1_1PinDef.html#a052aae95d6a1b7095b92ac87a7241ef4", null ],
+    [ "cudaInput", "structapra_1_1PinDef.html#a5cafc5f733032ab223c553f2b150ec4c", null ],
+    [ "cudaOutput", "structapra_1_1PinDef.html#a46a84e7c9a4c5cf0b0881bf7c3ab3163", null ],
+    [ "frameTypeCount", "structapra_1_1PinDef.html#aba2880a0b4cdd9e140521b25aec4d51d", null ],
+    [ "hasImageTypeRestrictions", "structapra_1_1PinDef.html#a05dfab8c79419a95cbcc1285bf8ded88", null ],
+    [ "imageTypeCount", "structapra_1_1PinDef.html#a0a69983bb06f51386762ff60f8872341", null ],
+    [ "withImageType", "structapra_1_1PinDef.html#a34d10a96710e5c87fd946517c4adc8c6", null ],
+    [ "withImageTypes", "structapra_1_1PinDef.html#ab3a77717c2f52bc5b369544bf76b663b", null ],
+    [ "withImageTypes", "structapra_1_1PinDef.html#a7ebe0a5dbdc6b0d1a2d8028867fa667b", null ],
+    [ "withImageTypes", "structapra_1_1PinDef.html#a3f7436c0b6d6208a35ffb3f948cb0bd0", null ],
+    [ "withImageTypes", "structapra_1_1PinDef.html#a0c945cf80c430ee0e186f12370b0c69f", null ],
+    [ "description", "structapra_1_1PinDef.html#a6b56fbc8caf79394b2ccc5d383ea9483", null ],
+    [ "frame_type_count", "structapra_1_1PinDef.html#a3df726f892b99c285cbed8fb1fa1f7c7", null ],
+    [ "frame_types", "structapra_1_1PinDef.html#afb32485cc8f42d46ce470fb6215e5873", null ],
+    [ "image_type_count", "structapra_1_1PinDef.html#a8e9e5bd4ed947528c98338efe225dbab", null ],
+    [ "image_types", "structapra_1_1PinDef.html#a328e36718a0f28c6972c209bf92bc489", null ],
+    [ "memType", "structapra_1_1PinDef.html#a2f6b0077bcdc688b3a7fa9299fa81092", null ],
+    [ "name", "structapra_1_1PinDef.html#a9d133c49ec6d06e287ad7720243011ff", null ],
+    [ "required", "structapra_1_1PinDef.html#a57158c0e870eec612398bbc6a5f938c1", null ]
+];

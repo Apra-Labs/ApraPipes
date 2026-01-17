@@ -106,68 +106,112 @@ $(function(){initNavTree('Merge_8h_source.html',''); initResizable(true); });
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;Module.h&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="foldopen" id="foldopen00005" data-start="{" data-end="};">
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno"><a class="line" href="classMergeProps.html">    5</a></span><span class="keyword">class </span><a class="code hl_class" href="classMergeProps.html">MergeProps</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModuleProps.html">ModuleProps</a></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>{</div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00008" data-start="{" data-end="}">
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno"><a class="line" href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">    8</a></span>    <a class="code hl_function" href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">MergeProps</a>() : <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>() </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    {</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>        <a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a> = 30;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    }</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;declarative/PropertyMacros.h&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="foldopen" id="foldopen00006" data-start="{" data-end="};">
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno"><a class="line" href="classMergeProps.html">    6</a></span><span class="keyword">class </span><a class="code hl_class" href="classMergeProps.html">MergeProps</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModuleProps.html">ModuleProps</a></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>{</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00009" data-start="{" data-end="}">
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">    9</a></span>    <a class="code hl_function" href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">MergeProps</a>() : <a class="code hl_class" href="classModuleProps.html">ModuleProps</a>()</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    {</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>        <a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a> = 30;</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    }</div>
 </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">   13</a></span>    uint32_t <a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a>; <span class="comment">// Difference between current frame and first frame in the queue</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>};</div>
-</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">   14</a></span>    uint32_t <a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a>; <span class="comment">// Difference between current frame and first frame in the queue</span></div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="classMerge.html">   16</a></span><span class="keyword">class </span><a class="code hl_class" href="classMerge.html">Merge</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModule.html">Module</a> {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <a class="code hl_function" href="classMerge.html#a489cc0a40aee812c3f77caf165a54f35">Merge</a>(<a class="code hl_class" href="classMergeProps.html">MergeProps</a> _props=<a class="code hl_class" href="classMergeProps.html">MergeProps</a>());</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">   20</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">~Merge</a>() {}</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a7c6e35933934acb95d7bd5338c0d77e1">init</a>();</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#afb779710f9ac839870746c3fe3f39b71">term</a>();</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">protected</span>:  </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a9fdbaaea7b8c71cb12f8f690fc6d5613">process</a>(frame_container&amp; frames);</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#afab1737cca4a612380b37b670cb2397a">validateInputPins</a>();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a3e30f335caacca22d858d5ea82b239d3">validateOutputPins</a>();      </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classMerge.html#a80a75eeea366f8eb85a5bc283d5b50fd">addInputPin</a>(framemetadata_sp&amp; metadata, <span class="keywordtype">string</span>&amp; pinId);</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">private</span>:    </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keyword">class </span><a class="code hl_class" href="classDetail.html">Detail</a>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classMerge.html#aad888094ba93802e451e3359c779c846">   33</a></span>    boost::shared_ptr&lt;Detail&gt; <a class="code hl_variable" href="classMerge.html#aad888094ba93802e451e3359c779c846">mDetail</a>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>};</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="comment">// ============================================================</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="comment">// Property Binding for Declarative Pipeline</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="comment">// ============================================================</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> PropsT&gt;</div>
+<div class="foldopen" id="foldopen00020" data-start="{" data-end="}">
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classMergeProps.html#a7ce2b7c0bc2958e8f599a6d5c8f37070">   20</a></span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classMergeProps.html#a7ce2b7c0bc2958e8f599a6d5c8f37070">applyProperties</a>(</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        PropsT&amp; props,</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        <span class="keyword">const</span> std::map&lt;std::string, apra::ScalarPropertyValue&gt;&amp; values,</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        std::vector&lt;std::string&gt;&amp; missingRequired</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    ) {</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        <a class="code hl_function" href="namespaceapra.html#a8ba802c11726758be243bade4527b538">apra::applyProp</a>(props.maxDelay, <span class="stringliteral">&quot;maxDelay&quot;</span>, values, <span class="keyword">false</span>, missingRequired);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    }</div>
 </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="foldopen" id="foldopen00028" data-start="{" data-end="}">
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="classMergeProps.html#a8a5b7b9330251df3efe88efdc60c5f4e">   28</a></span>    <a class="code hl_typedef" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a> <a class="code hl_function" href="classMergeProps.html#a8a5b7b9330251df3efe88efdc60c5f4e">getProperty</a>(<span class="keyword">const</span> std::string&amp; propName)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>        <span class="keywordflow">if</span> (propName == <span class="stringliteral">&quot;maxDelay&quot;</span>) <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>int64_t<span class="keyword">&gt;</span>(<a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a>);</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Unknown property: &quot;</span> + propName);</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    }</div>
+</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="foldopen" id="foldopen00033" data-start="{" data-end="}">
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classMergeProps.html#a756bfe4a377c73bb7633c089dc8d4d9b">   33</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMergeProps.html#a756bfe4a377c73bb7633c089dc8d4d9b">setProperty</a>(<span class="keyword">const</span> std::string&amp; propName, <span class="keyword">const</span> <a class="code hl_typedef" href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a>&amp; value) {</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordflow">if</span> (propName == <span class="stringliteral">&quot;maxDelay&quot;</span>) {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceapra.html#aeed3f8f94e5c4966d7cd5a08ea175a1b">apra::applyFromVariant</a>(<a class="code hl_variable" href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">maxDelay</a>, value);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        }</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    }</div>
+</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="foldopen" id="foldopen00040" data-start="{" data-end="}">
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="classMergeProps.html#a09896ea4e426a1967accdd860d0aca3f">   40</a></span>    std::vector&lt;std::string&gt; <a class="code hl_function" href="classMergeProps.html#a09896ea4e426a1967accdd860d0aca3f">dynamicPropertyNames</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <span class="keywordflow">return</span> {};  <span class="comment">// maxDelay is not dynamically changeable at runtime</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    }</div>
+</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>};</div>
+</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="foldopen" id="foldopen00045" data-start="{" data-end="};">
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classMerge.html">   45</a></span><span class="keyword">class </span><a class="code hl_class" href="classMerge.html">Merge</a> : <span class="keyword">public</span> <a class="code hl_class" href="classModule.html">Module</a> {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <a class="code hl_function" href="classMerge.html#a489cc0a40aee812c3f77caf165a54f35">Merge</a>(<a class="code hl_class" href="classMergeProps.html">MergeProps</a> _props=<a class="code hl_class" href="classMergeProps.html">MergeProps</a>());</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">   49</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">~Merge</a>() {}</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a7c6e35933934acb95d7bd5338c0d77e1">init</a>();</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#afb779710f9ac839870746c3fe3f39b71">term</a>();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">protected</span>:  </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a9fdbaaea7b8c71cb12f8f690fc6d5613">process</a>(frame_container&amp; frames);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#afab1737cca4a612380b37b670cb2397a">validateInputPins</a>();</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classMerge.html#a3e30f335caacca22d858d5ea82b239d3">validateOutputPins</a>();      </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classMerge.html#a80a75eeea366f8eb85a5bc283d5b50fd">addInputPin</a>(framemetadata_sp&amp; metadata, <span class="keywordtype">string</span>&amp; pinId);</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">private</span>:    </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keyword">class </span><a class="code hl_class" href="classDetail.html">Detail</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="classMerge.html#aad888094ba93802e451e3359c779c846">   62</a></span>    boost::shared_ptr&lt;Detail&gt; <a class="code hl_variable" href="classMerge.html#aad888094ba93802e451e3359c779c846">mDetail</a>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>};</div>
+</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
 <div class="ttc" id="aclassDetail_html"><div class="ttname"><a href="classDetail.html">Detail</a></div><div class="ttdef"><b>Definition</b> FacialLandmarksCV.cpp:17</div></div>
-<div class="ttc" id="aclassMergeProps_html"><div class="ttname"><a href="classMergeProps.html">MergeProps</a></div><div class="ttdef"><b>Definition</b> Merge.h:6</div></div>
-<div class="ttc" id="aclassMergeProps_html_ab8991feef04c23778520ed5e4d0f7389"><div class="ttname"><a href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">MergeProps::MergeProps</a></div><div class="ttdeci">MergeProps()</div><div class="ttdef"><b>Definition</b> Merge.h:8</div></div>
-<div class="ttc" id="aclassMergeProps_html_af6bb93353c000c5d6246a5117ad28de8"><div class="ttname"><a href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">MergeProps::maxDelay</a></div><div class="ttdeci">uint32_t maxDelay</div><div class="ttdef"><b>Definition</b> Merge.h:13</div></div>
-<div class="ttc" id="aclassMerge_html"><div class="ttname"><a href="classMerge.html">Merge</a></div><div class="ttdef"><b>Definition</b> Merge.h:16</div></div>
+<div class="ttc" id="aclassMergeProps_html"><div class="ttname"><a href="classMergeProps.html">MergeProps</a></div><div class="ttdef"><b>Definition</b> Merge.h:7</div></div>
+<div class="ttc" id="aclassMergeProps_html_a09896ea4e426a1967accdd860d0aca3f"><div class="ttname"><a href="classMergeProps.html#a09896ea4e426a1967accdd860d0aca3f">MergeProps::dynamicPropertyNames</a></div><div class="ttdeci">std::vector&lt; std::string &gt; dynamicPropertyNames() const</div><div class="ttdef"><b>Definition</b> Merge.h:40</div></div>
+<div class="ttc" id="aclassMergeProps_html_a756bfe4a377c73bb7633c089dc8d4d9b"><div class="ttname"><a href="classMergeProps.html#a756bfe4a377c73bb7633c089dc8d4d9b">MergeProps::setProperty</a></div><div class="ttdeci">bool setProperty(const std::string &amp;propName, const apra::ScalarPropertyValue &amp;value)</div><div class="ttdef"><b>Definition</b> Merge.h:33</div></div>
+<div class="ttc" id="aclassMergeProps_html_a7ce2b7c0bc2958e8f599a6d5c8f37070"><div class="ttname"><a href="classMergeProps.html#a7ce2b7c0bc2958e8f599a6d5c8f37070">MergeProps::applyProperties</a></div><div class="ttdeci">static void applyProperties(PropsT &amp;props, const std::map&lt; std::string, apra::ScalarPropertyValue &gt; &amp;values, std::vector&lt; std::string &gt; &amp;missingRequired)</div><div class="ttdef"><b>Definition</b> Merge.h:20</div></div>
+<div class="ttc" id="aclassMergeProps_html_a8a5b7b9330251df3efe88efdc60c5f4e"><div class="ttname"><a href="classMergeProps.html#a8a5b7b9330251df3efe88efdc60c5f4e">MergeProps::getProperty</a></div><div class="ttdeci">apra::ScalarPropertyValue getProperty(const std::string &amp;propName) const</div><div class="ttdef"><b>Definition</b> Merge.h:28</div></div>
+<div class="ttc" id="aclassMergeProps_html_ab8991feef04c23778520ed5e4d0f7389"><div class="ttname"><a href="classMergeProps.html#ab8991feef04c23778520ed5e4d0f7389">MergeProps::MergeProps</a></div><div class="ttdeci">MergeProps()</div><div class="ttdef"><b>Definition</b> Merge.h:9</div></div>
+<div class="ttc" id="aclassMergeProps_html_af6bb93353c000c5d6246a5117ad28de8"><div class="ttname"><a href="classMergeProps.html#af6bb93353c000c5d6246a5117ad28de8">MergeProps::maxDelay</a></div><div class="ttdeci">uint32_t maxDelay</div><div class="ttdef"><b>Definition</b> Merge.h:14</div></div>
+<div class="ttc" id="aclassMerge_html"><div class="ttname"><a href="classMerge.html">Merge</a></div><div class="ttdef"><b>Definition</b> Merge.h:45</div></div>
 <div class="ttc" id="aclassMerge_html_a3e30f335caacca22d858d5ea82b239d3"><div class="ttname"><a href="classMerge.html#a3e30f335caacca22d858d5ea82b239d3">Merge::validateOutputPins</a></div><div class="ttdeci">bool validateOutputPins()</div><div class="ttdef"><b>Definition</b> Merge.cpp:115</div></div>
 <div class="ttc" id="aclassMerge_html_a489cc0a40aee812c3f77caf165a54f35"><div class="ttname"><a href="classMerge.html#a489cc0a40aee812c3f77caf165a54f35">Merge::Merge</a></div><div class="ttdeci">Merge(MergeProps _props=MergeProps())</div><div class="ttdef"><b>Definition</b> Merge.cpp:87</div></div>
-<div class="ttc" id="aclassMerge_html_a6ea67cf938a0f436fe1b4fb99a8a67d1"><div class="ttname"><a href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">Merge::~Merge</a></div><div class="ttdeci">virtual ~Merge()</div><div class="ttdef"><b>Definition</b> Merge.h:20</div></div>
+<div class="ttc" id="aclassMerge_html_a6ea67cf938a0f436fe1b4fb99a8a67d1"><div class="ttname"><a href="classMerge.html#a6ea67cf938a0f436fe1b4fb99a8a67d1">Merge::~Merge</a></div><div class="ttdeci">virtual ~Merge()</div><div class="ttdef"><b>Definition</b> Merge.h:49</div></div>
 <div class="ttc" id="aclassMerge_html_a7c6e35933934acb95d7bd5338c0d77e1"><div class="ttname"><a href="classMerge.html#a7c6e35933934acb95d7bd5338c0d77e1">Merge::init</a></div><div class="ttdeci">virtual bool init()</div><div class="ttdef"><b>Definition</b> Merge.cpp:126</div></div>
 <div class="ttc" id="aclassMerge_html_a80a75eeea366f8eb85a5bc283d5b50fd"><div class="ttname"><a href="classMerge.html#a80a75eeea366f8eb85a5bc283d5b50fd">Merge::addInputPin</a></div><div class="ttdeci">void addInputPin(framemetadata_sp &amp;metadata, string &amp;pinId)</div><div class="ttdef"><b>Definition</b> Merge.cpp:143</div></div>
 <div class="ttc" id="aclassMerge_html_a9fdbaaea7b8c71cb12f8f690fc6d5613"><div class="ttname"><a href="classMerge.html#a9fdbaaea7b8c71cb12f8f690fc6d5613">Merge::process</a></div><div class="ttdeci">bool process(frame_container &amp;frames)</div><div class="ttdef"><b>Definition</b> Merge.cpp:153</div></div>
-<div class="ttc" id="aclassMerge_html_aad888094ba93802e451e3359c779c846"><div class="ttname"><a href="classMerge.html#aad888094ba93802e451e3359c779c846">Merge::mDetail</a></div><div class="ttdeci">boost::shared_ptr&lt; Detail &gt; mDetail</div><div class="ttdef"><b>Definition</b> Merge.h:33</div></div>
+<div class="ttc" id="aclassMerge_html_aad888094ba93802e451e3359c779c846"><div class="ttname"><a href="classMerge.html#aad888094ba93802e451e3359c779c846">Merge::mDetail</a></div><div class="ttdeci">boost::shared_ptr&lt; Detail &gt; mDetail</div><div class="ttdef"><b>Definition</b> Merge.h:62</div></div>
 <div class="ttc" id="aclassMerge_html_afab1737cca4a612380b37b670cb2397a"><div class="ttname"><a href="classMerge.html#afab1737cca4a612380b37b670cb2397a">Merge::validateInputPins</a></div><div class="ttdeci">bool validateInputPins()</div><div class="ttdef"><b>Definition</b> Merge.cpp:92</div></div>
 <div class="ttc" id="aclassMerge_html_afb779710f9ac839870746c3fe3f39b71"><div class="ttname"><a href="classMerge.html#afb779710f9ac839870746c3fe3f39b71">Merge::term</a></div><div class="ttdeci">virtual bool term()</div><div class="ttdef"><b>Definition</b> Merge.cpp:137</div></div>
 <div class="ttc" id="aclassModuleProps_html"><div class="ttname"><a href="classModuleProps.html">ModuleProps</a></div><div class="ttdef"><b>Definition</b> Module.h:33</div></div>
 <div class="ttc" id="aclassModule_html"><div class="ttname"><a href="classModule.html">Module</a></div><div class="ttdef"><b>Definition</b> Module.h:151</div></div>
+<div class="ttc" id="anamespaceapra_html_a8ba802c11726758be243bade4527b538"><div class="ttname"><a href="namespaceapra.html#a8ba802c11726758be243bade4527b538">apra::applyProp</a></div><div class="ttdeci">void applyProp(T &amp;member, const char *propName, const std::map&lt; std::string, ScalarPropertyValue &gt; &amp;values, bool isRequired, std::vector&lt; std::string &gt; &amp;missingRequired)</div><div class="ttdef"><b>Definition</b> PropertyMacros.h:36</div></div>
+<div class="ttc" id="anamespaceapra_html_aeed3f8f94e5c4966d7cd5a08ea175a1b"><div class="ttname"><a href="namespaceapra.html#aeed3f8f94e5c4966d7cd5a08ea175a1b">apra::applyFromVariant</a></div><div class="ttdeci">bool applyFromVariant(T &amp;member, const ScalarPropertyValue &amp;value)</div><div class="ttdef"><b>Definition</b> PropertyMacros.h:108</div></div>
+<div class="ttc" id="anamespaceapra_html_af055647ba6443d5f9fd0f44b978078c4"><div class="ttname"><a href="namespaceapra.html#af055647ba6443d5f9fd0f44b978078c4">apra::ScalarPropertyValue</a></div><div class="ttdeci">std::variant&lt; int64_t, double, bool, std::string &gt; ScalarPropertyValue</div><div class="ttdef"><b>Definition</b> ModuleRegistry.h:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="dir_e914ee4d4a44400f1fdb170cb4ead18a.html">base</a></li><li class="navelem"><a class="el" href="dir_86751c6d8ae9997ab6788777e7f7ee73.html">include</a></li><li class="navelem"><b>Merge.h</b></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 669df2a</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: b9db9d8</a></li>
     </ul>
   </div>
   </body>

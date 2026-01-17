@@ -25,5 +25,8 @@ var searchData=
   ['framesmuxer_22',['FramesMuxer',['../classFramesMuxer.html',1,'']]],
   ['framesmuxerprops_23',['FramesMuxerProps',['../classFramesMuxerProps.html',1,'']]],
   ['framesmuxerstrategy_24',['FramesMuxerStrategy',['../classFramesMuxerStrategy.html',1,'']]],
-  ['framesqueue_25',['FramesQueue',['../classFramesQueue.html',1,'']]]
+  ['framesqueue_25',['FramesQueue',['../classFramesQueue.html',1,'']]],
+  ['frametypedef_26',['FrameTypeDef',['../structapra_1_1FrameTypeDef.html',1,'apra']]],
+  ['frametypeinfo_27',['FrameTypeInfo',['../structapra_1_1FrameTypeInfo.html',1,'apra']]],
+  ['frametyperegistry_28',['FrameTypeRegistry',['../classapra_1_1FrameTypeRegistry.html',1,'apra']]]
 ];

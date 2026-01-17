@@ -1,0 +1,9 @@
+<map id="apra::PipelineAnalyzer::checkForSuboptimalPatterns" name="apra::PipelineAnalyzer::checkForSuboptimalPatterns">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,71,201,111"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1PipelineDescription.html#aadd7ae1371ec835a0ede6e79668d7924" title=" " alt="" coords="249,5,412,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,68,242,48,244,53,177,73"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1ModuleRegistry.html#a1befd2952f7d9a90972fb716ab6e74c0" title=" " alt="" coords="260,71,402,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="201,88,245,88,245,94,201,94"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1ModuleRegistry.html#a2630bb1d0a8b7e751f823b3e027a1c1a" title=" " alt="" coords="249,136,413,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="177,109,244,129,242,134,175,114"/>
+</map>

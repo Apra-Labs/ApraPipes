@@ -9,7 +9,7 @@ var searchData=
   ['h264encodernvcodecprops_6',['H264EncoderNVCodecProps',['../classH264EncoderNVCodecProps.html#a6b04e913556fcb625ff033f840131743',1,'H264EncoderNVCodecProps::H264EncoderNVCodecProps(const uint32_t &amp;_bitRateKbps, const apracucontext_sp &amp;_cuContext, const uint32_t &amp;_gopLength, const uint32_t &amp;_frameRate, H264CodecProfile _vProfile, bool _enableBFrames)'],['../classH264EncoderNVCodecProps.html#a6d7b9707c81d8c0a17bd6e8e69799730',1,'H264EncoderNVCodecProps::H264EncoderNVCodecProps(apracucontext_sp &amp;_cuContext)'],['../classH264EncoderNVCodecProps.html#ace70f1049fb190b502ecc39170e08992',1,'H264EncoderNVCodecProps::H264EncoderNVCodecProps(const uint32_t &amp;_bitRateKbps, const apracucontext_sp &amp;_cuContext, const uint32_t &amp;_gopLength, const uint32_t &amp;_frameRate, H264CodecProfile _vProfile, bool _enableBFrames, uint32_t &amp;_bufferThres)']]],
   ['h264encoderv4l2_7',['H264EncoderV4L2',['../classH264EncoderV4L2.html#a4e16bfceabad3fafa6069900085db823',1,'H264EncoderV4L2']]],
   ['h264encoderv4l2helper_8',['H264EncoderV4L2Helper',['../classH264EncoderV4L2Helper.html#ae673d79eb9110eb93bbb1dc599ab6224',1,'H264EncoderV4L2Helper']]],
-  ['h264encoderv4l2props_9',['H264EncoderV4L2Props',['../classH264EncoderV4L2Props.html#ac322f5235126542ba4f1fba843fadf66',1,'H264EncoderV4L2Props']]],
+  ['h264encoderv4l2props_9',['H264EncoderV4L2Props',['../classH264EncoderV4L2Props.html#a0baba38799a0c9d879aee1792ac3533b',1,'H264EncoderV4L2Props::H264EncoderV4L2Props()'],['../classH264EncoderV4L2Props.html#a3805b0c30dc8f670fd457b033f9e95a7',1,'H264EncoderV4L2Props::H264EncoderV4L2Props(bool _enableMotionVectors, int _motionVectorThreshold=5)']]],
   ['h264framedemuxer_10',['H264FrameDemuxer',['../classH264FrameDemuxer.html#ae3ff9de0f1d492d976fe23049758ac64',1,'H264FrameDemuxer']]],
   ['h264metadata_11',['H264Metadata',['../classH264Metadata.html#a529415d82bdbf1cb2d2684096736f1f1',1,'H264Metadata::H264Metadata()'],['../classH264Metadata.html#a6e9458bc03ef1ba9cfdb47f97fca288e',1,'H264Metadata::H264Metadata(int _width, int _height)'],['../classH264Metadata.html#ab9875058ba3279343c55a6504a204168',1,'H264Metadata::H264Metadata(int _width, int _height, int _gop_size, int _max_b_frames)']]],
   ['h264parserutils_12',['H264ParserUtils',['../classH264ParserUtils.html#a0ba87b1bdbba051ca9d41dced8cc305e',1,'H264ParserUtils']]],
@@ -35,8 +35,14 @@ var searchData=
   ['handlestop_32',['handleStop',['../classModule.html#a7139a0dfd4b789d354169f80e01ad029',1,'Module']]],
   ['handlevideosequence_33',['HandleVideoSequence',['../classNvDecoder.html#a19c6c4350e928881c3c5e467f1e6bc92',1,'NvDecoder']]],
   ['handlevideosequenceproc_34',['HandleVideoSequenceProc',['../classNvDecoder.html#a9d18feaa4b3ecddb2caba65234dc3eee',1,'NvDecoder']]],
-  ['histogramoverlay_35',['HistogramOverlay',['../classHistogramOverlay.html#ac57b28244aa20037dca65bf9ee67b12e',1,'HistogramOverlay']]],
-  ['histogramoverlayprops_36',['HistogramOverlayProps',['../classHistogramOverlayProps.html#a19237a0b9ea1a1cc65bef20166ecd482',1,'HistogramOverlayProps']]],
-  ['hostallocator_37',['HostAllocator',['../classHostAllocator.html#aba5b59e2e22b00e5c8871bdb97fa30c6',1,'HostAllocator']]],
-  ['hourpatterncheck_38',['hourPatternCheck',['../classOrderedCacheOfFiles.html#a0e16fbf050c1dcfc6cb1e9c1711c2aaa',1,'OrderedCacheOfFiles']]]
+  ['haserrors_35',['hasErrors',['../structapra_1_1ModuleFactory_1_1BuildResult.html#a616e286ecc6530853962690f2f96a580',1,'apra::ModuleFactory::BuildResult::hasErrors()'],['../structapra_1_1PipelineValidator_1_1Result.html#ae5fd0a30a29b30c37f49feece06f6fb9',1,'apra::PipelineValidator::Result::hasErrors()']]],
+  ['hasframetype_36',['hasFrameType',['../classapra_1_1FrameTypeRegistry.html#a0b187a61420bbbd928b46004b17bd2f5',1,'apra::FrameTypeRegistry']]],
+  ['hasimagetyperestrictions_37',['hasImageTypeRestrictions',['../structapra_1_1PinDef.html#a05dfab8c79419a95cbcc1285bf8ded88',1,'apra::PinDef']]],
+  ['hasmodule_38',['hasModule',['../classapra_1_1ModuleRegistry.html#a5dd2878c39050ce4f3020857e2deda66',1,'apra::ModuleRegistry']]],
+  ['hasvalidator_39',['hasValidator',['../classapra_1_1PropertyValidatorRegistry.html#a3e80f76f0cb56bf05eb7c0aafb4d33f8',1,'apra::PropertyValidatorRegistry']]],
+  ['haswarnings_40',['hasWarnings',['../structapra_1_1ModuleFactory_1_1BuildResult.html#a42e535f6c6e4a77de242fb0836e0eab5',1,'apra::ModuleFactory::BuildResult::hasWarnings()'],['../structapra_1_1PipelineValidator_1_1Result.html#aa4b801f307dcf62873131e0abcbd647e',1,'apra::PipelineValidator::Result::hasWarnings()']]],
+  ['histogramoverlay_41',['HistogramOverlay',['../classHistogramOverlay.html#ac57b28244aa20037dca65bf9ee67b12e',1,'HistogramOverlay']]],
+  ['histogramoverlayprops_42',['HistogramOverlayProps',['../classHistogramOverlayProps.html#a19237a0b9ea1a1cc65bef20166ecd482',1,'HistogramOverlayProps']]],
+  ['hostallocator_43',['HostAllocator',['../classHostAllocator.html#aba5b59e2e22b00e5c8871bdb97fa30c6',1,'HostAllocator']]],
+  ['hourpatterncheck_44',['hourPatternCheck',['../classOrderedCacheOfFiles.html#a0e16fbf050c1dcfc6cb1e9c1711c2aaa',1,'OrderedCacheOfFiles']]]
 ];

@@ -2,6 +2,8 @@ var hierarchy =
 [
     [ "_CompInfo", "struct__CompInfo.html", null ],
     [ "AbsColorConversionFactory", "classAbsColorConversionFactory.html", null ],
+    [ "apra::AnalysisError", "structapra_1_1AnalysisError.html", null ],
+    [ "apra::AnalysisResult", "structapra_1_1AnalysisResult.html", null ],
     [ "APErrorObject", "classAPErrorObject.html", null ],
     [ "APHealthObject", "classAPHealthObject.html", null ],
     [ "apra_cudamalloc_allocator", "structapra__cudamalloc__allocator.html", null ],
@@ -17,6 +19,9 @@ var hierarchy =
     [ "ApraSegregatedStorage", "classApraSegregatedStorage.html", [
       [ "ApraPool< UserAllocator >", "classApraPool.html", null ]
     ] ],
+    [ "apra::AttrDef", "structapra_1_1AttrDef.html", null ],
+    [ "apra::FrameTypeDef::AttrDef", "structapra_1_1FrameTypeDef_1_1AttrDef.html", null ],
+    [ "apra::FrameTypeInfo::AttrInfo", "structapra_1_1FrameTypeInfo_1_1AttrInfo.html", null ],
     [ "AV4L2Buffer", "classAV4L2Buffer.html", null ],
     [ "AV4L2ElementPlane", "classAV4L2ElementPlane.html", null ],
     [ "AV4L2PlaneInfo", "classAV4L2PlaneInfo.html", null ],
@@ -30,6 +35,7 @@ var hierarchy =
         ] ]
       ] ]
     ] ],
+    [ "apra::BridgeSpec", "structapra_1_1BridgeSpec.html", null ],
     [ "Buffer", "classBuffer.html", null ],
     [ "BufferMaker", "classBufferMaker.html", [
       [ "Module::FFBufferMaker", "classModule_1_1FFBufferMaker.html", null ]
@@ -37,6 +43,7 @@ var hierarchy =
     [ "Buffer::BufferPlane", "structBuffer_1_1BufferPlane.html", null ],
     [ "Buffer::BufferPlaneFormat", "structBuffer_1_1BufferPlaneFormat.html", null ],
     [ "BuilderOverlayFactory", "classBuilderOverlayFactory.html", null ],
+    [ "apra::ModuleFactory::BuildResult", "structapra_1_1ModuleFactory_1_1BuildResult.html", null ],
     [ "OrderedCacheOfFiles::CacheIteratorState", "structOrderedCacheOfFiles_1_1CacheIteratorState.html", null ],
     [ "Command", "classCommand.html", [
       [ "DecoderPlaybackSpeed", "classDecoderPlaybackSpeed.html", null ],
@@ -51,6 +58,8 @@ var hierarchy =
       [ "StepCommand", "classStepCommand.html", null ],
       [ "ValvePassThroughCommand", "classValvePassThroughCommand.html", null ]
     ] ],
+    [ "apra::Connection", "structapra_1_1Connection.html", null ],
+    [ "apra::ConnectionInfo", "structapra_1_1ConnectionInfo.html", null ],
     [ "h264DecoderV4L2Helper::context_t", "structh264DecoderV4L2Helper_1_1context__t.html", null ],
     [ "CudaDriverLoader", "classCudaDriverLoader.html", null ],
     [ "CudaUtils", "classCudaUtils.html", null ],
@@ -161,6 +170,13 @@ var hierarchy =
       [ "NVDECException", "classNVDECException.html", null ]
     ] ],
     [ "FaceDetectsInfo", "classFaceDetectsInfo.html", null ],
+    [ "std::false_type", null, [
+      [ "apra::detail::has_apply_properties< T, typename >", "structapra_1_1detail_1_1has__apply__properties.html", null ],
+      [ "apra::detail::has_dynamic_property_names< P, typename >", "structapra_1_1detail_1_1has__dynamic__property__names.html", null ],
+      [ "apra::detail::has_get_property< P, typename >", "structapra_1_1detail_1_1has__get__property.html", null ],
+      [ "apra::detail::has_get_set_props< M, P, typename >", "structapra_1_1detail_1_1has__get__set__props.html", null ],
+      [ "apra::detail::has_set_property< P, typename >", "structapra_1_1detail_1_1has__set__property.html", null ]
+    ] ],
     [ "FileHeader", "structFileHeader.html", null ],
     [ "FilenameStrategy", "classFilenameStrategy.html", [
       [ "BoostDirectoryStrategy", "classBoostDirectoryStrategy.html", null ],
@@ -194,6 +210,9 @@ var hierarchy =
       [ "GroupedFramesQueue", "classGroupedFramesQueue.html", null ],
       [ "IndependentFramesQueue", "classIndependentFramesQueue.html", null ]
     ] ],
+    [ "apra::FrameTypeDef", "structapra_1_1FrameTypeDef.html", null ],
+    [ "apra::FrameTypeInfo", "structapra_1_1FrameTypeInfo.html", null ],
+    [ "apra::FrameTypeRegistry", "classapra_1_1FrameTypeRegistry.html", null ],
     [ "h264DecoderV4L2Helper", "classh264DecoderV4L2Helper.html", null ],
     [ "H264EncoderNVCodecHelper", "classH264EncoderNVCodecHelper.html", null ],
     [ "H264EncoderV4L2Helper", "classH264EncoderV4L2Helper.html", null ],
@@ -204,8 +223,10 @@ var hierarchy =
     ] ],
     [ "ImageMetadata", "classImageMetadata.html", null ],
     [ "ImagePlaneData", "classImagePlaneData.html", null ],
+    [ "apra::Issue", "structapra_1_1Issue.html", null ],
     [ "JPEGDecoderL4TMHelper", "classJPEGDecoderL4TMHelper.html", null ],
     [ "JPEGEncoderL4TMHelper", "classJPEGEncoderL4TMHelper.html", null ],
+    [ "apra::JsonParser", "classapra_1_1JsonParser.html", null ],
     [ "loc", "structloc.html", null ],
     [ "Logger", "classLogger.html", null ],
     [ "LoggerProps", "classLoggerProps.html", null ],
@@ -277,7 +298,12 @@ var hierarchy =
       [ "VirtualPTZ", "classVirtualPTZ.html", null ],
       [ "WebCamSource", "classWebCamSource.html", null ]
     ] ],
+    [ "apra::ModuleFactory::ModuleContext", "structapra_1_1ModuleFactory_1_1ModuleContext.html", null ],
+    [ "apra::ModuleFactory::ModuleEntry", "structapra_1_1ModuleFactory_1_1ModuleEntry.html", null ],
+    [ "apra::ModuleFactory", "classapra_1_1ModuleFactory.html", null ],
     [ "ModuleFactory", "classModuleFactory.html", null ],
+    [ "apra::ModuleInfo", "structapra_1_1ModuleInfo.html", null ],
+    [ "apra::ModuleInstance", "structapra_1_1ModuleInstance.html", null ],
     [ "ModuleProps", "classModuleProps.html", [
       [ "AbsControlModuleProps", "classAbsControlModuleProps.html", [
         [ "SimpleControlModuleProps", "classSimpleControlModuleProps.html", null ]
@@ -346,6 +372,8 @@ var hierarchy =
       [ "VirtualPTZProps", "classVirtualPTZProps.html", null ],
       [ "WebCamSourceProps", "classWebCamSourceProps.html", null ]
     ] ],
+    [ "apra::ModuleRegistrationBuilder< ModuleClass, PropsClass >", "classapra_1_1ModuleRegistrationBuilder.html", null ],
+    [ "apra::ModuleRegistry", "classapra_1_1ModuleRegistry.html", null ],
     [ "Mp4ReaderDetailAbs", "classMp4ReaderDetailAbs.html", [
       [ "Mp4ReaderDetailH264", "classMp4ReaderDetailH264.html", null ],
       [ "Mp4ReaderDetailJpeg", "classMp4ReaderDetailJpeg.html", null ]
@@ -377,6 +405,8 @@ var hierarchy =
     ] ],
     [ "NvEglRenderer", "classNvEglRenderer.html", null ],
     [ "NvV4L2CameraHelper", "classNvV4L2CameraHelper.html", null ],
+    [ "apra::ModuleFactory::Options", "structapra_1_1ModuleFactory_1_1Options.html", null ],
+    [ "apra::PipelineValidator::Options", "structapra_1_1PipelineValidator_1_1Options.html", null ],
     [ "OrderedCacheOfFiles", "classOrderedCacheOfFiles.html", null ],
     [ "OverlayFactory", "classOverlayFactory.html", null ],
     [ "OverlayInfo", "classOverlayInfo.html", [
@@ -393,17 +423,36 @@ var hierarchy =
       [ "OverlayInfoSerializerVisitor", "classOverlayInfoSerializerVisitor.html", null ]
     ] ],
     [ "PaceMaker", "classPaceMaker.html", null ],
+    [ "apra::ParseResult", "structapra_1_1ParseResult.html", null ],
+    [ "apra::PinDef", "structapra_1_1PinDef.html", null ],
+    [ "apra::ModuleInfo::PinInfo", "structapra_1_1ModuleInfo_1_1PinInfo.html", null ],
     [ "PipeLine", "classPipeLine.html", null ],
+    [ "apra::PipelineAnalyzer", "classapra_1_1PipelineAnalyzer.html", null ],
+    [ "apra::PipelineDescription", "structapra_1_1PipelineDescription.html", null ],
+    [ "apra::PipelineSettings", "structapra_1_1PipelineSettings.html", null ],
+    [ "apra::PipelineValidator", "classapra_1_1PipelineValidator.html", null ],
     [ "cv::Point2f", null, [
       [ "ApraPoint2f", "classApraPoint2f.html", null ]
     ] ],
     [ "Module::Profiler", "classModule_1_1Profiler.html", null ],
     [ "program", "structprogram.html", null ],
+    [ "apra::PropDef", "structapra_1_1PropDef.html", null ],
+    [ "apra::ModuleInfo::PropertyAccessors", "structapra_1_1ModuleInfo_1_1PropertyAccessors.html", null ],
+    [ "apra::PropertyInfo", "structapra_1_1PropertyInfo.html", null ],
+    [ "apra::PropertyValidator", "classapra_1_1PropertyValidator.html", [
+      [ "apra::CompositeValidator", "classapra_1_1CompositeValidator.html", null ],
+      [ "apra::EnumValidator", "classapra_1_1EnumValidator.html", null ],
+      [ "apra::RangeValidator< T >", "classapra_1_1RangeValidator.html", null ],
+      [ "apra::RegexValidator", "classapra_1_1RegexValidator.html", null ]
+    ] ],
+    [ "apra::PropertyValidatorRegistry", "classapra_1_1PropertyValidatorRegistry.html", null ],
+    [ "apra::ModuleInfo::PropInfo", "structapra_1_1ModuleInfo_1_1PropInfo.html", null ],
     [ "QuePushStrategy", "classQuePushStrategy.html", [
       [ "NonBlockingAllOrNonePushStrategy", "classNonBlockingAllOrNonePushStrategy.html", null ],
       [ "NonBlockingAnyPushStrategy", "classNonBlockingAnyPushStrategy.html", null ]
     ] ],
     [ "Rect", "structRect.html", null ],
+    [ "apra::PipelineValidator::Result", "structapra_1_1PipelineValidator_1_1Result.html", null ],
     [ "std::runtime_error", null, [
       [ "AIP_Exception", "classAIP__Exception.html", [
         [ "Mp4_Exception", "classMp4__Exception.html", null ]
@@ -424,16 +473,27 @@ var hierarchy =
       [ "Idle", "classIdle.html", null ],
       [ "Waiting", "classWaiting.html", null ]
     ] ],
+    [ "apra::Suggestion", "structapra_1_1Suggestion.html", null ],
     [ "threadsafe_que< T >", "classthreadsafe__que.html", null ],
     [ "threadsafe_que< std::string >", "classthreadsafe__que.html", null ],
+    [ "std::true_type", null, [
+      [ "apra::detail::has_apply_properties< T, std::void_t< decltype(T::applyProperties(std::declval< T & >(), std::declval< const std::map< std::string, ScalarPropertyValue > & >(), std::declval< std::vector< std::string > & >()))> >", "structapra_1_1detail_1_1has__apply__properties_3_01T_00_01std_1_1void__t_3_01decltype_07T_1_1app2906be3a527b8c8eee2055d0d5b5f1d2.html", null ],
+      [ "apra::detail::has_dynamic_property_names< P, std::void_t< decltype(P::dynamicPropertyNames())> >", "structapra_1_1detail_1_1has__dynamic__property__names_3_01P_00_01std_1_1void__t_3_01decltype_07Pd2d02d443654ef0bd86e4092b56ff773.html", null ],
+      [ "apra::detail::has_get_property< P, std::void_t< decltype(std::declval< const P & >().getProperty(std::string{}))> >", "structapra_1_1detail_1_1has__get__property_3_01P_00_01std_1_1void__t_3_01decltype_07std_1_1declvffcf8e688d13811d1cb794714118abd0.html", null ],
+      [ "apra::detail::has_get_set_props< M, P, std::void_t< decltype(std::declval< M & >().getProps()), decltype(std::declval< M & >().setProps(std::declval< P & >())) > >", "structapra_1_1detail_1_1has__get__set__props_3_01M_00_01P_00_01std_1_1void__t_3_01decltype_07std9e116c31d20b0e69f0b34a1f7d650902.html", null ],
+      [ "apra::detail::has_set_property< P, std::void_t< decltype(std::declval< P & >().setProperty(std::string{}, ScalarPropertyValue{}))> >", "structapra_1_1detail_1_1has__set__property_3_01P_00_01std_1_1void__t_3_01decltype_07std_1_1declvb9c513284ea37d6561efe38805528a41.html", null ]
+    ] ],
+    [ "apra::TypeConversion", "structapra_1_1TypeConversion.html", null ],
     [ "Utils", "classUtils.html", null ],
     [ "V4L2CUYUV420Converter", "classV4L2CUYUV420Converter.html", [
       [ "V4L2CUDMABufYUV420Converter", "classV4L2CUDMABufYUV420Converter.html", null ],
       [ "V4L2CURGBToYUV420Converter", "classV4L2CURGBToYUV420Converter.html", null ]
     ] ],
+    [ "apra::ValidationResult", "structapra_1_1ValidationResult.html", null ],
     [ "vertex", "structvertex.html", null ],
     [ "OrderedCacheOfFiles::Video", "structOrderedCacheOfFiles_1_1Video.html", null ],
     [ "OrderedCacheOfFiles::videoPath", "structOrderedCacheOfFiles_1_1videoPath.html", null ],
     [ "OrderedCacheOfFiles::videoTS", "structOrderedCacheOfFiles_1_1videoTS.html", null ],
+    [ "apra::Warning", "structapra_1_1Warning.html", null ],
     [ "YuvConverter< T >", "classYuvConverter.html", null ]
 ];

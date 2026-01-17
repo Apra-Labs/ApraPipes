@@ -1,7 +1,7 @@
 <map id="ImageEncoderCV::Detail" name="ImageEncoderCV::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="19,596,170,764"/>
-<area shape="rect" id="Node000002" href="$classImageEncoderCVProps.html" title=" " alt="" coords="11,467,178,533"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,533,97,579,92,579,92,533"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="19,677,170,845"/>
+<area shape="rect" id="Node000002" href="$classImageEncoderCVProps.html" title=" " alt="" coords="9,467,179,614"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,614,97,661,92,661,92,614"/>
 <area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

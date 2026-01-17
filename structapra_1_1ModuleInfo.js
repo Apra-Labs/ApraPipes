@@ -1,0 +1,25 @@
+var structapra_1_1ModuleInfo =
+[
+    [ "PinInfo", "structapra_1_1ModuleInfo_1_1PinInfo.html", "structapra_1_1ModuleInfo_1_1PinInfo" ],
+    [ "PropertyAccessors", "structapra_1_1ModuleInfo_1_1PropertyAccessors.html", "structapra_1_1ModuleInfo_1_1PropertyAccessors" ],
+    [ "PropInfo", "structapra_1_1ModuleInfo_1_1PropInfo.html", "structapra_1_1ModuleInfo_1_1PropInfo" ],
+    [ "CuContextFactoryFn", "structapra_1_1ModuleInfo.html#a97e63857e7581f42e2e069cb93832c8a", null ],
+    [ "CudaFactoryFn", "structapra_1_1ModuleInfo.html#abbc1082070abba477acf81571c867246", null ],
+    [ "FactoryFn", "structapra_1_1ModuleInfo.html#abdd4c056d38501574a1b869c5c7c5e9f", null ],
+    [ "PropertyAccessorFactoryFn", "structapra_1_1ModuleInfo.html#a88bf5467ccbf2bbc34ccd5904a62501f", null ],
+    [ "category", "structapra_1_1ModuleInfo.html#a5ccc7dda0527f8a969b96e01632a5b15", null ],
+    [ "cuContextFactory", "structapra_1_1ModuleInfo.html#a0c0cf0a10167e2431d2b6ae32a419832", null ],
+    [ "cudaFactory", "structapra_1_1ModuleInfo.html#afee73b6db7c6cb27e990bd98fa5af0c4", null ],
+    [ "description", "structapra_1_1ModuleInfo.html#a901678e59274542d7242da7f837d22f1", null ],
+    [ "factory", "structapra_1_1ModuleInfo.html#af370c168c465b8a81097f8496dd30f11", null ],
+    [ "inputs", "structapra_1_1ModuleInfo.html#abce3d7a803ab8c0664e150342fb1fa30", null ],
+    [ "name", "structapra_1_1ModuleInfo.html#af1528ebe38e684e87446f49ad7ddeb73", null ],
+    [ "outputs", "structapra_1_1ModuleInfo.html#abed5a6498c6536ef764b4ed75ecda7cf", null ],
+    [ "properties", "structapra_1_1ModuleInfo.html#a9291c4f46153b2305b72089a47038d94", null ],
+    [ "propertyAccessorFactory", "structapra_1_1ModuleInfo.html#ae2029a37197563b260158813cd68cbaf", null ],
+    [ "requiresCuContext", "structapra_1_1ModuleInfo.html#a357eee15ef2acaa3f8a80a0f62c5b5b4", null ],
+    [ "requiresCudaStream", "structapra_1_1ModuleInfo.html#a8820c3526912ac7fea59b029e64eb613", null ],
+    [ "selfManagedOutputPins", "structapra_1_1ModuleInfo.html#a1fd40fbcff197b00557c8a5258ffb007", null ],
+    [ "tags", "structapra_1_1ModuleInfo.html#a6bf6dc101525850ad47faf1500ab78f2", null ],
+    [ "version", "structapra_1_1ModuleInfo.html#ac9ca09fdf4597377f8d9e44dd93b453b", null ]
+];

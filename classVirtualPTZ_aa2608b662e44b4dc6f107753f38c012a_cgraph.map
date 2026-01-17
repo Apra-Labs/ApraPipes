@@ -1,7 +1,9 @@
 <map id="VirtualPTZ::setProps" name="VirtualPTZ::setProps">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,147,106"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,105,147,131"/>
 <area shape="rect" id="Node000002" href="$classModule.html#aeba20f2c7a904f61cf20911a5d7f84ed" title=" " alt="" coords="195,80,372,106"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,90,179,90,179,96,147,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,107,179,103,180,108,148,112"/>
+<area shape="rect" id="Node000007" href="$classModule.html#a63e323a29bc57167b05581d0d5de69dd" title=" " alt="" coords="202,129,364,155"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="148,124,187,128,186,134,147,129"/>
 <area shape="rect" id="Node000003" href="$classModule.html#a8fefc8b729f4d33af405124d6e8cd433" title=" " alt="" coords="420,5,617,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="316,77,419,40,443,33,445,38,421,45,318,82"/>
 <area shape="rect" id="Node000004" href="$classModule.html#a9d9560b4f757dfe628851cd34a2685c7" title=" " alt="" coords="470,55,567,80"/>
@@ -9,5 +11,5 @@
 <area shape="rect" id="Node000005" href="$classModule.html#a2bbadee25908b6adeb8639e9db972f2f" title=" " alt="" coords="452,104,585,130"/>
 <area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="373,99,438,106,437,111,372,105"/>
 <area shape="rect" id="Node000006" href="$classModule.html#a9b3624e543f9909401cdfc4686ac1ecd" title=" " alt="" coords="460,153,577,179"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="319,104,421,140,446,147,445,152,419,145,317,109"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="342,104,373,114,397,127,421,140,446,148,445,153,419,145,395,132,371,119,340,109"/>
 </map>

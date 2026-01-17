@@ -1,0 +1,27 @@
+var classapra_1_1FrameTypeRegistry =
+[
+    [ "FrameTypeRegistry", "classapra_1_1FrameTypeRegistry.html#ad52f7c9e8c2209c8e9bcca66c6e51df1", null ],
+    [ "~FrameTypeRegistry", "classapra_1_1FrameTypeRegistry.html#a1b563fd87c8124427e092ca90cf2ca19", null ],
+    [ "FrameTypeRegistry", "classapra_1_1FrameTypeRegistry.html#a2e020181136d81707ec33ba1f8634e6b", null ],
+    [ "clear", "classapra_1_1FrameTypeRegistry.html#ae788f3e9427b778e7e1a32f54fada3a5", null ],
+    [ "getAllFrameTypes", "classapra_1_1FrameTypeRegistry.html#a35b9abaf0bd35d08cc5bca47afc8ca72", null ],
+    [ "getAncestors", "classapra_1_1FrameTypeRegistry.html#aa523ffe8963e6f62e6d0e2f7fbea9c66", null ],
+    [ "getFrameType", "classapra_1_1FrameTypeRegistry.html#aba3e66ae32693157b92e5d745419cc05", null ],
+    [ "getFrameTypesByTag", "classapra_1_1FrameTypeRegistry.html#a92452c4b3d67eaada9f90d481f8d181a", null ],
+    [ "getParent", "classapra_1_1FrameTypeRegistry.html#ae1452ef11a70f3b3071dbdeb924cf2ce", null ],
+    [ "getSubtypes", "classapra_1_1FrameTypeRegistry.html#a747dfa3c56a71458df7007e8ff2e23da", null ],
+    [ "hasFrameType", "classapra_1_1FrameTypeRegistry.html#a0b187a61420bbbd928b46004b17bd2f5", null ],
+    [ "instance", "classapra_1_1FrameTypeRegistry.html#acfd67ad5156b48e1183158358f1a1cea", null ],
+    [ "invalidateCache", "classapra_1_1FrameTypeRegistry.html#a8a89882f8c7f2f7cbaa87d5d4f63e843", null ],
+    [ "isCompatible", "classapra_1_1FrameTypeRegistry.html#a662b6a7c323db5eabb3733e3c1d9bf31", null ],
+    [ "isSubtype", "classapra_1_1FrameTypeRegistry.html#a705171886672cca3d42fbd87af7c475a", null ],
+    [ "operator=", "classapra_1_1FrameTypeRegistry.html#a0cf73a56ff335bc4e3691dd2f98e463b", null ],
+    [ "registerFrameType", "classapra_1_1FrameTypeRegistry.html#a2aaf05faae99c49b3cdf889f0c57b964", null ],
+    [ "size", "classapra_1_1FrameTypeRegistry.html#af11af25ff11e63c548bd3e4b6574ecd7", null ],
+    [ "toJson", "classapra_1_1FrameTypeRegistry.html#a3c0d85228c2b6f00fd642d1312f070e0", null ],
+    [ "toMarkdown", "classapra_1_1FrameTypeRegistry.html#a27ec65c848399fbf1d81033b6ec363bd", null ],
+    [ "ancestorCache_", "classapra_1_1FrameTypeRegistry.html#ae409c9f9d8155e938f323c137eb6f1cb", null ],
+    [ "cacheValid_", "classapra_1_1FrameTypeRegistry.html#a10387fbf6528e211ca13c3ea652859ac", null ],
+    [ "mutex_", "classapra_1_1FrameTypeRegistry.html#aa4065b82650b81987eed6bba484c8493", null ],
+    [ "types_", "classapra_1_1FrameTypeRegistry.html#a88cf176ef7bd16cfd7520fc440cf4c23", null ]
+];

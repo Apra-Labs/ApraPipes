@@ -6,6 +6,7 @@ var classImageEncoderCV =
     [ "init", "classImageEncoderCV.html#ade1a2416935241df9920825582bb429e", null ],
     [ "process", "classImageEncoderCV.html#ad0629234b44e9c1dcd042eb248f670e1", null ],
     [ "processSOS", "classImageEncoderCV.html#ac126f7495bb9d8d3663dd4fff111872d", null ],
+    [ "shouldTriggerSOS", "classImageEncoderCV.html#af3c3d8816597b1e79c984c403d45feb3", null ],
     [ "term", "classImageEncoderCV.html#a5c3b821274e984ee353753389df147c6", null ],
     [ "validateInputPins", "classImageEncoderCV.html#a50383dc1c36ae1149719dbd6b0571afd", null ],
     [ "validateOutputPins", "classImageEncoderCV.html#a5d6636a1de2d41e5fed183ebbe1162ad", null ],

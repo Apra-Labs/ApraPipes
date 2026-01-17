@@ -9,5 +9,6 @@ var searchData=
   ['jpegencoderl4tmhelper_6',['JPEGEncoderL4TMHelper',['../classJPEGEncoderL4TMHelper.html',1,'']]],
   ['jpegencoderl4tmprops_7',['JPEGEncoderL4TMProps',['../classJPEGEncoderL4TMProps.html',1,'']]],
   ['jpegencodernvjpeg_8',['JPEGEncoderNVJPEG',['../classJPEGEncoderNVJPEG.html',1,'']]],
-  ['jpegencodernvjpegprops_9',['JPEGEncoderNVJPEGProps',['../classJPEGEncoderNVJPEGProps.html',1,'']]]
+  ['jpegencodernvjpegprops_9',['JPEGEncoderNVJPEGProps',['../classJPEGEncoderNVJPEGProps.html',1,'']]],
+  ['jsonparser_10',['JsonParser',['../classapra_1_1JsonParser.html',1,'apra']]]
 ];

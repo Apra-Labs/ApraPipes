@@ -1,7 +1,7 @@
 <map id="TextOverlayXForm::Detail" name="TextOverlayXForm::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="16,759,173,988"/>
-<area shape="rect" id="Node000002" href="$classTextOverlayXFormProps.html" title=" " alt="" coords="7,467,181,696"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,696,97,742,92,742,92,696"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="16,860,173,1089"/>
+<area shape="rect" id="Node000002" href="$classTextOverlayXFormProps.html" title=" " alt="" coords="7,467,181,797"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,797,97,844,92,844,92,797"/>
 <area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

@@ -1,5 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,5,106,31"/>
-<area shape="rect" id="Node000001" href="$classNVDECException.html" title="Exception class for error reporting from the decode API." alt="" coords="154,5,276,31"/>
-<area shape="poly" id="edge232_Node000000_Node000001" title=" " alt="" coords="121,16,154,16,154,21,121,21"/>
+<area shape="rect" id="Node000000" href="$classMp4ReaderDetailAbs.html" title=" " alt="" coords="5,31,149,56"/>
+<area shape="rect" id="Node000001" href="$classMp4ReaderDetailH264.html" title=" " alt="" coords="197,5,348,31"/>
+<area shape="poly" id="edge215_Node000000_Node000001" title=" " alt="" coords="164,30,196,25,197,31,164,35"/>
+<area shape="rect" id="Node000002" href="$classMp4ReaderDetailJpeg.html" title=" " alt="" coords="198,55,346,80"/>
+<area shape="poly" id="edge216_Node000000_Node000002" title=" " alt="" coords="164,52,198,56,197,61,164,57"/>
 </map>

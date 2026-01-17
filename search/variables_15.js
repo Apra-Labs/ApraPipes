@@ -1,11 +1,20 @@
 var searchData=
 [
   ['u_0',['u',['../classJPEGDecoderL4TMHelper.html#af85fa343beb8b9fee8e4f964e0921417',1,'JPEGDecoderL4TMHelper::u'],['../structvertex.html#a947017e88dc8afee895a2a56a1a813e1',1,'vertex::u']]],
-  ['updatealltimestamp_1',['updateAllTimestamp',['../classExportH264.html#a8e1ea31ae414c0fb86e113b1f2addf57',1,'ExportH264']]],
-  ['updatedencodedimgmetadata_2',['updatedEncodedImgMetadata',['../classMp4ReaderDetailAbs.html#aa0cefefee499a3b09ccab9a3b4a348c9',1,'Mp4ReaderDetailAbs']]],
-  ['updateendtimesaved_3',['updateEndTimeSaved',['../classExportH264.html#a939996a6de1659ebc6b44eb7811ec262',1,'ExportH264']]],
-  ['upperwatermark_4',['upperWaterMark',['../classArchiveSpaceManagerProps.html#ab353a328692c93402ab0b09f3b30e65c',1,'ArchiveSpaceManagerProps::upperWaterMark'],['../classH264DecoderProps.html#a13be378de647d1e57774837dad5fb304',1,'H264DecoderProps::upperWaterMark'],['../classMultimediaQueueXformProps.html#affed6ef8c16698d67a0fa6dd7de0085a',1,'MultimediaQueueXformProps::upperWaterMark'],['../classOrderedCacheOfFiles.html#a04a1d75876d1f53d5e37d7b4825def1f',1,'OrderedCacheOfFiles::upperWaterMark'],['../classFramesQueue.html#af95b7e63d3caa1115198948f30ef8fd7',1,'FramesQueue::upperWaterMark']]],
-  ['url_5',['URL',['../classRTSPPusherProps.html#a0854122302c27f73869f1ba00b24f204',1,'RTSPPusherProps']]],
-  ['username_6',['userName',['../classRTSPClientSrcProps.html#a7bdefdaf7e6f8d3ff0c4cd03ec87c4bd',1,'RTSPClientSrcProps']]],
-  ['usetcp_7',['useTCP',['../classRTSPClientSrcProps.html#a74ca4dc57a3452675b1284a831265941',1,'RTSPClientSrcProps']]]
+  ['unit_1',['unit',['../structapra_1_1PropDef.html#adcfd6bf77432188c725396dd0a05478a',1,'apra::PropDef::unit'],['../structapra_1_1ModuleInfo_1_1PropInfo.html#a699a2cf3439d1aa7aee94637b91827d8',1,'apra::ModuleInfo::PropInfo::unit']]],
+  ['unixpath_2',['UnixPath',['../namespaceapra_1_1patterns.html#a004faadbd3be137bad28478d6c34fba0',1,'apra::patterns']]],
+  ['unknown_5fdest_5fmodule_3',['UNKNOWN_DEST_MODULE',['../structapra_1_1Issue.html#aacd82e5b40bf4ae382961f48a4210f61',1,'apra::Issue']]],
+  ['unknown_5fdest_5fpin_4',['UNKNOWN_DEST_PIN',['../structapra_1_1Issue.html#ae8c324817c008669e27b125ca1778c2d',1,'apra::Issue']]],
+  ['unknown_5fmodule_5',['UNKNOWN_MODULE',['../structapra_1_1Issue.html#ab071b8ae4e718388e42b31021449b927',1,'apra::Issue']]],
+  ['unknown_5fmodule_5ftype_6',['UNKNOWN_MODULE_TYPE',['../structapra_1_1Issue.html#af96b1c492308ffa67a26114fd85bebc4',1,'apra::Issue']]],
+  ['unknown_5fproperty_7',['UNKNOWN_PROPERTY',['../structapra_1_1Issue.html#a64637e93b5afd4639c2073f706eacce2',1,'apra::Issue']]],
+  ['unknown_5fsource_5fmodule_8',['UNKNOWN_SOURCE_MODULE',['../structapra_1_1Issue.html#a0d53083c6b92b89624f819e0be3db0cd',1,'apra::Issue']]],
+  ['unknown_5fsource_5fpin_9',['UNKNOWN_SOURCE_PIN',['../structapra_1_1Issue.html#a43c101a98d470cf3ad66118c16a81f46',1,'apra::Issue']]],
+  ['updatealltimestamp_10',['updateAllTimestamp',['../classExportH264.html#a8e1ea31ae414c0fb86e113b1f2addf57',1,'ExportH264']]],
+  ['updatedencodedimgmetadata_11',['updatedEncodedImgMetadata',['../classMp4ReaderDetailAbs.html#aa0cefefee499a3b09ccab9a3b4a348c9',1,'Mp4ReaderDetailAbs']]],
+  ['updateendtimesaved_12',['updateEndTimeSaved',['../classExportH264.html#a939996a6de1659ebc6b44eb7811ec262',1,'ExportH264']]],
+  ['upperwatermark_13',['upperWaterMark',['../classArchiveSpaceManagerProps.html#ab353a328692c93402ab0b09f3b30e65c',1,'ArchiveSpaceManagerProps::upperWaterMark'],['../classH264DecoderProps.html#a13be378de647d1e57774837dad5fb304',1,'H264DecoderProps::upperWaterMark'],['../classMultimediaQueueXformProps.html#affed6ef8c16698d67a0fa6dd7de0085a',1,'MultimediaQueueXformProps::upperWaterMark'],['../classOrderedCacheOfFiles.html#a04a1d75876d1f53d5e37d7b4825def1f',1,'OrderedCacheOfFiles::upperWaterMark'],['../classFramesQueue.html#af95b7e63d3caa1115198948f30ef8fd7',1,'FramesQueue::upperWaterMark']]],
+  ['url_14',['URL',['../classRTSPPusherProps.html#a0854122302c27f73869f1ba00b24f204',1,'RTSPPusherProps::URL'],['../namespaceapra_1_1patterns.html#a3d3e7c03d1a1429207b879ae1432ccc0',1,'apra::patterns::URL']]],
+  ['username_15',['userName',['../classRTSPClientSrcProps.html#a7bdefdaf7e6f8d3ff0c4cd03ec87c4bd',1,'RTSPClientSrcProps']]],
+  ['usetcp_16',['useTCP',['../classRTSPClientSrcProps.html#a74ca4dc57a3452675b1284a831265941',1,'RTSPClientSrcProps']]]
 ];

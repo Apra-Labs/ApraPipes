@@ -6,6 +6,10 @@ var classFramesMuxerProps =
       [ "MAX_TIMESTAMP_DELAY", "classFramesMuxerProps.html#aa3733a5ac8e2f5ba4a7bb01d6ffd21b9a5b41fe070e0eb5a64ae581404a17e301", null ]
     ] ],
     [ "FramesMuxerProps", "classFramesMuxerProps.html#a6fdd5535c3f2f0060f75a719fa88d3ee", null ],
+    [ "applyProperties", "classFramesMuxerProps.html#a18e527187305606a2303218398dc9dc1", null ],
+    [ "dynamicPropertyNames", "classFramesMuxerProps.html#a9022fdbd654de7992a25892f5b09229e", null ],
+    [ "getProperty", "classFramesMuxerProps.html#a4db34ae3a08999d6dc6de3534d8ab89e", null ],
+    [ "setProperty", "classFramesMuxerProps.html#a8d6ec912f26764900282ac374c01bd05", null ],
     [ "maxDelay", "classFramesMuxerProps.html#a1d5e195e3a8ecbb31260680cb050fd5f", null ],
     [ "maxTsDelayInMS", "classFramesMuxerProps.html#a4aa8565c12d2d5a7facea5a017293c09", null ],
     [ "strategy", "classFramesMuxerProps.html#a82fb5469f904fffa5a02b718b9b79367", null ]

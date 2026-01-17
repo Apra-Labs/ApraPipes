@@ -1,0 +1,9 @@
+<map id="apra::ValidationResult::fail" name="apra::ValidationResult::fail">
+<area shape="rect" id="Node000001" title=" " alt="" coords="194,71,340,111"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1EnumValidator.html#abf6741f00ed4b8928540285e9d2f63cc" title=" " alt="" coords="7,5,144,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="190,68,136,49,138,44,192,63"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1RangeValidator.html#ae35495d817d752282cfb6deef3b6303d" title=" " alt="" coords="5,71,146,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="178,94,146,94,146,88,178,88"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1RegexValidator.html#ad792a4fbb3db61867207beb92879f0dc" title=" " alt="" coords="6,136,145,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="192,119,138,138,136,133,190,114"/>
+</map>

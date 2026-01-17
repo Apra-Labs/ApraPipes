@@ -11,5 +11,6 @@ var searchData=
   ['imageresizecvprops_8',['ImageResizeCVProps',['../classImageResizeCVProps.html',1,'']]],
   ['imageviewermodule_9',['ImageViewerModule',['../classImageViewerModule.html',1,'']]],
   ['imageviewermoduleprops_10',['ImageViewerModuleProps',['../classImageViewerModuleProps.html',1,'']]],
-  ['independentframesqueue_11',['IndependentFramesQueue',['../classIndependentFramesQueue.html',1,'']]]
+  ['independentframesqueue_11',['IndependentFramesQueue',['../classIndependentFramesQueue.html',1,'']]],
+  ['issue_12',['Issue',['../structapra_1_1Issue.html',1,'apra']]]
 ];

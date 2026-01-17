@@ -1,0 +1,3 @@
+<map id="apra::detail::has_apply_properties&lt; T, std::void_t&lt; decltype(T::applyProperties(std::declval&lt; T &amp; &gt;(), std::declval&lt; const std::map&lt; std::string, ScalarPropertyValue &gt; &amp; &gt;(), std::declval&lt; std::vector&lt; std::string &gt; &amp; &gt;()))&gt; &gt;" name="apra::detail::has_apply_properties&lt; T, std::void_t&lt; decltype(T::applyProperties(std::declval&lt; T &amp; &gt;(), std::declval&lt; const std::map&lt; std::string, ScalarPropertyValue &gt; &amp; &gt;(), std::declval&lt; std::vector&lt; std::string &gt; &amp; &gt;()))&gt; &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,196,177"/>
+</map>

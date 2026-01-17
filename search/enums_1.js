@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['decodersamplingstrategy_0',['DecoderSamplingStrategy',['../classAudioToTextXFormProps.html#a7a67e515ec3b2d3fa528ac472429d498',1,'AudioToTextXFormProps']]],
-  ['dtscalcstrategytype_1',['DTSCalcStrategyType',['../classDTSCalcStrategy.html#ab79c5fadb3b4392a83a13b2193693c34',1,'DTSCalcStrategy']]]
+  ['commandtype_0',['CommandType',['../classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40e',1,'Command']]],
+  ['conversiontype_1',['ConversionType',['../classColorConversionProps.html#a2ae38f3d0543ea5569ca17571b1248a6',1,'ColorConversionProps']]]
 ];

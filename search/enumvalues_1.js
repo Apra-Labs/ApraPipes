@@ -18,5 +18,6 @@ var searchData=
   ['bgra_15',['BGRA',['../classImageMetadata.html#af04036a83bf90d2fdc1353cebc0a979ead6982830bd194e6164640f2b1aaf4061',1,'ImageMetadata::BGRA'],['../classCCNPPI_1_1Detail.html#a89629ecb9460a1fe1e3f5bd9a80164c5ae3ecb18250343a166ec3bb710854c349',1,'CCNPPI::Detail::BGRA']]],
   ['bilinear_16',['BILINEAR',['../classNvTransformProps.html#aca5f816c4838d320100f9bf474eef8aea6e66e82a7a67114f460531741fa63161',1,'NvTransformProps']]],
   ['blocking_17',['BLOCKING',['../classQuePushStrategy.html#aa52a7d2892cca56382e1ec93c836d360a9da1c6636519e4dbe415bd7627de9549',1,'QuePushStrategy']]],
-  ['bmp_5fimage_18',['BMP_IMAGE',['../classFrameMetadata.html#af324c09818d5965791464a2b687c95aba5abd674dea50bb3bf5fba78845489366',1,'FrameMetadata']]]
+  ['bmp_5fimage_18',['BMP_IMAGE',['../classFrameMetadata.html#af324c09818d5965791464a2b687c95aba5abd674dea50bb3bf5fba78845489366',1,'FrameMetadata']]],
+  ['boolean_19',['Boolean',['../structapra_1_1PropDef.html#acf65f6d64075c645c72da284e6d9b2bba27226c864bac7454a8504f8edb15d95b',1,'apra::PropDef::Boolean'],['../structapra_1_1AttrDef.html#a7d1724f178831aada2ecb1c86f7e8485a27226c864bac7454a8504f8edb15d95b',1,'apra::AttrDef::Boolean']]]
 ];

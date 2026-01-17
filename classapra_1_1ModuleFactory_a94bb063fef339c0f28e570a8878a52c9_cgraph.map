@@ -1,0 +1,15 @@
+<map id="apra::ModuleFactory::connectModules" name="apra::ModuleFactory::connectModules">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,96,143,137"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1Issue.html#aef9e5b2ba55d09adb42ec984a67a3981" title=" " alt="" coords="220,5,336,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,94,142,66,190,40,204,34,206,39,192,45,144,71,104,98"/>
+<area shape="rect" id="Node000003" href="$namespaceapra.html#afe45864053cd081f9a8b3b4a6d0478ad" title=" " alt="" coords="196,55,361,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="142,98,207,82,208,87,144,103"/>
+<area shape="rect" id="Node000004" href="$namespaceapra.html#a34f9c2c4c96d19859870895abe4687b2" title=" " alt="" coords="191,104,366,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="143,114,175,114,175,120,143,120"/>
+<area shape="rect" id="Node000006" href="$structapra_1_1Issue.html#a89ef2cf14fd7a7488b691cb924445627" title=" " alt="" coords="223,153,334,179"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="144,131,208,147,207,152,142,136"/>
+<area shape="rect" id="Node000007" href="$classapra_1_1ModuleRegistry.html#af5e31c26b3abbb480d13ebddf08884ab" title=" " alt="" coords="208,203,349,244"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="105,135,145,163,192,189,203,194,201,199,189,194,143,167,102,140"/>
+<area shape="rect" id="Node000005" href="$namespaceapra.html#a4947fa33d5390a24ef92134bc30fab32" title=" " alt="" coords="414,104,630,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="366,114,398,114,398,120,366,120"/>
+</map>

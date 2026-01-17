@@ -1,0 +1,17 @@
+<map id="apra::ModuleRegistrationBuilder::~ModuleRegistrationBuilder" name="apra::ModuleRegistrationBuilder::~ModuleRegistrationBuilder">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,135,191,190"/>
+<area shape="rect" id="Node000002" href="$classapra_1_1ModuleRegistrationBuilder.html#a8e412ceba46b7952c2ce304c27d23262" title=" " alt="" coords="239,142,402,183"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,160,223,160,223,165,191,165"/>
+<area shape="rect" id="Node000003" href="$classapra_1_1ModuleRegistrationBuilder.html#a319d14bb986fa905a9bf84a54ad9774d" title=" " alt="" coords="450,5,656,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="346,140,393,105,449,71,459,65,462,70,451,75,396,110,349,144"/>
+<area shape="rect" id="Node000005" href="$classapra_1_1ModuleRegistry.html#af5e31c26b3abbb480d13ebddf08884ab" title=" " alt="" coords="482,85,624,126"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="402,140,467,124,468,129,403,145"/>
+<area shape="rect" id="Node000006" href="$namespaceapra_1_1detail.html#a7df2a7b116ad9c479fdd93645885879a" title=" " alt="" coords="478,150,628,175"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="402,160,463,160,463,165,402,165"/>
+<area shape="rect" id="Node000007" href="$classapra_1_1ModuleRegistry.html#a68192e3176f3d46c27e4753ad84f59e4" title=" " alt="" coords="482,200,624,240"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="403,180,468,196,467,201,402,185"/>
+<area shape="rect" id="Node000008" href="$namespaceapra_1_1detail.html#af4bb97d1e426b30f614963c321546287" title=" " alt="" coords="456,264,650,290"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="347,181,394,216,451,249,470,257,468,262,449,254,391,221,344,185"/>
+<area shape="rect" id="Node000004" href="$classapra_1_1ModuleRegistrationBuilder.html#a47596c1296ff3eb276122eaa90fa8542" title=" " alt="" coords="704,13,868,54"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="657,30,689,30,689,36,657,36"/>
+</map>

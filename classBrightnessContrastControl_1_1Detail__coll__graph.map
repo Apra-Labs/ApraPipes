@@ -1,7 +1,7 @@
 <map id="BrightnessContrastControl::Detail" name="BrightnessContrastControl::Detail">
-<area shape="rect" id="Node000001" title=" " alt="" coords="13,687,176,911"/>
-<area shape="rect" id="Node000002" href="$classBrightnessContrastControlProps.html" title=" " alt="" coords="6,467,182,624"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,624,97,670,92,670,92,624"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="13,804,176,1027"/>
+<area shape="rect" id="Node000002" href="$classBrightnessContrastControlProps.html" title=" " alt="" coords="6,467,182,741"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,741,97,787,92,787,92,741"/>
 <area shape="rect" id="Node000003" href="$classModuleProps.html" title=" " alt="" coords="5,5,183,417"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,433,97,467,92,467,92,433"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,432,97,467,92,467,92,432"/>
 </map>

@@ -62,6 +62,13 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Topics", "topics.html", "topics" ],
+    [ "Namespace Members", "namespacemembers.html", [
+      [ "All", "namespacemembers.html", null ],
+      [ "Functions", "namespacemembers_func.html", null ],
+      [ "Variables", "namespacemembers_vars.html", null ],
+      [ "Typedefs", "namespacemembers_type.html", null ],
+      [ "Enumerations", "namespacemembers_enum.html", null ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -82,25 +89,28 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classApraNode.html#ad2e8130403cb764aae83ae21008a431e",
-"classBuffer.html#a6002af2b41087f5cd575e6f49b5a0ea8",
-"classCommand.html#ad959d1bc9c9acc8a52fab224d5d3f40eac0097d8b716b74cdd8d2c5d36ab3323f",
-"classDMAUtils.html",
-"classEffectsNPPI.html#a7ede4a75525787daae0675ff051c1c6d",
-"classFaceDetectorXform_1_1Detail.html#ace40dd9f011148a870ab5a027fcbf06f",
-"classFrameMetadata.html#ac0bd326cece8f7c3df877ccb2d54abd0a9f3db7a02e9816922aefb5b201d213e6",
-"classH264EncoderNVCodec.html",
-"classHostAllocator.html#aff2a93077bbf1bbdf241d4e8af392c91",
-"classJPEGEncoderL4TMProps.html",
-"classModule.html#a4450e28d215d8538b48fea6ac0207283",
-"classMp4ReaderDetailAbs.html#a47aedd9f30c69e16013114216aca87fa",
-"classMultimediaQueueXformProps.html#afa641d1bab9a217b25a0e6797b90b259",
-"classNvTransformProps.html#a4c2ad11274f35fa732cd621ffce656c1",
-"classPipeLine.html#ab99368fa91933d60ad9ff5279fbcf534",
-"classRectangleOverlay.html#aa46d71f5c8dddb0342e972d20b232869",
-"classTextOverlayXForm_1_1Detail.html#a1d7b75f335245c7cba4c31dcaf4a28ff",
-"classYuvConverter.html#a314c93534cac78f3a0f3a2a58a61bd5a",
-"structMp4ReaderDetailAbs_1_1DemuxAndParserState.html#a146d27420acdd66f9c47e651ec4e0459"
+"classApraNode.html#a9212952b48016f95675c3ab609762645",
+"classBrightnessContrastControlProps.html#abcd40764f5a484676ef6d6a015133c91",
+"classColorConversionProps.html#a2ae38f3d0543ea5569ca17571b1248a6a388300f29447a48079b9d158bea1745d",
+"classDMAFDWrapper.html#a0fcbe41dc3613ff88fd95234b36ec36a",
+"classDetailRenderer.html#a2470aac9eb1147e8647fa6161d36d208",
+"classFaceDetectorXform.html#a890ed1a6e515ce73d16b3fa64d99b4f4",
+"classFrameContainerQueueAdapter.html#ae37d467fe812eb4919c59ec17e3e82d6",
+"classH264Decoder.html#a85ce95392afb6d8ea994ac0b3e5576e1",
+"classH264ParserUtils.html#a17c7ff1513790fceb57539369e5c8458",
+"classJPEGDecoderL4TM_1_1Detail.html#a3a5bc567a148f8204e6d8657cfce05b7",
+"classMemTypeConversionProps.html",
+"classModule_1_1Profiler.html#a246ebb57aef3b6099b47b924c343899b",
+"classMp4WriterSinkProps.html#a191971e76f93aa5e6980b5bc3732af64",
+"classNvDecoder.html#a7b77dc0b45f6fc50617f80435944691b",
+"classOverlayModuleProps.html#ae26611198abcc7209688a49f562f4324",
+"classRTSPPusherProps.html",
+"classSimpleControlModule.html#a56341b410d1778fd798700c14d3bfd10",
+"classValveModule.html#a6bbcaa0744f419d9ccd04d538981cca0",
+"classapra_1_1ModuleRegistrationBuilder.html#ab2f48d6342634b23faea562b8e488377",
+"functions_vars_s.html",
+"structapra_1_1ConnectionInfo.html#a6fed03f4358bbdb1f98e66b77fecf42e",
+"structapra_1_1PropDef.html#aaf31295bc4af7c15cbf356e3c745da26"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
