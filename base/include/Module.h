@@ -199,6 +199,7 @@ public:
   virtual bool term();
   virtual bool isFull();
   bool isNextModuleQueFull();
+  bool isModuleRunning() { return mRunning; }  // Public method to check if module is running
 
   void adaptQueue(boost::shared_ptr<FrameContainerQueueAdapter> queAdapter);
 
@@ -229,6 +230,8 @@ protected:
 
   void setProps(ModuleProps &props);
   void fillProps(ModuleProps &props);
+  // Check if the module is ready for queue-based property changes
+  bool canQueueProps() const { return mpCommandFactory != nullptr; }
   template <class T>
   void addPropsToQueue(T &props, bool priority = false)
   {

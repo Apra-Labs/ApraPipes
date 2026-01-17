@@ -1,0 +1,26 @@
+{
+  "pipeline": {
+    "name": "three_module_chain",
+    "description": "Three-module chain: TestSignalGenerator -> ValveModule -> StatSink"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "maxFrames": 100
+      }
+    },
+    "valve": {
+      "type": "ValveModule"
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "valve" },
+    { "from": "valve", "to": "stats" }
+  ]
+}

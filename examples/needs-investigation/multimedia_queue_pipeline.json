@@ -1,0 +1,31 @@
+{
+  "pipeline": {
+    "name": "Multimedia Queue Demo Pipeline",
+    "description": "Demonstrates frame buffering with MultimediaQueueXform. Chain: TestSignalGenerator -> MultimediaQueueXform -> StatSink. Used for video recording, playback control with frame seeking, and handling backpressure."
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 320,
+        "height": 240
+      }
+    },
+    "buffer": {
+      "type": "MultimediaQueueXform",
+      "props": {
+        "queueLength": 10000,
+        "tolerance": 2000,
+        "mmqFps": 24,
+        "isMapDelayInTime": true
+      }
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "buffer" },
+    { "from": "buffer", "to": "stats" }
+  ]
+}

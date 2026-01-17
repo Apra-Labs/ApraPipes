@@ -325,6 +325,49 @@ gh cache delete <cache-key>
 
 ---
 
+## Issue V1: Compiler Path Affects Binary Cache ABI Hash
+
+**Symptom**:
+```
+Restored 0 package(s) to ...
+```
+GitHub Actions cache is restored (2GB downloaded), but vcpkg logs show `Restored 0 package(s)`. CMake configure takes 2+ hours rebuilding all packages.
+
+**Root Cause**:
+vcpkg uses the literal compiler PATH in its ABI hash calculation, not just the version. Two builds using the same compiler version but different paths will NOT share cached packages.
+
+```bash
+# Cloud build uses explicit path
+CC=/usr/bin/gcc-11
+CXX=/usr/bin/g++-11
+
+# Docker build uses default symlink
+CC=/usr/bin/cc → /usr/bin/gcc-11
+CXX=/usr/bin/c++ → /usr/bin/g++-11
+```
+
+**Both are GCC 11.4.0** but different paths = different ABI hashes = cache miss.
+
+**Fix - Ensure Consistent Compiler Paths**:
+```yaml
+# In workflow env:
+env:
+  CC: /usr/bin/gcc-11
+  CXX: /usr/bin/g++-11
+```
+
+**Debug Tip**:
+Search cmake configure logs for `Compiler found:` to see the exact path being used:
+```
+-- The C compiler identification is GNU 11.4.0
+...
+Compiler found: /usr/bin/g++-11
+```
+
+**Invariant**: All builds sharing a vcpkg cache must use identical compiler paths, not just identical compiler versions.
+
+---
+
 ## vcpkg Installation Failures
 
 ### Network Timeouts

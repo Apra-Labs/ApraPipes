@@ -1,0 +1,58 @@
+{
+  "pipeline": {
+    "name": "CUDA Image Effects Demo",
+    "description": "Demonstrates GPU-accelerated image effects (brightness, contrast) using NVIDIA NPP. Output: ./data/testOutput/cuda_effects_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "upload_gpu": {
+      "type": "CudaMemCopyH2D",
+      "props": {}
+    },
+    "effects": {
+      "type": "EffectsNPPI",
+      "props": {
+        "brightness": 50,
+        "contrast": 1.5
+      }
+    },
+    "download_cpu": {
+      "type": "CudaMemCopyD2H",
+      "props": {}
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_effects_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "upload_gpu" },
+    { "from": "upload_gpu", "to": "effects" },
+    { "from": "effects", "to": "download_cpu" },
+    { "from": "download_cpu", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "pipeline": {
+    "name": "CUDA Gaussian Blur Demo",
+    "description": "Demonstrates GPU-accelerated Gaussian blur using NVIDIA NPP. Generates test frames, uploads to GPU, applies blur, downloads, and saves as JPEG. Output: ./data/testOutput/cuda_blur_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "upload_gpu": {
+      "type": "CudaMemCopyH2D",
+      "props": {}
+    },
+    "blur": {
+      "type": "GaussianBlur",
+      "props": {
+        "kernelSize": 15
+      }
+    },
+    "download_cpu": {
+      "type": "CudaMemCopyD2H",
+      "props": {}
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_blur_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "upload_gpu" },
+    { "from": "upload_gpu", "to": "blur" },
+    { "from": "blur", "to": "download_cpu" },
+    { "from": "download_cpu", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

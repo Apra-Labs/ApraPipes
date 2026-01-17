@@ -432,8 +432,12 @@ gh run view <ID> --log
 # Download workflow logs
 gh run download <ID>
 
-# Watch workflow in real-time
-watch -n 10 'gh run view <ID> --json status,conclusion | jq'
+# Watch workflow in real-time (with proper interval!)
+# NEVER use default 3 second interval - causes rate limiting
+gh run watch <ID> -i 120 --exit-status  # 2-minute interval
+
+# Watch with system watch command
+watch -n 120 'gh run view <ID> --json status,conclusion | jq'
 
 # List all workflows
 gh workflow list
@@ -442,6 +446,13 @@ gh workflow list
 gh workflow run <workflow.yml>
 
 # Cancel ALL active workflows on a branch
+# CRITICAL: ALWAYS filter by branch to avoid canceling other developers' work!
 gh run list --branch <branch> --json databaseId --limit 50 \
   | jq -r '.[] | .databaseId' | xargs -I {} gh run cancel {}
+
+# BAD - cancels all matching runs regardless of branch
+# gh run list -w CI-MacOSX-NoCUDA --json databaseId,status --jq '...'
+
+# GOOD - filter by current branch before cancelling
+# gh run list -w CI-MacOSX-NoCUDA -b feature/my-branch --json databaseId,status --jq '...'
 ```

@@ -1,0 +1,8 @@
+{
+  "modules": {
+    "broken": {
+      "type": "TestModule"
+      "missing_comma": true
+    }
+  }
+}

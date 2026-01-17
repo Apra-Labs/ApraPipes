@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ApraPipes/pipeline-schema.json",
+  "title": "ApraPipes Pipeline Configuration",
+  "description": "Schema for declarative video processing pipelines in ApraPipes",
+  "type": "object",
+  "properties": {
+    "pipeline": {
+      "type": "object",
+      "description": "Pipeline metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Pipeline name for identification"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what the pipeline does"
+        },
+        "version": {
+          "type": "string",
+          "description": "Pipeline version",
+          "default": "1.0"
+        }
+      }
+    },
+    "modules": {
+      "type": "object",
+      "description": "Module instances keyed by unique instance ID",
+      "additionalProperties": {
+        "$ref": "#/definitions/module"
+      }
+    },
+    "connections": {
+      "type": "array",
+      "description": "Connections between modules",
+      "items": {
+        "$ref": "#/definitions/connection"
+      }
+    }
+  },
+  "required": ["modules"],
+  "definitions": {
+    "module": {
+      "type": "object",
+      "description": "A module instance in the pipeline",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The registered module type name (e.g., 'FileReaderModule', 'ImageDecoderCV')"
+        },
+        "props": {
+          "type": "object",
+          "description": "Module-specific properties",
+          "additionalProperties": true
+        }
+      },
+      "required": ["type"]
+    },
+    "connection": {
+      "type": "object",
+      "description": "A connection between two modules",
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source module and optional pin (format: 'module_id' or 'module_id.pin_name')",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)?$"
+        },
+        "to": {
+          "type": "string",
+          "description": "Destination module and optional pin (format: 'module_id' or 'module_id.pin_name')",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)?$"
+        },
+        "sieve": {
+          "type": "boolean",
+          "description": "Controls frame passthrough behavior. When false (default), transform modules pass through their input frames along with declared outputs. When true, only declared output pins are connected.",
+          "default": false
+        }
+      },
+      "required": ["from", "to"]
+    }
+  },
+  "examples": [
+    {
+      "pipeline": {
+        "name": "simple_pipeline",
+        "description": "A simple test signal to sink pipeline"
+      },
+      "modules": {
+        "source": {
+          "type": "TestSignalGenerator",
+          "props": {
+            "width": 640,
+            "height": 480
+          }
+        },
+        "sink": {
+          "type": "StatSink"
+        }
+      },
+      "connections": [
+        { "from": "source", "to": "sink" }
+      ]
+    },
+    {
+      "pipeline": {
+        "name": "face_detection_with_sieve",
+        "description": "Demonstrates sieve passthrough behavior"
+      },
+      "modules": {
+        "decoder": { "type": "ImageDecoderCV" },
+        "faceDetector": { "type": "FacialLandmarkCV" },
+        "encoder": { "type": "ImageEncoderCV" },
+        "landmarksSink": { "type": "StatSink" }
+      },
+      "connections": [
+        { "from": "decoder", "to": "faceDetector" },
+        { "from": "faceDetector", "to": "encoder" },
+        { "from": "faceDetector", "to": "landmarksSink", "sieve": true }
+      ]
+    }
+  ]
+}

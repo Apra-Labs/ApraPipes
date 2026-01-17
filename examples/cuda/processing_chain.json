@@ -1,0 +1,73 @@
+{
+  "pipeline": {
+    "name": "CUDA Processing Chain Demo",
+    "description": "Demonstrates a GPU processing chain: resize, blur, and color effects all on the GPU before downloading. Output: ./data/testOutput/cuda_chain_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 800,
+        "height": 600,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "upload_gpu": {
+      "type": "CudaMemCopyH2D",
+      "props": {}
+    },
+    "resize": {
+      "type": "ResizeNPPI",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "blur": {
+      "type": "GaussianBlur",
+      "props": {
+        "kernelSize": 7
+      }
+    },
+    "effects": {
+      "type": "EffectsNPPI",
+      "props": {
+        "brightness": 40,
+        "contrast": 1.4
+      }
+    },
+    "download_cpu": {
+      "type": "CudaMemCopyD2H",
+      "props": {}
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 95
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_chain_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "upload_gpu" },
+    { "from": "upload_gpu", "to": "resize" },
+    { "from": "resize", "to": "blur" },
+    { "from": "blur", "to": "effects" },
+    { "from": "effects", "to": "download_cpu" },
+    { "from": "download_cpu", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "pipeline": {
+    "name": "DMABUF to HOST Bridge Demo",
+    "description": "Demonstrates DMAFDToHostCopy bridge - camera produces DMABUF, bridge copies to HOST for CPU processing. REQUIRES USB CAMERA."
+  },
+  "modules": {
+    "camera": {
+      "type": "NvV4L2Camera",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "maxConcurrentFrames": 10
+      },
+      "comment": "V4L2 USB camera - outputs DMABUF memory"
+    },
+    "dmabuf_to_host": {
+      "type": "DMAFDToHostCopy",
+      "comment": "Copies from DMABUF to HOST memory (CPU accessible)"
+    },
+    "cpu_encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "type": "JPEG"
+      },
+      "comment": "CPU-based JPEG encoding (requires HOST memory)"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_output/bridge_output_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "dmabuf_to_host" },
+    { "from": "dmabuf_to_host", "to": "cpu_encoder" },
+    { "from": "cpu_encoder", "to": "writer" }
+  ]
+}

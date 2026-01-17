@@ -150,7 +150,7 @@ FileReaderModuleProps FileReaderModule::getProps()
 }
 
 bool FileReaderModule::handlePropsChange(frame_sp& frame)
-{	
+{
 	bool ret = Module::handlePropsChange(frame, mProps);
 
 	mDriver->Disconnect();

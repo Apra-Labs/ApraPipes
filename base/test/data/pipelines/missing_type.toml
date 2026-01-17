@@ -1,0 +1,5 @@
+# Pipeline with a module missing the required 'type' field
+[modules.broken]
+# Missing 'type' field
+    [modules.broken.props]
+    foo = "bar"

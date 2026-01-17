@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Module.h"
+#include "declarative/PropertyMacros.h"
 #include <boost/filesystem.hpp>
 class Mp4ReaderDetailAbs;
 class Mp4ReaderDetailJpeg;
@@ -11,7 +12,6 @@ class Mp4ReaderSourceProps : public ModuleProps
 public:
 	Mp4ReaderSourceProps() : ModuleProps()
 	{
-
 	}
 
 	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false) : ModuleProps()
@@ -84,6 +84,53 @@ public:
 	int parseFSTimeoutDuration = 15;
 	bool readLoop = false;
 	bool giveLiveTS = false;
+
+	// Declarative pipeline support: "h264" or "jpeg" to auto-create output pins
+	// If empty (default), output pins must be added manually via addOutPutPin()
+	std::string outputFormat = "";
+
+	// ============================================================
+	// Property Binding for Declarative Pipeline
+	// ============================================================
+	template<typename PropsT>
+	static void applyProperties(
+		PropsT& props,
+		const std::map<std::string, apra::ScalarPropertyValue>& values,
+		std::vector<std::string>& missingRequired
+	) {
+		apra::applyProp(props.videoPath, "videoPath", values, true, missingRequired);
+		apra::applyProp(props.parseFS, "parseFS", values, false, missingRequired);
+		apra::applyProp(props.direction, "direction", values, false, missingRequired);
+		apra::applyProp(props.bFramesEnabled, "bFramesEnabled", values, false, missingRequired);
+		apra::applyProp(props.reInitInterval, "reInitInterval", values, false, missingRequired);
+		apra::applyProp(props.parseFSTimeoutDuration, "parseFSTimeoutDuration", values, false, missingRequired);
+		apra::applyProp(props.readLoop, "readLoop", values, false, missingRequired);
+		apra::applyProp(props.giveLiveTS, "giveLiveTS", values, false, missingRequired);
+		apra::applyProp(props.outputFormat, "outputFormat", values, false, missingRequired);
+	}
+
+	apra::ScalarPropertyValue getProperty(const std::string& propName) const {
+		if (propName == "videoPath") return videoPath;
+		if (propName == "parseFS") return parseFS;
+		if (propName == "direction") return direction;
+		if (propName == "bFramesEnabled") return bFramesEnabled;
+		if (propName == "reInitInterval") return static_cast<int64_t>(reInitInterval);
+		if (propName == "parseFSTimeoutDuration") return static_cast<int64_t>(parseFSTimeoutDuration);
+		if (propName == "readLoop") return readLoop;
+		if (propName == "giveLiveTS") return giveLiveTS;
+		if (propName == "outputFormat") return outputFormat;
+		throw std::runtime_error("Unknown property: " + propName);
+	}
+
+	bool setProperty(const std::string& propName, const apra::ScalarPropertyValue& value) {
+		// Most properties are static (can't change after init)
+		return false;
+	}
+
+	std::vector<std::string> dynamicPropertyNames() const {
+		return {};  // No dynamically changeable properties
+	}
+
 private:
 	friend class boost::serialization::access;
 

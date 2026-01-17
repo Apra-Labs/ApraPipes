@@ -1,0 +1,57 @@
+{
+  "pipeline": {
+    "name": "CUDA Rotate Demo",
+    "description": "Demonstrates GPU-accelerated image rotation using NVIDIA NPP. Rotates images by 90 degrees. Output: ./data/testOutput/cuda_rotate_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "upload_gpu": {
+      "type": "CudaMemCopyH2D",
+      "props": {}
+    },
+    "rotate": {
+      "type": "RotateNPPI",
+      "props": {
+        "angle": 90.0
+      }
+    },
+    "download_cpu": {
+      "type": "CudaMemCopyD2H",
+      "props": {}
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/cuda_rotate_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "upload_gpu" },
+    { "from": "upload_gpu", "to": "rotate" },
+    { "from": "rotate", "to": "download_cpu" },
+    { "from": "download_cpu", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

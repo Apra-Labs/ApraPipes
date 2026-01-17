@@ -5,6 +5,14 @@ OPTION(ENABLE_CUDA "Use this switch to enable CUDA" ON)
 OPTION(ENABLE_ARM64 "Use this switch to enable ARM64" OFF)
 OPTION(ENABLE_WINDOWS "Use this switch to enable WINDOWS" OFF)
 OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
+OPTION(BUILD_HEADLESS "Build without GTK/GUI dependencies (for headless/server environments)" OFF)
+
+# FFmpeg Assembly Optimizations
+# Default OFF: FFmpeg built without hand-written assembly, allowing static linking into shared objects (Node.js addon)
+# When ON: FFmpeg built with assembly (MMX/SSE/AVX on x64, NEON on ARM64) for better performance,
+#          but Node.js addon will exclude FFmpeg-dependent modules (RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils)
+# See docs/declarative-pipeline/BUILD_OPTIONS.md for details
+OPTION(USE_FFMPEG_ASM_OPTIMIZATIONS "Enable FFmpeg hand-written assembly optimizations (excludes FFmpeg modules from Node.js addon)" OFF)
 
 # vcpkg overlay ports are controlled via VCPKG_OVERLAY_PORTS environment variable
 # ARM64 builds set this in CI workflow to use arm64-overlay directory
@@ -13,6 +21,7 @@ OPTION(ENABLE_MACOS "Use this switch to enable MACOS" OFF)
 set(VCPKG_INSTALL_OPTIONS "--clean-after-build")
 IF(ENABLE_CUDA)
 	add_compile_definitions(APRA_HAS_CUDA_HEADERS)
+	add_compile_definitions(ENABLE_CUDA)
 ENDIF(ENABLE_CUDA)
 
 # NOTE: VCPKG_TARGET_TRIPLET must be set via cmake command line (-DVCPKG_TARGET_TRIPLET=...)
@@ -38,6 +47,8 @@ IF(ENABLE_ARM64)
 	set(VCPKG_OVERLAY_TRIPLETS ../vcpkg/triplets/community/arm64-linux.cmake)
 	set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
 	set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+	# Set PKG_CONFIG_PATH so system packages like gio-2.0 can be found
+	set(ENV{PKG_CONFIG_PATH} "/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 ENDIF(ENABLE_ARM64)
 
 #use /MP only for language CXX (and not CUDA) and MSVC for both targets
@@ -57,17 +68,30 @@ find_package(OpenCV CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibLZMA REQUIRED)
+
+# libarchive is a transitive dependency of OpenCV highgui - we need to link it
+# explicitly with its dependencies (BZ2, ZLIB, LZMA) to fix static link order issues
+find_library(LIBARCHIVE_LIB NAMES archive libarchive.a
+    PATHS ${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib
+    NO_DEFAULT_PATH)
+if(LIBARCHIVE_LIB)
+    message(STATUS "Found libarchive: ${LIBARCHIVE_LIB}")
+endif()
 find_package(FFMPEG REQUIRED)
 find_package(ZXing CONFIG REQUIRED)
 find_package(bigint CONFIG REQUIRED)
 find_package(SFML COMPONENTS Network Graphics Window Audio System CONFIG REQUIRED)
 find_package(whisper CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 
+# Linux dependencies (includes ARM64 via ENABLE_LINUX)
+# This pattern matches the working configuration from commit 06d464fd
 IF(ENABLE_LINUX)
 	find_package(GLEW REQUIRED)
 	find_package(glfw3 CONFIG REQUIRED)
 	find_package(FreeGLUT CONFIG REQUIRED)
+	# GIO and GOBJECT are needed for GTK-based modules
 	pkg_check_modules(GIO REQUIRED gio-2.0)
 	pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 	pkg_check_modules(GLFW REQUIRED glfw3)
@@ -88,14 +112,21 @@ IF(ENABLE_ARM64)
 	set(ENV{PKG_CONFIG_PATH} "${VCPKG_PKGCONFIG_PATH}:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig")
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND NOT BUILD_HEADLESS)
 	# x64 Linux uses vcpkg's GTK
 	pkg_check_modules(GDK3 REQUIRED gdk-3.0)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	# Curses is needed for KeyboardListener
+	find_package(Curses REQUIRED)
+ELSEIF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND BUILD_HEADLESS)
+	# Headless build - skip GTK/GDK
+	message(STATUS "BUILD_HEADLESS=ON: Skipping GTK/GDK dependencies")
+	set(GDK3_FOUND FALSE)
+	set(GTK3_FOUND FALSE)
 ELSEIF(ENABLE_ARM64)
 	# ARM64/Jetson uses system GTK headers directly (see VCPKG_GTK_INCLUDE_DIRS below)
 	# and has version mismatch between vcpkg glib (2.86) and system glib (2.64)
-	# We need GTK3 for linking GtkGlRenderer
+	# Only check GTK3 for ARM64 - GDK3 linking causes faciallandmarks test crash
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 ENDIF()
 
@@ -248,14 +279,20 @@ SET(CORE_FILES
 	src/Mp4WriterSinkUtils.cpp
 	src/MultimediaQueueXform.cpp
 	src/Mp4ReaderSource.cpp
-	src/RTSPClientSrc.cpp
-	src/RTSPClientSrc.cpp
-	src/MotionVectorExtractor.cpp
 	src/OverlayModule.cpp
 	src/OrderedCacheOfFiles.cpp
 	src/SimpleControlModule.cpp
-	src/APErrorObject.cpp 
+	src/APErrorObject.cpp
 	src/APHealthObject.cpp
+	src/declarative/ModuleRegistry.cpp
+	src/declarative/PipelineDescription.cpp
+	src/declarative/JsonParser.cpp
+	src/declarative/ModuleFactory.cpp
+	src/declarative/FrameTypeRegistry.cpp
+	src/declarative/FrameTypeRegistrations.cpp
+	src/declarative/PipelineValidator.cpp
+	src/declarative/PipelineAnalyzer.cpp
+	src/declarative/ModuleRegistrations.cpp
 )
 
 SET(CORE_FILES_H
@@ -308,12 +345,8 @@ SET(CORE_FILES_H
 	include/ValveModule.h
 	include/ArchiveSpaceManager.h
 	include/MultimediaQueueXform.h
-	include/RTSPClientSrc.h
 	include/H264Metadata.h
 	include/Mp4ReaderSource.h
-	include/RTSPClientSrc.h
-	include/H264Metadata.h
-	include/MotionVectorExtractor.h
 	include/OverlayModule.h
 	include/OrderedCacheOfFiles.h
 	include/TestSignalGeneratorSrc.h
@@ -322,6 +355,14 @@ SET(CORE_FILES_H
 	include/APErrorObject.h
 	include/APCallback.h
 	include/APHealthObject.h
+	include/declarative/Metadata.h
+	include/declarative/ModuleRegistry.h
+	include/declarative/PipelineDescription.h
+	include/declarative/JsonParser.h
+	include/declarative/ParseResult.h
+	include/declarative/ModuleFactory.h
+	include/declarative/FrameTypeRegistry.h
+	include/declarative/PipelineValidator.h
 )
 
 IF(ENABLE_WINDOWS)
@@ -332,40 +373,68 @@ IF(ENABLE_WINDOWS)
 ENDIF(ENABLE_WINDOWS)
 
 SET(GENERIC_FILES
-	src/RTSPPusher.cpp
 	src/H264FrameDemuxer.cpp
-	src/H264ParserUtils.cpp
 	src/H264Utils.cpp
 	src/QRReader.cpp
 )
 SET(GENERIC_FILES_H
 	include/H264FrameDemuxer.h
-	include/H264ParserUtils.h
 	include/H264Utils.h
-	include/RTSPPusher.h
 	include/QRReader.h
 )
 
+# ============================================================
+# FFmpeg-Dependent Modules
+# These modules require FFmpeg and are separated to allow conditional
+# exclusion from Node.js addon when USE_FFMPEG_ASM_OPTIMIZATIONS is ON.
+# When asm optimizations are enabled, static FFmpeg cannot be linked
+# into shared objects due to -fPIC relocation issues.
+# ============================================================
+SET(FFMPEG_DEPENDENT_SOURCES
+	src/RTSPClientSrc.cpp
+	src/RTSPPusher.cpp
+	src/MotionVectorExtractor.cpp
+	src/H264ParserUtils.cpp
+)
+SET(FFMPEG_DEPENDENT_HEADERS
+	include/RTSPClientSrc.h
+	include/RTSPPusher.h
+	include/MotionVectorExtractor.h
+	include/H264ParserUtils.h
+)
+
 IF(ENABLE_LINUX)
-	list(APPEND CORE_FILES src/KeyboardListener.cpp)
-	list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	# VirtualCameraSink doesn't require GTK
 	list(APPEND GENERIC_FILES src/VirtualCameraSink.cpp)
 	list(APPEND GENERIC_FILES_H include/VirtualCameraSink.h)
-	SET(GTKGL_FILES_H include/Background.h
-		include/GLUtils.h
-		include/GtkGlRenderer.h
-		include/GTKMatrix.h
-		include/GTKModel.h
-		include/GTKSetup.h
-		include/GTKView.h
-	)
-	SET(GTKGL_FILES_CPP src/Background.cpp
-		src/GtkGlRenderer.cpp
-		src/GTKMatrix.cpp
-		src/GTKModel.cpp
-		src/GTKSetup.cpp
-		src/GTKView.cpp
+
+	# KeyboardListener requires Curses - only include if not headless
+	IF(NOT BUILD_HEADLESS AND CURSES_FOUND)
+		list(APPEND CORE_FILES src/KeyboardListener.cpp)
+		list(APPEND CORE_FILES_H include/KeyboardListener.h)
+	ENDIF()
+
+	# GTK/GL files only included if GTK3 is found (not in headless mode)
+	IF(GTK3_FOUND)
+		SET(GTKGL_FILES_H include/Background.h
+			include/GLUtils.h
+			include/GtkGlRenderer.h
+			include/GTKMatrix.h
+			include/GTKModel.h
+			include/GTKSetup.h
+			include/GTKView.h
 		)
+		SET(GTKGL_FILES_CPP src/Background.cpp
+			src/GtkGlRenderer.cpp
+			src/GTKMatrix.cpp
+			src/GTKModel.cpp
+			src/GTKSetup.cpp
+			src/GTKView.cpp
+			)
+	ELSE()
+		SET(GTKGL_FILES_H "")
+		SET(GTKGL_FILES_CPP "")
+	ENDIF()
 ENDIF(ENABLE_LINUX)
 
 SET(IP_FILES
@@ -468,6 +537,7 @@ IF(ENABLE_ARM64)
 		src/JPEGDecoderL4TMHelper.cpp
 		src/JPEGEncoderL4TM.cpp
 		src/JPEGEncoderL4TMHelper.cpp
+		src/L4TMJpegLoader.cpp
 		src/AV4L2Buffer.cpp
 		src/AV4L2ElementPlane.cpp
 		src/H264EncoderV4L2Helper.cpp
@@ -514,9 +584,10 @@ SET(CUDA_IP_FILES_H
 IF(ENABLE_ARM64)
 	SET(CUDA_IP_FILES_H ${CUDA_IP_FILES_H}
 		include/JPEGDecoderL4TMHelper.h
-		include/JPEGDecoderL4TM.h	
+		include/JPEGDecoderL4TM.h
 		include/JPEGEncoderL4TMHelper.h
 		include/JPEGEncoderL4TM.h
+		include/L4TMJpegLoader.h
 		include/AV4L2Buffer.h
 		include/AV4L2ElementPlane.h
 		include/H264EncoderV4L2Helper.h
@@ -550,6 +621,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(SOURCE
 	${CORE_FILES} ${CORE_FILES_H}
 	${GENERIC_FILES} ${GENERIC_FILES_H}
+	${FFMPEG_DEPENDENT_SOURCES} ${FFMPEG_DEPENDENT_HEADERS}
 	${IP_FILES} ${IP_FILES_H}
 )
 
@@ -687,16 +759,31 @@ SET(UT_FILES
 	test/testSignalGeneratorSrc_tests.cpp
 	test/audioToTextXform_tests.cpp
 	test/simpleControlModuleTests.cpp
+	test/declarative/metadata_tests.cpp
+	test/declarative/module_registry_tests.cpp
+	test/declarative/pipeline_description_tests.cpp
+	test/declarative/json_parser_tests.cpp
+	test/declarative/module_factory_tests.cpp
+	test/declarative/frame_type_registry_tests.cpp
+	test/declarative/pipeline_validator_tests.cpp
+	test/declarative/pipeline_analyzer_tests.cpp
+	test/declarative/property_macros_tests.cpp
+	test/declarative/module_registration_tests.cpp
+	test/declarative/property_validators_tests.cpp
+	test/declarative/pipeline_integration_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )
 
 IF(ENABLE_LINUX)
 	list(APPEND UT_FILES
-	test/gtkglrenderer_tests.cpp
 	test/virtualcamerasink_tests.cpp
 	test/QRReader_tests.cpp
 	)
+	# GTK-dependent tests only when GTK is available
+	IF(GTK3_FOUND)
+		list(APPEND UT_FILES test/gtkglrenderer_tests.cpp)
+	ENDIF()
 	set(GLEW_LIBRARIES
 		GLEW::GLEW
 		glfw
@@ -716,13 +803,43 @@ ENDIF (ENABLE_CUDA)
 find_library(OPENH264_LIB NAMES openh264.lib libopenh264.a REQUIRED)
 find_library(LIBMP4_LIB NAMES mp4lib.lib libmp4lib.a REQUIRED)
 
+# ============================================================
+# Common libraries shared by aprapipesut, aprapipes_cli, and apra_schema_generator
+# DRY: Define once, use everywhere
+# ============================================================
+set(APRA_COMMON_LIBS
+    ${GLEW_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${LIBMP4_LIB}
+    ${OPENH264_LIB}
+    ${Boost_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${JETSON_LIBS}
+    ${NVCUDAToolkit_LIBS}
+    ${NVCODEC_LIB}
+    # NOTE: NVJPEGLIB_L4T (libnvjpeg.so) is NOT linked here because:
+    # 1. It exports jpeg_* symbols that conflict with vcpkg's libjpeg-turbo
+    # 2. L4TM modules use dlopen via L4TMJpegLoader to load it at runtime
+    # 3. Linking it causes OpenCV's JpegDecoder to use wrong struct sizes and crash
+    ${CURSES_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ${LIBARCHIVE_LIB}
+    ZXing::Core
+    ZXing::ZXing
+    BZip2::BZip2
+    ZLIB::ZLIB
+    LibLZMA::LibLZMA
+    bigint::bigint
+    SFML::Audio
+    whisper::whisper
+)
+
 IF(ENABLE_ARM64)
 	target_include_directories(aprapipesut PRIVATE 	${VCPKG_GTK_INCLUDE_DIRS})
-	# ARM64/Jetson needs GTK3 for GtkGlRenderer
-	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
 ENDIF(ENABLE_ARM64)
 
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64)
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
 	# x64 Linux uses vcpkg's GTK
 	target_include_directories(aprapipesut PRIVATE 	${GTK3_INCLUDE_DIRS})
 	target_link_libraries(aprapipesut
@@ -733,28 +850,15 @@ ENDIF()
 
 target_link_libraries(aprapipesut
   aprapipes
-  ${GLEW_LIBRARIES}
-  ${JPEG_LIBRARIES}
-  ${LIBMP4_LIB}
-  ${OPENH264_LIB}
-  ${Boost_LIBRARIES}
-  ${FFMPEG_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${JETSON_LIBS}
-  ${NVCUDAToolkit_LIBS}
-  ${NVCODEC_LIB}
-  ${NVJPEGLIB_L4T}
-  ${CURSES_LIBRARIES}
-  ${CMAKE_DL_LIBS}  # For dlopen/dlsym in CudaDriverLoader
-  ZXing::Core
-  ZXing::ZXing
-  BZip2::BZip2
-  ZLIB::ZLIB
-  LibLZMA::LibLZMA
-  bigint::bigint
-  SFML::Audio
-  whisper::whisper
-  )
+  ${APRA_COMMON_LIBS}
+)
+
+# ARM64/Jetson needs GTK3 for GtkGlRenderer - linked AFTER aprapipes
+# to fix "DSO missing from command line" error
+# NOTE: Don't link GDK3_LIBRARIES - it causes faciallandmarks test crash
+IF(ENABLE_ARM64)
+	target_link_libraries(aprapipesut ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
 
 # Windows: Use /DELAYLOAD for CUDA DLLs so executable can start without CUDA installed
 # This enables runtime detection of GPU availability - the DLLs are only loaded when first used
@@ -824,3 +928,364 @@ install(
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aprapipes)
+
+# ============================================================
+# ApraPipes CLI Tool (Declarative Pipeline)
+# ============================================================
+add_executable(aprapipes_cli
+    tools/aprapipes_cli.cpp
+)
+
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(aprapipes_cli PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(aprapipes_cli PRIVATE
+        aprapipes
+    )
+endif()
+
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+target_link_libraries(aprapipes_cli PRIVATE ${APRA_COMMON_LIBS})
+
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(aprapipes_cli PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
+    target_include_directories(aprapipes_cli PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(aprapipes_cli PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
+
+# Include directories for declarative headers and dependencies
+target_include_directories(aprapipes_cli PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
+
+# Install CLI executable
+install(TARGETS aprapipes_cli
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# ApraPipes Schema Generator Tool (E2)
+# Exports module/frame type metadata to JSON/Markdown
+# ============================================================
+add_executable(apra_schema_generator
+    tools/schema_generator.cpp
+)
+
+# Force load aprapipes to include static module registrations
+if(APPLE)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:aprapipes>
+    )
+elseif(UNIX)
+    target_link_libraries(apra_schema_generator PRIVATE
+        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
+    )
+else()
+    target_link_libraries(apra_schema_generator PRIVATE
+        aprapipes
+    )
+endif()
+
+# Link all required libraries (uses APRA_COMMON_LIBS - DRY) + nlohmann_json for JSON output
+target_link_libraries(apra_schema_generator PRIVATE
+    ${APRA_COMMON_LIBS}
+    nlohmann_json::nlohmann_json
+)
+
+# GTK linkage for Linux/ARM64 (same as aprapipesut)
+IF(ENABLE_ARM64)
+    target_include_directories(apra_schema_generator PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
+ENDIF(ENABLE_ARM64)
+
+IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
+    target_include_directories(apra_schema_generator PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
+ENDIF()
+
+target_include_directories(apra_schema_generator PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
+
+# Install schema generator executable
+install(TARGETS apra_schema_generator
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ============================================================
+# Generate schema files at build time
+# ============================================================
+set(SCHEMA_DIR ${CMAKE_BINARY_DIR}/schema)
+
+add_custom_command(
+    OUTPUT ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SCHEMA_DIR}
+    COMMAND apra_schema_generator
+        --modules-json ${SCHEMA_DIR}/modules.json
+        --frame-types-json ${SCHEMA_DIR}/frame_types.json
+        --modules-md ${SCHEMA_DIR}/MODULES.md
+        --frame-types-md ${SCHEMA_DIR}/FRAME_TYPES.md
+    DEPENDS apra_schema_generator
+    COMMENT "Generating ApraPipes schema from C++ metadata"
+    VERBATIM
+)
+
+add_custom_target(generate_schema ALL
+    DEPENDS ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+)
+
+# ============================================================
+# D2 Phase 3: Module Scanner for Registration Detection
+# Scans headers for Module subclasses and generates a list
+# Used by unit tests to detect unregistered modules
+# ============================================================
+set(MODULE_SUBCLASSES_FILE ${CMAKE_BINARY_DIR}/generated/module_subclasses.inc)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
+
+set(SCAN_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ScanModuleClasses.cmake)
+
+add_custom_target(scan-modules
+    COMMAND ${CMAKE_COMMAND}
+        -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+        -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+        -P ${SCAN_SCRIPT}
+    COMMENT "Scanning for Module subclasses..."
+    VERBATIM
+)
+
+# Run scan at configure time to ensure file exists for builds
+if(EXISTS ${SCAN_SCRIPT})
+    execute_process(
+        COMMAND ${CMAKE_COMMAND}
+            -DSCAN_DIR=${CMAKE_CURRENT_SOURCE_DIR}/include
+            -DOUTPUT_FILE=${MODULE_SUBCLASSES_FILE}
+            -P ${SCAN_SCRIPT}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+endif()
+
+# Add generated directory to test target include paths
+# so module_registration_tests.cpp can find module_subclasses.inc
+target_include_directories(aprapipesut PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+# ============================================================
+# Node.js Native Addon (Optional)
+# Build with: cmake -DBUILD_NODE_ADDON=ON ...
+# Requires: node-addon-api and node-api-headers from vcpkg
+#
+# When USE_FFMPEG_ASM_OPTIMIZATIONS=ON:
+#   - FFmpeg-dependent modules are excluded from the Node.js addon
+#   - Excluded modules: RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils
+#   - This is necessary because FFmpeg with assembly optimizations cannot be
+#     statically linked into shared objects due to -fPIC relocation issues
+# ============================================================
+option(BUILD_NODE_ADDON "Build Node.js native addon (@apralabs/aprapipes)" OFF)
+
+if(BUILD_NODE_ADDON)
+    message(STATUS "Node.js addon build enabled")
+
+    # Find node-addon-api from vcpkg
+    find_package(unofficial-node-addon-api CONFIG QUIET)
+    find_package(unofficial-node-api-headers CONFIG QUIET)
+
+    if(unofficial-node-addon-api_FOUND AND unofficial-node-api-headers_FOUND)
+        message(STATUS "Found node-addon-api and node-api-headers")
+
+        # When ASM optimizations are enabled, we need a separate library without FFmpeg modules
+        if(USE_FFMPEG_ASM_OPTIMIZATIONS)
+            message(STATUS "USE_FFMPEG_ASM_OPTIMIZATIONS=ON: Building Node.js addon WITHOUT FFmpeg-dependent modules")
+            message(STATUS "  Excluded: RTSPClientSrc, RTSPPusher, MotionVectorExtractor, H264ParserUtils")
+
+            # Build source list without FFmpeg-dependent modules
+            set(NODE_COMPAT_SOURCE
+                ${CORE_FILES} ${CORE_FILES_H}
+                ${GENERIC_FILES} ${GENERIC_FILES_H}
+                ${IP_FILES} ${IP_FILES_H}
+            )
+            IF(ENABLE_CUDA)
+                set(NODE_COMPAT_SOURCE ${NODE_COMPAT_SOURCE}
+                    ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+                    ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+                )
+            ENDIF(ENABLE_CUDA)
+            # Note: GTKGL_FILES intentionally excluded from Node.js addon
+            # GtkGlRenderer is a display module not needed for headless pipelines
+            # Including it requires GTK preload which causes libjpeg symbol conflicts
+
+            # Create Node-compatible library without FFmpeg modules
+            add_library(aprapipes_node_compat STATIC ${NODE_COMPAT_SOURCE})
+
+            # Same include directories as aprapipes
+            target_include_directories(aprapipes_node_compat PRIVATE
+                ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+                ${GTK3_INCLUDE_DIRS}
+                ${VCPKG_GTK_INCLUDE_DIRS}
+                ${FFMPEG_INCLUDE_DIRS}
+                ${OpenCV_INCLUDE_DIRS}
+                ${Boost_INCLUDE_DIRS}
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+                ${CMAKE_BINARY_DIR}/generated
+                ${LIBMP4_INC_DIR}
+            )
+
+            # Add compile definition to indicate FFmpeg modules are excluded
+            target_compile_definitions(aprapipes_node_compat PRIVATE APRAPIPES_NO_FFMPEG_MODULES)
+
+            set(NODE_ADDON_APRAPIPES_LIB aprapipes_node_compat)
+            # Don't link FFmpeg libraries when using node_compat
+            set(NODE_ADDON_EXTRA_LIBS "")
+        else()
+            # On Linux, we need to exclude GTK modules from Node.js addon
+            # GTK display modules (GtkGlRenderer) can't work in Node.js anyway
+            # Including them requires GTK preload which causes libjpeg symbol conflicts
+            if(ENABLE_LINUX)
+                message(STATUS "Building Node.js addon without GTK display modules (Linux)")
+
+                # Build source list without GTK modules
+                set(NODE_HEADLESS_SOURCE
+                    ${CORE_FILES} ${CORE_FILES_H}
+                    ${GENERIC_FILES} ${GENERIC_FILES_H}
+                    ${IP_FILES} ${IP_FILES_H}
+                )
+                IF(ENABLE_CUDA)
+                    set(NODE_HEADLESS_SOURCE ${NODE_HEADLESS_SOURCE}
+                        ${CUDA_CORE_FILES} ${CUDA_CORE_FILES_H}
+                        ${CUDA_IP_FILES} ${CUDA_IP_FILES_H}
+                    )
+                ENDIF(ENABLE_CUDA)
+                # Note: GTKGL_FILES intentionally excluded - display modules not needed in Node.js
+
+                add_library(aprapipes_node_headless STATIC ${NODE_HEADLESS_SOURCE})
+                target_include_directories(aprapipes_node_headless PRIVATE
+                    ${JETSON_MULTIMEDIA_LIB_INCLUDE}
+                    ${FFMPEG_INCLUDE_DIRS}
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+                    ${CMAKE_BINARY_DIR}/generated
+                    ${LIBMP4_INC_DIR}
+                    ${NVCODEC_INCLUDE_DIR}
+                )
+                target_compile_definitions(aprapipes_node_headless PRIVATE APRAPIPES_NO_GTK_MODULES APRAPIPES_NO_FFMPEG_MODULES)
+
+                set(NODE_ADDON_APRAPIPES_LIB aprapipes_node_headless)
+                set(NODE_ADDON_EXTRA_LIBS ${FFMPEG_LIBRARIES})
+            else()
+                message(STATUS "USE_FFMPEG_ASM_OPTIMIZATIONS=OFF: Building Node.js addon with all modules")
+                set(NODE_ADDON_APRAPIPES_LIB aprapipes)
+                set(NODE_ADDON_EXTRA_LIBS ${FFMPEG_LIBRARIES})
+            endif()
+        endif()
+
+        set(NODE_ADDON_NAME "aprapipes_node")
+
+        add_library(${NODE_ADDON_NAME} SHARED
+            bindings/node/addon.cpp
+            bindings/node/pipeline_wrapper.cpp
+            bindings/node/module_wrapper.cpp
+            bindings/node/event_emitter.cpp
+        )
+
+        # Set output extension to .node
+        set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+            OUTPUT_NAME "aprapipes"
+            PREFIX ""
+            SUFFIX ".node"
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+        )
+
+        # Link node-addon-api
+        target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+            unofficial::node-addon-api::node-addon-api
+        )
+
+        # Force load aprapipes (or aprapipes_node_compat) to include static module registrations
+        if(APPLE)
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                -Wl,-force_load,$<TARGET_FILE:${NODE_ADDON_APRAPIPES_LIB}>
+            )
+            # macOS: Use undefined dynamic lookup for Node symbols
+            set_target_properties(${NODE_ADDON_NAME} PROPERTIES
+                LINK_FLAGS "-undefined dynamic_lookup"
+            )
+        elseif(UNIX)
+            # GCC 9.x has stricter RTTI symbol handling - include Boost.Serialization in whole-archive
+            # This fixes "undefined symbol: typeinfo for boost::archive::detail::basic_iserializer" on Jetson
+            # See: docs/declarative-pipeline/JETSON_KNOWN_ISSUES.md -> Issue J2
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0")
+                message(STATUS "GCC ${CMAKE_CXX_COMPILER_VERSION} detected - applying Boost.Serialization whole-archive workaround for Node.js addon (J2 fix)")
+                target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                    -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} ${Boost_SERIALIZATION_LIBRARY} -Wl,--no-whole-archive
+                )
+            else()
+                target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                    -Wl,--whole-archive ${NODE_ADDON_APRAPIPES_LIB} -Wl,--no-whole-archive
+                )
+            endif()
+        else()
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE
+                ${NODE_ADDON_APRAPIPES_LIB}
+            )
+        endif()
+
+        # Link all required libraries (uses APRA_COMMON_LIBS - DRY)
+        # When ASM is ON, exclude FFmpeg libraries from node addon
+        if(USE_FFMPEG_ASM_OPTIMIZATIONS)
+            # Create a copy of APRA_COMMON_LIBS without FFMPEG_LIBRARIES
+            set(NODE_ADDON_LIBS ${APRA_COMMON_LIBS})
+            list(REMOVE_ITEM NODE_ADDON_LIBS ${FFMPEG_LIBRARIES})
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${NODE_ADDON_LIBS})
+        else()
+            target_link_libraries(${NODE_ADDON_NAME} PRIVATE ${APRA_COMMON_LIBS})
+        endif()
+
+        # Include directories (same as aprapipes target + bindings/node for wrapper headers)
+        target_include_directories(${NODE_ADDON_NAME} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
+            ${CMAKE_CURRENT_SOURCE_DIR}/bindings/node
+            ${OpenCV_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
+            ${FFMPEG_INCLUDE_DIRS}
+            ${LIBMP4_INC_DIR}
+        )
+
+        # Copy to project root for npm usage
+        add_custom_command(TARGET ${NODE_ADDON_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:${NODE_ADDON_NAME}>
+                ${CMAKE_CURRENT_SOURCE_DIR}/../$<TARGET_FILE_NAME:${NODE_ADDON_NAME}>
+            COMMENT "Copying Node addon to project root"
+        )
+
+        # Install target
+        install(TARGETS ${NODE_ADDON_NAME}
+            LIBRARY DESTINATION lib/node
+            RUNTIME DESTINATION lib/node
+        )
+
+        message(STATUS "Node.js addon target: ${NODE_ADDON_NAME}")
+        message(STATUS "Node.js addon library: ${NODE_ADDON_APRAPIPES_LIB}")
+    else()
+        message(WARNING "Node.js addon requested but node-addon-api not found in vcpkg. Run: vcpkg install node-addon-api node-api-headers")
+    endif()
+endif()

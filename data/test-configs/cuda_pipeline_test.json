@@ -1,0 +1,81 @@
+{
+  "name": "cuda_gpu_processing_pipeline",
+  "description": "Test pipeline for CUDA GPU-accelerated image processing",
+  "modules": [
+    {
+      "id": "source",
+      "type": "TestSignalGenerator",
+      "properties": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS"
+      }
+    },
+    {
+      "id": "to_device",
+      "type": "CudaMemCopy",
+      "properties": {
+        "kind": "HostToDevice"
+      }
+    },
+    {
+      "id": "blur",
+      "type": "GaussianBlur",
+      "properties": {
+        "kernelSize": 7
+      }
+    },
+    {
+      "id": "resize",
+      "type": "ResizeNPPI",
+      "properties": {
+        "width": 320,
+        "height": 240
+      }
+    },
+    {
+      "id": "effects",
+      "type": "EffectsNPPI",
+      "properties": {
+        "brightness": 10,
+        "contrast": 1.2,
+        "saturation": 1.1
+      }
+    },
+    {
+      "id": "sync",
+      "type": "CudaStreamSynchronize"
+    },
+    {
+      "id": "to_host",
+      "type": "CudaMemCopy",
+      "properties": {
+        "kind": "DeviceToHost"
+      }
+    },
+    {
+      "id": "encode",
+      "type": "JPEGEncoderNVJPEG",
+      "properties": {
+        "quality": 85
+      }
+    },
+    {
+      "id": "sink",
+      "type": "FileWriterModule",
+      "properties": {
+        "strFullFileNameWithPattern": "/tmp/cuda_test_????.jpg"
+      }
+    }
+  ],
+  "connections": [
+    { "source": "source.output", "target": "to_device.input" },
+    { "source": "to_device.output", "target": "blur.input" },
+    { "source": "blur.output", "target": "resize.input" },
+    { "source": "resize.output", "target": "effects.input" },
+    { "source": "effects.output", "target": "sync.input" },
+    { "source": "sync.output", "target": "to_host.input" },
+    { "source": "to_host.output", "target": "encode.input" },
+    { "source": "encode.output", "target": "sink.input" }
+  ]
+}

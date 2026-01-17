@@ -162,6 +162,8 @@ bool ArchiveSpaceManager::init()
     {
         return false;
     }
+    // Validate props here for declarative pipeline (default constructor skips validation)
+    mDetail->mProps.validateProps();
     return true;
 }
 

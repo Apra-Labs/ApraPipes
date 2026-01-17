@@ -1,0 +1,33 @@
+{
+  "pipeline": {
+    "name": "face_detector_fixed",
+    "description": "Analytics pipeline: TestSignalGenerator -> ColorConversion -> FaceDetectorXform -> StatSink. Fixed version with proper frame type conversion."
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "maxFrames": 100
+      }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "face_detect": {
+      "type": "FaceDetectorXform"
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "convert" },
+    { "from": "convert", "to": "face_detect" },
+    { "from": "face_detect", "to": "stats" }
+  ]
+}

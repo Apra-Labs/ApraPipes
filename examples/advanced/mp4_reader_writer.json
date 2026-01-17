@@ -1,0 +1,42 @@
+{
+  "pipeline": {
+    "name": "MP4 Writer Demo",
+    "description": "Demonstrates creating MP4 video from test signal. Uses JPEG encoding. Output: ./data/testOutput/mp4_demo/ folder"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "Mp4WriterSink",
+      "props": {
+        "baseFolder": "./data/testOutput/mp4_demo/",
+        "chunkTime": 60,
+        "fps": 30
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

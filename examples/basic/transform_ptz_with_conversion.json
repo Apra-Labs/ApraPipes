@@ -1,0 +1,39 @@
+{
+  "pipeline": {
+    "name": "transform_ptz_fixed",
+    "description": "Transform pipeline: TestSignalGenerator -> ColorConversion -> VirtualPTZ -> StatSink. Fixed version with proper frame type conversion."
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 1920,
+        "height": 1080,
+        "maxFrames": 100
+      }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "ptz": {
+      "type": "VirtualPTZ",
+      "props": {
+        "roiX": 0.25,
+        "roiY": 0.25,
+        "roiWidth": 0.5,
+        "roiHeight": 0.5
+      }
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "convert" },
+    { "from": "convert", "to": "ptz" },
+    { "from": "ptz", "to": "stats" }
+  ]
+}

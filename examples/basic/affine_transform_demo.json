@@ -1,0 +1,44 @@
+{
+  "pipeline": {
+    "name": "Affine Transform Demo",
+    "description": "Affine Transform Demo Pipeline (Template). Demonstrates rotation, scaling, and translation of images. Output: JPEG files written to ./data/testOutput/affine_????.jpg"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "maxFrames": 100
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "transform": {
+      "type": "AffineTransform",
+      "props": {
+        "angle": 30.0,
+        "scale": 0.9
+      }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/affine_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "transform" },
+    { "from": "transform", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

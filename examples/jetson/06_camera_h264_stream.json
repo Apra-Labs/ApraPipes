@@ -1,0 +1,50 @@
+{
+  "pipeline": {
+    "name": "Camera to H264 Stream",
+    "description": "Complete pipeline: CSI camera capture, transform, H264 encode. REQUIRES CSI CAMERA."
+  },
+  "modules": {
+    "camera": {
+      "type": "NvArgusCamera",
+      "props": {
+        "width": 1920,
+        "height": 1080,
+        "cameraId": 0
+      },
+      "comment": "CSI camera via Argus API - outputs DMABUF"
+    },
+    "transform": {
+      "type": "NvTransform",
+      "props": {
+        "imageType": "YUV420",
+        "width": 1280,
+        "height": 720
+      },
+      "comment": "GPU-accelerated resize - DMABUF to DMABUF"
+    },
+    "dmabuf_to_host": {
+      "type": "DMAFDToHostCopy",
+      "comment": "Bridge from DMABUF to HOST for encoder"
+    },
+    "h264_encoder": {
+      "type": "H264EncoderV4L2",
+      "props": {
+        "targetKbps": 4000
+      },
+      "comment": "V4L2 hardware H264 encoder - requires HOST input"
+    },
+    "stats": {
+      "type": "StatSink",
+      "props": {
+        "logHealth": true,
+        "logHealthFrequency": 100
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "transform" },
+    { "from": "transform", "to": "dmabuf_to_host" },
+    { "from": "dmabuf_to_host", "to": "h264_encoder" },
+    { "from": "h264_encoder", "to": "stats" }
+  ]
+}

@@ -54,7 +54,8 @@ jobs:
       cache-path: '/data/.cache/vcpkg'
       cmake-conf-cmd: 'export VCPKG_OVERLAY_PORTS=../thirdparty/arm64-overlay && cmake -B . -G Ninja -DENABLE_ARM64=ON ../base'
       vcpkg-triplet: 'arm64-linux-release'
-      nProc: 6
+      build-node-addon: true
+      nProc: 4
       nTestTimeoutMins: 45
 
   report:

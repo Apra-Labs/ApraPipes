@@ -13,7 +13,7 @@
 
 BOOST_AUTO_TEST_SUITE(jpegdecoderl4tm_tests)
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic)
 {	
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_basic, * boost::unit_test::disabled())
 	delete[] pReadData;
 }
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb)
 {		
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
@@ -109,8 +109,10 @@ BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_rgb, * boost::unit_test::disabled())
 	delete[] pReadData;
 }
 
-BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, * boost::unit_test::disabled())
+BOOST_AUTO_TEST_CASE(jpegdecoderl4tm_mono, *boost::unit_test::disabled())
 {
+	// DISABLED: NVIDIA hardware JPEG decoder hangs on grayscale images
+	// This is a hardware/driver limitation, not a code bug
 	const uint8_t* pReadData = nullptr;
 	unsigned int readDataSize = 0U;
 	BOOST_TEST(Test_Utils::readFile("./data/mono.jpg", pReadData, readDataSize));

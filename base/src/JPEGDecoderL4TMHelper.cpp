@@ -1,4 +1,5 @@
 #include "JPEGDecoderL4TMHelper.h"
+#include "L4TMJpegLoader.h"
 #include <string.h>
 #include <malloc.h>
 #include <iostream>
@@ -7,12 +8,14 @@
 
 JPEGDecoderL4TMHelper::JPEGDecoderL4TMHelper()
 {
+    // Initialize the L4TM jpeg loader (loads libnvjpeg.so)
+    L4TMJpegLoader::init();
 
     memset(&cinfo, 0, sizeof(cinfo));
     memset(&jerr, 0, sizeof(jerr));
-    cinfo.err = jpeg_std_error(&jerr);
+    cinfo.err = L4TMJpegLoader::std_error(&jerr);
 
-    jpeg_create_decompress(&cinfo);
+    L4TMJpegLoader::create_decompress(&cinfo);
 
     line[0] = y;
     line[1] = u;
@@ -29,15 +32,15 @@ JPEGDecoderL4TMHelper::JPEGDecoderL4TMHelper()
 
 JPEGDecoderL4TMHelper::~JPEGDecoderL4TMHelper()
 {
-    jpeg_destroy_decompress(&cinfo);
+    L4TMJpegLoader::destroy_decompress(&cinfo);
 }
 
 bool JPEGDecoderL4TMHelper::init(const unsigned char *in_buf, unsigned long in_buf_size, int &width, int &height)
 {
 
-    jpeg_mem_src(&cinfo, (unsigned char *)in_buf, in_buf_size);
+    L4TMJpegLoader::mem_src(&cinfo, (unsigned char *)in_buf, in_buf_size);
 
-    (void)jpeg_read_header(&cinfo, TRUE);
+    (void)L4TMJpegLoader::read_header(&cinfo, TRUE);
     cinfo.out_color_space = cinfo.jpeg_color_space;
 
     if (cinfo.comp_info[0].h_samp_factor == 2)
@@ -63,7 +66,7 @@ bool JPEGDecoderL4TMHelper::init(const unsigned char *in_buf, unsigned long in_b
         }
     }
 
-    jpeg_finish_decompress(&cinfo);
+    L4TMJpegLoader::finish_decompress(&cinfo);
     width = cinfo.image_width;
     height = cinfo.image_height;
 
@@ -90,8 +93,8 @@ bool JPEGDecoderL4TMHelper::init(const unsigned char *in_buf, unsigned long in_b
 
 int JPEGDecoderL4TMHelper::decode(const unsigned char *in_buf, unsigned long in_buf_size, unsigned char *out_buf)
 {
-    jpeg_mem_src(&cinfo, (unsigned char *)in_buf, in_buf_size);
-    (void)jpeg_read_header(&cinfo, TRUE);
+    L4TMJpegLoader::mem_src(&cinfo, (unsigned char *)in_buf, in_buf_size);
+    (void)L4TMJpegLoader::read_header(&cinfo, TRUE);
     cinfo.out_color_space = cinfo.jpeg_color_space;
 
     for (i = 0; i < 3; i++)
@@ -120,7 +123,7 @@ int JPEGDecoderL4TMHelper::decode(const unsigned char *in_buf, unsigned long in_
         last[i] = base[i] + (stride[i] * (tempheight - 1));
     }
 
-    jpeg_start_decompress(&cinfo);
+    L4TMJpegLoader::start_decompress(&cinfo);
 
     for (i = 0; i < (int)cinfo.image_height; i += v_samp[0] * DCTSIZE)
     {
@@ -166,14 +169,14 @@ int JPEGDecoderL4TMHelper::decode(const unsigned char *in_buf, unsigned long in_
             }
         }
 
-        lines = jpeg_read_raw_data(&cinfo, line, v_samp[0] * DCTSIZE);
+        lines = L4TMJpegLoader::read_raw_data(&cinfo, line, v_samp[0] * DCTSIZE);
         if ((!lines))
         {
             LOG_ERROR << "jpeg_read_raw_data() returned 0";
         }
     }
 
-    jpeg_finish_decompress(&cinfo);
+    L4TMJpegLoader::finish_decompress(&cinfo);
 
     return 0;
 }

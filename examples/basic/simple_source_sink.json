@@ -1,0 +1,22 @@
+{
+  "pipeline": {
+    "name": "simple_source_sink",
+    "description": "Simplest possible pipeline: TestSignalGenerator -> StatSink"
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "maxFrames": 100
+      }
+    },
+    "stats": {
+      "type": "StatSink"
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "stats" }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "pipeline": {
+    "name": "Affine Transform Demo Pipeline",
+    "description": "Applies affine transformations (rotation, scale, translate) to test frames. Chain: TestSignalGenerator -> ColorConversion -> AffineTransform -> BMPConverter -> FileWriter. TEMPLATE: AffineTransform requires metadata with valid dimensions in addInputPin()."
+  },
+  "modules": {
+    "generator": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480
+      }
+    },
+    "color_convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "transform": {
+      "type": "AffineTransform",
+      "props": {
+        "angle": 45.0,
+        "scale": 0.8,
+        "x": 50,
+        "y": 30
+      }
+    },
+    "bmp_encoder": {
+      "type": "BMPConverter"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/declarative_test/affine_output/frame_????.bmp"
+      }
+    }
+  },
+  "connections": [
+    { "from": "generator", "to": "color_convert" },
+    { "from": "color_convert", "to": "transform" },
+    { "from": "transform", "to": "bmp_encoder" },
+    { "from": "bmp_encoder", "to": "writer" }
+  ]
+}

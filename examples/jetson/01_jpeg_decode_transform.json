@@ -1,0 +1,40 @@
+{
+  "pipeline": {
+    "name": "Jetson L4TM Quality Adjustment",
+    "description": "Reads JPEG files, decodes/re-encodes at different quality using Jetson L4TM hardware codec."
+  },
+  "modules": {
+    "reader": {
+      "type": "FileReaderModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/frame.jpg",
+        "readLoop": true,
+        "maxIndex": 10,
+        "outputFrameType": "EncodedImage"
+      },
+      "comment": "Reads JPEG files"
+    },
+    "decoder": {
+      "type": "JPEGDecoderL4TM",
+      "comment": "Hardware JPEG decoder (L4TM)"
+    },
+    "encoder": {
+      "type": "JPEGEncoderL4TM",
+      "props": {
+        "quality": 70
+      },
+      "comment": "Re-encode at lower quality (70 vs typical 90)"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_test/q70_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "reader", "to": "decoder" },
+    { "from": "decoder", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

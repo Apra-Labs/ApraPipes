@@ -1,0 +1,48 @@
+{
+  "pipeline": {
+    "name": "Affine Transform Chain",
+    "description": "Affine Transform Chain Example. Demonstrates rotation and scaling with AffineTransform. Output: ./data/testOutput/affine_chain_????.jpg"
+  },
+  "modules": {
+    "source": {
+      "type": "TestSignalGenerator",
+      "props": {
+        "width": 640,
+        "height": 480,
+        "pattern": "COLOR_BARS",
+        "maxFrames": 100
+      }
+    },
+    "convert": {
+      "type": "ColorConversion",
+      "props": {
+        "conversionType": "YUV420PLANAR_TO_RGB"
+      }
+    },
+    "transform": {
+      "type": "AffineTransform",
+      "props": {
+        "angle": 45.0,
+        "scale": 0.8
+      }
+    },
+    "encoder": {
+      "type": "ImageEncoderCV",
+      "props": {
+        "quality": 90
+      }
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "./data/testOutput/affine_chain_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "source", "to": "convert" },
+    { "from": "convert", "to": "transform" },
+    { "from": "transform", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}

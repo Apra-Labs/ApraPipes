@@ -66,15 +66,53 @@ cd vcpkg
 vcpkg integrate install
 cd ..
 
+# Set GCC-11 for CUDA 11.8 compatibility (required on Ubuntu 24.04 with GCC 13+)
+if [ -f /usr/bin/gcc-11 ]; then
+  echo "Setting GCC-11 for CUDA 11.8 compatibility..."
+  export CC=/usr/bin/gcc-11
+  export CXX=/usr/bin/g++-11
+  export CUDAHOSTCXX=/usr/bin/g++-11
+fi
+
+# Set CUDA environment variables
+export CUDA_PATH=/usr/local/cuda
+export CUDAToolkit_ROOT=/usr/local/cuda
+export CUDACXX=/usr/local/cuda/bin/nvcc
+
 CMAKE_THCOUNT=$(sh ./checkProc.sh)
 mkdir -p _build
 cd _build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../base -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build . -- -j "$CMAKE_THCOUNT"
+cmake -G Ninja \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+  -DVCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay \
+  -DVCPKG_OVERLAY_TRIPLETS=../thirdparty/triplets \
+  -DVCPKG_TARGET_TRIPLET=x64-linux-release \
+  -DVCPKG_HOST_TRIPLET=x64-linux-release \
+  -DCUDA_ARCH_BIN="7.5;8.6" \
+  -DENABLE_LINUX=ON \
+  -DENABLE_WINDOWS=OFF \
+  -DENABLE_CUDA=ON \
+  ../base
+# Note: BUILD_NODE_ADDON=OFF by default due to -fPIC issues with static FFmpeg.
+# To enable, build FFmpeg dynamically or disable x86 assembly in FFmpeg.
+cmake --build . -j "$CMAKE_THCOUNT"
 
 cd ..
 
-mkdir -p _debugbuild
-cd _debugbuild
-cmake -DCMAKE_BUILD_TYPE=Debug ../base -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build . -- -j "$CMAKE_THCOUNT"
+# Debug build disabled - only building RelWithDebInfo
+# Uncomment below to enable debug build:
+# mkdir -p _debugbuild
+# cd _debugbuild
+# cmake -G Ninja \
+#   -DCMAKE_BUILD_TYPE=Debug \
+#   -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
+#   -DVCPKG_OVERLAY_PORTS=../thirdparty/custom-overlay \
+#   -DVCPKG_TARGET_TRIPLET=x64-linux-release \
+#   -DVCPKG_HOST_TRIPLET=x64-linux-release \
+#   -DCUDA_ARCH_BIN="7.5;8.6" \
+#   -DENABLE_LINUX=ON \
+#   -DENABLE_WINDOWS=OFF \
+#   -DENABLE_CUDA=ON \
+#   ../base
+# cmake --build . -j "$CMAKE_THCOUNT"

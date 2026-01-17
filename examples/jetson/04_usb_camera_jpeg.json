@@ -1,0 +1,50 @@
+{
+  "pipeline": {
+    "name": "USB Camera to JPEG",
+    "description": "Captures from USB camera via V4L2, transforms and saves as JPEG files. REQUIRES USB CAMERA."
+  },
+  "modules": {
+    "camera": {
+      "type": "NvV4L2Camera",
+      "props": {
+        "width": 1280,
+        "height": 720,
+        "maxConcurrentFrames": 10,
+        "isMirror": false
+      },
+      "comment": "V4L2 USB camera - outputs DMABUF"
+    },
+    "transform": {
+      "type": "NvTransform",
+      "props": {
+        "imageType": "YUV420",
+        "width": 640,
+        "height": 480
+      },
+      "comment": "GPU-accelerated resize - DMABUF to DMABUF"
+    },
+    "dmabuf_to_host": {
+      "type": "DMAFDToHostCopy",
+      "comment": "Bridge from DMABUF to HOST for encoder"
+    },
+    "encoder": {
+      "type": "JPEGEncoderL4TM",
+      "props": {
+        "quality": 85
+      },
+      "comment": "Hardware JPEG encoder - requires HOST input"
+    },
+    "writer": {
+      "type": "FileWriterModule",
+      "props": {
+        "strFullFileNameWithPattern": "/tmp/jetson_output/usb_frame_????.jpg"
+      }
+    }
+  },
+  "connections": [
+    { "from": "camera", "to": "transform" },
+    { "from": "transform", "to": "dmabuf_to_host" },
+    { "from": "dmabuf_to_host", "to": "encoder" },
+    { "from": "encoder", "to": "writer" }
+  ]
+}
