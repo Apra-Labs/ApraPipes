@@ -366,29 +366,41 @@ jobs:
         retention-days: 7
 
     #=========================================================================
-    # INTEGRATION TESTS (ARM64 - Basic + Node.js + Jetson examples)
+    # INTEGRATION TESTS (Basic JSON - strict)
     #=========================================================================
-    - name: Run basic + Node.js integration tests
+    - name: Run integration tests (basic)
       if: ${{ success() && !inputs.is-prep-phase }}
-      continue-on-error: true
       run: |
         chmod +x examples/test_all_examples.sh
         ./examples/test_all_examples.sh \
-          --basic --node \
+          --basic \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report "${{ github.workspace }}/integration_report_basic.json" \
-          --ci
+          --json-report "${{ github.workspace }}/integration_report_basic.json"
 
-    - name: Run Jetson integration tests
+    #=========================================================================
+    # INTEGRATION TESTS (Node.js - soft, has platform-specific timeout issues)
+    #=========================================================================
+    - name: Run integration tests (Node.js)
       if: ${{ success() && !inputs.is-prep-phase }}
       continue-on-error: true
+      run: |
+        ./examples/test_all_examples.sh \
+          --node \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_node.json" \
+          --ci
+
+    #=========================================================================
+    # INTEGRATION TESTS (Jetson - strict)
+    #=========================================================================
+    - name: Run integration tests (Jetson)
+      if: ${{ success() && !inputs.is-prep-phase }}
       run: |
         chmod +x examples/test_jetson_examples.sh
         ./examples/test_jetson_examples.sh \
           --cli \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report "${{ github.workspace }}/integration_report_jetson.json" \
-          --ci
+          --json-report "${{ github.workspace }}/integration_report_jetson.json"
 
     - name: Upload integration reports
       if: ${{ always() && !inputs.is-prep-phase }}
@@ -397,5 +409,6 @@ jobs:
         name: IntegrationReport_${{ inputs.flav }}
         path: |
           ${{ github.workspace }}/integration_report_basic.json
+          ${{ github.workspace }}/integration_report_node.json
           ${{ github.workspace }}/integration_report_jetson.json
       continue-on-error: true

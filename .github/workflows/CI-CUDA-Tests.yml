@@ -236,19 +236,17 @@ jobs:
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
     #=========================================================================
-    # INTEGRATION TESTS (GPU - CUDA examples)
+    # INTEGRATION TESTS (GPU - CUDA examples, strict)
     #=========================================================================
     - name: Run CUDA integration tests
       if: success()
-      continue-on-error: true
       shell: bash
       run: |
         chmod +x examples/test_all_examples.sh
         ./examples/test_all_examples.sh \
           --cuda \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report "${{ github.workspace }}/integration_report_cuda.json" \
-          --ci
+          --json-report "${{ github.workspace }}/integration_report_cuda.json"
 
     - name: Upload CUDA integration report
       if: always()
