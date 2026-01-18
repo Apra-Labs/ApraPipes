@@ -17,10 +17,13 @@
 #   --node             Test only Node.js examples
 #   --verbose          Show detailed output
 #   --keep-outputs     Don't cleanup output files after tests
+#   --sdk-dir <path>   Use SDK directory structure (for CI)
+#   --json-report <f>  Write JSON report to file
+#   --ci               CI mode: always exit 0, generate report
 #   --help             Show this help message
 #
 # Exit codes:
-#   0 - All tests passed
+#   0 - All tests passed (or CI mode)
 #   1 - One or more tests failed
 #   2 - Not a Jetson device or script error
 # ==============================================================================
@@ -48,12 +51,19 @@ TEST_CLI=true
 TEST_NODE=true
 VERBOSE=false
 KEEP_OUTPUTS=false
+SDK_DIR=""
+JSON_REPORT=""
+CI_MODE=false
+WORK_DIR="$PROJECT_ROOT"
 
 # Counters
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 SKIPPED_TESTS=0
+
+# Results array for JSON report (name:status)
+declare -a TEST_RESULTS
 
 # ==============================================================================
 # Helper Functions
@@ -128,6 +138,18 @@ while [[ $# -gt 0 ]]; do
             KEEP_OUTPUTS=true
             shift
             ;;
+        --sdk-dir)
+            SDK_DIR="$2"
+            shift 2
+            ;;
+        --json-report)
+            JSON_REPORT="$2"
+            shift 2
+            ;;
+        --ci)
+            CI_MODE=true
+            shift
+            ;;
         --help)
             show_help
             ;;
@@ -137,6 +159,20 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# ==============================================================================
+# SDK Mode Configuration
+# ==============================================================================
+
+if [[ -n "$SDK_DIR" ]]; then
+    SDK_DIR="$(cd "$SDK_DIR" && pwd)"  # Convert to absolute path
+    CLI_PATH="$SDK_DIR/bin/aprapipes_cli"
+    NODE_ADDON="$SDK_DIR/bin/aprapipes.node"
+    EXAMPLES_DIR="$SDK_DIR/examples"
+    OUTPUT_DIR="$SDK_DIR/data/testOutput"
+    WORK_DIR="$SDK_DIR"
+    echo -e "${BLUE}[SDK MODE]${NC} Using SDK at: $SDK_DIR"
+fi
 
 # ==============================================================================
 # Pre-flight Checks
@@ -204,12 +240,15 @@ run_cli_example() {
     local json_file="$1"
     local example_name=$(basename "$json_file" .json)
     local duration="${2:-5}"
+    local test_status="passed"
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     print_test "CLI: $example_name"
 
     if [[ ! -f "$json_file" ]]; then
         print_fail "JSON file not found: $json_file"
+        test_status="failed"
+        TEST_RESULTS+=("cli_$example_name:$test_status")
         return 1
     fi
 
@@ -221,7 +260,7 @@ run_cli_example() {
     local output
     local exit_code=0
 
-    cd "$PROJECT_ROOT"
+    cd "$WORK_DIR"
     output=$(timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" --duration "$duration" 2>&1) || exit_code=$?
 
     if [ "$VERBOSE" = true ]; then
@@ -236,6 +275,8 @@ run_cli_example() {
     # Check for errors
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
         print_fail "Pipeline reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("cli_$example_name:$test_status")
         return 1
     fi
 
@@ -250,6 +291,7 @@ run_cli_example() {
         # Some pipelines don't output files (like display pipelines)
         print_pass "$example_name (no output files - may be expected)"
     fi
+    TEST_RESULTS+=("cli_$example_name:$test_status")
     return 0
 }
 
@@ -277,12 +319,15 @@ fi
 run_node_example() {
     local js_file="$1"
     local example_name=$(basename "$js_file" .js)
+    local test_status="passed"
 
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     print_test "Node: $example_name"
 
     if [[ ! -f "$js_file" ]]; then
         print_fail "JS file not found: $js_file"
+        test_status="failed"
+        TEST_RESULTS+=("node_$example_name:$test_status")
         return 1
     fi
 
@@ -294,7 +339,7 @@ run_node_example() {
     local output
     local exit_code=0
 
-    cd "$PROJECT_ROOT"
+    cd "$WORK_DIR"
     output=$(timeout "$RUN_TIMEOUT" node "$js_file" 2>&1) || exit_code=$?
 
     if [ "$VERBOSE" = true ]; then
@@ -304,16 +349,20 @@ run_node_example() {
     # Check for success indicators
     if echo "$output" | grep -qi "Demo Complete\|Example Complete\|SUCCESS"; then
         print_pass "$example_name"
+        TEST_RESULTS+=("node_$example_name:$test_status")
         return 0
     fi
 
     # Check for errors
     if echo "$output" | grep -qi "Error:\|failed\|exception"; then
         print_fail "Example reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("node_$example_name:$test_status")
         return 1
     fi
 
     print_pass "$example_name"
+    TEST_RESULTS+=("node_$example_name:$test_status")
     return 0
 }
 
@@ -345,8 +394,55 @@ echo -e "${GREEN}Passed:  $PASSED_TESTS${NC}"
 echo -e "${RED}Failed:  $FAILED_TESTS${NC}"
 echo -e "${YELLOW}Skipped: $SKIPPED_TESTS${NC}"
 
+# ==============================================================================
+# Generate JSON Report
+# ==============================================================================
+
+if [[ -n "$JSON_REPORT" ]]; then
+    print_info "Writing JSON report to: $JSON_REPORT"
+
+    # Build results array
+    results_json="["
+    first=true
+    for result in "${TEST_RESULTS[@]}"; do
+        name="${result%:*}"
+        status="${result#*:}"
+        if [ "$first" = true ]; then
+            first=false
+        else
+            results_json+=","
+        fi
+        results_json+="{\"name\":\"$name\",\"status\":\"$status\"}"
+    done
+    results_json+="]"
+
+    # Write JSON report
+    cat > "$JSON_REPORT" << EOF
+{
+  "script": "test_jetson_examples.sh",
+  "timestamp": "$(date -Iseconds)",
+  "summary": {
+    "passed": $PASSED_TESTS,
+    "failed": $FAILED_TESTS,
+    "skipped": $SKIPPED_TESTS,
+    "total": $TOTAL_TESTS
+  },
+  "results": $results_json
+}
+EOF
+    echo -e "${GREEN}Report written to: $JSON_REPORT${NC}"
+fi
+
+# ==============================================================================
+# Exit Handling
+# ==============================================================================
+
 if [[ $FAILED_TESTS -gt 0 ]]; then
     echo -e "\n${RED}Some tests failed!${NC}"
+    if [ "$CI_MODE" = true ]; then
+        echo -e "${YELLOW}CI mode: Exiting with success despite failures${NC}"
+        exit 0
+    fi
     exit 1
 else
     echo -e "\n${GREEN}All Jetson tests passed!${NC}"

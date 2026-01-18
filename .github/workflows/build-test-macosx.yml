@@ -213,3 +213,85 @@ jobs:
           ${{ github.workspace }}/build/vcpkg-manifest-install.log
           tests.txt
       continue-on-error: true
+
+    - name: Package SDK artifact
+      if: ${{ success() && !inputs.is-prep-phase }}
+      run: |
+        SDK_DIR="${{ github.workspace }}/sdk"
+        BUILD_DIR="${{ github.workspace }}/build"
+        INCLUDE_DIR="${{ github.workspace }}/base/include"
+        EXAMPLES_DIR="${{ github.workspace }}/examples"
+        DATA_DIR="${{ github.workspace }}/data"
+
+        # Create SDK structure
+        mkdir -p "$SDK_DIR"/{bin,lib,include,examples/basic,examples/node,data}
+
+        # Generate VERSION file
+        VERSION=$(git describe --tags --always 2>/dev/null || echo "0.0.0-g$(git rev-parse --short HEAD)")
+        echo "$VERSION" > "$SDK_DIR/VERSION"
+        echo "SDK Version: $VERSION"
+
+        # Copy binaries
+        cp -f "$BUILD_DIR/aprapipes_cli" "$SDK_DIR/bin/" 2>/dev/null || true
+        cp -f "$BUILD_DIR/aprapipesut" "$SDK_DIR/bin/" 2>/dev/null || true
+        cp -f "$BUILD_DIR/aprapipes.node" "$SDK_DIR/bin/" 2>/dev/null || true
+        cp -f "$BUILD_DIR"/*.dylib "$SDK_DIR/bin/" 2>/dev/null || true
+
+        # Copy static libraries
+        cp -f "$BUILD_DIR"/*.a "$SDK_DIR/lib/" 2>/dev/null || true
+
+        # Copy headers
+        cp -rf "$INCLUDE_DIR"/* "$SDK_DIR/include/" 2>/dev/null || true
+
+        # Copy examples - basic (JSON pipelines)
+        if [ -d "$EXAMPLES_DIR/basic" ]; then
+          cp -f "$EXAMPLES_DIR/basic"/*.json "$SDK_DIR/examples/basic/" 2>/dev/null || true
+        fi
+
+        # Copy examples - node (JavaScript examples)
+        if [ -d "$EXAMPLES_DIR/node" ]; then
+          cp -f "$EXAMPLES_DIR/node"/*.js "$SDK_DIR/examples/node/" 2>/dev/null || true
+          cp -f "$EXAMPLES_DIR/node/README.md" "$SDK_DIR/examples/node/" 2>/dev/null || true
+        fi
+
+        # Copy sample data files
+        cp -f "$DATA_DIR/frame.jpg" "$SDK_DIR/data/" 2>/dev/null || true
+        cp -f "$DATA_DIR/faces.jpg" "$SDK_DIR/data/" 2>/dev/null || true
+
+        # Copy SDK README if it exists
+        if [ -f "${{ github.workspace }}/docs/SDK_README.md" ]; then
+          cp -f "${{ github.workspace }}/docs/SDK_README.md" "$SDK_DIR/README.md"
+        fi
+
+        echo "=== SDK Contents ==="
+        find "$SDK_DIR" -type f | head -50
+
+    - name: Upload SDK artifact
+      if: ${{ success() && !inputs.is-prep-phase }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: aprapipes-sdk-macos-arm64
+        path: ${{ github.workspace }}/sdk/
+        retention-days: 7
+
+    #=========================================================================
+    # INTEGRATION TESTS (macOS - Basic examples)
+    #=========================================================================
+    - name: Run integration tests (basic examples)
+      if: ${{ success() && !inputs.is-prep-phase }}
+      continue-on-error: true
+      run: |
+        chmod +x examples/test_all_examples.sh
+        ./examples/test_all_examples.sh \
+          --basic \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report integration_report.json \
+          --ci
+
+    - name: Upload integration report
+      if: ${{ always() && !inputs.is-prep-phase }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationReport_${{ inputs.flav }}
+        path: integration_report.json
+      continue-on-error: true

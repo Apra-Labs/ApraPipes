@@ -5,7 +5,7 @@
 # Tests all declarative pipeline examples (basic, cuda, advanced).
 #
 # Usage:
-#   ./scripts/test_all_examples.sh [options]
+#   ./examples/test_all_examples.sh [options]
 #
 # Options:
 #   --basic            Test only basic (CPU) examples
@@ -13,10 +13,13 @@
 #   --advanced         Test only advanced examples
 #   --verbose          Show detailed output
 #   --keep-outputs     Don't cleanup output files after tests
+#   --sdk-dir <path>   Use SDK directory structure (for CI)
+#   --json-report <f>  Write JSON report to file
+#   --ci               CI mode: always exit 0, generate report
 #   --help             Show this help message
 #
 # Exit codes:
-#   0 - All tests passed
+#   0 - All tests passed (or CI mode)
 #   1 - One or more tests failed
 #   2 - Script error (missing CLI, etc.)
 # ==============================================================================
@@ -35,7 +38,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLI_PATH="$PROJECT_ROOT/bin/aprapipes_cli"
 EXAMPLES_DIR="$PROJECT_ROOT/examples"
-OUTPUT_DIR="$PROJECT_ROOT/bin/data/testOutput"
+OUTPUT_DIR="$PROJECT_ROOT/data/testOutput"
+WORK_DIR="$PROJECT_ROOT"  # Directory to run CLI from (for relative paths in JSON)
 RUN_TIMEOUT=30  # seconds timeout for each pipeline
 
 # Options
@@ -44,12 +48,18 @@ TEST_CUDA=true
 TEST_ADVANCED=true
 VERBOSE=false
 KEEP_OUTPUTS=false
+SDK_DIR=""
+JSON_REPORT=""
+CI_MODE=false
 
 # Counters
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 SKIPPED_TESTS=0
+
+# Results array for JSON report (name:status)
+declare -a TEST_RESULTS
 
 # ==============================================================================
 # Helper Functions
@@ -133,6 +143,18 @@ while [[ $# -gt 0 ]]; do
             KEEP_OUTPUTS=true
             shift
             ;;
+        --sdk-dir)
+            SDK_DIR="$2"
+            shift 2
+            ;;
+        --json-report)
+            JSON_REPORT="$2"
+            shift 2
+            ;;
+        --ci)
+            CI_MODE=true
+            shift
+            ;;
         --help)
             show_help
             ;;
@@ -142,6 +164,25 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# ==============================================================================
+# SDK Mode Configuration
+# ==============================================================================
+# In SDK mode, paths are relative to the SDK directory:
+#   sdk/bin/aprapipes_cli
+#   sdk/examples/basic/*.json
+#   sdk/data/frame.jpg (referenced as ./data/frame.jpg in JSON)
+#
+# We run CLI from SDK root so relative paths in JSON resolve correctly.
+
+if [[ -n "$SDK_DIR" ]]; then
+    SDK_DIR="$(cd "$SDK_DIR" && pwd)"  # Convert to absolute path
+    CLI_PATH="$SDK_DIR/bin/aprapipes_cli"
+    EXAMPLES_DIR="$SDK_DIR/examples"
+    OUTPUT_DIR="$SDK_DIR/data/testOutput"
+    WORK_DIR="$SDK_DIR"  # Run CLI from SDK root
+    echo -e "${BLUE}[SDK MODE]${NC} Using SDK at: $SDK_DIR"
+fi
 
 # ==============================================================================
 # Pre-flight Checks
@@ -203,22 +244,25 @@ run_json_example() {
     print_info "Running pipeline..."
     local output
     local exit_code=0
+    local test_status="passed"
 
-    cd "$PROJECT_ROOT/bin"
+    cd "$WORK_DIR"
     output=$(timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
 
     # Check for critical errors (ignore warnings)
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
         if echo "$output" | grep -qi "not found\|Unknown module"; then
             print_skip "Module not available: $example_name"
-            ((PASSED_TESTS--))  # Undo the increment from print_skip
-            ((SKIPPED_TESTS++))
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
             return 0
         fi
         if [ "$VERBOSE" = true ]; then
             echo "$output"
         fi
         print_fail "Pipeline reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
         return 1
     fi
 
@@ -231,11 +275,14 @@ run_json_example() {
 
         if [[ "$file_count" -lt "$expected_count" ]]; then
             print_fail "Expected $expected_count files, got $file_count"
+            test_status="failed"
+            TEST_RESULTS+=("$example_name:$test_status")
             return 1
         fi
     fi
 
     print_pass "$example_name"
+    TEST_RESULTS+=("$example_name:$test_status")
     return 0
 }
 
@@ -308,8 +355,55 @@ echo -e "${GREEN}Passed:  $PASSED_TESTS${NC}"
 echo -e "${RED}Failed:  $FAILED_TESTS${NC}"
 echo -e "${YELLOW}Skipped: $SKIPPED_TESTS${NC}"
 
+# ==============================================================================
+# Generate JSON Report
+# ==============================================================================
+
+if [[ -n "$JSON_REPORT" ]]; then
+    print_info "Writing JSON report to: $JSON_REPORT"
+
+    # Build results array
+    results_json="["
+    first=true
+    for result in "${TEST_RESULTS[@]}"; do
+        name="${result%:*}"
+        status="${result#*:}"
+        if [ "$first" = true ]; then
+            first=false
+        else
+            results_json+=","
+        fi
+        results_json+="{\"name\":\"$name\",\"status\":\"$status\"}"
+    done
+    results_json+="]"
+
+    # Write JSON report
+    cat > "$JSON_REPORT" << EOF
+{
+  "script": "test_all_examples.sh",
+  "timestamp": "$(date -Iseconds)",
+  "summary": {
+    "passed": $PASSED_TESTS,
+    "failed": $FAILED_TESTS,
+    "skipped": $SKIPPED_TESTS,
+    "total": $TOTAL_TESTS
+  },
+  "results": $results_json
+}
+EOF
+    echo -e "${GREEN}Report written to: $JSON_REPORT${NC}"
+fi
+
+# ==============================================================================
+# Exit Handling
+# ==============================================================================
+
 if [[ $FAILED_TESTS -gt 0 ]]; then
     echo -e "\n${RED}Some tests failed!${NC}"
+    if [ "$CI_MODE" = true ]; then
+        echo -e "${YELLOW}CI mode: Exiting with success despite failures${NC}"
+        exit 0
+    fi
     exit 1
 else
     echo -e "\n${GREEN}All tests passed!${NC}"

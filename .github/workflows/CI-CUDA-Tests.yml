@@ -235,6 +235,29 @@ jobs:
           CI_test_result_${{ needs.setup.outputs.flav }}.xml
           ${{ github.workspace }}/data/SaveOrCompareFail/**
 
+    #=========================================================================
+    # INTEGRATION TESTS (GPU - CUDA examples)
+    #=========================================================================
+    - name: Run CUDA integration tests
+      if: success()
+      continue-on-error: true
+      shell: bash
+      run: |
+        chmod +x examples/test_all_examples.sh
+        ./examples/test_all_examples.sh \
+          --cuda \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report integration_report_cuda.json \
+          --ci
+
+    - name: Upload CUDA integration report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationReport_${{ needs.setup.outputs.flav }}_cuda
+        path: integration_report_cuda.json
+      continue-on-error: true
+
   #===========================================================================
   # PUBLISH CUDA TEST RESULTS (DRY: uses publish-test.yml)
   #===========================================================================

@@ -433,27 +433,43 @@ jobs:
       run: |
         $sdkDir = "${{ github.workspace }}/sdk"
         $includeDir = "${{ github.workspace }}/base/include"
+        $examplesDir = "${{ github.workspace }}/examples"
+        $dataDir = "${{ github.workspace }}/data"
 
         # Create SDK structure
         New-Item -ItemType Directory -Path "$sdkDir/bin" -Force | Out-Null
         New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
         New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/examples/basic" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/examples/node" -Force | Out-Null
+        New-Item -ItemType Directory -Path "$sdkDir/data" -Force | Out-Null
+
+        # Generate VERSION file
+        $version = git describe --tags --always 2>$null
+        if (-not $version) { $version = "0.0.0-g$(git rev-parse --short HEAD)" }
+        Set-Content -Path "$sdkDir/VERSION" -Value $version
+        Write-Host "SDK Version: $version"
 
         if ("${{ inputs.os }}" -eq "linux") {
           $buildDir = "${{ github.workspace }}/build"
+          # Binaries
+          Copy-Item "$buildDir/aprapipes_cli" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           Copy-Item "$buildDir/aprapipesut" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+          Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           Copy-Item "$buildDir/*.so*" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
         } else {
           $buildDir = "${{ github.workspace }}/build/Release"
-          Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force
+          # Binaries (includes aprapipes_cli.exe, aprapipesut.exe)
+          Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
+          Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           # Copy non-CUDA DLLs only (CUDA DLLs are delay-loaded)
-          Get-ChildItem "$buildDir/*.dll" | Where-Object {
+          Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
             $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
           } | ForEach-Object {
             Copy-Item $_.FullName "$sdkDir/bin/" -Force
           }
-          Get-ChildItem "$buildDir/*.lib" | ForEach-Object {
+          Get-ChildItem "$buildDir/*.lib" -ErrorAction SilentlyContinue | ForEach-Object {
             Copy-Item $_.FullName "$sdkDir/lib/" -Force
           }
         }
@@ -461,9 +477,41 @@ jobs:
         # Copy headers
         Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
 
+        # Copy examples - basic (JSON pipelines)
+        if (Test-Path "$examplesDir/basic") {
+          Copy-Item "$examplesDir/basic/*.json" "$sdkDir/examples/basic/" -Force -ErrorAction SilentlyContinue
+        }
+
+        # Copy examples - node (JavaScript examples)
+        if (Test-Path "$examplesDir/node") {
+          Copy-Item "$examplesDir/node/*.js" "$sdkDir/examples/node/" -Force -ErrorAction SilentlyContinue
+          Copy-Item "$examplesDir/node/README.md" "$sdkDir/examples/node/" -Force -ErrorAction SilentlyContinue
+        }
+
+        # Copy CUDA examples (for CUDA builds)
+        if ("${{ inputs.cuda }}" -eq "ON" -and (Test-Path "$examplesDir/cuda")) {
+          New-Item -ItemType Directory -Path "$sdkDir/examples/cuda" -Force | Out-Null
+          Copy-Item "$examplesDir/cuda/*.json" "$sdkDir/examples/cuda/" -Force -ErrorAction SilentlyContinue
+        }
+
+        # Copy sample data files
+        if (Test-Path "$dataDir/frame.jpg") {
+          Copy-Item "$dataDir/frame.jpg" "$sdkDir/data/" -Force
+        }
+        if (Test-Path "$dataDir/faces.jpg") {
+          Copy-Item "$dataDir/faces.jpg" "$sdkDir/data/" -Force
+        }
+
+        # Copy SDK README if it exists
+        if (Test-Path "${{ github.workspace }}/docs/SDK_README.md") {
+          Copy-Item "${{ github.workspace }}/docs/SDK_README.md" "$sdkDir/README.md" -Force
+        }
+
         Write-Host "=== SDK Contents ==="
-        Get-ChildItem "$sdkDir/bin" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  bin/$($_.Name)" }
-        Get-ChildItem "$sdkDir/lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  lib/$($_.Name)" }
+        Get-ChildItem "$sdkDir" -Recurse -File | ForEach-Object {
+          $relativePath = $_.FullName.Replace("$sdkDir/", "").Replace("$sdkDir\", "")
+          Write-Host "  $relativePath"
+        }
 
     - name: Upload SDK artifact
       if: success()
@@ -472,6 +520,29 @@ jobs:
         name: aprapipes-sdk-${{ inputs.os }}-x64
         path: ${{ github.workspace }}/sdk/
         retention-days: 7
+
+    #=========================================================================
+    # INTEGRATION TESTS (Cloud - Basic examples)
+    #=========================================================================
+    - name: Run integration tests (basic examples)
+      if: success()
+      continue-on-error: true
+      shell: bash
+      run: |
+        chmod +x examples/test_all_examples.sh
+        ./examples/test_all_examples.sh \
+          --basic \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report integration_report_basic.json \
+          --ci
+
+    - name: Upload integration report (basic)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationReport_${{ inputs.flav }}_basic
+        path: integration_report_basic.json
+      continue-on-error: true
 
   #===========================================================================
   # PUBLISH TEST RESULTS (DRY: uses publish-test.yml)
