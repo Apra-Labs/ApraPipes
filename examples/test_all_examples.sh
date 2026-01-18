@@ -102,6 +102,46 @@ show_help() {
     exit 0
 }
 
+# Portable timeout function (works on Linux and macOS)
+run_with_timeout() {
+    local timeout_sec=$1
+    shift
+    local cmd=("$@")
+
+    # Try GNU timeout (Linux)
+    if command -v timeout &>/dev/null; then
+        timeout "$timeout_sec" "${cmd[@]}"
+        return $?
+    fi
+
+    # Try gtimeout (macOS with coreutils)
+    if command -v gtimeout &>/dev/null; then
+        gtimeout "$timeout_sec" "${cmd[@]}"
+        return $?
+    fi
+
+    # Fallback: background process with wait (POSIX compatible)
+    "${cmd[@]}" &
+    local pid=$!
+
+    # Start a watchdog in background
+    (
+        sleep "$timeout_sec"
+        kill -9 "$pid" 2>/dev/null
+    ) &
+    local watchdog=$!
+
+    # Wait for command to finish
+    wait "$pid" 2>/dev/null
+    local exit_code=$?
+
+    # Kill watchdog if command finished
+    kill "$watchdog" 2>/dev/null
+    wait "$watchdog" 2>/dev/null
+
+    return $exit_code
+}
+
 # ==============================================================================
 # Argument Parsing
 # ==============================================================================
@@ -247,7 +287,7 @@ run_json_example() {
     local test_status="passed"
 
     cd "$WORK_DIR"
-    output=$(timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
+    output=$(run_with_timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
 
     # Check for critical errors (ignore warnings)
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
