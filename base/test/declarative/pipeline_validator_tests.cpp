@@ -277,6 +277,7 @@ BOOST_AUTO_TEST_CASE(Validate_SimplePipeline_NoErrors)
 {
     PipelineValidator::Options opts;
     opts.includeInfoMessages = true;
+    opts.validatePaths = false;  // Disable path validation - test uses placeholder paths
     PipelineValidator validator(opts);
     auto desc = createSimplePipeline();
 
@@ -300,6 +301,7 @@ BOOST_AUTO_TEST_CASE(Validate_WithInfoMessages)
 {
     PipelineValidator::Options opts;
     opts.includeInfoMessages = true;
+    opts.validatePaths = false;  // Disable path validation - test uses placeholder paths
     PipelineValidator validator(opts);
 
     auto desc = createSimplePipeline();
@@ -315,6 +317,7 @@ BOOST_AUTO_TEST_CASE(Validate_DisableConnectionValidation)
 {
     PipelineValidator::Options opts;
     opts.validateConnections = false;
+    opts.validatePaths = false;  // Disable path validation - test focuses on connections
     opts.includeInfoMessages = true;
     PipelineValidator validator(opts);
 
@@ -395,6 +398,7 @@ BOOST_AUTO_TEST_CASE(Validate_InfoMessages_ShowModuleCount)
 {
     PipelineValidator::Options opts;
     opts.includeInfoMessages = true;
+    opts.validatePaths = false;  // Disable path validation - test uses placeholder paths
     PipelineValidator validator(opts);
 
     auto desc = createSimplePipeline();
@@ -428,6 +432,7 @@ BOOST_AUTO_TEST_CASE(Validate_StopOnFirstError_Option)
 {
     PipelineValidator::Options opts;
     opts.stopOnFirstError = true;
+    opts.validatePaths = false;  // Disable path validation - test uses placeholder paths
     PipelineValidator validator(opts);
 
     // Shell implementation doesn't produce errors,
