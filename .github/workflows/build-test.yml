@@ -533,7 +533,7 @@ jobs:
         ./examples/test_all_examples.sh \
           --basic \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report integration_report_basic.json \
+          --json-report "${{ github.workspace }}/integration_report_basic.json" \
           --ci
 
     - name: Upload integration report (basic)
@@ -541,7 +541,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: IntegrationReport_${{ inputs.flav }}_basic
-        path: integration_report_basic.json
+        path: ${{ github.workspace }}/integration_report_basic.json
       continue-on-error: true
 
   #===========================================================================

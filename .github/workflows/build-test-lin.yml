@@ -376,7 +376,7 @@ jobs:
         ./examples/test_all_examples.sh \
           --basic \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report integration_report_basic.json \
+          --json-report "${{ github.workspace }}/integration_report_basic.json" \
           --ci
 
     - name: Run Jetson integration tests
@@ -387,7 +387,7 @@ jobs:
         ./examples/test_jetson_examples.sh \
           --cli \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report integration_report_jetson.json \
+          --json-report "${{ github.workspace }}/integration_report_jetson.json" \
           --ci
 
     - name: Upload integration reports
@@ -396,6 +396,6 @@ jobs:
       with:
         name: IntegrationReport_${{ inputs.flav }}
         path: |
-          integration_report_basic.json
-          integration_report_jetson.json
+          ${{ github.workspace }}/integration_report_basic.json
+          ${{ github.workspace }}/integration_report_jetson.json
       continue-on-error: true

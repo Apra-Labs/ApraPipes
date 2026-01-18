@@ -247,7 +247,7 @@ jobs:
         ./examples/test_all_examples.sh \
           --cuda \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report integration_report_cuda.json \
+          --json-report "${{ github.workspace }}/integration_report_cuda.json" \
           --ci
 
     - name: Upload CUDA integration report
@@ -255,7 +255,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: IntegrationReport_${{ needs.setup.outputs.flav }}_cuda
-        path: integration_report_cuda.json
+        path: ${{ github.workspace }}/integration_report_cuda.json
       continue-on-error: true
 
   #===========================================================================

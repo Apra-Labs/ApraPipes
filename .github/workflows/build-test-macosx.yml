@@ -285,7 +285,7 @@ jobs:
         ./examples/test_all_examples.sh \
           --basic \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report integration_report.json \
+          --json-report "${{ github.workspace }}/integration_report.json" \
           --ci
 
     - name: Upload integration report
@@ -293,5 +293,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: IntegrationReport_${{ inputs.flav }}
-        path: integration_report.json
+        path: ${{ github.workspace }}/integration_report.json
       continue-on-error: true
