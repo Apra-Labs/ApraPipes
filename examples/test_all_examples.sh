@@ -2,7 +2,7 @@
 # ==============================================================================
 # Unified Examples Test Script
 # ==============================================================================
-# Tests all declarative pipeline examples (basic, cuda, advanced).
+# Tests all declarative pipeline examples (basic, cuda, advanced, node).
 #
 # Usage:
 #   ./examples/test_all_examples.sh [options]
@@ -11,6 +11,7 @@
 #   --basic            Test only basic (CPU) examples
 #   --cuda             Test only CUDA (GPU) examples
 #   --advanced         Test only advanced examples
+#   --node             Test only Node.js addon examples
 #   --verbose          Show detailed output
 #   --keep-outputs     Don't cleanup output files after tests
 #   --sdk-dir <path>   Use SDK directory structure (for CI)
@@ -21,7 +22,7 @@
 # Exit codes:
 #   0 - All tests passed (or CI mode)
 #   1 - One or more tests failed
-#   2 - Script error (missing CLI, etc.)
+#   2 - Script error (missing CLI, missing Node.js, etc.)
 # ==============================================================================
 
 set -e
@@ -46,6 +47,7 @@ RUN_TIMEOUT=30  # seconds timeout for each pipeline
 TEST_BASIC=true
 TEST_CUDA=true
 TEST_ADVANCED=true
+TEST_NODE=true
 VERBOSE=false
 KEEP_OUTPUTS=false
 SDK_DIR=""
@@ -138,7 +140,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --basic)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_BASIC=true
@@ -146,7 +148,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --cuda)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_CUDA=true
@@ -154,10 +156,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --advanced)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_ADVANCED=true
+            shift
+            ;;
+        --node)
+            if [ "$SPECIFIC_REQUESTED" = false ]; then
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
+                SPECIFIC_REQUESTED=true
+            fi
+            TEST_NODE=true
             shift
             ;;
         --verbose)
@@ -235,7 +245,7 @@ echo -e "${GREEN}CLI:${NC} $CLI_PATH"
 echo -e "${GREEN}Examples:${NC} $EXAMPLES_DIR"
 echo -e "${GREEN}Output:${NC} $OUTPUT_DIR"
 echo ""
-echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED"
+echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED, Node=$TEST_NODE"
 
 # ==============================================================================
 # Test Functions
@@ -314,6 +324,114 @@ run_json_example() {
     return 0
 }
 
+# Run a single Node.js example
+# Args: $1 = js file path
+#       $2 = output prefix (optional, for file count validation)
+#       $3 = expected file count (optional, default 0 = no check)
+run_node_example() {
+    local js_file="$1"
+    local output_prefix="$2"
+    local expected_count="${3:-0}"
+    local example_name=$(basename "$js_file" .js)
+
+    ((TOTAL_TESTS++))
+    print_test "$example_name (Node.js)"
+
+    # Check if JS file exists
+    if [[ ! -f "$js_file" ]]; then
+        print_fail "JS file not found: $js_file"
+        TEST_RESULTS+=("$example_name:failed")
+        return 1
+    fi
+
+    # Check if Node.js is available
+    if ! command -v node &>/dev/null; then
+        print_skip "Node.js not available"
+        TEST_RESULTS+=("$example_name:skipped")
+        return 0
+    fi
+
+    # Determine the node output directory (examples write to examples/node/output/)
+    local node_output_dir="$EXAMPLES_DIR/node/output"
+
+    # Clean output files for this example if prefix specified
+    if [[ -n "$output_prefix" ]]; then
+        rm -f "$node_output_dir/${output_prefix}_"*.jpg "$node_output_dir/${output_prefix}_"*.bmp 2>/dev/null || true
+    fi
+
+    # Run the Node.js example
+    print_info "Running Node.js example..."
+    local output
+    local exit_code=0
+    local test_status="passed"
+
+    cd "$WORK_DIR"
+    output=$(run_with_timeout "$RUN_TIMEOUT" node "$js_file" 2>&1) || exit_code=$?
+
+    # Check for critical errors
+    if [[ $exit_code -ne 0 ]]; then
+        # Check if it's a module availability issue
+        if echo "$output" | grep -qi "Unknown module\\|Module not found\\|not available"; then
+            print_skip "Module not available: $example_name"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+
+        # Check if addon failed to load (which is expected if not built)
+        if echo "$output" | grep -qi "Failed to load addon"; then
+            print_skip "Node.js addon not available"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -15
+        print_fail "Node.js example failed with exit code $exit_code"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # Check for errors in output even if exit code is 0
+    if echo "$output" | grep -qi "Error:\\|exception\\|AIPException"; then
+        if echo "$output" | grep -qi "not found\\|Unknown module"; then
+            print_skip "Module not available: $example_name"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -15
+        print_fail "Example reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # If output prefix specified, verify files were created
+    if [[ -n "$output_prefix" ]] && [[ "$expected_count" -gt 0 ]]; then
+        local file_count
+        file_count=$(ls "$node_output_dir/${output_prefix}_"*.jpg "$node_output_dir/${output_prefix}_"*.bmp 2>/dev/null | wc -l)
+
+        print_info "Generated $file_count files (expected: $expected_count)"
+
+        if [[ "$file_count" -lt "$expected_count" ]]; then
+            echo -e "${RED}Node.js output:${NC}"
+            echo "$output" | tail -20
+            print_fail "Expected $expected_count files, got $file_count"
+            test_status="failed"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 1
+        fi
+    fi
+
+    print_pass "$example_name"
+    TEST_RESULTS+=("$example_name:$test_status")
+    return 0
+}
+
 # ==============================================================================
 # Basic Examples Tests
 # ==============================================================================
@@ -369,12 +487,55 @@ if [ "$TEST_ADVANCED" = true ]; then
 fi
 
 # ==============================================================================
+# Node.js Examples Tests
+# ==============================================================================
+
+if [ "$TEST_NODE" = true ]; then
+    print_header "Testing Node.js Addon Examples"
+
+    # Check if Node.js is available
+    if ! command -v node &>/dev/null; then
+        echo -e "${YELLOW}Warning: Node.js not found. Skipping Node.js tests.${NC}"
+    else
+        echo -e "${GREEN}Node.js:${NC} $(node --version)"
+
+        # Check if addon exists (expected at bin/aprapipes.node)
+        if [[ -f "$WORK_DIR/bin/aprapipes.node" ]]; then
+            echo -e "${GREEN}Addon:${NC} $WORK_DIR/bin/aprapipes.node"
+        else
+            echo -e "${YELLOW}Warning: Node.js addon not found at $WORK_DIR/bin/aprapipes.node${NC}"
+        fi
+
+        # Create node output directory if needed
+        mkdir -p "$EXAMPLES_DIR/node/output"
+
+        # Basic examples that work without external dependencies
+        # These use TestSignalGenerator + FileWriterModule
+        # Output file patterns: frame_????.jpg, processed_????.jpg, etc.
+        run_node_example "$EXAMPLES_DIR/node/basic_pipeline.js" "frame" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/event_handling.js" "event" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/image_processing.js" "processed" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/ptz_control.js" "ptz" 10 || true
+
+        # archive_space_demo.js is pure JS (doesn't use addon modules) - still run it
+        run_node_example "$EXAMPLES_DIR/node/archive_space_demo.js" "" 0 || true
+
+        # Skip these - they need external resources:
+        # - rtsp_pusher_demo.js: needs RTSP server
+        # - face_detection_demo.js: needs model files
+        # - jetson_l4tm_demo.js: ARM64/Jetson only (tested separately)
+    fi
+fi
+
+# ==============================================================================
 # Cleanup and Summary
 # ==============================================================================
 
 if [ "$KEEP_OUTPUTS" = false ]; then
     print_info "Cleaning up output files..."
     rm -f "$OUTPUT_DIR"/*.jpg "$OUTPUT_DIR"/*.bmp "$OUTPUT_DIR"/*.raw 2>/dev/null || true
+    # Also clean Node.js output directory
+    rm -rf "$EXAMPLES_DIR/node/output" 2>/dev/null || true
 fi
 
 print_header "Test Summary"

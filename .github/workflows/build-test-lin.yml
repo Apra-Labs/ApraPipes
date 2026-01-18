@@ -366,15 +366,15 @@ jobs:
         retention-days: 7
 
     #=========================================================================
-    # INTEGRATION TESTS (ARM64 - Basic + Jetson examples)
+    # INTEGRATION TESTS (ARM64 - Basic + Node.js + Jetson examples)
     #=========================================================================
-    - name: Run basic integration tests
+    - name: Run basic + Node.js integration tests
       if: ${{ success() && !inputs.is-prep-phase }}
       continue-on-error: true
       run: |
         chmod +x examples/test_all_examples.sh
         ./examples/test_all_examples.sh \
-          --basic \
+          --basic --node \
           --sdk-dir "${{ github.workspace }}/sdk" \
           --json-report "${{ github.workspace }}/integration_report_basic.json" \
           --ci

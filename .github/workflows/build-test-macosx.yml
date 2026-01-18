@@ -275,15 +275,15 @@ jobs:
         retention-days: 7
 
     #=========================================================================
-    # INTEGRATION TESTS (macOS - Basic examples)
+    # INTEGRATION TESTS (macOS - Basic + Node.js examples)
     #=========================================================================
-    - name: Run integration tests (basic examples)
+    - name: Run integration tests
       if: ${{ success() && !inputs.is-prep-phase }}
       continue-on-error: true
       run: |
         chmod +x examples/test_all_examples.sh
         ./examples/test_all_examples.sh \
-          --basic \
+          --basic --node \
           --sdk-dir "${{ github.workspace }}/sdk" \
           --json-report "${{ github.workspace }}/integration_report.json" \
           --ci
