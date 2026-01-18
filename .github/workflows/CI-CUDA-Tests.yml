@@ -165,9 +165,9 @@ jobs:
         nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
       shell: pwsh
 
-    - name: Make test executable runnable
+    - name: Make executables runnable
       if: needs.setup.outputs.os == 'linux'
-      run: chmod +x sdk/bin/aprapipesut
+      run: chmod +x sdk/bin/aprapipesut sdk/bin/aprapipes_cli
 
     - name: Run CUDA Tests (Linux)
       if: needs.setup.outputs.os == 'linux'
