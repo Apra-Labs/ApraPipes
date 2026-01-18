@@ -257,9 +257,9 @@ run_json_example() {
             TEST_RESULTS+=("$example_name:$test_status")
             return 0
         fi
-        if [ "$VERBOSE" = true ]; then
-            echo "$output"
-        fi
+        # Always show error output (last few lines for context)
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -10
         print_fail "Pipeline reported errors"
         test_status="failed"
         TEST_RESULTS+=("$example_name:$test_status")
@@ -274,6 +274,9 @@ run_json_example() {
         print_info "Generated $file_count files (expected: $expected_count)"
 
         if [[ "$file_count" -lt "$expected_count" ]]; then
+            # Show CLI output for debugging
+            echo -e "${RED}CLI output:${NC}"
+            echo "$output" | tail -20
             print_fail "Expected $expected_count files, got $file_count"
             test_status="failed"
             TEST_RESULTS+=("$example_name:$test_status")
