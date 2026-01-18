@@ -282,7 +282,11 @@ run_json_example() {
     local test_status="passed"
 
     cd "$WORK_DIR"
+    print_info "CLI: $CLI_PATH"
+    print_info "JSON: $json_file"
+    print_info "PWD: $(pwd)"
     output=$(run_with_timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
+    print_info "Exit code: $exit_code"
 
     # Check for critical errors (ignore warnings)
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
@@ -309,9 +313,20 @@ run_json_example() {
         print_info "Generated $file_count files (expected: $expected_count)"
 
         if [[ "$file_count" -lt "$expected_count" ]]; then
-            # Show CLI output for debugging
+            # Show detailed diagnostics for debugging
+            echo -e "${RED}=== DIAGNOSTICS ===${NC}"
+            echo "Working directory: $(pwd)"
+            echo "Output directory: $OUTPUT_DIR"
+            echo "Looking for pattern: ${output_prefix}_*.{jpg,bmp,raw}"
+            echo "CLI exit code: $exit_code"
+            echo "Output dir exists: $(test -d "$OUTPUT_DIR" && echo 'YES' || echo 'NO')"
+            if [[ -d "$OUTPUT_DIR" ]]; then
+                echo "Files in output dir:"
+                ls -la "$OUTPUT_DIR" 2>/dev/null | head -20 || echo "  (empty or error)"
+            fi
             echo -e "${RED}CLI output:${NC}"
             echo "$output" | tail -20
+            echo -e "${RED}===================${NC}"
             print_fail "Expected $expected_count files, got $file_count"
             test_status="failed"
             TEST_RESULTS+=("$example_name:$test_status")
