@@ -519,7 +519,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Reads frames from files matching a pattern. Supports image sequences and raw frame files.")
                 .tags("source", "file", "reader")
                 .output("output", "Frame")  // Generic - actual type set via outputFrameType prop
-                .stringProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)", true)
+                .filePatternProp("strFullFileNameWithPattern", "File path pattern (e.g., /path/frame_????.raw)",
+                    PathRequirement::MustExist, true)
                 .intProp("startIndex", "Starting file index", false, fileReaderDefaults.startIndex, 0)
                 .intProp("maxIndex", "Maximum file index (-1 for unlimited)", false, fileReaderDefaults.maxIndex, -1)
                 .boolProp("readLoop", "Loop back to start when reaching end", false, fileReaderDefaults.readLoop)
@@ -535,7 +536,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Writes frames to files. Supports file sequences with pattern-based naming.")
                 .tags("sink", "file", "writer")
                 .input("input", "Frame")
-                .stringProp("strFullFileNameWithPattern", "Output file path pattern (e.g., /path/frame_????.raw)", true)
+                .filePatternProp("strFullFileNameWithPattern", "Output file path pattern (e.g., /path/frame_????.raw)",
+                    PathRequirement::WillBeCreated, true)
                 .boolProp("append", "Append to existing files instead of overwriting", false, fileWriterDefaults.append);
         }
 
@@ -652,7 +654,7 @@ void ensureBuiltinModulesRegistered() {
                 .description("Reads video frames from MP4 files. Set outputFormat='h264' or 'jpeg' for declarative use.")
                 .tags("source", "mp4", "video", "file")
                 .output("output", "H264Data", "EncodedImage")
-                .stringProp("videoPath", "Path to MP4 video file", true)
+                .filePathProp("videoPath", "Path to MP4 video file", PathRequirement::MustExist, true)
                 .boolProp("parseFS", "Parse filesystem for metadata", false, true)
                 .boolProp("direction", "Playback direction (true=forward)", false, true)
                 .boolProp("bFramesEnabled", "Enable B-frame decoding", false, false)
@@ -671,7 +673,8 @@ void ensureBuiltinModulesRegistered() {
                 .description("Writes video frames to MP4 files")
                 .tags("sink", "mp4", "video", "file")
                 .input("input", "H264Data", "EncodedImage")
-                .stringProp("baseFolder", "Output folder for MP4 files", false, "./data/Mp4_videos/")
+                .directoryPathProp("baseFolder", "Output folder for MP4 files", PathRequirement::WillBeCreated,
+                    false, "./data/Mp4_videos/")
                 .intProp("chunkTime", "Chunk duration in minutes (1-60)", false, 1, 1, 60)
                 .intProp("syncTimeInSecs", "Sync interval in seconds (1-60)", false, 1, 1, 60)
                 .intProp("fps", "Output frame rate", false, 30, 1, 120)
@@ -807,7 +810,7 @@ void ensureBuiltinModulesRegistered() {
                 .description("Receives video from RTSP stream (IP cameras, media servers)")
                 .tags("source", "rtsp", "network", "stream", "camera")
                 .output("output", "H264Data", "EncodedImage")
-                .stringProp("rtspURL", "RTSP stream URL (e.g., rtsp://host:port/path)", true)
+                .networkURLProp("rtspURL", "RTSP stream URL (e.g., rtsp://host:port/path)", true)
                 .stringProp("userName", "Authentication username", false, "")
                 .stringProp("password", "Authentication password", false, "")
                 .boolProp("useTCP", "Use TCP transport instead of UDP", false, true);
@@ -948,7 +951,8 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImagePlanar")
                 .intProp("thumbnailWidth", "Thumbnail width in pixels", false, 128, 16, 1024)
                 .intProp("thumbnailHeight", "Thumbnail height in pixels", false, 128, 16, 1024)
-                .stringProp("fileToStore", "Output file path for thumbnail strip", true);
+                .filePathProp("fileToStore", "Output file path for thumbnail strip",
+                    PathRequirement::WillBeCreated, true);
         }
 
         // ============================================================
@@ -968,10 +972,14 @@ void ensureBuiltinModulesRegistered() {
                 .input("input", "RawImage")
                 .output("landmarks", "FaceLandmarksInfo")
                 .enumProp("modelType", "Face detection model type", false, "SSD", "SSD", "HAAR_CASCADE")
-                .stringProp("faceDetectionConfig", "Path to SSD config file", false, "./data/assets/deploy.prototxt")
-                .stringProp("faceDetectionWeights", "Path to SSD weights file", false, "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel")
-                .stringProp("landmarksModel", "Path to facial landmarks model", false, "./data/assets/face_landmark_model.dat")
-                .stringProp("haarCascadeModel", "Path to Haar cascade model", false, "./data/assets/haarcascade.xml")
+                .filePathProp("faceDetectionConfig", "Path to SSD config file",
+                    PathRequirement::MustExist, false, "./data/assets/deploy.prototxt")
+                .filePathProp("faceDetectionWeights", "Path to SSD weights file",
+                    PathRequirement::MustExist, false, "./data/assets/res10_300x300_ssd_iter_140000_fp16.caffemodel")
+                .filePathProp("landmarksModel", "Path to facial landmarks model",
+                    PathRequirement::MustExist, false, "./data/assets/face_landmark_model.dat")
+                .filePathProp("haarCascadeModel", "Path to Haar cascade model",
+                    PathRequirement::MustExist, false, "./data/assets/haarcascade.xml")
                 .selfManagedOutputPins();
         }
 
@@ -998,7 +1006,8 @@ void ensureBuiltinModulesRegistered() {
                 .category(ModuleCategory::Utility)
                 .description("Monitors and manages disk space by deleting oldest files when storage exceeds threshold")
                 .tags("utility", "archive", "storage", "disk", "management")
-                .stringProp("pathToWatch", "Directory path to monitor for space management", true)
+                .directoryPathProp("pathToWatch", "Directory path to monitor for space management",
+                    PathRequirement::MustExist, true)
                 .intProp("lowerWaterMark", "Lower threshold in bytes - stop deleting when reached", true, 0)
                 .intProp("upperWaterMark", "Upper threshold in bytes - start deleting when exceeded", true, 0)
                 .intProp("samplingFreq", "Sampling frequency for size estimation", false, 60, 1, 1000);
@@ -1038,7 +1047,8 @@ void ensureBuiltinModulesRegistered() {
                 .tags("transform", "audio", "speech", "text", "whisper", "ml")
                 .input("input", "AudioFrame")
                 .output("output", "TextFrame")
-                .stringProp("modelPath", "Path to Whisper model file", true)
+                .filePathProp("modelPath", "Path to Whisper model file",
+                    PathRequirement::MustExist, true)
                 .intProp("bufferSize", "Audio buffer size in samples", false, 16000, 1000, 100000)
                 .enumProp("samplingStrategy", "Decoder sampling strategy", false, "GREEDY", "GREEDY", "BEAM_SEARCH")
                 .selfManagedOutputPins();

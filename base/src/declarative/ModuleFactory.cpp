@@ -7,6 +7,7 @@
 #include "declarative/ModuleFactory.h"
 #include "declarative/ModuleRegistrations.h"
 #include "declarative/PipelineAnalyzer.h"
+#include "declarative/PathUtils.h"
 #include "Module.h"
 #include "FrameMetadata.h"
 #include "RawImageMetadata.h"
@@ -660,7 +661,32 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
                 convertedProps[propName] = val;
             }
             else if constexpr (std::is_same_v<T, std::string>) {
-                convertedProps[propName] = val;
+                // Check if this is a path property that needs normalization
+                if (propInfo && propInfo->path_type != PathType::NotAPath) {
+                    // Normalize the path for cross-platform compatibility
+                    std::string normalizedPath = path_utils::normalizePath(val);
+
+                    // For WillBeCreated paths, create the parent directory
+                    if (propInfo->path_requirement == PathRequirement::WillBeCreated) {
+                        std::string parentDir = path_utils::parentPath(normalizedPath);
+                        if (!parentDir.empty() && !path_utils::isDirectory(parentDir)) {
+                            if (path_utils::createDirectories(parentDir)) {
+                                if (options_.collect_info_messages) {
+                                    issues.push_back(Issue::info(
+                                        "I052",
+                                        location,
+                                        "Created directory: " + parentDir
+                                    ));
+                                }
+                            }
+                            // Note: Directory creation failure is caught by validator
+                        }
+                    }
+
+                    convertedProps[propName] = normalizedPath;
+                } else {
+                    convertedProps[propName] = val;
+                }
             }
             else if constexpr (std::is_same_v<T, std::vector<int64_t>>) {
                 if (!val.empty()) {

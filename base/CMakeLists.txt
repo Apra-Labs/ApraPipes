@@ -293,6 +293,7 @@ SET(CORE_FILES
 	src/declarative/PipelineValidator.cpp
 	src/declarative/PipelineAnalyzer.cpp
 	src/declarative/ModuleRegistrations.cpp
+	src/declarative/PathUtils.cpp
 )
 
 SET(CORE_FILES_H
@@ -771,6 +772,7 @@ SET(UT_FILES
 	test/declarative/module_registration_tests.cpp
 	test/declarative/property_validators_tests.cpp
 	test/declarative/pipeline_integration_tests.cpp
+	test/declarative/path_utils_tests.cpp
 	${ARM64_UT_FILES}
 	${CUDA_UT_FILES}
 )

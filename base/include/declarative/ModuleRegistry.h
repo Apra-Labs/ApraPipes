@@ -68,6 +68,10 @@ struct ModuleInfo {
         std::vector<std::string> enum_values;
         std::string description;
         std::string unit;
+
+        // Path metadata - for file/directory path properties
+        PathType path_type = PathType::NotAPath;
+        PathRequirement path_requirement = PathRequirement::None;
     };
     std::vector<PropInfo> properties;
 

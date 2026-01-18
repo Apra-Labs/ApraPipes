@@ -88,6 +88,16 @@ struct Issue {
     static constexpr const char* INIT_FAILED = "E500";
     static constexpr const char* RUN_FAILED = "E501";
 
+    // Path validation (E6xx / W6xx)
+    static constexpr const char* PATH_NOT_FOUND = "E600";           // File/directory does not exist
+    static constexpr const char* PATH_NOT_FILE = "E601";            // Expected file, found directory
+    static constexpr const char* PATH_NOT_DIR = "E602";             // Expected directory, found file
+    static constexpr const char* PATH_PARENT_NOT_FOUND = "E603";    // Parent directory does not exist
+    static constexpr const char* PATH_NOT_WRITABLE = "E604";        // Directory is not writable
+    static constexpr const char* PATH_CREATE_FAILED = "E605";       // Failed to create directory
+    static constexpr const char* PATH_NO_PATTERN_MATCHES = "W600";  // No files match pattern (warning)
+    static constexpr const char* PATH_ALREADY_EXISTS = "W601";      // File exists but MustNotExist (warning)
+
     // Info messages (I0xx)
     static constexpr const char* INFO_VALIDATING = "I000";
     static constexpr const char* INFO_MODULE_FOUND = "I010";
