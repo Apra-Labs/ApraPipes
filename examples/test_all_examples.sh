@@ -102,14 +102,15 @@ show_help() {
     exit 0
 }
 
-# Portable timeout function (works on Linux and macOS)
+# Portable timeout function (works on Linux, macOS, and Windows Git Bash)
 run_with_timeout() {
     local timeout_sec=$1
     shift
     local cmd=("$@")
 
-    # Try GNU timeout (Linux)
-    if command -v timeout &>/dev/null; then
+    # Try GNU timeout (Linux) - check it's actually GNU timeout, not Windows timeout
+    # GNU timeout supports --version, Windows timeout does not
+    if command -v timeout &>/dev/null && timeout --version &>/dev/null 2>&1; then
         timeout "$timeout_sec" "${cmd[@]}"
         return $?
     fi
@@ -120,26 +121,10 @@ run_with_timeout() {
         return $?
     fi
 
-    # Fallback: background process with wait (POSIX compatible)
-    "${cmd[@]}" &
-    local pid=$!
-
-    # Start a watchdog in background
-    (
-        sleep "$timeout_sec"
-        kill -9 "$pid" 2>/dev/null
-    ) &
-    local watchdog=$!
-
-    # Wait for command to finish
-    wait "$pid" 2>/dev/null
-    local exit_code=$?
-
-    # Kill watchdog if command finished
-    kill "$watchdog" 2>/dev/null
-    wait "$watchdog" 2>/dev/null
-
-    return $exit_code
+    # Fallback: Just run without timeout
+    # (Background process timeout doesn't capture output properly)
+    "${cmd[@]}"
+    return $?
 }
 
 # ==============================================================================
