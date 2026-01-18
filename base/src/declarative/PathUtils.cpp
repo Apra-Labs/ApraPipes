@@ -3,7 +3,7 @@
 // Path validation and normalization utilities implementation
 // ============================================================
 
-#include "PathUtils.h"
+#include "declarative/PathUtils.h"
 #include <boost/filesystem.hpp>
 #include <algorithm>
 #include <fstream>
