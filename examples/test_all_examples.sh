@@ -229,15 +229,15 @@ fi
 print_header "ApraPipes Examples Test Suite"
 
 # Check CLI exists (handle Windows .exe extension)
-if [[ ! -f "$CLI_PATH" ]]; then
-    if [[ -f "${CLI_PATH}.exe" ]]; then
-        CLI_PATH="${CLI_PATH}.exe"
-        echo -e "${BLUE}[INFO]${NC} Using Windows executable: $CLI_PATH"
-    else
-        echo -e "${RED}Error: CLI not found at $CLI_PATH${NC}"
-        echo "Please build and install: ./scripts/install_to_bin.sh"
-        exit 2
-    fi
+# On Windows Git Bash, -f auto-resolves .exe but execution might not
+# So explicitly check for .exe first
+if [[ -f "${CLI_PATH}.exe" ]]; then
+    CLI_PATH="${CLI_PATH}.exe"
+    echo -e "${BLUE}[INFO]${NC} Using Windows executable: $CLI_PATH"
+elif [[ ! -f "$CLI_PATH" ]]; then
+    echo -e "${RED}Error: CLI not found at $CLI_PATH${NC}"
+    echo "Please build and install: ./scripts/install_to_bin.sh"
+    exit 2
 fi
 
 # Debug: Show actual CLI path and verify it's executable
