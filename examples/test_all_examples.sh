@@ -217,6 +217,9 @@ if [[ -n "$SDK_DIR" ]]; then
     OUTPUT_DIR="$SDK_DIR/data/testOutput"
     WORK_DIR="$SDK_DIR"  # Run CLI from SDK root
     echo -e "${BLUE}[SDK MODE]${NC} Using SDK at: $SDK_DIR"
+
+    # Add SDK bin to PATH for Windows (DLL loading requires this)
+    export PATH="$SDK_DIR/bin:$PATH"
 fi
 
 # ==============================================================================
