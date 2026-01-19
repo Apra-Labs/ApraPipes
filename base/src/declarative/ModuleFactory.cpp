@@ -668,7 +668,11 @@ boost::shared_ptr<Module> ModuleFactory::createModule(
 
                     // For WillBeCreated paths, create the parent directory
                     if (propInfo->path_requirement == PathRequirement::WillBeCreated) {
-                        std::string parentDir = path_utils::parentPath(normalizedPath);
+                        // For patterns, use patternDirectory to find the directory containing wildcards
+                        std::string parentDir = (propInfo->path_type == PathType::FilePattern ||
+                                                 propInfo->path_type == PathType::GlobPattern)
+                            ? path_utils::patternDirectory(normalizedPath)
+                            : path_utils::parentPath(normalizedPath);
                         if (!parentDir.empty() && !path_utils::isDirectory(parentDir)) {
                             if (path_utils::createDirectories(parentDir)) {
                                 if (options_.collect_info_messages) {
