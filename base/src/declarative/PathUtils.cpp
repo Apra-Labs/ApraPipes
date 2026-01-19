@@ -247,7 +247,7 @@ PathValidationResult validatePath(
     }
 
     // No validation needed
-    if (requirement == PathRequirement::None) {
+    if (requirement == PathRequirement::NoValidation) {
         result.valid = true;
         return result;
     }
@@ -387,7 +387,7 @@ std::string pathTypeToString(PathType type) {
 
 std::string pathRequirementToString(PathRequirement requirement) {
     switch (requirement) {
-        case PathRequirement::None: return "None";
+        case PathRequirement::NoValidation: return "NoValidation";
         case PathRequirement::MustExist: return "MustExist";
         case PathRequirement::MayExist: return "MayExist";
         case PathRequirement::MustNotExist: return "MustNotExist";

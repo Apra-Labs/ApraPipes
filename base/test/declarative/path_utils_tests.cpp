@@ -143,12 +143,12 @@ BOOST_AUTO_TEST_CASE(ValidatePath_EmptyPath_ReturnsInvalid) {
 }
 
 BOOST_AUTO_TEST_CASE(ValidatePath_NetworkURL_AlwaysValid) {
-    auto result = validatePath("rtsp://example.com/stream", PathType::NetworkURL, PathRequirement::None);
+    auto result = validatePath("rtsp://example.com/stream", PathType::NetworkURL, PathRequirement::NoValidation);
     BOOST_CHECK_EQUAL(result.valid, true);
 }
 
 BOOST_AUTO_TEST_CASE(ValidatePath_RequirementNone_AlwaysValid) {
-    auto result = validatePath("/any/path", PathType::FilePath, PathRequirement::None);
+    auto result = validatePath("/any/path", PathType::FilePath, PathRequirement::NoValidation);
     BOOST_CHECK_EQUAL(result.valid, true);
 }
 
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(PathTypeToString_AllTypes) {
 }
 
 BOOST_AUTO_TEST_CASE(PathRequirementToString_AllRequirements) {
-    BOOST_CHECK_EQUAL(pathRequirementToString(PathRequirement::None), "None");
+    BOOST_CHECK_EQUAL(pathRequirementToString(PathRequirement::NoValidation), "NoValidation");
     BOOST_CHECK_EQUAL(pathRequirementToString(PathRequirement::MustExist), "MustExist");
     BOOST_CHECK_EQUAL(pathRequirementToString(PathRequirement::MayExist), "MayExist");
     BOOST_CHECK_EQUAL(pathRequirementToString(PathRequirement::MustNotExist), "MustNotExist");

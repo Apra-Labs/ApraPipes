@@ -467,7 +467,7 @@ public:
         prop.default_value = defaultVal;
         prop.description = desc;
         prop.path_type = PathType::NetworkURL;
-        prop.path_requirement = PathRequirement::None;
+        prop.path_requirement = PathRequirement::NoValidation;
         info_.properties.push_back(std::move(prop));
         return *this;
     }

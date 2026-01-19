@@ -50,7 +50,7 @@ enum class PathType {
 // Path Requirement - Existence and access requirements for paths
 // ============================================================
 enum class PathRequirement {
-    None,            // No validation (for NotAPath or NetworkURL)
+    NoValidation,    // No validation (for NotAPath or NetworkURL)
     MustExist,       // Path must exist at pipeline start (readers)
     MayExist,        // Path may or may not exist (overwriting writers)
     MustNotExist,    // Path must NOT exist (strict non-overwriting mode)
@@ -281,7 +281,7 @@ struct PropDef {
 
     // Path metadata - for file/directory path properties
     PathType path_type = PathType::NotAPath;
-    PathRequirement path_requirement = PathRequirement::None;
+    PathRequirement path_requirement = PathRequirement::NoValidation;
 
     // Default constructor
     constexpr PropDef() = default;
@@ -720,7 +720,7 @@ struct PropDef {
         p.required = default_val.empty();
         p.string_default = default_val;
         p.path_type = PathType::NetworkURL;
-        p.path_requirement = PathRequirement::None;  // No filesystem validation
+        p.path_requirement = PathRequirement::NoValidation;  // No filesystem validation
         p.description = desc;
         return p;
     }

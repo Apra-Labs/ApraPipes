@@ -71,7 +71,7 @@ struct ModuleInfo {
 
         // Path metadata - for file/directory path properties
         PathType path_type = PathType::NotAPath;
-        PathRequirement path_requirement = PathRequirement::None;
+        PathRequirement path_requirement = PathRequirement::NoValidation;
     };
     std::vector<PropInfo> properties;
 
