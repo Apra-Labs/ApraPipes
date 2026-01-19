@@ -244,6 +244,10 @@ fi
 echo -e "${BLUE}[DEBUG]${NC} CLI file exists: $(ls -la "$CLI_PATH" 2>&1 | head -1)"
 echo -e "${BLUE}[DEBUG]${NC} CLI file type: $(file "$CLI_PATH" 2>&1 || echo 'file command not available')"
 
+# Debug: Test CLI directly to check it runs
+echo -e "${BLUE}[DEBUG]${NC} Testing CLI version..."
+"$CLI_PATH" --version 2>&1 || echo "[DEBUG] CLI --version exit code: $?"
+
 # Check examples directory exists
 if [[ ! -d "$EXAMPLES_DIR" ]]; then
     echo -e "${RED}Error: Examples directory not found: $EXAMPLES_DIR${NC}"
