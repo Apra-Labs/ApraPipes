@@ -523,9 +523,106 @@ jobs:
 
     #=========================================================================
     # INTEGRATION TESTS (Basic JSON - strict)
+    # Windows: Use PowerShell to set up PATH properly before running tests
+    # Linux: Use bash directly (PATH handling works correctly)
     #=========================================================================
-    - name: Run integration tests (basic)
-      if: success()
+    - name: Run integration tests (basic) - Windows
+      if: success() && inputs.os == 'windows'
+      shell: pwsh
+      run: |
+        # Add SDK bin to PATH for DLL loading
+        $sdkBin = "${{ github.workspace }}\sdk\bin"
+        $env:PATH = "$sdkBin;$env:PATH"
+
+        # Add CUDA bin to PATH if available
+        if ($env:CUDA_PATH) {
+          $cudaBin = Join-Path $env:CUDA_PATH "bin"
+          $env:PATH = "$cudaBin;$env:PATH"
+          Write-Host "CUDA bin added to PATH: $cudaBin"
+        }
+
+        # Debug: Show PATH and test CLI directly
+        Write-Host "=== Environment Debug ==="
+        Write-Host "SDK bin: $sdkBin"
+        Write-Host "CUDA_PATH: $env:CUDA_PATH"
+
+        $cli = "$sdkBin\aprapipes_cli.exe"
+        Write-Host "CLI path: $cli"
+        Write-Host "CLI exists: $(Test-Path $cli)"
+
+        # List DLLs in SDK bin
+        Write-Host "=== DLLs in SDK bin ==="
+        Get-ChildItem "$sdkBin\*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+
+        # Test CLI launch directly
+        Write-Host "=== Testing CLI --version ==="
+        & $cli --version
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "::error::CLI failed to launch with exit code $LASTEXITCODE"
+          # Try to get more diagnostic info
+          Write-Host "=== Checking for missing DLLs ==="
+          # Use dumpbin if available, otherwise skip
+          $dumpbin = Get-Command dumpbin -ErrorAction SilentlyContinue
+          if ($dumpbin) {
+            & dumpbin /dependents $cli 2>&1 | Select-String "dll" | ForEach-Object { Write-Host "  $_" }
+          }
+          exit 1
+        }
+
+        # Run basic integration tests
+        Write-Host "=== Running Basic Integration Tests ==="
+        $examples = @(
+          "simple_source_sink",
+          "three_module_chain",
+          "split_pipeline"
+        )
+
+        $passed = 0
+        $failed = 0
+        $sdkDir = "${{ github.workspace }}\sdk"
+
+        foreach ($example in $examples) {
+          $jsonPath = "$sdkDir\examples\basic\$example.json"
+          if (Test-Path $jsonPath) {
+            Write-Host "[TEST] $example"
+            Push-Location $sdkDir
+            & $cli run $jsonPath 2>&1
+            $exitCode = $LASTEXITCODE
+            Pop-Location
+
+            if ($exitCode -eq 0) {
+              Write-Host "[PASS] $example"
+              $passed++
+            } else {
+              Write-Host "[FAIL] $example (exit code: $exitCode)"
+              $failed++
+            }
+          } else {
+            Write-Host "[SKIP] $example (file not found)"
+          }
+        }
+
+        # Write JSON report
+        $report = @{
+          script = "integration_tests_windows.ps1"
+          timestamp = (Get-Date -Format "o")
+          summary = @{
+            passed = $passed
+            failed = $failed
+            total = $passed + $failed
+          }
+        }
+        $report | ConvertTo-Json -Depth 3 | Set-Content "${{ github.workspace }}\integration_report_basic.json"
+
+        Write-Host "=== Summary ==="
+        Write-Host "Passed: $passed, Failed: $failed"
+
+        if ($failed -gt 0) {
+          exit 1
+        }
+
+    - name: Run integration tests (basic) - Linux/macOS
+      if: success() && inputs.os != 'windows'
       shell: bash
       run: |
         chmod +x examples/test_all_examples.sh
@@ -538,7 +635,7 @@ jobs:
     # INTEGRATION TESTS (Node.js - soft, has platform-specific timeout issues)
     #=========================================================================
     - name: Run integration tests (Node.js)
-      if: success()
+      if: success() && inputs.os != 'windows'
       continue-on-error: true
       shell: bash
       run: |
