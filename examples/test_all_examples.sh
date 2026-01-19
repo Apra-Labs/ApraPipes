@@ -313,6 +313,26 @@ run_json_example() {
     output=$(run_with_timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
     print_info "Exit code: $exit_code"
 
+    # Check for CLI launch failure (exit code 127 = command not found / DLL load failure)
+    if [[ "$exit_code" -eq 127 ]]; then
+        echo -e "${RED}=== CLI LAUNCH FAILURE ===${NC}"
+        echo "Exit code 127 indicates the CLI executable failed to start."
+        echo "This usually means missing DLLs on Windows."
+        echo "CLI path: $CLI_PATH"
+        echo "Working directory: $(pwd)"
+        echo "PATH includes: $(echo $PATH | tr ':' '\n' | grep -i sdk | head -3)"
+        if [[ -n "$CUDA_PATH" ]]; then
+            echo "CUDA_PATH: $CUDA_PATH"
+        else
+            echo "CUDA_PATH: (not set)"
+        fi
+        echo -e "${RED}=========================${NC}"
+        print_fail "CLI failed to launch (exit code 127)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
     # Check for critical errors (ignore warnings)
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
         if echo "$output" | grep -qi "not found\|Unknown module"; then
