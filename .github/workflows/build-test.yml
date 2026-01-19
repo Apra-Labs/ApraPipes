@@ -463,31 +463,60 @@ jobs:
           # vcpkg_installed is inside the build directory when using vcpkg toolchain
           $vcpkgBinDir = "${{ github.workspace }}/build/vcpkg_installed/x64-windows-cuda/bin"
 
+          # Debug: List what's in build/Release
+          Write-Host "=== Contents of build/Release ==="
+          Write-Host "Path: $buildDir"
+          Write-Host "Exists: $(Test-Path $buildDir)"
+          if (Test-Path $buildDir) {
+            $exeCount = (Get-ChildItem "$buildDir/*.exe" -ErrorAction SilentlyContinue).Count
+            $dllCount = (Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue).Count
+            Write-Host "EXE files: $exeCount"
+            Write-Host "DLL files: $dllCount"
+            Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object {
+              Write-Host "  $($_.Name)"
+            }
+          }
+
           # Binaries (includes aprapipes_cli.exe, aprapipesut.exe)
           Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
 
           # Copy non-CUDA DLLs from build directory
+          $copiedFromBuild = 0
           Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
             $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
           } | ForEach-Object {
             Copy-Item $_.FullName "$sdkDir/bin/" -Force
+            $copiedFromBuild++
           }
+          Write-Host "Copied $copiedFromBuild DLLs from build/Release to SDK"
 
           # Copy vcpkg runtime DLLs (OpenCV, FFmpeg, Boost, etc.)
           # These are required for the CLI to run
+          Write-Host "=== vcpkg bin directory ==="
+          Write-Host "Path: $vcpkgBinDir"
+          Write-Host "Exists: $(Test-Path $vcpkgBinDir)"
           if (Test-Path $vcpkgBinDir) {
+            $vcpkgDllCount = (Get-ChildItem "$vcpkgBinDir/*.dll" -ErrorAction SilentlyContinue).Count
+            Write-Host "DLL files in vcpkg bin: $vcpkgDllCount"
             Write-Host "Copying vcpkg DLLs from: $vcpkgBinDir"
+            $copiedFromVcpkg = 0
             Get-ChildItem "$vcpkgBinDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
               # Exclude CUDA DLLs (delay-loaded) and debug DLLs
               $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)" -and
               $_.Name -notmatch "d\.dll$"  # Skip debug versions like opencv_world4d.dll
             } | ForEach-Object {
               Copy-Item $_.FullName "$sdkDir/bin/" -Force
-              Write-Host "  Copied: $($_.Name)"
+              $copiedFromVcpkg++
             }
+            Write-Host "Copied $copiedFromVcpkg DLLs from vcpkg to SDK"
           } else {
             Write-Host "WARNING: vcpkg bin directory not found: $vcpkgBinDir"
+            # Try to find vcpkg_installed
+            Write-Host "Looking for vcpkg_installed..."
+            Get-ChildItem "${{ github.workspace }}/build" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "  $($_.Name)"
+            }
           }
 
           Get-ChildItem "$buildDir/*.lib" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -533,6 +562,16 @@ jobs:
           $relativePath = $_.FullName.Replace("$sdkDir/", "").Replace("$sdkDir\", "")
           Write-Host "  $relativePath"
         }
+
+        # Write SDK contents to a file for debugging (in case logs aren't accessible)
+        $debugFile = "${{ github.workspace }}/sdk_debug.txt"
+        "SDK Debug Info" | Out-File $debugFile
+        "=============" | Out-File $debugFile -Append
+        "DLLs in SDK bin:" | Out-File $debugFile -Append
+        Get-ChildItem "$sdkDir/bin/*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+          "  $($_.Name)" | Out-File $debugFile -Append
+        }
+        "Total DLLs: $((Get-ChildItem "$sdkDir/bin/*.dll" -ErrorAction SilentlyContinue).Count)" | Out-File $debugFile -Append
 
     - name: Upload SDK artifact
       if: success()
@@ -695,6 +734,7 @@ jobs:
         path: |
           ${{ github.workspace }}/integration_report_basic.json
           ${{ github.workspace }}/integration_report_node.json
+          ${{ github.workspace }}/sdk_debug.txt
       continue-on-error: true
 
   #===========================================================================
