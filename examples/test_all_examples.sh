@@ -228,12 +228,21 @@ fi
 
 print_header "ApraPipes Examples Test Suite"
 
-# Check CLI exists
+# Check CLI exists (handle Windows .exe extension)
 if [[ ! -f "$CLI_PATH" ]]; then
-    echo -e "${RED}Error: CLI not found at $CLI_PATH${NC}"
-    echo "Please build and install: ./scripts/install_to_bin.sh"
-    exit 2
+    if [[ -f "${CLI_PATH}.exe" ]]; then
+        CLI_PATH="${CLI_PATH}.exe"
+        echo -e "${BLUE}[INFO]${NC} Using Windows executable: $CLI_PATH"
+    else
+        echo -e "${RED}Error: CLI not found at $CLI_PATH${NC}"
+        echo "Please build and install: ./scripts/install_to_bin.sh"
+        exit 2
+    fi
 fi
+
+# Debug: Show actual CLI path and verify it's executable
+echo -e "${BLUE}[DEBUG]${NC} CLI file exists: $(ls -la "$CLI_PATH" 2>&1 | head -1)"
+echo -e "${BLUE}[DEBUG]${NC} CLI file type: $(file "$CLI_PATH" 2>&1 || echo 'file command not available')"
 
 # Check examples directory exists
 if [[ ! -d "$EXAMPLES_DIR" ]]; then
