@@ -220,6 +220,15 @@ if [[ -n "$SDK_DIR" ]]; then
 
     # Add SDK bin to PATH for Windows (DLL loading requires this)
     export PATH="$SDK_DIR/bin:$PATH"
+
+    # Add CUDA bin to PATH for Windows (OpenCV CUDA DLLs need cudart64_*.dll)
+    # CUDA_PATH is set by CI workflow via GITHUB_ENV
+    if [[ -n "$CUDA_PATH" ]]; then
+        # Convert Windows path to Unix-style for Git Bash
+        CUDA_BIN=$(cygpath -u "$CUDA_PATH/bin" 2>/dev/null || echo "$CUDA_PATH/bin")
+        export PATH="$CUDA_BIN:$PATH"
+        echo -e "${BLUE}[SDK MODE]${NC} Added CUDA to PATH: $CUDA_BIN"
+    fi
 fi
 
 # ==============================================================================
