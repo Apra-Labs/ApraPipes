@@ -1,6 +1,6 @@
 # Declarative Pipeline - Progress Tracker
 
-> Last Updated: 2026-01-18
+> Last Updated: 2026-01-19
 
 **Branch:** `feat/sdk-packaging`
 
@@ -19,6 +19,42 @@
 | Auto-Bridging | ✅ Complete (memory + pixel format) |
 | SDK Packaging | ✅ Complete (all 4 platforms) |
 | Path Types | ✅ Complete (first-class path type system) |
+| Integration Tests | 🔄 In Progress (Windows fix pending CI verification) |
+
+---
+
+## Sprint 12: Windows Integration Test Fix (In Progress)
+
+> Started: 2026-01-19
+
+**Goal:** Fix Windows integration tests that fail with exit code 127.
+
+### Problem Analysis
+
+Windows integration tests fail with exit code 127 (CLI fails to launch) while Linux, macOS, and ARM64 all pass. Root cause analysis:
+
+1. **Symptom**: CLI fails to execute with exit code 127 despite file existing
+2. **Root Cause**: Git Bash PATH handling for DLL loading is problematic on Windows
+3. **Why bash works on Linux/macOS**: Unix shells handle shared library paths natively
+4. **Why bash fails on Windows**: PATH conversion from Unix-style to Windows-style doesn't always work correctly for DLL search paths
+
+### Solution
+
+Use PowerShell (pwsh) for Windows integration tests instead of bash:
+- PowerShell uses native Windows PATH handling
+- Properly sets up SDK bin and CUDA bin directories
+- Includes debug output for diagnostics
+- Linux/macOS continue to use bash (works correctly)
+
+### Tasks
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Analyze CI failure logs | ✅ Complete | Exit code 127, DLL loading issue |
+| Identify root cause | ✅ Complete | Git Bash PATH conversion |
+| Implement PowerShell integration tests | ✅ Complete | In build-test.yml |
+| Verify fix on CI | ⏳ Pending | Awaiting CI run results |
+| Update documentation | ✅ Complete | This file |
 
 ---
 

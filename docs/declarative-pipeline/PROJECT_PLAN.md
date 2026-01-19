@@ -1,23 +1,34 @@
 # Declarative Pipeline - Project Plan
 
-> Last Updated: 2026-01-17
+> Last Updated: 2026-01-19
 
 ---
 
 ## Overview
 
-The Declarative Pipeline project transforms ApraPipes from imperative C++ construction to declarative JSON configuration. The project is now in the SDK Packaging phase.
+The Declarative Pipeline project transforms ApraPipes from imperative C++ construction to declarative JSON configuration. Core implementation complete, now in stabilization phase.
 
 ---
 
-## Current Sprint: Sprint 10 - SDK Packaging
+## Current Sprint: Sprint 12 - Windows Integration Test Fix
 
-**Goal:** Create consistent SDK packaging across all 4 CI workflows.
+**Goal:** Fix Windows integration tests that fail with exit code 127.
 
-**Objectives:**
-1. Package all artifacts (CLI, Node addon, libraries, examples)
-2. Works out of the box for end users
-3. Enable GitHub Releases (Phase 2)
+**Problem:**
+- Windows integration tests fail with exit code 127 (CLI fails to launch)
+- Linux, macOS, and ARM64 all pass
+- Root cause: Git Bash PATH handling for DLL loading is problematic on Windows
+
+**Solution:**
+- Use PowerShell (pwsh) for Windows integration tests
+- Native Windows PATH handling works correctly
+- Extensive debug output for diagnostics
+
+**Status:** Awaiting CI verification
+
+---
+
+## SDK Packaging (Complete)
 
 **Artifacts per platform:**
 - `bin/` - CLI, test executable, Node addon, shared libraries
@@ -43,6 +54,21 @@ The Declarative Pipeline project transforms ApraPipes from imperative C++ constr
 ---
 
 ## Completed Sprints
+
+### Sprint 11: Path Types Enhancement
+**Completed:** 2026-01-18
+
+- First-class path types (FilePath, DirectoryPath, FilePattern, etc.)
+- Path requirements (MustExist, WillBeCreated, etc.)
+- Early validation at pipeline build time
+- 12 module properties updated
+
+### Sprint 10: SDK Packaging
+**Completed:** 2026-01-17
+
+- Consistent SDK packaging across all 4 CI workflows
+- SDK artifacts: bin, lib, include, examples, data
+- Integration tests added (basic, CUDA, Node.js, Jetson)
 
 ### Sprint 9: Node.js on Jetson (J2)
 **Completed:** 2026-01-17

@@ -460,15 +460,35 @@ jobs:
           Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
         } else {
           $buildDir = "${{ github.workspace }}/build/Release"
+          $vcpkgBinDir = "${{ github.workspace }}/vcpkg_installed/x64-windows-cuda/bin"
+
           # Binaries (includes aprapipes_cli.exe, aprapipesut.exe)
           Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
           Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          # Copy non-CUDA DLLs only (CUDA DLLs are delay-loaded)
+
+          # Copy non-CUDA DLLs from build directory
           Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
             $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
           } | ForEach-Object {
             Copy-Item $_.FullName "$sdkDir/bin/" -Force
           }
+
+          # Copy vcpkg runtime DLLs (OpenCV, FFmpeg, Boost, etc.)
+          # These are required for the CLI to run
+          if (Test-Path $vcpkgBinDir) {
+            Write-Host "Copying vcpkg DLLs from: $vcpkgBinDir"
+            Get-ChildItem "$vcpkgBinDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
+              # Exclude CUDA DLLs (delay-loaded) and debug DLLs
+              $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)" -and
+              $_.Name -notmatch "d\.dll$"  # Skip debug versions like opencv_world4d.dll
+            } | ForEach-Object {
+              Copy-Item $_.FullName "$sdkDir/bin/" -Force
+              Write-Host "  Copied: $($_.Name)"
+            }
+          } else {
+            Write-Host "WARNING: vcpkg bin directory not found: $vcpkgBinDir"
+          }
+
           Get-ChildItem "$buildDir/*.lib" -ErrorAction SilentlyContinue | ForEach-Object {
             Copy-Item $_.FullName "$sdkDir/lib/" -Force
           }

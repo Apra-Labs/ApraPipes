@@ -1,22 +1,32 @@
-# CLAUDE.md - ApraPipes SDK Packaging
+# CLAUDE.md - ApraPipes Declarative Pipeline
 
 > Instructions for Claude Code agents working on the ApraPipes project.
 
 **Branch:** `feat/sdk-packaging`
-**Documentation:** `docs/declarative-pipeline/SDK_PACKAGING_PLAN.md`
+**Documentation:** `docs/declarative-pipeline/`
 
 ---
 
-## Current Phase: SDK Packaging (Sprint 10)
+## Current Phase: Sprint 12 - Windows Integration Test Fix
 
-**Mission:** Create consistent SDK packaging across all 4 CI workflows.
+**Mission:** Fix Windows integration tests that fail with exit code 127.
 
-**Goals:**
-1. Package all artifacts (CLI, Node addon, libraries, examples)
-2. Works out of the box for end users
-3. Enable GitHub Releases (Phase 2)
+**Problem:**
+- Windows integration tests fail with exit code 127 (CLI fails to launch)
+- Linux, macOS, and ARM64 all pass
+- Root cause: Git Bash PATH handling for DLL loading is problematic on Windows
 
-**SDK Structure:**
+**Solution:**
+- Use PowerShell (pwsh) for Windows integration tests
+- Native Windows PATH handling works correctly
+- Linux/macOS continue to use bash (works correctly)
+
+**Status:** Awaiting CI verification (commit c41375381)
+
+---
+
+## SDK Structure (Complete)
+
 ```
 aprapipes-sdk-{platform}/
 ├── bin/
@@ -43,10 +53,10 @@ aprapipes-sdk-{platform}/
 **Current State:**
 | Workflow | SDK Artifact | Status |
 |----------|-------------|--------|
-| CI-Windows | `aprapipes-sdk-windows-x64` | Partial (bin/lib/include only) |
-| CI-Linux | `aprapipes-sdk-linux-x64` | Partial (bin/lib/include only) |
-| CI-MacOSX | None | Missing |
-| CI-Linux-ARM64 | None | Missing |
+| CI-Windows | `aprapipes-sdk-windows-x64` | ✅ Complete (integration tests pending) |
+| CI-Linux | `aprapipes-sdk-linux-x64` | ✅ Complete |
+| CI-MacOSX | `aprapipes-sdk-macos-arm64` | ✅ Complete |
+| CI-Linux-ARM64 | `aprapipes-sdk-linux-arm64` | ✅ Complete |
 
 **Protected Assets (DO NOT BREAK):**
 - All 4 CI workflows GREEN
@@ -104,19 +114,25 @@ Check for: debug code, temporary hacks, commented-out code, unrelated changes.
 
 ## Implementation Tasks
 
-### Phase 1: SDK Packaging (Now)
+### Sprint 12: Windows Integration Test Fix (Current)
 
-1. [ ] Create `package-sdk.yml` reusable workflow
-2. [ ] Update `build-test.yml` (Windows/Linux x64) - add CLI, Node addon, examples, data
-3. [ ] Update `build-test-macosx.yml` - add SDK packaging
-4. [ ] Update `build-test-lin.yml` (ARM64) - add SDK packaging
-5. [ ] Create `docs/SDK_README.md` - SDK usage documentation
-6. [ ] Test all workflows - verify GPU tests still work
+1. [x] Analyze CI failure logs (exit code 127)
+2. [x] Identify root cause (Git Bash PATH conversion)
+3. [x] Implement PowerShell integration tests for Windows
+4. [ ] Verify fix on CI (awaiting run)
+
+### SDK Packaging (Complete)
+
+1. [x] Update `build-test.yml` (Windows/Linux x64) - SDK packaging
+2. [x] Update `build-test-macosx.yml` - SDK packaging
+3. [x] Update `build-test-lin.yml` (ARM64) - SDK packaging
+4. [x] Create `docs/SDK_README.md` - SDK usage documentation
+5. [x] Integration tests added (basic, CUDA, Node.js, Jetson)
 
 ### Phase 2: GitHub Releases (Deferred)
 
-7. [ ] Create `release.yml` - coordinated release workflow
-8. [ ] Test release workflow creates single release with all 4 platforms
+1. [ ] Create `release.yml` - coordinated release workflow
+2. [ ] Test release workflow creates single release with all 4 platforms
 
 ---
 
