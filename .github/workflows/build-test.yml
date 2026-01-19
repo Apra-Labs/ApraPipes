@@ -460,7 +460,8 @@ jobs:
           Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
         } else {
           $buildDir = "${{ github.workspace }}/build/Release"
-          $vcpkgBinDir = "${{ github.workspace }}/vcpkg_installed/x64-windows-cuda/bin"
+          # vcpkg_installed is inside the build directory when using vcpkg toolchain
+          $vcpkgBinDir = "${{ github.workspace }}/build/vcpkg_installed/x64-windows-cuda/bin"
 
           # Binaries (includes aprapipes_cli.exe, aprapipesut.exe)
           Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
