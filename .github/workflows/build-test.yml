@@ -555,6 +555,21 @@ jobs:
         $sdkBin = "${{ github.workspace }}\sdk\bin"
         $env:PATH = "$sdkBin;$env:PATH"
 
+        # Add vcpkg bin to PATH as fallback (in case DLLs weren't copied to SDK)
+        $vcpkgBin = "${{ github.workspace }}\build\vcpkg_installed\x64-windows-cuda\bin"
+        if (Test-Path $vcpkgBin) {
+          $env:PATH = "$vcpkgBin;$env:PATH"
+          Write-Host "vcpkg bin added to PATH: $vcpkgBin"
+        } else {
+          Write-Host "WARNING: vcpkg bin not found: $vcpkgBin"
+          # Try alternative locations
+          $altVcpkgBin = "${{ github.workspace }}\vcpkg_installed\x64-windows-cuda\bin"
+          if (Test-Path $altVcpkgBin) {
+            $env:PATH = "$altVcpkgBin;$env:PATH"
+            Write-Host "vcpkg bin (alt) added to PATH: $altVcpkgBin"
+          }
+        }
+
         # Add CUDA bin to PATH if available
         if ($env:CUDA_PATH) {
           $cudaBin = Join-Path $env:CUDA_PATH "bin"
@@ -567,13 +582,19 @@ jobs:
         Write-Host "SDK bin: $sdkBin"
         Write-Host "CUDA_PATH: $env:CUDA_PATH"
 
+        # List DLLs in SDK bin
+        Write-Host "=== DLLs in SDK bin (count: $((Get-ChildItem "$sdkBin\*.dll" -ErrorAction SilentlyContinue).Count)) ==="
+        Get-ChildItem "$sdkBin\*.dll" -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object { Write-Host "  $($_.Name)" }
+
+        # Check if vcpkg DLLs exist
+        if (Test-Path $vcpkgBin) {
+          Write-Host "=== DLLs in vcpkg bin (count: $((Get-ChildItem "$vcpkgBin\*.dll" -ErrorAction SilentlyContinue).Count)) ==="
+          Get-ChildItem "$vcpkgBin\*.dll" -ErrorAction SilentlyContinue | Select-Object -First 10 | ForEach-Object { Write-Host "  $($_.Name)" }
+        }
+
         $cli = "$sdkBin\aprapipes_cli.exe"
         Write-Host "CLI path: $cli"
         Write-Host "CLI exists: $(Test-Path $cli)"
-
-        # List DLLs in SDK bin
-        Write-Host "=== DLLs in SDK bin ==="
-        Get-ChildItem "$sdkBin\*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
 
         # Test CLI launch directly
         Write-Host "=== Testing CLI --version ==="
