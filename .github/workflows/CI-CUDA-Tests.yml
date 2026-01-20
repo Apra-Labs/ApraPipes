@@ -252,91 +252,10 @@ jobs:
       if: success() && needs.setup.outputs.os == 'windows'
       shell: pwsh
       run: |
-        $sdkDir = "${{ github.workspace }}\sdk"
-        $sdkBin = "$sdkDir\bin"
-        $cli = "$sdkBin\aprapipes_cli.exe"
-
-        # Add SDK bin to PATH for DLL loading
-        $env:PATH = "$sdkBin;$env:PATH"
-
-        # Add CUDA bin to PATH
-        if ($env:CUDA_PATH) {
-          $cudaBin = Join-Path $env:CUDA_PATH "bin"
-          $env:PATH = "$cudaBin;$env:PATH"
-        }
-
-        Write-Host "=== Running CUDA Integration Tests ==="
-
-        # Check if CUDA examples directory exists
-        $cudaExamplesDir = "$sdkDir\examples\cuda"
-        if (-not (Test-Path $cudaExamplesDir)) {
-          Write-Host "No CUDA examples directory found at: $cudaExamplesDir"
-          Write-Host "Skipping CUDA integration tests (examples not packaged)"
-          # Create empty report
-          $report = @{
-            timestamp = (Get-Date -Format "o")
-            script = "cuda_integration_tests_windows.ps1"
-            summary = @{ passed = 0; failed = 0; skipped = 1; total = 0 }
-            note = "CUDA examples not found in SDK"
-          }
-          $report | ConvertTo-Json -Depth 3 | Set-Content "${{ github.workspace }}\integration_report_cuda.json"
-          exit 0
-        }
-
-        # Get all CUDA example JSON files
-        $examples = Get-ChildItem "$cudaExamplesDir\*.json" -ErrorAction SilentlyContinue
-        if ($examples.Count -eq 0) {
-          Write-Host "No CUDA example JSON files found"
-          $report = @{
-            timestamp = (Get-Date -Format "o")
-            script = "cuda_integration_tests_windows.ps1"
-            summary = @{ passed = 0; failed = 0; skipped = 1; total = 0 }
-            note = "No CUDA example JSON files found"
-          }
-          $report | ConvertTo-Json -Depth 3 | Set-Content "${{ github.workspace }}\integration_report_cuda.json"
-          exit 0
-        }
-
-        Write-Host "Found $($examples.Count) CUDA examples"
-        $passed = 0
-        $failed = 0
-        $results = @()
-
-        foreach ($example in $examples) {
-          $name = $example.BaseName
-          Write-Host "[TEST] $name"
-          Push-Location $sdkDir
-          & $cli validate $example.FullName 2>&1
-          $exitCode = $LASTEXITCODE
-          Pop-Location
-
-          if ($exitCode -eq 0) {
-            Write-Host "[PASS] $name (validation)"
-            $passed++
-            $results += @{ name = $name; status = "passed" }
-          } else {
-            Write-Host "[FAIL] $name (exit code: $exitCode)"
-            $failed++
-            $results += @{ name = $name; status = "failed" }
-          }
-        }
-
-        # Create JSON report
-        $report = @{
-          timestamp = (Get-Date -Format "o")
-          script = "cuda_integration_tests_windows.ps1"
-          summary = @{
-            passed = $passed
-            failed = $failed
-            total = $passed + $failed
-          }
-          results = $results
-        }
-        $report | ConvertTo-Json -Depth 3 | Set-Content "${{ github.workspace }}\integration_report_cuda.json"
-
-        Write-Host "Passed: $passed, Failed: $failed"
-        # Don't fail on validation errors - CUDA examples may require GPU
-        # The important thing is the CLI launched successfully
+        .\examples\test_all_examples.ps1 `
+          -SdkDir "${{ github.workspace }}\sdk" `
+          -JsonReport "${{ github.workspace }}\integration_report_cuda.json" `
+          -Cuda
 
     - name: Upload CUDA integration report
       if: always()
