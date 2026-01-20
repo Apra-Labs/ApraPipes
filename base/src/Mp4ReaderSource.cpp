@@ -513,7 +513,15 @@ public:
 				LOG_TRACE << "REOPEN THE FILE < " << mState.mVideoPath << ">";
 				openVideoSetPointer(mState.mVideoPath);
 				auto seekTS = mState.direction ? mState.frameTSInMsecs + 1 : mState.frameTSInMsecs - 1;
-				auto ret = randomSeekInternal(seekTS); // also resets end
+				bool ret=false;
+				try
+				{
+					ret = randomSeekInternal(seekTS); // also resets end
+				}
+				catch(Mp4_Exception& ex)
+				{
+					ret=false;
+				}
 				if (!ret)
 				{
 					auto msg = "Unexpected issue occured while resuming playback after reloading the file <"
@@ -870,12 +878,23 @@ public:
 				throw; // Rethrow if you want to propagate the exception further
 			}
 		}
-		bool ret;
+		bool ret=false;
 		try
-		{
+		{		 
 			LOG_ERROR << "Handling Random Seek Command";
 			ret = cof->getRandomSeekFile(skipTS, mState.direction, skipMsecsInFile, skipVideoFile);
 		}
+		catch (Mp4_Exception& exception)
+		{
+			ret=false;
+		
+			if (exception.getCode() == MP4_OCOF_END)
+			{
+				auto msg = "Reached End OF cache";
+				throw Mp4Exception(MP4_OCOF_END, msg);
+			}
+		}
+
 		catch (const std::exception &e)
 		{
 			LOG_ERROR << "Exception caught while getting random seek file: " << e.what();
@@ -989,6 +1008,14 @@ public:
 				}
 				return false;
 			}
+			if (ex.getCode() == MP4_OCOF_END)
+			{
+				LOG_INFO<<"exception caught in randomSeekInternal";
+				auto msg="seek failed due to EOC";
+				APErrorObject error(345, msg);
+				propagateError(error);
+				
+			}
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, ex.getCode(), ex.getError(), ex.getOpenFileErrorCode(), skipTS);
 			return false;
 		}
@@ -998,6 +1025,11 @@ public:
 			makeAndSendMp4Error(Mp4ErrorFrame::MP4_SEEK, MP4_UNEXPECTED_STATE, msg, 0, skipTS);
 			return false;
 		}
+		
+		auto msg="seek successfull";
+		APErrorObject error(200, msg);
+		propagateError(error);
+		LOG_INFO<<"seek successed";
 		return true;
 	}
 
