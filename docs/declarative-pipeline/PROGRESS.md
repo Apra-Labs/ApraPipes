@@ -19,13 +19,13 @@
 | Auto-Bridging | ✅ Complete (memory + pixel format) |
 | SDK Packaging | ✅ Complete (all 4 platforms) |
 | Path Types | ✅ Complete (first-class path type system) |
-| Integration Tests | 🔄 In Progress (Windows fix pending CI verification) |
+| Integration Tests | ✅ Complete (all platforms passing) |
 
 ---
 
-## Sprint 12: Windows Integration Test Fix (In Progress)
+## Sprint 12: Windows Integration Test Fix (Complete)
 
-> Started: 2026-01-19
+> Started: 2026-01-19 | Completed: 2026-01-20
 
 **Goal:** Fix Windows integration tests that fail with STATUS_DLL_NOT_FOUND.
 
@@ -55,9 +55,10 @@ Add `/DELAYLOAD` linker options to `aprapipes_cli` and `apra_schema_generator` i
 | Analyze CI failure logs | ✅ Complete | Exit code -1073741515 (STATUS_DLL_NOT_FOUND) |
 | Download SDK artifact | ✅ Complete | Tested locally to reproduce issue |
 | Identify root cause | ✅ Complete | Missing DELAYLOAD for CLI executables |
-| Add DELAYLOAD to aprapipes_cli | ✅ Complete | In CMakeLists.txt |
-| Add DELAYLOAD to apra_schema_generator | ✅ Complete | In CMakeLists.txt |
-| Verify fix on CI | ⏳ Pending | Awaiting CI run results |
+| Add DELAYLOAD to aprapipes_cli | ✅ Complete | In CMakeLists.txt (commit e42e62a) |
+| Add DELAYLOAD to apra_schema_generator | ✅ Complete | In CMakeLists.txt (commit e42e62a) |
+| Fix test command | ✅ Complete | Use list-modules instead of --version (commit bdb91fb) |
+| Verify fix on CI | ✅ Complete | Windows build passed |
 
 ---
 
