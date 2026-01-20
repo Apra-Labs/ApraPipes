@@ -27,34 +27,37 @@
 
 > Started: 2026-01-19
 
-**Goal:** Fix Windows integration tests that fail with exit code 127.
+**Goal:** Fix Windows integration tests that fail with STATUS_DLL_NOT_FOUND.
 
 ### Problem Analysis
 
-Windows integration tests fail with exit code 127 (CLI fails to launch) while Linux, macOS, and ARM64 all pass. Root cause analysis:
+Windows integration tests fail with exit code -1073741515 (STATUS_DLL_NOT_FOUND / 0xC0000135) while Linux, macOS, and ARM64 all pass.
 
-1. **Symptom**: CLI fails to execute with exit code 127 despite file existing
-2. **Root Cause**: Git Bash PATH handling for DLL loading is problematic on Windows
-3. **Why bash works on Linux/macOS**: Unix shells handle shared library paths natively
-4. **Why bash fails on Windows**: PATH conversion from Unix-style to Windows-style doesn't always work correctly for DLL search paths
+**Root Cause:** `aprapipes_cli.exe` was missing `/DELAYLOAD` options for CUDA DLLs.
+
+1. **Symptom**: CLI crashes immediately with STATUS_DLL_NOT_FOUND when CUDA DLLs are not in PATH
+2. **Root Cause**: aprapipesut had DELAYLOAD configured for CUDA DLLs, but aprapipes_cli and apra_schema_generator did not
+3. **Why unit tests passed**: aprapipesut has DELAYLOAD configured so it can start without CUDA
+4. **Why integration tests failed**: aprapipes_cli didn't have DELAYLOAD, so it crashed before any code could run
 
 ### Solution
 
-Use PowerShell (pwsh) for Windows integration tests instead of bash:
-- PowerShell uses native Windows PATH handling
-- Properly sets up SDK bin and CUDA bin directories
-- Includes debug output for diagnostics
-- Linux/macOS continue to use bash (works correctly)
+Add `/DELAYLOAD` linker options to `aprapipes_cli` and `apra_schema_generator` in CMakeLists.txt:
+- Link `delayimp.lib` for delay-load helper
+- Add DELAYLOAD for all CUDA DLLs (nvjpeg, npp*, cublas, cudart, etc.)
+- Executables now start successfully even without CUDA installed
+- CUDA features still work when CUDA DLLs are available at runtime
 
 ### Tasks
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Analyze CI failure logs | ✅ Complete | Exit code 127, DLL loading issue |
-| Identify root cause | ✅ Complete | Git Bash PATH conversion |
-| Implement PowerShell integration tests | ✅ Complete | In build-test.yml |
+| Analyze CI failure logs | ✅ Complete | Exit code -1073741515 (STATUS_DLL_NOT_FOUND) |
+| Download SDK artifact | ✅ Complete | Tested locally to reproduce issue |
+| Identify root cause | ✅ Complete | Missing DELAYLOAD for CLI executables |
+| Add DELAYLOAD to aprapipes_cli | ✅ Complete | In CMakeLists.txt |
+| Add DELAYLOAD to apra_schema_generator | ✅ Complete | In CMakeLists.txt |
 | Verify fix on CI | ⏳ Pending | Awaiting CI run results |
-| Update documentation | ✅ Complete | This file |
 
 ---
 
