@@ -635,9 +635,9 @@ jobs:
         Write-Host "CLI path: $cli"
         Write-Host "CLI exists: $(Test-Path $cli)"
 
-        # Test CLI launch directly
-        Write-Host "=== Testing CLI --version ==="
-        & $cli --version
+        # Test CLI launch directly (list-modules is a simple command that doesn't require files)
+        Write-Host "=== Testing CLI list-modules ==="
+        & $cli list-modules
         if ($LASTEXITCODE -ne 0) {
           Write-Host "::error::CLI failed to launch with exit code $LASTEXITCODE"
           # Try to get more diagnostic info
