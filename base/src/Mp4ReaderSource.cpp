@@ -1339,7 +1339,6 @@ protected:
 	bool sentEOSSignal = false;
 	bool seekReachedEOF = false;
 	bool waitFlag = false;
-	bool isUpdatingProps = false;
 	uint64_t recheckDiskTS = 0;
 	boost::shared_ptr<OrderedCacheOfFiles> cof;
 	framemetadata_sp updatedEncodedImgMetadata;
