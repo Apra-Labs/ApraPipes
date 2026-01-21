@@ -2,7 +2,7 @@
 # ==============================================================================
 # Unified Examples Test Script
 # ==============================================================================
-# Tests all declarative pipeline examples (basic, cuda, advanced, node).
+# Tests all declarative pipeline examples (basic, cuda, advanced, node, jetson).
 #
 # Usage:
 #   ./examples/test_all_examples.sh [options]
@@ -12,6 +12,7 @@
 #   --cuda             Test only CUDA (GPU) examples
 #   --advanced         Test only advanced examples
 #   --node             Test only Node.js addon examples
+#   --jetson           Test only Jetson (ARM64) examples (requires Jetson device)
 #   --verbose          Show detailed output
 #   --keep-outputs     Don't cleanup output files after tests
 #   --sdk-dir <path>   Use SDK directory structure (for CI)
@@ -49,6 +50,7 @@ TEST_BASIC=true
 TEST_CUDA=true
 TEST_ADVANCED=true
 TEST_NODE=true
+TEST_JETSON=false  # Disabled by default (requires Jetson device)
 VERBOSE=false
 KEEP_OUTPUTS=false
 SDK_DIR=""
@@ -141,7 +143,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --basic)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_BASIC=true
@@ -149,7 +151,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --cuda)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_CUDA=true
@@ -157,7 +159,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --advanced)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_ADVANCED=true
@@ -165,10 +167,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --node)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_NODE=true
+            shift
+            ;;
+        --jetson)
+            if [ "$SPECIFIC_REQUESTED" = false ]; then
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
+                SPECIFIC_REQUESTED=true
+            fi
+            TEST_JETSON=true
             shift
             ;;
         --verbose)
@@ -276,7 +286,7 @@ echo -e "${GREEN}Examples:${NC} $EXAMPLES_DIR"
 echo -e "${GREEN}Output:${NC} $OUTPUT_DIR"
 echo -e "${GREEN}Timeout:${NC} ${RUN_TIMEOUT}s per test"
 echo ""
-echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED, Node=$TEST_NODE"
+echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED, Node=$TEST_NODE, Jetson=$TEST_JETSON"
 
 # ==============================================================================
 # Test Functions
@@ -570,6 +580,40 @@ if [ "$TEST_ADVANCED" = true ]; then
     run_json_example "$EXAMPLES_DIR/advanced/motion_vector_pipeline.json" "" 0 || true
     run_json_example "$EXAMPLES_DIR/advanced/multimedia_queue_pipeline.json" "" 0 || true
     run_json_example "$EXAMPLES_DIR/advanced/affine_transform_pipeline.json" "" 0 || true
+fi
+
+# ==============================================================================
+# Jetson (ARM64) Examples Tests
+# ==============================================================================
+
+if [ "$TEST_JETSON" = true ]; then
+    print_header "Testing Jetson (ARM64) Examples"
+
+    # Check if we're on a Jetson device
+    if [[ ! -f /etc/nv_tegra_release ]]; then
+        echo -e "${YELLOW}Warning: Not a Jetson device (missing /etc/nv_tegra_release)${NC}"
+        echo -e "${YELLOW}Jetson tests may fail or be skipped.${NC}"
+    else
+        echo -e "${GREEN}Jetson Platform:${NC}"
+        cat /etc/nv_tegra_release | head -1
+    fi
+
+    # Test Jetson-specific examples (L4TM JPEG, camera, H264)
+    run_json_example "$EXAMPLES_DIR/jetson/01_test_signal_to_jpeg.json" "" 0 || true
+    run_json_example "$EXAMPLES_DIR/jetson/01_jpeg_decode_transform.json" "" 0 || true
+    run_json_example "$EXAMPLES_DIR/jetson/02_h264_encode_demo.json" "" 0 || true
+
+    # These require camera hardware - skip if not available
+    # run_json_example "$EXAMPLES_DIR/jetson/03_camera_preview.json" "" 0 || true
+    # run_json_example "$EXAMPLES_DIR/jetson/04_usb_camera_jpeg.json" "" 0 || true
+
+    run_json_example "$EXAMPLES_DIR/jetson/05_dmabuf_to_host_bridge.json" "" 0 || true
+    # run_json_example "$EXAMPLES_DIR/jetson/06_camera_h264_stream.json" "" 0 || true  # Requires camera
+
+    # Also test Jetson-specific Node.js example if Node.js is available
+    if command -v node &>/dev/null && [[ -f "$WORK_DIR/bin/aprapipes.node" ]]; then
+        run_node_example "$EXAMPLES_DIR/node/jetson_l4tm_demo.js" "" 0 || true
+    fi
 fi
 
 # ==============================================================================

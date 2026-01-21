@@ -1,6 +1,7 @@
 # SDK Integration Testing Plan
 
 > Created: 2026-01-17
+> **Status: COMPLETED** - All test scripts consolidated into `test_all_examples.sh`
 
 ## Goal
 
@@ -10,16 +11,22 @@ Add integration testing phase to all CI workflows that:
 3. Does NOT fail CI builds (informational only, initially)
 4. Ensures examples continue working over time
 
-## Existing Test Scripts
+## Current Test Script
 
-We already have well-structured test scripts in `examples/`:
+All test functionality is now in a single unified script:
 
 | Script | Purpose | Platforms |
 |--------|---------|-----------|
-| `test_all_examples.sh` | Basic + CUDA + Advanced | All (cloud + GPU) |
-| `test_cuda_examples.sh` | CUDA-specific tests | Windows GPU, Linux GPU |
-| `test_jetson_examples.sh` | Jetson L4TM + camera | Jetson only |
-| `test_declarative_pipelines.sh` | Full declarative test | All |
+| `test_all_examples.sh` | All tests (basic, cuda, jetson, node) | All |
+| `test_all_examples.ps1` | Windows PowerShell version | Windows |
+
+**Usage:**
+```bash
+./examples/test_all_examples.sh --basic    # CPU examples
+./examples/test_all_examples.sh --cuda     # GPU examples
+./examples/test_all_examples.sh --jetson   # Jetson ARM64 examples
+./examples/test_all_examples.sh --node     # Node.js examples
+```
 
 ## Test Matrix
 
@@ -28,7 +35,7 @@ We already have well-structured test scripts in `examples/`:
 | CI-Windows | `test_all_examples.sh --basic` | `test_all_examples.sh --cuda` | Both |
 | CI-Linux | `test_all_examples.sh --basic` | `test_all_examples.sh --cuda` | Both |
 | CI-MacOSX | `test_all_examples.sh --basic` | N/A | Cloud only |
-| CI-Linux-ARM64 | `test_jetson_examples.sh` | N/A | Single runner |
+| CI-Linux-ARM64 | `test_all_examples.sh --jetson` | N/A | Single runner |
 
 ## Implementation Plan
 

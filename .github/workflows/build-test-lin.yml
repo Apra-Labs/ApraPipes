@@ -344,9 +344,8 @@ jobs:
     - name: Run integration tests (Jetson)
       if: ${{ success() && !inputs.is-prep-phase }}
       run: |
-        chmod +x examples/test_jetson_examples.sh
-        ./examples/test_jetson_examples.sh \
-          --cli \
+        ./examples/test_all_examples.sh \
+          --jetson \
           --sdk-dir "${{ github.workspace }}/sdk" \
           --json-report "${{ github.workspace }}/integration_report_jetson.json"
 
