@@ -182,33 +182,59 @@ foreach ($example in $examples) {
     try {
         Push-Location $SdkDir
 
-        # Run CLI with timeout using Start-Process
-        $tempOut = [System.IO.Path]::GetTempFileName()
-        $tempErr = [System.IO.Path]::GetTempFileName()
+        # Use System.Diagnostics.Process for reliable exit code capture
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $cli
+        $psi.Arguments = "validate `"$jsonPath`""
+        $psi.UseShellExecute = $false
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.CreateNoWindow = $true
+        $psi.WorkingDirectory = $SdkDir
 
-        $proc = Start-Process -FilePath $cli -ArgumentList "validate", $jsonPath `
-            -NoNewWindow -PassThru `
-            -RedirectStandardOutput $tempOut `
-            -RedirectStandardError $tempErr
+        $proc = New-Object System.Diagnostics.Process
+        $proc.StartInfo = $psi
+
+        # Capture output asynchronously to avoid deadlocks
+        $stdout = New-Object System.Text.StringBuilder
+        $stderr = New-Object System.Text.StringBuilder
+
+        $stdoutEvent = Register-ObjectEvent -InputObject $proc -EventName OutputDataReceived -Action {
+            if ($Event.SourceEventArgs.Data) { $Event.MessageData.AppendLine($Event.SourceEventArgs.Data) }
+        } -MessageData $stdout
+
+        $stderrEvent = Register-ObjectEvent -InputObject $proc -EventName ErrorDataReceived -Action {
+            if ($Event.SourceEventArgs.Data) { $Event.MessageData.AppendLine($Event.SourceEventArgs.Data) }
+        } -MessageData $stderr
+
+        $proc.Start() | Out-Null
+        $proc.BeginOutputReadLine()
+        $proc.BeginErrorReadLine()
 
         $completed = $proc.WaitForExit($Timeout * 1000)
 
         if (-not $completed) {
-            # Timeout - kill the process
             $proc.Kill()
             $proc.WaitForExit(5000)
+            Unregister-Event -SourceIdentifier $stdoutEvent.Name
+            Unregister-Event -SourceIdentifier $stderrEvent.Name
             Pop-Location
             Write-Host "[FAIL] $example (timeout after ${Timeout}s)"
             $failed++
             $results += @{ name = $example; status = "failed"; reason = "timeout" }
-            Remove-Item $tempOut, $tempErr -ErrorAction SilentlyContinue
             continue
         }
 
+        # Ensure async reads complete
+        $proc.WaitForExit()
+        Start-Sleep -Milliseconds 100
+
+        Unregister-Event -SourceIdentifier $stdoutEvent.Name
+        Unregister-Event -SourceIdentifier $stderrEvent.Name
+
         $exitCode = $proc.ExitCode
-        $output = Get-Content $tempOut -Raw -ErrorAction SilentlyContinue
-        $errOutput = Get-Content $tempErr -Raw -ErrorAction SilentlyContinue
-        Remove-Item $tempOut, $tempErr -ErrorAction SilentlyContinue
+        $output = $stdout.ToString()
+        $errOutput = $stderr.ToString()
         Pop-Location
 
         if ($exitCode -eq 0) {
