@@ -213,18 +213,6 @@ public:
 
 	void setProps(Mp4ReaderSourceProps& props)
 	{
-		if (isUpdatingProps)
-		{
-			// Only update state if video path hasn't changed (e.g., just FPS update)
-			if (props.videoPath == mProps.videoPath && props.parseFS == mProps.parseFS && props.skipDir == mProps.skipDir)
-			{
-				mProps = props;
-				return;
-			}
-			// If video path changed during prop update, log warning and return to prevent recursion
-			LOG_INFO << "setProps called recursively with different video path. Ignoring to prevent loop.";
-			return;
-		}
 		std::string tempVideoPath;
 		std::chrono::time_point<std::chrono::system_clock> t = std::chrono::system_clock::now();
 		auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch());
@@ -254,18 +242,7 @@ public:
 				return;
 			}
 			updateMstate(props, tempVideoPath);
-			isUpdatingProps = true;
-			try
-			{
-				initNewVideo();
-			}
-			catch (...)
-			{
-				isUpdatingProps = false;
-				throw;
-			}
-			isUpdatingProps = false;
-		
+			initNewVideo();
 		}
 
 		std::string tempSkipDir;
@@ -322,17 +299,7 @@ public:
 			//parse successful - update mState and skipDir with current root dir
 			updateMstate(props, tempVideoPath);
 			mProps.skipDir = tempSkipDir;
-			isUpdatingProps = true;
-			try
-			{
-				initNewVideo(true);
-			}
-			catch (...)
-			{
-				isUpdatingProps = false;
-				throw;
-			}
-			isUpdatingProps = false;
+			initNewVideo(true);
 
 			return;
 		}
