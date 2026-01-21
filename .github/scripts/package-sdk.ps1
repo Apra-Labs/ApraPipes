@@ -7,7 +7,7 @@
     examples, and sample data needed to use ApraPipes.
 
     This script is designed to run in GitHub Actions CI but can also be run locally
-    for testing. It handles both Windows and Linux platforms.
+    for testing. It handles all platforms: Windows, Linux x64, macOS, and ARM64/Jetson.
 
     SDK Structure:
         aprapipes-sdk-{platform}/
@@ -15,13 +15,14 @@
         │   ├── aprapipes_cli(.exe)
         │   ├── aprapipesut(.exe)
         │   ├── aprapipes.node
-        │   └── *.dll / *.so
+        │   └── *.dll / *.so / *.dylib
         ├── lib/           # Static libraries
         │   └── *.lib / *.a
         ├── include/       # Header files
         ├── examples/
         │   ├── basic/     # JSON pipeline examples
         │   ├── cuda/      # CUDA examples (if applicable)
+        │   ├── jetson/    # Jetson examples (ARM64 only)
         │   └── node/      # Node.js examples
         ├── data/          # Sample input files
         ├── README.md      # SDK documentation
@@ -39,11 +40,14 @@
     Path to the source repository root (contains base/, examples/, data/, docs/).
 
 .PARAMETER Platform
-    Target platform: "windows" or "linux".
+    Target platform: "windows", "linux", "macos", or "arm64".
 
 .PARAMETER Cuda
     Whether this is a CUDA-enabled build. If true, includes CUDA examples.
     CUDA runtime DLLs are NOT included (they are delay-loaded).
+
+.PARAMETER Jetson
+    Include Jetson-specific examples (ARM64 only). Set to "ON" to include.
 
 .PARAMETER VcpkgBinDir
     Optional path to vcpkg bin directory for Windows runtime DLLs.
@@ -59,9 +63,19 @@
         -VcpkgBinDir "D:\build\vcpkg_installed\x64-windows-cuda\bin"
 
 .EXAMPLE
-    # Linux CI usage
+    # Linux x64 CI usage
     .\package-sdk.ps1 -SdkDir "/home/runner/sdk" -BuildDir "/home/runner/build" `
         -SourceDir "/home/runner/aprapipes" -Platform linux
+
+.EXAMPLE
+    # macOS CI usage
+    .\package-sdk.ps1 -SdkDir "/Users/runner/sdk" -BuildDir "/Users/runner/build" `
+        -SourceDir "/Users/runner/aprapipes" -Platform macos
+
+.EXAMPLE
+    # ARM64/Jetson CI usage
+    .\package-sdk.ps1 -SdkDir "/data/sdk" -BuildDir "/data/build" `
+        -SourceDir "/data/aprapipes" -Platform arm64 -Cuda ON -Jetson ON
 
 .EXAMPLE
     # Local testing on Windows
@@ -102,11 +116,14 @@ param(
     [string]$SourceDir,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet("windows", "linux")]
+    [ValidateSet("windows", "linux", "macos", "arm64")]
     [string]$Platform,
 
     [Parameter(Mandatory=$false)]
     [string]$Cuda = "OFF",
+
+    [Parameter(Mandatory=$false)]
+    [string]$Jetson = "OFF",
 
     [Parameter(Mandatory=$false)]
     [string]$VcpkgBinDir = "",
@@ -124,6 +141,7 @@ $ErrorActionPreference = "Stop"
 Write-Host "=== ApraPipes SDK Packaging ===" -ForegroundColor Cyan
 Write-Host "Platform:   $Platform"
 Write-Host "CUDA:       $Cuda"
+Write-Host "Jetson:     $Jetson"
 Write-Host "SDK Dir:    $SdkDir"
 Write-Host "Build Dir:  $BuildDir"
 Write-Host "Source Dir: $SourceDir"
@@ -193,8 +211,8 @@ Write-Host "  Version: $version"
 Write-Host ""
 Write-Host "=== Copying Binaries ===" -ForegroundColor Cyan
 
-if ($Platform -eq "linux") {
-    # Linux: executables and shared libraries in build/
+if ($Platform -in @("linux", "macos", "arm64")) {
+    # Unix-like: executables and shared libraries in build/
     $binaries = @(
         @{ Source = "$BuildDir/aprapipes_cli"; Dest = "$SdkDir/bin/" },
         @{ Source = "$BuildDir/aprapipesut"; Dest = "$SdkDir/bin/" },
@@ -208,12 +226,22 @@ if ($Platform -eq "linux") {
         }
     }
 
-    # Copy all .so files (shared libraries)
-    $soFiles = Get-ChildItem "$BuildDir/*.so*" -ErrorAction SilentlyContinue
-    foreach ($so in $soFiles) {
-        Copy-Item $so.FullName "$SdkDir/bin/" -Force
+    # Copy shared libraries (platform-specific extension)
+    if ($Platform -eq "macos") {
+        # macOS uses .dylib
+        $dylibFiles = Get-ChildItem "$BuildDir/*.dylib" -ErrorAction SilentlyContinue
+        foreach ($dylib in $dylibFiles) {
+            Copy-Item $dylib.FullName "$SdkDir/bin/" -Force
+        }
+        Write-Host "  Copied: $($dylibFiles.Count) shared libraries (.dylib)"
+    } else {
+        # Linux/ARM64 uses .so
+        $soFiles = Get-ChildItem "$BuildDir/*.so*" -ErrorAction SilentlyContinue
+        foreach ($so in $soFiles) {
+            Copy-Item $so.FullName "$SdkDir/bin/" -Force
+        }
+        Write-Host "  Copied: $($soFiles.Count) shared libraries (.so)"
     }
-    Write-Host "  Copied: $($soFiles.Count) shared libraries (.so)"
 
     # Copy static libraries
     $aFiles = Get-ChildItem "$BuildDir/*.a" -ErrorAction SilentlyContinue
@@ -350,6 +378,19 @@ if ($Cuda -eq "ON") {
     }
 }
 
+# Jetson examples (ARM64 only)
+if ($Jetson -eq "ON") {
+    $jetsonExamples = Join-Path $examplesDir "jetson"
+    if (Test-Path $jetsonExamples) {
+        New-Item -ItemType Directory -Path "$SdkDir/examples/jetson" -Force | Out-Null
+        $jetsonJsonFiles = Get-ChildItem "$jetsonExamples/*.json" -ErrorAction SilentlyContinue
+        foreach ($json in $jetsonJsonFiles) {
+            Copy-Item $json.FullName "$SdkDir/examples/jetson/" -Force
+        }
+        Write-Host "  Copied: $($jetsonJsonFiles.Count) Jetson examples"
+    }
+}
+
 # =============================================================================
 # Copy Sample Data
 # =============================================================================
@@ -422,18 +463,20 @@ SDK Debug Info
 Generated: $(Get-Date -Format "o")
 Platform: $Platform
 CUDA: $Cuda
+Jetson: $Jetson
 SDK Directory: $SdkDir
 Build Directory: $BuildDir
 
-DLLs in SDK bin:
+Shared libraries in SDK bin:
 "@ | Out-File $debugFile
 
-    Get-ChildItem "$SdkDir/bin/*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+    # List all shared libraries based on platform
+    Get-ChildItem "$SdkDir/bin/*.dll", "$SdkDir/bin/*.so*", "$SdkDir/bin/*.dylib" -ErrorAction SilentlyContinue | ForEach-Object {
         "  $($_.Name)" | Out-File $debugFile -Append
     }
 
-    $dllCount = (Get-ChildItem "$SdkDir/bin/*.dll" -ErrorAction SilentlyContinue).Count
-    "Total DLLs: $dllCount" | Out-File $debugFile -Append
+    $libCount = (Get-ChildItem "$SdkDir/bin/*.dll", "$SdkDir/bin/*.so*", "$SdkDir/bin/*.dylib" -ErrorAction SilentlyContinue).Count
+    "Total shared libraries: $libCount" | Out-File $debugFile -Append
 
     Write-Host ""
     Write-Host "  Debug info written to: $debugFile"
