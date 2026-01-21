@@ -471,7 +471,8 @@ jobs:
           -SdkDir "${{ github.workspace }}\sdk" `
           -JsonReport "${{ github.workspace }}\integration_report_basic.json" `
           -Basic `
-          -VcpkgBin "${{ github.workspace }}\build\vcpkg_installed\x64-windows-cuda\bin"
+          -VcpkgBin "${{ github.workspace }}\build\vcpkg_installed\x64-windows-cuda\bin" `
+          -CI
 
     - name: Run integration tests (basic) - Linux/macOS
       if: success() && inputs.os != 'windows'
