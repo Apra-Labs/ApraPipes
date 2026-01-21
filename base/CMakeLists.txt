@@ -873,18 +873,33 @@ IF(ENABLE_WINDOWS AND ENABLE_CUDA)
 	# The DLL names include version suffix (e.g., nvjpeg64_11.dll for CUDA 11.x)
 	# Note: nvcuda.dll is NOT delay-loaded - it's loaded via LoadLibrary in CudaDriverLoader
 	target_link_options(aprapipesut PRIVATE
+		# NVIDIA CUDA runtime DLLs
 		"/DELAYLOAD:nvjpeg64_11.dll"
 		"/DELAYLOAD:nppig64_11.dll"
 		"/DELAYLOAD:nppicc64_11.dll"
 		"/DELAYLOAD:nppidei64_11.dll"
 		"/DELAYLOAD:nppial64_11.dll"
 		"/DELAYLOAD:nppc64_11.dll"
+		"/DELAYLOAD:nppif64_11.dll"
+		"/DELAYLOAD:nppim64_11.dll"
 		"/DELAYLOAD:cublas64_11.dll"
 		"/DELAYLOAD:cublasLt64_11.dll"
 		"/DELAYLOAD:cudart64_110.dll"
 		# Video Codec SDK DLLs - these are part of NVIDIA driver, not CUDA toolkit
 		"/DELAYLOAD:nvcuvid.dll"
 		"/DELAYLOAD:nvEncodeAPI64.dll"
+		# OpenCV CUDA DLLs (these transitively load CUDA runtime)
+		"/DELAYLOAD:opencv_cudaarithm4.dll"
+		"/DELAYLOAD:opencv_cudabgsegm4.dll"
+		"/DELAYLOAD:opencv_cudacodec4.dll"
+		"/DELAYLOAD:opencv_cudafeatures2d4.dll"
+		"/DELAYLOAD:opencv_cudafilters4.dll"
+		"/DELAYLOAD:opencv_cudaimgproc4.dll"
+		"/DELAYLOAD:opencv_cudalegacy4.dll"
+		"/DELAYLOAD:opencv_cudaobjdetect4.dll"
+		"/DELAYLOAD:opencv_cudaoptflow4.dll"
+		"/DELAYLOAD:opencv_cudastereo4.dll"
+		"/DELAYLOAD:opencv_cudawarping4.dll"
 	)
 ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
 
@@ -973,17 +988,32 @@ ENDIF()
 IF(ENABLE_WINDOWS AND ENABLE_CUDA)
     target_link_libraries(aprapipes_cli PRIVATE delayimp.lib)
     target_link_options(aprapipes_cli PRIVATE
+        # NVIDIA CUDA runtime DLLs
         "/DELAYLOAD:nvjpeg64_11.dll"
         "/DELAYLOAD:nppig64_11.dll"
         "/DELAYLOAD:nppicc64_11.dll"
         "/DELAYLOAD:nppidei64_11.dll"
         "/DELAYLOAD:nppial64_11.dll"
         "/DELAYLOAD:nppc64_11.dll"
+        "/DELAYLOAD:nppif64_11.dll"
+        "/DELAYLOAD:nppim64_11.dll"
         "/DELAYLOAD:cublas64_11.dll"
         "/DELAYLOAD:cublasLt64_11.dll"
         "/DELAYLOAD:cudart64_110.dll"
         "/DELAYLOAD:nvcuvid.dll"
         "/DELAYLOAD:nvEncodeAPI64.dll"
+        # OpenCV CUDA DLLs (these transitively load CUDA runtime)
+        "/DELAYLOAD:opencv_cudaarithm4.dll"
+        "/DELAYLOAD:opencv_cudabgsegm4.dll"
+        "/DELAYLOAD:opencv_cudacodec4.dll"
+        "/DELAYLOAD:opencv_cudafeatures2d4.dll"
+        "/DELAYLOAD:opencv_cudafilters4.dll"
+        "/DELAYLOAD:opencv_cudaimgproc4.dll"
+        "/DELAYLOAD:opencv_cudalegacy4.dll"
+        "/DELAYLOAD:opencv_cudaobjdetect4.dll"
+        "/DELAYLOAD:opencv_cudaoptflow4.dll"
+        "/DELAYLOAD:opencv_cudastereo4.dll"
+        "/DELAYLOAD:opencv_cudawarping4.dll"
     )
 ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
 
@@ -1043,17 +1073,32 @@ ENDIF()
 IF(ENABLE_WINDOWS AND ENABLE_CUDA)
     target_link_libraries(apra_schema_generator PRIVATE delayimp.lib)
     target_link_options(apra_schema_generator PRIVATE
+        # NVIDIA CUDA runtime DLLs
         "/DELAYLOAD:nvjpeg64_11.dll"
         "/DELAYLOAD:nppig64_11.dll"
         "/DELAYLOAD:nppicc64_11.dll"
         "/DELAYLOAD:nppidei64_11.dll"
         "/DELAYLOAD:nppial64_11.dll"
         "/DELAYLOAD:nppc64_11.dll"
+        "/DELAYLOAD:nppif64_11.dll"
+        "/DELAYLOAD:nppim64_11.dll"
         "/DELAYLOAD:cublas64_11.dll"
         "/DELAYLOAD:cublasLt64_11.dll"
         "/DELAYLOAD:cudart64_110.dll"
         "/DELAYLOAD:nvcuvid.dll"
         "/DELAYLOAD:nvEncodeAPI64.dll"
+        # OpenCV CUDA DLLs (these transitively load CUDA runtime)
+        "/DELAYLOAD:opencv_cudaarithm4.dll"
+        "/DELAYLOAD:opencv_cudabgsegm4.dll"
+        "/DELAYLOAD:opencv_cudacodec4.dll"
+        "/DELAYLOAD:opencv_cudafeatures2d4.dll"
+        "/DELAYLOAD:opencv_cudafilters4.dll"
+        "/DELAYLOAD:opencv_cudaimgproc4.dll"
+        "/DELAYLOAD:opencv_cudalegacy4.dll"
+        "/DELAYLOAD:opencv_cudaobjdetect4.dll"
+        "/DELAYLOAD:opencv_cudaoptflow4.dll"
+        "/DELAYLOAD:opencv_cudastereo4.dll"
+        "/DELAYLOAD:opencv_cudawarping4.dll"
     )
 ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
 
