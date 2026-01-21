@@ -14,7 +14,7 @@ public:
 
 	}
 
-	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false, float _playbackSpeed = 1.0f, uint64_t _startTimestamp = 0, bool _isUpdatingProps = false) : ModuleProps()
+	Mp4ReaderSourceProps(std::string _videoPath, bool _parseFS, uint16_t _reInitInterval, bool _direction, bool _readLoop, bool _giveLiveTS, int _parseFSTimeoutDuration = 15, bool _bFramesEnabled = false, float _playbackSpeed = 1.0f, uint64_t _startTimestamp = 0) : ModuleProps()
 	{
 		/* About props:
 			- videoPath - Path of a video from where the reading will start.
@@ -54,7 +54,6 @@ public:
 		direction = _direction;
 		giveLiveTS = _giveLiveTS;
 		playbackSpeed = _playbackSpeed;
-		isUpdatingProps = _isUpdatingProps;
 		if (_reInitInterval < 0)
 		{
 			throw AIPException(AIP_FATAL, "reInitInterval must be 0 or more seconds");
@@ -99,7 +98,6 @@ public:
 	bool giveLiveTS = false;
 	bool forceFPS = false;
 	float playbackSpeed = 1.0f;
-	bool isUpdatingProps = false;
 	uint64_t startTimestamp = 0;  // Hint for initial cache building in parseFS mode
 private:
 	friend class boost::serialization::access;
