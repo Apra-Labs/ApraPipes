@@ -431,147 +431,24 @@ jobs:
       if: success()
       shell: pwsh
       run: |
-        $sdkDir = "${{ github.workspace }}/sdk"
-        $includeDir = "${{ github.workspace }}/base/include"
-        $examplesDir = "${{ github.workspace }}/examples"
-        $dataDir = "${{ github.workspace }}/data"
-
-        # Create SDK structure
-        New-Item -ItemType Directory -Path "$sdkDir/bin" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/examples/basic" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/examples/node" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/data" -Force | Out-Null
-
-        # Generate VERSION file
-        $version = git describe --tags --always 2>$null
-        if (-not $version) { $version = "0.0.0-g$(git rev-parse --short HEAD)" }
-        Set-Content -Path "$sdkDir/VERSION" -Value $version
-        Write-Host "SDK Version: $version"
-
+        # Determine build directory and vcpkg bin based on platform
         if ("${{ inputs.os }}" -eq "linux") {
           $buildDir = "${{ github.workspace }}/build"
-          # Binaries
-          Copy-Item "$buildDir/aprapipes_cli" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/aprapipesut" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/*.so*" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
+          $vcpkgBin = ""
         } else {
           $buildDir = "${{ github.workspace }}/build/Release"
-          # vcpkg_installed is inside the build directory when using vcpkg toolchain
-          $vcpkgBinDir = "${{ github.workspace }}/build/vcpkg_installed/x64-windows-cuda/bin"
-
-          # Debug: List what's in build/Release
-          Write-Host "=== Contents of build/Release ==="
-          Write-Host "Path: $buildDir"
-          Write-Host "Exists: $(Test-Path $buildDir)"
-          if (Test-Path $buildDir) {
-            $exeCount = (Get-ChildItem "$buildDir/*.exe" -ErrorAction SilentlyContinue).Count
-            $dllCount = (Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue).Count
-            Write-Host "EXE files: $exeCount"
-            Write-Host "DLL files: $dllCount"
-            Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object {
-              Write-Host "  $($_.Name)"
-            }
-          }
-
-          # Binaries (includes aprapipes_cli.exe, aprapipesut.exe)
-          Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/aprapipes.node" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-
-          # Copy non-CUDA DLLs from build directory
-          $copiedFromBuild = 0
-          Get-ChildItem "$buildDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
-            $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
-          } | ForEach-Object {
-            Copy-Item $_.FullName "$sdkDir/bin/" -Force
-            $copiedFromBuild++
-          }
-          Write-Host "Copied $copiedFromBuild DLLs from build/Release to SDK"
-
-          # Copy vcpkg runtime DLLs (OpenCV, FFmpeg, Boost, etc.)
-          # These are required for the CLI to run
-          Write-Host "=== vcpkg bin directory ==="
-          Write-Host "Path: $vcpkgBinDir"
-          Write-Host "Exists: $(Test-Path $vcpkgBinDir)"
-          if (Test-Path $vcpkgBinDir) {
-            $vcpkgDllCount = (Get-ChildItem "$vcpkgBinDir/*.dll" -ErrorAction SilentlyContinue).Count
-            Write-Host "DLL files in vcpkg bin: $vcpkgDllCount"
-            Write-Host "Copying vcpkg DLLs from: $vcpkgBinDir"
-            $copiedFromVcpkg = 0
-            Get-ChildItem "$vcpkgBinDir/*.dll" -ErrorAction SilentlyContinue | Where-Object {
-              # Exclude CUDA DLLs (delay-loaded) and debug DLLs
-              $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)" -and
-              $_.Name -notmatch "d\.dll$"  # Skip debug versions like opencv_world4d.dll
-            } | ForEach-Object {
-              Copy-Item $_.FullName "$sdkDir/bin/" -Force
-              $copiedFromVcpkg++
-            }
-            Write-Host "Copied $copiedFromVcpkg DLLs from vcpkg to SDK"
-          } else {
-            Write-Host "WARNING: vcpkg bin directory not found: $vcpkgBinDir"
-            # Try to find vcpkg_installed
-            Write-Host "Looking for vcpkg_installed..."
-            Get-ChildItem "${{ github.workspace }}/build" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Host "  $($_.Name)"
-            }
-          }
-
-          Get-ChildItem "$buildDir/*.lib" -ErrorAction SilentlyContinue | ForEach-Object {
-            Copy-Item $_.FullName "$sdkDir/lib/" -Force
-          }
+          $vcpkgBin = "${{ github.workspace }}/build/vcpkg_installed/x64-windows-cuda/bin"
         }
 
-        # Copy headers
-        Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
-
-        # Copy examples - basic (JSON pipelines)
-        if (Test-Path "$examplesDir/basic") {
-          Copy-Item "$examplesDir/basic/*.json" "$sdkDir/examples/basic/" -Force -ErrorAction SilentlyContinue
-        }
-
-        # Copy examples - node (JavaScript examples)
-        if (Test-Path "$examplesDir/node") {
-          Copy-Item "$examplesDir/node/*.js" "$sdkDir/examples/node/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$examplesDir/node/README.md" "$sdkDir/examples/node/" -Force -ErrorAction SilentlyContinue
-        }
-
-        # Copy CUDA examples (for CUDA builds)
-        if ("${{ inputs.cuda }}" -eq "ON" -and (Test-Path "$examplesDir/cuda")) {
-          New-Item -ItemType Directory -Path "$sdkDir/examples/cuda" -Force | Out-Null
-          Copy-Item "$examplesDir/cuda/*.json" "$sdkDir/examples/cuda/" -Force -ErrorAction SilentlyContinue
-        }
-
-        # Copy sample data files
-        if (Test-Path "$dataDir/frame.jpg") {
-          Copy-Item "$dataDir/frame.jpg" "$sdkDir/data/" -Force
-        }
-        if (Test-Path "$dataDir/faces.jpg") {
-          Copy-Item "$dataDir/faces.jpg" "$sdkDir/data/" -Force
-        }
-
-        # Copy SDK README if it exists
-        if (Test-Path "${{ github.workspace }}/docs/SDK_README.md") {
-          Copy-Item "${{ github.workspace }}/docs/SDK_README.md" "$sdkDir/README.md" -Force
-        }
-
-        Write-Host "=== SDK Contents ==="
-        Get-ChildItem "$sdkDir" -Recurse -File | ForEach-Object {
-          $relativePath = $_.FullName.Replace("$sdkDir/", "").Replace("$sdkDir\", "")
-          Write-Host "  $relativePath"
-        }
-
-        # Write SDK contents to a file for debugging (in case logs aren't accessible)
-        $debugFile = "${{ github.workspace }}/sdk_debug.txt"
-        "SDK Debug Info" | Out-File $debugFile
-        "=============" | Out-File $debugFile -Append
-        "DLLs in SDK bin:" | Out-File $debugFile -Append
-        Get-ChildItem "$sdkDir/bin/*.dll" -ErrorAction SilentlyContinue | ForEach-Object {
-          "  $($_.Name)" | Out-File $debugFile -Append
-        }
-        "Total DLLs: $((Get-ChildItem "$sdkDir/bin/*.dll" -ErrorAction SilentlyContinue).Count)" | Out-File $debugFile -Append
+        # Call the SDK packaging script
+        & "${{ github.workspace }}/.github/scripts/package-sdk.ps1" `
+          -SdkDir "${{ github.workspace }}/sdk" `
+          -BuildDir $buildDir `
+          -SourceDir "${{ github.workspace }}" `
+          -Platform "${{ inputs.os }}" `
+          -Cuda "${{ inputs.cuda }}" `
+          -VcpkgBinDir $vcpkgBin `
+          -DebugOutput
 
     - name: Upload SDK artifact
       if: success()
