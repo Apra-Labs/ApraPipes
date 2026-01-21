@@ -8,8 +8,7 @@
       "type": "FileReaderModule",
       "props": {
         "strFullFileNameWithPattern": "./data/frame.jpg",
-        "readLoop": true,
-        "maxIndex": 10,
+        "readLoop": false,
         "outputFrameType": "EncodedImage"
       },
       "comment": "Reads JPEG files - outputs EncodedImage"

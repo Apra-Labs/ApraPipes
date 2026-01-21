@@ -607,7 +607,7 @@ if [ "$TEST_JETSON" = true ]; then
     # run_json_example "$EXAMPLES_DIR/jetson/03_camera_preview.json" "" 0 || true
     # run_json_example "$EXAMPLES_DIR/jetson/04_usb_camera_jpeg.json" "" 0 || true
 
-    run_json_example "$EXAMPLES_DIR/jetson/05_dmabuf_to_host_bridge.json" "" 0 || true
+    # run_json_example "$EXAMPLES_DIR/jetson/05_dmabuf_to_host_bridge.json" "" 0 || true  # Requires camera
     # run_json_example "$EXAMPLES_DIR/jetson/06_camera_h264_stream.json" "" 0 || true  # Requires camera
 
     # Also test Jetson-specific Node.js example if Node.js is available
