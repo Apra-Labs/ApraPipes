@@ -175,7 +175,8 @@ $directories = @(
     "$SdkDir/include",
     "$SdkDir/examples/basic",
     "$SdkDir/examples/node",
-    "$SdkDir/data"
+    "$SdkDir/data",
+    "$SdkDir/data/testOutput"  # Required for examples that write output files
 )
 
 foreach ($dir in $directories) {
