@@ -32,7 +32,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/declarative_test/affine_output/frame_????.bmp"
+        "strFullFileNameWithPattern": "./data/testOutput/affine_frame_????.bmp"
       }
     }
   },

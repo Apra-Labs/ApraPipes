@@ -27,7 +27,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_test/encoded_????.jpg"
+        "strFullFileNameWithPattern": "./data/testOutput/jetson_encoded_????.jpg"
       }
     }
   },

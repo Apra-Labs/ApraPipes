@@ -12,7 +12,7 @@
  *
  * Usage: node examples/node/jetson_l4tm_demo.js
  *
- * Output: Creates re-encoded JPEG files in /tmp/jetson_node_test/
+ * Output: Creates re-encoded JPEG files in ./data/testOutput/
  */
 
 const path = require('path');
@@ -43,7 +43,7 @@ if (!hasL4TM) {
 console.log('L4TM modules available: JPEGDecoderL4TM, JPEGEncoderL4TM');
 
 // Create output directory
-const outputDir = '/tmp/jetson_node_test';
+const outputDir = path.join(__dirname, '../../data/testOutput');
 if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
 }
@@ -124,7 +124,7 @@ async function main() {
     console.log('  JPEGEncoderL4TM (HW encode @ quality=90)');
     console.log('       |');
     console.log('       v');
-    console.log('  FileWriterModule -> /tmp/jetson_node_test/');
+    console.log('  FileWriterModule -> ./data/testOutput/');
     console.log('');
 
     // Create the pipeline

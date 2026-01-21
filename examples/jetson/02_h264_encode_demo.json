@@ -33,7 +33,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_output/encoded.h264"
+        "strFullFileNameWithPattern": "./data/testOutput/jetson_encoded.h264"
       }
     }
   },

@@ -105,12 +105,12 @@ Pipeline:
   JPEGEncoderL4TM (HW encode @ quality=90)
        |
        v
-  FileWriterModule -> /tmp/jetson_node_test/
+  FileWriterModule -> ./data/testOutput/
 
 NvMMLiteBlockCreate : Block : BlockType = 256
 [JPEG Decode] BeginSequence Display WidthxHeight 1920x454
 
-Generated 181 JPEG files in /tmp/jetson_node_test/
+Generated 181 JPEG files in ./data/testOutput/
 Throughput: 60.0 frames/sec (hardware accelerated)
 ```
 
