@@ -17,6 +17,7 @@
 #   --sdk-dir <path>   Use SDK directory structure (for CI)
 #   --json-report <f>  Write JSON report to file
 #   --ci               CI mode: always exit 0, generate report
+#   --timeout <sec>    Timeout per test in seconds (default: 60)
 #   --help             Show this help message
 #
 # Exit codes:
@@ -41,7 +42,7 @@ CLI_PATH="$PROJECT_ROOT/bin/aprapipes_cli"
 EXAMPLES_DIR="$PROJECT_ROOT/examples"
 OUTPUT_DIR="$PROJECT_ROOT/data/testOutput"
 WORK_DIR="$PROJECT_ROOT"  # Directory to run CLI from (for relative paths in JSON)
-RUN_TIMEOUT=30  # seconds timeout for each pipeline
+RUN_TIMEOUT=60  # seconds timeout for each pipeline (configurable via --timeout)
 
 # Options
 TEST_BASIC=true
@@ -190,6 +191,10 @@ while [[ $# -gt 0 ]]; do
             CI_MODE=true
             shift
             ;;
+        --timeout)
+            RUN_TIMEOUT="$2"
+            shift 2
+            ;;
         --help)
             show_help
             ;;
@@ -269,6 +274,7 @@ mkdir -p "$OUTPUT_DIR"
 echo -e "${GREEN}CLI:${NC} $CLI_PATH"
 echo -e "${GREEN}Examples:${NC} $EXAMPLES_DIR"
 echo -e "${GREEN}Output:${NC} $OUTPUT_DIR"
+echo -e "${GREEN}Timeout:${NC} ${RUN_TIMEOUT}s per test"
 echo ""
 echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED, Node=$TEST_NODE"
 
@@ -312,6 +318,16 @@ run_json_example() {
     print_info "PWD: $(pwd)"
     output=$(run_with_timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
     print_info "Exit code: $exit_code"
+
+    # Check for timeout (exit code 124 from GNU timeout)
+    if [[ "$exit_code" -eq 124 ]]; then
+        echo -e "${RED}=== TIMEOUT ===${NC}"
+        echo "Test exceeded ${RUN_TIMEOUT}s timeout limit"
+        print_fail "$example_name (timeout after ${RUN_TIMEOUT}s)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
 
     # Check for CLI launch failure (exit code 127 = command not found / DLL load failure)
     if [[ "$exit_code" -eq 127 ]]; then
@@ -427,6 +443,16 @@ run_node_example() {
 
     cd "$WORK_DIR"
     output=$(run_with_timeout "$RUN_TIMEOUT" node "$js_file" 2>&1) || exit_code=$?
+
+    # Check for timeout (exit code 124 from GNU timeout)
+    if [[ "$exit_code" -eq 124 ]]; then
+        echo -e "${RED}=== TIMEOUT ===${NC}"
+        echo "Test exceeded ${RUN_TIMEOUT}s timeout limit"
+        print_fail "$example_name (timeout after ${RUN_TIMEOUT}s)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
 
     # Check for critical errors
     if [[ $exit_code -ne 0 ]]; then

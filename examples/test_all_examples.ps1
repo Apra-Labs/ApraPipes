@@ -26,6 +26,9 @@
 .PARAMETER VcpkgBin
     Optional path to vcpkg bin directory for additional DLLs.
 
+.PARAMETER Timeout
+    Maximum seconds per test (default: 60). Tests exceeding this are killed and marked failed.
+
 .EXAMPLE
     .\test_all_examples.ps1 -SdkDir "C:\sdk" -JsonReport "C:\report.json" -Basic
 
@@ -50,7 +53,10 @@ param(
     [switch]$CI,
 
     [Parameter(Mandatory=$false)]
-    [string]$VcpkgBin = ""
+    [string]$VcpkgBin = "",
+
+    [Parameter(Mandatory=$false)]
+    [int]$Timeout = 60
 )
 
 $ErrorActionPreference = "Stop"
@@ -171,12 +177,38 @@ foreach ($example in $examples) {
         continue
     }
 
-    Write-Host "[TEST] $example"
+    Write-Host "[TEST] $example (timeout: ${Timeout}s)"
 
     try {
         Push-Location $SdkDir
-        $output = & $cli validate $jsonPath 2>&1
-        $exitCode = $LASTEXITCODE
+
+        # Run CLI with timeout using Start-Process
+        $tempOut = [System.IO.Path]::GetTempFileName()
+        $tempErr = [System.IO.Path]::GetTempFileName()
+
+        $proc = Start-Process -FilePath $cli -ArgumentList "validate", $jsonPath `
+            -NoNewWindow -PassThru `
+            -RedirectStandardOutput $tempOut `
+            -RedirectStandardError $tempErr
+
+        $completed = $proc.WaitForExit($Timeout * 1000)
+
+        if (-not $completed) {
+            # Timeout - kill the process
+            $proc.Kill()
+            $proc.WaitForExit(5000)
+            Pop-Location
+            Write-Host "[FAIL] $example (timeout after ${Timeout}s)"
+            $failed++
+            $results += @{ name = $example; status = "failed"; reason = "timeout" }
+            Remove-Item $tempOut, $tempErr -ErrorAction SilentlyContinue
+            continue
+        }
+
+        $exitCode = $proc.ExitCode
+        $output = Get-Content $tempOut -Raw -ErrorAction SilentlyContinue
+        $errOutput = Get-Content $tempErr -Raw -ErrorAction SilentlyContinue
+        Remove-Item $tempOut, $tempErr -ErrorAction SilentlyContinue
         Pop-Location
 
         if ($exitCode -eq 0) {
@@ -185,6 +217,7 @@ foreach ($example in $examples) {
             $results += @{ name = $example; status = "passed" }
         } else {
             Write-Host "[FAIL] $example (exit code: $exitCode)"
+            if ($errOutput) { Write-Host "  Error: $errOutput" }
             $failed++
             $results += @{ name = $example; status = "failed" }
         }
