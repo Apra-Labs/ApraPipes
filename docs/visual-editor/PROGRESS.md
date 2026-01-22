@@ -2,8 +2,8 @@
 
 > **Last Updated:** 2026-01-22
 > **Current Phase:** Phase 1 - Core Editor (In Progress)
-> **Current Sprint:** Sprint 1.1 - Project Setup & Schema Loading
-> **Next Action:** Continue Sprint 1.1
+> **Current Sprint:** Sprint 1.2 - Module Palette
+> **Next Action:** Implement drag-and-drop from palette to canvas
 
 ---
 
@@ -12,7 +12,7 @@
 | Phase | Status | Completion | Notes |
 |-------|--------|------------|-------|
 | **Planning** | ✅ Complete | 100% | All design docs created |
-| **Phase 1: Core Editor** | 🚧 In Progress | 15% | 3-4 weeks |
+| **Phase 1: Core Editor** | 🚧 In Progress | 30% | 3-4 weeks |
 | **Phase 2: Validation** | ⏳ Not Started | 0% | 2 weeks |
 | **Phase 3: Runtime** | ⏳ Not Started | 0% | 2-3 weeks |
 | **Phase 6: Polish** | ⏳ Not Started | 0% | 2-3 weeks |
@@ -28,7 +28,7 @@
 
 ---
 
-## Phase 1: Core Editor (15% Complete)
+## Phase 1: Core Editor (30% Complete)
 
 ### Sprint 1.1: Project Setup & Schema Loading
 **Status:** ✅ Complete
@@ -52,17 +52,19 @@
 ---
 
 ### Sprint 1.2: Module Palette
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** Week 1
 
-- [ ] ModulePalette component
-- [ ] Fetch schema from API
-- [ ] Group modules by category
-- [ ] Display module cards
-- [ ] Implement drag-and-drop
-- [ ] Generate unique node IDs
+- [x] ModulePalette component (implemented in Sprint 1.1)
+- [x] Fetch schema from API (implemented in Sprint 1.1)
+- [x] Group modules by category (implemented in Sprint 1.1)
+- [x] Display module cards (implemented in Sprint 1.1)
+- [x] Implement drag-and-drop (basic drag in Sprint 1.1)
+- [x] Generate unique node IDs (nanoid)
+- [x] Tests (29/29 passing)
 
-**Blockers:** Depends on Sprint 1.1
+**Blockers:** None
+**Completion:** ✅ Sprint 1.2 COMPLETE
 
 ---
 
