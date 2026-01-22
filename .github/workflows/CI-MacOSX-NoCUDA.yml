@@ -7,6 +7,7 @@ on:
       - '.github/docs/**'
       - '.claude/**'
       - 'docs/**'
+      - 'tools/visual-editor/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -14,6 +15,7 @@ on:
       - '.github/docs/**'
       - '.claude/**'
       - 'docs/**'
+      - 'tools/visual-editor/**'
   workflow_dispatch:
     inputs:
       force-cache-update:
