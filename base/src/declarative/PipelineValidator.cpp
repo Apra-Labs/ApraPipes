@@ -6,6 +6,7 @@
 
 #include "declarative/PipelineValidator.h"
 #include "declarative/ModuleRegistry.h"
+#include "declarative/PathUtils.h"
 #include <sstream>
 #include <set>
 #include <queue>
@@ -182,6 +183,16 @@ PipelineValidator::Result PipelineValidator::validate(const PipelineDescription&
     if (options_.validateGraph) {
         auto graphResult = validateGraph(desc);
         result.merge(graphResult);
+
+        if (options_.stopOnFirstError && result.hasErrors()) {
+            return result;
+        }
+    }
+
+    // Phase 5: Path validation (filesystem checks)
+    if (options_.validatePaths) {
+        auto pathResult = validatePaths(desc);
+        result.merge(pathResult);
     }
 
     // Summary
@@ -860,6 +871,135 @@ PipelineValidator::Result PipelineValidator::validateGraph(const PipelineDescrip
                 "Module is not connected to any other module (orphan)",
                 "Either connect it to the pipeline or remove it"
             ));
+        }
+    }
+
+    return result;
+}
+
+// ============================================================
+// Phase 5: Path validation (filesystem checks)
+// ============================================================
+
+PipelineValidator::Result PipelineValidator::validatePaths(const PipelineDescription& desc) const {
+    Result result;
+    auto& registry = ModuleRegistry::instance();
+
+    if (options_.includeInfoMessages) {
+        result.issues.push_back(Issue::info(
+            "I050",
+            "paths",
+            "Validating path properties..."
+        ));
+    }
+
+    for (const auto& module : desc.modules) {
+        const std::string moduleLocation = "modules." + module.instance_id;
+
+        // Skip path validation if module type is unknown
+        const auto* moduleInfo = registry.getModule(module.module_type);
+        if (!moduleInfo) {
+            continue;
+        }
+
+        // Build map of known properties
+        std::map<std::string, const ModuleInfo::PropInfo*> knownProps;
+        for (const auto& prop : moduleInfo->properties) {
+            knownProps[prop.name] = &prop;
+        }
+
+        // Check each property
+        for (const auto& [propName, propValue] : module.properties) {
+            auto it = knownProps.find(propName);
+            if (it == knownProps.end()) {
+                continue;  // Unknown property - already flagged in property validation
+            }
+
+            const auto& propInfo = *it->second;
+
+            // Skip non-path properties
+            if (propInfo.path_type == PathType::NotAPath) {
+                continue;
+            }
+
+            // Extract string value from property
+            std::string pathValue;
+            if (std::holds_alternative<std::string>(propValue)) {
+                pathValue = std::get<std::string>(propValue);
+            } else {
+                // Not a string - skip (type mismatch already caught)
+                continue;
+            }
+
+            const std::string propLocation = moduleLocation + ".props." + propName;
+
+            // Validate the path
+            auto pathResult = path_utils::validatePath(
+                pathValue,
+                propInfo.path_type,
+                propInfo.path_requirement
+            );
+
+            // Report issues
+            if (!pathResult.valid) {
+                // Determine the appropriate error code
+                std::string errorCode;
+                if (pathResult.error.find("does not exist") != std::string::npos) {
+                    if (pathResult.error.find("Parent") != std::string::npos ||
+                        pathResult.error.find("Directory") != std::string::npos) {
+                        errorCode = Issue::PATH_PARENT_NOT_FOUND;
+                    } else {
+                        errorCode = Issue::PATH_NOT_FOUND;
+                    }
+                } else if (pathResult.error.find("not writable") != std::string::npos) {
+                    errorCode = Issue::PATH_NOT_WRITABLE;
+                } else if (pathResult.error.find("Failed to create") != std::string::npos) {
+                    errorCode = Issue::PATH_CREATE_FAILED;
+                } else if (pathResult.error.find("not a file") != std::string::npos) {
+                    errorCode = Issue::PATH_NOT_FILE;
+                } else if (pathResult.error.find("not a directory") != std::string::npos) {
+                    errorCode = Issue::PATH_NOT_DIR;
+                } else {
+                    errorCode = Issue::PATH_NOT_FOUND;  // Default
+                }
+
+                // Path errors are always errors (filesystem issues need to be fixed)
+                result.issues.push_back(Issue::error(
+                    errorCode,
+                    propLocation,
+                    pathResult.error,
+                    "Check that the path exists and is accessible"
+                ));
+            }
+
+            // Report warnings
+            if (!pathResult.warning.empty()) {
+                std::string warningCode;
+                if (pathResult.warning.find("No files match") != std::string::npos) {
+                    warningCode = Issue::PATH_NO_PATTERN_MATCHES;
+                } else if (pathResult.warning.find("already exists") != std::string::npos ||
+                           pathResult.warning.find("will be overwritten") != std::string::npos) {
+                    warningCode = Issue::PATH_ALREADY_EXISTS;
+                } else {
+                    warningCode = Issue::PATH_NO_PATTERN_MATCHES;  // Default warning
+                }
+
+                result.issues.push_back(Issue::warning(
+                    warningCode,
+                    propLocation,
+                    pathResult.warning,
+                    ""
+                ));
+            }
+
+            // Log directory creation
+            if (pathResult.directory_created && options_.includeInfoMessages) {
+                result.issues.push_back(Issue::info(
+                    "I051",
+                    propLocation,
+                    "Created directory: " + path_utils::parentPath(pathResult.normalized_path)
+                ));
+            }
         }
     }
 

@@ -341,6 +341,27 @@ int cmdRun(const std::string& filepath,
 
         std::cout << "Pipeline running. Press Ctrl+C to stop.\n";
 
+        // Wait for source modules to start running (avoid race condition)
+        // Threads need time to start and set mRunning = true
+        bool sourcesStarted = false;
+        int startupWaitMs = 0;
+        const int maxStartupWaitMs = 5000;  // 5 second timeout for startup
+        while (g_running && !sourcesStarted && startupWaitMs < maxStartupWaitMs) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            startupWaitMs += 50;
+            // Check if at least one source has started
+            for (const auto& src : sourceModules) {
+                if (src && src->isModuleRunning()) {
+                    sourcesStarted = true;
+                    break;
+                }
+            }
+        }
+
+        if (!sourcesStarted && !sourceModules.empty()) {
+            std::cerr << "Warning: Source modules did not start within timeout\n";
+        }
+
         while (g_running) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

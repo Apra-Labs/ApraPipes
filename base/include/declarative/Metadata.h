@@ -33,6 +33,31 @@ enum class ModuleCategory {
     Utility       // Helper modules (queue, tee, mux)
 };
 
+// ============================================================
+// Path Type - Semantic type for file/directory path properties
+// ============================================================
+enum class PathType {
+    NotAPath,        // Regular string, not a filesystem path
+    FilePath,        // Single file: /path/to/file.mp4
+    DirectoryPath,   // Directory: /path/to/folder/
+    FilePattern,     // File with wildcards: frame_????.jpg
+    GlobPattern,     // Glob pattern: *.mp4
+    DevicePath,      // Device file: /dev/video0
+    NetworkURL       // Network URL: rtsp://host/stream (not filesystem)
+};
+
+// ============================================================
+// Path Requirement - Existence and access requirements for paths
+// ============================================================
+enum class PathRequirement {
+    NoValidation,    // No validation (for NotAPath or NetworkURL)
+    MustExist,       // Path must exist at pipeline start (readers)
+    MayExist,        // Path may or may not exist (overwriting writers)
+    MustNotExist,    // Path must NOT exist (strict non-overwriting mode)
+    ParentMustExist, // Parent directory must exist, file may not (writers)
+    WillBeCreated    // Framework creates parent directories if needed (writers)
+};
+
 // Use the canonical types from existing headers - no duplication
 using MemType = FrameMetadata::MemType;
 using ImageType = ImageMetadata::ImageType;
@@ -253,6 +278,10 @@ struct PropDef {
     // Documentation
     std::string_view description = "";
     std::string_view unit = "";  // e.g., "ms", "percent", "pixels"
+
+    // Path metadata - for file/directory path properties
+    PathType path_type = PathType::NotAPath;
+    PathRequirement path_requirement = PathRequirement::NoValidation;
 
     // Default constructor
     constexpr PropDef() = default;
@@ -571,6 +600,143 @@ struct PropDef {
         p.enum_value_count = 4;
         p.description = desc;
         return p;
+    }
+
+    // ========================================================
+    // Path property factories
+    // Use these for properties that are file/directory paths
+    // ========================================================
+
+    // Single file path (e.g., /path/to/video.mp4)
+    static constexpr PropDef FilePath(
+        std::string_view name,
+        PathRequirement requirement,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::FilePath;
+        p.path_requirement = requirement;
+        p.description = desc;
+        return p;
+    }
+
+    // Directory path (e.g., /path/to/folder/)
+    static constexpr PropDef DirectoryPath(
+        std::string_view name,
+        PathRequirement requirement,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::DirectoryPath;
+        p.path_requirement = requirement;
+        p.description = desc;
+        return p;
+    }
+
+    // File pattern with wildcards (e.g., frame_????.jpg)
+    static constexpr PropDef FilePattern(
+        std::string_view name,
+        PathRequirement requirement,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::FilePattern;
+        p.path_requirement = requirement;
+        p.description = desc;
+        return p;
+    }
+
+    // Glob pattern (e.g., *.mp4)
+    static constexpr PropDef GlobPattern(
+        std::string_view name,
+        PathRequirement requirement,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::GlobPattern;
+        p.path_requirement = requirement;
+        p.description = desc;
+        return p;
+    }
+
+    // Device path (e.g., /dev/video0)
+    static constexpr PropDef DevicePath(
+        std::string_view name,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::DevicePath;
+        p.path_requirement = PathRequirement::MustExist;  // Device must exist
+        p.description = desc;
+        return p;
+    }
+
+    // Network URL (e.g., rtsp://host/stream) - no filesystem validation
+    static constexpr PropDef NetworkURL(
+        std::string_view name,
+        std::string_view default_val = "",
+        std::string_view desc = "",
+        Mutability mut = Mutability::Static
+    ) {
+        PropDef p;
+        p.name = name;
+        p.type = Type::Text;
+        p.mutability = mut;
+        p.required = default_val.empty();
+        p.string_default = default_val;
+        p.path_type = PathType::NetworkURL;
+        p.path_requirement = PathRequirement::NoValidation;  // No filesystem validation
+        p.description = desc;
+        return p;
+    }
+
+    // ========================================================
+    // Helper to check if this property is a path type
+    // ========================================================
+    constexpr bool isPath() const {
+        return path_type != PathType::NotAPath && path_type != PathType::NetworkURL;
+    }
+
+    constexpr bool isFilesystemPath() const {
+        return path_type == PathType::FilePath ||
+               path_type == PathType::DirectoryPath ||
+               path_type == PathType::FilePattern ||
+               path_type == PathType::GlobPattern;
     }
 };
 

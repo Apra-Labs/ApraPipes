@@ -7,9 +7,8 @@
     "reader": {
       "type": "FileReaderModule",
       "props": {
-        "strFullFileNameWithPattern": "./data/frame_????.jpg",
+        "strFullFileNameWithPattern": "./data/frame.jpg",
         "readLoop": false,
-        "maxIndex": 100,
         "outputFrameType": "EncodedImage"
       }
     },
@@ -34,7 +33,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_output/encoded.h264"
+        "strFullFileNameWithPattern": "./data/testOutput/jetson_encoded.h264"
       }
     }
   },

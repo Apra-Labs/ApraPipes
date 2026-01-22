@@ -282,7 +282,7 @@ jobs:
           ${{ github.workspace }}/data/SaveOrCompareFail/**
       
 
-    - name: Upload build logs 
+    - name: Upload build logs
       if:  ${{ always() }} # only upload logs when we have a failure above
       uses: actions/upload-artifact@v4
       with:
@@ -292,5 +292,72 @@ jobs:
           ${{ github.workspace }}/vcpkg/buildtrees/**/*.txt
           ${{ github.workspace }}/vcpkg_installed/vcpkg/*
 
+    - name: Package SDK artifact
+      if: ${{ success() && !inputs.is-prep-phase }}
+      shell: pwsh
+      run: |
+        & "${{ github.workspace }}/.github/scripts/package-sdk.ps1" `
+          -SdkDir "${{ github.workspace }}/sdk" `
+          -BuildDir "${{ github.workspace }}/build" `
+          -SourceDir "${{ github.workspace }}" `
+          -Platform arm64 `
+          -Cuda "${{ inputs.cuda }}" `
+          -Jetson ON `
+          -DebugOutput
 
+    - name: Upload SDK artifact
+      if: ${{ success() && !inputs.is-prep-phase }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: aprapipes-sdk-linux-arm64
+        path: ${{ github.workspace }}/sdk/
+        retention-days: 7
 
+    #=========================================================================
+    # INTEGRATION TESTS (Basic JSON - strict)
+    #=========================================================================
+    - name: Run integration tests (basic)
+      if: ${{ success() && !inputs.is-prep-phase }}
+      run: |
+        chmod +x examples/test_all_examples.sh
+        ./examples/test_all_examples.sh \
+          --basic \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_basic.json" \
+          --ci
+
+    #=========================================================================
+    # INTEGRATION TESTS (Node.js - soft, has platform-specific timeout issues)
+    #=========================================================================
+    - name: Run integration tests (Node.js)
+      if: ${{ success() && !inputs.is-prep-phase }}
+      continue-on-error: true
+      run: |
+        ./examples/test_all_examples.sh \
+          --node \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_node.json" \
+          --ci
+
+    #=========================================================================
+    # INTEGRATION TESTS (Jetson - strict)
+    #=========================================================================
+    - name: Run integration tests (Jetson)
+      if: ${{ success() && !inputs.is-prep-phase }}
+      run: |
+        ./examples/test_all_examples.sh \
+          --jetson \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_jetson.json" \
+          --ci
+
+    - name: Upload integration reports
+      if: ${{ always() && !inputs.is-prep-phase }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationReport_${{ inputs.flav }}
+        path: |
+          ${{ github.workspace }}/integration_report_basic.json
+          ${{ github.workspace }}/integration_report_node.json
+          ${{ github.workspace }}/integration_report_jetson.json
+      continue-on-error: true

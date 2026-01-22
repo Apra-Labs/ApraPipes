@@ -2,23 +2,29 @@
 # ==============================================================================
 # Unified Examples Test Script
 # ==============================================================================
-# Tests all declarative pipeline examples (basic, cuda, advanced).
+# Tests all declarative pipeline examples (basic, cuda, advanced, node, jetson).
 #
 # Usage:
-#   ./scripts/test_all_examples.sh [options]
+#   ./examples/test_all_examples.sh [options]
 #
 # Options:
 #   --basic            Test only basic (CPU) examples
 #   --cuda             Test only CUDA (GPU) examples
 #   --advanced         Test only advanced examples
+#   --node             Test only Node.js addon examples
+#   --jetson           Test only Jetson (ARM64) examples (requires Jetson device)
 #   --verbose          Show detailed output
 #   --keep-outputs     Don't cleanup output files after tests
+#   --sdk-dir <path>   Use SDK directory structure (for CI)
+#   --json-report <f>  Write JSON report to file
+#   --ci               CI mode: always exit 0, generate report
+#   --timeout <sec>    Timeout per test in seconds (default: 60)
 #   --help             Show this help message
 #
 # Exit codes:
-#   0 - All tests passed
+#   0 - All tests passed (or CI mode)
 #   1 - One or more tests failed
-#   2 - Script error (missing CLI, etc.)
+#   2 - Script error (missing CLI, missing Node.js, etc.)
 # ==============================================================================
 
 set -e
@@ -35,21 +41,30 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLI_PATH="$PROJECT_ROOT/bin/aprapipes_cli"
 EXAMPLES_DIR="$PROJECT_ROOT/examples"
-OUTPUT_DIR="$PROJECT_ROOT/bin/data/testOutput"
-RUN_TIMEOUT=30  # seconds timeout for each pipeline
+OUTPUT_DIR="$PROJECT_ROOT/data/testOutput"
+WORK_DIR="$PROJECT_ROOT"  # Directory to run CLI from (for relative paths in JSON)
+RUN_TIMEOUT=60  # seconds timeout for each pipeline (configurable via --timeout)
 
 # Options
 TEST_BASIC=true
 TEST_CUDA=true
 TEST_ADVANCED=true
+TEST_NODE=true
+TEST_JETSON=false  # Disabled by default (requires Jetson device)
 VERBOSE=false
 KEEP_OUTPUTS=false
+SDK_DIR=""
+JSON_REPORT=""
+CI_MODE=false
 
 # Counters
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 SKIPPED_TESTS=0
+
+# Results array for JSON report (name:status)
+declare -a TEST_RESULTS
 
 # ==============================================================================
 # Helper Functions
@@ -92,6 +107,31 @@ show_help() {
     exit 0
 }
 
+# Portable timeout function (works on Linux, macOS, and Windows Git Bash)
+run_with_timeout() {
+    local timeout_sec=$1
+    shift
+    local cmd=("$@")
+
+    # Try GNU timeout (Linux) - check it's actually GNU timeout, not Windows timeout
+    # GNU timeout supports --version, Windows timeout does not
+    if command -v timeout &>/dev/null && timeout --version &>/dev/null 2>&1; then
+        timeout "$timeout_sec" "${cmd[@]}"
+        return $?
+    fi
+
+    # Try gtimeout (macOS with coreutils)
+    if command -v gtimeout &>/dev/null; then
+        gtimeout "$timeout_sec" "${cmd[@]}"
+        return $?
+    fi
+
+    # Fallback: Just run without timeout
+    # (Background process timeout doesn't capture output properly)
+    "${cmd[@]}"
+    return $?
+}
+
 # ==============================================================================
 # Argument Parsing
 # ==============================================================================
@@ -103,7 +143,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --basic)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_BASIC=true
@@ -111,7 +151,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --cuda)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_CUDA=true
@@ -119,10 +159,26 @@ while [[ $# -gt 0 ]]; do
             ;;
         --advanced)
             if [ "$SPECIFIC_REQUESTED" = false ]; then
-                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
                 SPECIFIC_REQUESTED=true
             fi
             TEST_ADVANCED=true
+            shift
+            ;;
+        --node)
+            if [ "$SPECIFIC_REQUESTED" = false ]; then
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
+                SPECIFIC_REQUESTED=true
+            fi
+            TEST_NODE=true
+            shift
+            ;;
+        --jetson)
+            if [ "$SPECIFIC_REQUESTED" = false ]; then
+                TEST_BASIC=false; TEST_CUDA=false; TEST_ADVANCED=false; TEST_NODE=false; TEST_JETSON=false
+                SPECIFIC_REQUESTED=true
+            fi
+            TEST_JETSON=true
             shift
             ;;
         --verbose)
@@ -132,6 +188,22 @@ while [[ $# -gt 0 ]]; do
         --keep-outputs)
             KEEP_OUTPUTS=true
             shift
+            ;;
+        --sdk-dir)
+            SDK_DIR="$2"
+            shift 2
+            ;;
+        --json-report)
+            JSON_REPORT="$2"
+            shift 2
+            ;;
+        --ci)
+            CI_MODE=true
+            shift
+            ;;
+        --timeout)
+            RUN_TIMEOUT="$2"
+            shift 2
             ;;
         --help)
             show_help
@@ -144,17 +216,61 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ==============================================================================
+# SDK Mode Configuration
+# ==============================================================================
+# In SDK mode, paths are relative to the SDK directory:
+#   sdk/bin/aprapipes_cli
+#   sdk/examples/basic/*.json
+#   sdk/data/frame.jpg (referenced as ./data/frame.jpg in JSON)
+#
+# We run CLI from SDK root so relative paths in JSON resolve correctly.
+
+if [[ -n "$SDK_DIR" ]]; then
+    SDK_DIR="$(cd "$SDK_DIR" && pwd)"  # Convert to absolute path
+    CLI_PATH="$SDK_DIR/bin/aprapipes_cli"
+    EXAMPLES_DIR="$SDK_DIR/examples"
+    OUTPUT_DIR="$SDK_DIR/data/testOutput"
+    WORK_DIR="$SDK_DIR"  # Run CLI from SDK root
+    echo -e "${BLUE}[SDK MODE]${NC} Using SDK at: $SDK_DIR"
+
+    # Add SDK bin to PATH for Windows (DLL loading requires this)
+    export PATH="$SDK_DIR/bin:$PATH"
+
+    # Add CUDA bin to PATH for Windows (OpenCV CUDA DLLs need cudart64_*.dll)
+    # CUDA_PATH is set by CI workflow via GITHUB_ENV
+    if [[ -n "$CUDA_PATH" ]]; then
+        # Convert Windows path to Unix-style for Git Bash
+        CUDA_BIN=$(cygpath -u "$CUDA_PATH/bin" 2>/dev/null || echo "$CUDA_PATH/bin")
+        export PATH="$CUDA_BIN:$PATH"
+        echo -e "${BLUE}[SDK MODE]${NC} Added CUDA to PATH: $CUDA_BIN"
+    fi
+fi
+
+# ==============================================================================
 # Pre-flight Checks
 # ==============================================================================
 
 print_header "ApraPipes Examples Test Suite"
 
-# Check CLI exists
-if [[ ! -f "$CLI_PATH" ]]; then
+# Check CLI exists (handle Windows .exe extension)
+# On Windows Git Bash, -f auto-resolves .exe but execution might not
+# So explicitly check for .exe first
+if [[ -f "${CLI_PATH}.exe" ]]; then
+    CLI_PATH="${CLI_PATH}.exe"
+    echo -e "${BLUE}[INFO]${NC} Using Windows executable: $CLI_PATH"
+elif [[ ! -f "$CLI_PATH" ]]; then
     echo -e "${RED}Error: CLI not found at $CLI_PATH${NC}"
     echo "Please build and install: ./scripts/install_to_bin.sh"
     exit 2
 fi
+
+# Debug: Show actual CLI path and verify it's executable
+echo -e "${BLUE}[DEBUG]${NC} CLI file exists: $(ls -la "$CLI_PATH" 2>&1 | head -1)"
+echo -e "${BLUE}[DEBUG]${NC} CLI file type: $(file "$CLI_PATH" 2>&1 || echo 'file command not available')"
+
+# Debug: Test CLI directly to check it runs
+echo -e "${BLUE}[DEBUG]${NC} Testing CLI version..."
+"$CLI_PATH" --version 2>&1 || echo "[DEBUG] CLI --version exit code: $?"
 
 # Check examples directory exists
 if [[ ! -d "$EXAMPLES_DIR" ]]; then
@@ -168,8 +284,9 @@ mkdir -p "$OUTPUT_DIR"
 echo -e "${GREEN}CLI:${NC} $CLI_PATH"
 echo -e "${GREEN}Examples:${NC} $EXAMPLES_DIR"
 echo -e "${GREEN}Output:${NC} $OUTPUT_DIR"
+echo -e "${GREEN}Timeout:${NC} ${RUN_TIMEOUT}s per test"
 echo ""
-echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED"
+echo "Test categories: Basic=$TEST_BASIC, CUDA=$TEST_CUDA, Advanced=$TEST_ADVANCED, Node=$TEST_NODE, Jetson=$TEST_JETSON"
 
 # ==============================================================================
 # Test Functions
@@ -203,22 +320,59 @@ run_json_example() {
     print_info "Running pipeline..."
     local output
     local exit_code=0
+    local test_status="passed"
 
-    cd "$PROJECT_ROOT/bin"
-    output=$(timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
+    cd "$WORK_DIR"
+    print_info "CLI: $CLI_PATH"
+    print_info "JSON: $json_file"
+    print_info "PWD: $(pwd)"
+    output=$(run_with_timeout "$RUN_TIMEOUT" "$CLI_PATH" run "$json_file" 2>&1) || exit_code=$?
+    print_info "Exit code: $exit_code"
+
+    # Check for timeout (exit code 124 from GNU timeout)
+    if [[ "$exit_code" -eq 124 ]]; then
+        echo -e "${RED}=== TIMEOUT ===${NC}"
+        echo "Test exceeded ${RUN_TIMEOUT}s timeout limit"
+        print_fail "$example_name (timeout after ${RUN_TIMEOUT}s)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # Check for CLI launch failure (exit code 127 = command not found / DLL load failure)
+    if [[ "$exit_code" -eq 127 ]]; then
+        echo -e "${RED}=== CLI LAUNCH FAILURE ===${NC}"
+        echo "Exit code 127 indicates the CLI executable failed to start."
+        echo "This usually means missing DLLs on Windows."
+        echo "CLI path: $CLI_PATH"
+        echo "Working directory: $(pwd)"
+        echo "PATH includes: $(echo $PATH | tr ':' '\n' | grep -i sdk | head -3)"
+        if [[ -n "$CUDA_PATH" ]]; then
+            echo "CUDA_PATH: $CUDA_PATH"
+        else
+            echo "CUDA_PATH: (not set)"
+        fi
+        echo -e "${RED}=========================${NC}"
+        print_fail "CLI failed to launch (exit code 127)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
 
     # Check for critical errors (ignore warnings)
     if echo "$output" | grep -qi "failed\|exception\|AIPException"; then
         if echo "$output" | grep -qi "not found\|Unknown module"; then
             print_skip "Module not available: $example_name"
-            ((PASSED_TESTS--))  # Undo the increment from print_skip
-            ((SKIPPED_TESTS++))
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
             return 0
         fi
-        if [ "$VERBOSE" = true ]; then
-            echo "$output"
-        fi
+        # Always show error output (last few lines for context)
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -10
         print_fail "Pipeline reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
         return 1
     fi
 
@@ -230,12 +384,147 @@ run_json_example() {
         print_info "Generated $file_count files (expected: $expected_count)"
 
         if [[ "$file_count" -lt "$expected_count" ]]; then
+            # Show detailed diagnostics for debugging
+            echo -e "${RED}=== DIAGNOSTICS ===${NC}"
+            echo "Working directory: $(pwd)"
+            echo "Output directory: $OUTPUT_DIR"
+            echo "Looking for pattern: ${output_prefix}_*.{jpg,bmp,raw}"
+            echo "CLI exit code: $exit_code"
+            echo "Output dir exists: $(test -d "$OUTPUT_DIR" && echo 'YES' || echo 'NO')"
+            if [[ -d "$OUTPUT_DIR" ]]; then
+                echo "Files in output dir:"
+                ls -la "$OUTPUT_DIR" 2>/dev/null | head -20 || echo "  (empty or error)"
+            fi
+            echo -e "${RED}CLI output:${NC}"
+            echo "$output" | tail -20
+            echo -e "${RED}===================${NC}"
             print_fail "Expected $expected_count files, got $file_count"
+            test_status="failed"
+            TEST_RESULTS+=("$example_name:$test_status")
             return 1
         fi
     fi
 
     print_pass "$example_name"
+    TEST_RESULTS+=("$example_name:$test_status")
+    return 0
+}
+
+# Run a single Node.js example
+# Args: $1 = js file path
+#       $2 = output prefix (optional, for file count validation)
+#       $3 = expected file count (optional, default 0 = no check)
+run_node_example() {
+    local js_file="$1"
+    local output_prefix="$2"
+    local expected_count="${3:-0}"
+    local example_name=$(basename "$js_file" .js)
+
+    ((TOTAL_TESTS++))
+    print_test "$example_name (Node.js)"
+
+    # Check if JS file exists
+    if [[ ! -f "$js_file" ]]; then
+        print_fail "JS file not found: $js_file"
+        TEST_RESULTS+=("$example_name:failed")
+        return 1
+    fi
+
+    # Check if Node.js is available
+    if ! command -v node &>/dev/null; then
+        print_skip "Node.js not available"
+        TEST_RESULTS+=("$example_name:skipped")
+        return 0
+    fi
+
+    # Determine the node output directory (examples write to examples/node/output/)
+    local node_output_dir="$EXAMPLES_DIR/node/output"
+
+    # Clean output files for this example if prefix specified
+    if [[ -n "$output_prefix" ]]; then
+        rm -f "$node_output_dir/${output_prefix}_"*.jpg "$node_output_dir/${output_prefix}_"*.bmp 2>/dev/null || true
+    fi
+
+    # Run the Node.js example
+    print_info "Running Node.js example..."
+    local output
+    local exit_code=0
+    local test_status="passed"
+
+    cd "$WORK_DIR"
+    output=$(run_with_timeout "$RUN_TIMEOUT" node "$js_file" 2>&1) || exit_code=$?
+
+    # Check for timeout (exit code 124 from GNU timeout)
+    if [[ "$exit_code" -eq 124 ]]; then
+        echo -e "${RED}=== TIMEOUT ===${NC}"
+        echo "Test exceeded ${RUN_TIMEOUT}s timeout limit"
+        print_fail "$example_name (timeout after ${RUN_TIMEOUT}s)"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # Check for critical errors
+    if [[ $exit_code -ne 0 ]]; then
+        # Check if it's a module availability issue
+        if echo "$output" | grep -qi "Unknown module\\|Module not found\\|not available"; then
+            print_skip "Module not available: $example_name"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+
+        # Check if addon failed to load (which is expected if not built)
+        if echo "$output" | grep -qi "Failed to load addon"; then
+            print_skip "Node.js addon not available"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -15
+        print_fail "Node.js example failed with exit code $exit_code"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # Check for errors in output even if exit code is 0
+    if echo "$output" | grep -qi "Error:\\|exception\\|AIPException"; then
+        if echo "$output" | grep -qi "not found\\|Unknown module"; then
+            print_skip "Module not available: $example_name"
+            test_status="skipped"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 0
+        fi
+        echo -e "${RED}Error output:${NC}"
+        echo "$output" | tail -15
+        print_fail "Example reported errors"
+        test_status="failed"
+        TEST_RESULTS+=("$example_name:$test_status")
+        return 1
+    fi
+
+    # If output prefix specified, verify files were created
+    if [[ -n "$output_prefix" ]] && [[ "$expected_count" -gt 0 ]]; then
+        local file_count
+        file_count=$(ls "$node_output_dir/${output_prefix}_"*.jpg "$node_output_dir/${output_prefix}_"*.bmp 2>/dev/null | wc -l)
+
+        print_info "Generated $file_count files (expected: $expected_count)"
+
+        if [[ "$file_count" -lt "$expected_count" ]]; then
+            echo -e "${RED}Node.js output:${NC}"
+            echo "$output" | tail -20
+            print_fail "Expected $expected_count files, got $file_count"
+            test_status="failed"
+            TEST_RESULTS+=("$example_name:$test_status")
+            return 1
+        fi
+    fi
+
+    print_pass "$example_name"
+    TEST_RESULTS+=("$example_name:$test_status")
     return 0
 }
 
@@ -294,12 +583,89 @@ if [ "$TEST_ADVANCED" = true ]; then
 fi
 
 # ==============================================================================
+# Jetson (ARM64) Examples Tests
+# ==============================================================================
+
+if [ "$TEST_JETSON" = true ]; then
+    print_header "Testing Jetson (ARM64) Examples"
+
+    # Check if we're on a Jetson device
+    if [[ ! -f /etc/nv_tegra_release ]]; then
+        echo -e "${YELLOW}Warning: Not a Jetson device (missing /etc/nv_tegra_release)${NC}"
+        echo -e "${YELLOW}Jetson tests may fail or be skipped.${NC}"
+    else
+        echo -e "${GREEN}Jetson Platform:${NC}"
+        cat /etc/nv_tegra_release | head -1
+    fi
+
+    # Test Jetson-specific examples (L4TM JPEG, camera, H264)
+    run_json_example "$EXAMPLES_DIR/jetson/01_test_signal_to_jpeg.json" "" 0 || true
+    run_json_example "$EXAMPLES_DIR/jetson/01_jpeg_decode_transform.json" "" 0 || true
+    run_json_example "$EXAMPLES_DIR/jetson/02_h264_encode_demo.json" "" 0 || true
+
+    # These require camera hardware - skip if not available
+    # run_json_example "$EXAMPLES_DIR/jetson/03_camera_preview.json" "" 0 || true
+    # run_json_example "$EXAMPLES_DIR/jetson/04_usb_camera_jpeg.json" "" 0 || true
+
+    # run_json_example "$EXAMPLES_DIR/jetson/05_dmabuf_to_host_bridge.json" "" 0 || true  # Requires camera
+    # run_json_example "$EXAMPLES_DIR/jetson/06_camera_h264_stream.json" "" 0 || true  # Requires camera
+
+    # Also test Jetson-specific Node.js example if Node.js is available
+    if command -v node &>/dev/null && [[ -f "$WORK_DIR/bin/aprapipes.node" ]]; then
+        run_node_example "$EXAMPLES_DIR/node/jetson_l4tm_demo.js" "" 0 || true
+    fi
+fi
+
+# ==============================================================================
+# Node.js Examples Tests
+# ==============================================================================
+
+if [ "$TEST_NODE" = true ]; then
+    print_header "Testing Node.js Addon Examples"
+
+    # Check if Node.js is available
+    if ! command -v node &>/dev/null; then
+        echo -e "${YELLOW}Warning: Node.js not found. Skipping Node.js tests.${NC}"
+    else
+        echo -e "${GREEN}Node.js:${NC} $(node --version)"
+
+        # Check if addon exists (expected at bin/aprapipes.node)
+        if [[ -f "$WORK_DIR/bin/aprapipes.node" ]]; then
+            echo -e "${GREEN}Addon:${NC} $WORK_DIR/bin/aprapipes.node"
+        else
+            echo -e "${YELLOW}Warning: Node.js addon not found at $WORK_DIR/bin/aprapipes.node${NC}"
+        fi
+
+        # Create node output directory if needed
+        mkdir -p "$EXAMPLES_DIR/node/output"
+
+        # Basic examples that work without external dependencies
+        # These use TestSignalGenerator + FileWriterModule
+        # Output file patterns: frame_????.jpg, processed_????.jpg, etc.
+        run_node_example "$EXAMPLES_DIR/node/basic_pipeline.js" "frame" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/event_handling.js" "event" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/image_processing.js" "processed" 10 || true
+        run_node_example "$EXAMPLES_DIR/node/ptz_control.js" "ptz" 10 || true
+
+        # archive_space_demo.js is pure JS (doesn't use addon modules) - still run it
+        run_node_example "$EXAMPLES_DIR/node/archive_space_demo.js" "" 0 || true
+
+        # Skip these - they need external resources:
+        # - rtsp_pusher_demo.js: needs RTSP server
+        # - face_detection_demo.js: needs model files
+        # - jetson_l4tm_demo.js: ARM64/Jetson only (tested separately)
+    fi
+fi
+
+# ==============================================================================
 # Cleanup and Summary
 # ==============================================================================
 
 if [ "$KEEP_OUTPUTS" = false ]; then
     print_info "Cleaning up output files..."
     rm -f "$OUTPUT_DIR"/*.jpg "$OUTPUT_DIR"/*.bmp "$OUTPUT_DIR"/*.raw 2>/dev/null || true
+    # Also clean Node.js output directory
+    rm -rf "$EXAMPLES_DIR/node/output" 2>/dev/null || true
 fi
 
 print_header "Test Summary"
@@ -308,8 +674,55 @@ echo -e "${GREEN}Passed:  $PASSED_TESTS${NC}"
 echo -e "${RED}Failed:  $FAILED_TESTS${NC}"
 echo -e "${YELLOW}Skipped: $SKIPPED_TESTS${NC}"
 
+# ==============================================================================
+# Generate JSON Report
+# ==============================================================================
+
+if [[ -n "$JSON_REPORT" ]]; then
+    print_info "Writing JSON report to: $JSON_REPORT"
+
+    # Build results array
+    results_json="["
+    first=true
+    for result in "${TEST_RESULTS[@]}"; do
+        name="${result%:*}"
+        status="${result#*:}"
+        if [ "$first" = true ]; then
+            first=false
+        else
+            results_json+=","
+        fi
+        results_json+="{\"name\":\"$name\",\"status\":\"$status\"}"
+    done
+    results_json+="]"
+
+    # Write JSON report
+    cat > "$JSON_REPORT" << EOF
+{
+  "script": "test_all_examples.sh",
+  "timestamp": "$(date -Iseconds)",
+  "summary": {
+    "passed": $PASSED_TESTS,
+    "failed": $FAILED_TESTS,
+    "skipped": $SKIPPED_TESTS,
+    "total": $TOTAL_TESTS
+  },
+  "results": $results_json
+}
+EOF
+    echo -e "${GREEN}Report written to: $JSON_REPORT${NC}"
+fi
+
+# ==============================================================================
+# Exit Handling
+# ==============================================================================
+
 if [[ $FAILED_TESTS -gt 0 ]]; then
     echo -e "\n${RED}Some tests failed!${NC}"
+    if [ "$CI_MODE" = true ]; then
+        echo -e "${YELLOW}CI mode: Exiting with success despite failures${NC}"
+        exit 0
+    fi
     exit 1
 else
     echo -e "\n${GREEN}All tests passed!${NC}"

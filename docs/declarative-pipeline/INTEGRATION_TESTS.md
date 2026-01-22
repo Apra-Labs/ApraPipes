@@ -12,32 +12,26 @@
 
 ## Test Script
 
-Run integration tests with:
+Run integration tests with the unified test script:
 ```bash
-# Full test (runs pipelines)
-./examples/test_declarative_pipelines.sh
+# Run all tests (basic, cuda, advanced, node)
+./examples/test_all_examples.sh
 
-# Validate only (no runtime execution)
-./examples/test_declarative_pipelines.sh --validate-only
+# Run specific test categories
+./examples/test_all_examples.sh --basic    # CPU-only examples
+./examples/test_all_examples.sh --cuda     # GPU examples
+./examples/test_all_examples.sh --jetson   # Jetson ARM64 examples
+./examples/test_all_examples.sh --node     # Node.js examples
 
 # Verbose output
-./examples/test_declarative_pipelines.sh --verbose
+./examples/test_all_examples.sh --basic --verbose
 
-# Test specific pipeline
-./examples/test_declarative_pipelines.sh --pipeline "affine"
+# CI mode (JSON report, always exit 0)
+./examples/test_all_examples.sh --basic --json-report report.json --ci
 ```
 
-### Runtime Modes
-- **Node.js** (preferred): Uses `aprapipes.node` addon via `pipeline_test_runner.js`
-- **CLI** (fallback): Uses `aprapipes_cli` executable
-
-The script auto-detects available runtimes and selects the best option.
-
-### Linux Notes
-On Linux, the script automatically preloads GTK3 for the Node.js addon:
-```bash
-export LD_PRELOAD=/lib/x86_64-linux-gnu/libgtk-3.so.0
-```
+### Runtime
+The script uses `aprapipes_cli run` to execute JSON pipeline files with a configurable timeout (default 60s).
 
 ---
 

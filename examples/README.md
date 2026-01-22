@@ -8,12 +8,12 @@ This directory contains example pipelines demonstrating the declarative JSON-bas
 examples/
 ├── basic/              # Simple working examples (CPU-only)
 ├── cuda/               # GPU-accelerated examples (requires NVIDIA GPU)
+├── jetson/             # Jetson ARM64 examples (L4TM, camera)
 ├── advanced/           # Complex pipelines and templates
 ├── node/               # Node.js addon examples
 ├── needs-investigation/ # Examples that need fixes or have known issues
-├── test_all_examples.sh
-├── test_cuda_examples.sh
-└── test_declarative_pipelines.sh
+├── test_all_examples.sh    # Unified test script
+└── test_all_examples.ps1   # Windows PowerShell version
 ```
 
 ## Quick Start
@@ -51,9 +51,19 @@ cd examples/node
 node basic_pipeline.js
 ```
 
-### Running All Tests
+### Running Tests
 ```bash
+# Run all tests (basic, cuda, advanced, node)
 ./examples/test_all_examples.sh
+
+# Run specific test categories
+./examples/test_all_examples.sh --basic    # CPU-only examples
+./examples/test_all_examples.sh --cuda     # GPU examples
+./examples/test_all_examples.sh --jetson   # Jetson ARM64 examples
+./examples/test_all_examples.sh --node     # Node.js examples
+
+# Combine flags
+./examples/test_all_examples.sh --basic --cuda
 ```
 
 ---
@@ -88,6 +98,25 @@ Requires NVIDIA GPU and CUDA toolkit.
 | `nvjpeg_encoder.json` | GPU-accelerated JPEG encoding |
 
 **Output:** Files are written to `bin/data/testOutput/cuda_*.jpg`
+
+---
+
+## Jetson Examples (ARM64)
+
+Requires NVIDIA Jetson device (Xavier, Orin, etc.) with JetPack 5.x.
+
+| Example | Description |
+|---------|-------------|
+| `01_test_signal_to_jpeg.json` | Test signal to L4TM JPEG encoding |
+| `01_jpeg_decode_transform.json` | L4TM JPEG decode with resize |
+| `02_h264_encode_demo.json` | H264 encoding via V4L2 |
+| `03_camera_preview.json` | Camera preview (requires camera) |
+| `05_dmabuf_to_host_bridge.json` | DMA buffer to host memory |
+
+**Running Jetson tests:**
+```bash
+./examples/test_all_examples.sh --jetson
+```
 
 ---
 

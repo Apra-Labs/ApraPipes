@@ -64,9 +64,11 @@ public:
         bool includeInfoMessages;       // Include info-level messages
         bool validateConnections;       // Run connection validation
         bool validateGraph;             // Run graph validation
+        bool validatePaths;             // Run path validation (filesystem checks)
 
         Options() : stopOnFirstError(false), includeInfoMessages(false),
-                    validateConnections(true), validateGraph(true) {}
+                    validateConnections(true), validateGraph(true),
+                    validatePaths(true) {}
     };
 
     // Constructor
@@ -80,6 +82,7 @@ public:
     Result validateProperties(const PipelineDescription& desc) const;
     Result validateConnections(const PipelineDescription& desc) const;
     Result validateGraph(const PipelineDescription& desc) const;
+    Result validatePaths(const PipelineDescription& desc) const;
 
     // Get/set options
     const Options& options() const { return options_; }

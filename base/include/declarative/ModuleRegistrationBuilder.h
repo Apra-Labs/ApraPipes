@@ -400,6 +400,78 @@ public:
         return *this;
     }
 
+    // ============================================================
+    // Path property definition methods
+    // ============================================================
+
+    // Add a file path property (single file, e.g., /path/to/video.mp4)
+    ModuleRegistrationBuilder& filePathProp(const std::string& name, const std::string& desc,
+                                            PathRequirement requirement, bool required = false,
+                                            const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "string";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        prop.path_type = PathType::FilePath;
+        prop.path_requirement = requirement;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a directory path property
+    ModuleRegistrationBuilder& directoryPathProp(const std::string& name, const std::string& desc,
+                                                  PathRequirement requirement, bool required = false,
+                                                  const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "string";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        prop.path_type = PathType::DirectoryPath;
+        prop.path_requirement = requirement;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a file pattern property (with wildcards, e.g., frame_????.jpg)
+    ModuleRegistrationBuilder& filePatternProp(const std::string& name, const std::string& desc,
+                                                PathRequirement requirement, bool required = false,
+                                                const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "string";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        prop.path_type = PathType::FilePattern;
+        prop.path_requirement = requirement;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
+    // Add a network URL property (e.g., rtsp://host/stream) - no filesystem validation
+    ModuleRegistrationBuilder& networkURLProp(const std::string& name, const std::string& desc,
+                                              bool required = false,
+                                              const std::string& defaultVal = "") {
+        ModuleInfo::PropInfo prop;
+        prop.name = name;
+        prop.type = "string";
+        prop.mutability = "static";
+        prop.required = required;
+        prop.default_value = defaultVal;
+        prop.description = desc;
+        prop.path_type = PathType::NetworkURL;
+        prop.path_requirement = PathRequirement::NoValidation;
+        info_.properties.push_back(std::move(prop));
+        return *this;
+    }
+
     // Mark module as managing its own output pins (creates them in addInputPin)
     // This prevents ModuleFactory from pre-creating output pins
     ModuleRegistrationBuilder& selfManagedOutputPins() {

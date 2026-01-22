@@ -4,11 +4,6 @@
 #include "boost/format.hpp"
 
 #define CH_WILD_CARD '?'
-#ifdef _WIN32
-#define SZ_FILE_SEPERATOR_STRING "\\"
-#else
-#define SZ_FILE_SEPERATOR_STRING "/"
-#endif //_WIN32
 
 boost::shared_ptr<FilenameStrategy> FilenameStrategy::getStrategy(const std::string& strPath,
 	int startIndex,
@@ -217,13 +212,16 @@ std::string FilenameStrategy::GetFileNameForCurrentIndex(bool checkForExistence)
 
 	if (mWildCardLen > 0)
 	{
-		// https://www.boost.org/doc/libs/1_71_0/libs/format/doc/format.html								
+		// https://www.boost.org/doc/libs/1_71_0/libs/format/doc/format.html
 		auto fmt = boost::format("%0"+ std::to_string(mWildCardLen)+"d") % mCurrentIndex;
-		strIndexedName = fmt.str();		
+		strIndexedName = fmt.str();
 	}
 
-	strFileNameForIndex = mDirName + SZ_FILE_SEPERATOR_STRING + mFileBaseName
-		+ strIndexedName + mFileTailName;
+	// Use boost::filesystem::path to construct the path with correct separators
+	// This handles cross-platform path separator differences automatically
+	boost::filesystem::path filePath = boost::filesystem::path(mDirName) /
+		(mFileBaseName + strIndexedName + mFileTailName);
+	strFileNameForIndex = filePath.string();
 
 	if (checkForExistence)
 	{

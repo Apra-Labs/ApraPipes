@@ -37,7 +37,7 @@
     "writer": {
       "type": "FileWriterModule",
       "props": {
-        "strFullFileNameWithPattern": "/tmp/jetson_output/usb_frame_????.jpg"
+        "strFullFileNameWithPattern": "./data/testOutput/usb_frame_????.jpg"
       }
     }
   },

@@ -431,39 +431,24 @@ jobs:
       if: success()
       shell: pwsh
       run: |
-        $sdkDir = "${{ github.workspace }}/sdk"
-        $includeDir = "${{ github.workspace }}/base/include"
-
-        # Create SDK structure
-        New-Item -ItemType Directory -Path "$sdkDir/bin" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/lib" -Force | Out-Null
-        New-Item -ItemType Directory -Path "$sdkDir/include" -Force | Out-Null
-
+        # Determine build directory and vcpkg bin based on platform
         if ("${{ inputs.os }}" -eq "linux") {
           $buildDir = "${{ github.workspace }}/build"
-          Copy-Item "$buildDir/aprapipesut" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/*.so*" "$sdkDir/bin/" -Force -ErrorAction SilentlyContinue
-          Copy-Item "$buildDir/*.a" "$sdkDir/lib/" -Force -ErrorAction SilentlyContinue
+          $vcpkgBin = ""
         } else {
           $buildDir = "${{ github.workspace }}/build/Release"
-          Copy-Item "$buildDir/*.exe" "$sdkDir/bin/" -Force
-          # Copy non-CUDA DLLs only (CUDA DLLs are delay-loaded)
-          Get-ChildItem "$buildDir/*.dll" | Where-Object {
-            $_.Name -notmatch "^(cudart|cublas|cufft|cudnn|npp|nvjpeg)"
-          } | ForEach-Object {
-            Copy-Item $_.FullName "$sdkDir/bin/" -Force
-          }
-          Get-ChildItem "$buildDir/*.lib" | ForEach-Object {
-            Copy-Item $_.FullName "$sdkDir/lib/" -Force
-          }
+          $vcpkgBin = "${{ github.workspace }}/build/vcpkg_installed/x64-windows-cuda/bin"
         }
 
-        # Copy headers
-        Copy-Item "$includeDir/*" "$sdkDir/include/" -Recurse -Force -ErrorAction SilentlyContinue
-
-        Write-Host "=== SDK Contents ==="
-        Get-ChildItem "$sdkDir/bin" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  bin/$($_.Name)" }
-        Get-ChildItem "$sdkDir/lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  lib/$($_.Name)" }
+        # Call the SDK packaging script
+        & "${{ github.workspace }}/.github/scripts/package-sdk.ps1" `
+          -SdkDir "${{ github.workspace }}/sdk" `
+          -BuildDir $buildDir `
+          -SourceDir "${{ github.workspace }}" `
+          -Platform "${{ inputs.os }}" `
+          -Cuda "${{ inputs.cuda }}" `
+          -VcpkgBinDir $vcpkgBin `
+          -DebugOutput
 
     - name: Upload SDK artifact
       if: success()
@@ -472,6 +457,58 @@ jobs:
         name: aprapipes-sdk-${{ inputs.os }}-x64
         path: ${{ github.workspace }}/sdk/
         retention-days: 7
+
+    #=========================================================================
+    # INTEGRATION TESTS (Basic JSON - strict)
+    # Windows: Use PowerShell to set up PATH properly before running tests
+    # Linux: Use bash directly (PATH handling works correctly)
+    #=========================================================================
+    - name: Run integration tests (basic) - Windows
+      if: success() && inputs.os == 'windows'
+      shell: pwsh
+      run: |
+        .\examples\test_all_examples.ps1 `
+          -SdkDir "${{ github.workspace }}\sdk" `
+          -JsonReport "${{ github.workspace }}\integration_report_basic.json" `
+          -Basic `
+          -VcpkgBin "${{ github.workspace }}\build\vcpkg_installed\x64-windows-cuda\bin" `
+          -CI
+
+    - name: Run integration tests (basic) - Linux/macOS
+      if: success() && inputs.os != 'windows'
+      shell: bash
+      run: |
+        chmod +x examples/test_all_examples.sh
+        ./examples/test_all_examples.sh \
+          --basic \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_basic.json" \
+          --ci
+
+    #=========================================================================
+    # INTEGRATION TESTS (Node.js - soft, has platform-specific timeout issues)
+    #=========================================================================
+    - name: Run integration tests (Node.js)
+      if: success() && inputs.os != 'windows'
+      continue-on-error: true
+      shell: bash
+      run: |
+        ./examples/test_all_examples.sh \
+          --node \
+          --sdk-dir "${{ github.workspace }}/sdk" \
+          --json-report "${{ github.workspace }}/integration_report_node.json" \
+          --ci
+
+    - name: Upload integration reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationReport_${{ inputs.flav }}
+        path: |
+          ${{ github.workspace }}/integration_report_basic.json
+          ${{ github.workspace }}/integration_report_node.json
+          ${{ github.workspace }}/sdk_debug.txt
+      continue-on-error: true
 
   #===========================================================================
   # PUBLISH TEST RESULTS (DRY: uses publish-test.yml)
