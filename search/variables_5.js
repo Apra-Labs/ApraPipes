@@ -42,7 +42,7 @@ var searchData=
   ['enumsize_39',['enumSize',['../classCCNPPI_1_1Detail.html#a0e0f8593237c87b4ff2bcf1d2cb52971',1,'CCNPPI::Detail']]],
   ['eos_40',['eos',['../structh264DecoderV4L2Helper_1_1context__t.html#a6173dca1385ad04730a1bf0d8f3edf7c',1,'h264DecoderV4L2Helper::context_t']]],
   ['eosframe_41',['eosFrame',['../classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f',1,'FrameFactory']]],
-  ['error_42',['error',['../structapra_1_1ParseResult.html#aeefb2c1368c2a2e4b2e587a4c4ca4a81',1,'apra::ParseResult::error'],['../structapra_1_1ValidationResult.html#a42cd35583f0db777739e78b7b4f5b750',1,'apra::ValidationResult::error']]],
+  ['error_42',['error',['../structapra_1_1ParseResult.html#aeefb2c1368c2a2e4b2e587a4c4ca4a81',1,'apra::ParseResult::error'],['../structapra_1_1path__utils_1_1PathValidationResult.html#af23ebf7a1aeab6a872ed4eba53fcf833',1,'apra::path_utils::PathValidationResult::error'],['../structapra_1_1ValidationResult.html#a42cd35583f0db777739e78b7b4f5b750',1,'apra::ValidationResult::error']]],
   ['error_5fcolumn_43',['error_column',['../structapra_1_1ParseResult.html#a69d529ca192e89e7b86cb8d0bccafa77',1,'apra::ParseResult']]],
   ['error_5fline_44',['error_line',['../structapra_1_1ParseResult.html#a066037cc568a977f19967790e11afc65',1,'apra::ParseResult']]],
   ['errorcode_45',['errorCode',['../classMp4ErrorFrame.html#ac13d75df616d6e4c393bee7996d6228d',1,'Mp4ErrorFrame']]],

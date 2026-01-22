@@ -115,6 +115,8 @@ $(function(){initNavTree('namespaceapra.html',''); initResizable(true); });
 Namespaces</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapra_1_1detail.html">detail</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapra_1_1path__utils.html">path_utils</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapra_1_1patterns.html">patterns</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -225,6 +227,29 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a0e8ce931817882d52bdcfeb1dd6cef4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a22ac8b0d18c8d18f9c024ba7efca3f" id="r_a4a22ac8b0d18c8d18f9c024ba7efca3f"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3f">PathType</a> { <br />
+&#160;&#160;<a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fa21cdafc2e822b7adba6476a0628127e5">NotAPath</a>
+, <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fa2fb403e71d8ade2ba79af3f6c4695d09">FilePath</a>
+, <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fa4112331038c1fd0c6bd4b964f82110fd">DirectoryPath</a>
+, <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fabc8da4482162864b4540e89ca5ead06f">FilePattern</a>
+, <br />
+&#160;&#160;<a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fa06c1406b988cf5d23163b42d6e9da00c">GlobPattern</a>
+, <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fabfb904dfdafd64c3d830defa7cb1bb2a">DevicePath</a>
+, <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3fa498149dcb5d9a155872cfe89d3aff553">NetworkURL</a>
+<br />
+ }</td></tr>
+<tr class="separator:a4a22ac8b0d18c8d18f9c024ba7efca3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fb8700015464d0ef5384a03bbe1616a" id="r_a4fb8700015464d0ef5384a03bbe1616a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> { <br />
+&#160;&#160;<a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aad4cd02c0a5c55938454a86ada22269cf">NoValidation</a>
+, <a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aa05ce745d91b630573ce1c1dfa1e747b4">MustExist</a>
+, <a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aaaecfdfd063b8018e91d7f77fda890734">MayExist</a>
+, <a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aa8b5f74fb12dfa472098d5f0ea3187fdc">MustNotExist</a>
+, <br />
+&#160;&#160;<a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aab893323f6a2c599960169603297ea3ff">ParentMustExist</a>
+, <a class="el" href="#a4fb8700015464d0ef5384a03bbe1616aa683018358bc7181e40c3a6e590685fa7">WillBeCreated</a>
+<br />
+ }</td></tr>
+<tr class="separator:a4fb8700015464d0ef5384a03bbe1616a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9aa7e75d7aa0456af48da06e365ff4e" id="r_ae9aa7e75d7aa0456af48da06e365ff4e"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae9aa7e75d7aa0456af48da06e365ff4e">BridgeType</a> { <a class="el" href="#ae9aa7e75d7aa0456af48da06e365ff4ea4789f23283b3a61f858b641a1bef19a3">Memory</a>
 , <a class="el" href="#ae9aa7e75d7aa0456af48da06e365ff4ea520d0db389f362bf79ef56ca0af3dcab">Format</a>
  }</td></tr>
@@ -541,6 +566,67 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a0e8ce931817882d52bdcfeb1dd6cef4baa768caa988605a2846599cf7e2d0c26a" name="a0e8ce931817882d52bdcfeb1dd6cef4baa768caa988605a2846599cf7e2d0c26a"></a>Analytics&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0e8ce931817882d52bdcfeb1dd6cef4ba9bbf373797bf7cf7ba62c80023682e25" name="a0e8ce931817882d52bdcfeb1dd6cef4ba9bbf373797bf7cf7ba62c80023682e25"></a>Controller&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0e8ce931817882d52bdcfeb1dd6cef4ba94df2a6972ca1fa79411645fe9b42339" name="a0e8ce931817882d52bdcfeb1dd6cef4ba94df2a6972ca1fa79411645fe9b42339"></a>Utility&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="a4fb8700015464d0ef5384a03bbe1616a" name="a4fb8700015464d0ef5384a03bbe1616a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fb8700015464d0ef5384a03bbe1616a">&#9670;&#160;</a></span>PathRequirement</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a4fb8700015464d0ef5384a03bbe1616a">apra::PathRequirement</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aad4cd02c0a5c55938454a86ada22269cf" name="a4fb8700015464d0ef5384a03bbe1616aad4cd02c0a5c55938454a86ada22269cf"></a>NoValidation&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aa05ce745d91b630573ce1c1dfa1e747b4" name="a4fb8700015464d0ef5384a03bbe1616aa05ce745d91b630573ce1c1dfa1e747b4"></a>MustExist&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aaaecfdfd063b8018e91d7f77fda890734" name="a4fb8700015464d0ef5384a03bbe1616aaaecfdfd063b8018e91d7f77fda890734"></a>MayExist&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aa8b5f74fb12dfa472098d5f0ea3187fdc" name="a4fb8700015464d0ef5384a03bbe1616aa8b5f74fb12dfa472098d5f0ea3187fdc"></a>MustNotExist&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aab893323f6a2c599960169603297ea3ff" name="a4fb8700015464d0ef5384a03bbe1616aab893323f6a2c599960169603297ea3ff"></a>ParentMustExist&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4fb8700015464d0ef5384a03bbe1616aa683018358bc7181e40c3a6e590685fa7" name="a4fb8700015464d0ef5384a03bbe1616aa683018358bc7181e40c3a6e590685fa7"></a>WillBeCreated&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="a4a22ac8b0d18c8d18f9c024ba7efca3f" name="a4a22ac8b0d18c8d18f9c024ba7efca3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a22ac8b0d18c8d18f9c024ba7efca3f">&#9670;&#160;</a></span>PathType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a4a22ac8b0d18c8d18f9c024ba7efca3f">apra::PathType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fa21cdafc2e822b7adba6476a0628127e5" name="a4a22ac8b0d18c8d18f9c024ba7efca3fa21cdafc2e822b7adba6476a0628127e5"></a>NotAPath&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fa2fb403e71d8ade2ba79af3f6c4695d09" name="a4a22ac8b0d18c8d18f9c024ba7efca3fa2fb403e71d8ade2ba79af3f6c4695d09"></a>FilePath&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fa4112331038c1fd0c6bd4b964f82110fd" name="a4a22ac8b0d18c8d18f9c024ba7efca3fa4112331038c1fd0c6bd4b964f82110fd"></a>DirectoryPath&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fabc8da4482162864b4540e89ca5ead06f" name="a4a22ac8b0d18c8d18f9c024ba7efca3fabc8da4482162864b4540e89ca5ead06f"></a>FilePattern&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fa06c1406b988cf5d23163b42d6e9da00c" name="a4a22ac8b0d18c8d18f9c024ba7efca3fa06c1406b988cf5d23163b42d6e9da00c"></a>GlobPattern&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fabfb904dfdafd64c3d830defa7cb1bb2a" name="a4a22ac8b0d18c8d18f9c024ba7efca3fabfb904dfdafd64c3d830defa7cb1bb2a"></a>DevicePath&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4a22ac8b0d18c8d18f9c024ba7efca3fa498149dcb5d9a155872cfe89d3aff553" name="a4a22ac8b0d18c8d18f9c024ba7efca3fa498149dcb5d9a155872cfe89d3aff553"></a>NetworkURL&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -1615,7 +1701,7 @@ template&lt;typename T &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="namespaceapra.html">apra</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: b9db9d8</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 1ade0e5</a></li>
     </ul>
   </div>
   </body>

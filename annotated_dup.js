@@ -13,6 +13,9 @@ var annotated_dup =
         [ "has_set_property", "structapra_1_1detail_1_1has__set__property.html", null ],
         [ "has_set_property< P, std::void_t< decltype(std::declval< P & >().setProperty(std::string{}, ScalarPropertyValue{}))> >", "structapra_1_1detail_1_1has__set__property_3_01P_00_01std_1_1void__t_3_01decltype_07std_1_1declvb9c513284ea37d6561efe38805528a41.html", null ]
       ] ],
+      [ "path_utils", "namespaceapra_1_1path__utils.html", [
+        [ "PathValidationResult", "structapra_1_1path__utils_1_1PathValidationResult.html", "structapra_1_1path__utils_1_1PathValidationResult" ]
+      ] ],
       [ "AnalysisError", "structapra_1_1AnalysisError.html", "structapra_1_1AnalysisError" ],
       [ "AnalysisResult", "structapra_1_1AnalysisResult.html", "structapra_1_1AnalysisResult" ],
       [ "AttrDef", "structapra_1_1AttrDef.html", "structapra_1_1AttrDef" ],

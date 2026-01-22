@@ -107,10 +107,10 @@ var NAVTREEINDEX =
 "classRTSPPusherProps.html",
 "classSimpleControlModule.html#a56341b410d1778fd798700c14d3bfd10",
 "classValveModule.html#a6bbcaa0744f419d9ccd04d538981cca0",
-"classapra_1_1ModuleRegistrationBuilder.html#ab2f48d6342634b23faea562b8e488377",
-"functions_vars_s.html",
-"structapra_1_1ConnectionInfo.html#a6fed03f4358bbdb1f98e66b77fecf42e",
-"structapra_1_1PropDef.html#aaf31295bc4af7c15cbf356e3c745da26"
+"classapra_1_1ModuleRegistrationBuilder.html#aac2a7406a13c3d9c6c4c9acd120e5569",
+"functions_vars_n.html",
+"structapra_1_1ConnectionInfo.html",
+"structapra_1_1PropDef.html#a37236b1becf5f81e2e53cd18147e6447"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

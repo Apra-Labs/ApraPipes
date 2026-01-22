@@ -1,7 +1,13 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,5,127,31"/>
-<area shape="rect" id="Node000001" href="$classAIP__Exception.html" title=" " alt="" coords="175,5,281,31"/>
-<area shape="poly" id="edge242_Node000000_Node000001" title=" " alt="" coords="142,16,174,16,174,21,142,21"/>
-<area shape="rect" id="Node000002" href="$classMp4__Exception.html" title=" " alt="" coords="329,5,438,31"/>
-<area shape="poly" id="edge243_Node000001_Node000002" title=" " alt="" coords="296,16,329,16,329,21,296,21"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,144,110,169"/>
+<area shape="rect" id="Node000001" href="$structapra_1_1detail_1_1has__apply__properties.html" title=" " alt="" coords="176,5,354,46"/>
+<area shape="poly" id="edge237_Node000000_Node000001" title=" " alt="" coords="76,129,111,92,156,57,182,44,184,49,159,61,115,96,80,133"/>
+<area shape="rect" id="Node000002" href="$structapra_1_1detail_1_1has__dynamic__property__names.html" title=" " alt="" coords="158,71,372,111"/>
+<area shape="poly" id="edge238_Node000000_Node000002" title=" " alt="" coords="114,136,157,122,196,109,198,114,158,127,115,141"/>
+<area shape="rect" id="Node000003" href="$structapra_1_1detail_1_1has__get__property.html" title=" " alt="" coords="181,136,349,177"/>
+<area shape="poly" id="edge239_Node000000_Node000003" title=" " alt="" coords="125,154,180,154,180,159,125,159"/>
+<area shape="rect" id="Node000004" href="$structapra_1_1detail_1_1has__get__set__props.html" title=" " alt="" coords="166,201,364,242"/>
+<area shape="poly" id="edge240_Node000000_Node000004" title=" " alt="" coords="115,172,158,186,198,198,196,203,157,191,114,177"/>
+<area shape="rect" id="Node000005" href="$structapra_1_1detail_1_1has__set__property.html" title=" " alt="" coords="181,267,349,307"/>
+<area shape="poly" id="edge241_Node000000_Node000005" title=" " alt="" coords="80,180,115,217,159,251,184,264,182,269,156,256,111,221,76,183"/>
 </map>

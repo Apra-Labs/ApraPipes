@@ -79,7 +79,7 @@ var searchData=
   ['eosframe_76',['eosFrame',['../classFrameFactory.html#a8acb9e130748d3021e83b44c8899237f',1,'FrameFactory']]],
   ['eosframetype_77',['EoSFrameType',['../classEoSFrame.html#a264a799ba81113db7a486025d740e0cd',1,'EoSFrame']]],
   ['error_78',['Error',['../structapra_1_1Issue.html#ada71b0edb3e711415fd44abe6e90838fa902b0d55fddef6f8d651fe1035b7d4bd',1,'apra::Issue']]],
-  ['error_79',['error',['../structapra_1_1ParseResult.html#aeefb2c1368c2a2e4b2e587a4c4ca4a81',1,'apra::ParseResult::error'],['../structapra_1_1ValidationResult.html#a42cd35583f0db777739e78b7b4f5b750',1,'apra::ValidationResult::error'],['../structapra_1_1Issue.html#aef9e5b2ba55d09adb42ec984a67a3981',1,'apra::Issue::error()']]],
+  ['error_79',['error',['../structapra_1_1ParseResult.html#aeefb2c1368c2a2e4b2e587a4c4ca4a81',1,'apra::ParseResult::error'],['../structapra_1_1path__utils_1_1PathValidationResult.html#af23ebf7a1aeab6a872ed4eba53fcf833',1,'apra::path_utils::PathValidationResult::error'],['../structapra_1_1ValidationResult.html#a42cd35583f0db777739e78b7b4f5b750',1,'apra::ValidationResult::error'],['../structapra_1_1Issue.html#aef9e5b2ba55d09adb42ec984a67a3981',1,'apra::Issue::error()']]],
   ['error_5fcolumn_80',['error_column',['../structapra_1_1ParseResult.html#a69d529ca192e89e7b86cb8d0bccafa77',1,'apra::ParseResult']]],
   ['error_5fline_81',['error_line',['../structapra_1_1ParseResult.html#a066037cc568a977f19967790e11afc65',1,'apra::ParseResult']]],
   ['errorcode_82',['errorCode',['../classMp4ErrorFrame.html#ac13d75df616d6e4c393bee7996d6228d',1,'Mp4ErrorFrame']]],

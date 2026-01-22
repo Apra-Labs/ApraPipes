@@ -424,6 +424,7 @@ var hierarchy =
     ] ],
     [ "PaceMaker", "classPaceMaker.html", null ],
     [ "apra::ParseResult", "structapra_1_1ParseResult.html", null ],
+    [ "apra::path_utils::PathValidationResult", "structapra_1_1path__utils_1_1PathValidationResult.html", null ],
     [ "apra::PinDef", "structapra_1_1PinDef.html", null ],
     [ "apra::ModuleInfo::PinInfo", "structapra_1_1ModuleInfo_1_1PinInfo.html", null ],
     [ "PipeLine", "classPipeLine.html", null ],

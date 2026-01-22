@@ -9,6 +9,7 @@ var classapra_1_1PipelineValidator =
     [ "validateConnections", "classapra_1_1PipelineValidator.html#a526aeb011678dc4fd2940f70cf32c1c3", null ],
     [ "validateGraph", "classapra_1_1PipelineValidator.html#a8ac34ebbd31c64255f0ce23aa10ad540", null ],
     [ "validateModules", "classapra_1_1PipelineValidator.html#a329770b3d97e35f54906fcad2eddd77c", null ],
+    [ "validatePaths", "classapra_1_1PipelineValidator.html#a607d48a4892dc8afa806e72badffa694", null ],
     [ "validateProperties", "classapra_1_1PipelineValidator.html#a8845a03b798168976877eec5cdd7447e", null ],
     [ "options_", "classapra_1_1PipelineValidator.html#a7b4e11c610727d121eba442946d135d6", null ]
 ];

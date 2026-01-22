@@ -7,6 +7,8 @@ var structapra_1_1ModuleInfo_1_1PropInfo =
     [ "min_value", "structapra_1_1ModuleInfo_1_1PropInfo.html#ab9b4e633880655850861c8a86bdabe1b", null ],
     [ "mutability", "structapra_1_1ModuleInfo_1_1PropInfo.html#a6328ce93863c13f422edcb914a3fe97d", null ],
     [ "name", "structapra_1_1ModuleInfo_1_1PropInfo.html#ab12682a77bac914a6ebfd7a60b982095", null ],
+    [ "path_requirement", "structapra_1_1ModuleInfo_1_1PropInfo.html#aab31d8462bf65aded73c64e9da98cafc", null ],
+    [ "path_type", "structapra_1_1ModuleInfo_1_1PropInfo.html#a892c091a4460a000564d859f6a5ca87b", null ],
     [ "regex_pattern", "structapra_1_1ModuleInfo_1_1PropInfo.html#aa1a06c8f7dc1e8f14046626dcf8e5629", null ],
     [ "required", "structapra_1_1ModuleInfo_1_1PropInfo.html#a1376fd0ce9b0d596a0a21e9b127c11d5", null ],
     [ "type", "structapra_1_1ModuleInfo_1_1PropInfo.html#a1b569922181876571cf183b21003971a", null ],

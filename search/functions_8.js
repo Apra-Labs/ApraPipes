@@ -41,8 +41,9 @@ var searchData=
   ['hasmodule_38',['hasModule',['../classapra_1_1ModuleRegistry.html#a5dd2878c39050ce4f3020857e2deda66',1,'apra::ModuleRegistry']]],
   ['hasvalidator_39',['hasValidator',['../classapra_1_1PropertyValidatorRegistry.html#a3e80f76f0cb56bf05eb7c0aafb4d33f8',1,'apra::PropertyValidatorRegistry']]],
   ['haswarnings_40',['hasWarnings',['../structapra_1_1ModuleFactory_1_1BuildResult.html#a42e535f6c6e4a77de242fb0836e0eab5',1,'apra::ModuleFactory::BuildResult::hasWarnings()'],['../structapra_1_1PipelineValidator_1_1Result.html#aa4b801f307dcf62873131e0abcbd647e',1,'apra::PipelineValidator::Result::hasWarnings()']]],
-  ['histogramoverlay_41',['HistogramOverlay',['../classHistogramOverlay.html#ac57b28244aa20037dca65bf9ee67b12e',1,'HistogramOverlay']]],
-  ['histogramoverlayprops_42',['HistogramOverlayProps',['../classHistogramOverlayProps.html#a19237a0b9ea1a1cc65bef20166ecd482',1,'HistogramOverlayProps']]],
-  ['hostallocator_43',['HostAllocator',['../classHostAllocator.html#aba5b59e2e22b00e5c8871bdb97fa30c6',1,'HostAllocator']]],
-  ['hourpatterncheck_44',['hourPatternCheck',['../classOrderedCacheOfFiles.html#a0e16fbf050c1dcfc6cb1e9c1711c2aaa',1,'OrderedCacheOfFiles']]]
+  ['haswildcards_41',['hasWildcards',['../namespaceapra_1_1path__utils.html#ac22fb3912b1f3b8153b17090455f66f6',1,'apra::path_utils']]],
+  ['histogramoverlay_42',['HistogramOverlay',['../classHistogramOverlay.html#ac57b28244aa20037dca65bf9ee67b12e',1,'HistogramOverlay']]],
+  ['histogramoverlayprops_43',['HistogramOverlayProps',['../classHistogramOverlayProps.html#a19237a0b9ea1a1cc65bef20166ecd482',1,'HistogramOverlayProps']]],
+  ['hostallocator_44',['HostAllocator',['../classHostAllocator.html#aba5b59e2e22b00e5c8871bdb97fa30c6',1,'HostAllocator']]],
+  ['hourpatterncheck_45',['hourPatternCheck',['../classOrderedCacheOfFiles.html#a0e16fbf050c1dcfc6cb1e9c1711c2aaa',1,'OrderedCacheOfFiles']]]
 ];

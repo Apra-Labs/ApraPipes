@@ -1,9 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classFramesMuxerStrategy.html" title=" " alt="" coords="5,55,154,80"/>
-<area shape="rect" id="Node000001" href="$classAllOrNoneStrategy.html" title=" " alt="" coords="211,5,340,31"/>
-<area shape="poly" id="edge79_Node000000_Node000001" title=" " alt="" coords="148,48,221,29,222,34,149,53"/>
-<area shape="rect" id="Node000002" href="$classMaxDelayAnyStrategy.html" title=" " alt="" coords="202,55,349,80"/>
-<area shape="poly" id="edge80_Node000000_Node000002" title=" " alt="" coords="169,65,202,65,202,70,169,70"/>
-<area shape="rect" id="Node000003" href="$classTimeStampStrategy.html" title=" " alt="" coords="207,104,344,130"/>
-<area shape="poly" id="edge81_Node000000_Node000003" title=" " alt="" coords="149,82,222,101,221,106,148,87"/>
+<area shape="rect" id="Node000000" href="$classFrameMetadataFactory.html" title=" " alt="" coords="5,5,161,31"/>
 </map>

@@ -184,7 +184,8 @@ var searchData=
   ['getwarnings_181',['getWarnings',['../structapra_1_1ModuleFactory_1_1BuildResult.html#a217d13b62526b3a34eb719419e25f87f',1,'apra::ModuleFactory::BuildResult']]],
   ['getwidth_182',['GetWidth',['../classNvDecoder.html#a7a1772ab43ad2c049939c89c10f628e1',1,'NvDecoder']]],
   ['getwidth_183',['getWidth',['../classEncodedImageMetadata.html#a845a5e5dc0b5b887e43c9b1baed48947',1,'EncodedImageMetadata::getWidth()'],['../classH264Metadata.html#ab0ee49158562328d810b187475b7f646',1,'H264Metadata::getWidth()'],['../classRawImageMetadata.html#aab052bc45a51a4fc7444bbafd71d00c4',1,'RawImageMetadata::getWidth()'],['../classRawImagePlanarMetadata.html#aab6e16cf7babb40e7939a4629aba4d2d',1,'RawImagePlanarMetadata::getWidth()']]],
-  ['groupedframesqueue_184',['GroupedFramesQueue',['../classGroupedFramesQueue.html#ab587e81c0f2c65b48d811c68dc55e2ed',1,'GroupedFramesQueue']]],
-  ['gtkglrenderer_185',['GtkGlRenderer',['../classGtkGlRenderer.html#aafee1ca6cc35e5def8cf39c02713a72d',1,'GtkGlRenderer']]],
-  ['gtkglrendererprops_186',['GtkGlRendererProps',['../classGtkGlRendererProps.html#a3e436c10de6cb526d7683af5bf695689',1,'GtkGlRendererProps']]]
+  ['globpattern_184',['GlobPattern',['../structapra_1_1PropDef.html#ade5ae4a4eb1703ccfe2147704afb1235',1,'apra::PropDef']]],
+  ['groupedframesqueue_185',['GroupedFramesQueue',['../classGroupedFramesQueue.html#ab587e81c0f2c65b48d811c68dc55e2ed',1,'GroupedFramesQueue']]],
+  ['gtkglrenderer_186',['GtkGlRenderer',['../classGtkGlRenderer.html#aafee1ca6cc35e5def8cf39c02713a72d',1,'GtkGlRenderer']]],
+  ['gtkglrendererprops_187',['GtkGlRendererProps',['../classGtkGlRendererProps.html#a3e436c10de6cb526d7683af5bf695689',1,'GtkGlRendererProps']]]
 ];

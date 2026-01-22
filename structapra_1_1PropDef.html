@@ -116,7 +116,7 @@ Collaboration diagram for apra::PropDef:</div>
 <div class="dyncontent">
 <div class="center"><img src="structapra_1_1PropDef__coll__graph.png" border="0" usemap="#aapra_1_1PropDef_coll__map" alt="Collaboration graph"/></div>
 <map name="aapra_1_1PropDef_coll__map" id="aapra_1_1PropDef_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,116,499"/>
+<area shape="rect" title=" " alt="" coords="5,5,137,539"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -141,6 +141,10 @@ Public Types</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a6fc50157f83df81204cf3b7abe84e6eb" id="r_a6fc50157f83df81204cf3b7abe84e6eb"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6fc50157f83df81204cf3b7abe84e6eb">PropDef</a> ()=default</td></tr>
 <tr class="separator:a6fc50157f83df81204cf3b7abe84e6eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a874c519b5124269992e03f73a9aac346" id="r_a874c519b5124269992e03f73a9aac346"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a874c519b5124269992e03f73a9aac346">isPath</a> () const</td></tr>
+<tr class="separator:a874c519b5124269992e03f73a9aac346"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cf9077ffec998f749229f8530aea8e7" id="r_a1cf9077ffec998f749229f8530aea8e7"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1cf9077ffec998f749229f8530aea8e7">isFilesystemPath</a> () const</td></tr>
+<tr class="separator:a1cf9077ffec998f749229f8530aea8e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -182,6 +186,18 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a75c9bb0e3026f469dcdc7572d57d396a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85ed301345947354176edd710f4c8ff0" id="r_a85ed301345947354176edd710f4c8ff0"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85ed301345947354176edd710f4c8ff0">RequiredEnum</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, std::string_view v1, std::string_view v2, std::string_view v3, std::string_view v4, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
 <tr class="separator:a85ed301345947354176edd710f4c8ff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37236b1becf5f81e2e53cd18147e6447" id="r_a37236b1becf5f81e2e53cd18147e6447"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a37236b1becf5f81e2e53cd18147e6447">FilePath</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> requirement, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:a37236b1becf5f81e2e53cd18147e6447"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d83afdd392a30679f5c691c9f3a1671" id="r_a6d83afdd392a30679f5c691c9f3a1671"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d83afdd392a30679f5c691c9f3a1671">DirectoryPath</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> requirement, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:a6d83afdd392a30679f5c691c9f3a1671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29272c1acea0f17b7e035d4363f8ebfd" id="r_a29272c1acea0f17b7e035d4363f8ebfd"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29272c1acea0f17b7e035d4363f8ebfd">FilePattern</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> requirement, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:a29272c1acea0f17b7e035d4363f8ebfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade5ae4a4eb1703ccfe2147704afb1235" id="r_ade5ae4a4eb1703ccfe2147704afb1235"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade5ae4a4eb1703ccfe2147704afb1235">GlobPattern</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> requirement, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:ade5ae4a4eb1703ccfe2147704afb1235"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0765a0639cfc57cccf26aaa17d3b15ef" id="r_a0765a0639cfc57cccf26aaa17d3b15ef"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0765a0639cfc57cccf26aaa17d3b15ef">DevicePath</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:a0765a0639cfc57cccf26aaa17d3b15ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fec0ea883ff16db5bc92fa2af5d31f9" id="r_a3fec0ea883ff16db5bc92fa2af5d31f9"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3fec0ea883ff16db5bc92fa2af5d31f9">NetworkURL</a> (std::string_view <a class="el" href="#ae878d192f2360f3c3bbf01e84bfb32ac">name</a>, std::string_view default_val=&quot;&quot;, std::string_view desc=&quot;&quot;, <a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a> mut=<a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a>)</td></tr>
+<tr class="separator:a3fec0ea883ff16db5bc92fa2af5d31f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -219,6 +235,10 @@ Public Attributes</h2></td></tr>
 <tr class="separator:adeaa47e05cf25022fc512c6b75931357"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adcfd6bf77432188c725396dd0a05478a" id="r_adcfd6bf77432188c725396dd0a05478a"><td class="memItemLeft" align="right" valign="top">std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adcfd6bf77432188c725396dd0a05478a">unit</a> = &quot;&quot;</td></tr>
 <tr class="separator:adcfd6bf77432188c725396dd0a05478a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41172bdf9a64b646eb48adf573fadd8b" id="r_a41172bdf9a64b646eb48adf573fadd8b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceapra.html#a4a22ac8b0d18c8d18f9c024ba7efca3f">PathType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41172bdf9a64b646eb48adf573fadd8b">path_type</a> = <a class="el" href="namespaceapra.html#a4a22ac8b0d18c8d18f9c024ba7efca3fa21cdafc2e822b7adba6476a0628127e5">PathType::NotAPath</a></td></tr>
+<tr class="separator:a41172bdf9a64b646eb48adf573fadd8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b581b2cc62aa6eade70a47547ca866e" id="r_a7b581b2cc62aa6eade70a47547ca866e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b581b2cc62aa6eade70a47547ca866e">path_requirement</a> = <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616aad4cd02c0a5c55938454a86ada22269cf">PathRequirement::NoValidation</a></td></tr>
+<tr class="separator:a7b581b2cc62aa6eade70a47547ca866e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="a4b5f2b419e8473d0460433a041401aed" name="a4b5f2b419e8473d0460433a041401aed"></a>
@@ -321,6 +341,89 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0765a0639cfc57cccf26aaa17d3b15ef" name="a0765a0639cfc57cccf26aaa17d3b15ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0765a0639cfc57cccf26aaa17d3b15ef">&#9670;&#160;</a></span>DevicePath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::DevicePath </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6d83afdd392a30679f5c691c9f3a1671" name="a6d83afdd392a30679f5c691c9f3a1671"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d83afdd392a30679f5c691c9f3a1671">&#9670;&#160;</a></span>DirectoryPath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::DirectoryPath </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a></td>          <td class="paramname"><span class="paramname"><em>requirement</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -790,6 +893,94 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<a id="a37236b1becf5f81e2e53cd18147e6447" name="a37236b1becf5f81e2e53cd18147e6447"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37236b1becf5f81e2e53cd18147e6447">&#9670;&#160;</a></span>FilePath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::FilePath </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a></td>          <td class="paramname"><span class="paramname"><em>requirement</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a29272c1acea0f17b7e035d4363f8ebfd" name="a29272c1acea0f17b7e035d4363f8ebfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29272c1acea0f17b7e035d4363f8ebfd">&#9670;&#160;</a></span>FilePattern()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::FilePattern </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a></td>          <td class="paramname"><span class="paramname"><em>requirement</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a02dd36f9ee9f129a1b0623298959a493" name="a02dd36f9ee9f129a1b0623298959a493"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a02dd36f9ee9f129a1b0623298959a493">&#9670;&#160;</a></span>Floating()</h2>
 
@@ -839,6 +1030,50 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<a id="ade5ae4a4eb1703ccfe2147704afb1235" name="ade5ae4a4eb1703ccfe2147704afb1235"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade5ae4a4eb1703ccfe2147704afb1235">&#9670;&#160;</a></span>GlobPattern()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::GlobPattern </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a></td>          <td class="paramname"><span class="paramname"><em>requirement</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="adac2100b2102fc3a1a9dbd2748c46333" name="adac2100b2102fc3a1a9dbd2748c46333"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adac2100b2102fc3a1a9dbd2748c46333">&#9670;&#160;</a></span>Integer()</h2>
 
@@ -867,6 +1102,95 @@ Here is the caller graph for this function:</div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>max_val</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>desc</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a4b5f2b419e8473d0460433a041401aed">Mutability</a></td>          <td class="paramname"><span class="paramname"><em>mut</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a4b5f2b419e8473d0460433a041401aeda84a8921b25f505d0d2077aeb5db4bc16">Mutability::Static</a></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1cf9077ffec998f749229f8530aea8e7" name="a1cf9077ffec998f749229f8530aea8e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cf9077ffec998f749229f8530aea8e7">&#9670;&#160;</a></span>isFilesystemPath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool apra::PropDef::isFilesystemPath </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a874c519b5124269992e03f73a9aac346" name="a874c519b5124269992e03f73a9aac346"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a874c519b5124269992e03f73a9aac346">&#9670;&#160;</a></span>isPath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool apra::PropDef::isPath </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3fec0ea883ff16db5bc92fa2af5d31f9" name="a3fec0ea883ff16db5bc92fa2af5d31f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3fec0ea883ff16db5bc92fa2af5d31f9">&#9670;&#160;</a></span>NetworkURL()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="structapra_1_1PropDef.html">PropDef</a> apra::PropDef::NetworkURL </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>default_val</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1375,6 +1699,34 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<a id="a7b581b2cc62aa6eade70a47547ca866e" name="a7b581b2cc62aa6eade70a47547ca866e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b581b2cc62aa6eade70a47547ca866e">&#9670;&#160;</a></span>path_requirement</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616a">PathRequirement</a> apra::PropDef::path_requirement = <a class="el" href="namespaceapra.html#a4fb8700015464d0ef5384a03bbe1616aad4cd02c0a5c55938454a86ada22269cf">PathRequirement::NoValidation</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a41172bdf9a64b646eb48adf573fadd8b" name="a41172bdf9a64b646eb48adf573fadd8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41172bdf9a64b646eb48adf573fadd8b">&#9670;&#160;</a></span>path_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceapra.html#a4a22ac8b0d18c8d18f9c024ba7efca3f">PathType</a> apra::PropDef::path_type = <a class="el" href="namespaceapra.html#a4a22ac8b0d18c8d18f9c024ba7efca3fa21cdafc2e822b7adba6476a0628127e5">PathType::NotAPath</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a489479b9eb943ebc226be5755726715d" name="a489479b9eb943ebc226be5755726715d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a489479b9eb943ebc226be5755726715d">&#9670;&#160;</a></span>regex_pattern</h2>
 
@@ -1453,7 +1805,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
     <ul>
       <li class="navelem"><a class="el" href="namespaceapra.html">apra</a></li><li class="navelem"><a class="el" href="structapra_1_1PropDef.html">PropDef</a></li>
-      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: b9db9d8</a></li>
+      <li class="footer"><a href="https://github.com/Apra-Labs/ApraPipes/commits/main/">Source Commit: 1ade0e5</a></li>
     </ul>
   </div>
   </body>

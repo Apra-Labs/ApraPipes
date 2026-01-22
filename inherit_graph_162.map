@@ -1,9 +1,13 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classOverlayInfoVisitor.html" title=" " alt="" coords="5,63,130,88"/>
-<area shape="rect" id="Node000001" href="$classOverlayInfoDrawingVisitor.html" title=" " alt="" coords="181,5,352,31"/>
-<area shape="poly" id="edge225_Node000000_Node000001" title=" " alt="" coords="128,55,177,41,218,29,220,34,178,46,130,60"/>
-<area shape="rect" id="Node000002" href="$classOverlayInfoSerializeSizeVisitor.html" title=" " alt="" coords="186,55,347,96"/>
-<area shape="poly" id="edge226_Node000000_Node000002" title=" " alt="" coords="145,73,185,73,185,78,145,78"/>
-<area shape="rect" id="Node000003" href="$classOverlayInfoSerializerVisitor.html" title=" " alt="" coords="178,120,355,146"/>
-<area shape="poly" id="edge227_Node000000_Node000003" title=" " alt="" coords="130,91,178,105,220,117,218,122,177,110,128,96"/>
+<area shape="rect" id="Node000000" href="$classOverlayInfo.html" title=" " alt="" coords="5,80,93,106"/>
+<area shape="rect" id="Node000001" href="$classCircleOverlay.html" title=" " alt="" coords="155,5,254,31"/>
+<area shape="poly" id="edge220_Node000000_Node000001" title=" " alt="" coords="84,69,140,40,165,29,167,34,142,45,86,74"/>
+<area shape="rect" id="Node000002" href="$classCompositeOverlay.html" title=" " alt="" coords="141,55,268,80"/>
+<area shape="poly" id="edge221_Node000000_Node000002" title=" " alt="" coords="108,81,140,75,141,81,109,86"/>
+<area shape="rect" id="Node000004" href="$classLineOverlay.html" title=" " alt="" coords="159,104,250,130"/>
+<area shape="poly" id="edge223_Node000000_Node000004" title=" " alt="" coords="109,99,159,107,158,113,108,105"/>
+<area shape="rect" id="Node000005" href="$classRectangleOverlay.html" title=" " alt="" coords="143,153,266,179"/>
+<area shape="poly" id="edge224_Node000000_Node000005" title=" " alt="" coords="87,111,142,140,167,150,165,155,140,145,85,116"/>
+<area shape="rect" id="Node000003" href="$classDrawingOverlay.html" title=" " alt="" coords="316,55,428,80"/>
+<area shape="poly" id="edge222_Node000002_Node000003" title=" " alt="" coords="284,65,316,65,316,70,284,70"/>
 </map>
