@@ -323,7 +323,8 @@ jobs:
         ./examples/test_all_examples.sh \
           --basic \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report "${{ github.workspace }}/integration_report_basic.json"
+          --json-report "${{ github.workspace }}/integration_report_basic.json" \
+          --ci
 
     #=========================================================================
     # INTEGRATION TESTS (Node.js - soft, has platform-specific timeout issues)
@@ -347,7 +348,8 @@ jobs:
         ./examples/test_all_examples.sh \
           --jetson \
           --sdk-dir "${{ github.workspace }}/sdk" \
-          --json-report "${{ github.workspace }}/integration_report_jetson.json"
+          --json-report "${{ github.workspace }}/integration_report_jetson.json" \
+          --ci
 
     - name: Upload integration reports
       if: ${{ always() && !inputs.is-prep-phase }}
