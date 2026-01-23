@@ -29,18 +29,45 @@ interface WorkspaceActions {
   newWorkspace: () => void;
   openWorkspace: (path: string) => Promise<void>;
   saveWorkspace: (path?: string) => Promise<void>;
+  importJSON: (jsonContent: string) => void;
 
   // State management
   setCurrentPath: (path: string | null) => void;
   markDirty: () => void;
   markClean: () => void;
   addRecentFile: (path: string) => void;
+  clearRecentFiles: () => void;
+}
+
+const RECENT_FILES_KEY = 'aprapipes-studio-recent-files';
+
+/**
+ * Load recent files from localStorage
+ */
+function loadRecentFiles(): string[] {
+  try {
+    const stored = localStorage.getItem(RECENT_FILES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Save recent files to localStorage
+ */
+function saveRecentFiles(files: string[]): void {
+  try {
+    localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(files));
+  } catch {
+    // Storage might be full or unavailable
+  }
 }
 
 const initialState: WorkspaceState = {
   currentPath: null,
   isDirty: false,
-  recentFiles: [],
+  recentFiles: loadRecentFiles(),
 };
 
 const API_BASE = 'http://localhost:3000';
@@ -186,9 +213,63 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
   addRecentFile: (path) => {
     set((state) => {
       const filtered = state.recentFiles.filter((f) => f !== path);
+      const newRecentFiles = [path, ...filtered].slice(0, 10); // Keep max 10 recent files
+      saveRecentFiles(newRecentFiles);
       return {
-        recentFiles: [path, ...filtered].slice(0, 10), // Keep max 10 recent files
+        recentFiles: newRecentFiles,
       };
     });
+  },
+
+  clearRecentFiles: () => {
+    saveRecentFiles([]);
+    set({ recentFiles: [] });
+  },
+
+  importJSON: (jsonContent) => {
+    try {
+      const data = JSON.parse(jsonContent) as PipelineConfig;
+
+      // Load pipeline config
+      usePipelineStore.getState().fromJSON(jsonContent);
+
+      // Restore canvas nodes from config
+      const canvasStore = useCanvasStore.getState();
+      canvasStore.reset();
+
+      const schema = usePipelineStore.getState().schema;
+
+      // Add nodes for each module
+      let yOffset = 100;
+      for (const [_moduleId, moduleConfig] of Object.entries(data.modules)) {
+        const moduleSchema = schema[moduleConfig.type];
+        if (moduleSchema) {
+          // Position nodes in a column for now
+          canvasStore.addNode(moduleConfig.type, moduleSchema, { x: 100, y: yOffset });
+          yOffset += 150;
+        }
+      }
+
+      // Restore connections
+      for (const conn of data.connections) {
+        const [sourceId, sourceHandle] = conn.from.split('.');
+        const [targetId, targetHandle] = conn.to.split('.');
+        canvasStore.addEdge({
+          source: sourceId,
+          target: targetId,
+          sourceHandle,
+          targetHandle,
+        });
+      }
+
+      set({
+        currentPath: null, // No file path for imported JSON
+        isDirty: true, // Mark as dirty since it's unsaved
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to import JSON:', error);
+      throw error;
+    }
   },
 }));

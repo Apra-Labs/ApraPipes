@@ -1,9 +1,10 @@
-import { useCallback, useState, useEffect } from 'react';
-import { Play, Square, Save, FolderOpen, FileJson, Settings, FilePlus, Loader2 } from 'lucide-react';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { Play, Square, Save, FolderOpen, FileJson, Settings, FilePlus, Loader2, Undo, Redo, HelpCircle, X, Upload, Clock, ChevronDown, Trash2 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useRuntimeStore } from '../../store/runtimeStore';
 import { usePipelineStore } from '../../store/pipelineStore';
+import { useCanvasStore } from '../../store/canvasStore';
 
 /**
  * Main toolbar component with pipeline controls
@@ -17,6 +18,9 @@ export function Toolbar() {
   const newWorkspace = useWorkspaceStore((state) => state.newWorkspace);
   const saveWorkspace = useWorkspaceStore((state) => state.saveWorkspace);
   const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
+  const recentFiles = useWorkspaceStore((state) => state.recentFiles);
+  const clearRecentFiles = useWorkspaceStore((state) => state.clearRecentFiles);
+  const importJSON = useWorkspaceStore((state) => state.importJSON);
 
   // Runtime state
   const runtimeStatus = useRuntimeStore((state) => state.status);
@@ -32,14 +36,43 @@ export function Toolbar() {
   const pipelineConfig = usePipelineStore((state) => state.config);
   const validatePipeline = usePipelineStore((state) => state.validate);
 
+  // Undo/Redo state
+  const canUndo = useCanvasStore((state) => state.canUndo);
+  const canRedo = useCanvasStore((state) => state.canRedo);
+  const undo = useCanvasStore((state) => state.undo);
+  const redo = useCanvasStore((state) => state.redo);
+
   const [openDialogVisible, setOpenDialogVisible] = useState(false);
   const [saveDialogVisible, setSaveDialogVisible] = useState(false);
+  const [helpDialogVisible, setHelpDialogVisible] = useState(false);
+  const [importDialogVisible, setImportDialogVisible] = useState(false);
+  const [recentFilesVisible, setRecentFilesVisible] = useState(false);
   const [pathInput, setPathInput] = useState('');
+  const [importContent, setImportContent] = useState('');
+  const recentFilesRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Connect to WebSocket on mount
   useEffect(() => {
     connect();
   }, [connect]);
+
+  // Click outside handler for recent files dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (recentFilesRef.current && !recentFilesRef.current.contains(e.target as Node)) {
+        setRecentFilesVisible(false);
+      }
+    };
+    if (recentFilesVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [recentFilesVisible]);
+
+  // Get selected node for delete shortcut
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
+  const removeNode = useCanvasStore((state) => state.removeNode);
 
   const handleNew = useCallback(() => {
     if (isDirty) {
@@ -87,6 +120,51 @@ export function Toolbar() {
     }
   }, [pathInput, saveWorkspace]);
 
+  // Import JSON from text
+  const handleImport = useCallback(() => {
+    setImportContent('');
+    setImportDialogVisible(true);
+  }, []);
+
+  const handleImportConfirm = useCallback(() => {
+    if (!importContent.trim()) return;
+    try {
+      importJSON(importContent.trim());
+      setImportDialogVisible(false);
+    } catch (error) {
+      alert(`Failed to import JSON: ${error instanceof Error ? error.message : 'Invalid JSON'}`);
+    }
+  }, [importContent, importJSON]);
+
+  // Import JSON from file
+  const handleFileImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      try {
+        importJSON(content);
+      } catch (error) {
+        alert(`Failed to import JSON: ${error instanceof Error ? error.message : 'Invalid JSON'}`);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  }, [importJSON]);
+
+  // Open recent file
+  const handleOpenRecent = useCallback(async (path: string) => {
+    setRecentFilesVisible(false);
+    try {
+      await openWorkspace(path);
+    } catch (error) {
+      alert(`Failed to open workspace: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [openWorkspace]);
+
   // Run pipeline
   const handleRun = useCallback(async () => {
     try {
@@ -128,6 +206,92 @@ export function Toolbar() {
     }
   }, [validatePipeline]);
 
+  // Keyboard shortcuts (defined after all handlers)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle shortcuts when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Ctrl/Cmd + Z = Undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+        return;
+      }
+
+      // Ctrl/Cmd + Shift + Z = Redo (or Ctrl/Cmd + Y)
+      if ((e.ctrlKey || e.metaKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+        e.preventDefault();
+        if (canRedo) redo();
+        return;
+      }
+
+      // Ctrl/Cmd + S = Save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+        return;
+      }
+
+      // Ctrl/Cmd + N = New
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleNew();
+        return;
+      }
+
+      // Ctrl/Cmd + O = Open
+      if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+        e.preventDefault();
+        handleOpen();
+        return;
+      }
+
+      // Delete or Backspace = Delete selected node
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
+        e.preventDefault();
+        removeNode(selectedNodeId);
+        return;
+      }
+
+      // F5 = Validate
+      if (e.key === 'F5') {
+        e.preventDefault();
+        handleValidate();
+        return;
+      }
+
+      // ? = Show help (Shift + /)
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setHelpDialogVisible(true);
+        return;
+      }
+
+      // Ctrl/Cmd + I = Import
+      if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+        e.preventDefault();
+        handleImport();
+        return;
+      }
+
+      // Escape = Close dialogs
+      if (e.key === 'Escape') {
+        setHelpDialogVisible(false);
+        setOpenDialogVisible(false);
+        setSaveDialogVisible(false);
+        setImportDialogVisible(false);
+        setRecentFilesVisible(false);
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, undo, redo, handleSave, handleNew, handleOpen, handleImport, selectedNodeId, removeNode, handleValidate]);
+
   const canRun = runtimeStatus === 'IDLE' || runtimeStatus === 'STOPPED';
   const canStop = runtimeStatus === 'RUNNING';
   const hasModules = Object.keys(pipelineConfig.modules).length > 0;
@@ -151,6 +315,82 @@ export function Toolbar() {
             icon={<Save className="w-4 h-4" />}
             label={isDirty ? 'Save*' : 'Save'}
             onClick={handleSave}
+          />
+          <ToolbarButton icon={<Upload className="w-4 h-4" />} label="Import" onClick={handleImport} />
+
+          {/* Recent Files Dropdown */}
+          <div className="relative" ref={recentFilesRef}>
+            <button
+              className={`
+                flex items-center gap-1 px-2 py-1.5 rounded text-sm font-medium
+                transition-colors hover:bg-muted
+                ${recentFiles.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+              onClick={() => setRecentFilesVisible(!recentFilesVisible)}
+              disabled={recentFiles.length === 0}
+              title="Recent Files"
+            >
+              <Clock className="w-4 h-4" />
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {recentFilesVisible && recentFiles.length > 0 && (
+              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-64 max-h-80 overflow-y-auto">
+                <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Recent Files</span>
+                  <button
+                    className="p-1 hover:bg-gray-100 rounded text-gray-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearRecentFiles();
+                      setRecentFilesVisible(false);
+                    }}
+                    title="Clear recent files"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="py-1">
+                  {recentFiles.map((file) => (
+                    <button
+                      key={file}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 truncate"
+                      onClick={() => handleOpenRecent(file)}
+                      title={file}
+                    >
+                      {file}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Hidden file input for importing JSON files */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept=".json"
+          onChange={handleFileImport}
+          className="hidden"
+        />
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-border" />
+
+        {/* Undo/Redo */}
+        <div className="flex items-center gap-1 ml-2">
+          <ToolbarButton
+            icon={<Undo className="w-4 h-4" />}
+            label="Undo"
+            disabled={!canUndo}
+            onClick={undo}
+          />
+          <ToolbarButton
+            icon={<Redo className="w-4 h-4" />}
+            label="Redo"
+            disabled={!canRedo}
+            onClick={redo}
           />
         </div>
 
@@ -211,6 +451,11 @@ export function Toolbar() {
             onClick={handleValidate}
           />
           <ToolbarButton icon={<Settings className="w-4 h-4" />} label="Settings" disabled />
+          <ToolbarButton
+            icon={<HelpCircle className="w-4 h-4" />}
+            label="Help"
+            onClick={() => setHelpDialogVisible(true)}
+          />
         </div>
       </header>
 
@@ -249,7 +494,118 @@ export function Toolbar() {
           />
         </Dialog>
       )}
+
+      {/* Import Dialog */}
+      {importDialogVisible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-[500px] p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Import Pipeline JSON</h2>
+              <button
+                className="p-1 hover:bg-gray-100 rounded"
+                onClick={() => fileInputRef.current?.click()}
+                title="Import from file"
+              >
+                <FolderOpen className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mb-4">
+              <textarea
+                placeholder="Paste pipeline JSON here..."
+                value={importContent}
+                onChange={(e) => setImportContent(e.target.value)}
+                className="w-full h-48 px-3 py-2 border border-gray-300 rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                onClick={() => setImportDialogVisible(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50"
+                onClick={handleImportConfirm}
+                disabled={!importContent.trim()}
+              >
+                Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Dialog */}
+      {helpDialogVisible && (
+        <HelpModal onClose={() => setHelpDialogVisible(false)} />
+      )}
     </>
+  );
+}
+
+/**
+ * Help modal showing keyboard shortcuts
+ */
+function HelpModal({ onClose }: { onClose: () => void }) {
+  const shortcuts = [
+    { key: 'Ctrl+N', action: 'New workspace' },
+    { key: 'Ctrl+O', action: 'Open workspace' },
+    { key: 'Ctrl+S', action: 'Save workspace' },
+    { key: 'Ctrl+I', action: 'Import JSON' },
+    { key: 'Ctrl+Z', action: 'Undo' },
+    { key: 'Ctrl+Shift+Z', action: 'Redo' },
+    { key: 'Ctrl+Y', action: 'Redo (alternative)' },
+    { key: 'Delete', action: 'Delete selected node' },
+    { key: 'Backspace', action: 'Delete selected node' },
+    { key: 'F5', action: 'Validate pipeline' },
+    { key: '?', action: 'Show this help' },
+    { key: 'Escape', action: 'Close dialogs' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-lg shadow-xl w-96 max-h-[80vh] overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-4 overflow-y-auto max-h-[60vh]">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-sm text-gray-500 border-b">
+                <th className="pb-2">Shortcut</th>
+                <th className="pb-2">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shortcuts.map(({ key, action }) => (
+                <tr key={key} className="border-b border-gray-100 last:border-0">
+                  <td className="py-2">
+                    <kbd className="px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded font-mono">
+                      {key}
+                    </kbd>
+                  </td>
+                  <td className="py-2 text-sm text-gray-700">{action}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+          <p className="text-xs text-gray-500 text-center">
+            Press <kbd className="px-1 bg-gray-100 border rounded">?</kbd> anytime to show this help
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -230,4 +230,57 @@ describe('workspaceStore', () => {
       expect(useWorkspaceStore.getState().recentFiles).toContain('/test/project');
     });
   });
+
+  describe('clearRecentFiles', () => {
+    it('clears all recent files', () => {
+      useWorkspaceStore.getState().addRecentFile('/test/file1');
+      useWorkspaceStore.getState().addRecentFile('/test/file2');
+      expect(useWorkspaceStore.getState().recentFiles).toHaveLength(2);
+
+      useWorkspaceStore.getState().clearRecentFiles();
+      expect(useWorkspaceStore.getState().recentFiles).toEqual([]);
+    });
+  });
+
+  describe('importJSON', () => {
+    it('imports valid pipeline JSON', () => {
+      const pipelineJson = JSON.stringify({
+        modules: {},
+        connections: [],
+      });
+
+      useWorkspaceStore.getState().importJSON(pipelineJson);
+
+      expect(useWorkspaceStore.getState().currentPath).toBeNull();
+      expect(useWorkspaceStore.getState().isDirty).toBe(true);
+    });
+
+    it('throws on invalid JSON', () => {
+      expect(() => {
+        useWorkspaceStore.getState().importJSON('not valid json');
+      }).toThrow();
+    });
+
+    it('marks workspace as dirty after import', () => {
+      const pipelineJson = JSON.stringify({
+        modules: {},
+        connections: [],
+      });
+
+      useWorkspaceStore.getState().importJSON(pipelineJson);
+      expect(useWorkspaceStore.getState().isDirty).toBe(true);
+    });
+
+    it('does not set currentPath after import', () => {
+      useWorkspaceStore.getState().setCurrentPath('/existing/path');
+
+      const pipelineJson = JSON.stringify({
+        modules: {},
+        connections: [],
+      });
+
+      useWorkspaceStore.getState().importJSON(pipelineJson);
+      expect(useWorkspaceStore.getState().currentPath).toBeNull();
+    });
+  });
 });

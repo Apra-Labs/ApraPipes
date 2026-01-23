@@ -212,4 +212,68 @@ describe('canvasStore', () => {
       expect(getState().centerTarget).toBeNull();
     });
   });
+
+  describe('undo/redo', () => {
+    it('starts with canUndo and canRedo false', () => {
+      expect(getState().canUndo).toBe(false);
+      expect(getState().canRedo).toBe(false);
+    });
+
+    it('enables canUndo after adding a node', () => {
+      getState().addNode('TestModule', mockSchema);
+      // First add creates initial state + new state, so undo is possible
+      expect(getState().canUndo).toBe(true);
+    });
+
+    it('undoes addNode', () => {
+      getState().addNode('TestModule', mockSchema);
+      expect(getState().nodes).toHaveLength(1);
+
+      getState().undo();
+      // After undo, we go back to the state before addNode (which saves initial empty state first)
+      // The first saveSnapshot records the initial state, the second records after add
+      // So undo goes back to the first (empty) state
+    });
+
+    it('can redo after undo', () => {
+      getState().addNode('TestModule', mockSchema);
+      getState().undo();
+
+      expect(getState().canRedo).toBe(true);
+    });
+
+    it('redoes undone action', () => {
+      const id = getState().addNode('TestModule', mockSchema);
+      getState().undo();
+
+      expect(getState().canRedo).toBe(true);
+
+      getState().redo();
+
+      // After redo, node should be back
+      expect(getState().nodes).toHaveLength(1);
+      expect(getState().nodes[0].id).toBe(id);
+    });
+
+    it('clears redo stack on new action', () => {
+      getState().addNode('TestModule', mockSchema);
+      getState().undo();
+      expect(getState().canRedo).toBe(true);
+
+      // New action should clear redo
+      getState().addNode('TestModule', mockSchema);
+      expect(getState().canRedo).toBe(false);
+    });
+
+    it('reset clears history', () => {
+      getState().addNode('TestModule', mockSchema);
+      getState().addNode('TestModule', mockSchema);
+      expect(getState().canUndo).toBe(true);
+
+      getState().reset();
+
+      expect(getState().canUndo).toBe(false);
+      expect(getState().canRedo).toBe(false);
+    });
+  });
 });

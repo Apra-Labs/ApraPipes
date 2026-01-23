@@ -8,6 +8,7 @@ import {
   EdgeChange,
 } from '@xyflow/react';
 import { generateNodeId } from '../utils/id';
+import { HistoryManager } from '../utils/history';
 import type { ModuleSchema } from '../types/schema';
 
 export interface ModuleNodeData {
@@ -42,6 +43,17 @@ interface CanvasState {
   edges: Edge[];
   selectedNodeId: string | null;
   centerTarget: string | null; // Node ID to center on
+  // History state
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+/**
+ * Snapshot of canvas state for history
+ */
+interface CanvasSnapshot {
+  nodes: ModuleNode[];
+  edges: Edge[];
 }
 
 interface CanvasActions {
@@ -73,6 +85,11 @@ interface CanvasActions {
 
   // Reset
   reset: () => void;
+
+  // History (Undo/Redo)
+  undo: () => void;
+  redo: () => void;
+  saveSnapshot: (action?: string) => void;
 }
 
 const initialState: CanvasState = {
@@ -80,7 +97,15 @@ const initialState: CanvasState = {
   edges: [],
   selectedNodeId: null,
   centerTarget: null,
+  canUndo: false,
+  canRedo: false,
 };
+
+// Create history manager singleton
+const historyManager = new HistoryManager<CanvasSnapshot>({
+  maxSize: 50,
+  storageKey: 'aprapipes-studio-history',
+});
 
 export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => ({
   ...initialState,
@@ -107,6 +132,9 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
       nodes: [...state.nodes, newNode],
     }));
 
+    // Save snapshot after change
+    get().saveSnapshot(`Add ${moduleType}`);
+
     return id;
   },
 
@@ -116,6 +144,7 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
       edges: state.edges.filter((e) => e.source !== id && e.target !== id),
       selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
     }));
+    get().saveSnapshot('Delete node');
   },
 
   updateNodePosition: (id, position) => {
@@ -148,12 +177,14 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
     set((state) => ({
       edges: [...state.edges, newEdge],
     }));
+    get().saveSnapshot('Connect modules');
   },
 
   removeEdge: (id) => {
     set((state) => ({
       edges: state.edges.filter((e) => e.id !== id),
     }));
+    get().saveSnapshot('Delete connection');
   },
 
   updateNodeValidation: (nodeId, errors, warnings) => {
@@ -216,6 +247,47 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
   },
 
   reset: () => {
+    historyManager.clear();
     set(initialState);
+  },
+
+  undo: () => {
+    const snapshot = historyManager.undo();
+    if (snapshot) {
+      set({
+        nodes: snapshot.nodes,
+        edges: snapshot.edges,
+        canUndo: historyManager.canUndo(),
+        canRedo: historyManager.canRedo(),
+      });
+    }
+  },
+
+  redo: () => {
+    const snapshot = historyManager.redo();
+    if (snapshot) {
+      set({
+        nodes: snapshot.nodes,
+        edges: snapshot.edges,
+        canUndo: historyManager.canUndo(),
+        canRedo: historyManager.canRedo(),
+      });
+    }
+  },
+
+  saveSnapshot: (action?: string) => {
+    const { nodes, edges } = get();
+
+    // If this is the first snapshot, push an initial empty state first
+    // so that undo can go back to the initial state
+    if (historyManager.getCurrentState() === null) {
+      historyManager.push({ nodes: [], edges: [] }, 'Initial');
+    }
+
+    historyManager.push({ nodes, edges }, action);
+    set({
+      canUndo: historyManager.canUndo(),
+      canRedo: historyManager.canRedo(),
+    });
   },
 }));
