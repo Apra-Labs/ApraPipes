@@ -1,10 +1,11 @@
 /**
- * Type definitions for module schema from schema_generator
+ * Type definitions for module schema from aprapipes.node addon
  */
 
 export interface Pin {
   name: string;
   frame_types: string[];
+  required?: boolean;
 }
 
 export interface PropertySchema {
@@ -14,18 +15,37 @@ export interface PropertySchema {
   max?: string;
   enum_values?: string[];
   description?: string;
+  required?: boolean;
+  mutability?: string;
 }
 
 export interface ModuleSchema {
   category: string;
   description: string;
+  version?: string;
+  tags?: string[];
   inputs: Pin[];
   outputs: Pin[];
   properties: Record<string, PropertySchema>;
 }
 
+export interface FrameTypeSchema {
+  parent: string;
+  description: string;
+  tags: string[];
+  attributes?: Record<string, {
+    type: string;
+    required: boolean;
+    description: string;
+    enumValues?: string[];
+  }>;
+  ancestors?: string[];
+  subtypes?: string[];
+}
+
 export interface SchemaResponse {
   modules: Record<string, ModuleSchema>;
+  frameTypes: Record<string, FrameTypeSchema>;
 }
 
 /**

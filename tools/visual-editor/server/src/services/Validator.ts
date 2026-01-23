@@ -20,25 +20,14 @@ import { logger } from '../utils/logger.js';
  */
 export class Validator {
   private schemaLoader: SchemaLoader;
-  private useNativeValidator: boolean = false;
 
   constructor(schemaLoader: SchemaLoader) {
     this.schemaLoader = schemaLoader;
-    this.checkNativeValidator();
-  }
-
-  /**
-   * Check if native aprapipes validator is available
-   */
-  private checkNativeValidator(): void {
-    try {
-      // Try to load aprapipes.node - this will be implemented when the addon is available
-      // For now, always use mock validator
-      this.useNativeValidator = false;
-      logger.info('Using mock validator (aprapipes.node not available)');
-    } catch {
-      this.useNativeValidator = false;
-      logger.info('Using mock validator (aprapipes.node not available)');
+    // Log validation mode based on addon availability
+    if (this.schemaLoader.isAddonLoaded()) {
+      logger.info('Validator using aprapipes.node addon for schema');
+    } else {
+      logger.info('Validator using mock schema data');
     }
   }
 
@@ -46,26 +35,6 @@ export class Validator {
    * Validate a pipeline configuration
    */
   async validate(config: PipelineConfig): Promise<ValidationResult> {
-    if (this.useNativeValidator) {
-      return this.validateWithNative(config);
-    }
-    return this.validateWithMock(config);
-  }
-
-  /**
-   * Validate using native aprapipes validator
-   */
-  private async validateWithNative(_config: PipelineConfig): Promise<ValidationResult> {
-    // TODO: Implement when aprapipes.node is available
-    // const result = aprapipes.validatePipeline(config);
-    // return this.parseNativeResult(result);
-    return { valid: true, issues: [] };
-  }
-
-  /**
-   * Validate using mock validator (schema-based checks)
-   */
-  private async validateWithMock(config: PipelineConfig): Promise<ValidationResult> {
     const issues: ValidationIssue[] = [];
     const schema = await this.schemaLoader.getSchema();
 
@@ -87,7 +56,7 @@ export class Validator {
     }
 
     // Validate connections
-    this.validateConnections(config, schema, issues);
+    await this.validateConnections(config, schema, issues);
 
     // Check for disconnected modules
     this.checkDisconnectedModules(config, schema, issues);
@@ -235,11 +204,11 @@ export class Validator {
   /**
    * Validate connections
    */
-  private validateConnections(
+  private async validateConnections(
     config: PipelineConfig,
     schema: Record<string, ModuleSchema>,
     issues: ValidationIssue[]
-  ): void {
+  ): Promise<void> {
     const seenConnections = new Set<string>();
 
     for (let i = 0; i < config.connections.length; i++) {
@@ -318,7 +287,7 @@ export class Validator {
         const targetInput = targetSchema.inputs?.find((i) => i.name === targetPin);
 
         if (sourceOutput && targetInput) {
-          const compatible = this.checkFrameTypeCompatibility(
+          const compatible = await this.checkFrameTypeCompatibility(
             sourceOutput.frame_types,
             targetInput.frame_types
           );
@@ -337,15 +306,26 @@ export class Validator {
   }
 
   /**
-   * Check frame type compatibility between pins
+   * Check frame type compatibility between pins using hierarchy
    */
-  private checkFrameTypeCompatibility(sourceTypes: string[], targetTypes: string[]): boolean {
+  private async checkFrameTypeCompatibility(sourceTypes: string[], targetTypes: string[]): Promise<boolean> {
     // If either side accepts any type, it's compatible
     if (sourceTypes.length === 0 || targetTypes.length === 0) {
       return true;
     }
-    // Check if there's any overlap in frame types
-    return sourceTypes.some((st) => targetTypes.includes(st));
+
+    // Check if any source type is compatible with any target type
+    for (const sourceType of sourceTypes) {
+      for (const targetType of targetTypes) {
+        // Use the schema loader's hierarchy-aware compatibility check
+        const compatible = await this.schemaLoader.areFrameTypesCompatible(sourceType, targetType);
+        if (compatible) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   /**

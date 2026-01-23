@@ -15,10 +15,20 @@ describe('SchemaLoader', () => {
     expect(typeof schema.modules).toBe('object');
   });
 
-  it('returns mock data when modules.json not found', async () => {
+  it('returns schema with modules and frameTypes', async () => {
     const schema = await schemaLoader.load();
 
-    // Mock schema should have at least these modules
+    // Schema should have both modules and frameTypes
+    expect(schema.modules).toBeDefined();
+    expect(schema.frameTypes).toBeDefined();
+    expect(Object.keys(schema.modules).length).toBeGreaterThan(0);
+    expect(Object.keys(schema.frameTypes).length).toBeGreaterThan(0);
+  });
+
+  it('loads from addon or returns mock data', async () => {
+    const schema = await schemaLoader.load();
+
+    // Either addon or mock - should have TestSignalGenerator
     expect(schema.modules).toHaveProperty('TestSignalGenerator');
     expect(schema.modules.TestSignalGenerator.category).toBe('source');
   });
@@ -54,5 +64,39 @@ describe('SchemaLoader', () => {
     const module = await schemaLoader.getModule('NonExistentModule');
 
     expect(module).toBeUndefined();
+  });
+
+  it('getFrameTypes returns frame type hierarchy', async () => {
+    const frameTypes = await schemaLoader.getFrameTypes();
+
+    expect(frameTypes).toBeDefined();
+    expect(Object.keys(frameTypes).length).toBeGreaterThan(0);
+
+    // Check Frame is the base type
+    if (frameTypes.Frame) {
+      expect(frameTypes.Frame.parent).toBe('');
+      expect(frameTypes.Frame.subtypes).toBeDefined();
+    }
+  });
+
+  it('areFrameTypesCompatible returns true for exact match', async () => {
+    const compatible = await schemaLoader.areFrameTypesCompatible('RawImage', 'RawImage');
+    expect(compatible).toBe(true);
+  });
+
+  it('areFrameTypesCompatible returns true when input accepts Frame (any)', async () => {
+    const compatible = await schemaLoader.areFrameTypesCompatible('RawImage', 'Frame');
+    expect(compatible).toBe(true);
+  });
+
+  it('areFrameTypesCompatible returns true for subtype to parent', async () => {
+    // RawImagePlanar is a subtype of RawImage, so it should be compatible
+    const compatible = await schemaLoader.areFrameTypesCompatible('RawImagePlanar', 'RawImage');
+    expect(compatible).toBe(true);
+  });
+
+  it('isAddonLoaded returns boolean', () => {
+    const loaded = schemaLoader.isAddonLoaded();
+    expect(typeof loaded).toBe('boolean');
   });
 });

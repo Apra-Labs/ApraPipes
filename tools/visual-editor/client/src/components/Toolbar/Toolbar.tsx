@@ -195,12 +195,19 @@ export function Toolbar() {
   const handleValidate = useCallback(async () => {
     try {
       const result = await validatePipeline();
-      if (result.valid) {
-        alert('Pipeline is valid!');
+      const errorCount = result.issues.filter((i) => i.level === 'error').length;
+      const warningCount = result.issues.filter((i) => i.level === 'warning').length;
+      const infoCount = result.issues.filter((i) => i.level === 'info').length;
+
+      // Provide accurate validation feedback
+      if (errorCount === 0 && warningCount === 0 && infoCount === 0) {
+        alert('Pipeline is valid! No issues found.');
+      } else if (errorCount === 0 && warningCount > 0) {
+        alert(`Pipeline valid with ${warningCount} warning(s). Check the Problems panel.`);
+      } else if (errorCount > 0) {
+        alert(`Validation found ${errorCount} error(s), ${warningCount} warning(s). Check the Problems panel.`);
       } else {
-        const errorCount = result.issues.filter((i) => i.level === 'error').length;
-        const warningCount = result.issues.filter((i) => i.level === 'warning').length;
-        alert(`Validation complete: ${errorCount} error(s), ${warningCount} warning(s)`);
+        alert(`Validation complete with ${infoCount} info message(s).`);
       }
     } catch (error) {
       alert(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
