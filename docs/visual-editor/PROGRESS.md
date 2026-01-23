@@ -570,6 +570,15 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 
 ---
 
+## Backlog / Known Issues
+
+| Issue | Type | Priority | Notes |
+|-------|------|----------|-------|
+| TestSignalGenerator.patterns shows as string input instead of dropdown | Investigation | Low | Enum values may not be populated in schema. Check if `enumValues` is being generated correctly for this property in CLI/addon output. |
+| File browser "Failed to load directory" error | Investigation | Low | API works via curl but browser shows error. Improved error handling added - may need further debugging. |
+
+---
+
 ## Recent Changes
 
 ### 2026-01-23 (Session 2)
