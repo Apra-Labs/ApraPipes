@@ -54,9 +54,12 @@ export function FileBrowserDialog({
       if (path) params.set('path', path);
       if (filter && mode === 'file') params.set('filter', filter);
 
-      const response = await fetch(`/api/files/list?${params}`);
+      const url = `/api/files/list?${params}`;
+      const response = await fetch(url);
+
       if (!response.ok) {
-        throw new Error('Failed to load directory');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -65,7 +68,12 @@ export function FileBrowserDialog({
       setEntries(data.entries);
       setPathInput(data.path);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load directory');
+      console.error('FileBrowser error:', err);
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Cannot connect to server. Is it running?');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load directory');
+      }
     } finally {
       setLoading(false);
     }

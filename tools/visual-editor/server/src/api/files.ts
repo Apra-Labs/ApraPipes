@@ -105,10 +105,23 @@ router.get('/list', async (req, res) => {
 
     res.json(response);
   } catch (error) {
-    logger.error('File list error:', error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to list directory',
-    });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to list directory';
+    const errorCode = (error as NodeJS.ErrnoException).code;
+
+    logger.error('File list error:', errorMessage, errorCode);
+
+    // Handle common error codes
+    if (errorCode === 'ENOENT') {
+      return res.status(404).json({ error: 'Directory not found' });
+    }
+    if (errorCode === 'EACCES' || errorCode === 'EPERM') {
+      return res.status(403).json({ error: 'Permission denied' });
+    }
+    if (errorCode === 'ENOTDIR') {
+      return res.status(400).json({ error: 'Not a directory' });
+    }
+
+    res.status(500).json({ error: errorMessage });
   }
 });
 
