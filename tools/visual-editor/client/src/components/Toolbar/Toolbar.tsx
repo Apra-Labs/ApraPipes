@@ -6,6 +6,7 @@ import { useRuntimeStore } from '../../store/runtimeStore';
 import { usePipelineStore } from '../../store/pipelineStore';
 import { useCanvasStore } from '../../store/canvasStore';
 import { FileBrowserDialog } from '../FileBrowser';
+import { SettingsModal } from './SettingsModal';
 
 /**
  * Main toolbar component with pipeline controls
@@ -13,6 +14,10 @@ import { FileBrowserDialog } from '../FileBrowser';
 export function Toolbar() {
   const viewMode = useUIStore((state) => state.viewMode);
   const setViewMode = useUIStore((state) => state.setViewMode);
+  const settingsDialogVisible = useUIStore((state) => state.settingsDialogVisible);
+  const openSettingsDialog = useUIStore((state) => state.openSettingsDialog);
+  const closeSettingsDialog = useUIStore((state) => state.closeSettingsDialog);
+  const validateOnSave = useUIStore((state) => state.settings.validateOnSave);
 
   const currentPath = useWorkspaceStore((state) => state.currentPath);
   const isDirty = useWorkspaceStore((state) => state.isDirty);
@@ -99,6 +104,22 @@ export function Toolbar() {
   }, [openWorkspace]);
 
   const handleSave = useCallback(async () => {
+    // Validate on save if enabled
+    if (validateOnSave) {
+      try {
+        const result = await validatePipeline();
+        const errorCount = result.issues.filter((i) => i.level === 'error').length;
+        if (errorCount > 0) {
+          const proceed = window.confirm(
+            `Pipeline has ${errorCount} validation error(s). Save anyway?`
+          );
+          if (!proceed) return;
+        }
+      } catch {
+        // Continue saving even if validation fails
+      }
+    }
+
     if (currentPath) {
       try {
         await saveWorkspace();
@@ -108,7 +129,7 @@ export function Toolbar() {
     } else {
       setSaveBrowserVisible(true);
     }
-  }, [currentPath, saveWorkspace]);
+  }, [currentPath, saveWorkspace, validateOnSave, validatePipeline]);
 
   const handleSaveSelect = useCallback(async (path: string) => {
     try {
@@ -472,7 +493,11 @@ export function Toolbar() {
             disabled={!hasModules}
             onClick={handleValidate}
           />
-          <ToolbarButton icon={<Settings className="w-4 h-4" />} label="Settings" disabled />
+          <ToolbarButton
+            icon={<Settings className="w-4 h-4" />}
+            label="Settings"
+            onClick={openSettingsDialog}
+          />
           <ToolbarButton
             icon={<HelpCircle className="w-4 h-4" />}
             label="Help"
@@ -544,6 +569,11 @@ export function Toolbar() {
       {/* Help Dialog */}
       {helpDialogVisible && (
         <HelpModal onClose={() => setHelpDialogVisible(false)} />
+      )}
+
+      {/* Settings Dialog */}
+      {settingsDialogVisible && (
+        <SettingsModal onClose={closeSettingsDialog} />
       )}
     </>
   );

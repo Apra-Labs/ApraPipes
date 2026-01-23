@@ -8,6 +8,10 @@ describe('uiStore', () => {
       viewMode: 'visual',
       leftPanelCollapsed: false,
       rightPanelCollapsed: false,
+      settingsDialogVisible: false,
+      settings: {
+        validateOnSave: true,
+      },
     });
   });
 
@@ -56,6 +60,34 @@ describe('uiStore', () => {
       getState().toggleRightPanel();
       getState().toggleRightPanel();
       expect(getState().rightPanelCollapsed).toBe(false);
+    });
+  });
+
+  describe('settings dialog', () => {
+    it('opens settings dialog', () => {
+      expect(getState().settingsDialogVisible).toBe(false);
+      getState().openSettingsDialog();
+      expect(getState().settingsDialogVisible).toBe(true);
+    });
+
+    it('closes settings dialog', () => {
+      getState().openSettingsDialog();
+      getState().closeSettingsDialog();
+      expect(getState().settingsDialogVisible).toBe(false);
+    });
+  });
+
+  describe('settings', () => {
+    it('has validateOnSave enabled by default', () => {
+      expect(getState().settings.validateOnSave).toBe(true);
+    });
+
+    it('toggles validateOnSave setting', () => {
+      getState().setValidateOnSave(false);
+      expect(getState().settings.validateOnSave).toBe(false);
+
+      getState().setValidateOnSave(true);
+      expect(getState().settings.validateOnSave).toBe(true);
     });
   });
 });

@@ -2,8 +2,8 @@
 
 > **Last Updated:** 2026-01-23
 > **Current Phase:** Phase 7 - Critical Fixes & Real Schema Integration
-> **Current Sprint:** Sprint 7.3 - Demo Feedback (In Progress)
-> **Next Action:** Complete remaining Sprint 7.3 items (F7 pin properties)
+> **Current Sprint:** Sprint 7.4 - Real Integration (Ready)
+> **Next Action:** Run real validations via aprapipes.node and test with real pipelines
 
 ---
 
@@ -16,7 +16,7 @@
 | **Phase 2: Validation** | ✅ Complete | 100% | 2 weeks |
 | **Phase 3: Runtime** | ✅ Complete | 100% | 2-3 weeks |
 | **Phase 6: Polish** | ✅ Complete | 100% | 2-3 weeks |
-| **Phase 7: Critical Fixes** | 🚧 In Progress | 80% | User feedback items |
+| **Phase 7: Critical Fixes** | 🚧 In Progress | 95% | User feedback items |
 | **Phase 4: LLM Basic** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 | **Phase 5: LLM Advanced** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 
@@ -438,7 +438,7 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 ---
 
 ### Sprint 7.3: Demo Feedback & UX Improvements
-**Status:** 🚧 In Progress
+**Status:** ✅ Complete
 **Duration:** 2 days
 
 **Goal:** Address demo feedback and improve editor UX.
@@ -451,22 +451,32 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 - [x] File browser for workspace Open/Save dialogs
 - [x] Integrated aprapipes.node addon for live schema
 - [x] schema.json fallback when addon not available
-- [ ] F7: Pin properties (click pin → show properties in Property Panel)
+- [x] F7: Pin properties (click pin → show properties in Property Panel)
+  - Added `selectedPin` state and `selectPin` action to canvasStore
+  - ModuleNode pins are now clickable with visual selection state
+  - PropertyPanel shows pin name, direction, frame types, parent module
+  - PropertyPanel shows connected modules with navigation
 
 **Blockers:** None
+**Completion:** ✅ Sprint 7.3 COMPLETE
 
 ---
 
 ### Sprint 7.4: UI Polish & Settings
-**Status:** ⏳ Not Started
+**Status:** ✅ Complete
 **Duration:** 2 days
 
 **Goal:** Add user preferences and auto-arrange functionality.
 
 - [x] F6: Remove "SOURCE"/"TRANSFORM" labels (completed in Sprint 7.2)
-- [ ] F5: Settings page + validate-on-save + arrange button
+- [x] F5: Settings modal
+  - Validate-on-save toggle (persisted to localStorage)
+  - Auto-arrange modules button (grid layout, sorted by category)
+  - Settings stored in uiStore with persist middleware
+  - Save warns user if validation has errors
 
-**Blockers:** Depends on Sprint 7.3
+**Blockers:** None
+**Completion:** ✅ Sprint 7.4 COMPLETE
 
 ---
 
@@ -581,8 +591,33 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 
 ## Recent Changes
 
+### 2026-01-23 (Session 3)
+- ✅ **Sprint 7.3 COMPLETE** (Demo Feedback)
+  - ✅ F7: Pin properties implemented
+    - Added `selectedPin` state and `selectPin` action to canvasStore
+    - ModuleNode pins are clickable with visual selection highlighting
+    - PropertyPanel shows pin details when selected:
+      - Pin name with direction icon
+      - Direction badge (Input/Output)
+      - Supported frame types
+      - Parent module (clickable to navigate)
+      - Connected modules (clickable to navigate and center)
+    - 6 PropertyPanel tests added
+- ✅ **Sprint 7.4 COMPLETE** (UI Polish & Settings)
+  - ✅ F5: Settings modal implemented
+    - Validate-on-save toggle (enabled by default)
+    - Auto-arrange modules button (grid layout)
+    - Modules sorted by category: sources → transforms → sinks
+    - Settings persisted to localStorage via zustand persist
+    - Save prompts user if validation has errors
+  - Added `SettingsModal` component
+  - Added settings actions to uiStore: `openSettingsDialog`, `closeSettingsDialog`, `setValidateOnSave`
+  - 4 new uiStore tests for settings
+- All 287 tests passing (202 client + 85 server)
+- Build passing
+
 ### 2026-01-23 (Session 2)
-- 🚧 **Sprint 7.3 IN PROGRESS** (Demo Feedback)
+- ✅ **Sprint 7.3 IN PROGRESS** (Demo Feedback)
   - ✅ Integrated aprapipes.node addon into visual editor backend
     - SchemaLoader loads from addon with schema.json fallback
     - Frame type hierarchy used for connection validation

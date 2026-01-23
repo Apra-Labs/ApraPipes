@@ -1,6 +1,7 @@
-import { memo, useState } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { memo, useState, useCallback } from 'react';
+import { Handle, Position, useNodeId } from '@xyflow/react';
 import type { ModuleNodeData } from '../../store/canvasStore';
+import { useCanvasStore } from '../../store/canvasStore';
 import { useRuntimeStore } from '../../store/runtimeStore';
 import { getCategoryColor } from '../../types/schema';
 
@@ -52,6 +53,22 @@ function StatusBadge({ status }: { status: 'idle' | 'running' | 'error' }) {
 function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
   const categoryColorClass = getCategoryColor(data.category);
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
+  const nodeId = useNodeId();
+
+  // Pin selection
+  const selectPin = useCanvasStore((state) => state.selectPin);
+  const selectedPin = useCanvasStore((state) => state.selectedPin);
+
+  const handlePinClick = useCallback((pinName: string, pinType: 'input' | 'output', e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't trigger node selection
+    if (nodeId) {
+      selectPin({ nodeId, pinName, pinType });
+    }
+  }, [nodeId, selectPin]);
+
+  const isPinSelected = (pinName: string, pinType: 'input' | 'output') => {
+    return selectedPin?.nodeId === nodeId && selectedPin?.pinName === pinName && selectedPin?.pinType === pinType;
+  };
 
   // Get runtime metrics from store
   const runtimeStatus = useRuntimeStore((state) => state.status);
@@ -148,18 +165,25 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
           {data.inputs.map((input: { name: string; frame_types: string[] }, index: number) => (
             <div
               key={input.name}
-              className="flex items-center gap-2 relative"
+              className={`flex items-center gap-2 relative cursor-pointer rounded px-1 -mx-1 ${
+                isPinSelected(input.name, 'input') ? 'bg-blue-100' : 'hover:bg-gray-100'
+              }`}
               onMouseEnter={() => setHoveredPin(`in-${input.name}`)}
               onMouseLeave={() => setHoveredPin(null)}
+              onClick={(e) => handlePinClick(input.name, 'input', e)}
             >
               <Handle
                 type="target"
                 position={Position.Left}
                 id={input.name}
-                className="!w-4 !h-4 !bg-blue-500 !border-2 !border-white hover:!bg-blue-600 hover:!scale-150 hover:!ring-4 hover:!ring-blue-300/50 transition-all cursor-crosshair"
+                className={`!w-4 !h-4 !border-2 !border-white hover:!scale-150 hover:!ring-4 hover:!ring-blue-300/50 transition-all cursor-crosshair ${
+                  isPinSelected(input.name, 'input') ? '!bg-blue-700 !ring-2 !ring-blue-500' : '!bg-blue-500 hover:!bg-blue-600'
+                }`}
                 style={{ top: `${24 + index * 24}px` }}
               />
-              <span className="text-xs text-gray-500 pl-2">{input.name}</span>
+              <span className={`text-xs pl-2 ${isPinSelected(input.name, 'input') ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                {input.name}
+              </span>
               {hoveredPin === `in-${input.name}` && (
                 <PinTooltip name={input.name} frameTypes={input.frame_types} position="left" />
               )}
@@ -172,16 +196,23 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
           {data.outputs.map((output: { name: string; frame_types: string[] }, index: number) => (
             <div
               key={output.name}
-              className="flex items-center justify-end gap-2 relative"
+              className={`flex items-center justify-end gap-2 relative cursor-pointer rounded px-1 -mx-1 ${
+                isPinSelected(output.name, 'output') ? 'bg-green-100' : 'hover:bg-gray-100'
+              }`}
               onMouseEnter={() => setHoveredPin(`out-${output.name}`)}
               onMouseLeave={() => setHoveredPin(null)}
+              onClick={(e) => handlePinClick(output.name, 'output', e)}
             >
-              <span className="text-xs text-gray-500 pr-2">{output.name}</span>
+              <span className={`text-xs pr-2 ${isPinSelected(output.name, 'output') ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                {output.name}
+              </span>
               <Handle
                 type="source"
                 position={Position.Right}
                 id={output.name}
-                className="!w-4 !h-4 !bg-green-500 !border-2 !border-white hover:!bg-green-600 hover:!scale-150 hover:!ring-4 hover:!ring-green-300/50 transition-all cursor-crosshair"
+                className={`!w-4 !h-4 !border-2 !border-white hover:!scale-150 hover:!ring-4 hover:!ring-green-300/50 transition-all cursor-crosshair ${
+                  isPinSelected(output.name, 'output') ? '!bg-green-700 !ring-2 !ring-green-500' : '!bg-green-500 hover:!bg-green-600'
+                }`}
                 style={{ top: `${24 + index * 24}px` }}
               />
               {hoveredPin === `out-${output.name}` && (

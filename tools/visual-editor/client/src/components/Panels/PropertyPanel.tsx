@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useCanvasStore } from '../../store/canvasStore';
 import { usePipelineStore } from '../../store/pipelineStore';
 import type { PropertySchema, ModuleSchema } from '../../types/schema';
@@ -22,9 +22,13 @@ interface PropertyPanelProps {
  */
 export function PropertyPanel({ schema }: PropertyPanelProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
+  const selectedPin = useCanvasStore((state) => state.selectedPin);
   const nodes = useCanvasStore((state) => state.nodes);
+  const edges = useCanvasStore((state) => state.edges);
   const updateNodeData = useCanvasStore((state) => state.updateNodeData);
   const removeNode = useCanvasStore((state) => state.removeNode);
+  const centerOnNode = useCanvasStore((state) => state.centerOnNode);
+  const selectNode = useCanvasStore((state) => state.selectNode);
 
   const updateModuleProperty = usePipelineStore((state) => state.updateModuleProperty);
   const pipelineConfig = usePipelineStore((state) => state.config);
@@ -228,6 +232,143 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
     }
   };
 
+  // Get pin information if a pin is selected
+  const getPinInfo = () => {
+    if (!selectedPin) return null;
+
+    const pinNode = nodes.find((n) => n.id === selectedPin.nodeId);
+    if (!pinNode) return null;
+
+    const pins = selectedPin.pinType === 'input' ? pinNode.data.inputs : pinNode.data.outputs;
+    const pin = pins.find((p: { name: string; frame_types: string[] }) => p.name === selectedPin.pinName);
+    if (!pin) return null;
+
+    // Find connected edges
+    const connectedEdges = edges.filter((e) => {
+      if (selectedPin.pinType === 'input') {
+        return e.target === selectedPin.nodeId && e.targetHandle === selectedPin.pinName;
+      } else {
+        return e.source === selectedPin.nodeId && e.sourceHandle === selectedPin.pinName;
+      }
+    });
+
+    // Find connected modules
+    const connectedModules = connectedEdges.map((e) => {
+      if (selectedPin.pinType === 'input') {
+        const sourceNode = nodes.find((n) => n.id === e.source);
+        return { nodeId: e.source, label: sourceNode?.data.label || e.source, pinName: e.sourceHandle || 'default' };
+      } else {
+        const targetNode = nodes.find((n) => n.id === e.target);
+        return { nodeId: e.target, label: targetNode?.data.label || e.target, pinName: e.targetHandle || 'default' };
+      }
+    });
+
+    return {
+      ...pin,
+      direction: selectedPin.pinType,
+      moduleName: pinNode.data.label,
+      moduleType: pinNode.data.type,
+      connectedModules,
+    };
+  };
+
+  const pinInfo = getPinInfo();
+
+  // Show pin properties if a pin is selected
+  if (selectedPin && pinInfo) {
+    return (
+      <div className="p-4 space-y-4">
+        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+          Pin Properties
+        </h3>
+
+        {/* Pin Name */}
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">Pin Name</label>
+          <div className="flex items-center gap-2 px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded">
+            {pinInfo.direction === 'input' ? (
+              <ArrowRight className="w-4 h-4 text-blue-500" />
+            ) : (
+              <ArrowLeft className="w-4 h-4 text-green-500" />
+            )}
+            <span className="font-mono">{pinInfo.name}</span>
+          </div>
+        </div>
+
+        {/* Direction */}
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">Direction</label>
+          <div className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
+            pinInfo.direction === 'input'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-green-100 text-green-700'
+          }`}>
+            {pinInfo.direction === 'input' ? 'Input (Target)' : 'Output (Source)'}
+          </div>
+        </div>
+
+        {/* Frame Types */}
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">Supported Frame Types</label>
+          {pinInfo.frame_types.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {pinInfo.frame_types.map((ft: string) => (
+                <span
+                  key={ft}
+                  className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded"
+                >
+                  {ft}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 italic">Any frame type</p>
+          )}
+        </div>
+
+        {/* Parent Module */}
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">Parent Module</label>
+          <button
+            onClick={() => {
+              selectNode(selectedPin.nodeId);
+            }}
+            className="w-full text-left px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 transition-colors"
+          >
+            <span className="font-medium">{pinInfo.moduleName}</span>
+            <span className="text-gray-400 ml-1">({pinInfo.moduleType})</span>
+          </button>
+        </div>
+
+        {/* Connected Modules */}
+        <div className="border-t border-gray-200 pt-4">
+          <label className="block text-xs font-medium text-gray-600 mb-2">
+            {pinInfo.direction === 'input' ? 'Connected From' : 'Connected To'}
+          </label>
+          {pinInfo.connectedModules.length > 0 ? (
+            <div className="space-y-1">
+              {pinInfo.connectedModules.map((conn: { nodeId: string; label: string; pinName: string }) => (
+                <button
+                  key={`${conn.nodeId}-${conn.pinName}`}
+                  onClick={() => {
+                    selectNode(conn.nodeId);
+                    centerOnNode(conn.nodeId);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                >
+                  <span>{conn.label}</span>
+                  <span className="text-xs text-gray-400 font-mono">.{conn.pinName}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 italic">Not connected</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (!selectedNode) {
     return (
       <div className="p-4">
@@ -235,7 +376,7 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
           Properties
         </h3>
         <p className="text-sm text-muted-foreground">
-          Select a module to view its properties
+          Select a module or pin to view its properties
         </p>
       </div>
     );

@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { ModuleNode } from '../components/Canvas/ModuleNode';
 import type { ModuleNodeData } from '../store/canvasStore';
 import { useRuntimeStore } from '../store/runtimeStore';
+import { useCanvasStore } from '../store/canvasStore';
 
 // Mock React Flow Handle component
 vi.mock('@xyflow/react', () => ({
@@ -10,13 +11,17 @@ vi.mock('@xyflow/react', () => ({
     <div data-testid={`handle-${type}-${id}`} />
   ),
   Position: { Left: 'left', Right: 'right' },
+  useNodeId: () => 'test-node-id',
 }));
 
-// Reset runtime store before each test
+// Reset stores before each test
 beforeEach(() => {
   useRuntimeStore.setState({
     status: 'IDLE',
     moduleMetrics: {},
+  });
+  useCanvasStore.setState({
+    selectedPin: null,
   });
 });
 

@@ -38,11 +38,18 @@ export interface ModuleNode {
   data: ModuleNodeData;
 }
 
+export interface SelectedPin {
+  nodeId: string;
+  pinName: string;
+  pinType: 'input' | 'output';
+}
+
 interface CanvasState {
   nodes: ModuleNode[];
   edges: Edge[];
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
+  selectedPin: SelectedPin | null;
   centerTarget: string | null; // Node ID to center on
   // History state
   canUndo: boolean;
@@ -75,6 +82,7 @@ interface CanvasActions {
   // Selection
   selectNode: (id: string | null) => void;
   selectEdge: (id: string | null) => void;
+  selectPin: (pin: SelectedPin | null) => void;
 
   // Navigation
   centerOnNode: (id: string) => void;
@@ -99,6 +107,7 @@ const initialState: CanvasState = {
   edges: [],
   selectedNodeId: null,
   selectedEdgeId: null,
+  selectedPin: null,
   centerTarget: null,
   canUndo: false,
   canRedo: false,
@@ -227,11 +236,16 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
   },
 
   selectNode: (id) => {
-    set({ selectedNodeId: id, selectedEdgeId: null });
+    set({ selectedNodeId: id, selectedEdgeId: null, selectedPin: null });
   },
 
   selectEdge: (id) => {
-    set({ selectedEdgeId: id, selectedNodeId: null });
+    set({ selectedEdgeId: id, selectedNodeId: null, selectedPin: null });
+  },
+
+  selectPin: (pin) => {
+    set({ selectedPin: pin, selectedEdgeId: null });
+    // Keep selectedNodeId when selecting a pin (pin belongs to a node)
   },
 
   centerOnNode: (id) => {
