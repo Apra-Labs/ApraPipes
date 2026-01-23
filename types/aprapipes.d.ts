@@ -24,6 +24,13 @@ declare module '@apralabs/aprapipes' {
   export function describeModule(moduleName: string): ModuleInfo;
 
   /**
+   * Get detailed information about ALL registered module types
+   * Used for schema generation - same structure as CLI `describe --all --json`
+   * @returns Object containing all modules keyed by name
+   */
+  export function describeAllModules(): AllModulesSchema;
+
+  /**
    * Validate a pipeline configuration without running it
    * @param config Pipeline configuration (JSON string or object)
    * @returns Validation result with any issues found
@@ -34,11 +41,39 @@ declare module '@apralabs/aprapipes' {
   // Type definitions
   // ============================================================
 
+  /**
+   * Schema containing all registered modules and frame types
+   * Returned by describeAllModules() and CLI `describe --all --json`
+   */
+  export interface AllModulesSchema {
+    modules: { [moduleName: string]: ModuleInfo };
+    frameTypes: { [typeName: string]: FrameTypeInfo };
+  }
+
+  /**
+   * Frame type metadata from FrameTypeRegistry
+   */
+  export interface FrameTypeInfo {
+    parent: string;
+    description: string;
+    tags: string[];
+    attributes?: { [attrName: string]: FrameTypeAttribute };
+    ancestors?: string[];
+    subtypes?: string[];
+  }
+
+  export interface FrameTypeAttribute {
+    type: string;
+    required: boolean;
+    description: string;
+    enumValues?: string[];
+  }
+
   export interface ModuleInfo {
     name: string;
     description: string;
     version: string;
-    category: 'source' | 'sink' | 'transform' | 'analytics' | 'utility' | 'unknown';
+    category: 'source' | 'sink' | 'transform' | 'analytics' | 'controller' | 'utility' | 'unknown';
     tags: string[];
     properties: PropertyInfo[];
     inputs: PinInfo[];
@@ -50,6 +85,11 @@ declare module '@apralabs/aprapipes' {
     type: string;
     required: boolean;
     description: string;
+    mutability: string;
+    default: string;
+    min?: string;
+    max?: string;
+    enumValues?: string[];
   }
 
   export interface PinInfo {

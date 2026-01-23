@@ -40,17 +40,13 @@
     {
       "name": "whisper",
       "default-features": false,
-      "features": [
-        "cuda"
-      ]
+      "features": []
     },
     {
       "name": "opencv4",
       "default-features": false,
       "features": [
         "contrib",
-        "cuda",
-        "cudnn",
         "dnn",
         "highgui",
         "jpeg",

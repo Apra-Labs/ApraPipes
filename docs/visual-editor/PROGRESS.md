@@ -1,9 +1,9 @@
 # ApraPipes Studio — Progress Tracker
 
 > **Last Updated:** 2026-01-23
-> **Current Phase:** Phase 6 - Polish (Complete)
-> **Current Sprint:** N/A - Phase Complete
-> **Next Action:** Demo and review
+> **Current Phase:** Phase 7 - Critical Fixes & Real Schema Integration
+> **Current Sprint:** Sprint 7.2 - Critical Bug Fixes (Complete)
+> **Next Action:** Sprint 7.3 - Pin Properties & Validation UX
 
 ---
 
@@ -16,6 +16,7 @@
 | **Phase 2: Validation** | ✅ Complete | 100% | 2 weeks |
 | **Phase 3: Runtime** | ✅ Complete | 100% | 2-3 weeks |
 | **Phase 6: Polish** | ✅ Complete | 100% | 2-3 weeks |
+| **Phase 7: Critical Fixes** | 🚧 In Progress | 50% | User feedback items |
 | **Phase 4: LLM Basic** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 | **Phase 5: LLM Advanced** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 
@@ -371,6 +372,97 @@
 
 ---
 
+## Phase 7: Critical Fixes & Real Schema (50% Complete)
+
+> **Priority:** CRITICAL - Based on user feedback 2026-01-23
+
+### Sprint 7.1: Schema Generation Infrastructure
+**Status:** ✅ Complete
+**Duration:** 1 day
+
+**Goal:** Create consolidated schema generation so visual editor depends ONLY on tool output.
+
+- [x] CLI: Add `aprapipes_cli describe --all --json` option
+- [x] CLI: Add `aprapipes_cli frame-types --json` command
+- [x] CLI: Merge apra_schema_generator into aprapipes_cli (deleted schema_generator.cpp)
+- [x] CLI: `describe --all --json` now outputs BOTH `modules` and `frameTypes`
+- [x] Node Addon: Add `describeAllModules()` function (includes frameTypes)
+- [x] TypeScript types: Add `AllModulesSchema` and `FrameTypeInfo` interfaces
+- [x] Output 37 modules with full metadata
+- [x] Output 27 frame types with hierarchy info
+- [x] Both CLI and addon produce compatible JSON structure
+- [x] Updated CMakeLists.txt to use aprapipes_cli for schema generation
+- [x] Tests passing
+
+**Verification:**
+```bash
+./build/aprapipes_cli describe --all --json | jq '.modules | keys | length'  # Returns 37
+./build/aprapipes_cli describe --all --json | jq '.frameTypes | keys | length'  # Returns 27
+./build/aprapipes_cli frame-types --json | jq '.frameTypes | keys | length'  # Returns 27
+node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.keys(m.describeAllModules().modules).length, 'frameTypes:', Object.keys(m.describeAllModules().frameTypes).length)"  # Returns 37, 27
+```
+
+**Blockers:** None
+**Completion:** ✅ Sprint 7.1 COMPLETE
+
+---
+
+### Sprint 7.2: Critical Bug Fixes
+**Status:** ✅ Complete
+**Duration:** 1 day
+
+**Goal:** Fix blocking bugs that prevent basic editor usage.
+
+- [x] F3: Opening workspace doesn't draw nodes on canvas
+  - Root cause: `addNode()` generated new IDs instead of preserving original IDs
+  - Fix: Added optional `id` parameter to `canvasStore.addNode()`
+  - Updated `openWorkspace()` and `importJSON()` to pass original module IDs
+- [x] F1: No way to remove a node from design surface
+  - Delete/Backspace keyboard shortcut now removes from BOTH canvas and pipeline stores
+  - Added delete button (trash icon) to PropertyPanel
+  - Confirmation dialog before delete
+- [x] F2: Difficult to connect nodes (handle hit area too small)
+  - Increased handle size from 12px to 16px (`w-3 h-3` → `w-4 h-4`)
+  - Increased hover scale from 125% to 150%
+  - Added ring glow effect on hover for better visibility
+  - Added `cursor-crosshair` for clearer connection affordance
+- [x] F6 (bonus): Removed "SOURCE"/"TRANSFORM" category labels
+  - Category now shown only by header color
+  - Category name in title attribute for accessibility
+  - More compact node design
+- [x] All 273 tests passing (194 client + 79 server)
+
+**Blockers:** None
+**Completion:** ✅ Sprint 7.2 COMPLETE
+
+---
+
+### Sprint 7.3: Pin Properties & Validation UX
+**Status:** ⏳ Not Started
+**Duration:** 2 days
+
+**Goal:** Implement pin properties and fix validation messaging.
+
+- [ ] F7: Pin properties (click pin → show properties in Property Panel)
+- [ ] F4: Fix validation messaging (don't say "valid" if there are warnings)
+
+**Blockers:** Depends on Sprint 7.2
+
+---
+
+### Sprint 7.4: UI Polish & Settings
+**Status:** ⏳ Not Started
+**Duration:** 2 days
+
+**Goal:** Add user preferences and auto-arrange functionality.
+
+- [x] F6: Remove "SOURCE"/"TRANSFORM" labels (completed in Sprint 7.2)
+- [ ] F5: Settings page + validate-on-save + arrange button
+
+**Blockers:** Depends on Sprint 7.3
+
+---
+
 ## Phase 4: LLM Basic (0% Complete)
 
 ### Sprint 4.1: LLM Provider Abstraction
@@ -474,6 +566,38 @@
 ## Recent Changes
 
 ### 2026-01-23
+- ✅ **Sprint 7.2 COMPLETE** (Critical Bug Fixes)
+  - F3: Fixed workspace load not drawing nodes
+    - `addNode()` now accepts optional `id` parameter
+    - `openWorkspace()` and `importJSON()` preserve original module IDs
+  - F1: Added node deletion
+    - Delete/Backspace keyboard shortcut now syncs canvas AND pipeline stores
+    - Added delete button (trash icon) in PropertyPanel
+    - Confirmation dialog before deletion
+  - F2: Improved connection handle UX
+    - Increased handle size from 12px to 16px
+    - Added ring glow effect on hover
+    - Changed cursor to crosshair
+  - F6: Removed category text labels (colors sufficient)
+  - All 273 tests passing (194 client + 79 server)
+- ✅ **Sprint 7.1 COMPLETE** (Schema Generation Infrastructure)
+  - Added `aprapipes_cli describe --all --json` command
+  - Added `describeAllModules()` function to Node addon
+  - Updated TypeScript types with `AllModulesSchema` interface
+  - Both CLI and addon output 37 modules with full metadata
+  - Output includes: name, category, version, description, tags, inputs, outputs, properties
+  - Properties include: name, type, mutability, default, min/max, enumValues
+  - All tests passing
+- ✅ **Phase 7 Started** based on user feedback
+  - F1: No way to remove node (Sprint 7.2)
+  - F2: Difficult to connect nodes (Sprint 7.2)
+  - F3: Workspace load doesn't draw nodes (Sprint 7.2)
+  - F4: Validation says "valid" with warnings (Sprint 7.3)
+  - F5: Need settings page + arrange button (Sprint 7.4)
+  - F6: Remove category labels from nodes (Sprint 7.4)
+  - F7: Pin properties not implemented (Sprint 7.3)
+  - F8/F9: Use real schema from tools (Sprint 7.1 ✅)
+  - F10: CLI describe --all + describeAllModules() (Sprint 7.1 ✅)
 - ✅ **Phase 6 COMPLETE** (100%)
 - ✅ Sprint 6.4 Complete (Phase 6 Testing)
   - Module search already implemented in Phase 1

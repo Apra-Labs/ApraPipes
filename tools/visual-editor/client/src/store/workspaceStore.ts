@@ -118,11 +118,14 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
         const moduleSchema = schema[moduleConfig.type];
 
         if (moduleSchema) {
-          // Add node using existing addNode (generates new ID if needed)
-          // For simplicity, we'll update position after
-          canvasStore.addNode(moduleConfig.type, moduleSchema, position);
+          // Add node with the ORIGINAL module ID from the saved workspace
+          // This ensures connections can be restored correctly
+          canvasStore.addNode(moduleConfig.type, moduleSchema, position, moduleId);
         }
       }
+
+      // Save a snapshot after restoring all nodes
+      canvasStore.saveSnapshot('Load workspace');
 
       // Restore connections
       for (const conn of data.config.connections) {
@@ -239,16 +242,19 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
 
       const schema = usePipelineStore.getState().schema;
 
-      // Add nodes for each module
+      // Add nodes for each module with original IDs
       let yOffset = 100;
-      for (const [_moduleId, moduleConfig] of Object.entries(data.modules)) {
+      for (const [moduleId, moduleConfig] of Object.entries(data.modules)) {
         const moduleSchema = schema[moduleConfig.type];
         if (moduleSchema) {
-          // Position nodes in a column for now
-          canvasStore.addNode(moduleConfig.type, moduleSchema, { x: 100, y: yOffset });
+          // Position nodes in a column and preserve the original module ID
+          canvasStore.addNode(moduleConfig.type, moduleSchema, { x: 100, y: yOffset }, moduleId);
           yOffset += 150;
         }
       }
+
+      // Save a snapshot after importing
+      canvasStore.saveSnapshot('Import JSON');
 
       // Restore connections
       for (const conn of data.connections) {

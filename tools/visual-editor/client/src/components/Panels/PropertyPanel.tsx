@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useCanvasStore } from '../../store/canvasStore';
 import { usePipelineStore } from '../../store/pipelineStore';
 import type { PropertySchema, ModuleSchema } from '../../types/schema';
@@ -22,10 +23,12 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
   const nodes = useCanvasStore((state) => state.nodes);
   const updateNodeData = useCanvasStore((state) => state.updateNodeData);
+  const removeNode = useCanvasStore((state) => state.removeNode);
 
   const updateModuleProperty = usePipelineStore((state) => state.updateModuleProperty);
   const pipelineConfig = usePipelineStore((state) => state.config);
   const renameModule = usePipelineStore((state) => state.renameModule);
+  const removeModule = usePipelineStore((state) => state.removeModule);
 
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
@@ -75,6 +78,15 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
     },
     [handleNameSave]
   );
+
+  const handleDelete = useCallback(() => {
+    if (!selectedNodeId) return;
+    const confirmed = window.confirm(`Delete module "${selectedNode?.data.label || selectedNodeId}"?`);
+    if (confirmed) {
+      removeNode(selectedNodeId);
+      removeModule(selectedNodeId);
+    }
+  }, [selectedNodeId, selectedNode, removeNode, removeModule]);
 
   const getPropertyValue = (key: string, propSchema: PropertySchema): unknown => {
     if (moduleConfig?.properties?.[key] !== undefined) {
@@ -210,9 +222,18 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
 
   return (
     <div className="p-4 space-y-4">
-      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-        Properties
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+          Properties
+        </h3>
+        <button
+          onClick={handleDelete}
+          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+          title="Delete module (Delete key)"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
 
       {/* Module Name (Editable) */}
       <div className="space-y-1">

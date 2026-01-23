@@ -21,6 +21,7 @@
 #include "declarative/ModuleRegistry.h"
 #include "declarative/ModuleRegistrations.h"
 #include "declarative/PipelineDescription.h"
+#include "declarative/FrameTypeRegistry.h"
 
 using namespace apra;
 
@@ -500,11 +501,256 @@ int cmdListModules(const std::string& categoryFilter, const std::string& tag, bo
 }
 
 // ============================================================
-// Command: describe
+// Helper: Output single module info as JSON
 // ============================================================
-int cmdDescribe(const std::string& moduleName, bool jsonOutput) {
+void outputModuleJson(const ModuleInfo* info, std::ostream& out) {
+    out << "{";
+    out << R"("name":")" << info->name << "\"";
+    out << R"(,"category":")" << categoryToString(info->category) << "\"";
+    out << R"(,"version":")" << info->version << "\"";
+    out << R"(,"description":")" << info->description << "\"";
+
+    out << R"(,"tags":[)";
+    bool first = true;
+    for (const auto& tag : info->tags) {
+        if (!first) out << ",";
+        first = false;
+        out << "\"" << tag << "\"";
+    }
+    out << "]";
+
+    out << R"(,"inputs":[)";
+    first = true;
+    for (const auto& pin : info->inputs) {
+        if (!first) out << ",";
+        first = false;
+        out << R"({"name":")" << pin.name << "\"";
+        out << R"(,"required":)" << (pin.required ? "true" : "false");
+        out << R"(,"frameTypes":[)";
+        bool firstType = true;
+        for (const auto& ft : pin.frame_types) {
+            if (!firstType) out << ",";
+            firstType = false;
+            out << "\"" << ft << "\"";
+        }
+        out << "]}";
+    }
+    out << "]";
+
+    out << R"(,"outputs":[)";
+    first = true;
+    for (const auto& pin : info->outputs) {
+        if (!first) out << ",";
+        first = false;
+        out << R"({"name":")" << pin.name << "\"";
+        out << R"(,"frameTypes":[)";
+        bool firstType = true;
+        for (const auto& ft : pin.frame_types) {
+            if (!firstType) out << ",";
+            firstType = false;
+            out << "\"" << ft << "\"";
+        }
+        out << "]}";
+    }
+    out << "]";
+
+    out << R"(,"properties":[)";
+    first = true;
+    for (const auto& prop : info->properties) {
+        if (!first) out << ",";
+        first = false;
+        out << R"({"name":")" << prop.name << "\"";
+        out << R"(,"type":")" << prop.type << "\"";
+        out << R"(,"required":)" << (prop.required ? "true" : "false");
+        out << R"(,"description":")" << prop.description << "\"";
+        out << R"(,"mutability":")" << prop.mutability << "\"";
+        out << R"(,"default":")" << prop.default_value << "\"";
+        if (!prop.min_value.empty()) {
+            out << R"(,"min":")" << prop.min_value << "\"";
+            out << R"(,"max":")" << prop.max_value << "\"";
+        }
+        if (!prop.enum_values.empty()) {
+            out << R"(,"enumValues":[)";
+            bool firstEnum = true;
+            for (const auto& ev : prop.enum_values) {
+                if (!firstEnum) out << ",";
+                firstEnum = false;
+                out << "\"" << ev << "\"";
+            }
+            out << "]";
+        }
+        out << "}";
+    }
+    out << "]";
+
+    out << "}";
+}
+
+// ============================================================
+// Helper: Output all frame types as JSON
+// ============================================================
+void outputFrameTypesJson(std::ostream& out) {
+    auto& registry = FrameTypeRegistry::instance();
+    const auto allTypes = registry.getAllFrameTypes();
+
+    out << "{";
+    bool first = true;
+    for (const auto& name : allTypes) {
+        const auto* info = registry.getFrameType(name);
+        if (!info) continue;
+
+        if (!first) out << ",";
+        first = false;
+
+        out << "\"" << name << "\":{";
+        out << R"("parent":")" << info->parent << "\"";
+        out << R"(,"description":")" << info->description << "\"";
+
+        // Tags
+        out << R"(,"tags":[)";
+        bool firstTag = true;
+        for (const auto& tag : info->tags) {
+            if (!firstTag) out << ",";
+            firstTag = false;
+            out << "\"" << tag << "\"";
+        }
+        out << "]";
+
+        // Attributes
+        if (!info->attributes.empty()) {
+            out << R"(,"attributes":{)";
+            bool firstAttr = true;
+            for (const auto& attr : info->attributes) {
+                if (!firstAttr) out << ",";
+                firstAttr = false;
+                out << "\"" << attr.name << "\":{";
+                out << R"("type":")" << attr.type << "\"";
+                out << R"(,"required":)" << (attr.required ? "true" : "false");
+                out << R"(,"description":")" << attr.description << "\"";
+                if (!attr.enum_values.empty()) {
+                    out << R"(,"enumValues":[)";
+                    bool firstEnum = true;
+                    for (const auto& ev : attr.enum_values) {
+                        if (!firstEnum) out << ",";
+                        firstEnum = false;
+                        out << "\"" << ev << "\"";
+                    }
+                    out << "]";
+                }
+                out << "}";
+            }
+            out << "}";
+        }
+
+        // Ancestors
+        auto ancestors = registry.getAncestors(name);
+        if (!ancestors.empty()) {
+            out << R"(,"ancestors":[)";
+            bool firstAnc = true;
+            for (const auto& anc : ancestors) {
+                if (!firstAnc) out << ",";
+                firstAnc = false;
+                out << "\"" << anc << "\"";
+            }
+            out << "]";
+        }
+
+        // Subtypes
+        auto subtypes = registry.getSubtypes(name);
+        if (!subtypes.empty()) {
+            out << R"(,"subtypes":[)";
+            bool firstSub = true;
+            for (const auto& sub : subtypes) {
+                if (!firstSub) out << ",";
+                firstSub = false;
+                out << "\"" << sub << "\"";
+            }
+            out << "]";
+        }
+
+        out << "}";
+    }
+    out << "}";
+}
+
+// ============================================================
+// Command: frame-types (list all frame types)
+// ============================================================
+int cmdFrameTypes(bool jsonOutput) {
+    ensureBuiltinModulesRegistered();
+    auto& registry = FrameTypeRegistry::instance();
+    const auto allTypes = registry.getAllFrameTypes();
+
+    if (jsonOutput) {
+        std::cout << R"({"frameTypes":)";
+        outputFrameTypesJson(std::cout);
+        std::cout << "}\n";
+    } else {
+        std::cout << "Frame Types (" << allTypes.size() << " total)\n";
+        std::cout << "========================================\n\n";
+        for (const auto& name : allTypes) {
+            const auto* info = registry.getFrameType(name);
+            if (!info) continue;
+
+            std::cout << "# " << name << "\n";
+            if (!info->parent.empty()) {
+                std::cout << "  Parent: " << info->parent << "\n";
+            }
+            if (!info->description.empty()) {
+                std::cout << "  " << info->description << "\n";
+            }
+            std::cout << "\n";
+        }
+    }
+
+    return EXIT_SUCCESS_CODE;
+}
+
+// ============================================================
+// Command: describe (single module or all modules with --all)
+// ============================================================
+int cmdDescribe(const std::string& moduleName, bool jsonOutput, bool describeAll) {
     ensureBuiltinModulesRegistered();
     auto& registry = ModuleRegistry::instance();
+
+    // Handle --all flag: describe all modules and frame types
+    if (describeAll) {
+        auto allModules = registry.getAllModules();
+
+        if (jsonOutput) {
+            // Output both modules and frameTypes for complete schema
+            std::cout << R"({"modules":{)";
+            bool first = true;
+            for (const auto& name : allModules) {
+                auto* info = registry.getModule(name);
+                if (!info) continue;
+
+                if (!first) std::cout << ",";
+                first = false;
+                std::cout << "\"" << name << "\":";
+                outputModuleJson(info, std::cout);
+            }
+            std::cout << R"(},"frameTypes":)";
+            outputFrameTypesJson(std::cout);
+            std::cout << "}\n";
+        } else {
+            std::cout << "All Registered Modules (" << allModules.size() << " total)\n";
+            std::cout << "========================================\n\n";
+            for (const auto& name : allModules) {
+                auto* info = registry.getModule(name);
+                if (!info) continue;
+
+                std::cout << "# " << info->name << "\n";
+                std::cout << "Category: " << categoryToString(info->category) << "\n";
+                std::cout << "Version:  " << info->version << "\n";
+                std::cout << info->description << "\n";
+                std::cout << "----------------------------------------\n\n";
+            }
+        }
+        return EXIT_SUCCESS_CODE;
+    }
+
+    // Single module describe
     auto* info = registry.getModule(moduleName);
 
     if (!info) {
@@ -526,85 +772,9 @@ int cmdDescribe(const std::string& moduleName, bool jsonOutput) {
     }
 
     if (jsonOutput) {
-        // JSON output
-        std::cout << "{";
-        std::cout << R"("name":")" << info->name << "\"";
-        std::cout << R"(,"category":")" << categoryToString(info->category) << "\"";
-        std::cout << R"(,"version":")" << info->version << "\"";
-        std::cout << R"(,"description":")" << info->description << "\"";
-
-        std::cout << R"(,"tags":[)";
-        bool first = true;
-        for (const auto& tag : info->tags) {
-            if (!first) std::cout << ",";
-            first = false;
-            std::cout << "\"" << tag << "\"";
-        }
-        std::cout << "]";
-
-        std::cout << R"(,"inputs":[)";
-        first = true;
-        for (const auto& pin : info->inputs) {
-            if (!first) std::cout << ",";
-            first = false;
-            std::cout << R"({"name":")" << pin.name << "\"";
-            std::cout << R"(,"required":)" << (pin.required ? "true" : "false");
-            std::cout << R"(,"frameTypes":[)";
-            bool firstType = true;
-            for (const auto& ft : pin.frame_types) {
-                if (!firstType) std::cout << ",";
-                firstType = false;
-                std::cout << "\"" << ft << "\"";
-            }
-            std::cout << "]}";
-        }
-        std::cout << "]";
-
-        std::cout << R"(,"outputs":[)";
-        first = true;
-        for (const auto& pin : info->outputs) {
-            if (!first) std::cout << ",";
-            first = false;
-            std::cout << R"({"name":")" << pin.name << "\"";
-            std::cout << R"(,"frameTypes":[)";
-            bool firstType = true;
-            for (const auto& ft : pin.frame_types) {
-                if (!firstType) std::cout << ",";
-                firstType = false;
-                std::cout << "\"" << ft << "\"";
-            }
-            std::cout << "]}";
-        }
-        std::cout << "]";
-
-        std::cout << R"(,"properties":[)";
-        first = true;
-        for (const auto& prop : info->properties) {
-            if (!first) std::cout << ",";
-            first = false;
-            std::cout << R"({"name":")" << prop.name << "\"";
-            std::cout << R"(,"type":")" << prop.type << "\"";
-            std::cout << R"(,"mutability":")" << prop.mutability << "\"";
-            std::cout << R"(,"default":")" << prop.default_value << "\"";
-            if (!prop.min_value.empty()) {
-                std::cout << R"(,"min":")" << prop.min_value << "\"";
-                std::cout << R"(,"max":")" << prop.max_value << "\"";
-            }
-            if (!prop.enum_values.empty()) {
-                std::cout << R"(,"enumValues":[)";
-                bool firstEnum = true;
-                for (const auto& ev : prop.enum_values) {
-                    if (!firstEnum) std::cout << ",";
-                    firstEnum = false;
-                    std::cout << "\"" << ev << "\"";
-                }
-                std::cout << "]";
-            }
-            std::cout << "}";
-        }
-        std::cout << "]";
-
-        std::cout << "}\n";
+        // JSON output using helper function
+        outputModuleJson(info, std::cout);
+        std::cout << "\n";
     } else {
         // Human-readable output
         std::cout << "# " << info->name << "\n\n";
@@ -684,6 +854,8 @@ Commands:
   run <file.json>               Build and run a pipeline
   list-modules                  List all registered modules
   describe <module>             Show detailed module information
+  describe --all                Show all modules + frame types (schema gen)
+  frame-types                   List all frame types in the hierarchy
 
 Options:
   --help, -h                    Show this help message
@@ -698,11 +870,16 @@ Options for 'list-modules':
                                 analytics, controller, utility)
   --tag <tag>                   Filter by tag
 
+Options for 'describe':
+  --all                         Describe all modules + frame types (schema)
+
 Examples:
   )" << progname << R"( validate pipeline.json
   )" << progname << R"( run pipeline.json --set decoder.device_id=1
   )" << progname << R"( list-modules --category source
   )" << progname << R"( describe FileReaderModule --json
+  )" << progname << R"( describe --all --json > schema.json
+  )" << progname << R"( frame-types --json > frame_types.json
 
 Exit Codes:
   0 - Success
@@ -793,11 +970,26 @@ int main(int argc, char* argv[]) {
         return cmdListModules(category, tag, jsonOutput);
     }
     else if (command == "describe") {
-        if (args.empty()) {
-            std::cerr << "Error: describe requires a module name\n";
+        // Check for --all flag
+        bool describeAll = false;
+        std::string moduleName;
+
+        for (const auto& arg : args) {
+            if (arg == "--all") {
+                describeAll = true;
+            } else if (moduleName.empty()) {
+                moduleName = arg;
+            }
+        }
+
+        if (!describeAll && moduleName.empty()) {
+            std::cerr << "Error: describe requires a module name or --all flag\n";
             return EXIT_USAGE_ERROR;
         }
-        return cmdDescribe(args[0], jsonOutput);
+        return cmdDescribe(moduleName, jsonOutput, describeAll);
+    }
+    else if (command == "frame-types") {
+        return cmdFrameTypes(jsonOutput);
     }
     else {
         std::cerr << "Unknown command: " << command << "\n";

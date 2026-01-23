@@ -1030,109 +1030,23 @@ install(TARGETS aprapipes_cli
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # ============================================================
-# ApraPipes Schema Generator Tool (E2)
-# Exports module/frame type metadata to JSON/Markdown
-# ============================================================
-add_executable(apra_schema_generator
-    tools/schema_generator.cpp
-)
-
-# Force load aprapipes to include static module registrations
-if(APPLE)
-    target_link_libraries(apra_schema_generator PRIVATE
-        -Wl,-force_load,$<TARGET_FILE:aprapipes>
-    )
-elseif(UNIX)
-    target_link_libraries(apra_schema_generator PRIVATE
-        -Wl,--whole-archive aprapipes -Wl,--no-whole-archive
-    )
-else()
-    target_link_libraries(apra_schema_generator PRIVATE
-        aprapipes
-    )
-endif()
-
-# Link all required libraries (uses APRA_COMMON_LIBS - DRY) + nlohmann_json for JSON output
-target_link_libraries(apra_schema_generator PRIVATE
-    ${APRA_COMMON_LIBS}
-    nlohmann_json::nlohmann_json
-)
-
-# GTK linkage for Linux/ARM64 (same as aprapipesut)
-IF(ENABLE_ARM64)
-    target_include_directories(apra_schema_generator PRIVATE ${VCPKG_GTK_INCLUDE_DIRS})
-    target_link_libraries(apra_schema_generator PRIVATE ${GTK3_LIBRARIES})
-ENDIF(ENABLE_ARM64)
-
-IF(ENABLE_LINUX AND NOT ENABLE_ARM64 AND GTK3_FOUND)
-    target_include_directories(apra_schema_generator PRIVATE ${GTK3_INCLUDE_DIRS})
-    target_link_libraries(apra_schema_generator PRIVATE ${GDK3_LIBRARIES} ${GTK3_LIBRARIES})
-ENDIF()
-
-# Windows: Use /DELAYLOAD for CUDA DLLs (same as aprapipes_cli and aprapipesut)
-IF(ENABLE_WINDOWS AND ENABLE_CUDA)
-    target_link_libraries(apra_schema_generator PRIVATE delayimp.lib)
-    target_link_options(apra_schema_generator PRIVATE
-        # NVIDIA CUDA runtime DLLs
-        "/DELAYLOAD:nvjpeg64_11.dll"
-        "/DELAYLOAD:nppig64_11.dll"
-        "/DELAYLOAD:nppicc64_11.dll"
-        "/DELAYLOAD:nppidei64_11.dll"
-        "/DELAYLOAD:nppial64_11.dll"
-        "/DELAYLOAD:nppc64_11.dll"
-        "/DELAYLOAD:nppif64_11.dll"
-        "/DELAYLOAD:nppim64_11.dll"
-        "/DELAYLOAD:cublas64_11.dll"
-        "/DELAYLOAD:cublasLt64_11.dll"
-        "/DELAYLOAD:cudart64_110.dll"
-        "/DELAYLOAD:nvcuvid.dll"
-        "/DELAYLOAD:nvEncodeAPI64.dll"
-        # OpenCV CUDA DLLs (these transitively load CUDA runtime)
-        "/DELAYLOAD:opencv_cudaarithm4.dll"
-        "/DELAYLOAD:opencv_cudabgsegm4.dll"
-        "/DELAYLOAD:opencv_cudacodec4.dll"
-        "/DELAYLOAD:opencv_cudafeatures2d4.dll"
-        "/DELAYLOAD:opencv_cudafilters4.dll"
-        "/DELAYLOAD:opencv_cudaimgproc4.dll"
-        "/DELAYLOAD:opencv_cudalegacy4.dll"
-        "/DELAYLOAD:opencv_cudaobjdetect4.dll"
-        "/DELAYLOAD:opencv_cudaoptflow4.dll"
-        "/DELAYLOAD:opencv_cudastereo4.dll"
-        "/DELAYLOAD:opencv_cudawarping4.dll"
-    )
-ENDIF(ENABLE_WINDOWS AND ENABLE_CUDA)
-
-target_include_directories(apra_schema_generator PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/declarative
-    ${OpenCV_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-)
-
-# Install schema generator executable
-install(TARGETS apra_schema_generator
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-# ============================================================
-# Generate schema files at build time
+# Generate schema files at build time (using aprapipes_cli)
+# Replaces the old apra_schema_generator tool
 # ============================================================
 set(SCHEMA_DIR ${CMAKE_BINARY_DIR}/schema)
 
+# Generate combined schema (modules + frameTypes) using aprapipes_cli
 add_custom_command(
-    OUTPUT ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+    OUTPUT ${SCHEMA_DIR}/schema.json
     COMMAND ${CMAKE_COMMAND} -E make_directory ${SCHEMA_DIR}
-    COMMAND apra_schema_generator
-        --modules-json ${SCHEMA_DIR}/modules.json
-        --frame-types-json ${SCHEMA_DIR}/frame_types.json
-        --modules-md ${SCHEMA_DIR}/MODULES.md
-        --frame-types-md ${SCHEMA_DIR}/FRAME_TYPES.md
-    DEPENDS apra_schema_generator
-    COMMENT "Generating ApraPipes schema from C++ metadata"
+    COMMAND aprapipes_cli describe --all --json > ${SCHEMA_DIR}/schema.json
+    DEPENDS aprapipes_cli
+    COMMENT "Generating ApraPipes schema from C++ metadata (aprapipes_cli describe --all --json)"
     VERBATIM
 )
 
 add_custom_target(generate_schema ALL
-    DEPENDS ${SCHEMA_DIR}/modules.json ${SCHEMA_DIR}/frame_types.json
+    DEPENDS ${SCHEMA_DIR}/schema.json
 )
 
 # ============================================================

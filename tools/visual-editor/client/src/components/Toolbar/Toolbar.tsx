@@ -35,6 +35,7 @@ export function Toolbar() {
   // Pipeline config
   const pipelineConfig = usePipelineStore((state) => state.config);
   const validatePipeline = usePipelineStore((state) => state.validate);
+  const removeModule = usePipelineStore((state) => state.removeModule);
 
   // Undo/Redo state
   const canUndo = useCanvasStore((state) => state.canUndo);
@@ -252,7 +253,9 @@ export function Toolbar() {
       // Delete or Backspace = Delete selected node
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
         e.preventDefault();
+        // Remove from both canvas and pipeline stores
         removeNode(selectedNodeId);
+        removeModule(selectedNodeId);
         return;
       }
 
@@ -290,7 +293,7 @@ export function Toolbar() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo, handleSave, handleNew, handleOpen, handleImport, selectedNodeId, removeNode, handleValidate]);
+  }, [canUndo, canRedo, undo, redo, handleSave, handleNew, handleOpen, handleImport, selectedNodeId, removeNode, removeModule, handleValidate]);
 
   const canRun = runtimeStatus === 'IDLE' || runtimeStatus === 'STOPPED';
   const canStop = runtimeStatus === 'RUNNING';

@@ -58,7 +58,7 @@ interface CanvasSnapshot {
 
 interface CanvasActions {
   // Node operations
-  addNode: (moduleType: string, schema: ModuleSchema, position?: { x: number; y: number }) => string;
+  addNode: (moduleType: string, schema: ModuleSchema, position?: { x: number; y: number }, id?: string) => string;
   removeNode: (id: string) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateNodeData: (id: string, data: Partial<ModuleNodeData>) => void;
@@ -110,15 +110,19 @@ const historyManager = new HistoryManager<CanvasSnapshot>({
 export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => ({
   ...initialState,
 
-  addNode: (moduleType, schema, position = { x: 100, y: 100 }) => {
-    const id = generateNodeId(moduleType);
+  addNode: (moduleType, schema, position = { x: 100, y: 100 }, id?: string) => {
+    // Use provided id or generate a new one
+    const nodeId = id || generateNodeId(moduleType);
+    // For label, use the provided id if available, otherwise extract from generated id
+    const label = id || nodeId.split('_').slice(0, -1).join('_');
+
     const newNode: ModuleNode = {
-      id,
+      id: nodeId,
       type: 'module',
       position,
       data: {
         type: moduleType,
-        label: id.split('_').slice(0, -1).join('_'),
+        label,
         category: schema.category,
         description: schema.description,
         inputs: schema.inputs,
@@ -132,10 +136,12 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
       nodes: [...state.nodes, newNode],
     }));
 
-    // Save snapshot after change
-    get().saveSnapshot(`Add ${moduleType}`);
+    // Save snapshot after change (but not when restoring workspace - that's done separately)
+    if (!id) {
+      get().saveSnapshot(`Add ${moduleType}`);
+    }
 
-    return id;
+    return nodeId;
   },
 
   removeNode: (id) => {

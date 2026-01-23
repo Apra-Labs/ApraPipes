@@ -39,10 +39,11 @@ describe('ModuleNode', () => {
     expect(screen.getByText('My Module')).toBeInTheDocument();
   });
 
-  it('renders category badge', () => {
-    const data = createMockData({ category: 'transform' });
+  it('renders category in title attribute (compact design)', () => {
+    const data = createMockData({ category: 'transform', type: 'TestModule', label: 'Test Label' });
     render(<ModuleNode data={data} />);
-    expect(screen.getByText('transform')).toBeInTheDocument();
+    // Category is now shown only in the title attribute for compact design
+    expect(screen.getByTitle('TestModule (transform)')).toBeInTheDocument();
   });
 
   it('renders output handles', () => {

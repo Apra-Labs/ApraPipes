@@ -83,14 +83,14 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
         ${effectiveStatus === 'running' || hasErrors ? 'shadow-lg' : ''}
       `}
     >
-      {/* Header */}
+      {/* Header - compact design, category shown by color only */}
       <div className={`px-3 py-2 rounded-t-md ${categoryColorClass}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <StatusBadge status={effectiveStatus} />
-            <span className="text-xs font-medium uppercase opacity-80">
-              {data.category}
-            </span>
+            <h3 className="font-semibold text-sm truncate" title={`${data.type} (${data.category})`}>
+              {data.label || data.type}
+            </h3>
           </div>
           <div className="flex items-center gap-1">
             {hasErrors && (
@@ -114,9 +114,6 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
             )}
           </div>
         </div>
-        <h3 className="font-semibold text-sm truncate" title={data.type}>
-          {data.label || data.type}
-        </h3>
       </div>
 
       {/* Metrics (shown when running) */}
@@ -159,7 +156,7 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
                 type="target"
                 position={Position.Left}
                 id={input.name}
-                className="!w-3 !h-3 !bg-blue-500 !border-2 !border-white hover:!bg-blue-600 hover:!scale-125 transition-transform"
+                className="!w-4 !h-4 !bg-blue-500 !border-2 !border-white hover:!bg-blue-600 hover:!scale-150 hover:!ring-4 hover:!ring-blue-300/50 transition-all cursor-crosshair"
                 style={{ top: `${24 + index * 24}px` }}
               />
               <span className="text-xs text-gray-500 pl-2">{input.name}</span>
@@ -184,7 +181,7 @@ function ModuleNodeComponent({ data, selected }: ModuleNodeProps) {
                 type="source"
                 position={Position.Right}
                 id={output.name}
-                className="!w-3 !h-3 !bg-green-500 !border-2 !border-white hover:!bg-green-600 hover:!scale-125 transition-transform"
+                className="!w-4 !h-4 !bg-green-500 !border-2 !border-white hover:!bg-green-600 hover:!scale-150 hover:!ring-4 hover:!ring-green-300/50 transition-all cursor-crosshair"
                 style={{ top: `${24 + index * 24}px` }}
               />
               {hoveredPin === `out-${output.name}` && (

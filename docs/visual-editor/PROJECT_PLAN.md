@@ -1580,6 +1580,205 @@ Agent must generate:
 
 ---
 
+## 12. Phase 7: Critical Fixes & Real Schema Integration (HIGH PRIORITY)
+
+> **Added:** 2026-01-23 (User Feedback)
+> **Priority:** CRITICAL - Must complete before further development
+> **Rationale:** Visual editor must be driven by real schema from aprapipes tools, not mock data
+
+### 7.1 Priority Order
+
+| Priority | Item | Description | Type |
+|----------|------|-------------|------|
+| **P0** | F10 | CLI `describe --all --json` + `describeAllModules()` | Feature |
+| **P0** | F8/F9 | Use real schema from schema-generator | Infrastructure |
+| **P1** | F3 | Opening workspace doesn't draw nodes on canvas | Bug |
+| **P1** | F1 | No way to remove a node from design surface | Bug |
+| **P1** | F2 | Difficult to connect nodes (end up dragging whole node) | UX Bug |
+| **P2** | F7 | Pin properties NOT implemented | Missing Feature |
+| **P2** | F4 | Validate says "valid" then shows warnings/errors | UX Bug |
+| **P3** | F6 | Remove "SOURCE"/"TRANSFORM" labels (colors enough) | UI Polish |
+| **P3** | F5 | Settings page + validate-on-save + arrange button | Feature |
+
+---
+
+### 7.2 Sprint 7.1: Schema Generation Infrastructure (P0)
+
+**Goal:** Create consolidated schema generation so visual editor depends ONLY on tool output.
+
+#### Tasks
+
+1. **CLI: Add `describe --all --json` option**
+   - Modify `base/src/AprapipesCli.cpp` or relevant CLI source
+   - New option: `aprapipes_cli describe --all --json`
+   - Output: Consolidated JSON with ALL modules and their properties
+   - Same structure as individual `describe <module> --json` but as array/object
+   - Format:
+     ```json
+     {
+       "modules": {
+         "TestSignalGenerator": {
+           "type": "TestSignalGenerator",
+           "category": "source",
+           "description": "...",
+           "inputs": [...],
+           "outputs": [...],
+           "properties": {...}
+         },
+         "FileWriterModule": {...}
+       }
+     }
+     ```
+
+2. **Node.js Addon: Add `describeAllModules()` function**
+   - Modify `base/src/node_addon/aprapipes_node.cpp` (or similar)
+   - Export new function: `describeAllModules()`
+   - Must produce IDENTICAL output structure as CLI `--all --json`
+   - Update TypeScript types in `types/aprapipes.d.ts`
+
+3. **Visual Editor: Use real schema**
+   - Update `SchemaLoader.ts` to call `describeAllModules()` if available
+   - Fallback to loading `modules.json` file (generated from CLI)
+   - Remove hard-coded mock schema
+   - Visual editor should have NO knowledge of module internals
+
+#### Acceptance Criteria
+
+**Functional:**
+- [ ] `./build/aprapipes_cli describe --all --json` outputs all modules
+- [ ] Output is valid JSON parseable by `jq`
+- [ ] `describeAllModules()` in Node addon returns same structure
+- [ ] Visual editor loads schema from addon/file, not mock
+- [ ] Both CLI and addon produce identical JSON structure
+
+**Testing:**
+- [ ] C++ unit test for CLI `--all` option
+- [ ] Node addon test for `describeAllModules()`
+- [ ] Visual editor test with real schema
+
+**Verification:**
+```bash
+# CLI test
+./build/aprapipes_cli describe --all --json > /tmp/schema.json
+jq '.modules | keys | length' /tmp/schema.json  # Should be > 30
+
+# Compare with individual describes
+./build/aprapipes_cli describe TestSignalGenerator --json > /tmp/single.json
+jq '.modules.TestSignalGenerator' /tmp/schema.json > /tmp/from_all.json
+diff /tmp/single.json /tmp/from_all.json  # Should match (or be equivalent)
+
+# Node addon test
+node -e "const m = require('./build/aprapipes.node'); console.log(JSON.stringify(m.describeAllModules(), null, 2))" > /tmp/addon_schema.json
+```
+
+---
+
+### 7.3 Sprint 7.2: Critical Bug Fixes (P1)
+
+**Goal:** Fix blocking bugs that prevent basic editor usage.
+
+#### Tasks
+
+1. **F3: Fix workspace load not drawing nodes**
+   - Debug `workspaceStore.openWorkspace()` flow
+   - Ensure loaded JSON is converted to React Flow nodes
+   - Ensure canvas store `setNodes()` is called after load
+   - Test: Open saved workspace → nodes appear on canvas
+
+2. **F1: Add node deletion**
+   - Add Delete key handler in canvas
+   - Add right-click context menu with "Delete" option
+   - Add delete button in property panel header
+   - `canvasStore.removeNode(id)` action
+   - Update connections when node deleted
+
+3. **F2: Improve connection UX (handle hit area)**
+   - Increase handle size/hit area (larger clickable region)
+   - Add visual feedback on handle hover
+   - Consider: connection mode toggle or different interaction
+   - Test: Can easily grab handle without moving node
+
+#### Acceptance Criteria
+
+- [ ] Open saved workspace → nodes and edges appear on canvas
+- [ ] Select node + press Delete → node removed
+- [ ] Right-click node → context menu with Delete option
+- [ ] Handles have larger hit area, easier to click
+- [ ] Visual feedback when hovering over handle
+
+---
+
+### 7.4 Sprint 7.3: Pin Properties & Validation UX (P2)
+
+**Goal:** Implement pin properties and fix validation messaging.
+
+#### Tasks
+
+1. **F7: Pin Properties**
+   - Pins (inputs/outputs) can have configurable properties
+   - Property Panel shows pin properties when pin selected
+   - Pin properties editable (e.g., frame type constraints)
+   - Schema must include pin property definitions
+
+2. **F4: Fix validation messaging**
+   - Don't say "pipeline is valid" if there are warnings
+   - Clear messaging:
+     - "Valid" = no errors AND no warnings
+     - "Valid with warnings" = no errors, has warnings
+     - "Invalid" = has errors
+   - Status bar reflects actual state
+
+#### Acceptance Criteria
+
+- [ ] Click on pin → property panel shows pin properties
+- [ ] Can edit pin properties
+- [ ] Validation message accurately reflects state
+- [ ] No confusing "valid but has warnings" situation
+
+---
+
+### 7.5 Sprint 7.4: UI Polish & Settings (P3)
+
+**Goal:** Remove visual clutter and add user preferences.
+
+#### Tasks
+
+1. **F6: Remove category labels from nodes**
+   - Remove "SOURCE", "TRANSFORM", "SINK" text from ModuleNode
+   - Keep category colors (sufficient visual indicator)
+   - Reclaim vertical space in node design
+
+2. **F5: Settings & Arrange**
+   - Create Settings page/modal
+   - Add "Validate on Save" toggle (stored in localStorage)
+   - Add "Arrange" button in toolbar
+   - Auto-arrange nodes using layout algorithm (dagre or similar)
+
+#### Acceptance Criteria
+
+- [ ] Nodes show category by color only, no text label
+- [ ] Settings modal accessible from toolbar/menu
+- [ ] "Validate on Save" preference works
+- [ ] "Arrange" button auto-layouts nodes nicely
+
+---
+
+## 13. Updated Phase Roadmap
+
+| Phase | Name | Priority | Status | Notes |
+|-------|------|----------|--------|-------|
+| **Phase 7** | Critical Fixes & Real Schema | **CRITICAL** | 🚧 In Progress | Do FIRST |
+| Phase 1 | Core Editor | Critical | ✅ Complete | |
+| Phase 2 | Validation | Critical | ✅ Complete | |
+| Phase 3 | Runtime | Critical | ✅ Complete | |
+| Phase 6 | Polish | High | ✅ Complete | |
+| Phase 4 | LLM Basic | Medium | ⏳ Deferred | After Phase 7 |
+| Phase 5 | LLM Advanced | Medium | ⏳ Deferred | After Phase 4 |
+
+**New Execution Order:** Phase 7 → Phase 4 → Phase 5
+
+---
+
 **End of Enhanced Project Plan**
 
 _This plan is designed for autonomous agent execution with clear verification at each step._
