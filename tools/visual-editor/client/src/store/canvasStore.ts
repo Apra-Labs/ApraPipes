@@ -42,6 +42,7 @@ interface CanvasState {
   nodes: ModuleNode[];
   edges: Edge[];
   selectedNodeId: string | null;
+  selectedEdgeId: string | null;
   centerTarget: string | null; // Node ID to center on
   // History state
   canUndo: boolean;
@@ -73,6 +74,7 @@ interface CanvasActions {
 
   // Selection
   selectNode: (id: string | null) => void;
+  selectEdge: (id: string | null) => void;
 
   // Navigation
   centerOnNode: (id: string) => void;
@@ -96,6 +98,7 @@ const initialState: CanvasState = {
   nodes: [],
   edges: [],
   selectedNodeId: null,
+  selectedEdgeId: null,
   centerTarget: null,
   canUndo: false,
   canRedo: false,
@@ -224,7 +227,11 @@ export const useCanvasStore = create<CanvasState & CanvasActions>((set, get) => 
   },
 
   selectNode: (id) => {
-    set({ selectedNodeId: id });
+    set({ selectedNodeId: id, selectedEdgeId: null });
+  },
+
+  selectEdge: (id) => {
+    set({ selectedEdgeId: id, selectedNodeId: null });
   },
 
   centerOnNode: (id) => {

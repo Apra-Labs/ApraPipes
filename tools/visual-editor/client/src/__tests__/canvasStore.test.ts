@@ -276,4 +276,62 @@ describe('canvasStore', () => {
       expect(getState().canRedo).toBe(false);
     });
   });
+
+  describe('selectEdge', () => {
+    it('selects an edge by ID', () => {
+      const sourceId = getState().addNode('Source', mockSchema);
+      const targetId = getState().addNode('Target', mockTransformSchema);
+
+      getState().addEdge({
+        source: sourceId,
+        target: targetId,
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      });
+
+      const edgeId = getState().edges[0].id;
+      getState().selectEdge(edgeId);
+
+      expect(getState().selectedEdgeId).toBe(edgeId);
+      expect(getState().selectedNodeId).toBeNull(); // Selecting edge clears node selection
+    });
+
+    it('clears selection with null', () => {
+      const sourceId = getState().addNode('Source', mockSchema);
+      const targetId = getState().addNode('Target', mockTransformSchema);
+
+      getState().addEdge({
+        source: sourceId,
+        target: targetId,
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      });
+
+      const edgeId = getState().edges[0].id;
+      getState().selectEdge(edgeId);
+      getState().selectEdge(null);
+
+      expect(getState().selectedEdgeId).toBeNull();
+    });
+
+    it('selecting node clears edge selection', () => {
+      const sourceId = getState().addNode('Source', mockSchema);
+      const targetId = getState().addNode('Target', mockTransformSchema);
+
+      getState().addEdge({
+        source: sourceId,
+        target: targetId,
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      });
+
+      const edgeId = getState().edges[0].id;
+      getState().selectEdge(edgeId);
+      expect(getState().selectedEdgeId).toBe(edgeId);
+
+      getState().selectNode(sourceId);
+      expect(getState().selectedNodeId).toBe(sourceId);
+      expect(getState().selectedEdgeId).toBeNull(); // Edge selection cleared
+    });
+  });
 });

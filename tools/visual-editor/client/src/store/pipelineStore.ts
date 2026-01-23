@@ -39,6 +39,7 @@ interface PipelineActions {
   // Connection operations
   addConnection: (from: string, to: string) => void;
   removeConnection: (connectionIndex: number) => void;
+  removeConnectionByEndpoints: (from: string, to: string) => void;
 
   // Serialization
   toJSON: () => string;
@@ -262,6 +263,18 @@ export const usePipelineStore = create<PipelineState & PipelineActions>((set, ge
       config: {
         ...state.config,
         connections: state.config.connections.filter((_, i) => i !== connectionIndex),
+      },
+      isDirty: true,
+    }));
+  },
+
+  removeConnectionByEndpoints: (from, to) => {
+    set((state) => ({
+      config: {
+        ...state.config,
+        connections: state.config.connections.filter(
+          (conn) => !(conn.from === from && conn.to === to)
+        ),
       },
       isDirty: true,
     }));

@@ -7,6 +7,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
   NodeTypes,
+  Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -24,11 +25,13 @@ function CanvasInner({ schema }: CanvasProps) {
   const {
     nodes,
     edges,
+    selectedEdgeId,
     onNodesChange,
     onEdgesChange,
     onConnect: canvasOnConnect,
     addNode,
     selectNode,
+    selectEdge,
   } = useCanvasStore();
 
   const addModuleToPipeline = usePipelineStore((state) => state.addModule);
@@ -93,16 +96,36 @@ function CanvasInner({ schema }: CanvasProps) {
     [selectNode]
   );
 
+  const handleEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      selectEdge(edge.id);
+    },
+    [selectEdge]
+  );
+
   const handlePaneClick = useCallback(() => {
     selectNode(null);
-  }, [selectNode]);
+    selectEdge(null);
+  }, [selectNode, selectEdge]);
+
+  // Apply selection styling to edges
+  const styledEdges = useMemo(() => {
+    return edges.map((edge) => ({
+      ...edge,
+      selected: edge.id === selectedEdgeId,
+      style: {
+        strokeWidth: edge.id === selectedEdgeId ? 3 : 2,
+        stroke: edge.id === selectedEdgeId ? '#3b82f6' : '#888',
+      },
+    }));
+  }, [edges, selectedEdgeId]);
 
   return (
     <div className="w-full h-full" onDragOver={handleDragOver} onDrop={handleDrop}>
       <ReactFlow
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         nodes={nodes as any}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={nodeTypes}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onNodesChange={onNodesChange as any}
@@ -110,6 +133,7 @@ function CanvasInner({ schema }: CanvasProps) {
         onConnect={handleConnect}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onNodeClick={handleNodeClick as any}
+        onEdgeClick={handleEdgeClick}
         onPaneClick={handlePaneClick}
         fitView
         snapToGrid

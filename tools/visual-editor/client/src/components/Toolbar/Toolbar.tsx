@@ -71,9 +71,12 @@ export function Toolbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [recentFilesVisible]);
 
-  // Get selected node for delete shortcut
+  // Get selected node/edge for delete shortcut
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
+  const selectedEdgeId = useCanvasStore((state) => state.selectedEdgeId);
   const removeNode = useCanvasStore((state) => state.removeNode);
+  const removeEdge = useCanvasStore((state) => state.removeEdge);
+  const removeConnectionByEndpoints = usePipelineStore((state) => state.removeConnectionByEndpoints);
 
   const handleNew = useCallback(() => {
     if (isDirty) {
@@ -257,13 +260,28 @@ export function Toolbar() {
         return;
       }
 
-      // Delete or Backspace = Delete selected node
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
-        e.preventDefault();
-        // Remove from both canvas and pipeline stores
-        removeNode(selectedNodeId);
-        removeModule(selectedNodeId);
-        return;
+      // Delete or Backspace = Delete selected node or edge
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedNodeId) {
+          e.preventDefault();
+          // Remove from both canvas and pipeline stores
+          removeNode(selectedNodeId);
+          removeModule(selectedNodeId);
+          return;
+        }
+        if (selectedEdgeId) {
+          e.preventDefault();
+          // Parse edge ID to get connection details and remove from both stores
+          // Edge ID format: "source-sourceHandle-target-targetHandle"
+          const parts = selectedEdgeId.split('-');
+          if (parts.length >= 4) {
+            const from = `${parts[0]}.${parts[1]}`;
+            const to = `${parts[2]}.${parts[3]}`;
+            removeConnectionByEndpoints(from, to);
+          }
+          removeEdge(selectedEdgeId);
+          return;
+        }
       }
 
       // F5 = Validate
@@ -300,7 +318,7 @@ export function Toolbar() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canUndo, canRedo, undo, redo, handleSave, handleNew, handleOpen, handleImport, selectedNodeId, removeNode, removeModule, handleValidate]);
+  }, [canUndo, canRedo, undo, redo, handleSave, handleNew, handleOpen, handleImport, selectedNodeId, selectedEdgeId, removeNode, removeModule, removeEdge, removeConnectionByEndpoints, handleValidate]);
 
   const canRun = runtimeStatus === 'IDLE' || runtimeStatus === 'STOPPED';
   const canStop = runtimeStatus === 'RUNNING';
@@ -567,8 +585,8 @@ function HelpModal({ onClose }: { onClose: () => void }) {
     { key: 'Ctrl+Z', action: 'Undo' },
     { key: 'Ctrl+Shift+Z', action: 'Redo' },
     { key: 'Ctrl+Y', action: 'Redo (alternative)' },
-    { key: 'Delete', action: 'Delete selected node' },
-    { key: 'Backspace', action: 'Delete selected node' },
+    { key: 'Delete', action: 'Delete selected node or connection' },
+    { key: 'Backspace', action: 'Delete selected node or connection' },
     { key: 'F5', action: 'Validate pipeline' },
     { key: '?', action: 'Show this help' },
     { key: 'Escape', action: 'Close dialogs' },
