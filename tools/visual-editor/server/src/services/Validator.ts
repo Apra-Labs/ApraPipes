@@ -2,7 +2,7 @@
  * Pipeline Validator Service
  *
  * Validates pipeline configurations against the module schema.
- * Uses aprapipes.node when available, falls back to mock validation.
+ * Uses aprapipes.node when available, falls back to schema-based validation.
  */
 
 import type {
@@ -15,19 +15,34 @@ import { getErrorDefinition } from './errorMessages.js';
 import { SchemaLoader, type ModuleSchema } from './SchemaLoader.js';
 import { logger } from '../utils/logger.js';
 
+// Type for the native addon validation result
+interface NativeValidationResult {
+  valid: boolean;
+  issues: Array<{
+    level: 'error' | 'warning' | 'info';
+    code: string;
+    message: string;
+    location: string;
+    suggestion?: string;
+  }>;
+}
+
 /**
  * Validator class for pipeline configurations
  */
 export class Validator {
   private schemaLoader: SchemaLoader;
+  private useNativeValidation: boolean;
 
   constructor(schemaLoader: SchemaLoader) {
     this.schemaLoader = schemaLoader;
-    // Log validation mode based on addon availability
-    if (this.schemaLoader.isAddonLoaded()) {
-      logger.info('Validator using aprapipes.node addon for schema');
+    this.useNativeValidation = this.schemaLoader.isAddonLoaded();
+
+    // Log validation mode
+    if (this.useNativeValidation) {
+      logger.info('Validator using native aprapipes.node validation');
     } else {
-      logger.info('Validator using mock schema data');
+      logger.info('Validator using schema-based validation (fallback)');
     }
   }
 
@@ -35,6 +50,88 @@ export class Validator {
    * Validate a pipeline configuration
    */
   async validate(config: PipelineConfig): Promise<ValidationResult> {
+    // Try native validation first if addon is available
+    if (this.useNativeValidation) {
+      try {
+        const nativeResult = await this.validateNative(config);
+        if (nativeResult) {
+          return nativeResult;
+        }
+      } catch (error) {
+        logger.warn('Native validation failed, falling back to schema-based:', error);
+      }
+    }
+
+    // Fall back to schema-based validation
+    return this.validateWithSchema(config);
+  }
+
+  /**
+   * Validate using native aprapipes.node addon
+   */
+  private async validateNative(config: PipelineConfig): Promise<ValidationResult | null> {
+    const addon = this.schemaLoader.getAddon();
+    if (!addon || typeof addon.validatePipeline !== 'function') {
+      return null;
+    }
+
+    // Convert config to the format expected by the addon
+    const pipelineJson = this.convertToPipelineJson(config);
+
+    try {
+      const result: NativeValidationResult = addon.validatePipeline(pipelineJson);
+
+      // Map native issues to our ValidationIssue format
+      const issues: ValidationIssue[] = result.issues.map((issue) => ({
+        level: issue.level,
+        code: issue.code,
+        message: issue.message,
+        location: issue.location,
+        suggestion: issue.suggestion,
+      }));
+
+      logger.debug(`Native validation complete: ${issues.length} issues`);
+
+      return {
+        valid: result.valid,
+        issues,
+      };
+    } catch (error) {
+      logger.error('Native validation threw error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Convert our PipelineConfig format to the JSON format expected by aprapipes.node
+   */
+  private convertToPipelineJson(config: PipelineConfig): string {
+    // The addon expects the standard ApraPipes JSON format:
+    // { "modules": { "id": { "type": "...", "props": {...} } }, "connections": [...] }
+    const pipelineObj = {
+      modules: {} as Record<string, { type: string; props?: Record<string, unknown> }>,
+      connections: config.connections.map((conn) => ({
+        from: conn.from,
+        to: conn.to,
+      })),
+    };
+
+    for (const [moduleId, moduleConfig] of Object.entries(config.modules)) {
+      pipelineObj.modules[moduleId] = {
+        type: moduleConfig.type,
+        ...(moduleConfig.properties && Object.keys(moduleConfig.properties).length > 0
+          ? { props: moduleConfig.properties }
+          : {}),
+      };
+    }
+
+    return JSON.stringify(pipelineObj);
+  }
+
+  /**
+   * Validate using schema (fallback when addon not available)
+   */
+  private async validateWithSchema(config: PipelineConfig): Promise<ValidationResult> {
     const issues: ValidationIssue[] = [];
     const schema = await this.schemaLoader.getSchema();
 
@@ -65,6 +162,13 @@ export class Validator {
     const valid = !issues.some((issue) => issue.level === 'error');
 
     return { valid, issues };
+  }
+
+  /**
+   * Check if using native validation
+   */
+  isUsingNativeValidation(): boolean {
+    return this.useNativeValidation;
   }
 
   /**

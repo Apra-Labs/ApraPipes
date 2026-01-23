@@ -153,9 +153,19 @@ function loadSchemaFromFile(): Schema | null {
 // Addon loading
 // ============================================================
 
+// Type for validation issues from the addon
+interface AddonValidationIssue {
+  level: 'error' | 'warning' | 'info';
+  code: string;
+  message: string;
+  location: string;
+  suggestion?: string;
+}
+
 let aprapipesAddon: {
   describeAllModules: () => AddonSchema;
-  validatePipeline: (config: string | object) => { valid: boolean; issues: unknown[] };
+  validatePipeline: (config: string | object) => { valid: boolean; issues: AddonValidationIssue[] };
+  createPipeline?: (config: string | object) => unknown;
 } | null = null;
 
 function loadAddon(): boolean {
@@ -365,6 +375,13 @@ class SchemaLoader {
    */
   isAddonLoaded(): boolean {
     return this.addonLoaded;
+  }
+
+  /**
+   * Get the native addon (for advanced use like validation)
+   */
+  getAddon(): typeof aprapipesAddon {
+    return this.addonLoaded ? aprapipesAddon : null;
   }
 
   /**

@@ -2,8 +2,8 @@
 
 > **Last Updated:** 2026-01-23
 > **Current Phase:** Phase 7 - Critical Fixes & Real Schema Integration
-> **Current Sprint:** Sprint 7.4 - Real Integration (Ready)
-> **Next Action:** Run real validations via aprapipes.node and test with real pipelines
+> **Current Sprint:** Sprint 7.5 - Real Integration (Complete)
+> **Next Action:** Test with real pipelines on a system with aprapipes.node built
 
 ---
 
@@ -16,7 +16,7 @@
 | **Phase 2: Validation** | ✅ Complete | 100% | 2 weeks |
 | **Phase 3: Runtime** | ✅ Complete | 100% | 2-3 weeks |
 | **Phase 6: Polish** | ✅ Complete | 100% | 2-3 weeks |
-| **Phase 7: Critical Fixes** | 🚧 In Progress | 95% | User feedback items |
+| **Phase 7: Critical Fixes** | ✅ Complete | 100% | User feedback + real integration |
 | **Phase 4: LLM Basic** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 | **Phase 5: LLM Advanced** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 
@@ -480,6 +480,29 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 
 ---
 
+### Sprint 7.5: Real Integration
+**Status:** ✅ Complete
+**Duration:** 1 day
+
+**Goal:** Wire up real validation and pipeline execution through aprapipes.node.
+
+- [x] Validator uses native `validatePipeline()` when addon available
+  - Falls back to schema-based validation when addon not found
+  - Converts PipelineConfig to JSON format expected by addon
+  - Maps native validation issues to our ValidationIssue format
+- [x] PipelineManager uses native `createPipeline()` when addon available
+  - Updated to use correct addon API: `init()`, `run()`, `stop()`, `terminate()`
+  - Proper event handling via `pipeline.on('health', ...)` and `pipeline.on('error', ...)`
+  - Added `forceMockMode` option for testing
+  - Converts PipelineConfig to JSON format expected by addon
+- [x] Tests updated to use mock mode for isolation
+- [x] Added typed addon interfaces for better TypeScript support
+
+**Blockers:** None
+**Completion:** ✅ Sprint 7.5 COMPLETE
+
+---
+
 ## Phase 4: LLM Basic (0% Complete)
 
 ### Sprint 4.1: LLM Provider Abstraction
@@ -613,8 +636,20 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
   - Added `SettingsModal` component
   - Added settings actions to uiStore: `openSettingsDialog`, `closeSettingsDialog`, `setValidateOnSave`
   - 4 new uiStore tests for settings
+- ✅ **Sprint 7.5 COMPLETE** (Real Integration)
+  - Validator now uses native `validatePipeline()` from addon when available
+    - Falls back to schema-based validation when addon not found
+    - Added `NativeValidationResult` type
+    - Added `convertToPipelineJson()` to convert config format
+  - PipelineManager now uses native `createPipeline()` from addon when available
+    - Updated to use correct API: `init()`, `run()`, `stop()`, `terminate()`
+    - Proper event handling via `on('health', ...)` and `on('error', ...)`
+    - Added `forceMockMode` constructor option for testing
+    - Added typed `NativeAddon` and `NativePipeline` interfaces
+  - Tests updated to force mock mode for isolation
 - All 287 tests passing (202 client + 85 server)
 - Build passing
+- **Phase 7 COMPLETE** (100%)
 
 ### 2026-01-23 (Session 2)
 - ✅ **Sprint 7.3 IN PROGRESS** (Demo Feedback)

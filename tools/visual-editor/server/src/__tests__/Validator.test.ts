@@ -54,6 +54,22 @@ describe('Validator', () => {
     schemaLoader = new SchemaLoader();
     // Mock getSchema to return our test schema
     vi.spyOn(schemaLoader, 'getSchema').mockResolvedValue(mockSchema);
+    // Mock isAddonLoaded to return false (use schema-based validation)
+    vi.spyOn(schemaLoader, 'isAddonLoaded').mockReturnValue(false);
+    // Mock getAddon to return null
+    vi.spyOn(schemaLoader, 'getAddon').mockReturnValue(null);
+    // Mock areFrameTypesCompatible for frame type checks
+    vi.spyOn(schemaLoader, 'areFrameTypesCompatible').mockImplementation(
+      async (output: string, input: string) => {
+        // Simple mock - exact match or input is a superset
+        if (output === input) return true;
+        if (input === 'Frame') return true;
+        // raw_image is compatible with raw_image and encoded_image
+        if (output === 'raw_image' && input === 'encoded_image') return false;
+        if (output === 'encoded_image' && input === 'raw_image') return false;
+        return false;
+      }
+    );
     validator = new Validator(schemaLoader);
   });
 

@@ -23,7 +23,8 @@ describe('PipelineManager', () => {
 
   beforeEach(() => {
     resetPipelineManager();
-    manager = new PipelineManager();
+    // Force mock mode for tests
+    manager = new PipelineManager({ forceMockMode: true });
   });
 
   afterEach(() => {

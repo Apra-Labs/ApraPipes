@@ -23,13 +23,14 @@ const logger = createLogger('PipelineManager');
 /**
  * Try to load the native aprapipes addon
  */
-function tryLoadNativeAddon(): unknown | null {
+function tryLoadNativeAddon(): NativeAddon | null {
   try {
     // Try multiple paths for the native addon
     const paths = [
-      '../../bin/aprapipes.node',
-      '../../../bin/aprapipes.node',
-      '../../../../bin/aprapipes.node',
+      '../../aprapipes.node',
+      '../../../aprapipes.node',
+      '../../../../aprapipes.node',
+      '../../../../../aprapipes.node',
     ];
 
     for (const addonPath of paths) {
@@ -38,7 +39,7 @@ function tryLoadNativeAddon(): unknown | null {
         const addon = require(addonPath);
         if (addon && typeof addon.createPipeline === 'function') {
           logger.info(`Native addon loaded from ${addonPath}`);
-          return addon;
+          return addon as NativeAddon;
         }
       } catch {
         // Try next path
@@ -54,15 +55,49 @@ function tryLoadNativeAddon(): unknown | null {
 }
 
 /**
+ * Type for the native addon
+ */
+interface NativeAddon {
+  createPipeline: (config: string | object) => NativePipeline;
+  validatePipeline: (config: string | object) => { valid: boolean; issues: unknown[] };
+}
+
+/**
+ * Type for a native pipeline instance
+ */
+interface NativePipeline {
+  init: () => Promise<boolean>;
+  run: (options?: { pauseSupport?: boolean }) => Promise<boolean>;
+  stop: () => Promise<boolean>;
+  terminate: () => Promise<boolean>;
+  pause: () => void;
+  play: () => void;
+  getStatus: () => string;
+  getName: () => string;
+  getModuleIds: () => string[];
+  on: (event: string, callback: (data: unknown) => void) => NativePipeline;
+  off: (event: string, callback: (data: unknown) => void) => NativePipeline;
+  removeAllListeners: (event?: string) => NativePipeline;
+}
+
+/**
+ * Options for PipelineManager constructor
+ */
+interface PipelineManagerOptions {
+  /** Force mock mode even if native addon is available (for testing) */
+  forceMockMode?: boolean;
+}
+
+/**
  * Pipeline Manager class
  * Extends EventEmitter to broadcast pipeline events to subscribers
  */
 export class PipelineManager extends EventEmitter {
   private pipelines: Map<string, PipelineInstance> = new Map();
-  private nativeAddon: unknown | null;
+  private nativeAddon: NativeAddon | null;
   private useMockMode: boolean;
 
-  constructor() {
+  constructor(options: PipelineManagerOptions = {}) {
     super();
 
     // Add default error listener to prevent unhandled error crashes
@@ -71,13 +106,19 @@ export class PipelineManager extends EventEmitter {
       // Error events are logged elsewhere, this just prevents crash
     });
 
-    this.nativeAddon = tryLoadNativeAddon();
-    this.useMockMode = this.nativeAddon === null;
-
-    if (this.useMockMode) {
-      logger.info('PipelineManager initialized in MOCK mode');
+    if (options.forceMockMode) {
+      this.nativeAddon = null;
+      this.useMockMode = true;
+      logger.info('PipelineManager initialized in MOCK mode (forced)');
     } else {
-      logger.info('PipelineManager initialized with native addon');
+      this.nativeAddon = tryLoadNativeAddon();
+      this.useMockMode = this.nativeAddon === null;
+
+      if (this.useMockMode) {
+        logger.info('PipelineManager initialized in MOCK mode');
+      } else {
+        logger.info('PipelineManager initialized with native addon');
+      }
     }
   }
 
@@ -231,10 +272,11 @@ export class PipelineManager extends EventEmitter {
     // Cleanup native pipeline if exists
     if (instance.nativePipeline && !this.useMockMode) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (instance.nativePipeline as any).destroy?.();
+        const pipeline = instance.nativePipeline as NativePipeline;
+        pipeline.removeAllListeners();
+        await pipeline.terminate();
       } catch (error) {
-        logger.warn(`Failed to destroy native pipeline: ${id}`, error);
+        logger.warn(`Failed to terminate native pipeline: ${id}`, error);
       }
     }
 
@@ -337,40 +379,67 @@ export class PipelineManager extends EventEmitter {
       throw new Error('Native addon not available');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const addon = this.nativeAddon as any;
+    // Convert config to the format expected by the addon
+    const pipelineConfig = this.convertToPipelineConfig(instance.config);
 
     // Create native pipeline
-    const pipeline = addon.createPipeline(JSON.stringify(instance.config));
+    const pipeline = this.nativeAddon.createPipeline(pipelineConfig);
     instance.nativePipeline = pipeline;
 
     // Set up event listeners
-    pipeline.on('health', (event: HealthEvent) => {
+    pipeline.on('health', (event: unknown) => {
       if (instance.status !== 'RUNNING') return;
 
-      instance.metrics[event.moduleId] = {
-        fps: event.fps,
-        qlen: event.qlen,
-        isQueueFull: event.isQueueFull,
+      const healthEvent = event as HealthEvent;
+      instance.metrics[healthEvent.moduleId] = {
+        fps: healthEvent.fps,
+        qlen: healthEvent.qlen,
+        isQueueFull: healthEvent.isQueueFull,
         timestamp: Date.now(),
       };
 
-      this.emit('health', { pipelineId: instance.id, ...event });
+      this.emit('health', { pipelineId: instance.id, ...healthEvent });
     });
 
-    pipeline.on('error', (event: ErrorEvent) => {
+    pipeline.on('error', (event: unknown) => {
+      const errorEvent = event as ErrorEvent;
       instance.errors.push({
-        moduleId: event.moduleId,
-        message: event.message,
+        moduleId: errorEvent.moduleId,
+        message: errorEvent.message,
         timestamp: Date.now(),
-        code: event.code,
+        code: errorEvent.code,
       });
 
-      this.emit('error', { pipelineId: instance.id, ...event });
+      this.emit('error', { pipelineId: instance.id, ...errorEvent });
     });
 
-    // Start the pipeline
-    await pipeline.start();
+    // Initialize and run the pipeline
+    await pipeline.init();
+    await pipeline.run({ pauseSupport: true });
+  }
+
+  /**
+   * Convert PipelineConfig to the format expected by aprapipes.node
+   */
+  private convertToPipelineConfig(config: PipelineConfig): string {
+    const pipelineObj = {
+      modules: {} as Record<string, { type: string; props?: Record<string, unknown> }>,
+      connections: config.connections.map((conn) => ({
+        from: conn.from,
+        to: conn.to,
+      })),
+    };
+
+    for (const [moduleId, moduleConfig] of Object.entries(config.modules)) {
+      pipelineObj.modules[moduleId] = {
+        type: moduleConfig.type,
+        ...(moduleConfig.properties && Object.keys(moduleConfig.properties).length > 0
+          ? { props: moduleConfig.properties }
+          : {}),
+      };
+    }
+
+    return JSON.stringify(pipelineObj);
   }
 
   /**
@@ -381,8 +450,7 @@ export class PipelineManager extends EventEmitter {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pipeline = instance.nativePipeline as any;
+    const pipeline = instance.nativePipeline as NativePipeline;
     await pipeline.stop();
   }
 }
