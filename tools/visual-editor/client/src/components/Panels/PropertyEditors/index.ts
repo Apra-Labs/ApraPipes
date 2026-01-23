@@ -4,3 +4,4 @@ export { BoolCheckbox } from './BoolCheckbox';
 export { StringInput } from './StringInput';
 export { EnumDropdown } from './EnumDropdown';
 export { JsonEditor } from './JsonEditor';
+export { PathInput } from './PathInput';

@@ -5,6 +5,7 @@ import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useRuntimeStore } from '../../store/runtimeStore';
 import { usePipelineStore } from '../../store/pipelineStore';
 import { useCanvasStore } from '../../store/canvasStore';
+import { FileBrowserDialog } from '../FileBrowser';
 
 /**
  * Main toolbar component with pipeline controls
@@ -43,12 +44,11 @@ export function Toolbar() {
   const undo = useCanvasStore((state) => state.undo);
   const redo = useCanvasStore((state) => state.redo);
 
-  const [openDialogVisible, setOpenDialogVisible] = useState(false);
-  const [saveDialogVisible, setSaveDialogVisible] = useState(false);
+  const [openBrowserVisible, setOpenBrowserVisible] = useState(false);
+  const [saveBrowserVisible, setSaveBrowserVisible] = useState(false);
   const [helpDialogVisible, setHelpDialogVisible] = useState(false);
   const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [recentFilesVisible, setRecentFilesVisible] = useState(false);
-  const [pathInput, setPathInput] = useState('');
   const [importContent, setImportContent] = useState('');
   const recentFilesRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,19 +87,16 @@ export function Toolbar() {
   }, [isDirty, newWorkspace]);
 
   const handleOpen = useCallback(() => {
-    setPathInput('');
-    setOpenDialogVisible(true);
+    setOpenBrowserVisible(true);
   }, []);
 
-  const handleOpenConfirm = useCallback(async () => {
-    if (!pathInput.trim()) return;
+  const handleOpenSelect = useCallback(async (path: string) => {
     try {
-      await openWorkspace(pathInput.trim());
-      setOpenDialogVisible(false);
+      await openWorkspace(path);
     } catch (error) {
       alert(`Failed to open workspace: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, [pathInput, openWorkspace]);
+  }, [openWorkspace]);
 
   const handleSave = useCallback(async () => {
     if (currentPath) {
@@ -109,20 +106,17 @@ export function Toolbar() {
         alert(`Failed to save workspace: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     } else {
-      setPathInput('');
-      setSaveDialogVisible(true);
+      setSaveBrowserVisible(true);
     }
   }, [currentPath, saveWorkspace]);
 
-  const handleSaveConfirm = useCallback(async () => {
-    if (!pathInput.trim()) return;
+  const handleSaveSelect = useCallback(async (path: string) => {
     try {
-      await saveWorkspace(pathInput.trim());
-      setSaveDialogVisible(false);
+      await saveWorkspace(path);
     } catch (error) {
       alert(`Failed to save workspace: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, [pathInput, saveWorkspace]);
+  }, [saveWorkspace]);
 
   // Import JSON from text
   const handleImport = useCallback(() => {
@@ -308,8 +302,8 @@ export function Toolbar() {
       // Escape = Close dialogs
       if (e.key === 'Escape') {
         setHelpDialogVisible(false);
-        setOpenDialogVisible(false);
-        setSaveDialogVisible(false);
+        setOpenBrowserVisible(false);
+        setSaveBrowserVisible(false);
         setImportDialogVisible(false);
         setRecentFilesVisible(false);
         return;
@@ -487,41 +481,23 @@ export function Toolbar() {
         </div>
       </header>
 
-      {/* Open Dialog */}
-      {openDialogVisible && (
-        <Dialog
-          title="Open Workspace"
-          onClose={() => setOpenDialogVisible(false)}
-          onConfirm={handleOpenConfirm}
-        >
-          <input
-            type="text"
-            placeholder="Enter workspace path (e.g., my-project)"
-            value={pathInput}
-            onChange={(e) => setPathInput(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            autoFocus
-          />
-        </Dialog>
-      )}
+      {/* Open Workspace Browser */}
+      <FileBrowserDialog
+        isOpen={openBrowserVisible}
+        onClose={() => setOpenBrowserVisible(false)}
+        onSelect={handleOpenSelect}
+        title="Open Workspace"
+        mode="directory"
+      />
 
-      {/* Save Dialog */}
-      {saveDialogVisible && (
-        <Dialog
-          title="Save Workspace"
-          onClose={() => setSaveDialogVisible(false)}
-          onConfirm={handleSaveConfirm}
-        >
-          <input
-            type="text"
-            placeholder="Enter workspace path (e.g., my-project)"
-            value={pathInput}
-            onChange={(e) => setPathInput(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            autoFocus
-          />
-        </Dialog>
-      )}
+      {/* Save Workspace Browser */}
+      <FileBrowserDialog
+        isOpen={saveBrowserVisible}
+        onClose={() => setSaveBrowserVisible(false)}
+        onSelect={handleSaveSelect}
+        title="Save Workspace"
+        mode="directory"
+      />
 
       {/* Import Dialog */}
       {importDialogVisible && (
@@ -696,34 +672,3 @@ function ViewToggleButton({ children, active, onClick }: ViewToggleButtonProps) 
   );
 }
 
-interface DialogProps {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-  onConfirm: () => void;
-}
-
-function Dialog({ title, children, onClose, onConfirm }: DialogProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-96 p-4">
-        <h2 className="text-lg font-semibold mb-4">{title}</h2>
-        <div className="mb-4">{children}</div>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded"
-            onClick={onConfirm}
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}

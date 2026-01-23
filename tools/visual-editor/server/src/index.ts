@@ -6,6 +6,7 @@ import schemaRouter from './api/schema.js';
 import { workspaceRouter } from './api/workspace.js';
 import validateRouter from './api/validate.js';
 import { pipelineRouter } from './api/pipeline.js';
+import filesRouter from './api/files.js';
 import { getMetricsStream } from './websocket/MetricsStream.js';
 import { createLogger } from './utils/logger.js';
 
@@ -23,6 +24,7 @@ app.use('/api/schema', schemaRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/api/validate', validateRouter);
 app.use('/api/pipeline', pipelineRouter);
+app.use('/api/files', filesRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

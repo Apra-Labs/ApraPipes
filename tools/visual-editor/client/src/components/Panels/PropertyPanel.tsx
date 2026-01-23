@@ -10,6 +10,7 @@ import {
   StringInput,
   EnumDropdown,
   JsonEditor,
+  PathInput,
 } from './PropertyEditors';
 
 interface PropertyPanelProps {
@@ -130,6 +131,14 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
     }
   };
 
+  // Detect if a string property is likely a file/path
+  const isPathProperty = (key: string, description?: string): boolean => {
+    const pathKeywords = ['path', 'file', 'dir', 'folder', 'directory', 'location'];
+    const keyLower = key.toLowerCase();
+    const descLower = (description || '').toLowerCase();
+    return pathKeywords.some((kw) => keyLower.includes(kw) || descLower.includes(kw));
+  };
+
   const renderPropertyEditor = (key: string, propSchema: PropertySchema) => {
     const value = getPropertyValue(key, propSchema);
 
@@ -165,6 +174,18 @@ export function PropertyPanel({ schema }: PropertyPanelProps) {
           />
         );
       case 'string':
+        // Use PathInput for path-like properties
+        if (isPathProperty(key, propSchema.description)) {
+          return (
+            <PathInput
+              key={key}
+              label={key}
+              value={value as string}
+              schema={propSchema}
+              onChange={(v) => handlePropertyChange(key, v)}
+            />
+          );
+        }
         return (
           <StringInput
             key={key}
