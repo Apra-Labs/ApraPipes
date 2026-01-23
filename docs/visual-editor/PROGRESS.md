@@ -2,8 +2,8 @@
 
 > **Last Updated:** 2026-01-23
 > **Current Phase:** Phase 7 - Critical Fixes & Real Schema Integration
-> **Current Sprint:** Sprint 7.2 - Critical Bug Fixes (Complete)
-> **Next Action:** Sprint 7.3 - Pin Properties & Validation UX
+> **Current Sprint:** Sprint 7.3 - Demo Feedback (In Progress)
+> **Next Action:** Complete remaining Sprint 7.3 items (F7 pin properties)
 
 ---
 
@@ -16,7 +16,7 @@
 | **Phase 2: Validation** | ✅ Complete | 100% | 2 weeks |
 | **Phase 3: Runtime** | ✅ Complete | 100% | 2-3 weeks |
 | **Phase 6: Polish** | ✅ Complete | 100% | 2-3 weeks |
-| **Phase 7: Critical Fixes** | 🚧 In Progress | 50% | User feedback items |
+| **Phase 7: Critical Fixes** | 🚧 In Progress | 80% | User feedback items |
 | **Phase 4: LLM Basic** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 | **Phase 5: LLM Advanced** | ⏳ Not Started | 0% | 1-2 weeks (deferred) |
 
@@ -437,16 +437,23 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 
 ---
 
-### Sprint 7.3: Pin Properties & Validation UX
-**Status:** ⏳ Not Started
+### Sprint 7.3: Demo Feedback & UX Improvements
+**Status:** 🚧 In Progress
 **Duration:** 2 days
 
-**Goal:** Implement pin properties and fix validation messaging.
+**Goal:** Address demo feedback and improve editor UX.
 
+- [x] F4: Fix validation messaging (don't say "valid" if there are warnings)
+- [x] Enum properties render as dropdowns (already working)
+- [x] Float properties always show slider + number input (smart defaults)
+- [x] Edge selection and deletion (click to select, Delete to remove)
+- [x] File browser for path properties (auto-detects path-like properties)
+- [x] File browser for workspace Open/Save dialogs
+- [x] Integrated aprapipes.node addon for live schema
+- [x] schema.json fallback when addon not available
 - [ ] F7: Pin properties (click pin → show properties in Property Panel)
-- [ ] F4: Fix validation messaging (don't say "valid" if there are warnings)
 
-**Blockers:** Depends on Sprint 7.2
+**Blockers:** None
 
 ---
 
@@ -565,7 +572,29 @@ node -e "const m = require('./aprapipes.node'); console.log('modules:', Object.k
 
 ## Recent Changes
 
-### 2026-01-23
+### 2026-01-23 (Session 2)
+- 🚧 **Sprint 7.3 IN PROGRESS** (Demo Feedback)
+  - ✅ Integrated aprapipes.node addon into visual editor backend
+    - SchemaLoader loads from addon with schema.json fallback
+    - Frame type hierarchy used for connection validation
+    - Removed mock data in favor of real/generated schema
+  - ✅ Fixed F4 validation messaging
+    - Now shows "Valid with X warning(s)" instead of just "Valid!"
+  - ✅ Float properties always show slider
+    - Smart defaults: 0-1 for normalized, adaptive for others
+    - Always includes number input for precise control
+  - ✅ Edge selection and deletion
+    - Click edge to select (blue highlight)
+    - Delete/Backspace removes selected edge
+    - Added `selectEdge` and `removeConnectionByEndpoints` actions
+  - ✅ File browser for paths and workspace dialogs
+    - `/api/files` API for server-side directory browsing
+    - `FileBrowserDialog` component
+    - `PathInput` for file/path properties (auto-detects by name)
+    - Workspace Open/Save now use file browser
+  - All 282 tests passing (197 client + 85 server)
+
+### 2026-01-23 (Session 1)
 - ✅ **Sprint 7.2 COMPLETE** (Critical Bug Fixes)
   - F3: Fixed workspace load not drawing nodes
     - `addNode()` now accepts optional `id` parameter
