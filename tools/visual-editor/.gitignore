@@ -29,3 +29,6 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# User data
+server/workspaces/
